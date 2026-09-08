@@ -407,6 +407,7 @@ class _WorldAtlasFamily:
     name: str
     map_indices: tuple[int, ...]
     slots: tuple[int, ...]
+    palette_index: int = ACCEPTED_PALETTE_INDEX
 
     @property
     def asset_id(self) -> str:
@@ -445,6 +446,7 @@ _MAP19_20_ATLAS = _WorldAtlasFamily(
     "map19-20", ACCEPTED_CASTLE_MAP_INDICES, ACCEPTED_CASTLE_TILESET_SLOTS
 )
 _MAP21_ATLAS = _WorldAtlasFamily("map21", (21,), (6, 23, 44, 53, 8))
+_MAP40_ATLAS = _WorldAtlasFamily("map40", (40,), (94, 95, 96, 97, 58), palette_index=3)
 
 
 @dataclass(frozen=True)
@@ -809,7 +811,7 @@ def _parse_world_tileset_metadata(
         if any(value != 255 and value >= 115 for value in parsed_slots):
             raise _reject("InvalidSelection", field, "A map tileset slot is out of range.")
         if ordinal in family.map_indices and (
-            palette != ACCEPTED_PALETTE_INDEX or parsed_slots != family.slots
+            palette != family.palette_index or parsed_slots != family.slots
         ):
             raise _reject("InvalidSelection", field, "An accepted atlas map selection drifted.")
 
@@ -862,7 +864,7 @@ def _parse_world_palette_metadata(
             _metadata_sha256(row.get("sourceSha256"), f"{field}.sourceSha256"),
             _metadata_sha256(row.get("effectiveSha256"), f"{field}.effectiveSha256"),
         )
-        if index == ACCEPTED_PALETTE_INDEX:
+        if index == family.palette_index:
             selected = record
 
     maps = _metadata_array(root.get("maps"), 79, "paletteMetadata.maps")
@@ -874,7 +876,7 @@ def _parse_world_palette_metadata(
         _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
         _metadata_int(row.get("mapAddress"), f"{field}.mapAddress")
         palette = _metadata_int(row.get("paletteIndex"), f"{field}.paletteIndex")
-        if palette > 15 or (ordinal in family.map_indices and palette != ACCEPTED_PALETTE_INDEX):
+        if palette > 15 or (ordinal in family.map_indices and palette != family.palette_index):
             raise _reject(
                 "InvalidSelection",
                 field,
@@ -918,7 +920,7 @@ def _build_world_atlas_source(
         if (
             palette_map["mapAddress"] != address
             or address + 6 > len(rom)
-            or rom[address : address + 6] != bytes((ACCEPTED_PALETTE_INDEX, *family.slots))
+            or rom[address : address + 6] != bytes((family.palette_index, *family.slots))
         ):
             raise _reject(
                 "SourcePayloadMismatch",
@@ -951,7 +953,7 @@ def _build_world_atlas_source(
         raise _reject(
             "PalettePayloadMismatch",
             "palettePayload",
-            "The accepted palette-zero transform drifted.",
+            "The accepted index-zero transform drifted.",
         )
     effective_words = [
         int.from_bytes(effective_palette_bytes[offset : offset + 2], "big")
@@ -1004,7 +1006,7 @@ def _build_world_atlas_source(
     source_bundle = b"".join(
         (
             family.source_magic,
-            bytes((*family.map_indices, ACCEPTED_PALETTE_INDEX, *family.slots)),
+            bytes((*family.map_indices, family.palette_index, *family.slots)),
             effective_palette_bytes,
             *decoded_buffers,
         )
@@ -2782,6 +2784,36 @@ def build_map21_base_atlas_candidate(
     )
 
 
+def build_map40_base_atlas_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build the fixed Map 40 atlas candidate without promoting tracked assets."""
+
+    return _build_base_atlas_candidate(
+        family=_MAP40_ATLAS,
+        asset_root=asset_root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        rom_path=rom_path,
+        expected_rom_sha256=expected_rom_sha256,
+        tileset_metadata_path=tileset_metadata_path,
+        expected_tileset_metadata_sha256=expected_tileset_metadata_sha256,
+        palette_metadata_path=palette_metadata_path,
+        expected_palette_metadata_sha256=expected_palette_metadata_sha256,
+        candidate_name=candidate_name,
+    )
+
+
 def _build_base_atlas_candidate(
     *,
     family: _WorldAtlasFamily,
@@ -3025,7 +3057,7 @@ def _build_base_atlas_candidate(
         }
         if family != _MAP3_ATLAS:
             receipt["acceptedMapIndices"] = list(family.map_indices)
-            receipt["acceptedPaletteIndex"] = ACCEPTED_PALETTE_INDEX
+            receipt["acceptedPaletteIndex"] = family.palette_index
             receipt["inputIdentities"] = {
                 "romSha256": ACCEPTED_ROM_SHA256,
                 "tilesetMetadataSha256": ACCEPTED_TILESET_METADATA_SHA256,
@@ -4264,6 +4296,7 @@ def _parser() -> argparse.ArgumentParser:
         "map3-base-atlas-candidate",
         "map19-20-base-atlas-candidate",
         "map21-base-atlas-candidate",
+        "map40-base-atlas-candidate",
     ):
         world = subparsers.add_parser(command)
         world.add_argument("--asset-root", required=True)
@@ -4317,11 +4350,13 @@ def main(argv: list[str] | None = None) -> int:
             "map3-base-atlas-candidate",
             "map19-20-base-atlas-candidate",
             "map21-base-atlas-candidate",
+            "map40-base-atlas-candidate",
         ):
             build_atlas = {
                 "map3-base-atlas-candidate": build_map3_base_atlas_candidate,
                 "map19-20-base-atlas-candidate": build_map19_20_base_atlas_candidate,
                 "map21-base-atlas-candidate": build_map21_base_atlas_candidate,
+                "map40-base-atlas-candidate": build_map40_base_atlas_candidate,
             }[arguments.command]
             receipt = build_atlas(
                 asset_root=arguments.asset_root,

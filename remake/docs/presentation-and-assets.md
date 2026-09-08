@@ -286,6 +286,24 @@ effective palette and the five 4,096-byte decoded tilesets. Its receipt explicit
 `acceptedMapIndices: [21]`, palette 0, the actual selected slots and all three fixed input digests,
 alongside the existing source/generator/output identities. It contains no local absolute paths.
 
+The separate `build_map40_base_atlas_candidate` API and `map40-base-atlas-candidate` command
+produce only Map 40, palette 3 and ordered slots `[94,95,96,97,58]`. The fixed family owns its
+palette index; metadata selection, the six-byte ROM header join, actual palette source range,
+source bundle and receipt all use that index. The selected `MapPalette03` source is checked before
+the existing index-zero transparency transform. The other fixed families retain palette 0 and
+their source format, pixel policy, IDs and receipt shape; callers cannot supply an arbitrary palette.
+
+Map 40 uses asset `world.map40.base-tileset-atlas`, source
+`source.world.map40.base-visual-selection`, policy `private-local-map40-base-nearest-rgba8-v1`,
+and capability `private-local-map40-base-tileset-atlas-candidate-build-v1`. Its paths use
+`world/map40/` under `source/`, `masters/` and `runtime/`. The source bundle starts with ASCII
+`SF2-MAP40-BASE-VISUAL-SELECTION-V1` plus NUL, bytes `[40,3,94,95,96,97,58]`, the 32-byte
+effective palette and five 4,096-byte decoded tilesets. The receipt records `acceptedMapIndices: [40]`,
+`acceptedPaletteIndex: 3`, the fixed slots and input identities. Its master is 128-by-320; buckets are
+exact nearest 256-by-640 and 512-by-1280. The existing five-file transaction, two-pass determinism,
+zero-remote checks and rollback apply unchanged. This candidate does not admit a Godot mount,
+original presentation fidelity, init/F507 execution, later warps, Battle 01 or H3/H4.
+
 The castle candidate uses asset `world.map19-20.base-tileset-atlas`, source
 `source.world.map19-20.base-visual-selection`, policy `private-local-map19-20-base-nearest-rgba8-v1`
 and capability `private-local-map19-20-base-tileset-atlas-candidate-build-v1`. Its master and nearest
@@ -309,7 +327,9 @@ uv run python -m sf2tool.remake_asset_build map19-20-base-atlas-candidate `
 ```
 
 For Map 21, use `map21-base-atlas-candidate` with the same input options and
-`--candidate-name 'map21-base-atlas-review'`. Each command writes exactly five files in the named
+`--candidate-name 'map21-base-atlas-review'`. For Map 40, use `map40-base-atlas-candidate` and
+`--candidate-name 'map40-base-atlas-review'` with those same fixed input options.
+Each command writes exactly five files in the named
 asset checkout's fresh ignored `cache/` candidate and emits a receipt.
 Local image review and a separately accepted source/master/runtime/manifest transaction must precede
 consumer binding. This builder does not promote assets or change the current Godot runtime. The
