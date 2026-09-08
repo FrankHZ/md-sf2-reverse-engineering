@@ -625,17 +625,90 @@ with one pending-state capture while retaining the accepted first eleven images.
 isolated Godot toolchain root and record actual view/status plus process cleanup. No new H2/H3/H4
 or full Python run follows solely from this boundary; normal H0 input absence is reported honestly.
 
+### Implemented startup input preparation
+
+The data half of the next startup item is implemented by
+`PrivateOriginalBattle01StartupReader`, `OriginalBattle01StartupDefinition`,
+`OriginalBattle01ControlledPartyPreset`, and `GameSession.PreparePrivateOriginalBattle01Startup`.
+The reader takes the existing selected `battle01-data.json` and `battle01-scene.json` exports plus
+an explicit read-only path to the compressed `battle01/terrain.bin` bound by the scene document.
+The scene export contains hashes/counts rather than the full grid. The reader therefore reuses the
+existing C# `StackCompressedGraphicsDecoder` to obtain the actual terrain; no extractor or schema
+was added. Source and scene file SHA values stay pinned by the existing extraction manifests.
+
+**Confirmed input contract:** battle 1/map 57, area `(0,0,16,20)`, wildcard triggers, three ally
+placements, six enemy placements, three quadrilateral regions, zero points and nine `STARTING`
+records. `OriginalBattle01Placement` preserves source ordinal, ally-slot/enemy-definition identity,
+AI-commandset byte, item word, both order/region pairs, source-labeled filler and spawn value.
+Region unknown and trailing bytes retain their source labels; they do not become invented flags.
+The complete source-order projection is 148 bytes: four counts, nine 12-byte records (including the
+big-endian item word), then vertex count/unknown/ordered XY pairs/trailing bytes for each region.
+Its digest is `2CDF8BC074C11451308121825DAE04DB530422FC945322934A23E6AB20EF10CE`.
+The constructor rejects invalid counts/order/identities, duplicate positions or regions, out-of-area
+placements/vertices, unsupported AI references, and non-`STARTING` input before digest admission.
+
+Terrain remains **48 by 48**, stride 48 and 2,304 raw bytes, with digest
+`ECA7CDDAC612489FFD835A44D32D1C82E955A686F2D1C6DBFA5ED2959453C835`. The 16-by-20 battle area is
+separate from that storage stride. Valid raw types are 0–8 or obstructed 255; occupancy is not
+merged into the input. The selected source actually contains values 0–3 and 255. Scene facts retain
+custom background 9, halved experience and no enemy-leader-present flag; no victory rule or rendering
+is inferred from these values. Application validates the complete typed deployment/terrain and source
+provenance at every custom port, so a source cannot substitute a different grid with matching counts.
+
+**Controlled comparison policy:** `private-local-battle01-player-ready-comparison-inputs-v1` selects
+allies 0/1/2, explicit difficulty 0 and RNG seed `0x1234`. Its class, level, HP/MP, effective ATT/DEF/AGI/MOV,
+status, four packed item words and four packed spell bytes bind to the accepted
+[player-ready fixture](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json) through tests.
+These are named comparison inputs, not a naturally carried save or original base stats. In particular,
+equipment is retained as data and has not been applied a second time to the effective attributes.
+The preset does not import observed positions, activation bits, turn scores, current actor or the
+already-consumed ready-state RNG. Placement owns positions, and the initial seed does not promise
+that replaying a different chronology produces the fixture's first actor or turn order.
+
+The code-owned GIZMO source baseline remains enemy definition 39, level 0, HP 5, MP 0, base ATT 7,
+DEF/AGI/MOV 5, hovering type 6 and the pinned source resistance/prowess/item/spell/status/AI fields
+owned by [enemy promotions](../../docs/research/enemy-promotions.md). The source-labeled unknown
+byte remains unknown. This is before difficulty adjustment: the comparison observation's enemy ATT
+is 8, and preparation must not replace base ATT 7 with that post-initialization value.
+
+Preparation requires the exact current Pending instance and its exact source snapshot. Missing,
+foreign/stale, rejected or invalid input returns a typed diagnostic. A valid result contains the
+Pending, admitted startup definition and explicit party preset. Collections are copied and exposed
+read-only. Repeated preparation is allowed and returns inputs without installing a cache, consuming
+Pending, relocating, advancing step/flags, changing locomotion/bridge, or creating active battle state.
+No Godot input action or battle display consumes this preparation yet. The required-private reader
+check and reproduction environment belong to [development and verification](./development-and-verification.md#selected-battle01-startup-inputs).
+
+**Next initialization boundary, not executed here:** the clear-F88 path establishes new-battle state,
+then follows the accepted before-battle seam, clears F90–F105, heals eligible allies (HP/MP maxima,
+status mask `0x0007` and derived-stat refresh), initializes allies/enemies, clears AI memory, loads the
+battle and invokes the start seam. The selected `bbcs_01` before program contains map/entity setup,
+temporary positions and presentation choreography; its temporary scene entities/positions must not
+replace final battle placement. Scene/text/music/fade/camera presentation is intentionally skipped
+by this staged remake policy; no original program is claimed executed. The start route sets F451
+before its empty `ms_Empty` program. F451 remains distinct from retained F401 unlock and clear F501
+completion. The later owner must implement these semantic effects and their order before consuming
+Pending, followed by activation, region routing, spawning and turn generation.
+
+**Unknown / not supplied as original initialization facts:** natural party/base-stat inheritance,
+full derived-stat/equipment refresh from the effective comparison preset, timing-dependent RNG
+chronology, unsupported transient script effects and original presentation. These boundaries must
+be resolved or explicitly bounded by the initialization slice; they are not filled with zero values.
+Terrain occupancy, a finalized roster, active region flags and turn order are outputs of that later
+slice, not hidden state in this preparation. Natural continuity and H4 remain Unknown.
+
 ### Ordered path to the first controllable Battle 01 turn
 
 1. Consume the independently accepted pending boundary above as the sole continuation input.
    Its receipt is neither a completed warp receipt nor an active battle snapshot.
-2. Admit the bounded battle startup inputs through the existing Content trust boundary:
+2. **Input preparation implemented; initialization remains pending.** Consume the fixed definition
+   and explicit comparison preset above through the existing Content trust boundary:
    [placement](../../docs/research/battle01-placement.md),
    [spritesets](../../docs/research/battle-spriteset-data.md),
    [terrain/routing](../../docs/research/battle-routing-data.md), and
    [global data](../../docs/research/battle-global-data.md). Reuse maintained selected-battle outputs;
-   no whole canonical re-extraction. Specify the controlled party stats/status/equipment and RNG
-   inputs before initialization. Account for the accepted before/start semantic effects in the
+   no whole canonical re-extraction. The accepted preparation fixes controlled party
+   stats/status/equipment/spells and RNG inputs. Account for the accepted before/start semantic effects in the
    new-battle order while explicitly skipping original scene, text, music and fade presentation; do
    not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
    Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
