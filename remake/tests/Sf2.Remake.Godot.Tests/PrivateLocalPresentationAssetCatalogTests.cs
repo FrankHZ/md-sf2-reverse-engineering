@@ -72,6 +72,40 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         })
             Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(wrong, wrong.Buckets[0]));
     }
+    [Fact]
+    public void NorthMap40AtlasRequiresItsIndependentPaletteSelectionAndExactBuckets()
+    {
+        var exact = AtlasDefinition(assetId: PrivateLocalPresentationAssetCatalog.Map40BaseAtlasAssetId,
+            twoXDigest: PrivateLocalPresentationAssetCatalog.Map40BaseAtlas2xDigest,
+            fourXDigest: PrivateLocalPresentationAssetCatalog.Map40BaseAtlas4xDigest);
+        foreach (var bucket in exact.Buckets)
+        {
+            Assert.True(PrivateLocalPresentationAssetCatalog.IsExactMap40BaseAtlasBinding(exact, bucket));
+            Assert.False(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(exact, bucket));
+            Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(exact, bucket));
+        }
+        Assert.Equal(exact.AssetId, PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+            new(new("map40"), 3, [94, 95, 96, 97, 58])));
+        foreach (string map in new[] { "map3", "map19", "map20", "map21" })
+            Assert.Null(PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+                new(new(map), 3, [94, 95, 96, 97, 58])));
+        Assert.Null(PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+            new(new("map40"), 0, [94, 95, 96, 97, 58])));
+        Assert.Null(PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+            new(new("map40"), 3, [94, 95, 96, 97, 8])));
+        foreach (var wrong in new[]
+        {
+            AtlasDefinition(),
+            AtlasDefinition(assetId: exact.AssetId,
+                twoXDigest: PrivateLocalPresentationAssetCatalog.CastleBaseAtlas2xDigest,
+                fourXDigest: PrivateLocalPresentationAssetCatalog.CastleBaseAtlas4xDigest),
+            AtlasDefinition(assetId: exact.AssetId, width: 127,
+                twoXDigest: PrivateLocalPresentationAssetCatalog.Map40BaseAtlas2xDigest),
+            AtlasDefinition(assetId: exact.AssetId, filter: "linear",
+                twoXDigest: PrivateLocalPresentationAssetCatalog.Map40BaseAtlas2xDigest),
+        })
+            Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap40BaseAtlasBinding(wrong, wrong.Buckets[0]));
+    }
     [Theory]
     [InlineData(1, 2)]
     [InlineData(2, 2)]
@@ -320,6 +354,9 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
             package.Catalog.MountMap21BaseAtlas(package.Request, package.Accepted, 1),
             PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
         AssertCode(
+            package.Catalog.MountMap40BaseAtlas(package.Request, package.Accepted, 1),
+            PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
+        AssertCode(
             package.Catalog.MountMap3BaseAtlas(
                 package.Request,
                 package.Accepted,
@@ -394,8 +431,8 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         PrivateLocalPresentationAssetMounted entityFourX =
             Assert.IsType<PrivateLocalPresentationAssetMounted>(
                 catalog.MountMap3Entity142Reference(request, accepted, 3));
-        Assert.Equal(10, accepted.Receipt.AssetCount);
-        Assert.Equal(20, accepted.Receipt.BucketCount);
+        Assert.Equal(11, accepted.Receipt.AssetCount);
+        Assert.Equal(22, accepted.Receipt.BucketCount);
         foreach (int scale in new[] { 2, 4 })
         {
             var castle = Assert.IsType<PrivateLocalPresentationAssetMounted>(
@@ -412,6 +449,15 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                 middleTower.Asset.Definition, middleTower.Asset.Bucket));
             Assert.False(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(
                 middleTower.Asset.Definition, middleTower.Asset.Bucket));
+            var northMap40 = Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap40BaseAtlas(request, accepted, scale));
+            Assert.Equal(scale, northMap40.Asset.Bucket.Scale);
+            Assert.Equal((128 * scale, 320 * scale),
+                (northMap40.Asset.Bucket.Width, northMap40.Asset.Bucket.Height));
+            Assert.True(PrivateLocalPresentationAssetCatalog.IsExactMap40BaseAtlasBinding(
+                northMap40.Asset.Definition, northMap40.Asset.Bucket));
+            Assert.False(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(
+                northMap40.Asset.Definition, northMap40.Asset.Bucket));
         }
         byte[] copied = twoX.Asset.CopyPngBytes();
         copied[0] = 0;
@@ -457,14 +503,15 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     }
 
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_PRESENTATION_ASSET_ROOT")]
-    public void ExactLocalMiddleTowerBucketsRejectMissingOrChangedPayloads()
+    public void ExactLocalMap21AndMap40BucketsRejectMissingOrChangedPayloads()
     {
         string source = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput(
             "SF2_PRIVATE_PRESENTATION_ASSET_ROOT");
+        foreach (bool northMap40 in new[] { false, true })
         foreach (int scale in new[] { 2, 4 })
         foreach (bool missing in new[] { false, true })
         {
-            string root = Path.Combine(Path.GetTempPath(), "sf2-map21-payload-" + Guid.NewGuid().ToString("N"));
+            string root = Path.Combine(Path.GetTempPath(), "sf2-later-map-payload-" + Guid.NewGuid().ToString("N"));
             try
             {
                 foreach (string directory in new[] { "manifests", "runtime" })
@@ -484,8 +531,9 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                 var accepted = Assert.IsType<LocalPresentationAssetPackAccepted>(reader.Admit(request));
                 var catalog = new PrivateLocalPresentationAssetCatalog(reader);
                 Assert.IsType<PrivateLocalPresentationAssetMounted>(
-                    catalog.MountMap21BaseAtlas(request, accepted, scale));
-                string payload = Path.Combine(root, "runtime", "world", "map21",
+                    northMap40 ? catalog.MountMap40BaseAtlas(request, accepted, scale) :
+                        catalog.MountMap21BaseAtlas(request, accepted, scale));
+                string payload = Path.Combine(root, "runtime", "world", northMap40 ? "map40" : "map21",
                     $"base-tileset-atlas@{scale}x.png");
                 if (missing) File.Delete(payload);
                 else
@@ -495,7 +543,8 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     File.WriteAllBytes(payload, changed);
                 }
                 var rejected = Assert.IsType<PrivateLocalPresentationAssetMountRejected>(
-                    catalog.MountMap21BaseAtlas(request, accepted, scale));
+                    northMap40 ? catalog.MountMap40BaseAtlas(request, accepted, scale) :
+                        catalog.MountMap21BaseAtlas(request, accepted, scale));
                 Assert.Equal(missing ? PrivateLocalPresentationAssetMountFailureCode.AssetUnavailable :
                     PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch, rejected.Diagnostic.Code);
                 Assert.DoesNotContain(root, rejected.Diagnostic.Message);

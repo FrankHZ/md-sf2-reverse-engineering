@@ -335,9 +335,9 @@ Local image review and a separately accepted source/master/runtime/manifest tran
 consumer binding. This builder does not promote assets or change the current Godot runtime. The
 current consumer binds the independently accepted Map 19/20 and Map 21 families described below.
 
-The current reviewed local pack at commit `c8dcc451e7210a1cd433865431151a1de62a1573`, tree
-`4890d6d03ac62d099737ff6e4d24f4bce63f56d2`, and manifest SHA-256
-`520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146` contains the two HUD assets,
+The current reviewed local pack at commit `b41d12ddfb1704f3a0494c3d6ed23f866ff20dac`, tree
+`429636d9aa323411f79ad4ec00dc4ee421328e89`, and manifest SHA-256
+`5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281` contains the two HUD assets,
 the exact Map 3, shared Map 19/20 and independent Map 21 atlas families, the player initial-reference-frame family, the three controlled-player
 locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The explicit
 PrivateLocal consumer mounts all three fixed atlas families at the selected 2x or 4x scale after Content
@@ -639,7 +639,7 @@ owned, reviewable implementation slices.
 ## Current runtime castle base view
 
 The required visual selection belongs to each immutable runtime. Application's exact catalog
-admission checks Maps 3/19/20/21 independently, including custom import-source ports. The base
+admission checks Maps 3/19/20/21/40 independently, including custom import-source ports. The base
 renderer uses that current selection, the snapshot's working layout, and the current runtime's blocks
 and areas. Map 3 uses its own atlas; Maps 19/20 share palette 0 and slots `[6,23,44,53,62]`, but
 switching between them still changes the selection's map and the working layout. Missing or mismatched
@@ -671,20 +671,33 @@ guard success and rejection. Neither source entity135's facing effect nor natura
 Unknown or mismatched runtime/visual selections still reject. Only the fixed Map 21 atlas is newly
 consumed; Map 3 overlays and NPC diagnostics remain scoped to Map 3, and no NPC asset is added.
 
+Map 40 has its own accepted atlas in the eleven-asset/22-bucket full pack. Its exact binding is
+`world.map40.base-tileset-atlas`, palette 3 and slots `[94,95,96,97,58]`; palette 3 is independent of
+tile palette-bank bits. The 2x digest is
+`40A083FD4AEBF2A13EB93037FDA8D3438AD2B97899560D8077EBDCF2C96B5BD3`, and the 4x digest is
+`636A371D7481D63FE845BC2E6C1AB7A2BE99361448626E8553AC2E312110DC59`.
+Explicit base-atlas startup requires all four map-family mounts and rejects a missing/changed Map 40
+payload or selection. The presenter switches on the current exact runtime; no Map 21/castle fallback
+is admitted. Controlled arrival at `(4,30)`/UP/raw 1 uses the existing 64-by-64 camera bounds and crop
+`(0,27)`, hides traversal and all retained route glyphs, and keeps status below the base viewport.
+Traversal-only startup still shows the diagnostic grid. Both views state that init is unexecuted.
+Map 40's area offset `(0,32)`, parallax 128 and main-layer type 255 remain data; this consumer adds
+no second-layer execution, player-art policy, NPC extraction, subsequent warp or Battle 01 behavior.
+
 ### Reproduce the bounded native image review
 
 The [fixed probe](../tests/native/Map19Map20AtlasReviewProbe.cs) is test-owned instrumentation, excluded
 from the production project. It seeds the same validated Map 19 state as the private canonical test,
 then drives the accepted fixture through the 38-input royal route, controlled palace F, two-input
 return, Astral approach/F, released west route, three Left inputs into Map 21, and the controlled guard
-F followed by ordinary Right/Up. Ten real Godot
+F followed by ordinary Right/Up and the 18-input north exit. Eleven real Godot
 viewport captures cover Map 3,
 Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 base atlas, guard before/after
-F, and the actual walk endpoint. Map 3-to-19 is a seeded projection
+F, the actual walk endpoint, and the Map 40 base arrival. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
-and `runtime` from accepted asset commit `c8dcc451e7210a1cd433865431151a1de62a1573` into a fresh
+and `runtime` from accepted asset commit `b41d12ddfb1704f3a0494c3d6ed23f866ff20dac` into a fresh
 ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
 to the isolated accepted inputs. Set `SF2_CASTLE_REVIEW_EDITOR` to the official 4.7.2 Mono editor
 extracted inside this worktree by the Godot gate, and `SF2_CASTLE_REVIEW_ROOT` to a **fresh** absolute
@@ -711,10 +724,13 @@ check the visible player and undirected guard marker, the real F adapter's promp
 the ordinary walk endpoint. Wrong-position and duplicate F calls use that same adapter and preserve
 snapshot/locomotion/bridge without throwing. Frame eleven drives all 18 ordinary north-exit inputs
 from (5,15)/UP to exact Map 40 (4,30)/UP, area 1. The accepted Map 40 runtime uses palette 3 and
-slots [94,95,96,97,58], a separate family with no admitted atlas. Its traversal diagnostic crops at
-(0,27), draws the player at column 4/row 3, hides the retained Map 21 base viewport and guard glyph,
-and places controlled-arrival/diagnostic/init-not-executed status below the grid at Y=450.
-The probe checks the actual player pixel and retained route receipts. This admits neither Map 40
+slots [94,95,96,97,58] and its exact accepted base atlas. It crops at (0,27), draws the player at
+column 4/row 3 with UP/raw 1, hides traversal and retained actors, and places controlled-arrival/
+base-atlas/init-not-executed status below the base viewport at Y=310. The final image is
+`11-map40-base-atlas.png`; the first ten capture names and production route remain unchanged.
+The probe mounts and decodes both accepted 2x/4x Map 40 PNGs, checks every projected RGBA component
+for nearest equivalence, samples opaque base pixels from the actual renderer outside the player,
+and checks camera/player coordinates and retained route receipts. This admits neither Map 40
 init nor subsequent warps, original rendering, camera/parallax execution, or Battle 01.
 An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
@@ -775,8 +791,8 @@ steps = [
                 "--canonical-map-import=" + os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"],
                 "--private-map3-base-view", "--private-map3-base-atlas",
                 "--presentation-asset-root=" + os.environ["SF2_PRIVATE_PRESENTATION_ASSET_ROOT"],
-                "--presentation-asset-commit=c8dcc451e7210a1cd433865431151a1de62a1573",
-                "--presentation-manifest-sha256=520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146"]),
+                "--presentation-asset-commit=b41d12ddfb1704f3a0494c3d6ed23f866ff20dac",
+                "--presentation-manifest-sha256=5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281"]),
 ]
 receipts = []
 for name, command in steps:

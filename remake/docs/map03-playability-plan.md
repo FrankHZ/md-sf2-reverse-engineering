@@ -489,10 +489,13 @@ the existing per-operation contract. A fresh session returns to the controlled M
 Wrong approach/direction or missing prerequisites do not cross maps; active locomotion rejects the
 transition without changing snapshot, locomotion or bridge.
 
-Map 40 has no admitted atlas. Only its exact admitted runtime enters the Godot diagnostic branch:
-the retained Map 21 base viewport is hidden, the current traversal grid shows crop (0,27), and the
-controlled-arrival/diagnostic/init-not-executed status sits below it. No retained guard marker is
-projected into Map 40. Unknown or drifted runtime/visual selections remain rejected.
+Map 40 consumes its separately accepted palette-3 atlas through the existing base projection.
+Explicit base-atlas startup requires all four fixed map families; missing or mismatched Map 40
+payloads or selections reject. The current runtime supplies layout/blocks/area, and the existing
+64-by-64 camera bounds produce crop (0,27), player (4,30)/UP. The base view hides traversal and
+retained guard/Map 3 actors; status at Y=310 identifies the base atlas and unexecuted init.
+Traversal-only startup retains the diagnostic grid and status at Y=450. Area second-layer offset
+(0,32), parallax 128 and main-layer type 255 remain admitted data without new layer execution.
 
 **Unknown / excluded:** natural castle continuity and caller state, Map 21→20 return, Map 40→57,
 wildcard exit handling, Map 40→21, Battle 01 admission/init, general flags/events/init/lifecycle,
@@ -504,7 +507,7 @@ AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput using
 SF2_REQUIRE_PRIVATE_TESTS=1 and SF2_PRIVATE_CANONICAL_MAP_IMPORT; it checks every input and all 19
 Map 21 points in the actual C# session, then verifies the destination and retained state.
 Application's NorthMap40 tests cover atomicity, source-port drift, prerequisites, busy/reset and
-ordinary movement; Godot's diagnostic test and the maintained native image recipe cover visibility,
+ordinary movement; Godot's catalog/projection/status tests and the maintained native image recipe cover visibility,
 status and actual renderer output. Run the normal public verify and committed dependency planner;
 the source owner names the H2 reproduction, and this slice does not run new H3/H4 work.
 
@@ -523,11 +526,13 @@ existing source/palette/PNG pipeline. It produces a fresh ignored five-file cand
 The [presentation owner](./presentation-and-assets.md) defines its IDs, source bytes, CLI and
 acceptance boundary. Its parameterized public tests distinguish actual palette-3 bytes from palette 0,
 check complete master/bucket pixels, reject source/header/metadata drift and exercise rollback.
-The accepted Map 40 runtime continues to show the diagnostic grid until asset acceptance and a
-separate consumer slice are complete.
+The accepted local pack now includes the Map 40 family and the explicit base-atlas consumer binds it.
+Required-private catalog tests cover both bucket scales and missing/changed copied payloads. The
+native recipe compares actual 2x/4x projected pixels and checks the rendered arrival after the same
+18 ordinary inputs; the first ten captures remain the accepted route review.
 
-1. Independently review and accept the Map 40 atlas candidate, then bind its fixed display family.
-   Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.
+1. Assess the bounded Map 40→57 warp and exact destination runtime, then the Battle 01 admission
+   boundary. The manual bridge remains synthetic; natural continuity remains Unknown.
 
 ## Decision Rules
 

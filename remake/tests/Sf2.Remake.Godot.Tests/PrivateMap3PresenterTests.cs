@@ -20,6 +20,26 @@ public sealed class PrivateMap3PresenterTests
         if (traversalVisible) Assert.True(expectedY > 105 + 7 * 48);
     }
 
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    public void NorthMap40BaseVisibilityAndStatusRequireItsOwnMountedViewport(
+        bool hasViewport, bool hasMap40, bool expectedBase)
+    {
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true);
+        var visibility = PrivateMap3Presenter.ProjectionVisibility(snapshot.Map, snapshot.Definition.Map,
+            hasViewport, false, hasCastleAtlas: true, hasMap21Atlas: true, hasMap40Atlas: hasMap40);
+        Assert.Equal(expectedBase, visibility.BaseVisible);
+        Assert.Equal(!expectedBase, visibility.TraversalVisible);
+        var status = PrivateMap3PresentationPlan.FormatStatus(snapshot, "Review", baseAtlasVisible: visibility.BaseVisible);
+        Assert.StartsWith("Map 40 controlled arrival. " + (expectedBase ? "Base atlas" : "Diagnostic view") +
+            "; init not executed.", status);
+        Assert.DoesNotContain("F ", status);
+        Assert.DoesNotContain("Guard moved", status);
+        Assert.Equal(expectedBase ? 310 : 450, PrivateMap3Presenter.ProjectionStatusY(visibility.TraversalVisible, 310));
+    }
+
     [Fact]
     public void NorthMap40DiagnosticViewHidesRetainedAtlasAndGuard()
     {

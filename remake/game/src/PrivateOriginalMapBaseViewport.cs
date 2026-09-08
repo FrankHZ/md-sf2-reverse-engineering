@@ -1368,7 +1368,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 snapshot.CurrentRuntime.VisualResourceSelection) != mount.Definition.AssetId ||
             !(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(mount.Definition, mount.Bucket) ||
                 PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(mount.Definition, mount.Bucket) ||
-                PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(mount.Definition, mount.Bucket)) ||
+                PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(mount.Definition, mount.Bucket) ||
+                PrivateLocalPresentationAssetCatalog.IsExactMap40BaseAtlasBinding(mount.Definition, mount.Bucket)) ||
             mount.Bucket.Width != checked(
                 PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth *
                 mount.Bucket.Scale) ||
@@ -1378,7 +1379,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         {
             diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
                 PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
-                "The private Map 3 base-atlas mount is incompatible with the viewport.");
+                "The private base-atlas mount is incompatible with the viewport.");
             return false;
         }
 
