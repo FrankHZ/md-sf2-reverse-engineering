@@ -30,12 +30,13 @@ public sealed class Battle01FirstRoundOrder
     private Battle01FirstRoundOrder(Battle01FirstRoundOrder source)
     {
         Slots = source.Slots; RegionCutsceneRows = source.RegionCutsceneRows; SpawnedCombatants = source.SpawnedCombatants;
-        CurrentTurnOffset = EntrySize;
+        CurrentTurnOffset = checked((byte)(source.CurrentTurnOffset + EntrySize));
     }
-    internal Battle01FirstRoundOrder AdvanceAfterFirstTurn()
+    internal Battle01FirstRoundOrder AdvanceCompletedPlayerTurn()
     {
-        if (CurrentTurnOffset != 0 || Slots.Count != 64)
-            throw new ArgumentException("Only one completed first turn may advance this 64-slot order.", "turnOrder");
+        if (Slots.Count != 64 || CurrentTurnOffset % EntrySize != 0 ||
+            CurrentTurnOffset >= (Slots.Count - 1) * EntrySize || CurrentCandidate is null)
+            throw new ArgumentException("A completed player may advance one entry; round regeneration is unsupported.", "turnOrder");
         return new(this);
     }
 }

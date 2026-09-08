@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -911,9 +911,11 @@ Map3 character sheets are not reused as the Battle01 roster. Without a base-art 
 diagnostic mode retains terrain-ID cells and its graphics-unavailable heading. Missing/wrong requested
 Map57 art rejects before startup; a projection rejection displays an unavailable view and closes input.
 Action choice offers a separate Space press for controlled no-effect STAY or Backspace cancellation.
-STAY retains the selected live position, completes only the first player's turn and stops before next
-dispatch. The completed view names the historical actor and actual next candidate separately, shows
-raw byte offset2 and removes the old range/path/cursor. Its effective-stat policy is explicit in the
+STAY retains the selected live position and tries actual next entry once. Player2 receives its own
+Centaur range from current occupancy, then can move/cancel/STAY. Its completion stops at
+enemy128 / OpponentAi, raw byte offset4. The completed view names the historical actor and actual
+candidate separately and removes the old range/path/cursor; unrelated keys preserve the reason.
+Its effective-stat policy is explicit in the
 [owning plan](./map03-playability-plan.md#implemented-first-player-stay-completion). The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
 
@@ -935,15 +937,19 @@ The existing bounded process runner retains 120-second step limits, job terminat
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
 original Map57 scene/layer/VRAM/animation fidelity, timing, other battle actions, later turns/victory and H4 remain Unknown.
 
-For first-turn STAY acceptance, use a fresh review root and `SF2_BATTLE01_CONTROL_REVIEW=stay`
+For next-player acceptance, use a fresh review root and `SF2_BATTLE01_CONTROL_REVIEW=next-player`
 with the same required canonical, three selected inputs and accepted runtime/manifest pack. The
 recipe seeds controlled Map40, uses the existing 28-key route and N, then I/Space to provisional
-relocation and a second independent Space for STAY. It captures only `01-provisional`,
-`02-stay-completed` and `03-input-closed`. Require actor1 still at (9,17), both faction counts3/6,
-all nine live units, unchanged full turn buffer/seed0xA4991234, byte offset2 and actual next candidate2
-without dispatch. I/J/K/L, Space, Backspace, N and the old exploration keys must retain the exact
-completed snapshot. Inspect all three images for clear STAY/next-unit labels, no current-actor
-highlight/range/path/cursor at completion, legible controls and no old canvas layers. This mode never
+relocation and a second independent Space for STAY. That press automatically enters actual player2,
+captured as `01-next-player`. I/Space moves player2 from (7,18) to (7,17) in
+`02-second-provisional`; Backspace restores only player2 in `03-second-cancelled`.
+I/Space/Space then completes its STAY and tries enemy128 once. `04-ai-boundary` captures the
+OpponentAi endpoint after old-key checks. Require actor1 still at (9,17), actor2 at (7,17),
+both receipts with faction counts3/6, all nine units, unchanged full turn buffer/seed0xA4991234,
+and raw offsets0 to2 to4. I/J/K/L, Space, Backspace, N and old exploration keys must retain the exact
+completed snapshot and candidate/reason text. Inspect all four images for the active Centaur range,
+independent cancel, legible status/controls, no old canvas layers and no current-actor range/path/cursor
+at the AI boundary. The `stay` recipe name remains an alias for this current chain. This mode never
 replays the six-frame cancellation or castle modes; captures and bounded process/code-head receipts
 remain local. It is controlled remake behavior, not original after-turn fidelity.
 

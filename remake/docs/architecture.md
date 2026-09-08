@@ -137,9 +137,21 @@ stat authority. No generic stat refresh, death processing or action resolver is 
 
 `FirstRound.CurrentTurnOffset` is a raw byte offset; `CurrentCandidate` uses offset divided by the
 two-byte entry size. Advancing from 0 to 2 shares the complete unchanged 64-slot order and preserves
-the historical `FirstCandidate`. `FirstPlayerTurnCompleted` stops before dispatching that candidate.
-The presenter shows completed actor and next candidate separately, with no current actor, range,
-path or cursor. Old battle and exploration inputs cannot reopen or advance the endpoint.
+the historical `FirstCandidate`. Each completed player advances exactly one entry; offset2 becomes4.
+`PlayerTurnCompleted` is the committed STAY boundary. `EnterPrivateOriginalBattle01NextPlayerControl`
+requires that exact snapshot and actor, then reuses the first-control classifier, candidate-only
+missing-word preset and range/preview construction. The first-control API remains restricted to
+offset0. Fixed class1/CENTAUR2 joins class4/HEALER12; current effective MOV determines the budget.
+The new range captures live occupancy, so its cancel restores only this actor's turn origin.
+
+The previous immutable completion receipt survives next entry and movement; a later receipt links it
+through `Previous` as provenance. Active control determines the movement phase and presenter overlays
+even when that historical receipt exists. The UI invokes next entry once after each successful STAY,
+with no extra N. Unavailable or rejected entry leaves the exact committed STAY object in place and
+shows the actual candidate/reason; completed-phase key handling returns no replacement status.
+There is no frame retry, skip or new-round loop. In the accepted sequence player2 completes before
+enemy128 / OpponentAi stops dispatch at offset4. This endpoint shows completed actor and next candidate
+with no current range/path/cursor. Old battle and exploration inputs preserve it and its diagnostic.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only

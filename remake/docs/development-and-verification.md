@@ -122,8 +122,10 @@ and active/tested-region distinction, the complete ordered buffer/current offset
 input preservation and duplicate rejection. The real class/status/MOV and named activation-word policy
 feed the control entry; a cost2 move from (9,18) to (9,17), blocked (9,19) rejection, provisional
 occupancy, cancel restoration and a subsequent STAY exercise the complete API chain. STAY must retain
-nine units and seed0xA4991234, advance raw byte offset0 to2 and expose next candidate2 without
-dispatch. Only shared player-ready fixture
+nine units and seed0xA4991234 and advance raw byte offset0 to2. Next entry must use actual candidate2,
+class1/CENTAUR2, budget14 and current occupancy. Its move to (7,17), cancellation to (7,18) and
+second STAY must preserve actor1 at (9,17), both receipts and all64 slots. Offset4 must expose actual
+enemy128 / OpponentAi; unavailable entry retains the exact second completed snapshot. Only shared player-ready fixture
 fields are compared; the test does not claim original control execution, elapsed time or RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
@@ -163,12 +165,20 @@ sentinel preservation. Exact-current application checks close stale/foreign/dupl
 requests and old movement/control/round entry. Use the required selected-input test above for the
 actual full chain; no optional skip substitutes for it.
 
+Next-player ownership is `FullyQualifiedName~Battle01NextPlayerControlTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01NextPlayerControlTests` in Application. These cover
+current occupancy, independent cancel, preserved completion provenance, once-only phase entry,
+exact snapshot/actor guards, status/AI/profile/sentinel boundaries and late range failure without
+partial word or state commit. The movement tests compare Centaur and Healer reachability through
+forest/hills/desert and derive the budget from effective MOV.
+
 The thin Battle01 Godot consumer adds the focused Godot filters
 `Map3RuntimeProfileSelectionTests|Map3InputAdapterTests|PrivateMap3PresenterTests|PrivateBattle01PresenterTests`
 (each prefixed by `FullyQualifiedName~`). They cover all-or-none/private-only/path-free admission,
 old callback isolation, current phase, a deliberately authored actor2 first candidate, live versus
 deployment position, path/cost projection, confirm/cancel/STAY controls and the completed actor versus
-undispatched candidate without old range/path/cursor.
+undispatched candidate without old range/path/cursor, plus active next-player projection despite
+a preserved historical completion receipt.
 Pair them with the required selected-input Content class above, the locked solution and official
 seven-step Godot gate. Native acceptance uses the existing probe's explicit Battle01 mode:
 [launch and bounded recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
@@ -176,11 +186,12 @@ It seeds Map40 once, drives the 28-input Pending route and N/I/Space/Backspace t
 physical-key input events, captures Pending/ready/selected/provisional/cancelled/rejected frames,
 and checks snapshot/occupancy/RNG/offset retention and old-layer/input isolation. Inspect the images
 for overlap and clipping in addition to the receipt. This mode does not replay the old twelve frames
-or assert natural Map3 continuity, original scene fidelity or H3/H4 closure. For first STAY
-completion, use only the bounded `stay` mode after the owning managed gates: three captures at
-provisional action choice, completed STAY and the closed-input endpoint. The same real key adapter
-must retain live placement, show the actual next candidate at byte offset2 without dispatch, and
-reject old battle/exploration keys. Do not replay earlier native modes solely for a new commit.
+or assert natural Map3 continuity, original scene fidelity or H3/H4 closure. For next-player
+acceptance, use only the bounded `next-player` mode (`stay` remains an alias) after the owning
+managed gates: four captures at automatic next-player entry, second provisional movement, second
+cancel and the enemy boundary. The same real key adapter must preserve both completed moves and
+the full order/RNG, reach raw offset4 / candidate128 / OpponentAi, and retain the exact endpoint
+and diagnostic across old battle/exploration keys. Do not replay earlier modes solely for a new commit.
 
 For the Map57 base consumer, add focused `PrivateBattle01BaseViewProjectionTests`,
 `PrivateOriginalMapBaseViewportTests` and `PrivateLocalPresentationAssetCatalogTests`. They cover

@@ -14,7 +14,7 @@ public sealed class PrivateOriginalBattle01TurnCompletionTests
         var session = ActionChoice(); var before = session.PrivateOriginalBattle01!;
         var committed = Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(before, 1)).Snapshot;
         Assert.Same(committed, session.PrivateOriginalBattle01); Assert.NotSame(before, committed);
-        Assert.Equal(Battle01Phase.FirstPlayerTurnCompleted, committed.Battle.Phase); Assert.Null(committed.Battle.FirstControl);
+        Assert.Equal(Battle01Phase.PlayerTurnCompleted, committed.Battle.Phase); Assert.Null(committed.Battle.FirstControl);
         Assert.Equal(new MapPosition(1, 2), committed.Battle.Roster[1].Position);
         Assert.Same(before.Battle.Occupancy, committed.Battle.Occupancy); Assert.Same(before.Battle.Roster, committed.Battle.Roster);
         Assert.Same(before.Preparation, committed.Preparation); Assert.Same(before.SourceSnapshot, committed.SourceSnapshot);

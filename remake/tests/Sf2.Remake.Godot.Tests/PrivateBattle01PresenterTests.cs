@@ -108,19 +108,37 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal(new MapPosition(2, 2), view.Units.Single(unit => unit.Index == 2).Position);
         Assert.Null(view.Cursor); Assert.Empty(view.Path); Assert.Null(view.GridCost); Assert.Null(view.PathCost); Assert.Null(view.Budget);
         Assert.All(view.Tiles, tile => { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
-        Assert.False(view.CanConfirm); Assert.DoesNotContain("Space", view.Controls); Assert.Contains("Next unit has not acted", view.Controls);
+        Assert.False(view.CanConfirm); Assert.DoesNotContain("Space", view.Controls); Assert.Contains("Candidate not started", view.Controls);
+    }
+
+    [Fact]
+    public void PreviousCompletionDoesNotHideTheNextPlayersIndependentMovementProjection()
+    {
+        var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(AuthoredBattle(nextPlayer: true)), 2).State!;
+        var action = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 2, new(2, 2)), 2);
+        var completed = Battle01TurnCompletion.CommitStay(action, 2, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        Assert.Equal((byte)1, completed.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+        var next = Battle01NextPlayerControl.Enter(completed, 1).State!;
+        var view = PrivateBattle01Presenter.BuildProjection(next, "next player ready");
+        Assert.Equal(1, view.ActorIndex); Assert.Null(view.CompletedActorIndex); Assert.Null(view.NextCandidateIndex);
+        Assert.Equal(Battle01Phase.PlayerMovementSelection, view.Phase);
+        Assert.Equal(new MapPosition(1, 1), view.Cursor); Assert.Equal(14, view.Budget);
+        Assert.Equal(new MapPosition(2, 2), view.Units.Single(unit => unit.Index == 2).Position);
+        Assert.Same(completed.TurnCompletion, next.TurnCompletion);
+        Assert.Contains("Space", view.Controls); Assert.Contains(view.Tiles, tile => tile.CanStop);
     }
 
     // Public authored geometry and party, deliberately with actor 2 as the first candidate.
-    private static Battle01InitializedState AuthoredBattle()
+    private static Battle01InitializedState AuthoredBattle(bool nextPlayer = false)
     {
         var rows = Enumerable.Range(0, 9).Select(index => new Battle01Deployment((byte)index,
             index < 3 ? index : 128 + index - 3, (byte)(index < 3 ? index : 39), new(index, 1),
             0, 127, 255, 0, 255, 15, 0, 0));
         var regions = Enumerable.Range(0, 3).Select(index => new Battle01Region((byte)index, 0,
             [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
-        var allies = Enumerable.Range(0, 3).Select(index => new Battle01AllyInput((byte)index, 4,
-            new(1, 12, 12, 8, 8, 9, 4, (byte)(index == 2 ? 50 : 4), 5, 0,
+        var allies = Enumerable.Range(0, 3).Select(index => new Battle01AllyInput((byte)index, (byte)(nextPlayer && index == 1 ? 1 : 4),
+            new(1, 12, 12, 8, 8, 9, 4, (byte)(index == 2 ? 50 : nextPlayer && index == 1 ? 30 : 4),
+                (byte)(nextPlayer && index == 1 ? 7 : 5), 0,
                 [127, 127, 127, 127], [63, 63, 63, 63])));
         var enemy = new Battle01EnemyInput(39, 39, 0,
             new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0, [127, 127, 127, 127], [63, 63, 63, 63]),

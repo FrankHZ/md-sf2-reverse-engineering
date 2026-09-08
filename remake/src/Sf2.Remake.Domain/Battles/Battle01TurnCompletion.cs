@@ -11,7 +11,7 @@ public sealed class Battle01StayCompletionPolicy
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01StayCompletionPolicy Policy,
-    Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn);
+    Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null);
 
 public static class Battle01TurnCompletion
 {
@@ -20,8 +20,8 @@ public static class Battle01TurnCompletion
     {
         ArgumentNullException.ThrowIfNull(current);
         if (current.Phase != Battle01Phase.PlayerActionChoice || current.FirstControl is not { } control ||
-            current.FirstRound is not { CurrentTurnOffset: 0 } order)
-            throw new ArgumentException("STAY requires the first player's uncommitted action choice.", "phase");
+            current.FirstRound is not { } order)
+            throw new ArgumentException("STAY requires the current player's uncommitted action choice.", "phase");
         if (control.ActorIndex != actorIndex || order.CurrentCandidate?.CombatantIndex != actorIndex || actorIndex >= 128)
             throw new ArgumentException("STAY must name the current controlled player.", "actor");
 
@@ -33,7 +33,7 @@ public static class Battle01TurnCompletion
         NormalizeControlledNoEffectTurn(current, policy);
         RequireEmptyKilledCleanup(current, "cleanup.after");
         var after = RequireContinuingFactions(current, "outcome.after");
-        return new(current, order.AdvanceAfterFirstTurn(), new(actorIndex, policy!, before, after));
+        return new(current, order.AdvanceCompletedPlayerTurn(), new(actorIndex, policy!, before, after, current.TurnCompletion));
     }
 
     private static void RequireDefeatedWrapperReturn(Battle01InitializedState current)
