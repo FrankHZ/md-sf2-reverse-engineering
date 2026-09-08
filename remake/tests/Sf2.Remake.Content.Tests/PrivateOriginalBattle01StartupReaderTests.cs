@@ -287,6 +287,53 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(
             session.EnterPrivateOriginalBattle01FirstRound(firstRound)).Diagnostic.Field);
         Assert.Same(firstRound, session.PrivateOriginalBattle01);
+
+        int actorIndex = order.FirstCandidate!.Value.CombatantIndex;
+        var actorRow = observed.EnumerateArray().Single(row => row.GetProperty("id").GetInt32() == actorIndex);
+        var controlled = Assert.IsType<PrivateOriginalBattle01FirstControlEntered>(
+            session.EnterPrivateOriginalBattle01FirstControl(firstRound, actorIndex)).Snapshot;
+        var actor = controlled.Battle.Roster.Single(unit => unit.Index == actorIndex);
+        var control = controlled.Battle.FirstControl!; var origin = actor.Position;
+        Assert.Equal(Battle01Phase.PlayerMovementSelection, controlled.Battle.Phase);
+        Assert.Equal((byte?)actorRow.GetProperty("class").GetByte(), actor.ClassId);
+        Assert.Equal(actorRow.GetProperty("statusEffects").GetUInt16(), actor.Stats.Status);
+        Assert.Equal(actor.Stats.Move * 2, control.Movement.Range.Budget); Assert.Equal(10, control.Movement.Range.Budget);
+        Assert.Equal(12, control.Movement.Range.Profile.MovementType); Assert.Equal(4, control.Movement.Range.Profile.ClassId);
+        // This zero is an explicit control-entry comparison policy, not inferred natural initialization.
+        Assert.True(control.CandidateWordSupplied);
+        Assert.Equal((ushort?)actorRow.GetProperty("activationBitfield").GetUInt16(), actor.AiBitfield);
+        Assert.Null(firstRound.Battle.Roster.Single(unit => unit.Index == actorIndex).AiBitfield);
+        Assert.All(controlled.Battle.Roster.Where(unit => unit.Index < 128 && unit.Index != actorIndex), unit => Assert.Null(unit.AiBitfield));
+        Assert.False(control.Preset.AllyAutoBattle); Assert.False(control.Preset.OpponentControl);
+        var destination = new MapPosition(origin.X, origin.Y - 1);
+        Assert.Equal(2, control.Movement.Range.Grid.CostAt(destination));
+        Assert.Equal("destination", Assert.IsType<PrivateOriginalBattle01PlayerMovementRejected>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(controlled, actorIndex, new(origin.X, 19))).Diagnostic.Field);
+        Assert.Same(controlled, session.PrivateOriginalBattle01);
+        var selected = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(controlled, actorIndex, destination)).Snapshot;
+        Assert.Equal(origin, selected.Battle.Roster.Single(unit => unit.Index == actorIndex).Position);
+        Assert.Equal(new byte[] { 1, 255 }, selected.Battle.FirstControl!.Movement.Preview.Directions);
+        Assert.Equal(new byte[] { 3, 255 }, selected.Battle.FirstControl.Movement.Preview.ReturnDirections);
+        Assert.Equal(2, selected.Battle.FirstControl.Movement.Preview.Cost);
+        var moved = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(selected, actorIndex)).Snapshot;
+        Assert.Equal(Battle01Phase.PlayerActionChoice, moved.Battle.Phase);
+        Assert.Equal(destination, moved.Battle.Roster.Single(unit => unit.Index == actorIndex).Position);
+        Assert.Equal(origin, moved.Battle.Roster.Single(unit => unit.Index == actorIndex).Deployment.Position);
+        Assert.Equal(-1, moved.Battle.OccupantAt(origin)); Assert.Equal(actorIndex, moved.Battle.OccupantAt(destination));
+        var cancelled = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(moved, actorIndex)).Snapshot;
+        Assert.Same(cancelled, session.PrivateOriginalBattle01); Assert.Equal(origin, cancelled.Battle.FirstControl!.Movement.Cursor);
+        Assert.Equal(origin, cancelled.Battle.Roster.Single(unit => unit.Index == actorIndex).Position);
+        Assert.Equal(controlled.Battle.Occupancy, cancelled.Battle.Occupancy); Assert.Same(order, cancelled.Battle.FirstRound);
+        Assert.Equal(roundState.RandomSeedImage, cancelled.Battle.RandomSeedImage); Assert.Equal(0, cancelled.Battle.FirstRound!.CurrentTurnOffset);
+        Assert.Same(prepared, cancelled.Preparation); Assert.Same(firstRound.SourceBridge, cancelled.SourceBridge);
+        Assert.Same(actor.Stats, cancelled.Battle.Roster.Single(unit => unit.Index == actorIndex).Stats);
+        Assert.Same(roundState.Terrain, cancelled.Battle.Terrain); Assert.Same(roundState.RegionFlags90Through105, cancelled.Battle.RegionFlags90Through105);
+        Assert.Equal("cancel", Assert.IsType<PrivateOriginalBattle01PlayerMovementRejected>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(cancelled, actorIndex)).Diagnostic.Field);
+        Assert.Same(cancelled, session.PrivateOriginalBattle01);
     }
 
     private static GameSession SeedControlledPending(string canonical)

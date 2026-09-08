@@ -27,8 +27,10 @@ all current session state. A separate one-time initialization API consumes that 
 battle-owned Map 57 with nine initialized combatants, raw terrain and separate occupancy. Old
 exploration commands close and Map 40 survives as frozen provenance. A separate first-round API
 computes activation, the empty region-cutscene/spawn seams and the complete ordered turn buffer,
-then atomically replaces the current battle. It stops before actor control; a UI consumer remains
-pending. See the [first-round boundary](./docs/map03-playability-plan.md#implemented-controlled-first-round).
+then atomically replaces the current battle. The first-control API now selects the actual current
+player candidate and exposes terrain-weighted movement preview, provisional confirmation and cancel
+through the same session authority. This stops before committing a battle action; a Godot UI consumer
+remains pending. See the [player-control boundary](./docs/map03-playability-plan.md#implemented-controlled-first-player-api).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,

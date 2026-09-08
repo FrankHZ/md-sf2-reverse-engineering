@@ -157,7 +157,7 @@ public sealed class Battle01FirstRoundTests
         Assert.Equal(0x1234u, invalid.RandomSeedImage); Assert.Null(invalid.FirstRound);
     }
 
-    private static Battle01InitializedState Initial(int bowieY = 18)
+    internal static Battle01InitializedState Initial(int bowieY = 18)
     {
         byte[] primary = [2, 2, 2, 1, 1, 0]; MapPosition[] allies = [new(8, bowieY), new(9, 18), new(7, 18)];
         var rows = Enumerable.Range(0, 9).Select(index => new Battle01Deployment((byte)index,
