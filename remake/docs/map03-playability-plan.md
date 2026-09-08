@@ -513,26 +513,143 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 ## Ordered Queue
 
-The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
-explicit selection, working layout, blocks and area. It retains the camera/player policy, scopes
-Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
-Map 21 switches to its independent atlas and retains the controlled undirected guard projection.
-The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
-owns its eleven-frame seeded projection check and the precise distinction from natural reach/H4.
+This assessment proposes the next bounded implementation; it adds no runtime capability. Current
+play reaches Map 40 with its accepted atlas. The manual battle bridge remains public-synthetic,
+and natural castle continuity and complete Battle 01 play remain **Unknown**.
 
-The fixed Map 40 candidate builder now owns palette 3 and slots `[94,95,96,97,58]` through the
-existing source/palette/PNG pipeline. It produces a fresh ignored five-file candidate, with a
-128-by-320 master and exact nearest 2x/4x buckets, for independent pixel and asset review.
-The [presentation owner](./presentation-and-assets.md) defines its IDs, source bytes, CLI and
-acceptance boundary. Its parameterized public tests distinguish actual palette-3 bytes from palette 0,
-check complete master/bucket pixels, reject source/header/metadata drift and exercise rollback.
-The accepted local pack now includes the Map 40 family and the explicit base-atlas consumer binds it.
-Required-private catalog tests cover both bucket scales and missing/changed copied payloads. The
-native recipe compares actual 2x/4x projected pixels and checks the rendered arrival after the same
-18 ordinary inputs; the first ten captures remain the accepted route review.
+### Accepted inputs and incompatible existing assumptions
 
-1. Assess the bounded Map 40→57 warp and exact destination runtime, then the Battle 01 admission
-   boundary. The manual bridge remains synthetic; natural continuity remains Unknown.
+The [admission owner](../../docs/research/map3-battle01-admission.md) and its
+[H2 fixture](../../tests/fixtures/h2/map3-battle01-admission-static-v1.json) own the Map 40
+28-input/29-point route to `(14,12)`, the second reachable event terminal `(15,12)`, and warp row 1
+of `Map40s6_WarpEvents`: wildcard X, Y=12, no scroll/retained coordinates, destination Map 57
+`(8,18)`/UP/raw 1. Resolve the existing movement/stair candidate first, then require its layout
+word's event field `0x1000` before matching the wildcard row. Other walkable cells on Y=12 do not
+warp. Row 2 returning to Map 21 remains outside this slice.
+
+The existing fixed canonical import, under the [map-data owner](../../docs/research/map-data-inventory.md)
+and [setup contract](../../docs/design/contracts/map-setup-data.md), already contains Map 57's exact
+`Map57s0` through `s8` resource joins, 64-by-64 layout, one inclusive area `(0,0)..(15,19)`, and
+palette 8/slots `[94,98,99,255,255]`. Its `setupRoute` and `animationTable` are explicitly null.
+Both layer origins are `(0,0)`, both parallax pairs are `(256,256)`, autoscroll is zero, type is 255,
+and music is 34; these are input data, not executed presentation. Preserve absent setup as absent;
+do not manufacture `ms_map57`, an init identity, or an empty source entity list. The current
+[exploration runtime](../src/Sf2.Remake.Application/Content/OriginalMapExplorationRuntimeDefinition.cs)
+requires all three. Its five accepted runtime contracts should stay intact.
+
+Keep the Map 57 area separate from the [CheckBattle candidate contract](../../docs/design/contracts/map-entry-routing-state.md):
+row index 1 has wildcard X/Y, F401 unlock, F501 completion, battle area X/Y/width/height
+`(0,0,16,20)`, and selected index 1. A candidate is not a started battle. F401 comes from the retained
+guard's StoryFlag1 result, not its separate handler flag 256. The canonical map import does not
+contain the battle-coordinate table; its selected numeric facts must bind to the accepted admission
+fixture through focused tests, as a bounded code-owned contract rather than a new runtime fixture reader.
+
+The [battle lifecycle](../../docs/design/contracts/battle-control-lifecycle.md),
+[cutscene routing](../../docs/research/battle-cutscenes.md), and admission fixture own the clear-F88
+new-battle order, before/start program identities, region clear, ally/enemy initialization, load, and
+first-round order. The existing [battle bridge](../src/Sf2.Remake.Application/Sessions/PrivateOriginalMapBattleBridge.cs)
+wraps `PublicSyntheticBattleDefinition`; its [tactical model](../src/Sf2.Remake.Domain/Battles/TacticalBattle.cs)
+has one player/one enemy and a maximum grid dimension of 16. Neither can represent the admitted
+3-ally/6-enemy, 16-by-20 Battle 01 simply by changing IDs or enlarging the grid limit.
+
+### Proposed first slice: visible pending admission before relocation
+
+**Proposed remake policy:** add one fixed battle-destination definition and one Application-owned
+pending admission result behind `GameSession`. Reuse `WorkingMapLayout`, block/area catalogs and
+`OriginalMapVisualResourceSelection` for destination data; keep it outside the ordinary exploration
+runtime catalog. This preserves null setup without weakening every exploration snapshot and gives
+the later battle lifecycle a typed destination under the existing [architecture](./architecture.md)
+and [private trust profile](./runtime-profiles-and-trust.md). No generic runtime hierarchy or flag engine is needed.
+
+Content validates the exact existing Map 57 joins, dimensions, layout/block/area identity, null
+references and visual selection, plus the source warp's complete row. Application also checks the
+typed definition at every import-source port. The controlled preset explicitly supplies F501/F88/F451
+clear; their absence from today's world state must not be interpreted as naturally clear flags.
+The request requires the existing castle/palace/Astral/guard receipts and their F401 result.
+
+After 27 committed Map 40 inputs, the selected route is at `(14,13)`. The 28th input resolves
+`(14,12)` and publishes pending destination Map 57 `(8,18)`/UP, candidate Battle 1 and its distinct
+battle area. It does **not** commit relocation, advance the exploration step, set current battle,
+run init/cutscenes, set F451, or claim player-ready. Preserve the exact pre-trigger Map 40 snapshot,
+locomotion, import/route receipts and synthetic bridge. Both movement entrypoints return the same
+typed pending outcome without reading its nonexistent ordinary traversal or starting an animation.
+Use the same event-marked wildcard rule at the other admitted terminal, not an invented fixed X=14 rule.
+
+The player can walk to the exit and inspect “Battle 01 admission pending; destination Map 57;
+battle not started.” Map 40 remains visibly identified as the retained source. Pending blocks further
+movement, interactions and battle actions through the Application facade; duplicate/busy requests
+are zero-mutation. Restart is the recovery and clears pending state. There is no ENTER/continue,
+Map 57 exploration, battle attack, or synthetic fallback in this slice. This explicit temporary stop
+is a product staging policy, not a claim about the original's immediate warp/CheckBattle sequence.
+
+Candidate ownership for the first implementation anchor is the following closed set; the main gate
+must authorize it and recheck competing writers before code work:
+
+| Responsibility | Exact candidate paths under `remake/` |
+| --- | --- |
+| Fixed trust definition and source-port admission | `src/Sf2.Remake.Application/Content/OriginalBattle01AdmissionDefinition.cs` (new), `src/Sf2.Remake.Application/Content/OriginalMapImportDefinition.cs`, `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs`, `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs` |
+| Authoritative pending result and movement lifecycle | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Admission.cs` (new), `src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs`, `src/Sf2.Remake.Application/Sessions/OriginalMapPlayerLocomotionAnimation.cs` |
+| Thin status and input-result projection | `game/src/PrivateMap3Composition.cs`, `game/src/PrivateMap3Presenter.cs` |
+| Focused trust, route, reset, atomicity and display tests | `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs`, `tests/Sf2.Remake.Application.Tests/OriginalMapGameSessionTests.cs`, `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`, `tests/native/Map19Map20AtlasReviewProbe.cs` |
+| Current capability and reproduction | `README.md`, `docs/capability-status.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` |
+
+Dependencies are accepted main, the unchanged fixed canonical input, the admission fixture, and the
+current accepted asset pack only for native Map 40 review. No Domain, extraction, schema, global
+registry or asset transaction belongs to this first slice. Any additional writer path needs amendment.
+After locked restore/build, the candidate's focused commands are:
+
+```powershell
+dotnet test remake/tests/Sf2.Remake.Application.Tests/Sf2.Remake.Application.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~Battle01Admission"
+dotnet test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~Battle01Admission|FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput"
+dotnet test remake/tests/Sf2.Remake.Godot.Tests/Sf2.Remake.Godot.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~PrivateMap3PresenterTests"
+uv run sf2 verify plan --base origin/main --head HEAD
+uv run sf2 verify
+```
+
+Name new admission tests to match the filter. Set `SF2_REQUIRE_PRIVATE_TESTS=1` and the canonical
+input for the Content run; skips cannot cover the actual 28-input route. Check all 29 fixture points
+with the last point explicitly prospective, both terminals, non-event cells on Y=12, row-2 exclusion,
+source/selection/null-setup drift, missing receipts, busy/duplicate commands and fresh restart.
+Ordinary non-event cells keep normal traversal. Denied or repeated pending commands retain
+snapshot/locomotion/bridge/pending identities. Run the committed planner's
+selected .NET/Godot gates, one full .NET suite when selected, and extend the existing native recipe
+with one pending-state capture while retaining the accepted first eleven images. Use the explicit
+isolated Godot toolchain root and record actual view/status plus process cleanup. No new H2/H3/H4
+or full Python run follows solely from this proposal; normal H0 input absence is reported honestly.
+
+### Ordered path to the first controllable Battle 01 turn
+
+1. Implement and independently accept the pending boundary above. Its receipt becomes the sole
+   continuation input; it is neither a completed warp receipt nor an active battle snapshot.
+2. Admit the bounded battle startup inputs through the existing Content trust boundary:
+   [placement](../../docs/research/battle01-placement.md),
+   [spritesets](../../docs/research/battle-spriteset-data.md),
+   [terrain/routing](../../docs/research/battle-routing-data.md), and
+   [global data](../../docs/research/battle-global-data.md). Reuse maintained selected-battle outputs;
+   no whole canonical re-extraction. Specify the controlled party stats/status/equipment and RNG
+   inputs before initialization. Account for the accepted before/start semantic effects in the
+   new-battle order while explicitly skipping original scene, text, music and fade presentation; do
+   not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
+   Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
+   failure retains pending. Implement roster, terrain/occupancy, activation and turn generation under
+   the existing Domain/Application boundaries; do not promote the synthetic duel to Battle 01.
+3. Dispatch the first generated living actor through the accepted control branch, then connect the
+   [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
+   [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
+   terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported
+   control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
+   a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
+   Require deterministic repeated input/RNG results and semantic movement tests before calling this
+   first turn controllable. Attack resolution, enemy turns, later rounds and victory remain later slices.
+   Map 57 graphics require a separate fixed palette-8/`255` empty-slot policy and asset acceptance;
+   the five-decoded-slot atlas builder cannot silently treat 255 as a tileset or retain Map 40 art.
+   Clearly labeled diagnostic combatant markers may expose the control seam before original art is
+   admitted; that is not complete private presentation or an original-fidelity result.
+
+Each later item needs its own exact ownership and acceptance anchor. Missing concrete startup inputs
+block that item, not the pending boundary; natural continuity and H4 stay at their accepted owners
+under [ADR 0016](../../docs/decisions/0016-remake-start-evidence-deferral.md), without an automatic
+emulator-work queue.
 
 ## Decision Rules
 
