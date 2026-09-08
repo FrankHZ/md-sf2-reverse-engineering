@@ -696,6 +696,7 @@ public static class OriginalMapRuntimeAdmission
                 MiddleTowerMap21TransitionCapability,
                 MiddleTowerGuardCapability,
                 NorthMap40TransitionCapability,
+                OriginalBattle01AdmissionDefinition.Capability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -1149,6 +1150,24 @@ public static class OriginalMapRuntimeAdmission
                 Map21EntityProjectionDigest,
                 StringComparison.OrdinalIgnoreCase);
     }
+
+    public static bool HasExactAcceptedBattle01VisualResourceSelection(OriginalMapVisualResourceSelection selection) =>
+        selection.Map.Value == OriginalBattle01AdmissionDefinition.MapIdValue && selection.PaletteIndex == 8 &&
+        selection.TilesetSlots.SequenceEqual(new byte[] { 94, 98, 99, 255, 255 });
+
+    public static bool HasExactAcceptedBattle01Admission(OriginalBattle01AdmissionDefinition? definition) =>
+        definition is not null && HasExactAcceptedBattle01VisualResourceSelection(definition.VisualResourceSelection) &&
+        definition.SetupRouteReference is null && definition.AnimationTableReference is null &&
+        definition.DecodedLayoutDigest == OriginalBattle01AdmissionDefinition.LayoutDigest &&
+        definition.BlockCatalog.ResourceId == "Map57s0_Blocks" &&
+        definition.BlockCatalog.Records.Count == OriginalBattle01AdmissionDefinition.BlockCount &&
+        definition.BlockCatalog.ProjectionDigest == OriginalBattle01AdmissionDefinition.BlockDigest &&
+        HasExactCastleAreaProjection(definition.AreaCatalog, "Map57s2_Areas", 1,
+            OriginalBattle01AdmissionDefinition.AreaBoundsDigest, OriginalBattle01AdmissionDefinition.AreaSourceDigest) &&
+        definition.WarpIdentity == new OriginalMapCrossMapTransitionIdentity(ContentProfile.PrivateLocal,
+            new(Map40Id), "Map40s6_WarpEvents", 1) && definition.TriggerX == 255 && definition.TriggerY == 12 &&
+        definition.Destination == new MapPosition(8, 18) && definition.DestinationOpaqueFacing == 1 &&
+        definition.Preset == OriginalBattle01ControlledPreset.NewBattle;
 
     public static bool HasExactAcceptedMap40Runtime(
         OriginalMapExplorationRuntimeDefinition runtime)

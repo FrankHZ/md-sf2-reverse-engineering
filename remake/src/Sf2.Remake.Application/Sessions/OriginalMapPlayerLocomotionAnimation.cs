@@ -421,7 +421,9 @@ public sealed partial class GameSession
 
         MapPosition sourcePosition = PrivateOriginalMapSnapshot.PlayerPosition;
         PrivateOriginalMapMoveApplied move = ApplyPrivateOriginalMap(command);
-        PrivateOriginalMapPlayerLocomotionSnapshot next = move.CrossMapTransition is not null
+        PrivateOriginalMapPlayerLocomotionSnapshot next = move.Battle01Admission is not null
+            ? current
+            : move.CrossMapTransition is not null
             ? PrivateOriginalMapPlayerLocomotion
             : move.SameMapWarp is not null
             ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(

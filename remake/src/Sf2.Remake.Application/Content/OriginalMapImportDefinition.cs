@@ -200,7 +200,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapCrossMapTransitionDefinition? westTowerMap20Transition = null,
         OriginalMapCrossMapTransitionDefinition? middleTowerMap21Transition = null,
         OriginalMapMiddleTowerGuardDefinition? middleTowerGuard = null,
-        OriginalMapCrossMapTransitionDefinition? northMap40Transition = null)
+        OriginalMapCrossMapTransitionDefinition? northMap40Transition = null,
+        OriginalBattle01AdmissionDefinition? battle01Admission = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -733,6 +734,7 @@ public sealed class OriginalMapImportDefinition
         WestTowerMap20Transition = westTowerMap20Transition;
         MiddleTowerMap21Transition = middleTowerMap21Transition;
         NorthMap40Transition = northMap40Transition;
+        Battle01Admission = battle01Admission;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -803,6 +805,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCrossMapTransitionDefinition? MiddleTowerMap21Transition { get; }
 
     public OriginalMapCrossMapTransitionDefinition? NorthMap40Transition { get; }
+
+    public OriginalBattle01AdmissionDefinition? Battle01Admission { get; }
 
     internal OriginalMapCrossMapTransitionDefinition? FindCrossMapTransition(
         OriginalMapCrossMapTransitionIdentity identity) =>

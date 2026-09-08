@@ -87,6 +87,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability,
                 OriginalMapRuntimeAdmission.MiddleTowerGuardCapability,
                 OriginalMapRuntimeAdmission.NorthMap40TransitionCapability,
+                OriginalBattle01AdmissionDefinition.Capability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -1408,10 +1409,55 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Same(guardEndpoint.CastleGate, northArrival.CastleGate);
         Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
         Assert.Null(northArrival.MiddleTowerGuardPosition);
-        CompleteMove(ExplorationDirection.North);
-        Assert.Null(session.PrivateOriginalMapSnapshot.LastCrossMapTransition);
-        Assert.Same(guardApplied.Receipt, session.PrivateOriginalMapSnapshot.MiddleTowerGuard);
-        Assert.Equal(new MapId("map40"), session.PrivateOriginalMapSnapshot.Map);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBattle01Admission(northArrival.Definition.Battle01Admission));
+        var battleRoute = extension.GetProperty("segments")[2];
+        Assert.Equal("map40-entry-to-wildcard-battle-warp", battleRoute.GetProperty("id").GetString());
+        Assert.Equal(28, battleRoute.GetProperty("inputs").GetArrayLength());
+        Assert.Equal(29, battleRoute.GetProperty("points").GetArrayLength());
+        for (int index = 0; index < 28; index++)
+        {
+            var point = battleRoute.GetProperty("points")[index];
+            var beforeInput = session.PrivateOriginalMapSnapshot;
+            var beforeAnimation = session.PrivateOriginalMapPlayerLocomotion;
+            Assert.Equal(new MapPosition(point[0].GetInt32(), point[1].GetInt32()), beforeInput.PlayerPosition);
+            var direction = battleRoute.GetProperty("inputs")[index].GetString() == "Up"
+                ? ExplorationDirection.North : ExplorationDirection.East;
+            var move = CompleteMove(direction).Move;
+            var target = battleRoute.GetProperty("points")[index + 1];
+            if (index < 27)
+            {
+                Assert.Null(move.Battle01Admission);
+                Assert.Equal(new MapPosition(target[0].GetInt32(), target[1].GetInt32()), move.Snapshot.PlayerPosition);
+                Assert.Null(move.Snapshot.LastCrossMapTransition);
+            }
+            else
+            {
+                var pending = Assert.IsType<PrivateOriginalBattle01PendingAdmission>(move.Battle01Admission);
+                Assert.Equal(new MapPosition(target[0].GetInt32(), target[1].GetInt32()), pending.Trigger);
+                Assert.Same(beforeInput, session.PrivateOriginalMapSnapshot);
+                Assert.Same(beforeAnimation, session.PrivateOriginalMapPlayerLocomotion);
+                Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+                Assert.Equal((byte)1, beforeAnimation.OpaqueFacing);
+                Assert.Equal(new MapPosition(14, 13), beforeInput.PlayerPosition);
+                Assert.Equal(new MapPosition(8, 18), pending.Definition.Destination);
+                Assert.Throws<InvalidOperationException>(() => move.Traversal);
+                Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+                Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
+                session.RequestPrivateOriginalMapInteraction(beforeInput.SimulationStep);
+                Assert.IsType<PrivateOriginalMapBattleBridgeRejected>(session.ApplyPrivateOriginalMapBattleBridge(
+                    new RequestPrivateOriginalMapBattleBridgeCommand(bridge.Definition.Bridge, beforeInput.SimulationStep)));
+                Assert.Same(beforeInput, session.PrivateOriginalMapSnapshot);
+                Assert.Same(beforeAnimation, session.PrivateOriginalMapPlayerLocomotion);
+                Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+                Assert.Same(pending, session.PrivateOriginalBattle01Admission);
+            }
+            Assert.Same(guardApplied.Receipt, session.PrivateOriginalMapSnapshot.MiddleTowerGuard);
+            Assert.Equal(new MapId("map40"), session.PrivateOriginalMapSnapshot.Map);
+        }
+        var restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(GameSession.StartPrivateOriginalMap(
+            new PrivateCanonicalMap3ImportReader(path), Request(AcceptedCanonicalDigest))).Session;
+        Assert.Null(restarted.PrivateOriginalBattle01Admission);
+        Assert.Equal(new MapId("map3"), restarted.PrivateOriginalMapSnapshot.Map);
         using var canonicalBodies = JsonDocument.Parse(File.ReadAllText(
             Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT")!));
         Assert.DoesNotContain(canonicalBodies.RootElement.GetProperty("resources").EnumerateObject()
@@ -1817,6 +1863,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AddSyntheticPalaceFirstVisit(result);
         AddSyntheticMiddleTower(result);
         AddSyntheticMap40(result);
+        AddSyntheticMap57(result);
         JsonArray astralActors = ResourceArray(result, "entityLists").OfType<JsonObject>()
             .Single(row => row["id"]!.GetValue<string>() == "ms_map19_Entities")["records"]!.AsArray();
         astralActors[8] = astralActors[12]!.DeepClone();
@@ -1883,6 +1930,43 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         words[Index(3, 36)] = OriginalMapTraversal.LeftStairMask | 0x1000;
         PalaceResource(document, "warpEventTables", "Map20s6_WarpEvents")["records"]![3] =
             JsonSerializer.SerializeToNode(WarpRecord(3, 36, 21, 3, 16, 0));
+    }
+
+    private static void AddSyntheticMap57(JsonObject document)
+    {
+        foreach (string collection in new[] { "blocksets", "layouts", "areaTables", "flagEventTables",
+            "stepEventTables", "roofEventTables", "warpEventTables", "itemTables" })
+        {
+            var rows = document["resources"]![collection]!.AsArray();
+            foreach (var source in rows.OfType<JsonObject>().ToArray())
+                if (source["id"]!.GetValue<string>().StartsWith("Map21s", StringComparison.Ordinal))
+                    rows.Add(JsonNode.Parse(source.ToJsonString().Replace("Map21", "Map57", StringComparison.Ordinal)));
+        }
+        var map = Map(document, 57);
+        map["references"] = JsonNode.Parse(Map(document, 21)["references"]!.ToJsonString().Replace("Map21", "Map57", StringComparison.Ordinal));
+        map["references"]!["setupRoute"] = null;
+        map["references"]!["animationTable"] = null;
+        map["palette"] = 8;
+        map["tilesets"] = JsonSerializer.SerializeToNode(new[] { 94, 98, 99, 255, 255 });
+        var blocks = PalaceResource(document, "blocksets", "Map57s0_Blocks");
+        blocks["address"] = 755240;
+        blocks["blocks"] = JsonSerializer.SerializeToNode(Enumerable.Range(0, 120).Select(_ => new ushort[9]));
+        var layout = PalaceResource(document, "layouts", "Map57s1_Layout");
+        layout["address"] = 756002;
+        layout["words"] = JsonSerializer.SerializeToNode(new ushort[WorkingMapLayout.WordCount]);
+        var areas = PalaceResource(document, "areaTables", "Map57s2_Areas");
+        areas["address"] = 755172;
+        areas["records"] = JsonSerializer.SerializeToNode(new[] { AreaRecord(0, 0, 15, 19, defaultMusic: 34) });
+        var area = areas["records"]![0]!;
+        area["secondLayerForegroundStart"]!["x"] = 0;
+        area["secondLayerForegroundStart"]!["y"] = 0;
+        area["secondLayerBackgroundStart"]!["x"] = 0;
+        area["secondLayerBackgroundStart"]!["y"] = 0;
+        area["mainLayerType"] = 255;
+        var warps = PalaceResource(document, "warpEventTables", "Map40s6_WarpEvents");
+        warps["address"] = 723644;
+        warps["records"] = JsonSerializer.SerializeToNode(new[] {
+            WarpRecord(255, 12, 57, 8, 18, 1), WarpRecord(255, 31, 21, 9, 2, 3) });
     }
 
     private static void AddSyntheticMap40(JsonObject document)
@@ -2465,6 +2549,91 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(OriginalMapRuntimeAdmission.Map40EntityProjectionDigest, runtime.EntityPopulation.ProjectionDigest);
         Assert.Equal("ms_map40_InitFunction", runtime.SelectedInitIdentity);
         Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(runtime.VisualResourceSelection));
+    }
+
+    [Theory]
+    [InlineData("palette")]
+    [InlineData("slots")]
+    [InlineData("source")]
+    [InlineData("setup")]
+    [InlineData("animation")]
+    [InlineData("layout-join")]
+    [InlineData("layout-address")]
+    [InlineData("block-address")]
+    [InlineData("area-address")]
+    [InlineData("warp-address")]
+    [InlineData("warp-count")]
+    [InlineData("warp-trigger-x")]
+    [InlineData("warp-trigger-y")]
+    [InlineData("warp-scroll")]
+    [InlineData("warp-retains")]
+    [InlineData("warp-direction")]
+    [InlineData("warp-target")]
+    [InlineData("warp-destination")]
+    [InlineData("warp-facing")]
+    [InlineData("warp-reserved")]
+    public void Battle01AdmissionRejectsDestinationAndSourceWarpDrift(string drift)
+    {
+        var document = SampleDocument();
+        var map = Map(document, 57);
+        var table = PalaceResource(document, "warpEventTables", "Map40s6_WarpEvents");
+        var warp = table["records"]![0]!;
+        switch (drift)
+        {
+            case "palette": map["palette"] = 3; break;
+            case "slots": map["tilesets"]![3] = 0; break;
+            case "source": map["sourceSymbol"] = "Map40"; break;
+            case "setup": map["references"]!["setupRoute"] = "MapSetupRoute40"; break;
+            case "animation": map["references"]!["animationTable"] = "Map40s0_Blocks"; break;
+            case "layout-join": map["references"]!["layout"] = "Map40s1_Layout"; break;
+            case "layout-address": PalaceResource(document, "layouts", "Map57s1_Layout")["address"] = 1; break;
+            case "block-address": PalaceResource(document, "blocksets", "Map57s0_Blocks")["address"] = 1; break;
+            case "area-address": PalaceResource(document, "areaTables", "Map57s2_Areas")["address"] = 1; break;
+            case "warp-address": table["address"] = 1; break;
+            case "warp-count": table["records"]!.AsArray().RemoveAt(1); break;
+            case "warp-trigger-x": warp["trigger"]!["x"] = 14; break;
+            case "warp-trigger-y": warp["trigger"]!["y"] = 31; break;
+            case "warp-scroll": warp["scrollMode"] = 1; break;
+            case "warp-retains": warp["retainsCoordinates"] = true; break;
+            case "warp-direction": warp["scrollDirection"] = 0; break;
+            case "warp-target": warp["targetMap"] = 21; break;
+            case "warp-destination": warp["destination"]!["y"] = 17; break;
+            case "warp-facing": warp["facing"] = 3; break;
+            case "warp-reserved": warp["reserved"] = 1; break;
+        }
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void Battle01AdmissionBindsCheckBattleFactsAndExplicitPresetOutsideExploration()
+    {
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        var battle = Assert.IsType<OriginalBattle01AdmissionDefinition>(definition.Battle01Admission);
+        Assert.Null(battle.SetupRouteReference);
+        Assert.Null(battle.AnimationTableReference);
+        Assert.Throws<KeyNotFoundException>(() => definition.RuntimeCatalog.Resolve(new("map57")));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBattle01VisualResourceSelection(battle.VisualResourceSelection));
+        Assert.Equal(OriginalBattle01ControlledPreset.NewBattle, battle.Preset);
+        Assert.False(battle.Preset.CompletedFlag501);
+        Assert.False(battle.Preset.SuspendedFlag88);
+        Assert.False(battle.Preset.IntroFlag451);
+        string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-battle01-admission-static-v1.json"));
+        using var fixture = JsonDocument.Parse(File.ReadAllText(path));
+        var admission = fixture.RootElement.GetProperty("static").GetProperty("admission");
+        var check = admission.GetProperty("checkBattle");
+        Assert.Equal(battle.BattleIndex, check.GetProperty("tableRowIndex").GetInt32());
+        Assert.Equal(battle.BattleIndex, check.GetProperty("resultRegister").GetProperty("value").GetInt32());
+        Assert.Equal(battle.DestinationMap.Value, "map" + check.GetProperty("map").GetInt32());
+        Assert.Equal(battle.UnlockedFlag, check.GetProperty("unlockedFlag").GetInt32());
+        Assert.Equal(battle.CompletedFlag, check.GetProperty("completedFlag").GetInt32());
+        Assert.Equal(new[] { battle.BattleAreaX, battle.BattleAreaY, battle.BattleAreaWidth, battle.BattleAreaHeight },
+            check.GetProperty("area").EnumerateArray().Select(value => value.GetInt32()));
+        Assert.Equal(new[] { (int)battle.BattleTriggerX, battle.BattleTriggerY },
+            check.GetProperty("trigger").EnumerateArray().Select(value => value.GetInt32()));
+        Assert.Equal(88, admission.GetProperty("newBattle").GetProperty("suspendFlag").GetInt32());
+        Assert.Equal(451, fixture.RootElement.GetProperty("static").GetProperty("constants")
+            .GetProperty("BATTLE_INTRO_CUTSCENE_FLAGS_START").GetInt32() + battle.BattleIndex);
     }
 
     private static JsonObject PalaceResource(JsonObject document, string collection, string id) =>

@@ -334,6 +334,14 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   defeat/retry and victory, and does not import the public completion flag, effect, setup, facing, or
   return-map state. Its project-authored pending choice either acknowledges entry or records a
   one-shot terminal decline without changing that snapshot.
+- The controlled Map 40 exit creates a visible Battle 01 pending admission before relocation.
+  After 27 ordinary inputs, the final Up retains Map 40 `(14,13)`/UP and all session/animation/bridge
+  state, while naming destination Map 57 `(8,18)`/UP and candidate Battle 1. Its explicit new-battle
+  preset supplies F501/F88/F451 clear and requires the completed guard StoryFlag1/F401. The separate
+  Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
+  Further actions are blocked; restart the private launch to return to Map 3. Battle initialization,
+  Map 57 rendering and the first controllable turn remain separate work. See the
+  [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
 - Public-synthetic import/export success grants no right to distribute original content.

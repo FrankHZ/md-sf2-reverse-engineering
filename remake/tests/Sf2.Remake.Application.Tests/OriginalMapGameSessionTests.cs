@@ -8,6 +8,178 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class OriginalMapGameSessionTests
 {
     [Theory]
+    [InlineData(14, true)]
+    [InlineData(14, false)]
+    [InlineData(15, true)]
+    [InlineData(15, false)]
+    public void Battle01AdmissionBothMovementEntriesRetainTheSourceAtBothTerminals(int x, bool direct)
+    {
+        var session = Battle01AdmissionSession(new(x, 13));
+        var before = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        var move = direct ? session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)) :
+            session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)).Move;
+        var pending = Assert.IsType<PrivateOriginalBattle01PendingAdmission>(move.Battle01Admission);
+        Assert.Same(pending, session.PrivateOriginalBattle01Admission);
+        Assert.Same(before, move.Snapshot);
+        Assert.Same(before, pending.SourceSnapshot);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.Equal(new MapPosition(x, 12), pending.Trigger);
+        Assert.Equal(new MapPosition(8, 18), pending.Definition.Destination);
+        Assert.Equal(before.SimulationStep, pending.SourceSimulationStep);
+        Assert.Equal(OriginalBattle01ControlledPreset.NewBattle, pending.Definition.Preset);
+        Assert.Null(move.CrossMapTransition);
+        Assert.Throws<InvalidOperationException>(() => move.Traversal);
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.East)));
+        session.RequestPrivateOriginalMapInteraction(before.SimulationStep);
+        session.RequestPrivateOriginalMapInteraction(before.SimulationStep - 1);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.Same(pending, session.PrivateOriginalBattle01Admission);
+        var restarted = Start(before.Definition);
+        Assert.Null(restarted.PrivateOriginalBattle01Admission);
+        Assert.Equal(new MapId("map3"), restarted.PrivateOriginalMapSnapshot.Map);
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("palette")]
+    [InlineData("slots")]
+    [InlineData("layout")]
+    [InlineData("blocks")]
+    [InlineData("area-bounds")]
+    [InlineData("area-source")]
+    [InlineData("setup")]
+    [InlineData("animation")]
+    [InlineData("warp-row")]
+    [InlineData("trigger")]
+    [InlineData("destination")]
+    [InlineData("facing")]
+    [InlineData("preset-id")]
+    [InlineData("completed501")]
+    [InlineData("suspended88")]
+    [InlineData("intro451")]
+    public void Battle01AdmissionCustomSourceRejectsItsOwnContractDrift(string drift)
+    {
+        var preset = OriginalBattle01ControlledPreset.NewBattle;
+        preset = drift switch {
+            "preset-id" => preset with { Id = "unsupported" },
+            "completed501" => preset with { CompletedFlag501 = true },
+            "suspended88" => preset with { SuspendedFlag88 = true },
+            "intro451" => preset with { IntroFlag451 = true }, _ => preset };
+        var admission = AcceptedOriginalMapRuntimeCatalog.Battle01(preset,
+            layoutDigest: drift == "layout" ? new string('0', 64) : null,
+            blockDigest: drift == "blocks" ? new string('0', 64) : null,
+            areaBottom: drift == "area-bounds" ? 18 : 19, areaMusic: (byte)(drift == "area-source" ? 0 : 34),
+            selection: drift is "palette" or "slots" ? new(new("map57"), (byte)(drift == "palette" ? 0 : 8),
+                drift == "slots" ? [94, 98, 99, 0, 0] : [94, 98, 99, 255, 255]) : null,
+            setupRoute: drift == "setup" ? "invented" : null,
+            animationTable: drift == "animation" ? "invented" : null,
+            warp: drift == "warp-row" ? new(ContentProfile.PrivateLocal, new("map40"), "Map40s6_WarpEvents", 2) : null,
+            triggerY: (byte)(drift == "trigger" ? 31 : 12), facing: (byte)(drift == "facing" ? 3 : 1),
+            destination: drift == "destination" ? new(9, 18) : null);
+        var result = Assert.IsType<PrivateOriginalMapGameSessionStartRejected>(GameSession.StartPrivateOriginalMap(
+            new AcceptedSource(Accepted(Definition(EmptyWords(), battle01Admission: admission,
+                omitBattle01Admission: drift == "missing"))), Request()));
+        Assert.Equal("definition.battle01Admission", result.Diagnostic.Field);
+    }
+
+    [Theory]
+    [InlineData(13, 13, ExplorationDirection.North)]
+    [InlineData(14, 30, ExplorationDirection.South)]
+    public void Battle01AdmissionDoesNotTurnNonEventRow12OrReturnRow31IntoBattle(int x, int y, ExplorationDirection direction)
+    {
+        var session = Battle01AdmissionSession(new(x, y));
+        var move = session.ApplyPrivateOriginalMap(new(direction));
+        Assert.Null(move.Battle01Admission);
+        Assert.Null(move.CrossMapTransition);
+        Assert.Null(session.PrivateOriginalBattle01Admission);
+        Assert.Equal(new MapId("map40"), move.Snapshot.Map);
+    }
+
+    [Fact]
+    public void Battle01AdmissionUsesResolvedStairCandidateAndOnlyTheEventField()
+    {
+        ushort[] words = Battle01AdmissionSession(new(14, 13)).PrivateOriginalMapSnapshot.CurrentRuntime.WorkingLayout.Words.ToArray();
+        words[13 * 64 + 13] = 0x8000;
+        words[12 * 64 + 14] = 0x9000;
+        var session = Battle01AdmissionSession(new(13, 13), new WorkingMapLayout(words));
+        var pending = session.ApplyPrivateOriginalMap(new(ExplorationDirection.East)).Battle01Admission!;
+        Assert.Equal(new MapPosition(14, 12), pending.Trigger);
+        Assert.Equal(new MapPosition(13, 13), session.PrivateOriginalMapSnapshot.PlayerPosition);
+    }
+
+    [Fact]
+    public void Battle01AdmissionRejectsAnIncompleteGuardAndBusyLocomotionWithoutMutation()
+    {
+        var incomplete = Battle01AdmissionSession(new(14, 13), guard: false);
+        var before = incomplete.PrivateOriginalMapSnapshot;
+        var animation = incomplete.PrivateOriginalMapPlayerLocomotion;
+        Assert.Throws<InvalidOperationException>(() => incomplete.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Same(before, incomplete.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, incomplete.PrivateOriginalMapPlayerLocomotion);
+        Assert.Null(incomplete.PrivateOriginalBattle01Admission);
+        var busy = Battle01AdmissionSession(new(14, 14));
+        busy.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North));
+        before = busy.PrivateOriginalMapSnapshot;
+        animation = busy.PrivateOriginalMapPlayerLocomotion;
+        Assert.True(animation.IsMoving);
+        Assert.Throws<InvalidOperationException>(() => busy.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Throws<InvalidOperationException>(() => busy.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
+        Assert.Same(before, busy.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, busy.PrivateOriginalMapPlayerLocomotion);
+        Assert.Null(busy.PrivateOriginalBattle01Admission);
+    }
+
+    [Theory]
+    [InlineData("castle")]
+    [InlineData("palace")]
+    [InlineData("astral")]
+    [InlineData("guard")]
+    public void Battle01AdmissionRejectsEachMissingRouteReceiptWithoutMutation(string missing)
+    {
+        var session = Battle01AdmissionSession(new(14, 13), missing: missing);
+        var before = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.Null(session.PrivateOriginalBattle01Admission);
+    }
+
+    private static GameSession Battle01AdmissionSession(MapPosition position, WorkingMapLayout? layout = null, bool guard = true, string? missing = null)
+    {
+        var session = ReachMiddleTowerGuard();
+        session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep);
+        var before = session.PrivateOriginalMapSnapshot;
+        var runtime = before.Definition.RuntimeCatalog.Resolve(new("map40"));
+        layout ??= runtime.WorkingLayout;
+        var snapshot = new PrivateOriginalMapSessionSnapshot(before.Definition, before.Receipt, layout,
+            before.SimulationStep + 1, position, runtime.Traversal.TryMove(layout,
+                new(position.X, position.Y - 1), ExplorationDirection.South), false, null,
+            zone601: before.Zone601, sarah: before.Sarah, entity142: before.Entity142,
+            messengerAcceptance: before.MessengerAcceptance, castleGate: missing == "castle" ? null : before.CastleGate,
+            currentRuntime: runtime, palaceFirstVisit: missing == "palace" ? null : before.PalaceFirstVisit,
+            astralAcceptance: missing is "astral" or "palace" ? null : before.AstralAcceptance,
+            // Dependent receipts cannot survive a missing prerequisite under the snapshot contract.
+            middleTowerGuard: guard && missing is null ? before.MiddleTowerGuard : null);
+        typeof(GameSession).GetField("_privateOriginalMapSnapshot",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(session, snapshot);
+        typeof(GameSession).GetField("_privateOriginalMapPlayerLocomotion",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(session,
+                PrivateOriginalMapPlayerLocomotionSnapshot.ControlledAdmission(position));
+        return session;
+    }
+
+    [Theory]
     [InlineData("map19")]
     [InlineData("map20")]
     [InlineData("map21")]
@@ -3622,7 +3794,8 @@ public sealed class OriginalMapGameSessionTests
         bool omitMiddleTower = false,
         bool omitMiddleTowerGuard = false,
         bool omitNorthMap40 = false,
-        OriginalMapCrossMapTransitionDefinition? northMap40 = null)
+        OriginalMapCrossMapTransitionDefinition? northMap40 = null,
+        OriginalBattle01AdmissionDefinition? battle01Admission = null, bool omitBattle01Admission = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -3718,7 +3891,8 @@ public sealed class OriginalMapGameSessionTests
             omitWestTower ? null : westTower ?? AcceptedOriginalMapRuntimeCatalog.WestTower(),
             omitMiddleTower ? null : middleTower ?? AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
             omitMiddleTowerGuard ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]),
-            omitNorthMap40 ? null : northMap40 ?? AcceptedOriginalMapRuntimeCatalog.NorthMap40());
+            omitNorthMap40 ? null : northMap40 ?? AcceptedOriginalMapRuntimeCatalog.NorthMap40(),
+            omitBattle01Admission ? null : battle01Admission ?? AcceptedOriginalMapRuntimeCatalog.Battle01());
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -4455,10 +4629,34 @@ internal static class AcceptedOriginalMapRuntimeCatalog
             visualResourceSelection: new(map, 0, [6, 23, 44, 53, 8]));
     }
 
+    internal static OriginalBattle01AdmissionDefinition Battle01(
+        OriginalBattle01ControlledPreset? preset = null, string? layoutDigest = null,
+        OriginalMapVisualResourceSelection? selection = null, string? setupRoute = null,
+        string? animationTable = null, OriginalMapCrossMapTransitionIdentity? warp = null,
+        byte triggerY = 12, byte facing = 1, MapPosition? destination = null,
+        string? blockDigest = null, int areaBottom = 19, byte areaMusic = 34)
+    {
+        var blocks = new OriginalMapBlockCatalog(Enumerable.Range(0, OriginalBattle01AdmissionDefinition.BlockCount)
+            .Select(index => new OriginalMapBlockDefinition(new("Map57s0_Blocks", index), new ushort[9])),
+            blockDigest ?? OriginalBattle01AdmissionDefinition.BlockDigest);
+        var areas = new OriginalMapAreaCatalog([
+            new OriginalMapAreaDefinition(new("Map57s2_Areas", 1), new(0, 0, 15, areaBottom),
+                new(0, 0), new(0, 0), new(256, 256), new(256, 256), new(0, 0), new(0, 0), 255, areaMusic)]);
+        return new(new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]), blocks, areas,
+            selection ?? new(new("map57"), 8, [94, 98, 99, 255, 255]),
+            warp ?? new(ContentProfile.PrivateLocal, new("map40"), "Map40s6_WarpEvents", 1),
+            255, triggerY, destination ?? new(8, 18), facing, preset ?? OriginalBattle01ControlledPreset.NewBattle,
+            setupRoute, animationTable, layoutDigestOverride: layoutDigest ?? OriginalBattle01AdmissionDefinition.LayoutDigest);
+    }
+
     private static OriginalMapExplorationRuntimeDefinition Map40Runtime()
     {
         MapId map = new(OriginalMapRuntimeAdmission.Map40Id);
-        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        ushort[] words = new ushort[WorkingMapLayout.WordCount];
+        words[12 * 64 + 14] = 0x1000;
+        words[12 * 64 + 15] = 0x1000;
+        words[31 * 64 + 14] = 0x1000;
+        WorkingMapLayout layout = new(words);
         OriginalMapBlockCatalog blocks = new(
             Enumerable.Range(0, OriginalMapRuntimeAdmission.Map40BlockCount)
                 .Select(index => new OriginalMapBlockDefinition(
