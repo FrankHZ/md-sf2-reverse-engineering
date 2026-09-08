@@ -1086,6 +1086,262 @@ diagnostic. No enemy action, turn skip, next-ally search or round regeneration i
 Domain/Application next-player tests, the required selected-input chain and native `next-player`
 mode own this boundary; `stay` remains a compatible recipe name for the same current chain.
 
+### Next slice decision: first inactive enemy standby
+
+This is a bounded implementation contract, not an implemented capability. The next useful slice is
+the **complete first enemy's standby decision, optional movement and no-effect STAY**, ending before
+another actor is dispatched. Seed-copy and standby-data admission belong inside that slice: the
+existing owners supply the required facts, so a separate input-only slice would leave the same visible
+AI boundary. No active commandset, attack, spell, target scoring or multi-enemy loop is authorized.
+
+**Controlled input policy for this decision:** add an independent 16-bit seed-copy input to the
+named player-ready comparison preset, explicitly `0x1234`. Its provenance is
+[`map3-battle01-player-ready-v1.json`](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json),
+`static.bridge.randomSeedCopy` and
+`expectedObservation.records[0].deterministicState.ready.randomSeedCopy`, both 4660. Carry it unchanged
+through the currently skipped original text/diamond-menu path and both controlled player turns.
+This retention is a proposed remake policy for acceptance with this plan; it is **not** an observation
+of the original seed after two natural player actions. Do not select a seed to force an idle outcome,
+derive it from the main seed, or silently supply it at enemy entry. Missing/drifted input rejects.
+The current preset and Domain do not yet carry this field.
+
+#### Exact current inputs and source branch
+
+**Confirmed:** the accepted selected Battle01 placements and current immutable state give the rows
+below. All orders are NONE/255, secondary region is NONE/15, spawn is STARTING/0, and enemy definition
+is GIZMO/39. The initialization composes `(baseAi & F000) | (spawn << 8) | filler`, not an activation
+inference from the commandset name.
+
+| Enemy | Live and deployment position | Commandset | Primary region | Filler | Current AI word |
+| --- | --- | --- | --- | --- | --- |
+| 128 | (7,3) | ATTACKER1/6 | 2 | 60h | 2060h |
+| 129 | (9,4) | ATTACKER1/6 | 2 | 60h | 2060h |
+| 130 | (6,4) | ATTACKER1/6 | 2 | 60h | 2060h |
+| 131 | (8,3) | ATTACKER1/6 | 1 | 60h | 2060h |
+| 132 | (9,5) | ATTACKER2/7 | 1 | 70h | 2070h |
+| 133 | (6,5) | ATTACKER2/7 | 0 | 70h | 2070h |
+
+The selected region upper edges are `y <= 19 - 4*x/5`, `y <= 7 + 4*x/5`, and
+`y <= 12`, within their fixed quadrilaterals. All initial allies at y18 lie outside; current
+A0(8,18), A1(9,17), A2(7,17) also lie outside. First-round entry tested all three (mask0007), while
+all sixteen F90..F105 remain false. Player movement/STAY neither reruns activation nor changes those
+flags or enemy words. AI memory has 48 zero bytes; last-target bytes remain FF. The current order is
+offset4, `Slots[2]=128`, with nine living units and main RNG image A4991234. The existing
+`OpponentAi` result describes the remake's unsupported controller, not an original action.
+
+At the pinned source `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+`ExecuteIndividualTurn` routes this living, status0 enemy to `StartAiControl` because opponent
+control is false. `startaicontrol.asm` reads commandset6 (not swarm15), clears
+`NEWLY_TRIGGERED_BATTLE_REGIONS`, sees configured primary region2, and finds primary-active bit0
+clear in `2060 & 0003`. It calls `DetermineAiStandbyMovement` and forces action STAY/3.
+No `ExecuteAiCommand` entry is selected: the configured ATTACKER1 list is not executed.
+The source does not retest region geometry at this entry. All exits clear temporary obstruction bits.
+See [AI decision](../../docs/design/contracts/battle-ai-decision.md#commandsets-activation-and-special-attackers),
+[turn/control](../../docs/research/map3-battle01-turn-control.md) and
+[AI standby](../../docs/research/battle-ai.md#dispatcher-and-standby-control).
+
+#### Deterministic first-enemy example
+
+**Confirmed:** the following is a read-only reduction using the accepted source parsers, thinking
+RNG helper and weighted-grid model, with the explicitly proposed retained seed-copy. It is not a new
+H3 observation. The [randomness owner](../../docs/design/contracts/randomness.md) and independent
+[`random-services-v1.json`](../../tests/fixtures/h3/random-services-v1.json) resolve the byte lane:
+the base-address byte is the **high byte of the big-endian word**. Thus 1234h starts from 12h, not34h.
+The source sign-extends that byte, multiplies by541, adds12345 and masksFF; the accepted byte helper
+has the same masked result. The low byte34 remains untouched. Source comments and the older AI
+contract's “low-byte seed-copy” wording do not override this more specific runtime-backed owner.
+For range2..127 the return is 0..range-1; range1 still advances once and returns0.
+
+| Thinking call | Purpose | Before word | Generator steps / rejected retries | Return | After word |
+| --- | --- | --- | --- | --- | --- |
+| RNG(8) | idle/eligibility gate | 1234h | 61 / 60 | 7 | 0734h |
+| RNG(2) | initialize memory move count | 0734h | 85 / 84 | 0 | 0034h |
+| RNG(1) | choose sole remaining candidate | 0034h | 1 / 0 | 0 | 3934h |
+
+The first result7 enters eligibility; only results2/4/6 immediately STAY in place with FF move string.
+`ValidateAiStandbyEligibility` with orders NONE/NONE and regions2/15 returns D1=0,D2=0:
+**regular movement**. The caller moves only when D1 is zero, opposite the routine's return comment.
+It uses deployment starting position (7,3), not a player origin or AI memory coordinate. Memory byte0
+has low nibble0, so RNG(2)=0 initializes it to04h, selecting the four-position table. RNG(2)=1 would
+select03h and the other table; neither branch can be replaced by a constant STAY.
+
+The exact existing standby tables are `[(0,-1),(-1,1),(1,1)]` for count3 and
+`[(0,-1),(-1,0),(0,1),(1,0)]` for count4, owned by
+`disasm/data/battles/global/aistandbymovements.asm` and
+[`battle-ai-remaining-static-v1.json / expected.standby`](../../tests/fixtures/h2/battle-ai-remaining-static-v1.json).
+GIZMO's admitted movement type6 is **Hovering**, not Flying/type5. The pinned
+`landeffectsettingsandmovecosts.asm` row6 gives costs
+`[2,2,2,2,2,2,2,-1,2,-1,-1,-1,-1,-1,-1,-1]` and land-effect indices
+`[0,1,0,2,2,2,0,0,0,0,0,0,0,0,0,0]`. Effective MOV5 yields budget10.
+`InitializeMovementArrays -> BuildMovementArrays` builds the raw terrain range;
+`BuildTargetsArrayWithAllCombatants` separately supplies occupancy to radius0
+`DetermineAttackPosition`. Do not substitute the player's opponent-blocked range wrapper.
+
+| Index | Candidate | Raw terrain | Grid cost | Current occupant | Before previous-index exclusion |
+| --- | --- | --- | --- | --- | --- |
+| 0 | (7,2) | 00h | 2 | empty | eligible |
+| 1 | (6,3) | 01h | 2 | empty | eligible |
+| 2 | (7,4) | FFh | unreachable | empty | rejected terrain |
+| 3 | (8,3) | 01h | 2 | enemy131 | rejected occupancy |
+
+Initial memory04h has previous index0, so valid mask03h becomes02h. RNG(1) selects index1.
+The memory becomes14h, and destination is (6,3). At destination cost2, the sole source backtrack
+neighbor at cost<=1 is origin (7,3), cost0; other neighbors are unreachable or cost4.
+`alt_BuildCancelMoveString` emits right0/FF; `BuildMoveStringForAi` reverses and XOR2s the
+non-terminator to **left2/FF**. This one-edge path is independently reducible without assuming the
+accepted remake player preview equals the source string builder. The retained source-mask
+counterexample above still applies to other paths.
+
+`ExecuteAiControl` in `battlefunctions_2.asm` replays the move string and writes live X/Y **before**
+checking action STAY. Hence the result is enemy128 (7,3)->(6,3), action3, memory[0]00->14h,
+seed-copy1234->3934h, tested-region word0007->0000, with main RNG A4991234 unchanged.
+No attack target/action command, HP change or last-target update is selected. The existing two
+player receipts and positions remain. After the separately admitted no-effect finalization, advance
+one two-byte entry to offset6, actual `Slots[3]=131`, and stop before its dispatch.
+
+All current enemies have neutral bit3 clear; A1/A2 have supplied word0. A0's missing ally word must
+remain missing. Its distant (8,18) cell is outside this budget/candidate/path seam, so no claim about
+its source neutral-bit classification is needed. Do not globally fill ally words to build an AI list;
+a relevant unknown activation/occupancy input must reject instead of inventing a blocker rule.
+The composed original execution at this unobserved caller state is **Inferred**; its natural
+seed-copy lifetime, caller timing and full original movement execution remain **Unknown**.
+
+#### Reproduce the bounded reduction
+
+Use the same read-only selected-data and pinned-disasm locations as the startup reader, supplied in
+`SF2_PRIVATE_BATTLE01_DATA` and `SF2_UPSTREAM_DISASM` (the latter ends at `disasm`).
+From the repository root, this invokes only existing pure Python owners and reads the compressed
+terrain; it neither exports a new payload nor starts an emulator:
+
+```powershell
+@'
+import hashlib, json, os
+from pathlib import Path
+from sf2tool.compression import decode_stack_compressed
+from sf2tool.h2.battle_ai import _parse_standby, _standby_eligibility_outcome
+from sf2tool.h2.battlefield import build_weighted_movement_model
+from sf2tool.h3.battle_ai_action import _thinking_rng_step
+
+root = Path(os.environ["SF2_UPSTREAM_DISASM"])
+data_bytes = Path(os.environ["SF2_PRIVATE_BATTLE01_DATA"]).read_bytes()
+assert hashlib.sha256(data_bytes).hexdigest().upper() == "32EEAE9AFB01DC38A1BAA99EE2E0B4C0B48F8A676F69771A5F5C52A2FC7E4C60"
+data = json.loads(data_bytes)
+fixture = json.loads(Path("tests/fixtures/h3/map3-battle01-player-ready-v1.json").read_text())
+assert fixture["static"]["bridge"]["randomSeedCopy"] == 0x1234
+assert fixture["expectedObservation"]["records"][0]["deterministicState"]["ready"]["randomSeedCopy"] == 0x1234
+standby = _parse_standby(root,
+    (root / "code/gameflow/battle/ai/determineaistandbymovement_1.asm").read_text(),
+    (root / "code/gameflow/battle/ai/determineaistandbymovement_2.asm").read_text())
+assert standby == json.loads(Path("tests/fixtures/h2/battle-ai-remaining-static-v1.json").read_text())["expected"]["standby"]
+seed = 0x12
+for range_ in (8, 2, 1):
+    before = seed
+    final, result = _thinking_rng_step(seed, range_)
+    steps = 0
+    while True:
+        seed, _ = _thinking_rng_step(seed, 1)
+        steps += 1
+        if range_ <= 1 or seed < range_: break
+    assert seed == final
+    print("RNG", range_, hex((before << 8) | 0x34), result,
+          hex((seed << 8) | 0x34), "steps", steps, "retries", steps-1)
+e = data["entities"][3]; b = e["behavior"]
+print("eligibility", _standby_eligibility_outcome(
+    b["primaryOrderExpression"] != "NONE", b["secondaryOrderExpression"] != "NONE",
+    b["primaryRegion"] != 15, b["secondaryRegion"] != 15))
+compressed = (root / "data/battles/entries/battle01/terrain.bin").read_bytes()
+assert hashlib.sha256(compressed).hexdigest().upper() == "A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A"
+terrain = list(decode_stack_compressed(compressed, expected_output_bytes=2304).output)
+costs = [2,2,2,2,2,2,2,-1,2,-1,-1,-1,-1,-1,-1,-1]
+grid = build_weighted_movement_model(terrain, costs,
+    start_offset=e["y"]*48+e["x"], budget=10)["reachableCosts"]
+positions = {i if i < 3 else 128+i-3:(v["x"],v["y"])
+             for i,v in enumerate(data["entities"])}
+positions[1], positions[2] = (9,17), (7,17)
+occupied = {p:i for i,p in positions.items()}
+valid = []
+for index,(dx,dy) in enumerate(standby["movementTables"][1]["coordinates"]):
+    p = (e["x"]+dx,e["y"]+dy); offset = p[1]*48+p[0]
+    cost = grid.get(str(offset)); occupant = occupied.get(p)
+    print(index,p,"terrain",terrain[offset],"cost",cost,"occupant",occupant)
+    if cost is not None and occupant is None and index != 0: valid.append(index)
+assert valid == [1] and seed == 0x39
+assert grid[str(3*48+7)] == 0 and grid[str(3*48+6)] == 2
+print("selected",valid[0],"memory",hex((valid[0]<<4)|4),"move",[2,255])
+'@ | uv run python -X utf8 -
+```
+
+The existing helpers take a seed **byte**, not a RAM word; the example explicitly extracts12h and
+reassembles the preserved low byte. The third call's return0 must not be written over its39h
+helper-return seed. Candidate filtering must precede the final range choice; assuming two candidates
+would consume a different RNG stream and select the wrong result.
+
+#### Next implementation ownership and acceptance
+
+Only a separately anchored implementation slice may change runtime code. Its proposed exact paths,
+all relative to `remake/`, are:
+
+| Owned paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs` | Explicit seed-copy input/provenance and forwarding into the existing initialized state |
+| `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs` | Independent seed-copy word carried by every immutable copy; single AI-memory update and enemy-completed phase |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyStandby.cs` (new) | Bounded first-enemy classifier/standby decision, checked memory/tables, source move-string result and atomic completion projection |
+| `src/Sf2.Remake.Domain/Battles/Battle01PlayerMovement.cs` | Reuse existing weighted propagation; admit fixed Hovering6 facts without opening enemy player-control profiles |
+| `src/Sf2.Remake.Domain/Battles/Battle01TurnCompletion.cs`; `Battle01FirstRound.cs` in the same directory | Share ordered no-effect finalization for an explicitly admitted enemy; one-entry advance and receipt preservation |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyStandby.cs` (new) | Exact snapshot/actor/phase facade; allocate all output before one session replacement |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | One enemy attempt following the second STAY's actual AI result, visible move/STAY outcome, then closed input |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` (new); `Battle01InitializationTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in the same directory | Branch/RNG/source-path/atomicity and state-retention checks |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyStandbyTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in the same directory | Explicit missing/drifted seed-copy, exact requests and failure preservation |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Required actual-input chain and one bounded native consumer |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current behavior, controlled policy, reproduction and remaining boundary |
+
+The immutable Domain battle holds current state, and GameSession replaces it atomically; the preset
+is historical input provenance. Seed-copy is a distinct nullable/missing-capable input until admitted,
+never an alias or implicit default from `RandomSeedImage`. Decision data may record calls, candidate,
+move and memory changes in the completion receipt, without a second command queue or phase authority.
+Preserve both player receipts through the enemy receipt's existing `Previous` chain. A bounded
+`EnemyTurnCompleted` phase can close this endpoint without renaming all player-control APIs.
+
+The production facade admits only the first actual enemy128 at offset4 after the two accepted player
+STAYs, known inactive source orders/regions and intact living roster. A different current actor, active/
+swarm/special/move-order branch, missing seed-copy, unsupported memory/profile or incomplete path
+rejects with the exact prior second-player STAY preserved. Legitimate immediate-idle or no-valid-candidate
+standby results retain their source RNG/memory effects; they are not blanket enemy skip behavior.
+On success clear the tested-region word, update only memory[0], seed-copy and the one live
+position/occupancy, preserve deployment/last-targets/activation words and main RNG, then finalize.
+
+Reuse the existing no-effect policy and ordered defeated-wrapper/cleanup/count/normalization/
+cleanup/count boundary. Apply it to the enemy's **already initialized effective stats** by identity:
+HP5, MP0, ATT8 (difficulty0 source7 adjusted once), DEF5, AGI5, MOV5, status0, no equipped recovery.
+Do not load source stats again or repeat difficulty/equipment computation. A missing/changed effective
+stat, status/passive effect, death/outcome or inconsistent occupancy rejects before any seed, memory,
+position, receipt or offset is installed. Build the complete result and session wrapper before commit.
+
+Reuse `BuildWeightedGrid` with source standby terrain semantics, not the player range/preview facade.
+Implement only the required bounded source move-string path semantics, preserving the accumulated
+direction-mask discrepancy above; do not label the lowest-cost player preview an original AI string.
+No generic pathfinding framework, renderer animation, cache, new fixture registry or AI planner is needed.
+Godot may project the immediate diagnostic relocation and “enemy standby / moved then STAY” result;
+it must retain the actual next candidate131 at offset6 without attempting its AI or a new round.
+Frames and old keys must not reenter the completed enemy, discard the prior STAY on rejection, or
+pretend original movement/diamond/menu animation executed.
+
+Acceptance for that later implementation is the required real selected-input chain through this
+single enemy, plus focused tests for all immediate-idle rolls, both standby tables, actual blocked/
+occupied/previous-index exclusions, no-alternative memory clearing, and source move-string replay.
+Compare the three calls/147 generator steps and final3934h independently with the existing Python
+helpers; test range1 return versus seed, high-byte signed edges, and main/copy RNG isolation.
+Exercise missing/foreign/stale/wrong-actor/phase requests and late path/stat/occupancy rejection,
+proving no partial commit and both earlier receipts retained. Use the committed planner for .NET/
+official Godot gates, then one new bounded native mode showing the enemy outcome and closed next
+candidate; do not replay all prior modes.
+
+For **this plan-only change**, use only the read-only reduction above, clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD`, and normal `uv run sf2 verify`.
+H0 missing input is reported honestly; no full .NET/Godot/ROM/H3 run or asset transaction is required.
+Natural caller state, seed-copy lifetime, timing, original layers/animation, active AI, later enemies/
+rounds, victory and H4 remain **Unknown** or unimplemented at their existing owners.
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
