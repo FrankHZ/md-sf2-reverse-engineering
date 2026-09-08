@@ -20,6 +20,11 @@ tileset/palette extraction metadata.
 The controlled castle route selects the shared Map 19/20 atlas and then the independent Map 21
 atlas from the accepted local pack. Each view uses its current runtime layout and camera; the
 Map 21 guard remains an authored undirected diamond whose occupancy follows the controlled F result.
+The controlled Map 40 exit now retains a visible Battle 01 pending admission. A separate Content/
+Application preparation API validates selected Battle 01 placement/scene inputs and the full 48-by-48
+terrain, then returns them with an explicit party/RNG comparison preset. It preserves Pending and
+all current session state. Battle initialization, turn generation and a UI consumer remain pending;
+see the [startup input boundary](./docs/map03-playability-plan.md#implemented-startup-input-preparation).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,

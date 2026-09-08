@@ -30,7 +30,7 @@ of the owning slice. A documentation-only change does not run .NET unless the co
 
 ## Optional Private .NET Checks
 
-Three tests can consume explicit local inputs. They use the existing xUnit skip mechanism and keep
+Private checks can consume explicit local inputs. They use the existing xUnit skip mechanism and keep
 their production admission and private assertions unchanged. No private input is required by Public CI.
 
 | Test method | Required environment variables |
@@ -38,6 +38,8 @@ their production admission and private assertions unchanged. No private input is
 | `AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput` | `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
 | `AcceptedIgnoredInputsCloseExactPayloadAndMutationBoundaries` | `SF2_PRIVATE_ROM`, `SF2_PRIVATE_MAP_TILESET_METADATA`, `SF2_PRIVATE_MAP_PALETTE_METADATA` |
 | `ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
+| `ExactLocalMap21AndMap40BucketsRejectMissingOrChangedPayloads` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
+| `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` | `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`, `SF2_PRIVATE_BATTLE01_TERRAIN` |
 
 For each test, no selected inputs means an explicit **skipped / no private assertions ran** result.
 Configuring any of its input variables selects that private check; partial configuration fails instead
@@ -69,6 +71,46 @@ with the same required switch and filter. Scope the input variables to the ownin
 payloads and TRX/log output in that worktree's ignored directories. A required run with missing
 inputs is a failed availability check, not a private success or product regression. A public run
 with skipped private tests is public evidence only.
+
+## Selected Battle01 Startup Inputs
+
+The new Content check actually reads the two fixed selected source exports and the compressed
+terrain input, runs the existing C# Stack decoder and checks the exact full deployment/terrain
+contract. Its public semantic tests use authored placements, regions and terrain. They bypass only
+the transport identity for parser checks and cannot claim admission of the canonical payload.
+Application tests use the existing internal projection seam for authored data; the required-private
+check exercises real digest computation and the same custom-port admission predicate.
+
+From the repository root, set `SF2_PINNED_UPSTREAM` to the registered read-only upstream checkout
+at commit `c834c652b6862bc5679fd7f69a38a7093206efc6`. Use a fresh owning worktree's ignored output
+paths. These are the existing selected exporters; no whole battle/map extraction or legacy rail is
+required, and the startup reader does not need a ROM.
+
+```powershell
+$upstream = $env:SF2_PINNED_UPSTREAM
+$env:SF2_PRIVATE_BATTLE01_DATA = Join-Path (Get-Location).Path 'local/derived/battle01-data.json'
+$env:SF2_PRIVATE_BATTLE01_SCENE = Join-Path (Get-Location).Path 'local/derived/battle01-scene.json'
+$env:SF2_PRIVATE_BATTLE01_TERRAIN = Join-Path $upstream 'disasm/data/battles/entries/battle01/terrain.bin'
+& ./scripts/Export-Battle01Data.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_DATA
+& ./scripts/Export-Battle01Scene.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_SCENE
+$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
+dotnet test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests'
+```
+
+Verify the two export SHA values against `manifests/extractions/battle01-data.json` and
+`battle01-scene.json`; the production reader also enforces them. The scene export contains metadata
+rather than decoded grid bytes, so the third input is explicitly required. Its compressed SHA is
+`A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A`, length 284. The decoded
+terrain is 2,304 bytes with the accepted scene digest; it is not a 16-by-20 cropped array.
+Missing/partial required configuration fails, while an unselected optional run explicitly skips.
+Keep these environment variables scoped to the owning command and put TEMP/TMP, logs and generated
+outputs in the same worktree. Never mutate the supplied upstream terrain file.
+
+The owning Application filter is `FullyQualifiedName~PrivateOriginalBattle01StartupTests`. It checks
+valid/repeated preparation, exact current Pending, rejection before source reads, custom-port
+validation, party/RNG constraints and read-only collection/stride behavior. Use the committed planner
+for subsequent .NET and official Godot selection. This data-only boundary adds no native image review
+and does not rerun the already accepted twelve-frame pending-admission recipe or any H3/H4 seam.
 
 ## Repository Planner
 
