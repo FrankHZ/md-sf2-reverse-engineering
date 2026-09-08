@@ -513,9 +513,10 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 ## Ordered Queue
 
-Current controlled play reaches a visible Battle 01 pending admission while retaining Map 40
-and its accepted atlas. The manual battle bridge remains public-synthetic,
-and natural castle continuity and complete Battle 01 play remain **Unknown**.
+Current controlled play reaches diagnostic Battle 01 first-player movement, provisional confirmation
+and cancellation through the explicit selected-input N entry at Pending. The manual battle bridge
+remains public-synthetic. Natural castle continuity, original Map57 presentation and complete
+Battle 01 play remain **Unknown**.
 
 ### Accepted inputs and incompatible existing assumptions
 
@@ -551,6 +552,77 @@ first-round order. The existing [battle bridge](../src/Sf2.Remake.Application/Se
 wraps `PublicSyntheticBattleDefinition`; its [tactical model](../src/Sf2.Remake.Domain/Battles/TacticalBattle.cs)
 has one player/one enemy and a maximum grid dimension of 16. Neither can represent the admitted
 3-ally/6-enemy, 16-by-20 Battle 01 simply by changing IDs or enlarging the grid limit.
+
+### Map57 atlas candidate and unloaded-slot boundary
+
+**Confirmed:** the bounded reference proof uses the unchanged canonical import
+`DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508` selects
+`Map57s0_Blocks` (120 records, address 755240) and `Map57s1_Layout` (4096 words, address 756002).
+Using the existing renderer's `TILE_INDEX_MASK=0x3FF`, `TILE_INDEX_OFFSET=0x100` and 128 tiles
+per slot gives the following counts over each scope's distinct referenced block records:
+
+| Scope | Distinct blocks | Pattern references | Logical pattern range | References by physical slot |
+| --- | ---: | ---: | --- | --- |
+| Complete 64-by-64 layout | 118 (all except 1 and 2) | 1062 | 0..293 | slot0:47, slot1:1004, slot2:11; slot3/4:0 |
+| Battle area (0,0)..(15,19) | 115 | 1035 | 6..255 | slot0:38, slot1:997; slot2/3/4:0 |
+| Entire block catalog, including unused records | 120 | 1080 | 0..591 | the above plus 18 slot4 references |
+
+The last row is a real limitation: unused blocks 1 and 2 are the shared predefined records in
+`h2/map_layouts.py::INITIAL_BLOCK_WORDS`, with logical slot4 patterns 556..591. Neither occurs
+anywhere in the accepted Map57 layout. The proof covers drawing this fixed layout and its battle
+area, not an arbitrary block-catalog viewer, changed layout, event-generated block replacement,
+VRAM persistence or animation. Both accepted area layer origins are zero; this does not execute
+the original layer, palette or scene pipeline.
+
+Reproduce the minimal proof from the code repository with an explicit read-only canonical input:
+
+```powershell
+# SF2_PRIVATE_CANONICAL_MAP_IMPORT names the accepted fully qualified private file.
+@'
+import hashlib, json, os
+from collections import Counter
+from pathlib import Path
+from sf2tool.texture_extract import TILE_INDEX_MASK, TILE_INDEX_OFFSET, MAP_SLOT_TILE_COUNT
+raw = Path(os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"]).read_bytes()
+assert hashlib.sha256(raw).hexdigest().upper() == "DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508"
+doc = json.loads(raw)
+selection = doc["maps"][57]
+assert (selection["id"], selection["palette"], selection["tilesets"]) == (57, 8, [94,98,99,255,255])
+blocks = next(r["blocks"] for r in doc["resources"]["blocksets"] if r["id"] == selection["references"]["blockset"])
+layout = next(r for r in doc["resources"]["layouts"] if r["id"] == selection["references"]["layout"])
+assert len(blocks) == 120 and (layout["width"], layout["height"]) == (64, 64)
+words = layout["words"]
+whole = {w & TILE_INDEX_MASK for w in words}
+area = {words[y*64+x] & TILE_INDEX_MASK for y in range(20) for x in range(16)}
+assert set(range(120)) - whole == {1, 2}
+for name, used in (("wholeLayout", whole), ("battleArea", area), ("allBlocks", set(range(120)))):
+    patterns = [(w & TILE_INDEX_MASK) - TILE_INDEX_OFFSET for b in sorted(used) for w in blocks[b]]
+    slots = Counter(p // MAP_SLOT_TILE_COUNT for p in patterns)
+    if name != "allBlocks":
+        assert min(patterns) >= 0 and max(patterns) < 3 * MAP_SLOT_TILE_COUNT
+    print(json.dumps(dict(scope=name, blocks=len(used), references=len(patterns),
+                         minimum=min(patterns), maximum=max(patterns), slots=dict(sorted(slots.items())))))
+'@ | uv run python -X utf8 -
+```
+
+**Accepted controlled remake storage policy:** only the fixed Map57 builder may retain source
+selection `[94,98,99,255,255]` while synthesizing physical slots 3 and 4 as project-authored
+4096-byte zero buffers and transparent RGBA `[0,0,0,0]` segments. It decodes exactly real
+tilesets 94/98/99 and selects palette8. The source bundle explicitly tags the authored slots,
+the policy ID distinguishes this derivation, and the receipt labels each physical slot's source kind.
+The atlas stays five segments: no tileset255 lookup, Map40 substitution or index compaction.
+The three fixed input pins, ROM header join and existing Stack/source/decoded checks remain required.
+Since the ROM and metadata are fixed, this policy does not accept arbitrary replacement-map content.
+
+The pinned `code/common/maps/mapload.asm` `LoadMapTilesets` and map loading path skip negative
+slot bytes while keeping distinct fixed RAM/VRAM banks; see the accepted
+[tileset](../../docs/design/contracts/map-tileset-data.md),
+[palette](../../docs/design/contracts/map-palette-data.md) and
+[rendering owner](../../docs/research/technical-graphics.md). They do not prove zeroed original VRAM
+for skipped slots. Original retained VRAM, dynamic replacement, animation, timing and final fidelity
+remain **Unknown**. Candidate generation is separate from local asset acceptance and the later Godot
+consumer; current Battle01 remains diagnostic. The [candidate recipe](./presentation-and-assets.md#map57-candidate-policy)
+owns the source format, explicit CLI, geometry and review boundary.
 
 ### Implemented boundary: visible pending admission before relocation
 
@@ -992,8 +1064,8 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
    input/capture recipe. Attack resolution, enemy turns, later rounds and victory remain later slices.
-   Map 57 graphics require a separate fixed palette-8/`255` empty-slot policy and asset acceptance;
-   the five-decoded-slot atlas builder cannot silently treat 255 as a tileset or retain Map 40 art.
+   The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
+   policy above. Local asset acceptance and a separate Godot consumer are still required.
    Clearly labeled diagnostic combatant markers may expose the control seam before original art is
    admitted; that is not complete private presentation or an original-fidelity result.
 

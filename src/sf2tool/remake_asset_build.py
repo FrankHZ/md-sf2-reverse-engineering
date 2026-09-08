@@ -408,6 +408,7 @@ class _WorldAtlasFamily:
     map_indices: tuple[int, ...]
     slots: tuple[int, ...]
     palette_index: int = ACCEPTED_PALETTE_INDEX
+    authored_empty_slots: tuple[int, ...] = ()
 
     @property
     def asset_id(self) -> str:
@@ -419,7 +420,15 @@ class _WorldAtlasFamily:
 
     @property
     def policy_id(self) -> str:
+        if self.authored_empty_slots:
+            return f"private-local-{self.name}-base-nearest-rgba8-authored-empty-slots-v1"
         return f"private-local-{self.name}-base-nearest-rgba8-v1"
+
+    @property
+    def slot_policy_bytes(self) -> bytes:
+        if not self.authored_empty_slots:
+            return b""
+        return b"SF2-PROJECT-AUTHORED-ZERO-SLOTS-V1\0" + bytes(self.authored_empty_slots)
 
     @property
     def capability(self) -> str:
@@ -447,6 +456,9 @@ _MAP19_20_ATLAS = _WorldAtlasFamily(
 )
 _MAP21_ATLAS = _WorldAtlasFamily("map21", (21,), (6, 23, 44, 53, 8))
 _MAP40_ATLAS = _WorldAtlasFamily("map40", (40,), (94, 95, 96, 97, 58), palette_index=3)
+_MAP57_ATLAS = _WorldAtlasFamily(
+    "map57", (57,), (94, 98, 99, 255, 255), palette_index=8, authored_empty_slots=(3, 4)
+)
 
 
 @dataclass(frozen=True)
@@ -742,7 +754,7 @@ def _parse_world_tileset_metadata(
     document: Mapping[str, object],
     rom_length: int,
     family: _WorldAtlasFamily = _MAP3_ATLAS,
-) -> tuple[WorldTilesetRecord, ...]:
+) -> tuple[WorldTilesetRecord | None, ...]:
     root = _metadata_object(document, _TILESET_ROOT_FIELDS, "tilesetMetadata")
     _require_metadata_provenance(root, ACCEPTED_TILESET_METADATA_ID, "tilesetMetadata")
     rows = _metadata_array(root.get("tilesets"), 115, "tilesetMetadata.tilesets")
@@ -815,13 +827,21 @@ def _parse_world_tileset_metadata(
         ):
             raise _reject("InvalidSelection", field, "An accepted atlas map selection drifted.")
 
-    if set(selected) != set(family.slots):
+    required = {
+        index for slot, index in enumerate(family.slots) if slot not in family.authored_empty_slots
+    }
+    if set(selected) != required:
         raise _reject(
             "InvalidSelection",
             "tilesetMetadata.tilesets",
             "The accepted atlas tileset selection is incomplete.",
         )
-    return tuple(selected[index] for index in family.slots)
+    # Only the fixed Map57 family declares authored slots. A missing real record
+    # remains a rejection, and every physical slot keeps its original position.
+    return tuple(
+        None if slot in family.authored_empty_slots else selected[index]
+        for slot, index in enumerate(family.slots)
+    )
 
 
 def _parse_world_palette_metadata(
@@ -961,9 +981,14 @@ def _build_world_atlas_source(
     ]
     palette = [md_palette_color(word) for word in effective_words]
 
-    decoded_buffers: list[bytes] = []
+    slot_buffers: list[bytes] = []
     atlas_pixels: list[int] = []
     for record in tileset_records:
+        if record is None:
+            # Project-authored storage, not a decoded tileset255 or original VRAM claim.
+            slot_buffers.append(bytes(WORLD_DECODED_BYTES_PER_TILESET))
+            atlas_pixels.extend([0] * (WORLD_SHEET_WIDTH * WORLD_SHEET_HEIGHT * 4))
+            continue
         compressed = rom[record.source_address : record.source_address + record.compressed_bytes]
         if _sha256(compressed) != record.source_sha256:
             raise _reject(
@@ -999,7 +1024,7 @@ def _build_world_atlas_source(
             for offset in range(0, WORLD_DECODED_BYTES_PER_TILESET, TILE_BYTES_4BPP)
         ]
         atlas_pixels.extend(render_tileset_sheet(tiles, palette))
-        decoded_buffers.append(decoded.output)
+        slot_buffers.append(decoded.output)
 
     if len(atlas_pixels) != WORLD_ATLAS_WIDTH * WORLD_ATLAS_HEIGHT * 4:
         raise _reject("GeneratorOutputInvalid", "atlas", "The world atlas geometry drifted.")
@@ -1007,8 +1032,9 @@ def _build_world_atlas_source(
         (
             family.source_magic,
             bytes((*family.map_indices, family.palette_index, *family.slots)),
+            family.slot_policy_bytes,
             effective_palette_bytes,
-            *decoded_buffers,
+            *slot_buffers,
         )
     )
     return WorldAtlasSource(source_bundle, tuple(atlas_pixels), family.slots)
@@ -2814,6 +2840,36 @@ def build_map40_base_atlas_candidate(
     )
 
 
+def build_map57_base_atlas_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build only Map57, retaining two explicitly authored unloaded slot buffers."""
+
+    return _build_base_atlas_candidate(
+        family=_MAP57_ATLAS,
+        asset_root=asset_root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        rom_path=rom_path,
+        expected_rom_sha256=expected_rom_sha256,
+        tileset_metadata_path=tileset_metadata_path,
+        expected_tileset_metadata_sha256=expected_tileset_metadata_sha256,
+        palette_metadata_path=palette_metadata_path,
+        expected_palette_metadata_sha256=expected_palette_metadata_sha256,
+        candidate_name=candidate_name,
+    )
+
+
 def _build_base_atlas_candidate(
     *,
     family: _WorldAtlasFamily,
@@ -3063,6 +3119,26 @@ def _build_base_atlas_candidate(
                 "tilesetMetadataSha256": ACCEPTED_TILESET_METADATA_SHA256,
                 "paletteMetadataSha256": ACCEPTED_PALETTE_METADATA_SHA256,
             }
+        if family.authored_empty_slots:
+            receipt["unloadedSlotPolicy"] = {
+                "id": "project-authored-zero-slots-v1",
+                "slots": list(family.authored_empty_slots),
+                "bufferBytesPerSlot": WORLD_DECODED_BYTES_PER_TILESET,
+                "bufferFill": 0,
+                "rgba": [0, 0, 0, 0],
+                "originalVramClaim": False,
+            }
+            receipt["slotSources"] = [
+                {
+                    "slot": slot,
+                    "selectedTileset": index,
+                    "kind": (
+                        "project-authored-zero" if slot in family.authored_empty_slots
+                        else "decoded-source"
+                    ),
+                }
+                for slot, index in enumerate(family.slots)
+            ]
     except AssetBuildError:
         raise
     except OSError as error:
@@ -4297,6 +4373,7 @@ def _parser() -> argparse.ArgumentParser:
         "map19-20-base-atlas-candidate",
         "map21-base-atlas-candidate",
         "map40-base-atlas-candidate",
+        "map57-base-atlas-candidate",
     ):
         world = subparsers.add_parser(command)
         world.add_argument("--asset-root", required=True)
@@ -4351,12 +4428,14 @@ def main(argv: list[str] | None = None) -> int:
             "map19-20-base-atlas-candidate",
             "map21-base-atlas-candidate",
             "map40-base-atlas-candidate",
+            "map57-base-atlas-candidate",
         ):
             build_atlas = {
                 "map3-base-atlas-candidate": build_map3_base_atlas_candidate,
                 "map19-20-base-atlas-candidate": build_map19_20_base_atlas_candidate,
                 "map21-base-atlas-candidate": build_map21_base_atlas_candidate,
                 "map40-base-atlas-candidate": build_map40_base_atlas_candidate,
+                "map57-base-atlas-candidate": build_map57_base_atlas_candidate,
             }[arguments.command]
             receipt = build_atlas(
                 asset_root=arguments.asset_root,

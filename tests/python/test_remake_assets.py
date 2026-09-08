@@ -936,6 +936,7 @@ WORLD_ATLAS_CASES = (
     ("map19-20", (19, 20), (6, 23, 44, 53, 62), 0),
     ("map21", (21,), (6, 23, 44, 53, 8), 0),
     ("map40", (40,), (94, 95, 96, 97, 58), 3),
+    ("map57", (57,), (94, 98, 99, 255, 255), 8),
 )
 
 
@@ -959,10 +960,16 @@ def _world_inputs(
     palette3_words = [0x480, *(((index % 8) << 5) for index in range(1, 16))]
     palette3_source = b"".join(word.to_bytes(2, "big") for word in palette3_words)
     rom[192:224] = palette3_source
+    # A separate blue palette makes palette8 substitution visible in pixel checks.
+    palette8_words = [0x600, *(((index % 8) << 9) for index in range(1, 16))]
+    palette8_source = b"".join(word.to_bytes(2, "big") for word in palette8_words)
+    rom[224:256] = palette8_source
     rom[63] = 0xEE
     decodes: dict[bytes, StackDecodeResult] = {}
     selected_rows: dict[int, dict[str, Any]] = {}
     for position, index in enumerate(slots):
+        if index == 255:
+            continue
         compressed = bytes([0xA0 + position])
         address = 64 + position
         rom[address] = compressed[0]
@@ -1053,13 +1060,16 @@ def _world_inputs(
             "index": index,
             "symbol": f"MapPalette{index:02}",
             "sourcePath": f"project-authored/palette-{index:02}.bin",
-            "sourceAddress": 192 if index == 3 else 0,
+            "sourceAddress": 224 if index == 8 else 192 if index == 3 else 0,
             "byteCount": 32,
             "colorCount": 16,
-            "sourceFirstColor": 0x480 if index == 3 else 2,
+            "sourceFirstColor": 0x600 if index == 8 else 0x480 if index == 3 else 2,
             "effectiveFirstColor": 0,
-            "sourceSha256": _digest(palette3_source if index == 3 else palette_source),
+            "sourceSha256": _digest(
+                palette8_source if index == 8 else palette3_source if index == 3 else palette_source
+            ),
             "effectiveSha256": _digest(
+                b"\0\0" + palette8_source[2:] if index == 8 else
                 b"\0\0" + palette3_source[2:] if index == 3 else effective_palette
             ),
         }
@@ -1156,6 +1166,7 @@ def _build_world_candidate(
         "map19-20": remake_asset_build.build_map19_20_base_atlas_candidate,
         "map21": remake_asset_build.build_map21_base_atlas_candidate,
         "map40": remake_asset_build.build_map40_base_atlas_candidate,
+        "map57": remake_asset_build.build_map57_base_atlas_candidate,
     }[name]
     return build(
         asset_root=str(repository.root),
@@ -1681,6 +1692,7 @@ def test_official_resvg_candidate_build_opt_in(tmp_path: Path) -> None:
         ("map19-20", "build_map19_20_base_atlas_candidate"),
         ("map21", "build_map21_base_atlas_candidate"),
         ("map40", "build_map40_base_atlas_candidate"),
+        ("map57", "build_map57_base_atlas_candidate"),
     ),
 )
 def test_fixed_world_atlas_cli_routes_only_to_its_named_api(
@@ -1768,12 +1780,30 @@ def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
     asset = manifest["assets"][0]
     assert asset["assetId"] == f"world.{name}.base-tileset-atlas"
     assert asset["source"]["assetId"] == f"source.world.{name}.base-visual-selection"
-    assert asset["derivation"]["policyId"] == f"private-local-{name}-base-nearest-rgba8-v1"
+    suffix = "-authored-empty-slots" if name == "map57" else ""
+    assert asset["derivation"]["policyId"] == f"private-local-{name}-base-nearest-rgba8{suffix}-v1"
     assert receipt["capability"] == f"private-local-{name}-base-tileset-atlas-candidate-build-v1"
     bundle = candidate / f"source/world/{name}/base-visual-selection-v1.bin"
     magic = f"SF2-{name.upper()}-BASE-VISUAL-SELECTION-V1\0".encode("ascii")
     assert bundle.read_bytes().startswith(magic + bytes((*maps, palette_index, *slots)))
-    assert len(bundle.read_bytes()) == len(magic) + len(maps) + 6 + 32 + 5 * 4096
+    slot_policy = b"SF2-PROJECT-AUTHORED-ZERO-SLOTS-V1\0\x03\x04" if name == "map57" else b""
+    palette_offset = len(magic) + len(maps) + 6 + len(slot_policy)
+    assert bundle.read_bytes()[len(magic) + len(maps) + 6 : palette_offset] == slot_policy
+    assert len(bundle.read_bytes()) == palette_offset + 32 + 5 * 4096
+    if name == "map57":
+        assert bundle.read_bytes()[-8192:] == bytes(8192)
+        assert receipt["slotSources"] == [
+            {"slot": slot, "selectedTileset": index,
+             "kind": "decoded-source" if slot < 3 else "project-authored-zero"}
+            for slot, index in enumerate((94, 98, 99, 255, 255))
+        ]
+        assert receipt["unloadedSlotPolicy"] == {
+            "id": "project-authored-zero-slots-v1", "slots": [3, 4],
+            "bufferBytesPerSlot": 4096, "bufferFill": 0, "rgba": [0, 0, 0, 0],
+            "originalVramClaim": False,
+        }
+    else:
+        assert "slotSources" not in receipt and "unloadedSlotPolicy" not in receipt
     assert asset["source"]["sha256"] == _digest(bundle.read_bytes())
     if name != "map3":
         assert receipt["acceptedMapIndices"] == list(maps)
@@ -1812,8 +1842,13 @@ def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
         candidate / "masters" / "world" / name / "base-tileset-atlas.png"
     )
     assert (master_width, master_height) == (128, 320)
-    first_color = bytes([0, 36, 0, 255] if palette_index == 3 else [36, 0, 0, 255])
-    second_color = bytes([0, 73, 0, 255] if palette_index == 3 else [73, 0, 0, 255])
+    channel = {0: 0, 3: 1, 8: 2}[palette_index]
+    first = [0, 0, 0, 255]
+    first[channel] = 36
+    first_color = bytes(first)
+    second = [0, 0, 0, 255]
+    second[channel] = 73
+    second_color = bytes(second)
     assert master_pixels[:8] == first_color + bytes(4)
     assert master_pixels[64 * 128 * 4 : 64 * 128 * 4 + 4] == second_color
     expanded_channels = (0, 36, 73, 109, 146, 182, 219, 255)
@@ -1822,11 +1857,14 @@ def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
         if index == 0:
             return bytes(4)
         value = expanded_channels[index]
-        return bytes((0, value, 0, 255) if palette_index == 3 else (value, 0, 0, 255))
+        color = [0, 0, 0, 255]
+        color[channel] = value
+        return bytes(color)
 
     assert master_pixels == b"".join(
+        bytes(128 * 64 * 4) if index == 255 else
         (expected_color(segment + 1) + expected_color(segment)) * (128 * 64 // 2)
-        for segment in range(5)
+        for segment, index in enumerate(slots)
     )
     two_width, two_height, two_pixels = _read_rgba_png(
         candidate / "runtime" / "world" / name / "base-tileset-atlas@2x.png"
@@ -1848,9 +1886,9 @@ def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
             )
             expected_rows.extend([row] * scale)
         assert scaled == b"".join(expected_rows)
-    effective = bundle.read_bytes()[len(magic) + len(maps) + 6 :][:32]
+    effective = bundle.read_bytes()[palette_offset :][:32]
     assert effective[:2] == b"\0\0"
-    assert effective[2:4] == (b"\0\x20" if palette_index == 3 else b"\0\x02")
+    assert effective[2:4] == {0: b"\0\x02", 3: b"\0\x20", 8: b"\x02\0"}[palette_index]
     encoded = json.dumps(receipt, sort_keys=True)
     for forbidden in (str(repository.root), str(rom_path), str(tileset_path), str(palette_path)):
         assert forbidden not in encoded
@@ -1859,7 +1897,31 @@ def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
     assert not list((repository.root / "cache").glob(".sf2-*-world-atlas-build-*"))
 
 
-@pytest.mark.parametrize("map_index", (19, 20, 21, 40))
+def test_map57_authored_empty_slots_never_decode_or_substitute_a_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    rom, tilesets, palettes, decodes = _world_inputs(
+        map_indices=(57,), slots=(94, 98, 99, 255, 255), palette_index=8,
+    )
+    calls: list[bytes] = []
+    decoder = _fake_world_decoder(decodes)
+
+    def record_decode(data: bytes, *, expected_output_bytes: int) -> StackDecodeResult:
+        calls.append(data)
+        return decoder(data, expected_output_bytes=expected_output_bytes)
+
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(rom))
+    monkeypatch.setattr(remake_asset_build, "decode_stack_compressed", record_decode)
+    source = remake_asset_build._build_world_atlas_source(
+        rom, tilesets, palettes, remake_asset_build._MAP57_ATLAS,
+    )
+    assert calls == [b"\xa0", b"\xa1", b"\xa2"]
+    assert source.selected_slots == (94, 98, 99, 255, 255)
+    assert source.source_bundle.endswith(bytes(2 * 4096))
+    assert source.rgba_pixels[-2 * 128 * 64 * 4:] == (0,) * (2 * 128 * 64 * 4)
+
+
+@pytest.mark.parametrize("map_index", (19, 20, 21, 40, 57))
 @pytest.mark.parametrize(
     "drift", ("slots", "tileset-palette", "palette", "rom-header", "address-join")
 )
@@ -1871,6 +1933,7 @@ def test_world_atlases_check_selections_and_rom_headers(
         20: remake_asset_build._MAP19_20_ATLAS,
         21: remake_asset_build._MAP21_ATLAS,
         40: remake_asset_build._MAP40_ATLAS,
+        57: remake_asset_build._MAP57_ATLAS,
     }[map_index]
     rom, tilesets, palettes, decodes = _world_inputs(
         map_indices=family.map_indices, slots=family.slots, palette_index=family.palette_index,
@@ -1908,13 +1971,17 @@ def test_world_atlases_check_selections_and_rom_headers(
     (("address", "SourcePayloadMismatch"), ("source", "SourcePayloadMismatch"),
      ("effective", "PalettePayloadMismatch"), ("first-color", "PalettePayloadMismatch")),
 )
-def test_map40_selects_and_checks_palette3_source_bytes(
+@pytest.mark.parametrize(
+    "family", (remake_asset_build._MAP40_ATLAS, remake_asset_build._MAP57_ATLAS)
+)
+def test_fixed_world_atlas_checks_selected_palette_source_bytes(
     monkeypatch: pytest.MonkeyPatch, drift: str, code: str,
+    family: remake_asset_build._WorldAtlasFamily,
 ) -> None:
     rom, tilesets, palettes, decodes = _world_inputs(
-        map_indices=(40,), slots=(94, 95, 96, 97, 58), palette_index=3,
+        map_indices=family.map_indices, slots=family.slots, palette_index=family.palette_index,
     )
-    selected = palettes["palettes"][3]
+    selected = palettes["palettes"][family.palette_index]
     if drift == "address":
         selected["sourceAddress"] = 0
     elif drift == "source":
@@ -1927,7 +1994,7 @@ def test_map40_selects_and_checks_palette3_source_bytes(
     monkeypatch.setattr(remake_asset_build, "decode_stack_compressed", _fake_world_decoder(decodes))
     with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
         remake_asset_build._build_world_atlas_source(
-            rom, tilesets, palettes, remake_asset_build._MAP40_ATLAS,
+            rom, tilesets, palettes, family,
         )
     assert rejected.value.code == code
     assert rejected.value.field == "palettePayload"
@@ -1975,27 +2042,35 @@ def test_fixed_world_atlas_nondeterministic_png_rolls_back_ignored_candidate(
         ("palette-mask", "PalettePayloadMismatch"),
     ),
 )
-def test_map3_world_atlas_semantics_fail_closed(
+@pytest.mark.parametrize(
+    "family", (remake_asset_build._MAP3_ATLAS, remake_asset_build._MAP57_ATLAS)
+)
+def test_fixed_world_atlas_semantics_fail_closed(
     monkeypatch: pytest.MonkeyPatch,
     mutation: str,
     code: str,
+    family: remake_asset_build._WorldAtlasFamily,
 ) -> None:
-    rom, tilesets, palettes, decodes = _world_inputs()
+    rom, tilesets, palettes, decodes = _world_inputs(
+        map_indices=family.map_indices, slots=family.slots, palette_index=family.palette_index,
+    )
     tilesets = deepcopy(tilesets)
     palettes = deepcopy(palettes)
     rom_bytes = bytearray(rom)
     if mutation == "unknown-root":
         tilesets["unknown"] = True
     elif mutation == "selection-order":
-        tilesets["maps"][3]["tilesetSlots"][0:2] = [37, 0]
+        tilesets["maps"][family.map_indices[0]]["tilesetSlots"][0:2] = list(family.slots[1::-1])
     elif mutation == "source-hash":
-        tilesets["tilesets"][0]["sourceSha256"] = "0" * 64
+        tilesets["tilesets"][family.slots[0]]["sourceSha256"] = "0" * 64
     elif mutation == "decoded-hash":
-        tilesets["tilesets"][0]["decodedSha256"] = "0" * 64
+        tilesets["tilesets"][family.slots[0]]["decodedSha256"] = "0" * 64
     else:
-        rom_bytes[0:2] = b"\xff\xff"
-        source = bytes(rom_bytes[:32])
-        palettes["palettes"][0]["sourceSha256"] = _digest(source)
+        palette_row = palettes["palettes"][family.palette_index]
+        address = palette_row["sourceAddress"]
+        rom_bytes[address:address + 2] = b"\xff\xff"
+        source = bytes(rom_bytes[address:address + 32])
+        palette_row["sourceSha256"] = _digest(source)
     semantic_rom_digest = _digest(bytes(rom_bytes))
     tilesets["romSha256"] = semantic_rom_digest
     palettes["romSha256"] = semantic_rom_digest
@@ -2003,12 +2078,14 @@ def test_map3_world_atlas_semantics_fail_closed(
     monkeypatch.setattr(remake_asset_build, "decode_stack_compressed", _fake_world_decoder(decodes))
 
     with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
-        remake_asset_build._build_world_atlas_source(bytes(rom_bytes), tilesets, palettes)
+        remake_asset_build._build_world_atlas_source(bytes(rom_bytes), tilesets, palettes, family)
 
     assert rejected.value.code == code
 
 
-@pytest.mark.parametrize(("name", "maps", "slots", "palette_index"), WORLD_ATLAS_CASES[:3])
+@pytest.mark.parametrize(
+    ("name", "maps", "slots", "palette_index"), WORLD_ATLAS_CASES[:3] + WORLD_ATLAS_CASES[-1:]
+)
 def test_world_fixed_roots_precede_parse_and_reject_relative_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2047,6 +2124,7 @@ def test_world_fixed_roots_precede_parse_and_reject_relative_paths(
             "map19-20": remake_asset_build.build_map19_20_base_atlas_candidate,
             "map21": remake_asset_build.build_map21_base_atlas_candidate,
             "map40": remake_asset_build.build_map40_base_atlas_candidate,
+            "map57": remake_asset_build.build_map57_base_atlas_candidate,
         }[name]
         build(
             asset_root=str(repository.root),
