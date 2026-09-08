@@ -334,6 +334,31 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal("cancel", Assert.IsType<PrivateOriginalBattle01PlayerMovementRejected>(
             session.CancelPrivateOriginalBattle01PlayerMovement(cancelled, actorIndex)).Diagnostic.Field);
         Assert.Same(cancelled, session.PrivateOriginalBattle01);
+        var staySelected = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(cancelled, actorIndex, destination)).Snapshot;
+        var stayChoice = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(staySelected, actorIndex)).Snapshot;
+        var completed = Assert.IsType<PrivateOriginalBattle01StayCommitted>(
+            session.CommitPrivateOriginalBattle01Stay(stayChoice, actorIndex)).Snapshot;
+        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Equal(1, actorIndex);
+        Assert.Equal(Battle01Phase.FirstPlayerTurnCompleted, completed.Battle.Phase); Assert.Null(completed.Battle.FirstControl);
+        Assert.Equal(1, completed.Battle.TurnCompletion!.CompletedActorIndex);
+        Assert.Equal(2, completed.Battle.FirstRound!.CurrentTurnOffset);
+        Assert.Equal((byte)2, completed.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex);
+        Assert.Equal(order.Slots[1], completed.Battle.FirstRound.CurrentCandidate);
+        Assert.Same(order.Slots, completed.Battle.FirstRound.Slots); Assert.Equal(64, completed.Battle.FirstRound.Slots.Count);
+        Assert.Equal(0xA4991234u, completed.Battle.RandomSeedImage); Assert.Equal(9, completed.Battle.Roster.Count);
+        Assert.Same(stayChoice.Battle.Roster, completed.Battle.Roster); Assert.Same(stayChoice.Battle.Occupancy, completed.Battle.Occupancy);
+        Assert.Equal(destination, completed.Battle.Roster.Single(unit => unit.Index == actorIndex).Position);
+        Assert.Equal(-1, completed.Battle.OccupantAt(origin)); Assert.Equal(actorIndex, completed.Battle.OccupantAt(destination));
+        Assert.Equal(new Battle01FactionCounts(3, 6), completed.Battle.TurnCompletion.BeforeAfterTurn);
+        Assert.Equal(completed.Battle.TurnCompletion.BeforeAfterTurn, completed.Battle.TurnCompletion.AfterAfterTurn);
+        Assert.Same(prepared, completed.Preparation); Assert.Same(firstRound.SourceSnapshot, completed.SourceSnapshot);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01PlayerMovementRejected>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(completed, actorIndex)).Diagnostic.Field);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01TurnCompletionRejected>(
+            session.CommitPrivateOriginalBattle01Stay(completed, actorIndex)).Diagnostic.Field);
+        Assert.Same(completed, session.PrivateOriginalBattle01);
     }
 
     private static GameSession SeedControlledPending(string canonical)

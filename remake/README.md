@@ -34,8 +34,9 @@ N at Pending connects this chain to a diagnostic Map 57 grid. I/J/K/L select, Sp
 confirms movement, and Backspace cancels. The view shows nine live unit positions, terrain, range,
 path and costs. With the explicit base-atlas option, the reviewed fixed Map57 base art appears
 beneath diagnostic unit markers on a 24-pixel grid; without it, terrain cells remain diagnostic.
-It stops at player action choice without
-committing an action or turn. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
+At action choice, a second independent Space press commits controlled no-effect STAY and completes
+only this player's turn. The live position remains; byte offset2 identifies the next candidate, whose
+control is not dispatched. Backspace cancels only before STAY. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
 and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
@@ -365,8 +366,8 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
-  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity, action/turn
-  completion and natural continuity remain open. See the
+  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
+  other actions, later turns and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.

@@ -95,7 +95,7 @@ public sealed class Battle01Combatant
         ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, FirstPlayerTurnCompleted }
 
 public sealed class Battle01InitializedState
 {
@@ -121,6 +121,15 @@ public sealed class Battle01InitializedState
         RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
         RandomSeedImage = source.RandomSeedImage; FirstRound = source.FirstRound; FirstControl = firstControl;
     }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
+        Battle01TurnCompletionReceipt completion)
+    {
+        Roster = source.Roster; Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
+        AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
+        RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
+        RandomSeedImage = source.RandomSeedImage; FirstRound = firstRound; TurnCompletion = completion;
+        // FirstControl is intentionally absent: its provisional movement/cancel authority is consumed.
+    }
     public MapId Map { get; } = new("map57");
     public int BattleIndex => 1;
     public int AreaX => 0;
@@ -145,12 +154,13 @@ public sealed class Battle01InitializedState
     public ushort NewlyTestedRegionMask { get; }
     public Battle01FirstRoundOrder? FirstRound { get; }
     public Battle01FirstControlState? FirstControl { get; }
+    public Battle01TurnCompletionReceipt? TurnCompletion { get; }
     public int ElapsedSeconds => 0;
     public bool SuspendedFlag88 => false;
     public bool IntroFlag451 => true;
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
-    public Battle01Phase Phase => FirstControl is { } control
+    public Battle01Phase Phase => TurnCompletion is not null ? Battle01Phase.FirstPlayerTurnCompleted : FirstControl is { } control
         ? control.Movement.Stage == Battle01PlayerMovementStage.Selection ? Battle01Phase.PlayerMovementSelection : Battle01Phase.PlayerActionChoice
         : FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;
     public byte TerrainAt(MapPosition position) => Terrain[TerrainIndex(position)];

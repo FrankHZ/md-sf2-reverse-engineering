@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -910,7 +910,11 @@ the same 24-pixel grid. Cursor terrain remains visible in the details. Units are
 Map3 character sheets are not reused as the Battle01 roster. Without a base-art request, the explicit
 diagnostic mode retains terrain-ID cells and its graphics-unavailable heading. Missing/wrong requested
 Map57 art rejects before startup; a projection rejection displays an unavailable view and closes input.
-Action choice offers cancellation only. The complete old
+Action choice offers a separate Space press for controlled no-effect STAY or Backspace cancellation.
+STAY retains the selected live position, completes only the first player's turn and stops before next
+dispatch. The completed view names the historical actor and actual next candidate separately, shows
+raw byte offset2 and removes the old range/path/cursor. Its effective-stat policy is explicit in the
+[owning plan](./map03-playability-plan.md#implemented-first-player-stay-completion). The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
 
 For this boundary, reuse the bounded recipe immediately above with
@@ -929,7 +933,19 @@ snapshot/actor/live-position/occupancy changes, both cancel stages, immutable re
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 scene/layer/VRAM/animation fidelity, timing, battle actions, later turns/victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, other battle actions, later turns/victory and H4 remain Unknown.
+
+For first-turn STAY acceptance, use a fresh review root and `SF2_BATTLE01_CONTROL_REVIEW=stay`
+with the same required canonical, three selected inputs and accepted runtime/manifest pack. The
+recipe seeds controlled Map40, uses the existing 28-key route and N, then I/Space to provisional
+relocation and a second independent Space for STAY. It captures only `01-provisional`,
+`02-stay-completed` and `03-input-closed`. Require actor1 still at (9,17), both faction counts3/6,
+all nine live units, unchanged full turn buffer/seed0xA4991234, byte offset2 and actual next candidate2
+without dispatch. I/J/K/L, Space, Backspace, N and the old exploration keys must retain the exact
+completed snapshot. Inspect all three images for clear STAY/next-unit labels, no current-actor
+highlight/range/path/cursor at completion, legible controls and no old canvas layers. This mode never
+replays the six-frame cancellation or castle modes; captures and bounded process/code-head receipts
+remain local. It is controlled remake behavior, not original after-turn fidelity.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,

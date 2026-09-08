@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -179,7 +179,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
-        await CaptureControl("01-pending");
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "stay";
+        if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
         {
@@ -205,8 +206,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         var origin = battle.FirstControl.Movement.Range.Origin;
         var destination = new MapPosition(origin.X, origin.Y - 1);
         Require(battle.Roster.Count == 9 && origin == new MapPosition(9, 18) &&
-            battle.FirstRound!.Slots[battle.FirstRound.CurrentTurnOffset].CombatantIndex == actor, "Actual current candidate and nine units");
-        await CaptureControl("02-ready");
+            battle.FirstRound!.CurrentCandidate?.CombatantIndex == actor, "Actual current candidate and nine units");
+        if (!stayReview) await CaptureControl("02-ready");
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic")
         {
             Require(Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").BaseView is null,
@@ -227,14 +228,57 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(!ReferenceEquals(ready, selected) && selected.Battle.FirstControl!.Movement.Cursor == destination &&
             selected.Battle.Roster.Single(unit => unit.Index == actor).Position == origin &&
             selected.Battle.FirstControl.Movement.Preview.Cost == 2, "Godot I selects without relocating");
-        await CaptureControl("03-selected");
+        if (!stayReview) await CaptureControl("03-selected");
         await PressBattleKey(Key.Space);
         var moved = _session.PrivateOriginalBattle01!;
         Require(moved.Battle.Phase == Battle01Phase.PlayerActionChoice &&
             moved.Battle.Roster.Single(unit => unit.Index == actor).Position == destination &&
             moved.Battle.OccupantAt(origin) == -1 && moved.Battle.OccupantAt(destination) == actor, "Godot Space provisional live relocation");
-        await CaptureControl("04-provisional");
-        foreach (Key key in new[] { Key.I, Key.Space, Key.W, Key.F, Key.B, Key.M, Key.N })
+        await CaptureControl(stayReview ? "01-provisional" : "04-provisional");
+        if (stayReview)
+        {
+            // A separate physical press commits STAY; the first press only confirmed movement.
+            await PressBattleKey(Key.Space);
+            var completed = _session.PrivateOriginalBattle01!;
+            var end = completed.Battle;
+            Require(!ReferenceEquals(moved, completed) && end.Phase == Battle01Phase.FirstPlayerTurnCompleted &&
+                end.FirstControl is null && end.TurnCompletion?.CompletedActorIndex == actor && actor == 1,
+                "Second Space consumes exactly one first-player STAY");
+            Require(end.FirstRound!.CurrentTurnOffset == 2 && end.FirstRound.CurrentCandidate?.CombatantIndex == 2 &&
+                end.FirstRound.CurrentCandidate == battle.FirstRound!.Slots[1] &&
+                ReferenceEquals(end.FirstRound.Slots, battle.FirstRound.Slots) && end.FirstRound.Slots.Count == 64,
+                "Advance uses byte offset2 and reads slot1 without dispatch, reroll or reorder");
+            Require(end.Roster.Count == 9 && ReferenceEquals(end.Roster, moved.Battle.Roster) &&
+                ReferenceEquals(end.Occupancy, moved.Battle.Occupancy) && end.Roster.Single(unit => unit.Index == actor).Position == destination &&
+                end.RandomSeedImage == 0xA4991234 && ReferenceEquals(completed.Preparation, ready.Preparation),
+                "STAY retains live relocation, stats, occupancy, RNG and provenance");
+            Require(end.TurnCompletion!.BeforeAfterTurn == new Battle01FactionCounts(3, 6) &&
+                end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3, 6), "Both continuing-faction checks");
+            await CaptureControl("02-stay-completed");
+            foreach (Key key in new[] { Key.I, Key.J, Key.K, Key.L, Key.Space, Key.Backspace, Key.N,
+                Key.W, Key.A, Key.S, Key.D, Key.F, Key.G, Key.B, Key.M })
+            {
+                await PressBattleKey(key);
+                Require(ReferenceEquals(completed, _session.PrivateOriginalBattle01), "Completed endpoint rejects old battle and exploration input");
+            }
+            var view = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!;
+            Require(view.ActorIndex is null && view.CompletedActorIndex == actor && view.NextCandidateIndex == 2 &&
+                view.Cursor is null && view.Path.Count == 0 && view.Tiles.All(tile => !tile.Reachable && !tile.CanStop),
+                "Completed actor is historical; next candidate has no range/cursor/control");
+            var hidden = _root.GetChildren().OfType<CanvasItem>().Where(child => child is not PrivateBattle01Presenter).ToArray();
+            Require(hidden.Length > 0 && hidden.All(child => !child.Visible), "All old canvas subtrees remain hidden after STAY");
+            await CaptureControl("03-input-closed");
+            File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+                status = "Pass", scope = "controlled Map40 seed; real N/I/Space/Space; first no-effect STAY only",
+                completedActor = actor, nextCandidate = view.NextCandidateIndex, nextDispatched = false,
+                origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound.CurrentTurnOffset,
+                beforeAfterTurn = end.TurnCompletion.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
+                policy = end.TurnCompletion.Policy.Id, inputClosed = true, oldCanvasHidden = hidden.Length, frames = _frames,
+            }, new JsonSerializerOptions { WriteIndented = true }));
+            GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=3 stay");
+            return;
+        }
+        foreach (Key key in new[] { Key.I, Key.W, Key.F, Key.B, Key.M, Key.N })
         {
             await PressBattleKey(key);
             Require(ReferenceEquals(moved, _session.PrivateOriginalBattle01), "Action-choice boundary and old-input isolation");
@@ -268,7 +312,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             instrumentation = new[] { "existing private state factories for Map40 seed only", "Input.ParseInputEvent physical keys", "bounded ProcessFrame waits", "FramePostDraw/SavePng" },
             committedMap40Inputs = 27, pendingMap40Inputs = 1, actor, origin, destination,
             rng = battle.RandomSeedImage, offset = final.Battle.FirstRound!.CurrentTurnOffset,
-            oldCanvasHidden = oldCanvas.Length, inputIsolation = "W F B M and action-choice I Space N preserve exact snapshot",
+            oldCanvasHidden = oldCanvas.Length, inputIsolation = "W F B M and action-choice I N preserve exact snapshot",
             provisionalOccupancyChecked = true, bothCancelStagesChecked = true, frames = _frames,
         }, new JsonSerializerOptions { WriteIndented = true }));
         GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=6 controlled-Map40-seed");
@@ -309,6 +353,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 Require(!new Rect2(labels[left].Position, labels[left].Size).Intersects(
                     new Rect2(labels[right].Position, labels[right].Size)), "Battlefield text regions must not overlap");
             _frames.Add(new { name, map = current.Map.Value, phase = view.Phase.ToString(), actor = view.ActorIndex,
+                completedActor = view.CompletedActorIndex, nextCandidate = view.NextCandidateIndex,
                 cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
                 budget = view.Budget, status = view.Status, controls = view.Controls, baseArt, baseSamples,
                 blockPixels = PrivateBattle01Presenter.TileSize, width = image.GetWidth(), height = image.GetHeight() });
@@ -351,9 +396,12 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(checkedPixels >= 12, "Enough visible base-art samples outside live overlays");
         Color ScreenPixel(Vector2 point) => image.GetPixel((int)(point.X * image.GetWidth() / 960),
             (int)(point.Y * image.GetHeight() / 540));
-        var actor = overlay.Units.Single(unit => unit.Index == overlay.ActorIndex);
-        Require(ScreenPixel(PrivateBattle01Presenter.Cell(actor.Position) + Vector2.One * 3)
-            .IsEqualApprox(new Color("#f2cc75")), "Current live actor outline aligns with its 24px cell");
+        if (overlay.ActorIndex is { } actorIndex)
+        {
+            var actor = overlay.Units.Single(unit => unit.Index == actorIndex);
+            Require(ScreenPixel(PrivateBattle01Presenter.Cell(actor.Position) + Vector2.One * 3)
+                .IsEqualApprox(new Color("#f2cc75")), "Current live actor outline aligns with its 24px cell");
+        }
         if (overlay.Path.Count > 1 && !overlay.Units.Any(unit => unit.Position == overlay.Path[^1]))
         {
             var end = PrivateBattle01Presenter.Cell(overlay.Path[^1]) + Vector2.One * 12;

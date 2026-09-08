@@ -12,6 +12,7 @@ public readonly record struct Battle01TurnEntry(byte CombatantIndex, byte Altere
 
 public sealed class Battle01FirstRoundOrder
 {
+    public const int EntrySize = 2;
     internal Battle01FirstRoundOrder(Battle01TurnEntry[] slots, int[] regionCutsceneRows, int[] spawnedCombatants)
     {
         Slots = Array.AsReadOnly(slots); RegionCutsceneRows = Array.AsReadOnly(regionCutsceneRows);
@@ -19,10 +20,24 @@ public sealed class Battle01FirstRoundOrder
     }
     // Preserve the entire source buffer, including sentinel entries inside signed-boundary results.
     public IReadOnlyList<Battle01TurnEntry> Slots { get; }
-    public byte CurrentTurnOffset => 0;
+    // Raw source byte offset, never a slot index. FirstCandidate remains historical.
+    public byte CurrentTurnOffset { get; }
     public Battle01TurnEntry? FirstCandidate => Slots[0].IsSentinel ? null : Slots[0];
+    public Battle01TurnEntry? CurrentCandidate => Slots[CurrentTurnOffset / EntrySize].IsSentinel
+        ? null : Slots[CurrentTurnOffset / EntrySize];
     public IReadOnlyList<int> RegionCutsceneRows { get; }
     public IReadOnlyList<int> SpawnedCombatants { get; }
+    private Battle01FirstRoundOrder(Battle01FirstRoundOrder source)
+    {
+        Slots = source.Slots; RegionCutsceneRows = source.RegionCutsceneRows; SpawnedCombatants = source.SpawnedCombatants;
+        CurrentTurnOffset = EntrySize;
+    }
+    internal Battle01FirstRoundOrder AdvanceAfterFirstTurn()
+    {
+        if (CurrentTurnOffset != 0 || Slots.Count != 64)
+            throw new ArgumentException("Only one completed first turn may advance this 64-slot order.", "turnOrder");
+        return new(this);
+    }
 }
 
 public static class Battle01FirstRound

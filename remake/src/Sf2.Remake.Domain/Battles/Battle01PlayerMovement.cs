@@ -43,11 +43,13 @@ public sealed class Battle01MovementRange
         Battle01MovementGrid grid, Battle01MovementProfile profile)
     {
         ActorIndex = actor.Index; Origin = actor.Position; Budget = actor.Stats.Move * 2;
+        EffectiveStatsAtEntry = actor.Stats;
         OriginOccupancy = occupants; ProjectedTerrain = Array.AsReadOnly(projectedTerrain); Grid = grid; Profile = profile;
         LegalDestinations = Array.AsReadOnly(Enumerable.Range(0, 2304).Select(offset => new MapPosition(offset % 48, offset / 48))
             .Where(CanStopAt).ToArray());
     }
     public int ActorIndex { get; }
+    internal Battle01Stats EffectiveStatsAtEntry { get; }
     public MapPosition Origin { get; }
     public int Budget { get; }
     public Battle01MovementProfile Profile { get; }
@@ -129,7 +131,8 @@ public static class Battle01PlayerMovement
     {
         ArgumentNullException.ThrowIfNull(current);
         var control = current.FirstControl;
-        if (control is null || (!allowActionChoice && current.Phase != Battle01Phase.PlayerMovementSelection))
+        if (control is null || (current.Phase != Battle01Phase.PlayerMovementSelection &&
+                !(allowActionChoice && current.Phase == Battle01Phase.PlayerActionChoice)))
             throw new ArgumentException("This operation requires the active player selection phase.", "phase");
         if (control.ActorIndex != actorIndex)
             throw new ArgumentException("The request must name the current controlled actor.", "actor");
