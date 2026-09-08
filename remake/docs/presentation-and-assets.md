@@ -304,6 +304,41 @@ exact nearest 256-by-640 and 512-by-1280. The existing five-file transaction, tw
 zero-remote checks and rollback apply unchanged. This candidate does not admit a Godot mount,
 original presentation fidelity, init/F507 execution, later warps, Battle 01 or H3/H4.
 
+#### Map57 candidate policy
+
+`build_map57_base_atlas_candidate` and `map57-base-atlas-candidate` produce only Map57:
+palette8, ordered source selection `[94,98,99,255,255]`. The
+[reference proof](./map03-playability-plan.md#map57-atlas-candidate-and-unloaded-slot-boundary)
+shows no use of slots 3/4 by the fixed layout, while preserving the two unused block records that
+do contain slot4 references. This is a controlled storage policy, not proof that original skipped
+VRAM banks were zeroed or safe for arbitrary block rendering.
+
+Slots 0/1/2 decode real tilesets 94/98/99 under the existing exact source/Stack/decoded checks.
+Physical slots 3/4 retain sentinel255 identity and become separately tagged, project-authored
+4096-byte zero buffers and RGBA `[0,0,0,0]` segments. Tileset255 is never read or decoded and
+slot indices are never compacted. The master stays 128-by-320, with nearest 256-by-640 and
+512-by-1280 buckets; the final 128 logical rows are transparent. Other families retain their
+five-real-slot source format, palette, geometry, output pixels and rejection behavior.
+
+The asset/source IDs and paths use the existing `map57` family convention. The policy is
+`private-local-map57-base-nearest-rgba8-authored-empty-slots-v1`. Its binary source bundle is:
+ASCII `SF2-MAP57-BASE-VISUAL-SELECTION-V1` plus NUL; bytes `[57,8,94,98,99,255,255]`;
+ASCII `SF2-PROJECT-AUTHORED-ZERO-SLOTS-V1` plus NUL and bytes `[3,4]`; the 32-byte effective
+palette8; then all five ordered 4096-byte slot buffers. The last two are authored, not decoded
+source payloads. The receipt's `unloadedSlotPolicy` and `slotSources` state this distinction
+alongside the unchanged input/asset/source/generator/master/2x/4x identity fields.
+
+Use the same fixed-input arguments in the recipe below with command
+`map57-base-atlas-candidate` and a fresh `--candidate-name 'map57-base-atlas-review'`.
+The writable asset root must be a separate ordinary local clone inside this code worktree's
+ignored local area, with its origin removed and the existing rejecting hook configuration applied.
+An asset linked worktree is incompatible with the maintained verifier. Verify the clone's exact
+baseline, clean state and zero remotes before and after generation. The maintained command writes
+only its five candidate files below ignored cache and performs both deterministic render passes.
+Review the master and both runtime PNGs locally along with the receipt. It does not update the
+canonical asset repository, promote a manifest or bind a Godot consumer. Asset acceptance and
+the consumer require separate ownership and review.
+
 The castle candidate uses asset `world.map19-20.base-tileset-atlas`, source
 `source.world.map19-20.base-visual-selection`, policy `private-local-map19-20-base-nearest-rgba8-v1`
 and capability `private-local-map19-20-base-tileset-atlas-candidate-build-v1`. Its master and nearest
@@ -329,6 +364,8 @@ uv run python -m sf2tool.remake_asset_build map19-20-base-atlas-candidate `
 For Map 21, use `map21-base-atlas-candidate` with the same input options and
 `--candidate-name 'map21-base-atlas-review'`. For Map 40, use `map40-base-atlas-candidate` and
 `--candidate-name 'map40-base-atlas-review'` with those same fixed input options.
+Map57 uses `map57-base-atlas-candidate` and `--candidate-name 'map57-base-atlas-review'`;
+its additional authored-slot policy is described above.
 Each command writes exactly five files in the named
 asset checkout's fresh ignored `cache/` candidate and emits a receipt.
 Local image review and a separately accepted source/master/runtime/manifest transaction must precede
