@@ -23,6 +23,8 @@ public sealed partial class GameSession
         PrivateOriginalBattle01PendingAdmission? pending, IOriginalBattle01StartupSource? source,
         OriginalBattle01ControlledPartyPreset? party)
     {
+        if (PrivateOriginalBattle01 is not null)
+            return Rejected("battle", "Battle 01 has already initialized; exploration startup is closed.");
         if (pending is null || PrivateOriginalBattle01Admission is null)
             return Rejected("pending", "A current Battle 01 pending admission is required.");
         if (!ReferenceEquals(pending, PrivateOriginalBattle01Admission) ||

@@ -216,12 +216,12 @@ public sealed class PrivateOriginalBattle01StartupTests
         (byte)(index < 3 ? index : 39), new(index, 1), OriginalBattle01AiCommandSet.Healer1, 127, 255, 0, 255, 0, 0, OriginalBattle01Spawn.Starting)).ToArray();
     private static OriginalBattle01AiRegion[] Regions() => Enumerable.Range(0, 3).Select(index => new OriginalBattle01AiRegion(
         (byte)index, 0, [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0)).ToArray();
-    private static OriginalBattle01StartupDefinition Definition(OriginalBattle01StartupProvenance? provenance = null,
-        bool computeDeployment = false, bool computeTerrain = false) => new(provenance ?? Provenance(), Entities(), Regions(), new byte[2304],
+    internal static OriginalBattle01StartupDefinition Definition(OriginalBattle01StartupProvenance? provenance = null,
+        bool computeDeployment = false, bool computeTerrain = false, IEnumerable<byte>? terrain = null) => new(provenance ?? Provenance(), Entities(), Regions(), terrain ?? new byte[2304],
             computeDeployment ? null : OriginalBattle01StartupDefinition.AcceptedPlacementDigest,
             computeTerrain ? null : OriginalBattle01StartupDefinition.AcceptedTerrainDigest);
 
-    private static GameSession PendingSession(bool createPending = true)
+    internal static GameSession PendingSession(bool createPending = true)
     {
         // Reuse the accepted test-owned completed-route seed without widening production ownership.
         var method = typeof(OriginalMapGameSessionTests).GetMethod("Battle01AdmissionSession", BindingFlags.Static | BindingFlags.NonPublic)!;

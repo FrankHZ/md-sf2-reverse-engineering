@@ -404,7 +404,9 @@ public sealed partial class GameSession
     private PrivateOriginalMapPlayerLocomotionSnapshot? _privateOriginalMapPlayerLocomotion;
 
     public PrivateOriginalMapPlayerLocomotionSnapshot PrivateOriginalMapPlayerLocomotion =>
-        _privateOriginalMapPlayerLocomotion ?? throw new InvalidOperationException(
+        PrivateOriginalBattle01 is not null
+            ? throw new InvalidOperationException("Battle 01 owns the session; exploration locomotion is frozen.")
+            : _privateOriginalMapPlayerLocomotion ?? throw new InvalidOperationException(
             "This GameSession does not own private original-map player locomotion state.");
 
     public PrivateOriginalMapPlayerLocomotionStarted BeginPrivateOriginalMapPlayerLocomotion(

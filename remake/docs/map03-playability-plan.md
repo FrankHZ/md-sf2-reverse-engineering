@@ -679,7 +679,7 @@ Pending, relocating, advancing step/flags, changing locomotion/bridge, or creati
 No Godot input action or battle display consumes this preparation yet. The required-private reader
 check and reproduction environment belong to [development and verification](./development-and-verification.md#selected-battle01-startup-inputs).
 
-**Next initialization boundary, not executed here:** the clear-F88 path establishes new-battle state,
+**Original initialization order consumed by the bounded initializer below:** the clear-F88 path establishes new-battle state,
 then follows the accepted before-battle seam, clears F90–F105, heals eligible allies (HP/MP maxima,
 status mask `0x0007` and derived-stat refresh), initializes allies/enemies, clears AI memory, loads the
 battle and invokes the start seam. The selected `bbcs_01` before program contains map/entity setup,
@@ -687,21 +687,86 @@ temporary positions and presentation choreography; its temporary scene entities/
 replace final battle placement. Scene/text/music/fade/camera presentation is intentionally skipped
 by this staged remake policy; no original program is claimed executed. The start route sets F451
 before its empty `ms_Empty` program. F451 remains distinct from retained F401 unlock and clear F501
-completion. The later owner must implement these semantic effects and their order before consuming
-Pending, followed by activation, region routing, spawning and turn generation.
+completion. Activation, region routing, spawning and turn generation follow initialization and remain
+outside this slice.
 
 **Unknown / not supplied as original initialization facts:** natural party/base-stat inheritance,
-full derived-stat/equipment refresh from the effective comparison preset, timing-dependent RNG
-chronology, unsupported transient script effects and original presentation. These boundaries must
-be resolved or explicitly bounded by the initialization slice; they are not filled with zero values.
-Terrain occupancy, a finalized roster, active region flags and turn order are outputs of that later
-slice, not hidden state in this preparation. Natural continuity and H4 remain Unknown.
+natural derived-stat/equipment refresh, timing-dependent RNG chronology, unsupported transient script
+effects and original presentation. The controlled initialization policy below bounds the effective
+party input explicitly; it does not reconstruct absent original base attributes. Terrain occupancy
+and the initialized roster are outputs of initialization, not hidden state in preparation. Active
+region decisions and turn order remain later outputs. Natural continuity and H4 remain Unknown.
+
+### Implemented controlled initialization
+
+`GameSession.InitializePrivateOriginalBattle01` consumes only a
+`PrivateOriginalBattle01StartupPrepared` belonging to this session's exact current Pending and
+source snapshot. Application revalidates the selected input/party and clear-F88 admission, then maps
+them into `Domain/Battles/Battle01Initialization.cs`. Missing, foreign, stale, consumed or invalid
+requests reject without mutation. All validation, collection copying, occupancy projection and
+result allocation finish before the commit installs the immutable battle snapshot and consumes
+Pending. An obstructed starting cell is a late projection rejection, not a partially initialized
+session. Repeated initialization cannot apply healing or difficulty a second time.
+
+The result owns battle1/Map57, area `(0,0,16,20)`, complete raw terrain with stride48, independent
+occupancy and nine combatants `0,1,2,128..133`. Positions and source ordinal/AI/item/orders/regions/
+filler/spawn come from the selected deployment, with three copied regions retaining their unknown
+and trailing bytes. Occupancy uses combatant indices with an independent empty sentinel; terrain
+is never overwritten. Enemy movement type merges with the deployment AI command set. The source
+initialization bytes compose the initial enemy AI bitfield while retaining the baseline upper
+nibble; nonzero filler bytes are preserved without inventing a descriptive meaning. This is
+initialization data, before `ActivateEnemies`, not the observed player-ready activation state.
+
+The bounded new-battle projection preserves the semantic dependencies of the accepted before/start
+order: clear elapsed seconds and region flags90–105, heal the living controlled party, initialize
+ally/enemy stats and final spriteset placement, clear AI memory (48 last targets to255 and 48 memory
+bytes to0), establish battle terrain and apply the start seam's F451 result. F401 unlock is retained;
+F501 completion and F88 suspension remain clear. Map setup and temporary before-program entities do
+not override battle placement. Original bytecode, VInt, text, music, fade and camera choreography are
+explicitly skipped staging policy. No intermediate lifecycle state or presentation timing is exposed.
+
+**Controlled ally policy:** the named preset's effective attributes are treated as already refreshed
+for derived stats and equipment. HP/MP are restored to maxima and status retains mask `0x0007`;
+equipped weapons are retained as data and are not applied again. The admitted preset has three living
+allies and no status effects. This does not add arbitrary-party initialization, dead/Peter/Lemon
+branches, or reconstructed ally base/resistance/prowess/movement-type fields absent from the input.
+
+**Accepted bounded enemy policy:** for this slice's only admitted GIZMO source ATT7 and difficulty0,
+compute `floor(baseAttack * 5 / 4)` once, giving initialized base/effective ATT8. Keep the immutable
+source ATT7. Main-gate accepted this concrete implementation policy under ADR0016 after reviewing
+`ShiningForceCentral/SF2DISASM`
+(`https://github.com/ShiningForceCentral/SF2DISASM.git`) at
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battleloop/initializecombatants.asm`,
+`AdjustEnemyBaseAttForDifficulty` (lines381–416): the consecutive equal branches admit difficulty0
+to one multiply-by5/right-shift2 path. The existing H3 ready ATT8 is an independent comparison, not
+the value source. `InitializeEnemyStats` in the same file owns HP/MP, movement/AI, orders, items,
+initialization-bit composition and subsequent stat refresh; fixed GIZMO has no item/status modifier.
+This policy does not implement other difficulties, arbitrary base ranges/overflow, the SUPER repeat,
+or random-battle upgrades. The broader transformation boundary in
+[enemy-definition data](../../docs/design/contracts/enemy-definition-data.md) remains unchanged;
+remake tests are not evidence about original-game execution.
+
+`PrivateOriginalBattle01SessionSnapshot` is the current battle authority.
+`PrivateOriginalFlowStage` becomes Battle and `PrivateOriginalCurrentMap` becomes Map57. The exact
+Map40 snapshot, import and route/605/607/608/guard/F401 records, locomotion and bridge remain frozen
+provenance. Current exploration getters and all their movement, animation, interaction and bridge
+mutation entries reject after the commit. A fresh GameSession starts at controlled Map3 with neither
+Pending nor Battle01.
+
+The endpoint is `Battle01Phase.BeforeFirstRound` with explicit seed `0x1234`, elapsed seconds0,
+cleared region flags and AI memory. There is no generated order, selected actor, region activation,
+spawned round entrant, battle command, victory or UI consumer. Skipped time-dependent choreography
+does not preserve original RNG chronology or promise actor1 first. The next owner starts with this
+state and implements the accepted round-entry order. A later UI must recognize battle flow before
+reading exploration and must not relabel Map40 art as Map57. Natural continuity, original
+presentation and H4 remain **Unknown**.
 
 ### Ordered path to the first controllable Battle 01 turn
 
 1. Consume the independently accepted pending boundary above as the sole continuation input.
    Its receipt is neither a completed warp receipt nor an active battle snapshot.
-2. **Input preparation implemented; initialization remains pending.** Consume the fixed definition
+2. **Input preparation and controlled initialization implemented.** Consume the fixed definition
    and explicit comparison preset above through the existing Content trust boundary:
    [placement](../../docs/research/battle01-placement.md),
    [spritesets](../../docs/research/battle-spriteset-data.md),
@@ -712,9 +777,10 @@ slice, not hidden state in this preparation. Natural continuity and H4 remain Un
    new-battle order while explicitly skipping original scene, text, music and fade presentation; do
    not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
    Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
-   failure retains pending. Implement roster, terrain/occupancy, activation and turn generation under
-   the existing Domain/Application boundaries; do not promote the synthetic duel to Battle 01.
-3. Dispatch the first generated living actor through the accepted control branch, then connect the
+   failure retains pending. Roster and terrain/occupancy now belong to the initialized battle.
+3. From the pre-first-round snapshot, implement enemy activation, region-cutscene routing, spawning
+   admission and turn generation in the accepted order under Domain/Application. Then dispatch the
+   first generated living actor through the accepted control branch and connect the
    [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
    [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
    terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported
