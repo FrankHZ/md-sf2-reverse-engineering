@@ -18,6 +18,9 @@ internal enum PrivateMap3WorldTreatment
 
 internal sealed record Map3RuntimeProfileSelection
 {
+    internal const string Battle01DataOption = "--private-battle01-data";
+    internal const string Battle01SceneOption = "--private-battle01-scene";
+    internal const string Battle01TerrainOption = "--private-battle01-terrain";
     private const string ProfileOption = "--runtime-profile";
     private const string ImportOption = "--canonical-map-import";
     private const string RetiredRomOption = "--original-rom";
@@ -51,7 +54,8 @@ internal sealed record Map3RuntimeProfileSelection
         string? presentationAssetCommit,
         string? presentationManifestDigest,
         PrivateMap3WorldTreatment worldTreatment,
-        string? diagnostic)
+        string? diagnostic,
+        PrivateBattle01InputPaths? battle01Inputs = null)
     {
         RequestedProfile = requestedProfile;
         IsAvailable = isAvailable;
@@ -67,6 +71,7 @@ internal sealed record Map3RuntimeProfileSelection
         PresentationManifestDigest = presentationManifestDigest;
         WorldTreatment = worldTreatment;
         Diagnostic = diagnostic;
+        Battle01Inputs = battle01Inputs;
     }
 
     internal Map3RuntimeProfile? RequestedProfile { get; }
@@ -96,6 +101,8 @@ internal sealed record Map3RuntimeProfileSelection
     internal PrivateMap3WorldTreatment WorldTreatment { get; }
 
     internal string? Diagnostic { get; }
+
+    internal PrivateBattle01InputPaths? Battle01Inputs { get; }
 
     internal static Map3RuntimeProfileSelection Parse(IEnumerable<string> arguments)
     {
@@ -239,6 +246,9 @@ internal sealed record Map3RuntimeProfileSelection
         values.TryGetValue(ProfileOption, out string? profileValue);
         Map3RuntimeProfile? profile = ParseKnownProfile(profileValue);
         bool hasPrivateInputs = values.ContainsKey(ImportOption) ||
+            values.ContainsKey(Battle01DataOption) ||
+            values.ContainsKey(Battle01SceneOption) ||
+            values.ContainsKey(Battle01TerrainOption) ||
             values.ContainsKey(PresentationAssetRootOption) ||
             values.ContainsKey(PresentationAssetCommitOption) ||
             values.ContainsKey(PresentationManifestDigestOption) ||
@@ -398,6 +408,18 @@ internal sealed record Map3RuntimeProfileSelection
                 privateBaseAtlasRequested);
         }
 
+        PrivateBattle01InputPaths? battle01Inputs = null;
+        if (values.ContainsKey(Battle01DataOption) || values.ContainsKey(Battle01SceneOption) ||
+            values.ContainsKey(Battle01TerrainOption))
+        {
+            if (!TryNormalizeRequiredPath(values.GetValueOrDefault(Battle01DataOption), out var data) ||
+                !TryNormalizeRequiredPath(values.GetValueOrDefault(Battle01SceneOption), out var scene) ||
+                !TryNormalizeRequiredPath(values.GetValueOrDefault(Battle01TerrainOption), out var terrain))
+                return Unavailable(profile, privateSmokeRequested, privateHudPreviewRequested,
+                    "Battle 01 requires all three explicit fully qualified data, scene and terrain paths.");
+            battle01Inputs = new(data!, scene!, terrain!);
+        }
+
         if (!privateBaseViewRequested)
         {
             return Available(
@@ -408,7 +430,8 @@ internal sealed record Map3RuntimeProfileSelection
                 privateBaseAtlasRequested,
                 presentationAssetRoot,
                 presentationAssetCommit,
-                presentationManifestDigest);
+                presentationManifestDigest,
+                battle01Inputs);
         }
 
         if (!privateBaseAtlasRequested)
@@ -434,7 +457,8 @@ internal sealed record Map3RuntimeProfileSelection
             presentationAssetCommit,
             presentationManifestDigest,
             worldTreatment,
-            diagnostic: null);
+            diagnostic: null,
+            battle01Inputs);
     }
 
     private static string? ValueOption(string argument)
@@ -450,6 +474,9 @@ internal sealed record Map3RuntimeProfileSelection
             PresentationAssetCommitOption,
             PresentationManifestDigestOption,
             WorldTreatmentOption,
+            Battle01DataOption,
+            Battle01SceneOption,
+            Battle01TerrainOption,
         })
         {
             if (string.Equals(argument, option, StringComparison.Ordinal) ||
@@ -478,6 +505,9 @@ internal sealed record Map3RuntimeProfileSelection
         PresentationAssetCommitOption => "presentation asset commit",
         PresentationManifestDigestOption => "presentation manifest digest",
         WorldTreatmentOption => "private Map 3 world treatment",
+        Battle01DataOption => "Battle 01 data",
+        Battle01SceneOption => "Battle 01 scene",
+        Battle01TerrainOption => "Battle 01 terrain",
         _ => "runtime",
     };
 
@@ -509,7 +539,8 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateBaseAtlasRequested = false,
         string? presentationAssetRoot = null,
         string? presentationAssetCommit = null,
-        string? presentationManifestDigest = null) =>
+        string? presentationManifestDigest = null,
+        PrivateBattle01InputPaths? battle01Inputs = null) =>
         new(
             profile,
             true,
@@ -524,7 +555,8 @@ internal sealed record Map3RuntimeProfileSelection
             presentationAssetCommit,
             presentationManifestDigest,
             PrivateMap3WorldTreatment.ExactNearest,
-            diagnostic: null);
+            diagnostic: null,
+            battle01Inputs);
 
     private static Map3RuntimeProfileSelection Unavailable(
         Map3RuntimeProfile? profile,
@@ -587,3 +619,5 @@ internal sealed record Map3RuntimeProfileSelection
         _ => null,
     };
 }
+
+internal sealed record PrivateBattle01InputPaths(string Data, string Scene, string Terrain);

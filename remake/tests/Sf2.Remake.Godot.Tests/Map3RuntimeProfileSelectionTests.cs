@@ -5,6 +5,59 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class Map3RuntimeProfileSelectionTests
 {
+    private static string[] Battle01Arguments() =>
+    [
+        "--runtime-profile=private-local", "--canonical-map-import=" + Path.GetFullPath("private-import.json"),
+        "--private-battle01-data=" + Path.GetFullPath("private-data.json"),
+        "--private-battle01-scene=" + Path.GetFullPath("private-scene.json"),
+        "--private-battle01-terrain=" + Path.GetFullPath("private-terrain.bin"),
+    ];
+
+    [Fact]
+    public void Battle01SelectionCarriesExplicitPathsForLaterContentAdmission()
+    {
+        var selection = Map3RuntimeProfileSelection.Parse(Battle01Arguments());
+        Assert.True(selection.IsAvailable);
+        Assert.Equal(new PrivateBattle01InputPaths(Path.GetFullPath("private-data.json"),
+            Path.GetFullPath("private-scene.json"), Path.GetFullPath("private-terrain.bin")), selection.Battle01Inputs);
+        Assert.Null(Map3RuntimeProfileSelection.Parse([]).Battle01Inputs);
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void PartialDuplicateRelativeAndEmptyBattle01OptionsAreUnavailableWithoutLeakingPaths(int index)
+    {
+        var complete = Battle01Arguments();
+        string option = complete[index].Split('=')[0];
+        foreach (var arguments in new[] {
+            complete.Where((_, ordinal) => ordinal != index),
+            complete.Append(complete[index]),
+            complete.Select((value, ordinal) => ordinal == index ? option + "=relative/private-secret" : value),
+            complete.Select((value, ordinal) => ordinal == index ? option + "=" : value),
+            complete.Select((value, ordinal) => ordinal == index ? option + "=bad\0path" : value),
+            complete.Select((value, ordinal) => ordinal == index ? option : value),
+        })
+        {
+            var selection = Map3RuntimeProfileSelection.Parse(arguments);
+            Assert.False(selection.IsAvailable);
+            Assert.Null(selection.Battle01Inputs);
+            Assert.DoesNotContain("private-secret", selection.Diagnostic);
+            Assert.DoesNotContain(Path.GetFullPath("private-data.json"), selection.Diagnostic);
+        }
+    }
+
+    [Theory]
+    [InlineData("--runtime-profile=public-synthetic")]
+    [InlineData("--unrelated=value")]
+    public void Battle01OptionsRequireExplicitPrivateProfile(string profile)
+    {
+        var arguments = Battle01Arguments();
+        arguments[0] = profile;
+        Assert.False(Map3RuntimeProfileSelection.Parse(arguments).IsAvailable);
+    }
+
     private const string AssetCommit = "d221cf3e89e90e647467415fc58edc38faad04f8";
     private const string ManifestDigest =
         "308C9E2617D0591E6B535F8BB6A9C6EC959A6B873F2495FB8B36CE7C99336897";

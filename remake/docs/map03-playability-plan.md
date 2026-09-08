@@ -677,7 +677,7 @@ foreign/stale, rejected or invalid input returns a typed diagnostic. A valid res
 Pending, admitted startup definition and explicit party preset. Collections are copied and exposed
 read-only. Repeated preparation is allowed and returns inputs without installing a cache, consuming
 Pending, relocating, advancing step/flags, changing locomotion/bridge, or creating active battle state.
-No Godot input action or battle display consumes this preparation yet. The required-private reader
+The explicit Godot N action now consumes this preparation through the controlled consumer below. The required-private reader
 check and reproduction environment belong to [development and verification](./development-and-verification.md#selected-battle01-startup-inputs).
 
 **Original initialization order consumed by the bounded initializer below:** the clear-F88 path establishes new-battle state,
@@ -757,9 +757,9 @@ Pending nor Battle01.
 
 The initialization endpoint is `Battle01Phase.BeforeFirstRound` with RAM image `0x00001234`, elapsed seconds0,
 cleared region flags and AI memory. There is no generated order, selected actor, region activation,
-spawned round entrant, battle command, victory or UI consumer. Skipped time-dependent choreography
+spawned round entrant, battle command or victory at this initialization endpoint. Skipped time-dependent choreography
 does not preserve original RNG chronology or promise actor1 first. The first-round consumer below
-starts with this state and implements the accepted round-entry order. A later UI must recognize battle flow before
+starts with this state and implements the accepted round-entry order. The UI recognizes battle flow before
 reading exploration and must not relabel Map40 art as Map57. Natural continuity, original
 presentation and H4 remain **Unknown**.
 
@@ -840,8 +840,8 @@ The generated round now has a separate, callable Domain/Application consumer:
 offset0 entry without skipping sentinels, selecting another actor or reordering the 64-slot buffer.
 Missing/dead/unplaced candidates, AI routes, SLEEP/STUN and unsupported movement profiles remain
 explicitly unavailable at this boundary. The supported player path installs a complete range and
-selection state in the existing current battle authority. This is an API capability; Godot has not
-connected a native controller or Map57 view.
+selection state in the existing current battle authority. The controlled Godot consumer below
+connects it to native input and an authored diagnostic Map57 grid.
 
 **Controlled caller inputs:** `private-local-battle01-first-player-control-inputs-v1` fixes ally
 auto-battle=false and opponent-control=false. For only the actual current ally candidate whose
@@ -932,8 +932,40 @@ snapshot only after validation and allocation. Rejected and duplicate requests l
 order, flags and current actor unchanged. Valid movement preserves image `0xA4991234` and turn
 offset0; it does not reseed or rerun control/RNG/initialization. Old exploration remains closed, and
 a fresh session returns to controlled Map3. No action resolution, later actor/round, AI execution or
-victory is implemented. The next Godot consumer can render `FirstControl.Movement` and call the
-three movement facades; it must retain this one battle authority and expose the action-choice stop.
+victory is implemented. The Godot consumer renders `FirstControl.Movement` and calls the
+three movement facades, retaining this one battle authority and exposing the action-choice stop.
+
+### Controlled Godot Battle01 consumer
+
+The existing private profile parser accepts three explicit paths, together:
+`--private-battle01-data`, `--private-battle01-scene`, and `--private-battle01-terrain`, each in
+`--name=value` form. Relative, empty, malformed, duplicate and partial selections are unavailable;
+public/default profiles cannot consume them. The UI carries paths only. The existing Content reader
+performs file/identity/semantic admission at N, so missing files or rejected payloads display the
+Prepare stage while retaining Pending. No selected inputs means the existing Pending endpoint remains.
+
+At the actual Map40 Pending, N invokes Prepare, Initialize, FirstRound and FirstControl in order with
+the named accepted comparison inputs. Each endpoint receives the exact current object and actual
+current candidate; there is no actor1 constant, reroll, extra RNG call or reorder. Preparation or
+initialization rejection keeps Map40/Pending. Initialization closes exploration: later round/control
+failure displays the actual battle phase and diagnostic instead of returning to Map40 or retrying init.
+
+The new view is explicitly a diagnostic battlefield with controlled inputs and unavailable original
+Map57 graphics. Authored cells show the 16-by-20 battle area, raw terrain IDs, reachable/legal-stop
+marks, all nine live combatant positions, current actor, cursor/path, grid cost, preview cost and budget.
+I/J/K/L request adjacent cursor destinations; out-of-area and unreachable steps preserve state with
+an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, only
+Backspace cancellation is connected. Backspace also cancels a selection to turn origin; repeated
+origin cancellation remains a rejection. No attack, spell, item, STAY, turn completion, AI,
+next actor/round, victory or original cancellation animation is introduced.
+
+Root input and physics route on current battle authority before any closed exploration getter.
+Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session
+startup remains Map3. The existing native probe's narrow mode uses an explicitly controlled Map40
+seed, then actual Godot physical-key events for the Pending route and battle operations; this is
+**Confirmed** bounded native controllability when its assertions, screenshots and process receipt pass.
+Natural Map3 continuity, original Map57 presentation and H4 remain **Unknown**. Reproduction and
+visual acceptance belong to [presentation and assets](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 
 ### Ordered path to the first controllable Battle 01 turn
 
@@ -951,15 +983,15 @@ three movement facades; it must retain this one battle authority and expose the 
    not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
    Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
    failure retains pending. Roster and terrain/occupancy now belong to the initialized battle.
-3. **Controlled first-round generation and first-player movement APIs implemented.** A thin Godot
-   consumer next connects the exact current control/selection state to a visible view and input using the
+3. **Controlled first-round generation, first-player movement and diagnostic Godot consumer implemented.**
+   The thin consumer connects the exact current control/selection state to a visible grid and input using the
    [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
    [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
    terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported
    control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
-   The API has deterministic semantic movement tests; native controllability still requires its own
-   consumer and acceptance. Attack resolution, enemy turns, later rounds and victory remain later slices.
+   The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
+   input/capture recipe. Attack resolution, enemy turns, later rounds and victory remain later slices.
    Map 57 graphics require a separate fixed palette-8/`255` empty-slot policy and asset acceptance;
    the five-decoded-slot atlas builder cannot silently treat 255 as a tileset or retain Map 40 art.
    Clearly labeled diagnostic combatant markers may expose the control seam before original art is

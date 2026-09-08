@@ -202,6 +202,27 @@ internal sealed class Map3InputAdapter
         }
     }
 
+    internal PrivateBattle01Input PollPrivateBattle01()
+    {
+        foreach (var binding in BindingList)
+        {
+            PrivateBattle01Input input = binding.PhysicalKey switch
+            {
+                Key.N => PrivateBattle01Input.Enter,
+                Key.I => PrivateBattle01Input.North,
+                Key.L => PrivateBattle01Input.East,
+                Key.K => PrivateBattle01Input.South,
+                Key.J => PrivateBattle01Input.West,
+                Key.Space => PrivateBattle01Input.Confirm,
+                Key.Backspace => PrivateBattle01Input.Cancel,
+                _ => PrivateBattle01Input.None,
+            };
+            if (input != PrivateBattle01Input.None && _isActionJustPressed(binding.ActionName))
+                return input;
+        }
+        return PrivateBattle01Input.None;
+    }
+
     internal void PollPublicSynthetic()
     {
         foreach (Map3InputBinding binding in BindingList)

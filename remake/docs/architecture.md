@@ -113,9 +113,21 @@ The three movement session facades enforce exact snapshot, actor and phase befor
 `Battle01MovementPath.PolicyId` identifies the controlled preview policy, whose selected path cost is
 checked against both the propagation cost and budget. This is not original cancellation-animation
 execution. The [owning policy](./map03-playability-plan.md#implemented-controlled-first-player-api)
-records the source-contract disagreement and bounded scene/preview rules. The next thin Godot consumer
-can call these APIs and render their immutable output; it must not own another current position or
-pretend the pending native UI is already controllable.
+records the source-contract disagreement and bounded scene/preview rules.
+
+`PrivateBattle01Composition` is the thin Godot consumer. Its three all-or-none private path options
+construct the existing Content reader; only explicit N at the current Pending starts preparation,
+initialization, first round and first control. Each call uses the returned current snapshot and
+current turn-buffer candidate. Rejection displays its stage; after initialization the view remains
+on the actual battle even when later entry fails. No retry rerolls or reinitializes an existing battle.
+The process router prioritizes battle state over exploration and the synthetic bridge, and physics
+checks the battle flow stage before reading the closed exploration locomotion getter.
+
+`PrivateBattle01Presenter` projects immutable live positions, terrain/range and preview data into
+authored grid geometry. It owns no cursor, roster, RNG or turn state. Root hides the complete old
+Map40/HUD/synthetic canvas subtrees before attaching it. Existing I/J/K/L, Space and Backspace keys
+route once through the private battle poller; action choice accepts only cancellation. Original
+Map57 art and all battle actions/turn completion remain outside this diagnostic consumer.
 
 Two areas currently concentrate more responsibility than the target shape:
 

@@ -621,6 +621,8 @@ public sealed partial class Map3Root
             outcome,
             started.Animation,
             started.Move.Battle01Admission);
+        if (started.Move.Battle01Admission is not null && _privateBattle01Source is not null)
+            _privatePresenter?.ProjectBattle01Pending();
         if (_privateBattleBridgeEnabled)
         {
             _battlePresenter?.Project(
@@ -634,6 +636,7 @@ public sealed partial class Map3Root
         _ = delta;
         if (_runtimeProfile != Map3RuntimeProfile.PrivateLocal ||
             _session is null ||
+            _session.PrivateOriginalFlowStage == GameFlowStage.Battle ||
             !_session.PrivateOriginalMapPlayerLocomotion.IsMoving)
         {
             return;

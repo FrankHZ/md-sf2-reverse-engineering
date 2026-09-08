@@ -42,6 +42,9 @@ public sealed partial class Map3Root : Node2D
             "profile-selection",
             selectionStarted);
         _runtimeProfile = selection.RequestedProfile;
+        if (selection.IsAvailable && selection.Battle01Inputs is { } battleInputs)
+            _privateBattle01Source = new PrivateOriginalBattle01StartupReader(
+                battleInputs.Data, battleInputs.Scene, battleInputs.Terrain);
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePublicSyntheticInputActions());
         _inputAdapter.EnsureActionsRegistered();
         BuildSelectedPresentation(selection);
@@ -382,6 +385,7 @@ public sealed partial class Map3Root : Node2D
 
         if (_runtimeProfile == Map3RuntimeProfile.PrivateLocal)
         {
+            if (PollPrivateBattle01()) return;
             if (_privateBattleBridgeEnabled)
             {
                 _inputAdapter?.PollPublicSynthetic();

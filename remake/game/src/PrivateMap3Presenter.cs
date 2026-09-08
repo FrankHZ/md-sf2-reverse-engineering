@@ -631,6 +631,19 @@ internal sealed class PrivateMap3Presenter
             BaseVisible: baseVisible);
     }
 
+    internal static string Battle01PendingStatus(string? failure = null) =>
+        "Battle 01 pending. Map 40 retained.\n" +
+        (failure is null ? "N: start controlled diagnostic Battle 01.\n" : failure + "\n") +
+        "Destination Map 57; restart returns to Map 3.";
+
+    internal void ProjectBattle01Pending(string? failure = null)
+    {
+        // Pending cannot coexist with an active synthetic battle. Use the whole status
+        // row so Content rejection details and recovery still fit below traversal.
+        _status.Size = new Vector2(912, StatusSize.Y);
+        _status.Text = Battle01PendingStatus(failure);
+    }
+
     internal void ProjectStatus(string message)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(message);

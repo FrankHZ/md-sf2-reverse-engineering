@@ -8,6 +8,17 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateMap3PresenterTests
 {
+    [Fact]
+    public void SelectedBattleInputsShowExplicitPendingActionAndKeepFailureStage()
+    {
+        string pending = PrivateMap3Presenter.Battle01PendingStatus();
+        Assert.Contains("N: start controlled diagnostic Battle 01.", pending);
+        Assert.Contains("Map 40 retained", pending);
+        string failure = PrivateMap3Presenter.Battle01PendingStatus("Prepare rejected: selected input is missing.");
+        Assert.Contains("Prepare rejected", failure);
+        Assert.DoesNotContain("ready", failure, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData(true, 310, 450)]
     [InlineData(false, 310, 310)]
