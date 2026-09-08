@@ -155,8 +155,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             };
             await PressBattleKey(key);
             for (int frame = 0; frame < 120 && _session.PrivateOriginalMapPlayerLocomotion.IsMoving; frame++)
-                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            Require(!_session.PrivateOriginalMapPlayerLocomotion.IsMoving, "Movement settles within bounded frames");
+                await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
+            Require(!_session.PrivateOriginalMapPlayerLocomotion.IsMoving, $"Movement settles within 120 physics ticks at route input {index}");
         }
         var pending = _session.PrivateOriginalBattle01Admission;
         Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
