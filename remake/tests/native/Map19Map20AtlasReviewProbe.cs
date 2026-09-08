@@ -38,7 +38,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 Require(typeof(Map3Root).GetField("_session", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .GetValue(root) is null, "Missing Map57 asset must fail before session startup");
                 var status = Field<Label>(Field<PrivateMap3Presenter>(root, "_privatePresenter"), "_status");
-                Require(status.Text == "PrivateLocal presentation unavailable (PackageUnavailable)." &&
+                Require(status.Text == "Unavailable: PrivateLocal presentation unavailable (PackageUnavailable)." &&
                     status.GetLineCount() == status.GetVisibleLineCount(), "Missing Map57 art fails the complete pack admission visibly");
                 await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
                 using var failedImage = GetViewport().GetTexture().GetImage();

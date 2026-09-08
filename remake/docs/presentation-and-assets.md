@@ -938,7 +938,7 @@ For `missing-atlas`, give the recipe a separate ignored negative-test pack conta
 and runtime payloads from the accepted read-only pack, with only its Map57 runtime bucket absent.
 Do not modify the canonical asset checkout. Keep the accepted commit/manifest pins and selected
 startup inputs. The missing bucket fails the existing complete-pack admission first, so the probe
-requires the visible `PrivateLocal presentation unavailable (PackageUnavailable).` diagnostic,
+requires the visible `Unavailable: PrivateLocal presentation unavailable (PackageUnavailable).` diagnostic,
 no session and no fallback, and writes
 one capture. The required managed checks cover missing and changed payloads for both scales.
 
