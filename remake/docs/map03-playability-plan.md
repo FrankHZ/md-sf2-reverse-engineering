@@ -515,7 +515,8 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 Current controlled play reaches diagnostic Battle 01 first-player movement, provisional confirmation
 and cancellation through the explicit selected-input N entry at Pending. The manual battle bridge
-remains public-synthetic. Natural castle continuity, original Map57 presentation and complete
+remains public-synthetic. An explicit base-atlas launch now shows reviewed fixed Map57 base art with
+diagnostic units. Natural castle continuity, original Map57 presentation fidelity and complete
 Battle 01 play remain **Unknown**.
 
 ### Accepted inputs and incompatible existing assumptions
@@ -620,8 +621,8 @@ slot bytes while keeping distinct fixed RAM/VRAM banks; see the accepted
 [palette](../../docs/design/contracts/map-palette-data.md) and
 [rendering owner](../../docs/research/technical-graphics.md). They do not prove zeroed original VRAM
 for skipped slots. Original retained VRAM, dynamic replacement, animation, timing and final fidelity
-remain **Unknown**. Candidate generation is separate from local asset acceptance and the later Godot
-consumer; current Battle01 remains diagnostic. The [candidate recipe](./presentation-and-assets.md#map57-candidate-policy)
+remain **Unknown**. Candidate generation is separate from the accepted local asset transaction and
+the fixed-layout Godot consumer below; Battle01 units remain diagnostic. The [candidate recipe](./presentation-and-assets.md#map57-candidate-policy)
 owns the source format, explicit CLI, geometry and review boundary.
 
 ### Implemented boundary: visible pending admission before relocation
@@ -1022,9 +1023,16 @@ current candidate; there is no actor1 constant, reroll, extra RNG call or reorde
 initialization rejection keeps Map40/Pending. Initialization closes exploration: later round/control
 failure displays the actual battle phase and diagnostic instead of returning to Map40 or retrying init.
 
-The new view is explicitly a diagnostic battlefield with controlled inputs and unavailable original
-Map57 graphics. Authored cells show the 16-by-20 battle area, raw terrain IDs, reachable/legal-stop
-marks, all nine live combatant positions, current actor, cursor/path, grid cost, preview cost and budget.
+The view explicitly distinguishes reviewed fixed Map57 base art plus diagnostic units from the
+unrequested-art diagnostic mode. `--private-map3-base-atlas` plus selected Battle01 inputs requires
+the current accepted Map57 asset; failure is visible before startup. Its projection reads the current
+battle's `Preparation.Pending.Definition`, preserves its fixed layout/blocks/area/selection and rejects
+any used slot3/4 reference. The two unused seed blocks do not become drawable empty art. The shared
+block sampler renders the full 16-by-20 area at 24 pixels per block, preserving the 2x/4x physical
+raster on a 384-by-480 logical map. It executes no original layer, scroll, VRAM or animation pipeline.
+The right column holds status and controls; live units, range, legal stops, current actor, cursor/path
+and costs/budget share the same 24-pixel grid. Units remain project-authored markers. Terrain is shown
+at the current cursor; without requested art, authored cells also show terrain IDs.
 I/J/K/L request adjacent cursor destinations; out-of-area and unreachable steps preserve state with
 an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, only
 Backspace cancellation is connected. Backspace also cancels a selection to turn origin; repeated
@@ -1065,7 +1073,8 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
    input/capture recipe. Attack resolution, enemy turns, later rounds and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
-   policy above. Local asset acceptance and a separate Godot consumer are still required.
+   policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
+   original scene/layers/VRAM/animation fidelity remains separate acceptance work.
    Clearly labeled diagnostic combatant markers may expose the control seam before original art is
    admitted; that is not complete private presentation or an original-fidelity result.
 

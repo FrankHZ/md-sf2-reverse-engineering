@@ -98,6 +98,11 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "40A083FD4AEBF2A13EB93037FDA8D3438AD2B97899560D8077EBDCF2C96B5BD3";
     internal const string Map40BaseAtlas4xDigest =
         "636A371D7481D63FE845BC2E6C1AB7A2BE99361448626E8553AC2E312110DC59";
+    internal const string Map57BaseAtlasAssetId = "world.map57.base-tileset-atlas";
+    internal const string Map57BaseAtlas2xDigest =
+        "3278D7D189D4E1717D212DD59BFBC94779FFDBDFFE171002679A0F3E929A69A3";
+    internal const string Map57BaseAtlas4xDigest =
+        "FF8C6AD736752A5BEDCE5549EB5D0FCE3C69F7FC3B7A9D3FFECF0D3394F79AA7";
     internal const int Map3BaseAtlasLogicalWidth = 128;
     internal const int Map3BaseAtlasLogicalHeight = 320;
     internal const string Map3PlayerReferenceAssetId =
@@ -117,9 +122,9 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const int Map3Entity142ReferenceLogicalWidth = 48;
     internal const int Map3Entity142ReferenceLogicalHeight = 24;
     internal const string Map3AssetRepositoryCommit =
-        "b41d12ddfb1704f3a0494c3d6ed23f866ff20dac";
+        "3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880";
     internal const string Map3AssetManifestDigest =
-        "5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281";
+        "4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40";
     internal const string Map3BaseAtlas2xDigest =
         "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
     internal const string Map3BaseAtlas4xDigest =
@@ -204,6 +209,12 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         LocalPresentationAssetPackAccepted accepted,
         double effectivePhysicalScale) =>
         MountBaseAtlas(request, accepted, effectivePhysicalScale, Map40BaseAtlasAssetId);
+
+    internal PrivateLocalPresentationAssetMountResult MountMap57BaseAtlas(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale) =>
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, Map57BaseAtlasAssetId);
 
     private PrivateLocalPresentationAssetMountResult MountBaseAtlas(
         LocalPresentationAssetPackRequest request,
@@ -432,7 +443,9 @@ internal sealed class PrivateLocalPresentationAssetCatalog
                     ? Map21BaseAtlasAssetId
                     : OriginalMapRuntimeAdmission.HasExactAcceptedMap40VisualResourceSelection(selection)
                         ? Map40BaseAtlasAssetId
-                        : null;
+                        : OriginalMapRuntimeAdmission.HasExactAcceptedBattle01VisualResourceSelection(selection)
+                            ? Map57BaseAtlasAssetId
+                            : null;
 
     internal static bool IsExactMap3BaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
@@ -449,6 +462,10 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal static bool IsExactMap40BaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
         IsExactBaseAtlasBinding(definition, bucket, Map40BaseAtlasAssetId);
+
+    internal static bool IsExactMap57BaseAtlasBinding(
+        LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
+        IsExactBaseAtlasBinding(definition, bucket, Map57BaseAtlasAssetId);
 
     private static bool IsExactBaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition,
@@ -467,6 +484,8 @@ internal sealed class PrivateLocalPresentationAssetCatalog
             (Map21BaseAtlasAssetId, 4) => Map21BaseAtlas4xDigest,
             (Map40BaseAtlasAssetId, 2) => Map40BaseAtlas2xDigest,
             (Map40BaseAtlasAssetId, 4) => Map40BaseAtlas4xDigest,
+            (Map57BaseAtlasAssetId, 2) => Map57BaseAtlas2xDigest,
+            (Map57BaseAtlasAssetId, 4) => Map57BaseAtlas4xDigest,
             _ => null,
         };
         return string.Equals(

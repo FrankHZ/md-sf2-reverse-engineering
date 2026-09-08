@@ -372,12 +372,12 @@ Local image review and a separately accepted source/master/runtime/manifest tran
 consumer binding. This builder does not promote assets or change the current Godot runtime. The
 current consumer binds the independently accepted Map 19/20 and Map 21 families described below.
 
-The current reviewed local pack at commit `b41d12ddfb1704f3a0494c3d6ed23f866ff20dac`, tree
-`429636d9aa323411f79ad4ec00dc4ee421328e89`, and manifest SHA-256
-`5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281` contains the two HUD assets,
-the exact Map 3, shared Map 19/20 and independent Map 21 atlas families, the player initial-reference-frame family, the three controlled-player
+The current reviewed local pack at commit `3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880`, tree
+`880d845e1368a87f185cb8bb18b7a3cc6d5882f2`, and manifest SHA-256
+`4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40` contains the two HUD assets,
+the exact Map3, shared Map19/20 and independent Map21/40/57 atlas families, the player initial-reference-frame family, the three controlled-player
 locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The explicit
-PrivateLocal consumer mounts all three fixed atlas families at the selected 2x or 4x scale after Content
+PrivateLocal consumer mounts all four exploration families, plus Map57 when Battle01 inputs are selected, at the selected 2x or 4x scale after Content
 rechecks the closed pack; only the current family supplies the rendered base. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
 already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
 576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
@@ -708,7 +708,7 @@ guard success and rejection. Neither source entity135's facing effect nor natura
 Unknown or mismatched runtime/visual selections still reject. Only the fixed Map 21 atlas is newly
 consumed; Map 3 overlays and NPC diagnostics remain scoped to Map 3, and no NPC asset is added.
 
-Map 40 has its own accepted atlas in the eleven-asset/22-bucket full pack. Its exact binding is
+Map 40 has its own accepted atlas in the twelve-asset/24-bucket full pack. Its exact binding is
 `world.map40.base-tileset-atlas`, palette 3 and slots `[94,95,96,97,58]`; palette 3 is independent of
 tile palette-bank bits. The 2x digest is
 `40A083FD4AEBF2A13EB93037FDA8D3438AD2B97899560D8077EBDCF2C96B5BD3`, and the 4x digest is
@@ -737,7 +737,7 @@ F, the actual walk endpoint, the Map 40 base arrival and Battle 01 pending admis
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
-and `runtime` from accepted asset commit `b41d12ddfb1704f3a0494c3d6ed23f866ff20dac` into a fresh
+and `runtime` from accepted asset commit `3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880` into a fresh
 ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
 to the isolated accepted inputs. Set `SF2_CASTLE_REVIEW_EDITOR` to the official 4.7.2 Mono editor
 extracted inside this worktree by the Godot gate, and `SF2_CASTLE_REVIEW_ROOT` to a **fresh** absolute
@@ -838,15 +838,18 @@ steps = [
                 "--canonical-map-import=" + os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"],
                 "--private-map3-base-view", "--private-map3-base-atlas",
                 "--presentation-asset-root=" + os.environ["SF2_PRIVATE_PRESENTATION_ASSET_ROOT"],
-                "--presentation-asset-commit=b41d12ddfb1704f3a0494c3d6ed23f866ff20dac",
-                "--presentation-manifest-sha256=5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281"]),
+                "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
+                "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
         "--private-battle01-terrain=" + environment["SF2_PRIVATE_BATTLE01_TERRAIN"],
     ])
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic":
+    steps[-1][1][:] = [arg for arg in steps[-1][1] if arg not in {"--private-map3-base-view", "--private-map3-base-atlas"}
+                       and not arg.startswith("--presentation-")]
 receipts = []
 for name, command in steps:
     result = gate.run_bounded_process(name, command, cwd=game, environment=environment,
@@ -884,13 +887,34 @@ unavailable; file or payload rejection at N retains the current Pending.
 
 At the actual Map40 Pending, N starts the controlled Prepare/Initialize/FirstRound/FirstControl chain.
 I/J/K/L move its cursor, Space provisionally confirms movement and Backspace returns to the turn
-origin. The diagnostic Map57 grid shows raw terrain IDs, reachable/legal-stop cells, all nine live
-unit positions, actor, cursor, path and costs/budget. The heading explicitly marks controlled inputs
-and unavailable original Map57 graphics. Action choice offers cancellation only. The complete old
+origin. With `--private-map3-base-atlas`, selected Battle01 inputs also require the reviewed Map57
+atlas at startup. Its asset/source/derivation policy is fixed by the full manifest above; the existing
+catalog independently requires the exact 2x/4x PNG identities. Rehashing a replacement manifest or
+payload cannot grant it the accepted identity. Map57 uses source
+`source.world.map57.base-visual-selection` and policy
+`private-local-map57-base-nearest-rgba8-authored-empty-slots-v1`; its runtime digests are
+`3278D7D189D4E1717D212DD59BFBC94779FFDBDFFE171002679A0F3E929A69A3` (2x) and
+`FF8C6AD736752A5BEDCE5549EB5D0FCE3C69F7FC3B7A9D3FFECF0D3394F79AA7` (4x).
+
+The current battle's fixed admission supplies the Map57 layout, block catalog, area and selection.
+The projection checks that exact definition and scans the whole layout's referenced blocks for
+unloaded slots. It preserves the unused seed blocks without drawing them. Shared block sampling
+handles index masking/offset, both flips, transparent index zero and the existing background fill.
+The 16-by-20 area uses real 24-pixel blocks: a 768-by-960 or 1536-by-1920 physical raster maps to
+384-by-480 logical pixels with nearest filtering, without reducing the blocks to the former 20-pixel
+diagnostic cells. The map sits left of the status/control column on the existing 960-by-540 canvas.
+
+The heading says `MAP 57 BASE ART + DIAGNOSTIC UNITS`, with reviewed fixed-art/controlled-input
+disclosure. All nine live unit markers, reachable/legal-stop cells, actor/cursor/path and costs use
+the same 24-pixel grid. Cursor terrain remains visible in the details. Units are authored markers;
+Map3 character sheets are not reused as the Battle01 roster. Without a base-art request, the explicit
+diagnostic mode retains terrain-ID cells and its graphics-unavailable heading. Missing/wrong requested
+Map57 art rejects before startup; a projection rejection displays an unavailable view and closes input.
+Action choice offers cancellation only. The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
 
 For this boundary, reuse the bounded recipe immediately above with
-`SF2_BATTLE01_CONTROL_REVIEW=1` and the three selected-input environment variables set.
+`SF2_BATTLE01_CONTROL_REVIEW=base-art` and the three selected-input environment variables set.
 Choose a fresh ignored `SF2_CASTLE_REVIEW_ROOT` and the editor from the owning official toolchain gate.
 This mode compiles the same tracked probe into the exact committed source copy, seeds controlled
 Map40 entry through existing test-owned factories, and drives the 27 committed moves plus prospective
@@ -900,11 +924,23 @@ battle transitions directly or replay the unrelated twelve-frame castle recipe.
 
 Require six captures: Pending, ready, selected, provisional, cancelled and rejected. Inspect them
 for text clipping, path/actor distinction and retained map/guard/overlay layers. The receipt checks
-actual snapshot/actor/live-position/occupancy changes, both cancel stages, immutable rejection,
+actual admitted layout and visible base texels outside overlays at 24-pixel cell coordinates,
+snapshot/actor/live-position/occupancy changes, both cancel stages, immutable rejection,
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 art, original scene/timing, battle actions, later turns/victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, battle actions, later turns/victory and H4 remain Unknown.
+
+Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
+unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,
+then checks actual I/Space/Backspace restoration and retained RNG/offset without replaying all art frames.
+For `missing-atlas`, give the recipe a separate ignored negative-test pack containing copied manifests
+and runtime payloads from the accepted read-only pack, with only its Map57 runtime bucket absent.
+Do not modify the canonical asset checkout. Keep the accepted commit/manifest pins and selected
+startup inputs. The missing bucket fails the existing complete-pack admission first, so the probe
+requires the visible `Unavailable: PrivateLocal presentation unavailable (PackageUnavailable).` diagnostic,
+no session and no fallback, and writes
+one capture. The required managed checks cover missing and changed payloads for both scales.
 
 For the rejected-input boundary, use another fresh review root, set
 `SF2_BATTLE01_CONTROL_REVIEW=missing-input`, and point `SF2_PRIVATE_BATTLE01_DATA` at an explicitly

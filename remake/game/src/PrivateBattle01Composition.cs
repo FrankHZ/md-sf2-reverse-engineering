@@ -93,12 +93,14 @@ public sealed partial class Map3Root
 {
     private IOriginalBattle01StartupSource? _privateBattle01Source;
     private PrivateBattle01Presenter? _privateBattle01Presenter;
+    private PrivateLocalPresentationRasterMount? _privateBattle01Atlas;
 
     private bool PollPrivateBattle01()
     {
         if (_session is null || !PrivateBattle01Ui.OwnsInput(_session.PrivateOriginalFlowStage,
                 _session.PrivateOriginalBattle01Admission is not null, _privateBattle01Source is not null))
             return false;
+        if (_privateBattle01Presenter?.BaseArtUnavailable == true) return true;
         var input = _inputAdapter?.PollPrivateBattle01() ?? PrivateBattle01Input.None;
         if (input == PrivateBattle01Input.None) return true;
         string outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input);
@@ -111,6 +113,12 @@ public sealed partial class Map3Root
                 foreach (var child in GetChildren().OfType<CanvasItem>()) child.Hide();
                 _privateBattle01Presenter = new PrivateBattle01Presenter();
                 AddChild(_privateBattle01Presenter);
+                if (_privateBattle01Atlas is not null && !_privateBattle01Presenter.TryBindBaseAtlas(
+                        _privateBattle01Atlas, battle.Preparation.Pending.Definition))
+                {
+                    _privateBattle01Presenter.ProjectBaseArtUnavailable();
+                    return true;
+                }
             }
             _privateBattle01Presenter.Project(battle.Battle, outcome);
         }

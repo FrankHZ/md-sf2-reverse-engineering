@@ -38,7 +38,8 @@ their production admission and private assertions unchanged. No private input is
 | `AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput` | `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
 | `AcceptedIgnoredInputsCloseExactPayloadAndMutationBoundaries` | `SF2_PRIVATE_ROM`, `SF2_PRIVATE_MAP_TILESET_METADATA`, `SF2_PRIVATE_MAP_PALETTE_METADATA` |
 | `ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
-| `ExactLocalMap21AndMap40BucketsRejectMissingOrChangedPayloads` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
+| `ExactLocalMap21Map40AndMap57BucketsRejectMissingOrChangedPayloads` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
+| `AcceptedMap57DefinitionAndRealBucketsComposeTheFixedAreaAndRejectLayoutDrift` | `SF2_PRIVATE_CANONICAL_MAP_IMPORT`, `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
 | `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` | `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`, `SF2_PRIVATE_BATTLE01_TERRAIN` |
 | `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending` | the three selected Battle01 variables above plus `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
 
@@ -164,7 +165,17 @@ It seeds Map40 once, drives the 28-input Pending route and N/I/Space/Backspace t
 physical-key input events, captures Pending/ready/selected/provisional/cancelled/rejected frames,
 and checks snapshot/occupancy/RNG/offset retention and old-layer/input isolation. Inspect the images
 for overlap and clipping in addition to the receipt. This mode does not replay the old twelve frames
-or assert natural Map3 continuity, original graphics, action completion or H3/H4 closure.
+or assert natural Map3 continuity, original scene fidelity, action completion or H3/H4 closure.
+
+For the Map57 base consumer, add focused `PrivateBattle01BaseViewProjectionTests`,
+`PrivateOriginalMapBaseViewportTests` and `PrivateLocalPresentationAssetCatalogTests`. They cover
+fixed selection and asset identity, caller-rehashed pack rejection, whole-layout unloaded-slot
+rejection, physical texel/flip/transparency reuse, unchanged exploration crops and 24-pixel overlay
+alignment. Run the real canonical/asset tests with `SF2_REQUIRE_PRIVATE_TESTS=1`; the actual inputs
+must not skip. Keep `TEMP` and `TMP` under this worktree's ignored local scratch. The existing required
+selected Battle01 Content check supplies the actual startup inputs; native `base-art` mode consumes
+those same selections through the real session. Use the one-frame `missing-atlas` boundary and
+two-frame `diagnostic` regression described by the native recipe; all private captures stay local.
 
 ## Repository Planner
 
