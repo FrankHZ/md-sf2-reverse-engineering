@@ -248,9 +248,14 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             Require(view.Phase == current.Battle.Phase &&
                 view.Units.All(unit => unit.Position == current.Battle.Roster.Single(row => row.Index == unit.Index).Position),
                 "Visible projection matches live battle");
-            foreach (var label in presenter.GetChildren().OfType<Label>())
+            var labels = presenter.GetChildren().OfType<Label>().ToArray();
+            foreach (var label in labels)
                 Require(label.GetLineCount() == label.GetVisibleLineCount() &&
                     label.Position.Y + label.GetMinimumSize().Y <= 540, "All battlefield labels fit logical canvas");
+            for (int left = 0; left < labels.Length; left++)
+            for (int right = left + 1; right < labels.Length; right++)
+                Require(!new Rect2(labels[left].Position, labels[left].Size).Intersects(
+                    new Rect2(labels[right].Position, labels[right].Size)), "Battlefield text regions must not overlap");
             _frames.Add(new { name, map = current.Map.Value, phase = view.Phase.ToString(), actor = view.ActorIndex,
                 cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
                 budget = view.Budget, status = view.Status, controls = view.Controls, width = image.GetWidth(), height = image.GetHeight() });
