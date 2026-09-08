@@ -89,11 +89,33 @@ retains only the source-derived initial value. `GeneratorWord` is derived from t
 16 bits; it is not another RNG authority. The low word remains unchanged.
 
 The completed phase is `FirstRoundGenerated`, with a full 64-slot signed/stable buffer and current
-turn offset0. `FirstCandidate` is data for the next controller slice, not an executed actor. Old
+turn offset0. `FirstCandidate` is data consumed by the distinct control entry, not an executed action. Old
 immutable snapshots and Prepared inputs remain provenance; none is exposed as another current map
 or live round state. Duplicate/foreign/stale/invalid requests commit nothing, and old exploration
 commands remain closed. The [round policy](./map03-playability-plan.md#implemented-controlled-first-round)
 records the RNG storage interpretation and the exact shared comparison seam.
+
+`EnterPrivateOriginalBattle01FirstControl` consumes the exact current generated snapshot and
+requested actor identity. It classifies the real first candidate without skipping or reordering the
+buffer, then constructs the supported class4/HEALER range. A named caller preset supplies only that
+candidate's missing ally activation word and fixes the two control toggles; existing activation words
+and current status fields retain authority. The supplement and complete movement projection commit
+together. AI, disabled action and unsupported-profile branches return unavailable without mutation.
+
+`Battle01InitializedState.FirstControl` owns the player movement selection. The battle roster's live
+`Position` is separate from immutable source `Deployment.Position`. The range keeps an explicitly
+historical `OriginOccupancy` projection, raw-cost/reachable grids and opponent-blocked terrain; current
+occupancy remains `Battle.Occupancy`. Preview only changes the cursor/path. Confirm atomically changes
+live position/occupancy and enters `PlayerActionChoice`; cancel restores the turn origin and returns
+to `PlayerMovementSelection`. No action or turn is submitted by either transition.
+
+The three movement session facades enforce exact snapshot, actor and phase before a single replacement.
+`Battle01MovementPath.PolicyId` identifies the controlled preview policy, whose selected path cost is
+checked against both the propagation cost and budget. This is not original cancellation-animation
+execution. The [owning policy](./map03-playability-plan.md#implemented-controlled-first-player-api)
+records the source-contract disagreement and bounded scene/preview rules. The next thin Godot consumer
+can call these APIs and render their immutable output; it must not own another current position or
+pretend the pending native UI is already controllable.
 
 Two areas currently concentrate more responsibility than the target shape:
 

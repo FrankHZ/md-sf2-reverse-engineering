@@ -114,11 +114,14 @@ registered read-only canonical import through `SF2_PRIVATE_CANONICAL_MAP_IMPORT`
 filter `FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests` with
 `SF2_REQUIRE_PRIVATE_TESTS=1`. The additional required test seeds a completed controlled Map40 route
 through accepted test-only factories, issues ordinary moves to exact Pending, reads the selected
-inputs and calls the real session initializer followed by `EnterPrivateOriginalBattle01FirstRound`.
+inputs and calls the real session initializer followed by `EnterPrivateOriginalBattle01FirstRound`,
+`EnterPrivateOriginalBattle01FirstControl` and the public movement select/confirm/cancel APIs.
 It verifies the nine-unit projection, immutable terrain/occupancy, computed enemy ATT, activation bits
 and active/tested-region distinction, the complete ordered buffer/current offset and final RNG image,
-input preservation and duplicate rejection. Only the shared player-ready fixture fields are compared;
-the test does not claim actor-control execution, observed elapsed time or natural RNG chronology.
+input preservation and duplicate rejection. The real class/status/MOV and named activation-word policy
+feed the control entry; a cost2 move from (9,18) to (9,17), blocked (9,19) rejection, provisional
+occupancy and cancel restoration exercise the complete API chain. Only shared player-ready fixture
+fields are compared; the test does not claim original control execution, elapsed time or RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
 
@@ -135,7 +138,18 @@ RNG, region/secondary activation and turn-order boundary fixtures for word width
 consumption, edge inclusion, bit preservation, second entries, byte wrapping, signed stable sorting
 and sentinel placement. The Application checks include failed local projection without committing
 partial flags/RNG. The pure helper uses the 16-bit `rng-v1.json` seed; the controlled battle uses the
-distinct four-byte RAM image recorded by the player-ready observer. Use the committed planner
+distinct four-byte RAM image recorded by the player-ready observer.
+
+First-player ownership is `FullyQualifiedName~Battle01FirstControlTests` and
+`FullyQualifiedName~Battle01PlayerMovementTests` in Domain, and the corresponding names prefixed by
+`PrivateOriginal` in Application. These cover source status/activation branches, candidate-only
+supplemental input, late failure with no partial commit, real weighted terrain/occupancy admission,
+cursor versus provisional live position, confirm/cancel/stale/duplicate rejection and fresh-session
+reset. The pure propagation tests consume all five cases in `battlefield-movement-matrix-v1.json`,
+including LIFO expansion, budget128 bucket wrap and flat row-edge behavior, without unsafe reads.
+The source-mask counterexample checks the explicitly controlled preview policy with a complete
+cost10 route, direction replay, terminators, return to origin and current/source position separation;
+it is not an original move-string or H4 compatibility test. Use the committed planner
 for subsequent .NET and official Godot selection. This API-only boundary adds no native image review
 and does not rerun the already accepted twelve-frame pending-admission recipe or any H3/H4 seam.
 

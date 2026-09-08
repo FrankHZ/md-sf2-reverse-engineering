@@ -67,14 +67,15 @@ public sealed record Battle01EnemyInput(byte DefinitionId, byte SourceUnknownByt
 public sealed class Battle01Combatant
 {
     internal Battle01Combatant(Battle01Deployment deployment, Battle01Stats stats, byte? classId,
-        Battle01EnemyInput? enemySource, ushort? aiBitfield = null)
+        Battle01EnemyInput? enemySource, ushort? aiBitfield = null, MapPosition? position = null)
     {
         Deployment = deployment; Stats = stats; ClassId = classId; EnemySource = enemySource;
         AiBitfield = aiBitfield ?? InitializationAiBitfield;
+        Position = position ?? deployment.Position;
     }
     public Battle01Deployment Deployment { get; }
     public int Index => Deployment.CombatantIndex;
-    public MapPosition Position => Deployment.Position;
+    public MapPosition Position { get; }
     public Battle01Stats Stats { get; }
     public byte? ClassId { get; }
     // Enemy-only source fields remain distinct from the computed effective stats.
@@ -89,10 +90,12 @@ public sealed class Battle01Combatant
         (ushort)((EnemySource.BaseAiBitfield & 0xF000) | ((Deployment.Spawn & 15) << 8) | Deployment.SourceFiller);
     public ushort? AiBitfield { get; }
     internal Battle01Combatant WithAiBitfield(ushort value) => value == AiBitfield
-        ? this : new(Deployment, Stats, ClassId, EnemySource, value);
+        ? this : new(Deployment, Stats, ClassId, EnemySource, value, Position);
+    internal Battle01Combatant WithPosition(MapPosition position) => position == Position
+        ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice }
 
 public sealed class Battle01InitializedState
 {
@@ -109,6 +112,14 @@ public sealed class Battle01InitializedState
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = Array.AsReadOnly(regionFlags); NewlyTestedRegionMask = newlyTestedRegionMask;
         RandomSeedImage = randomSeedImage; FirstRound = firstRound;
+    }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
+        IReadOnlyList<int> occupancy, Battle01FirstControlState firstControl)
+    {
+        Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = occupancy;
+        AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
+        RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
+        RandomSeedImage = source.RandomSeedImage; FirstRound = source.FirstRound; FirstControl = firstControl;
     }
     public MapId Map { get; } = new("map57");
     public int BattleIndex => 1;
@@ -133,12 +144,15 @@ public sealed class Battle01InitializedState
     public ushort GeneratorWord => (ushort)(RandomSeedImage >> 16);
     public ushort NewlyTestedRegionMask { get; }
     public Battle01FirstRoundOrder? FirstRound { get; }
+    public Battle01FirstControlState? FirstControl { get; }
     public int ElapsedSeconds => 0;
     public bool SuspendedFlag88 => false;
     public bool IntroFlag451 => true;
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
-    public Battle01Phase Phase => FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;
+    public Battle01Phase Phase => FirstControl is { } control
+        ? control.Movement.Stage == Battle01PlayerMovementStage.Selection ? Battle01Phase.PlayerMovementSelection : Battle01Phase.PlayerActionChoice
+        : FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;
     public byte TerrainAt(MapPosition position) => Terrain[TerrainIndex(position)];
     public int OccupantAt(MapPosition position) => Occupancy[TerrainIndex(position)];
     private static int TerrainIndex(MapPosition position)

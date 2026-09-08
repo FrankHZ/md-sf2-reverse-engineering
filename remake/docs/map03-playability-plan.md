@@ -833,6 +833,108 @@ implemented here. The comparison does not import executed-actor lists, observed 
 counters, or original timing-dependent RNG chronology. Actor1 is this computed candidate, not a
 universal player-first rule. Natural continuity, original presentation and H4 remain **Unknown**.
 
+### Implemented controlled first-player API
+
+The generated round now has a separate, callable Domain/Application consumer:
+`EnterPrivateOriginalBattle01FirstControl(expectedSnapshot, actorIndex)`. It reads the current
+offset0 entry without skipping sentinels, selecting another actor or reordering the 64-slot buffer.
+Missing/dead/unplaced candidates, AI routes, SLEEP/STUN and unsupported movement profiles remain
+explicitly unavailable at this boundary. The supported player path installs a complete range and
+selection state in the existing current battle authority. This is an API capability; Godot has not
+connected a native controller or Map57 view.
+
+**Controlled caller inputs:** `private-local-battle01-first-player-control-inputs-v1` fixes ally
+auto-battle=false and opponent-control=false. For only the actual current ally candidate whose
+`AiBitfield` is still null, it supplies activation word0 on successful entry. Other allies retain
+their missing values. A non-null word is always consumed unchanged, including AI-controlled bit4.
+The source getter reads the word at combatant offset52; that field is distinct from current
+`Stats.Status`, whose MUDDLE mask is `0x30`, SLEEP mask `0xC0` and STUN mask1. HEALER1's source
+commandset identity does not force AI control. These branches consume the accepted
+[individual-turn contract](../../docs/design/contracts/battle-functions-control-flow.md#individual-turn-control)
+and [Map3 turn/control spine](../../docs/research/map3-battle01-turn-control.md).
+
+The three observed ally activation words in the player-ready comparison fixture are zero, but that
+later observation does not prove their natural pre-control initialization. The candidate-only
+supplement is an explicit main-gate-approved caller policy, not a new original-game conclusion or a
+change to the initializer's historical input. It is installed only after every control/range/path
+projection and result allocation succeeds. AI/unavailable, stale/foreign/wrong-actor and failing
+requests leave the current word, candidate, phase and snapshot intact.
+
+**Movement profile and provenance:** source baseline remains
+`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+The current candidate's class4 is PRST; `data/stats/allies/classes/classdefs.asm` row4 stores
+HEALER, movement type12. Class storage belongs to
+[ally definition data](../../docs/design/contracts/ally-definition-data.md#class-and-promotion-definition-topology)
+and [ally data inventory](../../docs/research/ally-data-inventory.md). The movement-type field occupies
+the high nibble at combatant offset49; `GetMovetype` in `code/common/stats/combatantstats_1.asm` reads
+that nibble. This bounded consumer resolves only the accepted class4 profile; it adds no general
+class importer and does not replace the current effective MOV with the class's source MOV.
+
+`data/battles/global/landeffectsettingsandmovecosts.asm` row12 and `PopulateMoveCostsTable` in
+`code/gameflow/battle/battlefield/battlefieldengine.asm` supply sixteen costs. The low nibble15 becomes
+signed -1; other low nibbles are costs. The admitted vector is
+`[-1,2,2,3,4,3,3,-1,-1,-1,-1,-1,-1,-1,-1,-1]`. Upper-nibble land-effect setting indexes remain
+separate: `[0,1,0,2,2,2,2,0,0,0,0,0,0,0,0,0]`. These minimal code-owned facts consume the accepted
+[global-data owner](../../docs/research/battle-global-data.md) and the
+[navigation contract](../../docs/design/contracts/battlefield-navigation.md); no full private table
+or grid is tracked. Current MOV5 gives budget10 through the original `MOV*2` rule.
+
+Propagation preserves the 48x48 row-major grid, right/left/up/down probes, 32 remaining-budget LIFO
+buckets, first admission and exact-budget terminal admission. `TotalCosts` and `MovableGrid` preserve
+the low/high accumulated cost bytes; reachable cells, origin occupancy, projected terrain, legal
+stop tiles and the preview path remain distinct. `BuildMovementRangeGrid` marks opponents before
+building and clears their temporary flags afterward. Accordingly, the immutable projection blocks
+living placed opponents while allowing travel through allies. Confirm rejects every other occupant,
+including an ally on a reachable tile. Origin remains a legal selection. No attack target list or
+action range is implied by this movement range.
+
+The storage builder retains flat horizontal neighbors, including the accepted row-wrap fixture.
+This API restricts selected tiles and preview steps to the scene's 16x20 area and rejects any
+incomplete route; it never replays an array row-wrap as a geometric tile step. The fixed private
+terrain has no traversable cells outside that area. This is a bounded product policy, not a claim
+that every original caller enforces these scene bounds. The memory-safe builder checks bounds
+before reads; original out-of-range probe chronology and natural exposure remain **Unknown** here.
+
+**Controlled preview policy and preserved disagreement:** `battle01-controlled-lowest-cost-preview-v1`
+backtracks strictly decreasing grid costs. It keeps the lowest-cost eligible predecessors, avoids
+the previous backtrack direction when an equal alternative exists, then uses right/up/left/down code
+priority. Forward directions reverse the backtrack and XOR2; the supplied return directions use the
+backtrack order. Right/up/left/down are 0/1/2/3, and FF terminates each sequence. The complete forward
+path must reach the selected tile, and its sum of entered-tile costs must not exceed either the
+published destination grid cost or MOV budget. `Preview.Cost` is this path sum; `GridCost` is the
+distinct propagation value. Failure produces no partial preview or state commit.
+
+This policy is not a claim of original `BuildCancelMoveString` execution, a shortest-path guarantee,
+or original return animation. Pinned `code/gameflow/battle/battlefield/buildmovestringfunctions.asm`,
+`alt_BuildCancelMoveString / loc_DC18 / loc_DC28 / loc_DCB6`, retains previously admitted direction
+bits in d5 when a later neighbor lowers the threshold. Concrete counterexample: current cost10,
+previousMask0, right cost8 and left cost6, with the other neighbors blocked. Right first sets mask1;
+left lowers the threshold to6 but adds bit2, leaving mask5. The final priority chooses right8. The
+lowest-cost wording in `battlefield-navigation.md` and
+`battlefield-static-v1.json / expected.pathSelectionFacts.moveString` therefore has a preserved
+disagreement awaiting independent research correction. Those evidence owners are unchanged here.
+The main gate explicitly approved the distinct remake preview policy. Its authored weighted
+counterexample selects left6, provides a cost10 forward path within budget10, and a terminated
+return to origin. H4 path compatibility and natural cancellation choreography remain **Unknown**.
+
+**Selection, provisional relocation and cancel:** `SelectPrivateOriginalBattle01PlayerDestination`
+changes only the preview/cursor in `PlayerMovementSelection`. A reachable occupied ally tile may be
+previewed but cannot be confirmed. `ConfirmPrivateOriginalBattle01PlayerMovement` atomically updates
+the actor's live `Position` and current occupancy, then enters `PlayerActionChoice` without submitting
+ATTACK, spell, item or STAY. `Deployment.Position`, stats and source receipts remain immutable.
+`CancelPrivateOriginalBattle01PlayerMovement` restores this turn's origin and occupancy, clears the
+preview and returns to selection. Cancelling an already cleared selection rejects without mutation.
+The source menu owner restores local position and has a movement-cancel result -1; this API policy
+does not execute its battlefield-menu request, VInt/input sampling or return animation.
+
+All mutations require the exact current snapshot, correct actor and phase, and install one new
+snapshot only after validation and allocation. Rejected and duplicate requests leave path, RNG,
+order, flags and current actor unchanged. Valid movement preserves image `0xA4991234` and turn
+offset0; it does not reseed or rerun control/RNG/initialization. Old exploration remains closed, and
+a fresh session returns to controlled Map3. No action resolution, later actor/round, AI execution or
+victory is implemented. The next Godot consumer can render `FirstControl.Movement` and call the
+three movement facades; it must retain this one battle authority and expose the action-choice stop.
+
 ### Ordered path to the first controllable Battle 01 turn
 
 1. Consume the independently accepted pending boundary above as the sole continuation input.
@@ -849,15 +951,15 @@ universal player-first rule. Natural continuity, original presentation and H4 re
    not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
    Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
    failure retains pending. Roster and terrain/occupancy now belong to the initialized battle.
-3. **Controlled first-round generation implemented.** Consume its exact generated state and dispatch
-   the first living entry at current-turn offset0 through the accepted control branch, then connect the
+3. **Controlled first-round generation and first-player movement APIs implemented.** A thin Godot
+   consumer next connects the exact current control/selection state to a visible view and input using the
    [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
    [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
    terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported
    control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
-   Require deterministic repeated input/RNG results and semantic movement tests before calling this
-   first turn controllable. Attack resolution, enemy turns, later rounds and victory remain later slices.
+   The API has deterministic semantic movement tests; native controllability still requires its own
+   consumer and acceptance. Attack resolution, enemy turns, later rounds and victory remain later slices.
    Map 57 graphics require a separate fixed palette-8/`255` empty-slot policy and asset acceptance;
    the five-decoded-slot atlas builder cannot silently treat 255 as a tileset or retain Map 40 art.
    Clearly labeled diagnostic combatant markers may expose the control seam before original art is
