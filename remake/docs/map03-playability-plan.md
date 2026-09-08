@@ -870,8 +870,9 @@ four-byte big-endian RAM image written/read by
 16-bit big-endian word at RANDOM_SEED. Thus this image begins with generator word0 and retained
 low word `0x1234`; truncating the uint to ushort would silently select a different seed.
 Main-gate accepted this storage interpretation for the fixed controlled comparison. The state now
-names the one authority `RandomSeedImage`, with a derived `GeneratorWord`; no memory bus or
-seed-copy RNG is modeled. The existing party preset retains the observation's input representation.
+names the main authority `RandomSeedImage`, with a derived `GeneratorWord`; no memory bus is modeled.
+The distinct seed-copy is carried explicitly for the later inactive-enemy consumer below and is not
+used by first-round generation. The party preset retains the observation's input representation.
 
 The main helper updates `word = (word * 13 + 7) & 0xFFFF`, doubles the range with word wrapping,
 multiplies unsigned, takes the high product word and halves it, as owned by
@@ -1082,28 +1083,30 @@ same no-effect policy, status/equipment/effective-stat checks and both faction g
 advances offset2 to4, reading slot2 as actual enemy128 / `OpponentAi`; both completed moves, all nine
 units, original 64 entries and seed0xA4991234 remain. Unsupported or rejected entry keeps that committed
 STAY and displays the actual candidate/reason. Frames and unrelated keys do not retry or replace the
-diagnostic. No enemy action, turn skip, next-ally search or round regeneration is implemented.
+diagnostic. The separate first inactive enemy consumer below handles actual128; this next-player
+API performs no enemy action, turn skip, next-ally search or round regeneration.
 Domain/Application next-player tests, the required selected-input chain and native `next-player`
 mode own this boundary; `stay` remains a compatible recipe name for the same current chain.
 
-### Next slice decision: first inactive enemy standby
+### Implemented first inactive enemy standby
 
-This is a bounded implementation contract, not an implemented capability. The next useful slice is
-the **complete first enemy's standby decision, optional movement and no-effect STAY**, ending before
-another actor is dispatched. Seed-copy and standby-data admission belong inside that slice: the
-existing owners supply the required facts, so a separate input-only slice would leave the same visible
-AI boundary. No active commandset, attack, spell, target scoring or multi-enemy loop is authorized.
+The controlled consumer implements the **complete first enemy's standby decision, optional movement
+and no-effect STAY**, ending at offset6 before actual enemy131. It owns explicit seed-copy admission,
+source standby tables, the existing raw weighted-grid helper and bounded source move-string behavior.
+Godot attempts it once after the second player's actual128 / OpponentAi result. No active commandset,
+attack, spell, target scoring or multi-enemy loop is implemented.
 
-**Controlled input policy for this decision:** add an independent 16-bit seed-copy input to the
+**Accepted controlled input policy:** an independent 16-bit seed-copy input belongs to the
 named player-ready comparison preset, explicitly `0x1234`. Its provenance is
 [`map3-battle01-player-ready-v1.json`](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json),
 `static.bridge.randomSeedCopy` and
 `expectedObservation.records[0].deterministicState.ready.randomSeedCopy`, both 4660. Carry it unchanged
 through the currently skipped original text/diamond-menu path and both controlled player turns.
-This retention is a proposed remake policy for acceptance with this plan; it is **not** an observation
+This retention is the accepted remake policy `battle01-controlled-player-ready-seed-copy-retention-v1`; it is **not** an observation
 of the original seed after two natural player actions. Do not select a seed to force an idle outcome,
 derive it from the main seed, or silently supply it at enemy entry. Missing/drifted input rejects.
-The current preset and Domain do not yet carry this field.
+The preset and every immutable Domain copy carry this distinct nullable field. The production preset
+requires it explicitly; the first enemy facade rejects a missing or drifted word without replacement.
 
 #### Exact current inputs and source branch
 
@@ -1143,7 +1146,7 @@ See [AI decision](../../docs/design/contracts/battle-ai-decision.md#commandsets-
 #### Deterministic first-enemy example
 
 **Confirmed:** the following is a read-only reduction using the accepted source parsers, thinking
-RNG helper and weighted-grid model, with the explicitly proposed retained seed-copy. It is not a new
+RNG helper and weighted-grid model, with the explicitly accepted retained seed-copy. It is not a new
 H3 observation. The [randomness owner](../../docs/design/contracts/randomness.md) and independent
 [`random-services-v1.json`](../../tests/fixtures/h3/random-services-v1.json) resolve the byte lane:
 the base-address byte is the **high byte of the big-endian word**. Thus 1234h starts from 12h, not34h.
@@ -1276,10 +1279,9 @@ reassembles the preserved low byte. The third call's return0 must not be written
 helper-return seed. Candidate filtering must precede the final range choice; assuming two candidates
 would consume a different RNG stream and select the wrong result.
 
-#### Next implementation ownership and acceptance
+#### Implementation ownership and acceptance
 
-Only a separately anchored implementation slice may change runtime code. Its proposed exact paths,
-all relative to `remake/`, are:
+The bounded implementation owners, all relative to `remake/`, are:
 
 | Owned paths | Responsibility |
 | --- | --- |
@@ -1326,7 +1328,7 @@ it must retain the actual next candidate131 at offset6 without attempting its AI
 Frames and old keys must not reenter the completed enemy, discard the prior STAY on rejection, or
 pretend original movement/diamond/menu animation executed.
 
-Acceptance for that later implementation is the required real selected-input chain through this
+Acceptance is the required real selected-input chain through this
 single enemy, plus focused tests for all immediate-idle rolls, both standby tables, actual blocked/
 occupied/previous-index exclusions, no-alternative memory clearing, and source move-string replay.
 Compare the three calls/147 generator steps and final3934h independently with the existing Python
@@ -1336,9 +1338,12 @@ proving no partial commit and both earlier receipts retained. Use the committed 
 official Godot gates, then one new bounded native mode showing the enemy outcome and closed next
 candidate; do not replay all prior modes.
 
-For **this plan-only change**, use only the read-only reduction above, clean committed
-`uv run sf2 verify plan --base origin/main --head HEAD`, and normal `uv run sf2 verify`.
-H0 missing input is reported honestly; no full .NET/Godot/ROM/H3 run or asset transaction is required.
+Use the read-only reduction above, clean committed `uv run sf2 verify plan --base origin/main --head HEAD`,
+the selected locked .NET and official Godot gates, the required real input chain, one bounded
+`enemy-standby` native review and normal `uv run sf2 verify`. H0 missing input is reported honestly;
+no ROM/H3 replay or asset transaction is required. The native mode captures only the completed enemy
+and closed-input endpoint; its [recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
+owns source-copy and process receipts. The next stopping condition remains actual131 before dispatch.
 Natural caller state, seed-copy lifetime, timing, original layers/animation, active AI, later enemies/
 rounds, victory and H4 remain **Unknown** or unimplemented at their existing owners.
 

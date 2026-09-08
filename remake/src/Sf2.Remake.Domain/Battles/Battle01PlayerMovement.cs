@@ -104,6 +104,10 @@ public sealed class Battle01PlayerMovementSelection
 
 public static class Battle01PlayerMovement
 {
+    // Pinned c834c652 landEffectSettingsAndMoveCosts row6: enemy Hovering, not Flying5.
+    // Standby uses raw terrain propagation, separately from the player range/preview policy.
+    internal static IReadOnlyList<sbyte> HoveringCosts { get; } = Array.AsReadOnly<sbyte>(
+        [2, 2, 2, 2, 2, 2, 2, -1, 2, -1, -1, -1, -1, -1, -1, -1]);
     public static Battle01InitializedState SelectDestination(Battle01InitializedState current, int actorIndex, MapPosition destination)
     {
         var control = RequireControl(current, actorIndex, allowActionChoice: false);

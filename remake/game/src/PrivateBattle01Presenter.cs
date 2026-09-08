@@ -91,7 +91,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         {
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "Space: STAY and end this turn   Backspace: cancel relocation",
-            Battle01Phase.PlayerTurnCompleted => "Input closed. Candidate not started. Relaunch starts Map 3.",
+            Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted =>
+                "Input closed. Candidate not started. Relaunch starts Map 3.",
             _ => "Current battle retained. Relaunch starts Map 3.",
         };
         return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, completion?.CompletedActorIndex,

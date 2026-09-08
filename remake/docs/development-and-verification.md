@@ -125,8 +125,11 @@ occupancy, cancel restoration and a subsequent STAY exercise the complete API ch
 nine units and seed0xA4991234 and advance raw byte offset0 to2. Next entry must use actual candidate2,
 class1/CENTAUR2, budget14 and current occupancy. Its move to (7,17), cancellation to (7,18) and
 second STAY must preserve actor1 at (9,17), both receipts and all64 slots. Offset4 must expose actual
-enemy128 / OpponentAi; unavailable entry retains the exact second completed snapshot. Only shared player-ready fixture
-fields are compared; the test does not claim original control execution, elapsed time or RNG chronology.
+enemy128 / OpponentAi; that classifier retains the exact second completed snapshot. The enemy-standby
+facade must then move128 to(6,3), record RNG ranges8/2/1 with results7/0/0 and61/85/1 generator steps,
+seed-copy1234 to3934, memory0 to14h and tested-mask7 to0. It preserves mainA4991234, all stats by
+identity, both earlier receipts and all64 slots, stopping offset6 before131. Shared player-ready fixture
+fields corroborate only their named seam; this is not original natural control/timing/RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
 
@@ -172,6 +175,14 @@ exact snapshot/actor guards, status/AI/profile/sentinel boundaries and late rang
 partial word or state commit. The movement tests compare Centaur and Healer reachability through
 forest/hills/desert and derive the budget from effective MOV.
 
+Enemy standby ownership is `FullyQualifiedName~Battle01EnemyStandbyTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01EnemyStandbyTests` in Application. Cover all immediate-idle
+rolls, both tables, previous-index/terrain/occupancy exclusions, no-alternative memory clearing,
+source accumulated direction-mask behavior and incomplete paths. Range0/1 and signed high-byte/range
+edges retain actual RNG advancement. Missing/drifted seed-copy and late terrain/stat/occupancy/policy
+failures must preserve the full second STAY snapshot. The owning plan includes the independent
+existing Python helper and raw-grid reduction; no new original runtime observation is implied.
+
 The thin Battle01 Godot consumer adds the focused Godot filters
 `Map3RuntimeProfileSelectionTests|Map3InputAdapterTests|PrivateMap3PresenterTests|PrivateBattle01PresenterTests`
 (each prefixed by `FullyQualifiedName~`). They cover all-or-none/private-only/path-free admission,
@@ -186,12 +197,12 @@ It seeds Map40 once, drives the 28-input Pending route and N/I/Space/Backspace t
 physical-key input events, captures Pending/ready/selected/provisional/cancelled/rejected frames,
 and checks snapshot/occupancy/RNG/offset retention and old-layer/input isolation. Inspect the images
 for overlap and clipping in addition to the receipt. This mode does not replay the old twelve frames
-or assert natural Map3 continuity, original scene fidelity or H3/H4 closure. For next-player
-acceptance, use only the bounded `next-player` mode (`stay` remains an alias) after the owning
-managed gates: four captures at automatic next-player entry, second provisional movement, second
-cancel and the enemy boundary. The same real key adapter must preserve both completed moves and
-the full order/RNG, reach raw offset4 / candidate128 / OpponentAi, and retain the exact endpoint
-and diagnostic across old battle/exploration keys. Do not replay earlier modes solely for a new commit.
+or assert natural Map3 continuity, original scene fidelity or H3/H4 closure. For first-enemy standby
+acceptance, use only `enemy-standby` after the owning managed gates: two captures show its completed
+west move/STAY and the same closed endpoint after old keys. Require all three linked receipts,
+offset6/actual131 before dispatch, seed-copy3934, memory14h and mainA4991234 unchanged. The retained
+`next-player` mode (`stay` alias) has four captures including its current enemy-completed endpoint.
+Do not replay earlier modes solely for a new commit.
 
 For the Map57 base consumer, add focused `PrivateBattle01BaseViewProjectionTests`,
 `PrivateOriginalMapBaseViewportTests` and `PrivateLocalPresentationAssetCatalogTests`. They cover

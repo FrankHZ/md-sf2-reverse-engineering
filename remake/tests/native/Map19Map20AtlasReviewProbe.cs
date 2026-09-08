@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -179,7 +179,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
-        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player";
+        bool enemyReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-standby";
+        bool stayReview = enemyReview || System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player";
         if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
@@ -260,37 +261,48 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 firstReceipt.BeforeAfterTurn == new Battle01FactionCounts(3, 6) &&
                 firstReceipt.AfterAfterTurn == new Battle01FactionCounts(3, 6),
                 "Candidate-only supplement and current occupancy preserve the first completed move");
-            await CaptureControl("01-next-player");
+            if (!enemyReview) await CaptureControl("01-next-player");
             await PressBattleKey(Key.I); await PressBattleKey(Key.Space);
             var secondMoved = _session.PrivateOriginalBattle01!;
             Require(secondMoved.Battle.Phase == Battle01Phase.PlayerActionChoice &&
                 secondMoved.Battle.Roster[2].Position == new MapPosition(7, 17) &&
                 secondMoved.Battle.Roster[1].Position == destination &&
                 ReferenceEquals(firstReceipt, secondMoved.Battle.TurnCompletion), "Second player's independent provisional movement");
-            await CaptureControl("02-second-provisional");
+            if (!enemyReview) await CaptureControl("02-second-provisional");
             await PressBattleKey(Key.Backspace);
             var secondCancelled = _session.PrivateOriginalBattle01!;
             Require(secondCancelled.Battle.Roster[2].Position == new MapPosition(7, 18) &&
                 secondCancelled.Battle.Roster[1].Position == destination &&
                 secondCancelled.Battle.Occupancy.SequenceEqual(next.Battle.Occupancy) &&
                 ReferenceEquals(firstReceipt, secondCancelled.Battle.TurnCompletion), "Second cancel preserves the first STAY");
-            await CaptureControl("03-second-cancelled");
+            if (!enemyReview) await CaptureControl("03-second-cancelled");
             await PressBattleKey(Key.I); await PressBattleKey(Key.Space); await PressBattleKey(Key.Space);
             var completed = _session.PrivateOriginalBattle01!;
             var end = completed.Battle;
-            Require(end.Phase == Battle01Phase.PlayerTurnCompleted && end.FirstControl is null &&
-                end.TurnCompletion?.CompletedActorIndex == 2 && ReferenceEquals(end.TurnCompletion.Previous, firstReceipt),
-                "Second STAY remains committed after unsupported next dispatch");
-            Require(end.FirstRound!.CurrentTurnOffset == 4 && end.FirstRound.CurrentCandidate?.CombatantIndex == 128 &&
-                end.FirstRound.CurrentCandidate == battle.FirstRound!.Slots[2] &&
+            Require(end.Phase == Battle01Phase.EnemyTurnCompleted && end.FirstControl is null &&
+                end.TurnCompletion?.CompletedActorIndex == 128 && end.TurnCompletion.Previous?.CompletedActorIndex == 2 &&
+                ReferenceEquals(end.TurnCompletion.Previous.Previous, firstReceipt), "First enemy completion retains both player STAYs");
+            Require(end.FirstRound!.CurrentTurnOffset == 6 && end.FirstRound.CurrentCandidate?.CombatantIndex == 131 &&
+                end.FirstRound.CurrentCandidate == battle.FirstRound!.Slots[3] &&
                 ReferenceEquals(end.FirstRound.Slots, battle.FirstRound.Slots) && end.FirstRound.Slots.Count == 64 &&
                 end.RandomSeedImage == 0xA4991234 && end.Roster.Count == 9 &&
                 end.Roster[1].Position == destination && end.Roster[2].Position == new MapPosition(7, 17) &&
-                ReferenceEquals(completed.Preparation, ready.Preparation), "Actual enemy boundary preserves both moves, RNG and order");
+                ReferenceEquals(completed.Preparation, ready.Preparation), "Next enemy boundary preserves both player moves, main RNG and order");
+            var standby = end.TurnCompletion!.EnemyStandby!;
+            Require(end.Roster[3].Position == new MapPosition(6, 3) && end.Roster[3].Deployment.Position == new MapPosition(7, 3) &&
+                end.OccupantAt(new(7, 3)) == -1 && end.OccupantAt(new(6, 3)) == 128 &&
+                standby.MoveString.SequenceEqual(new byte[] { 2, 255 }) && standby.Rolls.Select(roll => roll.Range).SequenceEqual(new byte[] { 8, 2, 1 }) &&
+                standby.Rolls.Select(roll => roll.GeneratorSteps).SequenceEqual(new[] { 61, 85, 1 }) &&
+                ready.Battle.RandomSeedCopy == 0x1234 && end.RandomSeedCopy == 0x3934 && end.AiMemory[0] == 0x14 &&
+                end.NewlyTestedRegionMask == 0 && end.RegionFlags90Through105.All(flag => !flag) &&
+                end.Roster.Select((unit, i) => ReferenceEquals(unit.Stats, battle.Roster[i].Stats)).All(value => value),
+                "Source standby rolls, west path, memory and unchanged effective stats");
             Require(end.TurnCompletion!.BeforeAfterTurn == new Battle01FactionCounts(3, 6) &&
-                end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3, 6), "Second STAY runs both faction gates");
+                end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3, 6), "Enemy STAY runs both faction gates");
             string stoppedStatus = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!.Status;
-            Require(stoppedStatus.Contains("128") && stoppedStatus.Contains("OpponentAi"), "Exact unsupported candidate and reason visible");
+            Require(stoppedStatus.Contains("Enemy standby") && stoppedStatus.Contains("(6,3)") && stoppedStatus.Contains("STAY complete"),
+                "Enemy standby move and completion visible");
+            if (enemyReview) await CaptureControl("01-enemy-standby");
             foreach (Key key in new[] { Key.I, Key.J, Key.K, Key.L, Key.Space, Key.Backspace, Key.N,
                 Key.W, Key.A, Key.S, Key.D, Key.F, Key.G, Key.B, Key.M })
             {
@@ -300,21 +312,21 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "Unrelated keys never retry dispatch or overwrite the boundary reason");
             }
             var view = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!;
-            Require(view.ActorIndex is null && view.CompletedActorIndex == 2 && view.NextCandidateIndex == 128 &&
+            Require(view.ActorIndex is null && view.CompletedActorIndex == 128 && view.NextCandidateIndex == 131 &&
                 view.Cursor is null && view.Path.Count == 0 && view.Tiles.All(tile => !tile.Reachable && !tile.CanStop),
                 "Completed actor is historical; next candidate has no range/cursor/control");
             var hidden = _root.GetChildren().OfType<CanvasItem>().Where(child => child is not PrivateBattle01Presenter).ToArray();
             Require(hidden.Length > 0 && hidden.All(child => !child.Visible), "All old canvas subtrees remain hidden after STAY");
-            await CaptureControl("04-ai-boundary");
+            await CaptureControl(enemyReview ? "02-input-closed" : "04-enemy-standby");
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
-                status = "Pass", scope = "controlled Map40 seed; real keys; two player STAYs and one unsupported enemy dispatch",
-                firstCompletedActor = actor, secondCompletedActor = 2, nextCandidate = view.NextCandidateIndex,
-                nextAvailability = "OpponentAi", nextStarted = false, rawOffsets = new[] { 0, 2, 4 },
+                status = "Pass", scope = "controlled Map40 seed; real keys; two player STAYs and first inactive enemy standby",
+                firstCompletedActor = actor, secondCompletedActor = 2, enemyCompletedActor = 128, nextCandidate = view.NextCandidateIndex,
+                nextStarted = false, rawOffsets = new[] { 0, 2, 4, 6 }, standby, seedCopy = end.RandomSeedCopy,
                 origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound.CurrentTurnOffset,
                 beforeAfterTurn = end.TurnCompletion.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
                 policy = end.TurnCompletion.Policy.Id, inputClosed = true, oldCanvasHidden = hidden.Length, frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=4 next-player");
+            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} {(enemyReview ? "enemy-standby" : "next-player")}");
             return;
         }
         foreach (Key key in new[] { Key.I, Key.W, Key.F, Key.B, Key.M, Key.N })

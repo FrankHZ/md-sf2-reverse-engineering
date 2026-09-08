@@ -401,6 +401,37 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(9, secondCompleted.Battle.Roster.Count); Assert.Same(prepared, secondCompleted.Preparation);
         Assert.Equal(destination, secondCompleted.Battle.Roster[1].Position);
         Assert.Equal(new MapPosition(7, 17), secondCompleted.Battle.Roster[2].Position);
+        Assert.Equal((ushort?)0x1234, initialized.Battle.RandomSeedCopy);
+        Assert.Equal(initialized.Battle.RandomSeedCopy, secondCompleted.Battle.RandomSeedCopy);
+        var enemyCompleted = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(secondCompleted, 128)).Snapshot;
+        var enemyState = enemyCompleted.Battle; var decision = enemyState.TurnCompletion!.EnemyStandby!;
+        Assert.Same(enemyCompleted, session.PrivateOriginalBattle01); Assert.Same(prepared, enemyCompleted.Preparation);
+        Assert.Same(secondCompleted.Battle.TurnCompletion, enemyState.TurnCompletion.Previous);
+        Assert.Equal(Battle01Phase.EnemyTurnCompleted, enemyState.Phase); Assert.Null(enemyState.FirstControl);
+        Assert.Equal(6, enemyState.FirstRound!.CurrentTurnOffset); Assert.Equal(order.Slots[3], enemyState.FirstRound.CurrentCandidate);
+        Assert.Equal((byte)131, enemyState.FirstRound.CurrentCandidate!.Value.CombatantIndex); Assert.Same(order.Slots, enemyState.FirstRound.Slots);
+        Assert.Equal(new MapPosition(6, 3), enemyState.Roster[3].Position); Assert.Equal(new MapPosition(7, 3), enemyState.Roster[3].Deployment.Position);
+        Assert.Equal(-1, enemyState.OccupantAt(new(7, 3))); Assert.Equal(128, enemyState.OccupantAt(new(6, 3)));
+        Assert.Equal(new byte[] { 2, 255 }, decision.MoveString); Assert.Equal(new byte[] { 8, 2, 1 }, decision.Rolls.Select(roll => roll.Range));
+        Assert.Equal(new byte[] { 7, 0, 0 }, decision.Rolls.Select(roll => roll.Result));
+        Assert.Equal(new[] { 61, 85, 1 }, decision.Rolls.Select(roll => roll.GeneratorSteps));
+        Assert.Equal(new int?[] { 2, 2, null, 2 }, decision.Candidates.Select(candidate => candidate.GridCost));
+        Assert.Equal(new int?[] { null, null, null, 131 }, decision.Candidates.Select(candidate => candidate.Occupant));
+        Assert.Equal((ushort?)0x3934, enemyState.RandomSeedCopy); Assert.Equal(0xA4991234u, enemyState.RandomSeedImage);
+        Assert.Equal(0x14, enemyState.AiMemory[0]); Assert.All(enemyState.AiMemory.Skip(1), value => Assert.Equal(0, value));
+        Assert.Equal(0, enemyState.NewlyTestedRegionMask); Assert.All(enemyState.RegionFlags90Through105, flag => Assert.False(flag));
+        Assert.Same(secondCompleted.Battle.AiLastTargets, enemyState.AiLastTargets); Assert.Null(enemyState.Roster[0].AiBitfield);
+        for (int i = 0; i < 9; i++)
+        {
+            Assert.Same(secondCompleted.Battle.Roster[i].Stats, enemyState.Roster[i].Stats);
+            Assert.Same(secondCompleted.Battle.Roster[i].Deployment, enemyState.Roster[i].Deployment);
+            Assert.Equal(secondCompleted.Battle.Roster[i].AiBitfield, enemyState.Roster[i].AiBitfield);
+            if (i != 3) Assert.Same(secondCompleted.Battle.Roster[i], enemyState.Roster[i]);
+        }
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01EnemyStandbyRejected>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(enemyCompleted, 131)).Diagnostic.Field);
+        Assert.Same(enemyCompleted, session.PrivateOriginalBattle01);
     }
 
     private static GameSession SeedControlledPending(string canonical)

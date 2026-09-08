@@ -47,7 +47,7 @@ internal static class PrivateBattle01Ui
 
         // An unavailable next dispatch has already been reported. Unrelated keys cannot retry it
         // or overwrite its precise reason; the existing presenter retains that result.
-        if (current.Battle.Phase == Battle01Phase.PlayerTurnCompleted) return null;
+        if (current.Battle.Phase is Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted) return null;
         if (current.Battle.FirstControl is not { } control)
             return "Current battle retained. First player control is unavailable; relaunch starts Map 3.";
         if (input == PrivateBattle01Input.Enter)
@@ -108,6 +108,8 @@ internal static class PrivateBattle01Ui
         {
             PrivateOriginalBattle01NextPlayerControlEntered entered =>
                 $"STAY complete. Player {entered.Snapshot.Battle.FirstControl!.ActorIndex} ready.",
+            PrivateOriginalBattle01NextPlayerControlUnavailable { Decision.Availability: Battle01FirstControlAvailability.OpponentAi,
+                Decision.ActorIndex: 128 } => EnterFirstEnemy(session, completed),
             PrivateOriginalBattle01NextPlayerControlUnavailable unavailable =>
                 $"Next control unavailable: candidate {unavailable.Decision.ActorIndex?.ToString() ?? "sentinel"} / {unavailable.Decision.Availability}.",
             PrivateOriginalBattle01NextPlayerControlRejected rejected =>
@@ -115,6 +117,16 @@ internal static class PrivateBattle01Ui
             _ => "Next control unavailable; committed STAY retained.",
         };
     }
+
+    private static string EnterFirstEnemy(GameSession session, PrivateOriginalBattle01SessionSnapshot completed) =>
+        session.CompletePrivateOriginalBattle01EnemyStandby(completed, 128) switch
+        {
+            PrivateOriginalBattle01EnemyStandbyCompleted done =>
+                $"Enemy standby: E0 (7,3) to ({done.Snapshot.Battle.Roster[3].Position.X},{done.Snapshot.Battle.Roster[3].Position.Y}); STAY complete.",
+            PrivateOriginalBattle01EnemyStandbyRejected rejected =>
+                $"Enemy standby rejected: {rejected.Diagnostic.Field}; second player STAY retained.",
+            _ => "Enemy standby unavailable; second player STAY retained.",
+        };
 }
 
 public sealed partial class Map3Root

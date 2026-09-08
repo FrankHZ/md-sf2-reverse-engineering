@@ -11,7 +11,8 @@ public sealed class Battle01StayCompletionPolicy
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01StayCompletionPolicy Policy,
-    Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null);
+    Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
+    Battle01EnemyStandbyDecision? EnemyStandby = null);
 
 public static class Battle01TurnCompletion
 {
@@ -24,16 +25,22 @@ public static class Battle01TurnCompletion
             throw new ArgumentException("STAY requires the current player's uncommitted action choice.", "phase");
         if (control.ActorIndex != actorIndex || order.CurrentCandidate?.CombatantIndex != actorIndex || actorIndex >= 128)
             throw new ArgumentException("STAY must name the current controlled player.", "actor");
+        return CompleteControlledStay(current, actorIndex, control.Movement.Range.EffectiveStatsAtEntry, policy);
+    }
 
+    internal static Battle01InitializedState CompleteControlledStay(Battle01InitializedState current, int actorIndex,
+        Battle01Stats entryStats, Battle01StayCompletionPolicy? policy, Battle01EnemyStandbyDecision? enemyStandby = null)
+    {
         // BattleLoop, pinned c834c652: defeated wrapper -> cleanup/count -> after-turn -> cleanup/count -> advance.
         // STAY never constructed a scene/worklist; unsupported deaths must not become empty cleanup.
         RequireDefeatedWrapperReturn(current);
         RequireEmptyKilledCleanup(current, "cleanup.before");
         var before = RequireContinuingFactions(current, "outcome.before");
-        NormalizeControlledNoEffectTurn(current, policy);
+        NormalizeControlledNoEffectTurn(current, actorIndex, entryStats, policy);
         RequireEmptyKilledCleanup(current, "cleanup.after");
         var after = RequireContinuingFactions(current, "outcome.after");
-        return new(current, order.AdvanceCompletedPlayerTurn(), new(actorIndex, policy!, before, after, current.TurnCompletion));
+        return new(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
+            new(actorIndex, policy!, before, after, current.TurnCompletion, enemyStandby));
     }
 
     private static void RequireDefeatedWrapperReturn(Battle01InitializedState current)
@@ -60,7 +67,8 @@ public static class Battle01TurnCompletion
         return new(allies, enemies);
     }
 
-    private static void NormalizeControlledNoEffectTurn(Battle01InitializedState current, Battle01StayCompletionPolicy? policy)
+    private static void NormalizeControlledNoEffectTurn(Battle01InitializedState current, int actorIndex,
+        Battle01Stats entryStats, Battle01StayCompletionPolicy? policy)
     {
         if (!ReferenceEquals(policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats))
             throw new ArgumentException("The unchanged, already-refreshed effective-stat policy must be explicit.", "policy");
@@ -83,9 +91,7 @@ public static class Battle01TurnCompletion
         }
         if (!occupancy.SequenceEqual(current.Occupancy))
             throw new ArgumentException("The retained live occupancy must match the complete roster.", "occupancy");
-        var movement = current.FirstControl!.Movement;
-        if (!ReferenceEquals(current.Roster.Single(unit => unit.Index == movement.Range.ActorIndex).Stats,
-                movement.Range.EffectiveStatsAtEntry))
+        if (!ReferenceEquals(current.Roster.Single(unit => unit.Index == actorIndex).Stats, entryStats))
             throw new ArgumentException("The actor's admitted effective stats must remain unchanged since control entry.", "stats");
         // All current production paths preserve the immutable initialized Stats objects. With no
         // status/item/action changes, retain them; never reconstruct base stats or stack equipment.

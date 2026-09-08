@@ -36,7 +36,7 @@ public sealed class Battle01FirstRoundOrder
     {
         if (Slots.Count != 64 || CurrentTurnOffset % EntrySize != 0 ||
             CurrentTurnOffset >= (Slots.Count - 1) * EntrySize || CurrentCandidate is null)
-            throw new ArgumentException("A completed player may advance one entry; round regeneration is unsupported.", "turnOrder");
+            throw new ArgumentException("A completed actor may advance one entry; round regeneration is unsupported.", "turnOrder");
         return new(this);
     }
 }

@@ -85,7 +85,9 @@ routes, and turn generation in that order; Application then replaces the single 
 The same phase-capable battle state now owns the updated `AiBitfield`, region flags, separate
 `NewlyTestedRegionMask`, `RandomSeedImage` and `FirstRound` buffer. `InitializationAiBitfield`
 retains only the source-derived initial value. `GeneratorWord` is derived from the image's high
-16 bits; it is not another RNG authority. The low word remains unchanged.
+16 bits; it is not another RNG authority. The low word remains unchanged. Independent nullable
+`RandomSeedCopy` comes from the named controlled preset as1234 and is retained across the round
+and both player turns. Its retention policy does not establish the original natural seed lifetime.
 
 The completed phase is `FirstRoundGenerated`, with a full 64-slot signed/stable buffer and current
 turn offset0. `FirstCandidate` is data consumed by the distinct control entry, not an executed action. Old
@@ -149,9 +151,16 @@ through `Previous` as provenance. Active control determines the movement phase a
 even when that historical receipt exists. The UI invokes next entry once after each successful STAY,
 with no extra N. Unavailable or rejected entry leaves the exact committed STAY object in place and
 shows the actual candidate/reason; completed-phase key handling returns no replacement status.
-There is no frame retry, skip or new-round loop. In the accepted sequence player2 completes before
-enemy128 / OpponentAi stops dispatch at offset4. This endpoint shows completed actor and next candidate
-with no current range/path/cursor. Old battle and exploration inputs preserve it and its diagnostic.
+There is no frame retry, skip or new-round loop. At offset4, actual enemy128 / OpponentAi invokes
+`CompletePrivateOriginalBattle01EnemyStandby` once. The Domain admits the inactive regular GIZMO
+branch, runs thinking RNG and source standby tables against raw Hovering6 terrain plus separate
+occupancy, builds the bounded source move string, and shares the ordered no-effect completion.
+The separate seed-copy, memory[0], live move and tested-mask clear are local allocations until all
+completion checks pass and Application replaces one snapshot. A rejection retains the exact second
+player STAY and its diagnostic. Success adds an enemy decision to the linked completion receipt:
+enemy128 moves west to(6,3), seed-copy3934, memory14h, main RNG unchanged. `EnemyTurnCompleted`
+stops at offset6 before actual131, with no current range/path/cursor. Old keys preserve this endpoint.
+No active commandset, attack/spell, generic AI controller or original movement animation is consumed.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only

@@ -7,6 +7,18 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01FirstRoundTests
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0x1234)]
+    public void RoundGenerationRetainsTheIndependentSeedCopyWithoutUsingIt(int? copy)
+    {
+        var initial = Initial(); var seeded = new Battle01InitializedState(initial.Roster.ToArray(), initial.Regions.ToArray(),
+            initial.Terrain.ToArray(), initial.Occupancy.ToArray(), initial.RandomSeedImage, (ushort?)copy);
+        var after = Battle01FirstRound.Enter(seeded);
+        Assert.Equal((ushort?)copy, after.RandomSeedCopy); Assert.Equal(0xA4991234u, after.RandomSeedImage);
+        Assert.Equal(Battle01FirstRound.Enter(initial).FirstRound!.Slots, after.FirstRound!.Slots);
+    }
+
     [Fact]
     public void BaselineTestsThreeRegionsWithoutActivatingThemAndComputesTheAcceptedRound()
     {

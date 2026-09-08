@@ -47,6 +47,8 @@ public sealed class PrivateOriginalBattle01StartupTests
     [InlineData("missing-party", "party")]
     [InlineData("party-id", "party.id")]
     [InlineData("rng", "party.randomSeed")]
+    [InlineData("missing-copy", "party.randomSeedCopy")]
+    [InlineData("drifted-copy", "party.randomSeedCopy")]
     [InlineData("difficulty", "party.difficulty")]
     [InlineData("stats", "party.allies")]
     public void InvalidPreparationRequestsRejectBeforeReadingAndWithoutMutation(string drift, string field)
@@ -67,7 +69,8 @@ public sealed class PrivateOriginalBattle01StartupTests
                 10, ally.EffectiveDefense, ally.EffectiveAgility, ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells);
         }
         var party = new OriginalBattle01ControlledPartyPreset(drift == "party-id" ? "unnamed" : acceptedParty.Id,
-            drift == "rng" ? 1u : acceptedParty.RandomSeed, (byte)(drift == "difficulty" ? 1 : 0), allies);
+            drift == "rng" ? 1u : acceptedParty.RandomSeed, (byte)(drift == "difficulty" ? 1 : 0), allies,
+            drift == "missing-copy" ? null : drift == "drifted-copy" ? (ushort)0x3412 : acceptedParty.RandomSeedCopy);
         var source = new Source(new OriginalBattle01StartupImported(Definition()));
         var result = Assert.IsType<PrivateOriginalBattle01StartupRejected>(session.PreparePrivateOriginalBattle01Startup(
             pending, drift == "missing-source" ? null : source, drift == "missing-party" ? null : party));

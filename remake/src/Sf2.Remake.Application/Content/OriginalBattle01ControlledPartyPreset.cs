@@ -51,9 +51,11 @@ public sealed class OriginalBattle01ControlledPartyPreset
     public const string ComparisonId = "private-local-battle01-player-ready-comparison-inputs-v1";
     public const string EvidenceOwner = "sf2-map3-battle01-player-ready-runtime-v1";
     public const uint ComparisonSeed = 0x1234;
+    public const ushort ComparisonSeedCopy = 0x1234;
+    public const string SeedCopyPolicyId = "battle01-controlled-player-ready-seed-copy-retention-v1";
 
     public OriginalBattle01ControlledPartyPreset(string id, uint randomSeed, byte difficulty,
-        IEnumerable<OriginalBattle01ControlledAlly> allies)
+        IEnumerable<OriginalBattle01ControlledAlly> allies, ushort? randomSeedCopy = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(allies);
@@ -62,10 +64,12 @@ public sealed class OriginalBattle01ControlledPartyPreset
             !copy.Select(ally => ally.Id).SequenceEqual(new byte[] { 0, 1, 2 }))
             throw new ArgumentException("The controlled party requires ordered ally slots 0, 1 and 2.", nameof(allies));
         Id = id; RandomSeed = randomSeed; Difficulty = difficulty; Allies = Array.AsReadOnly(copy);
+        RandomSeedCopy = randomSeedCopy;
     }
 
     public string Id { get; }
     public uint RandomSeed { get; }
+    public ushort? RandomSeedCopy { get; }
     public byte Difficulty { get; }
     public IReadOnlyList<OriginalBattle01ControlledAlly> Allies { get; }
 
@@ -75,12 +79,14 @@ public sealed class OriginalBattle01ControlledPartyPreset
             new(0, 0, 1, 12, 12, 8, 8, 9, 4, 4, 6, 0, [199, 0, 127, 127], [10, 63, 63, 63]),
             new(1, 4, 1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213, 0, 0, 127], [0, 63, 63, 63]),
             new(2, 1, 1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184, 0, 127, 127], [63, 63, 63, 63]),
-        ]);
+        ], ComparisonSeedCopy);
 
     public OriginalBattle01StartupDiagnostic? GetAdmissionDiagnostic()
     {
         if (Id != ComparisonId) return new("party.id", "Only the named controlled comparison preset is admitted.");
         if (RandomSeed != ComparisonSeed) return new("party.randomSeed", "The comparison seed must be explicitly 0x1234.");
+        if (RandomSeedCopy != ComparisonSeedCopy)
+            return new("party.randomSeedCopy", "The independent comparison seed-copy must be explicitly 0x1234.");
         if (Difficulty != 0) return new("party.difficulty", "The comparison uses explicit difficulty zero.");
         if (!Allies.Zip(PlayerReadyComparison.Allies).All(pair => pair.First.Matches(pair.Second)))
             return new("party.allies", "Controlled effective stats, status, equipment or spells drifted.");
