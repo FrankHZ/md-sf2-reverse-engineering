@@ -656,7 +656,8 @@ is inferred from these values. Application validates the complete typed deployme
 provenance at every custom port, so a source cannot substitute a different grid with matching counts.
 
 **Controlled comparison policy:** `private-local-battle01-player-ready-comparison-inputs-v1` selects
-allies 0/1/2, explicit difficulty 0 and RNG seed `0x1234`. Its class, level, HP/MP, effective ATT/DEF/AGI/MOV,
+allies 0/1/2, explicit difficulty 0 and RNG RAM image `0x00001234` (word interpretation below).
+Its class, level, HP/MP, effective ATT/DEF/AGI/MOV,
 status, four packed item words and four packed spell bytes bind to the accepted
 [player-ready fixture](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json) through tests.
 These are named comparison inputs, not a naturally carried save or original base stats. In particular,
@@ -754,13 +755,83 @@ provenance. Current exploration getters and all their movement, animation, inter
 mutation entries reject after the commit. A fresh GameSession starts at controlled Map3 with neither
 Pending nor Battle01.
 
-The endpoint is `Battle01Phase.BeforeFirstRound` with explicit seed `0x1234`, elapsed seconds0,
+The initialization endpoint is `Battle01Phase.BeforeFirstRound` with RAM image `0x00001234`, elapsed seconds0,
 cleared region flags and AI memory. There is no generated order, selected actor, region activation,
 spawned round entrant, battle command, victory or UI consumer. Skipped time-dependent choreography
-does not preserve original RNG chronology or promise actor1 first. The next owner starts with this
-state and implements the accepted round-entry order. A later UI must recognize battle flow before
+does not preserve original RNG chronology or promise actor1 first. The first-round consumer below
+starts with this state and implements the accepted round-entry order. A later UI must recognize battle flow before
 reading exploration and must not relabel Map40 art as Map57. Natural continuity, original
 presentation and H4 remain **Unknown**.
+
+### Implemented controlled first round
+
+`GameSession.EnterPrivateOriginalBattle01FirstRound` accepts only this session's exact current
+initialized snapshot in `BeforeFirstRound`. `Domain/Battles/Battle01FirstRound.cs` performs enemy
+activation, Battle01 region-cutscene routing, spawn admission and turn generation in that order.
+Application replaces the single immutable current battle snapshot only after all validation,
+projection and result allocation succeed. Failure preserves flags, roster, RNG and phase; a repeated
+request cannot generate another round. Initialization is not repeated, Pending stays consumed, and
+the original Prepared/Map40/route/locomotion/bridge provenance remains unchanged.
+
+The same battle state becomes `FirstRoundGenerated` and owns current enemy `AiBitfield`, sixteen
+region flags, `NewlyTestedRegionMask`, RNG image and the `FirstRound` buffer. Source-derived
+`InitializationAiBitfield` is explicitly historical. With the controlled starting positions the
+three polygons are tested (mask7) and no region activates; these are distinct fields. The six enemies
+retain their source-composed `0x2060`/`0x2070` bits. Region membership uses the accepted quad split
+into triangles `(1,2,4)` and `(3,2,4)`, with edges included. The y12 and secondary-region fixtures
+test separate controlled boundaries: primary activation sets bit0, primary takes precedence, and
+secondary activation sets both low bits while preserving the remaining source bits.
+
+Battle01 has no region-cutscene table row, so `RegionCutsceneRows` is empty. All nine units remain
+STARTING and have no respawn/hidden admission candidate, so `SpawnedCombatants` is empty. These
+ordered seams neither run original programs/animation nor create another batch of enemies. Other
+spawn modes and battles are unsupported at this boundary.
+
+**RNG storage policy and provenance:** the accepted startup comparison's uint `0x00001234` is the
+four-byte big-endian RAM image written/read by
+[`map3_messenger_acceptance_observer.lua`](../../tools/bizhawk/map3_messenger_acceptance_observer.lua),
+`write_u32_be` at line427 and `read_u32_be` at line2084. The pinned
+`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/tech/randomnumbergenerator.asm / GenerateRandomNumber`, reads and updates the
+16-bit big-endian word at RANDOM_SEED. Thus this image begins with generator word0 and retained
+low word `0x1234`; truncating the uint to ushort would silently select a different seed.
+Main-gate accepted this storage interpretation for the fixed controlled comparison. The state now
+names the one authority `RandomSeedImage`, with a derived `GeneratorWord`; no memory bus or
+seed-copy RNG is modeled. The existing party preset retains the observation's input representation.
+
+The main helper updates `word = (word * 13 + 7) & 0xFFFF`, doubles the range with word wrapping,
+multiplies unsigned, takes the high product word and halves it, as owned by
+[technical services](../../docs/research/technical-services.md#rng-service-contract) and
+[runtime RNG](../../docs/research/runtime-rng-and-battle-math.md#confirmed-base-rng). Zero range still
+advances the word. Activation and the empty route/spawn seams consume no additional random values
+under this no-presentation policy. Each of the nine current combatants consumes two range0 calls
+and one range3 call, giving 27 calls from word0 to `0xA499`, and image `0xA4991234` /2761495092.
+The low word remains `0x1234`; RANDOM_SEED_COPY does not participate.
+
+Turn generation admits all placed/living allies then enemies, including those with no active
+region. It masks AGI to seven bits, adds/subtracts the bounded RNG pair, then adds `RNG(3)-1`
+and wraps the stored byte. The accepted second-entry helper uses `floor((AGI & 127)*5/6)` with
+only its own bounded pair. The full 64-slot `(combatant, altered agility)` buffer starts at
+`FF/FF` and uses signed descending stable comparisons, matching pinned
+`disasm/code/gameflow/battle/battleloop/turnorderfunctions.asm / GenerateBattleTurnOrder` and
+`AddCombatantAndRandomizedAgiToTurnOrder`. Sentinels participate in the sort: the accepted boundary
+case's score135 entry remains after the sentinels, while a score255 entry retains its stable tie
+before them. The implementation preserves the buffer rather than compacting those entries.
+
+For the current effective AGI4/5/7 and six AGI5 enemies, computed entries are
+`1:6,2:6,128:5,131:5,133:5,129:4,130:4,132:4,0:3`, followed by sentinels. The order/current offset0,
+unchanged activation flags/bits and final RNG image agree with the shared seam in
+[`map3-battle01-player-ready-v1.json`](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json).
+They are computed from current state, not copied from the observation. The separate
+`rng-v1.json` uses a 16-bit seed at the helper seam; `battle01-turn-order-v1.json` uses the
+Debug Battle Test party with Bowie AGI99 and a different seed interpretation. Neither replaces this
+controlled scenario's party or expected order.
+
+The endpoint exposes `FirstCandidate` as data at current-turn offset0, without dispatching or
+executing that actor. No input controller, move/attack/AI, later round, victory, UI or Map57 art is
+implemented here. The comparison does not import executed-actor lists, observed seconds/frame
+counters, or original timing-dependent RNG chronology. Actor1 is this computed candidate, not a
+universal player-first rule. Natural continuity, original presentation and H4 remain **Unknown**.
 
 ### Ordered path to the first controllable Battle 01 turn
 
@@ -778,9 +849,8 @@ presentation and H4 remain **Unknown**.
    not claim original programs executed. Keep intro/start F451 separate from F401 unlock and F501 completion.
    Atomically consume pending into a battle-owned Map 57 state only when all required inputs validate;
    failure retains pending. Roster and terrain/occupancy now belong to the initialized battle.
-3. From the pre-first-round snapshot, implement enemy activation, region-cutscene routing, spawning
-   admission and turn generation in the accepted order under Domain/Application. Then dispatch the
-   first generated living actor through the accepted control branch and connect the
+3. **Controlled first-round generation implemented.** Consume its exact generated state and dispatch
+   the first living entry at current-turn offset0 through the accepted control branch, then connect the
    [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
    [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
    terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported

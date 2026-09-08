@@ -64,7 +64,7 @@ Controlled Battle01 initialization is a distinct Domain transition, independent 
 preset into Domain values. `GameSession.InitializePrivateOriginalBattle01` validates the exact
 current Prepared/Pending, performs all potentially failing projections, then consumes Pending and
 installs one `PrivateOriginalBattle01SessionSnapshot`. Its `Battle` owns current Map57, roster,
-terrain/occupancy, cleared AI/region state, RNG and the pre-first-round phase.
+terrain/occupancy, phase-dependent AI/region state, RNG and round order.
 
 `PrivateOriginalFlowStage` and `PrivateOriginalCurrentMap` identify the live private state.
 After initialization, `PrivateOriginalMapSnapshot` and locomotion access reject; all old movement,
@@ -79,6 +79,21 @@ exploration snapshot; it must not label retained Map40 art as Map57. The initial
 next round-entry input, before activation, spawn admission, turn ordering or actor selection. Its
 fixed enemy difficulty and already-refreshed effective ally policies are recorded in the
 [owning plan](./map03-playability-plan.md#implemented-controlled-initialization).
+
+`EnterPrivateOriginalBattle01FirstRound` accepts only the exact current battle snapshot in
+`BeforeFirstRound`. Domain projects enemy activation, the fixed empty Battle01 cutscene/spawn
+routes, and turn generation in that order; Application then replaces the single current snapshot.
+The same phase-capable battle state now owns the updated `AiBitfield`, region flags, separate
+`NewlyTestedRegionMask`, `RandomSeedImage` and `FirstRound` buffer. `InitializationAiBitfield`
+retains only the source-derived initial value. `GeneratorWord` is derived from the image's high
+16 bits; it is not another RNG authority. The low word remains unchanged.
+
+The completed phase is `FirstRoundGenerated`, with a full 64-slot signed/stable buffer and current
+turn offset0. `FirstCandidate` is data for the next controller slice, not an executed actor. Old
+immutable snapshots and Prepared inputs remain provenance; none is exposed as another current map
+or live round state. Duplicate/foreign/stale/invalid requests commit nothing, and old exploration
+commands remain closed. The [round policy](./map03-playability-plan.md#implemented-controlled-first-round)
+records the RNG storage interpretation and the exact shared comparison seam.
 
 Two areas currently concentrate more responsibility than the target shape:
 

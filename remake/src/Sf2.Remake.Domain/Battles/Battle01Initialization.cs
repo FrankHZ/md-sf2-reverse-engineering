@@ -67,9 +67,10 @@ public sealed record Battle01EnemyInput(byte DefinitionId, byte SourceUnknownByt
 public sealed class Battle01Combatant
 {
     internal Battle01Combatant(Battle01Deployment deployment, Battle01Stats stats, byte? classId,
-        Battle01EnemyInput? enemySource)
+        Battle01EnemyInput? enemySource, ushort? aiBitfield = null)
     {
         Deployment = deployment; Stats = stats; ClassId = classId; EnemySource = enemySource;
+        AiBitfield = aiBitfield ?? InitializationAiBitfield;
     }
     public Battle01Deployment Deployment { get; }
     public int Index => Deployment.CombatantIndex;
@@ -83,20 +84,31 @@ public sealed class Battle01Combatant
     public byte? Prowess => EnemySource?.BaseProwess;
     public byte? MovementTypeAndAiCommandSet => EnemySource is null ? null :
         (byte)((EnemySource.MovementType << 4) | Deployment.AiCommandSet);
-    // Initialization composition only. ActivateEnemies has not run.
+    // Historical initialization composition; later activation updates AiBitfield.
     public ushort? InitializationAiBitfield => EnemySource is null ? null :
         (ushort)((EnemySource.BaseAiBitfield & 0xF000) | ((Deployment.Spawn & 15) << 8) | Deployment.SourceFiller);
+    public ushort? AiBitfield { get; }
+    internal Battle01Combatant WithAiBitfield(ushort value) => value == AiBitfield
+        ? this : new(Deployment, Stats, ClassId, EnemySource, value);
 }
 
-public enum Battle01Phase { BeforeFirstRound }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated }
 
 public sealed class Battle01InitializedState
 {
     internal Battle01InitializedState(Battle01Combatant[] roster, Battle01Region[] regions,
-        byte[] terrain, int[] occupancy, uint randomSeed)
+        byte[] terrain, int[] occupancy, uint randomSeedImage)
     {
         Roster = Array.AsReadOnly(roster); Regions = Array.AsReadOnly(regions);
-        Terrain = Array.AsReadOnly(terrain); Occupancy = Array.AsReadOnly(occupancy); RandomSeed = randomSeed;
+        Terrain = Array.AsReadOnly(terrain); Occupancy = Array.AsReadOnly(occupancy); RandomSeedImage = randomSeedImage;
+    }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
+        bool[] regionFlags, ushort newlyTestedRegionMask, uint randomSeedImage, Battle01FirstRoundOrder firstRound)
+    {
+        Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
+        AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
+        RegionFlags90Through105 = Array.AsReadOnly(regionFlags); NewlyTestedRegionMask = newlyTestedRegionMask;
+        RandomSeedImage = randomSeedImage; FirstRound = firstRound;
     }
     public MapId Map { get; } = new("map57");
     public int BattleIndex => 1;
@@ -116,13 +128,17 @@ public sealed class Battle01InitializedState
     public IReadOnlyList<byte> AiLastTargets { get; } = Array.AsReadOnly(Enumerable.Repeat((byte)255, 48).ToArray());
     public IReadOnlyList<byte> AiMemory { get; } = Array.AsReadOnly(new byte[48]);
     public IReadOnlyList<bool> RegionFlags90Through105 { get; } = Array.AsReadOnly(new bool[16]);
-    public uint RandomSeed { get; }
+    // Four-byte big-endian RAM image. The main generator owns only its high 16-bit word.
+    public uint RandomSeedImage { get; }
+    public ushort GeneratorWord => (ushort)(RandomSeedImage >> 16);
+    public ushort NewlyTestedRegionMask { get; }
+    public Battle01FirstRoundOrder? FirstRound { get; }
     public int ElapsedSeconds => 0;
     public bool SuspendedFlag88 => false;
     public bool IntroFlag451 => true;
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
-    public Battle01Phase Phase => Battle01Phase.BeforeFirstRound;
+    public Battle01Phase Phase => FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;
     public byte TerrainAt(MapPosition position) => Terrain[TerrainIndex(position)];
     public int OccupantAt(MapPosition position) => Occupancy[TerrainIndex(position)];
     private static int TerrainIndex(MapPosition position)
@@ -138,13 +154,13 @@ public static class Battle01Initialization
 {
     public static Battle01InitializedState Initialize(IEnumerable<Battle01Deployment> deployment,
         IEnumerable<Battle01Region> regions, IEnumerable<byte> terrain,
-        IEnumerable<Battle01AllyInput> allies, Battle01EnemyInput enemy, uint randomSeed, byte difficulty)
+        IEnumerable<Battle01AllyInput> allies, Battle01EnemyInput enemy, uint randomSeedImage, byte difficulty)
     {
         ArgumentNullException.ThrowIfNull(deployment); ArgumentNullException.ThrowIfNull(regions);
         ArgumentNullException.ThrowIfNull(terrain); ArgumentNullException.ThrowIfNull(allies);
         ArgumentNullException.ThrowIfNull(enemy);
-        if (randomSeed != 0x1234 || difficulty != 0)
-            throw new ArgumentException("Only the controlled seed 0x1234 and difficulty zero are supported.");
+        if (randomSeedImage != 0x00001234 || difficulty != 0)
+            throw new ArgumentException("Only the controlled RAM image 0x00001234 and difficulty zero are supported.");
         var rows = deployment.ToArray(); var regionCopy = regions.ToArray();
         var rawTerrain = terrain.ToArray(); var party = allies.ToArray();
         int[] indices = [0, 1, 2, 128, 129, 130, 131, 132, 133];
@@ -188,7 +204,7 @@ public static class Battle01Initialization
             roster[index] = new(rows[index], stats, index < 3 ? party[index].ClassId : null, index < 3 ? null : enemy);
             occupancy[rows[index].Position.Y * 48 + rows[index].Position.X] = rows[index].CombatantIndex;
         }
-        return new(roster, regionCopy, rawTerrain, occupancy, randomSeed);
+        return new(roster, regionCopy, rawTerrain, occupancy, randomSeedImage);
     }
     internal static bool WithinArea(MapPosition position) => position.X >= 0 && position.X < 16 &&
         position.Y >= 0 && position.Y < 20;

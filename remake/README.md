@@ -25,9 +25,10 @@ Application preparation API validates selected Battle 01 placement/scene inputs 
 terrain, then returns them with an explicit party/RNG comparison preset. It preserves Pending and
 all current session state. A separate one-time initialization API consumes that Prepared request into
 battle-owned Map 57 with nine initialized combatants, raw terrain and separate occupancy. Old
-exploration commands close and Map 40 survives as frozen provenance. This stops before first-round
-activation/turn generation; a UI consumer remains pending. See the
-[initialization boundary](./docs/map03-playability-plan.md#implemented-controlled-initialization).
+exploration commands close and Map 40 survives as frozen provenance. A separate first-round API
+computes activation, the empty region-cutscene/spawn seams and the complete ordered turn buffer,
+then atomically replaces the current battle. It stops before actor control; a UI consumer remains
+pending. See the [first-round boundary](./docs/map03-playability-plan.md#implemented-controlled-first-round).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,

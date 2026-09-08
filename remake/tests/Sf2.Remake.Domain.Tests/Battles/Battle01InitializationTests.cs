@@ -25,7 +25,8 @@ public sealed class Battle01InitializationTests
         Assert.Equal(16, state.RegionFlags90Through105.Count); Assert.All(state.RegionFlags90Through105, flag => Assert.False(flag));
         Assert.Equal(48, state.AiLastTargets.Count); Assert.All(state.AiLastTargets, value => Assert.Equal(255, value));
         Assert.Equal(48, state.AiMemory.Count); Assert.All(state.AiMemory, value => Assert.Equal(0, value));
-        Assert.Equal(0, state.ElapsedSeconds); Assert.Equal(0x1234u, state.RandomSeed);
+        Assert.Equal(0, state.ElapsedSeconds); Assert.Equal(0x1234u, state.RandomSeedImage);
+        Assert.Equal(0, state.GeneratorWord); Assert.Null(state.FirstRound);
         Assert.True(state.UnlockFlag401); Assert.True(state.IntroFlag451);
         Assert.False(state.CompletedFlag501); Assert.False(state.SuspendedFlag88);
         Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase);
@@ -124,6 +125,6 @@ public sealed class Battle01InitializationTests
     private static Battle01AllyInput[] Allies() => Enumerable.Range(0, 3).Select(index =>
         new Battle01AllyInput((byte)index, (byte)(index == 1 ? 4 : index == 2 ? 1 : 0),
             new(1, 12, 12, 8, 8, 9, 4, 4, 6, 0, [199, 0, 127, 127], [10, 63, 63, 63]))).ToArray();
-    private static Battle01EnemyInput Enemy() => new(39, 39, 0,
+    internal static Battle01EnemyInput Enemy() => new(39, 39, 0,
         new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0, [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
 }

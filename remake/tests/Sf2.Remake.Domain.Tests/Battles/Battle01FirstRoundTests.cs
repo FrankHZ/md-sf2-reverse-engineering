@@ -1,0 +1,180 @@
+using System.Text.Json;
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
+using Xunit;
+
+namespace Sf2.Remake.Domain.Tests.Battles;
+
+public sealed class Battle01FirstRoundTests
+{
+    [Fact]
+    public void BaselineTestsThreeRegionsWithoutActivatingThemAndComputesTheAcceptedRound()
+    {
+        var initial = Initial(); var next = Battle01FirstRound.Enter(initial);
+        using var activation = Fixture("battle01-region-activation-v1");
+        var expectedActivation = activation.RootElement.GetProperty("expected").GetProperty("initial");
+        Assert.Equal(expectedActivation.GetProperty("newlyTriggered").GetUInt16(), next.NewlyTestedRegionMask);
+        Assert.Equal(expectedActivation.GetProperty("regionFlags").EnumerateArray().Select(flag => flag.GetBoolean()),
+            next.RegionFlags90Through105.Take(3));
+        Assert.All(next.RegionFlags90Through105, flag => Assert.False(flag));
+        foreach (var row in expectedActivation.GetProperty("enemies").EnumerateArray())
+        {
+            var unit = next.Roster.Single(unit => unit.Index == row.GetProperty("combatant").GetInt32());
+            Assert.Equal((ushort?)row.GetProperty("bitfield").GetUInt16(), unit.AiBitfield);
+        }
+        using var ready = Fixture("map3-battle01-player-ready-v1");
+        var record = ready.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
+        Assert.Equal(record.GetProperty("turnState").GetProperty("entries").EnumerateArray()
+            .Select(row => new Battle01TurnEntry(row.GetProperty("actor").GetByte(), row.GetProperty("score").GetByte())),
+            next.FirstRound!.Slots.Take(9));
+        Assert.Equal(64, next.FirstRound.Slots.Count);
+        Assert.All(next.FirstRound.Slots.Skip(9), slot => Assert.Equal(new Battle01TurnEntry(255, 255), slot));
+        Assert.Equal(0, next.FirstRound.CurrentTurnOffset); Assert.Equal((byte)1, next.FirstRound.FirstCandidate!.Value.CombatantIndex);
+        Assert.Empty(next.FirstRound.RegionCutsceneRows); Assert.Empty(next.FirstRound.SpawnedCombatants);
+        Assert.Equal(record.GetProperty("deterministicState").GetProperty("ready").GetProperty("randomSeed").GetUInt32(), next.RandomSeedImage);
+        Assert.Equal(0xA499, next.GeneratorWord); Assert.Equal(0x1234u, next.RandomSeedImage & 0xFFFF);
+        Assert.Equal(Battle01Phase.FirstRoundGenerated, next.Phase);
+        Assert.Equal(9, next.Roster.Count); // Inactive regions do not exclude placed living enemies.
+        Assert.All(next.Roster, unit => Assert.Equal(unit.Index, next.OccupantAt(unit.Position)));
+        Assert.Same(initial.Terrain, next.Terrain); Assert.Same(initial.Occupancy, next.Occupancy);
+        Assert.Same(initial.AiMemory, next.AiMemory); Assert.Same(initial.AiLastTargets, next.AiLastTargets);
+        Assert.Equal(0, next.ElapsedSeconds); Assert.True(next.UnlockFlag401); Assert.True(next.IntroFlag451);
+        Assert.False(next.CompletedFlag501); Assert.False(next.SuspendedFlag88);
+    }
+
+    [Fact]
+    public void ControlledEdgeActivatesPrimaryBitsAndPreservesInitialSourceFields()
+    {
+        var initial = Initial(12); var next = Battle01FirstRound.Enter(initial);
+        using var fixture = Fixture("battle01-region-activation-v1");
+        var expected = fixture.RootElement.GetProperty("expected").GetProperty("controlled");
+        Assert.Equal(expected.GetProperty("newlyTriggered").GetUInt16(), next.NewlyTestedRegionMask);
+        Assert.Equal(expected.GetProperty("regionFlags").EnumerateArray().Select(flag => flag.GetBoolean()),
+            next.RegionFlags90Through105.Take(3));
+        foreach (var row in expected.GetProperty("enemies").EnumerateArray())
+        {
+            var before = initial.Roster.Single(unit => unit.Index == row.GetProperty("combatant").GetInt32());
+            var after = next.Roster.Single(unit => unit.Index == before.Index);
+            Assert.Equal((ushort?)row.GetProperty("bitfield").GetUInt16(), after.AiBitfield);
+            Assert.Equal(before.InitializationAiBitfield, after.InitializationAiBitfield);
+            Assert.Equal(before.InitializationAiBitfield, before.AiBitfield);
+            Assert.Same(before.Stats, after.Stats); Assert.Same(before.Deployment, after.Deployment);
+        }
+        Assert.Equal(0, initial.NewlyTestedRegionMask); Assert.All(initial.RegionFlags90Through105, flag => Assert.False(flag));
+        Assert.Equal(0x1234u, initial.RandomSeedImage); Assert.Null(initial.FirstRound);
+        Assert.Throws<NotSupportedException>(() => ((IList<Battle01TurnEntry>)next.FirstRound!.Slots)[0] = new(2, 0));
+        Assert.Throws<NotSupportedException>(() => ((IList<bool>)next.RegionFlags90Through105)[0] = false);
+        Assert.Throws<ArgumentException>(() => Battle01FirstRound.Enter(next));
+        Assert.Equal(JsonSerializer.Serialize(next), JsonSerializer.Serialize(Battle01FirstRound.Enter(initial)));
+    }
+
+    [Fact]
+    public void SecondaryRegionFixtureSetsBothLowBitsAndPrimaryRetainsPrecedence()
+    {
+        using var fixture = Fixture("battle01-secondary-activation-v1");
+        var input = fixture.RootElement.GetProperty("setup").GetProperty("enemy");
+        var expected = fixture.RootElement.GetProperty("expected");
+        bool[] flags = expected.GetProperty("regionFlags").EnumerateArray().Select(flag => flag.GetBoolean())
+            .Concat(Enumerable.Repeat(false, 13)).ToArray();
+        ushort initialBits = input.GetProperty("initialActivationBitfield").GetUInt16();
+        Assert.Equal(expected.GetProperty("enemy").GetProperty("activationBitfield").GetUInt16(),
+            Battle01FirstRound.ActivateAssignedRegions(initialBits, input.GetProperty("controlledPrimaryRegion").GetByte(),
+                input.GetProperty("controlledSecondaryRegion").GetByte(), flags));
+        Assert.Equal((ushort)0x2061, Battle01FirstRound.ActivateAssignedRegions(initialBits, 0, 2, flags));
+        Assert.Equal(initialBits, Battle01FirstRound.ActivateAssignedRegions(initialBits, 15, 15, flags));
+    }
+
+    [Theory]
+    [InlineData(0, 0, true)]
+    [InlineData(15, 12, true)]
+    [InlineData(8, 12, true)]
+    [InlineData(8, 13, false)]
+    [InlineData(8, 18, false)]
+    public void QuadUsesBothTrianglesAndIncludesEdges(int x, int y, bool inside) =>
+        Assert.Equal(inside, Battle01FirstRound.IsInside(Initial().Regions[2], new(x, y)));
+
+    [Fact]
+    public void WordRngMatchesExistingFixtureWhileZeroRangeStillAdvancesTheGenerator()
+    {
+        using var fixture = Fixture("rng-v1");
+        foreach (var row in fixture.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            ushort word = row.GetProperty("seed").GetUInt16();
+            ushort result = Battle01FirstRound.NextRandom(ref word, row.GetProperty("range").GetUInt16());
+            Assert.Equal(row.GetProperty("expectedSeed").GetUInt16(), word);
+            Assert.Equal(row.GetProperty("expectedValue").GetUInt16(), result);
+        }
+        var initial = Initial();
+        Assert.Equal(0x00001234u, initial.RandomSeedImage); Assert.Equal(0, initial.GeneratorWord);
+        ushort first = initial.GeneratorWord;
+        Assert.Equal(0, Battle01FirstRound.NextRandom(ref first, 0)); Assert.Equal(7, first);
+        Assert.Equal(0, Battle01FirstRound.NextRandom(ref first, 0)); Assert.Equal(98, first);
+        ushort advanced = initial.GeneratorWord;
+        for (int index = 0; index < 27; index++) Battle01FirstRound.NextRandom(ref advanced, 0);
+        Assert.Equal(Battle01FirstRound.Enter(initial).GeneratorWord, advanced);
+    }
+
+    [Fact]
+    public void BoundaryFixturePreservesSecondEntriesSignedStableSortAndAllSentinelSlots()
+    {
+        using var fixture = Fixture("turn-order-boundaries-v1");
+        var candidates = Initial().Roster.Select(unit => new Battle01FirstRound.TurnCandidate(
+            (byte)unit.Index, (byte)unit.Position.X, unit.Stats.HpCurrent, unit.Stats.Agility)).ToArray();
+        foreach (var mutation in fixture.RootElement.GetProperty("mutations").EnumerateArray())
+        {
+            int index = Array.FindIndex(candidates, candidate => candidate.Index == mutation.GetProperty("combatant").GetByte());
+            var value = mutation.GetProperty("value");
+            candidates[index] = mutation.GetProperty("field").GetString() switch
+            {
+                "currentAgi" => candidates[index] with { Agility = value.GetByte() },
+                "currentHp" => candidates[index] with { CurrentHp = value.GetUInt16() },
+                "x" => candidates[index] with { X = value.GetByte() },
+                _ => throw new InvalidDataException("Unexpected accepted mutation field."),
+            };
+        }
+        ushort word = fixture.RootElement.GetProperty("seed").GetUInt16();
+        var slots = Battle01FirstRound.GenerateTurnOrder(candidates.Reverse(), ref word);
+        Assert.Equal(fixture.RootElement.GetProperty("expectedEntries").EnumerateArray()
+            .Select(row => new Battle01TurnEntry(row.GetProperty("combatant").GetByte(), row.GetProperty("score").GetByte())),
+            slots.Where(slot => !slot.IsSentinel));
+        Assert.Equal(64, slots.Length); Assert.Equal(56, slots.Count(slot => slot.IsSentinel));
+        Assert.Equal(new Battle01TurnEntry(0, 255), slots[6]); // Stable tie ahead of empty -1 slots.
+        Assert.All(slots.Skip(7).Take(56), slot => Assert.Equal(new Battle01TurnEntry(255, 255), slot));
+        Assert.Equal(new Battle01TurnEntry(1, 135), slots[63]); // Preserve the signed-negative entry beyond sentinels.
+        Assert.DoesNotContain(slots, slot => slot.CombatantIndex is 2 or 128);
+    }
+
+    [Fact]
+    public void UnsupportedSpawnRejectsAfterLocalActivationWithoutChangingTheInput()
+    {
+        var source = Initial(12); var roster = source.Roster.ToArray(); var enemy = roster[3];
+        roster[3] = new(enemy.Deployment with { Spawn = 1 }, enemy.Stats, enemy.ClassId, enemy.EnemySource);
+        var invalid = new Battle01InitializedState(roster, source.Regions.ToArray(), source.Terrain.ToArray(),
+            source.Occupancy.ToArray(), source.RandomSeedImage);
+        var error = Assert.Throws<ArgumentException>(() => Battle01FirstRound.Enter(invalid));
+        Assert.Equal("spawn", error.ParamName);
+        Assert.All(invalid.RegionFlags90Through105, flag => Assert.False(flag));
+        Assert.Equal(0x1234u, invalid.RandomSeedImage); Assert.Null(invalid.FirstRound);
+    }
+
+    private static Battle01InitializedState Initial(int bowieY = 18)
+    {
+        byte[] primary = [2, 2, 2, 1, 1, 0]; MapPosition[] allies = [new(8, bowieY), new(9, 18), new(7, 18)];
+        var rows = Enumerable.Range(0, 9).Select(index => new Battle01Deployment((byte)index,
+            index < 3 ? index : 128 + index - 3, (byte)(index < 3 ? index : 39),
+            index < 3 ? allies[index] : new(4 + index - 3, 5), (byte)(index >= 7 ? 7 : index >= 3 ? 6 : 0),
+            127, 255, index < 3 ? (byte)0 : primary[index - 3], 255, 15,
+            (byte)(index >= 7 ? 112 : index >= 3 ? 96 : 0), 0));
+        Battle01Region[] regions = [
+            new(0, 0, [new(0, 0), new(0, 19), new(15, 7), new(15, 0)], 0, 0),
+            new(1, 0, [new(0, 0), new(0, 7), new(15, 19), new(15, 0)], 0, 0),
+            new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0)];
+        byte[] agility = [4, 5, 7];
+        var party = Enumerable.Range(0, 3).Select(index => new Battle01AllyInput((byte)index, (byte)index,
+            new(1, 12, 12, 8, 8, 9, 4, agility[index], 6, 0, [127, 127, 127, 127], [63, 63, 63, 63])));
+        // Authored empty terrain and bounded source facts; no private grid or observation snapshot is copied.
+        return Battle01Initialization.Initialize(rows, regions, new byte[2304], party, Battle01InitializationTests.Enemy(), 0x1234, 0);
+    }
+    private static JsonDocument Fixture(string name) => JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(
+        Path.Combine(AppContext.BaseDirectory, "../../../../../../tests/fixtures/h3", name + ".json"))));
+}
