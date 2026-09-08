@@ -56,7 +56,7 @@ public sealed class PrivateOriginalBattle01InitializationTests
             session.PreparePrivateOriginalBattle01Startup(prepared.Pending, new Source(prepared.Inputs), prepared.Party)).Diagnostic.Field);
         Assert.Same(state, session.PrivateOriginalBattle01); Assert.Null(session.PrivateOriginalBattle01Admission);
         Assert.All(state.Battle.Roster.Skip(3), enemy => Assert.Equal(8, enemy.Stats.Attack));
-        Assert.Equal(0x1234u, state.Battle.RandomSeed);
+        Assert.Equal(0x1234u, state.Battle.RandomSeedImage);
     }
 
     [Theory]
@@ -150,11 +150,11 @@ public sealed class PrivateOriginalBattle01InitializationTests
     {
         public OriginalBattle01StartupImportResult Admit() => new OriginalBattle01StartupImported(definition);
     }
-    private sealed class MapSource(OriginalMapImportDefinition definition, OriginalMapImportReceipt receipt) : IOriginalMapImportSource
+    internal sealed class MapSource(OriginalMapImportDefinition definition, OriginalMapImportReceipt receipt) : IOriginalMapImportSource
     {
         public OriginalMapImportResult Admit(OriginalMapImportRequest request) => new OriginalMapImportAccepted(definition, receipt);
     }
-    private static PrivateOriginalBattle01StartupPrepared Prepare(GameSession session, OriginalBattle01StartupDefinition? definition = null) =>
+    internal static PrivateOriginalBattle01StartupPrepared Prepare(GameSession session, OriginalBattle01StartupDefinition? definition = null) =>
         Assert.IsType<PrivateOriginalBattle01StartupPrepared>(session.PreparePrivateOriginalBattle01Startup(
             session.PrivateOriginalBattle01Admission, new Source(definition ?? PrivateOriginalBattle01StartupTests.Definition()),
             OriginalBattle01ControlledPartyPreset.PlayerReadyComparison));

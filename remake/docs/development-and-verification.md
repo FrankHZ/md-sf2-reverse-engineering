@@ -114,8 +114,11 @@ registered read-only canonical import through `SF2_PRIVATE_CANONICAL_MAP_IMPORT`
 filter `FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests` with
 `SF2_REQUIRE_PRIVATE_TESTS=1`. The additional required test seeds a completed controlled Map40 route
 through accepted test-only factories, issues ordinary moves to exact Pending, reads the selected
-inputs and calls the real session initializer. It verifies the nine-unit final projection, immutable
-terrain/occupancy, AI/region resets, computed enemy ATT, input preservation and duplicate rejection.
+inputs and calls the real session initializer followed by `EnterPrivateOriginalBattle01FirstRound`.
+It verifies the nine-unit projection, immutable terrain/occupancy, computed enemy ATT, activation bits
+and active/tested-region distinction, the complete ordered buffer/current offset and final RNG image,
+input preservation and duplicate rejection. Only the shared player-ready fixture fields are compared;
+the test does not claim actor-control execution, observed elapsed time or natural RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
 
@@ -125,7 +128,14 @@ validation, party/RNG constraints and read-only collection/stride behavior. Init
 `FullyQualifiedName~Battle01InitializationTests` in Domain and
 `FullyQualifiedName~PrivateOriginalBattle01InitializationTests` in Application. These cover
 deterministic initialization, healing without double equipment, late rejection before commit, stale/
-foreign/duplicate requests, frozen provenance, closed old commands and reset. Use the committed planner
+foreign/duplicate requests, frozen provenance, closed old commands and reset. First-round ownership
+is `FullyQualifiedName~Battle01FirstRoundTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01FirstRoundTests` in Application. These use the accepted
+RNG, region/secondary activation and turn-order boundary fixtures for word width, zero-range
+consumption, edge inclusion, bit preservation, second entries, byte wrapping, signed stable sorting
+and sentinel placement. The Application checks include failed local projection without committing
+partial flags/RNG. The pure helper uses the 16-bit `rng-v1.json` seed; the controlled battle uses the
+distinct four-byte RAM image recorded by the player-ready observer. Use the committed planner
 for subsequent .NET and official Godot selection. This API-only boundary adds no native image review
 and does not rerun the already accepted twelve-frame pending-admission recipe or any H3/H4 seam.
 

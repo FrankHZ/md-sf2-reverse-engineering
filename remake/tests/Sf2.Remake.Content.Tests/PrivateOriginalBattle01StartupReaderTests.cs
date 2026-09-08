@@ -183,7 +183,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage);
         Assert.Equal(new MapId("map57"), session.PrivateOriginalCurrentMap);
         Assert.Equal(new MapId("map40"), initialized.SourceSnapshot.Map); Assert.Null(session.PrivateOriginalBattle01Admission);
-        Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase); Assert.Equal(0x1234u, state.RandomSeed);
+        Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase); Assert.Equal(0x1234u, state.RandomSeedImage);
         Assert.Equal(9, state.Roster.Count); Assert.Equal(9, state.Occupancy.Count(index => index >= 0));
         Assert.Equal(prepared.Inputs.Terrain, state.Terrain); Assert.NotSame(prepared.Inputs.Terrain, state.Terrain);
         Assert.Equal(2304, state.Terrain.Count);
@@ -243,6 +243,50 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             session.InitializePrivateOriginalBattle01(prepared)).Diagnostic.Field);
         Assert.Same(initialized, session.PrivateOriginalBattle01); Assert.Equal(7, prepared.Inputs.EnemyBaseline.BaseAttack);
         Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+
+        var firstRound = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(
+            session.EnterPrivateOriginalBattle01FirstRound(initialized)).Snapshot;
+        var roundState = firstRound.Battle; var order = roundState.FirstRound!;
+        var record = fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
+        var expectedTurns = record.GetProperty("turnState");
+        Assert.Same(firstRound, session.PrivateOriginalBattle01); Assert.NotSame(initialized, firstRound);
+        Assert.Same(initialized.Preparation, firstRound.Preparation);
+        Assert.Same(initialized.SourceSnapshot, firstRound.SourceSnapshot);
+        Assert.Same(initialized.SourceLocomotion, firstRound.SourceLocomotion);
+        Assert.Same(initialized.SourceBridge, firstRound.SourceBridge);
+        Assert.Same(state.Terrain, roundState.Terrain); Assert.Same(state.Occupancy, roundState.Occupancy);
+        Assert.Equal(Battle01Phase.FirstRoundGenerated, roundState.Phase);
+        Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase); Assert.Null(state.FirstRound);
+        Assert.Equal(expectedTurns.GetProperty("entries").EnumerateArray().Select(row =>
+            new Battle01TurnEntry(row.GetProperty("actor").GetByte(), row.GetProperty("score").GetByte())), order.Slots.Take(9));
+        Assert.Equal(64, order.Slots.Count);
+        Assert.All(order.Slots.Skip(9), slot => Assert.Equal(new Battle01TurnEntry(255, 255), slot));
+        Assert.Equal(expectedTurns.GetProperty("currentTurnOffset").GetByte(), order.CurrentTurnOffset);
+        Assert.Equal(expectedTurns.GetProperty("entries")[0].GetProperty("actor").GetByte(), order.FirstCandidate!.Value.CombatantIndex);
+        Assert.Empty(order.RegionCutsceneRows); Assert.Empty(order.SpawnedCombatants);
+        Assert.Equal(record.GetProperty("deterministicState").GetProperty("seeded").GetProperty("randomSeed").GetUInt32(), state.RandomSeedImage);
+        Assert.Equal(record.GetProperty("deterministicState").GetProperty("ready").GetProperty("randomSeed").GetUInt32(), roundState.RandomSeedImage);
+        Assert.Equal(0, state.GeneratorWord); Assert.Equal(0xA499, roundState.GeneratorWord);
+        Assert.Equal(0x1234u, roundState.RandomSeedImage & 0xFFFFu);
+        Assert.Equal(record.GetProperty("admission").GetProperty("regionFlags90Through105").EnumerateArray().Select(flag => flag.GetBoolean()),
+            roundState.RegionFlags90Through105);
+        Assert.Equal(7, roundState.NewlyTestedRegionMask); Assert.All(roundState.RegionFlags90Through105, flag => Assert.False(flag));
+        Assert.Equal(9, roundState.Roster.Count);
+        for (int index = 0; index < 9; index++)
+        {
+            var unit = roundState.Roster[index]; Assert.Same(state.Roster[index].Stats, unit.Stats);
+            Assert.Same(state.Roster[index].Deployment, unit.Deployment);
+            Assert.Equal(unit.Index, roundState.OccupantAt(unit.Position));
+            if (unit.Index >= 128)
+                Assert.Equal((ushort?)observed.EnumerateArray().Single(row => row.GetProperty("id").GetInt32() == unit.Index)
+                    .GetProperty("activationBitfield").GetUInt16(), unit.AiBitfield);
+        }
+        // Compare only the shared state seam. This API never executes H3's actor-control entry or timing.
+        Assert.Equal(0, roundState.ElapsedSeconds); Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage);
+        Assert.Equal(new MapId("map57"), session.PrivateOriginalCurrentMap); Assert.Null(session.PrivateOriginalBattle01Admission);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(
+            session.EnterPrivateOriginalBattle01FirstRound(firstRound)).Diagnostic.Field);
+        Assert.Same(firstRound, session.PrivateOriginalBattle01);
     }
 
     private static GameSession SeedControlledPending(string canonical)
