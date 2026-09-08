@@ -35,7 +35,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             root.ProcessMode = ProcessModeEnum.Disabled;
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "1")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -164,6 +164,22 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
         await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
+        {
+            var status = Field<Label>(_presenter, "_status");
+            Require(_session.PrivateOriginalBattle01 is null &&
+                ReferenceEquals(pending, _session.PrivateOriginalBattle01Admission) &&
+                ReferenceEquals(pending!.SourceSnapshot, _session.PrivateOriginalMapSnapshot) &&
+                status.Text.Contains("Prepare rejected:") && status.Text.Contains("input is unavailable") &&
+                !status.Text.Contains(RequiredPath("SF2_PRIVATE_BATTLE01_DATA")), "Missing input visibly retains exact Pending without path disclosure");
+            await CaptureControl("02-prepare-rejected");
+            File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+                status = "Pass", scope = "controlled Map40 seed; Godot N with an explicitly selected absent data input",
+                pendingAndSourceRetained = true, stage = "Prepare rejected", frames = _frames,
+            }, new JsonSerializerOptions { WriteIndented = true }));
+            GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=2 missing-input");
+            return;
+        }
         var ready = _session.PrivateOriginalBattle01!;
         Require(ready is not null && _session.PrivateOriginalBattle01Admission is null &&
             ready.Battle.Phase == Battle01Phase.PlayerMovementSelection, "N reaches real first control");

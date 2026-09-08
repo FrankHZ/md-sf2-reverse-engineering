@@ -804,7 +804,7 @@ steps = [
                 "--presentation-asset-commit=b41d12ddfb1704f3a0494c3d6ed23f866ff20dac",
                 "--presentation-manifest-sha256=5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "1":
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -868,3 +868,11 @@ unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed e
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
 original Map57 art, original scene/timing, battle actions, later turns/victory and H4 remain Unknown.
+
+For the rejected-input boundary, use another fresh review root, set
+`SF2_BATTLE01_CONTROL_REVIEW=missing-input`, and point `SF2_PRIVATE_BATTLE01_DATA` at an explicitly
+absent absolute path inside that worktree's ignored local directory. Keep scene and terrain selections
+valid. The same probe expects Pending plus a visible Prepare rejection, checks exact Pending/source
+retention and absence of the selected path in displayed text, and writes two captures. Inspect that
+the rejection and restart instruction both remain visible; this is an expected failure-path test,
+not a replacement for the six-frame valid-input control review.
