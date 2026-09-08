@@ -16,7 +16,7 @@ internal sealed record PrivateBattle01Projection(
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
 {
-    internal const string Heading = "DIAGNOSTIC BATTLEFIELD  |  Map 57 / Battle 01";
+    internal const string Heading = "DIAGNOSTIC | MAP 57 / BATTLE 01";
     internal const string Boundary = "Controlled inputs. Original Map 57 graphics unavailable.";
     internal const string BaseArtHeading = "MAP 57 BASE ART + DIAGNOSTIC UNITS";
     internal const string BaseArtBoundary = "Reviewed fixed base art. Controlled inputs.\nOriginal scene, layers and animation are not reproduced.";
