@@ -28,6 +28,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     private Label? _details;
     private Label? _allies;
     private Label? _enemies;
+    private Label? _remainingEnemies;
     private Label? _status;
     private Label? _controls;
 
@@ -107,9 +108,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             AddLabel(_baseView is null ? Boundary : BaseArtBoundary, new(456, 72), new(480, 50), 16);
             _details = AddLabel("", new(456, 130), new(480, 108), 16);
             AddLabel("Live units  |  (x,y)  |  HP", new(456, 244), new(480, 26), 16);
-            _allies = AddLabel("", new(456, 274), new(232, 126), 15);
-            _enemies = AddLabel("", new(704, 274), new(232, 126), 15);
-            _status = AddLabel("", new(456, 404), new(480, 62), 14);
+            _allies = AddLabel("", new(456, 274), new(144, 90), 15);
+            _enemies = AddLabel("", new(624, 274), new(144, 90), 15);
+            _remainingEnemies = AddLabel("", new(792, 274), new(144, 90), 15);
+            _status = AddLabel("", new(456, 382), new(480, 82), 13);
             _controls = AddLabel("", new(456, 474), new(480, 56), 15);
         }
         var view = _projection;
@@ -120,9 +122,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"Grid cost: {view.GridCost?.ToString() ?? "-"}   Path cost: {view.PathCost?.ToString() ?? "-"}   Budget: {view.Budget?.ToString() ?? "-"}\n" +
             $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}";
         static string UnitLine(PrivateBattle01Unit unit) =>
-            $"{UnitTag(unit.Index)} [{unit.Index}]  ({unit.Position.X},{unit.Position.Y})  HP {unit.Hp}";
+            $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}";
         _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
-        _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Select(UnitLine));
+        _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
+        _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         _status!.Text = "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :
                 "Terrain: current cursor; dots: legal stops\n") + view.Status;

@@ -348,6 +348,18 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             checkedPixels++;
         }
         Require(checkedPixels >= 12, "Enough visible base-art samples outside live overlays");
+        Color ScreenPixel(Vector2 point) => image.GetPixel((int)(point.X * image.GetWidth() / 960),
+            (int)(point.Y * image.GetHeight() / 540));
+        var actor = overlay.Units.Single(unit => unit.Index == overlay.ActorIndex);
+        Require(ScreenPixel(PrivateBattle01Presenter.Cell(actor.Position) + Vector2.One * 3)
+            .IsEqualApprox(new Color("#f2cc75")), "Current live actor outline aligns with its 24px cell");
+        if (overlay.Path.Count > 1 && !overlay.Units.Any(unit => unit.Position == overlay.Path[^1]))
+        {
+            var end = PrivateBattle01Presenter.Cell(overlay.Path[^1]) + Vector2.One * 12;
+            var previous = PrivateBattle01Presenter.Cell(overlay.Path[^2]) + Vector2.One * 12;
+            Require(ScreenPixel(end + (previous - end).Normalized()).IsEqualApprox(new Color("#f2cc75")),
+                "Preview path reaches the selected cell center without moving the live actor");
+        }
         return checkedPixels;
     }
 
