@@ -609,7 +609,9 @@ public sealed partial class Map3Root
         PrivateOriginalMapPlayerLocomotionStarted started =
             _session.BeginPrivateOriginalMapPlayerLocomotion(
                 new MoveExplorationCommand(direction));
-        string outcome = started.Move.CrossMapTransition is not null
+        string outcome = started.Move.Battle01Admission is not null
+            ? "Battle01AdmissionPending"
+            : started.Move.CrossMapTransition is not null
             ? "CrossMapTransition"
             : started.Move.SameMapWarp is not null
                 ? "SameMapWarp"
@@ -617,7 +619,8 @@ public sealed partial class Map3Root
         _privatePresenter?.Project(
             started.Move.Snapshot,
             outcome,
-            started.Animation);
+            started.Animation,
+            started.Move.Battle01Admission);
         if (_privateBattleBridgeEnabled)
         {
             _battlePresenter?.Project(
@@ -671,6 +674,7 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateInteractionRequest()
     {
+        if (_session?.PrivateOriginalBattle01Admission is not null) return;
         if (_session is null)
         {
             return;
@@ -809,6 +813,7 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateMoveWhenAvailable(ExplorationDirection direction)
     {
+        if (_session?.PrivateOriginalBattle01Admission is not null) return;
         if (_session?.PrivateOriginalMapBattleBridge?.IsBusy == true)
         {
             return;
@@ -819,6 +824,7 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateBattleBridgeRequest()
     {
+        if (_session?.PrivateOriginalBattle01Admission is not null) return;
         if (_session?.PrivateOriginalMapBattleBridge is not
             PrivateOriginalMapBattleBridgeSnapshot bridge)
         {

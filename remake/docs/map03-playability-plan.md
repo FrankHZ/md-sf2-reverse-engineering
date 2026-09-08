@@ -497,8 +497,8 @@ retained guard/Map 3 actors; status at Y=310 identifies the base atlas and unexe
 Traversal-only startup retains the diagnostic grid and status at Y=450. Area second-layer offset
 (0,32), parallax 128 and main-layer type 255 remain admitted data without new layer execution.
 
-**Unknown / excluded:** natural castle continuity and caller state, Map 21→20 return, Map 40→57,
-wildcard exit handling, Map 40→21, Battle 01 admission/init, general flags/events/init/lifecycle,
+**Unknown / excluded from this arrival capability:** natural castle continuity and caller state,
+Map 21→20 return, Map 40→21, completed Map 40→57 relocation, Battle 01 init, general flags/events/init/lifecycle,
 original art/audio/camera/parallax and H4. Walkable diagnostic cells do not admit later warp records.
 The H2 source shape and explicit-bridge H3 observation do not establish natural continuity.
 
@@ -513,8 +513,8 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 ## Ordered Queue
 
-This assessment proposes the next bounded implementation; it adds no runtime capability. Current
-play reaches Map 40 with its accepted atlas. The manual battle bridge remains public-synthetic,
+Current controlled play reaches a visible Battle 01 pending admission while retaining Map 40
+and its accepted atlas. The manual battle bridge remains public-synthetic,
 and natural castle continuity and complete Battle 01 play remain **Unknown**.
 
 ### Accepted inputs and incompatible existing assumptions
@@ -552,20 +552,29 @@ wraps `PublicSyntheticBattleDefinition`; its [tactical model](../src/Sf2.Remake.
 has one player/one enemy and a maximum grid dimension of 16. Neither can represent the admitted
 3-ally/6-enemy, 16-by-20 Battle 01 simply by changing IDs or enlarging the grid limit.
 
-### Proposed first slice: visible pending admission before relocation
+### Implemented boundary: visible pending admission before relocation
 
-**Proposed remake policy:** add one fixed battle-destination definition and one Application-owned
-pending admission result behind `GameSession`. Reuse `WorkingMapLayout`, block/area catalogs and
-`OriginalMapVisualResourceSelection` for destination data; keep it outside the ordinary exploration
+**Implemented remake policy:** one fixed battle-destination definition and one Application-owned
+pending admission result behind `GameSession` reuse `WorkingMapLayout`, block/area catalogs and
+`OriginalMapVisualResourceSelection` for destination data, outside the ordinary exploration
 runtime catalog. This preserves null setup without weakening every exploration snapshot and gives
 the later battle lifecycle a typed destination under the existing [architecture](./architecture.md)
 and [private trust profile](./runtime-profiles-and-trust.md). No generic runtime hierarchy or flag engine is needed.
 
-Content validates the exact existing Map 57 joins, dimensions, layout/block/area identity, null
-references and visual selection, plus the source warp's complete row. Application also checks the
-typed definition at every import-source port. The controlled preset explicitly supplies F501/F88/F451
+Content pins the unchanged canonical SHA and validates the exact existing Map 57 joins, dimensions,
+layout/block/area addresses, null references and visual selection, plus the source warp's complete row.
+Application checks layout/block/area digests and the complete typed definition at every import-source port. The controlled preset explicitly supplies F501/F88/F451
 clear; their absence from today's world state must not be interpreted as naturally clear flags.
 The request requires the existing castle/palace/Astral/guard receipts and their F401 result.
+
+`OriginalBattle01AdmissionDefinition` owns the exact Map 57 projection constants. Its layout digest
+encodes all 4096 words as big-endian unsigned shorts; the block digest encodes a big-endian
+unsigned-short count followed by each record's nine words. Area bounds use a one-byte count and
+four bytes per area. The source-area digest uses that count, twelve big-endian unsigned shorts
+(bounds, layer origins and parallax), then six bytes (autoscroll pairs, layer type and music).
+The required-private Content test recomputes these through the production reader and Application
+admission. The public semantic sample uses project-authored zero payloads and does not claim to
+reproduce the canonical layout. Custom-source drift tests independently enforce all four digests.
 
 After 27 committed Map 40 inputs, the selected route is at `(14,13)`. The 28th input resolves
 `(14,12)` and publishes pending destination Map 57 `(8,18)`/UP, candidate Battle 1 and its distinct
@@ -582,21 +591,20 @@ are zero-mutation. Restart is the recovery and clears pending state. There is no
 Map 57 exploration, battle attack, or synthetic fallback in this slice. This explicit temporary stop
 is a product staging policy, not a claim about the original's immediate warp/CheckBattle sequence.
 
-Candidate ownership for the first implementation anchor is the following closed set; the main gate
-must authorize it and recheck competing writers before code work:
+The implementation owners and proportional verification surfaces are:
 
-| Responsibility | Exact candidate paths under `remake/` |
+| Responsibility | Paths under `remake/` |
 | --- | --- |
-| Fixed trust definition and source-port admission | `src/Sf2.Remake.Application/Content/OriginalBattle01AdmissionDefinition.cs` (new), `src/Sf2.Remake.Application/Content/OriginalMapImportDefinition.cs`, `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs`, `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs` |
-| Authoritative pending result and movement lifecycle | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Admission.cs` (new), `src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs`, `src/Sf2.Remake.Application/Sessions/OriginalMapPlayerLocomotionAnimation.cs` |
+| Fixed trust definition and source-port admission | `src/Sf2.Remake.Application/Content/OriginalBattle01AdmissionDefinition.cs`, `src/Sf2.Remake.Application/Content/OriginalMapImportDefinition.cs`, `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs`, `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs` |
+| Authoritative pending result and movement lifecycle | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Admission.cs`, `src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs`, `src/Sf2.Remake.Application/Sessions/OriginalMapPlayerLocomotionAnimation.cs` |
 | Thin status and input-result projection | `game/src/PrivateMap3Composition.cs`, `game/src/PrivateMap3Presenter.cs` |
-| Focused trust, route, reset, atomicity and display tests | `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs`, `tests/Sf2.Remake.Application.Tests/OriginalMapGameSessionTests.cs`, `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`, `tests/native/Map19Map20AtlasReviewProbe.cs` |
+| Focused trust, route, reset, atomicity and display tests | `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs`, `tests/Sf2.Remake.Application.Tests/OriginalMapGameSessionTests.cs`, `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`, `tests/native/Map19Map20AtlasReviewProbe.cs`; the accepted-definition fixtures in `tests/Sf2.Remake.Application.Tests/OriginalMapVisualGameSessionTests.cs` and `tests/Sf2.Remake.Application.Tests/PrivateOriginalMapBattleBridgeTests.cs` carry the required destination contract |
 | Current capability and reproduction | `README.md`, `docs/capability-status.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` |
 
 Dependencies are accepted main, the unchanged fixed canonical input, the admission fixture, and the
 current accepted asset pack only for native Map 40 review. No Domain, extraction, schema, global
 registry or asset transaction belongs to this first slice. Any additional writer path needs amendment.
-After locked restore/build, the candidate's focused commands are:
+After locked restore/build, the focused commands are:
 
 ```powershell
 dotnet test remake/tests/Sf2.Remake.Application.Tests/Sf2.Remake.Application.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~Battle01Admission"
@@ -615,12 +623,12 @@ snapshot/locomotion/bridge/pending identities. Run the committed planner's
 selected .NET/Godot gates, one full .NET suite when selected, and extend the existing native recipe
 with one pending-state capture while retaining the accepted first eleven images. Use the explicit
 isolated Godot toolchain root and record actual view/status plus process cleanup. No new H2/H3/H4
-or full Python run follows solely from this proposal; normal H0 input absence is reported honestly.
+or full Python run follows solely from this boundary; normal H0 input absence is reported honestly.
 
 ### Ordered path to the first controllable Battle 01 turn
 
-1. Implement and independently accept the pending boundary above. Its receipt becomes the sole
-   continuation input; it is neither a completed warp receipt nor an active battle snapshot.
+1. Consume the independently accepted pending boundary above as the sole continuation input.
+   Its receipt is neither a completed warp receipt nor an active battle snapshot.
 2. Admit the bounded battle startup inputs through the existing Content trust boundary:
    [placement](../../docs/research/battle01-placement.md),
    [spritesets](../../docs/research/battle-spriteset-data.md),

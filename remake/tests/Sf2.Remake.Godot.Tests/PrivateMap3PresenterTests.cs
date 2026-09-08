@@ -41,6 +41,35 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
+    public void Battle01AdmissionStatusRetainsMap40AndRejectsAStaleSource()
+    {
+        // Display-only fixture: admission and the real source endpoint are checked in Application/Content.
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true);
+        var runtime = snapshot.CurrentRuntime;
+        var definition = new OriginalBattle01AdmissionDefinition(runtime.WorkingLayout, runtime.BlockCatalog,
+            runtime.AreaCatalog, new(new("map57"), 8, [94, 98, 99, 255, 255]),
+            new(ContentProfile.PrivateLocal, new("map40"), "Map40s6_WarpEvents", 1), 255, 12,
+            new(8, 18), 1, OriginalBattle01ControlledPreset.NewBattle);
+        var constructor = typeof(PrivateOriginalBattle01PendingAdmission).GetConstructors(
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Single();
+        var pending = (PrivateOriginalBattle01PendingAdmission)constructor.Invoke([definition, snapshot, new MapPosition(14, 12)]);
+        string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, "Moved", baseAtlasVisible: true,
+            battle01Admission: pending);
+        Assert.Equal("Battle 01 admission pending. Battle not started.\n" +
+            "Map 40 retained; destination Map 57 (8,18)/UP.\nRestart to return to Map 3.", status);
+        Assert.DoesNotContain("ENTER", status);
+        Assert.DoesNotContain("Continue", status);
+        Assert.Throws<ArgumentException>(() => PrivateMap3PresentationPlan.FormatStatus(
+            PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true), "Moved",
+            baseAtlasVisible: true, battle01Admission: pending));
+        var visibility = PrivateMap3Presenter.ProjectionVisibility(snapshot.Map, snapshot.Definition.Map,
+            true, false, hasMap40Atlas: true);
+        Assert.True(visibility.BaseVisible);
+        Assert.False(visibility.TraversalVisible);
+        Assert.Equal(310, PrivateMap3Presenter.ProjectionStatusY(visibility.TraversalVisible, 310));
+    }
+
+    [Fact]
     public void NorthMap40DiagnosticViewHidesRetainedAtlasAndGuard()
     {
         var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true);

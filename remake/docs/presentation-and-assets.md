@@ -682,7 +682,10 @@ is admitted. Controlled arrival at `(4,30)`/UP/raw 1 uses the existing 64-by-64 
 `(0,27)`, hides traversal and all retained route glyphs, and keeps status below the base viewport.
 Traversal-only startup still shows the diagnostic grid. Both views state that init is unexecuted.
 Map 40's area offset `(0,32)`, parallax 128 and main-layer type 255 remain data; this consumer adds
-no second-layer execution, player-art policy, NPC extraction, subsequent warp or Battle 01 behavior.
+no second-layer execution, player-art policy or NPC extraction. The separate controlled Battle 01
+pending result retains this Map 40 base view: it names destination Map 57 and states that battle has
+not started. It does not mount Map 57 graphics or relocate the player. Restarting the private launch
+creates a fresh Map 3 session.
 
 ### Reproduce the bounded native image review
 
@@ -690,10 +693,10 @@ The [fixed probe](../tests/native/Map19Map20AtlasReviewProbe.cs) is test-owned i
 from the production project. It seeds the same validated Map 19 state as the private canonical test,
 then drives the accepted fixture through the 38-input royal route, controlled palace F, two-input
 return, Astral approach/F, released west route, three Left inputs into Map 21, and the controlled guard
-F followed by ordinary Right/Up and the 18-input north exit. Eleven real Godot
+F followed by ordinary Right/Up, the 18-input north exit and the controlled Map 40 pending route. Twelve real Godot
 viewport captures cover Map 3,
 Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 base atlas, guard before/after
-F, the actual walk endpoint, and the Map 40 base arrival. Map 3-to-19 is a seeded projection
+F, the actual walk endpoint, the Map 40 base arrival and Battle 01 pending admission. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
@@ -714,7 +717,7 @@ the missing/changed-payload checks copy only manifests and runtime buckets there
 the supplied asset input.
 
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
-all eleven PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
+all twelve PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
 the rendered guard diamond's center and downward interior to reject a spurious facing line.
 The first six retain the destination camera and player-rectangle checks. The seventh requires a
 visible Map 21 base atlas and hidden traversal view, `(3,16)`/area 1, crop `(0,13)`, raw facing 0
@@ -726,12 +729,19 @@ snapshot/locomotion/bridge without throwing. Frame eleven drives all 18 ordinary
 from (5,15)/UP to exact Map 40 (4,30)/UP, area 1. The accepted Map 40 runtime uses palette 3 and
 slots [94,95,96,97,58] and its exact accepted base atlas. It crops at (0,27), draws the player at
 column 4/row 3 with UP/raw 1, hides traversal and retained actors, and places controlled-arrival/
-base-atlas/init-not-executed status below the base viewport at Y=310. The final image is
+base-atlas/init-not-executed status below the base viewport at Y=310. This image is
 `11-map40-base-atlas.png`; the first ten capture names and production route remain unchanged.
 The probe mounts and decodes both accepted 2x/4x Map 40 PNGs, checks every projected RGBA component
 for nearest equivalence, samples opaque base pixels from the actual renderer outside the player,
-and checks camera/player coordinates and retained route receipts. This admits neither Map 40
-init nor subsequent warps, original rendering, camera/parallax execution, or Battle 01.
+and checks camera/player coordinates and retained route receipts. Frame twelve then checks all 29
+Map 40 fixture points: 27 committed moves reach (14,13)/UP, and the real production move adapter
+receives the last Up as prospective (14,12). It captures `12-battle01-admission-pending.png` with
+the Map 40 atlas retained, destination Map 57 (8,18)/UP, battle not started and restart recovery
+below the base viewport. All three status lines, including the complete restart instruction, must
+be visible without clipping. Duplicate movement, F, bridge request and physics tick leave source,
+animation, bridge, pending identity and status unchanged. The accepted first eleven PNGs must
+remain byte-identical. This does not admit Map 40 init, completed Map57 relocation, original
+rendering, camera/parallax execution, battle startup or a controllable turn.
 An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
 ignored; no pixels enter a public PR.

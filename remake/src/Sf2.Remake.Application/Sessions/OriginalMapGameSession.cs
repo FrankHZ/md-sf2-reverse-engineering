@@ -933,6 +933,17 @@ public sealed record PrivateOriginalMapMoveApplied
         }
     }
 
+    public PrivateOriginalMapMoveApplied(PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalBattle01PendingAdmission battle01Admission)
+    {
+        Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        Battle01Admission = battle01Admission ?? throw new ArgumentNullException(nameof(battle01Admission));
+        if (!ReferenceEquals(snapshot, battle01Admission.SourceSnapshot))
+            throw new ArgumentException("Pending admission must retain its exact source snapshot.", nameof(battle01Admission));
+    }
+
+    public PrivateOriginalBattle01PendingAdmission? Battle01Admission { get; }
+
     public PrivateOriginalMapSessionSnapshot Snapshot { get; }
 
     public OriginalMapTraversalResult Traversal => _traversal ??
@@ -1002,7 +1013,11 @@ public sealed partial class GameSession
                 "Private original-map movement is unavailable while the project-authored battle bridge is busy.");
         }
 
+        if (PrivateOriginalBattle01Admission is not null)
+            throw new InvalidOperationException("Battle 01 admission is pending; restart to return to controlled Map 3.");
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
+        if (TryBeginPrivateOriginalBattle01Admission(current, command, out var battle01Applied))
+            return battle01Applied!;
         if (current.Map == current.Definition.Map &&
             TryApplyPrivateOriginalMapSameMapWarp(current, command, out var warpApplied))
         {
@@ -1467,6 +1482,10 @@ public sealed partial class GameSession
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.middleTowerMap21Transition", "The controlled Map 21 arrival source binding drifted.");
         }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedBattle01Admission(definition.Battle01Admission))
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.battle01Admission", "The fixed battle destination, source warp or controlled preset drifted.");
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap40Transition(definition.NorthMap40Transition))
         {

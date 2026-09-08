@@ -77,6 +77,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _presenter.Project(_session.PrivateOriginalMapSnapshot, "Controlled guard walk endpoint", _session.PrivateOriginalMapPlayerLocomotion);
             await CaptureGuard("10-map21-guard-walk-endpoint", new(5, 15), new(6, 16), completed: true);
             await CaptureNorthMap40Arrival();
+            await CaptureBattle01Pending();
 
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new
             {
@@ -86,12 +87,12 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "PrivateLocalPresentationAssetCatalog", "PrivateMap3Presenter", "PrivateOriginalMapBaseViewport",
                     "PrivateMap3CameraProjection", "GameSession", "Application-owned player locomotion" },
                 instrumentation = new[] { "validated Map19 snapshot seed via existing private state factories",
-                    "fixture route driving", "actual Map3Root F adapter via test-only reflection", "disabled unsolicited physics/input callbacks", "FramePostDraw/SavePng" },
+                    "fixture route driving", "actual Map3Root F and pending-move adapters via test-only reflection", "disabled unsolicited physics/input callbacks", "FramePostDraw/SavePng" },
                 assetCommit = PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
                 assetManifest = PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest,
                 frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=11 seeded-projection-only");
+            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=12 seeded-projection-only");
             _fixture.Dispose();
             GetTree().Quit();
         }
@@ -323,6 +324,91 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             facing = movement.OpaqueFacing, statusY = status.Position.Y, status = status.Text,
             sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
             inputCount = 18, guardGlyphs = 0, checkedPixels, verifiedBucketScales = new[] { 2, 4 },
+            width = image.GetWidth(), height = image.GetHeight() });
+    }
+
+    private async Task CaptureBattle01Pending()
+    {
+        using var fixture = JsonDocument.Parse(File.ReadAllText(RequiredPath("SF2_MAP40_REVIEW_FIXTURE")));
+        var route = fixture.RootElement.GetProperty("static").GetProperty("extensionRoute").GetProperty("segments")[2];
+        Require(route.GetProperty("id").GetString() == "map40-entry-to-wildcard-battle-warp" &&
+            route.GetProperty("inputs").GetArrayLength() == 28 && route.GetProperty("points").GetArrayLength() == 29,
+            "Fixed pending-admission segment");
+        var entry = _session.PrivateOriginalMapSnapshot;
+        for (int index = 0; index < 27; index++)
+        {
+            var point = route.GetProperty("points")[index];
+            Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(point[0].GetInt32(), point[1].GetInt32()),
+                "Every committed Map40 source point");
+            var direction = route.GetProperty("inputs")[index].GetString() switch {
+                "Up" => ExplorationDirection.North, "Right" => ExplorationDirection.East,
+                "Left" => ExplorationDirection.West, "Down" => ExplorationDirection.South,
+                _ => throw new InvalidOperationException("Unknown pending route input."),
+            };
+            var move = Move(direction);
+            var target = route.GetProperty("points")[index + 1];
+            Require(move.Battle01Admission is null && move.CrossMapTransition is null &&
+                move.Snapshot.PlayerPosition == new MapPosition(target[0].GetInt32(), target[1].GetInt32()),
+                "Every committed Map40 target point");
+        }
+        var source = _session.PrivateOriginalMapSnapshot;
+        var animation = _session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = _session.PrivateOriginalMapBattleBridge;
+        Require(source.Map == new MapId("map40") && source.PlayerPosition == new MapPosition(14, 13) &&
+            source.SimulationStep == entry.SimulationStep + 27 && animation.OpaqueFacing == 1 && !animation.IsMoving &&
+            route.GetProperty("inputs")[27].GetString() == "Up", "Idle Map40 pre-trigger source");
+        void Input(string method, params object[] arguments) => typeof(Map3Root)
+            .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(_root, arguments);
+        // Exercise the production input-result adapter, including its avoidance of ordinary Traversal.
+        Input("ApplyPrivateMoveWhenAvailable", ExplorationDirection.North);
+        var pending = _session.PrivateOriginalBattle01Admission;
+        var finalPoint = route.GetProperty("points")[28];
+        Require(pending is not null && ReferenceEquals(pending.SourceSnapshot, source) &&
+            pending.Trigger == new MapPosition(finalPoint[0].GetInt32(), finalPoint[1].GetInt32()) &&
+            pending.Definition.DestinationMap == new MapId("map57") && pending.Definition.Destination == new MapPosition(8, 18) &&
+            pending.Definition.DestinationOpaqueFacing == 1 && pending.Definition.BattleIndex == 1 &&
+            pending.Definition.Preset == OriginalBattle01ControlledPreset.NewBattle, "Typed prospective Battle01 destination");
+        var status = Field<Label>(_presenter, "_status");
+        string pendingText = status.Text;
+        Input("ApplyPrivateMoveWhenAvailable", ExplorationDirection.North);
+        Input("ApplyPrivateInteractionRequest");
+        Input("ApplyPrivateBattleBridgeRequest");
+        _root._PhysicsProcess(1.0 / 60.0);
+        Require(ReferenceEquals(source, _session.PrivateOriginalMapSnapshot) &&
+            ReferenceEquals(animation, _session.PrivateOriginalMapPlayerLocomotion) &&
+            ReferenceEquals(bridge, _session.PrivateOriginalMapBattleBridge) &&
+            ReferenceEquals(pending, _session.PrivateOriginalBattle01Admission) && status.Text == pendingText,
+            "Pending input/tick rejection preserves source, animation, bridge and display");
+        var traversal = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
+        var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
+        var projection = _presenter.BaseProjection!;
+        Require(baseViewport.Visible && !traversal.Visible && projection.Map == new MapId("map40") &&
+            _presenter.BaseAtlasAssetId == PrivateLocalPresentationAssetCatalog.Map40BaseAtlasAssetId &&
+            _presenter.UsesRequiredBaseAtlasSampling && baseViewport.LiveRouteActorProjection is null,
+            "Pending retains the Map40 atlas and no Map57 or guard projection");
+        Require(status.Position.Y == 310 &&
+            status.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+            pendingText.StartsWith("Battle 01 admission pending. Battle not started.", StringComparison.Ordinal) &&
+            pendingText.Contains("destination Map 57 (8,18)/UP.", StringComparison.Ordinal) &&
+            pendingText.Contains("Map 40 retained", StringComparison.Ordinal) &&
+            pendingText.Contains("Restart", StringComparison.Ordinal) && !pendingText.Contains("ENTER", StringComparison.Ordinal),
+            "Pending display and restart recovery below retained Map40");
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        using Image image = GetViewport().GetTexture().GetImage();
+        Require(status.GetLineCount() == 3 && status.GetVisibleLineCount() == status.GetLineCount(),
+            "All pending status lines, including restart recovery, are visible without clipping");
+        const string name = "12-battle01-admission-pending";
+        Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Pending PNG write");
+        _frames.Add(new { name, map = source.Map.Value, destinationMap = pending!.Definition.DestinationMap.Value,
+            playerX = source.PlayerPosition.X, playerY = source.PlayerPosition.Y, facing = animation.OpaqueFacing,
+            simulationStep = source.SimulationStep, committedInputCount = 27, prospectiveInputCount = 1,
+            triggerX = pending.Trigger.X, triggerY = pending.Trigger.Y, destinationX = 8, destinationY = 18,
+            battleIndex = pending.Definition.BattleIndex, battleStarted = false, preset = pending.Definition.Preset,
+            atlas = _presenter.BaseAtlasAssetId, digest = _presenter.BaseAtlasBucketDigest,
+            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
+            baseVisible = baseViewport.Visible, traversalVisible = traversal.Visible,
+            statusY = status.Position.Y, status = pendingText, statusLines = status.GetLineCount(),
+            visibleStatusLines = status.GetVisibleLineCount(), identitiesRetained = true,
             width = image.GetWidth(), height = image.GetHeight() });
     }
 
