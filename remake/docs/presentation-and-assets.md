@@ -848,7 +848,7 @@ if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "bas
         "--private-battle01-terrain=" + environment["SF2_PRIVATE_BATTLE01_TERRAIN"],
     ])
 if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic":
-    steps[-1][1][:] = [arg for arg in steps[-1][1] if arg != "--private-map3-base-atlas"
+    steps[-1][1][:] = [arg for arg in steps[-1][1] if arg not in {"--private-map3-base-view", "--private-map3-base-atlas"}
                        and not arg.startswith("--presentation-")]
 receipts = []
 for name, command in steps:
@@ -932,7 +932,7 @@ and private failure output. This is controlled seeded native UI evidence; natura
 original Map57 scene/layer/VRAM/animation fidelity, timing, battle actions, later turns/victory and H4 remain Unknown.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
-unrequested-art regression. The recipe removes the atlas and asset options, captures Pending/ready,
+unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,
 then checks actual I/Space/Backspace restoration and retained RNG/offset without replaying all art frames.
 For `missing-atlas`, give the recipe a separate ignored negative-test pack containing copied manifests
 and runtime payloads from the accepted read-only pack, with only its Map57 runtime bucket absent.
