@@ -38,13 +38,14 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 Require(typeof(Map3Root).GetField("_session", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .GetValue(root) is null, "Missing Map57 asset must fail before session startup");
                 var status = Field<Label>(Field<PrivateMap3Presenter>(root, "_privatePresenter"), "_status");
-                Require(status.Text.Contains("Map 57 base art unavailable") &&
-                    status.GetLineCount() == status.GetVisibleLineCount(), "Missing Map57 art has a visible failure");
+                Require(status.Text == "PrivateLocal presentation unavailable (PackageUnavailable)." &&
+                    status.GetLineCount() == status.GetVisibleLineCount(), "Missing Map57 art fails the complete pack admission visibly");
                 await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
                 using var failedImage = GetViewport().GetTexture().GetImage();
                 Require(failedImage.SavePng(Path.Combine(_output, "01-map57-asset-rejected.png")) == Error.Ok, "Failure PNG");
                 File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
                     status = "Pass", scope = "explicit base art; missing Map57 runtime payload", sessionStarted = false,
+                    missingAsset = "world.map57.base-tileset-atlas", failureStage = "pack-admission",
                     fallback = false, message = status.Text, frames = 1 }));
                 GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=1 missing-atlas");
                 _fixture.Dispose(); GetTree().Quit(); return;

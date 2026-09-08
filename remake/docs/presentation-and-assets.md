@@ -937,7 +937,9 @@ then checks actual I/Space/Backspace restoration and retained RNG/offset without
 For `missing-atlas`, give the recipe a separate ignored negative-test pack containing copied manifests
 and runtime payloads from the accepted read-only pack, with only its Map57 runtime bucket absent.
 Do not modify the canonical asset checkout. Keep the accepted commit/manifest pins and selected
-startup inputs. The probe requires visible Map57-art rejection, no session and no fallback, and writes
+startup inputs. The missing bucket fails the existing complete-pack admission first, so the probe
+requires the visible `PrivateLocal presentation unavailable (PackageUnavailable).` diagnostic,
+no session and no fallback, and writes
 one capture. The required managed checks cover missing and changed payloads for both scales.
 
 For the rejected-input boundary, use another fresh review root, set
