@@ -71,7 +71,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (!ReferenceEquals(palaceFirstVisit.Definition, definition.PalaceFirstVisit) ||
                 (currentRuntime.Map != palaceFirstVisit.Definition.Map &&
                     currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map19Id) &&
-                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map21Id)) ||
+                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map21Id) &&
+                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map40Id)) ||
                 palaceFirstVisit.SimulationStep > simulationStep ||
                 (palaceFirstVisit.SimulationStep == simulationStep &&
                     (currentRuntime.Map != palaceFirstVisit.Definition.Map ||
@@ -96,14 +97,17 @@ public sealed record PrivateOriginalMapSessionSnapshot
 
         if (middleTowerGuard is not null &&
             (!ReferenceEquals(middleTowerGuard.Definition, definition.MiddleTowerGuard) ||
-                currentRuntime.Map != middleTowerGuard.Definition.Map ||
+                (currentRuntime.Map != middleTowerGuard.Definition.Map &&
+                    (currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map40Id) ||
+                        !OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap40Transition(definition.NorthMap40Transition))) ||
                 palaceFirstVisit is null || astralAcceptance is null || castleGate?.Opened != true ||
                 middleTowerGuard.SimulationStep <= astralAcceptance.SimulationStep ||
                 middleTowerGuard.SimulationStep > simulationStep ||
                 (middleTowerGuard.SimulationStep == simulationStep &&
-                    playerPosition != middleTowerGuard.Definition.InteractionPosition)))
+                    (currentRuntime.Map != middleTowerGuard.Definition.Map ||
+                        playerPosition != middleTowerGuard.Definition.InteractionPosition))))
         {
-            throw new ArgumentException("Guard completion must retain its controlled preset, Map 21 and ordered step.",
+            throw new ArgumentException("Guard completion must retain its controlled preset, admitted route map and ordered step.",
                 nameof(middleTowerGuard));
         }
         MiddleTowerGuard = middleTowerGuard;
@@ -306,6 +310,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 ((ReferenceEquals(admitted, definition.WestTowerMap20Transition) ||
                     ReferenceEquals(admitted, definition.MiddleTowerMap21Transition)) &&
                     (admittedCastleGate?.Opened != true || palaceFirstVisit is null || astralAcceptance is null)) ||
+                (ReferenceEquals(admitted, definition.NorthMap40Transition) &&
+                    (admittedCastleGate?.Opened != true || palaceFirstVisit is null ||
+                        astralAcceptance is null || middleTowerGuard is null)) ||
                 lastCrossMapTransition.RecordIdentity != admitted.Identity ||
                 lastCrossMapTransition.Source != admitted.AdmittedApproach ||
                 lastCrossMapTransition.Trigger != admitted.AdmittedTrigger ||
@@ -1459,6 +1466,12 @@ public sealed partial class GameSession
         {
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.middleTowerMap21Transition", "The controlled Map 21 arrival source binding drifted.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap40Transition(definition.NorthMap40Transition))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.northMap40Transition", "The controlled Map 40 arrival source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedMiddleTowerGuard(

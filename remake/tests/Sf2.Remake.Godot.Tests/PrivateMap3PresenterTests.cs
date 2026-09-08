@@ -21,6 +21,28 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
+    public void NorthMap40DiagnosticViewHidesRetainedAtlasAndGuard()
+    {
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true);
+        var projection = PrivateOriginalMapTraversalViewProjection.Create(snapshot);
+        Assert.Equal(new MapId("map40"), projection.Map);
+        Assert.Equal(0, projection.OriginX);
+        Assert.Equal(27, projection.OriginY);
+        Assert.Equal((4, 3), (projection.PlayerColumn, projection.PlayerRow));
+        Assert.Single(projection.Cells, cell => cell.IsPlayer);
+        Assert.DoesNotContain(projection.Cells, cell => cell.IsMiddleTowerGuard || cell.IsAstral);
+        var visibility = PrivateMap3Presenter.ProjectionVisibility(snapshot.Map, snapshot.Definition.Map,
+            hasBaseViewport: true, showTraversalOnInitialMap: false, hasCastleAtlas: true, hasMap21Atlas: true);
+        Assert.False(visibility.BaseVisible);
+        Assert.True(visibility.TraversalVisible);
+        Assert.True(PrivateMap3Presenter.ProjectionStatusY(visibility.TraversalVisible, 310) > 105 + 7 * 48);
+        var status = PrivateMap3PresentationPlan.FormatStatus(snapshot, new string('x', 500));
+        Assert.StartsWith("Map 40 controlled arrival. Diagnostic view; init not executed.", status);
+        Assert.DoesNotContain("F ", status);
+        Assert.DoesNotContain("Guard moved", status);
+    }
+
+    [Fact]
     public void MiddleTowerArrivalStatusRetainsTheControlledBoundaryInEitherView()
     {
         var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(middleTower: true);

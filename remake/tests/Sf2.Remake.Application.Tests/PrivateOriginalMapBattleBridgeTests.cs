@@ -578,7 +578,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             AcceptedOriginalMapRuntimeCatalog.WestTower(),
             AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
-            new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
+            new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]),
+            AcceptedOriginalMapRuntimeCatalog.NorthMap40());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

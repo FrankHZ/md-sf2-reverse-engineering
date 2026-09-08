@@ -357,11 +357,11 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     [0, 0, 0, 0]),
             ]);
 
-    internal static PrivateOriginalMapSessionSnapshot CrossMapSnapshot(bool middleTower = false)
+    internal static PrivateOriginalMapSessionSnapshot CrossMapSnapshot(bool middleTower = false, bool northMap40 = false)
     {
         MapId map3 = new(OriginalMapRuntimeAdmission.MapId);
-        MapId destinationMap = new(middleTower ? OriginalMapRuntimeAdmission.Map21Id : OriginalMapRuntimeAdmission.Map19Id);
-        MapPosition destinationPosition = middleTower ? new(3, 16) : new(26, 30);
+        MapId destinationMap = new(northMap40 ? OriginalMapRuntimeAdmission.Map40Id : middleTower ? OriginalMapRuntimeAdmission.Map21Id : OriginalMapRuntimeAdmission.Map19Id);
+        MapPosition destinationPosition = northMap40 ? new(4, 30) : middleTower ? new(3, 16) : new(26, 30);
         OriginalMapExplorationRuntimeDefinition initial = Runtime(
             map3,
             new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
@@ -371,10 +371,10 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             new MapPosition(56, 3));
         OriginalMapExplorationRuntimeDefinition destination = Runtime(
             destinationMap,
-            new MapSetupId(middleTower ? OriginalMapRuntimeAdmission.Map21SelectedSetupId : OriginalMapRuntimeAdmission.Map19SelectedSetupId),
-            middleTower ? OriginalMapRuntimeAdmission.Map21SelectedInitIdentity : OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
-            middleTower ? "project-authored-map21-blocks" : "project-authored-map19-blocks",
-            middleTower ? new OriginalMapTraversalArea(0, 0, 11, 21) : new OriginalMapTraversalArea(24, 28, 28, 31),
+            new MapSetupId(northMap40 ? OriginalMapRuntimeAdmission.Map40SelectedSetupId : middleTower ? OriginalMapRuntimeAdmission.Map21SelectedSetupId : OriginalMapRuntimeAdmission.Map19SelectedSetupId),
+            northMap40 ? OriginalMapRuntimeAdmission.Map40SelectedInitIdentity : middleTower ? OriginalMapRuntimeAdmission.Map21SelectedInitIdentity : OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
+            northMap40 ? "project-authored-map40-blocks" : middleTower ? "project-authored-map21-blocks" : "project-authored-map19-blocks",
+            northMap40 ? new OriginalMapTraversalArea(0, 0, 31, 31) : middleTower ? new OriginalMapTraversalArea(0, 0, 11, 21) : new OriginalMapTraversalArea(24, 28, 28, 31),
             destinationPosition);
         OriginalMapExplorationRuntimeCatalog catalog = new([initial, destination]);
         OriginalMapCrossMapTransitionDefinition transition = new(
@@ -484,6 +484,7 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                 mapSprite: map.Value == "map21" ? (byte)206 : (byte)0,
                 map.Value == "map21" ? [0, 4, 0x60, 0xCE] : [0, 0, 0, 0]),
         ]);
+        if (map.Value == "map40") population = OriginalMapEntityPopulation.Empty(map, setup, "ms_map40_Entities");
         return new OriginalMapExplorationRuntimeDefinition(
             map,
             layout,
@@ -494,7 +495,7 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             initIdentity,
             Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount * 2])),
             Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount])),
-            new(map, 0, map.Value == "map3" ? [0, 37, 43, 53, 66] : map.Value == "map21" ? [6, 23, 44, 53, 8] : [6, 23, 44, 53, 62]));
+            new(map, map.Value == "map40" ? (byte)3 : (byte)0, map.Value == "map40" ? [94, 95, 96, 97, 58] : map.Value == "map3" ? [0, 37, 43, 53, 66] : map.Value == "map21" ? [6, 23, 44, 53, 8] : [6, 23, 44, 53, 62]));
     }
 
     private static int Index(int x, int y) =>
