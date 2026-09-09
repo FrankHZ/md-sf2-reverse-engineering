@@ -1129,8 +1129,9 @@ The selected region upper edges are `y <= 19 - 4*x/5`, `y <= 7 + 4*x/5`, and
 A0(8,18), A1(9,17), A2(7,17) also lie outside. First-round entry tested all three (mask0007), while
 all sixteen F90..F105 remain false. Player movement/STAY neither reruns activation nor changes those
 flags or enemy words. AI memory has 48 zero bytes; last-target bytes remain FF. The current order is
-offset4, `Slots[2]=128`, with nine living units and main RNG image A4991234. The existing
-`OpponentAi` result describes the remake's unsupported controller, not an original action.
+offset4, `Slots[2]=128`, with nine living units and main RNG image A4991234. The `OpponentAi`
+result classifies the actual candidate for the separate bounded first-enemy consumer; it does not
+establish original action execution.
 
 At the pinned source `c834c652b6862bc5679fd7f69a38a7093206efc6`:
 `ExecuteIndividualTurn` routes this living, status0 enemy to `StartAiControl` because opponent
@@ -1409,13 +1410,15 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    The thin consumer connects the exact current control/selection state to a visible grid and input using the
    [control contract](../../docs/design/contracts/battle-functions-control-flow.md) and
    [navigation contract](../../docs/design/contracts/battlefield-navigation.md): expose actor/turn and
-   terrain-aware movement/selection with cancel only for player control. An AI-first or unsupported
-   control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
+   terrain-aware movement/selection with cancel only for player control. First-control entry still
+   rejects an AI-first or unsupported candidate; the separate first-enemy consumer requires both
+   completed player turns. Never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
    input/capture recipe. No-effect STAY closes the first turn and dispatches the next supported player
-   once; its movement/cancel/STAY stops at the actual enemy candidate under the policy above.
-   Attack resolution, enemy turns, later rounds and victory remain later slices.
+   once. After that player's movement/cancel/STAY, the actual inactive enemy128 completes its bounded
+   standby and no-effect STAY under the policy above. The endpoint is offset6 before enemy131 is
+   dispatched. Later enemy turns, rounds, attack resolution and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.
