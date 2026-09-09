@@ -119,6 +119,22 @@ internal static class PrivateBattle01Ui
             int actor = candidate.CombatantIndex;
             if (actor >= 128)
             {
+                var word = current.Battle.Roster.SingleOrDefault(unit => unit.Index == actor)?.AiBitfield;
+                if (word is { } bits && (bits & 1) != 0)
+                {
+                    switch (session.CompletePrivateOriginalBattle01EnemyPursuit(current, actor))
+                    {
+                        case PrivateOriginalBattle01AttackSelectionRequired boundary:
+                            return boundary.Diagnostic.Message;
+                        case PrivateOriginalBattle01EnemyPursuitRejected failure:
+                            return $"Enemy {actor} pursuit rejected: {failure.Diagnostic.Field}; current state retained.";
+                        case PrivateOriginalBattle01EnemyPursuitCompleted completed:
+                            current = completed.Snapshot;
+                            continue;
+                        default:
+                            return $"Enemy {actor} pursuit unavailable; current state retained.";
+                    }
+                }
                 var result = session.CompletePrivateOriginalBattle01EnemyStandby(current, actor);
                 if (result is PrivateOriginalBattle01EnemyStandbyRejected rejected)
                     return $"Enemy {actor} standby rejected: {rejected.Diagnostic.Field}; last completed state retained.";

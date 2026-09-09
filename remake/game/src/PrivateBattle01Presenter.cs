@@ -11,7 +11,7 @@ internal sealed record PrivateBattle01Projection(
     Battle01Phase Phase, int Width, int Height, int? ActorIndex, int? CompletedActorIndex, int? NextCandidateIndex,
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
-    bool CanConfirm, string Controls, string Status);
+    bool CanConfirm, string Controls, string Status, bool PursuitCompleted);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -103,7 +103,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             Array.AsReadOnly(battle.Roster.Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position, unit.Stats.HpCurrent)).ToArray()),
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
-            movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status);
+            movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
+            completion?.EnemyPursuit is not null);
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -125,8 +126,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string cursor = view.Cursor is null ? "unavailable" : $"({view.Cursor.X},{view.Cursor.Y})";
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
+        string completionKind = view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
         _details.Text = view.CompletedActorIndex is { } completed ?
-            $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\nSTAY completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
+            $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completionKind} completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
             $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +

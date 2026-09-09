@@ -8,6 +8,59 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateBattle01PresenterTests
 {
+    [Fact]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct()
+    {
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
+        current=Battle01FirstRound.EnterNext(current);
+        while(current.FirstRound!.CurrentCandidate is { } candidate)
+        {
+            int actor=candidate.CombatantIndex;
+            current=actor==0 ? Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(11,15)) : CompleteAuthoredTurn(current);
+        }
+        current=Battle01FirstRound.EnterNext(current);
+        for(int i=0;i<4;i++) current=CompleteAuthoredTurn(current);
+        var pursuit=PrivateBattle01Presenter.BuildProjection(current,"Pursuit complete.");
+        Assert.True(pursuit.PursuitCompleted); Assert.Equal(131,pursuit.CompletedActorIndex);
+        Assert.Equal(128,pursuit.NextCandidateIndex); Assert.Null(pursuit.ActorIndex); Assert.Null(pursuit.Cursor);
+        Assert.Empty(pursuit.Path); Assert.False(pursuit.CanConfirm); Assert.Contains("Input closed",pursuit.Controls);
+        Assert.Equal(new MapPosition(9,4),pursuit.Units.Single(unit=>unit.Index==131).Position);
+        while(current.FirstRound!.RoundNumber<6 || current.FirstRound.CurrentTurnOffset<10)
+        {
+            if(current.FirstRound.CurrentCandidate is null)
+            {
+                current=Battle01FirstRound.EnterNext(current);
+                if(current.FirstRound!.RoundNumber==4)
+                {
+                    var generated=PrivateBattle01Presenter.BuildProjection(current,"Round 4 generated.");
+                    Assert.False(generated.PursuitCompleted); Assert.Null(generated.CompletedActorIndex); Assert.Equal(1,generated.ActorIndex);
+                }
+            }
+            else current=CompleteAuthoredTurn(current);
+        }
+        var boundary=Assert.Throws<Battle01AttackSelectionRequiredException>(()=>Battle01EnemyPursuit.CompleteNext(current,132,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+        var stopped=PrivateBattle01Presenter.BuildProjection(current,boundary.Message);
+        Assert.False(stopped.PursuitCompleted); Assert.Equal(128,stopped.CompletedActorIndex); Assert.Equal(132,stopped.NextCandidateIndex);
+        Assert.Null(stopped.Cursor); Assert.Empty(stopped.Path); Assert.False(stopped.CanConfirm);
+        Assert.All(stopped.Tiles,tile=> { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
+        Assert.Contains("attack selection",stopped.Status); Assert.Contains("Input closed",stopped.Controls); Assert.DoesNotContain("Space",stopped.Controls);
+    }
+
+    private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
+    {
+        int actor=current.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+        if(actor>=128)
+            return (current.Roster.Single(unit=>unit.Index==actor).AiBitfield!.Value&1)!=0
+                ? Battle01EnemyPursuit.CompleteNext(current,actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)
+                : Battle01EnemyStandby.CompleteNext(current,actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var ready=Battle01NextPlayerControl.Enter(current,actor).State!;
+        return Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(ready,actor),actor,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
 
     [Fact]
     public void NewRoundProjectionKeepsTheGeneratedCandidateVisibleWithoutReusingOldCompletion()
@@ -149,13 +202,14 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("Space", view.Controls); Assert.Contains(view.Tiles, tile => tile.CanStop);
     }
 
-    private static Battle01InitializedState AuthoredSecondCompleted()
+    private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
             (byte)(i < 3 ? i : 39), positions[i], (byte)(i >= 7 ? 7 : i >= 3 ? 6 : 0), 127, 255,
             (byte)(i < 6 ? 2 : i < 8 ? 1 : 0), 255, 15, (byte)(i >= 7 ? 112 : i >= 3 ? 96 : 0), 0));
-        var regions = Enumerable.Range(0, 3).Select(i => new Battle01Region((byte)i, 0, [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
+        var regions = Enumerable.Range(0, 3).Select(i => new Battle01Region((byte)i, 0,
+            regionEntry && i==1 ? [new(10,14),new(12,14),new(12,16),new(10,16)] : [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0, [127, 127, 127, 127], [63, 63, 63, 63])));
