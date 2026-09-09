@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -942,7 +942,7 @@ snapshot/actor/live-position/occupancy changes, both cancel stages, immutable re
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 scene/layer/VRAM/animation fidelity, timing, attack selection/resolution, other AI commands, victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, broader combat resolution, other AI commands, victory and H4 remain Unknown.
 
 For repeated inactive-round acceptance, use a fresh review root and
 `SF2_BATTLE01_CONTROL_REVIEW=round-continuation` with the same required canonical, three selected
@@ -987,15 +987,33 @@ explicitly choose origin/STAY. Capture these four frames:
    `00 FF`. This is test instrumentation. Restore the exact original snapshot before continuing
    physical Godot key events and compare the resulting actual131 decision with this copy.
 3. `03-round4-ready`: actual player1 after both active pursuits, main51DC1234/copy0234.
-4. `04-round6-attack-required`: actual132 stays at(11,10), eligible cohort0 at attack position(11,14)
-   cost8, raw offset10 and fifty prior receipts; main07821234/copy0034, no movement input or retry.
+4. `04-round6-bowie-hp9`: the physical relay moves132 to(11,14), applies3 damage once and yields
+   Bowie0 control at(11,15), raw12/receipt51, mainAF881234/copy0134. Visible HP/result and controls
+   remain together; the independent pursuit API still classifies the cohort before the copied attack.
 
-The receipt includes all six64-slot orders, typed standby/pursuit decisions,4498 thinking bytes,
-unchanged last-target/effective-stat/deployment provenance and final occupancy. Six pursuit turns
-consume no thinking bytes. Inspect every image and its layout/atlas assertions; frame02 must remain
-explicitly marked as a test copy, with no production pause hook or original-timing claim. The
-round6 rejection also ignores unrelated keys and later frames without changing the exact snapshot
-or status. This review does not implement attack priority, damage, victory or original economy effects.
+The receipt includes all six64-slot orders, typed standby/pursuit/physical decisions,4498 standby
+thinking bytes plus57 physical-priority bytes, full main/copy images, last-target slot4 FF→0,
+HP12→9 and original deployment provenance. Six pursuit turns consume no thinking bytes.
+Inspect every image and its layout/atlas assertions; frame02 remains explicitly marked as a test
+copy, with no production pause hook or original-timing claim. Frames and unmapped keys do not
+repeat an attack. N remains a recognized initialization command and may show its retained-state
+explanation while a player has control.
+
+For the first physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=enemy-physical-attack` with a
+fresh review root and the same inputs. The shared route produces four different captures:
+
+1. `01-round6-player1-ready`: the actual player before inactive128 and attack132.
+2. `02-attack132-test-copy`: explicitly labeled copied round6 snapshot, direct Application
+   player1 STAY/inactive128/attack132; HP snapshot12→temporary9→restore12→replay9, receipt51/raw12.
+   Restore the exact physical-route snapshot before the next manual input.
+3. `03-bowie-ready-hp9`: physical player1 STAY invokes the production relay and yields actual
+   Bowie0; the complete attack decision equals the copied decision. Show hit3 and HP12→9 with controls.
+4. `04-bowie-cancel-hp9`: physical L/Space/Backspace moves via the passable(12,15) tile and returns
+   to(11,15), retaining9 HP, the attack receipt and occupancy.
+
+The recipe retains its bounded restore/build/native process and source-archive provenance checks.
+Both modes use existing accepted base art and diagnostic units. No imported combat animation,
+original timing, natural RNG lifetime, general death/reward/victory/return or economy effect is claimed.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,

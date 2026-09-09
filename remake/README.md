@@ -47,8 +47,12 @@ has a round number; all previous receipts, own AI memory and the independent see
 Actual players choose movement/cancel/STAY manually in each round. Known activated GIZMOs use bounded
 commandsets6/7 pursuit when no physical attack target is eligible, then commit no-effect STAY.
 Bowie entering region1 at (11,15) in round2 drives repeated pursuit through round5 and reaches
-round6 enemy132 with an eligible physical target. The visible attack-selection boundary retains
-that candidate, all fifty completed receipts and both RNG channels, with player input closed.
+round6 enemy132 with an eligible physical target. The separate physical consumer selects Bowie,
+moves132 to(11,14), resolves the ordinary attack and applies3 damage once. Bowie receives actual
+next-player control at9 HP, with the attack summary retained during movement/cancel/STAY.
+Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
+Misses and ordinary criticals are calculated; a validated double/counter, lethal or other unsupported
+effect rejects the complete transition before any state commit.
 Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
 this controlled comparison does not establish natural continuity or original economy effects.
 Backspace cancels only before STAY. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
@@ -382,7 +386,7 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
   Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
-  attack selection/resolution, other AI commands, victory and natural continuity remain open. See the
+  other combat profiles, multi-strike/counter/death resolution, other AI commands, victory and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.

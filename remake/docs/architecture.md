@@ -185,11 +185,27 @@ The same actual-candidate relay routes active commandsets6/7 to
 opponent-blocked budget10 grid. A nonempty cohort returns a typed attack-selection requirement before
 priority, RNG or any commit. Otherwise raw budget128 target costs, the source accumulated-mask walk,
 radius0/1 occupancy fallback and final reverse/invert move string feed shared no-effect STAY.
-Exactly one typed standby or pursuit decision belongs to each enemy receipt; player receipts have
-neither. Pursuit retains memory and seed-copy, which backward history validation checks alongside
-standby thinking. A source-valid empty/fallback move completes origin STAY; malformed paths reject.
-The presenter distinguishes pursuit completion from the next candidate and keeps all movement input
-closed at attack selection. Attack priority/construction/resolution and original animation remain unsupported.
+Exactly one typed standby, pursuit or physical decision belongs to each enemy receipt; player
+receipts carry none. Pursuit retains memory and seed-copy, which backward history validation checks
+alongside standby thinking. A source-valid empty/fallback move completes origin STAY; malformed paths reject.
+
+The relay consumes the pursuit classifier's physical-cohort boundary once through
+`CompletePrivateOriginalBattle01EnemyPhysicalAttack`. That facade independently revalidates the
+current snapshot, cohort, priority, source path and supported combat profile. Its Domain reducer
+constructs the temporary HP effect, restores the source snapshot and replays one semantic reaction
+locally before physical cleanup/after-turn validation and one Application replacement. The explicit
+class0/Wooden Sword profile supplies prowess3; regular GIZMO prowess0, difficulty0/type2 and the
+two independent RNG channels retain their source semantics. Miss/ordinary critical results are
+calculated. True validated follow-ups, lethal/status/curse/reward and unsupported after-turn effects
+reject atomically. This is a bounded consumer, not a general battle-scene VM.
+
+The physical completion policy is distinct from strict STAY. History rewinds physical main-RNG
+changes before comparing earlier pursuit stamps, links thinking/last-target/memory and HP effects,
+and retains the generated64-slot order. HP copies preserve all non-HP fields; startup/prepared
+stats remain provenance. Subsequent movement/cancel/STAY, admitted AI and round generation retain
+the damaged current stats. Actual round6 attack132 produces HP12→9 and yields Bowie0 control;
+the presenter derives its persistent current-round attack summary from the existing receipt chain.
+Original scene animation/timing, broader profiles, multi-strike/counter/death and victory remain open.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only

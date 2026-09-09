@@ -1942,7 +1942,7 @@ The following owners maintain the bounded implementation and its acceptance boun
 | `src/Sf2.Remake.Domain/Battles/Battle01EnemyPursuit.cs` | Bounded active classifier, empty-action admission, source MOVE1 path/position decision and immutable pursuit receipt data. Reuse the existing grid and AI move-string mechanism; no generic AI engine. |
 | `src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs`; `Battle01EnemyStandby.cs` and `Battle01TurnCompletion.cs` in that same directory | Admit coherent retained primary-region activation for these six GIZMOs; keep unknown/secondary/special bits rejected. Preserve inactive dispatch when other enemies are active. Link typed pursuit decisions through the existing completion chain and thinking-history validation. |
 | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPursuit.cs` | Exact current snapshot/candidate/phase facade and a single successful session replacement. |
-| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Dispatch the actual active or inactive candidate after successful transitions; show pursuit completion and a precise attack-required rejection. Player controls remain manual. |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Dispatch the actual active or inactive candidate after successful transitions; show pursuit completion and route the typed attack requirement to the physical consumer below. Player controls remain manual. |
 | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPursuitTests.cs`; `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Source-order movement/cohort, activation retention, mixed receipt history, current-candidate and immutable rejection cases. |
 | `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPursuitTests.cs`; `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01TurnCompletionTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Exact request/snapshot rejection and authored cases. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Extend the existing required real selected-input chain in place; retain the real-reader check in this same owner. |
@@ -2001,33 +2001,31 @@ Implementation acceptance is proportional to the committed planner and owning ve
   [verification owner](./development-and-verification.md). The new bounded native `enemy-pursuit`
   mode uses the accepted local base-art assets and physical player move/confirm/STAY inputs.
   Capture four checkpoints: round3 ready with region1, after the first actual131 pursuit, actual
-  round4 player1 ready, and the actual round6 enemy132 attack-required boundary. The first-pursuit
+  round4 player1 ready, and actual round6 Bowie0 ready at HP9 after enemy132's attack. The first-pursuit
   checkpoint uses a labeled copied round3 snapshot and direct Application steps. Restore the exact
   physical-route snapshot and compare the physical relay's actual131 decision before continuing;
   no production pause hook or original timing is claimed. Assert no repeated dispatch on frames/unrelated
-  keys at the rejection. Update only affected existing native mode contracts and rerun invalidated
+  keys after automatic dispatch. Update only affected existing native mode contracts and rerun invalidated
   modes; follow the existing finite-timeout/isolated-output recipe.
 
-Stop implementation at one clean, pushed, frozen Draft PR for independent main-gate review, with
-the actual pursuit comparison and visible attack-required state. Attack target priority, attack/
-item/spell construction and resolution, damage/death, victory/return, natural RNG lifetime,
+The standalone pursuit API retains its typed attack-required boundary without consuming RNG or
+changing state. The composition routes that boundary through the ordinary physical consumer below.
+Item/spell actions, broader combat profiles, death, victory/return, natural RNG lifetime,
 original animation/timing, the deals corruption and H4 remain **Unknown** or unimplemented.
-Subsequent work requires a new accepted scope and main-gate dispatch.
 
-### Proposed first ordinary physical attack and next-player continuation
+### Implemented first ordinary physical attack and next-player continuation
 
-This is a decision plan awaiting independent main-gate acceptance and an implementation dispatch.
-The current consumer still stops at the preceding round6 enemy132 attack-selection boundary.
-The proposed useful slice completes that actual enemy's target selection, movement, physical scene
-semantics, persistent HP application and turn finalization, then hands control to the actual next
-candidate Bowie0. A selected-command receipt alone does not satisfy this boundary.
+The controlled consumer completes the actual round6 enemy132 target selection, movement, physical
+scene semantics, persistent HP application and turn finalization, then hands control to the actual
+next candidate Bowie0 at HP9. Player movement, confirm/cancel and STAY retain the applied HP.
+The standalone pursuit classifier remains available at its preceding attack-required boundary.
 
 #### Source support and controlled comparison
 
 **Confirmed:** the pinned `ShiningForceCentral/SF2DISASM` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6` supports the following bounded source branches.
 Source-relative paths below are under `disasm/`; accepted contract and fixture owners remain the
-authority for original behavior. This plan does not modify their evidence, fixtures or Unknowns.
+authority for original behavior. This consumer does not modify their evidence, fixtures or Unknowns.
 
 | Owner or source seam | Applicable behavior |
 | --- | --- |
@@ -2214,7 +2212,7 @@ print(json.dumps(dict(round=6, actor=132, target=target, priority=priority,
 '@ | uv run python -X utf8 -
 ```
 
-#### Proposed semantic boundary and state changes
+#### Semantic boundary and state changes
 
 Admit the existing living nine-unit comparison, regular activated GIZMO commandsets6/7, coherent
 primary-region words, ordinary physical-only target cohorts and the explicit Bowie class0/sword
@@ -2225,7 +2223,7 @@ unsupported input until then. Preserve source cohort/tie order even though this 
 target. Keep spell/item, muddle, debug and special-animation actors outside this slice.
 
 Calculate miss and ordinary critical outcomes for admitted inputs. Evaluate both follow-up rolls
-and their source validators in local state. The proposed first slice admits **nonlethal attacks
+and their source validators in local state. The consumer admits **nonlethal attacks
 without a validated double/counter continuation**. A required extra strike, counter, death,
 ailment/curse, reward or unsupported after-turn effect rejects the entire transition with a precise
 typed boundary before movement, HP, RNG, cursor or receipt changes become visible. In particular,
@@ -2279,27 +2277,27 @@ from the current receipt/live state while Bowie has control; entering player con
 the result immediately. Do not add a second combat log/state store, production pause hook or timing
 claim.
 
-#### Proposed implementation ownership, commits and acceptance
+#### Implementation ownership and acceptance
 
-This plan owns only `remake/docs/map03-playability-plan.md`. The following exact future paths,
-relative to `remake/`, require a separate main-gate implementation dispatch and serialized ownership.
-No content schema, fixture, research owner, asset, legacy script or package/toolchain change is needed.
+The following paths, relative to `remake/`, own this consumer and its verification. Changes retain
+serialized ownership and independent main-gate acceptance. Content schemas, fixtures, research
+owners, assets, legacy scripts and package/toolchain definitions are outside this boundary.
 
-| Future paths | Responsibility |
+| Paths | Responsibility |
 | --- | --- |
-| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPhysicalAttack.cs` (new); `Battle01Initialization.cs`, `Battle01EnemyPursuit.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs` in that directory | Bounded combat profile/selection/effect reducer, reuse cohort/path helpers, HP/state copies and coherent mixed receipt/main/thinking/last-target/HP validation. Keep the existing history entry point so NextPlayerControl consumes it without a new API. |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs` (new) | Atomic facade, explicit typed unsupported result and current snapshot admission. |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPhysicalAttack.cs`; `Battle01Initialization.cs`, `Battle01EnemyPursuit.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs` in that directory | Bounded combat profile/selection/effect reducer, reuse cohort/path helpers, HP/state copies and coherent mixed receipt/main/thinking/last-target/HP validation. Keep the existing history entry point so NextPlayerControl consumes it without a new API. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs` | Atomic facade, explicit typed unsupported result and current snapshot admission. |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | One automatic enemy attack dispatch, actual next player control and persistent current result/HP projection. |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs` (new); `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01EnemyPursuitTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Actual comparison plus affected strict guards, mixed history, HP retention and early/late rejection. |
-| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` (new); `PrivateOriginalBattle01EnemyPursuitTests.cs` in that directory | Successful exact snapshot replacement, preserved old classifier boundary and atomic failures. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs`; `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01EnemyPursuitTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Actual comparison plus affected strict guards, mixed history, HP retention and early/late rejection. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPhysicalAttackTests.cs`; `PrivateOriginalBattle01EnemyPursuitTests.cs` in that directory | Successful exact snapshot replacement, preserved old classifier boundary and atomic failures. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Extend the existing selected-input chain in its current Content owner. |
 | `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Thin projection/dispatch tests and bounded native physical-input comparison. |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current supported boundary, policy/provenance, exact recipes and remaining unsupported behavior. |
 
-Use three reviewable commits: Domain reducer/state/history plus owning tests; Application/Godot/
-selected-reader/native integration plus owning tests; then the six current-state documentation
-owners and final acceptance report. Keep intermediate APIs buildable. Any additional shared path or
-semantic expansion requires a revised ownership decision before editing it.
+The Domain owns source-derived decisions and coherent history; Application owns atomic snapshot
+replacement; Godot consumes those results. The selected-reader and native checks exercise their
+composition. Any additional shared path or semantic expansion requires a revised ownership decision
+before editing it.
 
 Implementation acceptance must establish:
 
@@ -2338,12 +2336,13 @@ Implementation acceptance must establish:
   finite-timeout, isolated output and process-completion checks. Preserve any completed failing
   suite's exact nodes and correct them narrowly; do not repeat the full suite to erase its result.
 
-Plan-only acceptance is the reproducible reduction, clean committed planner and its selected
-public-core checks, plus honestly reported normal verification. Do not run local .NET, Godot,
-native, full Python, ROM or H3 merely to approve this document. Implementation stops at one clean,
-pushed, frozen Draft PR for independent integration after the actual HP9 Bowie continuation.
+Acceptance retains the reproducible source reduction, committed planner selection, managed and
+required-private results, official Godot receipt, both affected native modes and normal public
+verification. Distinguish the tested production source head from a later documentation-only head;
+retain source/export identity and completed process status. Handoff stops at one clean, pushed,
+frozen Draft PR for independent integration after the actual HP9 Bowie continuation.
 
-**Unknown** or outside this proposed consumer: natural encounter seed/VInt lifetime, original
+**Unknown** or outside this consumer: natural encounter seed/VInt lifetime, original
 scene timing/presentation, other ally combat profiles, validated multi-strike/counter continuations,
 lethal/reward/death processing, victory, Battle01 completion/return and H4. The existing deals
 corruption exclusion and source cost/class-pass disagreement remain unchanged. ADR0016's runtime
@@ -2381,9 +2380,10 @@ Space press commits STAY; Backspace still cancels before that commit. Backspace 
 selection to turn origin; repeated origin cancellation remains a rejection. After STAY the UI tries
 the actual next candidate once and displays its active range when supported. At an unsupported
 candidate it shows the completed actor and candidate/reason with old range/path/cursor cleared.
-The same finite relay now generates later rounds and admits the bounded inactive standby and active
-pursuit consumers above. Nonempty physical cohorts stop before attack selection. Attacks, spells,
-items, victory and original cancellation animation remain unsupported.
+The same finite relay generates later rounds and admits bounded inactive standby, active pursuit
+and ordinary physical attacks. The controlled attack132 applies damage once and yields actual
+Bowie0 control with HP9 and a persistent result. Other combat profiles, spells, items, validated
+follow-ups, death/victory and original cancellation animation remain unsupported.
 
 Root input and physics route on current battle authority before any closed exploration getter.
 Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session
@@ -2424,8 +2424,8 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    control and independent move/cancel/STAY. The first sentinel at offset18 feeds repeatable wholly
    inactive rounds from current state. Actual candidates dispatch until manual player control or a
    precise retained rejection; the comparison reaches round3 control with eighteen receipts.
-   Known activated GIZMOs continue through the bounded pursuit consumer above; attack selection,
-   resolution and victory remain later slices.
+   Known activated GIZMOs continue through the bounded pursuit and physical consumers above;
+   actual attack132 yields HP9 Bowie0 control. Broader combat, death and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.
