@@ -220,7 +220,9 @@ internal sealed class Map3InputAdapter
             if (input != PrivateBattle01Input.None && _isActionJustPressed(binding.ActionName))
                 return input;
         }
-        return PrivateBattle01Input.None;
+        // Preserve the existing battle-key priority; A remains the existing exploration binding elsewhere.
+        var attack = BindingList.Single(binding => binding.PhysicalKey == Key.A);
+        return _isActionJustPressed(attack.ActionName) ? PrivateBattle01Input.Attack : PrivateBattle01Input.None;
     }
 
     internal void PollPublicSynthetic()

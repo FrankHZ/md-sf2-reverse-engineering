@@ -2349,13 +2349,13 @@ corruption exclusion and source cost/class-pass disagreement remain unchanged. A
 admission rule still applies; these boundaries are not an automatic emulator-work queue.
 
 
-### Proposed first manual player physical attack
+### Controlled first manual player physical attack
 
-This decision plan requires independent acceptance and a separate implementation dispatch. The
-current consumer gives Bowie0 control after enemy132's strike, but still offers only movement and
-STAY. The next capability is a manual attack choice, target confirmation and nested cancellation,
-one complete player attack including EXP, then the actual next control boundary. It does not add
-automatic player decisions, a general combat VM, or another state authority.
+The consumer now gives Bowie0 manual Attack targeting after enemy132's strike, with target
+confirmation and nested cancellation, one complete player attack including EXP, and actual
+131/133 dispatch through round7 player2 control. The Domain, exact-snapshot Application facade and
+thin Godot input/presenter consume the accepted reduction below. Player choices remain manual;
+the existing state and completion chain own the result.
 
 #### Source seams and explicit comparison inputs
 
@@ -2367,7 +2367,7 @@ identities/environment route above. Source paths below are relative to `disasm/`
 [combat resolution](../../docs/design/contracts/combat-resolution.md),
 [randomness](../../docs/design/contracts/randomness.md) and
 [turn lifecycle](../../docs/design/contracts/battle-control-lifecycle.md) owners remain authoritative.
-No research claim, contract, fixture or schema changes belong to this plan.
+Research claims, contracts, fixtures and schemas remain with those owners.
 
 | Source seam | Required behavior |
 | --- | --- |
@@ -2383,14 +2383,14 @@ HP5, receipt51, main `AF881234`, copy `0134`, last-target slot4=0, and the uncha
 Manual origin confirmation followed by choosing the adjacent132 is an **authored player choice**.
 It consumes no combat RNG before confirmation under the existing diagnostic input policy.
 
-Current `OriginalBattle01ControlledAlly` and `Battle01Stats` have no current EXP field. Add an
-explicit **controlled Bowie EXP0 supplement**, named separately from the observed player-ready
-preset; it is not an observed or naturally carried value. Preserve the old preset with unspecified
-EXP. A new named player-attack comparison supplies Bowie0 EXP0, keeps the other two allies' EXP
-unspecified, and otherwise copies the exact accepted party/seed/copy/difficulty. Carry the nullable
-field through the existing preparation-to-live-stats projection; reject this action if actor EXP is
-unspecified. The prepared EXP0/HP12 remain provenance after live EXP15/HP9. No enemy EXP value or
-gold state needs inventing for this nonlethal example.
+`OriginalBattle01ControlledAlly` and `Battle01Stats` retain nullable current EXP. The explicit
+**controlled Bowie EXP0 supplement** is named `private-local-battle01-player-attack-bowie-exp0-inputs-v1`,
+separately from the observed player-ready preset; it is not an observed or naturally carried value.
+The old preset retains unspecified EXP. The new comparison supplies Bowie0 EXP0, keeps the other
+two allies' EXP unspecified, and copies the accepted party/seed/copy/difficulty. The nullable field
+passes through preparation, initialization and immutable stat copies; player attack admission
+rejects unspecified actor EXP. Prepared EXP0/HP12 remain provenance after live EXP15/HP9. Enemy
+EXP remains unspecified and this nonlethal consumer adds no gold state.
 
 **Confirmed controlled result:** hit3, no critical/double/counter, enemy HP5→2; damage EXP30,
 halved15, final award15 and explicit Bowie EXP0→15 with no level change. Construction snapshot
@@ -2525,51 +2525,54 @@ print(json.dumps(dict(policy="controlled semantic replay; presentation RNG loops
 '@ | uv run python -X utf8 -
 ```
 
-#### Minimal implementation boundary and future ownership
+#### Implementation boundary and ownership
 
 Admit manual ordinary class0/Wooden Sword attacks against the existing regular GIZMO profile,
 with source miss/critical arithmetic, both follow-up decisions and the ally award path. Reject a
 validated extra strike/counter, lethal/kill/drop/gold, curse/ailment, unsupported target/attacker
-profile, unknown EXP, required level transition or after-turn effect atomically. Evaluate the real
+profile, target terrain other than1, unknown EXP, required level transition or after-turn effect atomically. Evaluate the real
 award before deciding whether a level boundary is needed; neither cap EXP below100 nor force an
 RNG result to keep a case inside scope. The computed comparison needs none of those extensions.
 
-1. Add nullable current EXP to the existing controlled ally/live-stat owners and a separate named
+1. Retain nullable current EXP in the existing controlled ally/live-stat owners and a separate named
    EXP0 comparison in the existing preset owner. Keep the old preset and its admission valid with
    EXP unspecified. The new preset admits only its declared Bowie EXP0 supplement and unchanged
    accepted fields; action admission requires known current EXP and links it back to preparation.
    Initialization, stat copies, equality and every movement/round transition preserve that field.
-2. Extend the existing player control state with a typed target-selection stage and ordered legal
+2. The existing player control state has a typed target-selection stage and ordered legal
    targets. At ActionChoice, A explicitly chooses Attack; I/J/K/L cycle the source list, Space
    confirms the selected target, Backspace returns to ActionChoice at the provisional position.
    A second Backspace uses existing movement cancellation to restore origin. Space at ordinary
    ActionChoice still commits strict STAY. Empty/unavailable targets leave the action choice intact.
    No RNG, HP, EXP, completion receipt or cursor advance occurs while opening/cycling/cancelling.
-3. Put exact-snapshot/actor/phase/selected-target admission and one final replacement in a focused
+3. Exact-snapshot/actor/phase/selected-target admission and one final replacement belong to the focused
    Application facade. Recompute legal range, occupancy, profiles and effects at confirmation.
    Reuse existing integer arithmetic/main-roll/reaction value types through explicit bounded
    profiles; retain the strict enemy resolver wrapper. Do not reuse its enemy-only dodge/critical
    constants, ally reaction role, last-target write or no-EXP assumption for the player.
-4. Add a distinct player physical receipt/policy to `Battle01TurnCompletion.cs`, not a STAY receipt
-   with changed HP. Record target/action words, profile, range origin, ordered full RNG images,
+4. The distinct player physical receipt/policy in `Battle01TurnCompletion.cs` records
+   target/action words, profile, range origin, ordered full RNG images,
    HP construction/restore/replay, accumulated/halved/randomized EXP and persistent before/after.
    Preserve empty cleanup passes, faction3/6, after-turn ordering and source cursor advance.
-5. Fix existing history assumptions explicitly: `RequireThinkingHistory` currently skips all
-   player receipts; its physical path assumes enemy AI last-target writes and ally-only HP origins.
-   Process player physical receipts before that skip, rewind their main/HP/EXP channels and compare
+5. `RequireThinkingHistory` processes player physical receipts before ordinary player STAY entries,
+   rewinds their main/HP/EXP channels without enemy AI last-target writes, and compares
    both factions with the correct original/prepared profile. Preserve strict enemy decision counts,
-   first-round STAY history and enemy-only last-target memory. `RequireRegularEnemy` currently
-   requires HP5; continuing actors may have positive HP≤5 only when linked reaction history proves
+   first-round STAY history and enemy-only last-target memory. `RequireRegularEnemy` admits
+   continuing actors with positive HP≤5 only when linked reaction history proves
    it. Keep startup/source HP5 and all source identity, max HP, ATT/DEF, resistance/prowess, equipment,
    status, activation and deployment checks strict. Damaged132 must survive later admitted AI and
    generation without healing or bypassing provenance; unreceipted HP drift still rejects.
-6. Extend the thin presenter with target highlight/cancel instructions, live EXP and the latest
+   Recorded preceding main endpoints also constrain generation through the existing source
+   generator, including the following main image and current64-slot order; no new seed storage exists.
+6. The thin presenter shows target highlight/cancel instructions, live EXP and the latest
    player result derived from existing receipts. Retain the visible hit/EXP result through actual
-   131/133 dispatch and round7 player2 control; the existing current-round-only summary lookup must
-   not immediately hide it on generation. Keep the finite actual-candidate relay and manual players.
+   131/133 dispatch and round7 player2 control; player result lookup crosses round boundaries.
+   Keep the finite actual-candidate relay and manual players.
 
-The following exact future paths require separate implementation ownership, all relative to
-`remake/`; only this plan file is writable in the current slice:
+The accepted implementation ownership is bounded to the following 34 paths, all relative to
+`remake/`. The independent main gate additionally authorized the existing enemy Application test
+owner solely to classify fabricated HP and main-seed inputs as `attack.history`; real lethal and
+follow-up resolver coverage and snapshot retention assertions remain intact:
 
 | Paths | Responsibility |
 | --- | --- |
@@ -2577,16 +2580,16 @@ The following exact future paths require separate implementation ownership, all 
 | `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (new) in the latter directory | Explicit EXP0 input supplement, live projection, atomic selection/cancel/confirmation facade. |
 | `game/src/Map3InputAdapter.cs`, `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` | Map existing A binding only in battle context, manual action flow, actual relay and persistent HP/EXP/result projection. |
 | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerPhysicalAttackTests.cs` (new); `Battle01InitializationTests.cs`, `Battle01PlayerMovementTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in that directory | Source branches, cancellation, EXP/provenance, strict old policies, linked HP/EXP and later AI/generation. |
-| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Named input admission, exact snapshots, action lifecycle and early/late atomic rejection. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` in that directory | Named input admission, exact snapshots, action lifecycle and early/late atomic rejection; the existing enemy test method preserves fabricated HP/seed provenance rejection. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Both existing required real Content methods and the complete selected-input continuation. |
 | `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`, `PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Input ownership/no-repeat, nested cancel, visible EXP/result and bounded native checkpoints. |
 | `README.md`; `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` | Current boundary, EXP input provenance, semantic RNG policy, reproducible recipes and remaining unsupported behavior. |
 
-These 33 paths form three buildable commits: Domain/input projection and owning tests; Application/
+These 34 owned paths bound three buildable commits: Domain/input projection and owning tests; Application/
 Godot/native integration and owning tests; then the six current-state documentation owners.
 No fixture/schema/research, asset, package/toolchain, legacy or unrelated registry change is needed.
 
-#### Future implementation acceptance and plan-only gate
+#### Implementation acceptance
 
 - Compare the independent reduction against Domain/Application and both required real Content
   methods in `Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests`, project
@@ -2620,13 +2623,12 @@ No fixture/schema/research, asset, package/toolchain, legacy or unrelated regist
   process completion. Recheck affected enemy-physical/pursuit native contracts when the shared
   HP/EXP/result presentation changes; other modes run only on actual invalidation. No native run
   grants original presentation, seed-lifetime or H4 parity.
-- **Current plan-only acceptance:** `uv sync --locked`, this pure reduction, relative links,
-  private boundary and diff checks, then a clean committed authoritative planner and normal
-  `uv run sf2 verify`/public-core. No local .NET, Godot, native, full Python, ROM or H3 execution
-  is required to approve this document; final public CI may run its fixed workflow. Update onto
-  current accepted `origin/main`, commit/push only this plan, and freeze one Draft PR for independent
-  review. Implementation remains undispatched until separately accepted. Report unavailable default
-  H0 input honestly; do not repair it by copying a private ROM into this plan worktree.
+- Run `uv sync --locked`, the pure reduction, relative links, private boundary and diff checks,
+  then the clean committed planner and its selected managed/official gates plus normal
+  `uv run sf2 verify`/public-core. Preserve the completed suite failures and narrow corrections
+  described in [development and verification](./development-and-verification.md). Update onto
+  current accepted `origin/main`, commit/push declared paths and freeze a Draft PR for independent
+  review. Report unavailable default H0 input honestly; do not copy a private ROM to repair it.
 
 ### Controlled Godot Battle01 consumer
 
@@ -2655,14 +2657,18 @@ and costs/budget share the same 24-pixel grid. Units remain project-authored mar
 at the current cursor; without requested art, authored cells also show terrain IDs.
 I/J/K/L request adjacent cursor destinations; out-of-area and unreachable steps preserve state with
 an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, a separate
-Space press commits STAY; Backspace still cancels before that commit. Backspace also cancels a
-selection to turn origin; repeated origin cancellation remains a rejection. After STAY the UI tries
+Space press commits STAY, while A opens manual physical targeting. I/J cycle backward and K/L
+forward; target Space confirms Attack and target Backspace returns to the provisional action choice.
+A second Backspace restores movement origin; repeated origin cancellation remains a rejection.
+After a completed action the UI tries
 the actual next candidate once and displays its active range when supported. At an unsupported
 candidate it shows the completed actor and candidate/reason with old range/path/cursor cleared.
 The same finite relay generates later rounds and admits bounded inactive standby, active pursuit
 and ordinary physical attacks. The controlled attack132 applies damage once and yields actual
-Bowie0 control with HP9 and a persistent result. Other combat profiles, spells, items, validated
-follow-ups, death/victory and original cancellation animation remain unsupported.
+Bowie0 control with HP9 and a persistent result. His explicit origin attack132 adds EXP15 and
+persists enemy HP2; actual131/133 then lead to round7 player2 control with that result still visible.
+Other combat profiles/terrain, spells, items, validated follow-ups, required level changes,
+death/victory and original cancellation animation remain unsupported.
 
 Root input and physics route on current battle authority before any closed exploration getter.
 Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session

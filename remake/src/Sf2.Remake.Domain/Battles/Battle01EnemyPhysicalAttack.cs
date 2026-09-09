@@ -141,22 +141,30 @@ public static class Battle01EnemyPhysicalAttack
 
     internal static Battle01PhysicalEffect Resolve(int attack, Battle01Stats target, int multiplier, uint main,
         int targetIndex, MapPosition attackerPosition, MapPosition targetPosition)
+        => ResolveSingleStrike(attack, target, multiplier, main, targetIndex, attackerPosition, targetPosition, 32, 32, 1);
+
+    internal static ushort MainRoll(ref uint main, List<Battle01MainRandomRoll> rolls, string purpose, ushort range)
+    {
+        uint before = main; ushort word = (ushort)(main >> 16);
+        ushort result = Battle01FirstRound.NextRandom(ref word, range);
+        main = ((uint)word << 16) | (main & 0xFFFF);
+        rolls.Add(new(purpose, range, before, main, result)); return result;
+    }
+
+    // Only the two separately admitted physical roles call this arithmetic seam.
+    internal static Battle01PhysicalEffect ResolveSingleStrike(int attack, Battle01Stats target, int multiplier, uint main,
+        int targetIndex, MapPosition attackerPosition, MapPosition targetPosition,
+        ushort dodgeRange, ushort criticalRange, int criticalShift)
     {
         var rolls = new List<Battle01MainRandomRoll>();
-        ushort Roll(string purpose, ushort range)
-        {
-            uint before = main; ushort word = (ushort)(main >> 16);
-            ushort result = Battle01FirstRound.NextRandom(ref word, range);
-            main = ((uint)word << 16) | (main & 0xFFFF);
-            rolls.Add(new(purpose, range, before, main, result)); return result;
-        }
-        bool dodge = Roll("dodge", 32) == 0, critical = false;
+        ushort Roll(string purpose, ushort range) => MainRoll(ref main, rolls, purpose, range);
+        bool dodge = Roll("dodge", dodgeRange) == 0, critical = false;
         int damage = 0;
         if (!dodge)
         {
             damage = LandDamage(attack, target.Defense, multiplier);
-            critical = Roll("critical", 32) == 0; // GIZMO prowess0: +1/2 damage, chance1/32
-            if (critical) damage += damage >> 1;
+            critical = Roll("critical", criticalRange) == 0;
+            if (critical) damage += damage >> criticalShift;
             ushort spreadRange = (ushort)((damage >> 3) + 1);
             damage -= Roll("spread-1", spreadRange);
             damage -= Roll("spread-2", spreadRange);
@@ -231,5 +239,5 @@ public static class Battle01EnemyPhysicalAttack
     internal static bool SameStats(Battle01Stats a, Battle01Stats b) =>
         a.Level == b.Level && a.HpMax == b.HpMax && a.HpCurrent == b.HpCurrent && a.MpMax == b.MpMax && a.MpCurrent == b.MpCurrent &&
         a.Attack == b.Attack && a.Defense == b.Defense && a.Agility == b.Agility && a.Move == b.Move && a.Status == b.Status &&
-        a.Items.SequenceEqual(b.Items) && a.Spells.SequenceEqual(b.Spells);
+        a.CurrentExp == b.CurrentExp && a.Items.SequenceEqual(b.Items) && a.Spells.SequenceEqual(b.Spells);
 }

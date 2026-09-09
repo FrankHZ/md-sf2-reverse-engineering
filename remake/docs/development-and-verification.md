@@ -137,11 +137,32 @@ Subsequent explicit origin-STAY choices admit region1 and both active enemies in
 then continue through round4/5 to enemy132's typed pursuit-API boundary in round6 and the separate
 ordinary physical attack. Check priority3,57 further thinking bytes, six main calls, mainAF881234/
 copy0134, HP snapshot12→temporary9→restore12→replay9, last-target slot4=0 and receipt51/raw12.
-Actual Bowie0 then moves/confirms/cancels from(11,15) via the passable(12,15) tile and completes
-STAY at9 HP. The preparation still contains the original12 HP. All generated64-slot orders and
+Actual Bowie0 then moves/confirms/cancels from(11,15) via the passable(12,15) tile, manually confirms
+origin and attacks132. The named preparation retains HP12 and authored EXP0; live HP remains9,
+target HP becomes2, EXP becomes15 and receipt52 advances raw12→14. The eight ordered main calls
+must match the owning plan. Actual131 pursuit and133 standby consume the next two turns;133's
+range8/3 thinking draws produce7/2 over114/19 steps, copy0234. Round7 mainCF491234, all64 slots
+and actual player2 at(7,17)/HP11/budget14 are checked with the persistent HP9/2 and EXP15. All generated64-slot orders and
 4498 preceding standby thinking bytes match the independent reduction, including the first131
 occupied-cell fallback. Shared player-ready fixture
 fields corroborate only their named seam; this is not original natural control/timing/RNG chronology.
+
+The player action filters are `FullyQualifiedName~Battle01PlayerPhysicalAttackTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01PlayerPhysicalAttackTests` in Application. Together with
+the existing input/presenter classes they cover manual legal targets, nested cancellation, exact
+snapshot admission, distinct receipt roles, real RNG miss/critical/follow-up/level branches, and late
+failure after local HP/EXP replay. The generation regression also exercises damaged132's later
+actual physical-cohort admission without healing. The required real Content methods above must
+execute with `SF2_REQUIRE_PRIVATE_TESTS=1`; an absent selected dependency is not a skip.
+
+Preserved discovery boundaries: the completed managed run reported1307 passed,2 failed,1 skipped.
+The two failures were `PrivateOriginalBattle01EnemyPhysicalAttackTests.InvalidInputsAndComputedFollowupsRetainEveryCurrentChannel`
+with direct `double`/`counter` seed injections: the new generation linkage correctly returned
+`attack.history` before resolver admission. Their replacements `unreceiptedDoubleSeed` and
+`unreceiptedCounterSeed` retain exact snapshot/channel assertions, alongside `unreceiptedHp`.
+Only the owning method is rerun after that correction. Real resolver follow-up/lethal tests remain.
+`GeneratedRoundAndDamagedEnemyControlRetainThePlayerReactionProvenance` first failed because a
+forged round7 main image was admitted; the recorded-endpoint generator check closes that failure.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
 
@@ -243,6 +264,12 @@ Use `enemy-physical-attack` for four checkpoints: actual round6 player1 ready, a
 snapshot after player1 STAY/inactive128/attack132, restored physical-route STAY yielding Bowie0
 ready at9 HP, and physical movement/confirm/cancel back to(11,15) at9 HP. Compare copied and
 physical attack receipts, all six RNG calls, visible HP/result and source/export identity.
+Use `player-physical-attack` for six native checkpoints: Bowie HP9/EXP0, provisional(12,14)
+target132, target-cancelled action choice, restored origin target132, labeled exact selected-snapshot
+Application copy after receipt52, and physical Space/actual relay through round7 player2. Compare
+the full copied/physical player receipt; inspect every image and the persistent HP/EXP result.
+The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
+original post-playback main/copy values. Rerun the affected enemy physical and pursuit modes.
 The automatic attack invalidates the old `enemy-pursuit` endpoint; rerun that mode. Other modes,
 including `round-continuation`, run only when their owning contracts change. Do not repeat a
 completed full managed suite after a correction; preserve its failed nodes and rerun them narrowly.

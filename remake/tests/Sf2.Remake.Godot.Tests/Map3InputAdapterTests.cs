@@ -18,6 +18,7 @@ public sealed class Map3InputAdapterTests
     [InlineData(Key.L, PrivateBattle01Input.East)]
     [InlineData(Key.Space, PrivateBattle01Input.Confirm)]
     [InlineData(Key.Backspace, PrivateBattle01Input.Cancel)]
+    [InlineData(Key.A, PrivateBattle01Input.Attack)]
     [InlineData(Key.W, PrivateBattle01Input.None)]
     [InlineData(Key.F, PrivateBattle01Input.None)]
     [InlineData(Key.B, PrivateBattle01Input.None)]

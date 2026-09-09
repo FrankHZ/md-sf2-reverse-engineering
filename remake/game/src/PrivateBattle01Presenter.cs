@@ -6,13 +6,13 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.GodotAdapter;
 
 internal sealed record PrivateBattle01Tile(MapPosition Position, byte Terrain, bool Reachable, bool CanStop);
-internal sealed record PrivateBattle01Unit(int Index, MapPosition Position, ushort Hp);
+internal sealed record PrivateBattle01Unit(int Index, MapPosition Position, ushort Hp, byte? Exp);
 internal sealed record PrivateBattle01Projection(
     Battle01Phase Phase, int Width, int Height, int? ActorIndex, int? CompletedActorIndex, int? NextCandidateIndex,
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
-    bool PhysicalAttackCompleted, string? AttackResult);
+    bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -95,11 +95,21 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"{UnitTag(lastAttack.ActorIndex)} -> {UnitTag(lastAttack.TargetIndex)}: " +
             (lastAttack.Effect.Dodged ? "miss" : (lastAttack.Effect.Critical ? "critical " : "hit ") + lastAttack.Effect.Damage) +
             $". HP {lastAttack.Effect.BeforeStats.HpCurrent} -> {lastAttack.Effect.AfterStats.HpCurrent}.";
+        for (var receipt = battle.TurnCompletion; receipt is not null; receipt = receipt.Previous)
+            if (receipt.PlayerPhysicalAttack is { } player)
+            {
+                attackResult = $"{UnitTag(player.ActorIndex)} -> {UnitTag(player.TargetIndex)}: " +
+                    (player.Effect.Dodged ? "miss" : (player.Effect.Critical ? "critical " : "hit ") + player.Effect.Damage) +
+                    $". HP {player.Effect.BeforeStats.HpCurrent} -> {player.Effect.AfterStats.HpCurrent}. " +
+                    $"EXP +{player.AwardedExp}: {player.Actor.Stats.CurrentExp} -> {player.ActorAfterStats.CurrentExp}.";
+                break;
+            }
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
-            Battle01Phase.PlayerActionChoice => "Space: STAY and end this turn   Backspace: cancel relocation",
+            Battle01Phase.PlayerActionChoice => "A: Attack   Space: STAY   Backspace: cancel relocation",
+            Battle01Phase.PlayerAttackTargetSelection => "I/J: previous   K/L: next   Space: attack   Backspace: action choice",
             Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted when battle.FirstRound is { CurrentCandidate: null } =>
                 "Round exhausted. Input closed. Relaunch starts Map 3.",
             Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted =>
@@ -108,11 +118,12 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         };
         return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, completion?.CompletedActorIndex,
             completion is null ? null : battle.FirstRound?.CurrentCandidate?.CombatantIndex, tiles.AsReadOnly(),
-            Array.AsReadOnly(battle.Roster.Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position, unit.Stats.HpCurrent)).ToArray()),
+            Array.AsReadOnly(battle.Roster.Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position, unit.Stats.HpCurrent, unit.Stats.CurrentExp)).ToArray()),
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
-            completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null, attackResult);
+            completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
+            attackResult, movement?.Attack?.TargetIndex);
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -123,8 +134,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);
             AddLabel(_baseView is null ? Boundary : BaseArtBoundary, new(456, 72), new(480, 50), 16);
             _details = AddLabel("", new(456, 130), new(480, 108), 16);
-            AddLabel("Live units  |  (x,y)  |  HP", new(456, 244), new(480, 26), 16);
-            _allies = AddLabel("", new(456, 274), new(144, 90), 15);
+            AddLabel("Live units | HP | controlled Bowie EXP0 input", new(456, 244), new(480, 26), 16);
+            _allies = AddLabel("", new(456, 274), new(164, 100), 14);
             _enemies = AddLabel("", new(624, 274), new(144, 90), 15);
             _remainingEnemies = AddLabel("", new(792, 274), new(144, 90), 15);
             _status = AddLabel("", new(456, 382), new(480, 82), 13);
@@ -141,9 +152,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +
             $"Grid cost: {view.GridCost?.ToString() ?? "-"}   Path cost: {view.PathCost?.ToString() ?? "-"}   Budget: {view.Budget?.ToString() ?? "-"}\n" +
-            $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}";
+            (view.SelectedTargetIndex is { } target ? $"Attack target: {UnitTag(target)} ({target})" :
+                $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}");
         static string UnitLine(PrivateBattle01Unit unit) =>
-            $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}";
+            $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +
+            (unit.Index < 128 ? $" EXP {unit.Exp?.ToString() ?? "?"}" : "");
         _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
@@ -204,6 +217,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             DrawRect(new Rect2(at + Vector2.One * 4, new Vector2(16, 16)), color);
             if (unit.Index == view.ActorIndex)
                 DrawRect(new Rect2(at + Vector2.One * 3, new Vector2(18, 18)), new Color("#f2cc75"), false, 2);
+            if (unit.Index == view.SelectedTargetIndex)
+                DrawRect(new Rect2(at + Vector2.One, new Vector2(22, 22)), new Color("#ff8a65"), false, 2);
             DrawString(font, at + new Vector2(4, 15), UnitTag(unit.Index), fontSize: 10);
         }
         if (view.Cursor is { } cursor)

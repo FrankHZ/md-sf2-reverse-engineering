@@ -51,11 +51,20 @@ round6 enemy132 with an eligible physical target. The separate physical consumer
 moves132 to(11,14), resolves the ordinary attack and applies3 damage once. Bowie receives actual
 next-player control at9 HP, with the attack summary retained during movement/cancel/STAY.
 Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
+At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
+attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
+the movement origin. N uses a separately named controlled Bowie EXP0 supplement; the earlier
+player-ready preset retains unspecified EXP. The bounded class0/Wooden Sword attack against a
+regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
+on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
+control with Bowie HP9/EXP15 and enemy132 HP2. The latest player result remains visible.
+Its eight main RNG calls and round7 CF491234 endpoint describe construction/award semantics with
+presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
 Misses and ordinary criticals are calculated; a validated double/counter, lethal or other unsupported
 effect rejects the complete transition before any state commit.
 Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
 this controlled comparison does not establish natural continuity or original economy effects.
-Backspace cancels only before STAY. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
+Backspace cancels only before action completion. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
 and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
