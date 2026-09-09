@@ -39,6 +39,22 @@ public sealed class Battle01EnemyPhysicalAttackTests
     internal static Battle01InitializedState ChesterHitCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(), 131, Policy);
 
     [Fact]
+    public void ChesterFinalizationRejectsAFalseHpReplayAfterConstructingTheLocalPhysicalEffect()
+    {
+        var before = ChesterAttackBoundary(); var d = Battle01EnemyPhysicalAttack.Decide(before, before.Roster[6]);
+        Assert.Equal(9, d.Effect.AfterStats.HpCurrent);
+        var roster = before.Roster.ToArray(); var occupancy = before.Occupancy.ToArray(); var targets = before.AiLastTargets.ToArray();
+        roster[6] = roster[6].WithPosition(d.Destination); roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentHp(10));
+        occupancy[11 + 10 * 48] = -1; occupancy[11 + 13 * 48] = 131; targets[3] = 2;
+        var local = new Battle01InitializedState(before, roster, occupancy, before.AiMemory.ToArray(),
+            d.SeedCopyAfter, d.Effect.MainSeedAfter, targets);
+        Assert.Equal("attack.history", Assert.Throws<ArgumentException>(() => Battle01TurnCompletion.CompletePhysical(local, d, Policy)).ParamName);
+        Assert.Equal(11, before.Roster[2].Stats.HpCurrent); Assert.Equal(0xB28D1234u, before.RandomSeedImage);
+        Assert.Equal((ushort?)0x0034, before.RandomSeedCopy); Assert.Equal(255, before.AiLastTargets[3]);
+        Assert.Equal(70, Battle01EnemyPursuitTests.Receipts(before).Count());
+    }
+
+    [Fact]
     public void ActualRoundEightChesterHitReplaysTheSelectedProfileAndPreservesFirstDefeatAccounting()
     {
         var before = ChesterAttackBoundary();
