@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -179,8 +179,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
-        bool enemyReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-standby";
-        bool stayReview = enemyReview || System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player";
+        // Earlier STAY mode names now alias the complete bounded first-round chain.
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round";
         if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
@@ -261,48 +261,64 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 firstReceipt.BeforeAfterTurn == new Battle01FactionCounts(3, 6) &&
                 firstReceipt.AfterAfterTurn == new Battle01FactionCounts(3, 6),
                 "Candidate-only supplement and current occupancy preserve the first completed move");
-            if (!enemyReview) await CaptureControl("01-next-player");
             await PressBattleKey(Key.I); await PressBattleKey(Key.Space);
             var secondMoved = _session.PrivateOriginalBattle01!;
             Require(secondMoved.Battle.Phase == Battle01Phase.PlayerActionChoice &&
                 secondMoved.Battle.Roster[2].Position == new MapPosition(7, 17) &&
                 secondMoved.Battle.Roster[1].Position == destination &&
                 ReferenceEquals(firstReceipt, secondMoved.Battle.TurnCompletion), "Second player's independent provisional movement");
-            if (!enemyReview) await CaptureControl("02-second-provisional");
             await PressBattleKey(Key.Backspace);
             var secondCancelled = _session.PrivateOriginalBattle01!;
             Require(secondCancelled.Battle.Roster[2].Position == new MapPosition(7, 18) &&
                 secondCancelled.Battle.Roster[1].Position == destination &&
                 secondCancelled.Battle.Occupancy.SequenceEqual(next.Battle.Occupancy) &&
                 ReferenceEquals(firstReceipt, secondCancelled.Battle.TurnCompletion), "Second cancel preserves the first STAY");
-            if (!enemyReview) await CaptureControl("03-second-cancelled");
             await PressBattleKey(Key.I); await PressBattleKey(Key.Space); await PressBattleKey(Key.Space);
-            var completed = _session.PrivateOriginalBattle01!;
-            var end = completed.Battle;
-            Require(end.Phase == Battle01Phase.EnemyTurnCompleted && end.FirstControl is null &&
-                end.TurnCompletion?.CompletedActorIndex == 128 && end.TurnCompletion.Previous?.CompletedActorIndex == 2 &&
-                ReferenceEquals(end.TurnCompletion.Previous.Previous, firstReceipt), "First enemy completion retains both player STAYs");
-            Require(end.FirstRound!.CurrentTurnOffset == 6 && end.FirstRound.CurrentCandidate?.CombatantIndex == 131 &&
-                end.FirstRound.CurrentCandidate == battle.FirstRound!.Slots[3] &&
-                ReferenceEquals(end.FirstRound.Slots, battle.FirstRound.Slots) && end.FirstRound.Slots.Count == 64 &&
-                end.RandomSeedImage == 0xA4991234 && end.Roster.Count == 9 &&
-                end.Roster[1].Position == destination && end.Roster[2].Position == new MapPosition(7, 17) &&
-                ReferenceEquals(completed.Preparation, ready.Preparation), "Next enemy boundary preserves both player moves, main RNG and order");
-            var standby = end.TurnCompletion!.EnemyStandby!;
-            Require(end.Roster[3].Position == new MapPosition(6, 3) && end.Roster[3].Deployment.Position == new MapPosition(7, 3) &&
-                end.OccupantAt(new(7, 3)) == -1 && end.OccupantAt(new(6, 3)) == 128 &&
-                standby.MoveString.SequenceEqual(new byte[] { 2, 255 }) && standby.Rolls.Select(roll => roll.Range).SequenceEqual(new byte[] { 8, 2, 1 }) &&
-                standby.Rolls.Select(roll => roll.GeneratorSteps).SequenceEqual(new[] { 61, 85, 1 }) &&
-                ready.Battle.RandomSeedCopy == 0x1234 && end.RandomSeedCopy == 0x3934 && end.AiMemory[0] == 0x14 &&
-                end.NewlyTestedRegionMask == 0 && end.RegionFlags90Through105.All(flag => !flag) &&
-                end.Roster.Select((unit, i) => ReferenceEquals(unit.Stats, battle.Roster[i].Stats)).All(value => value),
-                "Source standby rolls, west path, memory and unchanged effective stats");
-            Require(end.TurnCompletion!.BeforeAfterTurn == new Battle01FactionCounts(3, 6) &&
-                end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3, 6), "Enemy STAY runs both faction gates");
+            var bowie = _session.PrivateOriginalBattle01!; var bowieBattle = bowie.Battle;
+            Require(bowieBattle.Phase == Battle01Phase.PlayerMovementSelection && bowieBattle.FirstControl?.ActorIndex == 0 &&
+                bowieBattle.FirstRound!.CurrentTurnOffset == 16 && bowieBattle.FirstRound.CurrentCandidate?.CombatantIndex == 0 &&
+                bowieBattle.FirstControl.Movement.Range.Profile == Battle01MovementProfile.Regular &&
+                bowieBattle.FirstControl.Movement.Range.Budget == 12 && bowieBattle.Roster[0].Position == new MapPosition(8, 18),
+                "Finite enemy relay hands actual Bowie his class0 Regular1 range without making his decision");
+            var completedPrefix = new List<Battle01TurnCompletionReceipt>();
+            for (var receipt = bowieBattle.TurnCompletion; receipt is not null; receipt = receipt.Previous) completedPrefix.Add(receipt);
+            completedPrefix.Reverse();
+            Require(completedPrefix.Select(receipt => receipt.CompletedActorIndex).SequenceEqual(new[] { 1,2,128,131,133,129,130,132 }) &&
+                ReferenceEquals(completedPrefix[0], firstReceipt), "Eight ordered receipts retain both player turns");
+            var enemyDecisions = completedPrefix.Skip(2).Select(receipt => receipt.EnemyStandby!).ToArray();
+            Require(enemyDecisions.All(decision => decision is not null) && enemyDecisions.SelectMany(decision => decision.Rolls).Sum(roll => roll.GeneratorSteps) == 1483 &&
+                bowieBattle.Roster.Skip(3).Select(unit => unit.Position).SequenceEqual(new MapPosition[] { new(6,3),new(10,4),new(6,5),new(8,4),new(9,6),new(6,6) }) &&
+                bowieBattle.AiMemory.Take(6).SequenceEqual(new byte[] { 0x14,0x34,0x24,0x24,0x24,0x24 }) &&
+                bowieBattle.AiMemory.Skip(6).All(value => value == 0) && bowieBattle.RandomSeedCopy == 0x0134 &&
+                bowieBattle.RandomSeedImage == 0xA4991234 && bowieBattle.NewlyTestedRegionMask == 0 &&
+                bowieBattle.RegionFlags90Through105.All(flag => !flag) && bowieBattle.AiLastTargets.All(value => value == 255) &&
+                ReferenceEquals(bowieBattle.FirstRound!.Slots, battle.FirstRound!.Slots) &&
+                bowieBattle.Roster.Select((unit, i) => ReferenceEquals(unit.Stats, battle.Roster[i].Stats)).All(value => value),
+                "All six independent standby traces preserve main RNG, effective stats, order and first enemy memory");
+            Require(secondCancelled.Battle.Roster[0].AiBitfield is null && bowieBattle.Roster[0].AiBitfield == 0 &&
+                bowieBattle.FirstControl!.CandidateWordSupplied && ReferenceEquals(bowie.Preparation, ready.Preparation), "Only current Bowie receives the missing word");
+            await CaptureControl("01-bowie-ready");
+            await PressBattleKey(Key.I); await PressBattleKey(Key.Space);
+            var bowieMoved = _session.PrivateOriginalBattle01!;
+            Require(bowieMoved.Battle.Phase == Battle01Phase.PlayerActionChoice && bowieMoved.Battle.Roster[0].Position == new MapPosition(8,17) &&
+                ReferenceEquals(bowieMoved.Battle.TurnCompletion, bowieBattle.TurnCompletion), "Bowie provisional move retains eight completed turns");
+            await CaptureControl("02-bowie-provisional");
+            await PressBattleKey(Key.Backspace);
+            var bowieCancelled = _session.PrivateOriginalBattle01!;
+            Require(bowieCancelled.Battle.Roster[0].Position == new MapPosition(8,18) && bowieCancelled.Battle.Occupancy.SequenceEqual(bowieBattle.Occupancy) &&
+                ReferenceEquals(bowieCancelled.Battle.TurnCompletion, bowieBattle.TurnCompletion), "Bowie cancel restores only his origin and occupancy");
+            await CaptureControl("03-bowie-cancelled");
+            await PressBattleKey(Key.I); await PressBattleKey(Key.Space); await PressBattleKey(Key.Space);
+            var completed = _session.PrivateOriginalBattle01!; var end = completed.Battle;
+            Require(end.Phase == Battle01Phase.PlayerTurnCompleted && end.FirstControl is null && end.TurnCompletion?.CompletedActorIndex == 0 &&
+                ReferenceEquals(end.TurnCompletion.Previous, bowieBattle.TurnCompletion) && end.FirstRound!.CurrentTurnOffset == 18 &&
+                end.FirstRound.CurrentCandidate is null && end.FirstRound.Slots[9].IsSentinel &&
+                ReferenceEquals(end.FirstRound.Slots, bowieBattle.FirstRound!.Slots) && end.Roster[0].Position == new MapPosition(8,17) &&
+                end.RandomSeedCopy == 0x0134 && end.RandomSeedImage == 0xA4991234 && ReferenceEquals(end.AiMemory, bowieBattle.AiMemory) &&
+                end.TurnCompletion.BeforeAfterTurn == new Battle01FactionCounts(3,6) && end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3,6),
+                "Bowie separate STAY retains all nine receipts and stops at the real first sentinel without reroll");
             string stoppedStatus = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!.Status;
-            Require(stoppedStatus.Contains("Enemy standby") && stoppedStatus.Contains("(6,3)") && stoppedStatus.Contains("STAY complete"),
-                "Enemy standby move and completion visible");
-            if (enemyReview) await CaptureControl("01-enemy-standby");
+            Require(stoppedStatus.Contains("First round exhausted"), "First sentinel exhaustion visible");
             foreach (Key key in new[] { Key.I, Key.J, Key.K, Key.L, Key.Space, Key.Backspace, Key.N,
                 Key.W, Key.A, Key.S, Key.D, Key.F, Key.G, Key.B, Key.M })
             {
@@ -312,21 +328,21 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "Unrelated keys never retry dispatch or overwrite the boundary reason");
             }
             var view = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!;
-            Require(view.ActorIndex is null && view.CompletedActorIndex == 128 && view.NextCandidateIndex == 131 &&
+            Require(view.ActorIndex is null && view.CompletedActorIndex == 0 && view.NextCandidateIndex is null &&
                 view.Cursor is null && view.Path.Count == 0 && view.Tiles.All(tile => !tile.Reachable && !tile.CanStop),
                 "Completed actor is historical; next candidate has no range/cursor/control");
             var hidden = _root.GetChildren().OfType<CanvasItem>().Where(child => child is not PrivateBattle01Presenter).ToArray();
             Require(hidden.Length > 0 && hidden.All(child => !child.Visible), "All old canvas subtrees remain hidden after STAY");
-            await CaptureControl(enemyReview ? "02-input-closed" : "04-enemy-standby");
+            await CaptureControl("04-first-round-exhausted");
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
-                status = "Pass", scope = "controlled Map40 seed; real keys; two player STAYs and first inactive enemy standby",
-                firstCompletedActor = actor, secondCompletedActor = 2, enemyCompletedActor = 128, nextCandidate = view.NextCandidateIndex,
-                nextStarted = false, rawOffsets = new[] { 0, 2, 4, 6 }, standby, seedCopy = end.RandomSeedCopy,
+                status = "Pass", scope = "controlled Map40 seed; real keys; six inactive enemy STAYs, independent Bowie control and first sentinel",
+                completedActors = completedPrefix.Select(receipt => receipt.CompletedActorIndex).Append(0).ToArray(), nextCandidate = view.NextCandidateIndex,
+                nextStarted = false, rawOffsets = Enumerable.Range(0,10).Select(index => index*2).ToArray(), enemyDecisions, seedCopy = end.RandomSeedCopy,
                 origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound.CurrentTurnOffset,
                 beforeAfterTurn = end.TurnCompletion.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
                 policy = end.TurnCompletion.Policy.Id, inputClosed = true, oldCanvasHidden = hidden.Length, frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} {(enemyReview ? "enemy-standby" : "next-player")}");
+            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} first-round");
             return;
         }
         foreach (Key key in new[] { Key.I, Key.W, Key.F, Key.B, Key.M, Key.N })

@@ -20,6 +20,9 @@ public sealed record Battle01EnemyStandbyDecision(int ActorIndex, MapPosition Or
 
 public static class Battle01EnemyStandby
 {
+    private static readonly int[] FirstRoundActors = [1, 2, 128, 131, 133, 129, 130, 132, 0];
+    private static readonly MapPosition[] EnemyOrigins = [new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
+
     public static Battle01InitializedState CompleteFirst(Battle01InitializedState current, int actorIndex,
         Battle01StayCompletionPolicy? policy)
     {
@@ -39,16 +42,74 @@ public static class Battle01EnemyStandby
         if (current.AiMemory.Count != 48 || current.AiMemory.Any(value => value != 0) ||
             current.AiLastTargets.Count != 48 || current.AiLastTargets.Any(value => value != 255))
             throw new ArgumentException("The first enemy requires initialized standby memory and last targets.", "memory");
+        return CompleteAdmittedEnemy(current, actorIndex, policy);
+    }
+
+    public static Battle01InitializedState CompleteNext(Battle01InitializedState current, int actorIndex,
+        Battle01StayCompletionPolicy? policy)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        if (current.Phase != Battle01Phase.EnemyTurnCompleted ||
+            current.FirstRound is not { CurrentTurnOffset: >= 6 and <= 14 } order)
+            throw new ArgumentException("Remaining standby requires a completed first-round enemy.", "phase");
+        RequireCompletedPrefix(current, order.CurrentTurnOffset / 2);
+        if (order.CurrentCandidate?.CombatantIndex != actorIndex)
+            throw new ArgumentException("Standby must name the actual next first-round enemy.", "actor");
+        return CompleteAdmittedEnemy(current, actorIndex, policy);
+    }
+
+    internal static void RequireCompletedPrefix(Battle01InitializedState current, int completedCount)
+    {
+        var order = current.FirstRound;
+        if (completedCount is < 3 or > 8 || order is null || order.CurrentTurnOffset != completedCount * 2 ||
+            order.Slots.Count != 64 || !order.Slots.Take(9).Select(slot => (int)slot.CombatantIndex).SequenceEqual(FirstRoundActors) ||
+            order.Slots.Skip(9).Any(slot => !slot.IsSentinel))
+            throw new ArgumentException("Only the retained first-round candidate sequence is admitted.", "turnOrder");
+        var receipts = new Battle01TurnCompletionReceipt[completedCount]; var receipt = current.TurnCompletion;
+        for (int index = completedCount - 1; index >= 0; index--)
+        {
+            if (receipt is null || receipt.CompletedActorIndex != FirstRoundActors[index] ||
+                !ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats) ||
+                receipt.BeforeAfterTurn != new Battle01FactionCounts(3, 6) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+                throw new ArgumentException("The complete ordered no-effect receipt prefix must be retained.", "completion");
+            receipts[index] = receipt; receipt = receipt.Previous;
+        }
+        if (receipt is not null || receipts.Take(2).Any(player => player.EnemyStandby is not null))
+            throw new ArgumentException("The receipt prefix must start with exactly the two player turns.", "completion");
+        ushort seed = 0x1234; var memory = new byte[48];
+        foreach (var completed in receipts.Skip(2))
+        {
+            if (completed.EnemyStandby is not { } decision || decision.ActorIndex != completed.CompletedActorIndex ||
+                decision.SeedCopyBefore != seed || decision.MemoryBefore != 0)
+                throw new ArgumentException("Each completed enemy must preserve its own decision and preceding seed.", "completion");
+            seed = decision.SeedCopyAfter; memory[decision.ActorIndex - 128] = decision.MemoryAfter;
+        }
+        if (current.RandomSeedCopy != seed)
+            throw new ArgumentException("Continue from the last committed thinking seed-copy.", "randomSeedCopy");
+        if (!current.AiMemory.SequenceEqual(memory) || current.AiLastTargets.Count != 48 || current.AiLastTargets.Any(value => value != 255))
+            throw new ArgumentException("Completed enemy memory and initialized remaining slots must be preserved.", "memory");
+        if (current.RandomSeedImage != 0xA4991234 || current.NewlyTestedRegionMask != 0 ||
+            current.RegionFlags90Through105.Count != 16 || current.RegionFlags90Through105.Any(flag => flag))
+            throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
+    }
+
+    private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,
+        Battle01StayCompletionPolicy? policy)
+    {
         var actor = current.Roster.SingleOrDefault(unit => unit.Index == actorIndex)
             ?? throw new ArgumentException("The current enemy must exist.", "actor");
+        int memoryIndex = actorIndex - 128;
+        if (memoryIndex is < 0 or >= 6) throw new ArgumentException("Only the six initialized GIZMOs are admitted.", "actor");
         var deployment = actor.Deployment;
-        if (deployment.Identity != 39 || deployment.AiCommandSet != 6 ||
+        byte commandSet = memoryIndex >= 4 ? (byte)7 : (byte)6;
+        byte primaryRegion = memoryIndex < 3 ? (byte)2 : memoryIndex < 5 ? (byte)1 : (byte)0;
+        if (deployment.Identity != 39 || deployment.AiCommandSet != commandSet ||
             deployment.PrimaryOrder != 255 || deployment.SecondaryOrder != 255 ||
-            deployment.PrimaryRegion != 2 || deployment.SecondaryRegion != 15 ||
-            deployment.Spawn != 0 || actor.AiBitfield != 0x2060)
+            deployment.PrimaryRegion != primaryRegion || deployment.SecondaryRegion != 15 ||
+            deployment.Spawn != 0 || actor.AiBitfield != (0x2000 | (commandSet << 4)))
             throw new ArgumentException("Only the fixed inactive GIZMO regular standby branch is admitted.", "activation");
-        if (actor.Position != new MapPosition(7, 3) || actor.Position != deployment.Position)
-            throw new ArgumentException("The first enemy must retain its original deployment position.", "position");
+        if (actor.Position != EnemyOrigins[memoryIndex] || actor.Position != deployment.Position)
+            throw new ArgumentException("Each first-round enemy must enter at its original deployment position.", "position");
         var stats = actor.Stats;
         if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
             stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
@@ -56,7 +117,7 @@ public static class Battle01EnemyStandby
             stats.Items.Any(item => item != 127) || stats.Spells.Any(spell => spell != 63))
             throw new ArgumentException("The already initialized effective enemy stats must be unchanged.", "stats");
 
-        var decision = Decide(current, actor, current.RandomSeedCopy.Value, current.AiMemory[0]);
+        var decision = Decide(current, actor, current.RandomSeedCopy!.Value, current.AiMemory[memoryIndex]);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         if (occupancy.Length != 2304 || occupancy[Battle01PlayerMovement.Offset(actor.Position)] != actorIndex ||
             (decision.Destination != actor.Position && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1))
@@ -64,7 +125,7 @@ public static class Battle01EnemyStandby
         roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
         occupancy[Battle01PlayerMovement.Offset(actor.Position)] = -1;
         occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = actorIndex;
-        var memory = current.AiMemory.ToArray(); memory[0] = decision.MemoryAfter;
+        var memory = current.AiMemory.ToArray(); memory[memoryIndex] = decision.MemoryAfter;
         var moved = new Battle01InitializedState(current, roster, occupancy, memory, decision.SeedCopyAfter);
         // Local projection only: source clear-region/standby/move/STAY effects commit together.
         return Battle01TurnCompletion.CompleteControlledStay(moved, actorIndex, stats, policy, decision);

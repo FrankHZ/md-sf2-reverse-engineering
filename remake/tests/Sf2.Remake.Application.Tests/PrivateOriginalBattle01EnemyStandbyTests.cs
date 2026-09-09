@@ -24,7 +24,7 @@ public sealed class PrivateOriginalBattle01EnemyStandbyTests
         Assert.Equal(6, after.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal((byte)131, after.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex);
         Assert.Equal((ushort?)0x1234, before.Battle.RandomSeedCopy); Assert.Equal((ushort?)0x3934, after.Battle.RandomSeedCopy);
         Assert.Equal("snapshot", Reject(session.CompletePrivateOriginalBattle01EnemyStandby(before, 128)));
-        Assert.Equal("phase", Reject(session.CompletePrivateOriginalBattle01EnemyStandby(after, 131))); Assert.Same(after, session.PrivateOriginalBattle01);
+        Assert.Equal("actor", Reject(session.CompletePrivateOriginalBattle01EnemyStandby(after, 128))); Assert.Same(after, session.PrivateOriginalBattle01);
     }
 
     [Fact]
@@ -61,7 +61,56 @@ public sealed class PrivateOriginalBattle01EnemyStandbyTests
         Assert.Equal(7, input.Battle.NewlyTestedRegionMask); Assert.All(input.Battle.AiMemory, value => Assert.Equal(0, value));
     }
 
-    private static GameSession SecondCompleted()
+    [Fact]
+    public void EachRemainingEnemyCommitsIndependentlyAndTheLastHandsOffToBowieWithoutAutomatingHisTurn()
+    {
+        var session = SecondCompleted(); var players = session.PrivateOriginalBattle01!;
+        var current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(players, 128)).Snapshot;
+        for (int i = 0; i < 5; i++)
+        {
+            var previous = current; int actor = previous.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+            current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(previous, actor)).Snapshot;
+            Assert.Same(current, session.PrivateOriginalBattle01); Assert.Same(previous.Battle.TurnCompletion, current.Battle.TurnCompletion!.Previous);
+            Assert.Same(players.Preparation, current.Preparation); Assert.Same(players.SourceLocomotion, current.SourceLocomotion);
+            Assert.Same(players.SourceSnapshot, current.SourceSnapshot); Assert.Same(players.SourceBridge, current.SourceBridge);
+            Assert.Equal("snapshot", Reject(session.CompletePrivateOriginalBattle01EnemyStandby(previous, actor))); Assert.Same(current, session.PrivateOriginalBattle01);
+            Assert.Null(current.Battle.Roster[0].AiBitfield);
+        }
+        Assert.Equal(16, current.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal((ushort?)0x0134, current.Battle.RandomSeedCopy);
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 0)).Snapshot;
+        Assert.Equal(0, ready.Battle.FirstControl!.ActorIndex); Assert.Equal(12, ready.Battle.FirstControl.Movement.Range.Budget);
+        Assert.Same(current.Battle.TurnCompletion, ready.Battle.TurnCompletion); Assert.Equal((ushort?)0, ready.Battle.Roster[0].AiBitfield);
+    }
+
+    [Fact]
+    public void MidRelayLateOccupancyFailureKeepsTheLastEnemyCommitAndItsExactThinkingState()
+    {
+        var session = SecondCompleted(); var current = session.PrivateOriginalBattle01!;
+        foreach (int actor in new[] { 128, 131 }) current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(current, actor)).Snapshot;
+        var battle = current.Battle; var occupancy = battle.Occupancy.ToArray(); occupancy[17 * 48 + 9] = -1;
+        var invalid = Internal<Battle01InitializedState>(battle, battle.Roster.ToArray(), occupancy, battle.AiMemory.ToArray(), battle.RandomSeedCopy!.Value);
+        var input = Replace(session, invalid); string frozen = JsonSerializer.Serialize(input.Battle);
+        Assert.Equal("occupancy", Reject(session.CompletePrivateOriginalBattle01EnemyStandby(input, 133)));
+        Assert.Same(input, session.PrivateOriginalBattle01); Assert.Equal(frozen, JsonSerializer.Serialize(input.Battle));
+        Assert.Same(battle.TurnCompletion, input.Battle.TurnCompletion); Assert.Equal(131, input.Battle.TurnCompletion!.CompletedActorIndex);
+        Assert.Equal(8, input.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal((ushort?)0x0134, input.Battle.RandomSeedCopy);
+        Assert.Equal(0x24, input.Battle.AiMemory[3]); Assert.Equal(0, input.Battle.AiMemory[5]);
+    }
+
+    internal static GameSession AllEnemiesCompleted()
+    {
+        var session = SecondCompleted();
+        for (int i = 0; i < 6; i++)
+        {
+            var current = session.PrivateOriginalBattle01!;
+            Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(
+                current, current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex));
+        }
+        return session;
+    }
+
+    internal static GameSession SecondCompleted()
     {
         var session = RoundSession(); var source = session.PrivateOriginalBattle01!.Battle; var roster = source.Roster.ToArray();
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];

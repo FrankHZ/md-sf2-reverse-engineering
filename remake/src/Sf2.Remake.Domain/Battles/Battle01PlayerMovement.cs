@@ -12,17 +12,19 @@ public sealed class Battle01MovementProfile
         [-1, 2, 2, 3, 4, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
     public static Battle01MovementProfile Centaur { get; } = new("battle01-class1-centaur2-source-profile-v1", 1, 2,
         [-1, 2, 2, 3, 5, 5, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
+    public static Battle01MovementProfile Regular { get; } = new("battle01-class0-regular1-source-profile-v1", 0, 1,
+        [-1, 2, 2, 3, 4, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
     public string Id { get; }
     public byte ClassId { get; }
     public byte MovementType { get; }
-    // Bounded classdefs rows4/1 + landEffectSettingsAndMoveCosts rows12/2, pinned c834c652.
+    // Bounded classdefs rows4/1/0 + landEffectSettingsAndMoveCosts rows12/2/1, pinned c834c652.
     // Low nibble 15 becomes signed -1; the upper nibble is a separate land-effect setting.
     public IReadOnlyList<sbyte> Costs { get; }
     public IReadOnlyList<byte> LandEffects { get; } = Array.AsReadOnly<byte>(
         [0, 1, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     internal static Battle01MovementProfile? ForClass(byte? classId) => classId switch
     {
-        4 => Priest, 1 => Centaur, _ => null,
+        4 => Priest, 1 => Centaur, 0 => Regular, _ => null,
     };
 }
 

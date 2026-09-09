@@ -7,6 +7,21 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01PlayerMovementTests
 {
+    [Fact]
+    public void ClassZeroUsesSourceRegularCostsWithBowiesTwelvePointBudgetAndObstructedSky()
+    {
+        // Pinned c834c652 classdefs row0 SDMN: MOV6/REGULAR1; land-effect/movecost row1.
+        var profile = Battle01MovementProfile.Regular; var terrain = Enumerable.Repeat((byte)255, 2304).ToArray();
+        int start = 10 * 48 + 4; byte[] corridor = [1, 4, 5, 6, 1, 1];
+        for (int i = 0; i < corridor.Length; i++) terrain[start + i] = corridor[i];
+        var grid = Battle01PlayerMovement.BuildWeightedGrid(terrain, profile.Costs, start, 12);
+        Assert.Equal(new int?[] { 4, 7, 10, 12, null }, Enumerable.Range(1, 5).Select(i => grid.CostAtOffset(start + i)));
+        terrain[start + 1] = 0;
+        Assert.Null(Battle01PlayerMovement.BuildWeightedGrid(terrain, profile.Costs, start, 12).CostAtOffset(start + 1));
+        Assert.Equal(0, profile.ClassId); Assert.Equal(1, profile.MovementType); Assert.Same(profile, Battle01MovementProfile.ForClass(0));
+        Assert.Null(Battle01MovementProfile.ForClass(2)); Assert.Equal(2, profile.LandEffects[4]); Assert.Equal(1, profile.LandEffects[1]);
+    }
+
     [Theory]
     [InlineData("uniform-cost-two")]
     [InlineData("mixed-weight-two-routes")]

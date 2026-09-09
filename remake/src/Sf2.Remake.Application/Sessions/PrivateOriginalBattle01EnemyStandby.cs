@@ -20,8 +20,9 @@ public sealed partial class GameSession
         if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
             return new PrivateOriginalBattle01EnemyStandbyRejected(failure);
         Battle01InitializedState battle;
-        try { battle = Battle01EnemyStandby.CompleteFirst(current.Battle, actorIndex,
-            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats); }
+        try { battle = current.Battle.Phase == Battle01Phase.EnemyTurnCompleted
+            ? Battle01EnemyStandby.CompleteNext(current.Battle, actorIndex, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)
+            : Battle01EnemyStandby.CompleteFirst(current.Battle, actorIndex, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats); }
         catch (ArgumentException error) { return EnemyStandbyRejected(error.ParamName ?? "standby"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle,
             current.SourceLocomotion, current.SourceBridge);
@@ -30,5 +31,5 @@ public sealed partial class GameSession
         return result;
     }
     private static PrivateOriginalBattle01EnemyStandbyRejected EnemyStandbyRejected(string field) =>
-        new(new(field, "First enemy standby rejected (" + field + "); completed player STAY is retained."));
+        new(new(field, "Enemy standby rejected (" + field + "); the last completed turn is retained."));
 }

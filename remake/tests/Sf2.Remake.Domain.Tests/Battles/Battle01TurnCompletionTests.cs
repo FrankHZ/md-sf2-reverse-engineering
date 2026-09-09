@@ -10,6 +10,28 @@ public sealed class Battle01TurnCompletionTests
     private static Battle01StayCompletionPolicy Policy => Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
 
     [Fact]
+    public void BowiesSeparateStayRetainsAllNineReceiptsAndStopsAtTheActualSentinelWithoutRegeneration()
+    {
+        var enemies = Battle01EnemyStandbyTests.AllEnemiesCompleted(); var ready = Battle01NextPlayerControl.Enter(enemies, 0).State!;
+        var action = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 0, new(8, 17)), 0);
+        var completed = Battle01TurnCompletion.CommitStay(action, 0, Policy);
+        Assert.Equal(18, completed.FirstRound!.CurrentTurnOffset); Assert.Null(completed.FirstRound.CurrentCandidate);
+        Assert.Equal(new Battle01TurnEntry(255, 255), completed.FirstRound.Slots[9]); Assert.Same(enemies.FirstRound!.Slots, completed.FirstRound.Slots);
+        Assert.Equal(Battle01Phase.PlayerTurnCompleted, completed.Phase); Assert.Null(completed.FirstControl);
+        var actors = new List<int>(); for (var receipt = completed.TurnCompletion; receipt is not null; receipt = receipt.Previous) actors.Add(receipt.CompletedActorIndex);
+        Assert.Equal(new[] { 0, 132, 130, 129, 133, 131, 128, 2, 1 }, actors);
+        Assert.Same(enemies.TurnCompletion, completed.TurnCompletion!.Previous); Assert.Equal(new MapPosition(8, 17), completed.Roster[0].Position);
+        Assert.Same(enemies.AiMemory, completed.AiMemory); Assert.Same(enemies.AiLastTargets, completed.AiLastTargets);
+        Assert.Same(enemies.RegionFlags90Through105, completed.RegionFlags90Through105); Assert.Equal(enemies.RandomSeedImage, completed.RandomSeedImage);
+        Assert.Equal(enemies.RandomSeedCopy, completed.RandomSeedCopy); Assert.All(Enumerable.Range(0, 9), i => Assert.Same(enemies.Roster[i].Stats, completed.Roster[i].Stats));
+        string frozen = JsonSerializer.Serialize(completed);
+        for (int i = 0; i < 2; i++) Assert.Equal(Battle01FirstControlAvailability.Sentinel, Battle01NextPlayerControl.Enter(completed, 255).Decision.Availability);
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01TurnCompletion.CommitStay(completed, 0, Policy)).ParamName);
+        Assert.Throws<ArgumentException>(() => Battle01FirstRound.Enter(completed));
+        Assert.Equal(frozen, JsonSerializer.Serialize(completed));
+    }
+
+    [Fact]
     public void EnemyCompletionUsesTheSamePassiveRecoveryBoundaryBeforeAnyStateCanCommit()
     {
         var before = Battle01EnemyStandbyTests.SecondCompleted(); var roster = before.Roster.ToArray(); var unit = roster[1]; var stats = unit.Stats;
