@@ -1485,6 +1485,173 @@ original animation/presentation, active AI, attack/spells, victory and H4 remain
 unimplemented. The stopping condition is the first sentinel before round2, followed by a frozen
 Draft PR for independent root acceptance.
 
+### Proposed repeatable inactive-round continuation
+
+**Decision:** continue through real sentinels into repeatable inactive rounds and actual player
+control, using the same nine living units, classes0/1/4 and controlled no-effect STAY. After each
+player STAY, dispatch actual candidates until a player is ready or an unsupported boundary rejects;
+generate at most one new round per dispatch. This is a proposal: current input still closes at the
+first sentinel. Implementation requires a separate root anchor after this decision is accepted.
+
+**Confirmed source structure:** pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/battleloop_1.asm` @IndividualTurns_Loop compares FF and branches to @Start
+(ROM23B4E/23B52). @Start orders ActivateEnemies, ExecuteBattleRegionCutscene, spawn admission and
+GenerateBattleTurnOrder. @Initialize/suspend entry precedes it; healing, position resets,
+ClearAiMemory and difficulty/equipment setup are not repeated. See
+[battle lifecycle](../../docs/design/contracts/battle-control-lifecycle.md#round-order),
+[battle-loop research](../../docs/research/battle-loop.md) and
+[turn-control source contract](../../src/sf2tool/h2/map3_battle01_turn_control.py).
+`battleloop/turnorderfunctions.asm` clears64 entries, uses live/placed units and current AGI/main
+RNG, sorts signed/stably and resets raw offset0; retain the word-width/sentinel rules above.
+
+`battleloop/activateenemies.asm` and `triggerregions.asm` retain flags/activation words and test
+current ally positions with the separate tested mask. `ai/startaicontrol.asm` clears that mask before
+ordinary AI; round entry must not invent another clear. Battle01 has no region-cutscene row or
+non-STARTING spawn. Admit only empty route/spawn results and a wholly inactive activation projection.
+If new/already active flags or bits require unsupported behavior, reject the round before installing
+flags/order/RNG, retaining the completed sentinel and detected region/actor diagnostic. Bowie can
+reach(11,15) from(8,17), Regular1 cost10/budget12 with allied traversal; it enters region1 and must
+eventually expose this boundary, not silently STAY activated131/132. The y12 fixture is a separate
+authored seam, not a one-move reachability claim. Original activation side effects remain unsupported.
+
+**State/commit contract:** extend existing round/state owners with one current64-slot buffer/cursor.
+Give generated orders and completion receipts an immutable round number; phase must distinguish
+current generation from historical completion. Preserve TurnCompletion in the round-copy constructor:
+today's BeforeFirstRound-only Enter drops history, and receipt-first Phase would otherwise misclassify
+a new round. Keep first-entry admission strict; add exact-current completed-sentinel continuation in
+the same owner/facade, sharing activation/spawn/order algorithms. No reinitialization or second authority.
+Replace fixed first-order/mainA4991234/ownmemory0/currentposition=deployment guards with actual-round
+prefix/candidate, retained decision, source branch, live occupancy and effective-stat checks. Admit
+the current enemy/player after generation or either faction's completion; never reuse old control. Scope
+prefix validation to the current generation while keeping earlier receipts linked. Main generation
+retains lowword1234 and the independent copy; enemy completion uses the current copy and its own
+memory only. Validate/allocate each entire transition before one session commit. Late failure retains
+the last successful state; failed control after successful generation preserves that generated round.
+
+[Standby](../../docs/research/battle-ai.md#dispatcher-and-standby-control) anchors candidates at original
+deployment but builds the grid from current position. Retain nonzero memory, use RNG(2) only for a
+zero low nibble, exclude the previous index, and preserve idle/no-alternative memory effects.
+`battlefield/buildmovestringfunctions.asm` BuildMoveStringForAi/alt_BuildCancelMoveString owns paths,
+including the accumulated-mask distinction above. Non-decreasing/incomplete/out-of-area paths,
+unsupported memory/status/passive/death, unknown activation or active/special/swarm/move-order branches
+reject atomically; no shortest-path substitution or guessed STAY. Godot runs bounded actual-candidate
+dispatch after successful action/round entry only. Player choices stay manual; failure closes input
+with the precise retained boundary, without frame/unrelated-key retry or reroll/search for a player.
+
+**Inferred composed comparison, not natural execution:** from the accepted nine-turn sentinel,
+all players subsequently confirm origin and STAY. Each round consumes27 main calls.
+Round2 order `2:7,128:6,132:6,131:5,133:5,0:4,1:4,129:4,130:4` produces mainAA861234.
+Enemy128/132/131/133/129/130 destinations are(7,2)/(10,5)/(8,4)/(6,4)/(9,3)/(6,3);
+paths `[1,0,FF]/[1,0,FF]/[FF]/[1,1,FF]/[1,2,FF]/[1,1,FF]`. Idle131 keeps24h.
+Its11 thinking calls/967 bytes end copy0034, memory128..133 `[04,04,04,24,34,04]`h.
+Round3 order `2:8,129:6,130:6,131:6,128:5,133:5,0:4,1:4,132:4` produces main9BD71234;
+958 further bytes end copy0234 and memory `[04,24,14,34,24,14]`h. This supports repetition, not a
+guarantee that arbitrary player paths or unlimited rounds avoid unsupported boundaries.
+
+Reproduce after `uv sync --locked` from the repository root, with the same registered read-only
+`SF2_UPSTREAM_DISASM` (disasm directory) and `SF2_PRIVATE_BATTLE01_DATA` as above. The pure model
+checks pinned standby tables/selected terrain; origin-STAY is an explicit scenario, not a dispatch skip.
+
+```powershell
+@'
+import hashlib,json,os,subprocess
+from pathlib import Path
+from sf2tool.compression import decode_stack_compressed
+from sf2tool.h2.battle_ai import _parse_standby
+from sf2tool.h2.battlefield import build_weighted_movement_model
+from sf2tool.h3.battle_ai_action import _thinking_rng_step
+from sf2tool.h3.rng import _rng_step
+root=Path(os.environ["SF2_UPSTREAM_DISASM"])
+assert subprocess.check_output(["git","-C",str(root),"rev-parse","HEAD"],text=True).strip()=="c834c652b6862bc5679fd7f69a38a7093206efc6"
+raw=Path(os.environ["SF2_PRIVATE_BATTLE01_DATA"]).read_bytes()
+assert hashlib.sha256(raw).hexdigest()=="32eeae9afb01dc38a1baa99ee2e0b4c0b48f8a676f69771a5f5c52a2fc7e4c60"
+data=json.loads(raw); entities=data["entities"]
+raw=(root/"data/battles/entries/battle01/terrain.bin").read_bytes()
+assert hashlib.sha256(raw).hexdigest()=="a0e6b0d4f656c7bd893923330148b3f9366ca7d839f5a0676272a2c95daabc4a"
+terrain=list(decode_stack_compressed(raw,expected_output_bytes=2304).output)
+standby=_parse_standby(root,*[(root/f"code/gameflow/battle/ai/determineaistandbymovement_{i}.asm").read_text() for i in [1,2]])
+assert standby==json.loads(Path("tests/fixtures/h2/battle-ai-remaining-static-v1.json").read_text())["expected"]["standby"]
+pos=dict(zip([0,1,2,128,129,130,131,132,133],[(8,17),(9,17),(7,17),(6,3),(10,4),(6,5),(8,4),(9,6),(6,6)]))
+mem=dict(zip(range(128,134),[0x14,0x34,0x24,0x24,0x24,0x24])); main=0xA499; seed=1
+cross=lambda a,b,p:(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])
+def inside(r,p):
+ v=[(q["x"],q["y"]) for q in r["vertices"]]
+ return any(min(s)>=0 or max(s)<=0 for a,b,c in [(v[0],v[1],v[3]),(v[2],v[1],v[3])] for s in [[cross(a,b,p),cross(b,c,p),cross(c,a,p)]])
+regular=[-1,2,2,3,4,3,3]+[-1]*9
+assert build_weighted_movement_model(terrain,regular,start_offset=17*48+8,budget=12)["reachableCosts"][str(15*48+11)]==10
+assert [r["id"] for r in data["aiRegions"] if inside(r,(11,15))]==[1]
+def move_string(grid,origin,dest):
+ current=dest[1]*48+dest[0]; start=origin[1]*48+origin[0]; previous=0; back=[]
+ while current!=start:
+  cost=grid[str(current)]; threshold=cost-1; mask=0
+  for delta,bit in [(1,1),(-1,4),(-48,2),(48,8)]:
+   n=current+delta; value=grid.get(str(n))
+   if 0<=n<2304 and abs(n%48-current%48)+abs(n//48-current//48)==1 and value is not None and value<=threshold: mask|=bit; threshold=value
+  choice=mask^previous if mask&previous and mask^previous else mask; assert choice
+  d=next(i for i in range(4) if choice&(1<<i)); n=current+[1,-48,-1,48][d]
+  assert str(n) in grid and grid[str(n)]<cost
+  current=n; previous=1<<d; back.append(d)
+ return [d^2 for d in back[::-1]]+[255]
+for number in [2,3]:
+ assert not any(inside(r,pos[a]) for r in data["aiRegions"] for a in range(3))
+ order=[]
+ for actor,agi in zip(pos,[4,5,7,5,5,5,5,5,5]):
+  score=agi-1
+  for sign,bound in [(1,agi>>3),(-1,agi>>3),(1,3)]: main,value=_rng_step(main,bound); score+=sign*value
+  order.append((actor,score&255))
+ order += [(255,255)]*55; signed=lambda x:x if x<128 else x-256
+ for _ in range(62):
+  for i in range(63):
+   if signed(order[i+1][1])>signed(order[i][1]): order[i],order[i+1]=order[i+1],order[i]
+ records=[]
+ for actor,_ in order[:9]:
+  if actor<128: continue # Authored comparison: player explicitly confirms origin and STAY.
+  origin=pos[actor]; before=(seed,mem[actor]); rolls=[]; dest=origin; moves=[255]
+  def roll(bound):
+   global seed
+   steps=0
+   while True:
+    seed,_=_thinking_rng_step(seed,1); steps+=1
+    if bound<=1 or seed<bound: break
+   value=0 if bound<=1 else seed; rolls.append((bound,value,steps)); return value
+  if roll(8) not in [2,4,6]:
+   grid=build_weighted_movement_model(terrain,[2]*7+[-1,2]+[-1]*7,start_offset=origin[1]*48+origin[0],budget=10)["reachableCosts"]
+   if mem[actor]&15==0: mem[actor]=4 if roll(2)==0 else 3
+   count=mem[actor]&15; previous=mem[actor]>>4; entry=entities[actor-125]; valid=[]
+   for i,(dx,dy) in enumerate(next(t["coordinates"] for t in standby["movementTables"] if t["moveCount"]==count)):
+    p=(entry["x"]+dx,entry["y"]+dy); cost=grid.get(str(p[1]*48+p[0]))
+    if i!=previous and (cost==0 or (cost is not None and p not in pos.values())): valid.append((i,p))
+   if not valid: mem[actor]=0
+   else:
+    chosen,dest=valid[roll(len(valid))]; mem[actor]=chosen<<4|count; moves=move_string(grid,origin,dest)
+  pos[actor]=dest; records.append([actor,origin,dest,before,(seed,mem[actor]),rolls,moves])
+ assert (main,seed,sum(r[2] for e in records for r in e[5]))=={2:(0xAA86,0,967),3:(0x9BD7,2,958)}[number]
+ print(json.dumps({"round":number,"order":order[:9],"mainImage":hex(main<<16|0x1234),"seedCopy":hex(seed<<8|0x34),"memory":list(mem.values()),"enemies":records}))
+'@ | uv run python -X utf8 -
+```
+
+Proposed later paths (relative to `remake/`; separate implementation authorization required):
+
+- `src/Sf2.Remake.Domain/Battles/`: `Battle01Initialization.cs`, `Battle01FirstRound.cs`, `Battle01FirstControl.cs`, `Battle01NextPlayerControl.cs`, `Battle01EnemyStandby.cs`, `Battle01TurnCompletion.cs`.
+- `src/Sf2.Remake.Application/Sessions/`: `PrivateOriginalBattle01FirstRound.cs`, `PrivateOriginalBattle01NextPlayerControl.cs`, `PrivateOriginalBattle01EnemyStandby.cs`.
+- `game/src/`: `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs`.
+- `tests/Sf2.Remake.Domain.Tests/Battles/`: `Battle01FirstRoundTests.cs`, `Battle01FirstControlTests.cs`, `Battle01NextPlayerControlTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs`.
+- `tests/Sf2.Remake.Application.Tests/`: `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs`, `PrivateOriginalBattle01TurnCompletionTests.cs`.
+- `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`, `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`, `tests/native/Map19Map20AtlasReviewProbe.cs`.
+- `README.md`, `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md`.
+
+Later acceptance: required selected-input chain through round2 and actual round3 control; full changed
+buffers/main words; retained copy/memory/stats/receipts; independent player move/cancel; nonzero-memory
+two-edge paths and idle/no-alternative effects; duplicate/stale/foreign/prefix and late round/actor
+failure; reachable region1 rejection; enemy-first order proving dispatch without ally search.
+One new bounded native `round-continuation` mode shows round2 ready/provisional/cancel and round3 ready;
+update affected old mode contracts. Use planner-selected .NET/Godot and normal public gates, preserving
+completed failures and rerunning only invalidated checks. Stop at a frozen implementation Draft PR
+with repeatable admitted inactive rounds and visible unsupported boundaries. This decision changes
+only this plan: pure reduction, committed planner and normal public verification; no .NET/Godot/native/
+ROM/H3 replay. Active AI, attacks/spells, victory, natural seed lifetime/timing/presentation and H4
+remain **Unknown** or unimplemented.
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
