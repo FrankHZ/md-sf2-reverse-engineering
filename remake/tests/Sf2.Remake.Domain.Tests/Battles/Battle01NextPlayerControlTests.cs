@@ -8,6 +8,36 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void RoundNineChesterMovesAndCancelsWithRecordedDamageAndTheEarlierDefeatPreserved()
+    {
+        var after = Battle01EnemyPhysicalAttackTests.ChesterHitCompleted();
+        var generated = Battle01FirstRound.EnterNext(after);
+        Assert.Equal(9, generated.FirstRound!.RoundNumber);
+        Assert.Equal(new[] { new Battle01TurnEntry(2, 8), new(128, 6), new(129, 6), new(131, 6),
+            new(133, 5), new(1, 4), new(130, 4), new(0, 3) }.Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 56)), generated.FirstRound.Slots);
+        Assert.Equal((0x71D31234u, (ushort?)0x0134), (generated.RandomSeedImage, generated.RandomSeedCopy));
+        Assert.Equal(7, generated.NewlyTestedRegionMask);
+        Assert.Equal(new[] { false, true, false }, generated.RegionFlags90Through105.Take(3));
+        Assert.Equal(new ushort?[] { 0x2060, 0x2060, 0x2060, 0x2061, 0x2071, 0x2070 }, generated.Roster.Skip(3).Select(u => u.AiBitfield));
+        var ready = Battle01NextPlayerControl.Enter(generated, 2).State!;
+        Assert.Equal(0, ready.FirstRound!.CurrentTurnOffset); Assert.Equal(2, ready.FirstControl!.ActorIndex);
+        Assert.Equal(14, ready.FirstControl.Movement.Range.Budget); Assert.Equal(9, ready.Roster[2].Stats.HpCurrent);
+        var moved = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 2, new(12, 14)), 2);
+        Assert.Equal(new MapPosition(12, 14), moved.Roster[2].Position);
+        var cancelled = Battle01PlayerMovement.Cancel(moved, 2);
+        Assert.Equal(new MapPosition(11, 14), cancelled.Roster[2].Position);
+        Assert.Same(after.Roster[2].Stats, cancelled.Roster[2].Stats);
+        Assert.Same(after.TurnCompletion, cancelled.TurnCompletion); Assert.Same(generated.FirstRound, cancelled.FirstRound);
+        Assert.Equal(ready.Occupancy, cancelled.Occupancy);
+        Assert.Equal(generated.RandomSeedImage, cancelled.RandomSeedImage); Assert.Equal(generated.RandomSeedCopy, cancelled.RandomSeedCopy);
+        Assert.Equal(generated.AiLastTargets, cancelled.AiLastTargets); Assert.Equal(generated.AiMemory, cancelled.AiMemory);
+        Assert.Equal((6, (byte?)39, (ushort?)1, (uint?)60), ((int)cancelled.Roster[0].Stats.HpCurrent,
+            cancelled.Roster[0].Stats.CurrentExp, cancelled.Roster[0].Stats.CurrentKills, cancelled.CurrentGold));
+        Assert.Null(cancelled.Roster[7].Position); Assert.Equal(0, cancelled.Roster[7].Stats.HpCurrent);
+        Assert.Null(cancelled.Roster[2].Stats.CurrentExp); Assert.Null(cancelled.Roster[2].Stats.CurrentKills);
+    }
+
+    [Fact]
     public void BowieMovesAndCancelsAfterPhysicalReplayWithoutHealingOrLosingAttackHistory()
     {
         var after = Battle01EnemyPhysicalAttackTests.CompletedAttack();

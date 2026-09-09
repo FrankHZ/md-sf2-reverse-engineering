@@ -8,6 +8,27 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01PlayerPhysicalAttackTests
 {
     internal static Battle01PlayerPhysicalCompletionPolicy Policy => Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ChesterTargetSupportDoesNotAdmitHisPlayerAttackEvenWithFabricatedExp(bool supplyExp)
+    {
+        var target = Battle01EnemyPhysicalAttackTests.ChesterAttackBoundary().Roster[2];
+        Assert.Equal("battle01-class1-wooden-stick-effective-prowess3-v1", Battle01EnemyPhysicalAttack.RequireTargetProfile(target));
+        if (supplyExp) target = target.WithStats(target.Stats.WithCurrentExp(0));
+        Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.RequireActor(target)).ParamName);
+        if (!supplyExp)
+        {
+            var after = Battle01FirstRound.EnterNext(Battle01EnemyPhysicalAttackTests.ChesterHitCompleted());
+            var ready = Battle01NextPlayerControl.Enter(after, 2).State!;
+            var provisional = Battle01PlayerMovement.Confirm(ready, 2);
+            Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+                Battle01PlayerPhysicalAttack.Begin(provisional, 2)).ParamName);
+            Assert.Same(after.TurnCompletion, provisional.TurnCompletion);
+        }
+    }
     internal static Battle01InitializedState Ready() => Battle01NextPlayerControl.Enter(
         Battle01EnemyPhysicalAttack.CompleteNext(Battle01EnemyPhysicalAttackTests.AttackBoundary(0), 132,
             Battle01EnemyPhysicalAttackTests.Policy), 0).State!;

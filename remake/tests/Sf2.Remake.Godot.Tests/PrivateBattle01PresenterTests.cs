@@ -97,6 +97,29 @@ public sealed class PrivateBattle01PresenterTests
         var afterCancel = PrivateBattle01Presenter.BuildProjection(current, "Cancelled.");
         Assert.Equal(defeated.AttackResult, afterCancel.AttackResult);
         Assert.Equal(defeated.Units, afterCancel.Units); Assert.Equal((uint?)60, afterCancel.Gold); Assert.Equal((ushort?)1, afterCancel.BowieKills);
+
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        for (int i = 0; i < 3; i++) current = CompleteAuthoredTurn(current);
+        current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
+        current = Stay(current, 2, new(11, 14)); current = CompleteAuthoredTurn(current); // actual133
+        for (int i = 0; i < 5; i++) current = CompleteAuthoredTurn(current); // Bowie/player1 origin STAY,129/128/130
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 131, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+        var chesterHit = PrivateBattle01Presenter.BuildProjection(current, "Chester hit.");
+        Assert.Equal("E3 -> A2: hit 2. HP 11 -> 9.", chesterHit.AttackResult);
+        Assert.True(chesterHit.PhysicalAttackCompleted); Assert.Equal(131, chesterHit.CompletedActorIndex);
+        current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
+        var chesterReady = PrivateBattle01Presenter.BuildProjection(current, "Round 9. Player 2 ready.");
+        Assert.Equal(chesterHit.AttackResult, chesterReady.AttackResult); Assert.Equal(2, chesterReady.ActorIndex);
+        Assert.Equal(14, chesterReady.Budget); Assert.True(chesterReady.CanConfirm);
+        Assert.Equal(9, chesterReady.Units.Single(unit => unit.Index == 2).Hp);
+        Assert.DoesNotContain(chesterReady.Units, unit => unit.Index == 132);
+        Assert.Equal(((uint?)60, (ushort?)1), (chesterReady.Gold, chesterReady.BowieKills));
+        Assert.Equal((byte?)39, chesterReady.Units.Single(unit => unit.Index == 0).Exp);
+        current = Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 2, new(12, 14)), 2), 2);
+        var chesterCancelled = PrivateBattle01Presenter.BuildProjection(current, "Cancelled.");
+        Assert.Equal(chesterHit.AttackResult, chesterCancelled.AttackResult); Assert.Equal(chesterReady.Units, chesterCancelled.Units);
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -261,6 +284,7 @@ public sealed class PrivateBattle01PresenterTests
             regionEntry && i==1 ? [new(10,14),new(12,14),new(12,16),new(10,16)] : [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
+            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63]) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,

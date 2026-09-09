@@ -62,6 +62,13 @@ leave Bowie at6 HP. His next manual origin attack defeats132: HP2→0, EXP15→3
 kills0→1. Receipt59 clears the enemy's live position/occupancy, retains its source row and the same
 round7 order, counts allies/enemies3/5 twice, then yields actual player1 at(9,17), HP11/budget10.
 Player1 can move and cancel while the defeated132/+24 EXP/+60 gold result remains visible.
+Continuing with player1 origin STAY, R8 Chester moving to(11,14)/STAY, then Bowie and player1
+origin STAY lets actual enemy131 hit Chester: HP11→9, receipt71 and R9 actual Chester control
+at(11,14)/budget14. His move/confirm(12,14)/cancel retains Bowie HP6/EXP39/kills1, gold60 and
+unplaced132. The exact KNTE1/Wooden Stick184 target profile uses the existing nonlethal resolver;
+Chester active attacks and additional accounting inputs remain unsupported. The latest physical
+result persists across rounds, so the Chester hit replaces the older reward message while live
+gold, kills, EXP and dead-unit state retain their own values.
 The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
 Misses and ordinary criticals are calculated; a validated double/counter, another defeat or other unsupported

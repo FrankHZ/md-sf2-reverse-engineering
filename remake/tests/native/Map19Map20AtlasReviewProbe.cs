@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -180,7 +180,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
         // Earlier STAY mode names now alias the bounded round-continuation chain.
-        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat";
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit";
         if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
@@ -307,7 +307,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 second.Roster[0].Position == new MapPosition(8,17) && second.NewlyTestedRegionMask == 7,
                 "Actual sentinel generates round2 once and yields its real player without a player decision");
             CheckRoundBuffer(second, new byte[] {2,128,132,131,133,0,1,129,130}, new byte[] {7,6,6,5,5,4,4,4,4});
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit")
             {
                 await ReviewEnemyPursuit(round2,battle);
                 return;
@@ -419,7 +419,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
     private async Task ReviewEnemyPursuit(PrivateOriginalBattle01SessionSnapshot round2, Battle01InitializedState initialBattle)
     {
         bool physical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-physical-attack";
-        bool playerPhysical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "player-physical-attack" or "first-enemy-defeat";
+        bool playerPhysical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit";
         var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
         var rounds=new List<Battle01InitializedState> {initialBattle,round2.Battle};
         async Task OriginStay(int player)
@@ -601,7 +601,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
 
     private async Task ReviewPlayerPhysicalAttack(PrivateOriginalBattle01SessionSnapshot ready)
     {
-        bool firstDefeat = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "first-enemy-defeat";
+        bool firstDefeat = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "first-enemy-defeat" or "chester-enemy-hit";
         var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
         Require(ReferenceEquals(ready,_session.PrivateOriginalBattle01) && ready.Battle.Roster[0].Stats.HpCurrent==9 &&
             ready.Battle.Roster[0].Stats.CurrentExp==0 && ready.Battle.FirstControl?.ActorIndex==0 &&
@@ -792,6 +792,11 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         foreach (Key key in new[] { Key.W, Key.F, Key.B, Key.M, Key.A }) await PressBattleKey(key);
         Require(ReferenceEquals(cancelled, _session.PrivateOriginalBattle01), "Unmapped input cannot repeat the defeat");
         await CaptureControl("06-player1-move-cancel");
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "chester-enemy-hit")
+        {
+            await ReviewChesterEnemyHit(cancelled);
+            return;
+        }
         File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
             status = "Pass", scope = "controlled first enemy defeat and actual player1 movement; no original animation, natural RNG lifetime or H4 claim",
             preparation = final.Preparation.Party.Id, receipt59 = end.TurnCompletion, secondEnemyStrike = enemy,
@@ -804,12 +809,138 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} first-enemy-defeat");
     }
 
+    private async Task ReviewChesterEnemyHit(PrivateOriginalBattle01SessionSnapshot receipt59)
+    {
+        var presenter = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter");
+        Require(ReferenceEquals(receipt59, _session.PrivateOriginalBattle01) && receipt59.Battle.FirstControl?.ActorIndex == 1,
+            "Continue the exact accepted receipt59 player1 snapshot");
+        async Task ConfirmAndStay(int actor)
+        {
+            var movement = _session.PrivateOriginalBattle01!;
+            Require(movement.Battle.Phase == Battle01Phase.PlayerMovementSelection && movement.Battle.FirstControl?.ActorIndex == actor,
+                "Physical confirmation starts in the actual player's movement stage");
+            await PressBattleKey(Key.Space);
+            Require(_session.PrivateOriginalBattle01!.Battle.Phase == Battle01Phase.PlayerActionChoice &&
+                ReferenceEquals(movement.Battle.TurnCompletion, _session.PrivateOriginalBattle01.Battle.TurnCompletion),
+                "First physical Space confirms movement without committing a turn");
+            await PressBattleKey(Key.Space);
+        }
+        await ConfirmAndStay(1);
+        var roundEight = _session.PrivateOriginalBattle01!;
+        Require(roundEight.Battle.FirstRound!.RoundNumber == 8 && roundEight.Battle.FirstControl?.ActorIndex == 2 &&
+            roundEight.Battle.RandomSeedImage == 0xB28D1234 && roundEight.Battle.RandomSeedCopy == 0x5634,
+            "Actual R7 candidates lead to R8 Chester without a scripted skip");
+        CheckRoundBuffer(roundEight.Battle, [2,133,0,1,129,128,130,131], [8,6,5,5,5,4,4,4]);
+        foreach (Key key in new[] { Key.L, Key.L, Key.L, Key.I, Key.L, Key.I, Key.I }) await PressBattleKey(key);
+        var chesterSelection = _session.PrivateOriginalBattle01!;
+        Require(chesterSelection.Battle.FirstControl!.Movement.Cursor == new MapPosition(11, 14) &&
+            chesterSelection.Battle.FirstControl.Movement.GridCost == 14 &&
+            chesterSelection.Battle.FirstControl.Movement.Preview.Directions.SequenceEqual(new byte[] { 0,0,0,1,0,1,1,255 }),
+            "Physical cursor reaches the exact legal cost14 destination through the production movement API");
+        await ConfirmAndStay(2);
+        Require(_session.PrivateOriginalBattle01!.Battle.FirstControl?.ActorIndex == 0 &&
+            _session.PrivateOriginalBattle01.Battle.Roster[2].Position == new MapPosition(11, 14), "Actual133 yields Bowie control");
+        await CaptureControl("07-round8-bowie-after-chester-move");
+        await ConfirmAndStay(0);
+        var playerOne = _session.PrivateOriginalBattle01!;
+        Require(playerOne.Battle.FirstControl?.ActorIndex == 1 && playerOne.Battle.Roster[0].Position == new MapPosition(11, 15) &&
+            playerOne.Battle.Roster[0].Stats.HpCurrent == 6, "Bowie origin STAY preserves the selected nonlethal route");
+        await CaptureControl("08-round8-player1-before-confirm-stay");
+        var copied = (PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
+            BindingFlags.Instance | BindingFlags.NonPublic, null,
+            new object?[] { playerOne.Preparation, playerOne.Battle, playerOne.SourceLocomotion, playerOne.SourceBridge }, null)!;
+        Battle01InitializedState inspected;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session, copied);
+        try
+        {
+            Require(_session.ConfirmPrivateOriginalBattle01PlayerMovement(copied, 1) is PrivateOriginalBattle01PlayerMovementApplied,
+                "Exact copy confirms player1 movement through Application first");
+            var provisional = _session.PrivateOriginalBattle01!;
+            Require(_session.CommitPrivateOriginalBattle01Stay(provisional, 1) is PrivateOriginalBattle01StayCommitted,
+                "Exact copy separately commits player1 STAY");
+            string result = PrivateBattle01Ui.DispatchNext(_session, _session.PrivateOriginalBattle01!);
+            inspected = _session.PrivateOriginalBattle01!.Battle;
+            Require(inspected.FirstRound!.RoundNumber == 9 && inspected.FirstControl?.ActorIndex == 2,
+                "Exact copied Application relay completes actual129/128/130/131 and returns actual Chester");
+            presenter.Project(inspected, "TEST COPY: " + result + " Exact physical player1 movement snapshot resumes next.");
+            await CaptureControl("09-chester-hit-and-round9-test-copy",
+                "exact player1 movement snapshot copy; separate Application confirm/STAY then actual production relay; no production pause");
+        }
+        finally
+        {
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session, playerOne);
+            presenter.Project(playerOne.Battle, "Restored exact player1 movement snapshot. Confirm movement, then commit STAY.");
+        }
+        await ConfirmAndStay(1); // Both physical Space presses are required from the restored movement snapshot.
+        var ready = _session.PrivateOriginalBattle01!; var end = ready.Battle;
+        var receipt = end.TurnCompletion!; var hit = receipt.EnemyPhysicalAttack!; var priority = hit.Priorities.Single();
+        var json = new JsonSerializerOptions { MaxDepth = 256 };
+        Require(JsonSerializer.Serialize(inspected, json) == JsonSerializer.Serialize(end, json),
+            "Copied and physical full battle snapshots match, including all history, placements, stats, accounting, flags and RNG");
+        int count = 0; for (var r = receipt; r is not null; r = r.Previous) count++;
+        Require(count == 71 && receipt.CompletedActorIndex == 131 && receipt.RoundNumber == 8 &&
+            end.FirstRound!.RoundNumber == 9 && end.FirstRound.CurrentTurnOffset == 0 && end.FirstControl?.ActorIndex == 2 &&
+            end.FirstControl.Movement.Range.Budget == 14, "Receipt71 returns actual R9 Chester movement control");
+        Require(hit.CombatProfile == "battle01-class1-wooden-stick-effective-prowess3-v1" && hit.TargetIndex == 2 &&
+            hit.GridCost == 6 && hit.Destination == new MapPosition(11, 13) && hit.MoveString.SequenceEqual(new byte[] { 3,3,3,255 }) &&
+            priority.Priority == 7 && priority.PotentialDamage == 2 && priority.RemainingHp == 9 && priority.LandMultiplier == 230 &&
+            priority.Roll.GeneratorSteps == 57 && priority.Roll.BeforeSeedCopy == 0x0034 && priority.Roll.AfterSeedCopy == 0x0134 && priority.Roll.Result == 1,
+            "Unique actual Chester target, move and thinking-copy priority match the accepted reduction");
+        Require(hit.Effect.Rolls.Select(r => r.Range).SequenceEqual(new ushort[] {32,32,1,1,32,32}) &&
+            hit.Effect.Rolls.Select(r => r.Result).SequenceEqual(new ushort[] {2,27,0,0,25,13}) &&
+            hit.Effect.Rolls.Select(r => r.AfterImage).SequenceEqual(new uint[] {0x11301234,0xDF771234,0x59121234,0x85F11234,0xCD441234,0x6C7B1234}) &&
+            !hit.Effect.Dodged && !hit.Effect.Critical && hit.Effect.Damage == 2 && hit.Effect.TemporaryHp == 9 && hit.Effect.RestoredHp == 11 &&
+            hit.Effect.Reaction == new Battle01PhysicalReaction(2,-2,0,0,1), "Six main calls and HP construction/restore/replay match");
+        CheckRoundBuffer(end, [2,128,129,131,133,1,130,0], [8,6,6,6,5,4,4,3]);
+        Require(end.RandomSeedImage == 0x71D31234 && end.RandomSeedCopy == 0x0134 && end.NewlyTestedRegionMask == 7 &&
+            end.RegionFlags90Through105.Select((flag, i) => flag == (i == 1)).All(equal => equal) &&
+            end.Roster.Skip(3).Select(u => u.AiBitfield).SequenceEqual(new ushort?[] {0x2060,0x2060,0x2060,0x2061,0x2071,0x2070}) &&
+            end.AiMemory.Take(6).SequenceEqual(new byte[] {4,52,4,36,52,52}) &&
+            end.AiLastTargets.Take(6).SequenceEqual(new byte[] {255,255,255,2,0,255}), "Round generation and all AI/random channels match");
+        Require(receipt.BeforeAfterTurn == new Battle01FactionCounts(3,5) && receipt.AfterAfterTurn == new Battle01FactionCounts(3,5) &&
+            end.Roster.Select(u => u.Position).SequenceEqual(new MapPosition?[] {new(11,15),new(9,17),new(11,14),new(7,2),new(10,4),new(6,3),new(11,13),null,new(7,5)}) &&
+            end.Roster.Select(u => u.Stats.HpCurrent).SequenceEqual(new ushort[] {6,11,9,5,5,5,5,0,5}) && end.Occupancy.Count(id => id >= 0) == 8 &&
+            end.CurrentGold == 60 && end.Roster[0].Stats.CurrentExp == 39 && end.Roster[0].Stats.CurrentKills == 1 &&
+            end.Roster[2].Stats.CurrentExp is null && end.Roster[2].Stats.CurrentKills is null,
+            "Earlier death and awards persist; Chester receives no invented accounting inputs");
+        Require(presenter.Projection!.AttackResult == "E3 -> A2: hit 2. HP 11 -> 9." && presenter.Projection.ActorIndex == 2 &&
+            presenter.Projection.Gold == 60 && presenter.Projection.BowieKills == 1 && presenter.Projection.Units.All(u => u.Index != 132),
+            "Newest enemy result remains visible across R9 instead of receipt59 overwriting it");
+        await CaptureControl("10-round9-chester-after-physical-relay");
+        await PressBattleKey(Key.L);
+        Require(_session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost == 2, "Actual Chester preview retains cost2");
+        await PressBattleKey(Key.Space);
+        var moved = _session.PrivateOriginalBattle01!;
+        Require(moved.Battle.Phase == Battle01Phase.PlayerActionChoice && moved.Battle.Roster[2].Position == new MapPosition(12,14) &&
+            ReferenceEquals(receipt, moved.Battle.TurnCompletion), "Physical confirmation moves Chester without another action");
+        await CaptureControl("11-chester-provisional12-14");
+        await PressBattleKey(Key.Backspace);
+        var cancelled = _session.PrivateOriginalBattle01!;
+        Require(cancelled.Battle.Roster[2].Position == new MapPosition(11,14) && cancelled.Battle.Occupancy.SequenceEqual(end.Occupancy) &&
+            ReferenceEquals(receipt, cancelled.Battle.TurnCompletion) && ReferenceEquals(end.FirstRound, cancelled.Battle.FirstRound) &&
+            cancelled.Battle.RandomSeedImage == end.RandomSeedImage && cancelled.Battle.RandomSeedCopy == end.RandomSeedCopy &&
+            cancelled.Battle.AiMemory.SequenceEqual(end.AiMemory) && cancelled.Battle.AiLastTargets.SequenceEqual(end.AiLastTargets) &&
+            cancelled.Battle.CurrentGold == 60 && cancelled.Battle.Roster[0].Stats.CurrentExp == 39 && cancelled.Battle.Roster[0].Stats.CurrentKills == 1 &&
+            cancelled.Battle.Roster[2].Stats.HpCurrent == 9 && presenter.Projection!.AttackResult == "E3 -> A2: hit 2. HP 11 -> 9.",
+            "Physical movement cancellation preserves the applied result and every earlier award");
+        await CaptureControl("12-chester-move-cancel");
+        File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+            status = "Pass", scope = "controlled first enemy hit on Chester and actual R9 movement/cancel; original timing and H4 remain Unknown",
+            preparation = ready.Preparation.Party.Id, receipt71 = receipt, round = end.FirstRound,
+            main = end.RandomSeedImage, copy = end.RandomSeedCopy, memory = end.AiMemory, lastTargets = end.AiLastTargets,
+            gold = end.CurrentGold, tested = end.NewlyTestedRegionMask, regions = end.RegionFlags90Through105,
+            units = end.Roster.Select(u => new { u.Index, u.Position, u.Stats }), exactCopiedAndPhysicalSnapshotMatch = true,
+            separatePhysicalConfirmAndStay = true, actualChesterMoveCancel = true, frames = _frames,
+        }, new JsonSerializerOptions { WriteIndented = true, MaxDepth = 256 }));
+        GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} chester-enemy-hit");
+    }
+
     private static void CheckRoundBuffer(Battle01InitializedState battle, byte[] actors, byte[] scores)
     {
         var slots=battle.FirstRound!.Slots;
-        Require(slots.Count==64 && slots.Take(9).Select(slot=>slot.CombatantIndex).SequenceEqual(actors) &&
-            slots.Take(9).Select(slot=>slot.AlteredAgility).SequenceEqual(scores) &&
-            slots.Skip(9).All(slot=>slot==new Battle01TurnEntry(255,255)), "Complete current 64-slot buffer");
+        Require(slots.Count==64 && slots.Take(actors.Length).Select(slot=>slot.CombatantIndex).SequenceEqual(actors) &&
+            slots.Take(actors.Length).Select(slot=>slot.AlteredAgility).SequenceEqual(scores) &&
+            slots.Skip(actors.Length).All(slot=>slot==new Battle01TurnEntry(255,255)), "Complete current 64-slot buffer");
     }
 
     private void CheckContinuationDispatchBranches(PrivateOriginalBattle01SessionSnapshot round2,

@@ -766,6 +766,93 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal((ushort?)0, prepared.Party.Allies[0].CurrentKills);
         Assert.Same(initialized.SourceSnapshot, current.SourceSnapshot);
 
+        // Continue the same real input route and first-defeat preset; no post-hoc stat/seed injection.
+        current = CompleteCurrentTurn(); // Actual R7 player1 confirms origin and STAY.
+        foreach (int id in new[] { 129, 128, 130 })
+        {
+            Assert.Equal((byte?)id, current.Battle.FirstRound!.CurrentCandidate?.CombatantIndex);
+            current = CompleteCurrentTurn();
+        }
+        current = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)).Snapshot;
+        var roundEightSlots = current.Battle.FirstRound!.Slots;
+        Assert.Equal(new[] { new Battle01TurnEntry(2, 8), new(133, 6), new(0, 5), new(1, 5),
+            new(129, 5), new(128, 4), new(130, 4), new(131, 4) }.Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 56)), roundEightSlots);
+        Assert.Equal((0xB28D1234u, (ushort?)0x5634), (current.Battle.RandomSeedImage, current.Battle.RandomSeedCopy));
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(current, 2, new(11, 14))).Snapshot;
+        Assert.Equal(14, current.Battle.FirstControl!.Movement.GridCost);
+        Assert.Equal(new byte[] { 0, 0, 0, 1, 0, 1, 1, 255 }, current.Battle.FirstControl.Movement.Preview.Directions);
+        current = CompleteCurrentTurn(); current = CompleteCurrentTurn(); // Chester STAY, then actual133.
+        foreach (int id in new[] { 0, 1, 129, 128, 130 })
+        {
+            Assert.Equal((byte?)id, current.Battle.FirstRound!.CurrentCandidate?.CombatantIndex);
+            current = CompleteCurrentTurn(); // Bowie and player1 confirm origin; actual enemy standby.
+        }
+        var beforeChesterHit = current;
+        Assert.Equal((8, (byte)14, (byte?)131), (current.Battle.FirstRound!.RoundNumber,
+            current.Battle.FirstRound.CurrentTurnOffset, current.Battle.FirstRound.CurrentCandidate?.CombatantIndex));
+        Assert.Equal((0xB28D1234u, (ushort?)0x0034), (current.Battle.RandomSeedImage, current.Battle.RandomSeedCopy));
+        Assert.Equal(70, CountReceipts(current.Battle));
+        var cohort = Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(current, 131));
+        Assert.Equal(2, Assert.Single(cohort.Targets).ActorIndex); Assert.Same(current, session.PrivateOriginalBattle01);
+        current = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 131)).Snapshot;
+        var chesterReceipt = current.Battle.TurnCompletion!; var chesterHit = chesterReceipt.EnemyPhysicalAttack!;
+        var priority = Assert.Single(chesterHit.Priorities);
+        Assert.Equal("battle01-class1-wooden-stick-effective-prowess3-v1", chesterHit.CombatProfile);
+        Assert.Equal((131, 2, 6, 230, 2, 9, 7), (chesterHit.ActorIndex, chesterHit.TargetIndex, chesterHit.GridCost,
+            priority.LandMultiplier, priority.PotentialDamage, priority.RemainingHp, priority.Priority));
+        Assert.Equal(new MapPosition(11, 13), chesterHit.Destination); Assert.Equal(new byte[] { 3, 3, 3, 255 }, chesterHit.MoveString);
+        Assert.Equal((57, (ushort)0x0034, (ushort)0x0134, (byte)1), (priority.Roll.GeneratorSteps,
+            priority.Roll.BeforeSeedCopy, priority.Roll.AfterSeedCopy, priority.Roll.Result));
+        Assert.Equal(new ushort[] { 32, 32, 1, 1, 32, 32 }, chesterHit.Effect.Rolls.Select(roll => roll.Range));
+        Assert.Equal(new ushort[] { 2, 27, 0, 0, 25, 13 }, chesterHit.Effect.Rolls.Select(roll => roll.Result));
+        Assert.Equal(new uint[] { 0x11301234, 0xDF771234, 0x59121234, 0x85F11234, 0xCD441234, 0x6C7B1234 }, chesterHit.Effect.Rolls.Select(roll => roll.AfterImage));
+        Assert.Equal((9, 11, 9), ((int)chesterHit.Effect.TemporaryHp, (int)chesterHit.Effect.RestoredHp, (int)current.Battle.Roster[2].Stats.HpCurrent));
+        Assert.Equal(new Battle01PhysicalReaction(2, -2, 0, 0, 1), chesterHit.Effect.Reaction);
+        Assert.False(chesterHit.Effect.Dodged); Assert.False(chesterHit.Effect.Critical);
+        Assert.Same(beforeChesterHit.Battle.Roster[2].Stats, chesterHit.Effect.BeforeStats);
+        Assert.Equal(new Battle01FactionCounts(3, 5), chesterReceipt.BeforeAfterTurn); Assert.Equal(chesterReceipt.BeforeAfterTurn, chesterReceipt.AfterAfterTurn);
+        Assert.Null(chesterReceipt.EnemyDefeat); Assert.Same(beforeChesterHit.Battle.TurnCompletion, chesterReceipt.Previous);
+        Assert.Equal(71, CountReceipts(current.Battle)); Assert.Equal(0, current.Battle.NewlyTestedRegionMask);
+        Assert.Equal((0x6C7B1234u, (ushort?)0x0134), (current.Battle.RandomSeedImage, current.Battle.RandomSeedCopy));
+        Assert.Same(roundEightSlots, current.Battle.FirstRound!.Slots);
+        Assert.Equal(new byte[] { 4, 52, 4, 36, 52, 52 }, current.Battle.AiMemory.Take(6));
+        Assert.Equal(new byte[] { 255, 255, 255, 2, 0, 255 }, current.Battle.AiLastTargets.Take(6));
+        current = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)).Snapshot;
+        Assert.Equal(new[] { new Battle01TurnEntry(2, 8), new(128, 6), new(129, 6), new(131, 6),
+            new(133, 5), new(1, 4), new(130, 4), new(0, 3) }.Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 56)), current.Battle.FirstRound!.Slots);
+        Assert.Equal((0x71D31234u, (ushort?)0x0134), (current.Battle.RandomSeedImage, current.Battle.RandomSeedCopy));
+        Assert.Equal(7, current.Battle.NewlyTestedRegionMask); Assert.Equal(new[] { false, true, false }, current.Battle.RegionFlags90Through105.Take(3));
+        Assert.Equal(new ushort?[] { 0x2060, 0x2060, 0x2060, 0x2061, 0x2071, 0x2070 }, current.Battle.Roster.Skip(3).Select(u => u.AiBitfield));
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 2)).Snapshot;
+        var chesterReady = current;
+        Assert.Equal((9, (byte)0, 2, 14), (current.Battle.FirstRound!.RoundNumber, current.Battle.FirstRound.CurrentTurnOffset,
+            current.Battle.FirstControl!.ActorIndex, current.Battle.FirstControl.Movement.Range.Budget));
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(current, 2, new(12, 14))).Snapshot;
+        Assert.Equal(2, current.Battle.FirstControl!.Movement.GridCost);
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 2)).Snapshot;
+        Assert.Equal(new MapPosition(12, 14), current.Battle.Roster[2].Position);
+        Assert.Equal("attack.targetProfile", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01);
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(current, 2)).Snapshot;
+        Assert.Equal(chesterReady.Battle.Occupancy, current.Battle.Occupancy); Assert.Same(chesterReceipt, current.Battle.TurnCompletion);
+        Assert.Same(chesterReady.Battle.FirstRound, current.Battle.FirstRound);
+        Assert.Equal(chesterReady.Battle.RandomSeedImage, current.Battle.RandomSeedImage); Assert.Equal(chesterReady.Battle.RandomSeedCopy, current.Battle.RandomSeedCopy);
+        Assert.Equal(chesterReady.Battle.AiMemory, current.Battle.AiMemory); Assert.Equal(chesterReady.Battle.AiLastTargets, current.Battle.AiLastTargets);
+        Assert.Equal(new MapPosition?[] { new(11, 15), new(9, 17), new(11, 14), new(7, 2), new(10, 4), new(6, 3), new(11, 13), null, new(7, 5) }, current.Battle.Roster.Select(u => u.Position));
+        Assert.Equal(new ushort[] { 6, 11, 9, 5, 5, 5, 5, 0, 5 }, current.Battle.Roster.Select(u => u.Stats.HpCurrent));
+        Assert.Equal(((uint?)60, (byte?)39, (ushort?)1), (current.Battle.CurrentGold, current.Battle.Roster[0].Stats.CurrentExp, current.Battle.Roster[0].Stats.CurrentKills));
+        Assert.Null(current.Battle.Roster[2].Stats.CurrentExp); Assert.Null(current.Battle.Roster[2].Stats.CurrentKills);
+        Assert.Equal(8, current.Battle.Occupancy.Count(id => id >= 0)); Assert.Same(prepared, current.Preparation);
+        Assert.Equal(11, prepared.Party.Allies[2].HpCurrent); Assert.Null(prepared.Party.Allies[2].CurrentExp);
+        Assert.Same(initialized.SourceLocomotion, current.SourceLocomotion); Assert.Same(initialized.SourceBridge, current.SourceBridge);
+
+        static int CountReceipts(Battle01InitializedState battle)
+        {
+            int count = 0; for (var receipt = battle.TurnCompletion; receipt is not null; receipt = receipt.Previous) count++;
+            return count;
+        }
+
         PrivateOriginalBattle01SessionSnapshot CompleteCurrentTurn()
         {
             var input=session.PrivateOriginalBattle01!; int id=input.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;

@@ -89,14 +89,16 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         }
         var completion = control is null && battle.TurnCompletion?.RoundNumber == battle.FirstRound?.RoundNumber
             ? battle.TurnCompletion : null;
-        Battle01EnemyPhysicalAttackDecision? lastAttack = null;
-        for (var receipt = battle.TurnCompletion; receipt is not null && receipt.RoundNumber == battle.FirstRound?.RoundNumber; receipt = receipt.Previous)
-            if (receipt.EnemyPhysicalAttack is { } attack) { lastAttack = attack; break; }
-        string? attackResult = lastAttack is null ? null :
-            $"{UnitTag(lastAttack.ActorIndex)} -> {UnitTag(lastAttack.TargetIndex)}: " +
-            (lastAttack.Effect.Dodged ? "miss" : (lastAttack.Effect.Critical ? "critical " : "hit ") + lastAttack.Effect.Damage) +
-            $". HP {lastAttack.Effect.BeforeStats.HpCurrent} -> {lastAttack.Effect.AfterStats.HpCurrent}.";
+        string? attackResult = null;
         for (var receipt = battle.TurnCompletion; receipt is not null; receipt = receipt.Previous)
+        {
+            if (receipt.EnemyPhysicalAttack is { } enemy)
+            {
+                attackResult = $"{UnitTag(enemy.ActorIndex)} -> {UnitTag(enemy.TargetIndex)}: " +
+                    (enemy.Effect.Dodged ? "miss" : (enemy.Effect.Critical ? "critical " : "hit ") + enemy.Effect.Damage) +
+                    $". HP {enemy.Effect.BeforeStats.HpCurrent} -> {enemy.Effect.AfterStats.HpCurrent}.";
+                break;
+            }
             if (receipt.PlayerPhysicalAttack is { } player)
             {
                 attackResult = $"{UnitTag(player.ActorIndex)} -> {UnitTag(player.TargetIndex)}: " +
@@ -107,6 +109,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                     attackResult += $" {UnitTag(player.TargetIndex)} ({player.TargetIndex}) defeated. Gold +{player.GoldAfter - player.GoldBefore}.";
                 break;
             }
+        }
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
