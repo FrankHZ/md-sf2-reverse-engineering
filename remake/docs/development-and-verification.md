@@ -281,6 +281,18 @@ manual origin target132; labeled copy after receipt59; physical Space reaching a
 and player1 movement/cancel. Compare complete receipts and all accounting, position, occupancy,
 RNG/AI/flag channels. Inspect corpse removal, cleared reachable tile, five enemies, Bowie HP6/EXP39,
 gold60/kills1 and persistent defeated132/+24 EXP/+60 gold alongside usable controls.
+Use `chester-enemy-hit` for the six accepted first-defeat frames plus six continuation frames:
+R8 Bowie after Chester physically moves to(11,14)/STAY; player1 after Bowie origin STAY;
+a labeled exact player1 snapshot copy completing separate Application movement confirmation,
+STAY and the actual relay; the restored snapshot completing those two physical Space presses
+to R9 Chester; Chester's(12,14) provisional move; cancel back to(11,14). Compare the complete
+copied/physical battle snapshots,57 thinking steps,six attack main draws,24 living generation
+draws/full64 slots, HP9, previous awards/dead132 and newest enemy result across rounds.
+The two required real Content methods extend the same original-input prefix through this endpoint
+with `SF2_REQUIRE_PRIVATE_TESTS=1` and must report2 pass/0 skip. Narrow Domain/Application
+tests reject profile/accounting/history drift, stale or foreign requests and false local HP replay;
+Chester active attacks remain rejected. Recheck the existing first-defeat, player-physical,
+enemy-physical and pursuit native modes for this shared result-view change.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. The new named preparation and shared view require the
 affected player physical, enemy physical and pursuit modes. Other modes,

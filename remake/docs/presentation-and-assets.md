@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1050,6 +1050,35 @@ empty, counts3/5 twice, retained nine provenance rows/eight occupants and unchan
 Inspect every image for five enemy markers, readable reward/current-state text and usable player1
 controls. Restore/build/native must each exit0 with clean process termination; compare archived
 production sources with the candidate and official export source copy. No production pause is added.
+
+For `SF2_BATTLE01_CONTROL_REVIEW=chester-enemy-hit`, the same probe retains those six first-defeat
+frames and adds six actual continuation checkpoints:
+
+1. `07-round8-bowie-after-chester-move`: R7 player1 physically confirms origin and STAY;
+   actual enemies generate R8. Chester physically selects(11,14), cost14/path
+   `[0,0,0,1,0,1,1,255]`, confirms/STAYs, and actual133 yields Bowie.
+2. `08-round8-player1-before-confirm-stay`: Bowie physically confirms origin/STAY; actual player1
+   is still in movement selection. One Space alone does not complete his turn.
+3. `09-chester-hit-and-round9-test-copy`: labeled exact player1 snapshot copy separately confirms
+   movement and commits STAY through Application, then uses the unchanged production relay through
+   actual129/128/130/131 and R9 actual Chester control. No production pause or expected-state injection.
+4. `10-round9-chester-after-physical-relay`: restore the exact player1 movement snapshot; physical
+   Space confirms movement, a second physical Space commits STAY. The complete resulting battle
+   snapshot must match the copy, including receipt71, both3/5 counts, full64 order, all HP/placement,
+   gold/kills/EXP, main71D31234/copy0134 and AI/activation channels. Chester is HP9/budget14;
+   only region1 is active,132 stays dead/unplaced, and the visible latest result is131→Chester hit2.
+5. `11-chester-provisional12-14`: physical L/Space selects and confirms cost2 movement; the latest
+   hit remains visible, no second action/award occurs and current accounting remains unchanged.
+6. `12-chester-move-cancel`: physical Backspace restores(11,14), HP9, receipt71 and all channels.
+
+The exact target is class1/KNTE, Wooden Stick184, effective ATT8/DEF5/AGI7/MOV7, HPmax11/MP0,
+with EXP/kills unspecified. Enemy131 moves to(11,13), cost6/path`[3,3,3,255]`;57 thinking steps
+give priority7/copy0134. Six main draws give2/32,27/32,0/1,0/1,25/32,13/32 and HP11→temporary9→
+restore11→persistent9. R9 uses eight survivors and24 generation calls; no true follow-up or death
+occurs. Inspect all12 frames and the restore/build/native process receipts. Recheck the affected
+first-defeat, player/enemy physical and pursuit modes against their existing frame contracts.
+Current gold60/kills1/EXP39 and five enemy markers remain state projections even though the new
+enemy-hit summary replaces the older defeat message. This grants no Chester active-attack support.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu

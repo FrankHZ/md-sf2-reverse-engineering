@@ -196,7 +196,11 @@ The relay consumes the pursuit classifier's physical-cohort boundary once throug
 current snapshot, cohort, priority, source path and supported combat profile. Its Domain reducer
 constructs the temporary HP effect, restores the source snapshot and replays one semantic reaction
 locally before physical cleanup/after-turn validation and one Application replacement. The explicit
-class0/Wooden Sword profile supplies prowess3; regular GIZMO prowess0, difficulty0/type2 and the
+class0/Wooden Sword and exact Chester class1/Wooden Stick target profiles supply prowess3;
+the latter retains HPmax11/MP0/ATT8/DEF5/AGI7/MOV7 and unspecified EXP/kills. Enemy decision
+metadata comes from the admitted selected target. Player attack admission separately requires
+Bowie0/class0, so sharing the allied validator cannot enable Chester attacks. Regular GIZMO
+prowess0, difficulty0/type2 and the
 two independent RNG channels retain their source semantics. Miss/ordinary critical results are
 calculated. True validated follow-ups, lethal/status/curse/reward and unsupported after-turn effects
 reject atomically. This is a bounded consumer, not a general battle-scene VM.
@@ -206,7 +210,11 @@ changes before comparing earlier pursuit stamps, links thinking/last-target/memo
 and retains the generated64-slot order. HP copies preserve all non-HP fields; startup/prepared
 stats remain provenance. Subsequent movement/cancel/STAY, admitted AI and round generation retain
 the damaged current stats. Actual round6 attack132 produces HP12→9 and yields Bowie0 control;
-the presenter derives its persistent current-round attack summary from the existing receipt chain.
+the presenter selects the newest physical receipt across rounds from the existing chain.
+The post-defeat continuation brings enemy131 to(11,13), hits Chester11→9 and creates receipt71;
+eight surviving candidates generate R9 and actual Chester movement/cancel with main71D31234,
+copy0134. Reverse history admits the recorded HP11→9 and preserves receipt59's dead132,
+Bowie EXP39/kills1 and gold60. No additional preset, action model or result history is introduced.
 Original scene animation/timing, broader profiles, multi-strike/counter/death and victory remain open.
 
 Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player physical/EXP policy.
@@ -244,8 +252,9 @@ main endpoint is recorded, the existing generator reproduces the following main 
 Godot keeps ordinary action-choice Space as STAY; A opens targeting and target Space explicitly
 attacks. The existing finite relay reaches round7 player2, then actual131/132/133 and Bowie HP6.
 His explicit lethal attack creates receipt59 and immediately yields actual player1 movement/cancel.
-The presenter derives the persistent defeated132/+24 EXP/+60 gold result from that receipt and
-shows live gold60/kills1, Bowie EXP39 and five enemies.
+The presenter derives the defeated132/+24 EXP/+60 gold result from that receipt until a newer
+physical action replaces it; current gold60/kills1, Bowie EXP39 and five enemies remain live-state
+projections when the later Chester hit is displayed.
 Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
 presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
 and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.

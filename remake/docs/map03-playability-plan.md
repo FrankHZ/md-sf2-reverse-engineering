@@ -2990,24 +2990,25 @@ exact path before editing it.
   its aggregate. Update onto current accepted main, commit/push declared paths and freeze a Draft
   PR for independent integration. Main gate retains approval and merge authority.
 
-### Proposed first enemy hit on Chester after the first defeat
+### Implemented first enemy hit on Chester after the first defeat
 
-**Plan only; implementation is not admitted by this section.** The selected next slice extends the
-existing enemy physical wrapper to the exact controlled Chester target, completes enemy131's
-nonlethal action, generates the actual next round and returns Chester movement/cancel control.
-It consumes accepted `d23a5b3fb62a4625c175e72d87e1ca8d11160308`, tree
-`e41b5c01bba95578494200266694c4bce9f58ef2`, from receipt59 above. Only this plan is changed here.
+The existing enemy physical wrapper now admits the exact controlled Chester target, completes
+enemy131's nonlethal action, generates the actual next round and returns Chester movement/cancel.
+The source reduction and pre-implementation rejection below retain the reproducible baseline
+`d23a5b3fb62a4625c175e72d87e1ca8d11160308`, tree
+`e41b5c01bba95578494200266694c4bce9f58ef2`, and receipt59 above.
 The first-defeat preset, private input identities, difficulty, HP, equipment, EXP/gold/kills,
 main/copy seed inputs and initial living roster are carried into the real reducers. Every player command below
 is authored through the existing movement/confirm/STAY API; every enemy is the actual candidate.
 
 #### Observed route and selected first unsupported action
 
-**Confirmed controlled remake observation:** a bounded console replays the complete existing real
-Content acceptance method through receipt59 and extracts the production `DispatchNext` method
-verbatim. It adds no battle model and executes no test suite. On the selected variant, the actual
-enemy131 request rejects `attack.targetProfile`, retaining the exact current Application snapshot.
-All proposed state after that rejection below is source-derived, not a managed/native success.
+**Confirmed pre-implementation observation at the named baseline:** a bounded console replays
+the complete real Content method through receipt59 and extracts production `DispatchNext` verbatim.
+It adds no battle model and executes no test suite. The selected variant originally rejected
+`attack.targetProfile`, retaining the exact Application snapshot. The current implementation
+crosses that target boundary; its owning Domain/Application and real Content tests establish the
+complete controlled endpoint below. Native acceptance uses the `chester-enemy-hit` recipe.
 
 | Actual step | Retained result / first boundary |
 | --- | --- |
@@ -3038,7 +3039,7 @@ class tie. Both corrections are reflected below; the predicted lethal result rem
 This variant cannot justify a usable player1 endpoint. Its leader defeat, defeat counter, gold
 halving and egress/reentry dependencies are deferred; they do not belong to the selected slice.
 
-#### Source boundary and proposed complete outcome
+#### Source boundary and implemented outcome
 
 Pinned upstream remains `ShiningForceCentral/SF2DISASM` at
 `c834c652b6862bc5679fd7f69a38a7093206efc6`. The preceding selected-input/source checks are reused.
@@ -3065,7 +3066,7 @@ counter occurs. Copy `0134` is independent; last-target slot3 becomes2, memory s
 RNG/menu/VInt/death timing is excluded by the same accepted semantic policy, not rewritten to
 obtain these results.
 
-**Inferred composed implementation endpoint, requiring future gates:** receipt71 records enemy131
+**Confirmed controlled implementation endpoint:** receipt71 records enemy131
 at `(11,13)` and Chester HP9, then R9/raw0 exposes actual player2 at `(11,14)` with movement
 budget14, main `71D31234`, copy `0134`. Full64 order is
 `2:8,128:6,129:6,131:6,133:5,1:4,130:4,0:3` plus56 `FF:FF` slots. Bowie stays HP6/EXP39/kills1,
@@ -3266,7 +3267,7 @@ To reproduce the rejected leader-forward alternative independently from receipt5
 at its actual Chester BeginAttack rejection; the source command stops at the predicted leader
 death. Restore `chester-target` for the selected proposal. Keep separate local logs for each run.
 
-#### Implementation ownership and acceptance proposal
+#### Implementation ownership and acceptance
 
 Keep the existing `Battle01InitializedState`, live stats/occupancy, single
 `Battle01TurnCompletionReceipt` chain, `Battle01MainRandomRoll`/thinking-roll records and exact-current
@@ -3281,12 +3282,12 @@ the same allied-profile validator for damaged units, so target admission must al
 existing reverse-history pass and later generation. `Battle01PlayerPhysicalAttack.RequireActor`
 currently reuses that validator; explicitly retain its Bowie-only boundary so broadening a target
 does not silently admit Chester as an attacker. No new generic combat-profile registry is needed.
-The presenter currently searches enemy results only in the current round and then lets an older
-player receipt overwrite them. Select the newest relevant physical receipt in the existing chain
-so the Chester hit remains visible at R9; retain current gold/kills and dead132 in their existing
+The presenter selects the newest relevant physical receipt across rounds from the existing chain;
+the earlier current-round enemy scan followed by an older player-result overwrite is removed.
+The Chester hit remains visible at R9; current gold/kills and dead132 retain their existing
 state projection. Do not add a second result/event history.
 
-Proposed exact ownership below is relative to `remake/`; approval is required before implementation.
+The accepted implementation boundary below is relative to `remake/`.
 Files listed for verification do not imply every file needs a diff. No schema, registry, fixture,
 shared map primitive, asset, package, toolchain, canonical input or Python engine change is needed.
 
@@ -3308,10 +3309,9 @@ They already express the necessary history, arbitrary selected target, retained 
 candidate dispatch. If a reproduced dependency requires editing one, name the exact failure and
 request an ownership amendment before mutation; do not preemptively broaden these owners.
 
-Buildable commit order: (1) Domain target admission/metadata plus explicit attacker guard and
-owning tests; (2) Application/Content continuation tests and presenter/native changes with their
-tests; (3) current-state documentation. Compile/test the affected project boundary at each step.
-No input-schema migration or new preset is part of any commit.
+Domain target admission/metadata and the explicit attacker guard have owning tests. Application,
+real Content and presenter/native checks consume the same continuation. No input-schema migration
+or new preset is introduced; changes use the affected project and committed planner boundaries.
 
 - Both required real Content methods remain in
   `Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests`:
@@ -3338,15 +3338,13 @@ No input-schema migration or new preset is part of any commit.
   modes selected by the presentation change; do not manufacture a production pause.
 - On a clean committed implementation head, use `uv run sf2 verify plan --base origin/main --head HEAD`
   and its authoritative locked managed/official Godot selection, the owning tests/native recipe
-  above, and normal `uv run sf2 verify`. This plan-only change runs its source/managed diagnostic,
-  committed planner, normal public verification and Public CI; no full managed/native/H3 gate is
-  required to publish the plan. Carry any completed suite failure exactly and rerun only selected
+  above, and normal `uv run sf2 verify`. The pre-implementation rejection diagnostic is historical
+  baseline evidence, not a success test for current code. Carry any completed suite failure exactly and rerun only selected
   corrections unless the planner/runbook explicitly broadens invalidation. Freeze a clean Draft
   PR for independent main-gate review; implementation acceptance is a separate decision.
 
 **Unknown:** natural original-game reach and carried seeds/accounting, post-presentation seed
-composition/timing, original Chester hit/animation fidelity and H4; the proposed managed/native
-success until implemented. Chester active attacks, further combat outcomes, leader defeat/egress,
+composition/timing, original Chester hit/animation fidelity and H4. Chester active attacks, further combat outcomes, leader defeat/egress,
 level changes, spells/items and validated follow-ups remain unsupported. None is silently enabled
 by accepting Chester as this controlled enemy-attack target.
 
@@ -3391,6 +3389,10 @@ persists enemy HP2; actual131/133 then lead to round7 player2 control with that 
 Manual player2 STAY and actual131/132/133 yield Bowie HP6. His next origin Attack132 completes
 the first defeat, retains the source row while removing its live placement, and yields actual
 player1 movement/cancel with EXP39/gold60/kills1 and the persistent reward result.
+The selected continuation moves Chester to(11,14) in R8 while Bowie stays at(11,15); actual131
+hits Chester11→9, then R9 returns his movement/cancel control. The newest enemy result replaces
+the older reward message while all prior accounting and the unplaced132 row persist. The separate
+Bowie-only player attack guard keeps Chester attacks unsupported.
 Other combat profiles/terrain, spells, items, validated follow-ups, required level changes,
 further defeats/victory and original cancellation/death animation remain unsupported.
 
