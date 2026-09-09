@@ -145,7 +145,7 @@ public sealed class PrivateOriginalBattle01EnemyStandbyTests
                 i < 3 ? null : (ushort?)(i >= 7 ? 0x2070 : 0x2060), positions[i]);
         }
         var terrain = source.Terrain.ToArray(); terrain[4 * 48 + 7] = 255; terrain[2 * 48 + 7] = 0;
-        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[unit.Position.Y * 48 + unit.Position.X] = unit.Index;
+        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[Assert.IsType<MapPosition>(unit.Position).Y * 48 + Assert.IsType<MapPosition>(unit.Position).X] = unit.Index;
         var initial = Internal<Battle01InitializedState>(roster, source.Regions.ToArray(), terrain, occupancy, 0x1234u, (ushort?)0x1234);
         var snapshot = Replace(session, Battle01FirstRound.Enter(initial));
         snapshot = Assert.IsType<PrivateOriginalBattle01FirstControlEntered>(session.EnterPrivateOriginalBattle01FirstControl(snapshot, 1)).Snapshot;

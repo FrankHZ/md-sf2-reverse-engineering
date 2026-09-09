@@ -117,7 +117,7 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
-    internal static void RequireThinkingHistory(Battle01InitializedState current)
+    internal static (uint? Gold, ushort? BowieKills) RequireThinkingHistory(Battle01InitializedState current)
     {
         if (current.RandomSeedCopy is not { } seed)
             throw new ArgumentException("The current thinking seed-copy must be retained.", "randomSeedCopy");
@@ -126,28 +126,35 @@ public static class Battle01EnemyStandby
         var memory = current.AiMemory.ToArray();
         var targets = current.AiLastTargets.ToArray();
         var stats = current.Roster.ToDictionary(unit => unit.Index, unit => unit.Stats);
+        var positions = current.Roster.ToDictionary(unit => unit.Index, unit => unit.Position);
+        uint? gold = current.CurrentGold;
+        int livingEnemies = current.Roster.Count(unit => unit.Index >= 128 && unit.Stats.HpCurrent > 0);
         var damaged = new HashSet<int>();
         uint main = current.RandomSeedImage;
         int mainRound = current.FirstRound?.RoundNumber ?? 0;
         bool mainAnchored = true;
         uint? followingGenerationMain = null;
         bool followingIsCurrent = false;
+        int followingRound = 0;
         void RewindMain(uint before, uint after)
         {
             if (mainAnchored && main != after)
                 throw new ArgumentException("Physical main RNG history must remain linked.", "attack.history");
             if (!mainAnchored && followingGenerationMain is { } generated)
-                Battle01FirstRound.RequireGenerationFromRecordedMain(current, after, generated, followingIsCurrent);
+                Battle01FirstRound.RequireGenerationFromRecordedMain(current, after, generated, followingIsCurrent, followingRound);
             main = before; mainAnchored = true; followingGenerationMain = null;
         }
         for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
         {
             if (!Battle01TurnCompletion.HasValidPolicy(receipt))
                 throw new ArgumentException("Retain the completion kind's distinct policy.", "completion");
+            if (receipt.BeforeAfterTurn != new Battle01FactionCounts(3, livingEnemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+                throw new ArgumentException("Retain both faction counts at their historical death boundary.", "completion");
             if (receipt.RoundNumber != mainRound)
             {
                 followingGenerationMain = mainAnchored && receipt.RoundNumber == mainRound - 1 ? main : null;
                 followingIsCurrent = mainRound == current.FirstRound?.RoundNumber;
+                followingRound = mainRound;
                 mainRound = receipt.RoundNumber; mainAnchored = false;
             }
             if (receipt.CompletedActorIndex < 128)
@@ -157,13 +164,25 @@ public static class Battle01EnemyStandby
                 if (receipt.PlayerPhysicalAttack is { } player)
                 {
                     Battle01PlayerPhysicalAttack.ValidateDecision(player);
+                    var actorAfter = player.ActorAfterStats;
+                    if (player.DefeatedTarget)
+                    {
+                        Battle01TurnCompletion.ValidateDefeatReceipt(receipt);
+                        if (positions[player.TargetIndex] is not null)
+                            throw new ArgumentException("A cleaned enemy must remain unplaced.", "attack.history");
+                        actorAfter = actorAfter.WithCurrentKills(receipt.EnemyDefeat!.KillsAfter);
+                        positions[player.TargetIndex] = player.Target.Position;
+                        livingEnemies++;
+                    }
                     if (receipt.RoundNumber <= 1 || seed != player.SeedCopy ||
                         (mainAnchored && main != player.Effect.MainSeedAfter) ||
-                        !Battle01EnemyPhysicalAttack.SameStats(stats[player.ActorIndex], player.ActorAfterStats) ||
+                        gold != player.GoldAfter ||
+                        !Battle01EnemyPhysicalAttack.SameStats(stats[player.ActorIndex], actorAfter) ||
                         !Battle01EnemyPhysicalAttack.SameStats(stats[player.TargetIndex], player.Effect.AfterStats))
                         throw new ArgumentException("Player HP, EXP and both RNG channels must remain linked.", "attack.history");
                     RewindMain(player.MainSeedBefore, player.Effect.MainSeedAfter);
                     stats[player.ActorIndex] = player.Actor.Stats; stats[player.TargetIndex] = player.Effect.BeforeStats;
+                    gold = player.GoldBefore;
                     damaged.Add(player.ActorIndex); damaged.Add(player.TargetIndex);
                 }
                 continue;
@@ -214,11 +233,14 @@ public static class Battle01EnemyStandby
         if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
         if (targets.Any(value => value != 255))
             throw new ArgumentException("Last-target history must rewind to initialized empty slots.", "memory");
+        if (gold is not (null or 0) || livingEnemies != 6)
+            throw new ArgumentException("Gold and enemy deaths must rewind to their explicit initialization inputs.", "attack.history");
         foreach (var unit in current.Roster)
         {
             var original = stats[unit.Index];
             if (unit.Index >= 128)
-                RequireRegularEnemy(unit.WithStats(original), Math.Max(2, current.FirstRound?.RoundNumber ?? 2), (unit.AiBitfield & 1) != 0);
+                RequireRegularEnemy(unit.WithStats(original).WithPosition(positions[unit.Index]),
+                    Math.Max(2, current.FirstRound?.RoundNumber ?? 2), (unit.AiBitfield & 1) != 0);
             else if (damaged.Contains(unit.Index) || original.CurrentExp is not null)
             {
                 Battle01EnemyPhysicalAttack.RequireTargetProfile(unit.WithStats(original));
@@ -227,7 +249,12 @@ public static class Battle01EnemyStandby
             }
             if (original.HpCurrent != original.HpMax)
                 throw new ArgumentException("Physical HP history must retain the initialized full-HP origin.", "attack.history");
+            if (original.CurrentKills is not null && (unit.Index != 0 || original.CurrentKills != 0))
+                throw new ArgumentException("Known kills must rewind to the explicit Bowie zero input.", "attack.history");
         }
+        if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
+            Battle01TurnCompletion.RequireContinuingNoEffectState(current);
+        return (gold, stats[0].CurrentKills);
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,
@@ -238,11 +265,11 @@ public static class Battle01EnemyStandby
         RequireRegularEnemy(actor, current.FirstRound!.RoundNumber, active: false);
         var decision = Decide(current, actor, current.RandomSeedCopy!.Value, current.AiMemory[actorIndex - 128]);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
-        if (occupancy.Length != 2304 || occupancy[Battle01PlayerMovement.Offset(actor.Position)] != actorIndex ||
-            (decision.Destination != actor.Position && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1))
+        if (occupancy.Length != 2304 || occupancy[Battle01PlayerMovement.Offset(actor.RequirePosition())] != actorIndex ||
+            (decision.Destination != actor.RequirePosition() && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1))
             throw new ArgumentException("Standby relocation must preserve consistent live occupancy.", "occupancy");
         roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
-        occupancy[Battle01PlayerMovement.Offset(actor.Position)] = -1;
+        occupancy[Battle01PlayerMovement.Offset(actor.RequirePosition())] = -1;
         occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = actorIndex;
         var memory = current.AiMemory.ToArray(); memory[actorIndex - 128] = decision.MemoryAfter;
         var moved = new Battle01InitializedState(current, roster, occupancy, memory, decision.SeedCopyAfter);
@@ -250,7 +277,7 @@ public static class Battle01EnemyStandby
         return Battle01TurnCompletion.CompleteControlledStay(moved, actorIndex, actor.Stats, policy, decision);
     }
 
-    internal static void RequireRegularEnemy(Battle01Combatant actor, int roundNumber, bool active)
+    internal static void RequireRegularEnemy(Battle01Combatant actor, int roundNumber, bool active, bool allowDefeated = false)
     {
         int actorIndex = actor.Index;
         int memoryIndex = actorIndex - 128;
@@ -265,7 +292,7 @@ public static class Battle01EnemyStandby
             deployment.PrimaryRegion != primaryRegion || deployment.SecondaryRegion != 15 ||
             actor.AiBitfield != (0x2000 | (commandSet << 4) | (active ? 1 : 0)))
             throw new ArgumentException("Only the fixed GIZMO regular branch with matching activation is admitted.", "activation");
-        if (deployment.Position != EnemyOrigins[memoryIndex] || !Battle01Initialization.WithinArea(actor.Position) ||
+        if (deployment.Position != EnemyOrigins[memoryIndex] || (actor.Stats.HpCurrent == 0 ? !allowDefeated || actor.Position is not null : actor.Position is not { } livePosition || !Battle01Initialization.WithinArea(livePosition)) ||
             (roundNumber == 1 && actor.Position != deployment.Position))
             throw new ArgumentException("Retain the original standby anchor and a valid live position.", "position");
         var stats = actor.Stats;
@@ -275,8 +302,8 @@ public static class Battle01EnemyStandby
             source.BaseAiBitfield != 0x2000 || source.MovementType != 6 || baseline is null ||
             baseline.Level != 0 || baseline.HpMax != 5 || baseline.HpCurrent != 5 || baseline.MpMax != 0 || baseline.MpCurrent != 0 ||
             baseline.Attack != 7 || baseline.Defense != 5 || baseline.Agility != 5 || baseline.Move != 5 || baseline.Status != 0 ||
-            baseline.CurrentExp is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
-            stats.Level != 0 || stats.CurrentExp is not null || stats.HpMax != 5 || stats.HpCurrent is < 1 or > 5 ||
+            baseline.CurrentExp is not null || baseline.CurrentKills is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
+            stats.Level != 0 || stats.CurrentExp is not null || stats.CurrentKills is not null || stats.HpMax != 5 || (stats.HpCurrent > 5 || (stats.HpCurrent == 0 && !allowDefeated)) ||
             (roundNumber == 1 && stats.HpCurrent != 5) ||
             stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
             stats.Agility != 5 || stats.Move != 5 || stats.Status != 0 ||
@@ -290,28 +317,28 @@ public static class Battle01EnemyStandby
         ushort before = seedCopy; byte memoryBefore = memory;
         var rolls = new List<Battle01ThinkingRoll>(); var candidates = new List<Battle01StandbyCandidate>();
         Battle01EnemyStandbyDecision Result(MapPosition destination, IReadOnlyList<byte> moveString) =>
-            new(actor.Index, actor.Position, destination, before, seedCopy, memoryBefore, memory,
+            new(actor.Index, actor.RequirePosition(), destination, before, seedCopy, memoryBefore, memory,
                 rolls.AsReadOnly(), candidates.AsReadOnly(), moveString);
         byte Roll(byte range)
         {
             var roll = ThinkingRoll(seedCopy, range); rolls.Add(roll); seedCopy = roll.AfterSeedCopy;
             return roll.Result;
         }
-        if (Roll(8) is 2 or 4 or 6) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        if (Roll(8) is 2 or 4 or 6) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
         var d = actor.Deployment;
         bool p = d.PrimaryOrder != 255, s = d.SecondaryOrder != 255;
         bool pr = d.PrimaryRegion != 15, sr = d.SecondaryRegion != 15;
-        if ((p && pr) || (s && sr)) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        if ((p && pr) || (s && sr)) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
         if (p && !pr && !s && sr)
             throw new ArgumentException("Move-order standby is outside this bounded primitive.", "moveOrder");
-        if (!((!p && pr) || (!s && sr))) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        if (!((!p && pr) || (!s && sr))) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
         if (actor.EnemySource?.MovementType != 6)
             throw new ArgumentException("Standby requires the admitted Hovering6 profile.", "movementProfile");
 
         var grid = Battle01PlayerMovement.BuildWeightedGrid(battle.Terrain, Battle01PlayerMovement.HoveringCosts,
-            Battle01PlayerMovement.Offset(actor.Position), actor.Stats.Move * 2);
+            Battle01PlayerMovement.Offset(actor.RequirePosition()), actor.Stats.Move * 2);
         // Source builds occupancy separately. Do not invent the distant A0's missing neutral bit.
-        if (battle.Roster.Any(unit => unit.AiBitfield is null && grid.CostAt(unit.Position) is not null))
+        if (battle.Roster.Any(unit => unit.Stats.HpCurrent > 0 && unit.Position is { } unitPosition && unit.AiBitfield is null && grid.CostAt(unitPosition) is not null))
             throw new ArgumentException("A relevant combatant's activation word is unknown.", "activation");
         if ((memory & 15) == 0) memory = Roll(2) == 0 ? (byte)4 : (byte)3;
         int count = memory & 15, previous = memory >> 4;
@@ -332,11 +359,11 @@ public static class Battle01EnemyStandby
         }
         if (valid.Count == 0)
         {
-            memory = 0; return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+            memory = 0; return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
         }
         byte chosen = valid[Roll((byte)valid.Count)]; memory = (byte)((chosen << 4) | count);
         var destination = candidates.Single(candidate => candidate.Index == chosen).Position;
-        return Result(destination, SourceMoveString(grid, actor.Position, destination));
+        return Result(destination, SourceMoveString(grid, actor.RequirePosition(), destination));
     }
 
     internal static Battle01ThinkingRoll ThinkingRoll(ushort seedCopy, byte range)

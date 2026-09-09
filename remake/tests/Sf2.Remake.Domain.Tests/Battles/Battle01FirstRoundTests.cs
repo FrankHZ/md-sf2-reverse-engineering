@@ -153,10 +153,11 @@ public sealed class Battle01FirstRoundTests
     }
     internal static Battle01InitializedState CopyCurrent(Battle01InitializedState source, Battle01Combatant[]? roster=null,
         int[]? occupancy=null, byte[]? memory=null, ushort? copy=null, byte[]? terrain=null, ushort? tested=null,
-        Battle01FirstRoundOrder? order=null, Battle01TurnCompletionReceipt? receipt=null, uint? mainImage=null, byte[]? lastTargets=null)
+        Battle01FirstRoundOrder? order=null, Battle01TurnCompletionReceipt? receipt=null, uint? mainImage=null,
+        byte[]? lastTargets=null, uint? gold=null)
     {
         var initial=new Battle01InitializedState(roster ?? source.Roster.ToArray(),source.Regions.ToArray(),terrain ?? source.Terrain.ToArray(),
-            occupancy ?? source.Occupancy.ToArray(),mainImage ?? source.RandomSeedImage,copy ?? source.RandomSeedCopy);
+            occupancy ?? source.Occupancy.ToArray(),mainImage ?? source.RandomSeedImage,copy ?? source.RandomSeedCopy, gold ?? source.CurrentGold);
         var thinking=new Battle01InitializedState(initial,initial.Roster.ToArray(),initial.Occupancy.ToArray(),memory ?? source.AiMemory.ToArray(),
             copy ?? source.RandomSeedCopy!.Value, mainImage ?? source.RandomSeedImage, lastTargets ?? source.AiLastTargets.ToArray());
         var round=new Battle01InitializedState(thinking,thinking.Roster.ToArray(),source.RegionFlags90Through105.ToArray(),
@@ -204,7 +205,7 @@ public sealed class Battle01FirstRoundTests
         Assert.Equal(0xA499, next.GeneratorWord); Assert.Equal(0x1234u, next.RandomSeedImage & 0xFFFF);
         Assert.Equal(Battle01Phase.FirstRoundGenerated, next.Phase);
         Assert.Equal(9, next.Roster.Count); // Inactive regions do not exclude placed living enemies.
-        Assert.All(next.Roster, unit => Assert.Equal(unit.Index, next.OccupantAt(unit.Position)));
+        Assert.All(next.Roster, unit => Assert.Equal(unit.Index, next.OccupantAt(unit.RequirePosition())));
         Assert.Same(initial.Terrain, next.Terrain); Assert.Same(initial.Occupancy, next.Occupancy);
         Assert.Same(initial.AiMemory, next.AiMemory); Assert.Same(initial.AiLastTargets, next.AiLastTargets);
         Assert.Equal(0, next.ElapsedSeconds); Assert.True(next.UnlockFlag401); Assert.True(next.IntroFlag451);
@@ -288,7 +289,7 @@ public sealed class Battle01FirstRoundTests
     {
         using var fixture = Fixture("turn-order-boundaries-v1");
         var candidates = Initial().Roster.Select(unit => new Battle01FirstRound.TurnCandidate(
-            (byte)unit.Index, (byte)unit.Position.X, unit.Stats.HpCurrent, unit.Stats.Agility)).ToArray();
+            (byte)unit.Index, (byte)unit.RequirePosition().X, unit.Stats.HpCurrent, unit.Stats.Agility)).ToArray();
         foreach (var mutation in fixture.RootElement.GetProperty("mutations").EnumerateArray())
         {
             int index = Array.FindIndex(candidates, candidate => candidate.Index == mutation.GetProperty("combatant").GetByte());

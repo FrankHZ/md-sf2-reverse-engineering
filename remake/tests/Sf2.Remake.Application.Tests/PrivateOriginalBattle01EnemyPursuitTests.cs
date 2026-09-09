@@ -86,7 +86,7 @@ public sealed class PrivateOriginalBattle01EnemyPursuitTests
         (slots[0], slots[8]) = (slots[8], slots[0]); var order = Internal<Battle01FirstRoundOrder>(slots, Array.Empty<int>(), Array.Empty<int>(), 3);
         var roster = original.Battle.Roster.ToArray(); var enemy = roster[7];
         roster[7] = Internal<Battle01Combatant>(enemy.Deployment, enemy.Stats, enemy.ClassId, enemy.EnemySource, enemy.AiBitfield, new MapPosition(11, 10));
-        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[unit.Position.Y * 48 + unit.Position.X] = unit.Index;
+        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[Assert.IsType<MapPosition>(unit.Position).Y * 48 + Assert.IsType<MapPosition>(unit.Position).X] = unit.Index;
         var input = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session, roster: roster, occupancy: occupancy, order: order);
         string frozen = JsonSerializer.Serialize(input.Battle);
         var boundary = Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(input, 132));

@@ -16,11 +16,13 @@ public sealed class Battle01PlayerAttackSelection
 public sealed record Battle01PlayerPhysicalAttackDecision(Battle01Combatant Actor, Battle01Combatant Target,
     MapPosition MovementOrigin, IReadOnlyList<byte> MoveString, IReadOnlyList<int> LegalTargets,
     byte TargetTerrain, int LandMultiplier, uint MainSeedBefore, ushort SeedCopy,
-    Battle01PhysicalEffect Effect, int AccumulatedExp, int HalvedExp, int AwardedExp, Battle01Stats ActorAfterStats)
+    Battle01PhysicalEffect Effect, int AccumulatedExp, int HalvedExp, int AwardedExp, Battle01Stats ActorAfterStats,
+    uint? GoldBefore = null, uint? GoldAfter = null)
 {
     public int ActorIndex => Actor.Index;
     public int TargetIndex => Target.Index;
-    public MapPosition RangeOrigin => Actor.Position;
+    public MapPosition RangeOrigin => Actor.Position ?? throw new ArgumentException("The attacker must be placed.", "attack.history");
+    public bool DefeatedTarget => Effect.TemporaryHp == 0;
     public byte Action => 0;
     public ushort ItemOrSpellWord => (ushort)TargetIndex;
     public string CombatProfile => "battle01-class0-wooden-sword-effective-prowess3-v1";
@@ -30,6 +32,13 @@ public sealed record Battle01PlayerPhysicalAttackDecision(Battle01Combatant Acto
 
 public static class Battle01PlayerPhysicalAttack
 {
+    public static void RequireAccountingInputs(Battle01InitializedState current, uint? gold, ushort? bowieKills)
+    {
+        var original = Battle01EnemyStandby.RequireThinkingHistory(current);
+        if (original != (gold, bowieKills))
+            throw new ArgumentException("Live accounting must retain its declared preparation inputs.", "accounting.input");
+    }
+
     public static Battle01InitializedState Begin(Battle01InitializedState current, int actorIndex)
     {
         var control = RequireControl(current, actorIndex, Battle01Phase.PlayerActionChoice);
@@ -58,32 +67,44 @@ public static class Battle01PlayerPhysicalAttack
     public static Battle01InitializedState Confirm(Battle01InitializedState current, int actorIndex,
         Battle01PlayerPhysicalCompletionPolicy? policy)
     {
-        if (!ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp))
+        if (!Battle01PlayerPhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("The player physical/EXP completion policy must be explicit.", "policy");
-        var decision = Decide(current, actorIndex);
+        var decision = Decide(current, actorIndex, policy!.AllowsDefeat);
         var roster = current.Roster.ToArray();
         int actor = Array.FindIndex(roster, unit => unit.Index == actorIndex);
         int target = Array.FindIndex(roster, unit => unit.Index == decision.TargetIndex);
         roster[actor] = roster[actor].WithStats(decision.ActorAfterStats);
         roster[target] = roster[target].WithStats(decision.Effect.AfterStats);
-        var replayed = new Battle01InitializedState(current, roster, decision.Effect.MainSeedAfter);
+        var replayed = new Battle01InitializedState(current, roster, decision.Effect.MainSeedAfter, decision.GoldAfter);
         return Battle01TurnCompletion.CompletePlayerPhysical(replayed, decision, policy);
     }
 
-    internal static Battle01PlayerPhysicalAttackDecision Decide(Battle01InitializedState current, int actorIndex)
+    internal static Battle01PlayerPhysicalAttackDecision Decide(Battle01InitializedState current, int actorIndex, bool allowDefeat = false)
     {
         var control = RequireControl(current, actorIndex, Battle01Phase.PlayerAttackTargetSelection);
         var selected = RequireSelection(current, control);
         var actor = current.Roster.Single(unit => unit.Index == actorIndex);
         var target = current.Roster.Single(unit => unit.Index == selected.TargetIndex);
         RequireActor(actor); RequireTarget(target, current.FirstRound!.RoundNumber);
-        byte terrain = current.TerrainAt(target.Position);
+        var targetPosition = target.Position ?? throw new Battle01PhysicalAttackUnsupportedException("targetPlacement");
+        var actorPosition = actor.Position ?? throw new Battle01PhysicalAttackUnsupportedException("actorPlacement");
+        byte terrain = current.TerrainAt(targetPosition);
         int multiplier = TargetLandMultiplier(terrain);
         var resolved = Resolve(actor.Stats, target.Stats, multiplier, current.RandomSeedImage,
-            target.Index, actor.Position, target.Position);
+            target.Index, actorPosition, targetPosition, allowDefeat);
+        uint? goldAfter = current.CurrentGold;
+        if (resolved.Effect.TemporaryHp == 0)
+        {
+            if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
+                throw new Battle01PhysicalAttackUnsupportedException("additionalDefeat");
+            if (current.CurrentGold is not { } gold || actor.Stats.CurrentKills is null)
+                throw new Battle01PhysicalAttackUnsupportedException("killAccountingInput");
+            goldAfter = GoldAfterKill(gold);
+        }
         return new(actor, target, control.Movement.Range.Origin, control.Movement.Preview.Directions,
             selected.Targets, terrain, multiplier, current.RandomSeedImage, current.RandomSeedCopy!.Value,
-            resolved.Effect, resolved.Accumulated, resolved.Halved, resolved.Award, resolved.ActorAfter);
+            resolved.Effect, resolved.Accumulated, resolved.Halved, resolved.Award, resolved.ActorAfter,
+            current.CurrentGold, goldAfter);
     }
 
     private static Battle01FirstControlState RequireControl(Battle01InitializedState current, int actorIndex, Battle01Phase phase)
@@ -118,7 +139,7 @@ public static class Battle01PlayerPhysicalAttack
 
     internal static int[] Targets(Battle01InitializedState current, int actorIndex)
     {
-        var origin = current.Roster.Single(unit => unit.Index == actorIndex).Position;
+        var origin = current.Roster.Single(unit => unit.Index == actorIndex).RequirePosition();
         var targets = new List<int>();
         // Range1's source ring: down, right, up, left, resolved through live occupancy.
         foreach (var (x, y) in new[] { (0, 1), (1, 0), (0, -1), (-1, 0) })
@@ -153,13 +174,14 @@ public static class Battle01PlayerPhysicalAttack
 
     internal static (Battle01PhysicalEffect Effect, int Accumulated, int Halved, int Award, Battle01Stats ActorAfter)
         Resolve(Battle01Stats actor, Battle01Stats target, int multiplier, uint main, int targetIndex,
-            MapPosition actorPosition, MapPosition targetPosition)
+            MapPosition actorPosition, MapPosition targetPosition, bool allowDefeat = false)
     {
         if (actor.CurrentExp is not { } exp) throw new Battle01PhysicalAttackUnsupportedException("actorExpProfile");
         var effect = Battle01EnemyPhysicalAttack.ResolveSingleStrike(actor.Attack, target, multiplier, main,
-            targetIndex, actorPosition, targetPosition, 8, 16, 2);
+            targetIndex, actorPosition, targetPosition, 8, 16, 2, allowDefeat);
         // The admitted unpromoted level1 versus original level0 GIZMO gives kill EXP50.
         int accumulated = DamageExperience(effect.Damage, target.HpMax);
+        if (effect.TemporaryHp == 0) accumulated = Math.Min(49, accumulated + 50);
         int halved = accumulated >> 1, award = halved;
         var rolls = effect.Rolls.ToList(); main = effect.MainSeedAfter;
         if (Battle01EnemyPhysicalAttack.MainRoll(ref main, rolls, "exp-plus", 16) == 0) award++;
@@ -171,6 +193,8 @@ public static class Battle01PlayerPhysicalAttack
     }
 
     internal static int DamageExperience(int damage, ushort targetMaxHp) => Math.Min(49, 50 * damage / targetMaxHp);
+    internal static uint GoldAfterKill(uint gold) => (uint)Math.Min(9999999UL, (ulong)gold + 60);
+    internal static ushort KillsAfterKill(ushort kills) => (ushort)Math.Min(9999, (int)kills + 1);
 
     internal static void ValidateDecision(Battle01PlayerPhysicalAttackDecision decision)
     {
@@ -191,7 +215,12 @@ public static class Battle01PlayerPhysicalAttack
         }
         if (position != decision.RangeOrigin) throw new ArgumentException("Player range must start at the provisional tile.", "attack.history");
         var expected = Resolve(decision.Actor.Stats, decision.Target.Stats, decision.LandMultiplier,
-            decision.MainSeedBefore, decision.TargetIndex, decision.RangeOrigin, decision.Target.Position);
+            decision.MainSeedBefore, decision.TargetIndex, decision.RangeOrigin,
+            decision.Target.Position ?? throw new ArgumentException("Retain pre-death placement.", "attack.history"), decision.DefeatedTarget);
+        if (decision.DefeatedTarget
+            ? decision.GoldBefore is not { } gold || decision.GoldAfter != GoldAfterKill(gold) || decision.Actor.Stats.CurrentKills is null
+            : decision.GoldBefore != decision.GoldAfter)
+            throw new ArgumentException("Player gold must reproduce its construction input.", "attack.history");
         var a = decision.Effect; var e = expected.Effect;
         if (!ReferenceEquals(a.BeforeStats, decision.Target.Stats) || a.Dodged != e.Dodged || a.Critical != e.Critical ||
             a.Damage != e.Damage || a.TemporaryHp != e.TemporaryHp || a.RestoredHp != e.RestoredHp || a.Reaction != e.Reaction ||

@@ -118,7 +118,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         };
         return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, completion?.CompletedActorIndex,
             completion is null ? null : battle.FirstRound?.CurrentCandidate?.CombatantIndex, tiles.AsReadOnly(),
-            Array.AsReadOnly(battle.Roster.Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position, unit.Stats.HpCurrent, unit.Stats.CurrentExp)).ToArray()),
+            Array.AsReadOnly(battle.Roster.Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null).Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position!, unit.Stats.HpCurrent, unit.Stats.CurrentExp)).ToArray()),
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,

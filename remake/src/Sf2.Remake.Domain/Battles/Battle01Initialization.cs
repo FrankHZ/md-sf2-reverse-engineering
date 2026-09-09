@@ -31,20 +31,22 @@ public sealed class Battle01Stats
 {
     public Battle01Stats(byte level, ushort hpMax, ushort hpCurrent, byte mpMax, byte mpCurrent,
         byte attack, byte defense, byte agility, byte move, ushort status,
-        IEnumerable<ushort> items, IEnumerable<byte> spells, byte? currentExp = null)
+        IEnumerable<ushort> items, IEnumerable<byte> spells, byte? currentExp = null, ushort? currentKills = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(spells);
         var itemCopy = items.ToArray(); var spellCopy = spells.ToArray();
-        if (hpMax == 0 || hpCurrent == 0 || hpCurrent > hpMax || mpCurrent > mpMax || move == 0)
-            throw new ArgumentException("This initialization requires living combatants with valid vitals and movement.");
+        if (hpMax == 0 || hpCurrent > hpMax || mpCurrent > mpMax || move == 0)
+            throw new ArgumentException("Combatants require valid vitals and movement.");
         if (itemCopy.Length != 4 || itemCopy.Any(item => item > 255) || spellCopy.Length != 4)
             throw new ArgumentException("Four packed item words and four packed spell bytes are required.");
         if (currentExp > 200) throw new ArgumentOutOfRangeException(nameof(currentExp));
+        if (currentKills > 9999) throw new ArgumentOutOfRangeException(nameof(currentKills));
         Level = level; HpMax = hpMax; HpCurrent = hpCurrent; MpMax = mpMax; MpCurrent = mpCurrent;
         Attack = attack; Defense = defense; Agility = agility; Move = move; Status = status;
         Items = Array.AsReadOnly(itemCopy); Spells = Array.AsReadOnly(spellCopy);
         CurrentExp = currentExp;
+        CurrentKills = currentKills;
     }
     public byte Level { get; }
     public ushort HpMax { get; }
@@ -58,14 +60,17 @@ public sealed class Battle01Stats
     public ushort Status { get; }
     // Null is unspecified input, never an implicit zero EXP value.
     public byte? CurrentExp { get; }
+    public ushort? CurrentKills { get; }
     public IReadOnlyList<ushort> Items { get; }
     public IReadOnlyList<byte> Spells { get; }
     internal Battle01Stats WithCurrentHp(ushort hp) => hp == HpCurrent ? this :
-        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp);
+        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills);
     internal Battle01Stats WithCurrentExp(byte exp) => exp == CurrentExp ? this :
-        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp);
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp, CurrentKills);
+    internal Battle01Stats WithCurrentKills(ushort kills) => kills == CurrentKills ? this :
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, kills);
     internal Battle01Stats Initialize(byte attack, ushort status) =>
-        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells, CurrentExp);
+        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells, CurrentExp, CurrentKills);
 }
 
 public sealed record Battle01AllyInput(byte Id, byte ClassId, Battle01Stats EffectiveStats);
@@ -83,7 +88,9 @@ public sealed class Battle01Combatant
     }
     public Battle01Deployment Deployment { get; }
     public int Index => Deployment.CombatantIndex;
-    public MapPosition Position { get; }
+    public MapPosition? Position { get; }
+    internal MapPosition RequirePosition() => Position ??
+        throw new ArgumentException("This operation requires a placed combatant.", "position");
     public Battle01Stats Stats { get; }
     public byte? ClassId { get; }
     // Enemy-only source fields remain distinct from the computed effective stats.
@@ -97,12 +104,18 @@ public sealed class Battle01Combatant
     public ushort? InitializationAiBitfield => EnemySource is null ? null :
         (ushort)((EnemySource.BaseAiBitfield & 0xF000) | ((Deployment.Spawn & 15) << 8) | Deployment.SourceFiller);
     public ushort? AiBitfield { get; }
+    // Copies retain an explicit null placement after cleanup; deployment is historical only.
+    private Battle01Combatant(Battle01Combatant source, Battle01Stats stats, ushort? aiBitfield, MapPosition? position)
+    {
+        Deployment = source.Deployment; ClassId = source.ClassId; EnemySource = source.EnemySource;
+        Stats = stats; AiBitfield = aiBitfield; Position = position;
+    }
     internal Battle01Combatant WithAiBitfield(ushort value) => value == AiBitfield
-        ? this : new(Deployment, Stats, ClassId, EnemySource, value, Position);
-    internal Battle01Combatant WithPosition(MapPosition position) => position == Position
-        ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
+        ? this : new(this, Stats, value, Position);
+    internal Battle01Combatant WithPosition(MapPosition? position) => position == Position
+        ? this : new(this, Stats, AiBitfield, position);
     internal Battle01Combatant WithStats(Battle01Stats stats) => ReferenceEquals(stats, Stats)
-        ? this : new(Deployment, stats, ClassId, EnemySource, AiBitfield, Position);
+        ? this : new(this, stats, AiBitfield, Position);
 }
 
 public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection }
@@ -114,14 +127,20 @@ public sealed class Battle01InitializedState
         : this(roster, regions, terrain, occupancy, randomSeedImage, null) { }
     internal Battle01InitializedState(Battle01Combatant[] roster, Battle01Region[] regions,
         byte[] terrain, int[] occupancy, uint randomSeedImage, ushort? randomSeedCopy)
+        : this(roster, regions, terrain, occupancy, randomSeedImage, randomSeedCopy, null) { }
+    internal Battle01InitializedState(Battle01Combatant[] roster, Battle01Region[] regions,
+        byte[] terrain, int[] occupancy, uint randomSeedImage, ushort? randomSeedCopy, uint? currentGold)
     {
         Roster = Array.AsReadOnly(roster); Regions = Array.AsReadOnly(regions);
         Terrain = Array.AsReadOnly(terrain); Occupancy = Array.AsReadOnly(occupancy); RandomSeedImage = randomSeedImage;
         RandomSeedCopy = randomSeedCopy;
+        if (currentGold > 9999999) throw new ArgumentOutOfRangeException(nameof(currentGold));
+        CurrentGold = currentGold;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         bool[] regionFlags, ushort newlyTestedRegionMask, uint randomSeedImage, Battle01FirstRoundOrder firstRound)
     {
+        CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = Array.AsReadOnly(regionFlags); NewlyTestedRegionMask = newlyTestedRegionMask;
@@ -131,6 +150,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         IReadOnlyList<int> occupancy, Battle01FirstControlState firstControl)
     {
+        CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
@@ -141,6 +161,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         int[] occupancy, byte[] aiMemory, ushort randomSeedCopy)
     {
+        CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain;
         Occupancy = Array.AsReadOnly(occupancy); AiMemory = Array.AsReadOnly(aiMemory);
         AiLastTargets = source.AiLastTargets; RegionFlags90Through105 = source.RegionFlags90Through105;
@@ -149,9 +170,12 @@ public sealed class Battle01InitializedState
     }
     // Player action changes stats/main RNG while retaining its provisional position and AI channels.
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster, uint randomSeedImage)
+        : this(source, roster, randomSeedImage, source.CurrentGold) { }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster, uint randomSeedImage, uint? currentGold)
         : this(source, roster, source.Occupancy, source.FirstControl!)
     {
-        RandomSeedImage = randomSeedImage;
+        if (currentGold > 9999999) throw new ArgumentOutOfRangeException(nameof(currentGold));
+        RandomSeedImage = randomSeedImage; CurrentGold = currentGold;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         int[] occupancy, byte[] aiMemory, ushort randomSeedCopy, uint randomSeedImage, byte[] lastTargets)
@@ -162,6 +186,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
         Battle01TurnCompletionReceipt completion)
     {
+        CurrentGold = source.CurrentGold;
         Roster = source.Roster; Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
@@ -189,6 +214,7 @@ public sealed class Battle01InitializedState
     public IReadOnlyList<bool> RegionFlags90Through105 { get; } = Array.AsReadOnly(new bool[16]);
     // Four-byte big-endian RAM image. The main generator owns only its high 16-bit word.
     public uint RandomSeedImage { get; }
+    public uint? CurrentGold { get; }
     // Independent big-endian word; thinking RNG updates its high byte. Null is unsupplied input.
     public ushort? RandomSeedCopy { get; }
     public ushort GeneratorWord => (ushort)(RandomSeedImage >> 16);
@@ -229,7 +255,7 @@ public static class Battle01Initialization
     public static Battle01InitializedState Initialize(IEnumerable<Battle01Deployment> deployment,
         IEnumerable<Battle01Region> regions, IEnumerable<byte> terrain,
         IEnumerable<Battle01AllyInput> allies, Battle01EnemyInput enemy, uint randomSeedImage, byte difficulty,
-        ushort? randomSeedCopy = null)
+        ushort? randomSeedCopy = null, uint? currentGold = null)
     {
         ArgumentNullException.ThrowIfNull(deployment); ArgumentNullException.ThrowIfNull(regions);
         ArgumentNullException.ThrowIfNull(terrain); ArgumentNullException.ThrowIfNull(allies);
@@ -252,7 +278,7 @@ public static class Battle01Initialization
         if (regionCopy.Length != 3 || regionCopy.Where((region, index) => region is null || region.Id != index).Any())
             throw new ArgumentException("The selected three regions must remain ordered.", nameof(regions));
         if (party.Length != 3 || party.Where((ally, index) => ally is null || ally.Id != index ||
-            ally.EffectiveStats is null || ally.EffectiveStats.Level == 0).Any())
+            ally.EffectiveStats is null || ally.EffectiveStats.Level == 0 || ally.EffectiveStats.HpCurrent == 0).Any())
             throw new ArgumentException("Ordered living ally slots 0, 1 and 2 are required.", nameof(allies));
         if (rawTerrain.Length != 48 * 48 || rawTerrain.Any(value => value > 8 && value != 255))
             throw new ArgumentException("Terrain must retain the full raw 48-by-48 grid.", nameof(terrain));
@@ -262,7 +288,7 @@ public static class Battle01Initialization
         if (enemy.DefinitionId != 39 || enemy.SourceUnknownByte != 39 || enemy.SpellPowerMode != 0 ||
             baseline.Level != 0 || baseline.HpMax != 5 || baseline.HpCurrent != 5 || baseline.MpMax != 0 ||
             baseline.Attack != 7 || baseline.Defense != 5 || baseline.Agility != 5 || baseline.Move != 5 ||
-            baseline.Status != 0 || baseline.CurrentExp is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
+            baseline.Status != 0 || baseline.CurrentExp is not null || baseline.CurrentKills is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
             enemy.BaseResistance != 0x40E3 || enemy.BaseProwess != 0 || enemy.MovementType != 6 || enemy.BaseAiBitfield != 0x2000)
             throw new ArgumentException("Only the fixed GIZMO source baseline is supported.", nameof(enemy));
 
@@ -281,7 +307,7 @@ public static class Battle01Initialization
             roster[index] = new(rows[index], stats, index < 3 ? party[index].ClassId : null, index < 3 ? null : enemy);
             occupancy[rows[index].Position.Y * 48 + rows[index].Position.X] = rows[index].CombatantIndex;
         }
-        return new(roster, regionCopy, rawTerrain, occupancy, randomSeedImage, randomSeedCopy);
+        return new(roster, regionCopy, rawTerrain, occupancy, randomSeedImage, randomSeedCopy, currentGold);
     }
     internal static bool WithinArea(MapPosition position) => position.X >= 0 && position.X < 16 &&
         position.Y >= 0 && position.Y < 20;

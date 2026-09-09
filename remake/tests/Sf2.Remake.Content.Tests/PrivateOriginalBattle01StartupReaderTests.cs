@@ -200,7 +200,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         {
             var actual = state.Roster[index]; var source = prepared.Inputs.Entities[index];
             var comparison = observed.EnumerateArray().Single(row => row.GetProperty("id").GetInt32() == actual.Index);
-            Assert.Equal(source.Position, actual.Position); Assert.Equal(actual.Index, state.OccupantAt(actual.Position));
+            Assert.Equal(source.Position, actual.Position); Assert.Equal(actual.Index, state.OccupantAt(Assert.IsType<MapPosition>(actual.Position)));
             Assert.Equal(source.Ordinal, actual.Deployment.Ordinal);
             Assert.Equal((byte)source.AiCommandSet, actual.Deployment.AiCommandSet);
             Assert.Equal(source.ItemWord, actual.Deployment.ItemWord);
@@ -276,7 +276,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         {
             var unit = roundState.Roster[index]; Assert.Same(state.Roster[index].Stats, unit.Stats);
             Assert.Same(state.Roster[index].Deployment, unit.Deployment);
-            Assert.Equal(unit.Index, roundState.OccupantAt(unit.Position));
+            Assert.Equal(unit.Index, roundState.OccupantAt(Assert.IsType<MapPosition>(unit.Position)));
             if (unit.Index >= 128)
                 Assert.Equal((ushort?)observed.EnumerateArray().Single(row => row.GetProperty("id").GetInt32() == unit.Index)
                     .GetProperty("activationBitfield").GetUInt16(), unit.AiBitfield);
@@ -293,7 +293,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         var controlled = Assert.IsType<PrivateOriginalBattle01FirstControlEntered>(
             session.EnterPrivateOriginalBattle01FirstControl(firstRound, actorIndex)).Snapshot;
         var actor = controlled.Battle.Roster.Single(unit => unit.Index == actorIndex);
-        var control = controlled.Battle.FirstControl!; var origin = actor.Position;
+        var control = controlled.Battle.FirstControl!; var origin = Assert.IsType<MapPosition>(actor.Position);
         Assert.Equal(Battle01Phase.PlayerMovementSelection, controlled.Battle.Phase);
         Assert.Equal((byte?)actorRow.GetProperty("class").GetByte(), actor.ClassId);
         Assert.Equal(actorRow.GetProperty("statusEffects").GetUInt16(), actor.Stats.Status);
@@ -581,7 +581,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
                         Assert.Equal(new byte[] {0,3,255},pursuit.MoveString); Assert.Equal(4,pursuit.GridCost);
                     }
                 }
-                Assert.All(current.Battle.Roster,unit=>Assert.Equal(unit.Index,current.Battle.OccupantAt(unit.Position)));
+                Assert.All(current.Battle.Roster,unit=>Assert.Equal(unit.Index,current.Battle.OccupantAt(Assert.IsType<MapPosition>(unit.Position))));
             }
             Assert.Equal(expected.Steps,thinkingSteps); Assert.Equal((ushort?)expected.Copy,current.Battle.RandomSeedCopy);
             Assert.Equal(expected.Memory,current.Battle.AiMemory.Take(6)); Assert.All(current.Battle.AiMemory.Skip(6),value=>Assert.Equal(0,value));
