@@ -169,7 +169,9 @@ policy and Regular1 range give independent move/cancel/STAY with budget12. Bowie
 the ninth receipt and reaches the existing first sentinel at offset18. The same dispatch invokes
 `EnterPrivateOriginalBattle01NextRound`: local activation from current allies and retained flags/tested
 mask, empty region-cutscene/STARTING-spawn admission, then signed stable ordering from current main RNG.
-It rejects unsupported activation before installing flags/order/RNG. Successful generation retains
+It admits coherent primary-region flags for the six starting GIZMOs and rejects unsupported flags,
+secondary orders and actor state before installing flags/order/RNG. The explicit roster-only policy
+excludes the original activation routine's deals-memory alias. Successful generation retains
 positions, effective stats, deployment anchors, memory, seed-copy and every previous receipt.
 `RoundNumber` belongs to the current order and each immutable receipt; `RoundGenerated` distinguishes
 new order from historical completion. Later control/standby admission validates the actual current
@@ -178,7 +180,16 @@ including nonzero own memory. Each generation or actor transition has one Applic
 Failed control after generation preserves that generated round; later enemy failure preserves the last
 successful actor. The presenter shows the current candidate or completed actor with the precise
 diagnostic and no stale movement overlays; input cannot retry a rejected dispatch.
-No active commandset, attack/spell, generic AI controller or original movement animation is consumed.
+The same actual-candidate relay routes active commandsets6/7 to
+`CompletePrivateOriginalBattle01EnemyPursuit`. Domain first scans physical eligibility on the
+opponent-blocked budget10 grid. A nonempty cohort returns a typed attack-selection requirement before
+priority, RNG or any commit. Otherwise raw budget128 target costs, the source accumulated-mask walk,
+radius0/1 occupancy fallback and final reverse/invert move string feed shared no-effect STAY.
+Exactly one typed standby or pursuit decision belongs to each enemy receipt; player receipts have
+neither. Pursuit retains memory and seed-copy, which backward history validation checks alongside
+standby thinking. A source-valid empty/fallback move completes origin STAY; malformed paths reject.
+The presenter distinguishes pursuit completion from the next candidate and keeps all movement input
+closed at attack selection. Attack priority/construction/resolution and original animation remain unsupported.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only

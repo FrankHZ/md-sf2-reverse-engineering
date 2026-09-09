@@ -1347,7 +1347,7 @@ the selected locked .NET and official Godot gates, the required real input chain
 review and normal `uv run sf2 verify`. H0 missing input is reported honestly; no ROM/H3 replay or
 asset transaction is required. The [recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
 owns source-copy and process receipts. Natural caller state, seed-copy lifetime, timing, original
-layers/animation, active AI, victory and H4 remain **Unknown** or unimplemented.
+layers/animation, other AI commands, victory and H4 remain **Unknown** or unimplemented.
 
 ### First-round completion: remaining inactive enemies and Bowie
 
@@ -1481,7 +1481,7 @@ prefix/stale-request/late-failure, Regular1 movement/cancel and sentinel tests, 
 real selected-input chain. Use the committed planner, selected locked .NET/Godot gates and one new
 bounded `round-continuation` native mode below, which includes this first-round component. Keep prior
 completed failures and rerun corrections narrowly. Natural caller state, seed-copy lifetime,
-original animation/presentation, active AI, attack/spells, victory and H4 remain **Unknown** or
+original animation/presentation, other AI commands, attack/spells, victory and H4 remain **Unknown** or
 unimplemented. The first sentinel is this component's API boundary; the next-round owner below
 consumes it without reinitializing battle state.
 
@@ -1507,12 +1507,11 @@ RNG, sorts signed/stably and resets raw offset0; retain the word-width/sentinel 
 `battleloop/activateenemies.asm` and `triggerregions.asm` retain flags/activation words and test
 current ally positions with the separate tested mask. `ai/startaicontrol.asm` clears that mask before
 ordinary AI; round entry must not invent another clear. Battle01 has no region-cutscene row or
-non-STARTING spawn. Admit only empty route/spawn results and a wholly inactive activation projection.
-If new/already active flags or bits require unsupported behavior, reject the round before installing
-flags/order/RNG, retaining the completed sentinel and detected region/actor diagnostic. Bowie can
-reach(11,15) from(8,17), Regular1 cost10/budget12 with allied traversal; it enters region1 and must
-eventually expose this boundary, not silently STAY activated131/132. The y12 fixture is a separate
-authored seam, not a one-move reachability claim. Original activation side effects remain unsupported.
+non-STARTING spawn. Admit only empty route/spawn results. The inactive component shares coherent
+primary-region activation admission with the pursuit consumer below; unsupported flags/words still
+reject before flags/order/RNG commit. Bowie can reach(11,15) from(8,17), Regular1 cost10/budget12 with
+allied traversal; region1 then routes activated131/132 through pursuit. The y12 fixture is a separate
+authored seam, not a one-move reachability claim. Original economy side effects remain unsupported.
 
 **Implemented state/commit contract:** existing round/state owners retain one current64-slot buffer/cursor.
 Generated orders and completion receipts carry immutable RoundNumber; RoundGenerated distinguishes
@@ -1642,29 +1641,30 @@ Current implementation and verification owners (relative to `remake/`):
 Acceptance: required selected-input chain through round2 and actual round3 control; full changed
 buffers/main words; retained copy/memory/stats/receipts; independent player move/cancel; nonzero-memory
 two-edge paths and idle/no-alternative effects; duplicate/stale/foreign/prefix and late round/actor
-failure; reachable region1 rejection; enemy-first order proving dispatch without ally search.
+failure; reachable region1 activation; enemy-first order proving dispatch without ally search.
 One new bounded native `round-continuation` mode shows round2 ready/provisional/cancel and round3 ready;
 update affected old mode contracts. Use planner-selected .NET/Godot and normal public gates, preserving
 completed failures and rerunning only invalidated checks. Stop at a frozen implementation Draft PR
 with repeatable admitted inactive rounds and visible unsupported boundaries. Native captures follow
 physical player keys; separate authored copies test enemy-first dispatch, late control/occupancy failure
-and no retry at a reachable activation rejection. These copies are explicitly labeled and restore the
-actual round3 snapshot. No ROM/H3 replay or asset transaction is required. Active AI, attacks/spells,
+and reachable activation admission. These copies are explicitly labeled and restore the
+actual round3 snapshot. No ROM/H3 replay or asset transaction is required. Other AI commands, attacks/spells,
 victory, natural seed lifetime/timing/presentation and H4
 remain **Unknown** or unimplemented.
 
-### Proposed activated-enemy pursuit and attack-selection boundary
+### Implemented activated-enemy pursuit and attack-selection boundary
 
-**Decision for the next implementation:** admit ordinary activated Battle01 GIZMOs with commandsets6/7
+**Implemented decision:** admit ordinary activated Battle01 GIZMOs with commandsets6/7
 and no viable ATTACK1 physical, item or spell cohort. Follow failed commands through MOVE1 and complete
 its movement plus the existing controlled no-effect STAY. Stop before attack-priority evaluation when
 a physical cohort becomes nonempty. This exposes enemies advancing toward the party and the next
-real action boundary. This section is a decision/reduction, not an implemented capability.
+real action boundary. The selected-input Content chain and bounded Godot probe consume this
+comparison; the independent reduction below remains source-facing support, not original runtime evidence.
 
 The current reachable entry is round2 Bowie(8,17)->(11,15), Regular1 cost10/budget12, followed by
 manual STAY and the actual remaining candidates. Preserve the existing first-round sentinel,
 nine-unit projection, classes0/1/4, unchanged effective stats, player movement/cancel and subsequent
-origin-STAY choices. The implementation must continue through actual round3 order, its inactive
+origin-STAY choices. The implementation continues through actual round3 order, its inactive
 prefix, both activated enemies and actual round4 player1 control. The same explicit player choices
 then reach the round6 enemy132 attack-selection boundary. No new initialization or assumed player
 search is part of this decision.
@@ -1932,33 +1932,31 @@ print('PASS: bounded activation/pursuit reduction; no natural runtime or attack-
 '@ | uv run python -X utf8 -
 ```
 
-#### Future ownership, atomic transitions and acceptance
+#### Current owners, atomic transitions and acceptance
 
-This decision slice writes only this plan. Future implementation starts from accepted main in a
-fresh gate-anchored worktree; the following is the exact proposed write scope, relative to `remake/`.
-There is no stacked dependency or current shared writer. Reserve these existing shared owners
-serially; any further path needs a new scope decision before mutation.
+The following owners maintain the bounded implementation and its acceptance boundary, relative to
+`remake/`. Shared owners remain serialized; this table is navigation, not authorization for a new slice.
 
 | Owned paths | Change boundary |
 | --- | --- |
-| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPursuit.cs` (new) | Bounded active classifier, empty-action admission, source MOVE1 path/position decision and immutable pursuit receipt data. Reuse the existing grid and AI move-string mechanism; no generic AI engine. |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPursuit.cs` | Bounded active classifier, empty-action admission, source MOVE1 path/position decision and immutable pursuit receipt data. Reuse the existing grid and AI move-string mechanism; no generic AI engine. |
 | `src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs`; `Battle01EnemyStandby.cs` and `Battle01TurnCompletion.cs` in that same directory | Admit coherent retained primary-region activation for these six GIZMOs; keep unknown/secondary/special bits rejected. Preserve inactive dispatch when other enemies are active. Link typed pursuit decisions through the existing completion chain and thinking-history validation. |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPursuit.cs` (new) | Exact current snapshot/candidate/phase facade and a single successful session replacement. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPursuit.cs` | Exact current snapshot/candidate/phase facade and a single successful session replacement. |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Dispatch the actual active or inactive candidate after successful transitions; show pursuit completion and a precise attack-required rejection. Player controls remain manual. |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPursuitTests.cs` (new); `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Source-order movement/cohort, activation retention, mixed receipt history, current-candidate and immutable rejection cases. |
-| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPursuitTests.cs` (new); `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01TurnCompletionTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Exact request/snapshot rejection and authored cases. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPursuitTests.cs`; `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Source-order movement/cohort, activation retention, mixed receipt history, current-candidate and immutable rejection cases. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPursuitTests.cs`; `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01TurnCompletionTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Exact request/snapshot rejection and authored cases. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Extend the existing required real selected-input chain in place; retain the real-reader check in this same owner. |
 | `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Thin presenter/dispatch contract and one new bounded `enemy-pursuit` native mode. |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current capability, explicit economy policy, launch/test recipe, supported pursuit and visible attack boundary. |
 
-Round generation may install flags0..2 and their coherent primary-activation bits for the known
+Round generation installs flags0..2 and their coherent primary-activation bits for the known
 starting roster; retain unrelated bits, tested-mask semantics, empty cutscene/spawn results and both
 RNG channels. Reject unrecognized flags/words, secondary orders/regions, changed equipment/spells/
 stats/status, swarm/special actors, death/respawn and malformed occupancy. First-entry initialization
 and first-round checks stay strict. Later ordinary inactive actors remain eligible with other
 regions active; a completed pursuit counts as an enemy turn for mask0 and prefix validation.
 
-Keep one current order/cursor and the existing immutable receipt chain. Add a typed pursuit decision
+The implementation keeps one current order/cursor and the existing immutable receipt chain. A typed pursuit decision sits
 alongside standby, with exactly one enemy decision kind per enemy receipt and none on player
 receipts. Include actor, origin/destination, source command/target-cost decision, preliminary/final
 move strings and unchanged memory/copy before/after; main is unchanged by pursuit. Backward thinking
@@ -1976,13 +1974,8 @@ player shortest-path preview for either source AI walker. Failure after earlier 
 retains that last snapshot, and failure immediately after generation retains the generated round.
 Never rerun on frames/unrelated keys, skip an enemy, or fabricate an attack STAY.
 
-Implement as three reviewable commits on one topic: (1) Domain + owning tests for activation,
-pursuit/receipts and atomic boundaries; (2) Application/Godot + their tests/native mode; (3) current
-docs and final acceptance evidence. Each executable commit must compile with its direct dependents;
-keep any required signature callers in that same commit. Roll back a failing local transition by
-returning the unchanged snapshot, not compensating writes. Integration rollback is the slice's own
-coherent commits, with the prior reachable `activation.region1` rejection as the previous capability;
-the gate retains merge/rollback authority.
+A failing local transition returns the unchanged snapshot. Independent main-gate review owns
+integration and rollback; Git records the coherent implementation changes.
 
 Implementation acceptance is proportional to the committed planner and owning verification route:
 
@@ -2009,19 +2002,17 @@ Implementation acceptance is proportional to the committed planner and owning ve
   mode uses the accepted local base-art assets and physical player move/confirm/STAY inputs.
   Capture four checkpoints: round3 ready with region1, after the first actual131 pursuit, actual
   round4 player1 ready, and the actual round6 enemy132 attack-required boundary. The first-pursuit
-  checkpoint may pause the probe between completed dispatches for inspection; label that pause as
-  review instrumentation, not original timing. Assert no repeated dispatch on frames/unrelated
+  checkpoint uses a labeled copied round3 snapshot and direct Application steps. Restore the exact
+  physical-route snapshot and compare the physical relay's actual131 decision before continuing;
+  no production pause hook or original timing is claimed. Assert no repeated dispatch on frames/unrelated
   keys at the rejection. Update only affected existing native mode contracts and rerun invalidated
   modes; follow the existing finite-timeout/isolated-output recipe.
-- This plan alone runs its pure reduction, committed planner/public-core selection and normal
-  `uv run sf2 verify`; report missing H0/private dependencies honestly. It does not run local
-  .NET/Godot/native/full-suite or ROM/H3 work unless the planner selects an additional gate.
 
 Stop implementation at one clean, pushed, frozen Draft PR for independent main-gate review, with
 the actual pursuit comparison and visible attack-required state. Attack target priority, attack/
 item/spell construction and resolution, damage/death, victory/return, natural RNG lifetime,
 original animation/timing, the deals corruption and H4 remain **Unknown** or unimplemented.
-No next implementation begins from this unmerged plan.
+Subsequent work requires a new accepted scope and main-gate dispatch.
 
 ### Controlled Godot Battle01 consumer
 
@@ -2054,8 +2045,9 @@ Space press commits STAY; Backspace still cancels before that commit. Backspace 
 selection to turn origin; repeated origin cancellation remains a rejection. After STAY the UI tries
 the actual next candidate once and displays its active range when supported. At an unsupported
 candidate it shows the completed actor and candidate/reason with old range/path/cursor cleared.
-No attack, spell, item, AI action, later-round execution,
-victory or original cancellation animation is introduced.
+The same finite relay now generates later rounds and admits the bounded inactive standby and active
+pursuit consumers above. Nonempty physical cohorts stop before attack selection. Attacks, spells,
+items, victory and original cancellation animation remain unsupported.
 
 Root input and physics route on current battle authority before any closed exploration getter.
 Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session
@@ -2096,7 +2088,8 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    control and independent move/cancel/STAY. The first sentinel at offset18 feeds repeatable wholly
    inactive rounds from current state. Actual candidates dispatch until manual player control or a
    precise retained rejection; the comparison reaches round3 control with eighteen receipts.
-   Active AI, attack resolution and victory remain later slices.
+   Known activated GIZMOs continue through the bounded pursuit consumer above; attack selection,
+   resolution and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.
