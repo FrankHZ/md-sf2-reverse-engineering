@@ -12,7 +12,7 @@ internal sealed record PrivateBattle01Projection(
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
-    bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex);
+    bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -28,6 +28,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     private ImageTexture? _baseTexture;
     private Label? _details;
     private Label? _allies;
+    private Label? _accounting;
     private Label? _enemies;
     private Label? _remainingEnemies;
     private Label? _status;
@@ -102,6 +103,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                     (player.Effect.Dodged ? "miss" : (player.Effect.Critical ? "critical " : "hit ") + player.Effect.Damage) +
                     $". HP {player.Effect.BeforeStats.HpCurrent} -> {player.Effect.AfterStats.HpCurrent}. " +
                     $"EXP +{player.AwardedExp}: {player.Actor.Stats.CurrentExp} -> {player.ActorAfterStats.CurrentExp}.";
+                if (receipt.EnemyDefeat is not null)
+                    attackResult += $" {UnitTag(player.TargetIndex)} ({player.TargetIndex}) defeated. Gold +{player.GoldAfter - player.GoldBefore}.";
                 break;
             }
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
@@ -123,7 +126,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
             completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
-            attackResult, movement?.Attack?.TargetIndex);
+            attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills);
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -134,7 +137,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);
             AddLabel(_baseView is null ? Boundary : BaseArtBoundary, new(456, 72), new(480, 50), 16);
             _details = AddLabel("", new(456, 130), new(480, 108), 16);
-            AddLabel("Live units | HP | controlled Bowie EXP0 input", new(456, 244), new(480, 26), 16);
+            _accounting = AddLabel("", new(456, 244), new(480, 26), 16);
             _allies = AddLabel("", new(456, 274), new(164, 100), 14);
             _enemies = AddLabel("", new(624, 274), new(144, 90), 15);
             _remainingEnemies = AddLabel("", new(792, 274), new(144, 90), 15);
@@ -158,6 +161,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +
             (unit.Index < 128 ? $" EXP {unit.Exp?.ToString() ?? "?"}" : "");
         _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
+        _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}";
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         _status!.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
