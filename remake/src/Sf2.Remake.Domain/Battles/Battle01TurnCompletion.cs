@@ -2,21 +2,63 @@ namespace Sf2.Remake.Domain.Battles;
 
 // Explicit remake policy: the admitted effective stats are already refreshed and unchanged.
 // This is not an implementation of the original general UpdateCombatantStats routine.
-public sealed class Battle01StayCompletionPolicy
+public abstract class Battle01TurnCompletionPolicy
+{
+    private protected Battle01TurnCompletionPolicy() { }
+    public abstract string Id { get; }
+}
+
+public sealed class Battle01StayCompletionPolicy : Battle01TurnCompletionPolicy
 {
     private Battle01StayCompletionPolicy() { }
     public static Battle01StayCompletionPolicy ControlledUnchangedEffectiveStats { get; } = new();
-    public string Id => "battle01-controlled-stay-unchanged-effective-stats-v1";
+    public override string Id => "battle01-controlled-stay-unchanged-effective-stats-v1";
+}
+
+public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
+{
+    private Battle01PhysicalCompletionPolicy() { }
+    public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new();
+    public override string Id => "battle01-controlled-nonlethal-physical-strike-v1";
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
-public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01StayCompletionPolicy Policy,
+public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01TurnCompletionPolicy Policy,
     Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
     Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
-    Battle01EnemyPursuitDecision? EnemyPursuit = null);
+    Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null);
 
 public static class Battle01TurnCompletion
 {
+    internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
+        receipt.EnemyPhysicalAttack is not null
+            ? ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
+                receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
+            : ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+
+    internal static Battle01InitializedState CompletePhysical(Battle01InitializedState current,
+        Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy? policy)
+    {
+        if (!ReferenceEquals(policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike))
+            throw new ArgumentException("An explicit controlled physical completion policy is required.", "policy");
+        Battle01EnemyPhysicalAttack.ValidateDecision(decision);
+        RequireDefeatedWrapperReturn(current);
+        RequireEmptyKilledCleanup(current, "cleanup.before");
+        var before = RequireContinuingFactions(current, "outcome.before");
+        // The admitted actor's after-turn refresh changes no modifiers, status, MP or equipment.
+        // Its target HP has already been authorized by the physical reaction, not by STAY.
+        NormalizeControlledNoEffectTurn(current, decision.ActorIndex, decision.Actor.Stats,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        RequireEmptyKilledCleanup(current, "cleanup.after");
+        var after = RequireContinuingFactions(current, "outcome.after");
+        var result = new Battle01InitializedState(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
+            new(decision.ActorIndex, policy!, before, after, current.TurnCompletion,
+                RoundNumber: current.FirstRound.RoundNumber, EnemyPhysicalAttack: decision));
+        Battle01FirstRound.RequireCurrentPrefix(result);
+        Battle01EnemyStandby.RequireThinkingHistory(result);
+        return result;
+    }
+
     public static Battle01InitializedState CommitStay(Battle01InitializedState current, int actorIndex,
         Battle01StayCompletionPolicy? policy)
     {
@@ -110,7 +152,7 @@ public static class Battle01TurnCompletion
             throw new ArgumentException("The retained live occupancy must match the complete roster.", "occupancy");
         if (!ReferenceEquals(current.Roster.Single(unit => unit.Index == actorIndex).Stats, entryStats))
             throw new ArgumentException("The actor's admitted effective stats must remain unchanged since control entry.", "stats");
-        // All current production paths preserve the immutable initialized Stats objects. With no
-        // status/item/action changes, retain them; never reconstruct base stats or stack equipment.
+        // Retain this turn's immutable effective stats, including HP from a previous physical
+        // reaction. Never reconstruct startup maxima, base stats or stacked equipment here.
     }
 }

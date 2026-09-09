@@ -10,6 +10,21 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01EnemyPursuitTests
 {
     [Fact]
+    public void ThePursuitClassifierStaysReadOnlyBeforeTheSeparatePhysicalFacade()
+    {
+        var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.AttackSession();
+        var current = session.PrivateOriginalBattle01!;
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(current, 132));
+        Assert.Same(current, session.PrivateOriginalBattle01);
+        var after = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 132)).Snapshot;
+        Assert.Equal(9, after.Battle.Roster[0].Stats.HpCurrent);
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01EnemyPursuitRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(current, 132)).Diagnostic.Field);
+        Assert.Same(after, session.PrivateOriginalBattle01);
+    }
+
+    [Fact]
     public void PursuitCommitsOncePreservesProvenanceAndContinuesThroughInactiveActorsToPlayerControl()
     {
         var session = FirstPursuitSession(); var before = session.PrivateOriginalBattle01!;

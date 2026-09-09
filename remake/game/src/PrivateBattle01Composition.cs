@@ -125,7 +125,16 @@ internal static class PrivateBattle01Ui
                     switch (session.CompletePrivateOriginalBattle01EnemyPursuit(current, actor))
                     {
                         case PrivateOriginalBattle01AttackSelectionRequired boundary:
-                            return boundary.Diagnostic.Message;
+                            switch (session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, boundary.ActorIndex))
+                            {
+                                case PrivateOriginalBattle01EnemyPhysicalAttackCompleted attack:
+                                    current = attack.Snapshot;
+                                    continue;
+                                case PrivateOriginalBattle01EnemyPhysicalAttackRejected attackRejected:
+                                    return $"Enemy {actor} physical attack rejected: {attackRejected.Diagnostic.Field}; current state retained.";
+                                default:
+                                    return $"Enemy {actor} physical attack unavailable; current state retained.";
+                            }
                         case PrivateOriginalBattle01EnemyPursuitRejected failure:
                             return $"Enemy {actor} pursuit rejected: {failure.Diagnostic.Field}; current state retained.";
                         case PrivateOriginalBattle01EnemyPursuitCompleted completed:

@@ -75,7 +75,7 @@ public static class Battle01EnemyStandby
         RequireThinkingHistory(current);
         bool enemyCompleted = false;
         for (var receipt = current.TurnCompletion; receipt?.RoundNumber == order.RoundNumber; receipt = receipt.Previous)
-            enemyCompleted |= receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null;
+            enemyCompleted |= receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null || receipt.EnemyPhysicalAttack is not null;
         if (current.NewlyTestedRegionMask != (enemyCompleted ? 0 : 7))
             throw new ArgumentException("Retain the current round's tested mask.", "round");
         Battle01FirstRound.RequireActivationState(current.Roster, current.RegionFlags90Through105, order.RoundNumber);
@@ -97,7 +97,7 @@ public static class Battle01EnemyStandby
                 throw new ArgumentException("The complete ordered no-effect receipt prefix must be retained.", "completion");
             receipts[index] = receipt; receipt = receipt.Previous;
         }
-        if (receipt is not null || receipts.Any(item => item.EnemyPursuit is not null) ||
+        if (receipt is not null || receipts.Any(item => item.EnemyPursuit is not null || item.EnemyPhysicalAttack is not null) ||
             receipts.Take(2).Any(player => player.EnemyStandby is not null))
             throw new ArgumentException("The receipt prefix must start with exactly the two player turns.", "completion");
         ushort seed = 0x1234; var memory = new byte[48];
@@ -121,27 +121,56 @@ public static class Battle01EnemyStandby
     {
         if (current.RandomSeedCopy is not { } seed)
             throw new ArgumentException("The current thinking seed-copy must be retained.", "randomSeedCopy");
-        if (current.AiMemory.Count != 48 || current.AiLastTargets.Count != 48 || current.AiLastTargets.Any(value => value != 255))
+        if (current.AiMemory.Count != 48 || current.AiLastTargets.Count != 48)
             throw new ArgumentException("Retain all memory and last-target slots.", "memory");
         var memory = current.AiMemory.ToArray();
+        var targets = current.AiLastTargets.ToArray();
+        var stats = current.Roster.ToDictionary(unit => unit.Index, unit => unit.Stats);
+        var damaged = new HashSet<int>();
+        uint main = current.RandomSeedImage;
+        int mainRound = current.FirstRound?.RoundNumber ?? 0;
+        bool mainAnchored = true;
         for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
         {
+            if (!Battle01TurnCompletion.HasValidPolicy(receipt))
+                throw new ArgumentException("Retain the completion kind's distinct policy.", "completion");
+            if (receipt.RoundNumber != mainRound)
+            {
+                mainRound = receipt.RoundNumber; mainAnchored = false;
+            }
             if (receipt.CompletedActorIndex < 128)
             {
-                if (receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null)
+                if (receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null || receipt.EnemyPhysicalAttack is not null)
                     throw new ArgumentException("Player receipts cannot carry an enemy decision.", "completion");
                 continue;
             }
-            if ((receipt.EnemyStandby is null) == (receipt.EnemyPursuit is null))
+            if ((receipt.EnemyStandby is null ? 0 : 1) + (receipt.EnemyPursuit is null ? 0 : 1) +
+                (receipt.EnemyPhysicalAttack is null ? 0 : 1) != 1)
                 throw new ArgumentException("Each enemy receipt requires exactly one decision kind.", "completion");
             int actor; ushort before, after; byte memoryBefore, memoryAfter;
-            if (receipt.EnemyPursuit is { } pursuit)
+            if (receipt.EnemyPhysicalAttack is { } attack)
+            {
+                if (receipt.RoundNumber <= 1)
+                    throw new ArgumentException("Physical decisions cannot replace first-round standby.", "completion");
+                Battle01EnemyPhysicalAttack.ValidateDecision(attack);
+                actor = attack.ActorIndex; before = attack.SeedCopyBefore; after = attack.SeedCopyAfter;
+                memoryBefore = attack.Memory; memoryAfter = attack.Memory;
+                if ((mainAnchored && main != attack.Effect.MainSeedAfter) ||
+                    targets[actor - 128] != attack.TargetIndex ||
+                    !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], attack.Effect.AfterStats))
+                    throw new ArgumentException("Physical main RNG, last target and HP history must remain linked.", "attack.history");
+                main = attack.MainSeedBefore; mainAnchored = true;
+                targets[actor - 128] = attack.LastTargetBefore;
+                stats[attack.TargetIndex] = attack.Effect.BeforeStats; damaged.Add(attack.TargetIndex);
+            }
+            else if (receipt.EnemyPursuit is { } pursuit)
             {
                 actor = pursuit.ActorIndex; before = pursuit.SeedCopyBefore; after = pursuit.SeedCopyAfter;
                 memoryBefore = pursuit.MemoryBefore; memoryAfter = pursuit.MemoryAfter;
                 if (receipt.RoundNumber <= 1 || before != after || memoryBefore != memoryAfter ||
-                    (receipt.RoundNumber == current.FirstRound?.RoundNumber && pursuit.MainSeedImage != current.RandomSeedImage))
+                    (mainAnchored && pursuit.MainSeedImage != main))
                     throw new ArgumentException("Pursuit must preserve its round's main RNG and independent thinking state.", "completion");
+                main = pursuit.MainSeedImage; mainAnchored = true;
             }
             else
             {
@@ -158,6 +187,14 @@ public static class Battle01EnemyStandby
         }
         if (seed != 0x1234) throw new ArgumentException("Thinking history must retain its supplied comparison origin.", "randomSeedCopy");
         if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
+        if (targets.Any(value => value != 255))
+            throw new ArgumentException("Last-target history must rewind to initialized empty slots.", "memory");
+        foreach (int actor in damaged)
+        {
+            Battle01EnemyPhysicalAttack.RequireTargetProfile(current.Roster.Single(unit => unit.Index == actor).WithStats(stats[actor]));
+            if (stats[actor].HpCurrent != stats[actor].HpMax)
+                throw new ArgumentException("Physical HP history must retain the initialized full-HP origin.", "attack.history");
+        }
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,

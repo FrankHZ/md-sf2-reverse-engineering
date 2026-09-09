@@ -7,6 +7,19 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyStandbyTests
 {
+    [Fact]
+    public void InactiveEnemyAfterPhysicalAttackKeepsItsOwnThinkingAndLastTargetHistory()
+    {
+        var before = Battle01EnemyPursuit.CompleteNext(Battle01EnemyPhysicalAttackTests.CompletedBowie(), 131, Policy);
+        var after = Battle01EnemyStandby.CompleteNext(before, 133, Policy);
+        Assert.Equal(133, after.TurnCompletion!.CompletedActorIndex);
+        Assert.Same(before.AiLastTargets, after.AiLastTargets);
+        Assert.Equal((ushort?)after.TurnCompletion.EnemyStandby!.SeedCopyAfter, after.RandomSeedCopy);
+        Assert.Equal(before.RandomSeedImage, after.RandomSeedImage);
+        Assert.Equal(9, after.Roster[0].Stats.HpCurrent);
+        Assert.Null(after.FirstRound!.CurrentCandidate);
+    }
+
 
     [Fact]
     public void AuthoredEnemyFirstNewRoundUsesItsActualSlotAndNonzeroOwnMemory()
