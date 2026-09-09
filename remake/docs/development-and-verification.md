@@ -131,7 +131,11 @@ seed-copy1234 to3934, memory0 to14h and tested-mask7 to0. It preserves mainA4991
 identity, both earlier receipts and all64 slots. Continue actual131/133/129/130/132 with evolving
 occupancy, own memory and chained seed-copy: 1336 further steps end0134 at offset16. Only then
 supply actual Bowie0's missing word0, enter Regular1 budget12, move/cancel/confirm/STAY and retain
-all nine linked receipts at offset18/FF without another round. Shared player-ready fixture
+all nine linked receipts at offset18/FF. The next-round API then generates round2 from current state,
+retains history/memory/copy, completes actual origin-STAY choices and inactive enemies, and reaches
+actual round3 player control. Both64-slot buffers, main RNG words and all967 round2 thinking bytes
+are checked against the composed comparison. A separate immutable branch moves Bowie from(8,17)
+to(11,15) at cost10 and rejects region1 activation before the next-round commit. Shared player-ready fixture
 fields corroborate only their named seam; this is not original natural control/timing/RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
