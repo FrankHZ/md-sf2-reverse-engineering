@@ -9,6 +9,27 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01EnemyStandbyTests
 {
+
+    [Fact]
+    public void MidSecondRoundLateFailureAndStaleOrWrongActorRequestsPreserveTheLastCommit()
+    {
+        var session = PrivateOriginalBattle01FirstRoundTests.CompletedFirstRound();
+        Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(session.PrivateOriginalBattle01));
+        var generated = session.PrivateOriginalBattle01!;
+        PrivateOriginalBattle01FirstRoundTests.CompleteOriginTurn(session);
+        PrivateOriginalBattle01FirstRoundTests.CompleteOriginTurn(session);
+        var completed = session.PrivateOriginalBattle01!;
+        Assert.Equal("snapshot",Reject(session.CompletePrivateOriginalBattle01EnemyStandby(generated,128)));
+        Assert.Equal("actor",Reject(session.CompletePrivateOriginalBattle01EnemyStandby(completed,131)));
+        var occupancy = completed.Battle.Occupancy.ToArray(); occupancy[17*48+9] = -1;
+        var input = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session,occupancy:occupancy);
+        string frozen = JsonSerializer.Serialize(input.Battle);
+        Assert.Equal("occupancy",Reject(session.CompletePrivateOriginalBattle01EnemyStandby(input,132)));
+        Assert.Same(input,session.PrivateOriginalBattle01); Assert.Equal(frozen,JsonSerializer.Serialize(input.Battle));
+        Assert.Same(completed.Battle.TurnCompletion,input.Battle.TurnCompletion);
+        Assert.Equal(2,input.Battle.TurnCompletion!.RoundNumber); Assert.Equal(128,input.Battle.TurnCompletion.CompletedActorIndex);
+        Assert.Equal((ushort?)0x0034,input.Battle.RandomSeedCopy); Assert.Equal(0x04,input.Battle.AiMemory[0]);
+    }
     [Fact]
     public void CompletionReplacesOnlyTheExactSnapshotAndRetainsTheTwoPlayerTurnsAndSourceIdentities()
     {

@@ -33,5 +33,5 @@ public sealed partial class GameSession
     }
 
     private static PrivateOriginalBattle01NextPlayerControlRejected NextControlRejected(string field) =>
-        new(new(field, "Next player control cannot enter this snapshot (" + field + "); committed STAY is retained."));
+        new(new(field, "Next player control cannot enter this snapshot (" + field + "); current battle is retained."));
 }

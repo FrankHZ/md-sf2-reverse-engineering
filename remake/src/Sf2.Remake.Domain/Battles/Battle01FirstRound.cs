@@ -14,12 +14,17 @@ public sealed class Battle01FirstRoundOrder
 {
     public const int EntrySize = 2;
     internal Battle01FirstRoundOrder(Battle01TurnEntry[] slots, int[] regionCutsceneRows, int[] spawnedCombatants)
+        : this(slots, regionCutsceneRows, spawnedCombatants, 1) { }
+    internal Battle01FirstRoundOrder(Battle01TurnEntry[] slots, int[] regionCutsceneRows, int[] spawnedCombatants, int roundNumber)
     {
+        if (roundNumber < 1) throw new ArgumentOutOfRangeException(nameof(roundNumber));
+        RoundNumber = roundNumber;
         Slots = Array.AsReadOnly(slots); RegionCutsceneRows = Array.AsReadOnly(regionCutsceneRows);
         SpawnedCombatants = Array.AsReadOnly(spawnedCombatants);
     }
     // Preserve the entire source buffer, including sentinel entries inside signed-boundary results.
     public IReadOnlyList<Battle01TurnEntry> Slots { get; }
+    public int RoundNumber { get; }
     // Raw source byte offset, never a slot index. FirstCandidate remains historical.
     public byte CurrentTurnOffset { get; }
     public Battle01TurnEntry? FirstCandidate => Slots[0].IsSentinel ? null : Slots[0];
@@ -31,12 +36,13 @@ public sealed class Battle01FirstRoundOrder
     {
         Slots = source.Slots; RegionCutsceneRows = source.RegionCutsceneRows; SpawnedCombatants = source.SpawnedCombatants;
         CurrentTurnOffset = checked((byte)(source.CurrentTurnOffset + EntrySize));
+        RoundNumber = source.RoundNumber;
     }
     internal Battle01FirstRoundOrder AdvanceCompletedPlayerTurn()
     {
         if (Slots.Count != 64 || CurrentTurnOffset % EntrySize != 0 ||
             CurrentTurnOffset >= (Slots.Count - 1) * EntrySize || CurrentCandidate is null)
-            throw new ArgumentException("A completed actor may advance one entry; round regeneration is unsupported.", "turnOrder");
+            throw new ArgumentException("A completed actor may advance one current-round entry.", "turnOrder");
         return new(this);
     }
 }
@@ -48,15 +54,65 @@ public static class Battle01FirstRound
         ArgumentNullException.ThrowIfNull(current);
         if (current.Phase != Battle01Phase.BeforeFirstRound)
             throw new ArgumentException("Only the pre-first-round phase can enter this transition.", nameof(current));
-        // Keep the original semantic order. These helpers only project local immutable output.
+        return Generate(current, 1, requireInactive: false);
+    }
+
+    public static Battle01InitializedState EnterNext(Battle01InitializedState current)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        if (current.Phase is not (Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted) ||
+            current.FirstRound is not { CurrentCandidate: null } order)
+            throw new ArgumentException("Only a completed current-round sentinel can generate the next round.", "phase");
+        RequireCurrentPrefix(current);
+        Battle01EnemyStandby.RequireThinkingHistory(current);
+        Battle01TurnCompletion.RequireContinuingNoEffectState(current);
+        if (order.RoundNumber == int.MaxValue) throw new ArgumentException("Round number is exhausted.", "roundNumber");
+        return Generate(current, order.RoundNumber + 1, requireInactive: true);
+    }
+
+    private static Battle01InitializedState Generate(Battle01InitializedState current, int number, bool requireInactive)
+    {
+        // Keep source order. No initialization, memory clear, healing or input mutation here.
+        if (requireInactive && (current.RegionFlags90Through105.Count != 16 || current.Roster.Any(unit => unit.AiBitfield is null)))
+            throw new ArgumentException("Current activation inputs must be supplied.", "activation");
         var (roster, flags, tested) = ActivateEnemies(current);
+        if (requireInactive)
+        {
+            int region = Array.FindIndex(flags, flag => flag);
+            if (region >= 0) throw new ArgumentException("Active-region behavior is unsupported; completed round retained.", $"activation.region{region}");
+            var active = roster.FirstOrDefault(unit => unit.Index >= 128 && (unit.AiBitfield!.Value & 3) != 0);
+            if (active is not null) throw new ArgumentException("Active AI is unsupported; completed round retained.", $"activation.actor{active.Index}");
+        }
         int[] cutscenes = RouteBattle01RegionCutscenes();
         int[] spawned = AdmitStartingSpawns(roster);
         ushort word = current.GeneratorWord;
         var slots = GenerateTurnOrder(roster.Select(unit => new TurnCandidate((byte)unit.Index,
             (byte)unit.Position.X, unit.Stats.HpCurrent, unit.Stats.Agility)), ref word);
         uint image = ((uint)word << 16) | (current.RandomSeedImage & 0xFFFFu);
-        return new(current, roster, flags, tested, image, new(slots, cutscenes, spawned));
+        var next = new Battle01InitializedState(current, roster, flags, tested, image, new(slots, cutscenes, spawned, number));
+        if (requireInactive) RequireCurrentPrefix(next);
+        return next;
+    }
+
+    internal static void RequireCurrentPrefix(Battle01InitializedState current)
+    {
+        var order = current.FirstRound;
+        int[] actors = [0, 1, 2, 128, 129, 130, 131, 132, 133];
+        if (order is null || order.Slots.Count != 64 || order.CurrentTurnOffset > 18 || order.CurrentTurnOffset % 2 != 0 ||
+            !order.Slots.Take(9).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
+            order.Slots.Skip(9).Any(slot => !slot.IsSentinel))
+            throw new ArgumentException("The complete current-round order must be retained.", "turnOrder");
+        var receipt = current.TurnCompletion;
+        for (int index = order.CurrentTurnOffset / 2 - 1; index >= 0; index--)
+        {
+            if (receipt is null || receipt.RoundNumber != order.RoundNumber || receipt.CompletedActorIndex != order.Slots[index].CombatantIndex ||
+                !ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats) ||
+                receipt.BeforeAfterTurn != new Battle01FactionCounts(3, 6) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+                throw new ArgumentException("The complete current-generation receipt prefix must be retained.", "completion");
+            receipt = receipt.Previous;
+        }
+        if (order.RoundNumber == 1 ? receipt is not null : receipt?.RoundNumber != order.RoundNumber - 1)
+            throw new ArgumentException("The previous round's completion history must be retained.", "completion");
     }
 
     private static (Battle01Combatant[] Roster, bool[] Flags, ushort Tested) ActivateEnemies(Battle01InitializedState current)
@@ -112,7 +168,7 @@ public static class Battle01FirstRound
     {
         if (roster.Any(unit => unit.Deployment.Spawn != 0 ||
             (unit.AiBitfield is { } bits && (bits & 0x0300) != 0)))
-            throw new ArgumentException("This first-round boundary supports only the existing STARTING roster.", "spawn");
+            throw new ArgumentException("This round boundary supports only the existing STARTING roster.", "spawn");
         return []; // No respawn/hidden candidate; no duplicated roster, animation or RNG call.
     }
 

@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -916,9 +916,12 @@ Centaur range from current occupancy, then can move/cancel/STAY. Its completion 
 starts one finite relay over the actual six inactive enemies. Each move/STAY uses current occupancy,
 chained seed-copy and its own memory, then commits independently. A later failure stops at the last
 completed actor with its precise diagnostic. Success reaches actual Bowie0 at offset16 with the
-Regular1 budget12 range. His manual move/cancel/STAY ends at the first sentinel at offset18;
-the completed view removes active overlays, states first-round exhaustion and closes input.
-Unrelated keys preserve the result without retrying or starting round2.
+Regular1 budget12 range. His manual move/cancel/STAY reaches the first sentinel at offset18;
+current-position activation, empty cutscene/spawn admission and current-main ordering then generate
+the next wholly inactive round. The bounded dispatch yields its actual player without choosing a move.
+Every completion retains its round number and prior history. Unsupported activation rejects before
+installing flags/order/RNG; actor failure retains its last successful state. The view removes stale
+movement overlays at rejection, and unrelated keys preserve that reason without retrying.
 Its effective-stat policy is explicit in the
 [owning plan](./map03-playability-plan.md#implemented-first-player-stay-completion). The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
@@ -939,33 +942,39 @@ snapshot/actor/live-position/occupancy changes, both cancel stages, immutable re
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 scene/layer/VRAM/animation fidelity, timing, attacks, active AI, later rounds/victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, attacks, active AI, victory and H4 remain Unknown.
 
-For first-round completion acceptance, use a fresh review root and
-`SF2_BATTLE01_CONTROL_REVIEW=first-round` with the same required canonical, three selected inputs
-and accepted runtime/manifest pack. The recipe seeds controlled Map40, uses the existing 28-key route
-and N, and drives both player move/cancel/STAY turns through physical key polling. The second STAY
-runs the finite enemy relay and enters Bowie0. It captures only these four current boundaries:
+For repeated inactive-round acceptance, use a fresh review root and
+`SF2_BATTLE01_CONTROL_REVIEW=round-continuation` with the same required canonical, three selected
+inputs and accepted runtime/manifest pack. The recipe seeds controlled Map40, uses the existing
+28-key route and N, and drives the first-round player decisions and inactive enemies through physical
+key polling. Bowie's STAY reaches the sentinel and the same bounded dispatch enters round2 player2.
+It captures only these four current boundaries:
 
-1. `01-bowie-ready`: actual0 at(8,18), Regular1 budget12, offset16 and eight completed receipts.
-2. `02-bowie-provisional`: I/Space provisionally moves0 to(8,17), preserving those receipts.
-3. `03-bowie-cancelled`: Backspace restores only0 to(8,18) and its entry occupancy.
-4. `04-first-round-exhausted`: I/Space/Space independently completes Bowie STAY, then all old keys
-   retain the exact completed snapshot, status and first sentinel at offset18.
+1. `01-round2-ready`: actual2 at(7,17), new64-slot order, mainAA861234 and nine prior receipts.
+2. `02-round2-provisional`: I/Space provisionally moves2 to(7,16), preserving round1 history.
+3. `03-round2-cancelled`: Backspace restores only2 to its current origin(7,17) and entry occupancy.
+4. `04-round3-ready`: each actual round2 player2/0/1 explicitly confirms origin and separately presses
+   STAY; automatic inactive enemy dispatch and the next real sentinel yield round3 player2.
 
-Require chronological receipts `[1,2,128,131,133,129,130,132,0]`, all nine immutable effective stats,
-unchanged64 slots/mainA4991234 and faction counts3/6. The receipt includes all six enemy decisions,
-1483 generated bytes (1336 after128), final seed-copy0134, memories14/34/24/24/24/24h and final
-positions128..133 `[(6,3),(10,4),(6,5),(8,4),(9,6),(6,6)]`. Compare them with the independent reductions
-in the owning plan. Actual0's word stays missing through enemy completion and is supplied only at
-its control entry. I/J/K/L, Space, Backspace, N and old exploration keys cannot start another round.
-Inspect all four images for the active Bowie range, provisional path, independent cancellation,
-legible status/controls, hidden old canvas layers and no active overlay at exhaustion.
+Require eighteen chronological receipts with generation1/2 tags, the complete round2/3 buffers and
+mainAA861234/9BD71234, unchanged effective stats and original deployment anchors. The receipt includes
+all twelve enemy decisions:1483 thinking bytes in round1 plus967 in round2, final copy0034 and
+memory128..13304/04/04/24/34/04h. Compare every generated byte with the existing Python thinking helper
+and the order, paths and results with the [independent reduction](./map03-playability-plan.md#implemented-repeatable-inactive-round-continuation).
+Actual players remain manual. Inspect all four images for the current round and actor, range,
+provisional path, independent cancellation, legible status/controls and hidden old canvas layers.
 
-The former `enemy-standby`, `next-player` and `stay` recipe names are aliases for this current
-four-frame first-round chain. This mode does not replay six-frame cancellation or castle modes;
-captures and bounded process/code-head receipts remain local. It proves controlled remake behavior,
-not original after-turn fidelity or natural seed chronology.
+After captures, isolated copies exercise authored round2 enemy-first order, late generated-round
+control rejection, late enemy occupancy rejection and reachable Bowie region1 activation rejection.
+These call the existing Domain/Application dispatch directly and are explicitly authored boundary
+tests, separate from the physical-key comparison. Each rejected snapshot ignores all subsequent
+battle inputs without retry; the probe restores the actual round3 snapshot afterwards.
+
+The former `first-round`, `enemy-standby`, `next-player` and `stay` names alias this four-frame
+continuation chain. It does not replay six-frame cancellation or castle modes; captures and bounded
+process/code-head receipts remain local. It proves controlled remake behavior, not original after-turn
+fidelity, active AI, natural seed chronology or H4.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,

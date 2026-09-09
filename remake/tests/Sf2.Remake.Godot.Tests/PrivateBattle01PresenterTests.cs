@@ -8,6 +8,27 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateBattle01PresenterTests
 {
+
+    [Fact]
+    public void NewRoundProjectionKeepsTheGeneratedCandidateVisibleWithoutReusingOldCompletion()
+    {
+        var current = Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        for (int i=0;i<5;i++) current = Battle01EnemyStandby.CompleteNext(current,
+            current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var firstEnd = Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
+        var generated = Battle01FirstRound.EnterNext(firstEnd);
+        var view = PrivateBattle01Presenter.BuildProjection(generated,"Control rejected: terrain; actor 2; current state retained.");
+        Assert.Equal(Battle01Phase.RoundGenerated,view.Phase); Assert.Null(view.CompletedActorIndex);
+        Assert.Equal(2,view.ActorIndex); Assert.Null(view.Cursor); Assert.Empty(view.Path);
+        Assert.Equal(1,generated.TurnCompletion!.RoundNumber);
+        Assert.DoesNotContain("Round exhausted",view.Controls);
+        Assert.Contains("terrain",view.Status);
+        var ready = Battle01NextPlayerControl.Enter(generated,2).State!;
+        var readyView = PrivateBattle01Presenter.BuildProjection(ready,"Round 2. Player 2 ready.");
+        Assert.Equal(2,readyView.ActorIndex); Assert.Equal(new MapPosition(7,17),readyView.Cursor);
+        Assert.Null(readyView.CompletedActorIndex); Assert.Contains("Space",readyView.Controls);
+        Assert.Same(firstEnd.TurnCompletion,ready.TurnCompletion);
+    }
     [Theory]
     [InlineData(GameFlowStage.Exploration, false, false, false)]
     [InlineData(GameFlowStage.Exploration, false, true, false)]
@@ -181,7 +202,7 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Null(end.ActorIndex); Assert.Equal(0, end.CompletedActorIndex); Assert.Null(end.NextCandidateIndex);
         Assert.Null(end.Cursor); Assert.Empty(end.Path); Assert.False(end.CanConfirm); Assert.Null(end.Budget);
         Assert.All(end.Tiles, tile => { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
-        Assert.Contains("First round exhausted", end.Controls); Assert.DoesNotContain("Space", end.Controls);
+        Assert.Contains("Round exhausted", end.Controls); Assert.DoesNotContain("Space", end.Controls);
     }
 
     private static Battle01InitializedState Stay(Battle01InitializedState state, int actor, MapPosition target) =>

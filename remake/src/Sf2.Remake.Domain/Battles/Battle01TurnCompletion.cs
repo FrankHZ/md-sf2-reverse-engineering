@@ -12,7 +12,7 @@ public sealed class Battle01StayCompletionPolicy
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01StayCompletionPolicy Policy,
     Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
-    Battle01EnemyStandbyDecision? EnemyStandby = null);
+    Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1);
 
 public static class Battle01TurnCompletion
 {
@@ -40,7 +40,16 @@ public static class Battle01TurnCompletion
         RequireEmptyKilledCleanup(current, "cleanup.after");
         var after = RequireContinuingFactions(current, "outcome.after");
         return new(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
-            new(actorIndex, policy!, before, after, current.TurnCompletion, enemyStandby));
+            new(actorIndex, policy!, before, after, current.TurnCompletion, enemyStandby, current.FirstRound.RoundNumber));
+    }
+
+    internal static void RequireContinuingNoEffectState(Battle01InitializedState current)
+    {
+        RequireDefeatedWrapperReturn(current);
+        RequireEmptyKilledCleanup(current, "cleanup.before");
+        RequireContinuingFactions(current, "outcome.before");
+        NormalizeControlledNoEffectTurn(current, 0, current.Roster.Single(unit => unit.Index == 0).Stats,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
     }
 
     private static void RequireDefeatedWrapperReturn(Battle01InitializedState current)

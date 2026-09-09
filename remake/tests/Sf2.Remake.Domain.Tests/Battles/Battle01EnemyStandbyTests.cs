@@ -7,6 +7,48 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyStandbyTests
 {
+
+    [Fact]
+    public void AuthoredEnemyFirstNewRoundUsesItsActualSlotAndNonzeroOwnMemory()
+    {
+        var generated = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.CompletedFirstRound());
+        var slots = generated.FirstRound!.Slots.ToArray();
+        (slots[0],slots[1]) = (slots[1],slots[0]);
+        // Deliberately authored order; the unchanged comparison party naturally starts with player 2.
+        var input = Battle01FirstRoundTests.CopyCurrent(generated,order:new(slots,[],[],2));
+        var completed = Battle01EnemyStandby.CompleteNext(input,128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        Assert.Equal(2,completed.TurnCompletion!.RoundNumber); Assert.Equal(128,completed.TurnCompletion.CompletedActorIndex);
+        Assert.Equal(0x14,completed.TurnCompletion.EnemyStandby!.MemoryBefore);
+        Assert.Equal(0x04,completed.TurnCompletion.EnemyStandby.MemoryAfter);
+        Assert.Equal(new MapPosition(7,2),completed.Roster[3].Position);
+        Assert.Equal(new MapPosition(7,3),completed.Roster[3].Deployment.Position);
+        Assert.Same(generated.TurnCompletion,completed.TurnCompletion.Previous);
+        Assert.Equal(2,Battle01NextPlayerControl.Enter(completed,2).State!.FirstControl!.ActorIndex);
+    }
+
+    [Theory]
+    [InlineData("memory","memory")]
+    [InlineData("seed","randomSeedCopy")]
+    [InlineData("occupancy","occupancy")]
+    [InlineData("terrain","terrain")]
+    public void LaterEnemyFailureRetainsTheLastSuccessfulDecision(string mutation,string field)
+    {
+        var generated = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.CompletedFirstRound());
+        var completed = Battle01FirstRoundTests.CompleteOriginTurn(Battle01FirstRoundTests.CompleteOriginTurn(generated));
+        var memory = completed.AiMemory.ToArray(); var terrain = completed.Terrain.ToArray();
+        var occupancy = completed.Occupancy.ToArray(); ushort copy = completed.RandomSeedCopy!.Value;
+        if (mutation=="memory") memory[4] ^= 0x10;
+        if (mutation=="seed") copy ^= 0x100;
+        if (mutation=="occupancy") occupancy[17*48+9] = -1;
+        if (mutation=="terrain") terrain[5*48+10] = 16;
+        var input = Battle01FirstRoundTests.CopyCurrent(completed,memory:memory,terrain:terrain,occupancy:occupancy,copy:copy);
+        string frozen = System.Text.Json.JsonSerializer.Serialize(input);
+        Assert.Equal(field,Assert.Throws<ArgumentException>(() => Battle01EnemyStandby.CompleteNext(
+            input,132,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)).ParamName);
+        Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(input));
+        Assert.Same(completed.TurnCompletion,input.TurnCompletion);
+        Assert.Equal(128,input.TurnCompletion!.CompletedActorIndex); Assert.Equal(4,input.FirstRound!.CurrentTurnOffset);
+    }
     [Fact]
     public void FirstInactiveEnemyMovesWestAndCompletesExactlyOneTurnWithIndependentThinkingRng()
     {

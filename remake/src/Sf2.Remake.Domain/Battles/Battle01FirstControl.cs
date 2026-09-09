@@ -40,7 +40,7 @@ public static class Battle01FirstControl
     public static Battle01FirstControlTransition Enter(Battle01InitializedState current, int expectedActor)
     {
         ArgumentNullException.ThrowIfNull(current);
-        if (current.Phase != Battle01Phase.FirstRoundGenerated || current.FirstRound?.CurrentTurnOffset != 0)
+        if (current.Phase != Battle01Phase.FirstRoundGenerated || current.FirstRound is not { RoundNumber: 1, CurrentTurnOffset: 0 })
             throw new ArgumentException("First control requires the generated round before player entry.", "phase");
         return EnterCurrentCandidate(current, expectedActor);
     }

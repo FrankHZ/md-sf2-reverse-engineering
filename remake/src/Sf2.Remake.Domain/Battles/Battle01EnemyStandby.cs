@@ -28,7 +28,7 @@ public static class Battle01EnemyStandby
     {
         ArgumentNullException.ThrowIfNull(current);
         if (current.Phase != Battle01Phase.PlayerTurnCompleted ||
-            current.FirstRound is not { CurrentTurnOffset: 4 } order ||
+            current.FirstRound is not { RoundNumber: 1, CurrentTurnOffset: 4 } order ||
             current.TurnCompletion is not { CompletedActorIndex: 2, Previous.CompletedActorIndex: 1 } ||
             current.TurnCompletion.Previous.Previous is not null)
             throw new ArgumentException("First enemy standby requires the two completed player turns.", "phase");
@@ -49,12 +49,29 @@ public static class Battle01EnemyStandby
         Battle01StayCompletionPolicy? policy)
     {
         ArgumentNullException.ThrowIfNull(current);
-        if (current.Phase != Battle01Phase.EnemyTurnCompleted ||
-            current.FirstRound is not { CurrentTurnOffset: >= 6 and <= 14 } order)
-            throw new ArgumentException("Remaining standby requires a completed first-round enemy.", "phase");
-        RequireCompletedPrefix(current, order.CurrentTurnOffset / 2);
+        var order = current.FirstRound;
+        if (order is null) throw new ArgumentException("A current round is required.", "phase");
+        if (order.RoundNumber == 1)
+        {
+            if (current.Phase != Battle01Phase.EnemyTurnCompleted || order.CurrentTurnOffset is < 6 or > 14)
+                throw new ArgumentException("Remaining first-round standby requires a completed enemy.", "phase");
+            RequireCompletedPrefix(current, order.CurrentTurnOffset / 2);
+        }
+        else
+        {
+            if (current.Phase is not (Battle01Phase.RoundGenerated or Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted))
+                throw new ArgumentException("Standby requires current generation or completed actor dispatch.", "phase");
+            Battle01FirstRound.RequireCurrentPrefix(current);
+            RequireThinkingHistory(current);
+            bool enemyCompleted = false;
+            for (var receipt = current.TurnCompletion; receipt?.RoundNumber == order.RoundNumber; receipt = receipt.Previous)
+                enemyCompleted |= receipt.EnemyStandby is not null;
+            if (current.NewlyTestedRegionMask != (enemyCompleted ? 0 : 7) || current.RegionFlags90Through105.Count != 16 ||
+                current.RegionFlags90Through105.Any(flag => flag))
+                throw new ArgumentException("Retain the current round's tested mask and inactive flags.", "round");
+        }
         if (order.CurrentCandidate?.CombatantIndex != actorIndex)
-            throw new ArgumentException("Standby must name the actual next first-round enemy.", "actor");
+            throw new ArgumentException("Standby must name the actual current enemy.", "actor");
         return CompleteAdmittedEnemy(current, actorIndex, policy);
     }
 
@@ -93,6 +110,31 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
+    internal static void RequireThinkingHistory(Battle01InitializedState current)
+    {
+        if (current.RandomSeedCopy is not { } seed)
+            throw new ArgumentException("The current thinking seed-copy must be retained.", "randomSeedCopy");
+        if (current.AiMemory.Count != 48 || current.AiLastTargets.Count != 48 || current.AiLastTargets.Any(value => value != 255))
+            throw new ArgumentException("Retain all memory and last-target slots.", "memory");
+        var memory = current.AiMemory.ToArray();
+        for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
+        {
+            if (receipt.EnemyStandby is not { } decision)
+            {
+                if (receipt.CompletedActorIndex >= 128) throw new ArgumentException("Enemy decision history is incomplete.", "completion");
+                continue;
+            }
+            int slot = decision.ActorIndex - 128;
+            if (slot is < 0 or >= 6 || decision.ActorIndex != receipt.CompletedActorIndex)
+                throw new ArgumentException("Enemy decision must identify its completed actor.", "completion");
+            if (seed != decision.SeedCopyAfter) throw new ArgumentException("Thinking seed-copy history must remain linked.", "randomSeedCopy");
+            if (memory[slot] != decision.MemoryAfter) throw new ArgumentException("Each actor's retained memory must match its last decision.", "memory");
+            seed = decision.SeedCopyBefore; memory[slot] = decision.MemoryBefore;
+        }
+        if (seed != 0x1234) throw new ArgumentException("Thinking history must retain its supplied comparison origin.", "randomSeedCopy");
+        if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
+    }
+
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,
         Battle01StayCompletionPolicy? policy)
     {
@@ -108,8 +150,9 @@ public static class Battle01EnemyStandby
             deployment.PrimaryRegion != primaryRegion || deployment.SecondaryRegion != 15 ||
             deployment.Spawn != 0 || actor.AiBitfield != (0x2000 | (commandSet << 4)))
             throw new ArgumentException("Only the fixed inactive GIZMO regular standby branch is admitted.", "activation");
-        if (actor.Position != EnemyOrigins[memoryIndex] || actor.Position != deployment.Position)
-            throw new ArgumentException("Each first-round enemy must enter at its original deployment position.", "position");
+        if (deployment.Position != EnemyOrigins[memoryIndex] || !Battle01Initialization.WithinArea(actor.Position) ||
+            (current.FirstRound!.RoundNumber == 1 && actor.Position != deployment.Position))
+            throw new ArgumentException("Retain the original standby anchor and a valid live position.", "position");
         var stats = actor.Stats;
         if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
             stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||

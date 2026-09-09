@@ -7,6 +7,21 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+
+    [Fact]
+    public void LaterPlayerCompletionAppendsItsOwnRoundAndCannotCompleteTwice()
+    {
+        var generated = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.CompletedFirstRound());
+        var completed = Battle01FirstRoundTests.CompleteOriginTurn(generated);
+        Assert.Equal(2, completed.TurnCompletion!.RoundNumber);
+        Assert.Equal(2, completed.TurnCompletion.CompletedActorIndex);
+        Assert.Same(generated.TurnCompletion, completed.TurnCompletion.Previous);
+        Assert.Equal(1, completed.TurnCompletion.Previous!.RoundNumber);
+        Assert.Equal(2, completed.FirstRound!.CurrentTurnOffset);
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01TurnCompletion.CommitStay(
+            completed,2,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)).ParamName);
+        Assert.All(Enumerable.Range(0,9), i => Assert.Same(generated.Roster[i].Stats,completed.Roster[i].Stats));
+    }
     private static Battle01StayCompletionPolicy Policy => Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
 
     [Fact]

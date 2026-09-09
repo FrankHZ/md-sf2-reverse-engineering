@@ -151,8 +151,9 @@ through `Previous` as provenance. Active control determines the movement phase a
 even when that historical receipt exists. The UI invokes next entry once after each successful STAY,
 with no extra N. Unavailable or rejected entry leaves the exact committed STAY object in place and
 shows the actual candidate/reason; completed-phase key handling returns no replacement status.
-There is no frame retry, skip or new-round loop. At offset4, actual enemy128 / OpponentAi invokes
-one finite relay, bounded to six enemy completions. `CompletePrivateOriginalBattle01EnemyStandby`
+There is no frame retry or actor skip. A bounded dispatch follows actual slots, permits at most one
+new round per call and yields as soon as an actual player is ready. At first-round offset4, actual
+enemy128 / OpponentAi begins six enemy completions. `CompletePrivateOriginalBattle01EnemyStandby`
 keeps strict first128 admission; subsequent entries require the actual candidate, accepted completed
 prefix and chained seed-copy/own memory. Domain runs the inactive regular branch's thinking RNG,
 standby tables, raw Hovering6 grid plus separate live occupancy and bounded source move string.
@@ -165,8 +166,18 @@ The first128 move to(6,3) produces seed-copy3934 and memory[0]=14h. The remainin
 all effective stats and the full turn buffer remain unchanged. Only the complete eight-receipt
 prefix at offset16 admits Bowie0 through the shared next-player API. Its candidate-only missing-word
 policy and Regular1 range give independent move/cancel/STAY with budget12. Bowie's completion adds
-the ninth receipt and reaches the existing first sentinel at offset18. The presenter removes active
-range/path/cursor, states first-round exhaustion and closes input; old keys retain that endpoint.
+the ninth receipt and reaches the existing first sentinel at offset18. The same dispatch invokes
+`EnterPrivateOriginalBattle01NextRound`: local activation from current allies and retained flags/tested
+mask, empty region-cutscene/STARTING-spawn admission, then signed stable ordering from current main RNG.
+It rejects unsupported activation before installing flags/order/RNG. Successful generation retains
+positions, effective stats, deployment anchors, memory, seed-copy and every previous receipt.
+`RoundNumber` belongs to the current order and each immutable receipt; `RoundGenerated` distinguishes
+new order from historical completion. Later control/standby admission validates the actual current
+generation prefix and retained thinking history. Standby uses the live origin/grid and original anchor,
+including nonzero own memory. Each generation or actor transition has one Application commit.
+Failed control after generation preserves that generated round; later enemy failure preserves the last
+successful actor. The presenter shows the current candidate or completed actor with the precise
+diagnostic and no stale movement overlays; input cannot retry a rejected dispatch.
 No active commandset, attack/spell, generic AI controller or original movement animation is consumed.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
@@ -178,7 +189,7 @@ The 384-by-480 logical base maps the full 2x/4x raster with nearest sampling. No
 camera, parallel layout or position authority is created. All nine units remain diagnostic markers.
 The existing diagnostic mode remains available without requesting art. Missing/wrong requested art
 fails visibly; a failed base projection closes input without displaying a substitute battlefield.
-Original scene/layers, animation, VRAM persistence, fidelity, other battle actions and later rounds remain
+Original scene/layers, animation, VRAM persistence, fidelity and other battle actions remain
 outside this consumer.
 
 Two areas currently concentrate more responsibility than the target shape:

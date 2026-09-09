@@ -5,7 +5,14 @@ public static class Battle01NextPlayerControl
     public static Battle01FirstControlTransition Enter(Battle01InitializedState current, int expectedActor)
     {
         ArgumentNullException.ThrowIfNull(current);
-        if (current.Phase == Battle01Phase.EnemyTurnCompleted)
+        if (current.FirstRound is { RoundNumber: > 1 })
+        {
+            if (current.Phase is not (Battle01Phase.RoundGenerated or Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted))
+                throw new ArgumentException("Next control requires current generation or completed actor dispatch.", "phase");
+            Battle01FirstRound.RequireCurrentPrefix(current);
+            Battle01EnemyStandby.RequireThinkingHistory(current);
+        }
+        else if (current.Phase == Battle01Phase.EnemyTurnCompleted)
         {
             // Only the complete eight-actor prefix can hand control from enemies to Bowie.
             Battle01EnemyStandby.RequireCompletedPrefix(current, 8);

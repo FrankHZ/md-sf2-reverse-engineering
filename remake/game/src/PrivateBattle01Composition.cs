@@ -47,9 +47,7 @@ internal static class PrivateBattle01Ui
 
         // An unavailable next dispatch has already been reported. Unrelated keys cannot retry it
         // or overwrite its precise reason; the existing presenter retains that result.
-        if (current.Battle.Phase is Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted) return null;
-        if (current.Battle.FirstControl is not { } control)
-            return "Current battle retained. First player control is unavailable; relaunch starts Map 3.";
+        if (current.Battle.FirstControl is not { } control) return null;
         if (input == PrivateBattle01Input.Enter)
             return "Battle already initialized; current actor and round retained.";
         if (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice)
@@ -57,7 +55,7 @@ internal static class PrivateBattle01Ui
             if (input == PrivateBattle01Input.Confirm)
                 return session.CommitPrivateOriginalBattle01Stay(current, control.ActorIndex) switch
                 {
-                    PrivateOriginalBattle01StayCommitted committed => EnterNextPlayer(session, committed.Snapshot),
+                    PrivateOriginalBattle01StayCommitted committed => DispatchNext(session, committed.Snapshot),
                     PrivateOriginalBattle01TurnCompletionRejected rejected => "STAY rejected: " + rejected.Diagnostic.Message,
                     _ => "STAY unavailable.",
                 };
@@ -100,45 +98,46 @@ internal static class PrivateBattle01Ui
         };
     }
 
-    private static string EnterNextPlayer(GameSession session, PrivateOriginalBattle01SessionSnapshot completed)
+    internal static string DispatchNext(GameSession session, PrivateOriginalBattle01SessionSnapshot current)
     {
-        int candidate = completed.Battle.FirstRound!.CurrentCandidate?.CombatantIndex ?? 255;
-        // Exactly one dispatch after this successful STAY result; no frame or key-based retry loop.
-        return session.EnterPrivateOriginalBattle01NextPlayerControl(completed, candidate) switch
+        bool generated = false;
+        // At most the remainder of this buffer and one new buffer; actual player control yields.
+        int limit = current.Battle.FirstRound!.Slots.Count * 2;
+        for (int attempt = 0; attempt < limit; attempt++)
         {
-            PrivateOriginalBattle01NextPlayerControlEntered entered =>
-                entered.Snapshot.Battle.FirstControl!.ActorIndex == 0
-                    ? "First-round enemies complete. Bowie (A0) ready."
-                    : $"STAY complete. Player {entered.Snapshot.Battle.FirstControl.ActorIndex} ready.",
-            PrivateOriginalBattle01NextPlayerControlUnavailable { Decision.Availability: Battle01FirstControlAvailability.OpponentAi,
-                Decision.ActorIndex: 128 } => CompleteEnemyRelay(session, completed),
-            PrivateOriginalBattle01NextPlayerControlUnavailable { Decision.Availability: Battle01FirstControlAvailability.Sentinel }
-                when completed.Battle.FirstRound!.CurrentTurnOffset == 18 && completed.Battle.TurnCompletion?.CompletedActorIndex == 0 =>
-                "First round exhausted. Nine turns complete; next round not started.",
-            PrivateOriginalBattle01NextPlayerControlUnavailable unavailable =>
-                $"Next control unavailable: candidate {unavailable.Decision.ActorIndex?.ToString() ?? "sentinel"} / {unavailable.Decision.Availability}.",
-            PrivateOriginalBattle01NextPlayerControlRejected rejected =>
-                $"Next control rejected: {rejected.Diagnostic.Field}; candidate {candidate}; STAY retained.",
-            _ => "Next control unavailable; committed STAY retained.",
-        };
+            var order = current.Battle.FirstRound!;
+            if (order.CurrentCandidate is not { } candidate)
+            {
+                if (generated) return "Round dispatch stopped at its limit; current state retained.";
+                var result = session.EnterPrivateOriginalBattle01NextRound(current);
+                if (result is PrivateOriginalBattle01FirstRoundRejected rejected)
+                    return $"Next round rejected: {rejected.Diagnostic.Field}; round {order.RoundNumber} retained.";
+                current = ((PrivateOriginalBattle01FirstRoundEntered)result).Snapshot;
+                generated = true;
+                continue;
+            }
+            int actor = candidate.CombatantIndex;
+            if (actor >= 128)
+            {
+                var result = session.CompletePrivateOriginalBattle01EnemyStandby(current, actor);
+                if (result is PrivateOriginalBattle01EnemyStandbyRejected rejected)
+                    return $"Enemy {actor} standby rejected: {rejected.Diagnostic.Field}; last completed state retained.";
+                current = ((PrivateOriginalBattle01EnemyStandbyCompleted)result).Snapshot;
+                continue;
+            }
+            return session.EnterPrivateOriginalBattle01NextPlayerControl(current, actor) switch
+            {
+                PrivateOriginalBattle01NextPlayerControlEntered => $"Round {order.RoundNumber}. Player {actor} ready.",
+                PrivateOriginalBattle01NextPlayerControlUnavailable unavailable =>
+                    $"Control unavailable: actor {actor} / {unavailable.Decision.Availability}.",
+                PrivateOriginalBattle01NextPlayerControlRejected rejected =>
+                    $"Control rejected: {rejected.Diagnostic.Field}; actor {actor}; current state retained.",
+                _ => "Control unavailable; current state retained.",
+            };
+        }
+        return "Round dispatch stopped at its limit; current state retained.";
     }
 
-    private static string CompleteEnemyRelay(GameSession session, PrivateOriginalBattle01SessionSnapshot current)
-    {
-        // Six finite attempts, each reading the actual current candidate and committing independently.
-        // Never retry this relay from a frame or completed-phase input.
-        for (int attempt = 0; attempt < 6; attempt++)
-        {
-            int actor = current.Battle.FirstRound!.CurrentCandidate?.CombatantIndex ?? 255;
-            var result = session.CompletePrivateOriginalBattle01EnemyStandby(current, actor);
-            if (result is PrivateOriginalBattle01EnemyStandbyRejected rejected)
-                return $"Enemy {actor} standby rejected: {rejected.Diagnostic.Field}; completed actor {current.Battle.TurnCompletion!.CompletedActorIndex} retained.";
-            current = ((PrivateOriginalBattle01EnemyStandbyCompleted)result).Snapshot;
-            if (current.Battle.FirstRound!.CurrentCandidate is not { CombatantIndex: >= 128 })
-                return EnterNextPlayer(session, current);
-        }
-        return "First-round enemy relay stopped at its limit; last completed turn retained.";
-    }
 }
 
 public sealed partial class Map3Root

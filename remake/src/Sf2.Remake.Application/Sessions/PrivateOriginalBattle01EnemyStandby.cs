@@ -20,7 +20,7 @@ public sealed partial class GameSession
         if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
             return new PrivateOriginalBattle01EnemyStandbyRejected(failure);
         Battle01InitializedState battle;
-        try { battle = current.Battle.Phase == Battle01Phase.EnemyTurnCompleted
+        try { battle = current.Battle.FirstRound is { RoundNumber: > 1 } || current.Battle.Phase == Battle01Phase.EnemyTurnCompleted
             ? Battle01EnemyStandby.CompleteNext(current.Battle, actorIndex, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)
             : Battle01EnemyStandby.CompleteFirst(current.Battle, actorIndex, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats); }
         catch (ArgumentException error) { return EnemyStandbyRejected(error.ParamName ?? "standby"); }

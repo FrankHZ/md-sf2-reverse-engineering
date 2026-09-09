@@ -7,6 +7,15 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01FirstControlTests
 {
+
+    [Fact]
+    public void StrictFirstEntryCannotConsumeANewRoundWithPreviousCompletionHistory()
+    {
+        var next = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.CompletedFirstRound());
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01FirstControl.Enter(next, 2)).ParamName);
+        Assert.Equal(Battle01Phase.RoundGenerated, next.Phase);
+        Assert.Null(next.FirstControl); Assert.Equal(1, next.TurnCompletion!.RoundNumber);
+    }
     [Fact]
     public void FirstEntryCannotRestartTheCompletedEnemyPrefixOrSupplyBowiesWordEarly()
     {

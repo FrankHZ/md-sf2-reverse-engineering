@@ -1051,7 +1051,7 @@ source owner is `disasm/code/gameflow/battle/battleloop/processafterturneffects.
 and equipped bit7 are bounded rejection facts, not an equipment/stat subsystem implementation.
 
 Original after-turn fidelity, status/passive effects, battle scenes, other actions, AI execution,
-later rounds, death/outcome resolution, natural continuity and H4 remain **Unknown** or unimplemented
+active-round behavior, death/outcome resolution, natural continuity and H4 remain **Unknown** or unimplemented
 at their existing owners. Required actual-input and native tests verify controlled remake behavior.
 
 ### Implemented next-player control
@@ -1340,14 +1340,14 @@ Compare the three calls/147 generator steps and final3934h independently with th
 helpers; test range1 return versus seed, high-byte signed edges, and main/copy RNG isolation.
 Exercise missing/foreign/stale/wrong-actor/phase requests and late path/stat/occupancy rejection,
 proving no partial commit and both earlier receipts retained. Use the committed planner for .NET/
-official Godot gates, then the bounded `first-round` native mode below; do not replay prior modes.
+official Godot gates, then the bounded `round-continuation` native mode below; do not replay prior modes.
 
 Use the read-only reduction above, clean committed `uv run sf2 verify plan --base origin/main --head HEAD`,
 the selected locked .NET and official Godot gates, the required real input chain, one bounded native
 review and normal `uv run sf2 verify`. H0 missing input is reported honestly; no ROM/H3 replay or
 asset transaction is required. The [recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
 owns source-copy and process receipts. Natural caller state, seed-copy lifetime, timing, original
-layers/animation, active AI, later rounds, victory and H4 remain **Unknown** or unimplemented.
+layers/animation, active AI, victory and H4 remain **Unknown** or unimplemented.
 
 ### First-round completion: remaining inactive enemies and Bowie
 
@@ -1355,7 +1355,7 @@ The bounded continuation consumes the accepted first enemy completion at offset6
 only the remaining five inactive regular enemy turns in the current buffer, then gives actual
 Bowie0 his own player control. Each enemy commits independently; a later rejection retains the
 last completed snapshot and receipt chain. Bowie's separate move/cancel/STAY advances offset16
-to the first sentinel at18 and closes input as first-round exhausted. Round2 is not generated.
+to the first sentinel at18. This component feeds the repeatable inactive-round continuation below.
 
 **Confirmed source inputs:** the pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`
 standby/RNG/movement owners above apply to all six GIZMOs. The retained signed/stable buffer has
@@ -1479,19 +1479,19 @@ No new fixture registry, command queue, AI framework, asset transaction or share
 Acceptance pairs this independent reduction with focused evolving-occupancy/RNG/own-memory/path,
 prefix/stale-request/late-failure, Regular1 movement/cancel and sentinel tests, plus the required
 real selected-input chain. Use the committed planner, selected locked .NET/Godot gates and one new
-bounded `first-round` native mode showing Bowie ready/provisional/cancel/exhausted. Keep prior
+bounded `round-continuation` native mode below, which includes this first-round component. Keep prior
 completed failures and rerun corrections narrowly. Natural caller state, seed-copy lifetime,
 original animation/presentation, active AI, attack/spells, victory and H4 remain **Unknown** or
-unimplemented. The stopping condition is the first sentinel before round2, followed by a frozen
-Draft PR for independent root acceptance.
+unimplemented. The first sentinel is this component's API boundary; the next-round owner below
+consumes it without reinitializing battle state.
 
-### Proposed repeatable inactive-round continuation
+### Implemented repeatable inactive-round continuation
 
 **Decision:** continue through real sentinels into repeatable inactive rounds and actual player
 control, using the same nine living units, classes0/1/4 and controlled no-effect STAY. After each
 player STAY, dispatch actual candidates until a player is ready or an unsupported boundary rejects;
-generate at most one new round per dispatch. This is a proposal: current input still closes at the
-first sentinel. Implementation requires a separate root anchor after this decision is accepted.
+generate at most one new round per dispatch. The controlled origin-STAY path reaches actual round3
+player control. Unsupported activation or actor behavior retains the last successful snapshot.
 
 **Confirmed source structure:** pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/gameflow/battle/battleloop_1.asm` @IndividualTurns_Loop compares FF and branches to @Start
@@ -1514,14 +1514,13 @@ reach(11,15) from(8,17), Regular1 cost10/budget12 with allied traversal; it ente
 eventually expose this boundary, not silently STAY activated131/132. The y12 fixture is a separate
 authored seam, not a one-move reachability claim. Original activation side effects remain unsupported.
 
-**State/commit contract:** extend existing round/state owners with one current64-slot buffer/cursor.
-Give generated orders and completion receipts an immutable round number; phase must distinguish
-current generation from historical completion. Preserve TurnCompletion in the round-copy constructor:
-today's BeforeFirstRound-only Enter drops history, and receipt-first Phase would otherwise misclassify
-a new round. Keep first-entry admission strict; add exact-current completed-sentinel continuation in
-the same owner/facade, sharing activation/spawn/order algorithms. No reinitialization or second authority.
-Replace fixed first-order/mainA4991234/ownmemory0/currentposition=deployment guards with actual-round
-prefix/candidate, retained decision, source branch, live occupancy and effective-stat checks. Admit
+**Implemented state/commit contract:** existing round/state owners retain one current64-slot buffer/cursor.
+Generated orders and completion receipts carry immutable RoundNumber; RoundGenerated distinguishes
+current generation from historical completion. The round-copy constructor preserves TurnCompletion.
+First-entry admission remains strict; EnterNext and EnterPrivateOriginalBattle01NextRound require the
+exact completed sentinel and share activation/spawn/order algorithms. No reinitialization or second authority.
+After round1, actual-round prefix/candidate, retained decision, source branch, live occupancy and
+effective-stat checks replace fixed first-order/mainA4991234/ownmemory0/currentposition=deployment guards. Admit
 the current enemy/player after generation or either faction's completion; never reuse old control. Scope
 prefix validation to the current generation while keeping earlier receipts linked. Main generation
 retains lowword1234 and the independent copy; enemy completion uses the current copy and its own
@@ -1538,7 +1537,7 @@ reject atomically; no shortest-path substitution or guessed STAY. Godot runs bou
 dispatch after successful action/round entry only. Player choices stay manual; failure closes input
 with the precise retained boundary, without frame/unrelated-key retry or reroll/search for a player.
 
-**Inferred composed comparison, not natural execution:** from the accepted nine-turn sentinel,
+**Inferred original-game composition; Confirmed controlled remake comparison:** from the accepted nine-turn sentinel,
 all players subsequently confirm origin and STAY. Each round consumes27 main calls.
 Round2 order `2:7,128:6,132:6,131:5,133:5,0:4,1:4,129:4,130:4` produces mainAA861234.
 Enemy128/132/131/133/129/130 destinations are(7,2)/(10,5)/(8,4)/(6,4)/(9,3)/(6,3);
@@ -1630,7 +1629,7 @@ for number in [2,3]:
 '@ | uv run python -X utf8 -
 ```
 
-Proposed later paths (relative to `remake/`; separate implementation authorization required):
+Current implementation and verification owners (relative to `remake/`):
 
 - `src/Sf2.Remake.Domain/Battles/`: `Battle01Initialization.cs`, `Battle01FirstRound.cs`, `Battle01FirstControl.cs`, `Battle01NextPlayerControl.cs`, `Battle01EnemyStandby.cs`, `Battle01TurnCompletion.cs`.
 - `src/Sf2.Remake.Application/Sessions/`: `PrivateOriginalBattle01FirstRound.cs`, `PrivateOriginalBattle01NextPlayerControl.cs`, `PrivateOriginalBattle01EnemyStandby.cs`.
@@ -1640,16 +1639,18 @@ Proposed later paths (relative to `remake/`; separate implementation authorizati
 - `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`, `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`, `tests/native/Map19Map20AtlasReviewProbe.cs`.
 - `README.md`, `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md`.
 
-Later acceptance: required selected-input chain through round2 and actual round3 control; full changed
+Acceptance: required selected-input chain through round2 and actual round3 control; full changed
 buffers/main words; retained copy/memory/stats/receipts; independent player move/cancel; nonzero-memory
 two-edge paths and idle/no-alternative effects; duplicate/stale/foreign/prefix and late round/actor
 failure; reachable region1 rejection; enemy-first order proving dispatch without ally search.
 One new bounded native `round-continuation` mode shows round2 ready/provisional/cancel and round3 ready;
 update affected old mode contracts. Use planner-selected .NET/Godot and normal public gates, preserving
 completed failures and rerunning only invalidated checks. Stop at a frozen implementation Draft PR
-with repeatable admitted inactive rounds and visible unsupported boundaries. This decision changes
-only this plan: pure reduction, committed planner and normal public verification; no .NET/Godot/native/
-ROM/H3 replay. Active AI, attacks/spells, victory, natural seed lifetime/timing/presentation and H4
+with repeatable admitted inactive rounds and visible unsupported boundaries. Native captures follow
+physical player keys; separate authored copies test enemy-first dispatch, late control/occupancy failure
+and no retry at a reachable activation rejection. These copies are explicitly labeled and restore the
+actual round3 snapshot. No ROM/H3 replay or asset transaction is required. Active AI, attacks/spells,
+victory, natural seed lifetime/timing/presentation and H4
 remain **Unknown** or unimplemented.
 
 ### Controlled Godot Battle01 consumer
@@ -1722,8 +1723,10 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    input/capture recipe. No-effect STAY closes the first turn and dispatches the next supported player
    once. After that player's movement/cancel/STAY, all six actual inactive enemies complete bounded
    standby/no-effect STAY turns through the finite relay above. Actual Bowie0 then receives Regular1
-   control and independent move/cancel/STAY. The endpoint is the first sentinel at offset18 with all
-   nine receipts; active AI, round2, attack resolution and victory remain later slices.
+   control and independent move/cancel/STAY. The first sentinel at offset18 feeds repeatable wholly
+   inactive rounds from current state. Actual candidates dispatch until manual player control or a
+   precise retained rejection; the comparison reaches round3 control with eighteen receipts.
+   Active AI, attack resolution and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.
