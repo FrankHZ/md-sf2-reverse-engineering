@@ -2705,9 +2705,11 @@ owns death processing and post-action order. Source paths below are relative to 
 cell `(11,14)` becomes empty and132 cannot be selected, obstruct movement or be drawn as a live
 unit. Receipt59 retains both count snapshots3/5. Keep the current64-slot order byte-for-byte:
 132's already-consumed slot2 is not compacted out. Actual slot5 is player1 at `(9,17)`, HP11,
-movement budget10; input admission consumes no RNG. Bowie remains `(11,15)`, HP6/EXP39. Reaching
-that usable control state is the implementation acceptance boundary; it is currently **Inferred**
-from the composed source seams, pending Domain/Application/real Content/native implementation.
+movement budget10; input admission consumes no RNG. Bowie remains `(11,15)`, HP6/EXP39. This usable
+controlled remake endpoint is **Confirmed** by the owning Domain/Application tests, both required
+real Content methods and the `first-enemy-defeat` native recipe. The composed source seams and
+these controlled checks do not establish natural original-game flow, original death animation/VInt
+RNG or natural save-state accounting; those remain **Unknown** at this boundary.
 
 #### Reproduce the continuation without another movement model
 
