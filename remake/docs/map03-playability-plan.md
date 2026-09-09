@@ -2990,6 +2990,367 @@ exact path before editing it.
   its aggregate. Update onto current accepted main, commit/push declared paths and freeze a Draft
   PR for independent integration. Main gate retains approval and merge authority.
 
+### Proposed first enemy hit on Chester after the first defeat
+
+**Plan only; implementation is not admitted by this section.** The selected next slice extends the
+existing enemy physical wrapper to the exact controlled Chester target, completes enemy131's
+nonlethal action, generates the actual next round and returns Chester movement/cancel control.
+It consumes accepted `d23a5b3fb62a4625c175e72d87e1ca8d11160308`, tree
+`e41b5c01bba95578494200266694c4bce9f58ef2`, from receipt59 above. Only this plan is changed here.
+The first-defeat preset, private input identities, difficulty, HP, equipment, EXP/gold/kills,
+main/copy seed inputs and initial living roster are carried into the real reducers. Every player command below
+is authored through the existing movement/confirm/STAY API; every enemy is the actual candidate.
+
+#### Observed route and selected first unsupported action
+
+**Confirmed controlled remake observation:** a bounded console replays the complete existing real
+Content acceptance method through receipt59 and extracts the production `DispatchNext` method
+verbatim. It adds no battle model and executes no test suite. On the selected variant, the actual
+enemy131 request rejects `attack.targetProfile`, retaining the exact current Application snapshot.
+All proposed state after that rejection below is source-derived, not a managed/native success.
+
+| Actual step | Retained result / first boundary |
+| --- | --- |
+| Start receipt59, R7/raw10, player1 | Bowie `(11,15)` HP6/EXP39/kills1; Chester2 `(7,17)` HP11; player1 `(9,17)` HP11; gold60;132 HP0/unplaced. Main `F7751234`, copy `0234`; nine identity rows/eight occupants. |
+| Player1 origin STAY; actual129/128/130 standby | Receipts60–63. Enemy128 `(7,2)→(6,3)`,130 `(6,5)→(5,4)`;129 stays `(10,4)`. R8/raw0 gives player2, main `B28D1234`, copy `5634`. |
+| Chester chooses `(11,14)`, confirms/STAY; actual133 standby | Cost14, preview `[0,0,0,1,0,1,1,255]`;133 `(6,6)→(7,5)`. Receipt65, R8/raw4, actual Bowie control; main `B28D1234`, copy `0234`. |
+| **Selected variant:** Bowie origin STAY; player1 origin STAY; actual129/128/130 standby | Receipts66–70. Bowie remains `(11,15)` HP6; Chester `(11,14)` HP11. Enemy128 `(7,2)`,129 `(10,4)`,130 `(6,3)`,131 `(11,10)`,133 `(7,5)`. R8/raw14 actual131; main `B28D1234`, copy `0034`; memory `04/34/04/24/34/34`, last targets `FF/FF/FF/FF/00/FF`. |
+| Production physical request for131 | `PrivateOriginalBattle01EnemyPhysicalAttackRejected`, field `attack.targetProfile`. Receipt70/phase `EnemyTurnCompleted`, HP, positions, full64 slots, both seed images, accounting and AI channels stay at the previous row. No enemy movement or reaction is published. **Stop actual execution here.** |
+
+R8's complete64-slot order is `2:8,133:6,0:5,1:5,129:5,128:4,130:4,131:4` followed by56
+`FF:FF` slots. Dead132 consumes no new generation draws and keeps its original identity/deployment.
+The first legal variant already yields a narrow candidate; no second variant or whole-battle search
+is needed. This route neither uses an enemy skip nor replaces a failed state with its expected result.
+
+The earlier **leader-forward route remains a rejected plan alternative**: at real R8 Bowie control,
+move to `(11,12)` at cost6 with `[1,1,1,255]` and STAY. Actual131 then hits Bowie6→3; R9/raw0,
+receipt71 has main `71D31234`, copy `0234`. Chester's real move to `(12,11)` costs8 with
+`[1,1,0,1,255]`; its subsequent BeginAttack first rejects `attack.targetProfile`, retaining that
+provisional snapshot. Independent source arithmetic for a hypothetical supported Chester attack
+would require a new explicit EXP0 input and terrain0/Hovering LE0: damage3,131 HP5→2, EXP+15,
+main `A59B1234`. R9 also activates region2, so actual following128/129 use pursuit,
+without copy draws;131's target2/0 priorities1/19 select Bowie; four main calls give13/32,10/32,0/1,0/1, killing Bowie3→0 at `42DF1234`.
+The source loop checks defeat before another turn: `CountRemainingCombatants` forces ally count0
+when Bowie is dead. The initial diagnostic inference that133/player1 would follow was incorrect;
+its original local log is retained. A second diagnostic correction adds the R9 region-activation
+pass:128/129 are active pursuit, not standby, and131 selects priority19 over1 rather than a
+class tie. Both corrections are reflected below; the predicted lethal result remains, with copy0134.
+This variant cannot justify a usable player1 endpoint. Its leader defeat, defeat counter, gold
+halving and egress/reentry dependencies are deferred; they do not belong to the selected slice.
+
+#### Source boundary and proposed complete outcome
+
+Pinned upstream remains `ShiningForceCentral/SF2DISASM` at
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The preceding selected-input/source checks are reused.
+Paths below are relative to its `disasm/` root. Original rules are owned by the accepted
+[action](../../docs/design/contracts/battle-action-construction.md),
+[navigation](../../docs/design/contracts/battlefield-navigation.md),
+[combat](../../docs/design/contracts/combat-resolution.md) and
+[lifecycle](../../docs/design/contracts/battle-control-lifecycle.md) contracts, not remake output.
+
+| Named source seam | Bounded consequence |
+| --- | --- |
+| `data/stats/allies/allystartdefs.asm`, Chester entry; `data/stats/allies/classes/classdefs.asm` table `0x1EE890`, KNTE1; `data/stats/items/itemdefs.asm`, item56 | Chester has class1/Centaur movement, Wooden Stick equipped (`184`, not Short Spear), range1 and ATT+3; class prowess has critical1/16 ×1.25, double1/32 and counter1/32. Controlled effective ATT8/DEF5/AGI7/MOV7 and HP11/MP0 come from the named accepted comparison input, not reconstructed base growth. |
+| `code/gameflow/battle/battlefield/getreachabletargets.asm`, `getactionrange.asm`; `code/gameflow/battle/ai/command/attack/prioritizetargets.asm`, existing physical-priority owner | Source radius1/grid/occupied-target logic gives only target2, attack tile `(11,13)` cost6, path `[3,3,3,255]`. Existing class1 priority support remains authoritative. Copy `0034→0134`, range3/result1 after57 generator steps, potential2/remaining9 gives priority7. |
+| `data/battles/global/landeffectsettingsandmovecosts.asm` `0xD824`, Centaur row2; `calculatedamage.asm`, `determinedodge.asm` `0xAAFC`, `determinecriticalhit.asm` `0xAC4E`, `determinedoubleandcounter.asm` `0xB00E` under `code/gameflow/battle/battleactions/` | Target `(11,14)` terrain1 gives LE15 and multiplier230. Enemy ATT8 minus DEF5, times230/256, floors to2. Enemy prowess0 uses critical1/32 ×1.5; nonairborne/status0 Chester uses dodge1/32, counter1/32. No new range, terrain, spell, status, follow-up or damage algorithm is needed. |
+| `code/gameflow/battle/battleactions/attack.asm`, `inflictdamage.asm`, existing restore/reaction and turn-completion owners | Nonlethal HP11→temporary9→restore11→persistent9; reaction target2/HP−2/MP0/status0/flags1. No enemy EXP award or allied EXP input. No new death worklist or kill/gold mutation. |
+| `code/gameflow/battle/battleloop_1.asm`, `battleloop/countremainingcombatants.asm` `0x23C58`; existing round-generation owner | Both count checkpoints remain3/5, after-turn no-effect, cursor14→16 then sentinel; generate using eight survivors and return actual player2. The alternative Bowie-death path exits to `battleloop_2.asm` `BattleLoop_Defeat` before another candidate; it is outside this slice. |
+
+**Confirmed static arithmetic**, reproduced below: enemy131's six main calls are
+`2/32,27/32,0/1,0/1,25/32,13/32`; high words
+`B28D→1130→DF77→5912→85F1→CD44→6C7B`, low word1234 retained. No dodge, critical, double or
+counter occurs. Copy `0134` is independent; last-target slot3 becomes2, memory stays
+`04/34/04/24/34/34`. Completion retains tested mask0; R9 generation tests the three regions
+(mask7), retaining only region1 active and enemy words `2060/2060/2060/2061/2071/2070`. Original presentation
+RNG/menu/VInt/death timing is excluded by the same accepted semantic policy, not rewritten to
+obtain these results.
+
+**Inferred composed implementation endpoint, requiring future gates:** receipt71 records enemy131
+at `(11,13)` and Chester HP9, then R9/raw0 exposes actual player2 at `(11,14)` with movement
+budget14, main `71D31234`, copy `0134`. Full64 order is
+`2:8,128:6,129:6,131:6,133:5,1:4,130:4,0:3` plus56 `FF:FF` slots. Bowie stays HP6/EXP39/kills1,
+gold60; other HP, eight occupied cells, unplaced132 and its receipt59 provenance persist. Confirm
+and cancel Chester's legal `(12,14)` movement without committing another action or consuming RNG.
+Stop at this usable control; no claim is made about his next attack or the rest of R9.
+
+#### Reproduce the first rejection and source-derived continuation
+
+Use the registered read-only private environment named above and `uv sync --locked`. The managed
+diagnostic uses the real Content method and exact production relay, with only return-session,
+fixture-path and console instrumentation. Run it on the pinned accepted baseline; after this
+proposal is implemented its expected rejection must intentionally cease to hold. All generated
+files remain under this worktree's ignored `local/`. A missing input fails; no fixture substitutes it.
+
+```powershell
+@'
+from pathlib import Path
+repo=Path.cwd(); out=repo/'local/post-defeat-managed'; out.mkdir(parents=True,exist_ok=True)
+owner=repo/'remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs'
+s=owner.read_text(encoding='utf-8')
+a=s.index('    public void AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending()')
+b=s.index('    private static OriginalBattle01StartupImportResult Admit(',a)
+methods=s[a:b].replace('public void AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending()', 'static GameSession ReplayAccepted()')
+methods=methods.replace('private static GameSession SeedControlledPending','static GameSession SeedControlledPending')
+methods=methods.replace('Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput','RequireRegisteredInput')
+anchor='        Assert.Same(initialized.SourceSnapshot, current.SourceSnapshot);'
+assert methods.count(anchor)==1
+methods=methods.replace(anchor,anchor+'\n        return session;')
+methods=methods.replace('../../../../../../tests/fixtures/',repo.as_posix()+'/tests/fixtures/')
+driver=r'''
+var session=ReplayAccepted();
+bool forward=Environment.GetEnvironmentVariable("SF2_POST_DEFEAT_ROUTE")=="leader-forward";
+static string RequireRegisteredInput(string key)=>(string)typeof(Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests)
+ .Assembly.GetType("Sf2.Remake.TestSupport.PrivateInputFactAttribute")!.GetMethod("RequireInput",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{key})!;
+void Show(string stage) {
+ var b=session.PrivateOriginalBattle01!.Battle; int count=0;
+ for(var r=b.TurnCompletion;r is not null;r=r.Previous) count++;
+ Console.WriteLine(JsonSerializer.Serialize(new {stage,phase=b.Phase.ToString(),round=b.FirstRound!.RoundNumber,
+ raw=b.FirstRound.CurrentTurnOffset,actor=b.FirstControl?.ActorIndex,candidate=b.FirstRound.CurrentCandidate?.CombatantIndex,count,
+ main=b.RandomSeedImage.ToString("X8"),copy=b.RandomSeedCopy!.Value.ToString("X4"),b.CurrentGold,
+ slots=b.FirstRound.Slots,units=b.Roster.Select(u=>new {u.Index,u.Position,u.Stats}),b.AiMemory,b.AiLastTargets,b.NewlyTestedRegionMask,b.RegionFlags90Through105,ai=b.Roster.Select(u=>u.AiBitfield)}));
+}
+void Move(int actor,int x,int y) {
+ var p=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01!,actor,new(x,y))).Snapshot;
+ Console.WriteLine(JsonSerializer.Serialize(new {actor,x,y,p.Battle.FirstControl!.Movement.GridCost,p.Battle.FirstControl.Movement.Preview.Directions}));
+}
+void Stay() {
+ var p=session.PrivateOriginalBattle01!; int actor=p.Battle.FirstControl!.ActorIndex;
+ p=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(p,actor)).Snapshot;
+ p=Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(p,actor)).Snapshot;
+ Console.WriteLine(AcceptedRelay.DispatchNext(session,p));
+}
+Show("receipt59"); Stay(); Show("R8-player2"); Move(2,11,14); Stay(); Show("R8-Bowie");
+if(forward) Move(0,11,12);
+Stay(); Show("R8-player1"); Stay(); Show("actual-relay-end");
+if(forward) {
+ Move(2,12,11); var p=session.PrivateOriginalBattle01!;
+ p=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(p,2)).Snapshot;
+ var r=Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.BeginPrivateOriginalBattle01PlayerAttack(p,2));
+ Assert.Equal("attack.targetProfile",r.Diagnostic.Field); Assert.Same(p,session.PrivateOriginalBattle01);
+} else {
+ var p=session.PrivateOriginalBattle01!; Assert.Equal(8,p.Battle.FirstRound!.RoundNumber);
+ Assert.Equal(14,p.Battle.FirstRound.CurrentTurnOffset); Assert.Equal((byte?)131,p.Battle.FirstRound.CurrentCandidate?.CombatantIndex);
+ var r=Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(p,131));
+ Assert.Equal("attack.targetProfile",r.Diagnostic.Field); Assert.Same(p,session.PrivateOriginalBattle01);
+}
+Show("rejected-snapshot-retained"); Console.WriteLine("PASS: actual targetProfile rejection, exact snapshot retained; stop without bypass.");
+'''
+(out/'Program.cs').write_text(s[:s.index('namespace ')]+'\n'+driver+'\n'+methods,encoding='utf-8')
+c=(repo/'remake/game/src/PrivateBattle01Composition.cs').read_text(encoding='utf-8')
+a=c.index('    internal static string DispatchNext'); b=c.index('{',a); depth=1; end=b+1
+while depth:
+ depth+=(c[end]=='{')-(c[end]=='}'); end+=1
+(out/'Relay.cs').write_text('using Sf2.Remake.Application.Sessions;\nusing Sf2.Remake.Domain.Battles;\ninternal static class AcceptedRelay {\n'+c[a:end]+'\n}',encoding='utf-8')
+(out/'PostDefeat.csproj').write_text('''<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+<ItemGroup><ProjectReference Include="../../remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj" /></ItemGroup></Project>''',encoding='utf-8')
+'@ | uv run python -X utf8 -
+$env:SF2_REQUIRE_PRIVATE_TESTS='1'
+$env:SF2_POST_DEFEAT_ROUTE='chester-target'
+dotnet run --project local/post-defeat-managed/PostDefeat.csproj --configuration Release
+```
+
+The following source-only reduction reuses the preceding accepted prefix and movement helpers.
+Its generation loop keeps the same three draws per living actor, stable signed-byte ordering and
+64-slot padding, now with132 excluded. It prints all actual standby/copy transitions and the
+proposed strike/R9 result. It does not feed expected state into the managed diagnostic.
+
+```powershell
+@'
+from pathlib import Path
+import contextlib, io, json
+plan=Path('remake/docs/map03-playability-plan.md').read_text(encoding='utf-8')
+start=plan.index('from pathlib import Path\nimport contextlib, io, json\n',plan.index('### Implemented first enemy defeat'))
+end=plan.index("\n'@ | uv run python",start)
+with contextlib.redirect_stdout(io.StringIO()): exec(plan[start:end])
+assert (main,seed)==(0xF775,2) and 132 not in pos
+def alive_order():
+ global main,tested
+ for r in data['aiRegions']:
+  if not tested&(1<<r['id']):
+   flags[r['id']]|=any(inside(r,pos[a]) for a in range(3)); tested|=1<<r['id']
+ for i in range(6):
+  if i+128 in pos and flags[entities[i+3]['behavior']['primaryRegion']]: words[i]|=1
+ assert tested==7
+ slots=[]
+ for actor in pos:
+  agi={0:4,1:5,2:7}.get(actor,5); score=agi-1
+  for sign,bound in [(1,agi>>3),(-1,agi>>3),(1,3)]:
+   main,v=_rng_step(main,bound); score+=sign*v
+  slots.append((actor,score&255))
+ slots += [(255,255)]*(64-len(slots))
+ for _ in range(62):
+  for i in range(63):
+   if (slots[i+1][1]^128)>(slots[i][1]^128): slots[i],slots[i+1]=slots[i+1],slots[i]
+ return slots
+def physical(actor, expected):
+ global seed,trace
+ cohort=pursue(actor); g=grid(pos[actor],10,True); priorities=[]
+ for target,point in reversed(list(zip(cohort['targets'],cohort['attackPositions']))):
+  before=seed; steps=0
+  while True:
+   seed,_=_thinking_rng_step(seed,1); steps+=1
+   if seed<3: break
+  defense={0:4,1:5,2:5}[target]
+  assert terrain[pos[target][1]*48+pos[target][0]]==1
+  potential=land_damage(8,defense,230); remaining=max(0,hp_by_actor[target]-potential)
+  priority=(16 if remaining==0 else 1) if seed==0 else max(19-2*cost(g,point),1)
+  priorities.append(dict(target=target,point=point,cost=cost(g,point),potential=potential,remaining=remaining,priority=priority,thinking=[before,seed,steps]))
+ maximum=max(p['priority'] for p in priorities); eligible=[p for p in priorities if p['priority']==maximum]
+ if maximum>=15:
+  rank=min({0:0,1:5,2:15}[p['target']] for p in eligible)
+  eligible=[p for p in eligible if {0:0,1:5,2:15}[p['target']]==rank]
+ selected=sorted(enumerate(eligible),key=lambda p:(p[1]['cost'],p[0]))[-1][1]
+ assert selected['target']==expected
+ path=move_string(g,pos[actor],tuple(selected['point'])); pos[actor]=tuple(selected['point'])
+ trace=[]; damage=0; critical=False
+ if draw('dodge',32)!=0:
+  damage=land_damage(8,{0:4,1:5,2:5}[expected],230)
+  critical=draw('critical',32)==0
+  if critical: damage+=damage>>1
+  bound=(damage>>3)+1
+  damage-=draw('spread-1',bound); damage-=draw('spread-2',bound); damage=max(1,damage)
+ before=hp_by_actor[expected]; temporary=max(0,before-damage)
+ followups=None if temporary==0 else [draw('double',32)==0,draw('counter',32)==0]
+ print('physical',json.dumps(dict(actor=actor,priorities=priorities,selected=selected,path=path,damage=damage,hp=[before,temporary],followups=followups,trace=trace)))
+ hp_by_actor[expected]=temporary
+ return temporary,followups
+import os
+forward=os.environ.get('SF2_POST_DEFEAT_ROUTE')=='leader-forward'
+knte=(root/'data/stats/allies/classes/classdefs.asm').read_text().split('; 1: KNTE')[1].split('; 2:')[0]
+assert 'CENTAUR' in knte and 'CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN32' in knte
+# Actual player1 origin STAY, then all actual candidates; dead132 consumes no generation draws.
+for a in [129,128,130]: print('R7',json.dumps(standby(a)))
+r8=alive_order(); print('R8',r8[:8],f'{main:04X}1234',f'{seed:02X}34')
+assert r8[:8]==[(2,8),(133,6),(0,5),(1,5),(129,5),(128,4),(130,4),(131,4)] and r8[8:]==[(255,255)]*56
+pos[2]=(11,14) # Actual authored player choice, cost14; then actual133 and Bowie control.
+print('R8',json.dumps(standby(133)))
+if forward: pos[0]=(11,12) # Rejected-plan route only; selected variant is origin STAY.
+for a in [129,128,130]: print('R8',json.dumps(standby(a)))
+print('R8-before131',pos,mem,f'{main:04X}1234',f'{seed:02X}34')
+# Selected variant stops here in production. Only source reduction crosses its profile boundary.
+assert physical(131,0 if forward else 2)==((3 if forward else 9),[False,False])
+r9=alive_order(); print('R9-source-endpoint',r9,f'{main:04X}1234',f'{seed:02X}34',pos,hp_by_actor)
+assert r9[:8]==[(2,8),(128,6),(129,6),(131,6),(133,5),(1,4),(130,4),(0,3)] and r9[8:]==[(255,255)]*56
+assert main==0x71D3 and seed==(2 if forward else 1)
+assert flags[:3]==[False,True,forward]
+assert words==([0x2061]*4+[0x2071,0x2070] if forward else [0x2060]*3+[0x2061,0x2071,0x2070])
+if not forward:
+ assert pos[131]==(11,13) and hp_by_actor[0]==6 and hp_by_actor[2]==9
+ print('PROPOSED STOP: receipt71, R9/raw0 actual player2 movement/cancel; not a managed success claim.')
+else:
+ pos[2]=(12,11) # Actual admitted movement; first managed BeginAttack rejects here.
+ assert terrain[pos[131][1]*48+pos[131][0]]==0 and hover_land[0]=='LE0'
+ trace=[]; damage=0
+ if draw('player-dodge',8)!=0:
+  damage=land_damage(8,5,256)
+  if draw('player-critical',16)==0: damage+=damage>>2
+  bound=(damage>>3)+1
+  damage-=draw('player-spread-1',bound); damage-=draw('player-spread-2',bound); damage=max(1,damage)
+ temporary=max(0,hp_by_actor[131]-damage)
+ followups=[draw('player-double',32)==0,draw('player-counter',32)==0]
+ award=max(1,(min(49,50*damage//5)>>1)+int(draw('exp-plus',16)==0)-int(draw('exp-minus',16)==0))
+ assert damage==3 and temporary==2 and followups==[False,False] and award==15 and main==0xA59B
+ print('FORWARD-ONLY proposed Chester attack; missing EXP0 remains authored/unsupplied',trace)
+ hp_by_actor[131]=temporary
+ for a in [128,129]:
+  result=pursue(a); assert 'boundary' not in result; print('FORWARD-ONLY',json.dumps(result))
+ assert physical(131,0)==(0,None) and main==0x42DF and seed==1
+ print('STOP: Bowie death requires defeat outcome; no133 or player1 continuation is inferred.')
+'@ | Set-Content -LiteralPath local/post-defeat-source.py -Encoding utf8
+uv run python -X utf8 local/post-defeat-source.py
+```
+
+To reproduce the rejected leader-forward alternative independently from receipt59, set
+`$env:SF2_POST_DEFEAT_ROUTE='leader-forward'` and rerun both commands. The managed command stops
+at its actual Chester BeginAttack rejection; the source command stops at the predicted leader
+death. Restore `chester-target` for the selected proposal. Keep separate local logs for each run.
+
+#### Implementation ownership and acceptance proposal
+
+Keep the existing `Battle01InitializedState`, live stats/occupancy, single
+`Battle01TurnCompletionReceipt` chain, `Battle01MainRandomRoll`/thinking-roll records and exact-current
+Application replacement as the only authorities. Admit only the exact class1/Chester target profile
+in addition to the existing Bowie profile. Reuse the existing nonlethal policy and source-derived
+resolver; derive truthful enemy decision profile metadata from its selected target. Keep Chester
+EXP/kills unspecified and the first-defeat preset unchanged. History must rewind his HP9 to the
+accepted HP11 origin while preserving Bowie EXP39/kills1, gold60 and132's earlier death.
+
+There are two concrete coupled dependencies. `Battle01EnemyStandby.RequireThinkingHistory` calls
+the same allied-profile validator for damaged units, so target admission must also survive the
+existing reverse-history pass and later generation. `Battle01PlayerPhysicalAttack.RequireActor`
+currently reuses that validator; explicitly retain its Bowie-only boundary so broadening a target
+does not silently admit Chester as an attacker. No new generic combat-profile registry is needed.
+The presenter currently searches enemy results only in the current round and then lets an older
+player receipt overwrite them. Select the newest relevant physical receipt in the existing chain
+so the Chester hit remains visible at R9; retain current gold/kills and dead132 in their existing
+state projection. Do not add a second result/event history.
+
+Proposed exact ownership below is relative to `remake/`; approval is required before implementation.
+Files listed for verification do not imply every file needs a diff. No schema, registry, fixture,
+shared map primitive, asset, package, toolchain, canonical input or Python engine change is needed.
+
+| Exact paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPhysicalAttack.cs`, `Battle01PlayerPhysicalAttack.cs` in that directory | Exact target profile and truthful receipt metadata; preserve the separate Bowie-only attacker boundary. Existing resolver/receipt/seed-copy semantics remain. |
+| `game/src/PrivateBattle01Presenter.cs` | Render the newest actual combat result across the round boundary instead of overwriting it with receipt59. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs`, `Battle01PlayerPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Reuse `FirstDefeatCompleted` and its existing correctly authored allied profiles; exact continuation, strict unsupported profiles, history/seed/accounting tampering, generation and move/cancel. No synthetic stat replacement on the real path. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPhysicalAttackTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs` in that directory | Exact snapshot commit, stale/foreign/duplicate and late history rejection, actual candidate return. |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Both real Content methods; new-result persistence without losing prior accounting; bounded physical-key continuation and copied-versus-production comparison. |
+| `README.md`; `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` | Current supported target boundary, exact native recipe and remaining Unknowns, after implementation. |
+
+Read-only dependencies are `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs`,
+`Battle01PlayerMovement.cs`, `Battle01Initialization.cs` in the Domain battle directory;
+`src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`;
+`src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs`,
+`PrivateOriginalBattle01Initialization.cs`; and `game/src/PrivateBattle01Composition.cs`.
+They already express the necessary history, arbitrary selected target, retained HP and actual
+candidate dispatch. If a reproduced dependency requires editing one, name the exact failure and
+request an ownership amendment before mutation; do not preemptively broaden these owners.
+
+Buildable commit order: (1) Domain target admission/metadata plus explicit attacker guard and
+owning tests; (2) Application/Content continuation tests and presenter/native changes with their
+tests; (3) current-state documentation. Compile/test the affected project boundary at each step.
+No input-schema migration or new preset is part of any commit.
+
+- Both required real Content methods remain in
+  `Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests`:
+  `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` and
+  `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending`. With
+  `SF2_REQUIRE_PRIVATE_TESTS=1`, require2 pass/0 skip. Extend the complete existing prefix through
+  the exact variant, compare source cohort/57 copy steps/six main calls/restore/reaction,
+  receipt71 and both3/5 counts, full R8/R9 arrays, all live/dead placements, HP/EXP/gold/kills,
+  activation/tested mask/memory/last-target and Chester's actual movement/cancel.
+- Test Chester profile drift and unchanged Bowie support, wrong equipment/status/class/stats,
+  unknown versus fabricated accounting, forged target/profile/HP/roll/copy/last-target history,
+  stale/duplicate and late-failure atomicity. A missing/unsupported Chester attacker profile
+  must still reject. Preserve supported arithmetic and existing follow-up/lethal rejections;
+  do not introduce seed searches into the real acceptance route.
+- Add native mode `chester-enemy-hit` to the existing isolated probe recipe. Reach receipt59
+  through the accepted prefix. Capture new continuation checkpoints: R8 Bowie control after
+  Chester's physical movement/STAY; player1 control after Bowie origin STAY; a clearly labeled
+  copy of that exact snapshot completing player1 and actual129/128/130/131 through Application,
+  with reaction/receipt71 then actual R9 Chester control; restore the exact snapshot and press
+  physical Space to reproduce production dispatch; Chester's physical `(12,14)` preview/confirm;
+  physical Backspace restoring `(11,14)`. Compare copied/physical receipts and all retained
+  channels. Inspect every captured frame and all process exits, production source/probe copy
+  and export identity. Recheck the affected existing first-defeat and physical-result native
+  modes selected by the presentation change; do not manufacture a production pause.
+- On a clean committed implementation head, use `uv run sf2 verify plan --base origin/main --head HEAD`
+  and its authoritative locked managed/official Godot selection, the owning tests/native recipe
+  above, and normal `uv run sf2 verify`. This plan-only change runs its source/managed diagnostic,
+  committed planner, normal public verification and Public CI; no full managed/native/H3 gate is
+  required to publish the plan. Carry any completed suite failure exactly and rerun only selected
+  corrections unless the planner/runbook explicitly broadens invalidation. Freeze a clean Draft
+  PR for independent main-gate review; implementation acceptance is a separate decision.
+
+**Unknown:** natural original-game reach and carried seeds/accounting, post-presentation seed
+composition/timing, original Chester hit/animation fidelity and H4; the proposed managed/native
+success until implemented. Chester active attacks, further combat outcomes, leader defeat/egress,
+level changes, spells/items and validated follow-ups remain unsupported. None is silently enabled
+by accepting Chester as this controlled enemy-attack target.
+
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
