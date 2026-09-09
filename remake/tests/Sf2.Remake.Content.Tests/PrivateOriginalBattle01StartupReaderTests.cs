@@ -617,6 +617,33 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(0,current.Battle.NewlyTestedRegionMask); Assert.Equal(128,current.Battle.TurnCompletion!.CompletedActorIndex);
         history.Clear(); for(var receipt=current.Battle.TurnCompletion;receipt is not null;receipt=receipt.Previous) history.Add(receipt);
         Assert.Equal(50,history.Count); Assert.Equal(6,history.Count(receipt=>receipt.EnemyPursuit is not null));
+        var attackInput=current;
+        current=Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current,132)).Snapshot;
+        var attack=current.Battle.TurnCompletion!.EnemyPhysicalAttack!;
+        Assert.Equal(0,attack.TargetIndex); Assert.Equal(3,Assert.Single(attack.Priorities).Priority);
+        Assert.Equal(57,attack.Priorities[0].Roll.GeneratorSteps);
+        Assert.Equal(new ushort[] {32,32,1,1,32,32},attack.Effect.Rolls.Select(roll=>roll.Range));
+        Assert.Equal(new ushort[] {12,30,0,0,11,21},attack.Effect.Rolls.Select(roll=>roll.Result));
+        Assert.Equal(new byte[] {3,3,3,3,255},attack.MoveString); Assert.Equal(new MapPosition(11,14),attack.Destination);
+        Assert.Equal((9,12,9),((int)attack.Effect.TemporaryHp,(int)attack.Effect.RestoredHp,(int)current.Battle.Roster[0].Stats.HpCurrent));
+        Assert.Equal(0xAF881234u,current.Battle.RandomSeedImage); Assert.Equal((ushort?)0x0134,current.Battle.RandomSeedCopy);
+        Assert.Equal(0,current.Battle.AiLastTargets[4]); Assert.Equal(attackInput.Battle.AiMemory,current.Battle.AiMemory);
+        Assert.Same(attackInput.Battle.FirstRound!.Slots,current.Battle.FirstRound!.Slots);
+        Assert.Same(attackInput.Preparation,current.Preparation); Assert.Equal(12,current.Preparation.Party.Allies[0].HpCurrent);
+        Assert.Equal(12,current.Battle.FirstRound.CurrentTurnOffset);
+        history.Clear(); for(var receipt=current.Battle.TurnCompletion;receipt is not null;receipt=receipt.Previous) history.Add(receipt);
+        Assert.Equal(51,history.Count); Assert.Same(attackInput.Battle.TurnCompletion,current.Battle.TurnCompletion.Previous);
+        current=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current,0)).Snapshot;
+        Assert.Equal(0,current.Battle.FirstControl!.ActorIndex); Assert.Equal(12,current.Battle.FirstControl.Movement.Range.Budget);
+        current=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(current,0,new(12,15))).Snapshot;
+        current=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current,0)).Snapshot;
+        current=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(current,0)).Snapshot;
+        Assert.Equal(new MapPosition(11,15),current.Battle.Roster[0].Position); Assert.Equal(9,current.Battle.Roster[0].Stats.HpCurrent);
+        current=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current,0)).Snapshot;
+        current=Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current,0)).Snapshot;
+        Assert.Equal(9,current.Battle.Roster[0].Stats.HpCurrent); Assert.Equal(131,current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+        Assert.Same(attack,current.Battle.TurnCompletion!.Previous!.EnemyPhysicalAttack);
 
         PrivateOriginalBattle01SessionSnapshot CompleteCurrentTurn()
         {

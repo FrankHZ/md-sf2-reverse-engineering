@@ -11,7 +11,8 @@ internal sealed record PrivateBattle01Projection(
     Battle01Phase Phase, int Width, int Height, int? ActorIndex, int? CompletedActorIndex, int? NextCandidateIndex,
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
-    bool CanConfirm, string Controls, string Status, bool PursuitCompleted);
+    bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
+    bool PhysicalAttackCompleted, string? AttackResult);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -87,6 +88,13 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         }
         var completion = control is null && battle.TurnCompletion?.RoundNumber == battle.FirstRound?.RoundNumber
             ? battle.TurnCompletion : null;
+        Battle01EnemyPhysicalAttackDecision? lastAttack = null;
+        for (var receipt = battle.TurnCompletion; receipt is not null && receipt.RoundNumber == battle.FirstRound?.RoundNumber; receipt = receipt.Previous)
+            if (receipt.EnemyPhysicalAttack is { } attack) { lastAttack = attack; break; }
+        string? attackResult = lastAttack is null ? null :
+            $"{UnitTag(lastAttack.ActorIndex)} -> {UnitTag(lastAttack.TargetIndex)}: " +
+            (lastAttack.Effect.Dodged ? "miss" : (lastAttack.Effect.Critical ? "critical " : "hit ") + lastAttack.Effect.Damage) +
+            $". HP {lastAttack.Effect.BeforeStats.HpCurrent} -> {lastAttack.Effect.AfterStats.HpCurrent}.";
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
@@ -104,7 +112,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
-            completion?.EnemyPursuit is not null);
+            completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null, attackResult);
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -126,7 +134,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string cursor = view.Cursor is null ? "unavailable" : $"({view.Cursor.X},{view.Cursor.Y})";
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
-        string completionKind = view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
+        string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
         _details.Text = view.CompletedActorIndex is { } completed ?
             $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completionKind} completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
@@ -139,7 +147,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
-        _status!.Text = view.CompletedActorIndex is not null ?
+        _status!.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
             "Controlled no-effect STAY; effective stats retained.\n" + view.Status : "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :
                 "Terrain: current cursor; dots: legal stops\n") + view.Status;

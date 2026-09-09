@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -180,7 +180,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
         // Earlier STAY mode names now alias the bounded round-continuation chain.
-        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit";
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack";
         if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
@@ -307,7 +307,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 second.Roster[0].Position == new MapPosition(8,17) && second.NewlyTestedRegionMask == 7,
                 "Actual sentinel generates round2 once and yields its real player without a player decision");
             CheckRoundBuffer(second, new byte[] {2,128,132,131,133,0,1,129,130}, new byte[] {7,6,6,5,5,4,4,4,4});
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-pursuit")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "enemy-pursuit" or "enemy-physical-attack")
             {
                 await ReviewEnemyPursuit(round2,battle);
                 return;
@@ -418,6 +418,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
 
     private async Task ReviewEnemyPursuit(PrivateOriginalBattle01SessionSnapshot round2, Battle01InitializedState initialBattle)
     {
+        bool physical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-physical-attack";
         var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
         var rounds=new List<Battle01InitializedState> {initialBattle,round2.Battle};
         async Task OriginStay(int player)
@@ -453,7 +454,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             third.Roster[0].Position==new MapPosition(11,15) && third.RandomSeedImage==0x9BD71234 && third.RandomSeedCopy==0x0034,
             "Physical round2 region entry admits the actual activated round3");
         CheckRoundBuffer(third,[2,129,130,131,128,133,0,1,132],[8,6,6,6,5,5,4,4,4]);
-        await CaptureControl("01-round3-ready");
+        if (!physical) await CaptureControl("01-round3-ready");
 
         // Test-only copied snapshot and direct Application steps expose the otherwise synchronous intermediate view.
         // Restore the exact physical-route snapshot before any further Godot key event. No production pause hook.
@@ -479,7 +480,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 inspected.MoveString.SequenceEqual(new byte[] {0,255}) && inspected.GridCost==2 && completed.FirstRound!.CurrentTurnOffset==8,
                 "Copied first131 uses the occupied-cell fallback");
             presenter.Project(completed,"TEST COPY: after first E3 pursuit. Direct Application steps; physical route resumes from saved round3.");
-            await CaptureControl("02-first131-test-copy","test-only copied round3 snapshot; direct Application steps; not physical-key progression or original timing");
+            if (!physical) await CaptureControl("02-first131-test-copy","test-only copied round3 snapshot; direct Application steps; not physical-key progression or original timing");
         }
         finally
         {
@@ -499,7 +500,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             fourth.Roster[6].Position==new MapPosition(9,4) && fourth.Roster[7].Position==new MapPosition(11,6),
             "Both physical active pursuits finish and actual round4 player1 receives control");
         CheckRoundBuffer(fourth,[1,2,130,132,129,131,0,128,133],[6,6,6,6,5,5,4,4,4]);
-        await CaptureControl("03-round4-ready");
+        if (!physical) await CaptureControl("03-round4-ready");
         foreach(int player in new[] {1,2,0}) await OriginStay(player);
         var fifth=_session.PrivateOriginalBattle01!.Battle; rounds.Add(fifth);
         Require(fifth.FirstRound!.RoundNumber==5 && fifth.RandomSeedImage==0xDE251234 && fifth.RandomSeedCopy==0x0234 &&
@@ -510,42 +511,90 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(sixth.FirstRound!.RoundNumber==6 && sixth.RandomSeedImage==0x07821234 && sixth.RandomSeedCopy==0x5634 &&
             sixth.Roster[6].Position==new MapPosition(11,6) && sixth.Roster[7].Position==new MapPosition(11,10),"Round5 pursuit reaches the next physical eligibility seam");
         CheckRoundBuffer(sixth,[2,129,130,1,128,132,0,131,133],[7,6,6,5,5,5,4,4,4]);
-        await OriginStay(2); await OriginStay(1);
-        var stopped=_session.PrivateOriginalBattle01!; var end=stopped.Battle; var history=History(end);
-        Require(end.FirstControl is null && end.FirstRound!.RoundNumber==6 && end.FirstRound.CurrentTurnOffset==10 &&
-            end.FirstRound.CurrentCandidate?.CombatantIndex==132 && end.TurnCompletion?.CompletedActorIndex==128 &&
-            history.Length==50 && history.Count(receipt=>receipt.EnemyPursuit is not null)==6 && end.RandomSeedImage==0x07821234 &&
-            end.RandomSeedCopy==0x0034 && end.AiMemory.Take(6).SequenceEqual(new byte[] {4,0x34,0x24,0x24,0x34,0x24}) &&
-            end.NewlyTestedRegionMask==0 && end.Roster[7].Position==new MapPosition(11,10),"Attack selection retains the actual fifty-receipt boundary");
-        Require(presenter.Projection!.Status.Contains("Enemy 132: attack selection required") &&
-            presenter.Projection.NextCandidateIndex==132 && presenter.Projection.CompletedActorIndex==128 &&
-            !presenter.Projection.CanConfirm && presenter.Projection.Controls.Contains("Input closed"),"Visible attack-required boundary closes player input");
-        Require(_session.CompletePrivateOriginalBattle01EnemyPursuit(stopped,132) is PrivateOriginalBattle01AttackSelectionRequired typed &&
-            typed.Targets.SequenceEqual(new[] {new Battle01AttackCandidate(0,new(11,14),8)}) &&
-            ReferenceEquals(stopped,_session.PrivateOriginalBattle01),"Explicit typed rejection independently names the eligible cohort without mutation");
+        await OriginStay(2);
+        var beforeAttack=_session.PrivateOriginalBattle01!;
+        Require(beforeAttack.Battle.FirstControl?.ActorIndex==1,"Actual round6 player1 precedes inactive128 and attack132");
+        if (physical) await CaptureControl("01-round6-player1-ready");
+        var copied=(PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(
+            typeof(PrivateOriginalBattle01SessionSnapshot),BindingFlags.Instance|BindingFlags.NonPublic,null,
+            new object?[] {beforeAttack.Preparation,beforeAttack.Battle,beforeAttack.SourceLocomotion,beforeAttack.SourceBridge},null)!;
+        Battle01EnemyPhysicalAttackDecision inspectedAttack;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copied);
+        try
+        {
+            var confirm=(PrivateOriginalBattle01PlayerMovementApplied)_session.ConfirmPrivateOriginalBattle01PlayerMovement(copied,1);
+            Require(_session.CommitPrivateOriginalBattle01Stay(confirm.Snapshot,1) is PrivateOriginalBattle01StayCommitted,"Copied player1 STAY");
+            Require(_session.CompletePrivateOriginalBattle01EnemyStandby(_session.PrivateOriginalBattle01,128) is
+                PrivateOriginalBattle01EnemyStandbyCompleted,"Copied actual inactive128");
+            var boundary=_session.PrivateOriginalBattle01!;
+            Require(boundary.Battle.FirstRound!.CurrentTurnOffset==10 && History(boundary.Battle).Length==50 &&
+                _session.CompletePrivateOriginalBattle01EnemyPursuit(boundary,132) is PrivateOriginalBattle01AttackSelectionRequired typed &&
+                typed.Targets.SequenceEqual(new[] {new Battle01AttackCandidate(0,new(11,14),8)}) &&
+                ReferenceEquals(boundary,_session.PrivateOriginalBattle01),"Pursuit API retains independent physical-cohort boundary");
+            Require(_session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(boundary,132) is
+                PrivateOriginalBattle01EnemyPhysicalAttackCompleted,"Copied physical attack completes");
+            var completed=_session.PrivateOriginalBattle01!.Battle; inspectedAttack=completed.TurnCompletion!.EnemyPhysicalAttack!;
+            Require(completed.FirstRound!.CurrentTurnOffset==12 && History(completed).Length==51 &&
+                completed.Roster[0].Stats.HpCurrent==9,"Copied attack replay and completion precede next-player admission");
+            presenter.Project(completed,"TEST COPY: attack132 complete. Physical route resumes from saved round6 player1.");
+            if (physical) await CaptureControl("02-attack132-test-copy","test-only copied round6 snapshot; direct Application STAY/128/132; not physical-key progression or original timing");
+        }
+        finally
+        {
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,beforeAttack);
+            presenter.Project(beforeAttack.Battle,"Restored exact physical-route round6 player1; next STAY is manual.");
+        }
+        await OriginStay(1);
+        var ready=_session.PrivateOriginalBattle01!; var end=ready.Battle; var history=History(end);
+        var actualAttack=end.TurnCompletion!.EnemyPhysicalAttack!;
+        Require(end.FirstControl?.ActorIndex==0 && end.FirstRound!.CurrentTurnOffset==12 && history.Length==51 &&
+            end.RandomSeedImage==0xAF881234 && end.RandomSeedCopy==0x0134 && end.Roster[0].Stats.HpCurrent==9 &&
+            end.Roster[7].Position==new MapPosition(11,14) && end.AiLastTargets[4]==0 &&
+            JsonSerializer.Serialize(inspectedAttack)==JsonSerializer.Serialize(actualAttack),"Physical relay matches copied attack and hands actual Bowie control");
+        Require(presenter.Projection!.ActorIndex==0 && presenter.Projection.CanConfirm &&
+            presenter.Projection.AttackResult!.Contains("hit 3") && presenter.Projection.AttackResult.Contains("HP 12 -> 9"),
+            "Player controls and persistent physical result are visible together");
         string visibleStatus=presenter.Projection.Status;
-        foreach(Key key in new[] {Key.I,Key.L,Key.Space,Key.Backspace,Key.N,Key.W,Key.F,Key.B,Key.M}) await PressBattleKey(key);
+        // N is a recognized Enter command and may explain that this battle is already initialized.
+        foreach(Key key in new[] {Key.W,Key.F,Key.B,Key.M}) await PressBattleKey(key);
         for(int frame=0;frame<12;frame++) await ToSignal(GetTree(),SceneTree.SignalName.ProcessFrame);
-        Require(ReferenceEquals(stopped,_session.PrivateOriginalBattle01) && presenter.Projection.Status==visibleStatus,
-            "Frames and unrelated keys never retry or overwrite the rejection");
-        await CaptureControl("04-round6-attack-required");
+        Require(ReferenceEquals(ready,_session.PrivateOriginalBattle01) && presenter.Projection.Status==visibleStatus,
+            "Frames and unrelated keys never repeat the physical attack");
+        await CaptureControl(physical ? "03-bowie-ready-hp9" : "04-round6-bowie-hp9");
+        if (physical)
+        {
+            await PressBattleKey(Key.L); await PressBattleKey(Key.Space);
+            Require(_session.PrivateOriginalBattle01!.Battle.Roster[0].Position==new MapPosition(12,15) &&
+                _session.PrivateOriginalBattle01.Battle.Roster[0].Stats.HpCurrent==9,"Physical Bowie relocation retains damage");
+            await PressBattleKey(Key.Backspace);
+            Require(_session.PrivateOriginalBattle01!.Battle.Roster[0].Position==new MapPosition(11,15) &&
+                _session.PrivateOriginalBattle01.Battle.Roster[0].Stats.HpCurrent==9 &&
+                ReferenceEquals(end.TurnCompletion,_session.PrivateOriginalBattle01.Battle.TurnCompletion) &&
+                end.Occupancy.SequenceEqual(_session.PrivateOriginalBattle01.Battle.Occupancy),"Bowie cancel restores origin without healing or undoing attack");
+            await CaptureControl("04-bowie-cancel-hp9");
+        }
         var steps=Enumerable.Range(1,6).Select(number=>history.Where(receipt=>receipt.RoundNumber==number)
             .Sum(receipt=>receipt.EnemyStandby?.Rolls.Sum(roll=>roll.GeneratorSteps) ?? 0)).ToArray();
         Require(steps.SequenceEqual(new[] {1483,967,958,512,380,198}),"All completed thinking-byte counts match the independent reduction");
-        Require(end.AiMemory.Skip(6).All(value=>value==0) && end.AiLastTargets.All(value=>value==255) &&
-            end.Roster.Select((unit,i)=>ReferenceEquals(unit.Stats,initialBattle.Roster[i].Stats) && ReferenceEquals(unit.Deployment,initialBattle.Roster[i].Deployment)).All(value=>value),
-            "Pursuit preserves effective stats, original anchors and unused memory");
+        Require(actualAttack.Priorities.Sum(p=>p.Roll.GeneratorSteps)==57 &&
+            actualAttack.Effect.Rolls.Select(r=>r.Range).SequenceEqual(new ushort[] {32,32,1,1,32,32}) &&
+            actualAttack.Effect.Rolls.Select(r=>r.Result).SequenceEqual(new ushort[] {12,30,0,0,11,21}),
+            "Physical priority and six main calls match independent reduction");
+        Require(end.AiMemory.Skip(6).All(value=>value==0) && end.AiLastTargets.Where((_,i)=>i!=4).All(value=>value==255) &&
+            end.Roster.Select((unit,i)=>(i==0 || ReferenceEquals(unit.Stats,initialBattle.Roster[i].Stats)) &&
+                ReferenceEquals(unit.Deployment,initialBattle.Roster[i].Deployment)).All(value=>value),
+            "Physical action retains other HP/stats, original anchors and unused memory");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled Map40 seed; physical Godot keys through round6 attack-required boundary",
-            instrumentation="frame02 uses a copied round3 snapshot and direct Application steps; exact snapshot restored before physical-key continuation; first131 decisions compared",
+            status="Pass",scope="controlled Map40 seed; physical Godot keys through first ordinary attack and Bowie HP9 control",
+            instrumentation="copied round3 pursuit and round6 attack Application steps are compared with physical relay; exact source snapshots restored; no original timing claim",
             rounds=rounds.Select(b=>new {number=b.FirstRound!.RoundNumber,slots=b.FirstRound.Slots,main=b.RandomSeedImage,copy=b.RandomSeedCopy,
                 flags=b.RegionFlags90Through105,words=b.Roster.Skip(3).Select(unit=>unit.AiBitfield),tested=b.NewlyTestedRegionMask}),
-            turns=history.Select(receipt=>new {round=receipt.RoundNumber,actor=receipt.CompletedActorIndex,standby=receipt.EnemyStandby,pursuit=receipt.EnemyPursuit}),
+            turns=history.Select(receipt=>new {round=receipt.RoundNumber,actor=receipt.CompletedActorIndex,standby=receipt.EnemyStandby,pursuit=receipt.EnemyPursuit,physical=receipt.EnemyPhysicalAttack}),
             thinkingSteps=steps,main=end.RandomSeedImage,copy=end.RandomSeedCopy,memory=end.AiMemory,lastTargets=end.AiLastTargets,
             occupancy=end.Roster.Select(unit=>new {actor=unit.Index,position=unit.Position}),byteOffset=end.FirstRound!.CurrentTurnOffset,
-            nextCandidate=132,inputClosed=true,frames=_frames,
+            nextCandidate=0,inputClosed=false,frames=_frames,
         },new JsonSerializerOptions {WriteIndented=true}));
-        GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} enemy-pursuit");
+        GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} {(physical ? "enemy-physical-attack" : "enemy-pursuit")}");
     }
 
     private static void CheckRoundBuffer(Battle01InitializedState battle, byte[] actors, byte[] scores)
@@ -672,7 +721,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
                 budget = view.Budget, status = view.Status, controls = view.Controls, baseArt, baseSamples,
                 blockPixels = PrivateBattle01Presenter.TileSize, width = image.GetWidth(), height = image.GetHeight(),
-                provenance, pursuitCompleted=view.PursuitCompleted });
+                provenance, pursuitCompleted=view.PursuitCompleted, physicalAttackCompleted=view.PhysicalAttackCompleted, attackResult=view.AttackResult });
         }
         else
         {
