@@ -53,14 +53,18 @@ next-player control at9 HP, with the attack summary retained during movement/can
 Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
 At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
 attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
-the movement origin. N uses a separately named controlled Bowie EXP0 supplement; the earlier
-player-ready preset retains unspecified EXP. The bounded class0/Wooden Sword attack against a
+the movement origin. N uses the named controlled Bowie EXP0/gold0/kills0 supplement; both earlier
+presets retain their unspecified accounting inputs. The bounded class0/Wooden Sword attack against a
 regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
 on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
-control with Bowie HP9/EXP15 and enemy132 HP2. The latest player result remains visible.
-Its eight main RNG calls and round7 CF491234 endpoint describe construction/award semantics with
+control with Bowie HP9/EXP15 and enemy132 HP2. After player2's explicit origin STAY, actual131/132/133
+leave Bowie at6 HP. His next manual origin attack defeats132: HP2→0, EXP15→39, gold0→60 and
+kills0→1. Receipt59 clears the enemy's live position/occupancy, retains its source row and the same
+round7 order, counts allies/enemies3/5 twice, then yields actual player1 at(9,17), HP11/budget10.
+Player1 can move and cancel while the defeated132/+24 EXP/+60 gold result remains visible.
+The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
-Misses and ordinary criticals are calculated; a validated double/counter, lethal or other unsupported
+Misses and ordinary criticals are calculated; a validated double/counter, another defeat or other unsupported
 effect rejects the complete transition before any state commit.
 Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
 this controlled comparison does not establish natural continuity or original economy effects.

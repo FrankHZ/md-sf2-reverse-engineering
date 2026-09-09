@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1015,7 +1015,7 @@ The recipe retains its bounded restore/build/native process and source-archive p
 
 For manual player physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=player-physical-attack`
 with a fresh review root and the same registered inputs. N explicitly prepares the separate
-controlled Bowie EXP0 comparison; unspecified EXP in the older preset remains valid for its
+controlled Bowie EXP0/gold0/kills0 comparison; unspecified accounting in the older presets remains valid for their
 earlier operations. At action choice, A opens the live ordered target list, I/J choose previous,
 K/L choose next, Space confirms the attack, and Backspace returns to action choice at the provisional
 position. A second Backspace restores movement origin. Space at ordinary action choice still STAYs.
@@ -1029,6 +1029,27 @@ HP9/2, EXP15, mainCF491234/copy0234,133's114/19 thinking steps, and no repeated 
 unrelated input. Inspect every frame for target highlight, cancellation position, readable live
 EXP, and the player hit/EXP summary surviving round generation. The affected enemy physical and
 pursuit modes retain four frames each and must also be checked when this shared view changes.
+
+For the first enemy defeat, use `SF2_BATTLE01_CONTROL_REVIEW=first-enemy-defeat` with a fresh
+review root. The same physical-key prefix reaches round7 player2 without capturing the earlier
+player-attack frames again. Its six checkpoints are:
+
+1. `01-round7-player2`: actual player2, Bowie HP9/EXP15,132 HP2, gold0/kills0.
+2. `02-bowie-hp6-exp15`: explicit player2 origin STAY runs actual131/132/133; Bowie HP6.
+3. `03-origin-target132-hp2`: explicit origin Space/A leaves132 selected manually.
+4. `04-defeat-receipt59-test-copy`: labeled copy of that exact selection after direct Application
+   confirmation;132 removed, gold60/kills1 and Bowie EXP39; next candidate1 not dispatched.
+5. `05-player1-after-defeat`: restore the exact selected snapshot, then physical Space runs
+   production confirmation and yields actual player1 at(9,17), HP11/budget10.
+6. `06-player1-move-cancel`: physical L/Space/Backspace restores player1 after moving to(10,17);
+   cleared(11,14) remains a legal stop, and defeat/EXP/gold/kills stay visible.
+
+The copied and physical full receipt59, stats, placements, occupancy, awards, main/copy, AI and
+activation flags must match. Check all six lethal/award calls, overkill−3/HP2→0, worklist132 then
+empty, counts3/5 twice, retained nine provenance rows/eight occupants and unchanged64-slot order.
+Inspect every image for five enemy markers, readable reward/current-state text and usable player1
+controls. Restore/build/native must each exit0 with clean process termination; compare archived
+production sources with the candidate and official export source copy. No production pause is added.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu
