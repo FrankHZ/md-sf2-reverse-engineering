@@ -2032,7 +2032,7 @@ authority for original behavior. This plan does not modify their evidence, fixtu
 | Owner or source seam | Applicable behavior |
 | --- | --- |
 | [AI decision](../../docs/design/contracts/battle-ai-decision.md); `code/gameflow/battle/ai/command/attack/prioritizetargets.asm`, `PrioritizeTargetsForAttackAiCommand` `0xC958` and `AdjustTargetPriorityForAttackByDifficulty` `0xCB18` | Read each physical target and its stored movement cost in reverse cohort order. Rotate the activation word four bits, select its original top nibble, then the difficulty-indexed script. Difficulty0/type2 selects script3. Its thinking range3 retry determines remaining-HP or movement priority. |
-| Same contract; `ai/command/attack/determinebattleaction.asm` `DetermineAction` `0xEDD6` and `ai/command/attack.asm` `0xE78C` (both under `code/gameflow/battle/`) | Physical-only choice needs no main RNG. Preserve signed priority, tie/cohort and class-priority rules; priority below15 avoids class selection here. Physical action0 stores target in the word at action offset2, updates the actor's last-target byte, chooses attack position and builds the source reverse/inverted move string. Offset6 is the spell/item target field; do not invent a write to unused fields. |
+| Same contract; `ai/command/attack/determinebattleaction.asm` `DetermineBattleactionForAttackAiCommand` `0xEDD6` and `ai/command/attack.asm` `0xE78C` (both under `code/gameflow/battle/`) | Physical-only choice needs no main RNG. Preserve signed priority, tie/cohort and class-priority rules; priority below15 avoids class selection here. Physical action0 stores target in the word at action offset2, updates the actor's last-target byte, chooses attack position and builds the source reverse/inverted move string. Offset6 is the spell/item target field; do not invent a write to unused fields. |
 | [Action construction](../../docs/design/contracts/battle-action-construction.md); `code/gameflow/battle/battleactions/battleactionsengine_1.asm` `0x9B92` and `battleactionsengine_2.asm` `0xA34E` in that directory | Capture scene properties/HP; construct one-target action, damage and follow-up decisions; finish scene and restore HP snapshots before replay. Enemy first attacks take neither the ordinary ally damage-EXP path nor the counterattack EXP tail. |
 | [Combat resolution](../../docs/design/contracts/combat-resolution.md); `code/gameflow/battle/battleactions/attack.asm` `0xAAB6` through `determinedoubleandcounter.asm` `0xB00E` | Dodge precedes damage/critical. A hit applies land scaling, critical and two spread calls, temporary clamped HP, ailment/curse branches, then double/counter decisions if the target survives. A dodge skips hit effects but still reaches the two follow-up decisions. Both follow-up rolls must be consumed even when false. |
 | `code/gameflow/battle/battlescenes/battlesceneengine_0.asm` `bsc0B_executeAllyReaction`, HP branch `0x18DE0`; [combatant state](../../docs/design/contracts/combatant-state-access.md) | Replay the signed ally HP delta, MP delta and status; refresh effective stats. `common/stats/updatecombatantstats.asm` `InitializeCurrentStats` (under `code/`) refreshes combat modifiers/prowess, not HP/MP maxima. Startup initialization is not a post-hit refresh. |
@@ -2074,8 +2074,8 @@ explicit difficulty0, no debug override, status0 and already effective combat st
 | --- | ---: | ---: | --- |
 | Dodge | 32 | 12 | `61A1` |
 | Critical, GIZMO prowess0 | 32 | 30 | `F534` |
-| Positive spread | 1 | 0 | `73AB` |
-| Negative spread | 1 | 0 | `DFB6` |
+| First downward spread | 1 | 0 | `73AB` |
+| Second downward spread | 1 | 0 | `DFB6` |
 | Double | 32 | 11 | `5C45` |
 | Counter, Bowie prowess3 upper bits0 | 32 | 21 | `AF88` |
 
@@ -2097,6 +2097,14 @@ used by the preceding pursuit reduction. This script executes that accepted comp
 checks priority/action-choice fixture facts against pinned source, and independently reduces this
 specific attack; it does not call C#, Godot or an emulator. Its explicit controlled combat values
 are comparison inputs, not a new general stat extractor.
+
+The arithmetic also checks two authored discriminators outside the admitted consumer profile.
+`CalculatePotentialDamage` and `battlesceneScript_CalculateDamage` clamp ATT−DEF to1 before land
+scaling, which can produce an intermediate0. `inflictdamage.asm` `@ApplyDamageVariance` subtracts
+both rolls using the same bound computed before either subtraction, then applies the final minimum1
+([combat resolution, section5](../../docs/design/contracts/combat-resolution.md)). Thus damage8
+with legal range2 draws1/1 becomes6, while ATT4/DEF4 with multiplier230 produces intermediate0
+and final damage1 after two zero draws. Neither check consumes the comparison's RNG state.
 
 ```powershell
 @'
@@ -2141,14 +2149,32 @@ assert "landEffectAndMoveCost LE15|2" in regular
 assert terrain[pos[target][1]*48+pos[target][0]] == 1
 assert eq["LANDEFFECTSETTING_LE15"] == 0x10
 att, defense, hp = 8, 4, 12
-damage = max(1, ((att-defense)*230) >> 8)
-assert (words[4] >> 12, damage, hp-damage) == (2, 3, 9)
+def land_damage(attack, defense, multiplier):
+    return (max(1, attack-defense)*multiplier) >> 8
+def apply_variance(damage, draw):
+    bound = (damage >> 3)+1  # retain this bound for both source subtractions
+    damage -= draw("spread-1", bound)
+    damage -= draw("spread-2", bound)
+    return max(1, damage)
+# Authored arithmetic checks only; no new combat profile or main/thinking RNG calls.
+authored_calls = []
+def nonzero_spread(label, bound):
+    assert bound == 2
+    authored_calls.append(label)
+    return 1  # legal nonzero draw in [0, 2)
+assert apply_variance(land_damage(12, 4, 256), nonzero_spread) == 6
+assert authored_calls == ["spread-1", "spread-2"]
+zero_intermediate = land_damage(4, 4, 230)
+assert zero_intermediate == 0 and (zero_intermediate >> 3)+1 == 1
+assert apply_variance(zero_intermediate, lambda label, bound: 0) == 1
+potential_damage = land_damage(att, defense, 230)
+assert (words[4] >> 12, potential_damage, hp-potential_damage) == (2, 3, 9)
 # Difficulty 0, priority type 2 selects script3; d5 is movement, not distance.
 thinking_steps = 0
 while True:
     seed, _ = _thinking_rng_step(seed, 1); thinking_steps += 1
     if seed < 3: break
-priority = (16 if damage >= hp else 1) if seed == 0 else max(19-2*movement, 1)
+priority = (16 if potential_damage >= hp else 1) if seed == 0 else max(19-2*movement, 1)
 assert (thinking_steps, seed, priority) == (57, 1, 3)
 # The sole physical-only category performs no main-RNG action-choice call.
 trace = []
@@ -2159,10 +2185,10 @@ def roll(label, bound):
     return value
 dodge = roll("dodge", 32) == 0
 assert not dodge
+damage = land_damage(att, defense, 230)
 critical = roll("critical", 32) == 0  # actor prowess0: 1/32, +1/2 damage
 if critical: damage += damage >> 1
-spread_bound = (damage >> 3)+1
-damage = max(1, damage+roll("spread+", spread_bound)-roll("spread-", spread_bound))
+damage = apply_variance(damage, roll)
 temporary_hp = max(0, hp-damage)
 assert temporary_hp > 0
 double = roll("double", 32) == 0
