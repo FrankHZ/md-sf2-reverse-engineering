@@ -2349,6 +2349,285 @@ corruption exclusion and source cost/class-pass disagreement remain unchanged. A
 admission rule still applies; these boundaries are not an automatic emulator-work queue.
 
 
+### Proposed first manual player physical attack
+
+This decision plan requires independent acceptance and a separate implementation dispatch. The
+current consumer gives Bowie0 control after enemy132's strike, but still offers only movement and
+STAY. The next capability is a manual attack choice, target confirmation and nested cancellation,
+one complete player attack including EXP, then the actual next control boundary. It does not add
+automatic player decisions, a general combat VM, or another state authority.
+
+#### Source seams and explicit comparison inputs
+
+Use pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` and the existing selected-input
+identities/environment route above. Source paths below are relative to `disasm/`. The
+[navigation](../../docs/design/contracts/battlefield-navigation.md),
+[player control](../../docs/design/contracts/battle-functions-control-flow.md),
+[action construction](../../docs/design/contracts/battle-action-construction.md),
+[combat resolution](../../docs/design/contracts/combat-resolution.md),
+[randomness](../../docs/design/contracts/randomness.md) and
+[turn lifecycle](../../docs/design/contracts/battle-control-lifecycle.md) owners remain authoritative.
+No research claim, contract, fixture or schema changes belong to this plan.
+
+| Source seam | Required behavior |
+| --- | --- |
+| `battlefunctions/battlefunctions_2.asm` under `code/gameflow/battle/`, `ProcessBattleEntityControlPlayerInput` `0x24662`; `battlefunctions_0.asm`, `ControlCursorEntity_ChooseTarget` `0x230E2` | Movement confirmation provisionally sets position. Attack opens the supplied legal target list; empty list returns to action choice, B cancels targeting to the action menu without undoing that position, and cancelling the action menu restores turn origin. Target confirmation writes action0 and the target index to `BATTLEACTION_ITEM_OR_SPELL` (offset2), not the spell-target field at offset6. |
+| `battlefield/getactionrange.asm` `GetAttackRange` `0xC306`; `buildactionrangegrids.asm` within `0xC3DE..0xC590`; `buildtargetsarray.asm` `0xC7F2..0xC87A` (under `code/gameflow/battle/`) | Equipped Wooden Sword item71 has range1–1 (`data/stats/items/itemdefs.asm`). Enumerate the source ring about the provisional actor, using placed, living, opposing, non-neutral occupants. `SpellRange1` (`data/stats/spells/spellranges.asm`, `0xC590..0xC5D6`) orders down/right/up/left. Do not reuse AI movement-budget target discovery. The range helper's obstruction branch controls grid marking, not an extra rejection of a living mapped target. |
+| `battleactions/determinedodge.asm` `0xAAFC`, `calculatedamage.asm` `0xABBE`, `determinecriticalhit.asm` `0xAC4E`, `inflictdamage.asm` `0xACEA`, `determinedoubleandcounter.asm` `0xB00E` (under `code/gameflow/battle/`) | A Regular, non-archer attacker against a Hovering target uses dodge range8. Class0 prowess3 uses critical definition3: range16 and an additional `damage >> 2` on success. Double/counter upper fields are0, so both ranges32. Retain the existing validators and both downward spread calls with their shared pre-subtraction bound. |
+| `data/battles/global/landeffectsettingsandmovecosts.asm` `0xD824`; `data/stats/allies/classes/criticalhitdefs.asm` `0xACCA` | Target terrain1 and Hovering row6 give multiplier230/256. Prowess and movement roles reverse from the preceding enemy strike; GIZMO resistance40E3/prowess0 and source/effective stats remain distinct. No archer bonus or status/curse/ailment branch applies here. |
+| `battleactions/earnexp.asm`, `battlesceneScript_CalculateDamageExp` `0xA8CA`, `battlesceneScript_GetKillExp` `0xA968`; `giveexpandgold.asm` `0xA7F8` | Before temporary HP subtraction, ally damage EXP is `floor(killExp * damage / targetMaxHp)`, accumulated with cap49. Actor level1 minus target level0 is1, hence killExp50 even though this is not a kill. Battle01 halves the accumulator, then two range16 calls independently add/subtract1 on zero, with final minimum1. A surviving ally attacker also receives minimum EXP after a miss. |
+| `battleactions/battleactionsengine_2.asm`, `battlesceneScript_End` `0xA34E`; `battlescenes/battlesceneengine_0.asm`, `bsc0A_executeEnemyReaction` `0x18F4E`, `bsc0F_giveExp` `0x190DC` | Construct the enemy HP reaction and award command, restore saved HP, then replay enemy HP/status/MP and actor EXP in order. EXP replay masks the presentation bit, saturates addition at200, subtracts100 once and calls `LevelUp` once if needed. `COMBATANT_OFFSET_EXP` is48; `CHAR_STATCAP_EXP` is200. Do not invoke startup initialization to refresh current stats. |
+
+**Confirmed controlled starting state:** round6/raw12, Bowie0 at(11,15), HP9, enemy132 at(11,14),
+HP5, receipt51, main `AF881234`, copy `0134`, last-target slot4=0, and the unchanged64-slot order.
+Manual origin confirmation followed by choosing the adjacent132 is an **authored player choice**.
+It consumes no combat RNG before confirmation under the existing diagnostic input policy.
+
+Current `OriginalBattle01ControlledAlly` and `Battle01Stats` have no current EXP field. Add an
+explicit **controlled Bowie EXP0 supplement**, named separately from the observed player-ready
+preset; it is not an observed or naturally carried value. Preserve the old preset with unspecified
+EXP. A new named player-attack comparison supplies Bowie0 EXP0, keeps the other two allies' EXP
+unspecified, and otherwise copies the exact accepted party/seed/copy/difficulty. Carry the nullable
+field through the existing preparation-to-live-stats projection; reject this action if actor EXP is
+unspecified. The prepared EXP0/HP12 remain provenance after live EXP15/HP9. No enemy EXP value or
+gold state needs inventing for this nonlethal example.
+
+**Confirmed controlled result:** hit3, no critical/double/counter, enemy HP5→2; damage EXP30,
+halved15, final award15 and explicit Bowie EXP0→15 with no level change. Construction snapshot
+HP5→temporary2→restore5 precedes persistent reaction−3 and EXP replay. Bowie remains HP9 and all
+MP/equipment/status/effective-stat fields remain unchanged. No kill/drop/gold/level work is required.
+
+| Construction/award call | Range | Result | Main high word before→after |
+| --- | ---: | ---: | --- |
+| Dodge | 8 | 7 | AF88→E9EF |
+| Critical, attacker prowess3 | 16 | 14 | E9EF→E12A |
+| First downward spread | 1 | 0 | E12A→6F29 |
+| Second downward spread | 1 | 0 | 6F29→A51C |
+| Double | 32 | 12 | A51C→6273 |
+| Counter | 32 | 31 | 6273→FFDE |
+| EXP +1 test | 16 | 15 | FFDE→FE4D |
+| EXP −1 test | 16 | 14 | FE4D→E9F0 |
+
+Low word1234 and thinking copy0134 are unchanged by these eight calls. Player selection does not
+write enemy AI last-target memory. Receipt52 advances raw12→14 to actual131. Its admitted pursuit
+moves(11,6)→(11,8), source path `[3,3,255]`, then receipt53/raw16 admits inactive133. That standby
+moves(6,6)→(7,5), path `[1,0,255]`, consumes114+19 thinking bytes, and yields copy0234,
+memory `04/34/24/24/34/34`, receipt54/raw18. Round7 generation from current main `E9F01234`
+produces `2:6,131:6,132:6,133:6,0:5,1:5,129:5,128:4,130:4` plus55 FF slots, main `CF491234`,
+tested mask7 and retained region1 activation. Actual player2 at(7,17) receives budget14 control.
+This is the useful implementation endpoint; do not stop at an action receipt or skip the two enemies.
+
+**Presentation/RNG boundary:** these are exact calls in the accepted semantic, presentation-omitted
+comparison, not a claim about original post-scene RAM. Literal `bsc0A_executeEnemyReaction` flags1
+also executes24 range7 main-generator calls in its12-iteration sprite-jitter loop at `0x19004`,
+interleaved with VInt waits. Original diamond-menu and text-wait loops likewise advance main RNG
+and overwrite the high byte of the thinking copy. They are omitted with their presentation loops
+under the existing diagnostic policy, not disabled by changing original flags or forcing rolls.
+Record this exclusion beside the eight-call receipt. Neither `E9F01234` nor `CF491234` is a natural
+post-playback seed claim. Natural timing/caller composition and H4 remain **Unknown**; composition
+into a naturally reached original encounter is **Inferred**. A future original presentation adapter
+must resolve that boundary separately rather than silently consuming this controlled trace as parity.
+
+#### Reproduce the player action and actual continuation
+
+From repository root, run `uv sync --locked`, then the following with registered read-only
+`SF2_UPSTREAM_DISASM` and `SF2_PRIVATE_BATTLE01_DATA` as above. The reused reduction validates the
+pinned revision, selected-data identity and compressed terrain identity. This adds no C#/Godot/ROM
+execution and duplicates none of the earlier movement model.
+
+```powershell
+@'
+from pathlib import Path
+import contextlib, io, json, re
+plan = Path("remake/docs/map03-playability-plan.md").read_text(encoding="utf-8")
+start = plan.index("from pathlib import Path\nimport contextlib, io, json, re",
+                   plan.index("### Implemented first ordinary physical attack"))
+end = plan.index("\n'@ | uv run python", start)
+with contextlib.redirect_stdout(io.StringIO()):
+    exec(plan[start:end])
+assert (main, seed, receipts+1, slots[6][0]) == (0xAF88, 1, 51, 0)
+assert pos[0] == (11,15) and pos[132] == (11,14)
+assert (eq["PER_ACTION_EXP_CAP"], eq["CHAR_STATCAP_EXP"], eq["COMBATANT_OFFSET_EXP"]) == (49,200,48)
+assert (eq["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"], eq["PROWESS_LOWER_COUNTER_SHIFT_COUNT"]) == (4,6)
+# New explicitly authored comparison input, absent from the earlier observed preset.
+actor_exp = 0
+hp_by_actor = {actor: (9 if actor == 0 else 11 if actor < 128 else 5) for actor in pos}
+sword = (root/"data/stats/items/itemdefs.asm").read_text().split("; 71: Wooden Sword")[1].split("; 72:")[0]
+assert re.search(r"range\s+1, 1", sword) and "INCREASE_ATT, 3" in sword
+ranges = (root/"data/stats/spells/spellranges.asm").read_text().split("SpellRange1:")[1].split("SpellRange2:")[0]
+ring = [tuple(map(int, pair)) for pair in re.findall(r"dc\.b\s+(-?\d+),\s*(-?\d+)", ranges)]
+assert ring == [(0,1),(1,0),(0,-1),(-1,0)]
+targets = [a for dx,dy in ring for a in range(128,134)
+           if pos[a] == (pos[0][0]+dx,pos[0][1]+dy) and hp_by_actor[a] > 0
+           and not words[a-128] & 8]
+chosen_target = 132  # authored manual command; no automatic player choice in production
+assert targets == [132] and chosen_target in targets
+terrain_id = terrain[pos[chosen_target][1]*48+pos[chosen_target][0]]
+hover_source = (root/"data/battles/global/landeffectsettingsandmovecosts.asm").read_text().split("; 6: Hovering")[1].split("; 7:")[0]
+hover_land = re.findall(r"landEffectAndMoveCost\s+(LE\d+)\|", hover_source)
+assert terrain_id == 1 and hover_land[terrain_id] == "LE15"
+# Native cancellation detour: two empty plains cells, Regular cost2 each, budget12.
+assert all(terrain[y*48+x] == 1 and (x,y) not in pos.values() for x,y in [(12,15),(12,14)])
+critical_rows = re.findall(r"dc\.b\s+(\d+), CRITICAL_HIT_DAMAGE_FACTOR_(\d+)",
+    (root/"data/stats/allies/classes/criticalhitdefs.asm").read_text())
+critical_range, critical_shift = map(int, critical_rows[3])
+assert (critical_range, critical_shift) == (16,2)
+trace = []  # reuse the preceding source-main generator, with its actual ending state
+dodged = roll("dodge", 8) == 0
+damage = 0; critical = False; accumulated_exp = 0
+if not dodged:
+    damage = land_damage(9, 5, 230)
+    critical = roll("critical", critical_range) == 0
+    if critical: damage += damage >> critical_shift
+    damage = apply_variance(damage, roll)
+    level_difference = 1-0  # unpromoted actor level minus selected GIZMO level
+    kill_exp = 50 if level_difference < 3 else {3:40,4:30,5:20,6:10}.get(level_difference,0)
+    accumulated_exp = min(49, (kill_exp*damage)//5)
+temporary_hp = max(0, hp_by_actor[chosen_target]-damage)
+assert temporary_hp > 0  # otherwise this example requires the source death/kill branches
+double = roll("double", 32) == 0
+counter = roll("counter", 32) == 0
+assert not double and not counter  # ordinary adjacent, opposite-side, status0 validators
+award = accumulated_exp >> 1
+award += int(roll("exp-plus", 16) == 0)
+award -= int(roll("exp-minus", 16) == 0)
+award = max(1, award)
+assert [r[2] for r in trace] == [7,14,0,0,12,31,15,14]
+assert (damage, critical, accumulated_exp, award, main, seed) == (3,False,30,15,0xE9F0,1)
+restored_hp = hp_by_actor[chosen_target]
+reaction = dict(target=chosen_target, hpDelta=-damage, mpDelta=0, status=0, flags=1)
+hp_by_actor[chosen_target] = max(0, restored_hp+reaction["hpDelta"])
+exp_after = min(200, actor_exp+award)
+assert exp_after < 100  # otherwise admit the real LevelUp path; never discard its threshold
+assert (temporary_hp, restored_hp, hp_by_actor[132], hp_by_actor[0], exp_after) == (2,5,2,9,15)
+assert last_targets == [255]*4+[0]+[255]*43
+attack = dict(actor=0, action=0, targetWord=chosen_target, hp=[5,2,5,2], exp=[actor_exp,award,exp_after],
+    reaction=reaction, rng=[[a,b,c,d+"1234",e+"1234"] for a,b,c,d,e in trace],
+    main=f"{main:04X}1234", copy=f"{seed:02X}34", receipts=52, cursor=14, nextActor=slots[7][0])
+p131 = pursue(slots[7][0]); s133 = standby(slots[8][0])
+assert (p131["actor"],p131["destination"],p131["path"]) == (131,(11,8),[3,3,255])
+assert (s133["actor"],s133["destination"],s133["path"]) == (133,(7,5),[1,0,255])
+assert s133["rolls"] == [(8,7,114),(3,2,19)] and seed == 2
+for region in data["aiRegions"]:
+    if not tested & (1 << region["id"]):
+        flags[region["id"]] |= any(inside(region,pos[a]) for a in range(3))
+        tested |= 1 << region["id"]
+for i in range(6):
+    if flags[entities[i+3]["behavior"]["primaryRegion"]]: words[i] |= 1
+next_order = order()
+assert next_order[:9] == [(2,6),(131,6),(132,6),(133,6),(0,5),(1,5),(129,5),(128,4),(130,4)]
+assert next_order[9:] == [(255,255)]*55 and (main,tested) == (0xCF49,7)
+assert list(mem.values()) == [4,52,36,36,52,52] and hp_by_actor[132] == 2 and exp_after == 15
+print(json.dumps(dict(policy="controlled semantic replay; presentation RNG loops omitted", attack=attack,
+    nextEnemies=[p131,s133], round7=dict(order=next_order, main=f"{main:04X}1234", copy="0234",
+    receipts=54, cursor=0, nextActor=2, position=pos[2], budget=14, bowieHp=hp_by_actor[0],
+    enemy132Hp=hp_by_actor[132], bowieExp=exp_after, memory=list(mem.values()), tested=tested)),separators=(",",":")))
+'@ | uv run python -X utf8 -
+```
+
+#### Minimal implementation boundary and future ownership
+
+Admit manual ordinary class0/Wooden Sword attacks against the existing regular GIZMO profile,
+with source miss/critical arithmetic, both follow-up decisions and the ally award path. Reject a
+validated extra strike/counter, lethal/kill/drop/gold, curse/ailment, unsupported target/attacker
+profile, unknown EXP, required level transition or after-turn effect atomically. Evaluate the real
+award before deciding whether a level boundary is needed; neither cap EXP below100 nor force an
+RNG result to keep a case inside scope. The computed comparison needs none of those extensions.
+
+1. Add nullable current EXP to the existing controlled ally/live-stat owners and a separate named
+   EXP0 comparison in the existing preset owner. Keep the old preset and its admission valid with
+   EXP unspecified. The new preset admits only its declared Bowie EXP0 supplement and unchanged
+   accepted fields; action admission requires known current EXP and links it back to preparation.
+   Initialization, stat copies, equality and every movement/round transition preserve that field.
+2. Extend the existing player control state with a typed target-selection stage and ordered legal
+   targets. At ActionChoice, A explicitly chooses Attack; I/J/K/L cycle the source list, Space
+   confirms the selected target, Backspace returns to ActionChoice at the provisional position.
+   A second Backspace uses existing movement cancellation to restore origin. Space at ordinary
+   ActionChoice still commits strict STAY. Empty/unavailable targets leave the action choice intact.
+   No RNG, HP, EXP, completion receipt or cursor advance occurs while opening/cycling/cancelling.
+3. Put exact-snapshot/actor/phase/selected-target admission and one final replacement in a focused
+   Application facade. Recompute legal range, occupancy, profiles and effects at confirmation.
+   Reuse existing integer arithmetic/main-roll/reaction value types through explicit bounded
+   profiles; retain the strict enemy resolver wrapper. Do not reuse its enemy-only dodge/critical
+   constants, ally reaction role, last-target write or no-EXP assumption for the player.
+4. Add a distinct player physical receipt/policy to `Battle01TurnCompletion.cs`, not a STAY receipt
+   with changed HP. Record target/action words, profile, range origin, ordered full RNG images,
+   HP construction/restore/replay, accumulated/halved/randomized EXP and persistent before/after.
+   Preserve empty cleanup passes, faction3/6, after-turn ordering and source cursor advance.
+5. Fix existing history assumptions explicitly: `RequireThinkingHistory` currently skips all
+   player receipts; its physical path assumes enemy AI last-target writes and ally-only HP origins.
+   Process player physical receipts before that skip, rewind their main/HP/EXP channels and compare
+   both factions with the correct original/prepared profile. Preserve strict enemy decision counts,
+   first-round STAY history and enemy-only last-target memory. `RequireRegularGizmo` currently
+   requires HP5; continuing actors may have positive HP≤5 only when linked reaction history proves
+   it. Keep startup/source HP5 and all source identity, max HP, ATT/DEF, resistance/prowess, equipment,
+   status, activation and deployment checks strict. Damaged132 must survive later admitted AI and
+   generation without healing or bypassing provenance; unreceipted HP drift still rejects.
+6. Extend the thin presenter with target highlight/cancel instructions, live EXP and the latest
+   player result derived from existing receipts. Retain the visible hit/EXP result through actual
+   131/133 dispatch and round7 player2 control; the existing current-round-only summary lookup must
+   not immediately hide it on generation. Keep the finite actual-candidate relay and manual players.
+
+The following exact future paths require separate implementation ownership, all relative to
+`remake/`; only this plan file is writable in the current slice:
+
+| Paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01PlayerPhysicalAttack.cs` (new); `Battle01EnemyPhysicalAttack.cs`, `Battle01Initialization.cs`, `Battle01PlayerMovement.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs` in that directory | Manual legal target/selection/attack; focused shared arithmetic; EXP copies; both-faction history and damaged-enemy continuation; distinct completion policy. |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (new) in the latter directory | Explicit EXP0 input supplement, live projection, atomic selection/cancel/confirmation facade. |
+| `game/src/Map3InputAdapter.cs`, `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` | Map existing A binding only in battle context, manual action flow, actual relay and persistent HP/EXP/result projection. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerPhysicalAttackTests.cs` (new); `Battle01InitializationTests.cs`, `Battle01PlayerMovementTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in that directory | Source branches, cancellation, EXP/provenance, strict old policies, linked HP/EXP and later AI/generation. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Named input admission, exact snapshots, action lifecycle and early/late atomic rejection. |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Both existing required real Content methods and the complete selected-input continuation. |
+| `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`, `PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Input ownership/no-repeat, nested cancel, visible EXP/result and bounded native checkpoints. |
+| `README.md`; `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` | Current boundary, EXP input provenance, semantic RNG policy, reproducible recipes and remaining unsupported behavior. |
+
+These 33 paths form three buildable commits: Domain/input projection and owning tests; Application/
+Godot/native integration and owning tests; then the six current-state documentation owners.
+No fixture/schema/research, asset, package/toolchain, legacy or unrelated registry change is needed.
+
+#### Future implementation acceptance and plan-only gate
+
+- Compare the independent reduction against Domain/Application and both required real Content
+  methods in `Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests`, project
+  `tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj`:
+  `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` and
+  `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending`. Both must execute
+  with `SF2_REQUIRE_PRIVATE_TESTS=1` and the documented registered inputs, never skip or move owner.
+  Extend the latter from its real accepted enemy strike through manually specified player choices,
+  attack receipt52, actual131/133 and round7 player2 with HP9/2 and EXP15; compare all64 order slots,
+  eight main calls, unchanged copy at attack, later133 thinking trace and preparation/provenance.
+- Test empty/wrapped legal lists, live/opposing/neutral/placed/range admission, target cancellation
+  preserving a non-origin provisional tile, second cancellation restoring origin, and unchanged
+  RNG/HP/EXP/history on every non-committing input. Verify stale/foreign/duplicate/wrong-actor or
+  wrong-phase requests and target/occupancy/profile drift preserve exact session identity.
+  Exercise miss minimum EXP, real prowess3 criticals, integer damage EXP/cap/halving and independent
+  award±1 calls, and reject real follow-up/lethal/level requirements. Preserve a failure discovered
+  after local HP and EXP replay but before finalization without publishing either channel.
+  Forge HP/EXP/main/copy/receipt role/policy independently; ensure old enemy/STAY paths and generated
+  rounds retain live HP/EXP. Include admitted damaged-enemy continuation and unexplained HP rejection.
+- Use the committed planner's locked managed and official Godot selection plus normal verification.
+  Preserve completed full-suite failures and correct the exact nodes narrowly. For future native
+  acceptance, add bounded mode `player-physical-attack` to the existing isolated recipe, with six
+  captures: (1) actual Bowie HP9/EXP0 ready; (2) manual move to(12,14), confirm and target132 selection;
+  (3) target Backspace returning to ActionChoice at(12,14); then a second Backspace restores(11,15);
+  (4) manual origin confirmation/A selecting132; (5) a clearly labeled copy of that exact selected
+  snapshot after direct Application confirmation, showing reaction/award receipt52; (6) restore the
+  exact physical snapshot and press Space, allowing production relay to reach round7 player2 with
+  Bowie HP9/EXP15 and enemy132 HP2. The copied and physical attack receipts must match. Check the
+  provisional(12,14) path against actual terrain before using it; no teleport or production pause.
+  Compare source archives/production code/export provenance, inspect all frames and retain bounded
+  process completion. Recheck affected enemy-physical/pursuit native contracts when the shared
+  HP/EXP/result presentation changes; other modes run only on actual invalidation. No native run
+  grants original presentation, seed-lifetime or H4 parity.
+- **Current plan-only acceptance:** `uv sync --locked`, this pure reduction, relative links,
+  private boundary and diff checks, then a clean committed authoritative planner and normal
+  `uv run sf2 verify`/public-core. No local .NET, Godot, native, full Python, ROM or H3 execution
+  is required to approve this document; final public CI may run its fixed workflow. Update onto
+  current accepted `origin/main`, commit/push only this plan, and freeze one Draft PR for independent
+  review. Implementation remains undispatched until separately accepted. Report unavailable default
+  H0 input honestly; do not repair it by copying a private ROM into this plan worktree.
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
