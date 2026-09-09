@@ -60,6 +60,19 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("Space",ready.Controls); Assert.True(ready.CanConfirm);
         var cancelled=Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(current,0),0);
         Assert.Equal(ready.AttackResult,PrivateBattle01Presenter.BuildProjection(cancelled,"Cancelled.").AttackResult);
+        var chosen=Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current,0),0);
+        var targetView=PrivateBattle01Presenter.BuildProjection(chosen,"Target selected.");
+        Assert.Equal(132,targetView.SelectedTargetIndex); Assert.Contains("previous",targetView.Controls);
+        Assert.Equal((byte?)0,targetView.Units.Single(unit=>unit.Index==0).Exp);
+        current=Battle01PlayerPhysicalAttack.Confirm(chosen,0,Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp);
+        var playerResult=PrivateBattle01Presenter.BuildProjection(current,"Player hit.");
+        Assert.True(playerResult.PhysicalAttackCompleted); Assert.Contains("HP 5 -> 2",playerResult.AttackResult);
+        Assert.Contains("EXP +15: 0 -> 15",playerResult.AttackResult);
+        current=CompleteAuthoredTurn(current); current=CompleteAuthoredTurn(current);
+        current=Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current),2).State!;
+        var next=PrivateBattle01Presenter.BuildProjection(current,"Round 7. Player 2 ready.");
+        Assert.Equal(playerResult.AttackResult,next.AttackResult); Assert.Equal(2,next.ActorIndex);
+        Assert.Equal((byte?)15,next.Units.Single(unit=>unit.Index==0).Exp);
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -226,7 +239,7 @@ public sealed class PrivateBattle01PresenterTests
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
-                combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63])));
+                combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null)));
         var enemy = new Battle01EnemyInput(39, 39, 0, new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0,
             [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
         var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;

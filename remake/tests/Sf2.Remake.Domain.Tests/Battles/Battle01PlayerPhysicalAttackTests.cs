@@ -124,6 +124,26 @@ public sealed class Battle01PlayerPhysicalAttackTests
     }
 
     [Fact]
+    public void GeneratedRoundAndDamagedEnemyControlRetainThePlayerReactionProvenance()
+    {
+        var current=Completed();
+        current=Battle01EnemyPursuit.CompleteNext(current,131,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current=Battle01EnemyStandby.CompleteNext(current,133,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var generated=Battle01FirstRound.EnterNext(current);
+        var forged=Battle01FirstRoundTests.CopyCurrent(generated,mainImage:generated.RandomSeedImage ^ 0x10000);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01NextPlayerControl.Enter(forged,2));
+        current=Battle01NextPlayerControl.Enter(generated,2).State!;
+        current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current,2),2,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current=Battle01EnemyPursuit.CompleteNext(current,131,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        Assert.Equal(132,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+        Assert.Equal(2,current.Roster[7].Stats.HpCurrent);
+        // A valid damaged actor can still classify its actual physical cohort; it is never healed to source HP5.
+        Assert.Throws<Battle01AttackSelectionRequiredException>(()=>Battle01EnemyPursuit.CompleteNext(current,132,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+        Assert.Equal(5,current.Roster[7].EnemySource!.SourceStats.HpCurrent); Assert.Equal(2,current.Roster[7].Stats.HpCurrent);
+    }
+
+    [Fact]
     public void RealSeedsExerciseMissCriticalAndIndependentExpVariance()
     {
         Assert.Equal(0, Battle01PlayerPhysicalAttack.DamageExperience(0, 5));

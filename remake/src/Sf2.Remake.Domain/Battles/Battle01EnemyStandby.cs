@@ -130,12 +130,24 @@ public static class Battle01EnemyStandby
         uint main = current.RandomSeedImage;
         int mainRound = current.FirstRound?.RoundNumber ?? 0;
         bool mainAnchored = true;
+        uint? followingGenerationMain = null;
+        bool followingIsCurrent = false;
+        void RewindMain(uint before, uint after)
+        {
+            if (mainAnchored && main != after)
+                throw new ArgumentException("Physical main RNG history must remain linked.", "attack.history");
+            if (!mainAnchored && followingGenerationMain is { } generated)
+                Battle01FirstRound.RequireGenerationFromRecordedMain(current, after, generated, followingIsCurrent);
+            main = before; mainAnchored = true; followingGenerationMain = null;
+        }
         for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
         {
             if (!Battle01TurnCompletion.HasValidPolicy(receipt))
                 throw new ArgumentException("Retain the completion kind's distinct policy.", "completion");
             if (receipt.RoundNumber != mainRound)
             {
+                followingGenerationMain = mainAnchored && receipt.RoundNumber == mainRound - 1 ? main : null;
+                followingIsCurrent = mainRound == current.FirstRound?.RoundNumber;
                 mainRound = receipt.RoundNumber; mainAnchored = false;
             }
             if (receipt.CompletedActorIndex < 128)
@@ -150,7 +162,7 @@ public static class Battle01EnemyStandby
                         !Battle01EnemyPhysicalAttack.SameStats(stats[player.ActorIndex], player.ActorAfterStats) ||
                         !Battle01EnemyPhysicalAttack.SameStats(stats[player.TargetIndex], player.Effect.AfterStats))
                         throw new ArgumentException("Player HP, EXP and both RNG channels must remain linked.", "attack.history");
-                    main = player.MainSeedBefore; mainAnchored = true;
+                    RewindMain(player.MainSeedBefore, player.Effect.MainSeedAfter);
                     stats[player.ActorIndex] = player.Actor.Stats; stats[player.TargetIndex] = player.Effect.BeforeStats;
                     damaged.Add(player.ActorIndex); damaged.Add(player.TargetIndex);
                 }
@@ -172,7 +184,7 @@ public static class Battle01EnemyStandby
                     !Battle01EnemyPhysicalAttack.SameStats(stats[actor], attack.Actor.Stats) ||
                     !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], attack.Effect.AfterStats))
                     throw new ArgumentException("Physical main RNG, last target and HP history must remain linked.", "attack.history");
-                main = attack.MainSeedBefore; mainAnchored = true;
+                RewindMain(attack.MainSeedBefore, attack.Effect.MainSeedAfter);
                 targets[actor - 128] = attack.LastTargetBefore;
                 stats[attack.TargetIndex] = attack.Effect.BeforeStats; damaged.Add(attack.TargetIndex);
             }
@@ -183,7 +195,7 @@ public static class Battle01EnemyStandby
                 if (receipt.RoundNumber <= 1 || before != after || memoryBefore != memoryAfter ||
                     (mainAnchored && pursuit.MainSeedImage != main))
                     throw new ArgumentException("Pursuit must preserve its round's main RNG and independent thinking state.", "completion");
-                main = pursuit.MainSeedImage; mainAnchored = true;
+                RewindMain(pursuit.MainSeedImage, pursuit.MainSeedImage);
             }
             else
             {

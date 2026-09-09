@@ -51,9 +51,9 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
     [InlineData("status", "status")]
     [InlineData("equipment", "attack.targetProfile")]
     [InlineData("profile", "attack.targetProfile")]
-    [InlineData("lethal", "attack.lethal")]
-    [InlineData("double", "attack.double")]
-    [InlineData("counter", "attack.counter")]
+    [InlineData("unreceiptedHp", "attack.history")]
+    [InlineData("unreceiptedDoubleSeed", "attack.history")]
+    [InlineData("unreceiptedCounterSeed", "attack.history")]
     public void InvalidInputsAndComputedFollowupsRetainEveryCurrentChannel(string mutation, string field)
     {
         var session = AttackSession(); var source = session.PrivateOriginalBattle01!;
@@ -65,17 +65,19 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
             case "occupancy": occupancy[11 + 14 * 48] = 128; break;
             case "status":
             case "equipment":
-            case "lethal":
-                var changed = new Battle01Stats(s.Level, s.HpMax, mutation == "lethal" ? (ushort)1 : s.HpCurrent,
+            // Fabricated HP1 has no physical receipt; history admission rejects before resolution.
+            case "unreceiptedHp":
+                var changed = new Battle01Stats(s.Level, s.HpMax, mutation == "unreceiptedHp" ? (ushort)1 : s.HpCurrent,
                     s.MpMax, s.MpCurrent, s.Attack, s.Defense, s.Agility, s.Move, mutation == "status" ? (ushort)1 : s.Status,
                     mutation == "equipment" ? new ushort[] { 127, 0, 127, 127 } : s.Items, s.Spells);
                 roster[0] = Internal<Battle01Combatant>(target.Deployment, changed, target.ClassId, target.EnemySource, target.AiBitfield, target.Position);
                 break;
             case "profile":
                 roster[0] = Internal<Battle01Combatant>(target.Deployment, s, (byte?)4, target.EnemySource, target.AiBitfield, target.Position); break;
-            // Authored main seeds: six source draws [1,19,0,0,0,12] / [1,13,0,0,24,0].
-            case "double": main = 0x00E71234; break;
-            case "counter": main = 0x00A91234; break;
+            // These arbitrary images have no matching round/action history, so admission rejects before resolution.
+            // Real source-seed double/counter branches remain covered by the Domain resolver tests.
+            case "unreceiptedDoubleSeed": main = 0x00E71234; break;
+            case "unreceiptedCounterSeed": main = 0x00A91234; break;
         }
         var initial = Internal<Battle01InitializedState>(roster, b.Regions.ToArray(), terrain, occupancy, main, b.RandomSeedCopy);
         var memory = Internal<Battle01InitializedState>(initial, roster, occupancy, b.AiMemory.ToArray(), b.RandomSeedCopy!.Value, main, b.AiLastTargets.ToArray());

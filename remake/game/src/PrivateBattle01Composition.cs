@@ -6,7 +6,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
 
-internal enum PrivateBattle01Input { None, Enter, North, East, South, West, Confirm, Cancel }
+internal enum PrivateBattle01Input { None, Enter, North, East, South, West, Confirm, Cancel, Attack }
 
 // Thin consumer: the session remains the sole owner of admission and battle snapshots.
 internal static class PrivateBattle01Ui
@@ -22,7 +22,7 @@ internal static class PrivateBattle01Ui
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
-                OriginalBattle01ControlledPartyPreset.PlayerReadyComparison);
+                OriginalBattle01ControlledPartyPreset.PlayerAttackComparison);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -50,6 +50,32 @@ internal static class PrivateBattle01Ui
         if (current.Battle.FirstControl is not { } control) return null;
         if (input == PrivateBattle01Input.Enter)
             return "Battle already initialized; current actor and round retained.";
+        if (control.Movement.Stage == Battle01PlayerMovementStage.TargetSelection ||
+            (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice && input == PrivateBattle01Input.Attack))
+        {
+            PrivateOriginalBattle01PlayerAttackResult? attack = input switch
+            {
+                PrivateBattle01Input.Attack when control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice =>
+                    session.BeginPrivateOriginalBattle01PlayerAttack(current, control.ActorIndex),
+                PrivateBattle01Input.North or PrivateBattle01Input.West =>
+                    session.CyclePrivateOriginalBattle01PlayerAttackTarget(current, control.ActorIndex, -1),
+                PrivateBattle01Input.South or PrivateBattle01Input.East =>
+                    session.CyclePrivateOriginalBattle01PlayerAttackTarget(current, control.ActorIndex, 1),
+                PrivateBattle01Input.Cancel => session.CancelPrivateOriginalBattle01PlayerAttackTarget(current, control.ActorIndex),
+                PrivateBattle01Input.Confirm => session.ConfirmPrivateOriginalBattle01PlayerAttack(current, control.ActorIndex),
+                _ => null,
+            };
+            return attack switch
+            {
+                PrivateOriginalBattle01PlayerAttackApplied { Operation: PrivateOriginalBattle01PlayerAttackOperation.Confirm } applied =>
+                    DispatchNext(session, applied.Snapshot),
+                PrivateOriginalBattle01PlayerAttackApplied { Operation: PrivateOriginalBattle01PlayerAttackOperation.Cancel } =>
+                    "Target cancelled. Provisional position retained; Backspace restores turn origin.",
+                PrivateOriginalBattle01PlayerAttackApplied => "Select target: I/J previous, K/L next, Space attack, Backspace cancel.",
+                PrivateOriginalBattle01PlayerAttackRejected rejected => rejected.Diagnostic.Message,
+                _ => null,
+            };
+        }
         if (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice)
         {
             if (input == PrivateBattle01Input.Confirm)
@@ -60,8 +86,9 @@ internal static class PrivateBattle01Ui
                     _ => "STAY unavailable.",
                 };
             if (input != PrivateBattle01Input.Cancel)
-                return "Action choice: Space commits STAY; Backspace cancels.";
+                return "Action choice: A selects Attack; Space commits STAY; Backspace cancels.";
         }
+        if (input is PrivateBattle01Input.Attack or PrivateBattle01Input.None) return null;
 
         PrivateOriginalBattle01PlayerMovementResult result;
         if (input == PrivateBattle01Input.Confirm)

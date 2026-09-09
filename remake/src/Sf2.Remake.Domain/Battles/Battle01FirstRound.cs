@@ -127,6 +127,18 @@ public static class Battle01FirstRound
             throw new ArgumentException("The previous round's completion history must be retained.", "completion");
     }
 
+    internal static void RequireGenerationFromRecordedMain(Battle01InitializedState current, uint before, uint after, bool currentOrder)
+    {
+        // Admitted no-effect turns keep AGI and all nine living slots. Reuse the source generator,
+        // so a physical receipt's main endpoint also constrains the following generated round.
+        ushort word=(ushort)(before >> 16);
+        var slots=GenerateTurnOrder(current.Roster.Select(unit=>new TurnCandidate((byte)unit.Index,
+            (byte)unit.Position.X,unit.Stats.HpCurrent,unit.Stats.Agility)),ref word);
+        if ((((uint)word << 16) | (before & 0xFFFF)) != after ||
+            (currentOrder && !slots.SequenceEqual(current.FirstRound!.Slots)))
+            throw new ArgumentException("Generated main RNG and order must follow the recorded preceding main endpoint.", "attack.history");
+    }
+
     private static (Battle01Combatant[] Roster, bool[] Flags, ushort Tested) ActivateEnemies(Battle01InitializedState current)
     {
         var flags = current.RegionFlags90Through105.ToArray();
