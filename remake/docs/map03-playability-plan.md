@@ -1653,6 +1653,373 @@ actual round3 snapshot. No ROM/H3 replay or asset transaction is required. Activ
 victory, natural seed lifetime/timing/presentation and H4
 remain **Unknown** or unimplemented.
 
+### Proposed activated-enemy pursuit and attack-selection boundary
+
+**Decision for the next implementation:** admit ordinary activated Battle01 GIZMOs with commandsets6/7
+and no viable ATTACK1 physical, item or spell cohort. Follow failed commands through MOVE1 and complete
+its movement plus the existing controlled no-effect STAY. Stop before attack-priority evaluation when
+a physical cohort becomes nonempty. This exposes enemies advancing toward the party and the next
+real action boundary. This section is a decision/reduction, not an implemented capability.
+
+The current reachable entry is round2 Bowie(8,17)->(11,15), Regular1 cost10/budget12, followed by
+manual STAY and the actual remaining candidates. Preserve the existing first-round sentinel,
+nine-unit projection, classes0/1/4, unchanged effective stats, player movement/cancel and subsequent
+origin-STAY choices. The implementation must continue through actual round3 order, its inactive
+prefix, both activated enemies and actual round4 player1 control. The same explicit player choices
+then reach the round6 enemy132 attack-selection boundary. No new initialization or assumed player
+search is part of this decision.
+
+#### Source support, economy exclusion and preserved disagreements
+
+**Confirmed source structure:** all paths below are relative to the pinned disasm
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; the USA retail identity remains the preceding reduction's
+baseline. Accepted behavioral owners are [battle lifecycle](../../docs/design/contracts/battle-control-lifecycle.md),
+[AI decision](../../docs/design/contracts/battle-ai-decision.md),
+[action construction](../../docs/design/contracts/battle-action-construction.md),
+[battle-loop research](../../docs/research/battle-loop.md) and
+[AI research](../../docs/research/battle-ai.md). Action selection precedes action construction and
+resolution; an eligible cohort below does not establish a selected attack, hit, damage or presentation.
+
+| Pinned source owner | Bounded consequence |
+| --- | --- |
+| `code/gameflow/battle/battleloop/activateenemies.asm`, ActivateEnemies/UpdateEnemyActivationBitfield (ROM2550C..25544); `triggerregions.asm`, TriggerRegionsAndActivateEnemies | Retain flags90..105 and activation words; test current allies only for untested regions; primary activation sets bit0, secondary sets bits0/1. Ordinary StartAiControl clears the tested mask, not the flags. |
+| `code/gameflow/battle/ai/startaicontrol.asm`, StartAiControl; `data/battles/global/aicommandsets.asm`, AiCommandset06/07 | Non-swarm, nonspecial active GIZMO uses regular mode0. Set6 tries ATTACK1, HEAL1, SUPPORT, MOVE1, STAY; set7 first tries MOVE_ORDER1. Stop at the first successful command. |
+| `code/gameflow/battle/ai/command/moveorder.asm`, aiCommand_MoveOrder | Primary order FF fails this command; its provisional STAY/FF output is not a completed turn. No replacement follow order is available in the admitted inputs. |
+| `code/gameflow/battle/ai/command/attack/prioritizetargets.asm`, PrioritizeTargets; `attack/determinebattleaction.asm`, DetermineBattleaction; `command/heal.asm` and `command/support.asm` | Items127, spells63 and MP0 provide no item/spell/heal/support action. With an empty physical cohort, ATTACK1 fails without target-priority/thinking RNG; HEAL1 and SUPPORT also fail. MOVE1 is then reached. |
+| `code/gameflow/battle/battlefield/getreachabletargets.asm`, GetTargetsReachableByAttack; `getactionrange.asm`, GetAttackRange; `updateoccupiedterrainfunctions.asm` | Build the enemy's MOV*2=10 grid with living allies blocked by temporary occupied-terrain bit7. Unarmed physical range is exactly1; test every living/on-map ally through DetermineAttackPosition, using current occupancy. |
+| `code/gameflow/battle/ai/command/move.asm`, aiCommand_Move (ROMF1D4..F522) | Build raw cost grid with budget128, collect allies in index order and sort target costs ascending/stably. Rebuild from the chosen target and use hardcoded preliminary movement budget4. Reconcile the provisional destination against the actor's opponent-blocked budget10 grid and occupancy, trying radius0 then radius1. |
+| `code/gameflow/battle/battlefield/buildmovestringfunctions.asm`, BuildMoveString and BuildMoveStringForAi/alt_BuildCancelMoveString; `determineattackposition.asm`, DetermineAttackPosition (ROMC71A..C7F2) | Preserve the accumulating direction mask and repeat-direction rule. The preliminary walker follows the target-rooted grid; the final walker reverses/inverts its backward actor-rooted path. A radius scan keeps the strictly smallest unsigned cost, first on ties, with an immediate cost0 return. |
+
+**Confirmed alias calculation; explicit remake policy:** ActivateEnemies has no RTS after its32
+enemy iterations. It falls into UpdateEnemyActivationBitfield once more with d0=A0h. In
+`code/common/stats/combatantstats_3.asm`, GetCombatantEntryAddress rejects `>160` with `bhi`, so160
+is admitted: `FFE800h + (160-96)*56 = FFF600h`, the CURRENT_GOLD address. Fake HP at
+FFF60E..FFF60F reads the four deals nibbles for Protect/Quick/Running/White Ring; fake X atFFF62E
+is another deals byte. If fake X is nonnegative and fake HP nonzero, the fallthrough can read fake
+trigger regions atFFF636 and write the activation word atFFF634..FFF635. Its bit0 aliases the low
+quantity bit of item99/GODDESS_STAFF in DEALS_ITEMS (FFF604 base). Setting that bit does not
+increment an already odd quantity. The `sf2enums.asm` offsets/item IDs and `sf2const.asm` addresses
+make this derivation reproducible below.
+
+Empty held/equipped party items do **not** establish empty shop deals. Actual deals bytes and the
+natural occurrence of this economic corruption are **Unknown** for this supplied battle projection.
+Retain the remake's roster-only activation projection as an explicit policy: it does not emulate
+the out-of-roster deals write and makes no original-fidelity claim about shop inventory. No new
+economy state is required for this slice. In this exact battle reduction the real enemies already
+tested all three regions (mask7); the extra call can consult retained flags and mutate aliased deals,
+but cannot change the nine-unit roster, occupancy, order, main RNG or thinking copy. Do not generalize
+this scoped independence to untested regions or other battle/economy states.
+
+Preserve these owner disagreements without silently changing research fixtures or contracts:
+
+- The earlier seed-copy paragraph already records the contract's low-byte wording versus the
+  source/accepted model's **high byte**. Continue the accepted high-byte generator with low byte34h.
+- The movement research and `tests/fixtures/h2/battle-ai-movement-static-v1.json` describe class
+  reordering as applying when targets are enemies. The actual `aiCommand_Move` @loc_20 tests d0
+  bit7 after GetMoveCostToEntity has overwritten d0 with the last cost; sorting does not replace d0.
+  This reduction admits only complete target costs below128, so the disputed class branch is skipped.
+  The general high/invalid-cost case remains **Unknown** here and belongs to the AI movement owner.
+- DetermineAttackPosition's source comment says higher movecost, but `cmp.b candidateMoveCost,d0`
+  followed by `bcc @Next` keeps a strictly smaller unsigned cost. Use the instructions for this
+  radius0/1 boundary. The broader comment/wording reconciliation belongs to its research owner.
+
+Static inspection plus the bounded reduction suffices for this implementation decision under
+[ADR0016](../../docs/decisions/0016-remake-start-evidence-deferral.md). It does not establish natural
+caller seed lifetime, timing, rendered frames or hardware behavior; no H3 replay is admitted here.
+
+#### Actual-order comparison and pure reduction
+
+**Inferred original-game composition; Confirmed deterministic reduction:** begin with the preceding
+accepted first-round sentinel. Player turns are explicit scenario choices, not automated gameplay.
+Round2 retains its existing order, enemy paths, mainAA861234, copy0034 and memory
+`[04,04,04,24,34,04]`h even though Bowie ends at(11,15). At round3 entry only region1/flag91 is true;
+tested mask=7 and words128..133 are `[2060,2060,2060,2061,2071,2070]`h.
+
+Round3 order/scores are `2:8,129:6,130:6,131:6,128:5,133:5,0:4,1:4,132:4` with
+main9BD71234. Player2 confirms origin/STAY. Inactive129 moves(9,3)->(9,5) with `[3,3,FF]`,
+memory04->24; inactive130 moves(6,3)->(5,4) with `[3,2,FF]`, memory04->14.
+Each consumes256 thinking bytes and leaves copy0034. Their occupancy is input to the first pursuit:
+
+| Actual candidate | Decision and retained state |
+| --- | --- |
+| 131, raw offset6, commandset6 | Origin(8,4). Empty action cohorts; target costs0/1/2=28/28/28, stable target0. Preliminary `[0,3,FF]` reaches(9,5), now occupied by129. Radius0 fails; radius1 considers(9,4) cost2 first, then(8,5) cost2 tie, occupied(10,5), and(9,6) cost6. Final `[0,FF]` reaches(9,4), cost2. Action3/STAY; memory24, copy0034 and main unchanged. |
+| 128, then133 | Remain inactive. 128 moves(7,2)->(6,3), `[3,2,FF]`, memory04->14,256 thinking bytes;133 moves(6,4)->(7,5), `[3,0,FF]`, memory04->34,190 bytes, copy0234. Players0/1 then explicitly STAY. |
+| 132, raw offset16, commandset7 | MOVE_ORDER1 fails for orderFF; other action cohorts empty. Origin(10,5), target costs0/1/2=22/26/30, target0. Preliminary and final `[0,3,FF]` reach(11,6), cost4. Action3/STAY; memory34, copy0234 and main unchanged. |
+
+The round3 sentinel retains27 receipts, main9BD71234, copy0234, memory
+`[14,24,14,24,34,34]`h, tested0 and flag91. Only four inactive turns consume its958 thinking bytes;
+the active turns consume none. Round4 generates main51DC1234 and actual order
+`1:6,2:6,130:6,132:6,129:5,131:5,0:4,128:4,133:4`, so the next manual control is player1.
+
+With all later players explicitly choosing origin/STAY, active132 advances(11,6)->(11,8) in round4
+and ->(11,10) in round5;131 advances(9,4)->(10,5)->(11,6). Round4 ends copy0234 with512 thinking
+bytes; round5 mainDE251234/copy5634 with380. Round6 generates main07821234 and
+`2:7,129:6,130:6,1:5,128:5,132:5,0:4,131:4,133:4`. After actual2/129/130/1/128, enemy132 at raw
+offset10 has physical cohort `[0]`: an eligible attack position is(11,14), grid cost8, for Bowie(11,15).
+Stop before priority/RNG/selection or movement. Retain50 completed receipts, last actor128,
+copy0034, memory `[04,34,24,24,34,24]`h, tested0, and origin132(11,10). This is eligibility, not a
+resolved or selected attack.
+
+Reproduce after `uv sync --locked` with the same two read-only environment inputs as the preceding
+reduction. The script reuses only that owner's pinned-input/initial-state/path-helper prelude,
+checks the accepted static movement/control fixtures, then models this scenario independently of
+C#/Godot. It prints each actual order, all nine occupied positions, flags/words, six used memory
+slots, RNG images, command outcomes and cursor; the other42 memory slots remain0, all48 last-target
+slots remainFF. It preserves the fixture wording disagreement and adds the narrower cost admission.
+
+```powershell
+@'
+from pathlib import Path
+import json
+from sf2tool.h2.battle_ai import _parse_movement,_parse_control
+plan=Path("remake/docs/map03-playability-plan.md").read_text(encoding="utf-8")
+section=plan[plan.index("### Implemented repeatable inactive-round continuation"):]
+base=section[section.index("import hashlib,json,os,subprocess"):section.index("for number in [2,3]:")]
+exec(base)
+movement=_parse_movement(root)
+fixture=json.loads(Path("tests/fixtures/h2/battle-ai-movement-static-v1.json").read_text(encoding="utf-8"))
+assert {k:movement[k] for k in fixture['expected']}==fixture['expected']
+control=_parse_control(root,(root/"code/gameflow/battle/ai/startaicontrol.asm").read_text())
+assert control==json.loads(Path('tests/fixtures/h2/battle-ai-remaining-static-v1.json').read_text())['expected']['control']
+assert [c['commands'] for c in control['commandsets'][6:8]]==[[3,0,7,11,14],[10,3,0,7,11,14]]
+assert control['pathfindingModes'][6:8]==[0,0]
+# These fixture checks retain their wording, including the class-pass disagreement below.
+# The selected source path additionally requires every target cost to be below 128.
+from sf2tool.h2.battle_ai import _equates
+import re
+eq=_equates(root); const=(root/'sf2const.asm').read_text()
+def address(name): return int(re.search(r'^'+name+r':\s+equ\s+\$([0-9A-Fa-f]+)',const,re.M)[1],16)
+extra=eq['COMBATANT_ENEMIES_START']+eq['COMBATANT_ENEMIES_COUNTER']+1
+assert extra==eq['COMBATANT_ENEMIES_SPACE_END']==160
+alias=address('COMBATANT_DATA')+(extra-eq['COMBATANT_ENEMIES_START_MINUS_ALLIES_SPACE_END'])*56
+assert alias==address('CURRENT_GOLD')==0xFFF600
+assert (alias+14,alias+46,alias+52,alias+54)==(0xFFF60E,0xFFF62E,0xFFF634,0xFFF636)
+assert (alias+53-address('DEALS_ITEMS'))*2+1==eq['ITEM_GODDESS_STAFF']==99
+hover=[2]*7+[-1,2]+[-1]*7
+flags=[False]*16; tested=0; words=[0x2060]*4+[0x2070]*2; rounds=[]; receipts=9
+def grid(origin,budget,block=False):
+ t=terrain.copy()
+ if block:
+  for a in range(3):
+   p=pos[a]; t[p[1]*48+p[0]]|=128
+ return build_weighted_movement_model(t,hover,start_offset=origin[1]*48+origin[0],budget=budget)["reachableCosts"]
+def cost(g,p): return g.get(str(p[1]*48+p[0]))
+def walk(g,origin,budget):
+ p=origin; target=max(0,cost(g,p)-budget); previous=0; directions=[]
+ while cost(g,p)>target:
+  threshold=cost(g,p)-1; mask=0
+  for dx,dy,bit in [(1,0,1),(-1,0,4),(0,-1,2),(0,1,8)]:
+   q=(p[0]+dx,p[1]+dy); value=cost(g,q)
+   if 0<=q[0]<48 and 0<=q[1]<48 and value is not None and value<=threshold: mask|=bit; threshold=value
+  chosen=mask^previous if mask&previous and mask^previous else mask
+  assert chosen
+  d=next(i for i in range(4) if chosen&(1<<i)); dx,dy=[(1,0),(0,-1),(-1,0),(0,1)][d]
+  q=(p[0]+dx,p[1]+dy); assert cost(g,q)<cost(g,p) and 0<=q[0]<16 and 0<=q[1]<20
+  previous=1<<d; p=q; directions.append(d)
+ return p,directions+[255]
+def attack_position(g,point,radius):
+ best=None; minimum=255
+ for dy in range(-radius,radius+1):
+  for dx in range(-radius+abs(dy),radius-abs(dy)+1):
+   if abs(dx)+abs(dy)!=radius: continue
+   p=(point[0]+dx,point[1]+dy)
+   if not (0<=p[0]<48 and 0<=p[1]<48): continue
+   c=cost(g,p)
+   if c==0: return p
+   if c is not None and c<minimum and p not in pos.values(): best=p; minimum=c
+ return best
+def order():
+ global main
+ slots=[]
+ for actor,agi in zip(pos,[4,5,7,5,5,5,5,5,5]):
+  score=agi-1
+  for sign,bound in [(1,agi>>3),(-1,agi>>3),(1,3)]: main,v=_rng_step(main,bound); score+=sign*v
+  slots.append((actor,score&255))
+ slots += [(255,255)]*55
+ for _ in range(62):
+  for i in range(63):
+   if (slots[i+1][1]^128)>(slots[i][1]^128): slots[i],slots[i+1]=slots[i+1],slots[i]
+ return slots
+def standby(actor):
+ global seed,tested
+ tested=0; origin=pos[actor]; before=(seed,mem[actor]); rolls=[]; dest=origin; moves=[255]
+ def roll(bound):
+  global seed
+  steps=0
+  while True:
+   seed,_=_thinking_rng_step(seed,1); steps+=1
+   if bound<=1 or seed<bound: break
+  v=0 if bound<=1 else seed; rolls.append((bound,v,steps)); return v
+ if roll(8) not in [2,4,6]:
+  g=grid(origin,10)
+  if mem[actor]&15==0: mem[actor]=4 if roll(2)==0 else 3
+  count=mem[actor]&15; previous=mem[actor]>>4; entry=entities[actor-125]; valid=[]
+  for i,(dx,dy) in enumerate(next(t["coordinates"] for t in standby_tables if t["moveCount"]==count)):
+   p=(entry["x"]+dx,entry["y"]+dy); c=cost(g,p)
+   if i!=previous and (c==0 or (c is not None and p not in pos.values())): valid.append((i,p))
+  if not valid: mem[actor]=0
+  else:
+   chosen,dest=valid[roll(len(valid))]; mem[actor]=chosen<<4|count; moves=move_string(g,origin,dest)
+ pos[actor]=dest
+ return dict(actor=actor,origin=origin,destination=dest,before=before,after=(seed,mem[actor]),rolls=rolls,path=moves,action=3)
+standby_tables=_parse_standby(root,*[(root/f"code/gameflow/battle/ai/determineaistandbymovement_{i}.asm").read_text() for i in [1,2]])["movementTables"]
+def pursue(actor):
+ global tested
+ origin=pos[actor]; g=grid(origin,10,True)
+ cohort=[a for a in range(3) if attack_position(g,pos[a],1) is not None]
+ if cohort: return dict(actor=actor,origin=origin,boundary="physical-cohort",targets=cohort,
+  attackPositions=[attack_position(g,pos[a],1) for a in cohort])
+ g128=grid(origin,128)
+ costs=[(a,cost(g128,pos[a])) for a in range(3)]
+ assert all(c is not None and c<128 for a,c in costs) # current d0 low byte cannot enter @loc_21 class pass
+ target=min(costs,key=lambda item:item[1])[0]
+ preliminary,prepath=walk(grid(pos[target],128),origin,4)
+ destination=attack_position(g,preliminary,0) or attack_position(g,preliminary,1)
+ assert destination is not None
+ path=move_string(g,origin,destination)
+ p=origin
+ for d in path[:-1]:
+  dx,dy=[(1,0),(0,-1),(-1,0),(0,1)][d]; p=(p[0]+dx,p[1]+dy)
+  assert 0<=p[0]<16 and 0<=p[1]<20 and cost(g,p) is not None
+ assert p==destination and (p==origin or p not in pos.values())
+ result=dict(actor=actor,origin=origin,destination=destination,costs=costs,target=target,
+  preliminary=preliminary,prepath=prepath,path=path,gridCost=cost(g,destination),action=3,seedCopy=seed<<8|0x34,memory=mem[actor])
+ pos[actor]=destination; tested=0
+ return result
+for number in range(2,9):
+ for r in data["aiRegions"]:
+  if not tested&(1<<r["id"]):
+   flags[r["id"]]|=any(inside(r,pos[a]) for a in range(3)); tested|=1<<r["id"]
+ for i in range(6):
+  if flags[entities[i+3]['behavior']['primaryRegion']]: words[i]|=1
+ testedAtGeneration=tested; slots=order(); records=[]; boundary=False
+ assert slots[9:]==[(255,255)]*55
+ for offset,(actor,_) in enumerate(slots[:9]):
+  if actor<128:
+   if number==2 and actor==0: pos[0]=(11,15)
+   records.append(dict(actor=actor,manual="STAY",position=pos[actor])); receipts+=1; continue
+  active=bool(words[actor-128]&1)
+  before=(pos.copy(),mem.copy(),seed,main,tested)
+  result=pursue(actor) if active else standby(actor)
+  records.append(result)
+  if "boundary" in result:
+   assert before==(pos,mem,seed,main,tested)
+   boundary=True; break
+  receipts+=1
+  if active: assert (mem,seed,main)==(before[1],before[2],before[3])
+  assert len(set(pos.values()))==9 and all(0<=x<16 and 0<=y<20 for x,y in pos.values())
+ record=dict(round=number,order=slots[:9],sentinelOffset=18,flags=flags[:3],words=words.copy(),records=records,
+  main=hex(main<<16|0x1234),copy=hex(seed<<8|0x34),memory=list(mem.values()),tested=tested,
+  testedAtGeneration=testedAtGeneration,occupancy=pos.copy(),receipts=receipts,
+  thinkingSteps=sum(r[2] for e in records for r in e.get('rolls',[])),cursor=2*offset if boundary else 18)
+ rounds.append(record); print(json.dumps(record))
+ if boundary: break
+assert [(r['main'],r['copy'],r['thinkingSteps']) for r in rounds]==[
+ ('0xaa861234','0x34',967),('0x9bd71234','0x234',958),('0x51dc1234','0x234',512),
+ ('0xde251234','0x5634',380),('0x7821234','0x34',198)]
+r3=rounds[1]
+assert r3['order']==[(2,8),(129,6),(130,6),(131,6),(128,5),(133,5),(0,4),(1,4),(132,4)]
+assert r3['words']==[0x2060,0x2060,0x2060,0x2061,0x2071,0x2070]
+assert r3['flags']==[False,True,False] and r3['testedAtGeneration']==7 and r3['tested']==0
+p1,p2=r3['records'][3],r3['records'][8]
+assert (p1['target'],p1['preliminary'],p1['prepath'],p1['destination'],p1['path'],p1['gridCost'])==(0,(9,5),[0,3,255],(9,4),[0,255],2)
+assert (p2['target'],p2['destination'],p2['path'],p2['gridCost'])==(0,(11,6),[0,3,255],4)
+assert r3['memory']==[0x14,0x24,0x14,0x24,0x34,0x34]
+assert rounds[2]['order']==[(1,6),(2,6),(130,6),(132,6),(129,5),(131,5),(0,4),(128,4),(133,4)]
+assert rounds[-1]['records'][-1]==dict(actor=132,origin=(11,10),boundary='physical-cohort',targets=[0],attackPositions=[(11,14)])
+assert (receipts,rounds[-1]['cursor'],list(mem.values()))==(50,10,[0x04,0x34,0x24,0x24,0x34,0x24])
+print('PASS: bounded activation/pursuit reduction; no natural runtime or attack-resolution claim')
+'@ | uv run python -X utf8 -
+```
+
+#### Future ownership, atomic transitions and acceptance
+
+This decision slice writes only this plan. Future implementation starts from accepted main in a
+fresh gate-anchored worktree; the following is the exact proposed write scope, relative to `remake/`.
+There is no stacked dependency or current shared writer. Reserve these existing shared owners
+serially; any further path needs a new scope decision before mutation.
+
+| Owned paths | Change boundary |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyPursuit.cs` (new) | Bounded active classifier, empty-action admission, source MOVE1 path/position decision and immutable pursuit receipt data. Reuse the existing grid and AI move-string mechanism; no generic AI engine. |
+| `src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs`; `Battle01EnemyStandby.cs` and `Battle01TurnCompletion.cs` in that same directory | Admit coherent retained primary-region activation for these six GIZMOs; keep unknown/secondary/special bits rejected. Preserve inactive dispatch when other enemies are active. Link typed pursuit decisions through the existing completion chain and thinking-history validation. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPursuit.cs` (new) | Exact current snapshot/candidate/phase facade and a single successful session replacement. |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Dispatch the actual active or inactive candidate after successful transitions; show pursuit completion and a precise attack-required rejection. Player controls remain manual. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPursuitTests.cs` (new); `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01NextPlayerControlTests.cs` in that directory | Source-order movement/cohort, activation retention, mixed receipt history, current-candidate and immutable rejection cases. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPursuitTests.cs` (new); `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01TurnCompletionTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in that directory | Real selected-input chain and exact request/snapshot rejection. |
+| `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Thin presenter/dispatch contract and one new bounded `enemy-pursuit` native mode. |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current capability, explicit economy policy, launch/test recipe, supported pursuit and visible attack boundary. |
+
+Round generation may install flags0..2 and their coherent primary-activation bits for the known
+starting roster; retain unrelated bits, tested-mask semantics, empty cutscene/spawn results and both
+RNG channels. Reject unrecognized flags/words, secondary orders/regions, changed equipment/spells/
+stats/status, swarm/special actors, death/respawn and malformed occupancy. First-entry initialization
+and first-round checks stay strict. Later ordinary inactive actors remain eligible with other
+regions active; a completed pursuit counts as an enemy turn for mask0 and prefix validation.
+
+Keep one current order/cursor and the existing immutable receipt chain. Add a typed pursuit decision
+alongside standby, with exactly one enemy decision kind per enemy receipt and none on player
+receipts. Include actor, origin/destination, source command/target-cost decision, preliminary/final
+move strings and unchanged memory/copy before/after; main is unchanged by pursuit. Backward thinking
+history must verify pursuit identity and unchanged copy/memory instead of treating it as missing
+standby. Preserve all unused memory/last-target slots and effective stats. No second state store,
+general action queue, economy model, new content fixture/schema or shared research edit is needed.
+
+Each pursuit performs admission, cohort scan, local grid/path construction, destination occupancy
+checks, no-effect completion checks and all allocations before one session commit. Temporary
+opponent/obstruction terrain is local and cleared on success or rejection. Nonempty physical cohorts
+reject with actor/attack-selection detail before target-priority evaluation, RNG, movement, cursor or
+receipt updates. Invalid/incomplete/non-decreasing/out-of-area paths reject; source-valid empty
+preliminary movement or failure of both destination radii completes origin STAY. Do not substitute
+player shortest-path preview for either source AI walker. Failure after earlier successful dispatch
+retains that last snapshot, and failure immediately after generation retains the generated round.
+Never rerun on frames/unrelated keys, skip an enemy, or fabricate an attack STAY.
+
+Implement as three reviewable commits on one topic: (1) Domain + owning tests for activation,
+pursuit/receipts and atomic boundaries; (2) Application/Godot + their tests/native mode; (3) current
+docs and final acceptance evidence. Each executable commit must compile with its direct dependents;
+keep any required signature callers in that same commit. Roll back a failing local transition by
+returning the unchanged snapshot, not compensating writes. Integration rollback is the slice's own
+coherent commits, with the prior reachable `activation.region1` rejection as the previous capability;
+the gate retains merge/rollback authority.
+
+Implementation acceptance is proportional to the committed planner and owning verification route:
+
+- Managed tests: exact round2 relocation, all64 generated slots/scores and full RNG images, actual
+  round3 inactive prefix and both active paths above, occupied preliminary fallback/tie order,
+  retained regions/words/copy/memory/last targets, original deployment anchors, repeated round4/5
+  pursuit and the round6 cohort/cursor/50-receipt rejection. Test a source-valid empty/fallback STAY,
+  cost>=128/incomplete/out-of-area rejection, byte-mask path distinction and opponent blocking.
+  Authored cases cover enemy-first generation, primary flag retention after the party leaves,
+  inactive actors alongside active ones, duplicate/stale/foreign/wrong actor and mixed/missing/
+  conflicting decision receipts. Early and late failures preserve the exact snapshot and no RNG
+  consumption; a cohort rejection as the first enemy must also retain incoming tested mask7.
+- Run planner-selected locked .NET restore/build/test plus `uv run sf2 verify`. Required-private
+  execution uses `SF2_REQUIRE_PRIVATE_TESTS=1` and the existing filters
+  `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` (Content) and
+  `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending` (Application),
+  with their documented input variables. Extend the latter through this exact actual-input
+  round6 boundary; both required runs must execute, not skip. Public synthetic tests alone do not
+  prove the selected-data comparison. No runtime importer/exporter or asset replacement is required.
+- Run the planner-selected official Godot checks from the
+  [verification owner](./development-and-verification.md). The new bounded native `enemy-pursuit`
+  mode uses the accepted local base-art assets and physical player move/confirm/STAY inputs.
+  Capture four checkpoints: round3 ready with region1, after the first actual131 pursuit, actual
+  round4 player1 ready, and the actual round6 enemy132 attack-required boundary. The first-pursuit
+  checkpoint may pause the probe between completed dispatches for inspection; label that pause as
+  review instrumentation, not original timing. Assert no repeated dispatch on frames/unrelated
+  keys at the rejection. Update only affected existing native mode contracts and rerun invalidated
+  modes; follow the existing finite-timeout/isolated-output recipe.
+- This plan alone runs its pure reduction, committed planner/public-core selection and normal
+  `uv run sf2 verify`; report missing H0/private dependencies honestly. It does not run local
+  .NET/Godot/native/full-suite or ROM/H3 work unless the planner selects an additional gate.
+
+Stop implementation at one clean, pushed, frozen Draft PR for independent main-gate review, with
+the actual pursuit comparison and visible attack-required state. Attack target priority, attack/
+item/spell construction and resolution, damage/death, victory/return, natural RNG lifetime,
+original animation/timing, the deals corruption and H4 remain **Unknown** or unimplemented.
+No next implementation begins from this unmerged plan.
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
