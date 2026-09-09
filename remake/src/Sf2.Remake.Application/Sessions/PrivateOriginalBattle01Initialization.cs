@@ -91,7 +91,7 @@ public sealed partial class GameSession
                 new(enemy.Level, enemy.HpMax, enemy.HpMax, enemy.MpMax, enemy.MpMax, enemy.BaseAttack,
                     enemy.BaseDefense, enemy.BaseAgility, enemy.BaseMove, enemy.InitialStatus, enemy.Items, enemy.Spells),
                 enemy.BaseResistance, enemy.BaseProwess, enemy.MovementType, enemy.BaseAiBitfield),
-            party.RandomSeed, party.Difficulty);
+            party.RandomSeed, party.Difficulty, party.RandomSeedCopy);
     }
 
     private static PrivateOriginalBattle01InitializationRejected InitializationRejected(string field, string message) =>

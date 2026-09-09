@@ -32,6 +32,7 @@ public sealed class PrivateOriginalBattle01InitializationTests
         Assert.Same(animation, snapshot.SourceLocomotion); Assert.Same(bridge, snapshot.SourceBridge);
         Assert.Equal(pending!.SourceSimulationStep, source.SimulationStep);
         Assert.Equal(Battle01Phase.BeforeFirstRound, battle.Phase); Assert.Equal(9, battle.Roster.Count);
+        Assert.Equal((ushort?)0x1234, battle.RandomSeedCopy); Assert.Equal(prepared.Party.RandomSeedCopy, battle.RandomSeedCopy);
         Assert.Equal(new[] { 0, 1, 2, 128, 129, 130, 131, 132, 133 }, battle.Roster.Select(unit => unit.Index));
         Assert.All(battle.Roster, unit => Assert.Equal(unit.Index, battle.OccupantAt(unit.Position)));
         for (int index = 0; index < 3; index++)

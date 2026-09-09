@@ -1,0 +1,171 @@
+using Sf2.Remake.Domain.Maps;
+
+namespace Sf2.Remake.Domain.Battles;
+
+public sealed record Battle01ThinkingRoll(byte Range, ushort BeforeSeedCopy, ushort AfterSeedCopy,
+    byte Result, IReadOnlyList<byte> GeneratedBytes)
+{
+    public int GeneratorSteps => GeneratedBytes.Count;
+}
+public sealed record Battle01StandbyCandidate(byte Index, MapPosition Position, int? GridCost,
+    int? Occupant, bool Eligible);
+public sealed record Battle01EnemyStandbyDecision(int ActorIndex, MapPosition Origin, MapPosition Destination,
+    ushort SeedCopyBefore, ushort SeedCopyAfter, byte MemoryBefore, byte MemoryAfter,
+    IReadOnlyList<Battle01ThinkingRoll> Rolls, IReadOnlyList<Battle01StandbyCandidate> Candidates,
+    IReadOnlyList<byte> MoveString)
+{
+    public byte Action => 3;
+    public byte MovementType => 6;
+}
+
+public static class Battle01EnemyStandby
+{
+    public static Battle01InitializedState CompleteFirst(Battle01InitializedState current, int actorIndex,
+        Battle01StayCompletionPolicy? policy)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        if (current.Phase != Battle01Phase.PlayerTurnCompleted ||
+            current.FirstRound is not { CurrentTurnOffset: 4 } order ||
+            current.TurnCompletion is not { CompletedActorIndex: 2, Previous.CompletedActorIndex: 1 } ||
+            current.TurnCompletion.Previous.Previous is not null)
+            throw new ArgumentException("First enemy standby requires the two completed player turns.", "phase");
+        if (actorIndex != 128 || order.CurrentCandidate?.CombatantIndex != actorIndex)
+            throw new ArgumentException("Only the actual first enemy candidate may enter standby.", "actor");
+        if (current.RandomSeedCopy != 0x1234)
+            throw new ArgumentException("The independent retained comparison seed-copy must be supplied.", "randomSeedCopy");
+        if (current.RandomSeedImage != 0xA4991234 || current.NewlyTestedRegionMask != 7 ||
+            current.RegionFlags90Through105.Count != 16 || current.RegionFlags90Through105.Any(flag => flag))
+            throw new ArgumentException("The accepted round's RNG and inactive regions must be retained.", "round");
+        if (current.AiMemory.Count != 48 || current.AiMemory.Any(value => value != 0) ||
+            current.AiLastTargets.Count != 48 || current.AiLastTargets.Any(value => value != 255))
+            throw new ArgumentException("The first enemy requires initialized standby memory and last targets.", "memory");
+        var actor = current.Roster.SingleOrDefault(unit => unit.Index == actorIndex)
+            ?? throw new ArgumentException("The current enemy must exist.", "actor");
+        var deployment = actor.Deployment;
+        if (deployment.Identity != 39 || deployment.AiCommandSet != 6 ||
+            deployment.PrimaryOrder != 255 || deployment.SecondaryOrder != 255 ||
+            deployment.PrimaryRegion != 2 || deployment.SecondaryRegion != 15 ||
+            deployment.Spawn != 0 || actor.AiBitfield != 0x2060)
+            throw new ArgumentException("Only the fixed inactive GIZMO regular standby branch is admitted.", "activation");
+        if (actor.Position != new MapPosition(7, 3) || actor.Position != deployment.Position)
+            throw new ArgumentException("The first enemy must retain its original deployment position.", "position");
+        var stats = actor.Stats;
+        if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
+            stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
+            stats.Agility != 5 || stats.Move != 5 || stats.Status != 0 ||
+            stats.Items.Any(item => item != 127) || stats.Spells.Any(spell => spell != 63))
+            throw new ArgumentException("The already initialized effective enemy stats must be unchanged.", "stats");
+
+        var decision = Decide(current, actor, current.RandomSeedCopy.Value, current.AiMemory[0]);
+        var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
+        if (occupancy.Length != 2304 || occupancy[Battle01PlayerMovement.Offset(actor.Position)] != actorIndex ||
+            (decision.Destination != actor.Position && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1))
+            throw new ArgumentException("Standby relocation must preserve consistent live occupancy.", "occupancy");
+        roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
+        occupancy[Battle01PlayerMovement.Offset(actor.Position)] = -1;
+        occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = actorIndex;
+        var memory = current.AiMemory.ToArray(); memory[0] = decision.MemoryAfter;
+        var moved = new Battle01InitializedState(current, roster, occupancy, memory, decision.SeedCopyAfter);
+        // Local projection only: source clear-region/standby/move/STAY effects commit together.
+        return Battle01TurnCompletion.CompleteControlledStay(moved, actorIndex, stats, policy, decision);
+    }
+
+    internal static Battle01EnemyStandbyDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
+        ushort seedCopy, byte memory)
+    {
+        ushort before = seedCopy; byte memoryBefore = memory;
+        var rolls = new List<Battle01ThinkingRoll>(); var candidates = new List<Battle01StandbyCandidate>();
+        Battle01EnemyStandbyDecision Result(MapPosition destination, IReadOnlyList<byte> moveString) =>
+            new(actor.Index, actor.Position, destination, before, seedCopy, memoryBefore, memory,
+                rolls.AsReadOnly(), candidates.AsReadOnly(), moveString);
+        byte Roll(byte range)
+        {
+            var roll = ThinkingRoll(seedCopy, range); rolls.Add(roll); seedCopy = roll.AfterSeedCopy;
+            return roll.Result;
+        }
+        if (Roll(8) is 2 or 4 or 6) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        var d = actor.Deployment;
+        bool p = d.PrimaryOrder != 255, s = d.SecondaryOrder != 255;
+        bool pr = d.PrimaryRegion != 15, sr = d.SecondaryRegion != 15;
+        if ((p && pr) || (s && sr)) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        if (p && !pr && !s && sr)
+            throw new ArgumentException("Move-order standby is outside this bounded primitive.", "moveOrder");
+        if (!((!p && pr) || (!s && sr))) return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        if (actor.EnemySource?.MovementType != 6)
+            throw new ArgumentException("Standby requires the admitted Hovering6 profile.", "movementProfile");
+
+        var grid = Battle01PlayerMovement.BuildWeightedGrid(battle.Terrain, Battle01PlayerMovement.HoveringCosts,
+            Battle01PlayerMovement.Offset(actor.Position), actor.Stats.Move * 2);
+        // Source builds occupancy separately. Do not invent the distant A0's missing neutral bit.
+        if (battle.Roster.Any(unit => unit.AiBitfield is null && grid.CostAt(unit.Position) is not null))
+            throw new ArgumentException("A relevant combatant's activation word is unknown.", "activation");
+        if ((memory & 15) == 0) memory = Roll(2) == 0 ? (byte)4 : (byte)3;
+        int count = memory & 15, previous = memory >> 4;
+        if (count is not (3 or 4) || previous >= 4)
+            throw new ArgumentException("Only bounded standby memory patterns are supported.", "memory");
+        (int X, int Y)[] offsets = count == 3 ? [(0, -1), (-1, 1), (1, 1)] : [(0, -1), (-1, 0), (0, 1), (1, 0)];
+        var valid = new List<byte>();
+        for (byte index = 0; index < count; index++)
+        {
+            int x = d.Position.X + offsets[index].X, y = d.Position.Y + offsets[index].Y;
+            if (x is < 0 or >= 48 || y is < 0 or >= 48) continue; // downstream DetermineAttackPosition rejects coordinate48
+            var position = new MapPosition(x, y); int? cost = grid.CostAt(position);
+            var occupant = battle.Roster.FirstOrDefault(unit => unit.Position == position && unit.Stats.HpCurrent > 0 &&
+                unit.AiBitfield is { } word && (word & 8) == 0);
+            bool eligible = cost == 0 || (cost is not null && occupant is null);
+            candidates.Add(new(index, position, cost, occupant?.Index, eligible));
+            if (eligible && index != previous) valid.Add(index);
+        }
+        if (valid.Count == 0)
+        {
+            memory = 0; return Result(actor.Position, Array.AsReadOnly<byte>([255]));
+        }
+        byte chosen = valid[Roll((byte)valid.Count)]; memory = (byte)((chosen << 4) | count);
+        var destination = candidates.Single(candidate => candidate.Index == chosen).Position;
+        return Result(destination, SourceMoveString(grid, actor.Position, destination));
+    }
+
+    internal static Battle01ThinkingRoll ThinkingRoll(ushort seedCopy, byte range)
+    {
+        ushort before = seedCopy; var bytes = new List<byte>();
+        while (true)
+        {
+            // Source EXT.W then MULU.W; retain its masked byte and the separate low word byte.
+            ushort extended = unchecked((ushort)(short)(sbyte)(seedCopy >> 8));
+            byte next = (byte)((extended * 541 + 12345) & 255);
+            seedCopy = (ushort)((next << 8) | (seedCopy & 255)); bytes.Add(next);
+            if (unchecked((sbyte)range) <= 1 || next < range)
+                return new(range, before, seedCopy, unchecked((sbyte)range) <= 1 ? (byte)0 : next, bytes.AsReadOnly());
+        }
+    }
+
+    internal static IReadOnlyList<byte> SourceMoveString(Battle01MovementGrid grid, MapPosition origin, MapPosition destination)
+    {
+        int current = Battle01PlayerMovement.Offset(destination), start = Battle01PlayerMovement.Offset(origin);
+        var backtrack = new List<byte>(); int previousMask = 0;
+        while (current != start)
+        {
+            int cost = grid.CostAtOffset(current) ?? throw new ArgumentException("AI destination is unreachable.", "path");
+            int threshold = cost - 1, mask = 0;
+            foreach ((int delta, int bit) in new[] { (1, 1), (-1, 4), (-48, 2), (48, 8) })
+            {
+                int neighbor = current + delta;
+                if (neighbor is < 0 or >= 2304 || Math.Abs(neighbor % 48 - current % 48) +
+                    Math.Abs(neighbor / 48 - current / 48) != 1) continue;
+                if (grid.CostAtOffset(neighbor) is { } value && value <= threshold)
+                {
+                    mask |= bit; threshold = value; // Source retains earlier direction bits when threshold decreases.
+                }
+            }
+            int choice = (mask & previousMask) != 0 && (mask ^ previousMask) != 0 ? mask ^ previousMask : mask;
+            if (choice == 0) throw new ArgumentException("No complete bounded source AI path reaches the origin.", "path");
+            byte direction = (byte)((choice & 1) != 0 ? 0 : (choice & 2) != 0 ? 1 : (choice & 4) != 0 ? 2 : 3);
+            current += direction switch { 0 => 1, 1 => -48, 2 => -1, _ => 48 };
+            if (!Battle01Initialization.WithinArea(new(current % 48, current / 48)) ||
+                grid.CostAtOffset(current) is not { } nextCost || nextCost >= cost)
+                throw new ArgumentException("The source AI path must decrease cost within the fixed scene.", "path");
+            previousMask = 1 << direction; backtrack.Add(direction);
+        }
+        return Array.AsReadOnly(backtrack.AsEnumerable().Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+    }
+}

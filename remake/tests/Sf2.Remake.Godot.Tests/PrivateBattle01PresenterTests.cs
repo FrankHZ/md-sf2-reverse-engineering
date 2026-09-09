@@ -128,6 +128,38 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("Space", view.Controls); Assert.Contains(view.Tiles, tile => tile.CanStop);
     }
 
+    [Fact]
+    public void EnemyStandbyProjectionShowsItsLiveMoveAndStopsBeforeTheNextEnemy()
+    {
+        MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
+        var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
+            (byte)(i < 3 ? i : 39), positions[i], (byte)(i >= 7 ? 7 : i >= 3 ? 6 : 0), 127, 255,
+            (byte)(i < 6 ? 2 : i < 8 ? 1 : 0), 255, 15, (byte)(i >= 7 ? 112 : i >= 3 ? 96 : 0), 0));
+        var regions = Enumerable.Range(0, 3).Select(i => new Battle01Region((byte)i, 0, [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
+        byte[] agility = [4, 5, 7];
+        var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 1 ? 4 : 1),
+            new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 2 ? 7 : 5), 0, [127, 127, 127, 127], [63, 63, 63, 63])));
+        var enemy = new Battle01EnemyInput(39, 39, 0, new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0,
+            [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
+        var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;
+        var initial = Battle01Initialization.Initialize(rows, regions, terrain, party, enemy, 0x1234, 0, 0x1234);
+        var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(initial), 1).State!;
+        var first = Stay(ready, 1, new(9, 17)); var next = Battle01NextPlayerControl.Enter(first, 2).State!;
+        var second = Stay(next, 2, new(7, 17));
+        var completed = Battle01EnemyStandby.CompleteFirst(second, 128, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var view = PrivateBattle01Presenter.BuildProjection(completed, "Enemy standby: E0 moved; STAY complete.");
+        Assert.Equal(Battle01Phase.EnemyTurnCompleted, view.Phase); Assert.Null(view.ActorIndex);
+        Assert.Equal(128, view.CompletedActorIndex); Assert.Equal(131, view.NextCandidateIndex);
+        Assert.Equal(new MapPosition(6, 3), view.Units.Single(unit => unit.Index == 128).Position);
+        Assert.Equal(new MapPosition(8, 3), view.Units.Single(unit => unit.Index == 131).Position);
+        Assert.Null(view.Cursor); Assert.Empty(view.Path); Assert.False(view.CanConfirm);
+        Assert.All(view.Tiles, tile => { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
+        Assert.Contains("Input closed", view.Controls); Assert.Contains("Candidate not started", view.Controls); Assert.Contains("Enemy standby", view.Status);
+        static Battle01InitializedState Stay(Battle01InitializedState state, int actor, MapPosition target) =>
+            Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(state, actor, target), actor),
+                actor, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
+
     // Public authored geometry and party, deliberately with actor 2 as the first candidate.
     private static Battle01InitializedState AuthoredBattle(bool nextPlayer = false)
     {

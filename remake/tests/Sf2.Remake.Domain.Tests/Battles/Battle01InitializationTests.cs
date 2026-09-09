@@ -115,6 +115,16 @@ public sealed class Battle01InitializationTests
         Assert.Throws<ArgumentException>(() => Battle01Initialization.Initialize(Deployment(), Regions(), new byte[2304], Allies(), Enemy() with { DefinitionId = 40 }, 0x1234, 0));
     }
 
+    [Fact]
+    public void IndependentSeedCopyIsExplicitAndMissingIsNeverDerivedFromTheMainImage()
+    {
+        var missing = Initialize(Deployment(), new byte[2304]); Assert.Null(missing.RandomSeedCopy);
+        var supplied = Battle01Initialization.Initialize(Deployment(), Regions(), new byte[2304], Allies(), Enemy(), 0x1234, 0, 0x1234);
+        Assert.Equal((ushort?)0x1234, supplied.RandomSeedCopy); Assert.Equal(missing.RandomSeedImage, supplied.RandomSeedImage);
+        Assert.Equal("randomSeedCopy", Assert.Throws<ArgumentException>(() => Battle01Initialization.Initialize(
+            Deployment(), Regions(), new byte[2304], Allies(), Enemy(), 0x1234, 0, 0x3412)).ParamName);
+    }
+
     private static Battle01InitializedState Initialize(Battle01Deployment[] rows, byte[] terrain) =>
         Battle01Initialization.Initialize(rows, Regions(), terrain, Allies(), Enemy(), 0x1234, 0);
     private static Battle01Deployment[] Deployment() => Enumerable.Range(0, 9).Select(index =>

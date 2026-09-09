@@ -37,7 +37,10 @@ beneath diagnostic unit markers on a 24-pixel grid; without it, terrain cells re
 At action choice, a second independent Space press commits controlled no-effect STAY and immediately
 tries the actual next candidate once. In the accepted inputs, player2 receives its Centaur movement
 range using current occupancy and can move, cancel and STAY independently. Its STAY advances the raw
-byte offset to4 and stops visibly at enemy128 / OpponentAi, retaining both completed moves.
+byte offset to4 and invokes the first inactive enemy's bounded standby once. With the retained
+comparison seed-copy1234, enemy128 moves (7,3) to (6,3), completes no-effect STAY and stops at
+offset6 before enemy131. Both player receipts and effective stats remain; seed-copy becomes3934
+while main RNG staysA4991234. The endpoint closes input and visibly identifies the next candidate.
 Backspace cancels only before STAY. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
 and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
@@ -369,7 +372,7 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
   Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
-  other actions, later turns and natural continuity remain open. See the
+  actions beyond two player STAYs and the first inactive enemy, later rounds and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.

@@ -10,6 +10,18 @@ public sealed class Battle01TurnCompletionTests
     private static Battle01StayCompletionPolicy Policy => Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
 
     [Fact]
+    public void EnemyCompletionUsesTheSamePassiveRecoveryBoundaryBeforeAnyStateCanCommit()
+    {
+        var before = Battle01EnemyStandbyTests.SecondCompleted(); var roster = before.Roster.ToArray(); var unit = roster[1]; var stats = unit.Stats;
+        roster[1] = new(unit.Deployment, new(stats.Level, stats.HpMax, stats.HpCurrent, stats.MpMax, stats.MpCurrent,
+            stats.Attack, stats.Defense, stats.Agility, stats.Move, stats.Status, [0xE1, 127, 127, 127], stats.Spells),
+            unit.ClassId, null, unit.AiBitfield, unit.Position);
+        var input = Battle01EnemyStandbyTests.CopyCompleted(before, roster); string frozen = JsonSerializer.Serialize(input);
+        Assert.Equal("equipment", Assert.Throws<ArgumentException>(() => Battle01EnemyStandby.CompleteFirst(input, 128, Policy)).ParamName);
+        Assert.Equal(frozen, JsonSerializer.Serialize(input)); Assert.Same(before.TurnCompletion, input.TurnCompletion);
+    }
+
+    [Fact]
     public void StayRetainsProvisionalPositionAndStatsChecksBothFactionsThenAdvancesOneByteEntry()
     {
         var ready = Battle01FirstControl.Enter(Battle01FirstControlTests.Round(), 1).State!;

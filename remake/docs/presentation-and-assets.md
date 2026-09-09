@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -912,9 +912,10 @@ diagnostic mode retains terrain-ID cells and its graphics-unavailable heading. M
 Map57 art rejects before startup; a projection rejection displays an unavailable view and closes input.
 Action choice offers a separate Space press for controlled no-effect STAY or Backspace cancellation.
 STAY retains the selected live position and tries actual next entry once. Player2 receives its own
-Centaur range from current occupancy, then can move/cancel/STAY. Its completion stops at
-enemy128 / OpponentAi, raw byte offset4. The completed view names the historical actor and actual
-candidate separately and removes the old range/path/cursor; unrelated keys preserve the reason.
+Centaur range from current occupancy, then can move/cancel/STAY. Its completion at raw offset4
+tries actual enemy128's inactive standby once: the retained seed-copy1234 selects a west move to(6,3)
+and no-effect STAY. The completed view names E0 and actual next E3/131 separately at offset6,
+removes the old range/path/cursor, and explains the standby move. Unrelated keys preserve the result.
 Its effective-stat policy is explicit in the
 [owning plan](./map03-playability-plan.md#implemented-first-player-stay-completion). The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
@@ -943,15 +944,22 @@ recipe seeds controlled Map40, uses the existing 28-key route and N, then I/Spac
 relocation and a second independent Space for STAY. That press automatically enters actual player2,
 captured as `01-next-player`. I/Space moves player2 from (7,18) to (7,17) in
 `02-second-provisional`; Backspace restores only player2 in `03-second-cancelled`.
-I/Space/Space then completes its STAY and tries enemy128 once. `04-ai-boundary` captures the
-OpponentAi endpoint after old-key checks. Require actor1 still at (9,17), actor2 at (7,17),
-both receipts with faction counts3/6, all nine units, unchanged full turn buffer/seed0xA4991234,
-and raw offsets0 to2 to4. I/J/K/L, Space, Backspace, N and old exploration keys must retain the exact
+I/Space/Space then completes its STAY and tries enemy128 once. `04-enemy-standby` captures the
+enemy-completed endpoint after old-key checks. Require actor1 still at (9,17), actor2 at (7,17),
+enemy128 at(6,3), three linked receipts with faction counts3/6, all nine units, unchanged full turn buffer/main seed0xA4991234,
+and raw offsets0 to2 to4 to6. I/J/K/L, Space, Backspace, N and old exploration keys must retain the exact
 completed snapshot and candidate/reason text. Inspect all four images for the active Centaur range,
 independent cancel, legible status/controls, no old canvas layers and no current-actor range/path/cursor
-at the AI boundary. The `stay` recipe name remains an alias for this current chain. This mode never
+before next enemy131. The `stay` recipe name remains an alias for this current chain. This mode never
 replays the six-frame cancellation or castle modes; captures and bounded process/code-head receipts
 remain local. It is controlled remake behavior, not original after-turn fidelity.
+
+For first inactive enemy acceptance, use only a fresh root with `SF2_BATTLE01_CONTROL_REVIEW=enemy-standby`.
+The same production key chain skips earlier captures and produces `01-enemy-standby` immediately
+after the west move/STAY and `02-input-closed` after all old keys. Require move bytes `[2,255]`,
+thinking ranges8/2/1 and steps61/85/1, seed-copy3934, memory14h, tested-mask0, original effective
+stats by identity, and next131 untouched at offset6. Inspect both images for the live E0 position,
+readable completion/candidate/control text, no active range/cursor and no old canvas layers.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,
