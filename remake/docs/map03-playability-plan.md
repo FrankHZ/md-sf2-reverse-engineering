@@ -2558,7 +2558,7 @@ RNG result to keep a case inside scope. The computed comparison needs none of th
    player receipts; its physical path assumes enemy AI last-target writes and ally-only HP origins.
    Process player physical receipts before that skip, rewind their main/HP/EXP channels and compare
    both factions with the correct original/prepared profile. Preserve strict enemy decision counts,
-   first-round STAY history and enemy-only last-target memory. `RequireRegularGizmo` currently
+   first-round STAY history and enemy-only last-target memory. `RequireRegularEnemy` currently
    requires HP5; continuing actors may have positive HP≤5 only when linked reaction history proves
    it. Keep startup/source HP5 and all source identity, max HP, ATT/DEF, resistance/prowess, equipment,
    status, activation and deployment checks strict. Damaged132 must survive later admitted AI and
