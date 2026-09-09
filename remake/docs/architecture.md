@@ -207,6 +207,30 @@ the damaged current stats. Actual round6 attack132 produces HP12→9 and yields 
 the presenter derives its persistent current-round attack summary from the existing receipt chain.
 Original scene animation/timing, broader profiles, multi-strike/counter/death and victory remain open.
 
+Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player physical/EXP policy.
+The existing movement selection gains a target stage, holding the ordered live down/right/up/left
+range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
+then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
+snapshot and the separately named `PlayerAttackComparison` preparation. Nullable current EXP
+distinguishes the older unspecified input from the authored Bowie EXP0 supplement. Immutable HP
+and EXP copies retain every other field; preparation remains HP12/EXP0 provenance.
+
+Confirmation rechecks the actor, live target list, occupancy and admitted profiles before resolving
+the player's dodge8/critical16/+quarter damage, two spread calls, both follow-ups and EXP award.
+Local HP restore/reaction and EXP replay publish together only after completion validation; required
+level changes, lethal results and actual extra attacks reject the entire action. Mixed history
+rewinds player HP/EXP without enemy last-target writes, requires the full source HP5 GIZMO profile,
+and permits positive damaged enemy HP only with linked reaction provenance. Where a preceding
+main endpoint is recorded, the existing generator reproduces the following main image and current
+64-slot order. This adds no stored seed authority or history cache.
+
+Godot keeps ordinary action-choice Space as STAY; A opens targeting and target Space explicitly
+attacks. The existing finite relay consumes actual131/133 and enters actual round7 player2 control.
+The presenter derives the latest player result across round boundaries from completion receipts.
+Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
+presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
+and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.
+
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only
 `Preparation.Pending.Definition` from the current battle: its validated layout, block catalog,

@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1012,6 +1012,29 @@ fresh review root and the same inputs. The shared route produces four different 
    to(11,15), retaining9 HP, the attack receipt and occupancy.
 
 The recipe retains its bounded restore/build/native process and source-archive provenance checks.
+
+For manual player physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=player-physical-attack`
+with a fresh review root and the same registered inputs. N explicitly prepares the separate
+controlled Bowie EXP0 comparison; unspecified EXP in the older preset remains valid for its
+earlier operations. At action choice, A opens the live ordered target list, I/J choose previous,
+K/L choose next, Space confirms the attack, and Backspace returns to action choice at the provisional
+position. A second Backspace restores movement origin. Space at ordinary action choice still STAYs.
+
+The six 1920-by-1080 native checkpoints are actual Bowie HP9/EXP0; manual L/I to(12,14), Space/A
+target132; target Backspace at the provisional action choice; a second Backspace followed by origin
+Space/A; a labeled copy of that exact selected snapshot after direct Application attack confirmation;
+then exact snapshot restoration and physical Space through the production131/133 relay to actual
+round7 player2. The probe compares the full copied and physical receipt52 and all64 round7 slots,
+HP9/2, EXP15, mainCF491234/copy0234,133's114/19 thinking steps, and no repeated attack on idle or
+unrelated input. Inspect every frame for target highlight, cancellation position, readable live
+EXP, and the player hit/EXP summary surviving round generation. The affected enemy physical and
+pursuit modes retain four frames each and must also be checked when this shared view changes.
+
+The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
+policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu
+and text loops also advance RNG and the thinking copy. Those loops are omitted without changing
+original flags. E9F01234 and CF491234 do not claim original post-playback RAM, natural seed lifetime,
+original animation, or H4 continuity. Captures remain private and grant no distribution permission.
 Both modes use existing accepted base art and diagnostic units. No imported combat animation,
 original timing, natural RNG lifetime, general death/reward/victory/return or economy effect is claimed.
 
