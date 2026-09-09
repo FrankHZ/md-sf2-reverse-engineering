@@ -12,7 +12,8 @@ public sealed class Battle01StayCompletionPolicy
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01StayCompletionPolicy Policy,
     Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
-    Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1);
+    Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
+    Battle01EnemyPursuitDecision? EnemyPursuit = null);
 
 public static class Battle01TurnCompletion
 {
@@ -29,10 +30,17 @@ public static class Battle01TurnCompletion
     }
 
     internal static Battle01InitializedState CompleteControlledStay(Battle01InitializedState current, int actorIndex,
-        Battle01Stats entryStats, Battle01StayCompletionPolicy? policy, Battle01EnemyStandbyDecision? enemyStandby = null)
+        Battle01Stats entryStats, Battle01StayCompletionPolicy? policy, Battle01EnemyStandbyDecision? enemyStandby = null,
+        Battle01EnemyPursuitDecision? enemyPursuit = null)
     {
         // BattleLoop, pinned c834c652: defeated wrapper -> cleanup/count -> after-turn -> cleanup/count -> advance.
         // STAY never constructed a scene/worklist; unsupported deaths must not become empty cleanup.
+        if (actorIndex < 128 ? enemyStandby is not null || enemyPursuit is not null :
+            (enemyStandby is null) == (enemyPursuit is null))
+            throw new ArgumentException("Only an enemy completion may carry exactly one enemy decision.", "completion");
+        if ((enemyStandby is not null && enemyStandby.ActorIndex != actorIndex) ||
+            (enemyPursuit is not null && enemyPursuit.ActorIndex != actorIndex))
+            throw new ArgumentException("The completion decision must belong to its actor.", "completion");
         RequireDefeatedWrapperReturn(current);
         RequireEmptyKilledCleanup(current, "cleanup.before");
         var before = RequireContinuingFactions(current, "outcome.before");
@@ -40,7 +48,7 @@ public static class Battle01TurnCompletion
         RequireEmptyKilledCleanup(current, "cleanup.after");
         var after = RequireContinuingFactions(current, "outcome.after");
         return new(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
-            new(actorIndex, policy!, before, after, current.TurnCompletion, enemyStandby, current.FirstRound.RoundNumber));
+            new(actorIndex, policy!, before, after, current.TurnCompletion, enemyStandby, current.FirstRound.RoundNumber, enemyPursuit));
     }
 
     internal static void RequireContinuingNoEffectState(Battle01InitializedState current)

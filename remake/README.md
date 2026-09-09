@@ -42,11 +42,15 @@ standby move and no-effect STAY commits separately with current occupancy and it
 The seed-copy1234 becomes0134 while main RNG staysA4991234. Actual Bowie0 then receives his Regular
 movement range with budget12 and independent move/cancel/STAY. His STAY reaches the first sentinel
 at offset18, retaining all nine receipts and effective stats. The same dispatch then generates the
-next wholly inactive round from current positions, flags and main RNG. Each new order and completion
+next round from current positions, retained primary-region activation and main RNG. Each new order and completion
 has a round number; all previous receipts, own AI memory and the independent seed-copy survive.
-Actual players choose movement/cancel/STAY manually in each round. Newly active regions or unsupported
-actor behavior stop with a precise diagnostic and retain the last successful state. The controlled
-origin-STAY comparison reaches actual round3 player control; it does not establish natural continuity.
+Actual players choose movement/cancel/STAY manually in each round. Known activated GIZMOs use bounded
+commandsets6/7 pursuit when no physical attack target is eligible, then commit no-effect STAY.
+Bowie entering region1 at (11,15) in round2 drives repeated pursuit through round5 and reaches
+round6 enemy132 with an eligible physical target. The visible attack-selection boundary retains
+that candidate, all fifty completed receipts and both RNG channels, with player input closed.
+Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
+this controlled comparison does not establish natural continuity or original economy effects.
 Backspace cancels only before STAY. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
 and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
@@ -378,7 +382,7 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
   Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
-  attacks, active AI, victory and natural continuity remain open. See the
+  attack selection/resolution, other AI commands, victory and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.

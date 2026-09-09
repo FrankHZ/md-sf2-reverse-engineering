@@ -65,7 +65,7 @@ public sealed class Battle01FirstRoundTests
     }
 
     [Fact]
-    public void ReachableRegionEntryRejectsTheNextRoundBeforeAnyProjectedActivationOrRngIsInstalled()
+    public void ReachableRegionEntryActivatesKnownPrimaryWordsWithoutResettingRetainedState()
     {
         var current = Battle01FirstRound.EnterNext(CompletedFirstRound());
         while (current.FirstRound!.CurrentCandidate!.Value.CombatantIndex != 0) current = CompleteOriginTurn(current);
@@ -76,7 +76,11 @@ public sealed class Battle01FirstRoundTests
         current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(selected,0),0,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         while (current.FirstRound!.CurrentCandidate is not null) current = CompleteOriginTurn(current);
         var before = current; string frozen = JsonSerializer.Serialize(before);
-        Assert.Equal("activation.region1", Assert.Throws<ArgumentException>(() => Battle01FirstRound.EnterNext(before)).ParamName);
+        var active = Battle01FirstRound.EnterNext(before);
+        Assert.Equal(new[] { false, true, false }, active.RegionFlags90Through105.Take(3));
+        Assert.Equal(new ushort?[] { 0x2060,0x2060,0x2060,0x2061,0x2071,0x2070 }, active.Roster.Skip(3).Select(unit => unit.AiBitfield));
+        Assert.Equal(0x9BD71234u, active.RandomSeedImage); Assert.Equal(before.RandomSeedCopy, active.RandomSeedCopy);
+        Assert.Same(before.AiMemory, active.AiMemory); Assert.Same(before.TurnCompletion, active.TurnCompletion);
         Assert.Equal(frozen, JsonSerializer.Serialize(before)); Assert.All(before.RegionFlags90Through105, Assert.False);
         Assert.Equal(0xAA861234u, before.RandomSeedImage); Assert.Equal((ushort?)0x0034, before.RandomSeedCopy);
         // A separately authored retained tested mask proves generation does not invent a new clear.

@@ -736,9 +736,9 @@ Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 base 
 F, the actual walk endpoint, the Map 40 base arrival and Battle 01 pending admission. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
-Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
-and `runtime` from accepted asset commit `3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880` into a fresh
-ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
+Use a clean committed head after the owning tests and official Godot gate. Mount the accepted asset checkout read-only after its checkout preflight, or export only
+`manifests` and `runtime` from accepted commit `3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880`
+into a fresh ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
 to the isolated accepted inputs. Set `SF2_CASTLE_REVIEW_EDITOR` to the official 4.7.2 Mono editor
 extracted inside this worktree by the Godot gate, and `SF2_CASTLE_REVIEW_ROOT` to a **fresh** absolute
 child of this checkout's ignored `local/`. Run the following with `uv run python` from the checkout
@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -918,7 +918,7 @@ chained seed-copy and its own memory, then commits independently. A later failur
 completed actor with its precise diagnostic. Success reaches actual Bowie0 at offset16 with the
 Regular1 budget12 range. His manual move/cancel/STAY reaches the first sentinel at offset18;
 current-position activation, empty cutscene/spawn admission and current-main ordering then generate
-the next wholly inactive round. The bounded dispatch yields its actual player without choosing a move.
+the next admitted round. The bounded dispatch yields its actual player without choosing a move.
 Every completion retains its round number and prior history. Unsupported activation rejects before
 installing flags/order/RNG; actor failure retains its last successful state. The view removes stale
 movement overlays at rejection, and unrelated keys preserve that reason without retrying.
@@ -942,7 +942,7 @@ snapshot/actor/live-position/occupancy changes, both cancel stages, immutable re
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 scene/layer/VRAM/animation fidelity, timing, attacks, active AI, victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, attack selection/resolution, other AI commands, victory and H4 remain Unknown.
 
 For repeated inactive-round acceptance, use a fresh review root and
 `SF2_BATTLE01_CONTROL_REVIEW=round-continuation` with the same required canonical, three selected
@@ -966,7 +966,7 @@ Actual players remain manual. Inspect all four images for the current round and 
 provisional path, independent cancellation, legible status/controls and hidden old canvas layers.
 
 After captures, isolated copies exercise authored round2 enemy-first order, late generated-round
-control rejection, late enemy occupancy rejection and reachable Bowie region1 activation rejection.
+control rejection, late enemy occupancy rejection and successful reachable Bowie region1 activation.
 These call the existing Domain/Application dispatch directly and are explicitly authored boundary
 tests, separate from the physical-key comparison. Each rejected snapshot ignores all subsequent
 battle inputs without retry; the probe restores the actual round3 snapshot afterwards.
@@ -974,7 +974,28 @@ battle inputs without retry; the probe restores the actual round3 snapshot after
 The former `first-round`, `enemy-standby`, `next-player` and `stay` names alias this four-frame
 continuation chain. It does not replay six-frame cancellation or castle modes; captures and bounded
 process/code-head receipts remain local. It proves controlled remake behavior, not original after-turn
-fidelity, active AI, natural seed chronology or H4.
+fidelity, natural seed chronology or H4.
+
+For activated pursuit, select `SF2_BATTLE01_CONTROL_REVIEW=enemy-pursuit` and another fresh review
+root with the same inputs. The shared physical Godot key-event chain reaches round2 Bowie, moves
+him to(11,15), checks confirm/cancel, then separately confirms and commits STAY. All later players
+explicitly choose origin/STAY. Capture these four frames:
+
+1. `01-round3-ready`: actual player2, region1 active, main9BD71234/copy0034.
+2. `02-first131-test-copy`: a labeled copied round3 snapshot uses direct Application steps to expose
+   the synchronous first131 pursuit. Preliminary(9,5) is occupied; final(9,4) costs2 with move string
+   `00 FF`. This is test instrumentation. Restore the exact original snapshot before continuing
+   physical Godot key events and compare the resulting actual131 decision with this copy.
+3. `03-round4-ready`: actual player1 after both active pursuits, main51DC1234/copy0234.
+4. `04-round6-attack-required`: actual132 stays at(11,10), eligible cohort0 at attack position(11,14)
+   cost8, raw offset10 and fifty prior receipts; main07821234/copy0034, no movement input or retry.
+
+The receipt includes all six64-slot orders, typed standby/pursuit decisions,4498 thinking bytes,
+unchanged last-target/effective-stat/deployment provenance and final occupancy. Six pursuit turns
+consume no thinking bytes. Inspect every image and its layout/atlas assertions; frame02 must remain
+explicitly marked as a test copy, with no production pause hook or original-timing claim. The
+round6 rejection also ignores unrelated keys and later frames without changing the exact snapshot
+or status. This review does not implement attack priority, damage, victory or original economy effects.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,
