@@ -54,7 +54,7 @@ public static class Battle01FirstRound
         ArgumentNullException.ThrowIfNull(current);
         if (current.Phase != Battle01Phase.BeforeFirstRound)
             throw new ArgumentException("Only the pre-first-round phase can enter this transition.", nameof(current));
-        return Generate(current, 1, requireInactive: false);
+        return Generate(current, 1, continuing: false);
     }
 
     public static Battle01InitializedState EnterNext(Battle01InitializedState current)
@@ -67,22 +67,15 @@ public static class Battle01FirstRound
         Battle01EnemyStandby.RequireThinkingHistory(current);
         Battle01TurnCompletion.RequireContinuingNoEffectState(current);
         if (order.RoundNumber == int.MaxValue) throw new ArgumentException("Round number is exhausted.", "roundNumber");
-        return Generate(current, order.RoundNumber + 1, requireInactive: true);
+        return Generate(current, order.RoundNumber + 1, continuing: true);
     }
 
-    private static Battle01InitializedState Generate(Battle01InitializedState current, int number, bool requireInactive)
+    private static Battle01InitializedState Generate(Battle01InitializedState current, int number, bool continuing)
     {
         // Keep source order. No initialization, memory clear, healing or input mutation here.
-        if (requireInactive && (current.RegionFlags90Through105.Count != 16 || current.Roster.Any(unit => unit.AiBitfield is null)))
-            throw new ArgumentException("Current activation inputs must be supplied.", "activation");
+        if (continuing) RequireActivationState(current.Roster, current.RegionFlags90Through105, number);
         var (roster, flags, tested) = ActivateEnemies(current);
-        if (requireInactive)
-        {
-            int region = Array.FindIndex(flags, flag => flag);
-            if (region >= 0) throw new ArgumentException("Active-region behavior is unsupported; completed round retained.", $"activation.region{region}");
-            var active = roster.FirstOrDefault(unit => unit.Index >= 128 && (unit.AiBitfield!.Value & 3) != 0);
-            if (active is not null) throw new ArgumentException("Active AI is unsupported; completed round retained.", $"activation.actor{active.Index}");
-        }
+        if (continuing) RequireActivationState(roster, flags, number);
         int[] cutscenes = RouteBattle01RegionCutscenes();
         int[] spawned = AdmitStartingSpawns(roster);
         ushort word = current.GeneratorWord;
@@ -90,8 +83,27 @@ public static class Battle01FirstRound
             (byte)unit.Position.X, unit.Stats.HpCurrent, unit.Stats.Agility)), ref word);
         uint image = ((uint)word << 16) | (current.RandomSeedImage & 0xFFFFu);
         var next = new Battle01InitializedState(current, roster, flags, tested, image, new(slots, cutscenes, spawned, number));
-        if (requireInactive) RequireCurrentPrefix(next);
+        if (continuing) RequireCurrentPrefix(next);
         return next;
+    }
+
+    internal static void RequireActivationState(IReadOnlyList<Battle01Combatant> roster, IReadOnlyList<bool> flags, int roundNumber)
+    {
+        if (flags.Count != 16 || roster.Any(unit => unit.AiBitfield is null))
+            throw new ArgumentException("Current activation inputs must be supplied.", "activation");
+        for (int region = 3; region < flags.Count; region++)
+            if (flags[region]) throw new ArgumentException("Only the three known Battle01 regions are admitted.", $"activation.region{region}");
+        foreach (var enemy in roster.Where(unit => unit.Index >= 128))
+        {
+            int slot = enemy.Index - 128;
+            if (slot is < 0 or >= 6) throw new ArgumentException("Only the six starting GIZMOs are admitted.", "actor");
+            int region = slot < 3 ? 2 : slot < 5 ? 1 : 0;
+            int word = (slot < 4 ? 0x2060 : 0x2070) | (flags[region] ? 1 : 0);
+            if (enemy.AiBitfield != word)
+                throw new ArgumentException("Retain coherent primary activation and all source word bits.", $"activation.actor{enemy.Index}");
+            Battle01EnemyStandby.RequireRegularEnemy(enemy, roundNumber, flags[region]);
+        }
+        // Explicit roster-only remake policy: no combatant160/shop-deals alias is projected.
     }
 
     internal static void RequireCurrentPrefix(Battle01InitializedState current)

@@ -59,20 +59,26 @@ public static class Battle01EnemyStandby
         }
         else
         {
-            if (current.Phase is not (Battle01Phase.RoundGenerated or Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted))
-                throw new ArgumentException("Standby requires current generation or completed actor dispatch.", "phase");
-            Battle01FirstRound.RequireCurrentPrefix(current);
-            RequireThinkingHistory(current);
-            bool enemyCompleted = false;
-            for (var receipt = current.TurnCompletion; receipt?.RoundNumber == order.RoundNumber; receipt = receipt.Previous)
-                enemyCompleted |= receipt.EnemyStandby is not null;
-            if (current.NewlyTestedRegionMask != (enemyCompleted ? 0 : 7) || current.RegionFlags90Through105.Count != 16 ||
-                current.RegionFlags90Through105.Any(flag => flag))
-                throw new ArgumentException("Retain the current round's tested mask and inactive flags.", "round");
+            RequireCurrentRound(current);
         }
         if (order.CurrentCandidate?.CombatantIndex != actorIndex)
             throw new ArgumentException("Standby must name the actual current enemy.", "actor");
         return CompleteAdmittedEnemy(current, actorIndex, policy);
+    }
+
+    internal static void RequireCurrentRound(Battle01InitializedState current)
+    {
+        if (current.FirstRound is not { RoundNumber: > 1 } order ||
+            current.Phase is not (Battle01Phase.RoundGenerated or Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted))
+            throw new ArgumentException("Enemy control requires current generation or completed actor dispatch.", "phase");
+        Battle01FirstRound.RequireCurrentPrefix(current);
+        RequireThinkingHistory(current);
+        bool enemyCompleted = false;
+        for (var receipt = current.TurnCompletion; receipt?.RoundNumber == order.RoundNumber; receipt = receipt.Previous)
+            enemyCompleted |= receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null;
+        if (current.NewlyTestedRegionMask != (enemyCompleted ? 0 : 7))
+            throw new ArgumentException("Retain the current round's tested mask.", "round");
+        Battle01FirstRound.RequireActivationState(current.Roster, current.RegionFlags90Through105, order.RoundNumber);
     }
 
     internal static void RequireCompletedPrefix(Battle01InitializedState current, int completedCount)
@@ -91,7 +97,8 @@ public static class Battle01EnemyStandby
                 throw new ArgumentException("The complete ordered no-effect receipt prefix must be retained.", "completion");
             receipts[index] = receipt; receipt = receipt.Previous;
         }
-        if (receipt is not null || receipts.Take(2).Any(player => player.EnemyStandby is not null))
+        if (receipt is not null || receipts.Any(item => item.EnemyPursuit is not null) ||
+            receipts.Take(2).Any(player => player.EnemyStandby is not null))
             throw new ArgumentException("The receipt prefix must start with exactly the two player turns.", "completion");
         ushort seed = 0x1234; var memory = new byte[48];
         foreach (var completed in receipts.Skip(2))
@@ -119,17 +126,35 @@ public static class Battle01EnemyStandby
         var memory = current.AiMemory.ToArray();
         for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
         {
-            if (receipt.EnemyStandby is not { } decision)
+            if (receipt.CompletedActorIndex < 128)
             {
-                if (receipt.CompletedActorIndex >= 128) throw new ArgumentException("Enemy decision history is incomplete.", "completion");
+                if (receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null)
+                    throw new ArgumentException("Player receipts cannot carry an enemy decision.", "completion");
                 continue;
             }
-            int slot = decision.ActorIndex - 128;
-            if (slot is < 0 or >= 6 || decision.ActorIndex != receipt.CompletedActorIndex)
+            if ((receipt.EnemyStandby is null) == (receipt.EnemyPursuit is null))
+                throw new ArgumentException("Each enemy receipt requires exactly one decision kind.", "completion");
+            int actor; ushort before, after; byte memoryBefore, memoryAfter;
+            if (receipt.EnemyPursuit is { } pursuit)
+            {
+                actor = pursuit.ActorIndex; before = pursuit.SeedCopyBefore; after = pursuit.SeedCopyAfter;
+                memoryBefore = pursuit.MemoryBefore; memoryAfter = pursuit.MemoryAfter;
+                if (receipt.RoundNumber <= 1 || before != after || memoryBefore != memoryAfter ||
+                    (receipt.RoundNumber == current.FirstRound?.RoundNumber && pursuit.MainSeedImage != current.RandomSeedImage))
+                    throw new ArgumentException("Pursuit must preserve its round's main RNG and independent thinking state.", "completion");
+            }
+            else
+            {
+                var decision = receipt.EnemyStandby!;
+                actor = decision.ActorIndex; before = decision.SeedCopyBefore; after = decision.SeedCopyAfter;
+                memoryBefore = decision.MemoryBefore; memoryAfter = decision.MemoryAfter;
+            }
+            int slot = actor - 128;
+            if (slot is < 0 or >= 6 || actor != receipt.CompletedActorIndex)
                 throw new ArgumentException("Enemy decision must identify its completed actor.", "completion");
-            if (seed != decision.SeedCopyAfter) throw new ArgumentException("Thinking seed-copy history must remain linked.", "randomSeedCopy");
-            if (memory[slot] != decision.MemoryAfter) throw new ArgumentException("Each actor's retained memory must match its last decision.", "memory");
-            seed = decision.SeedCopyBefore; memory[slot] = decision.MemoryBefore;
+            if (seed != after) throw new ArgumentException("Thinking seed-copy history must remain linked.", "randomSeedCopy");
+            if (memory[slot] != memoryAfter) throw new ArgumentException("Each actor's retained memory must match its last decision.", "memory");
+            seed = before; memory[slot] = memoryBefore;
         }
         if (seed != 0x1234) throw new ArgumentException("Thinking history must retain its supplied comparison origin.", "randomSeedCopy");
         if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
@@ -140,27 +165,8 @@ public static class Battle01EnemyStandby
     {
         var actor = current.Roster.SingleOrDefault(unit => unit.Index == actorIndex)
             ?? throw new ArgumentException("The current enemy must exist.", "actor");
-        int memoryIndex = actorIndex - 128;
-        if (memoryIndex is < 0 or >= 6) throw new ArgumentException("Only the six initialized GIZMOs are admitted.", "actor");
-        var deployment = actor.Deployment;
-        byte commandSet = memoryIndex >= 4 ? (byte)7 : (byte)6;
-        byte primaryRegion = memoryIndex < 3 ? (byte)2 : memoryIndex < 5 ? (byte)1 : (byte)0;
-        if (deployment.Identity != 39 || deployment.AiCommandSet != commandSet ||
-            deployment.PrimaryOrder != 255 || deployment.SecondaryOrder != 255 ||
-            deployment.PrimaryRegion != primaryRegion || deployment.SecondaryRegion != 15 ||
-            deployment.Spawn != 0 || actor.AiBitfield != (0x2000 | (commandSet << 4)))
-            throw new ArgumentException("Only the fixed inactive GIZMO regular standby branch is admitted.", "activation");
-        if (deployment.Position != EnemyOrigins[memoryIndex] || !Battle01Initialization.WithinArea(actor.Position) ||
-            (current.FirstRound!.RoundNumber == 1 && actor.Position != deployment.Position))
-            throw new ArgumentException("Retain the original standby anchor and a valid live position.", "position");
-        var stats = actor.Stats;
-        if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
-            stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
-            stats.Agility != 5 || stats.Move != 5 || stats.Status != 0 ||
-            stats.Items.Any(item => item != 127) || stats.Spells.Any(spell => spell != 63))
-            throw new ArgumentException("The already initialized effective enemy stats must be unchanged.", "stats");
-
-        var decision = Decide(current, actor, current.RandomSeedCopy!.Value, current.AiMemory[memoryIndex]);
+        RequireRegularEnemy(actor, current.FirstRound!.RoundNumber, active: false);
+        var decision = Decide(current, actor, current.RandomSeedCopy!.Value, current.AiMemory[actorIndex - 128]);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         if (occupancy.Length != 2304 || occupancy[Battle01PlayerMovement.Offset(actor.Position)] != actorIndex ||
             (decision.Destination != actor.Position && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1))
@@ -168,10 +174,36 @@ public static class Battle01EnemyStandby
         roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
         occupancy[Battle01PlayerMovement.Offset(actor.Position)] = -1;
         occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = actorIndex;
-        var memory = current.AiMemory.ToArray(); memory[memoryIndex] = decision.MemoryAfter;
+        var memory = current.AiMemory.ToArray(); memory[actorIndex - 128] = decision.MemoryAfter;
         var moved = new Battle01InitializedState(current, roster, occupancy, memory, decision.SeedCopyAfter);
         // Local projection only: source clear-region/standby/move/STAY effects commit together.
-        return Battle01TurnCompletion.CompleteControlledStay(moved, actorIndex, stats, policy, decision);
+        return Battle01TurnCompletion.CompleteControlledStay(moved, actorIndex, actor.Stats, policy, decision);
+    }
+
+    internal static void RequireRegularEnemy(Battle01Combatant actor, int roundNumber, bool active)
+    {
+        int actorIndex = actor.Index;
+        int memoryIndex = actorIndex - 128;
+        if (memoryIndex is < 0 or >= 6) throw new ArgumentException("Only the six initialized GIZMOs are admitted.", "actor");
+        var deployment = actor.Deployment;
+        if (deployment.Spawn != 0)
+            throw new ArgumentException("Only the existing STARTING roster is admitted.", "spawn");
+        byte commandSet = memoryIndex >= 4 ? (byte)7 : (byte)6;
+        byte primaryRegion = memoryIndex < 3 ? (byte)2 : memoryIndex < 5 ? (byte)1 : (byte)0;
+        if (deployment.Identity != 39 || deployment.AiCommandSet != commandSet ||
+            deployment.PrimaryOrder != 255 || deployment.SecondaryOrder != 255 ||
+            deployment.PrimaryRegion != primaryRegion || deployment.SecondaryRegion != 15 ||
+            actor.AiBitfield != (0x2000 | (commandSet << 4) | (active ? 1 : 0)))
+            throw new ArgumentException("Only the fixed GIZMO regular branch with matching activation is admitted.", "activation");
+        if (deployment.Position != EnemyOrigins[memoryIndex] || !Battle01Initialization.WithinArea(actor.Position) ||
+            (roundNumber == 1 && actor.Position != deployment.Position))
+            throw new ArgumentException("Retain the original standby anchor and a valid live position.", "position");
+        var stats = actor.Stats;
+        if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
+            stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
+            stats.Agility != 5 || stats.Move != 5 || stats.Status != 0 ||
+            stats.Items.Any(item => item != 127) || stats.Spells.Any(spell => spell != 63))
+            throw new ArgumentException("The already initialized effective enemy stats must be unchanged.", "stats");
     }
 
     internal static Battle01EnemyStandbyDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
@@ -245,9 +277,19 @@ public static class Battle01EnemyStandby
 
     internal static IReadOnlyList<byte> SourceMoveString(Battle01MovementGrid grid, MapPosition origin, MapPosition destination)
     {
-        int current = Battle01PlayerMovement.Offset(destination), start = Battle01PlayerMovement.Offset(origin);
-        var backtrack = new List<byte>(); int previousMask = 0;
-        while (current != start)
+        var (reached, backtrack) = SourceWalk(grid, destination, 0);
+        if (reached != origin) throw new ArgumentException("The complete source AI path must reach its grid origin.", "path");
+        return Array.AsReadOnly(backtrack.SkipLast(1).Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+    }
+
+    internal static (MapPosition Destination, IReadOnlyList<byte> MoveString) SourceWalk(
+        Battle01MovementGrid grid, MapPosition origin, int targetCost)
+    {
+        if (!Battle01Initialization.WithinArea(origin) || targetCost < 0 || grid.CostAt(origin) is not { } startCost || targetCost > startCost)
+            throw new ArgumentException("A bounded source AI walk requires a reachable scene origin and cost threshold.", "path");
+        int current = Battle01PlayerMovement.Offset(origin);
+        var directions = new List<byte>(); int previousMask = 0;
+        while (grid.CostAtOffset(current) > targetCost)
         {
             int cost = grid.CostAtOffset(current) ?? throw new ArgumentException("AI destination is unreachable.", "path");
             int threshold = cost - 1, mask = 0;
@@ -268,8 +310,8 @@ public static class Battle01EnemyStandby
             if (!Battle01Initialization.WithinArea(new(current % 48, current / 48)) ||
                 grid.CostAtOffset(current) is not { } nextCost || nextCost >= cost)
                 throw new ArgumentException("The source AI path must decrease cost within the fixed scene.", "path");
-            previousMask = 1 << direction; backtrack.Add(direction);
+            previousMask = 1 << direction; directions.Add(direction);
         }
-        return Array.AsReadOnly(backtrack.AsEnumerable().Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+        return (new(current % 48, current / 48), Array.AsReadOnly(directions.Append((byte)255).ToArray()));
     }
 }
