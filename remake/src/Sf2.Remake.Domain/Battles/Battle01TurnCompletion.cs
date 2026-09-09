@@ -23,18 +23,53 @@ public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPol
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
+public sealed class Battle01PlayerPhysicalCompletionPolicy : Battle01TurnCompletionPolicy
+{
+    private Battle01PlayerPhysicalCompletionPolicy() { }
+    public static Battle01PlayerPhysicalCompletionPolicy ControlledNonlethalStrikeAndExp { get; } = new();
+    public override string Id => "battle01-controlled-player-nonlethal-physical-exp-v1";
+}
+
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01TurnCompletionPolicy Policy,
     Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
     Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
-    Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null);
+    Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null,
+    Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null);
 
 public static class Battle01TurnCompletion
 {
     internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
-        receipt.EnemyPhysicalAttack is not null
+        receipt.PlayerPhysicalAttack is not null
+            ? ReferenceEquals(receipt.Policy, Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp) &&
+                receipt.CompletedActorIndex < 128 && receipt.PlayerPhysicalAttack.ActorIndex == receipt.CompletedActorIndex &&
+                receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null
+            : receipt.EnemyPhysicalAttack is not null
             ? ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
             : ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+
+    internal static Battle01InitializedState CompletePlayerPhysical(Battle01InitializedState current,
+        Battle01PlayerPhysicalAttackDecision decision, Battle01PlayerPhysicalCompletionPolicy? policy)
+    {
+        if (!ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp))
+            throw new ArgumentException("An explicit player physical/EXP completion policy is required.", "policy");
+        if (current.Phase != Battle01Phase.PlayerAttackTargetSelection || current.FirstControl?.ActorIndex != decision.ActorIndex ||
+            current.FirstRound?.CurrentCandidate?.CombatantIndex != decision.ActorIndex)
+            throw new ArgumentException("Retain the actual selected player turn during local finalization.", "phase");
+        Battle01PlayerPhysicalAttack.ValidateDecision(decision);
+        RequireDefeatedWrapperReturn(current); RequireEmptyKilledCleanup(current, "cleanup.before");
+        var before = RequireContinuingFactions(current, "outcome.before");
+        NormalizeControlledNoEffectTurn(current, decision.ActorIndex, decision.ActorAfterStats,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        RequireEmptyKilledCleanup(current, "cleanup.after");
+        var after = RequireContinuingFactions(current, "outcome.after");
+        var result = new Battle01InitializedState(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
+            new(decision.ActorIndex, policy!, before, after, current.TurnCompletion,
+                RoundNumber: current.FirstRound.RoundNumber, PlayerPhysicalAttack: decision));
+        Battle01FirstRound.RequireCurrentPrefix(result);
+        Battle01EnemyStandby.RequireThinkingHistory(result);
+        return result;
+    }
 
     internal static Battle01InitializedState CompletePhysical(Battle01InitializedState current,
         Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy? policy)

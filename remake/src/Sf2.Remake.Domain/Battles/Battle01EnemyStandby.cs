@@ -97,7 +97,7 @@ public static class Battle01EnemyStandby
                 throw new ArgumentException("The complete ordered no-effect receipt prefix must be retained.", "completion");
             receipts[index] = receipt; receipt = receipt.Previous;
         }
-        if (receipt is not null || receipts.Any(item => item.EnemyPursuit is not null || item.EnemyPhysicalAttack is not null) ||
+        if (receipt is not null || receipts.Any(item => item.EnemyPursuit is not null || item.EnemyPhysicalAttack is not null || item.PlayerPhysicalAttack is not null) ||
             receipts.Take(2).Any(player => player.EnemyStandby is not null))
             throw new ArgumentException("The receipt prefix must start with exactly the two player turns.", "completion");
         ushort seed = 0x1234; var memory = new byte[48];
@@ -142,6 +142,18 @@ public static class Battle01EnemyStandby
             {
                 if (receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null || receipt.EnemyPhysicalAttack is not null)
                     throw new ArgumentException("Player receipts cannot carry an enemy decision.", "completion");
+                if (receipt.PlayerPhysicalAttack is { } player)
+                {
+                    Battle01PlayerPhysicalAttack.ValidateDecision(player);
+                    if (receipt.RoundNumber <= 1 || seed != player.SeedCopy ||
+                        (mainAnchored && main != player.Effect.MainSeedAfter) ||
+                        !Battle01EnemyPhysicalAttack.SameStats(stats[player.ActorIndex], player.ActorAfterStats) ||
+                        !Battle01EnemyPhysicalAttack.SameStats(stats[player.TargetIndex], player.Effect.AfterStats))
+                        throw new ArgumentException("Player HP, EXP and both RNG channels must remain linked.", "attack.history");
+                    main = player.MainSeedBefore; mainAnchored = true;
+                    stats[player.ActorIndex] = player.Actor.Stats; stats[player.TargetIndex] = player.Effect.BeforeStats;
+                    damaged.Add(player.ActorIndex); damaged.Add(player.TargetIndex);
+                }
                 continue;
             }
             if ((receipt.EnemyStandby is null ? 0 : 1) + (receipt.EnemyPursuit is null ? 0 : 1) +
@@ -157,6 +169,7 @@ public static class Battle01EnemyStandby
                 memoryBefore = attack.Memory; memoryAfter = attack.Memory;
                 if ((mainAnchored && main != attack.Effect.MainSeedAfter) ||
                     targets[actor - 128] != attack.TargetIndex ||
+                    !Battle01EnemyPhysicalAttack.SameStats(stats[actor], attack.Actor.Stats) ||
                     !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], attack.Effect.AfterStats))
                     throw new ArgumentException("Physical main RNG, last target and HP history must remain linked.", "attack.history");
                 main = attack.MainSeedBefore; mainAnchored = true;
@@ -189,10 +202,18 @@ public static class Battle01EnemyStandby
         if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
         if (targets.Any(value => value != 255))
             throw new ArgumentException("Last-target history must rewind to initialized empty slots.", "memory");
-        foreach (int actor in damaged)
+        foreach (var unit in current.Roster)
         {
-            Battle01EnemyPhysicalAttack.RequireTargetProfile(current.Roster.Single(unit => unit.Index == actor).WithStats(stats[actor]));
-            if (stats[actor].HpCurrent != stats[actor].HpMax)
+            var original = stats[unit.Index];
+            if (unit.Index >= 128)
+                RequireRegularEnemy(unit.WithStats(original), Math.Max(2, current.FirstRound?.RoundNumber ?? 2), (unit.AiBitfield & 1) != 0);
+            else if (damaged.Contains(unit.Index) || original.CurrentExp is not null)
+            {
+                Battle01EnemyPhysicalAttack.RequireTargetProfile(unit.WithStats(original));
+                if (original.CurrentExp is not (null or 0))
+                    throw new ArgumentException("Known player EXP must rewind to the declared zero input.", "attack.history");
+            }
+            if (original.HpCurrent != original.HpMax)
                 throw new ArgumentException("Physical HP history must retain the initialized full-HP origin.", "attack.history");
         }
     }
@@ -236,7 +257,15 @@ public static class Battle01EnemyStandby
             (roundNumber == 1 && actor.Position != deployment.Position))
             throw new ArgumentException("Retain the original standby anchor and a valid live position.", "position");
         var stats = actor.Stats;
-        if (actor.EnemySource?.MovementType != 6 || stats.HpMax != 5 || stats.HpCurrent != 5 ||
+        var source = actor.EnemySource; var baseline = source?.SourceStats;
+        if (actor.ClassId is not null || source is null || source.DefinitionId != 39 || source.SourceUnknownByte != 39 ||
+            source.SpellPowerMode != 0 || source.BaseResistance != 0x40E3 || source.BaseProwess != 0 ||
+            source.BaseAiBitfield != 0x2000 || source.MovementType != 6 || baseline is null ||
+            baseline.Level != 0 || baseline.HpMax != 5 || baseline.HpCurrent != 5 || baseline.MpMax != 0 || baseline.MpCurrent != 0 ||
+            baseline.Attack != 7 || baseline.Defense != 5 || baseline.Agility != 5 || baseline.Move != 5 || baseline.Status != 0 ||
+            baseline.CurrentExp is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
+            stats.Level != 0 || stats.CurrentExp is not null || stats.HpMax != 5 || stats.HpCurrent is < 1 or > 5 ||
+            (roundNumber == 1 && stats.HpCurrent != 5) ||
             stats.MpMax != 0 || stats.MpCurrent != 0 || stats.Attack != 8 || stats.Defense != 5 ||
             stats.Agility != 5 || stats.Move != 5 || stats.Status != 0 ||
             stats.Items.Any(item => item != 127) || stats.Spells.Any(spell => spell != 63))

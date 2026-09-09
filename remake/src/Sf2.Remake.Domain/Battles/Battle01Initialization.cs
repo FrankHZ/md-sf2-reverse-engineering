@@ -31,7 +31,7 @@ public sealed class Battle01Stats
 {
     public Battle01Stats(byte level, ushort hpMax, ushort hpCurrent, byte mpMax, byte mpCurrent,
         byte attack, byte defense, byte agility, byte move, ushort status,
-        IEnumerable<ushort> items, IEnumerable<byte> spells)
+        IEnumerable<ushort> items, IEnumerable<byte> spells, byte? currentExp = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(spells);
@@ -40,9 +40,11 @@ public sealed class Battle01Stats
             throw new ArgumentException("This initialization requires living combatants with valid vitals and movement.");
         if (itemCopy.Length != 4 || itemCopy.Any(item => item > 255) || spellCopy.Length != 4)
             throw new ArgumentException("Four packed item words and four packed spell bytes are required.");
+        if (currentExp > 200) throw new ArgumentOutOfRangeException(nameof(currentExp));
         Level = level; HpMax = hpMax; HpCurrent = hpCurrent; MpMax = mpMax; MpCurrent = mpCurrent;
         Attack = attack; Defense = defense; Agility = agility; Move = move; Status = status;
         Items = Array.AsReadOnly(itemCopy); Spells = Array.AsReadOnly(spellCopy);
+        CurrentExp = currentExp;
     }
     public byte Level { get; }
     public ushort HpMax { get; }
@@ -54,12 +56,16 @@ public sealed class Battle01Stats
     public byte Agility { get; }
     public byte Move { get; }
     public ushort Status { get; }
+    // Null is unspecified input, never an implicit zero EXP value.
+    public byte? CurrentExp { get; }
     public IReadOnlyList<ushort> Items { get; }
     public IReadOnlyList<byte> Spells { get; }
     internal Battle01Stats WithCurrentHp(ushort hp) => hp == HpCurrent ? this :
-        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells);
+        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp);
+    internal Battle01Stats WithCurrentExp(byte exp) => exp == CurrentExp ? this :
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp);
     internal Battle01Stats Initialize(byte attack, ushort status) =>
-        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells);
+        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells, CurrentExp);
 }
 
 public sealed record Battle01AllyInput(byte Id, byte ClassId, Battle01Stats EffectiveStats);
@@ -99,7 +105,7 @@ public sealed class Battle01Combatant
         ? this : new(Deployment, stats, ClassId, EnemySource, AiBitfield, Position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection }
 
 public sealed class Battle01InitializedState
 {
@@ -140,6 +146,12 @@ public sealed class Battle01InitializedState
         AiLastTargets = source.AiLastTargets; RegionFlags90Through105 = source.RegionFlags90Through105;
         NewlyTestedRegionMask = 0; RandomSeedImage = source.RandomSeedImage; RandomSeedCopy = randomSeedCopy;
         FirstRound = source.FirstRound; TurnCompletion = source.TurnCompletion;
+    }
+    // Player action changes stats/main RNG while retaining its provisional position and AI channels.
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster, uint randomSeedImage)
+        : this(source, roster, source.Occupancy, source.FirstControl!)
+    {
+        RandomSeedImage = randomSeedImage;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         int[] occupancy, byte[] aiMemory, ushort randomSeedCopy, uint randomSeedImage, byte[] lastTargets)
@@ -190,7 +202,12 @@ public sealed class Battle01InitializedState
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
     public Battle01Phase Phase => FirstControl is { } control
-        ? control.Movement.Stage == Battle01PlayerMovementStage.Selection ? Battle01Phase.PlayerMovementSelection : Battle01Phase.PlayerActionChoice
+        ? control.Movement.Stage switch
+        {
+            Battle01PlayerMovementStage.Selection => Battle01Phase.PlayerMovementSelection,
+            Battle01PlayerMovementStage.TargetSelection => Battle01Phase.PlayerAttackTargetSelection,
+            _ => Battle01Phase.PlayerActionChoice,
+        }
         : FirstRound is { RoundNumber: > 1 } round && (TurnCompletion is null || TurnCompletion.RoundNumber < round.RoundNumber)
             ? Battle01Phase.RoundGenerated
         : TurnCompletion is { } completed ? completed.CompletedActorIndex >= 128
@@ -243,9 +260,9 @@ public static class Battle01Initialization
             throw new ArgumentException("A starting combatant cannot occupy obstructed raw terrain.", nameof(terrain));
         Battle01Stats baseline = enemy.SourceStats ?? throw new ArgumentException("Missing enemy source stats.", nameof(enemy));
         if (enemy.DefinitionId != 39 || enemy.SourceUnknownByte != 39 || enemy.SpellPowerMode != 0 ||
-            baseline.Level != 0 || baseline.HpMax != 5 || baseline.MpMax != 0 ||
+            baseline.Level != 0 || baseline.HpMax != 5 || baseline.HpCurrent != 5 || baseline.MpMax != 0 ||
             baseline.Attack != 7 || baseline.Defense != 5 || baseline.Agility != 5 || baseline.Move != 5 ||
-            baseline.Status != 0 || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
+            baseline.Status != 0 || baseline.CurrentExp is not null || baseline.Items.Any(item => item != 127) || baseline.Spells.Any(spell => spell != 63) ||
             enemy.BaseResistance != 0x40E3 || enemy.BaseProwess != 0 || enemy.MovementType != 6 || enemy.BaseAiBitfield != 0x2000)
             throw new ArgumentException("Only the fixed GIZMO source baseline is supported.", nameof(enemy));
 

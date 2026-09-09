@@ -8,6 +8,21 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01InitializationTests
 {
     [Fact]
+    public void ExpIsExplicitPreservedByHealingAndCopiesAndForbiddenOnEnemySource()
+    {
+        var party = Allies(); var s = party[0].EffectiveStats;
+        Assert.Null(s.CurrentExp);
+        party[0] = party[0] with { EffectiveStats = s.WithCurrentHp(9).WithCurrentExp(0) };
+        var battle = Battle01Initialization.Initialize(Deployment(), Regions(), new byte[2304], party, Enemy(), 0x1234, 0);
+        Assert.Equal(12, battle.Roster[0].Stats.HpCurrent); Assert.Equal((byte?)0, battle.Roster[0].Stats.CurrentExp);
+        Assert.Equal((byte?)15, battle.Roster[0].Stats.WithCurrentExp(15).WithCurrentHp(9).CurrentExp);
+        Assert.Throws<ArgumentException>(() => Battle01Initialization.Initialize(Deployment(), Regions(), new byte[2304], party,
+            Enemy() with { SourceStats = Enemy().SourceStats.WithCurrentExp(0) }, 0x1234, 0));
+        Assert.Throws<ArgumentException>(() => Battle01Initialization.Initialize(Deployment(), Regions(), new byte[2304], party,
+            Enemy() with { SourceStats = Enemy().SourceStats.WithCurrentHp(4) }, 0x1234, 0));
+    }
+
+    [Fact]
     public void InitializesNineCombatantsWithSeparateTerrainOccupancyAndClearedPreRoundState()
     {
         var rows = Deployment(); var terrain = new byte[2304]; terrain[17] = 3; terrain[49] = 2;

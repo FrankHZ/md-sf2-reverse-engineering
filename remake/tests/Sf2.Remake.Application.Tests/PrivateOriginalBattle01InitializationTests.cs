@@ -10,6 +10,24 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void NamedPlayerAttackPresetSuppliesOnlyBowiesExplicitExpZero()
+    {
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var old = Prepare(session);
+        Assert.All(old.Party.Allies, ally => Assert.Null(ally.CurrentExp));
+        var preset = OriginalBattle01ControlledPartyPreset.PlayerAttackComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic());
+        var prepared = new PrivateOriginalBattle01StartupPrepared(old.Pending, old.Inputs, preset);
+        var initialized = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Equal(preset.Id, initialized.Preparation.Party.Id);
+        Assert.Equal((byte?)0, initialized.Battle.Roster[0].Stats.CurrentExp);
+        Assert.All(initialized.Battle.Roster.Skip(1), unit => Assert.Null(unit.Stats.CurrentExp));
+        Assert.Equal("party.allies", new OriginalBattle01ControlledPartyPreset(preset.Id, preset.RandomSeed, preset.Difficulty,
+            old.Party.Allies, preset.RandomSeedCopy).GetAdmissionDiagnostic()!.Field);
+        Assert.Equal("party.allies", new OriginalBattle01ControlledPartyPreset(old.Party.Id, preset.RandomSeed, preset.Difficulty,
+            preset.Allies, preset.RandomSeedCopy).GetAdmissionDiagnostic()!.Field);
+    }
+
+    [Fact]
     public void InitializationConsumesExactPendingAndMakesMap57TheOnlyCurrentMap()
     {
         var session = PrivateOriginalBattle01StartupTests.PendingSession();
