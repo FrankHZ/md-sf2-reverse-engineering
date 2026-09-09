@@ -8,6 +8,21 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01TurnCompletionTests
 {
+
+    [Fact]
+    public void SecondRoundStayCommitsOnceWithThePriorRoundHistoryAndEffectiveStats()
+    {
+        var session = PrivateOriginalBattle01FirstRoundTests.CompletedFirstRound();
+        var generated = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(
+            session.EnterPrivateOriginalBattle01NextRound(session.PrivateOriginalBattle01)).Snapshot;
+        PrivateOriginalBattle01FirstRoundTests.CompleteOriginTurn(session);
+        var completed = session.PrivateOriginalBattle01!;
+        Assert.Equal(2,completed.Battle.TurnCompletion!.RoundNumber);
+        Assert.Same(generated.Battle.TurnCompletion,completed.Battle.TurnCompletion.Previous);
+        Assert.All(Enumerable.Range(0,9), i => Assert.Same(generated.Battle.Roster[i].Stats,completed.Battle.Roster[i].Stats));
+        Assert.IsType<PrivateOriginalBattle01TurnCompletionRejected>(session.CommitPrivateOriginalBattle01Stay(completed,2));
+        Assert.Same(completed,session.PrivateOriginalBattle01);
+    }
     [Fact]
     public void ExactCurrentStayCommitsOnceAndRetainsInitializationProvenanceAndTheMovedUnit()
     {

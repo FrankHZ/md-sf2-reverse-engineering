@@ -7,6 +7,21 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01NextPlayerControlTests
 {
+
+    [Fact]
+    public void NewRoundPlayerUsesCurrentOriginAndCancelKeepsThePreviousRound()
+    {
+        var generated = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.CompletedFirstRound());
+        var ready = Battle01NextPlayerControl.Enter(generated, 2).State!;
+        Assert.Equal(new MapPosition(7,17), ready.FirstControl!.Movement.Range.Origin);
+        var moved = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready,2,new(7,16)),2);
+        var cancelled = Battle01PlayerMovement.Cancel(moved,2);
+        Assert.Equal(ready.Occupancy, cancelled.Occupancy);
+        Assert.Same(generated.TurnCompletion, cancelled.TurnCompletion);
+        Assert.Same(generated.FirstRound, cancelled.FirstRound);
+        Assert.Equal(generated.RandomSeedCopy, cancelled.RandomSeedCopy);
+        Assert.Equal(new MapPosition(7,17), cancelled.Roster[2].Position);
+    }
     [Fact]
     public void CompletedEnemyPrefixHandsOnlyActualBowieHisOwnRegularRangeAndCancelOrigin()
     {

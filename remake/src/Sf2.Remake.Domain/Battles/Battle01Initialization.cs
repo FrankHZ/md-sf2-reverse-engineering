@@ -95,7 +95,7 @@ public sealed class Battle01Combatant
         ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated }
 
 public sealed class Battle01InitializedState
 {
@@ -116,6 +116,7 @@ public sealed class Battle01InitializedState
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = Array.AsReadOnly(regionFlags); NewlyTestedRegionMask = newlyTestedRegionMask;
         RandomSeedImage = randomSeedImage; FirstRound = firstRound; RandomSeedCopy = source.RandomSeedCopy;
+        TurnCompletion = source.TurnCompletion;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         IReadOnlyList<int> occupancy, Battle01FirstControlState firstControl)
@@ -180,6 +181,8 @@ public sealed class Battle01InitializedState
     public bool UnlockFlag401 => true;
     public Battle01Phase Phase => FirstControl is { } control
         ? control.Movement.Stage == Battle01PlayerMovementStage.Selection ? Battle01Phase.PlayerMovementSelection : Battle01Phase.PlayerActionChoice
+        : FirstRound is { RoundNumber: > 1 } round && (TurnCompletion is null || TurnCompletion.RoundNumber < round.RoundNumber)
+            ? Battle01Phase.RoundGenerated
         : TurnCompletion is { } completed ? completed.CompletedActorIndex >= 128
             ? Battle01Phase.EnemyTurnCompleted : Battle01Phase.PlayerTurnCompleted
         : FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;

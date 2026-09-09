@@ -52,7 +52,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -179,8 +179,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
-        // Earlier STAY mode names now alias the complete bounded first-round chain.
-        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round";
+        // Earlier STAY mode names now alias the bounded round-continuation chain.
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation";
         if (!stayReview) await CaptureControl("01-pending");
         await PressBattleKey(Key.N);
         if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-input")
@@ -297,52 +297,77 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 "All six independent standby traces preserve main RNG, effective stats, order and first enemy memory");
             Require(secondCancelled.Battle.Roster[0].AiBitfield is null && bowieBattle.Roster[0].AiBitfield == 0 &&
                 bowieBattle.FirstControl!.CandidateWordSupplied && ReferenceEquals(bowie.Preparation, ready.Preparation), "Only current Bowie receives the missing word");
-            await CaptureControl("01-bowie-ready");
-            await PressBattleKey(Key.I); await PressBattleKey(Key.Space);
-            var bowieMoved = _session.PrivateOriginalBattle01!;
-            Require(bowieMoved.Battle.Phase == Battle01Phase.PlayerActionChoice && bowieMoved.Battle.Roster[0].Position == new MapPosition(8,17) &&
-                ReferenceEquals(bowieMoved.Battle.TurnCompletion, bowieBattle.TurnCompletion), "Bowie provisional move retains eight completed turns");
-            await CaptureControl("02-bowie-provisional");
-            await PressBattleKey(Key.Backspace);
-            var bowieCancelled = _session.PrivateOriginalBattle01!;
-            Require(bowieCancelled.Battle.Roster[0].Position == new MapPosition(8,18) && bowieCancelled.Battle.Occupancy.SequenceEqual(bowieBattle.Occupancy) &&
-                ReferenceEquals(bowieCancelled.Battle.TurnCompletion, bowieBattle.TurnCompletion), "Bowie cancel restores only his origin and occupancy");
-            await CaptureControl("03-bowie-cancelled");
             await PressBattleKey(Key.I); await PressBattleKey(Key.Space); await PressBattleKey(Key.Space);
-            var completed = _session.PrivateOriginalBattle01!; var end = completed.Battle;
-            Require(end.Phase == Battle01Phase.PlayerTurnCompleted && end.FirstControl is null && end.TurnCompletion?.CompletedActorIndex == 0 &&
-                ReferenceEquals(end.TurnCompletion.Previous, bowieBattle.TurnCompletion) && end.FirstRound!.CurrentTurnOffset == 18 &&
-                end.FirstRound.CurrentCandidate is null && end.FirstRound.Slots[9].IsSentinel &&
-                ReferenceEquals(end.FirstRound.Slots, bowieBattle.FirstRound!.Slots) && end.Roster[0].Position == new MapPosition(8,17) &&
-                end.RandomSeedCopy == 0x0134 && end.RandomSeedImage == 0xA4991234 && ReferenceEquals(end.AiMemory, bowieBattle.AiMemory) &&
-                end.TurnCompletion.BeforeAfterTurn == new Battle01FactionCounts(3,6) && end.TurnCompletion.AfterAfterTurn == new Battle01FactionCounts(3,6),
-                "Bowie separate STAY retains all nine receipts and stops at the real first sentinel without reroll");
-            string stoppedStatus = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!.Status;
-            Require(stoppedStatus.Contains("First round exhausted"), "First sentinel exhaustion visible");
-            foreach (Key key in new[] { Key.I, Key.J, Key.K, Key.L, Key.Space, Key.Backspace, Key.N,
-                Key.W, Key.A, Key.S, Key.D, Key.F, Key.G, Key.B, Key.M })
+            var round2 = _session.PrivateOriginalBattle01!; var second = round2.Battle;
+            Require(second.FirstRound!.RoundNumber == 2 && second.FirstRound.CurrentTurnOffset == 0 &&
+                second.FirstControl?.ActorIndex == 2 && second.Phase == Battle01Phase.PlayerMovementSelection &&
+                second.RandomSeedImage == 0xAA861234 && second.RandomSeedCopy == 0x0134 &&
+                second.TurnCompletion?.RoundNumber == 1 && second.TurnCompletion.CompletedActorIndex == 0 &&
+                ReferenceEquals(second.TurnCompletion.Previous, bowieBattle.TurnCompletion) &&
+                second.Roster[0].Position == new MapPosition(8,17) && second.NewlyTestedRegionMask == 7,
+                "Actual sentinel generates round2 once and yields its real player without a player decision");
+            CheckRoundBuffer(second, new byte[] {2,128,132,131,133,0,1,129,130}, new byte[] {7,6,6,5,5,4,4,4,4});
+            await CaptureControl("01-round2-ready");
+            await PressBattleKey(Key.I); await PressBattleKey(Key.Space);
+            var provisional = _session.PrivateOriginalBattle01!;
+            Require(provisional.Battle.Phase == Battle01Phase.PlayerActionChoice &&
+                provisional.Battle.Roster[2].Position == new MapPosition(7,16) &&
+                ReferenceEquals(second.TurnCompletion, provisional.Battle.TurnCompletion), "Round2 player chooses independent provisional movement");
+            await CaptureControl("02-round2-provisional");
+            await PressBattleKey(Key.Backspace);
+            var cancelled2 = _session.PrivateOriginalBattle01!;
+            Require(cancelled2.Battle.Roster[2].Position == new MapPosition(7,17) &&
+                cancelled2.Battle.Occupancy.SequenceEqual(second.Occupancy) &&
+                ReferenceEquals(second.TurnCompletion,cancelled2.Battle.TurnCompletion) &&
+                ReferenceEquals(second.FirstRound,cancelled2.Battle.FirstRound), "Round2 cancel restores its current origin and retains round1");
+            await CaptureControl("03-round2-cancelled");
+            // These physical presses are explicit origin confirm/STAY decisions for each actual player.
+            foreach (int player in new[] {2,0,1})
             {
-                await PressBattleKey(key);
-                Require(ReferenceEquals(completed, _session.PrivateOriginalBattle01), "Completed endpoint rejects old battle and exploration input");
-                Require(Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!.Status == stoppedStatus,
-                    "Unrelated keys never retry dispatch or overwrite the boundary reason");
+                Require(_session.PrivateOriginalBattle01!.Battle.FirstControl?.ActorIndex == player, "Actual player ready before manual choice");
+                await PressBattleKey(Key.Space);
+                Require(_session.PrivateOriginalBattle01!.Battle.Phase == Battle01Phase.PlayerActionChoice, "Origin confirmation does not complete a turn");
+                await PressBattleKey(Key.Space);
             }
-            var view = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!;
-            Require(view.ActorIndex is null && view.CompletedActorIndex == 0 && view.NextCandidateIndex is null &&
-                view.Cursor is null && view.Path.Count == 0 && view.Tiles.All(tile => !tile.Reachable && !tile.CanStop),
-                "Completed actor is historical; next candidate has no range/cursor/control");
+            var round3 = _session.PrivateOriginalBattle01!; var end = round3.Battle;
+            Require(end.FirstRound!.RoundNumber == 3 && end.FirstRound.CurrentTurnOffset == 0 &&
+                end.FirstControl?.ActorIndex == 2 && end.RandomSeedImage == 0x9BD71234 && end.RandomSeedCopy == 0x0034 &&
+                end.Roster.Take(3).Select(unit=>unit.Position).SequenceEqual(new MapPosition[] {new(8,17),new(9,17),new(7,17)}) &&
+                end.AiMemory.Take(6).SequenceEqual(new byte[] {4,4,4,0x24,0x34,4}) &&
+                end.AiMemory.Skip(6).All(value=>value==0) && end.AiLastTargets.All(value=>value==255) &&
+                end.RegionFlags90Through105.All(flag=>!flag) && end.NewlyTestedRegionMask == 7,
+                "Actual round3 player retains the composed round2 result without automated player action");
+            CheckRoundBuffer(end, new byte[] {2,129,130,131,128,133,0,1,132}, new byte[] {8,6,6,6,5,5,4,4,4});
+            var history = new List<Battle01TurnCompletionReceipt>();
+            for (var receipt=end.TurnCompletion;receipt is not null;receipt=receipt.Previous) history.Add(receipt);
+            history.Reverse();
+            Require(history.Count==18 && history.Take(9).All(receipt=>receipt.RoundNumber==1) &&
+                history.Skip(9).All(receipt=>receipt.RoundNumber==2) &&
+                history.Skip(9).Select(receipt=>receipt.CompletedActorIndex).SequenceEqual(second.FirstRound!.Slots.Take(9).Select(slot=>(int)slot.CombatantIndex)),
+                "All eighteen receipts preserve round numbers and actual generation order");
+            var secondDecisions=history.Skip(9).Where(receipt=>receipt.EnemyStandby is not null).Select(receipt=>receipt.EnemyStandby!).ToArray();
+            Require(secondDecisions.Sum(decision=>decision.Rolls.Sum(roll=>roll.GeneratorSteps))==967 &&
+                secondDecisions.Sum(decision=>decision.Rolls.Count)==11 &&
+                secondDecisions.Select(decision=>decision.Destination).SequenceEqual(new MapPosition[] {new(7,2),new(10,5),new(8,4),new(6,4),new(9,3),new(6,3)}) &&
+                end.Roster.Select((unit,i)=>ReferenceEquals(unit.Stats,battle.Roster[i].Stats) && ReferenceEquals(unit.Deployment,battle.Roster[i].Deployment)).All(value=>value),
+                "Round2 thinking and original deployment anchors retain effective stats without reinitialization");
             var hidden = _root.GetChildren().OfType<CanvasItem>().Where(child => child is not PrivateBattle01Presenter).ToArray();
-            Require(hidden.Length > 0 && hidden.All(child => !child.Visible), "All old canvas subtrees remain hidden after STAY");
-            await CaptureControl("04-first-round-exhausted");
+            Require(hidden.Length > 0 && hidden.All(child => !child.Visible), "Old canvas subtrees remain hidden throughout continuation");
+            await CaptureControl("04-round3-ready");
+            CheckContinuationDispatchBranches(round2,round3);
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
-                status = "Pass", scope = "controlled Map40 seed; real keys; six inactive enemy STAYs, independent Bowie control and first sentinel",
-                completedActors = completedPrefix.Select(receipt => receipt.CompletedActorIndex).Append(0).ToArray(), nextCandidate = view.NextCandidateIndex,
-                nextStarted = false, rawOffsets = Enumerable.Range(0,10).Select(index => index*2).ToArray(), enemyDecisions, seedCopy = end.RandomSeedCopy,
-                origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound!.CurrentTurnOffset,
-                beforeAfterTurn = end.TurnCompletion!.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
-                policy = end.TurnCompletion.Policy.Id, inputClosed = true, oldCanvasHidden = hidden.Length, frames = _frames,
+                status = "Pass", scope = "controlled Map40 seed; physical player keys through round2 and actual round3 control",
+                completedActors = history.Select(receipt=>receipt.CompletedActorIndex).ToArray(),
+                receiptRounds = history.Select(receipt=>receipt.RoundNumber).ToArray(),
+                round2Order=second.FirstRound.Slots, round3Order=end.FirstRound.Slots,
+                round2Main=second.RandomSeedImage, round3Main=end.RandomSeedImage,
+                enemyDecisions, secondDecisions, seedCopy=end.RandomSeedCopy, memory=end.AiMemory,
+                byteOffset=end.FirstRound.CurrentTurnOffset, nextCandidate=end.FirstControl!.ActorIndex,
+                nextStarted=true, inputClosed=false, oldCanvasHidden=hidden.Length, frames=_frames,
+                authoredChecks="isolated copied round2 order starts enemy128; late control and enemy failures retain state; reachable region1 rejection never retries; actual round3 snapshot restored",
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} first-round");
+            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} round-continuation");
+
             return;
         }
         foreach (Key key in new[] { Key.I, Key.W, Key.F, Key.B, Key.M, Key.N })
@@ -385,6 +410,89 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=6 controlled-Map40-seed");
     }
 
+
+    private static void CheckRoundBuffer(Battle01InitializedState battle, byte[] actors, byte[] scores)
+    {
+        var slots=battle.FirstRound!.Slots;
+        Require(slots.Count==64 && slots.Take(9).Select(slot=>slot.CombatantIndex).SequenceEqual(actors) &&
+            slots.Take(9).Select(slot=>slot.AlteredAgility).SequenceEqual(scores) &&
+            slots.Skip(9).All(slot=>slot==new Battle01TurnEntry(255,255)), "Complete current 64-slot buffer");
+    }
+
+    private void CheckContinuationDispatchBranches(PrivateOriginalBattle01SessionSnapshot round2,
+        PrivateOriginalBattle01SessionSnapshot actualRound3)
+    {
+        // Isolated authored copies exercise dispatch boundaries; these are not natural generated order evidence.
+        static T Construct<T>(params object?[] args) => (T)Activator.CreateInstance(typeof(T),
+            BindingFlags.Instance|BindingFlags.NonPublic,null,args,null)!;
+        static Battle01InitializedState Copy(Battle01InitializedState b, Battle01FirstRoundOrder? order=null,
+            byte[]? terrain=null,int[]? occupancy=null)
+        {
+            var initial=Construct<Battle01InitializedState>(b.Roster.ToArray(),b.Regions.ToArray(),terrain ?? b.Terrain.ToArray(),
+                occupancy ?? b.Occupancy.ToArray(),b.RandomSeedImage,b.RandomSeedCopy);
+            var thinking=Construct<Battle01InitializedState>(initial,initial.Roster.ToArray(),initial.Occupancy.ToArray(),b.AiMemory.ToArray(),b.RandomSeedCopy!.Value);
+            var generation=Construct<Battle01InitializedState>(thinking,thinking.Roster.ToArray(),b.RegionFlags90Through105.ToArray(),
+                b.NewlyTestedRegionMask,b.RandomSeedImage,order ?? b.FirstRound);
+            return Construct<Battle01InitializedState>(generation,generation.FirstRound,b.TurnCompletion);
+        }
+        PrivateOriginalBattle01SessionSnapshot Install(Battle01InitializedState b)
+        {
+            var snapshot=Construct<PrivateOriginalBattle01SessionSnapshot>(round2.Preparation,b,round2.SourceLocomotion,round2.SourceBridge);
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,snapshot);
+            return snapshot;
+        }
+        void NoRetry(PrivateOriginalBattle01SessionSnapshot snapshot)
+        {
+            foreach (var input in Enum.GetValues<PrivateBattle01Input>())
+                Require(PrivateBattle01Ui.Apply(_session,null,input) is null &&
+                    ReferenceEquals(snapshot,_session.PrivateOriginalBattle01), "Boundary ignores all further inputs without dispatch/reroll");
+        }
+        var generated=Copy(round2.Battle);
+        var slots=generated.FirstRound!.Slots.ToArray(); (slots[0],slots[1])=(slots[1],slots[0]);
+        var enemyFirst=Install(Copy(generated,Construct<Battle01FirstRoundOrder>(slots,Array.Empty<int>(),Array.Empty<int>(),2)));
+        var outcome=PrivateBattle01Ui.DispatchNext(_session,enemyFirst);
+        var ready=_session.PrivateOriginalBattle01!;
+        Require(outcome.Contains("Player 2 ready") && ready.Battle.FirstControl?.ActorIndex==2 &&
+            ready.Battle.FirstRound!.CurrentTurnOffset==2 && ready.Battle.TurnCompletion?.CompletedActorIndex==128 &&
+            ready.Battle.TurnCompletion.RoundNumber==2 && ReferenceEquals(ready.Battle.TurnCompletion.Previous,generated.TurnCompletion) &&
+            ready.Battle.TurnCompletion.EnemyStandby!.MemoryBefore==0x14, "Actual authored enemy-first order dispatches enemy then yields player");
+
+        var terrain=generated.Terrain.ToArray(); terrain[16*48+7]=16;
+        var invalidControl=Install(Copy(generated,terrain:terrain));
+        Require(PrivateBattle01Ui.DispatchNext(_session,invalidControl).Contains("Control rejected: terrain") &&
+            ReferenceEquals(invalidControl,_session.PrivateOriginalBattle01) && invalidControl.Battle.Phase==Battle01Phase.RoundGenerated &&
+            invalidControl.Battle.RandomSeedImage==0xAA861234, "Late control failure keeps the newly generated round");
+        NoRetry(invalidControl);
+
+        static Battle01InitializedState OriginStay(Battle01InitializedState b)
+        {
+            int actor=b.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+            return actor>=128 ? Battle01EnemyStandby.CompleteNext(b,actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats)
+                : Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(Battle01NextPlayerControl.Enter(b,actor).State!,actor),
+                    actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        }
+        var after128=OriginStay(OriginStay(generated)); var occupancy=after128.Occupancy.ToArray(); occupancy[17*48+9]=-1;
+        var invalidEnemy=Install(Copy(after128,occupancy:occupancy));
+        Require(PrivateBattle01Ui.DispatchNext(_session,invalidEnemy).Contains("Enemy 132 standby rejected: occupancy") &&
+            ReferenceEquals(invalidEnemy,_session.PrivateOriginalBattle01) &&
+            ReferenceEquals(after128.TurnCompletion,invalidEnemy.Battle.TurnCompletion), "Late enemy failure keeps prior enemy commit");
+        NoRetry(invalidEnemy);
+
+        var branch=generated;
+        while (branch.FirstRound!.CurrentCandidate!.Value.CombatantIndex!=0) branch=OriginStay(branch);
+        var selected=Battle01PlayerMovement.SelectDestination(Battle01NextPlayerControl.Enter(branch,0).State!,0,new(11,15));
+        Require(selected.FirstControl!.Movement.GridCost==10, "Real terrain admits Bowie region1 destination from current origin");
+        branch=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(selected,0),0,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        while (branch.FirstRound!.CurrentCandidate is not null) branch=OriginStay(branch);
+        var regionBoundary=Install(branch);
+        Require(PrivateBattle01Ui.DispatchNext(_session,regionBoundary).Contains("round.activation.region1") &&
+            ReferenceEquals(regionBoundary,_session.PrivateOriginalBattle01) && branch.FirstRound!.RoundNumber==2 &&
+            branch.RegionFlags90Through105.All(flag=>!flag) && branch.RandomSeedImage==0xAA861234,
+            "Projected active region rejects before flags, order or main RNG commit");
+        NoRetry(regionBoundary);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,actualRound3);
+    }
+
     private async Task PressBattleKey(Key key)
     {
         Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = key, Pressed = true });
@@ -420,7 +528,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 Require(!new Rect2(labels[left].Position, labels[left].Size).Intersects(
                     new Rect2(labels[right].Position, labels[right].Size)), "Battlefield text regions must not overlap");
             _frames.Add(new { name, map = current.Map.Value, phase = view.Phase.ToString(), actor = view.ActorIndex,
-                completedActor = view.CompletedActorIndex, nextCandidate = view.NextCandidateIndex,
+                round = current.Battle.FirstRound?.RoundNumber, completedActor = view.CompletedActorIndex, nextCandidate = view.NextCandidateIndex,
                 cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
                 budget = view.Budget, status = view.Status, controls = view.Controls, baseArt, baseSamples,
                 blockPixels = PrivateBattle01Presenter.TileSize, width = image.GetWidth(), height = image.GetHeight() });

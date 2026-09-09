@@ -85,14 +85,15 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 movement?.Range.Grid.CostAt(position) is not null,
                 movement?.Range.CanStopAt(position) == true));
         }
-        var completion = control is null ? battle.TurnCompletion : null;
+        var completion = control is null && battle.TurnCompletion?.RoundNumber == battle.FirstRound?.RoundNumber
+            ? battle.TurnCompletion : null;
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "Space: STAY and end this turn   Backspace: cancel relocation",
-            Battle01Phase.PlayerTurnCompleted when battle.FirstRound is { CurrentTurnOffset: 18, CurrentCandidate: null } =>
-                "First round exhausted. Input closed. Relaunch starts Map 3.",
+            Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted when battle.FirstRound is { CurrentCandidate: null } =>
+                "Round exhausted. Input closed. Relaunch starts Map 3.",
             Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted =>
                 "Input closed. Candidate not started. Relaunch starts Map 3.",
             _ => "Current battle retained. Relaunch starts Map 3.",
@@ -125,9 +126,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
         _details.Text = view.CompletedActorIndex is { } completed ?
-            $"Stage: {view.Phase}\nSTAY completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
+            $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\nSTAY completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
-            $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Stage: {view.Phase}\n" +
+            $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +
             $"Grid cost: {view.GridCost?.ToString() ?? "-"}   Path cost: {view.PathCost?.ToString() ?? "-"}   Budget: {view.Budget?.ToString() ?? "-"}\n" +
             $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}";

@@ -10,6 +10,88 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01FirstRoundTests
 {
     [Fact]
+    public void ExactSentinelCommitsOneNewGenerationWithTheEntirePreviousSnapshotProvenance()
+    {
+        var session=CompletedFirstRound(); var before=session.PrivateOriginalBattle01!;
+        foreach (var invalid in new PrivateOriginalBattle01SessionSnapshot?[] {null,CompletedFirstRound().PrivateOriginalBattle01,
+            new(before.Preparation,before.Battle,before.SourceLocomotion,before.SourceBridge)})
+            Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(invalid)).Diagnostic.Field);
+        var after=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(before)).Snapshot;
+        Assert.Same(after,session.PrivateOriginalBattle01); Assert.Same(before.Preparation,after.Preparation);
+        Assert.Same(before.SourceLocomotion,after.SourceLocomotion); Assert.Same(before.SourceSnapshot,after.SourceSnapshot); Assert.Same(before.SourceBridge,after.SourceBridge);
+        Assert.Same(before.Battle.TurnCompletion,after.Battle.TurnCompletion); Assert.Same(before.Battle.AiMemory,after.Battle.AiMemory);
+        Assert.Equal(Battle01Phase.RoundGenerated,after.Battle.Phase); Assert.Equal(2,after.Battle.FirstRound!.RoundNumber);
+        Assert.Equal(0xAA861234u,after.Battle.RandomSeedImage); Assert.Equal((ushort?)0x0134,after.Battle.RandomSeedCopy);
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(before)).Diagnostic.Field);
+        Assert.Equal("round.phase",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(after)).Diagnostic.Field);
+        Assert.Same(after,session.PrivateOriginalBattle01);
+    }
+
+    [Fact]
+    public void RepeatedRoundAndActorCommitsReachRealRoundThreeControlWithoutDiscardingReceipts()
+    {
+        var session=CompletedFirstRound(); var first=session.PrivateOriginalBattle01!;
+        var second=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(first)).Snapshot;
+        for (int i=0;i<9;i++) CompleteOriginTurn(session);
+        var completed=session.PrivateOriginalBattle01!;
+        Assert.Equal(18,completed.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal((ushort?)0x0034,completed.Battle.RandomSeedCopy);
+        var third=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(completed)).Snapshot;
+        var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(third,2)).Snapshot;
+        Assert.Equal(3,ready.Battle.FirstRound!.RoundNumber); Assert.Equal(0x9BD71234u,ready.Battle.RandomSeedImage);
+        Assert.Equal(2,ready.Battle.FirstControl!.ActorIndex); Assert.False(ready.Battle.FirstControl.CandidateWordSupplied);
+        Assert.Same(completed.Battle.TurnCompletion,ready.Battle.TurnCompletion);
+        var receipts=new List<Battle01TurnCompletionReceipt>(); for (var r=ready.Battle.TurnCompletion;r is not null;r=r.Previous) receipts.Add(r);
+        Assert.Equal(18,receipts.Count); Assert.All(receipts.Take(9),r=>Assert.Equal(2,r.RoundNumber)); Assert.All(receipts.Skip(9),r=>Assert.Equal(1,r.RoundNumber));
+        for (int i=0;i<9;i++) Assert.Same(first.Battle.Roster[i].Stats,ready.Battle.Roster[i].Stats);
+        Assert.Same(first.Battle.AiLastTargets,ready.Battle.AiLastTargets); Assert.Same(first.Preparation,ready.Preparation);
+    }
+
+    [Fact]
+    public void LateSpawnRejectionDoesNotInstallTheNewRoundOrLoseTheLastCompletion()
+    {
+        var session=CompletedFirstRound(); var before=session.PrivateOriginalBattle01!; var roster=before.Battle.Roster.ToArray(); var e=roster[3];
+        roster[3]=PrivateOriginalBattle01FirstControlTests.Internal<Battle01Combatant>(e.Deployment with {Spawn=1},e.Stats,e.ClassId,e.EnemySource,e.AiBitfield,e.Position);
+        var input=CopyCurrent(session,roster:roster);
+        Assert.Equal("round.spawn",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(input)).Diagnostic.Field);
+        Assert.Same(input,session.PrivateOriginalBattle01); Assert.Same(before.Battle.TurnCompletion,input.Battle.TurnCompletion);
+        Assert.Equal(1,input.Battle.FirstRound!.RoundNumber); Assert.Equal(18,input.Battle.FirstRound.CurrentTurnOffset);
+        Assert.Equal(before.Battle.RandomSeedImage,input.Battle.RandomSeedImage); Assert.Equal(before.Battle.AiMemory,input.Battle.AiMemory);
+        Assert.All(input.Battle.RegionFlags90Through105,Assert.False);
+    }
+
+    internal static GameSession CompletedFirstRound()
+    {
+        var session=PrivateOriginalBattle01EnemyStandbyTests.AllEnemiesCompleted(); var current=session.PrivateOriginalBattle01!;
+        var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current,0)).Snapshot;
+        var selected=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready,0,new(8,17))).Snapshot;
+        var moved=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(selected,0)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(moved,0)); return session;
+    }
+    internal static void CompleteOriginTurn(GameSession session)
+    {
+        var current=session.PrivateOriginalBattle01!; int actor=current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+        if (actor>=128) Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(current,actor));
+        else
+        {
+            var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current,actor)).Snapshot;
+            var moved=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(ready,actor)).Snapshot;
+            Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(moved,actor));
+        }
+    }
+    internal static PrivateOriginalBattle01SessionSnapshot CopyCurrent(GameSession session,Battle01Combatant[]? roster=null,
+        byte[]? terrain=null,int[]? occupancy=null,Battle01Region[]? regions=null,Battle01FirstRoundOrder? order=null)
+    {
+        var source=session.PrivateOriginalBattle01!; var b=source.Battle;
+        var initial=PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(roster ?? b.Roster.ToArray(),regions ?? b.Regions.ToArray(),
+            terrain ?? b.Terrain.ToArray(),occupancy ?? b.Occupancy.ToArray(),b.RandomSeedImage,b.RandomSeedCopy);
+        var thinking=PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(initial,initial.Roster.ToArray(),initial.Occupancy.ToArray(),b.AiMemory.ToArray(),b.RandomSeedCopy!.Value);
+        var round=PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(thinking,thinking.Roster.ToArray(),b.RegionFlags90Through105.ToArray(),b.NewlyTestedRegionMask,b.RandomSeedImage,order ?? b.FirstRound);
+        var battle=PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(round,round.FirstRound,b.TurnCompletion);
+        var input=new PrivateOriginalBattle01SessionSnapshot(source.Preparation,battle,source.SourceLocomotion,source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,input); return input;
+    }
+
+    [Fact]
     public void FirstRoundReplacesTheOnlyCurrentBattleAndRetainsInitializationAndSourceProvenance()
     {
         var session = InitializedSession(); var before = session.PrivateOriginalBattle01!;

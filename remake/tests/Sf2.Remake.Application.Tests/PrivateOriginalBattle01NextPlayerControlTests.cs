@@ -7,6 +7,44 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01NextPlayerControlTests
 {
+
+    [Fact]
+    public void NewRoundEntryRejectsWrongActorAndStaleRequestsAndCancelRetainsPriorRound()
+    {
+        var session = PrivateOriginalBattle01FirstRoundTests.CompletedFirstRound();
+        var generated = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(
+            session.EnterPrivateOriginalBattle01NextRound(session.PrivateOriginalBattle01)).Snapshot;
+        Assert.Equal("actor",Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(generated,1)));
+        Assert.Same(generated,session.PrivateOriginalBattle01);
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(generated,2)).Snapshot;
+        Assert.Equal("snapshot",Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(generated,2)));
+        Assert.Equal("phase",Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(ready,2)));
+        var moved = Move(session,ready,2,new(7,16));
+        var cancelled = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(moved,2)).Snapshot;
+        Assert.Equal(new MapPosition(7,17),cancelled.Battle.Roster[2].Position);
+        Assert.Equal(generated.Battle.Occupancy,cancelled.Battle.Occupancy);
+        Assert.Same(generated.Battle.TurnCompletion,cancelled.Battle.TurnCompletion);
+        Assert.Same(generated.Battle.FirstRound,cancelled.Battle.FirstRound);
+    }
+
+    [Fact]
+    public void LateControlFailureKeepsTheSuccessfullyGeneratedRoundWithoutReroll()
+    {
+        var session = PrivateOriginalBattle01FirstRoundTests.CompletedFirstRound();
+        var generated = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(
+            session.EnterPrivateOriginalBattle01NextRound(session.PrivateOriginalBattle01)).Snapshot;
+        var terrain = generated.Battle.Terrain.ToArray(); terrain[16*48+7]=16;
+        var input = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session,terrain:terrain);
+        Assert.Equal("terrain",Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(input,2)));
+        Assert.Same(input,session.PrivateOriginalBattle01); Assert.Equal(Battle01Phase.RoundGenerated,input.Battle.Phase);
+        Assert.Equal(2,input.Battle.FirstRound!.RoundNumber); Assert.Equal(0xAA861234u,input.Battle.RandomSeedImage);
+        Assert.Same(generated.Battle.TurnCompletion,input.Battle.TurnCompletion);
+        Assert.Equal("round.phase",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(
+            session.EnterPrivateOriginalBattle01NextRound(input)).Diagnostic.Field);
+        Assert.Same(input,session.PrivateOriginalBattle01);
+    }
     [Fact]
     public void ExactBowieEntryAndSeparateMoveCancelStayEndAtTheSentinelWithAllReceipts()
     {

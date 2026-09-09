@@ -35,6 +35,27 @@ public sealed partial class GameSession
         return applied;
     }
 
+    public PrivateOriginalBattle01FirstRoundResult EnterPrivateOriginalBattle01NextRound(
+        PrivateOriginalBattle01SessionSnapshot? expected)
+    {
+        var current = PrivateOriginalBattle01;
+        if (current is null) return RoundRejected("battle", "A current battle is required.");
+        if (expected is null || !ReferenceEquals(expected, current))
+            return RoundRejected("snapshot", "The request must name the exact current completed battle.");
+        if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
+            return new PrivateOriginalBattle01FirstRoundRejected(failure);
+        Battle01InitializedState battle;
+        try { battle = Battle01FirstRound.EnterNext(current.Battle); }
+        catch (ArgumentException error)
+        {
+            return RoundRejected("round." + (error.ParamName ?? "state"), "Next round rejected; last completed state retained.");
+        }
+        var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge);
+        var applied = new PrivateOriginalBattle01FirstRoundEntered(next);
+        PrivateOriginalBattle01 = next;
+        return applied;
+    }
+
     private static PrivateOriginalBattle01FirstRoundRejected RoundRejected(string field, string message) =>
         new(new(field, message));
 }
