@@ -9,6 +9,139 @@ public sealed class Battle01EnemyPhysicalAttackTests
 {
     internal static Battle01PhysicalCompletionPolicy Policy => Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
 
+    internal static Battle01InitializedState ChesterAttackBoundary()
+    {
+        var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        var current = Battle01NextPlayerControl.Enter(Battle01PlayerPhysicalAttackTests.FirstDefeatCompleted(), 1).State!;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1, stay);
+        foreach (int actor in new[] { 129, 128, 130 }) current = Battle01EnemyStandby.CompleteNext(current, actor, stay);
+        current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
+        current = Battle01PlayerMovement.SelectDestination(current, 2, new(11, 14));
+        Assert.Equal(14, current.FirstControl!.Movement.GridCost);
+        // This owner uses authored terrain; the real Content test owns the original exact path.
+        Assert.Equal(8, current.FirstControl.Movement.Preview.Directions.Count);
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 2), 2, stay);
+        current = Battle01EnemyStandby.CompleteNext(current, 133, stay);
+        foreach (int actor in new[] { 0, 1 })
+        {
+            current = Battle01NextPlayerControl.Enter(current, actor).State!;
+            current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, actor), actor, stay);
+        }
+        foreach (int actor in new[] { 129, 128, 130 }) current = Battle01EnemyStandby.CompleteNext(current, actor, stay);
+        Assert.Equal((8, (byte)14, 70, 0xB28D1234u, (ushort?)0x0034),
+            (current.FirstRound!.RoundNumber, current.FirstRound.CurrentTurnOffset,
+                Battle01EnemyPursuitTests.Receipts(current).Count(), current.RandomSeedImage, current.RandomSeedCopy));
+        Assert.Equal(new MapPosition(11, 15), current.Roster[0].Position);
+        Assert.Equal(new MapPosition(11, 14), current.Roster[2].Position);
+        return current;
+    }
+
+    internal static Battle01InitializedState ChesterHitCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(), 131, Policy);
+
+    [Fact]
+    public void ActualRoundEightChesterHitReplaysTheSelectedProfileAndPreservesFirstDefeatAccounting()
+    {
+        var before = ChesterAttackBoundary();
+        var after = Battle01EnemyPhysicalAttack.CompleteNext(before, 131, Policy);
+        var receipt = after.TurnCompletion!; var d = receipt.EnemyPhysicalAttack!; var p = Assert.Single(d.Priorities);
+        Assert.Equal("battle01-class1-wooden-stick-effective-prowess3-v1", d.CombatProfile);
+        Assert.Equal((131, 2, 6, 230, 2, 9, 7),
+            (d.ActorIndex, d.TargetIndex, d.GridCost, p.LandMultiplier, p.PotentialDamage, p.RemainingHp, p.Priority));
+        Assert.Equal(new MapPosition(11, 13), d.Destination);
+        Assert.Equal(new byte[] { 3, 3, 3, 255 }, d.MoveString);
+        Assert.Equal((57, (ushort)0x0034, (ushort)0x0134, (byte)1),
+            (p.Roll.GeneratorSteps, p.Roll.BeforeSeedCopy, p.Roll.AfterSeedCopy, p.Roll.Result));
+        Assert.Equal(new ushort[] { 32, 32, 1, 1, 32, 32 }, d.Effect.Rolls.Select(r => r.Range));
+        Assert.Equal(new ushort[] { 2, 27, 0, 0, 25, 13 }, d.Effect.Rolls.Select(r => r.Result));
+        Assert.Equal(new uint[] { 0xB28D1234, 0x11301234, 0xDF771234, 0x59121234, 0x85F11234, 0xCD441234 }, d.Effect.Rolls.Select(r => r.BeforeImage));
+        Assert.Equal(new uint[] { 0x11301234, 0xDF771234, 0x59121234, 0x85F11234, 0xCD441234, 0x6C7B1234 }, d.Effect.Rolls.Select(r => r.AfterImage));
+        Assert.Equal((2, 9, 11, 9), (d.Effect.Damage, (int)d.Effect.TemporaryHp, (int)d.Effect.RestoredHp, (int)after.Roster[2].Stats.HpCurrent));
+        Assert.False(d.Effect.Dodged); Assert.False(d.Effect.Critical);
+        Assert.Same(before.Roster[2].Stats, d.Effect.BeforeStats);
+        Assert.Equal(new Battle01PhysicalReaction(2, -2, 0, 0, 1), d.Effect.Reaction);
+        Assert.Equal((0x6C7B1234u, (ushort?)0x0134), (after.RandomSeedImage, after.RandomSeedCopy));
+        Assert.Equal(new byte[] { 4, 52, 4, 36, 52, 52 }, after.AiMemory.Take(6));
+        Assert.Equal(new byte[] { 255, 255, 255, 2, 0, 255 }, after.AiLastTargets.Take(6));
+        Assert.Equal(0, after.NewlyTestedRegionMask); Assert.Equal(before.RegionFlags90Through105, after.RegionFlags90Through105);
+        Assert.Equal(before.Roster.Select(u => u.AiBitfield), after.Roster.Select(u => u.AiBitfield));
+        Assert.Equal(new Battle01FactionCounts(3, 5), receipt.BeforeAfterTurn); Assert.Equal(receipt.BeforeAfterTurn, receipt.AfterAfterTurn);
+        Assert.Same(before.TurnCompletion, receipt.Previous); Assert.Null(receipt.EnemyDefeat); Assert.Null(receipt.PlayerPhysicalAttack);
+        Assert.Equal(71, Battle01EnemyPursuitTests.Receipts(after).Count()); Assert.Equal(16, after.FirstRound!.CurrentTurnOffset);
+        Assert.Same(before.FirstRound!.Slots, after.FirstRound.Slots);
+        Assert.Equal((6, (byte?)39, (ushort?)1, (uint?)60),
+            ((int)after.Roster[0].Stats.HpCurrent, after.Roster[0].Stats.CurrentExp, after.Roster[0].Stats.CurrentKills, after.CurrentGold));
+        Assert.Null(after.Roster[2].Stats.CurrentExp); Assert.Null(after.Roster[2].Stats.CurrentKills);
+        Assert.Null(after.Roster[7].Position); Assert.Equal(0, after.Roster[7].Stats.HpCurrent);
+        Assert.Equal(8, after.Roster.Count(u => u.Position is not null));
+        Assert.Equal(-1, after.OccupantAt(new(11, 10))); Assert.Equal(131, after.OccupantAt(new(11, 13)));
+        for (int i = 0; i < before.Roster.Count; i++)
+            if (i != 2) Assert.Same(before.Roster[i].Stats, after.Roster[i].Stats);
+        Assert.Equal(11, before.Roster[2].Stats.HpCurrent);
+    }
+
+    [Theory]
+    [InlineData("equipment")]
+    [InlineData("status")]
+    [InlineData("attack")]
+    [InlineData("defense")]
+    [InlineData("class")]
+    [InlineData("exp")]
+    [InlineData("kills")]
+    public void ChesterTargetAdmissionDoesNotAcceptDriftedOrFabricatedInputs(string mutation)
+    {
+        var before = ChesterAttackBoundary(); var target = before.Roster[2]; var s = target.Stats;
+        var stats = new Battle01Stats(s.Level, s.HpMax, s.HpCurrent, s.MpMax, s.MpCurrent,
+            mutation == "attack" ? (byte)9 : s.Attack, mutation == "defense" ? (byte)4 : s.Defense,
+            s.Agility, s.Move, mutation == "status" ? (ushort)1 : s.Status,
+            mutation == "equipment" ? new ushort[] { 199, 0, 127, 127 } : s.Items, s.Spells,
+            mutation == "exp" ? (byte)0 : null, mutation == "kills" ? (ushort)0 : null);
+        var forgedTarget = new Battle01Combatant(target.Deployment, stats, mutation == "class" ? (byte)4 : target.ClassId, null)
+            .WithPosition(target.Position).WithAiBitfield(0);
+        var roster = before.Roster.ToArray(); roster[2] = forgedTarget;
+        var forged = Battle01FirstRoundTests.CopyCurrent(before, roster: roster);
+        Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.RequireTargetProfile(forgedTarget)).ParamName);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01EnemyPhysicalAttack.CompleteNext(forged, 131, Policy));
+        Assert.Same(before.TurnCompletion, forged.TurnCompletion); Assert.Equal(11, before.Roster[2].Stats.HpCurrent);
+    }
+
+    [Theory]
+    [InlineData("hp")]
+    [InlineData("main")]
+    [InlineData("copy")]
+    [InlineData("lastTarget")]
+    [InlineData("exp")]
+    [InlineData("gold")]
+    [InlineData("kills")]
+    [InlineData("profile")]
+    [InlineData("reaction")]
+    [InlineData("roll")]
+    public void ChesterPhysicalHistoryRejectsForgedChannelsBeforeRoundNine(string mutation)
+    {
+        var after = ChesterHitCompleted(); var roster = after.Roster.ToArray(); var targets = after.AiLastTargets.ToArray();
+        var receipt = after.TurnCompletion!; var d = receipt.EnemyPhysicalAttack!;
+        uint main = after.RandomSeedImage, gold = after.CurrentGold!.Value; ushort copy = after.RandomSeedCopy!.Value;
+        switch (mutation)
+        {
+            case "hp": roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentHp(10)); break;
+            case "main": main ^= 0x10000; break;
+            case "copy": copy ^= 0x100; break;
+            case "lastTarget": targets[3] = 0; break;
+            case "exp": roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentExp(0)); break;
+            case "gold": gold++; break;
+            case "kills": roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentKills(2)); break;
+            case "profile": d = d with { Priorities = [d.Priorities[0] with { Target = after.Roster[0] }] }; break;
+            case "reaction": d = d with { Effect = d.Effect with { Reaction = d.Effect.Reaction! with { HpDelta = -3 } } }; break;
+            case "roll":
+                var rolls = d.Effect.Rolls.ToArray(); rolls[0] = rolls[0] with { Result = 3 };
+                d = d with { Effect = d.Effect with { Rolls = rolls } }; break;
+        }
+        var forged = Battle01FirstRoundTests.CopyCurrent(after, roster: roster, mainImage: main, copy: copy,
+            lastTargets: targets, gold: gold, receipt: receipt with { EnemyPhysicalAttack = d });
+        Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.EnterNext(forged));
+        Assert.Same(after.FirstRound, forged.FirstRound); Assert.Equal(9, after.Roster[2].Stats.HpCurrent);
+    }
+
     [Fact]
     public void ActualRoundSixAttackReplaysHpOnceAndAdvancesToBowieWithAllRandomChannels()
     {

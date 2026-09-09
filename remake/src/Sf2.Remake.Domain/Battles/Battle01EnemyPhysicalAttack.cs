@@ -21,7 +21,8 @@ public sealed record Battle01EnemyPhysicalAttackDecision(Battle01Combatant Actor
     public byte Action => 0;
     // The original physical action writes the target WORD at offset2; offset6 is not its target.
     public ushort ItemOrSpellWord => (ushort)TargetIndex;
-    public string CombatProfile => "battle01-class0-wooden-sword-effective-prowess3-v1";
+    public string CombatProfile => Battle01EnemyPhysicalAttack.RequireTargetProfile(
+        Priorities.Single(priority => priority.Target.Index == TargetIndex).Target);
     public MapPosition Origin => Actor.RequirePosition();
     public int GridCost => Priorities.Single(p => p.Target.Index == TargetIndex).Candidate.GridCost;
 }
@@ -127,16 +128,24 @@ public static class Battle01EnemyPhysicalAttack
     }
     internal static int LandDamage(int attack, int defense, int multiplier) => (Math.Max(1, attack - defense) * multiplier) >> 8;
 
-    internal static void RequireTargetProfile(Battle01Combatant target)
+    internal static string RequireTargetProfile(Battle01Combatant target)
     {
         var s = target.Stats;
-        if (target.Index >= 128 || target.ClassId != 0 || target.EnemySource is not null ||
-            s.Level != 1 || s.HpMax != 12 || s.MpMax != 8 || s.MpCurrent != 8 ||
-            s.Attack != 9 || s.Defense != 4 || s.Agility != 4 || s.Move != 6 || s.Status != 0 ||
-            !s.Items.SequenceEqual(new ushort[] { 199, 0, 127, 127 }) ||
-            !s.Spells.SequenceEqual(new byte[] { 10, 63, 63, 63 }))
+        if (target.Index >= 128 || target.EnemySource is not null || s.Level != 1 || s.Status != 0)
             throw new Battle01PhysicalAttackUnsupportedException("targetProfile");
-        // Class0 prowess3; Wooden Sword changes ATT only. The profile supplies current prowess explicitly.
+        // Both class profiles have prowess3; their equipped weapons change ATT only.
+        if (target.ClassId == 0 && s.HpMax == 12 && s.MpMax == 8 && s.MpCurrent == 8 &&
+            s.Attack == 9 && s.Defense == 4 && s.Agility == 4 && s.Move == 6 &&
+            s.Items.SequenceEqual(new ushort[] { 199, 0, 127, 127 }) &&
+            s.Spells.SequenceEqual(new byte[] { 10, 63, 63, 63 }))
+            return "battle01-class0-wooden-sword-effective-prowess3-v1";
+        if (target.Index == 2 && target.ClassId == 1 && s.HpMax == 11 && s.MpMax == 0 && s.MpCurrent == 0 &&
+            s.Attack == 8 && s.Defense == 5 && s.Agility == 7 && s.Move == 7 &&
+            s.CurrentExp is null && s.CurrentKills is null &&
+            s.Items.SequenceEqual(new ushort[] { 184, 0, 127, 127 }) &&
+            s.Spells.SequenceEqual(new byte[] { 63, 63, 63, 63 }))
+            return "battle01-class1-wooden-stick-effective-prowess3-v1";
+        throw new Battle01PhysicalAttackUnsupportedException("targetProfile");
     }
 
     internal static Battle01PhysicalEffect Resolve(int attack, Battle01Stats target, int multiplier, uint main,

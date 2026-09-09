@@ -156,6 +156,9 @@ public static class Battle01PlayerPhysicalAttack
 
     internal static void RequireActor(Battle01Combatant actor)
     {
+        // Admitting Chester as an enemy target does not admit his player attack role.
+        if (actor.Index != 0 || actor.ClassId != 0)
+            throw new Battle01PhysicalAttackUnsupportedException("targetProfile");
         Battle01EnemyPhysicalAttack.RequireTargetProfile(actor);
         if (actor.AiBitfield != 0 || actor.Stats.CurrentExp is null)
             throw new Battle01PhysicalAttackUnsupportedException("actorExpProfile");
