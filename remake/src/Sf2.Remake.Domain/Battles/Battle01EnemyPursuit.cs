@@ -56,6 +56,15 @@ public static class Battle01EnemyPursuit
 
     internal static Battle01EnemyPursuitDecision Decide(Battle01InitializedState battle, Battle01Combatant actor)
     {
+        var (grid, physical) = PhysicalCandidates(battle, actor);
+        if (physical.Length != 0) throw new Battle01AttackSelectionRequiredException(actor.Index, physical);
+        var allies = battle.Roster.Where(unit => unit.Index < 128).OrderBy(unit => unit.Index).ToArray();
+        return DecidePursuit(battle, actor, grid, allies);
+    }
+
+    internal static (Battle01MovementGrid Grid, Battle01AttackCandidate[] Targets) PhysicalCandidates(
+        Battle01InitializedState battle, Battle01Combatant actor)
+    {
         if (battle.Terrain.Count != 2304 || battle.Terrain.Any(value => value != 255 && value > 15))
             throw new ArgumentException("Pursuit requires the unmodified source terrain types.", "terrain");
         var allies = battle.Roster.Where(unit => unit.Index < 128).OrderBy(unit => unit.Index).ToArray();
@@ -66,8 +75,12 @@ public static class Battle01EnemyPursuit
         foreach (var ally in allies)
             if (DetermineAttackPosition(grid, ally.Position, 1, battle.Occupancy) is { } position)
                 physical.Add(new(ally.Index, position, grid.CostAt(position)!.Value));
-        if (physical.Count != 0) throw new Battle01AttackSelectionRequiredException(actor.Index, physical.ToArray());
+        return (grid, physical.ToArray());
+    }
 
+    private static Battle01EnemyPursuitDecision DecidePursuit(Battle01InitializedState battle,
+        Battle01Combatant actor, Battle01MovementGrid grid, Battle01Combatant[] allies)
+    {
         // The admitted GIZMO has no usable item/spell/heal/support action; set7's orderFF also fails.
         // MOVE1 (mode0): raw target costs, stable ascending order, then a target-rooted budget4 walk.
         var raw = Grid(battle.Terrain, actor.Position, 128);

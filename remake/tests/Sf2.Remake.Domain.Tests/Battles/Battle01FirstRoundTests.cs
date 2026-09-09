@@ -8,6 +8,22 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstRoundTests
 {
     [Fact]
+    public void NextGenerationStartsFromPostAttackMainSeedWithoutReinitializingHpOrTargets()
+    {
+        var before = Battle01EnemyPursuit.CompleteNext(Battle01EnemyPhysicalAttackTests.CompletedBowie(), 131,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        before = Battle01EnemyStandby.CompleteNext(before, 133, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        ushort word = before.GeneratorWord;
+        for (int i = 0; i < 27; i++) Battle01FirstRound.NextRandom(ref word, 3);
+        var next = Battle01FirstRound.EnterNext(before);
+        Assert.Equal(7, next.FirstRound!.RoundNumber);
+        Assert.Equal(((uint)word << 16) | 0x1234u, next.RandomSeedImage);
+        Assert.Equal(9, next.Roster[0].Stats.HpCurrent); Assert.Same(before.Roster[0].Stats, next.Roster[0].Stats);
+        Assert.Same(before.AiLastTargets, next.AiLastTargets); Assert.Equal(0, next.AiLastTargets[4]);
+        Assert.Same(before.TurnCompletion, next.TurnCompletion);
+    }
+
+    [Fact]
     public void NextRoundUsesCurrentMainWordAndRetainsTheCompletePriorStateAndHistory()
     {
         var before = CompletedFirstRound(); string frozen = JsonSerializer.Serialize(before);
@@ -137,13 +153,14 @@ public sealed class Battle01FirstRoundTests
     }
     internal static Battle01InitializedState CopyCurrent(Battle01InitializedState source, Battle01Combatant[]? roster=null,
         int[]? occupancy=null, byte[]? memory=null, ushort? copy=null, byte[]? terrain=null, ushort? tested=null,
-        Battle01FirstRoundOrder? order=null, Battle01TurnCompletionReceipt? receipt=null)
+        Battle01FirstRoundOrder? order=null, Battle01TurnCompletionReceipt? receipt=null, uint? mainImage=null, byte[]? lastTargets=null)
     {
         var initial=new Battle01InitializedState(roster ?? source.Roster.ToArray(),source.Regions.ToArray(),terrain ?? source.Terrain.ToArray(),
-            occupancy ?? source.Occupancy.ToArray(),source.RandomSeedImage,copy ?? source.RandomSeedCopy);
-        var thinking=new Battle01InitializedState(initial,initial.Roster.ToArray(),initial.Occupancy.ToArray(),memory ?? source.AiMemory.ToArray(),copy ?? source.RandomSeedCopy!.Value);
+            occupancy ?? source.Occupancy.ToArray(),mainImage ?? source.RandomSeedImage,copy ?? source.RandomSeedCopy);
+        var thinking=new Battle01InitializedState(initial,initial.Roster.ToArray(),initial.Occupancy.ToArray(),memory ?? source.AiMemory.ToArray(),
+            copy ?? source.RandomSeedCopy!.Value, mainImage ?? source.RandomSeedImage, lastTargets ?? source.AiLastTargets.ToArray());
         var round=new Battle01InitializedState(thinking,thinking.Roster.ToArray(),source.RegionFlags90Through105.ToArray(),
-            tested ?? source.NewlyTestedRegionMask,source.RandomSeedImage,order ?? source.FirstRound!);
+            tested ?? source.NewlyTestedRegionMask,mainImage ?? source.RandomSeedImage,order ?? source.FirstRound!);
         return new(round,round.FirstRound!,receipt ?? source.TurnCompletion!);
     }
 

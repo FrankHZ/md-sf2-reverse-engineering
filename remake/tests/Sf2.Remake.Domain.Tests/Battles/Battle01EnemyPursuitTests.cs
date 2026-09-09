@@ -7,6 +7,19 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPursuitTests
 {
+    [Fact]
+    public void LaterPursuitAcceptsTheRewoundPhysicalMainSeedAndRetainsDamagedAlly()
+    {
+        var before = Battle01EnemyPhysicalAttackTests.CompletedBowie();
+        Assert.Equal(131, before.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+        var after = Battle01EnemyPursuit.CompleteNext(before, 131, Policy);
+        Assert.Equal(new MapPosition(11, 8), after.Roster[6].Position);
+        Assert.Equal(0xAF881234u, after.TurnCompletion!.EnemyPursuit!.MainSeedImage);
+        Assert.Same(before.Roster[0].Stats, after.Roster[0].Stats);
+        Assert.Same(before.AiLastTargets, after.AiLastTargets);
+        Assert.Equal(9, after.Roster[0].Stats.HpCurrent);
+    }
+
     private static Battle01StayCompletionPolicy Policy => Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
 
     [Fact]

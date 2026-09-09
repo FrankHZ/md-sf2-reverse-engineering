@@ -118,7 +118,7 @@ public static class Battle01FirstRound
         for (int index = order.CurrentTurnOffset / 2 - 1; index >= 0; index--)
         {
             if (receipt is null || receipt.RoundNumber != order.RoundNumber || receipt.CompletedActorIndex != order.Slots[index].CombatantIndex ||
-                !ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats) ||
+                !Battle01TurnCompletion.HasValidPolicy(receipt) ||
                 receipt.BeforeAfterTurn != new Battle01FactionCounts(3, 6) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
                 throw new ArgumentException("The complete current-generation receipt prefix must be retained.", "completion");
             receipt = receipt.Previous;

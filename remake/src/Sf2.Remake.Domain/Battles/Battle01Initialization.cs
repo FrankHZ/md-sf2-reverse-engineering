@@ -56,6 +56,8 @@ public sealed class Battle01Stats
     public ushort Status { get; }
     public IReadOnlyList<ushort> Items { get; }
     public IReadOnlyList<byte> Spells { get; }
+    internal Battle01Stats WithCurrentHp(ushort hp) => hp == HpCurrent ? this :
+        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells);
     internal Battle01Stats Initialize(byte attack, ushort status) =>
         new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells);
 }
@@ -93,6 +95,8 @@ public sealed class Battle01Combatant
         ? this : new(Deployment, Stats, ClassId, EnemySource, value, Position);
     internal Battle01Combatant WithPosition(MapPosition position) => position == Position
         ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
+    internal Battle01Combatant WithStats(Battle01Stats stats) => ReferenceEquals(stats, Stats)
+        ? this : new(Deployment, stats, ClassId, EnemySource, AiBitfield, Position);
 }
 
 public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated }
@@ -136,6 +140,12 @@ public sealed class Battle01InitializedState
         AiLastTargets = source.AiLastTargets; RegionFlags90Through105 = source.RegionFlags90Through105;
         NewlyTestedRegionMask = 0; RandomSeedImage = source.RandomSeedImage; RandomSeedCopy = randomSeedCopy;
         FirstRound = source.FirstRound; TurnCompletion = source.TurnCompletion;
+    }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
+        int[] occupancy, byte[] aiMemory, ushort randomSeedCopy, uint randomSeedImage, byte[] lastTargets)
+        : this(source, roster, occupancy, aiMemory, randomSeedCopy)
+    {
+        RandomSeedImage = randomSeedImage; AiLastTargets = Array.AsReadOnly(lastTargets);
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
         Battle01TurnCompletionReceipt completion)

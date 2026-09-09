@@ -7,6 +7,22 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+    [Fact]
+    public void PlayerStayRetainsPriorPhysicalDamageUnderItsOwnStrictPolicy()
+    {
+        var after = Battle01EnemyPhysicalAttackTests.CompletedAttack();
+        var ready = Battle01NextPlayerControl.Enter(after, 0).State!;
+        var completed = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(ready, 0), 0,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        Assert.Same(after.Roster[0].Stats, completed.Roster[0].Stats);
+        Assert.Equal(9, completed.Roster[0].Stats.HpCurrent);
+        Assert.Null(completed.TurnCompletion!.EnemyPhysicalAttack);
+        Assert.Same(after.TurnCompletion, completed.TurnCompletion.Previous);
+        Assert.Equal(after.RandomSeedImage, completed.RandomSeedImage);
+        Assert.Equal("policy", Assert.Throws<ArgumentException>(() =>
+            Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(ready, 0), 0, null)).ParamName);
+    }
+
 
     [Fact]
     public void LaterPlayerCompletionAppendsItsOwnRoundAndCannotCompleteTwice()

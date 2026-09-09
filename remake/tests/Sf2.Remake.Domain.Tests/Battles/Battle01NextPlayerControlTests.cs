@@ -7,6 +7,22 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01NextPlayerControlTests
 {
+    [Fact]
+    public void BowieMovesAndCancelsAfterPhysicalReplayWithoutHealingOrLosingAttackHistory()
+    {
+        var after = Battle01EnemyPhysicalAttackTests.CompletedAttack();
+        var ready = Battle01NextPlayerControl.Enter(after, 0).State!;
+        Assert.Equal(12, ready.FirstControl!.Movement.Range.Budget);
+        var selected = Battle01PlayerMovement.SelectDestination(ready, 0, new(10, 15));
+        var confirmed = Battle01PlayerMovement.Confirm(selected, 0);
+        var cancelled = Battle01PlayerMovement.Cancel(confirmed, 0);
+        Assert.Equal(new MapPosition(11, 15), cancelled.Roster[0].Position);
+        Assert.Same(after.Roster[0].Stats, cancelled.Roster[0].Stats);
+        Assert.Equal(9, cancelled.Roster[0].Stats.HpCurrent);
+        Assert.Same(after.TurnCompletion, cancelled.TurnCompletion);
+        Assert.Equal(after.Occupancy, cancelled.Occupancy);
+    }
+
 
     [Fact]
     public void NewRoundPlayerUsesCurrentOriginAndCancelKeepsThePreviousRound()
