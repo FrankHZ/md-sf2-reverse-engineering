@@ -338,8 +338,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 status = "Pass", scope = "controlled Map40 seed; real keys; six inactive enemy STAYs, independent Bowie control and first sentinel",
                 completedActors = completedPrefix.Select(receipt => receipt.CompletedActorIndex).Append(0).ToArray(), nextCandidate = view.NextCandidateIndex,
                 nextStarted = false, rawOffsets = Enumerable.Range(0,10).Select(index => index*2).ToArray(), enemyDecisions, seedCopy = end.RandomSeedCopy,
-                origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound.CurrentTurnOffset,
-                beforeAfterTurn = end.TurnCompletion.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
+                origin, destination, rng = end.RandomSeedImage, byteOffset = end.FirstRound!.CurrentTurnOffset,
+                beforeAfterTurn = end.TurnCompletion!.BeforeAfterTurn, afterAfterTurn = end.TurnCompletion.AfterAfterTurn,
                 policy = end.TurnCompletion.Policy.Id, inputClosed = true, oldCanvasHidden = hidden.Length, frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
             GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} first-round");
