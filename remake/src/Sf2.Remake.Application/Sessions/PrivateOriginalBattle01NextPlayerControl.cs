@@ -19,6 +19,8 @@ public sealed partial class GameSession
         var current = PrivateOriginalBattle01;
         if (current is null) return NextControlRejected("battle");
         if (expected is null || !ReferenceEquals(expected, current)) return NextControlRejected("snapshot");
+        if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
+            return new PrivateOriginalBattle01NextPlayerControlRejected(failure);
         Battle01FirstControlTransition transition;
         try { transition = Battle01NextPlayerControl.Enter(current.Battle, actorIndex); }
         catch (ArgumentException error) { return NextControlRejected(error.ParamName ?? "control"); }

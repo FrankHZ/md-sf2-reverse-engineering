@@ -107,9 +107,14 @@ internal static class PrivateBattle01Ui
         return session.EnterPrivateOriginalBattle01NextPlayerControl(completed, candidate) switch
         {
             PrivateOriginalBattle01NextPlayerControlEntered entered =>
-                $"STAY complete. Player {entered.Snapshot.Battle.FirstControl!.ActorIndex} ready.",
+                entered.Snapshot.Battle.FirstControl!.ActorIndex == 0
+                    ? "First-round enemies complete. Bowie (A0) ready."
+                    : $"STAY complete. Player {entered.Snapshot.Battle.FirstControl.ActorIndex} ready.",
             PrivateOriginalBattle01NextPlayerControlUnavailable { Decision.Availability: Battle01FirstControlAvailability.OpponentAi,
-                Decision.ActorIndex: 128 } => EnterFirstEnemy(session, completed),
+                Decision.ActorIndex: 128 } => CompleteEnemyRelay(session, completed),
+            PrivateOriginalBattle01NextPlayerControlUnavailable { Decision.Availability: Battle01FirstControlAvailability.Sentinel }
+                when completed.Battle.FirstRound!.CurrentTurnOffset == 18 && completed.Battle.TurnCompletion?.CompletedActorIndex == 0 =>
+                "First round exhausted. Nine turns complete; next round not started.",
             PrivateOriginalBattle01NextPlayerControlUnavailable unavailable =>
                 $"Next control unavailable: candidate {unavailable.Decision.ActorIndex?.ToString() ?? "sentinel"} / {unavailable.Decision.Availability}.",
             PrivateOriginalBattle01NextPlayerControlRejected rejected =>
@@ -118,15 +123,22 @@ internal static class PrivateBattle01Ui
         };
     }
 
-    private static string EnterFirstEnemy(GameSession session, PrivateOriginalBattle01SessionSnapshot completed) =>
-        session.CompletePrivateOriginalBattle01EnemyStandby(completed, 128) switch
+    private static string CompleteEnemyRelay(GameSession session, PrivateOriginalBattle01SessionSnapshot current)
+    {
+        // Six finite attempts, each reading the actual current candidate and committing independently.
+        // Never retry this relay from a frame or completed-phase input.
+        for (int attempt = 0; attempt < 6; attempt++)
         {
-            PrivateOriginalBattle01EnemyStandbyCompleted done =>
-                $"Enemy standby: E0 (7,3) to ({done.Snapshot.Battle.Roster[3].Position.X},{done.Snapshot.Battle.Roster[3].Position.Y}); STAY complete.",
-            PrivateOriginalBattle01EnemyStandbyRejected rejected =>
-                $"Enemy standby rejected: {rejected.Diagnostic.Field}; second player STAY retained.",
-            _ => "Enemy standby unavailable; second player STAY retained.",
-        };
+            int actor = current.Battle.FirstRound!.CurrentCandidate?.CombatantIndex ?? 255;
+            var result = session.CompletePrivateOriginalBattle01EnemyStandby(current, actor);
+            if (result is PrivateOriginalBattle01EnemyStandbyRejected rejected)
+                return $"Enemy {actor} standby rejected: {rejected.Diagnostic.Field}; completed actor {current.Battle.TurnCompletion!.CompletedActorIndex} retained.";
+            current = ((PrivateOriginalBattle01EnemyStandbyCompleted)result).Snapshot;
+            if (current.Battle.FirstRound!.CurrentCandidate is not { CombatantIndex: >= 128 })
+                return EnterNextPlayer(session, current);
+        }
+        return "First-round enemy relay stopped at its limit; last completed turn retained.";
+    }
 }
 
 public sealed partial class Map3Root

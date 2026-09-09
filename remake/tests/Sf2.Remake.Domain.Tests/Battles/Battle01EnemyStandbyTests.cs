@@ -182,6 +182,80 @@ public sealed class Battle01EnemyStandbyTests
     }
 
     internal static Battle01StayCompletionPolicy Policy => Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+
+    [Fact]
+    public void RemainingEnemiesUseTheirOwnMemoryAndEvolvingOccupancyBeforeActualBowieEntry()
+    {
+        var before = Battle01EnemyStandby.CompleteFirst(SecondCompleted(), 128, Policy); var current = before;
+        int[] actors = [131, 133, 129, 130, 132]; MapPosition[] destinations = [new(8, 4), new(6, 6), new(10, 4), new(6, 5), new(9, 6)];
+        int[][] steps = [[56,199,57],[114,85,57],[114,85,1],[56,199,57],[114,85,57]];
+        byte[] finalBounds = [3,3,1,2,3]; ushort[] copies = [0x0134,0x0134,0x3934,0x0134,0x0134]; int total = 0;
+        for (int i = 0; i < actors.Length; i++)
+        {
+            var prior = current; string frozen = JsonSerializer.Serialize(prior);
+            Assert.Equal(actors[i], prior.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+            current = Battle01EnemyStandby.CompleteNext(prior, actors[i], Policy); var decision = current.TurnCompletion!.EnemyStandby!;
+            Assert.Same(prior.TurnCompletion, current.TurnCompletion.Previous); Assert.Equal(8 + i * 2, current.FirstRound!.CurrentTurnOffset);
+            Assert.Equal(destinations[i], decision.Destination); Assert.Equal(new byte[] { i == 2 ? (byte)0 : (byte)3, 255 }, decision.MoveString);
+            Assert.Equal(new byte[] { 8, 2, finalBounds[i] }, decision.Rolls.Select(roll => roll.Range));
+            Assert.Equal(steps[i], decision.Rolls.Select(roll => roll.GeneratorSteps)); total += decision.Rolls.Sum(roll => roll.GeneratorSteps);
+            Assert.Equal(prior.RandomSeedCopy, (ushort?)decision.SeedCopyBefore); Assert.Equal((ushort?)copies[i], current.RandomSeedCopy);
+            Assert.Equal(0, decision.MemoryBefore); Assert.Equal(i == 2 ? 0x34 : 0x24, current.AiMemory[actors[i] - 128]);
+            Assert.All(Enumerable.Range(0, 48).Where(slot => slot != actors[i] - 128), slot => Assert.Equal(prior.AiMemory[slot], current.AiMemory[slot]));
+            Assert.Null(current.Roster[0].AiBitfield); Assert.Same(before.FirstRound!.Slots, current.FirstRound.Slots);
+            Assert.Equal(0xA4991234u, current.RandomSeedImage); Assert.Equal(0, current.NewlyTestedRegionMask);
+            Assert.Same(before.RegionFlags90Through105, current.RegionFlags90Through105); Assert.Same(before.AiLastTargets, current.AiLastTargets);
+            for (int index = 0; index < 9; index++) { Assert.Same(before.Roster[index].Stats, current.Roster[index].Stats); Assert.Same(before.Roster[index].Deployment, current.Roster[index].Deployment); }
+            if (actors[i] == 129) Assert.Equal(131, decision.Candidates.Single(candidate => candidate.Position == new MapPosition(8, 4)).Occupant);
+            if (actors[i] == 130) Assert.Null(decision.Candidates.Single(candidate => candidate.Position == new MapPosition(6, 5)).Occupant);
+            Assert.Equal(frozen, JsonSerializer.Serialize(prior));
+        }
+        Assert.Equal(1336, total); Assert.Equal(0x14, current.AiMemory[0]); Assert.Equal((byte)0, current.FirstRound!.CurrentCandidate!.Value.CombatantIndex);
+        Assert.Equal(new MapPosition[] { new(6,3),new(10,4),new(6,5),new(8,4),new(9,6),new(6,6) }, current.Roster.Skip(3).Select(unit => unit.Position));
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01EnemyStandby.CompleteNext(current, 0, Policy)).ParamName);
+    }
+
+    [Theory]
+    [InlineData("actor", "actor")]
+    [InlineData("order", "turnOrder")]
+    [InlineData("receipt", "completion")]
+    [InlineData("seed", "randomSeedCopy")]
+    [InlineData("memory", "memory")]
+    [InlineData("terrain", "terrain")]
+    [InlineData("occupancy", "occupancy")]
+    [InlineData("activation", "activation")]
+    [InlineData("stats", "stats")]
+    public void MidRelayGuardOrLateFailureRetainsTheLastCompletedTurn(string mutation, string field)
+    {
+        var first = Battle01EnemyStandby.CompleteFirst(SecondCompleted(), 128, Policy);
+        var source = Battle01EnemyStandby.CompleteNext(first, 131, Policy); var roster = source.Roster.ToArray();
+        var terrain = source.Terrain.ToArray(); var occupancy = source.Occupancy.ToArray(); var memory = source.AiMemory.ToArray();
+        if (mutation == "terrain") terrain[6 * 48 + 6] = 16;
+        if (mutation == "occupancy") occupancy[17 * 48 + 9] = -1;
+        if (mutation == "memory") memory[3] = 0;
+        var actor = roster[8];
+        if (mutation == "activation") roster[8] = new(actor.Deployment, actor.Stats, null, actor.EnemySource, 0x2071);
+        if (mutation == "stats") roster[8] = new(actor.Deployment, Battle01FirstControlTests.Stats(actor.Stats, 0, 4), null, actor.EnemySource, actor.AiBitfield);
+        var order = source.FirstRound!;
+        if (mutation == "order")
+        {
+            var slots = order.Slots.ToArray(); (slots[4], slots[5]) = (slots[5], slots[4]); order = new(slots, [], []);
+            for (int i = 0; i < 4; i++) order = order.AdvanceCompletedPlayerTurn();
+        }
+        var input = CopyCompleted(source, roster, terrain, occupancy, mutation == "seed" ? (ushort)0x1234 : source.RandomSeedCopy,
+            memory, order, mutation == "receipt" ? source.TurnCompletion! with { Previous = null } : null);
+        string frozen = JsonSerializer.Serialize(input);
+        Assert.Equal(field, Assert.Throws<ArgumentException>(() => Battle01EnemyStandby.CompleteNext(input, mutation == "actor" ? 129 : 133, Policy)).ParamName);
+        Assert.Equal(frozen, JsonSerializer.Serialize(input)); Assert.Equal(8, input.FirstRound!.CurrentTurnOffset);
+    }
+
+    internal static Battle01InitializedState AllEnemiesCompleted()
+    {
+        var current = Battle01EnemyStandby.CompleteFirst(SecondCompleted(), 128, Policy);
+        for (int i = 0; i < 5; i++) current = Battle01EnemyStandby.CompleteNext(current, current.FirstRound!.CurrentCandidate!.Value.CombatantIndex, Policy);
+        return current;
+    }
+
     internal static Battle01InitializedState SecondCompleted()
     {
         var original = Battle01FirstRoundTests.Initial(); var roster = original.Roster.ToArray();
@@ -189,8 +263,8 @@ public sealed class Battle01EnemyStandbyTests
         for (int i = 0; i < 9; i++)
         {
             var unit = roster[i]; var deployment = i >= 3 ? unit.Deployment with { Position = enemies[i - 3] } : unit.Deployment;
-            roster[i] = new(deployment, i < 3 ? Battle01FirstControlTests.Stats(unit.Stats, 0, (byte)(i == 2 ? 7 : 5)) : unit.Stats,
-                i < 3 ? (byte)(i == 1 ? 4 : 1) : null, unit.EnemySource, unit.AiBitfield);
+            roster[i] = new(deployment, i < 3 ? Battle01FirstControlTests.Stats(unit.Stats, 0, (byte)(i == 0 ? 6 : i == 2 ? 7 : 5)) : unit.Stats,
+                i < 3 ? (byte)(i == 0 ? 0 : i == 1 ? 4 : 1) : null, unit.EnemySource, unit.AiBitfield);
         }
         var terrain = Enumerable.Repeat((byte)255, 2304).ToArray();
         for (int y = 0; y < 20; y++) for (int x = 0; x < 16; x++) terrain[y * 48 + x] = 1;
@@ -203,12 +277,15 @@ public sealed class Battle01EnemyStandbyTests
         return Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(next, 2, new(7, 17)), 2), 2, Policy);
     }
     internal static Battle01InitializedState CopyCompleted(Battle01InitializedState source, Battle01Combatant[]? roster = null,
-        byte[]? terrain = null, int[]? occupancy = null, ushort? seedCopy = 0x1234)
+        byte[]? terrain = null, int[]? occupancy = null, ushort? seedCopy = 0x1234, byte[]? memory = null,
+        Battle01FirstRoundOrder? order = null, Battle01TurnCompletionReceipt? receipt = null)
     {
         var initial = new Battle01InitializedState(roster ?? source.Roster.ToArray(), source.Regions.ToArray(),
             terrain ?? source.Terrain.ToArray(), occupancy ?? source.Occupancy.ToArray(), source.RandomSeedImage, seedCopy);
+        if (source.AiMemory.Any(value => value != 0)) initial = new(initial, initial.Roster.ToArray(), initial.Occupancy.ToArray(),
+            memory ?? source.AiMemory.ToArray(), seedCopy.GetValueOrDefault());
         var round = new Battle01InitializedState(initial, initial.Roster.ToArray(), source.RegionFlags90Through105.ToArray(),
-            source.NewlyTestedRegionMask, source.RandomSeedImage, source.FirstRound!);
-        return new(round, source.FirstRound!, source.TurnCompletion!);
+            source.NewlyTestedRegionMask, source.RandomSeedImage, order ?? source.FirstRound!);
+        return new(round, round.FirstRound!, receipt ?? source.TurnCompletion!);
     }
 }

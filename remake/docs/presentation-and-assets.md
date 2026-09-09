@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -913,9 +913,12 @@ Map57 art rejects before startup; a projection rejection displays an unavailable
 Action choice offers a separate Space press for controlled no-effect STAY or Backspace cancellation.
 STAY retains the selected live position and tries actual next entry once. Player2 receives its own
 Centaur range from current occupancy, then can move/cancel/STAY. Its completion at raw offset4
-tries actual enemy128's inactive standby once: the retained seed-copy1234 selects a west move to(6,3)
-and no-effect STAY. The completed view names E0 and actual next E3/131 separately at offset6,
-removes the old range/path/cursor, and explains the standby move. Unrelated keys preserve the result.
+starts one finite relay over the actual six inactive enemies. Each move/STAY uses current occupancy,
+chained seed-copy and its own memory, then commits independently. A later failure stops at the last
+completed actor with its precise diagnostic. Success reaches actual Bowie0 at offset16 with the
+Regular1 budget12 range. His manual move/cancel/STAY ends at the first sentinel at offset18;
+the completed view removes active overlays, states first-round exhaustion and closes input.
+Unrelated keys preserve the result without retrying or starting round2.
 Its effective-stat policy is explicit in the
 [owning plan](./map03-playability-plan.md#implemented-first-player-stay-completion). The complete old
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
@@ -936,30 +939,33 @@ snapshot/actor/live-position/occupancy changes, both cancel stages, immutable re
 unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
 The existing bounded process runner retains 120-second step limits, job termination/reap evidence
 and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
-original Map57 scene/layer/VRAM/animation fidelity, timing, other battle actions, later turns/victory and H4 remain Unknown.
+original Map57 scene/layer/VRAM/animation fidelity, timing, attacks, active AI, later rounds/victory and H4 remain Unknown.
 
-For next-player acceptance, use a fresh review root and `SF2_BATTLE01_CONTROL_REVIEW=next-player`
-with the same required canonical, three selected inputs and accepted runtime/manifest pack. The
-recipe seeds controlled Map40, uses the existing 28-key route and N, then I/Space to provisional
-relocation and a second independent Space for STAY. That press automatically enters actual player2,
-captured as `01-next-player`. I/Space moves player2 from (7,18) to (7,17) in
-`02-second-provisional`; Backspace restores only player2 in `03-second-cancelled`.
-I/Space/Space then completes its STAY and tries enemy128 once. `04-enemy-standby` captures the
-enemy-completed endpoint after old-key checks. Require actor1 still at (9,17), actor2 at (7,17),
-enemy128 at(6,3), three linked receipts with faction counts3/6, all nine units, unchanged full turn buffer/main seed0xA4991234,
-and raw offsets0 to2 to4 to6. I/J/K/L, Space, Backspace, N and old exploration keys must retain the exact
-completed snapshot and candidate/reason text. Inspect all four images for the active Centaur range,
-independent cancel, legible status/controls, no old canvas layers and no current-actor range/path/cursor
-before next enemy131. The `stay` recipe name remains an alias for this current chain. This mode never
-replays the six-frame cancellation or castle modes; captures and bounded process/code-head receipts
-remain local. It is controlled remake behavior, not original after-turn fidelity.
+For first-round completion acceptance, use a fresh review root and
+`SF2_BATTLE01_CONTROL_REVIEW=first-round` with the same required canonical, three selected inputs
+and accepted runtime/manifest pack. The recipe seeds controlled Map40, uses the existing 28-key route
+and N, and drives both player move/cancel/STAY turns through physical key polling. The second STAY
+runs the finite enemy relay and enters Bowie0. It captures only these four current boundaries:
 
-For first inactive enemy acceptance, use only a fresh root with `SF2_BATTLE01_CONTROL_REVIEW=enemy-standby`.
-The same production key chain skips earlier captures and produces `01-enemy-standby` immediately
-after the west move/STAY and `02-input-closed` after all old keys. Require move bytes `[2,255]`,
-thinking ranges8/2/1 and steps61/85/1, seed-copy3934, memory14h, tested-mask0, original effective
-stats by identity, and next131 untouched at offset6. Inspect both images for the live E0 position,
-readable completion/candidate/control text, no active range/cursor and no old canvas layers.
+1. `01-bowie-ready`: actual0 at(8,18), Regular1 budget12, offset16 and eight completed receipts.
+2. `02-bowie-provisional`: I/Space provisionally moves0 to(8,17), preserving those receipts.
+3. `03-bowie-cancelled`: Backspace restores only0 to(8,18) and its entry occupancy.
+4. `04-first-round-exhausted`: I/Space/Space independently completes Bowie STAY, then all old keys
+   retain the exact completed snapshot, status and first sentinel at offset18.
+
+Require chronological receipts `[1,2,128,131,133,129,130,132,0]`, all nine immutable effective stats,
+unchanged64 slots/mainA4991234 and faction counts3/6. The receipt includes all six enemy decisions,
+1483 generated bytes (1336 after128), final seed-copy0134, memories14/34/24/24/24/24h and final
+positions128..133 `[(6,3),(10,4),(6,5),(8,4),(9,6),(6,6)]`. Compare them with the independent reductions
+in the owning plan. Actual0's word stays missing through enemy completion and is supplied only at
+its control entry. I/J/K/L, Space, Backspace, N and old exploration keys cannot start another round.
+Inspect all four images for the active Bowie range, provisional path, independent cancellation,
+legible status/controls, hidden old canvas layers and no active overlay at exhaustion.
+
+The former `enemy-standby`, `next-player` and `stay` recipe names are aliases for this current
+four-frame first-round chain. This mode does not replay six-frame cancellation or castle modes;
+captures and bounded process/code-head receipts remain local. It proves controlled remake behavior,
+not original after-turn fidelity or natural seed chronology.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal
 unrequested-art regression. The recipe removes both base-view/base-atlas and asset options, captures Pending/ready,

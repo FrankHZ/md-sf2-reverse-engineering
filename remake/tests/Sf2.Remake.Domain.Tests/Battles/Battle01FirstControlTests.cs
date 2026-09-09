@@ -8,6 +8,15 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstControlTests
 {
     [Fact]
+    public void FirstEntryCannotRestartTheCompletedEnemyPrefixOrSupplyBowiesWordEarly()
+    {
+        var before = Battle01EnemyStandbyTests.AllEnemiesCompleted();
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01FirstControl.Enter(before, 0)).ParamName);
+        Assert.Null(before.Roster[0].AiBitfield); Assert.Equal(16, before.FirstRound!.CurrentTurnOffset);
+        Assert.Equal((ushort?)0x0134, before.RandomSeedCopy);
+    }
+
+    [Fact]
     public void ComputedCandidateEntersPlayerSelectionAndOnlyItsMissingActivationWordIsSupplied()
     {
         var before = Round(); int actor = before.FirstRound!.FirstCandidate!.Value.CombatantIndex;

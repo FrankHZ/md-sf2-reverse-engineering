@@ -143,7 +143,7 @@ the historical `FirstCandidate`. Each completed player advances exactly one entr
 `PlayerTurnCompleted` is the committed STAY boundary. `EnterPrivateOriginalBattle01NextPlayerControl`
 requires that exact snapshot and actor, then reuses the first-control classifier, candidate-only
 missing-word preset and range/preview construction. The first-control API remains restricted to
-offset0. Fixed class1/CENTAUR2 joins class4/HEALER12; current effective MOV determines the budget.
+offset0. Fixed class1/CENTAUR2 and class0/REGULAR1 join class4/HEALER12; current effective MOV determines the budget.
 The new range captures live occupancy, so its cancel restores only this actor's turn origin.
 
 The previous immutable completion receipt survives next entry and movement; a later receipt links it
@@ -152,14 +152,21 @@ even when that historical receipt exists. The UI invokes next entry once after e
 with no extra N. Unavailable or rejected entry leaves the exact committed STAY object in place and
 shows the actual candidate/reason; completed-phase key handling returns no replacement status.
 There is no frame retry, skip or new-round loop. At offset4, actual enemy128 / OpponentAi invokes
-`CompletePrivateOriginalBattle01EnemyStandby` once. The Domain admits the inactive regular GIZMO
-branch, runs thinking RNG and source standby tables against raw Hovering6 terrain plus separate
-occupancy, builds the bounded source move string, and shares the ordered no-effect completion.
-The separate seed-copy, memory[0], live move and tested-mask clear are local allocations until all
-completion checks pass and Application replaces one snapshot. A rejection retains the exact second
-player STAY and its diagnostic. Success adds an enemy decision to the linked completion receipt:
-enemy128 moves west to(6,3), seed-copy3934, memory14h, main RNG unchanged. `EnemyTurnCompleted`
-stops at offset6 before actual131, with no current range/path/cursor. Old keys preserve this endpoint.
+one finite relay, bounded to six enemy completions. `CompletePrivateOriginalBattle01EnemyStandby`
+keeps strict first128 admission; subsequent entries require the actual candidate, accepted completed
+prefix and chained seed-copy/own memory. Domain runs the inactive regular branch's thinking RNG,
+standby tables, raw Hovering6 grid plus separate live occupancy and bounded source move string.
+The separate seed-copy, own memory, live move and shared no-effect completion are local allocations
+until all checks pass and Application replaces one snapshot. A later rejection retains the last
+successful actor and every prior receipt; the relay stops with that actor's precise diagnostic.
+
+The first128 move to(6,3) produces seed-copy3934 and memory[0]=14h. The remaining actual order
+131,133,129,130,132 consumes evolving occupancy and ends with seed-copy0134, while mainA4991234,
+all effective stats and the full turn buffer remain unchanged. Only the complete eight-receipt
+prefix at offset16 admits Bowie0 through the shared next-player API. Its candidate-only missing-word
+policy and Regular1 range give independent move/cancel/STAY with budget12. Bowie's completion adds
+the ninth receipt and reaches the existing first sentinel at offset18. The presenter removes active
+range/path/cursor, states first-round exhaustion and closes input; old keys retain that endpoint.
 No active commandset, attack/spell, generic AI controller or original movement animation is consumed.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
@@ -171,7 +178,7 @@ The 384-by-480 logical base maps the full 2x/4x raster with nearest sampling. No
 camera, parallel layout or position authority is created. All nine units remain diagnostic markers.
 The existing diagnostic mode remains available without requesting art. Missing/wrong requested art
 fails visibly; a failed base projection closes input without displaying a substitute battlefield.
-Original scene/layers, animation, VRAM persistence, fidelity, other battle actions and later turns remain
+Original scene/layers, animation, VRAM persistence, fidelity, other battle actions and later rounds remain
 outside this consumer.
 
 Two areas currently concentrate more responsibility than the target shape:

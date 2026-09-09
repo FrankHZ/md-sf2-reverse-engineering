@@ -8,6 +8,29 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void CompletedEnemyPrefixHandsOnlyActualBowieHisOwnRegularRangeAndCancelOrigin()
+    {
+        var before = Battle01EnemyStandbyTests.AllEnemiesCompleted(); string frozen = JsonSerializer.Serialize(before);
+        Assert.Equal("actor", Assert.Throws<ArgumentException>(() => Battle01NextPlayerControl.Enter(before, 1)).ParamName);
+        var ready = Battle01NextPlayerControl.Enter(before, 0).State!; var control = ready.FirstControl!;
+        Assert.Equal(0, control.ActorIndex); Assert.Same(Battle01MovementProfile.Regular, control.Movement.Range.Profile);
+        Assert.Equal(12, control.Movement.Range.Budget); Assert.Equal(ready.Roster[0].Stats.Move * 2, control.Movement.Range.Budget);
+        Assert.True(control.CandidateWordSupplied); Assert.Null(before.Roster[0].AiBitfield); Assert.Equal((ushort?)0, ready.Roster[0].AiBitfield);
+        Assert.Same(before.TurnCompletion, ready.TurnCompletion); Assert.Same(before.Occupancy, control.Movement.Range.OriginOccupancy);
+        Assert.Same(before.FirstRound, ready.FirstRound); Assert.Equal((ushort?)0x0134, ready.RandomSeedCopy);
+        var selected = Battle01PlayerMovement.SelectDestination(ready, 0, new(8, 17));
+        var moved = Battle01PlayerMovement.Confirm(selected, 0); var cancelled = Battle01PlayerMovement.Cancel(moved, 0);
+        Assert.Equal(new MapPosition(8, 17), moved.Roster[0].Position); Assert.Equal(new MapPosition(8, 18), cancelled.Roster[0].Position);
+        Assert.Equal(before.Occupancy, cancelled.Occupancy); Assert.Same(before.TurnCompletion, cancelled.TurnCompletion);
+        Assert.Equal(16, cancelled.FirstRound!.CurrentTurnOffset); Assert.Equal(before.AiMemory, cancelled.AiMemory);
+        for (int i = 1; i < 9; i++) Assert.Same(before.Roster[i], cancelled.Roster[i]);
+        Assert.Equal(frozen, JsonSerializer.Serialize(before));
+        var firstEnemy = Battle01EnemyStandby.CompleteFirst(Battle01EnemyStandbyTests.SecondCompleted(), 128, Battle01EnemyStandbyTests.Policy);
+        Assert.Equal("turnOrder", Assert.Throws<ArgumentException>(() => Battle01NextPlayerControl.Enter(firstEnemy, 0)).ParamName);
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01NextPlayerControl.Enter(ready, 0)).ParamName);
+    }
+
+    [Fact]
     public void NextPlayerUsesLiveOccupancyAndItsOwnCancelThenStopsAtTheActualEnemyCandidate()
     {
         var first = FirstCompleted(); var firstReceipt = first.TurnCompletion;

@@ -8,6 +8,53 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01NextPlayerControlTests
 {
     [Fact]
+    public void ExactBowieEntryAndSeparateMoveCancelStayEndAtTheSentinelWithAllReceipts()
+    {
+        var session = PrivateOriginalBattle01EnemyStandbyTests.AllEnemiesCompleted(); var enemies = session.PrivateOriginalBattle01!;
+        Assert.Equal("snapshot", Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(null, 0)));
+        Assert.Equal("snapshot", Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(
+            new(enemies.Preparation, enemies.Battle, enemies.SourceLocomotion, enemies.SourceBridge), 0)));
+        Assert.Equal("actor", Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(enemies, 1)));
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(enemies, 0)).Snapshot;
+        Assert.Equal("snapshot", Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(enemies, 0)));
+        var moved = Move(session, ready, 0, new(8, 17)); var cancelled = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(moved, 0)).Snapshot;
+        Assert.Equal(new MapPosition(8, 18), cancelled.Battle.Roster[0].Position); Assert.Equal(enemies.Battle.Occupancy, cancelled.Battle.Occupancy);
+        Assert.Same(enemies.Battle.TurnCompletion, cancelled.Battle.TurnCompletion);
+        moved = Move(session, cancelled, 0, new(8, 17)); var completed = Assert.IsType<PrivateOriginalBattle01StayCommitted>(
+            session.CommitPrivateOriginalBattle01Stay(moved, 0)).Snapshot;
+        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Equal(18, completed.Battle.FirstRound!.CurrentTurnOffset);
+        Assert.Null(completed.Battle.FirstRound.CurrentCandidate); Assert.Equal((ushort?)0x0134, completed.Battle.RandomSeedCopy);
+        var receipts = new List<int>(); for (var receipt = completed.Battle.TurnCompletion; receipt is not null; receipt = receipt.Previous) receipts.Add(receipt.CompletedActorIndex);
+        Assert.Equal(new[] { 0, 132, 130, 129, 133, 131, 128, 2, 1 }, receipts);
+        Assert.Equal(Battle01FirstControlAvailability.Sentinel, Assert.IsType<PrivateOriginalBattle01NextPlayerControlUnavailable>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(completed, 255)).Decision.Availability);
+        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Same(enemies.Battle.FirstRound!.Slots, completed.Battle.FirstRound.Slots);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01TurnCompletionRejected>(session.CommitPrivateOriginalBattle01Stay(completed, 0)).Diagnostic.Field);
+        Assert.Same(completed, session.PrivateOriginalBattle01);
+    }
+
+    [Fact]
+    public void LateBowieRangeFailureRetainsAllEightReceiptsAndTheMissingWord()
+    {
+        var session = PrivateOriginalBattle01EnemyStandbyTests.AllEnemiesCompleted();
+        var source = session.PrivateOriginalBattle01!; var battle = source.Battle;
+        var terrain = battle.Terrain.ToArray(); terrain[17 * 48 + 8] = 16;
+        var initial = PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(
+            battle.Roster.ToArray(), battle.Regions.ToArray(), terrain, battle.Occupancy.ToArray(), battle.RandomSeedImage, battle.RandomSeedCopy);
+        var thinking = PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(initial,
+            battle.Roster.ToArray(), battle.Occupancy.ToArray(), battle.AiMemory.ToArray(), battle.RandomSeedCopy!.Value);
+        var invalid = PrivateOriginalBattle01FirstControlTests.Internal<Battle01InitializedState>(thinking, battle.FirstRound, battle.TurnCompletion);
+        var input = new PrivateOriginalBattle01SessionSnapshot(source.Preparation, invalid, source.SourceLocomotion, source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, input);
+        Assert.Equal("terrain", Reject(session.EnterPrivateOriginalBattle01NextPlayerControl(input, 0)));
+        Assert.Same(input, session.PrivateOriginalBattle01); Assert.Null(input.Battle.Roster[0].AiBitfield);
+        Assert.Same(battle.TurnCompletion, input.Battle.TurnCompletion); Assert.Null(input.Battle.FirstControl);
+        Assert.Equal(16, input.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal((ushort?)0x0134, input.Battle.RandomSeedCopy);
+        Assert.Equal(battle.AiMemory, input.Battle.AiMemory); Assert.Equal(battle.RandomSeedImage, input.Battle.RandomSeedImage);
+    }
+
+    [Fact]
     public void CurrentSnapshotEntersOnceAndSecondStayRetainsBothMovesAtTheEnemyBoundary()
     {
         var session = FirstCompleted(); var first = session.PrivateOriginalBattle01!;

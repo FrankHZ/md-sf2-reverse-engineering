@@ -943,7 +943,8 @@ HEALER, movement type12. Class storage belongs to
 and [ally data inventory](../../docs/research/ally-data-inventory.md). The movement-type field occupies
 the high nibble at combatant offset49; `GetMovetype` in `code/common/stats/combatantstats_1.asm` reads
 that nibble. This first-candidate case uses the class4 profile; the next-player seam below adds
-class1/CENTAUR2. Neither needs a general class importer or replaces effective MOV with source MOV.
+class1/CENTAUR2 and first-round completion adds class0/REGULAR1. These fixed profiles need no general
+class importer and do not replace effective MOV with source MOV.
 
 `data/battles/global/landeffectsettingsandmovecosts.asm` row12 and `PopulateMoveCostsTable` in
 `code/gameflow/battle/battlefield/battlefieldengine.asm` supply sixteen costs. The low nibble15 becomes
@@ -1056,7 +1057,8 @@ at their existing owners. Required actual-input and native tests verify controll
 ### Implemented next-player control
 
 `EnterPrivateOriginalBattle01NextPlayerControl(expectedSnapshot, actorIndex)` requires the exact
-committed `PlayerTurnCompleted` snapshot and actual `CurrentCandidate`. It shares the existing
+committed `PlayerTurnCompleted` snapshot (or the complete enemy prefix for Bowie below) and actual
+`CurrentCandidate`. It shares the existing
 classifier, control toggles, candidate-only missing ally word0 supplement, weighted propagation,
 preview and movement transitions. The first-control API still admits only generated offset0.
 It never searches for another ally, skips a sentinel/unsupported candidate or regenerates the order.
@@ -1085,16 +1087,17 @@ units, original 64 entries and seed0xA4991234 remain. Unsupported or rejected en
 STAY and displays the actual candidate/reason. Frames and unrelated keys do not retry or replace the
 diagnostic. The separate first inactive enemy consumer below handles actual128; this next-player
 API performs no enemy action, turn skip, next-ally search or round regeneration.
-Domain/Application next-player tests, the required selected-input chain and native `next-player`
-mode own this boundary; `stay` remains a compatible recipe name for the same current chain.
+Domain/Application next-player tests and the required selected-input chain own this boundary.
+The native `first-round` mode below consumes it; `next-player` and `stay` are aliases for that chain.
 
 ### Implemented first inactive enemy standby
 
 The controlled consumer implements the **complete first enemy's standby decision, optional movement
-and no-effect STAY**, ending at offset6 before actual enemy131. It owns explicit seed-copy admission,
-source standby tables, the existing raw weighted-grid helper and bounded source move-string behavior.
-Godot attempts it once after the second player's actual128 / OpponentAi result. No active commandset,
-attack, spell, target scoring or multi-enemy loop is implemented.
+and no-effect STAY** as one atomic API transition to offset6/actual enemy131. It owns explicit
+seed-copy admission, source standby tables, the existing raw weighted-grid helper and bounded source
+move-string behavior. The finite Godot relay below consumes it once after the second player's
+actual128 / OpponentAi result, then handles the remaining admitted enemies. No active commandset,
+attack, spell or target scoring is implemented.
 
 **Accepted controlled input policy:** an independent 16-bit seed-copy input belongs to the
 named player-ready comparison preset, explicitly `0x1234`. Its provenance is
@@ -1201,7 +1204,8 @@ checking action STAY. Hence the result is enemy128 (7,3)->(6,3), action3, memory
 seed-copy1234->3934h, tested-region word0007->0000, with main RNG A4991234 unchanged.
 No attack target/action command, HP change or last-target update is selected. The existing two
 player receipts and positions remain. After the separately admitted no-effect finalization, advance
-one two-byte entry to offset6, actual `Slots[3]=131`, and stop before its dispatch.
+one two-byte entry to offset6, actual `Slots[3]=131`. That atomic transition returns before the
+finite relay dispatches the next enemy.
 
 All current enemies have neutral bit3 clear; A1/A2 have supplied word0. A0's missing ally word must
 remain missing. Its distant (8,18) cell is outside this budget/candidate/path seam, so no claim about
@@ -1305,7 +1309,7 @@ move and memory changes in the completion receipt, without a second command queu
 Preserve both player receipts through the enemy receipt's existing `Previous` chain. A bounded
 `EnemyTurnCompleted` phase can close this endpoint without renaming all player-control APIs.
 
-The production facade admits only the first actual enemy128 at offset4 after the two accepted player
+The strict first-entry operation admits actual enemy128 at offset4 after the two accepted player
 STAYs, known inactive source orders/regions and intact living roster. A different current actor, active/
 swarm/special/move-order branch, missing seed-copy, unsupported memory/profile or incomplete path
 rejects with the exact prior second-player STAY preserved. Legitimate immediate-idle or no-valid-candidate
@@ -1324,8 +1328,8 @@ Reuse `BuildWeightedGrid` with source standby terrain semantics, not the player 
 Implement only the required bounded source move-string path semantics, preserving the accumulated
 direction-mask discrepancy above; do not label the lowest-cost player preview an original AI string.
 No generic pathfinding framework, renderer animation, cache, new fixture registry or AI planner is needed.
-Godot may project the immediate diagnostic relocation and “enemy standby / moved then STAY” result;
-it must retain the actual next candidate131 at offset6 without attempting its AI or a new round.
+This atomic transition exposes actual next candidate131 at offset6; the bounded relay below consumes
+that result. A later rejection can project the last completed enemy and its retained next candidate.
 Frames and old keys must not reenter the completed enemy, discard the prior STAY on rejection, or
 pretend original movement/diamond/menu animation executed.
 
@@ -1336,17 +1340,150 @@ Compare the three calls/147 generator steps and final3934h independently with th
 helpers; test range1 return versus seed, high-byte signed edges, and main/copy RNG isolation.
 Exercise missing/foreign/stale/wrong-actor/phase requests and late path/stat/occupancy rejection,
 proving no partial commit and both earlier receipts retained. Use the committed planner for .NET/
-official Godot gates, then one new bounded native mode showing the enemy outcome and closed next
-candidate; do not replay all prior modes.
+official Godot gates, then the bounded `first-round` native mode below; do not replay prior modes.
 
 Use the read-only reduction above, clean committed `uv run sf2 verify plan --base origin/main --head HEAD`,
-the selected locked .NET and official Godot gates, the required real input chain, one bounded
-`enemy-standby` native review and normal `uv run sf2 verify`. H0 missing input is reported honestly;
-no ROM/H3 replay or asset transaction is required. The native mode captures only the completed enemy
-and closed-input endpoint; its [recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
-owns source-copy and process receipts. The next stopping condition remains actual131 before dispatch.
-Natural caller state, seed-copy lifetime, timing, original layers/animation, active AI, later enemies/
-rounds, victory and H4 remain **Unknown** or unimplemented at their existing owners.
+the selected locked .NET and official Godot gates, the required real input chain, one bounded native
+review and normal `uv run sf2 verify`. H0 missing input is reported honestly; no ROM/H3 replay or
+asset transaction is required. The [recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
+owns source-copy and process receipts. Natural caller state, seed-copy lifetime, timing, original
+layers/animation, active AI, later rounds, victory and H4 remain **Unknown** or unimplemented.
+
+### First-round completion: remaining inactive enemies and Bowie
+
+The bounded continuation consumes the accepted first enemy completion at offset6. It executes
+only the remaining five inactive regular enemy turns in the current buffer, then gives actual
+Bowie0 his own player control. Each enemy commits independently; a later rejection retains the
+last completed snapshot and receipt chain. Bowie's separate move/cancel/STAY advances offset16
+to the first sentinel at18 and closes input as first-round exhausted. Round2 is not generated.
+
+**Confirmed source inputs:** the pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`
+standby/RNG/movement owners above apply to all six GIZMOs. The retained signed/stable buffer has
+actors `[1,2,128,131,133,129,130,132,0]`, followed by FF sentinels. Each remaining enemy uses its
+own deployment anchor, initialized memory slot and inactive order/region word, Hovering6 and
+effective MOV5/budget10. The accepted main RNG image remains A4991234; seed-copy advances from
+the previous committed enemy. A matching before/after word does not mean that RNG was unused.
+
+The existing pure helpers and selected terrain produce this **Inferred composed controlled result**
+after the accepted player moves to(9,17)/(7,17) and first enemy move to(6,3). These are comparison
+outputs, not runtime lookup data or evidence of natural original execution:
+
+| Actor / raw entry offset | Live move | Seed-copy before/after | Own memory slot/result | RNG bounds; results; generator steps | Source move bytes |
+| --- | --- | --- | --- | --- | --- |
+| 131 / 6 | (8,3) to(8,4) | 3934 / 0134 | 3 / 24h | 8,2,3; 1,0,1; 56,199,57 | 3,FF |
+| 133 / 8 | (6,5) to(6,6) | 0134 / 0134 | 5 / 24h | 8,2,3; 7,0,1; 114,85,57 | 3,FF |
+| 129 / 10 | (9,4) to(10,4) | 0134 / 3934 | 1 / 34h | 8,2,1; 7,0,0; 114,85,1 | 0,FF |
+| 130 / 12 | (6,4) to(6,5) | 3934 / 0134 | 2 / 24h | 8,2,2; 1,0,1; 56,199,57 | 3,FF |
+| 132 / 14 | (9,5) to(9,6) | 0134 / 0134 | 4 / 24h | 8,2,3; 7,0,1; 114,85,57 | 3,FF |
+
+The five turns consume1336 generator steps. At129 entry, west(8,4) is now occupied by131; at130
+entry, south(6,5) has been vacated by133. Frozen startup occupancy would select the wrong ranges
+or destinations. Memory[0]=14h and the first enemy receipt survive; final seed-copy is0134.
+
+Reproduce from the repository root with the same `SF2_UPSTREAM_DISASM` and selected data variable
+as the preceding reduction. This reads registered inputs and prints a path-free JSON comparison;
+it invokes no emulator, exporter or remake code:
+
+```powershell
+@'
+import hashlib, json, os
+from pathlib import Path
+from sf2tool.compression import decode_stack_compressed
+from sf2tool.h2.battle_ai import _parse_standby, _standby_eligibility_outcome
+from sf2tool.h2.battlefield import build_weighted_movement_model
+from sf2tool.h3.battle_ai_action import _thinking_rng_step
+
+root = Path(os.environ["SF2_UPSTREAM_DISASM"])
+raw = Path(os.environ["SF2_PRIVATE_BATTLE01_DATA"]).read_bytes()
+assert hashlib.sha256(raw).hexdigest().upper() == "32EEAE9AFB01DC38A1BAA99EE2E0B4C0B48F8A676F69771A5F5C52A2FC7E4C60"
+entities = json.loads(raw)["entities"]
+compressed = (root / "data/battles/entries/battle01/terrain.bin").read_bytes()
+assert hashlib.sha256(compressed).hexdigest().upper() == "A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A"
+terrain = list(decode_stack_compressed(compressed, expected_output_bytes=2304).output)
+standby = _parse_standby(root,
+    (root / "code/gameflow/battle/ai/determineaistandbymovement_1.asm").read_text(),
+    (root / "code/gameflow/battle/ai/determineaistandbymovement_2.asm").read_text())
+fixture = json.loads(Path("tests/fixtures/h3/map3-battle01-player-ready-v1.json").read_text())
+order = [row["actor"] for row in fixture["expectedObservation"]["records"][0]["turnState"]["entries"]]
+assert order == [1,2,128,131,133,129,130,132,0]
+positions = {i if i < 3 else i+125:(e["x"],e["y"]) for i,e in enumerate(entities)}
+positions.update({1:(9,17),2:(7,17),128:(6,3)})
+memory = {actor:0 for actor in range(128,134)}; memory[128] = 0x14
+seed = 0x39; records = []
+costs = [2,2,2,2,2,2,2,-1,2,-1,-1,-1,-1,-1,-1,-1]
+for actor in order[3:8]:
+    entry = entities[actor-125]; behavior = entry["behavior"]
+    assert _standby_eligibility_outcome(
+        behavior["primaryOrderExpression"] != "NONE", behavior["secondaryOrderExpression"] != "NONE",
+        behavior["primaryRegion"] != 15, behavior["secondaryRegion"] != 15) == "regular-move"
+    origin = positions[actor]; before = seed; rolls = []
+    def roll(bound):
+        global seed
+        start = seed; final, result = _thinking_rng_step(seed, bound); generated = []
+        while True:
+            seed, _ = _thinking_rng_step(seed, 1); generated.append(seed)
+            if bound <= 1 or seed < bound: break
+        assert final == seed
+        rolls.append({"range":bound,"before":(start<<8)|0x34,"after":(seed<<8)|0x34,
+                      "result":result,"generated":generated})
+        return result
+    candidates = []; move = [255]; destination = origin
+    if roll(8) not in standby["immediateStayRolls"]:
+        grid = build_weighted_movement_model(terrain,costs,start_offset=origin[1]*48+origin[0],budget=10)["reachableCosts"]
+        if memory[actor] & 15 == 0: memory[actor] = 4 if roll(2) == 0 else 3
+        count, previous = memory[actor] & 15, memory[actor] >> 4
+        table = next(table["coordinates"] for table in standby["movementTables"] if table["moveCount"] == count)
+        occupied = {p:i for i,p in positions.items()}; valid = []
+        for index,(dx,dy) in enumerate(table):
+            p = (entry["x"]+dx,entry["y"]+dy); cost = grid.get(str(p[1]*48+p[0]))
+            eligible = cost == 0 or (cost is not None and p not in occupied)
+            candidates.append({"index":index,"position":p,"cost":cost,"occupant":occupied.get(p),"eligible":eligible})
+            if eligible and index != previous: valid.append(index)
+        if not valid: memory[actor] = 0
+        else:
+            chosen = valid[roll(len(valid))]; memory[actor] = (chosen<<4)|count
+            destination = tuple(candidates[chosen]["position"])
+            assert grid[str(destination[1]*48+destination[0])] == 2 and grid[str(origin[1]*48+origin[0])] == 0
+            # These five source paths each have the origin as the sole cost-decreasing neighbor.
+            lower = [(destination[0]+dx,destination[1]+dy) for dx,dy in [(1,0),(-1,0),(0,-1),(0,1)]
+                     if grid.get(str((destination[1]+dy)*48+destination[0]+dx),65535) < 2]
+            assert lower == [origin]
+            move = [{(1,0):0,(0,-1):1,(-1,0):2,(0,1):3}[(destination[0]-origin[0],destination[1]-origin[1])],255]
+    positions[actor] = destination
+    records.append({"actor":actor,"origin":origin,"destination":destination,"seedBefore":(before<<8)|0x34,
+                    "seedAfter":(seed<<8)|0x34,"memory":memory[actor],"rolls":rolls,"candidates":candidates,"move":move})
+assert [r["destination"] for r in records] == [(8,4),(6,6),(10,4),(6,5),(9,6)]
+assert sum(len(roll["generated"]) for r in records for roll in r["rolls"]) == 1336
+assert seed == 1 and memory == {128:0x14,129:0x34,130:0x24,131:0x24,132:0x24,133:0x24}
+print(json.dumps({"records":records,"finalPositions":positions,"seedCopy":(seed<<8)|0x34},indent=2))
+'@ | uv run python -X utf8 -
+```
+
+**Confirmed Bowie profile:** `data/stats/allies/classes/classdefs.asm` row0 SDMN is MOV6/REGULAR;
+`sf2enums.asm` defines MOVETYPE_REGULAR=1. `data/battles/global/landeffectsettingsandmovecosts.asm`
+row1 has costs `[-1,2,2,3,4,3,3,-1,-1,-1,-1,-1,-1,-1,-1,-1]` and separate land-effect settings
+`[0,1,0,2,2,2,2,0,0,0,0,0,0,0,0,0]`. The fixed class0 profile derives budget12 from current
+effective MOV6; it retains the named controlled player-preview/source-mask distinction. Only
+actual0 entry supplies its missing activation word0 using the existing candidate-only policy.
+No earlier enemy turn fills that Unknown field. Bowie can select(8,17), confirm, cancel back to
+(8,18), then independently confirm and STAY. All nine receipts persist at the real FF sentinel.
+
+The existing standby owner/facade handles this bounded continuation; first-enemy entry remains
+strict. Reuse per-actor no-effect completion and next-player entry, with actual-order/prefix/phase
+guards and immutable failure handling. The thin Godot relay is finite and runs once after the
+second player STAY, not on frames or unrelated keys; it never automates Bowie's choice. A failed
+later turn retains earlier commits, live occupancy, memory, seed and the precise diagnostic.
+Only existing runtime/test owners and the six remake documentation owners change in this slice.
+No new fixture registry, command queue, AI framework, asset transaction or shared tooling is needed.
+
+Acceptance pairs this independent reduction with focused evolving-occupancy/RNG/own-memory/path,
+prefix/stale-request/late-failure, Regular1 movement/cancel and sentinel tests, plus the required
+real selected-input chain. Use the committed planner, selected locked .NET/Godot gates and one new
+bounded `first-round` native mode showing Bowie ready/provisional/cancel/exhausted. Keep prior
+completed failures and rerun corrections narrowly. Natural caller state, seed-copy lifetime,
+original animation/presentation, active AI, attack/spells, victory and H4 remain **Unknown** or
+unimplemented. The stopping condition is the first sentinel before round2, followed by a frozen
+Draft PR for independent root acceptance.
 
 ### Controlled Godot Battle01 consumer
 
@@ -1416,9 +1553,10 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
    input/capture recipe. No-effect STAY closes the first turn and dispatches the next supported player
-   once. After that player's movement/cancel/STAY, the actual inactive enemy128 completes its bounded
-   standby and no-effect STAY under the policy above. The endpoint is offset6 before enemy131 is
-   dispatched. Later enemy turns, rounds, attack resolution and victory remain later slices.
+   once. After that player's movement/cancel/STAY, all six actual inactive enemies complete bounded
+   standby/no-effect STAY turns through the finite relay above. Actual Bowie0 then receives Regular1
+   control and independent move/cancel/STAY. The endpoint is the first sentinel at offset18 with all
+   nine receipts; active AI, round2, attack resolution and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.
