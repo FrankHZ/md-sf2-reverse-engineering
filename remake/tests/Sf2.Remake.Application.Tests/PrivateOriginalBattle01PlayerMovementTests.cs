@@ -12,7 +12,7 @@ public sealed class PrivateOriginalBattle01PlayerMovementTests
     [Fact]
     public void PublicSelectionConfirmAndCancelKeepOneLivePositionAndPreserveSourceAndRoundState()
     {
-        var session = ControlledSession(); var before = session.PrivateOriginalBattle01!; var origin = before.Battle.Roster[1].Position;
+        var session = ControlledSession(); var before = session.PrivateOriginalBattle01!; var origin = Assert.IsType<MapPosition>(before.Battle.Roster[1].Position);
         var selected = Applied(session.SelectPrivateOriginalBattle01PlayerDestination(before, 1, new(1, 2)));
         Assert.Same(selected, session.PrivateOriginalBattle01); Assert.Equal(origin, selected.Battle.Roster[1].Position);
         Assert.Same(before.Battle.Occupancy, selected.Battle.Occupancy); Assert.Equal(new MapPosition(1, 2), selected.Battle.FirstControl!.Movement.Cursor);

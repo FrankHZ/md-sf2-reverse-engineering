@@ -56,14 +56,14 @@ public static class Battle01FirstControl
         var preset = Battle01FirstControlPreset.ControlledPlayer;
         bool supplied = actor.Index < 128 && actor.AiBitfield is null;
         ushort? activationWord = supplied ? preset.MissingCandidateAllyActivationWord : actor.AiBitfield;
-        var availability = Classify(actor.Index, actor.Stats.HpCurrent, actor.Position.X, actor.Position.Y,
+        var availability = Classify(actor.Index, actor.Stats.HpCurrent, actor.Position?.X ?? 255, actor.Position?.Y ?? 255,
             actor.Stats.Status, activationWord, preset.AllyAutoBattle, preset.OpponentControl);
         if (availability != Battle01FirstControlAvailability.Player) return Unavailable(index, availability);
         if (Battle01MovementProfile.ForClass(actor.ClassId) is null)
             return Unavailable(index, Battle01FirstControlAvailability.UnsupportedMovementProfile);
         var range = Battle01PlayerMovement.CreateRange(current, actor);
         var movement = new Battle01PlayerMovementSelection(range,
-            Battle01PlayerMovement.CreatePreview(range, actor.Position), Battle01PlayerMovementStage.Selection);
+            Battle01PlayerMovement.CreatePreview(range, actor.RequirePosition()), Battle01PlayerMovementStage.Selection);
         var roster = current.Roster.ToArray();
         if (supplied) roster[Array.IndexOf(roster, actor)] = actor.WithAiBitfield(activationWord!.Value);
         var control = new Battle01FirstControlState(preset, supplied, movement);

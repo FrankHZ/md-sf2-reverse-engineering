@@ -97,7 +97,119 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
         Assert.Same(ready.Battle.Roster[0].Stats, current.Battle.Roster[0].Stats);
     }
 
-    internal static GameSession ReadySession()
+    [Fact]
+    public void FirstDefeatPublishesOneSnapshotAndNextPlayerCanMoveAndCancel()
+    {
+        var session = FirstDefeatSession(); var selected = session.PrivateOriginalBattle01!;
+        string frozen = JsonSerializer.Serialize(selected);
+        var after = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(selected, 0)).Snapshot;
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.NotSame(selected, after);
+        Assert.Equal(((uint?)60, (ushort?)1, (byte?)39), (after.Battle.CurrentGold,
+            after.Battle.Roster[0].Stats.CurrentKills, after.Battle.Roster[0].Stats.CurrentExp));
+        Assert.Null(after.Battle.Roster[7].Position); Assert.Equal(0, after.Battle.Roster[7].Stats.HpCurrent);
+        Assert.Equal(-1, after.Battle.OccupantAt(new(11, 14)));
+        Assert.Same(selected.Preparation, after.Preparation); Assert.Equal((uint?)0, after.Preparation.Party.CurrentGold);
+        Assert.Equal((ushort?)0, after.Preparation.Party.Allies[0].CurrentKills);
+        Assert.Same(selected.SourceSnapshot, after.SourceSnapshot); Assert.Same(selected.SourceLocomotion, after.SourceLocomotion);
+        Assert.Same(selected.SourceBridge, after.SourceBridge); Assert.Equal(frozen, JsonSerializer.Serialize(selected));
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(selected, 0)).Diagnostic.Field);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(after, 0)).Diagnostic.Field);
+        Assert.Same(after, session.PrivateOriginalBattle01);
+        var current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(after, 1)).Snapshot;
+        Assert.Equal((1, 10), (current.Battle.FirstControl!.ActorIndex, current.Battle.FirstControl.Movement.Range.Budget));
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(current, 1, new(10, 17))).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 1)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(current, 1)).Snapshot;
+        Assert.Equal(new MapPosition(9, 17), current.Battle.Roster[1].Position);
+        Assert.Same(after.Battle.TurnCompletion, current.Battle.TurnCompletion);
+        Assert.Equal((uint?)60, current.Battle.CurrentGold); Assert.Equal((ushort?)1, current.Battle.Roster[0].Stats.CurrentKills);
+    }
+
+    [Theory]
+    [InlineData("foreign")]
+    [InlineData("equivalent")]
+    [InlineData("goldInput")]
+    [InlineData("killsInput")]
+    [InlineData("latePreparation")]
+    public void FirstDefeatRejectionRetainsExactSessionIncludingAllAccountingChannels(string mutation)
+    {
+        var session = FirstDefeatSession(); var current = session.PrivateOriginalBattle01!;
+        var request = current;
+        if (mutation == "foreign") request = FirstDefeatSession().PrivateOriginalBattle01!;
+        if (mutation == "equivalent") request = new(current.Preparation, current.Battle, current.SourceLocomotion, current.SourceBridge);
+        if (mutation is "goldInput" or "killsInput")
+        {
+            var b = current.Battle; var roster = b.Roster.ToArray();
+            if (mutation == "killsInput")
+            {
+                var actor = roster[0]; var s = actor.Stats;
+                var stats = new Battle01Stats(s.Level, s.HpMax, s.HpCurrent, s.MpMax, s.MpCurrent, s.Attack, s.Defense, s.Agility,
+                    s.Move, s.Status, s.Items, s.Spells, s.CurrentExp);
+                roster[0] = Internal<Battle01Combatant>(actor.Deployment, stats, actor.ClassId, actor.EnemySource, actor.AiBitfield, actor.Position);
+            }
+            var battle = Internal<Battle01InitializedState>(b, roster, b.RandomSeedImage, mutation == "goldInput" ? null : b.CurrentGold);
+            request = current = new(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge); Set(session, current);
+        }
+        if (mutation == "latePreparation")
+        {
+            // Nonlethal confirmation can finish locally, then the named preparation rejects a forged known/unknown accounting origin.
+            session = ReadySession(firstDefeat: true); current = session.PrivateOriginalBattle01!;
+            current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+                session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 0)).Snapshot;
+            current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(
+                session.BeginPrivateOriginalBattle01PlayerAttack(current, 0)).Snapshot;
+            var prepared = new PrivateOriginalBattle01StartupPrepared(current.Preparation.Pending, current.Preparation.Inputs,
+                OriginalBattle01ControlledPartyPreset.PlayerAttackComparison);
+            request = current = new(prepared, current.Battle, current.SourceLocomotion, current.SourceBridge); Set(session, current);
+        }
+        string frozen = JsonSerializer.Serialize(current);
+        var rejected = Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(request, 0));
+        if (mutation == "latePreparation") Assert.Equal("accounting.input", rejected.Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01); Assert.Equal(frozen, JsonSerializer.Serialize(current));
+    }
+
+    private static GameSession FirstDefeatSession()
+    {
+        var session = ReadySession(firstDefeat: true); var current = session.PrivateOriginalBattle01!;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 0)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(
+            session.BeginPrivateOriginalBattle01PlayerAttack(current, 0)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(current, 0)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(current, 131)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(current, 133)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(current, 131)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 132)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(current, 133)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(current, 0)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 0)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 0));
+        return session;
+    }
+
+    internal static GameSession ReadySession(bool firstDefeat = false)
     {
         // Existing authored route supplies the pre-strike state; declare EXP0 before either physical receipt.
         var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.AttackSession(); var before = session.PrivateOriginalBattle01!;
@@ -105,9 +217,19 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
         var stats = new Battle01Stats(s.Level, s.HpMax, s.HpCurrent, s.MpMax, s.MpCurrent, s.Attack, s.Defense, s.Agility,
             s.Move, s.Status, s.Items, s.Spells, 0);
         roster[0] = Internal<Battle01Combatant>(actor.Deployment, stats, actor.ClassId, actor.EnemySource, actor.AiBitfield, actor.Position);
-        var battle = Internal<Battle01InitializedState>(before.Battle, roster, before.Battle.RandomSeedImage);
+        var preset = firstDefeat ? OriginalBattle01ControlledPartyPreset.FirstDefeatComparison : OriginalBattle01ControlledPartyPreset.PlayerAttackComparison;
+        if (firstDefeat)
+            for (int index = 0; index < 3; index++)
+            {
+                var ally = preset.Allies[index]; var unit = roster[index];
+                var supplied = new Battle01Stats(ally.Level, ally.HpMax, ally.HpCurrent, ally.MpMax, ally.MpCurrent,
+                    ally.EffectiveAttack, ally.EffectiveDefense, ally.EffectiveAgility, ally.EffectiveMove, ally.StatusEffects,
+                    ally.Items, ally.Spells, ally.CurrentExp, ally.CurrentKills);
+                roster[index] = Internal<Battle01Combatant>(unit.Deployment, supplied, unit.ClassId, unit.EnemySource, unit.AiBitfield, unit.Position);
+            }
+        var battle = Internal<Battle01InitializedState>(before.Battle, roster, before.Battle.RandomSeedImage, preset.CurrentGold);
         var prepared = new PrivateOriginalBattle01StartupPrepared(before.Preparation.Pending, before.Preparation.Inputs,
-            OriginalBattle01ControlledPartyPreset.PlayerAttackComparison);
+            preset);
         before = new(prepared, battle, before.SourceLocomotion, before.SourceBridge); Set(session, before);
         var after = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 132)).Snapshot;
         Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(after, 0));

@@ -86,12 +86,13 @@ public sealed partial class GameSession
                 region.TrailingByte0, region.TrailingByte1)), inputs.Terrain,
             party.Allies.Select(ally => new Battle01AllyInput(ally.Id, ally.ClassId,
                 new(ally.Level, ally.HpMax, ally.HpCurrent, ally.MpMax, ally.MpCurrent, ally.EffectiveAttack,
-                    ally.EffectiveDefense, ally.EffectiveAgility, ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells, ally.CurrentExp))),
+                    ally.EffectiveDefense, ally.EffectiveAgility, ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells,
+                    ally.CurrentExp, ally.CurrentKills))),
             new(enemy.EnemyDefinitionId, enemy.SourceUnknownByte, enemy.SpellPowerMode,
                 new(enemy.Level, enemy.HpMax, enemy.HpMax, enemy.MpMax, enemy.MpMax, enemy.BaseAttack,
                     enemy.BaseDefense, enemy.BaseAgility, enemy.BaseMove, enemy.InitialStatus, enemy.Items, enemy.Spells),
                 enemy.BaseResistance, enemy.BaseProwess, enemy.MovementType, enemy.BaseAiBitfield),
-            party.RandomSeed, party.Difficulty, party.RandomSeedCopy);
+            party.RandomSeed, party.Difficulty, party.RandomSeedCopy, party.CurrentGold);
     }
 
     private static PrivateOriginalBattle01InitializationRejected InitializationRejected(string field, string message) =>

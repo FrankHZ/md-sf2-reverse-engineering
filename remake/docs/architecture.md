@@ -135,7 +135,9 @@ wrapper's early return, empty death cleanup, both factions, no-effect after-turn
 empty cleanup and both factions again before advancing. It retains the same immutable stats and
 live roster/occupancy, clears `FirstControl`, and installs a `TurnCompletion` receipt with both counts.
 The movement range retains its actor's immutable entry stats for drift rejection; it is not a second
-stat authority. No generic stat refresh, death processing or action resolver is introduced.
+stat authority. A previously receipted HP0/unplaced enemy remains cleaned on later no-effect turns;
+it is not a fresh worklist entry and receives no repeated award. Generic stat refresh remains outside
+this bounded fixed-profile consumer.
 
 `FirstRound.CurrentTurnOffset` is a raw byte offset; `CurrentCandidate` uses offset divided by the
 two-byte entry size. Advancing from 0 to 2 shares the complete unchanged 64-slot order and preserves
@@ -211,22 +213,39 @@ Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player p
 The existing movement selection gains a target stage, holding the ordered live down/right/up/left
 range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
 then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
-snapshot and the separately named `PlayerAttackComparison` preparation. Nullable current EXP
-distinguishes the older unspecified input from the authored Bowie EXP0 supplement. Immutable HP
-and EXP copies retain every other field; preparation remains HP12/EXP0 provenance.
+snapshot and a separately named `PlayerAttackComparison` or `FirstDefeatComparison` preparation.
+Nullable current EXP/gold/kills distinguish unspecified inputs from explicit authored zeroes.
+Godot uses the latter supplement; both earlier presets remain unchanged. Immutable copies preserve
+every channel, while preparation retains HP12/EXP0/gold0/kills0 as provenance.
 
 Confirmation rechecks the actor, live target list, occupancy and admitted profiles before resolving
 the player's dodge8/critical16/+quarter damage, two spread calls, both follow-ups and EXP award.
 Local HP restore/reaction and EXP replay publish together only after completion validation; required
-level changes, lethal results and actual extra attacks reject the entire action. Mixed history
+level changes and actual extra attacks reject the entire action. The older policy still rejects
+lethal results. The first-defeat policy permits one regular enemy death with known accounting inputs.
+It keeps full overkill damage, returns before double/counter draws, adds kill EXP50 with cap49 and
+Battle01 halving, and applies source gold60 during local construction. HP snapshot restore/reaction,
+EXP replay, first worklist kill credit/removal, actor normalization, cleared second worklist and both
+3/5 faction counts finish before one Application snapshot replacement. A late failure retains every
+old channel. Gold caps at9,999,999 including source carry; Bowie kills cap at9999.
+
+Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
+source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement
+from deployment. Living consumers require a position, and occupancy/target/presentation omit the
+cleaned row. Mixed history
 rewinds player HP/EXP without enemy last-target writes, requires the full source HP5 GIZMO profile,
-and permits positive damaged enemy HP only with linked reaction provenance. Where a preceding
+and permits damaged or cleaned enemy HP only with linked reaction/cleanup provenance. It rewinds
+placement, EXP, gold, kills and count transitions through the same receipt chain. Same-round
+generation validation restores its pre-kill candidate set from receipt before-images; a later
+generation excludes the dead row and its draws. Where a preceding
 main endpoint is recorded, the existing generator reproduces the following main image and current
 64-slot order. This adds no stored seed authority or history cache.
 
 Godot keeps ordinary action-choice Space as STAY; A opens targeting and target Space explicitly
-attacks. The existing finite relay consumes actual131/133 and enters actual round7 player2 control.
-The presenter derives the latest player result across round boundaries from completion receipts.
+attacks. The existing finite relay reaches round7 player2, then actual131/132/133 and Bowie HP6.
+His explicit lethal attack creates receipt59 and immediately yields actual player1 movement/cancel.
+The presenter derives the persistent defeated132/+24 EXP/+60 gold result from that receipt and
+shows live gold60/kills1, Bowie EXP39 and five enemies.
 Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
 presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
 and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.

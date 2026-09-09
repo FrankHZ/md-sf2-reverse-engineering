@@ -155,15 +155,23 @@ public sealed class Battle01EnemyPhysicalAttackTests
         Assert.Equal(0, Battle01EnemyPhysicalAttack.SelectTarget([Entry(2, 1, 8, 16), Entry(1, 4, 8, 16), Entry(0, 0, 0, 16)]).Target.Index);
     }
 
-    internal static Battle01InitializedState AttackBoundary(byte? currentExp = null)
+    internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false)
     {
         var current = Battle01EnemyPursuitTests.RoundThree();
         // The earlier movement-only authored helper has no equipment. Supply the accepted combat
         // comparison profile explicitly; HP, effective modifiers, order and RNG remain identical.
         var roster = current.Roster.ToArray();
         roster[0] = roster[0].WithStats(new(1, 12, 12, 8, 8, 9, 4, 4, 6, 0,
-            [199, 0, 127, 127], [10, 63, 63, 63], currentExp));
-        current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster);
+            [199, 0, 127, 127], [10, 63, 63, 63], currentExp, firstDefeatAccounting ? (ushort)0 : null));
+        if (firstDefeatAccounting)
+        {
+            // Explicit authored comparison fixture matching the selected-input allied stat roles.
+            roster[1] = roster[1].WithStats(new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0,
+                [213, 0, 0, 127], [0, 63, 63, 63]));
+            roster[2] = roster[2].WithStats(new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0,
+                [184, 0, 127, 127], [63, 63, 63, 63]));
+        }
+        current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, gold: firstDefeatAccounting ? 0u : null);
         for (int round = 3; round <= 5; round++)
         {
             while (current.FirstRound!.CurrentCandidate is not null) current = Battle01EnemyPursuitTests.CompleteTurn(current);

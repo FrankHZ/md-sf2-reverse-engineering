@@ -10,6 +10,32 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void FirstDefeatSupplementDeclaresGoldAndBowiesKillsWithoutChangingEarlierPresets()
+    {
+        foreach (var old in new[] { OriginalBattle01ControlledPartyPreset.PlayerReadyComparison,
+            OriginalBattle01ControlledPartyPreset.PlayerAttackComparison })
+        {
+            Assert.Null(old.CurrentGold); Assert.All(old.Allies, ally => Assert.Null(ally.CurrentKills));
+        }
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var source = Prepare(session);
+        var preset = OriginalBattle01ControlledPartyPreset.FirstDefeatComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic());
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Pending, source.Inputs, preset);
+        var initialized = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Same(prepared, initialized.Preparation);
+        Assert.Equal(((uint?)0, (ushort?)0, (byte?)0), (initialized.Battle.CurrentGold,
+            initialized.Battle.Roster[0].Stats.CurrentKills, initialized.Battle.Roster[0].Stats.CurrentExp));
+        Assert.All(initialized.Battle.Roster.Skip(1), unit => Assert.Null(unit.Stats.CurrentKills));
+        Assert.Equal("party.goldInput", new OriginalBattle01ControlledPartyPreset(preset.Id, preset.RandomSeed, preset.Difficulty,
+            preset.Allies, preset.RandomSeedCopy).GetAdmissionDiagnostic()!.Field);
+        Assert.Equal("party.allies", new OriginalBattle01ControlledPartyPreset(preset.Id, preset.RandomSeed, preset.Difficulty,
+            OriginalBattle01ControlledPartyPreset.PlayerAttackComparison.Allies, preset.RandomSeedCopy, 0).GetAdmissionDiagnostic()!.Field);
+        Assert.Equal("party.goldInput", new OriginalBattle01ControlledPartyPreset(OriginalBattle01ControlledPartyPreset.PlayerAttackComparisonId,
+            preset.RandomSeed, preset.Difficulty, OriginalBattle01ControlledPartyPreset.PlayerAttackComparison.Allies,
+            preset.RandomSeedCopy, 0).GetAdmissionDiagnostic()!.Field);
+    }
+
+    [Fact]
     public void NamedPlayerAttackPresetSuppliesOnlyBowiesExplicitExpZero()
     {
         var session = PrivateOriginalBattle01StartupTests.PendingSession(); var old = Prepare(session);
@@ -52,7 +78,7 @@ public sealed class PrivateOriginalBattle01InitializationTests
         Assert.Equal(Battle01Phase.BeforeFirstRound, battle.Phase); Assert.Equal(9, battle.Roster.Count);
         Assert.Equal((ushort?)0x1234, battle.RandomSeedCopy); Assert.Equal(prepared.Party.RandomSeedCopy, battle.RandomSeedCopy);
         Assert.Equal(new[] { 0, 1, 2, 128, 129, 130, 131, 132, 133 }, battle.Roster.Select(unit => unit.Index));
-        Assert.All(battle.Roster, unit => Assert.Equal(unit.Index, battle.OccupantAt(unit.Position)));
+        Assert.All(battle.Roster, unit => Assert.Equal(unit.Index, battle.OccupantAt(Assert.IsType<MapPosition>(unit.Position))));
         for (int index = 0; index < 3; index++)
         {
             var ally = prepared.Party.Allies[index]; var actual = battle.Roster[index];

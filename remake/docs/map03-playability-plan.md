@@ -2630,14 +2630,14 @@ No fixture/schema/research, asset, package/toolchain, legacy or unrelated regist
   current accepted `origin/main`, commit/push declared paths and freeze a Draft PR for independent
   review. Report unavailable default H0 input honestly; do not copy a private ROM to repair it.
 
-### Proposed first enemy defeat and actual next-player control
+### Implemented first enemy defeat and actual next-player control
 
-This is a **plan awaiting independent approval**, not an implemented capability. Continue the
-accepted round7 player2 endpoint above with manual player2 origin confirmation/STAY, then dispatch
-the actual131,132,133 candidates. Manually choose Bowie's origin/Attack/target132. The next precise
-unsupported branch is the resulting **`attack.lethal`**, after the ordinary enemy strike succeeds.
-The proposed useful endpoint is enemy132's completed defeat and actual player1 movement control
-in the same round. It does not require encounter victory, a fresh round or an additional player turn.
+The controlled implementation continues round7 player2 with manual origin confirmation/STAY,
+dispatches actual131/132/133, and accepts Bowie's explicit origin/Attack/target132 under the named
+first-defeat policy. The old nonlethal policy still rejects this strike as **`attack.lethal`**.
+The implemented endpoint is enemy132's completed defeat and actual player1 movement/cancel in
+the same round. Encounter victory, natural save-state accounting, original death animation/timing
+and the remainder of Battle01 remain outside this boundary.
 
 #### Starting state, reproduced sequence and boundary
 
@@ -2701,20 +2701,22 @@ owns death processing and post-action order. Source paths below are relative to 
 | `code/gameflow/battle/battlescenes/battlesceneengine_0.asm`, `bsc0A_executeEnemyReaction` `0x18F4E`, `AddEnemyToDeadList`, `bsc0F_giveExp` `0x190DC` | Restore target HP2 before replaying reaction−3 to0. Append132 to the death worklist once; EXP replay stores39. Retain MP0/status0 and the bounded already-refreshed effective enemy stats. |
 | `code/gameflow/battle/battleloop/processkilledcombatants.asm` `0x24518..0x24642`; `processafterturneffects.asm` `0x24242..0x2448A`; `battleloop_1.asm` | Defeated wrapper returns with Bowie and128 alive. First worklist `[132]` credits Bowie (`BATTLESCENE_FIRST_ALLY`) one kill, clears132 X/Y to signed−1 (bytesFF/FF), status0, refreshes stats and removes its entity from the field (source entity destination `0x7000,0x7000`). First faction count3/5; Bowie after-turn starts by clearing the worklist, has no effects; second worklist empty and second count3/5; cursor advances8→10. Cleanup does not itself clear the source list length. |
 
-**Proposed outcome:** preserve nine identity/provenance rows, but only eight living placed occupants;
+**Confirmed controlled outcome:** preserve nine identity/provenance rows, but only eight living placed occupants;
 cell `(11,14)` becomes empty and132 cannot be selected, obstruct movement or be drawn as a live
 unit. Receipt59 retains both count snapshots3/5. Keep the current64-slot order byte-for-byte:
 132's already-consumed slot2 is not compacted out. Actual slot5 is player1 at `(9,17)`, HP11,
-movement budget10; input admission consumes no RNG. Bowie remains `(11,15)`, HP6/EXP39. Reaching
-that usable control state is the implementation acceptance boundary; it is currently **Inferred**
-from the composed source seams, pending Domain/Application/real Content/native implementation.
+movement budget10; input admission consumes no RNG. Bowie remains `(11,15)`, HP6/EXP39. This usable
+controlled remake endpoint is **Confirmed** by the owning Domain/Application tests, both required
+real Content methods and the `first-enemy-defeat` native recipe. The composed source seams and
+these controlled checks do not establish natural original-game flow, original death animation/VInt
+RNG or natural save-state accounting; those remain **Unknown** at this boundary.
 
 #### Reproduce the continuation without another movement model
 
 Run `uv sync --locked`, use the registered read-only environment from the preceding reduction,
 and execute this block from repository root. It reuses that reduction's entire accepted prefix,
 private-input checks and pursuit/standby helpers, then prints each actual candidate and the
-proposed lethal arithmetic. It executes no ROM, C# or Godot code.
+source-derived lethal arithmetic. It executes no ROM, C# or Godot code.
 
 ```powershell
 @'
@@ -2808,7 +2810,7 @@ dead_position=pos.pop(132)
 live=[actor for actor in pos if hp_by_actor[actor]>0]
 assert len([a for a in live if a<128])==3 and len([a for a in live if a>=128])==5
 assert next_order[5]==(1,5) and pos[1]==(9,17)
-print('proposed-lethal-result',json.dumps(dict(damageExp=damage_exp,killExp=50,accumulated=accumulated,
+print('lethal-result',json.dumps(dict(damageExp=damage_exp,killExp=50,accumulated=accumulated,
     halved=halved,award=award,bowieExpBefore=exp_after,bowieExpAfter=exp_after+award,
     goldDelta=gold_words[39],killDelta=1,sourceUnplacedBytes=[255,255],removedCell=dead_position,
     firstWorklist=[132],secondWorklist=[],countsBeforeAfterTurn=[3,5],countsAfterAfterTurn=[3,5],
@@ -2887,18 +2889,17 @@ static void Describe(string stage, Battle01InitializedState s)
 dotnet run --project 'local/next-combat-managed/NextCombat.csproj' --verbosity quiet
 ```
 
-#### Minimal proposed implementation and state authority
+#### Implemented state authority and ownership
 
-This proposal adds one complete ordinary player kill against the existing regular GIZMO profile,
+This consumer implements one complete ordinary player kill against the existing regular GIZMO profile,
 including its mandatory bookkeeping and following player control. Retain the old nonlethal policy
 and add an explicit player defeat policy in the existing policy owner; keep the enemy wrapper
 strict. Reject unsupported profiles, actual follow-ups, ally/leader death, encounter outcomes,
 required level changes, drops, status/curse/after-turn effects and unspecified award inputs
 atomically. An unsupported branch must preserve its actual candidate rather than skip the actor.
 
-1. Add nullable current party gold to the existing controlled party/live battle state, and nullable
-   current kills to the existing controlled ally/live stats. Neither value is currently supplied.
-   Propose the separately named authored preset
+1. Nullable current party gold belongs to the existing controlled party/live battle state; nullable
+   current kills belongs to the existing controlled ally/live stats. The separately named authored preset
    `private-local-battle01-first-defeat-bowie-exp0-gold0-kills0-inputs-v1`: copy all accepted combat,
    difficulty and random inputs; explicitly supply party gold0 and Bowie kills0 alongside EXP0,
    leaving other ally kills/EXP unspecified. Preserve both older presets unchanged. These are
@@ -2935,36 +2936,32 @@ atomically. An unsupported branch must preserve its actual candidate rather than
    needs no new action key or pause. Later unsupported actions remain visible boundaries; this
    slice does not claim the remainder of round7 or all of Battle01 playable.
 
-The **proposed future ownership** below is bounded to existing paths relative to `remake/`.
-The current plan-only slice owns just this document; these future paths require independent plan
-approval. Nullable placement migration is limited to battle consumers, not shared map geometry.
+The **approved implementation ownership** below is bounded to existing paths relative to `remake/`.
+Nullable placement migration is limited to battle consumers, not shared map geometry.
 
-| Exact paths | Proposed responsibility |
+| Exact paths | Responsibility |
 | --- | --- |
 | `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs`, `Battle01PlayerPhysicalAttack.cs`, `Battle01EnemyPhysicalAttack.cs`, `Battle01TurnCompletion.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01PlayerMovement.cs`, `Battle01EnemyPursuit.cs`, `Battle01FirstControl.cs` in that same directory | HP0/unplaced state and nullable awards; bounded player kill and strict enemy wrapper; atomic completion/history/counts/generation; living placement consumers. |
 | `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`, `PrivateOriginalBattle01PlayerPhysicalAttack.cs` in that session directory | Explicit supplement, unchanged preparation provenance, input projection and one exact-snapshot commit. |
 | `game/src/PrivateBattle01Composition.cs`, `game/src/PrivateBattle01Presenter.cs` | Existing finite relay, live-only units and persistent defeat/award view. |
 | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01InitializationTests.cs`, `Battle01PlayerPhysicalAttackTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01PlayerMovementTests.cs`, `Battle01EnemyPursuitTests.cs`, `Battle01FirstControlTests.cs`, `Battle01NextPlayerControlTests.cs` in that same directory | New arithmetic/cleanup/history/control assertions and nullable-placement compilation adjustments only in affected owners; keep legacy living/nonlethal tests strict. |
 | `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01PlayerPhysicalAttackTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs`, `PrivateOriginalBattle01EnemyPursuitTests.cs`, `PrivateOriginalBattle01EnemyStandbyTests.cs` in that same directory | Supplement admission/provenance, real continuation and stale/duplicate/late atomic failures; existing enemy-test occupancy builders require nullable-placement adaptation. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerMovementTests.cs` | Approved ownership amendment for the observed CS8604 compilation dependency: only bind the existing live origin with `Assert.IsType<MapPosition>(before.Battle.Roster[1].Position)`; preserve all existing assertions. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Both required real Content methods, visible corpse removal/result and bounded copied/physical native comparison. |
 | `README.md`; `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` | Current implemented boundary, supplement/source policy, native recipe and remaining Unknowns. |
 
-These39 paths bound three buildable implementation commits: Domain/input projection and affected
+These40 paths bound three buildable implementation commits: Domain/input projection and affected
 tests; Application/Godot/native integration and tests; current-state documentation. No new schema,
-research fixture, registry, shared map geometry, asset, package or toolchain change is proposed.
+research fixture, registry, shared map geometry, asset, package or toolchain change is included.
 If compilation or an observed semantic dependency requires another owner, stop and report the
 exact path before editing it.
 
 #### Proportional acceptance and native checkpoints
 
-- For this **plan only**: locked sync, the source reduction and optional bounded managed diagnostic,
-  relative links/fences/tables/private boundary/diff checks, clean committed planner and normal
-  `uv run sf2 verify`/public-core. No full managed, official Godot/native, full Python or H3 run.
-  Report the known unavailable default H0 input honestly; do not copy a ROM to repair it.
-- Future implementation must extend both required methods in
+- Both required methods in
   `Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests`:
   `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` and
-  `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending`, with
+  `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending` execute with
   `SF2_REQUIRE_PRIVATE_TESTS=1` and registered real inputs. Neither may skip or move owner.
   Start from explicit preparation, replay the accepted prefix, compare the actual real target
   priorities and six enemy rolls, then all six lethal/award calls and receipt59 through actual
@@ -2978,7 +2975,7 @@ exact path before editing it.
   Test same-round generation-history validation using pre-kill candidates, dead exclusion from
   later generation, and next-player move/cancel without a second kill or award. A dead history row
   must neither block every subsequent no-effect action nor be cleaned/rewarded repeatedly.
-- Future native mode `first-enemy-defeat` uses the existing isolated recipe: capture (1) accepted
+- Native mode `first-enemy-defeat` uses the existing isolated recipe: capture (1) accepted
   round7 player2; (2) actual Bowie after131/132/133 with HP6/EXP15 and132 HP2; (3) manually selected
   origin Attack/132; (4) a clearly labeled copy of that exact selection after direct Application
   confirmation showing receipt59/death/awards; (5) restore the exact selected snapshot and press
@@ -2987,7 +2984,7 @@ exact path before editing it.
   source archives/production code/export identity; inspect every frame and process completion.
   Recheck only affected existing player/enemy physical and pursuit native presentation contracts.
   No native result grants original death animation/timing, natural seed lifetime or H4 parity.
-- Future implementation runs its owning tests, committed planner's locked managed and official
+- The implementation runs its owning tests, committed planner's locked managed and official
   Godot selection plus normal public verification. Carry completed-suite failures and rerun exact
   failed nodes or owning files after corrections; do not repeat a slow full suite merely to replace
   its aggregate. Update onto current accepted main, commit/push declared paths and freeze a Draft
@@ -3030,8 +3027,11 @@ The same finite relay generates later rounds and admits bounded inactive standby
 and ordinary physical attacks. The controlled attack132 applies damage once and yields actual
 Bowie0 control with HP9 and a persistent result. His explicit origin attack132 adds EXP15 and
 persists enemy HP2; actual131/133 then lead to round7 player2 control with that result still visible.
+Manual player2 STAY and actual131/132/133 yield Bowie HP6. His next origin Attack132 completes
+the first defeat, retains the source row while removing its live placement, and yields actual
+player1 movement/cancel with EXP39/gold60/kills1 and the persistent reward result.
 Other combat profiles/terrain, spells, items, validated follow-ups, required level changes,
-death/victory and original cancellation animation remain unsupported.
+further defeats/victory and original cancellation/death animation remain unsupported.
 
 Root input and physics route on current battle authority before any closed exploration getter.
 Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session

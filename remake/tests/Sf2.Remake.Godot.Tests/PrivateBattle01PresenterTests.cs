@@ -73,6 +73,30 @@ public sealed class PrivateBattle01PresenterTests
         var next=PrivateBattle01Presenter.BuildProjection(current,"Round 7. Player 2 ready.");
         Assert.Equal(playerResult.AttackResult,next.AttackResult); Assert.Equal(2,next.ActorIndex);
         Assert.Equal((byte?)15,next.Units.Single(unit=>unit.Index==0).Exp);
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 2), 2,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = CompleteAuthoredTurn(current);
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 132, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+        current = CompleteAuthoredTurn(current);
+        current = Battle01NextPlayerControl.Enter(current, 0).State!;
+        current = Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 0), 0);
+        current = Battle01PlayerPhysicalAttack.Confirm(current, 0, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat);
+        var defeated = PrivateBattle01Presenter.BuildProjection(current, "First defeat complete.");
+        Assert.Equal(8, defeated.Units.Count); Assert.DoesNotContain(defeated.Units, unit => unit.Index == 132);
+        Assert.Contains("E4 (132) defeated", defeated.AttackResult); Assert.Contains("HP 2 -> 0", defeated.AttackResult);
+        Assert.Contains("EXP +24: 15 -> 39", defeated.AttackResult); Assert.Contains("Gold +60", defeated.AttackResult);
+        Assert.Equal(((uint?)60, (ushort?)1), (defeated.Gold, defeated.BowieKills));
+        Assert.Equal((6, (byte?)39), ((int)defeated.Units.Single(unit => unit.Index == 0).Hp, defeated.Units.Single(unit => unit.Index == 0).Exp));
+        current = Battle01NextPlayerControl.Enter(current, 1).State!;
+        var playerOne = PrivateBattle01Presenter.BuildProjection(current, "Player 1 ready.");
+        Assert.Equal(1, playerOne.ActorIndex); Assert.True(playerOne.CanConfirm); Assert.Contains("Space", playerOne.Controls);
+        var clearTile = Assert.Single(playerOne.Tiles, tile => tile.Position == new MapPosition(11, 14));
+        Assert.Equal((byte)1, clearTile.Terrain); Assert.True(clearTile.CanStop);
+        current = Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 1, new(10, 17)), 1), 1);
+        var afterCancel = PrivateBattle01Presenter.BuildProjection(current, "Cancelled.");
+        Assert.Equal(defeated.AttackResult, afterCancel.AttackResult);
+        Assert.Equal(defeated.Units, afterCancel.Units); Assert.Equal((uint?)60, afterCancel.Gold); Assert.Equal((ushort?)1, afterCancel.BowieKills);
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -239,11 +263,13 @@ public sealed class PrivateBattle01PresenterTests
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
-                combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null)));
+                combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,
+                combatProfile && i==0 ? (ushort?)0 : null)));
         var enemy = new Battle01EnemyInput(39, 39, 0, new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0,
             [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
         var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;
-        var initial = Battle01Initialization.Initialize(rows, regions, terrain, party, enemy, 0x1234, 0, 0x1234);
+        var initial = Battle01Initialization.Initialize(rows, regions, terrain, party, enemy, 0x1234, 0, 0x1234,
+            combatProfile ? (uint?)0 : null);
         var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(initial), 1).State!;
         var first = Stay(ready, 1, new(9, 17)); var next = Battle01NextPlayerControl.Enter(first, 2).State!;
         return Stay(next, 2, new(7, 17));

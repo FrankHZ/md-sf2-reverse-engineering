@@ -80,7 +80,7 @@ public static class Battle01FirstRound
         int[] spawned = AdmitStartingSpawns(roster);
         ushort word = current.GeneratorWord;
         var slots = GenerateTurnOrder(roster.Select(unit => new TurnCandidate((byte)unit.Index,
-            (byte)unit.Position.X, unit.Stats.HpCurrent, unit.Stats.Agility)), ref word);
+            (byte)(unit.Position?.X ?? 255), unit.Stats.HpCurrent, unit.Stats.Agility)), ref word);
         uint image = ((uint)word << 16) | (current.RandomSeedImage & 0xFFFFu);
         var next = new Battle01InitializedState(current, roster, flags, tested, image, new(slots, cutscenes, spawned, number));
         if (continuing) RequireCurrentPrefix(next);
@@ -101,7 +101,7 @@ public static class Battle01FirstRound
             int word = (slot < 4 ? 0x2060 : 0x2070) | (flags[region] ? 1 : 0);
             if (enemy.AiBitfield != word)
                 throw new ArgumentException("Retain coherent primary activation and all source word bits.", $"activation.actor{enemy.Index}");
-            Battle01EnemyStandby.RequireRegularEnemy(enemy, roundNumber, flags[region]);
+            Battle01EnemyStandby.RequireRegularEnemy(enemy, roundNumber, flags[region], allowDefeated: true);
         }
         // Explicit roster-only remake policy: no combatant160/shop-deals alias is projected.
     }
@@ -109,34 +109,51 @@ public static class Battle01FirstRound
     internal static void RequireCurrentPrefix(Battle01InitializedState current)
     {
         var order = current.FirstRound;
-        int[] actors = [0, 1, 2, 128, 129, 130, 131, 132, 133];
-        if (order is null || order.Slots.Count != 64 || order.CurrentTurnOffset > 18 || order.CurrentTurnOffset % 2 != 0 ||
-            !order.Slots.Take(9).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
-            order.Slots.Skip(9).Any(slot => !slot.IsSentinel))
+        if (order is null) throw new ArgumentException("The current round is required.", "turnOrder");
+        int[] actors = GenerationRoster(current, order.RoundNumber).Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
+            .Select(unit => unit.Index).Order().ToArray();
+        if (actors.Length is < 8 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
+            !order.Slots.Take(actors.Length).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
+            order.Slots.Skip(actors.Length).Any(slot => !slot.IsSentinel))
             throw new ArgumentException("The complete current-round order must be retained.", "turnOrder");
         var receipt = current.TurnCompletion;
+        int enemies = current.Roster.Count(unit => unit.Index >= 128 && unit.Stats.HpCurrent > 0);
         for (int index = order.CurrentTurnOffset / 2 - 1; index >= 0; index--)
         {
             if (receipt is null || receipt.RoundNumber != order.RoundNumber || receipt.CompletedActorIndex != order.Slots[index].CombatantIndex ||
                 !Battle01TurnCompletion.HasValidPolicy(receipt) ||
-                receipt.BeforeAfterTurn != new Battle01FactionCounts(3, 6) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+                receipt.BeforeAfterTurn != new Battle01FactionCounts(3, enemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
                 throw new ArgumentException("The complete current-generation receipt prefix must be retained.", "completion");
+            if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true }) enemies++;
             receipt = receipt.Previous;
         }
         if (order.RoundNumber == 1 ? receipt is not null : receipt?.RoundNumber != order.RoundNumber - 1)
             throw new ArgumentException("The previous round's completion history must be retained.", "completion");
     }
 
-    internal static void RequireGenerationFromRecordedMain(Battle01InitializedState current, uint before, uint after, bool currentOrder)
+    internal static void RequireGenerationFromRecordedMain(Battle01InitializedState current, uint before, uint after,
+        bool currentOrder, int roundNumber)
     {
-        // Admitted no-effect turns keep AGI and all nine living slots. Reuse the source generator,
-        // so a physical receipt's main endpoint also constrains the following generated round.
+        // A generation precedes that round's deaths. Recover its candidate set from the same
+        // receipt before-images; never regenerate an old order from the current survivors.
         ushort word=(ushort)(before >> 16);
-        var slots=GenerateTurnOrder(current.Roster.Select(unit=>new TurnCandidate((byte)unit.Index,
-            (byte)unit.Position.X,unit.Stats.HpCurrent,unit.Stats.Agility)),ref word);
+        var slots=GenerateTurnOrder(GenerationRoster(current, roundNumber).Select(unit=>new TurnCandidate((byte)unit.Index,
+            (byte)(unit.Position?.X ?? 255),unit.Stats.HpCurrent,unit.Stats.Agility)),ref word);
         if ((((uint)word << 16) | (before & 0xFFFF)) != after ||
             (currentOrder && !slots.SequenceEqual(current.FirstRound!.Slots)))
             throw new ArgumentException("Generated main RNG and order must follow the recorded preceding main endpoint.", "attack.history");
+    }
+
+    internal static Battle01Combatant[] GenerationRoster(Battle01InitializedState current, int roundNumber)
+    {
+        var roster = current.Roster.ToArray();
+        for (var receipt = current.TurnCompletion; receipt is not null && receipt.RoundNumber >= roundNumber; receipt = receipt.Previous)
+            if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true } attack)
+            {
+                Battle01TurnCompletion.ValidateDefeatReceipt(receipt);
+                roster[Array.FindIndex(roster, unit => unit.Index == attack.TargetIndex)] = attack.Target;
+            }
+        return roster;
     }
 
     private static (Battle01Combatant[] Roster, bool[] Flags, ushort Tested) ActivateEnemies(Battle01InitializedState current)
@@ -144,17 +161,17 @@ public static class Battle01FirstRound
         var flags = current.RegionFlags90Through105.ToArray();
         ushort tested = current.NewlyTestedRegionMask;
         var roster = current.Roster.ToArray();
-        var allies = roster.Where(unit => unit.Index < 128 && unit.Position.X < 128 && unit.Stats.HpCurrent != 0).ToArray();
+        var allies = roster.Where(unit => unit.Index < 128 && unit.Position is not null && unit.Stats.HpCurrent != 0).ToArray();
         for (int index = 0; index < roster.Length; index++)
         {
             var enemy = roster[index];
-            if (enemy.Index < 128 || enemy.Position.X >= 128 || enemy.Stats.HpCurrent == 0) continue;
+            if (enemy.Index < 128 || enemy.Position is null || enemy.Stats.HpCurrent == 0) continue;
             foreach (var region in current.Regions)
             {
                 ushort bit = (ushort)(1 << region.Id);
                 if ((tested & bit) == 0)
                 {
-                    if (allies.Any(ally => IsInside(region, ally.Position))) flags[region.Id] = true;
+                    if (allies.Any(ally => IsInside(region, ally.RequirePosition()))) flags[region.Id] = true;
                     tested |= bit; // Tested once per round entry; this is not an active-region flag.
                 }
             }

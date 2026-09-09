@@ -324,7 +324,7 @@ public sealed class Battle01EnemyStandbyTests
         var terrain = Enumerable.Repeat((byte)255, 2304).ToArray();
         for (int y = 0; y < 20; y++) for (int x = 0; x < 16; x++) terrain[y * 48 + x] = 1;
         terrain[4 * 48 + 7] = 255; terrain[2 * 48 + 7] = 0;
-        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[unit.Position.Y * 48 + unit.Position.X] = unit.Index;
+        var occupancy = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) occupancy[unit.RequirePosition().Y * 48 + unit.RequirePosition().X] = unit.Index;
         var initial = new Battle01InitializedState(roster, original.Regions.ToArray(), terrain, occupancy, original.RandomSeedImage, 0x1234);
         var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(initial), 1).State!;
         var first = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 1, new(9, 17)), 1), 1, Policy);

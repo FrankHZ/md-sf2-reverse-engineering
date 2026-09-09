@@ -22,7 +22,7 @@ public sealed record Battle01EnemyPhysicalAttackDecision(Battle01Combatant Actor
     // The original physical action writes the target WORD at offset2; offset6 is not its target.
     public ushort ItemOrSpellWord => (ushort)TargetIndex;
     public string CombatProfile => "battle01-class0-wooden-sword-effective-prowess3-v1";
-    public MapPosition Origin => Actor.Position;
+    public MapPosition Origin => Actor.RequirePosition();
     public int GridCost => Priorities.Single(p => p.Target.Index == TargetIndex).Candidate.GridCost;
 }
 
@@ -53,7 +53,7 @@ public static class Battle01EnemyPhysicalAttack
 
         var decision = Decide(current, actor);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
-        int from = Battle01PlayerMovement.Offset(actor.Position), to = Battle01PlayerMovement.Offset(decision.Destination);
+        int from = Battle01PlayerMovement.Offset(actor.RequirePosition()), to = Battle01PlayerMovement.Offset(decision.Destination);
         if (occupancy[from] != actorIndex || (from != to && occupancy[to] != -1))
             throw new ArgumentException("The physical attack destination must preserve occupancy.", "occupancy");
         roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
@@ -76,7 +76,7 @@ public static class Battle01EnemyPhysicalAttack
         foreach (var candidate in candidates.Reverse())
         {
             var target = battle.Roster.Single(unit => unit.Index == candidate.ActorIndex);
-            int multiplier = LandMultiplier(target.ClassId, battle.TerrainAt(target.Position));
+            int multiplier = LandMultiplier(target.ClassId, battle.TerrainAt(target.RequirePosition()));
             var roll = Battle01EnemyStandby.ThinkingRoll(copy, 3); copy = roll.AfterSeedCopy;
             int potential = LandDamage(actor.Stats.Attack, target.Stats.Defense, multiplier);
             int remaining = Math.Max(0, target.Stats.HpCurrent - potential);
@@ -85,9 +85,9 @@ public static class Battle01EnemyPhysicalAttack
         }
         var selected = SelectTarget(priorities);
         RequireTargetProfile(selected.Target);
-        var moves = Battle01EnemyStandby.SourceMoveString(grid, actor.Position, selected.Candidate.AttackPosition);
+        var moves = Battle01EnemyStandby.SourceMoveString(grid, actor.RequirePosition(), selected.Candidate.AttackPosition);
         var effect = Resolve(actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
-            battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.Position);
+            battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.RequirePosition());
         return new(actor, selected.Candidate.AttackPosition, battle.RandomSeedCopy.Value, copy,
             battle.AiMemory[actor.Index - 128], battle.AiLastTargets[actor.Index - 128], battle.RandomSeedImage,
             priorities.AsReadOnly(), selected.Target.Index, moves, effect);
@@ -154,7 +154,7 @@ public static class Battle01EnemyPhysicalAttack
     // Only the two separately admitted physical roles call this arithmetic seam.
     internal static Battle01PhysicalEffect ResolveSingleStrike(int attack, Battle01Stats target, int multiplier, uint main,
         int targetIndex, MapPosition attackerPosition, MapPosition targetPosition,
-        ushort dodgeRange, ushort criticalRange, int criticalShift)
+        ushort dodgeRange, ushort criticalRange, int criticalShift, bool allowDefeat = false)
     {
         var rolls = new List<Battle01MainRandomRoll>();
         ushort Roll(string purpose, ushort range) => MainRoll(ref main, rolls, purpose, range);
@@ -172,9 +172,9 @@ public static class Battle01EnemyPhysicalAttack
         }
         int temporary = Math.Max(0, target.HpCurrent - damage);
         // Source death exits before double/counter rolls. No partial hit is committed.
-        if (temporary == 0) throw new Battle01PhysicalAttackUnsupportedException("lethal");
-        bool doubleRolled = Roll("double", 32) == 0;
-        bool counterRolled = Roll("counter", 32) == 0; // Bowie prowess3 counter bits are0.
+        if (temporary == 0 && !allowDefeat) throw new Battle01PhysicalAttackUnsupportedException("lethal");
+        bool doubleRolled = temporary > 0 && Roll("double", 32) == 0;
+        bool counterRolled = temporary > 0 && Roll("counter", 32) == 0; // Death returns before both calls.
         // Admitted enemy->ally, no muddle/death/status/debug, ordinary first physical action.
         bool validDouble = doubleRolled && temporary > 0;
         bool validCounter = counterRolled && temporary > 0 && target.Status == 0 &&
@@ -186,7 +186,7 @@ public static class Battle01EnemyPhysicalAttack
         // Local construction lowers HP, source end restores its snapshot, then reaction replay applies once.
         ushort restored = target.HpCurrent;
         var reaction = dodge ? null : new Battle01PhysicalReaction(targetIndex, -damage, 0, target.Status, 1);
-        var after = target.WithCurrentHp((ushort)(restored + (reaction?.HpDelta ?? 0)));
+        var after = target.WithCurrentHp((ushort)Math.Max(0, restored + (reaction?.HpDelta ?? 0)));
         return new(dodge, critical, damage, (ushort)temporary, restored, target, after, rolls.AsReadOnly(), reaction);
     }
 
@@ -226,7 +226,7 @@ public static class Battle01EnemyPhysicalAttack
         }
         if (position != decision.Destination) throw new ArgumentException("Physical path endpoint differs.", "attack.history");
         var expected = Resolve(decision.Actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
-            decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.Position);
+            decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.RequirePosition());
         var actual = decision.Effect;
         if (!ReferenceEquals(actual.BeforeStats, selected.Target.Stats) ||
             actual.Dodged != expected.Dodged || actual.Critical != expected.Critical || actual.Damage != expected.Damage ||
@@ -239,5 +239,6 @@ public static class Battle01EnemyPhysicalAttack
     internal static bool SameStats(Battle01Stats a, Battle01Stats b) =>
         a.Level == b.Level && a.HpMax == b.HpMax && a.HpCurrent == b.HpCurrent && a.MpMax == b.MpMax && a.MpCurrent == b.MpCurrent &&
         a.Attack == b.Attack && a.Defense == b.Defense && a.Agility == b.Agility && a.Move == b.Move && a.Status == b.Status &&
-        a.CurrentExp == b.CurrentExp && a.Items.SequenceEqual(b.Items) && a.Spells.SequenceEqual(b.Spells);
+        a.CurrentExp == b.CurrentExp && a.CurrentKills == b.CurrentKills &&
+        a.Items.SequenceEqual(b.Items) && a.Spells.SequenceEqual(b.Spells);
 }

@@ -53,7 +53,7 @@ public sealed class Battle01MovementRange
     internal Battle01MovementRange(Battle01Combatant actor, IReadOnlyList<int> occupants, byte[] projectedTerrain,
         Battle01MovementGrid grid, Battle01MovementProfile profile)
     {
-        ActorIndex = actor.Index; Origin = actor.Position; Budget = actor.Stats.Move * 2;
+        ActorIndex = actor.Index; Origin = actor.RequirePosition(); Budget = actor.Stats.Move * 2;
         EffectiveStatsAtEntry = actor.Stats;
         OriginOccupancy = occupants; ProjectedTerrain = Array.AsReadOnly(projectedTerrain); Grid = grid; Profile = profile;
         LegalDestinations = Array.AsReadOnly(Enumerable.Range(0, 2304).Select(offset => new MapPosition(offset % 48, offset / 48))
@@ -162,7 +162,7 @@ public static class Battle01PlayerMovement
         var actor = roster[index]; var occupancy = current.Occupancy.ToArray(); int target = Offset(destination);
         if (occupancy[target] != -1 && occupancy[target] != actorIndex)
             throw new ArgumentException("The relocation destination is occupied.", "destination");
-        occupancy[Offset(actor.Position)] = -1; occupancy[target] = actorIndex;
+        occupancy[Offset(actor.RequirePosition())] = -1; occupancy[target] = actorIndex;
         roster[index] = actor.WithPosition(destination);
         return new(current, roster, Array.AsReadOnly(occupancy), control);
     }
@@ -213,10 +213,10 @@ public static class Battle01PlayerMovement
         foreach (var opponent in battle.Roster.Where(unit => (unit.Index < 128) != (actor.Index < 128)))
         {
             var position = opponent.Position;
-            if (opponent.Stats.HpCurrent == 0 || position.X is < 0 or >= 48 || position.Y is < 0 or >= 48) continue;
+            if (opponent.Stats.HpCurrent == 0 || position is null || position.X is < 0 or >= 48 || position.Y is < 0 or >= 48) continue;
             terrain[Offset(position)] |= 0x80;
         }
-        var grid = BuildWeightedGrid(terrain, profile.Costs, Offset(actor.Position), actor.Stats.Move * 2);
+        var grid = BuildWeightedGrid(terrain, profile.Costs, Offset(actor.RequirePosition()), actor.Stats.Move * 2);
         // Player destination policy stays inside this scene's 16x20 area; propagation retains stride48.
         return new(actor, battle.Occupancy, terrain, grid, profile);
     }

@@ -78,7 +78,7 @@ public sealed class Battle01TurnCompletionTests
     public void StayRetainsProvisionalPositionAndStatsChecksBothFactionsThenAdvancesOneByteEntry()
     {
         var ready = Battle01FirstControl.Enter(Battle01FirstControlTests.Round(), 1).State!;
-        var origin = ready.Roster[1].Position; var destination = new MapPosition(origin.X, origin.Y - 1);
+        var origin = ready.Roster[1].RequirePosition(); var destination = new MapPosition(origin.X, origin.Y - 1);
         var action = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 1, destination), 1);
         string before = JsonSerializer.Serialize(action);
         var completed = Battle01TurnCompletion.CommitStay(action, 1, Policy);

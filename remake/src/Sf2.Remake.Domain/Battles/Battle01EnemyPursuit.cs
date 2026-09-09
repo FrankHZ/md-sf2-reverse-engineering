@@ -44,10 +44,10 @@ public static class Battle01EnemyPursuit
 
         var decision = Decide(current, actor);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
-        if (decision.Destination != actor.Position && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1)
+        if (decision.Destination != actor.RequirePosition() && occupancy[Battle01PlayerMovement.Offset(decision.Destination)] != -1)
             throw new ArgumentException("The final pursuit destination must be unoccupied.", "occupancy");
         roster[Array.IndexOf(roster, actor)] = actor.WithPosition(decision.Destination);
-        occupancy[Battle01PlayerMovement.Offset(actor.Position)] = -1;
+        occupancy[Battle01PlayerMovement.Offset(actor.RequirePosition())] = -1;
         occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = actorIndex;
         // The existing enemy projection clears tested regions locally; only the returned completion commits it.
         var moved = new Battle01InitializedState(current, roster, occupancy, current.AiMemory.ToArray(), decision.SeedCopyAfter);
@@ -69,11 +69,11 @@ public static class Battle01EnemyPursuit
             throw new ArgumentException("Pursuit requires the unmodified source terrain types.", "terrain");
         var allies = battle.Roster.Where(unit => unit.Index < 128).OrderBy(unit => unit.Index).ToArray();
         var blocked = battle.Terrain.ToArray();
-        foreach (var ally in allies) blocked[Battle01PlayerMovement.Offset(ally.Position)] |= 128;
-        var grid = Grid(blocked, actor.Position, 10);
+        foreach (var ally in allies) blocked[Battle01PlayerMovement.Offset(ally.RequirePosition())] |= 128;
+        var grid = Grid(blocked, actor.RequirePosition(), 10);
         var physical = new List<Battle01AttackCandidate>();
         foreach (var ally in allies)
-            if (DetermineAttackPosition(grid, ally.Position, 1, battle.Occupancy) is { } position)
+            if (DetermineAttackPosition(grid, ally.RequirePosition(), 1, battle.Occupancy) is { } position)
                 physical.Add(new(ally.Index, position, grid.CostAt(position)!.Value));
         return (grid, physical.ToArray());
     }
@@ -83,21 +83,21 @@ public static class Battle01EnemyPursuit
     {
         // The admitted GIZMO has no usable item/spell/heal/support action; set7's orderFF also fails.
         // MOVE1 (mode0): raw target costs, stable ascending order, then a target-rooted budget4 walk.
-        var raw = Grid(battle.Terrain, actor.Position, 128);
+        var raw = Grid(battle.Terrain, actor.RequirePosition(), 128);
         var costs = allies.Select(ally => new Battle01PursuitTargetCost(ally.Index,
-            raw.CostAt(ally.Position) is { } cost && cost < 128 ? cost :
+            raw.CostAt(ally.RequirePosition()) is { } cost && cost < 128 ? cost :
                 throw new ArgumentException("Only complete target costs below128 admit the source d0 class-pass boundary.", "pursuit.targets"))).ToArray();
         if (costs.Length != 3) throw new ArgumentException("Retain all three living controlled targets.", "pursuit.targets");
         int target = costs.OrderBy(item => item.Cost).First().ActorIndex;
-        var reverse = Grid(battle.Terrain, allies.Single(ally => ally.Index == target).Position, 128);
-        int startCost = reverse.CostAt(actor.Position) ?? throw new ArgumentException("The target-rooted path must reach the actor.", "path");
-        var preliminary = Battle01EnemyStandby.SourceWalk(reverse, actor.Position, Math.Max(0, startCost - 4));
-        var destination = preliminary.MoveString.Count == 1 ? actor.Position :
+        var reverse = Grid(battle.Terrain, allies.Single(ally => ally.Index == target).RequirePosition(), 128);
+        int startCost = reverse.CostAt(actor.RequirePosition()) ?? throw new ArgumentException("The target-rooted path must reach the actor.", "path");
+        var preliminary = Battle01EnemyStandby.SourceWalk(reverse, actor.RequirePosition(), Math.Max(0, startCost - 4));
+        var destination = preliminary.MoveString.Count == 1 ? actor.RequirePosition() :
             DetermineAttackPosition(grid, preliminary.Destination, 0, battle.Occupancy) ??
-            DetermineAttackPosition(grid, preliminary.Destination, 1, battle.Occupancy) ?? actor.Position;
-        var path = Battle01EnemyStandby.SourceMoveString(grid, actor.Position, destination);
+            DetermineAttackPosition(grid, preliminary.Destination, 1, battle.Occupancy) ?? actor.RequirePosition();
+        var path = Battle01EnemyStandby.SourceMoveString(grid, actor.RequirePosition(), destination);
         ushort copy = battle.RandomSeedCopy!.Value; byte memory = battle.AiMemory[actor.Index - 128];
-        return new(actor.Index, actor.Deployment.AiCommandSet, actor.Position, destination, copy, copy, memory, memory,
+        return new(actor.Index, actor.Deployment.AiCommandSet, actor.RequirePosition(), destination, copy, copy, memory, memory,
             battle.RandomSeedImage, Array.AsReadOnly(costs), target, preliminary.Destination, preliminary.MoveString,
             path, grid.CostAt(destination)!.Value);
     }

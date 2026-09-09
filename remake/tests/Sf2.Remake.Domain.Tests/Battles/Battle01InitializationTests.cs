@@ -35,7 +35,7 @@ public sealed class Battle01InitializationTests
         Assert.Equal(2304, state.Terrain.Count); Assert.Equal(2304, state.Occupancy.Count);
         Assert.Equal(2, state.TerrainAt(new(1, 1))); Assert.Equal(3, state.TerrainAt(new(17, 0)));
         Assert.Equal(1, state.OccupantAt(new(1, 1))); Assert.Equal(-1, state.OccupantAt(new(17, 0)));
-        Assert.All(state.Roster, unit => Assert.Equal(unit.Index, state.OccupantAt(unit.Position)));
+        Assert.All(state.Roster, unit => Assert.Equal(unit.Index, state.OccupantAt(unit.RequirePosition())));
         Assert.Equal(3, state.Regions.Count);
         Assert.Equal(16, state.RegionFlags90Through105.Count); Assert.All(state.RegionFlags90Through105, flag => Assert.False(flag));
         Assert.Equal(48, state.AiLastTargets.Count); Assert.All(state.AiLastTargets, value => Assert.Equal(255, value));

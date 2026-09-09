@@ -94,7 +94,7 @@ public sealed class Battle01EnemyPursuitTests
         var current = original; while (current.FirstRound!.CurrentCandidate is not null) current = CompleteTurn(current);
         // Authored position-only seam: the already-triggered flag must not clear when all allies leave.
         var roster = current.Roster.ToArray(); roster[0] = roster[0].WithPosition(new(8, 17)); var departed = Copy(current, roster);
-        Assert.All(departed.Regions, region => Assert.DoesNotContain(departed.Roster.Take(3), ally => Battle01FirstRound.IsInside(region, ally.Position)));
+        Assert.All(departed.Regions, region => Assert.DoesNotContain(departed.Roster.Take(3), ally => Battle01FirstRound.IsInside(region, ally.RequirePosition())));
         var next = Battle01FirstRound.EnterNext(departed);
         Assert.Equal(new[] { false, true, false }, next.RegionFlags90Through105.Take(3));
         Assert.Equal(departed.Roster.Select(unit => unit.AiBitfield), next.Roster.Select(unit => unit.AiBitfield));
@@ -255,7 +255,7 @@ public sealed class Battle01EnemyPursuitTests
     }
     private static int[] Occupancy(Battle01Combatant[] roster)
     {
-        var result = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) result[unit.Position.Y * 48 + unit.Position.X] = unit.Index; return result;
+        var result = Enumerable.Repeat(-1, 2304).ToArray(); foreach (var unit in roster) result[unit.RequirePosition().Y * 48 + unit.RequirePosition().X] = unit.Index; return result;
     }
     private static Battle01InitializedState Copy(Battle01InitializedState source, Battle01Combatant[] roster, byte[]? terrain = null, Battle01FirstRoundOrder? order = null) =>
         Battle01FirstRoundTests.CopyCurrent(source, roster: roster, occupancy: Occupancy(roster), terrain: terrain, order: order);
@@ -278,7 +278,7 @@ public sealed class Battle01EnemyPursuitTests
         Assert.Equal(before.Roster.Select(unit => unit.AiBitfield), after.Roster.Select(unit => unit.AiBitfield));
         Assert.Equal(0, after.NewlyTestedRegionMask); Assert.Equal((byte)3, decision.Action);
         for (int i = 0; i < 9; i++) { Assert.Same(before.Roster[i].Stats, after.Roster[i].Stats); Assert.Same(before.Roster[i].Deployment, after.Roster[i].Deployment); }
-        Assert.All(after.Roster, unit => Assert.Equal(unit.Index, after.OccupantAt(unit.Position)));
+        Assert.All(after.Roster, unit => Assert.Equal(unit.Index, after.OccupantAt(unit.RequirePosition())));
         Battle01EnemyStandby.RequireThinkingHistory(after);
     }
 }

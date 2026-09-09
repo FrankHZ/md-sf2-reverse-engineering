@@ -22,7 +22,7 @@ internal static class PrivateBattle01Ui
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
-                OriginalBattle01ControlledPartyPreset.PlayerAttackComparison);
+                OriginalBattle01ControlledPartyPreset.FirstDefeatComparison);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);

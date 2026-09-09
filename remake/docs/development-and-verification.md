@@ -147,6 +147,15 @@ and actual player2 at(7,17)/HP11/budget14 are checked with the persistent HP9/2 
 occupied-cell fallback. Shared player-ready fixture
 fields corroborate only their named seam; this is not original natural control/timing/RNG chronology.
 
+Continue this same real preparation with explicit gold0/Bowie kills0: player2 origin STAY,
+actual131 pursuit, actual132 physical attack and133 standby leave Bowie HP6/EXP15.
+Check real player1 HP11/DEF5 gives potential damage2 (remaining9), Bowie damage3/remaining6,
+priorities1/19 and six enemy calls. Manually select Bowie's origin Attack132. Compare all six
+lethal/award calls, overkill−3 with HP2→0, cap49/half24/EXP39, gold60/kills1, receipt59/raw10,
+first worklist132 and cleared second list, faction3/5 twice, retained dead-row provenance,
+eight occupied cells and the same64 slots. Actual player1 HP11/budget10 must move/cancel with
+mainF7751234/copy0234 and all awards retained. The real reader also checks empty enemy item rows.
+
 The player action filters are `FullyQualifiedName~Battle01PlayerPhysicalAttackTests` in Domain and
 `FullyQualifiedName~PrivateOriginalBattle01PlayerPhysicalAttackTests` in Application. Together with
 the existing input/presenter classes they cover manual legal targets, nested cancellation, exact
@@ -155,16 +164,15 @@ failure after local HP/EXP replay. The generation regression also exercises dama
 actual physical-cohort admission without healing. The required real Content methods above must
 execute with `SF2_REQUIRE_PRIVATE_TESTS=1`; an absent selected dependency is not a skip.
 
-Preserved discovery boundaries: the completed managed run reported1307 passed,2 failed,1 skipped.
-The two failures were `PrivateOriginalBattle01EnemyPhysicalAttackTests.InvalidInputsAndComputedFollowupsRetainEveryCurrentChannel`
-with direct `double`/`counter` seed injections: the new generation linkage correctly returned
-`attack.history` before resolver admission. Their replacements `unreceiptedDoubleSeed` and
-`unreceiptedCounterSeed` retain exact snapshot/channel assertions, alongside `unreceiptedHp`.
-Only the owning method is rerun after that correction. Real resolver follow-up/lethal tests remain.
-`GeneratedRoundAndDamagedEnemyControlRetainThePlayerReactionProvenance` first failed because a
-forged round7 main image was admitted; the recorded-endpoint generator check closes that failure.
-This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
-fails; no private assertions are silently omitted.
+Regression boundaries remain executable in the owning tests: unreceipted double/counter seeds
+and HP drift fail historical admission before resolution; resolver tests exercise real follow-ups.
+Recorded-endpoint generation rejects a forged round7 main image. First-defeat history rejects
+removed-cell ghost occupancy, changed placement, missing/duplicate worklists, count transitions,
+gold/kills/EXP, independent RNG channels and receipt-role drift. Next-player and later-generation
+checks admit a cleaned enemy without resurrection, blocking or repeated rewards. Late Domain
+finalization and Application preparation-origin failures retain exact selected snapshots.
+Preserve completed suite results and failed node IDs in the handoff; rerun corrections narrowly.
+These seeds are explicit comparison inputs, not a natural Map3-continuity claim.
 
 The preparation Application filter is `FullyQualifiedName~PrivateOriginalBattle01StartupTests`. It checks
 valid/repeated preparation, exact current Pending, rejection before source reads, custom-port
@@ -268,9 +276,14 @@ Use `player-physical-attack` for six native checkpoints: Bowie HP9/EXP0, provisi
 target132, target-cancelled action choice, restored origin target132, labeled exact selected-snapshot
 Application copy after receipt52, and physical Space/actual relay through round7 player2. Compare
 the full copied/physical player receipt; inspect every image and the persistent HP/EXP result.
+Use `first-enemy-defeat` for six checkpoints: round7 player2; actual Bowie HP6/EXP15;
+manual origin target132; labeled copy after receipt59; physical Space reaching actual player1;
+and player1 movement/cancel. Compare complete receipts and all accounting, position, occupancy,
+RNG/AI/flag channels. Inspect corpse removal, cleared reachable tile, five enemies, Bowie HP6/EXP39,
+gold60/kills1 and persistent defeated132/+24 EXP/+60 gold alongside usable controls.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
-original post-playback main/copy values. Rerun the affected enemy physical and pursuit modes.
-The automatic attack invalidates the old `enemy-pursuit` endpoint; rerun that mode. Other modes,
+original post-playback main/copy values. The new named preparation and shared view require the
+affected player physical, enemy physical and pursuit modes. Other modes,
 including `round-continuation`, run only when their owning contracts change. Do not repeat a
 completed full managed suite after a correction; preserve its failed nodes and rerun them narrowly.
 

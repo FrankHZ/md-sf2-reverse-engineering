@@ -99,7 +99,7 @@ public sealed class Battle01PlayerMovementTests
         Assert.Equal(2, range.Grid.CostAt(new(8, 18))); Assert.False(range.CanStopAt(new(8, 18)));
         Assert.Equal(4, range.Grid.CostAt(new(7, 18))); Assert.False(range.CanStopAt(new(7, 18)));
         Assert.Equal(6, range.Grid.CostAt(new(6, 18))); Assert.True(range.CanStopAt(new(6, 18)));
-        Assert.True(range.CanStopAt(actor.Position)); Assert.Null(range.Grid.CostAt(new(10, 18)));
+        Assert.True(range.CanStopAt(actor.RequirePosition())); Assert.Null(range.Grid.CostAt(new(10, 18)));
         Assert.Null(range.Grid.CostAt(new(11, 18)));
         Assert.Equal(1, battle.TerrainAt(new(10, 18))); Assert.Equal(0x81, range.ProjectedTerrain[18 * 48 + 10]);
         Assert.Equal(128, range.OriginOccupancy[18 * 48 + 10]); Assert.Same(battle.Occupancy, range.OriginOccupancy);
@@ -117,7 +117,7 @@ public sealed class Battle01PlayerMovementTests
         var terrain = Enumerable.Repeat((byte)255, 2304).ToArray();
         for (int x = 5; x <= 11; x++) terrain[18 * 48 + x] = 1;
         var occupancy = Enumerable.Repeat(-1, 2304).ToArray();
-        foreach (var unit in roster) occupancy[unit.Position.Y * 48 + unit.Position.X] = unit.Index;
+        foreach (var unit in roster) occupancy[unit.RequirePosition().Y * 48 + unit.RequirePosition().X] = unit.Index;
         return new(roster, initial.Regions.ToArray(), terrain, occupancy, initial.RandomSeedImage);
     }
 
@@ -186,7 +186,7 @@ public sealed class Battle01PlayerMovementTests
             terrain[point.Y * 48 + point.X] = 1;
         terrain[4 * 48 + 8] = 4; terrain[6 * 48 + 7] = 4;
         var occupancy = Enumerable.Repeat(-1, 2304).ToArray();
-        foreach (var unit in roster) occupancy[unit.Position.Y * 48 + unit.Position.X] = unit.Index;
+        foreach (var unit in roster) occupancy[unit.RequirePosition().Y * 48 + unit.RequirePosition().X] = unit.Index;
         return Battle01FirstRound.Enter(new(roster, initial.Regions.ToArray(), terrain, occupancy, initial.RandomSeedImage));
     }
 
