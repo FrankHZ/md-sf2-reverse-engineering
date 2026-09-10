@@ -232,7 +232,9 @@ inputs; all three older presets remain unchanged. The existing reverse-history p
 rewound original Chester EXP with gold and Bowie kills. Both physical Application wrappers compare
 that tuple with preparation before publishing, rejecting null/zero mismatches even after a valid
 local effect. Immutable copies preserve live earned EXP while preparation retains its original input.
-The new preset uses the first-defeat policy for Bowie and the existing nonlethal/EXP policy for Chester.
+The Chester preset uses the first-defeat policy for Bowie before any death and the separately named
+`ControlledStrikeAndSecondDefeat` policy for him after a cleaned death. Chester retains the existing
+nonlethal/EXP policy; older preparations and all earlier receipt policy IDs remain unchanged.
 
 Confirmation rechecks the actor, live target list, occupancy and admitted profiles before resolving
 the player's dodge8/critical16/+quarter damage, two spread calls, both follow-ups and EXP award.
@@ -244,6 +246,12 @@ Battle01 halving, and applies source gold60 during local construction. HP snapsh
 EXP replay, first worklist kill credit/removal, actor normalization, cleared second worklist and both
 3/5 faction counts finish before one Application snapshot replacement. A late failure retains every
 old channel. Gold caps at9,999,999 including source carry; Bowie kills cap at9999.
+The second-defeat policy is Bowie-only and admits at most two cleaned enemies. Target terrain0
+uses Hovering LE0/multiplier256; terrain1 retains230 and other target terrain remains rejected.
+Cleanup locates the newly reacted target separately from prior HP0/unplaced rows, then the existing
+reverse-history checks validate every older corpse against its own receipt. Receipt79 queues only131,
+retains132 unchanged, awards EXP24/gold60/kills1 once and finishes with both faction counts3/4.
+No extra ledger, preset or production presenter branch is needed.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement
@@ -253,7 +261,8 @@ rewinds player HP/EXP without enemy last-target writes, requires the full source
 and permits damaged or cleaned enemy HP only with linked reaction/cleanup provenance. It rewinds
 placement, EXP, gold, kills and count transitions through the same receipt chain. Same-round
 generation validation restores its pre-kill candidate set from receipt before-images; a later
-generation excludes the dead row and its draws. Where a preceding
+generation excludes every dead row and its draws. The candidate floor admits seven survivors;
+R7 history still reconstructs nine candidates and R9 eight, while R10 generates seven with21 calls. Where a preceding
 main endpoint is recorded, the existing generator reproduces the following main image and current
 64-slot order. This adds no stored seed authority or history cache.
 
@@ -264,6 +273,11 @@ The presenter derives the defeated132/+24 EXP/+60 gold result from that receipt 
 physical action replaces it; current gold60/kills1, Bowie EXP39 and five enemies remain live-state
 projections when the later Chester hit is displayed. Receipt72 shows Chester's player hit/EXP;
 the subsequent enemy hit replaces it when Sarah receives control, while live Chester EXP10 remains.
+Sarah origin STAY and actual130 yield Bowie at receipt78. His second defeat of131 publishes receipt79
+and the finite relay immediately generates R10/actual Chester control. The latest result shows
+hit4/HP3→0/+24 EXP/+60 gold; live EXP63/gold120/kills2 remain distinct, with four enemy markers.
+Chester movement/confirm/cancel preserves this result and both cleanup histories. The current
+acceptance boundary stops before his next action; third death, Chester kill and victory remain excluded.
 Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
 presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
 and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.

@@ -8,6 +8,25 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Fact]
+    public void Actual130AfterSarahStayRetainsAllEarlierAccountingAndProducesReceipt78()
+    {
+        var selected = Battle01PlayerPhysicalAttackTests.SecondDefeatSelected();
+        var receipt = selected.TurnCompletion!; var standby = receipt.EnemyStandby!;
+        Assert.Equal((130, 9, (byte)14, 78), (receipt.CompletedActorIndex, receipt.RoundNumber,
+            selected.FirstRound!.CurrentTurnOffset, Battle01EnemyPursuitTests.Receipts(selected).Count()));
+        Assert.Equal(1, receipt.Previous!.CompletedActorIndex); Assert.Equal(new MapPosition(6, 3), standby.Origin);
+        Assert.Equal(new MapPosition(5, 4), standby.Destination); Assert.Equal(new byte[] { 3, 2, 255 }, standby.MoveString);
+        Assert.Equal(new byte[] { 5, 0 }, standby.Rolls.Select(r => r.Result));
+        Assert.Equal(new[] { 11, 43 }, standby.Rolls.Select(r => r.GeneratorSteps));
+        Assert.Equal(new ushort[] { 0x0534, 0x0034 }, standby.Rolls.Select(r => r.AfterSeedCopy));
+        Assert.Equal((0x25991234u, (ushort?)0x0034), (selected.RandomSeedImage, selected.RandomSeedCopy));
+        Assert.Equal(new byte[] { 52, 36, 20, 36, 52, 52 }, selected.AiMemory.Take(6));
+        Assert.Equal(((uint?)60, (byte?)39, (ushort?)1, (byte?)10), (selected.CurrentGold,
+            selected.Roster[0].Stats.CurrentExp, selected.Roster[0].Stats.CurrentKills, selected.Roster[2].Stats.CurrentExp));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(selected, 0, 0, 0);
+    }
+
+    [Fact]
     public void PostChesterStandbysKeepTheSameRoundAndIndependentThinkingChannel()
     {
         var after = Battle01EnemyPhysicalAttackTests.AfterChesterPlayerRelay();

@@ -112,7 +112,7 @@ public static class Battle01FirstRound
         if (order is null) throw new ArgumentException("The current round is required.", "turnOrder");
         int[] actors = GenerationRoster(current, order.RoundNumber).Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
             .Select(unit => unit.Index).Order().ToArray();
-        if (actors.Length is < 8 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
+        if (actors.Length is < 7 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
             !order.Slots.Take(actors.Length).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
             order.Slots.Skip(actors.Length).Any(slot => !slot.IsSentinel))
             throw new ArgumentException("The complete current-round order must be retained.", "turnOrder");

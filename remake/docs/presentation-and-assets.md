@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1097,8 +1097,29 @@ For `SF2_BATTLE01_CONTROL_REVIEW=chester-player-attack`, retain these twelve fra
 6. `18-sarah-move-cancel`: physical Backspace returns to(9,17), retaining receipt76, the same
    generated64 R9 slots, main25991234/copy0634 and every accounting, AI and source channel.
 
-Inspect all18 images and the five affected older modes (12/6/6/4/4 images),50 images total.
-All six modes use `ChesterPlayerAttackComparison` at N; this is explicit input provenance,
+For `SF2_BATTLE01_CONTROL_REVIEW=second-enemy-defeat`, retain these18 frames and add:
+
+1. `19-bowie-ready-after-sarah-stay`: two separate physical Space presses confirm Sarah origin
+   and commit STAY; production actual130 standby returns Bowie HP3/EXP39/budget12 at receipt78.
+2. `20-bowie-origin-target131`: physical Space/A and I/L select the sole live131 at(10,15),
+   terrain0; Bowie remains at his terrain1 origin(11,15).
+3. `21-bowie-target-cancel`: Backspace returns to action choice with no effect or random draw.
+4. `22-second-defeat-receipt79-test-copy`: reselect A and copy the exact selection; Application
+   confirmation applies hit4/HP3→0/EXP+24/gold+60 and one kill. Labeled TEST COPY stops before
+   R10 generation, with R9 raw16/sentinel, main58271234/copy0034 and only131 in the new worklist.
+5. `23-round10-chester-after-physical-defeat`: the copy first runs production dispatch, then the
+   exact physical selection is restored. Physical Space must produce the identical full battle
+   and receipt79. Seven survivors generate R10/Chester HP9/EXP10/budget14, main9F861234/copy0034,
+   mask7;131/132 markers are absent. Empty LowSky(10,15) remains illegal for Centaur movement.
+6. `24-round10-chester-provisional12-14`: physical L/Space confirms cost2 movement with the newest
+   defeat result and live EXP63/gold120/kills2 still visible.
+7. `25-round10-chester-move-cancel`: physical Backspace restores(11,14), preserving both corpses,
+   all79 receipts, complete64-slot R10 order and48-entry AI channels. Stop before another action.
+
+Inspect25 images plus `chester-player-attack`18, `first-enemy-defeat`6 and `player-physical-attack`6:
+55 images across four modes, each retaining all three bounded process receipts. The same source
+head owns every archived production copy and the copied tracked probe.
+All modes use `ChesterPlayerAttackComparison` at N; this is explicit input provenance,
 not an EXP patch at receipt71. Preserve older null-preset captures read-only. Every mode retains
 its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
 
@@ -1107,7 +1128,7 @@ policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt wa
 and text loops also advance RNG and the thinking copy. Those loops are omitted without changing
 original flags. E9F01234 and CF491234 do not claim original post-playback RAM, natural seed lifetime,
 original animation, or H4 continuity. Captures remain private and grant no distribution permission.
-Both modes use existing accepted base art and diagnostic units. No imported combat animation,
+These modes use existing accepted base art and diagnostic units. No imported combat animation,
 original timing, natural RNG lifetime, general death/reward/victory/return or economy effect is claimed.
 
 Use another fresh review root with `SF2_BATTLE01_CONTROL_REVIEW=diagnostic` for the minimal

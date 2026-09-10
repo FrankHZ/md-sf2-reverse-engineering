@@ -70,7 +70,9 @@ public static class Battle01PlayerPhysicalAttack
     {
         if (!Battle01PlayerPhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("The player physical/EXP completion policy must be explicit.", "policy");
-        var decision = Decide(current, actorIndex, policy!.AllowsDefeat);
+        if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) && actorIndex != 0)
+            throw new ArgumentException("The second-defeat policy belongs to Bowie only.", "policy");
+        var decision = Decide(current, actorIndex, policy!.AllowsDefeat, policy.MaximumDefeats);
         var roster = current.Roster.ToArray();
         int actor = Array.FindIndex(roster, unit => unit.Index == actorIndex);
         int target = Array.FindIndex(roster, unit => unit.Index == decision.TargetIndex);
@@ -80,7 +82,8 @@ public static class Battle01PlayerPhysicalAttack
         return Battle01TurnCompletion.CompletePlayerPhysical(replayed, decision, policy);
     }
 
-    internal static Battle01PlayerPhysicalAttackDecision Decide(Battle01InitializedState current, int actorIndex, bool allowDefeat = false)
+    internal static Battle01PlayerPhysicalAttackDecision Decide(Battle01InitializedState current, int actorIndex,
+        bool allowDefeat = false, int maximumDefeats = 1)
     {
         var control = RequireControl(current, actorIndex, Battle01Phase.PlayerAttackTargetSelection);
         var selected = RequireSelection(current, control);
@@ -96,7 +99,7 @@ public static class Battle01PlayerPhysicalAttack
         uint? goldAfter = current.CurrentGold;
         if (resolved.Effect.TemporaryHp == 0)
         {
-            if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
+            if (current.Roster.Count(unit => unit.Stats.HpCurrent == 0) >= maximumDefeats)
                 throw new Battle01PhysicalAttackUnsupportedException("additionalDefeat");
             if (current.CurrentGold is not { } gold || actor.Stats.CurrentKills is null)
                 throw new Battle01PhysicalAttackUnsupportedException("killAccountingInput");
@@ -173,6 +176,7 @@ public static class Battle01PlayerPhysicalAttack
 
     internal static int TargetLandMultiplier(byte terrain) => terrain switch
     {
+        0 => 256,
         1 => 230,
         _ => throw new Battle01PhysicalAttackUnsupportedException("targetTerrain")
     };

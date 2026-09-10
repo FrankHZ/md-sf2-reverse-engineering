@@ -8,6 +8,30 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstRoundTests
 {
     [Fact]
+    public void SecondDefeatRetainsHistoricalCandidateSetsAndGeneratesExactlySevenSurvivors()
+    {
+        var before = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();
+        Assert.Equal(9, Battle01FirstRound.GenerationRoster(before, 7).Count(u => u.Stats.HpCurrent > 0));
+        Assert.Equal(8, Battle01FirstRound.GenerationRoster(before, 9).Count(u => u.Stats.HpCurrent > 0));
+        Assert.Equal(7, Battle01FirstRound.GenerationRoster(before, 10).Count(u => u.Stats.HpCurrent > 0));
+        ushort word = before.GeneratorWord;
+        foreach (var unit in before.Roster.Where(u => u.Stats.HpCurrent > 0))
+            foreach (ushort range in new ushort[] { (ushort)(unit.Stats.Agility >> 3), (ushort)(unit.Stats.Agility >> 3), 3 })
+                Battle01FirstRound.NextRandom(ref word, range);
+        var generated = Battle01FirstRound.EnterNext(before);
+        Assert.Equal((ushort)0x9F86, word); Assert.Equal(0x9F861234u, generated.RandomSeedImage);
+        Assert.Equal(new[] { new Battle01TurnEntry(2, 7), new(1, 6), new(128, 5), new(129, 5), new(130, 5), new(133, 5), new(0, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 57)), generated.FirstRound!.Slots);
+        Assert.Equal(10, generated.FirstRound.RoundNumber); Assert.Equal(7, generated.NewlyTestedRegionMask);
+        Assert.Same(before.TurnCompletion, generated.TurnCompletion); Assert.Same(before.AiMemory, generated.AiMemory);
+        Assert.Same(before.AiLastTargets, generated.AiLastTargets); Assert.Equal((ushort?)0x0034, generated.RandomSeedCopy);
+        Assert.Null(generated.Roster[6].Position); Assert.Null(generated.Roster[7].Position);
+        var slots = generated.FirstRound.Slots.ToArray(); slots[7] = new(131, 3);
+        var forged = CopyCurrent(generated, order: new(slots, [], [], 10));
+        Assert.ThrowsAny<ArgumentException>(() => Battle01NextPlayerControl.Enter(forged, 2));
+    }
+
+    [Fact]
     public void NextGenerationStartsFromPostAttackMainSeedWithoutReinitializingHpOrTargets()
     {
         var before = Battle01EnemyPursuit.CompleteNext(Battle01EnemyPhysicalAttackTests.CompletedBowie(), 131,

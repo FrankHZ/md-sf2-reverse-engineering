@@ -70,11 +70,16 @@ Chester can then confirm his origin and manually attack131 for2 damage: HP5→3,
 receipt72. Actual128/129 standby, damaged131's hit on Bowie6→3 and133 standby return Sarah/player1
 at(9,17), HP11/budget10, receipt76/R9 raw10, main25991234/copy0634. Her move/confirm(10,17)/cancel
 preserves Chester HP9/EXP10, Bowie EXP39/kills1, gold60 and unplaced132. The latest physical result
-shows131→Bowie hit3 while current EXP and accounting remain separate. Chester kills and further
-defeats remain unsupported; his authored EXP0 must trace back to the selected preparation.
+shows131→Bowie hit3 while current EXP and accounting remain separate. Sarah can confirm her origin
+and STAY; actual130 standby returns Bowie at receipt78. His origin attack on131 at terrain0(10,15)
+causes4 damage, HP3→0, EXP39→63, gold60→120 and kills1→2. Receipt79 clears only131;132 remains
+unplaced and unrewarded again. Seven survivors generate R10, returning Chester HP9/EXP10/budget14
+at(11,14). Move/confirm(12,14), cost2, and cancel preserve both deaths and all awards. This is the
+current stopping point. Chester kills and third defeats remain unsupported; his authored EXP0 must
+trace back to the selected preparation.
 The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
-Misses and ordinary criticals are calculated; a validated double/counter, another defeat or other unsupported
+Misses and ordinary criticals are calculated; a validated double/counter, third defeat or other unsupported
 effect rejects the complete transition before any state commit.
 Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
 this controlled comparison does not establish natural continuity or original economy effects.
