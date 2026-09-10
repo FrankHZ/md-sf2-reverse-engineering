@@ -1347,7 +1347,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 defeated.Roster[2].Position is null && defeated.Roster[2].Stats.HpCurrent == 0 &&
                 defeated.Roster[2].Stats.CurrentDefeats == 1 && defeated.OccupantAt(new(9,9)) == -1 &&
                 ReferenceEquals(boundary.Roster[6],defeated.Roster[6]) && ReferenceEquals(boundary.Roster[7],defeated.Roster[7]) &&
-                ReferenceEquals(boundary.FirstRound.Slots,defeated.FirstRound!.Slots),
+                ReferenceEquals(boundary.FirstRound!.Slots,defeated.FirstRound!.Slots),
                 "Receipt106 preserves four main calls,133 thinking steps, the sole cleanup and both old corpses");
             presenter.Project(defeated,"TEST COPY: enemy133 defeats Chester. Defeats 0 -> 1. Before actual130.");
             Require(presenter.Projection!.Units.Count == 6 && !presenter.Projection.Units.Any(u => u.Index is 2 or 131 or 132) &&
