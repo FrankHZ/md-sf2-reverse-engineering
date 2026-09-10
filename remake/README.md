@@ -53,8 +53,8 @@ next-player control at9 HP, with the attack summary retained during movement/can
 Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
 At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
 attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
-the movement origin. N uses the named controlled Chester EXP0 supplement over Bowie EXP0/gold0/kills0;
-all three earlier presets retain their original unspecified inputs. The bounded class0/Wooden Sword attack against a
+the movement origin. N uses the named Chester EXP0/defeats0 comparison over Bowie EXP0/gold0/kills0;
+all four earlier presets retain their original unspecified inputs. The bounded class0/Wooden Sword attack against a
 regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
 on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
 control with Bowie HP9/EXP15 and enemy132 HP2. After player2's explicit origin STAY, actual131/132/133
@@ -74,9 +74,15 @@ shows131→Bowie hit3 while current EXP and accounting remain separate. Sarah ca
 and STAY; actual130 standby returns Bowie at receipt78. His origin attack on131 at terrain0(10,15)
 causes4 damage, HP3→0, EXP39→63, gold60→120 and kills1→2. Receipt79 clears only131;132 remains
 unplaced and unrewarded again. Seven survivors generate R10, returning Chester HP9/EXP10/budget14
-at(11,14). Move/confirm(12,14), cost2, and cancel preserve both deaths and all awards. This is the
-current stopping point. Chester kills and third defeats remain unsupported; his authored EXP0 must
-trace back to the selected preparation.
+at(11,14). Move/confirm(12,14), cost2, and cancel preserve both deaths and all awards.
+Chester then moves to(9,9), cost14, and STAYs; twelve actual player choices across R10-R13
+reach enemy133 against Chester HP1. Its hit2 produces receipt106, defeats0->1 and cleared
+placement/occupancy, preserving EXP10 and unspecified kills. Actual130 pursues with only two
+living ally targets; six survivors generate R14 and return Sarah HP11/budget10 at(9,17).
+Her move/confirm(10,17), cost2, and cancel retain all107 receipts, gold120/Bowie EXP63/kills2,
+Chester HP0/defeats1, main02A11234/copy0234 and both earlier enemy corpses. Stop before her action.
+Chester kills, a second ally defeat and third enemy defeat remain unsupported; authored EXP and
+defeats must trace back to the selected preparation.
 The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
 Misses and ordinary criticals are calculated; a validated double/counter, third defeat or other unsupported

@@ -6,7 +6,7 @@ public sealed class OriginalBattle01ControlledAlly
     public OriginalBattle01ControlledAlly(byte id, byte classId, byte level, ushort hpMax, ushort hpCurrent,
         byte mpMax, byte mpCurrent, byte effectiveAttack, byte effectiveDefense, byte effectiveAgility,
         byte effectiveMove, ushort statusEffects, IEnumerable<ushort> items, IEnumerable<byte> spells,
-        byte? currentExp = null, ushort? currentKills = null)
+        byte? currentExp = null, ushort? currentKills = null, ushort? currentDefeats = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(spells);
@@ -20,12 +20,14 @@ public sealed class OriginalBattle01ControlledAlly
             throw new ArgumentException("Four packed spell bytes are required.", nameof(spells));
         if (currentExp > 200) throw new ArgumentOutOfRangeException(nameof(currentExp));
         if (currentKills > 9999) throw new ArgumentOutOfRangeException(nameof(currentKills));
+        if (currentDefeats > 9999) throw new ArgumentOutOfRangeException(nameof(currentDefeats));
         Id = id; ClassId = classId; Level = level; HpMax = hpMax; HpCurrent = hpCurrent;
         MpMax = mpMax; MpCurrent = mpCurrent; EffectiveAttack = effectiveAttack; EffectiveDefense = effectiveDefense;
         EffectiveAgility = effectiveAgility; EffectiveMove = effectiveMove; StatusEffects = statusEffects;
         Items = Array.AsReadOnly(itemCopy); Spells = Array.AsReadOnly(spellCopy);
         CurrentExp = currentExp;
         CurrentKills = currentKills;
+        CurrentDefeats = currentDefeats;
     }
 
     public byte Id { get; }
@@ -42,6 +44,7 @@ public sealed class OriginalBattle01ControlledAlly
     public ushort StatusEffects { get; }
     public byte? CurrentExp { get; }
     public ushort? CurrentKills { get; }
+    public ushort? CurrentDefeats { get; }
     public IReadOnlyList<ushort> Items { get; }
     public IReadOnlyList<byte> Spells { get; }
 
@@ -51,6 +54,7 @@ public sealed class OriginalBattle01ControlledAlly
         EffectiveAttack == other.EffectiveAttack && EffectiveDefense == other.EffectiveDefense &&
         EffectiveAgility == other.EffectiveAgility && EffectiveMove == other.EffectiveMove &&
         StatusEffects == other.StatusEffects && CurrentExp == other.CurrentExp && CurrentKills == other.CurrentKills &&
+        CurrentDefeats == other.CurrentDefeats &&
         Items.SequenceEqual(other.Items) && Spells.SequenceEqual(other.Spells);
 }
 
@@ -64,6 +68,7 @@ public sealed class OriginalBattle01ControlledPartyPreset
     public const string PlayerAttackComparisonId = "private-local-battle01-player-attack-bowie-exp0-inputs-v1";
     public const string FirstDefeatComparisonId = "private-local-battle01-first-defeat-bowie-exp0-gold0-kills0-inputs-v1";
     public const string ChesterPlayerAttackComparisonId = "private-local-battle01-chester-player-attack-exp0-inputs-v1";
+    public const string ChesterDefeatComparisonId = "private-local-battle01-chester-defeats0-inputs-v1";
 
     public OriginalBattle01ControlledPartyPreset(string id, uint randomSeed, byte difficulty,
         IEnumerable<OriginalBattle01ControlledAlly> allies, ushort? randomSeedCopy = null, uint? currentGold = null)
@@ -123,16 +128,27 @@ public sealed class OriginalBattle01ControlledPartyPreset
                 currentKills: ally.CurrentKills)
             : ally), ComparisonSeedCopy, FirstDefeatComparison.CurrentGold);
 
+    // Authored defeats supplement only; no natural save or unspecified-kills claim.
+    public static OriginalBattle01ControlledPartyPreset ChesterDefeatComparison { get; } = new(
+        ChesterDefeatComparisonId, ComparisonSeed, 0,
+        ChesterPlayerAttackComparison.Allies.Select(ally => ally.Id == 2
+            ? new OriginalBattle01ControlledAlly(ally.Id, ally.ClassId, ally.Level, ally.HpMax, ally.HpCurrent,
+                ally.MpMax, ally.MpCurrent, ally.EffectiveAttack, ally.EffectiveDefense, ally.EffectiveAgility,
+                ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells, ally.CurrentExp,
+                ally.CurrentKills, currentDefeats: 0)
+            : ally), ComparisonSeedCopy, ChesterPlayerAttackComparison.CurrentGold);
+
     public OriginalBattle01StartupDiagnostic? GetAdmissionDiagnostic()
     {
         if (Id != ComparisonId && Id != PlayerAttackComparisonId && Id != FirstDefeatComparisonId &&
-            Id != ChesterPlayerAttackComparisonId)
+            Id != ChesterPlayerAttackComparisonId && Id != ChesterDefeatComparisonId)
             return new("party.id", "Only the named controlled comparison presets are admitted.");
         if (RandomSeed != ComparisonSeed) return new("party.randomSeed", "The comparison seed must be explicitly 0x1234.");
         if (RandomSeedCopy != ComparisonSeedCopy)
             return new("party.randomSeedCopy", "The independent comparison seed-copy must be explicitly 0x1234.");
         if (Difficulty != 0) return new("party.difficulty", "The comparison uses explicit difficulty zero.");
-        var expected = Id == ChesterPlayerAttackComparisonId ? ChesterPlayerAttackComparison :
+        var expected = Id == ChesterDefeatComparisonId ? ChesterDefeatComparison :
+            Id == ChesterPlayerAttackComparisonId ? ChesterPlayerAttackComparison :
             Id == FirstDefeatComparisonId ? FirstDefeatComparison :
             Id == PlayerAttackComparisonId ? PlayerAttackComparison : PlayerReadyComparison;
         if (CurrentGold != expected.CurrentGold)

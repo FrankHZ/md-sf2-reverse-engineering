@@ -8,6 +8,20 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01InitializationTests
 {
     [Fact]
+    public void ExplicitDefeatsSurviveEveryImmutableStatCopyWithoutBecomingKills()
+    {
+        var stats=new Battle01Stats(1,11,11,0,0,8,5,7,7,0,[184,0,127,127],[63,63,63,63],
+            currentExp:0,currentDefeats:0);
+        Assert.Null(stats.CurrentKills);Assert.Equal((ushort?)0,stats.CurrentDefeats);
+        foreach(var copy in new[]{stats.WithCurrentHp(1),stats.WithCurrentExp(10),stats.WithCurrentKills(2),stats.Initialize(8,0)})
+            Assert.Equal((ushort?)0,copy.CurrentDefeats);
+        Assert.Equal((ushort?)1,stats.WithCurrentDefeats(1).CurrentDefeats);
+        Assert.False(Battle01EnemyPhysicalAttack.SameStats(stats,stats.WithCurrentDefeats(1)));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>new Battle01Stats(1,11,11,0,0,8,5,7,7,0,
+            [184,0,127,127],[63,63,63,63],currentDefeats:10000));
+    }
+
+    [Fact]
     public void ExpIsExplicitPreservedByHealingAndCopiesAndForbiddenOnEnemySource()
     {
         var party = Allies(); var s = party[0].EffectiveStats;

@@ -18,6 +18,8 @@ public sealed record Battle01EnemyPhysicalAttackDecision(Battle01Combatant Actor
     Battle01PhysicalEffect Effect)
 {
     public int ActorIndex => Actor.Index;
+    internal bool DefeatedTarget => Effect.TemporaryHp == 0;
+    internal Battle01Combatant Target => Priorities.Single(priority => priority.Target.Index == TargetIndex).Target;
     public byte Action => 0;
     // The original physical action writes the target WORD at offset2; offset6 is not its target.
     public ushort ItemOrSpellWord => (ushort)TargetIndex;
@@ -42,7 +44,7 @@ public static class Battle01EnemyPhysicalAttack
         Battle01EnemyStandby.RequireCurrentRound(current);
         if (actorIndex < 128 || current.FirstRound!.CurrentCandidate?.CombatantIndex != actorIndex)
             throw new ArgumentException("Physical attack must name the actual current enemy.", "actor");
-        if (!ReferenceEquals(policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike))
+        if (!Battle01PhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("The controlled physical policy must be explicit.", "policy");
         var actor = current.Roster.Single(unit => unit.Index == actorIndex);
         Battle01EnemyStandby.RequireRegularEnemy(actor, current.FirstRound.RoundNumber, active: true);
@@ -52,7 +54,7 @@ public static class Battle01EnemyPhysicalAttack
         if (actor.Prowess != 0 || actor.Resistance != 0x40E3)
             throw new Battle01PhysicalAttackUnsupportedException("actorProfile");
 
-        var decision = Decide(current, actor);
+        var decision = Decide(current, actor, policy!.AllowsAllyDefeat);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         int from = Battle01PlayerMovement.Offset(actor.RequirePosition()), to = Battle01PlayerMovement.Offset(decision.Destination);
         if (occupancy[from] != actorIndex || (from != to && occupancy[to] != -1))
@@ -67,7 +69,8 @@ public static class Battle01EnemyPhysicalAttack
         return Battle01TurnCompletion.CompletePhysical(replayed, decision, policy);
     }
 
-    internal static Battle01EnemyPhysicalAttackDecision Decide(Battle01InitializedState battle, Battle01Combatant actor)
+    internal static Battle01EnemyPhysicalAttackDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
+        bool allowAllyDefeat = false)
     {
         var (grid, candidates) = Battle01EnemyPursuit.PhysicalCandidates(battle, actor);
         if (candidates.Length == 0) throw new Battle01PhysicalAttackUnsupportedException("emptyCohort");
@@ -87,8 +90,9 @@ public static class Battle01EnemyPhysicalAttack
         var selected = SelectTarget(priorities);
         RequireTargetProfile(selected.Target);
         var moves = Battle01EnemyStandby.SourceMoveString(grid, actor.RequirePosition(), selected.Candidate.AttackPosition);
-        var effect = Resolve(actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
-            battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.RequirePosition());
+        var effect = ResolveSingleStrike(actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
+            battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.RequirePosition(),
+            32, 32, 1, allowAllyDefeat && selected.Target.Index == 2);
         return new(actor, selected.Candidate.AttackPosition, battle.RandomSeedCopy.Value, copy,
             battle.AiMemory[actor.Index - 128], battle.AiLastTargets[actor.Index - 128], battle.RandomSeedImage,
             priorities.AsReadOnly(), selected.Target.Index, moves, effect);
@@ -199,7 +203,7 @@ public static class Battle01EnemyPhysicalAttack
         return new(dodge, critical, damage, (ushort)temporary, restored, target, after, rolls.AsReadOnly(), reaction);
     }
 
-    internal static void ValidateDecision(Battle01EnemyPhysicalAttackDecision decision)
+    internal static void ValidateDecision(Battle01EnemyPhysicalAttackDecision decision, bool allowAllyDefeat = false)
     {
         if (decision.ActorIndex is < 128 or > 133 || decision.Priorities.Count is < 1 or > 3 ||
             decision.Actor.Prowess != 0 || decision.Actor.Stats.Attack != 8 ||
@@ -234,8 +238,9 @@ public static class Battle01EnemyPhysicalAttack
             if (!Battle01Initialization.WithinArea(position)) throw new ArgumentException("Physical path left the area.", "attack.history");
         }
         if (position != decision.Destination) throw new ArgumentException("Physical path endpoint differs.", "attack.history");
-        var expected = Resolve(decision.Actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
-            decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.RequirePosition());
+        var expected = ResolveSingleStrike(decision.Actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
+            decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.RequirePosition(),
+            32, 32, 1, allowAllyDefeat && selected.Target.Index == 2);
         var actual = decision.Effect;
         if (!ReferenceEquals(actual.BeforeStats, selected.Target.Stats) ||
             actual.Dodged != expected.Dodged || actual.Critical != expected.Critical || actual.Damage != expected.Damage ||
@@ -248,6 +253,6 @@ public static class Battle01EnemyPhysicalAttack
     internal static bool SameStats(Battle01Stats a, Battle01Stats b) =>
         a.Level == b.Level && a.HpMax == b.HpMax && a.HpCurrent == b.HpCurrent && a.MpMax == b.MpMax && a.MpCurrent == b.MpCurrent &&
         a.Attack == b.Attack && a.Defense == b.Defense && a.Agility == b.Agility && a.Move == b.Move && a.Status == b.Status &&
-        a.CurrentExp == b.CurrentExp && a.CurrentKills == b.CurrentKills &&
+        a.CurrentExp == b.CurrentExp && a.CurrentKills == b.CurrentKills && a.CurrentDefeats == b.CurrentDefeats &&
         a.Items.SequenceEqual(b.Items) && a.Spells.SequenceEqual(b.Spells);
 }

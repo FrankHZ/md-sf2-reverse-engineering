@@ -9,11 +9,12 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly)
     {
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -178,6 +179,47 @@ public sealed class PrivateBattle01PresenterTests
         var roundTenCancelled = PrivateBattle01Presenter.BuildProjection(current, "Chester cancelled.");
         Assert.Equal(roundTen.Units, roundTenCancelled.Units); Assert.Equal(roundTen.AttackResult, roundTenCancelled.AttackResult);
         Assert.Equal((roundTen.Gold, roundTen.BowieKills), (roundTenCancelled.Gold, roundTenCancelled.BowieKills));
+
+        if (!firstAlly) return;
+        current = Battle01PlayerMovement.SelectDestination(current, 2, new(9, 9));
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 2), 2,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        for (int step = 0; step < 40; step++)
+        {
+            var order = current.FirstRound!;
+            if (order.RoundNumber == 13 && order.CurrentTurnOffset == 10 && order.CurrentCandidate?.CombatantIndex == 133) break;
+            if (order.CurrentCandidate is null) current = Battle01FirstRound.EnterNext(current);
+            else
+            {
+                try { current = CompleteAuthoredTurn(current); }
+                catch (Battle01AttackSelectionRequiredException)
+                {
+                    current = Battle01EnemyPhysicalAttack.CompleteNext(current, order.CurrentCandidate.Value.CombatantIndex,
+                        Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+                }
+            }
+        }
+        Assert.Equal((13, (byte)10), (current.FirstRound!.RoundNumber, current.FirstRound.CurrentTurnOffset));
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 133, Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat);
+        var allyDefeated = PrivateBattle01Presenter.BuildProjection(current, "First ally defeated.");
+        Assert.Equal(6, allyDefeated.Units.Count); Assert.DoesNotContain(allyDefeated.Units, u => u.Index is 2 or 131 or 132);
+        Assert.Contains("HP 1 -> 0", allyDefeated.AttackResult); Assert.Contains("A2 (2) defeated. Defeats 0 -> 1.", allyDefeated.AttackResult);
+        Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", allyDefeated.AllyStatus);
+        Assert.Null(allyDefeated.ActorIndex); Assert.Equal(133, allyDefeated.CompletedActorIndex); Assert.Equal(130, allyDefeated.NextCandidateIndex);
+        current = Battle01EnemyPursuit.CompleteNext(current, 130, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 1).State!;
+        var sarah = PrivateBattle01Presenter.BuildProjection(current, "Round 14. Player 1 ready.");
+        Assert.Equal((1, 10, true), (sarah.ActorIndex, sarah.Budget, sarah.CanConfirm));
+        Assert.Equal(allyDefeated.AllyStatus, sarah.AllyStatus); Assert.Equal(allyDefeated.AttackResult, sarah.AttackResult);
+        current = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current, 1, new(10, 17)), 1);
+        var movedSarah = PrivateBattle01Presenter.BuildProjection(current, "Sarah provisional.");
+        Assert.Equal(new MapPosition(10, 17), movedSarah.Units.Single(u => u.Index == 1).Position);
+        current = Battle01PlayerMovement.Cancel(current, 1);
+        var cancelledSarah = PrivateBattle01Presenter.BuildProjection(current, "Sarah cancelled.");
+        Assert.Equal(sarah.Units, cancelledSarah.Units); Assert.Equal(sarah.AllyStatus, cancelledSarah.AllyStatus);
+        Assert.Equal(sarah.AttackResult, cancelledSarah.AttackResult);
+        Assert.Equal(((uint?)120, (ushort?)2), (cancelledSarah.Gold, cancelledSarah.BowieKills));
+
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -333,18 +375,22 @@ public sealed class PrivateBattle01PresenterTests
     }
 
     private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
-        bool chesterPlayer=false)
+        bool chesterPlayer=false, bool firstAlly=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
             (byte)(i < 3 ? i : 39), positions[i], (byte)(i >= 7 ? 7 : i >= 3 ? 6 : 0), 127, 255,
             (byte)(i < 6 ? 2 : i < 8 ? 1 : 0), 255, 15, (byte)(i >= 7 ? 112 : i >= 3 ? 96 : 0), 0));
-        var regions = Enumerable.Range(0, 3).Select(i => new Battle01Region((byte)i, 0,
+        IEnumerable<Battle01Region> regions = Enumerable.Range(0, 3).Select(i => new Battle01Region((byte)i, 0,
             regionEntry && i==1 ? [new(10,14),new(12,14),new(12,16),new(10,16)] : [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
+        if (firstAlly) regions = [
+            new(0, 0, [new(0, 0), new(0, 19), new(15, 7), new(15, 0)], 0, 0),
+            new(1, 0, [new(0, 0), new(0, 7), new(15, 19), new(15, 0)], 0, 0),
+            new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0)];
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63]) :
-            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null) :
+            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, currentDefeats: firstAlly ? (ushort?)0 : null) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,

@@ -12,7 +12,8 @@ internal sealed record PrivateBattle01Projection(
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
-    bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills);
+    bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
+    string AllyStatus);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -97,6 +98,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 attackResult = $"{UnitTag(enemy.ActorIndex)} -> {UnitTag(enemy.TargetIndex)}: " +
                     (enemy.Effect.Dodged ? "miss" : (enemy.Effect.Critical ? "critical " : "hit ") + enemy.Effect.Damage) +
                     $". HP {enemy.Effect.BeforeStats.HpCurrent} -> {enemy.Effect.AfterStats.HpCurrent}.";
+                if (receipt.AllyDefeat is { } cleanup)
+                    attackResult += $" {UnitTag(cleanup.DefeatedAlly)} ({cleanup.DefeatedAlly}) defeated. " +
+                        $"Defeats {cleanup.DefeatsBefore} -> {cleanup.DefeatsAfter}.";
                 break;
             }
             if (receipt.PlayerPhysicalAttack is { } player)
@@ -129,7 +133,12 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
             completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
-            attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills);
+            attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills,
+            string.Join("\n", battle.Roster.Where(unit => unit.Index < 128).Select(unit =>
+                (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
+                    : $"{UnitTag(unit.Index)} defeated HP {unit.Stats.HpCurrent}") +
+                $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
+                (unit.Stats.HpCurrent == 0 ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))));
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -163,7 +172,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         static string UnitLine(PrivateBattle01Unit unit) =>
             $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +
             (unit.Index < 128 ? $" EXP {unit.Exp?.ToString() ?? "?"}" : "");
-        _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
+        _allies!.Text = view.AllyStatus;
         _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}";
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));

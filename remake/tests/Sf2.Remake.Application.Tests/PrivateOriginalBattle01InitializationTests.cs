@@ -10,6 +10,30 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void ChesterDefeatsSupplementInitializesOnlyHisExplicitCounterAndPreservesUnknownKills()
+    {
+        var old = OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;
+        var preset = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic());
+        Assert.Same(old.Allies[0], preset.Allies[0]); Assert.Same(old.Allies[1], preset.Allies[1]);
+        Assert.Null(old.Allies[2].CurrentDefeats); Assert.Equal((ushort?)0, preset.Allies[2].CurrentDefeats);
+        Assert.Equal(old.Allies[2].CurrentExp, preset.Allies[2].CurrentExp);
+        Assert.Null(preset.Allies[2].CurrentKills); Assert.Equal(old.CurrentGold, preset.CurrentGold);
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var source = Prepare(session);
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Pending, source.Inputs, preset);
+        var current = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Same(prepared, current.Preparation);
+        Assert.Equal(new ushort?[] { null, null, 0 }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentDefeats));
+        Assert.Equal(new ushort?[] { 0, null, null }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentKills));
+        Assert.Equal(new byte?[] { 0, null, 0 }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentExp));
+        Assert.All(current.Battle.Roster.Skip(3), u => Assert.Null(u.Stats.CurrentDefeats));
+        foreach (var prior in new[] { OriginalBattle01ControlledPartyPreset.PlayerReadyComparison,
+            OriginalBattle01ControlledPartyPreset.PlayerAttackComparison,
+            OriginalBattle01ControlledPartyPreset.FirstDefeatComparison, old })
+            Assert.All(prior.Allies, a => Assert.Null(a.CurrentDefeats));
+    }
+
+    [Fact]
     public void ChesterSupplementSuppliesOnlyHisExpAtInitializationAndRetainsTheThreeOlderPresets()
     {
         var old = OriginalBattle01ControlledPartyPreset.FirstDefeatComparison;

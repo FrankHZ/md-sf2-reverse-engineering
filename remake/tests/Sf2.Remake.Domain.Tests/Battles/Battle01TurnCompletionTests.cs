@@ -8,6 +8,70 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01TurnCompletionTests
 {
     [Theory]
+    [InlineData("counter")][InlineData("beforeCounter")][InlineData("afterCounter")][InlineData("ally")]
+    [InlineData("worklist")][InlineData("afterWorklist")][InlineData("missing")][InlineData("policy")]
+    [InlineData("counts")][InlineData("afterCounts")][InlineData("hp")][InlineData("placement")]
+    [InlineData("occupancy")][InlineData("main")][InlineData("copy")][InlineData("gold")]
+    [InlineData("kills")][InlineData("exp")][InlineData("duplicate")][InlineData("oldEnemy")]
+    public void FirstAllyDefeatHistoryRejectsIndependentCleanupAccountingAndPlacementForgery(string field)
+    {
+        var accepted=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();
+        var r=accepted.TurnCompletion!;var cleanup=r.AllyDefeat!;
+        var roster=accepted.Roster.ToArray();var occupancy=accepted.Occupancy.ToArray();
+        uint main=accepted.RandomSeedImage;ushort copy=accepted.RandomSeedCopy!.Value;uint? gold=accepted.CurrentGold;
+        switch(field)
+        {
+            case "counter": roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentDefeats(2));break;
+            case "beforeCounter": r=r with {AllyDefeat=cleanup with {DefeatsBefore=1}};break;
+            case "afterCounter": r=r with {AllyDefeat=cleanup with {DefeatsAfter=2}};break;
+            case "ally": r=r with {AllyDefeat=cleanup with {DefeatedAlly=1}};break;
+            case "worklist": r=r with {AllyDefeat=cleanup with {FirstWorklist=new[]{2,131}}};break;
+            case "afterWorklist": r=r with {AllyDefeat=cleanup with {AfterTurnWorklist=new[]{2}}};break;
+            case "missing": r=r with {AllyDefeat=null};break;
+            case "policy": r=r with {Policy=Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike};break;
+            case "counts": r=r with {BeforeAfterTurn=new(3,4)};break;
+            case "afterCounts": r=r with {AfterAfterTurn=new(2,3)};break;
+            case "hp": roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentHp(1));break;
+            case "placement": roster[2]=roster[2].WithPosition(new(9,9));break;
+            case "occupancy": occupancy[9+9*48]=2;break;
+            case "main": main ^= 0x10000;break;
+            case "copy": copy ^= 0x100;break;
+            case "gold": gold=121;break;
+            case "kills": roster[0]=roster[0].WithStats(roster[0].Stats.WithCurrentKills(3));break;
+            case "exp": roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentExp(11));break;
+            case "duplicate": r=r with {Previous=r.Previous! with {AllyDefeat=cleanup}};break;
+            case "oldEnemy": roster[6]=roster[6].WithStats(roster[6].Stats.WithCurrentHp(1));break;
+        }
+        var forged=Battle01FirstRoundTests.CopyCurrent(accepted,roster:roster,occupancy:occupancy,receipt:r,
+            mainImage:main,copy:copy,gold:gold);
+        var options=new System.Text.Json.JsonSerializerOptions {MaxDepth=256};
+        string frozen=System.Text.Json.JsonSerializer.Serialize(forged,options);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01EnemyPursuit.CompleteNext(forged,130,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+        Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(forged,options));
+    }
+
+    [Fact]
+    public void FirstAllyDefeatLocalFinalizationRejectsAnIncorrectReactionReplay()
+    {
+        var before=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatBoundary();
+        var d=Battle01EnemyPhysicalAttack.Decide(before,before.Roster[8],allowAllyDefeat:true);
+        var roster=before.Roster.ToArray();var targets=before.AiLastTargets.ToArray();targets[5]=2;
+        // Intentionally omit the computed HP0 replay after the source-exact damage has been constructed.
+        var local=new Battle01InitializedState(before,roster,before.Occupancy.ToArray(),before.AiMemory.ToArray(),
+            d.SeedCopyAfter,d.Effect.MainSeedAfter,targets);
+        Assert.Equal("cleanup.before",Assert.Throws<ArgumentException>(()=>Battle01TurnCompletion.CompletePhysical(
+            local,d,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat)).ParamName);
+        Assert.Equal(1,before.Roster[2].Stats.HpCurrent);Assert.Equal((ushort?)0,before.Roster[2].Stats.CurrentDefeats);
+        Assert.Equal(0x66531234u,before.RandomSeedImage);Assert.Equal((ushort?)0x0134,before.RandomSeedCopy);
+    }
+
+    [Theory]
+    [InlineData(0,1)][InlineData(9998,9999)][InlineData(9999,9999)]
+    public void AllyDefeatsUseTheSourceWordSaturation(int before,int after) =>
+        Assert.Equal((ushort)after,Battle01TurnCompletion.DefeatsAfterDeath((ushort)before));
+
+    [Theory]
     [InlineData("oldCorpsePlaced")]
     [InlineData("oldCorpseStats")]
     [InlineData("oldCorpseCell")]

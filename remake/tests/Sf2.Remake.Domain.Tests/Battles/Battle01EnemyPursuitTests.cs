@@ -8,6 +8,23 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyPursuitTests
 {
     [Fact]
+    public void FirstAllyDefeatRemovesChesterFromBlockingAndBothTargetCohorts()
+    {
+        var after=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();
+        var physical=Battle01EnemyPursuit.PhysicalCandidates(after,after.Roster[8]);
+        Assert.Equal(2,physical.Grid.CostAt(new(9,9)));
+        Assert.DoesNotContain(physical.Targets,target=>target.ActorIndex==2);
+        var next=Battle01EnemyPursuit.CompleteNext(after,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var d=next.TurnCompletion!.EnemyPursuit!;
+        Assert.Equal(new[]{new Battle01PursuitTargetCost(0,26),new(1,26)},d.TargetCosts);
+        // This authored grid pursues two steps south; required Content owns the real cost2 east path.
+        Assert.Equal((0,4),(d.TargetIndex,d.GridCost));Assert.Equal(new MapPosition(8,7),d.Destination);
+        var forged=Battle01FirstRoundTests.CopyCurrent(next,receipt:next.TurnCompletion with {
+            EnemyPursuit=d with {TargetCosts=d.TargetCosts.Append(new Battle01PursuitTargetCost(2,0)).ToArray()}});
+        Assert.Equal("pursuit.targets",Assert.Throws<ArgumentException>(()=>Battle01EnemyStandby.RequireThinkingHistory(forged)).ParamName);
+    }
+
+    [Fact]
     public void LaterPursuitAcceptsTheRewoundPhysicalMainSeedAndRetainsDamagedAlly()
     {
         var before = Battle01EnemyPhysicalAttackTests.CompletedBowie();

@@ -17,14 +17,21 @@ public sealed class Battle01StayCompletionPolicy : Battle01TurnCompletionPolicy
 
 public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
-    private Battle01PhysicalCompletionPolicy() { }
-    public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new();
-    public override string Id => "battle01-controlled-nonlethal-physical-strike-v1";
+    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat) { AllowsAllyDefeat = allowsAllyDefeat; }
+    public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new(false);
+    public static Battle01PhysicalCompletionPolicy ControlledFirstAllyDefeat { get; } = new(true);
+    internal bool AllowsAllyDefeat { get; }
+    public override string Id => AllowsAllyDefeat
+        ? "battle01-controlled-first-chester-defeat-v1" : "battle01-controlled-nonlethal-physical-strike-v1";
+    internal static bool IsSupported(Battle01PhysicalCompletionPolicy? policy) =>
+        ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat);
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01EnemyDefeatCleanup(IReadOnlyList<int> FirstWorklist,
     IReadOnlyList<int> AfterTurnWorklist, int CreditedAlly, ushort KillsBefore, ushort KillsAfter);
+public sealed record Battle01AllyDefeatCleanup(IReadOnlyList<int> FirstWorklist,
+    IReadOnlyList<int> AfterTurnWorklist, int DefeatedAlly, ushort DefeatsBefore, ushort DefeatsAfter);
 public sealed class Battle01PlayerPhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
     private Battle01PlayerPhysicalCompletionPolicy(int maximumDefeats) { MaximumDefeats = maximumDefeats; }
@@ -48,13 +55,14 @@ public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Batt
     Battle01FactionCounts BeforeAfterTurn, Battle01FactionCounts AfterAfterTurn, Battle01TurnCompletionReceipt? Previous = null,
     Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
     Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null,
-    Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null, Battle01EnemyDefeatCleanup? EnemyDefeat = null);
+    Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null, Battle01EnemyDefeatCleanup? EnemyDefeat = null,
+    Battle01AllyDefeatCleanup? AllyDefeat = null);
 
 public static class Battle01TurnCompletion
 {
     internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
         receipt.PlayerPhysicalAttack is not null
-            ? Battle01PlayerPhysicalCompletionPolicy.IsSupported(receipt.Policy as Battle01PlayerPhysicalCompletionPolicy) &&
+            ? receipt.AllyDefeat is null && Battle01PlayerPhysicalCompletionPolicy.IsSupported(receipt.Policy as Battle01PlayerPhysicalCompletionPolicy) &&
                 (!receipt.PlayerPhysicalAttack.DefeatedTarget ||
                     ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).AllowsDefeat &&
                     6 - receipt.BeforeAfterTurn.Enemies <= ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).MaximumDefeats) &&
@@ -65,9 +73,13 @@ public static class Battle01TurnCompletion
                 receipt.CompletedActorIndex < 128 && receipt.PlayerPhysicalAttack.ActorIndex == receipt.CompletedActorIndex &&
                 receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null
             : receipt.EnemyDefeat is null && (receipt.EnemyPhysicalAttack is not null
-            ? ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
+            ? ((ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
+                    !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
+                (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat) &&
+                    receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is not null &&
+                    receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 4))) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
-            : ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+            : receipt.AllyDefeat is null && ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
 
     internal static Battle01InitializedState CompletePlayerPhysical(Battle01InitializedState current,
         Battle01PlayerPhysicalAttackDecision decision, Battle01PlayerPhysicalCompletionPolicy? policy)
@@ -147,24 +159,62 @@ public static class Battle01TurnCompletion
     internal static Battle01InitializedState CompletePhysical(Battle01InitializedState current,
         Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy? policy)
     {
-        if (!ReferenceEquals(policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike))
+        if (!Battle01PhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("An explicit controlled physical completion policy is required.", "policy");
-        Battle01EnemyPhysicalAttack.ValidateDecision(decision);
+        Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat);
         RequireDefeatedWrapperReturn(current);
-        RequireEmptyKilledCleanup(current, "cleanup.before");
+        Battle01AllyDefeatCleanup? cleanup = null;
+        if (decision.DefeatedTarget) (current, cleanup) = ApplyAllyDefeatCleanup(current, decision);
+        else RequireEmptyKilledCleanup(current, "cleanup.before");
         var before = RequireContinuingFactions(current, "outcome.before");
         // The admitted actor's after-turn refresh changes no modifiers, status, MP or equipment.
         // Its target HP has already been authorized by the physical reaction, not by STAY.
         NormalizeControlledNoEffectTurn(current, decision.ActorIndex, decision.Actor.Stats,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
-        RequireEmptyKilledCleanup(current, "cleanup.after");
+        RequireEmptyKilledCleanup(current, "cleanup.after", cleanup?.DefeatedAlly);
         var after = RequireContinuingFactions(current, "outcome.after");
         var result = new Battle01InitializedState(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
-            new(decision.ActorIndex, policy!, before, after, current.TurnCompletion,
-                RoundNumber: current.FirstRound.RoundNumber, EnemyPhysicalAttack: decision));
+            new(decision.ActorIndex, cleanup is null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike : policy!,
+                before, after, current.TurnCompletion, RoundNumber: current.FirstRound.RoundNumber,
+                EnemyPhysicalAttack: decision, AllyDefeat: cleanup));
         Battle01FirstRound.RequireCurrentPrefix(result);
         Battle01EnemyStandby.RequireThinkingHistory(result);
         return result;
+    }
+
+    internal static ushort DefeatsAfterDeath(ushort before) => (ushort)Math.Min(9999, before + 1);
+
+    private static (Battle01InitializedState State, Battle01AllyDefeatCleanup Cleanup) ApplyAllyDefeatCleanup(
+        Battle01InitializedState current, Battle01EnemyPhysicalAttackDecision decision)
+    {
+        var target = current.Roster.Single(unit => unit.Index == decision.TargetIndex);
+        if (decision.ActorIndex != 133 || decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 ||
+            decision.Target.Stats.CurrentDefeats != 0 || decision.Target.Stats.CurrentKills is not null ||
+            target.Position is not { } position || position != decision.Target.Position ||
+            !Battle01EnemyPhysicalAttack.SameStats(target.Stats, decision.Effect.AfterStats) ||
+            !current.Roster.Where(unit => unit.Stats.HpCurrent == 0).Select(unit => unit.Index).SequenceEqual(new[] { 2, 131, 132 }))
+            throw new ArgumentException("Only the first supplied Chester defeat after the two enemy cleanups is admitted.", "cleanup.before");
+        var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
+        int cell = Battle01PlayerMovement.Offset(position);
+        if (occupancy[cell] != 2) throw new ArgumentException("Retain Chester's cell before cleanup.", "occupancy");
+        ushort defeats = DefeatsAfterDeath(decision.Target.Stats.CurrentDefeats.Value);
+        // Status0 and already-refreshed controlled effective stats remain unchanged; HP stays0.
+        roster[Array.IndexOf(roster, target)] = target.WithStats(target.Stats.WithCurrentDefeats(defeats)).WithPosition(null);
+        occupancy[cell] = -1;
+        return (new Battle01InitializedState(current, roster, Array.AsReadOnly(occupancy), current.FirstControl!),
+            new(Array.AsReadOnly(new[] { 2 }), Array.Empty<int>(), 2, 0, defeats));
+    }
+
+    internal static void ValidateAllyDefeatReceipt(Battle01TurnCompletionReceipt receipt)
+    {
+        if (receipt.EnemyPhysicalAttack is not { DefeatedTarget: true } decision || receipt.AllyDefeat is not { } cleanup ||
+            !HasValidPolicy(receipt) || decision.ActorIndex != 133 || receipt.CompletedActorIndex != 133 ||
+            decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 || decision.Target.Stats.CurrentKills is not null ||
+            decision.Target.Stats.CurrentDefeats != 0 || cleanup.DefeatedAlly != 2 || cleanup.DefeatsBefore != 0 ||
+            cleanup.DefeatsAfter != DefeatsAfterDeath(cleanup.DefeatsBefore) ||
+            !cleanup.FirstWorklist.SequenceEqual(new[] { 2 }) || cleanup.AfterTurnWorklist.Count != 0 ||
+            receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+            throw new ArgumentException("Retain Chester's distinct defeat, counter and both worklists.", "attack.history");
     }
 
     public static Battle01InitializedState CommitStay(Battle01InitializedState current, int actorIndex,
@@ -227,9 +277,25 @@ public static class Battle01TurnCompletion
     {
         foreach (var unit in current.Roster.Where(unit => unit.Stats.HpCurrent == 0))
         {
-            if (unit.Position is not null || unit.Index < 128)
+            if (unit.Position is not null || (unit.Index < 128 && unit.Index != 2))
                 throw new ArgumentException("Unprocessed deaths cannot become an empty worklist.", field);
             if (unit.Index == pendingDefeat) continue;
+            if (unit.Index == 2)
+            {
+                Battle01TurnCompletionReceipt? allyDeath = null;
+                for (var prior = current.TurnCompletion; prior is not null; prior = prior.Previous)
+                    if (prior.AllyDefeat is not null)
+                    {
+                        if (allyDeath is not null) throw new ArgumentException("Chester cannot be defeated twice.", field);
+                        allyDeath = prior;
+                    }
+                if (allyDeath is null) throw new ArgumentException("Cleaned Chester requires his defeat receipt.", field);
+                ValidateAllyDefeatReceipt(allyDeath);
+                if (!Battle01EnemyPhysicalAttack.SameStats(unit.Stats,
+                    allyDeath.EnemyPhysicalAttack!.Effect.AfterStats.WithCurrentDefeats(allyDeath.AllyDefeat!.DefeatsAfter)))
+                    throw new ArgumentException("Retain Chester's replayed HP and defeat counter.", field);
+                continue;
+            }
             Battle01TurnCompletionReceipt? death = null;
             for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous)
                 if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true } attack && attack.TargetIndex == unit.Index)
@@ -269,7 +335,7 @@ public static class Battle01TurnCompletion
             // sf2enums equipped bit7, IDs HOLY_STAFF61 / MYSTERY_STAFF64 / LIFE_RING7C.
             if (unit.Stats.Items.Any(item => (item & 0x80) != 0 && (item & 0x7F) is 0x61 or 0x64 or 0x7C))
                 throw new ArgumentException("Equipped passive recovery is outside controlled no-effect STAY.", "equipment");
-            if (unit.Stats.HpCurrent == 0 && unit.Position is null && unit.Index >= 128) continue;
+            if (unit.Stats.HpCurrent == 0 && unit.Position is null && (unit.Index >= 128 || unit.Index == 2)) continue;
             if (unit.Stats.HpCurrent == 0 || unit.Position is not { } position || !Battle01Initialization.WithinArea(position))
                 throw new ArgumentException("Every controlled combatant must remain placed in the fixed area.", "position");
             int offset = Battle01PlayerMovement.Offset(position);

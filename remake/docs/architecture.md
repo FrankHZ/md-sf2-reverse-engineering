@@ -203,7 +203,7 @@ admission separately requires Bowie0/class0 or exact Chester2/class1 with known 
 decision metadata comes from that actual actor. Regular GIZMO
 prowess0, difficulty0/type2 and the
 two independent RNG channels retain their source semantics. Miss/ordinary critical results are
-calculated. True validated follow-ups, lethal/status/curse/reward and unsupported after-turn effects
+calculated. True validated follow-ups, other lethal/status/curse/reward and unsupported after-turn effects
 reject atomically. This is a bounded consumer, not a general battle-scene VM.
 
 The physical completion policy is distinct from strict STAY. History rewinds physical main-RNG
@@ -218,18 +218,18 @@ copy0134. Reverse history admits the recorded HP11→9 and preserves receipt59's
 Bowie EXP39/kills1 and gold60. The same history admits Chester's later player receipt72, EXP0→10
 and enemy131 HP5→3, then actual128/129/131/133 through receipt76 and Sarah movement/cancel.
 Damaged131 retains HP3 and selects Bowie6→3; main25991234/copy0634 and all64 R9 slots survive.
-Original scene animation/timing, broader profiles, multi-strike/counter/death and victory remain open.
+Original scene animation/timing, broader profiles, multi-strike/counter, other deaths and victory remain open.
 
 Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player physical/EXP policy.
 The existing movement selection gains a target stage, holding the ordered live down/right/up/left
 range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
 then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
-snapshot and a separately named `PlayerAttackComparison`, `FirstDefeatComparison` or
-`ChesterPlayerAttackComparison` preparation.
-Nullable current EXP/gold/kills distinguish unspecified inputs from explicit authored zeroes.
-Godot uses the Chester supplement, which adds only Chester EXP0 at initialization to the first-defeat
-inputs; all three older presets remain unchanged. The existing reverse-history pass returns the
-rewound original Chester EXP with gold and Bowie kills. Both physical Application wrappers compare
+snapshot and a separately named `PlayerAttackComparison`, `FirstDefeatComparison`,
+`ChesterPlayerAttackComparison` or `ChesterDefeatComparison` preparation.
+Nullable current EXP/gold/kills/defeats distinguish unspecified inputs from authored zeroes.
+Godot uses `ChesterDefeatComparison`, adding only Chester defeats0 to the prior Chester EXP0
+comparison; all four older presets remain unchanged. Reverse history returns the rewound
+original Chester EXP and defeats with gold and Bowie kills. Both physical Application wrappers compare
 that tuple with preparation before publishing, rejecting null/zero mismatches even after a valid
 local effect. Immutable copies preserve live earned EXP while preparation retains its original input.
 The Chester preset uses the first-defeat policy for Bowie before any death and the separately named
@@ -251,7 +251,18 @@ uses Hovering LE0/multiplier256; terrain1 retains230 and other target terrain re
 Cleanup locates the newly reacted target separately from prior HP0/unplaced rows, then the existing
 reverse-history checks validate every older corpse against its own receipt. Receipt79 queues only131,
 retains132 unchanged, awards EXP24/gold60/kills1 once and finishes with both faction counts3/4.
-No extra ledger, preset or production presenter branch is needed.
+No extra ledger or second state authority is needed.
+
+The separate `ControlledFirstAllyDefeat` policy admits only enemy133's first Chester2 defeat
+with explicit defeats0 and the two authenticated earlier enemy corpses. Nonlethal receipts retain
+their old policy. Temporary HP0 returns before double/counter or award draws; local reaction and
+`Battle01AllyDefeatCleanup` record worklists[2]/[], defeats0->1 and both2/4 counts before publication.
+Chester retains HP0/EXP10/unspecified kills and loses live placement/occupancy. Cleanup rewinds
+his pre-death HP/position/counter from receipt106 to authenticate older history and R13 generation.
+Living AI cohorts and R14 generation omit him. Actor0/enemy128 death, a second ally death and
+a third enemy death remain outside this boundary. Markers come from living placed rows; ally
+status comes from all three identity rows, preserving Chester HP0/EXP10/defeats1 and the newest
+attack result while Sarah moves and cancels in R14. Natural defeats and death animation remain Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement
@@ -261,8 +272,9 @@ rewinds player HP/EXP without enemy last-target writes, requires the full source
 and permits damaged or cleaned enemy HP only with linked reaction/cleanup provenance. It rewinds
 placement, EXP, gold, kills and count transitions through the same receipt chain. Same-round
 generation validation restores its pre-kill candidate set from receipt before-images; a later
-generation excludes every dead row and its draws. The candidate floor admits seven survivors;
-R7 history still reconstructs nine candidates and R9 eight, while R10 generates seven with21 calls. Where a preceding
+generation excludes every dead row and its draws. The candidate floor admits six survivors;
+R7 history reconstructs nine candidates, R9 eight and R13 seven even after Chester dies; R10
+uses21 generation calls and R14 uses18. Where a preceding
 main endpoint is recorded, the existing generator reproduces the following main image and current
 64-slot order. This adds no stored seed authority or history cache.
 

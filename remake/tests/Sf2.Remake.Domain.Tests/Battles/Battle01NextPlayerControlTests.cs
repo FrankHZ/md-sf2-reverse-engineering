@@ -8,6 +8,28 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void SarahCanMoveAndCancelAfterChesterDefeatWithoutRestoringADeadOccupant()
+    {
+        var defeated=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();
+        var end=Battle01EnemyPursuit.CompleteNext(defeated,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var round=Battle01FirstRound.EnterNext(end);
+        Assert.Throws<ArgumentException>(()=>Battle01NextPlayerControl.Enter(round,2));
+        var ready=Battle01NextPlayerControl.Enter(round,1).State!;
+        Assert.Equal(10,ready.FirstControl!.Movement.Range.Budget);
+        var moved=Battle01PlayerMovement.SelectDestination(ready,1,new(10,17));
+        Assert.Equal(2,moved.FirstControl!.Movement.GridCost);
+        moved=Battle01PlayerMovement.Confirm(moved,1);
+        var cancelled=Battle01PlayerMovement.Cancel(moved,1);
+        Assert.Equal(new MapPosition(9,17),cancelled.Roster[1].Position);
+        Assert.Null(cancelled.Roster[2].Position);Assert.Equal(0,cancelled.Roster[2].Stats.HpCurrent);
+        Assert.Equal((ushort?)1,cancelled.Roster[2].Stats.CurrentDefeats);
+        Assert.Same(end.TurnCompletion,cancelled.TurnCompletion);
+        Assert.Equal(107,Battle01EnemyPursuitTests.Receipts(cancelled).Count());
+        Assert.Equal(ready.Occupancy,cancelled.Occupancy);Assert.Equal(-1,cancelled.OccupantAt(new(9,9)));
+        Assert.Equal((0x02A11234u,(ushort?)0x0234),(cancelled.RandomSeedImage,cancelled.RandomSeedCopy));
+    }
+
+    [Fact]
     public void RoundTenChesterMovementRetainsBothCorpsesAndSecondDefeatAwards()
     {
         var completed = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();

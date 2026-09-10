@@ -7,6 +7,92 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
+    internal static Battle01InitializedState FirstAllyDefeatBoundary(ushort? defeats = 0)
+    {
+        // Existing authored combat fixture supplies the comparison before any physical receipt.
+        // The separate required Content test owns real transport, initialization and terrain.
+        var current = AttackBoundary(0, firstDefeatAccounting: true, chesterExp: 0, chesterDefeats: defeats);
+        var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        for (int step=0;step<80;step++)
+        {
+            var order=current.FirstRound!;
+            if(order.RoundNumber==13 && order.CurrentTurnOffset==10 && order.CurrentCandidate?.CombatantIndex==133)return current;
+            if(order.CurrentCandidate is not {} candidate) { current=Battle01FirstRound.EnterNext(current);continue; }
+            int actor=candidate.CombatantIndex;
+            if(actor>=128)
+            {
+                if((current.Roster.Single(unit=>unit.Index==actor).AiBitfield & 1)==0)
+                    current=Battle01EnemyStandby.CompleteNext(current,actor,stay);
+                else
+                {
+                    try { current=Battle01EnemyPursuit.CompleteNext(current,actor,stay); }
+                    catch(Battle01AttackSelectionRequiredException) { current=Battle01EnemyPhysicalAttack.CompleteNext(current,actor,Policy); }
+                }
+                continue;
+            }
+            current=Battle01NextPlayerControl.Enter(current,actor).State!;
+            if(actor==2 && order.RoundNumber is 8 or 10)
+                current=Battle01PlayerMovement.SelectDestination(current,actor,order.RoundNumber==8 ? new(11,14) : new(9,9));
+            current=Battle01PlayerMovement.Confirm(current,actor);
+            if(actor==0 && order.RoundNumber is 6 or 7 or 9 || actor==2 && order.RoundNumber==9)
+            {
+                current=Battle01PlayerPhysicalAttack.Begin(current,actor);
+                var policy=actor==2 ? Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp
+                    : order.RoundNumber==9 ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat
+                    : Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat;
+                current=Battle01PlayerPhysicalAttack.Confirm(current,actor,policy);
+            }
+            else current=Battle01TurnCompletion.CommitStay(current,actor,stay);
+        }
+        throw new InvalidOperationException("Authored continuation must reach the first ally defeat boundary.");
+    }
+
+    internal static Battle01InitializedState FirstAllyDefeatCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
+        FirstAllyDefeatBoundary(),133,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat);
+
+    [Fact]
+    public void FirstAllyDefeatRetainsTheSelectedStrikeAndEveryEarlierReceipt()
+    {
+        var before=FirstAllyDefeatBoundary(); var json=new JsonSerializerOptions{MaxDepth=256};
+        string frozen=JsonSerializer.Serialize(before,json);
+        var after=Battle01EnemyPhysicalAttack.CompleteNext(before,133,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat);
+        var r=after.TurnCompletion!;var d=r.EnemyPhysicalAttack!;var cleanup=r.AllyDefeat!;
+        Assert.Equal(105,Battle01EnemyPursuitTests.Receipts(before).Count());
+        Assert.Equal(106,Battle01EnemyPursuitTests.Receipts(after).Count());
+        Assert.Same(before.TurnCompletion,r.Previous);Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+        Assert.Equal((133,2,2,0,1),(d.ActorIndex,d.TargetIndex,d.Effect.Damage,(int)d.Effect.TemporaryHp,(int)d.Effect.RestoredHp));
+        Assert.Equal(new ushort[]{6,17,0,0},d.Effect.Rolls.Select(roll=>roll.Result));
+        Assert.Equal(new ushort[]{32,32,1,1},d.Effect.Rolls.Select(roll=>roll.Range));
+        Assert.Equal(new Battle01PhysicalReaction(2,-2,0,0,1),d.Effect.Reaction);
+        Assert.Equal((0x33171234u,(ushort?)0x0234),(after.RandomSeedImage,after.RandomSeedCopy));
+        Assert.Equal(((ushort)0,(ushort)1),(cleanup.DefeatsBefore,cleanup.DefeatsAfter));
+        Assert.Equal(new[]{2},cleanup.FirstWorklist);Assert.Empty(cleanup.AfterTurnWorklist);
+        Assert.Equal(new Battle01FactionCounts(2,4),r.BeforeAfterTurn);Assert.Equal(r.BeforeAfterTurn,r.AfterAfterTurn);
+        Assert.Null(after.Roster[2].Position);Assert.Equal(-1,after.OccupantAt(new(9,9)));
+        Assert.Equal(0,after.Roster[2].Stats.HpCurrent);Assert.Equal((ushort?)1,after.Roster[2].Stats.CurrentDefeats);
+        Assert.Same(before.Roster[6],after.Roster[6]);Assert.Same(before.Roster[7],after.Roster[7]);
+        Assert.Same(before.FirstRound!.Slots,after.FirstRound!.Slots);
+        Assert.Equal(((uint?)120,(byte?)63,(ushort?)2,(byte?)10),(after.CurrentGold,after.Roster[0].Stats.CurrentExp,
+            after.Roster[0].Stats.CurrentKills,after.Roster[2].Stats.CurrentExp));
+        Assert.Null(after.Roster[2].Stats.CurrentKills);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,0);
+        Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(() =>
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0)).ParamName);
+    }
+
+    [Fact]
+    public void FirstAllyDefeatStillRejectsOldPolicyAndUnspecifiedCounterWithoutPublishingDamage()
+    {
+        var known=FirstAllyDefeatBoundary();
+        Assert.Equal("attack.lethal",Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(known,133,Policy)).ParamName);
+        var unknown=FirstAllyDefeatBoundary(null);var json=new JsonSerializerOptions{MaxDepth=256};
+        string before=JsonSerializer.Serialize(unknown,json);
+        Assert.Equal("cleanup.before",Assert.Throws<ArgumentException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(unknown,133,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat)).ParamName);
+        Assert.Equal(before,JsonSerializer.Serialize(unknown,json));
+    }
+
     internal static Battle01InitializedState AfterChesterPlayerRelay()
     {
         var current = Battle01PlayerPhysicalAttackTests.ChesterCompleted();
@@ -344,7 +430,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false,
-        byte? chesterExp = null)
+        byte? chesterExp = null, ushort? chesterDefeats = null)
     {
         var current = Battle01EnemyPursuitTests.RoundThree();
         // The earlier movement-only authored helper has no equipment. Supply the accepted combat
@@ -358,7 +444,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
             roster[1] = roster[1].WithStats(new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0,
                 [213, 0, 0, 127], [0, 63, 63, 63]));
             roster[2] = roster[2].WithStats(new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0,
-                [184, 0, 127, 127], [63, 63, 63, 63], chesterExp));
+                [184, 0, 127, 127], [63, 63, 63, 63], chesterExp, currentDefeats: chesterDefeats));
         }
         current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, gold: firstDefeatAccounting ? 0u : null);
         for (int round = 3; round <= 5; round++)
