@@ -22,13 +22,15 @@ public sealed partial class GameSession
         Battle01InitializedState battle;
         try
         {
-            var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId
+            var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId
+                ? Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending
+                : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId
                 ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat
                 : Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
             battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex, policy);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
-                current.Preparation.Party.Allies[2].CurrentDefeats);
+                current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats);
         }
         catch (ArgumentException error) { return EnemyPhysicalAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle,

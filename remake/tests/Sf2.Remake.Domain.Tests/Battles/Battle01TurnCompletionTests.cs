@@ -7,6 +7,55 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+    [Fact]
+    public void TerminalBattleRejectsEveryContinuingGameplayEntryWithoutMutation()
+    {
+        var current = Battle01EnemyPhysicalAttackTests.LeaderDefeatCompleted();
+        var policy = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        var json = new System.Text.Json.JsonSerializerOptions { MaxDepth = 256 };
+        string before = System.Text.Json.JsonSerializer.Serialize(current, json);
+        Action[] operations = [
+            () => Battle01FirstRound.EnterNext(current),
+            () => Battle01NextPlayerControl.Enter(current, 1),
+            () => Battle01EnemyStandby.CompleteNext(current, 129, policy),
+            () => Battle01EnemyPursuit.CompleteNext(current, 129, policy),
+            () => Battle01EnemyPhysicalAttack.CompleteNext(current, 129, Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending),
+            () => Battle01PlayerMovement.Confirm(current, 1),
+            () => Battle01PlayerMovement.Cancel(current, 1),
+            () => Battle01PlayerPhysicalAttack.Begin(current, 1),
+            () => Battle01TurnCompletion.CommitStay(current, 1, policy) ];
+        foreach (var operation in operations) Assert.ThrowsAny<ArgumentException>(operation);
+        Assert.Equal(before, System.Text.Json.JsonSerializer.Serialize(current, json));
+    }
+
+    [Theory]
+    [InlineData("count")]
+    [InlineData("cleanup")]
+    [InlineData("previous")]
+    [InlineData("round")]
+    [InlineData("seed")]
+    [InlineData("mask")]
+    [InlineData("counter")]
+    [InlineData("occupancy")]
+    [InlineData("gold")]
+    public void TerminalHistoryCannotForgeOutcomeCleanupOrContinuity(string drift)
+    {
+        var current = Battle01EnemyPhysicalAttackTests.LeaderDefeatCompleted(); var receipt = current.DefeatPending!;
+        receipt = drift switch {
+            "count" => receipt with { FirstOutcome = new(1, 4) },
+            "cleanup" => receipt with { Cleanup = receipt.Cleanup with { FirstWorklist = new[] { 0, 2 } } },
+            "previous" => receipt with { Previous = receipt.Previous.Previous! },
+            "round" => receipt with { RoundNumber = 17 }, _ => receipt };
+        var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
+        if (drift == "counter") roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentDefeats(2));
+        if (drift == "occupancy") occupancy[15 * 48 + 11] = 0;
+        var forged = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, occupancy: occupancy,
+            copy: drift == "seed" ? (ushort)0x0234 : null, tested: drift == "mask" ? (ushort)7 : null,
+            gold: drift == "gold" ? 60u : null);
+        forged = new Battle01InitializedState(forged, receipt);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01TurnCompletion.RequireDefeatPending(forged));
+    }
+
     [Theory]
     [InlineData("counter")][InlineData("beforeCounter")][InlineData("afterCounter")][InlineData("ally")]
     [InlineData("worklist")][InlineData("afterWorklist")][InlineData("missing")][InlineData("policy")]

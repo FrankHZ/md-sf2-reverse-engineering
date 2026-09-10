@@ -225,11 +225,11 @@ The existing movement selection gains a target stage, holding the ordered live d
 range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
 then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
 snapshot and a separately named `PlayerAttackComparison`, `FirstDefeatComparison`,
-`ChesterPlayerAttackComparison` or `ChesterDefeatComparison` preparation.
+`ChesterPlayerAttackComparison`, `ChesterDefeatComparison` or `LeaderDefeatComparison` preparation.
 Nullable current EXP/gold/kills/defeats distinguish unspecified inputs from authored zeroes.
-Godot uses `ChesterDefeatComparison`, adding only Chester defeats0 to the prior Chester EXP0
-comparison; all four older presets remain unchanged. Reverse history returns the rewound
-original Chester EXP and defeats with gold and Bowie kills. Both physical Application wrappers compare
+Godot uses `LeaderDefeatComparison`, adding only Bowie defeats0 to `ChesterDefeatComparison`;
+all five older presets remain unchanged. Reverse history returns the rewound
+original Chester EXP/defeats and Bowie defeats with gold and Bowie kills. Both physical Application wrappers compare
 that tuple with preparation before publishing, rejecting null/zero mismatches even after a valid
 local effect. Immutable copies preserve live earned EXP while preparation retains its original input.
 The Chester preset uses the first-defeat policy for Bowie before any death and the separately named
@@ -259,10 +259,26 @@ their old policy. Temporary HP0 returns before double/counter or award draws; lo
 `Battle01AllyDefeatCleanup` record worklists[2]/[], defeats0->1 and both2/4 counts before publication.
 Chester retains HP0/EXP10/unspecified kills and loses live placement/occupancy. Cleanup rewinds
 his pre-death HP/position/counter from receipt106 to authenticate older history and R13 generation.
-Living AI cohorts and R14 generation omit him. Actor0/enemy128 death, a second ally death and
+Living AI cohorts and R14 generation omit him. Enemy128 death, Sarah death and
 a third enemy death remain outside this boundary. Markers come from living placed rows; ally
 status comes from all three identity rows, preserving Chester HP0/EXP10/defeats1 and the newest
 attack result while Sarah moves and cancels in R14. Natural defeats and death animation remain Unknown.
+
+`ControlledLeaderDefeatPending` admits only the planned R16/raw0 enemy129->Bowie action after119
+continuing receipts. Earlier nonlethal and Chester-death receipts keep their existing policies.
+`Battle01DefeatPendingReceipt` reuses the physical decision and ally-cleanup payload, links the
+exact previous119 receipts, and records first outcome0/4 with after-turn/advancement false. Cleanup
+increments supplied Bowie defeats0->1 and removes only his placement. The ordinary completion
+receipt cannot represent this branch: no second cleanup/count or advanced turn was executed.
+The state phase is `DefeatPending`; all immutable copies retain it. Terminal validation authenticates
+the strike/cleanup/occupancy/RNG and reconstructs an unpublished before-image for existing full
+history and generation checks, then reproduces the actual terrain-based target cohort/path.
+Both physical Application facades compare the rewound Bowie counter with preparation.
+Godot stops before dispatching historical candidate129 again and projects no actor, target or
+movement overlay. Bowie and Chester remain on the ally status list at HP0; five living markers
+remain. All battle keys, repeated terminal dispatch and session gameplay commands preserve the
+snapshot. Ordinary defeat recovery, restored leader HP, gold halving, unlock changes and return
+flow remain unsupported; original presentation/VInt and naturally carried defeats remain Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement

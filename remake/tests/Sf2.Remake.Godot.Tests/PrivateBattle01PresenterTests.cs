@@ -9,12 +9,13 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader)
     {
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -219,7 +220,27 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal(sarah.Units, cancelledSarah.Units); Assert.Equal(sarah.AllyStatus, cancelledSarah.AllyStatus);
         Assert.Equal(sarah.AttackResult, cancelledSarah.AttackResult);
         Assert.Equal(((uint?)120, (ushort?)2), (cancelledSarah.Gold, cancelledSarah.BowieKills));
-
+        if (!leader) return;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        for (int step = 0; step < 24; step++)
+        {
+            if (current.FirstRound!.RoundNumber == 16 && current.FirstRound.CurrentTurnOffset == 0) break;
+            current = current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current) : CompleteAuthoredTurn(current);
+        }
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 129, Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending);
+        var terminal = PrivateBattle01Presenter.BuildProjection(current, "Bowie defeated.");
+        Assert.Equal(Battle01Phase.DefeatPending, terminal.Phase);
+        Assert.Null(terminal.ActorIndex); Assert.Null(terminal.CompletedActorIndex); Assert.Null(terminal.NextCandidateIndex);
+        Assert.Null(terminal.Cursor); Assert.Null(terminal.SelectedTargetIndex); Assert.Empty(terminal.Path);
+        Assert.False(terminal.CanConfirm); Assert.False(terminal.PursuitCompleted); Assert.True(terminal.PhysicalAttackCompleted);
+        Assert.All(terminal.Tiles, tile => { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
+        Assert.Equal(5, terminal.Units.Count); Assert.DoesNotContain(terminal.Units, unit => unit.Index is 0 or 2 or 131 or 132);
+        Assert.Contains("HP 3 -> 0. Bowie defeated. Defeats 0 -> 1", terminal.AttackResult);
+        Assert.Contains("A0 defeated HP 0 EXP 63 Defeats 1", terminal.AllyStatus);
+        Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", terminal.AllyStatus);
+        Assert.Contains("Input closed", terminal.Controls); Assert.DoesNotContain("Space", terminal.Controls);
+        Assert.Equal(((uint?)120, (ushort?)2), (terminal.Gold, terminal.BowieKills));
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -375,7 +396,7 @@ public sealed class PrivateBattle01PresenterTests
     }
 
     private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
-        bool chesterPlayer=false, bool firstAlly=false)
+        bool chesterPlayer=false, bool firstAlly=false, bool leader=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
@@ -394,7 +415,7 @@ public sealed class PrivateBattle01PresenterTests
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,
-                combatProfile && i==0 ? (ushort?)0 : null)));
+                combatProfile && i==0 ? (ushort?)0 : null, leader && i==0 ? (ushort?)0 : null)));
         var enemy = new Battle01EnemyInput(39, 39, 0, new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0,
             [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
         var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;

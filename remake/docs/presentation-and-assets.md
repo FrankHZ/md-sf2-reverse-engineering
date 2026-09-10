@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat", "leader-defeat-pending"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1015,7 +1015,7 @@ The recipe retains its bounded restore/build/native process and source-archive p
 
 For manual player physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=player-physical-attack`
 with a fresh review root and the same registered inputs. N explicitly prepares the separate
-controlled Chester EXP0/defeats0 supplement over Bowie EXP0/gold0/kills0; unspecified inputs in all four older presets remain valid for their
+controlled Chester EXP0/defeats0 and Bowie EXP0/gold0/kills0/defeats0 supplements; unspecified inputs in all five older presets remain valid for their
 earlier operations. At action choice, A opens the live ordered target list, I/J choose previous,
 K/L choose next, Space confirms the attack, and Backspace returns to action choice at the provisional
 position. A second Backspace restores movement origin. Space at ordinary action choice still STAYs.
@@ -1119,8 +1119,8 @@ For `SF2_BATTLE01_CONTROL_REVIEW=second-enemy-defeat`, retain these18 frames and
 Inspect25 images plus `chester-player-attack`18, `first-enemy-defeat`6 and `player-physical-attack`6:
 55 images across four modes, each retaining all three bounded process receipts. The same source
 head owns every archived production copy and the copied tracked probe.
-All modes use `ChesterDefeatComparison` at N, supplying Chester EXP0 and defeats0 before
-initialization while preserving unspecified kills and all four earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains
+All modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
+preparation before initialization while preserving unspecified kills and all five earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains
 its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
 
 For `SF2_BATTLE01_CONTROL_REVIEW=first-ally-defeat`, retain the25 frames and add:
@@ -1145,6 +1145,19 @@ Preparation/shared-view changes also require enemy-physical4 and enemy-pursuit4,
 Each mode retains its bounded process receipts and exact archived production/probe identity.
 The new receipt exposes `boundary105`, `defeated106`, `pursued107` and final `battle` for comparison
 with the independent source reducer. Captured data never seeds the reducer.
+
+For `SF2_BATTLE01_CONTROL_REVIEW=leader-defeat-pending`, retain those35 frames, then capture
+R14 Bowie111, R15 Bowie115, R15 Sarah116 and her origin action choice. Inspect the exact action-choice
+copy at R16/raw0/119 before attack, then the separately typed terminal state. Restore that same
+physical choice and press Space: automatic production dispatch must reproduce the whole terminal
+battle. Capture it and press N/Space/Backspace/A/I/J/K/L; snapshot and projection must remain
+identical, as must a repeated dispatcher call. The43-frame receipt exposes `start107`, `boundary119`,
+`battle`, preparation and frozen-input results. Only the first cleanup/count executes, Bowie has no
+marker, Sarah remains alive, HP0/EXP63/defeats1 is readable, and no cursor or next actor appears.
+With the five affected earlier modes above this is81 individually inspected frames. Compare source
+reduction to native only after deriving it independently; inspect all PNGs and exact archived
+production/probe copies, and retain bounded process/exit/cleanup receipts. This is a diagnostic
+stop before ordinary defeat recovery; it adds no original visual, timing or return-flow claim.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu

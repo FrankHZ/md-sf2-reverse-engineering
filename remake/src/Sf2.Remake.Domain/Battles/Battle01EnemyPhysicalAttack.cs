@@ -54,7 +54,7 @@ public static class Battle01EnemyPhysicalAttack
         if (actor.Prowess != 0 || actor.Resistance != 0x40E3)
             throw new Battle01PhysicalAttackUnsupportedException("actorProfile");
 
-        var decision = Decide(current, actor, policy!.AllowsAllyDefeat);
+        var decision = Decide(current, actor, policy!.AllowsAllyDefeat, policy.AllowsLeaderDefeat);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         int from = Battle01PlayerMovement.Offset(actor.RequirePosition()), to = Battle01PlayerMovement.Offset(decision.Destination);
         if (occupancy[from] != actorIndex || (from != to && occupancy[to] != -1))
@@ -66,11 +66,15 @@ public static class Battle01EnemyPhysicalAttack
         var lastTargets = current.AiLastTargets.ToArray(); lastTargets[actorIndex - 128] = (byte)decision.TargetIndex;
         var replayed = new Battle01InitializedState(current, roster, occupancy, current.AiMemory.ToArray(),
             decision.SeedCopyAfter, decision.Effect.MainSeedAfter, lastTargets);
-        return Battle01TurnCompletion.CompletePhysical(replayed, decision, policy);
+        if (decision.DefeatedTarget && decision.TargetIndex == 0)
+            return Battle01TurnCompletion.CompleteLeaderDefeat(replayed, decision, policy);
+        // The new startup preset does not relabel any earlier continuing receipt.
+        return Battle01TurnCompletion.CompletePhysical(replayed, decision,
+            policy.AllowsLeaderDefeat ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat : policy);
     }
 
     internal static Battle01EnemyPhysicalAttackDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
-        bool allowAllyDefeat = false)
+        bool allowAllyDefeat = false, bool allowLeaderDefeat = false)
     {
         var (grid, candidates) = Battle01EnemyPursuit.PhysicalCandidates(battle, actor);
         if (candidates.Length == 0) throw new Battle01PhysicalAttackUnsupportedException("emptyCohort");
@@ -92,7 +96,7 @@ public static class Battle01EnemyPhysicalAttack
         var moves = Battle01EnemyStandby.SourceMoveString(grid, actor.RequirePosition(), selected.Candidate.AttackPosition);
         var effect = ResolveSingleStrike(actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
             battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.RequirePosition(),
-            32, 32, 1, allowAllyDefeat && selected.Target.Index == 2);
+            32, 32, 1, (allowAllyDefeat && selected.Target.Index == 2) || (allowLeaderDefeat && selected.Target.Index == 0));
         return new(actor, selected.Candidate.AttackPosition, battle.RandomSeedCopy.Value, copy,
             battle.AiMemory[actor.Index - 128], battle.AiLastTargets[actor.Index - 128], battle.RandomSeedImage,
             priorities.AsReadOnly(), selected.Target.Index, moves, effect);
@@ -203,7 +207,7 @@ public static class Battle01EnemyPhysicalAttack
         return new(dodge, critical, damage, (ushort)temporary, restored, target, after, rolls.AsReadOnly(), reaction);
     }
 
-    internal static void ValidateDecision(Battle01EnemyPhysicalAttackDecision decision, bool allowAllyDefeat = false)
+    internal static void ValidateDecision(Battle01EnemyPhysicalAttackDecision decision, bool allowAllyDefeat = false, bool allowLeaderDefeat = false)
     {
         if (decision.ActorIndex is < 128 or > 133 || decision.Priorities.Count is < 1 or > 3 ||
             decision.Actor.Prowess != 0 || decision.Actor.Stats.Attack != 8 ||
@@ -240,7 +244,7 @@ public static class Battle01EnemyPhysicalAttack
         if (position != decision.Destination) throw new ArgumentException("Physical path endpoint differs.", "attack.history");
         var expected = ResolveSingleStrike(decision.Actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
             decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.RequirePosition(),
-            32, 32, 1, allowAllyDefeat && selected.Target.Index == 2);
+            32, 32, 1, (allowAllyDefeat && selected.Target.Index == 2) || (allowLeaderDefeat && selected.Target.Index == 0));
         var actual = decision.Effect;
         if (!ReferenceEquals(actual.BeforeStats, selected.Target.Stats) ||
             actual.Dodged != expected.Dodged || actual.Critical != expected.Critical || actual.Damage != expected.Damage ||

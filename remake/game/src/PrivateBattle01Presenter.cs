@@ -114,9 +114,19 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 break;
             }
         }
-        int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
+        if (battle.DefeatPending is { } terminal)
+        {
+            var enemy = terminal.Attack;
+            completion = null;
+            attackResult = $"{UnitTag(enemy.ActorIndex)} -> A0: hit {enemy.Effect.Damage}. " +
+                $"HP {enemy.Effect.BeforeStats.HpCurrent} -> 0. Bowie defeated. " +
+                $"Defeats {terminal.Cleanup.DefeatsBefore} -> {terminal.Cleanup.DefeatsAfter}.";
+        }
+        int? actor = battle.DefeatPending is null && completion is null
+            ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
+            Battle01Phase.DefeatPending => "Battle stopped. Input closed. Relaunch starts Map 3.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "A: Attack   Space: STAY   Backspace: cancel relocation",
             Battle01Phase.PlayerAttackTargetSelection => "I/J: previous   K/L: next   Space: attack   Backspace: action choice",
@@ -132,7 +142,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
-            completion?.EnemyPursuit is not null, completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
+            completion?.EnemyPursuit is not null, battle.DefeatPending is not null || completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
             attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills,
             string.Join("\n", battle.Roster.Where(unit => unit.Index < 128).Select(unit =>
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
@@ -161,7 +171,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
         string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
-        _details.Text = view.CompletedActorIndex is { } completed ?
+        _details.Text = view.Phase == Battle01Phase.DefeatPending
+            ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nDefeat recovery is unavailable."
+            : view.CompletedActorIndex is { } completed ?
             $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completionKind} completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
             $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +

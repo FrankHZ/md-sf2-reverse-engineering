@@ -108,6 +108,11 @@ public static class Battle01FirstRound
 
     internal static void RequireCurrentPrefix(Battle01InitializedState current)
     {
+        if (current.DefeatPending is not null)
+        {
+            _ = Battle01TurnCompletion.RequireDefeatPending(current);
+            return;
+        }
         var order = current.FirstRound;
         if (order is null) throw new ArgumentException("The current round is required.", "turnOrder");
         int[] actors = GenerationRoster(current, order.RoundNumber).Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
@@ -148,6 +153,7 @@ public static class Battle01FirstRound
 
     internal static Battle01Combatant[] GenerationRoster(Battle01InitializedState current, int roundNumber)
     {
+        if (current.DefeatPending is not null) current = Battle01TurnCompletion.RequireDefeatPending(current);
         var roster = current.Roster.ToArray();
         for (var receipt = current.TurnCompletion; receipt is not null && receipt.RoundNumber >= roundNumber; receipt = receipt.Previous)
             if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true } attack)

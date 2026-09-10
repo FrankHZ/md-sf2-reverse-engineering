@@ -10,6 +10,25 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void LeaderSupplementAddsOnlyBowieDefeatsZeroAtInitialization()
+    {
+        var old = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var preset = OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic()); Assert.Null(old.Allies[0].CurrentDefeats);
+        Assert.Same(old.Allies[1], preset.Allies[1]); Assert.Same(old.Allies[2], preset.Allies[2]);
+        Assert.Equal(old.RandomSeed, preset.RandomSeed); Assert.Equal(old.RandomSeedCopy, preset.RandomSeedCopy);
+        Assert.Equal(old.CurrentGold, preset.CurrentGold);
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var source = Prepare(session);
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Pending, source.Inputs, preset);
+        var current = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Same(prepared, current.Preparation); Assert.Null(current.Battle.DefeatPending);
+        Assert.Equal(new ushort?[] { 0, null, 0 }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentDefeats));
+        Assert.Equal(new ushort?[] { 0, null, null }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentKills));
+        Assert.Equal(new byte?[] { 0, null, 0 }, current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentExp));
+        Assert.All(current.Battle.Roster.Skip(3), u => Assert.Null(u.Stats.CurrentDefeats));
+    }
+
+    [Fact]
     public void ChesterDefeatsSupplementInitializesOnlyHisExplicitCounterAndPreservesUnknownKills()
     {
         var old = OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;

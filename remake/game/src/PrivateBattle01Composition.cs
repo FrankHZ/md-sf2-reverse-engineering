@@ -22,7 +22,7 @@ internal static class PrivateBattle01Ui
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
-            OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
+            OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -132,6 +132,8 @@ internal static class PrivateBattle01Ui
         int limit = current.Battle.FirstRound!.Slots.Count * 2;
         for (int attempt = 0; attempt < limit; attempt++)
         {
+            if (current.Battle.Phase == Battle01Phase.DefeatPending)
+                return "Bowie defeated. Battle stopped. Defeat recovery is unavailable.";
             var order = current.Battle.FirstRound!;
             if (order.CurrentCandidate is not { } candidate)
             {

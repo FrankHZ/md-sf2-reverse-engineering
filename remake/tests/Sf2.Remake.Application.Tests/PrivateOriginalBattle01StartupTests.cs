@@ -12,6 +12,21 @@ public sealed class PrivateOriginalBattle01StartupTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void LeaderCounterCannotBeOmittedOrRetrofittedUnderThePreviousPreset(bool newId)
+    {
+        var session = PendingSession(); var preset = OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison;
+        var old = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var party = new OriginalBattle01ControlledPartyPreset(newId ? preset.Id : old.Id,
+            preset.RandomSeed, preset.Difficulty, newId ? old.Allies : preset.Allies, preset.RandomSeedCopy, preset.CurrentGold);
+        var source = new Source(new OriginalBattle01StartupImported(Definition()));
+        Assert.Equal("party.allies", Assert.IsType<PrivateOriginalBattle01StartupRejected>(session.PreparePrivateOriginalBattle01Startup(
+            session.PrivateOriginalBattle01Admission, source, party)).Diagnostic.Field);
+        Assert.Equal(0, source.Calls); Assert.Null(session.PrivateOriginalBattle01);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void DefeatsCounterMustMatchItsNamedPreparationBeforeInputsAreRead(bool newId)
     {
         var session = PendingSession(); var before = session.PrivateOriginalMapSnapshot;
