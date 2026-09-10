@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1015,7 +1015,7 @@ The recipe retains its bounded restore/build/native process and source-archive p
 
 For manual player physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=player-physical-attack`
 with a fresh review root and the same registered inputs. N explicitly prepares the separate
-controlled Chester EXP0 supplement over Bowie EXP0/gold0/kills0; unspecified inputs in all three older presets remain valid for their
+controlled Chester EXP0/defeats0 supplement over Bowie EXP0/gold0/kills0; unspecified inputs in all four older presets remain valid for their
 earlier operations. At action choice, A opens the live ordered target list, I/J choose previous,
 K/L choose next, Space confirms the attack, and Backspace returns to action choice at the provisional
 position. A second Backspace restores movement origin. Space at ordinary action choice still STAYs.
@@ -1119,9 +1119,32 @@ For `SF2_BATTLE01_CONTROL_REVIEW=second-enemy-defeat`, retain these18 frames and
 Inspect25 images plus `chester-player-attack`18, `first-enemy-defeat`6 and `player-physical-attack`6:
 55 images across four modes, each retaining all three bounded process receipts. The same source
 head owns every archived production copy and the copied tracked probe.
-All modes use `ChesterPlayerAttackComparison` at N; this is explicit input provenance,
-not an EXP patch at receipt71. Preserve older null-preset captures read-only. Every mode retains
+All modes use `ChesterDefeatComparison` at N, supplying Chester EXP0 and defeats0 before
+initialization while preserving unspecified kills and all four earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains
 its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
+
+For `SF2_BATTLE01_CONTROL_REVIEW=first-ally-defeat`, retain the25 frames and add:
+
+1. `26-chester-provisional9-9`: physical J/J, five I presses and Space confirm cost14 movement;
+   a separate Space commits STAY.
+2. `27-round11-actual-player-ready`, `28-round12-actual-player-ready` and
+   `29-round13-actual-player-ready`: actual-candidate relay between twelve total player choices.
+3. `30-first-ally-boundary105-test-copy`: copy the exact twelfth physical action choice;
+   Application Bowie STAY and129 attack reach HP1/receipt105. The old policy still rejects.
+4. `31-first-ally-defeat106-test-copy`: actual133 hit2, four main calls,133 thinking steps,
+   worklists[2]/[], both2/4 counts, defeats0->1 and removed Chester marker; show HP0/EXP10/defeats1.
+5. `32-pursuit107-test-copy`: actual130 targets only Bowie/Sarah at equal cost26, chooses Bowie
+   and moves(8,5)->(9,5); copied production dispatch then generates R14/Sarah.
+6. `33-round14-sarah-after-physical-relay`: restore the exact physical choice and press Space;
+   its complete battle must equal the inspected copy, including all107 receipts.
+7. `34-round14-sarah-provisional10-17` and `35-round14-sarah-move-cancel`: physical L/Space
+   and Backspace preserve the defeat result, two ally/four enemy markers, accounting and RNG.
+
+With Chester-player18, first-defeat6 and player-physical6 this requires65 inspected frames.
+Preparation/shared-view changes also require enemy-physical4 and enemy-pursuit4, totaling73 frames.
+Each mode retains its bounded process receipts and exact archived production/probe identity.
+The new receipt exposes `boundary105`, `defeated106`, `pursued107` and final `battle` for comparison
+with the independent source reducer. Captured data never seeds the reducer.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu

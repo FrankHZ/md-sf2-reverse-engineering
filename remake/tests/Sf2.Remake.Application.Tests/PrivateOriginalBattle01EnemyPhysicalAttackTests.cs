@@ -10,6 +10,128 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
 {
+
+    internal static GameSession FirstAllyDefeatSession(bool completeRoute = true)
+    {
+        // Reuse the authored pre-physical fixture. Required Content coverage owns real initialization.
+        var session = AttackSession(); var source = session.PrivateOriginalBattle01!;
+        // Earlier Application tests only needed region1; this route also enters regions0 and2.
+        var regions = source.Battle.Regions.ToArray();
+        regions[0] = new(0, 0, [new(0, 0), new(0, 19), new(15, 7), new(15, 0)], 0, 0);
+        regions[2] = new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0);
+        source = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session, regions: regions);
+        var preset = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var roster = source.Battle.Roster.ToArray();
+        for (int i = 0; i < 3; i++)
+        {
+            var a = preset.Allies[i]; var u = roster[i];
+            var stats = new Battle01Stats(a.Level, a.HpMax, a.HpCurrent, a.MpMax, a.MpCurrent,
+                a.EffectiveAttack, a.EffectiveDefense, a.EffectiveAgility, a.EffectiveMove,
+                a.StatusEffects, a.Items, a.Spells, a.CurrentExp, a.CurrentKills, a.CurrentDefeats);
+            roster[i] = Internal<Battle01Combatant>(u.Deployment, stats, u.ClassId, u.EnemySource, u.AiBitfield, u.Position);
+        }
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending, source.Preparation.Inputs, preset);
+        var initial = Internal<Battle01InitializedState>(source.Battle, roster, source.Battle.RandomSeedImage, preset.CurrentGold);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,
+            new PrivateOriginalBattle01SessionSnapshot(prepared, initial, source.SourceLocomotion, source.SourceBridge));
+        if (!completeRoute) return session;
+        for (int step = 0; step < 90; step++)
+        {
+            var current = session.PrivateOriginalBattle01!; var order = current.Battle.FirstRound!;
+            if (order.RoundNumber == 13 && order.CurrentTurnOffset == 10 && order.CurrentCandidate?.CombatantIndex == 133) return session;
+            if (order.CurrentCandidate is not {} candidate)
+            {
+                Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)); continue;
+            }
+            int actor = candidate.CombatantIndex;
+            if (actor >= 128)
+            {
+                if ((current.Battle.Roster.Single(u => u.Index == actor).AiBitfield & 1) == 0)
+                    Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(current, actor));
+                else if (session.CompletePrivateOriginalBattle01EnemyPursuit(current, actor) is not PrivateOriginalBattle01EnemyPursuitCompleted)
+                    Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, actor));
+                continue;
+            }
+            if (current.Battle.FirstControl is null)
+                current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, actor)).Snapshot;
+            if (actor == 2 && order.RoundNumber is 8 or 10)
+                current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(current, actor,
+                    order.RoundNumber == 8 ? new(11, 14) : new(9, 9))).Snapshot;
+            current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, actor)).Snapshot;
+            if (actor == 0 && order.RoundNumber is 6 or 7 or 9 || actor == 2 && order.RoundNumber == 9)
+            {
+                current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, actor)).Snapshot;
+                Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(current, actor));
+            }
+            else Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current, actor));
+        }
+        throw new InvalidOperationException("Authored Application route must reach actual R13 enemy133.");
+    }
+
+    [Fact]
+    public void FirstAllyDefeatPublishesOnceAndSarahCancelRetainsTheDefeatAndPreparation()
+    {
+        var session = FirstAllyDefeatSession(); var before = session.PrivateOriginalBattle01!;
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(before.Battle, json);
+        var after = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 133)).Snapshot;
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Same(before.Preparation, after.Preparation);
+        Assert.Same(before.SourceSnapshot, after.SourceSnapshot); Assert.Same(before.SourceBridge, after.SourceBridge);
+        Assert.Same(before.SourceLocomotion, after.SourceLocomotion); Assert.Same(before.Battle.TurnCompletion, after.Battle.TurnCompletion!.Previous);
+        Assert.Equal(frozen, JsonSerializer.Serialize(before.Battle, json));
+        Assert.Equal((ushort?)0, after.Preparation.Party.Allies[2].CurrentDefeats);
+        Assert.Equal((ushort?)1, after.Battle.Roster[2].Stats.CurrentDefeats);
+        Assert.Null(after.Battle.Roster[2].Position); Assert.Null(after.Battle.Roster[2].Stats.CurrentKills);
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 133)).Diagnostic.Field);
+        Assert.Equal("actor", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(after, 133)).Diagnostic.Field);
+        Assert.Same(after, session.PrivateOriginalBattle01);
+        var pursued = Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(after, 130)).Snapshot;
+        var generated = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(pursued)).Snapshot;
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(generated, 1)).Snapshot;
+        var moved = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready, 1, new(10, 17))).Snapshot;
+        moved = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(moved, 1)).Snapshot;
+        var cancelled = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(moved, 1)).Snapshot;
+        Assert.Equal((14, 1, 10), (cancelled.Battle.FirstRound!.RoundNumber, cancelled.Battle.FirstControl!.ActorIndex, cancelled.Battle.FirstControl.Movement.Range.Budget));
+        Assert.Equal(new MapPosition(9, 17), cancelled.Battle.Roster[1].Position);
+        Assert.Equal((0x02A11234u, (ushort?)0x0234), (cancelled.Battle.RandomSeedImage, cancelled.Battle.RandomSeedCopy));
+        Assert.Same(ready.Battle.TurnCompletion, cancelled.Battle.TurnCompletion); Assert.Same(after.Battle.Roster[2], cancelled.Battle.Roster[2]);
+        Assert.Same(before.Preparation, cancelled.Preparation); Assert.Equal(ready.Battle.Occupancy, cancelled.Battle.Occupancy);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("equivalent")]
+    [InlineData("foreign")]
+    public void FirstAllyDefeatRequiresTheExactCurrentSnapshot(string kind)
+    {
+        var session = FirstAllyDefeatSession(); var current = session.PrivateOriginalBattle01!;
+        var request = kind == "null" ? null : kind == "foreign" ? FirstAllyDefeatSession().PrivateOriginalBattle01 :
+            new PrivateOriginalBattle01SessionSnapshot(current.Preparation, current.Battle, current.SourceLocomotion, current.SourceBridge);
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(request, 133)).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01); Assert.Equal(1, current.Battle.Roster[2].Stats.HpCurrent);
+        Assert.Equal((ushort?)0, current.Battle.Roster[2].Stats.CurrentDefeats);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefeatsPreparationMismatchRejectsAfterLocalNonlethalFinalization(bool historyHasDefeats)
+    {
+        var session = historyHasDefeats ? FirstAllyDefeatSession(completeRoute: false) : ChesterAttackSession(chesterPlayer: true);
+        var source = session.PrivateOriginalBattle01!;
+        var preset = historyHasDefeats ? OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison :
+            OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending, source.Preparation.Inputs, preset);
+        var current = new PrivateOriginalBattle01SessionSnapshot(prepared, source.Battle, source.SourceLocomotion, source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, current);
+        int actor = historyHasDefeats ? 132 : 131;
+        var local = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actor, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+        Assert.NotSame(current.Battle, local);
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(current.Battle, json);
+        Assert.Equal("accounting.input", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, actor)).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01); Assert.Equal(frozen, JsonSerializer.Serialize(current.Battle, json));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

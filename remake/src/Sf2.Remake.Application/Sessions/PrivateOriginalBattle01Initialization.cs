@@ -87,7 +87,7 @@ public sealed partial class GameSession
             party.Allies.Select(ally => new Battle01AllyInput(ally.Id, ally.ClassId,
                 new(ally.Level, ally.HpMax, ally.HpCurrent, ally.MpMax, ally.MpCurrent, ally.EffectiveAttack,
                     ally.EffectiveDefense, ally.EffectiveAgility, ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells,
-                    ally.CurrentExp, ally.CurrentKills))),
+                    ally.CurrentExp, ally.CurrentKills, ally.CurrentDefeats))),
             new(enemy.EnemyDefinitionId, enemy.SourceUnknownByte, enemy.SpellPowerMode,
                 new(enemy.Level, enemy.HpMax, enemy.HpMax, enemy.MpMax, enemy.MpMax, enemy.BaseAttack,
                     enemy.BaseDefense, enemy.BaseAgility, enemy.BaseMove, enemy.InitialStatus, enemy.Items, enemy.Spells),

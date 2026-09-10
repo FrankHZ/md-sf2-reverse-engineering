@@ -33,10 +33,10 @@ public sealed record Battle01PlayerPhysicalAttackDecision(Battle01Combatant Acto
 public static class Battle01PlayerPhysicalAttack
 {
     public static void RequireAccountingInputs(Battle01InitializedState current, uint? gold, ushort? bowieKills,
-        byte? chesterExp)
+        byte? chesterExp, ushort? chesterDefeats = null)
     {
         var original = Battle01EnemyStandby.RequireThinkingHistory(current);
-        if (original != (gold, bowieKills, chesterExp))
+        if (original != (gold, bowieKills, chesterExp, chesterDefeats))
             throw new ArgumentException("Live accounting must retain its declared preparation inputs.", "accounting.input");
     }
 

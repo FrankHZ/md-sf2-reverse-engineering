@@ -58,7 +58,7 @@ public static class Battle01EnemyPursuit
     {
         var (grid, physical) = PhysicalCandidates(battle, actor);
         if (physical.Length != 0) throw new Battle01AttackSelectionRequiredException(actor.Index, physical);
-        var allies = battle.Roster.Where(unit => unit.Index < 128).OrderBy(unit => unit.Index).ToArray();
+        var allies = battle.Roster.Where(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0 && unit.Position is not null).OrderBy(unit => unit.Index).ToArray();
         return DecidePursuit(battle, actor, grid, allies);
     }
 
@@ -67,7 +67,7 @@ public static class Battle01EnemyPursuit
     {
         if (battle.Terrain.Count != 2304 || battle.Terrain.Any(value => value != 255 && value > 15))
             throw new ArgumentException("Pursuit requires the unmodified source terrain types.", "terrain");
-        var allies = battle.Roster.Where(unit => unit.Index < 128).OrderBy(unit => unit.Index).ToArray();
+        var allies = battle.Roster.Where(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0 && unit.Position is not null).OrderBy(unit => unit.Index).ToArray();
         var blocked = battle.Terrain.ToArray();
         foreach (var ally in allies) blocked[Battle01PlayerMovement.Offset(ally.RequirePosition())] |= 128;
         var grid = Grid(blocked, actor.RequirePosition(), 10);
@@ -87,7 +87,7 @@ public static class Battle01EnemyPursuit
         var costs = allies.Select(ally => new Battle01PursuitTargetCost(ally.Index,
             raw.CostAt(ally.RequirePosition()) is { } cost && cost < 128 ? cost :
                 throw new ArgumentException("Only complete target costs below128 admit the source d0 class-pass boundary.", "pursuit.targets"))).ToArray();
-        if (costs.Length != 3) throw new ArgumentException("Retain all three living controlled targets.", "pursuit.targets");
+        if (costs.Length is < 2 or > 3) throw new ArgumentException("Retain every living controlled target.", "pursuit.targets");
         int target = costs.OrderBy(item => item.Cost).First().ActorIndex;
         var reverse = Grid(battle.Terrain, allies.Single(ally => ally.Index == target).RequirePosition(), 128);
         int startCost = reverse.CostAt(actor.RequirePosition()) ?? throw new ArgumentException("The target-rooted path must reach the actor.", "path");

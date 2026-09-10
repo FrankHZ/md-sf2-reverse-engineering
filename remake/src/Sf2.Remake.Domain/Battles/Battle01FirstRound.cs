@@ -112,19 +112,21 @@ public static class Battle01FirstRound
         if (order is null) throw new ArgumentException("The current round is required.", "turnOrder");
         int[] actors = GenerationRoster(current, order.RoundNumber).Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
             .Select(unit => unit.Index).Order().ToArray();
-        if (actors.Length is < 7 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
+        if (actors.Length is < 6 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
             !order.Slots.Take(actors.Length).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
             order.Slots.Skip(actors.Length).Any(slot => !slot.IsSentinel))
             throw new ArgumentException("The complete current-round order must be retained.", "turnOrder");
         var receipt = current.TurnCompletion;
         int enemies = current.Roster.Count(unit => unit.Index >= 128 && unit.Stats.HpCurrent > 0);
+        int allies = current.Roster.Count(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0);
         for (int index = order.CurrentTurnOffset / 2 - 1; index >= 0; index--)
         {
             if (receipt is null || receipt.RoundNumber != order.RoundNumber || receipt.CompletedActorIndex != order.Slots[index].CombatantIndex ||
                 !Battle01TurnCompletion.HasValidPolicy(receipt) ||
-                receipt.BeforeAfterTurn != new Battle01FactionCounts(3, enemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+                receipt.BeforeAfterTurn != new Battle01FactionCounts(allies, enemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
                 throw new ArgumentException("The complete current-generation receipt prefix must be retained.", "completion");
             if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true }) enemies++;
+            if (receipt.AllyDefeat is not null) allies++;
             receipt = receipt.Previous;
         }
         if (order.RoundNumber == 1 ? receipt is not null : receipt?.RoundNumber != order.RoundNumber - 1)
@@ -152,6 +154,12 @@ public static class Battle01FirstRound
             {
                 Battle01TurnCompletion.ValidateDefeatReceipt(receipt);
                 roster[Array.FindIndex(roster, unit => unit.Index == attack.TargetIndex)] = attack.Target;
+            }
+            else if (receipt.AllyDefeat is not null)
+            {
+                Battle01TurnCompletion.ValidateAllyDefeatReceipt(receipt);
+                var target = receipt.EnemyPhysicalAttack!.Target;
+                roster[Array.FindIndex(roster, unit => unit.Index == target.Index)] = target;
             }
         return roster;
     }

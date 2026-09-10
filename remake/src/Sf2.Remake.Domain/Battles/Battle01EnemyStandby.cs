@@ -117,7 +117,7 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
-    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp) RequireThinkingHistory(Battle01InitializedState current)
+    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp, ushort? ChesterDefeats) RequireThinkingHistory(Battle01InitializedState current)
     {
         if (current.RandomSeedCopy is not { } seed)
             throw new ArgumentException("The current thinking seed-copy must be retained.", "randomSeedCopy");
@@ -129,6 +129,7 @@ public static class Battle01EnemyStandby
         var positions = current.Roster.ToDictionary(unit => unit.Index, unit => unit.Position);
         uint? gold = current.CurrentGold;
         int livingEnemies = current.Roster.Count(unit => unit.Index >= 128 && unit.Stats.HpCurrent > 0);
+        int livingAllies = current.Roster.Count(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0);
         var damaged = new HashSet<int>();
         uint main = current.RandomSeedImage;
         int mainRound = current.FirstRound?.RoundNumber ?? 0;
@@ -148,7 +149,7 @@ public static class Battle01EnemyStandby
         {
             if (!Battle01TurnCompletion.HasValidPolicy(receipt))
                 throw new ArgumentException("Retain the completion kind's distinct policy.", "completion");
-            if (receipt.BeforeAfterTurn != new Battle01FactionCounts(3, livingEnemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
+            if (receipt.BeforeAfterTurn != new Battle01FactionCounts(livingAllies, livingEnemies) || receipt.AfterAfterTurn != receipt.BeforeAfterTurn)
                 throw new ArgumentException("Retain both faction counts at their historical death boundary.", "completion");
             if (receipt.RoundNumber != mainRound)
             {
@@ -195,13 +196,23 @@ public static class Battle01EnemyStandby
             {
                 if (receipt.RoundNumber <= 1)
                     throw new ArgumentException("Physical decisions cannot replace first-round standby.", "completion");
-                Battle01EnemyPhysicalAttack.ValidateDecision(attack);
+                Battle01EnemyPhysicalAttack.ValidateDecision(attack, receipt.AllyDefeat is not null);
                 actor = attack.ActorIndex; before = attack.SeedCopyBefore; after = attack.SeedCopyAfter;
                 memoryBefore = attack.Memory; memoryAfter = attack.Memory;
+                var targetAfter = attack.Effect.AfterStats;
+                if (receipt.AllyDefeat is { } allyCleanup)
+                {
+                    Battle01TurnCompletion.ValidateAllyDefeatReceipt(receipt);
+                    if (positions[attack.TargetIndex] is not null || livingAllies != 2 || livingEnemies != 4)
+                        throw new ArgumentException("Retain the unique unplaced ally and both prior enemy defeats.", "attack.history");
+                    targetAfter = targetAfter.WithCurrentDefeats(allyCleanup.DefeatsAfter);
+                    positions[attack.TargetIndex] = attack.Target.Position;
+                    livingAllies++;
+                }
                 if ((mainAnchored && main != attack.Effect.MainSeedAfter) ||
                     targets[actor - 128] != attack.TargetIndex ||
                     !Battle01EnemyPhysicalAttack.SameStats(stats[actor], attack.Actor.Stats) ||
-                    !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], attack.Effect.AfterStats))
+                    !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], targetAfter))
                     throw new ArgumentException("Physical main RNG, last target and HP history must remain linked.", "attack.history");
                 RewindMain(attack.MainSeedBefore, attack.Effect.MainSeedAfter);
                 targets[actor - 128] = attack.LastTargetBefore;
@@ -214,6 +225,11 @@ public static class Battle01EnemyStandby
                 if (receipt.RoundNumber <= 1 || before != after || memoryBefore != memoryAfter ||
                     (mainAnchored && pursuit.MainSeedImage != main))
                     throw new ArgumentException("Pursuit must preserve its round's main RNG and independent thinking state.", "completion");
+                var livingTargets = stats.Where(pair => pair.Key < 128 && pair.Value.HpCurrent > 0 && positions[pair.Key] is not null)
+                    .Select(pair => pair.Key).Order().ToArray();
+                if (!pursuit.TargetCosts.Select(target => target.ActorIndex).SequenceEqual(livingTargets) ||
+                    !livingTargets.Contains(pursuit.TargetIndex))
+                    throw new ArgumentException("Pursuit history must retain all and only living ally targets.", "pursuit.targets");
                 RewindMain(pursuit.MainSeedImage, pursuit.MainSeedImage);
             }
             else
@@ -233,7 +249,7 @@ public static class Battle01EnemyStandby
         if (memory.Any(value => value != 0)) throw new ArgumentException("Thinking history must retain initialized memory provenance.", "memory");
         if (targets.Any(value => value != 255))
             throw new ArgumentException("Last-target history must rewind to initialized empty slots.", "memory");
-        if (gold is not (null or 0) || livingEnemies != 6)
+        if (gold is not (null or 0) || livingEnemies != 6 || livingAllies != 3)
             throw new ArgumentException("Gold and enemy deaths must rewind to their explicit initialization inputs.", "attack.history");
         foreach (var unit in current.Roster)
         {
@@ -251,10 +267,12 @@ public static class Battle01EnemyStandby
                 throw new ArgumentException("Physical HP history must retain the initialized full-HP origin.", "attack.history");
             if (original.CurrentKills is not null && (unit.Index != 0 || original.CurrentKills != 0))
                 throw new ArgumentException("Known kills must rewind to the explicit Bowie zero input.", "attack.history");
+            if (original.CurrentDefeats is not null && (unit.Index != 2 || original.CurrentDefeats != 0))
+                throw new ArgumentException("Known defeats must rewind to the explicit Chester zero input.", "attack.history");
         }
         if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             Battle01TurnCompletion.RequireContinuingNoEffectState(current);
-        return (gold, stats[0].CurrentKills, stats[2].CurrentExp);
+        return (gold, stats[0].CurrentKills, stats[2].CurrentExp, stats[2].CurrentDefeats);
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,

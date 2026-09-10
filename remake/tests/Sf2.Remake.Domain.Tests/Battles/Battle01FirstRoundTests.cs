@@ -8,6 +8,27 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstRoundTests
 {
     [Fact]
+    public void AllyDefeatRewindsTheOldRoundBeforeGeneratingOnlySixSurvivors()
+    {
+        var after=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();
+        var old=Battle01FirstRound.GenerationRoster(after,13);
+        Assert.Equal(7,old.Count(unit=>unit.Position is not null && unit.Stats.HpCurrent>0));
+        Assert.Equal(new MapPosition(9,9),old[2].Position);Assert.Equal(1,old[2].Stats.HpCurrent);
+        Assert.Equal((ushort?)0,old[2].Stats.CurrentDefeats);
+        Assert.Null(old[6].Position);Assert.Null(old[7].Position);
+        var end=Battle01EnemyPursuit.CompleteNext(after,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var generated=Battle01FirstRound.EnterNext(end);
+        Assert.Equal(14,generated.FirstRound!.RoundNumber);Assert.Equal(0x02A11234u,generated.RandomSeedImage);
+        Assert.Equal(new[]{new Battle01TurnEntry(1,6),new(129,6),new(128,5),new(130,5),new(0,4),new(133,4)}
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),58)),generated.FirstRound.Slots);
+        Assert.Same(end.TurnCompletion,generated.TurnCompletion);Assert.Equal(end.AiMemory,generated.AiMemory);
+        Assert.Equal(end.AiLastTargets,generated.AiLastTargets);Assert.Equal((ushort?)0x0234,generated.RandomSeedCopy);
+        Battle01EnemyStandby.RequireThinkingHistory(generated);
+        Assert.Throws<ArgumentException>(()=>Battle01FirstRound.RequireGenerationFromRecordedMain(
+            generated,0x33171234,0x02A21234,true,14));
+    }
+
+    [Fact]
     public void SecondDefeatRetainsHistoricalCandidateSetsAndGeneratesExactlySevenSurvivors()
     {
         var before = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();

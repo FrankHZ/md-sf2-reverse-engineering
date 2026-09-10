@@ -31,7 +31,8 @@ public sealed class Battle01Stats
 {
     public Battle01Stats(byte level, ushort hpMax, ushort hpCurrent, byte mpMax, byte mpCurrent,
         byte attack, byte defense, byte agility, byte move, ushort status,
-        IEnumerable<ushort> items, IEnumerable<byte> spells, byte? currentExp = null, ushort? currentKills = null)
+        IEnumerable<ushort> items, IEnumerable<byte> spells, byte? currentExp = null, ushort? currentKills = null,
+        ushort? currentDefeats = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(spells);
@@ -42,11 +43,13 @@ public sealed class Battle01Stats
             throw new ArgumentException("Four packed item words and four packed spell bytes are required.");
         if (currentExp > 200) throw new ArgumentOutOfRangeException(nameof(currentExp));
         if (currentKills > 9999) throw new ArgumentOutOfRangeException(nameof(currentKills));
+        if (currentDefeats > 9999) throw new ArgumentOutOfRangeException(nameof(currentDefeats));
         Level = level; HpMax = hpMax; HpCurrent = hpCurrent; MpMax = mpMax; MpCurrent = mpCurrent;
         Attack = attack; Defense = defense; Agility = agility; Move = move; Status = status;
         Items = Array.AsReadOnly(itemCopy); Spells = Array.AsReadOnly(spellCopy);
         CurrentExp = currentExp;
         CurrentKills = currentKills;
+        CurrentDefeats = currentDefeats;
     }
     public byte Level { get; }
     public ushort HpMax { get; }
@@ -61,16 +64,19 @@ public sealed class Battle01Stats
     // Null is unspecified input, never an implicit zero EXP value.
     public byte? CurrentExp { get; }
     public ushort? CurrentKills { get; }
+    public ushort? CurrentDefeats { get; }
     public IReadOnlyList<ushort> Items { get; }
     public IReadOnlyList<byte> Spells { get; }
     internal Battle01Stats WithCurrentHp(ushort hp) => hp == HpCurrent ? this :
-        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills);
+        new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills, CurrentDefeats);
     internal Battle01Stats WithCurrentExp(byte exp) => exp == CurrentExp ? this :
-        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp, CurrentKills);
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp, CurrentKills, CurrentDefeats);
     internal Battle01Stats WithCurrentKills(ushort kills) => kills == CurrentKills ? this :
-        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, kills);
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, kills, CurrentDefeats);
+    internal Battle01Stats WithCurrentDefeats(ushort defeats) => defeats == CurrentDefeats ? this :
+        new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills, defeats);
     internal Battle01Stats Initialize(byte attack, ushort status) =>
-        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells, CurrentExp, CurrentKills);
+        new(Level, HpMax, HpMax, MpMax, MpMax, attack, Defense, Agility, Move, status, Items, Spells, CurrentExp, CurrentKills, CurrentDefeats);
 }
 
 public sealed record Battle01AllyInput(byte Id, byte ClassId, Battle01Stats EffectiveStats);

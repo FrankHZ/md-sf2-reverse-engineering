@@ -9,6 +9,24 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01StartupTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefeatsCounterMustMatchItsNamedPreparationBeforeInputsAreRead(bool newId)
+    {
+        var session = PendingSession(); var before = session.PrivateOriginalMapSnapshot;
+        var preset = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var old = OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;
+        var party = new OriginalBattle01ControlledPartyPreset(newId ? preset.Id : old.Id,
+            preset.RandomSeed, preset.Difficulty, newId ? old.Allies : preset.Allies,
+            preset.RandomSeedCopy, preset.CurrentGold);
+        var source = new Source(new OriginalBattle01StartupImported(Definition()));
+        var result = Assert.IsType<PrivateOriginalBattle01StartupRejected>(session.PreparePrivateOriginalBattle01Startup(
+            session.PrivateOriginalBattle01Admission, source, party));
+        Assert.Equal("party.allies", result.Diagnostic.Field); Assert.Equal(0, source.Calls);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot); Assert.Null(session.PrivateOriginalBattle01);
+    }
+
     [Fact]
     public void PreparationAndRepeatedPreparationRetainExactPendingAndEverySessionIdentity()
     {

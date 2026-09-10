@@ -43,14 +43,17 @@ public sealed partial class GameSession
             return new PrivateOriginalBattle01PlayerAttackRejected(failure);
         if (current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.PlayerAttackComparisonId &&
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId &&
-            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId)
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId &&
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId)
             return PlayerAttackRejected("party.expInput");
+        bool chesterComparison = current.Preparation.Party.Id is OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId
+            or OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId;
         var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId ||
-            current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId && actorIndex == 0
+            chesterComparison && actorIndex == 0
             ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat
             : Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
         // Keep every earlier receipt's policy; the continuation starts only after the first cleanup.
-        if (current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId &&
+        if (chesterComparison &&
             actorIndex == 0 && current.Battle.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             policy = Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat;
         Battle01InitializedState battle;
@@ -58,7 +61,8 @@ public sealed partial class GameSession
         {
             battle = transition(current.Battle, policy);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
-                current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp);
+                current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
+                current.Preparation.Party.Allies[2].CurrentDefeats);
         }
         catch (ArgumentException error) { return PlayerAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge);
