@@ -3518,8 +3518,10 @@ the first defeat, retains the source row while removing its live placement, and 
 player1 movement/cancel with EXP39/gold60/kills1 and the persistent reward result.
 The selected continuation moves Chester to(11,14) in R8 while Bowie stays at(11,15); actual131
 hits Chester11→9, then R9 returns his movement/cancel control. The newest enemy result replaces
-the older reward message while all prior accounting and the unplaced132 row persist. The separate
-Bowie-only player attack guard keeps Chester attacks unsupported.
+the older reward message while all prior accounting and the unplaced132 row persist. With the
+new named Chester EXP0 preparation, his origin Attack131 creates receipt72/EXP10, then actual
+128/129/131/133 return Sarah movement/cancel at receipt76 with Bowie HP3 and main25991234/copy0634.
+The old null-EXP preparation still rejects Chester attacks; his kills remain unspecified in both.
 Other combat profiles/terrain, spells, items, validated follow-ups, required level changes,
 further defeats/victory and original cancellation/death animation remain unsupported.
 
