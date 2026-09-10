@@ -24,6 +24,8 @@ public sealed partial class GameSession
         {
             battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex,
                 Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
+                current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp);
         }
         catch (ArgumentException error) { return EnemyPhysicalAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle,

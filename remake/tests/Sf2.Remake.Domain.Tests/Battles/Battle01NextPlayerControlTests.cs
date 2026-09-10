@@ -8,6 +8,32 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void ActualSarahControlAfterChesterAttackMovesAndCancelsWithoutTakingHerTurn()
+    {
+        var after = Battle01EnemyPhysicalAttackTests.AfterChesterPlayerRelay();
+        var ready = Battle01NextPlayerControl.Enter(after, 1).State!;
+        Assert.Equal((9, (byte)10, 1, 10, 76), (ready.FirstRound!.RoundNumber, ready.FirstRound.CurrentTurnOffset,
+            ready.FirstControl!.ActorIndex, ready.FirstControl.Movement.Range.Budget, Battle01EnemyPursuitTests.Receipts(ready).Count()));
+        Assert.Equal(new[] { new Battle01TurnEntry(2, 8), new(128, 6), new(129, 6), new(131, 6),
+            new(133, 5), new(1, 4), new(130, 4), new(0, 3) }.Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 56)), ready.FirstRound.Slots);
+        var preview = Battle01PlayerMovement.SelectDestination(ready, 1, new(10, 17));
+        Assert.Equal(2, preview.FirstControl!.Movement.GridCost);
+        var moved = Battle01PlayerMovement.Confirm(preview, 1);
+        Assert.Equal(new MapPosition(10, 17), moved.Roster[1].Position);
+        var cancelled = Battle01PlayerMovement.Cancel(moved, 1);
+        Assert.Equal(new MapPosition?[] { new(11, 15), new(9, 17), new(11, 14), new(8, 3), new(9, 5),
+            new(6, 3), new(10, 15), null, new(7, 5) }, cancelled.Roster.Select(u => u.Position));
+        Assert.Equal(new ushort[] { 3, 11, 9, 5, 5, 5, 3, 0, 5 }, cancelled.Roster.Select(u => u.Stats.HpCurrent));
+        Assert.Same(after.TurnCompletion, cancelled.TurnCompletion); Assert.Same(after.FirstRound, cancelled.FirstRound);
+        Assert.Equal((0x25991234u, (ushort?)0x0634), (cancelled.RandomSeedImage, cancelled.RandomSeedCopy));
+        Assert.Equal(((uint?)60, (byte?)39, (ushort?)1, (byte?)10), (cancelled.CurrentGold,
+            cancelled.Roster[0].Stats.CurrentExp, cancelled.Roster[0].Stats.CurrentKills, cancelled.Roster[2].Stats.CurrentExp));
+        Assert.Null(cancelled.Roster[2].Stats.CurrentKills); Assert.Equal(8, cancelled.Occupancy.Count(id => id >= 0));
+        Assert.Equal(new[] { false, true, false }.Concat(Enumerable.Repeat(false, 13)), cancelled.RegionFlags90Through105);
+        Assert.Equal(0, cancelled.NewlyTestedRegionMask);
+    }
+
+    [Fact]
     public void RoundNineChesterMovesAndCancelsWithRecordedDamageAndTheEarlierDefeatPreserved()
     {
         var after = Battle01EnemyPhysicalAttackTests.ChesterHitCompleted();

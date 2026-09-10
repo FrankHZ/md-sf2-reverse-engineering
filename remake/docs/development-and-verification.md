@@ -288,11 +288,24 @@ STAY and the actual relay; the restored snapshot completing those two physical S
 to R9 Chester; Chester's(12,14) provisional move; cancel back to(11,14). Compare the complete
 copied/physical battle snapshots,57 thinking steps,six attack main draws,24 living generation
 draws/full64 slots, HP9, previous awards/dead132 and newest enemy result across rounds.
-The two required real Content methods extend the same original-input prefix through this endpoint
-with `SF2_REQUIRE_PRIVATE_TESTS=1` and must report2 pass/0 skip. Narrow Domain/Application
-tests reject profile/accounting/history drift, stale or foreign requests and false local HP replay;
-Chester active attacks remain rejected. Recheck the existing first-defeat, player-physical,
-enemy-physical and pursuit native modes for this shared result-view change.
+The two original required real Content methods retain their earlier preset/null assertions.
+`AcceptedSelectedInputsContinueChesterPlayerAttackFromAuthoredExpZero` supplies the new preset
+at preparation/initialization and reuses the complete real prefix, then confirms Chester's origin,
+cycles/cancels/reselects131 and commits damage2/EXP10. Actual128/129/131/133 lead to receipt76,
+Sarah HP11/budget10 movement/confirm(10,17)/cancel, Bowie HP3 and main25991234/copy0634.
+Run all three with `SF2_REQUIRE_PRIVATE_TESTS=1` and
+`FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests.AcceptedSelected`; require3 pass/0 skip.
+Narrow Domain/Application tests reject profile/accounting/history drift, stale or foreign requests,
+null/zero preparation-origin mismatches at both physical publish boundaries, and false local
+HP/EXP/RNG replay. Unspecified Chester EXP still rejects his player attack.
+Use `chester-player-attack` for18 native frames: the twelve Chester-hit frames followed by
+origin target131, target cancel, labeled copied receipt72, physical relay to Sarah, Sarah provisional
+move and cancel. Compare the complete copied/physical endpoint and unchanged R9 order, every
+receipt/stat/AI/random channel, newest enemy result and separately visible Chester EXP10.
+Recheck `chester-enemy-hit` (12), `first-enemy-defeat` (6), `player-physical-attack` (6),
+`enemy-physical-attack` (4) and `enemy-pursuit` (4):50 inspected frames in total.
+All native modes now use the named Chester EXP0 preparation; their earlier HP/RNG/accounting
+and frame contracts remain. Preserve old null-preset artifacts separately.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. The new named preparation and shared view require the
 affected player physical, enemy physical and pursuit modes. Other modes,

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
@@ -9,9 +10,29 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
 {
-    internal static GameSession ChesterAttackSession()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EnemyPublishRejectsNullVersusZeroChesterPreparationAfterLocalPhysicalFinalization(bool historyHasExp)
     {
-        var session = PrivateOriginalBattle01PlayerPhysicalAttackTests.ReadySession(firstDefeat: true);
+        var session = ChesterAttackSession(historyHasExp); var original = session.PrivateOriginalBattle01!;
+        var party = historyHasExp ? OriginalBattle01ControlledPartyPreset.FirstDefeatComparison :
+            OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;
+        var prepared = new PrivateOriginalBattle01StartupPrepared(original.Preparation.Pending, original.Preparation.Inputs, party);
+        var current = new PrivateOriginalBattle01SessionSnapshot(prepared, original.Battle, original.SourceLocomotion, original.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, current);
+        var local = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, 131, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+        Assert.Equal(9, local.Roster[2].Stats.HpCurrent);
+        Assert.Equal("accounting.input", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 131)).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01); Assert.Same(original.Battle, current.Battle);
+        Assert.Equal((11, 0xB28D1234u, (ushort?)0x0034, 255), ((int)current.Battle.Roster[2].Stats.HpCurrent,
+            current.Battle.RandomSeedImage, current.Battle.RandomSeedCopy, (int)current.Battle.AiLastTargets[3]));
+    }
+
+    internal static GameSession ChesterAttackSession(bool chesterPlayer = false)
+    {
+        var session = PrivateOriginalBattle01PlayerPhysicalAttackTests.ReadySession(firstDefeat: true, chesterPlayer);
         for (int step = 0; step < 24; step++)
         {
             var current = session.PrivateOriginalBattle01!;

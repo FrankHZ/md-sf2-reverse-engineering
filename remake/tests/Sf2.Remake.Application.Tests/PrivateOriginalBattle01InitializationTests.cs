@@ -10,6 +10,31 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void ChesterSupplementSuppliesOnlyHisExpAtInitializationAndRetainsTheThreeOlderPresets()
+    {
+        var old = OriginalBattle01ControlledPartyPreset.FirstDefeatComparison;
+        var preset = OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic());
+        Assert.Same(old.Allies[0], preset.Allies[0]); Assert.Same(old.Allies[1], preset.Allies[1]);
+        Assert.Equal(old.CurrentGold, preset.CurrentGold); Assert.Null(preset.Allies[2].CurrentKills);
+        foreach (var prior in new[] { OriginalBattle01ControlledPartyPreset.PlayerReadyComparison,
+            OriginalBattle01ControlledPartyPreset.PlayerAttackComparison, old })
+        {
+            Assert.Null(prior.GetAdmissionDiagnostic()); Assert.Null(prior.Allies[2].CurrentExp);
+            Assert.Null(prior.Allies[2].CurrentKills);
+        }
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var source = Prepare(session);
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Pending, source.Inputs, preset);
+        var initialized = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Equal(new byte?[] { 0, null, 0 }, initialized.Battle.Roster.Take(3).Select(u => u.Stats.CurrentExp));
+        Assert.Equal(new ushort?[] { 0, null, null }, initialized.Battle.Roster.Take(3).Select(u => u.Stats.CurrentKills));
+        Assert.Equal((uint?)0, initialized.Battle.CurrentGold);
+        foreach (var (id, allies) in new[] { (preset.Id, old.Allies), (old.Id, preset.Allies) })
+            Assert.Equal("party.allies", new OriginalBattle01ControlledPartyPreset(id, preset.RandomSeed,
+                preset.Difficulty, allies, preset.RandomSeedCopy, preset.CurrentGold).GetAdmissionDiagnostic()!.Field);
+    }
+
+    [Fact]
     public void FirstDefeatSupplementDeclaresGoldAndBowiesKillsWithoutChangingEarlierPresets()
     {
         foreach (var old in new[] { OriginalBattle01ControlledPartyPreset.PlayerReadyComparison,

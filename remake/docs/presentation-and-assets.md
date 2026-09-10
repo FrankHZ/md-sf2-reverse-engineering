@@ -841,7 +841,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -1015,7 +1015,7 @@ The recipe retains its bounded restore/build/native process and source-archive p
 
 For manual player physical attack, select `SF2_BATTLE01_CONTROL_REVIEW=player-physical-attack`
 with a fresh review root and the same registered inputs. N explicitly prepares the separate
-controlled Bowie EXP0/gold0/kills0 comparison; unspecified accounting in the older presets remains valid for their
+controlled Chester EXP0 supplement over Bowie EXP0/gold0/kills0; unspecified inputs in all three older presets remain valid for their
 earlier operations. At action choice, A opens the live ordered target list, I/J choose previous,
 K/L choose next, Space confirms the attack, and Backspace returns to action choice at the provisional
 position. A second Backspace restores movement origin. Space at ordinary action choice still STAYs.
@@ -1072,13 +1072,35 @@ frames and adds six actual continuation checkpoints:
 6. `12-chester-move-cancel`: physical Backspace restores(11,14), HP9, receipt71 and all channels.
 
 The exact target is class1/KNTE, Wooden Stick184, effective ATT8/DEF5/AGI7/MOV7, HPmax11/MP0,
-with EXP/kills unspecified. Enemy131 moves to(11,13), cost6/path`[3,3,3,255]`;57 thinking steps
+with EXP0 from the new preparation and kills unspecified. Enemy131 moves to(11,13), cost6/path`[3,3,3,255]`;57 thinking steps
 give priority7/copy0134. Six main draws give2/32,27/32,0/1,0/1,25/32,13/32 and HP11→temporary9→
 restore11→persistent9. R9 uses eight survivors and24 generation calls; no true follow-up or death
 occurs. Inspect all12 frames and the restore/build/native process receipts. Recheck the affected
 first-defeat, player/enemy physical and pursuit modes against their existing frame contracts.
 Current gold60/kills1/EXP39 and five enemy markers remain state projections even though the new
-enemy-hit summary replaces the older defeat message. This grants no Chester active-attack support.
+enemy-hit summary replaces the older defeat message. This mode stops before Chester's player attack.
+
+For `SF2_BATTLE01_CONTROL_REVIEW=chester-player-attack`, retain these twelve frames and add:
+
+1. `13-chester-origin-target131`: physical Space/A at(11,14), I/L target cycling; Chester HP9/EXP0
+   and the sole adjacent131 target remain visible.
+2. `14-chester-target-cancel`: physical Backspace returns to action choice without HP/EXP/RNG change.
+3. `15-chester-attack-receipt72-test-copy`: reselect with A, copy the exact selected snapshot and
+   confirm through Application. Label this frame as a test copy: A2→E3 hit2, HP5→3, EXP0→10;
+   actual128 is the next candidate and has not been dispatched. Run production dispatch on this
+   copy through actual128/129/131/133, then restore the exact selected physical snapshot.
+4. `16-sarah-ready-after-chester-attack`: physical Space confirms and runs the same production
+   relay. The full resulting battle state and receipt72 must equal the copy. Actual player1/Sarah
+   is ready at(9,17), HP11/budget10, receipt76/R9 raw10. Show newest E3→A0 hit3/HP6→3, with live
+   Chester HP9/EXP10, Bowie EXP39/kills1, gold60 and five enemy markers.
+5. `17-sarah-provisional10-17`: physical L/Space confirms cost2 movement without taking her turn.
+6. `18-sarah-move-cancel`: physical Backspace returns to(9,17), retaining receipt76, the same
+   generated64 R9 slots, main25991234/copy0634 and every accounting, AI and source channel.
+
+Inspect all18 images and the five affected older modes (12/6/6/4/4 images),50 images total.
+All six modes use `ChesterPlayerAttackComparison` at N; this is explicit input provenance,
+not an EXP patch at receipt71. Preserve older null-preset captures read-only. Every mode retains
+its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu

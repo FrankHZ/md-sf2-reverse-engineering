@@ -117,7 +117,7 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
-    internal static (uint? Gold, ushort? BowieKills) RequireThinkingHistory(Battle01InitializedState current)
+    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp) RequireThinkingHistory(Battle01InitializedState current)
     {
         if (current.RandomSeedCopy is not { } seed)
             throw new ArgumentException("The current thinking seed-copy must be retained.", "randomSeedCopy");
@@ -254,7 +254,7 @@ public static class Battle01EnemyStandby
         }
         if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             Battle01TurnCompletion.RequireContinuingNoEffectState(current);
-        return (gold, stats[0].CurrentKills);
+        return (gold, stats[0].CurrentKills, stats[2].CurrentExp);
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,

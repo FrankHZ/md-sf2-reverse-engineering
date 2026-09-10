@@ -63,6 +63,7 @@ public sealed class OriginalBattle01ControlledPartyPreset
     public const string SeedCopyPolicyId = "battle01-controlled-player-ready-seed-copy-retention-v1";
     public const string PlayerAttackComparisonId = "private-local-battle01-player-attack-bowie-exp0-inputs-v1";
     public const string FirstDefeatComparisonId = "private-local-battle01-first-defeat-bowie-exp0-gold0-kills0-inputs-v1";
+    public const string ChesterPlayerAttackComparisonId = "private-local-battle01-chester-player-attack-exp0-inputs-v1";
 
     public OriginalBattle01ControlledPartyPreset(string id, uint randomSeed, byte difficulty,
         IEnumerable<OriginalBattle01ControlledAlly> allies, ushort? randomSeedCopy = null, uint? currentGold = null)
@@ -112,15 +113,27 @@ public sealed class OriginalBattle01ControlledPartyPreset
                 ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells, ally.CurrentExp, currentKills: 0)
             : ally), ComparisonSeedCopy, currentGold: 0);
 
+    // Authored Chester EXP only; his naturally carried EXP and kills remain unestablished.
+    public static OriginalBattle01ControlledPartyPreset ChesterPlayerAttackComparison { get; } = new(
+        ChesterPlayerAttackComparisonId, ComparisonSeed, 0,
+        FirstDefeatComparison.Allies.Select(ally => ally.Id == 2
+            ? new OriginalBattle01ControlledAlly(ally.Id, ally.ClassId, ally.Level, ally.HpMax, ally.HpCurrent,
+                ally.MpMax, ally.MpCurrent, ally.EffectiveAttack, ally.EffectiveDefense, ally.EffectiveAgility,
+                ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells, currentExp: 0,
+                currentKills: ally.CurrentKills)
+            : ally), ComparisonSeedCopy, FirstDefeatComparison.CurrentGold);
+
     public OriginalBattle01StartupDiagnostic? GetAdmissionDiagnostic()
     {
-        if (Id != ComparisonId && Id != PlayerAttackComparisonId && Id != FirstDefeatComparisonId)
+        if (Id != ComparisonId && Id != PlayerAttackComparisonId && Id != FirstDefeatComparisonId &&
+            Id != ChesterPlayerAttackComparisonId)
             return new("party.id", "Only the named controlled comparison presets are admitted.");
         if (RandomSeed != ComparisonSeed) return new("party.randomSeed", "The comparison seed must be explicitly 0x1234.");
         if (RandomSeedCopy != ComparisonSeedCopy)
             return new("party.randomSeedCopy", "The independent comparison seed-copy must be explicitly 0x1234.");
         if (Difficulty != 0) return new("party.difficulty", "The comparison uses explicit difficulty zero.");
-        var expected = Id == FirstDefeatComparisonId ? FirstDefeatComparison :
+        var expected = Id == ChesterPlayerAttackComparisonId ? ChesterPlayerAttackComparison :
+            Id == FirstDefeatComparisonId ? FirstDefeatComparison :
             Id == PlayerAttackComparisonId ? PlayerAttackComparison : PlayerReadyComparison;
         if (CurrentGold != expected.CurrentGold)
             return new("party.goldInput", "Retain the named preset's explicit or unspecified gold input.");
