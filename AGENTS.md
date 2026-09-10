@@ -71,6 +71,14 @@ current accepted `origin/main` in an isolated worktree and a short-lived topic b
 matches the lane: `codex/research-*`, `codex/design-*`, `codex/tooling-*`, `codex/remake-*`, or
 `codex/repo-*`.
 
+Prefer reusing the same dedicated isolated worktree for successive slices of one task. After the
+previous slice is merged, tracked changes are clean, and its owned processes have exited, start the
+next topic branch from current accepted `origin/main` in that worktree. Preserve private inputs,
+completed gate results, and failure records; use separate ignored output locations for new runs and
+apply the existing dependency-based gate invalidation rules. Create another worktree when concurrent
+work or preserving a required reproduction environment needs separate isolation. Reuse never permits
+ordinary writes on `main` or multiple active writers in one worktree.
+
 Before editing, declare the exact owned paths, shared-path needs, dependencies, semantic boundary,
 and acceptance commands. Check all live worktrees and open topics for competing ownership. One path
 has one active writer; never run parallel writers in one worktree. Serialize shared registries,
