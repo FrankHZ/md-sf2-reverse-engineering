@@ -10,6 +10,92 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
 {
+    internal static GameSession SecondDefeatSelectedSession()
+    {
+        var session = ChesterReadySession(); var current = session.PrivateOriginalBattle01!;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
+        foreach (int actor in new[] { 128, 129 }) current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyStandby(current, actor)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 131)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(current, 133)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 1)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 1)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current, 1)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01EnemyStandbyCompleted>(session.CompletePrivateOriginalBattle01EnemyStandby(current, 130)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 0)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 0)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 0));
+        return session;
+    }
+
+    [Fact]
+    public void SecondDefeatPublishesOncePreservesAllEarlierPoliciesAndReturnsRoundTenControl()
+    {
+        var session = SecondDefeatSelectedSession(); var selected = session.PrivateOriginalBattle01!;
+        var frozen = JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 });
+        for (var r = selected.Battle.TurnCompletion; r is not null; r = r.Previous)
+            Assert.NotSame(Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat, r.Policy);
+        var cycle = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.CyclePrivateOriginalBattle01PlayerAttackTarget(selected, 0, 1)).Snapshot;
+        var cancelled = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.CancelPrivateOriginalBattle01PlayerAttackTarget(cycle, 0)).Snapshot;
+        Assert.Same(selected.Battle.TurnCompletion, cancelled.Battle.TurnCompletion);
+        var reselected = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(cancelled, 0)).Snapshot;
+        var after = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(reselected, 0)).Snapshot;
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Same(selected.Battle.TurnCompletion, after.Battle.TurnCompletion!.Previous);
+        Assert.Same(Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat, after.Battle.TurnCompletion.Policy);
+        Assert.Same(selected.Preparation, after.Preparation); Assert.Same(selected.SourceSnapshot, after.SourceSnapshot);
+        Assert.Same(selected.SourceLocomotion, after.SourceLocomotion); Assert.Same(selected.SourceBridge, after.SourceBridge);
+        Assert.Equal(((uint?)120, (byte?)63, (ushort?)2), (after.Battle.CurrentGold, after.Battle.Roster[0].Stats.CurrentExp, after.Battle.Roster[0].Stats.CurrentKills));
+        Assert.Null(after.Battle.Roster[6].Position); Assert.Null(after.Battle.Roster[7].Position);
+        foreach (var stale in new[] { selected, reselected })
+            Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.ConfirmPrivateOriginalBattle01PlayerAttack(stale, 0)).Diagnostic.Field);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.ConfirmPrivateOriginalBattle01PlayerAttack(after, 0)).Diagnostic.Field);
+        Assert.Same(after, session.PrivateOriginalBattle01);
+        var generated = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(after)).Snapshot;
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(generated, 2)).Snapshot;
+        Assert.Equal((0x9F861234u, (ushort?)0x0034, 10, 2), (ready.Battle.RandomSeedImage, ready.Battle.RandomSeedCopy,
+            ready.Battle.FirstRound!.RoundNumber, ready.Battle.FirstControl!.ActorIndex));
+        Assert.Equal(frozen, JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 }));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("equivalent")]
+    [InlineData("foreign")]
+    [InlineData("oldPreset")]
+    [InlineData("oldCorpse")]
+    [InlineData("repeatGold")]
+    public void SecondDefeatRejectsStaleOrForgedRequestsWithoutPublishingAnyChannel(string mutation)
+    {
+        var session = SecondDefeatSelectedSession(); var current = session.PrivateOriginalBattle01!;
+        PrivateOriginalBattle01SessionSnapshot? request = current;
+        if (mutation == "null") request = null;
+        else if (mutation == "equivalent") request = new(current.Preparation, current.Battle, current.SourceLocomotion, current.SourceBridge);
+        else if (mutation == "foreign") request = SecondDefeatSelectedSession().PrivateOriginalBattle01;
+        else if (mutation == "oldPreset")
+        {
+            var prepared = new PrivateOriginalBattle01StartupPrepared(current.Preparation.Pending, current.Preparation.Inputs,
+                OriginalBattle01ControlledPartyPreset.FirstDefeatComparison);
+            request = current = new(prepared, current.Battle, current.SourceLocomotion, current.SourceBridge); Set(session, current);
+        }
+        else
+        {
+            var roster = current.Battle.Roster.ToArray(); var corpse = roster[7];
+            if (mutation == "oldCorpse") roster[7] = Internal<Battle01Combatant>(corpse.Deployment, corpse.Stats, corpse.ClassId,
+                corpse.EnemySource, corpse.AiBitfield, new MapPosition(12, 14));
+            var battle = Internal<Battle01InitializedState>(current.Battle, roster, current.Battle.RandomSeedImage,
+                mutation == "repeatGold" ? (uint?)120 : current.Battle.CurrentGold);
+            request = current = new(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge); Set(session, current);
+        }
+        var frozen = JsonSerializer.Serialize(current, new JsonSerializerOptions { MaxDepth = 256 });
+        var result = Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.ConfirmPrivateOriginalBattle01PlayerAttack(request, 0));
+        if (mutation is "null" or "equivalent" or "foreign") Assert.Equal("snapshot", result.Diagnostic.Field);
+        if (mutation == "oldPreset") Assert.Equal("attack.additionalDefeat", result.Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01);
+        Assert.Equal(frozen, JsonSerializer.Serialize(current, new JsonSerializerOptions { MaxDepth = 256 }));
+    }
+
     internal static GameSession ChesterReadySession()
     {
         var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.ChesterAttackSession(chesterPlayer: true);

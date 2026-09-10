@@ -8,6 +8,29 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void RoundTenChesterMovementRetainsBothCorpsesAndSecondDefeatAwards()
+    {
+        var completed = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();
+        var generated = Battle01FirstRound.EnterNext(completed);
+        var ready = Battle01NextPlayerControl.Enter(generated, 2).State!;
+        Assert.Equal((10, (byte)0, 2, 14), (ready.FirstRound!.RoundNumber, ready.FirstRound.CurrentTurnOffset,
+            ready.FirstControl!.ActorIndex, ready.FirstControl.Movement.Range.Budget));
+        // The source terrain0 restriction is asserted by the required real Content route; this authored grid uses plains.
+        var preview = Battle01PlayerMovement.SelectDestination(ready, 2, new(12, 14));
+        Assert.Equal(2, preview.FirstControl!.Movement.GridCost);
+        var moved = Battle01PlayerMovement.Confirm(preview, 2); Assert.Equal(new MapPosition(12, 14), moved.Roster[2].Position);
+        var cancelled = Battle01PlayerMovement.Cancel(moved, 2); Assert.Equal(new MapPosition(11, 14), cancelled.Roster[2].Position);
+        Assert.Same(completed.TurnCompletion, cancelled.TurnCompletion); Assert.Same(generated.FirstRound, cancelled.FirstRound);
+        Assert.Same(ready.Roster[2].Stats, cancelled.Roster[2].Stats); Assert.Equal(ready.Occupancy, cancelled.Occupancy);
+        Assert.Equal((0x9F861234u, (ushort?)0x0034, (ushort)7), (cancelled.RandomSeedImage, cancelled.RandomSeedCopy, cancelled.NewlyTestedRegionMask));
+        Assert.Equal(new ushort[] { 3, 11, 9, 5, 5, 5, 0, 0, 5 }, cancelled.Roster.Select(u => u.Stats.HpCurrent));
+        Assert.Equal(((uint?)120, (byte?)63, (ushort?)2, (byte?)10), (cancelled.CurrentGold,
+            cancelled.Roster[0].Stats.CurrentExp, cancelled.Roster[0].Stats.CurrentKills, cancelled.Roster[2].Stats.CurrentExp));
+        Assert.Equal(7, cancelled.Occupancy.Count(id => id >= 0)); Assert.Null(cancelled.Roster[6].Position); Assert.Null(cancelled.Roster[7].Position);
+        Assert.Equal(generated.AiMemory, cancelled.AiMemory); Assert.Equal(generated.AiLastTargets, cancelled.AiLastTargets);
+    }
+
+    [Fact]
     public void ActualSarahControlAfterChesterAttackMovesAndCancelsWithoutTakingHerTurn()
     {
         var after = Battle01EnemyPhysicalAttackTests.AfterChesterPlayerRelay();

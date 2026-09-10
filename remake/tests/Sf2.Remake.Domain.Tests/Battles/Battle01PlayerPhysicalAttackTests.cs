@@ -7,6 +7,139 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01PlayerPhysicalAttackTests
 {
+    internal static Battle01PlayerPhysicalCompletionPolicy SecondPolicy => Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat;
+    internal static Battle01InitializedState SecondDefeatSelected()
+    {
+        var current = Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.AfterChesterPlayerRelay(), 1).State!;
+        var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1, stay);
+        current = Battle01EnemyStandby.CompleteNext(current, 130, stay);
+        current = Battle01NextPlayerControl.Enter(current, 0).State!;
+        return Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 0), 0);
+    }
+    internal static Battle01InitializedState SecondDefeatCompleted() => Battle01PlayerPhysicalAttack.Confirm(SecondDefeatSelected(), 0, SecondPolicy);
+
+    [Fact]
+    public void SecondDefeatPreservesTheFirstCorpseAndCreditsOnlyTheNewTarget()
+    {
+        var selected = SecondDefeatSelected(); var oldCorpse = selected.Roster[7];
+        var frozen = JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 });
+        var after = Battle01PlayerPhysicalAttack.Confirm(selected, 0, SecondPolicy);
+        var receipt = after.TurnCompletion!; var d = receipt.PlayerPhysicalAttack!;
+        Assert.Same(selected.TurnCompletion, receipt.Previous); Assert.Same(SecondPolicy, receipt.Policy);
+        Assert.Equal(79, Battle01EnemyPursuitTests.Receipts(after).Count());
+        // This existing authored grid uses plains here; the required real Content route uses Low Sky.
+        Assert.Equal((0, 131, 1, 230), (d.ActorIndex, d.TargetIndex, (int)d.TargetTerrain, d.LandMultiplier));
+        Assert.Equal(new[] { 131 }, d.LegalTargets); Assert.Equal(new byte[] { 255 }, d.MoveString);
+        Assert.Equal(new MapPosition(11, 15), d.RangeOrigin); Assert.Equal(new MapPosition(10, 15), d.Target.Position);
+        Assert.Equal(new ushort[] { 8, 16, 1, 1, 16, 16 }, d.Effect.Rolls.Select(r => r.Range));
+        Assert.Equal(new ushort[] { 7, 13, 0, 0, 9, 5 }, d.Effect.Rolls.Select(r => r.Result));
+        Assert.Equal(new uint[] { 0xE8CC1234, 0xD2631234, 0xAF0E1234, 0xE3BD1234, 0x90A01234, 0x58271234 },
+            d.Effect.Rolls.Select(r => r.AfterImage));
+        Assert.Equal((3, 0, 3, 0, 49, 24, 24), (d.Effect.Damage, (int)d.Effect.TemporaryHp, (int)d.Effect.RestoredHp,
+            (int)d.Effect.AfterStats.HpCurrent, d.AccumulatedExp, d.HalvedExp, d.AwardedExp));
+        Assert.Equal(0, d.Target.Stats.HpCurrent - d.Effect.Damage);
+        Assert.Equal(new Battle01PhysicalReaction(131, -3, 0, 0, 1), d.Effect.Reaction);
+        Assert.False(d.Effect.Dodged); Assert.False(d.Effect.Critical); Assert.True(d.DefeatedTarget);
+        Assert.Equal(((uint?)120, (byte?)63, (ushort?)2, (byte?)10),
+            (after.CurrentGold, after.Roster[0].Stats.CurrentExp, after.Roster[0].Stats.CurrentKills, after.Roster[2].Stats.CurrentExp));
+        Assert.Null(after.Roster[2].Stats.CurrentKills); Assert.Equal(3, after.Roster[0].Stats.HpCurrent);
+        Assert.Same(oldCorpse, after.Roster[7]); Assert.Null(after.Roster[6].Position); Assert.Null(after.Roster[7].Position);
+        Assert.Equal(-1, after.OccupantAt(new(10, 15))); Assert.Equal(7, after.Occupancy.Count(id => id >= 0));
+        Assert.Equal(new[] { 131 }, receipt.EnemyDefeat!.FirstWorklist); Assert.Empty(receipt.EnemyDefeat.AfterTurnWorklist);
+        Assert.Equal((0, (ushort)1, (ushort)2), (receipt.EnemyDefeat.CreditedAlly, receipt.EnemyDefeat.KillsBefore, receipt.EnemyDefeat.KillsAfter));
+        Assert.Equal(new Battle01FactionCounts(3, 4), receipt.BeforeAfterTurn); Assert.Equal(receipt.BeforeAfterTurn, receipt.AfterAfterTurn);
+        Assert.Equal((0x58271234u, (ushort?)0x0034, (byte)16), (after.RandomSeedImage, after.RandomSeedCopy, after.FirstRound!.CurrentTurnOffset));
+        Assert.Null(after.FirstRound.CurrentCandidate); Assert.Same(selected.FirstRound!.Slots, after.FirstRound.Slots);
+        Assert.Same(selected.AiMemory, after.AiMemory); Assert.Same(selected.AiLastTargets, after.AiLastTargets);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, 0, 0);
+        Assert.Equal(frozen, JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 }));
+    }
+
+    [Fact]
+    public void HoveringTerrainZeroUsesUnreducedDamageAndTheSameLethalEarlyReturn()
+    {
+        var selected = SecondDefeatSelected(); var actor = selected.Roster[0]; var target = selected.Roster[6];
+        var (effect, accumulated, halved, award, after) = Battle01PlayerPhysicalAttack.Resolve(actor.Stats, target.Stats,
+            Battle01PlayerPhysicalAttack.TargetLandMultiplier(0), selected.RandomSeedImage, 131,
+            actor.RequirePosition(), target.RequirePosition(), allowDefeat: true);
+        Assert.Equal((4, -1, 0, 3, 0, 49, 24, 24, (byte?)63), (effect.Damage,
+            target.Stats.HpCurrent - effect.Damage, (int)effect.TemporaryHp, (int)effect.RestoredHp,
+            (int)effect.AfterStats.HpCurrent, accumulated, halved, award, after.CurrentExp));
+        Assert.Equal(new Battle01PhysicalReaction(131, -4, 0, 0, 1), effect.Reaction);
+        Assert.Equal(new ushort[] { 8, 16, 1, 1, 16, 16 }, effect.Rolls.Select(r => r.Range));
+        Assert.Equal(new ushort[] { 7, 13, 0, 0, 9, 5 }, effect.Rolls.Select(r => r.Result));
+        Assert.Equal(0x58271234u, effect.MainSeedAfter); Assert.Equal(3, target.Stats.HpCurrent);
+    }
+
+    [Fact]
+    public void EarlierPoliciesKeepTheirLimitsAndTheSecondPolicyDoesNotAdmitChester()
+    {
+        var selected = SecondDefeatSelected();
+        Assert.Equal("attack.additionalDefeat", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.Confirm(selected, 0, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat)).ParamName);
+        Assert.Equal("attack.lethal", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.Confirm(selected, 0, Policy)).ParamName);
+        Assert.Equal("policy", Assert.Throws<ArgumentException>(() => Battle01PlayerPhysicalAttack.Confirm(ChesterSelected(), 2, SecondPolicy)).ParamName);
+        Assert.Equal(256, Battle01PlayerPhysicalAttack.TargetLandMultiplier(0));
+        Assert.Equal(230, Battle01PlayerPhysicalAttack.TargetLandMultiplier(1));
+        foreach (byte terrain in new byte[] { 2, 3, 6, 7, 8, 255 })
+            Assert.Equal("attack.targetTerrain", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+                Battle01PlayerPhysicalAttack.TargetLandMultiplier(terrain)).ParamName);
+        Assert.Equal("battle01-controlled-player-first-defeat-exp-gold-kills-v1", Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat.Id);
+    }
+
+    [Theory]
+    [InlineData("oldCorpsePosition")]
+    [InlineData("oldCorpseHp")]
+    [InlineData("newCellOccupied")]
+    [InlineData("repeatAward")]
+    [InlineData("firstWorklist")]
+    [InlineData("bothCorpsesWorklist")]
+    [InlineData("afterWorklist")]
+    [InlineData("oldPolicy")]
+    [InlineData("priorCleanup")]
+    [InlineData("priorPolicy")]
+    [InlineData("kills")]
+    [InlineData("exp")]
+    [InlineData("main")]
+    [InlineData("copy")]
+    [InlineData("firstCount")]
+    [InlineData("afterCount")]
+    public void SecondDefeatHistoryRejectsIndependentCorpseAwardAndPolicyForgery(string field)
+    {
+        var after = SecondDefeatCompleted(); var r = after.TurnCompletion!; var d = r.PlayerPhysicalAttack!;
+        var roster = after.Roster.ToArray(); var occupancy = after.Occupancy.ToArray(); uint main = after.RandomSeedImage;
+        ushort copy = after.RandomSeedCopy!.Value; uint gold = after.CurrentGold!.Value;
+        switch (field)
+        {
+            case "oldCorpsePosition": roster[7] = roster[7].WithPosition(new(12, 14)); break;
+            case "oldCorpseHp": roster[7] = roster[7].WithStats(roster[7].Stats.WithCurrentHp(1)); break;
+            case "newCellOccupied": occupancy[15 * 48 + 10] = 131; break;
+            case "repeatAward": gold += 60; break;
+            case "firstWorklist": r = r with { EnemyDefeat = r.EnemyDefeat! with { FirstWorklist = new[] { 132 } } }; break;
+            case "bothCorpsesWorklist": r = r with { EnemyDefeat = r.EnemyDefeat! with { FirstWorklist = new[] { 131, 132 } } }; break;
+            case "afterWorklist": r = r with { EnemyDefeat = r.EnemyDefeat! with { AfterTurnWorklist = new[] { 131 } } }; break;
+            case "oldPolicy": r = r with { Policy = Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat }; break;
+            case "priorCleanup": r = r with { Previous = ChangePriorDefeat(r.Previous!, old => old with { EnemyDefeat = null }) }; break;
+            case "priorPolicy": r = r with { Previous = ChangePriorDefeat(r.Previous!, old => old with { Policy = SecondPolicy }) }; break;
+            case "kills": roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentKills(3)); break;
+            case "exp": roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentExp(87)); break;
+            case "main": main ^= 0x10000; break;
+            case "copy": copy ^= 0x100; break;
+            case "firstCount": r = r with { BeforeAfterTurn = new(3, 5) }; break;
+            case "afterCount": r = r with { AfterAfterTurn = new(3, 5) }; break;
+        }
+        var forged = Battle01FirstRoundTests.CopyCurrent(after, roster: roster, occupancy: occupancy, mainImage: main, copy: copy, gold: gold, receipt: r);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.EnterNext(forged));
+        Assert.Equal((uint?)120, after.CurrentGold); Assert.Equal((ushort?)2, after.Roster[0].Stats.CurrentKills);
+        Assert.Null(after.Roster[7].Position); Assert.Null(after.Roster[6].Position);
+    }
+
+    private static Battle01TurnCompletionReceipt ChangePriorDefeat(Battle01TurnCompletionReceipt receipt,
+        Func<Battle01TurnCompletionReceipt, Battle01TurnCompletionReceipt> change) => receipt.EnemyDefeat is not null
+            ? change(receipt) : receipt with { Previous = ChangePriorDefeat(receipt.Previous!, change) };
+
     internal static Battle01PlayerPhysicalCompletionPolicy Policy => Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
 
     [Fact]

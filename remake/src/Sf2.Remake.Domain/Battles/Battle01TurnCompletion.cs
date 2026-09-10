@@ -27,14 +27,21 @@ public sealed record Battle01EnemyDefeatCleanup(IReadOnlyList<int> FirstWorklist
     IReadOnlyList<int> AfterTurnWorklist, int CreditedAlly, ushort KillsBefore, ushort KillsAfter);
 public sealed class Battle01PlayerPhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
-    private Battle01PlayerPhysicalCompletionPolicy(bool allowDefeat) { AllowsDefeat = allowDefeat; }
-    public static Battle01PlayerPhysicalCompletionPolicy ControlledNonlethalStrikeAndExp { get; } = new(false);
-    public static Battle01PlayerPhysicalCompletionPolicy ControlledStrikeAndFirstDefeat { get; } = new(true);
-    public bool AllowsDefeat { get; }
-    public override string Id => AllowsDefeat ? "battle01-controlled-player-first-defeat-exp-gold-kills-v1" :
-        "battle01-controlled-player-nonlethal-physical-exp-v1";
+    private Battle01PlayerPhysicalCompletionPolicy(int maximumDefeats) { MaximumDefeats = maximumDefeats; }
+    public static Battle01PlayerPhysicalCompletionPolicy ControlledNonlethalStrikeAndExp { get; } = new(0);
+    public static Battle01PlayerPhysicalCompletionPolicy ControlledStrikeAndFirstDefeat { get; } = new(1);
+    public static Battle01PlayerPhysicalCompletionPolicy ControlledStrikeAndSecondDefeat { get; } = new(2);
+    internal int MaximumDefeats { get; }
+    public bool AllowsDefeat => MaximumDefeats > 0;
+    public override string Id => MaximumDefeats switch
+    {
+        0 => "battle01-controlled-player-nonlethal-physical-exp-v1",
+        1 => "battle01-controlled-player-first-defeat-exp-gold-kills-v1",
+        _ => "battle01-controlled-player-second-defeat-exp-gold-kills-v1"
+    };
     internal static bool IsSupported(Battle01PlayerPhysicalCompletionPolicy? policy) =>
-        ReferenceEquals(policy, ControlledNonlethalStrikeAndExp) || ReferenceEquals(policy, ControlledStrikeAndFirstDefeat);
+        ReferenceEquals(policy, ControlledNonlethalStrikeAndExp) || ReferenceEquals(policy, ControlledStrikeAndFirstDefeat) ||
+        ReferenceEquals(policy, ControlledStrikeAndSecondDefeat);
 }
 
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01TurnCompletionPolicy Policy,
@@ -48,7 +55,12 @@ public static class Battle01TurnCompletion
     internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
         receipt.PlayerPhysicalAttack is not null
             ? Battle01PlayerPhysicalCompletionPolicy.IsSupported(receipt.Policy as Battle01PlayerPhysicalCompletionPolicy) &&
-                (!receipt.PlayerPhysicalAttack.DefeatedTarget || ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).AllowsDefeat) &&
+                (!receipt.PlayerPhysicalAttack.DefeatedTarget ||
+                    ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).AllowsDefeat &&
+                    6 - receipt.BeforeAfterTurn.Enemies <= ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).MaximumDefeats) &&
+                (!ReferenceEquals(receipt.Policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) ||
+                    receipt.CompletedActorIndex == 0 && receipt.BeforeAfterTurn.Enemies >= 4 &&
+                    receipt.BeforeAfterTurn.Enemies <= (receipt.PlayerPhysicalAttack.DefeatedTarget ? 4 : 5)) &&
                 receipt.PlayerPhysicalAttack.DefeatedTarget == (receipt.EnemyDefeat is not null) &&
                 receipt.CompletedActorIndex < 128 && receipt.PlayerPhysicalAttack.ActorIndex == receipt.CompletedActorIndex &&
                 receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null
@@ -62,6 +74,8 @@ public static class Battle01TurnCompletion
     {
         if (!Battle01PlayerPhysicalCompletionPolicy.IsSupported(policy) || (decision.DefeatedTarget && !policy!.AllowsDefeat))
             throw new ArgumentException("An explicit player physical/EXP completion policy is required.", "policy");
+        if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) && decision.ActorIndex != 0)
+            throw new ArgumentException("The second-defeat policy belongs to Bowie only.", "policy");
         if (current.Phase != Battle01Phase.PlayerAttackTargetSelection || current.FirstControl?.ActorIndex != decision.ActorIndex ||
             current.FirstRound?.CurrentCandidate?.CombatantIndex != decision.ActorIndex)
             throw new ArgumentException("Retain the actual selected player turn during local finalization.", "phase");
@@ -72,7 +86,7 @@ public static class Battle01TurnCompletion
         Battle01EnemyDefeatCleanup? cleanup = null;
         if (decision.DefeatedTarget)
         {
-            (current, cleanup) = ApplyFirstDefeatCleanup(current, decision);
+            (current, cleanup) = ApplyDefeatCleanup(current, decision, policy!);
         }
         else RequireEmptyKilledCleanup(current, "cleanup.before");
         var before = RequireContinuingFactions(current, "outcome.before");
@@ -91,15 +105,17 @@ public static class Battle01TurnCompletion
         return result;
     }
 
-    private static (Battle01InitializedState State, Battle01EnemyDefeatCleanup Cleanup) ApplyFirstDefeatCleanup(
-        Battle01InitializedState current, Battle01PlayerPhysicalAttackDecision decision)
+    private static (Battle01InitializedState State, Battle01EnemyDefeatCleanup Cleanup) ApplyDefeatCleanup(
+        Battle01InitializedState current, Battle01PlayerPhysicalAttackDecision decision, Battle01PlayerPhysicalCompletionPolicy policy)
     {
         var dead = current.Roster.Where(unit => unit.Stats.HpCurrent == 0).ToArray();
-        if (dead.Length != 1 || dead[0].Index != decision.TargetIndex || decision.TargetIndex < 128 ||
-            dead[0].Position is not { } position || position != decision.Target.Position ||
-            !Battle01EnemyPhysicalAttack.SameStats(dead[0].Stats, decision.Effect.AfterStats) ||
+        var target = dead.FirstOrDefault(unit => unit.Index == decision.TargetIndex);
+        if (dead.Length > policy.MaximumDefeats || dead.Count(unit => unit.Index == decision.TargetIndex) != 1 ||
+            target is null || decision.TargetIndex < 128 ||
+            target.Position is not { } position || position != decision.Target.Position ||
+            !Battle01EnemyPhysicalAttack.SameStats(target.Stats, decision.Effect.AfterStats) ||
             decision.Actor.Stats.CurrentKills is not { } kills)
-            throw new ArgumentException("The first death worklist must contain exactly the reacted enemy.", "cleanup.before");
+            throw new ArgumentException("Only this reacted enemy may enter the bounded new death worklist.", "cleanup.before");
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         int cell = Battle01PlayerMovement.Offset(position);
         if (occupancy[cell] != decision.TargetIndex)
@@ -110,7 +126,8 @@ public static class Battle01TurnCompletion
         ushort afterKills = Battle01PlayerPhysicalAttack.KillsAfterKill(kills);
         roster[actorSlot] = roster[actorSlot].WithStats(roster[actorSlot].Stats.WithCurrentKills(afterKills));
         // Fixed regular GIZMO has no modifiers/status/equipment to alter on its source stat refresh.
-        roster[Array.IndexOf(roster, dead[0])] = dead[0].WithPosition(null);
+        // Previously cleaned enemies are independently checked against their own receipts below.
+        roster[Array.IndexOf(roster, target)] = target.WithPosition(null);
         occupancy[cell] = -1;
         var state = new Battle01InitializedState(current, roster, Array.AsReadOnly(occupancy), current.FirstControl!);
         return (state, new(Array.AsReadOnly(new[] { decision.TargetIndex }), Array.Empty<int>(),

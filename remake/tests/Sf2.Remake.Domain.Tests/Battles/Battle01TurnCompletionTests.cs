@@ -7,6 +7,41 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+    [Theory]
+    [InlineData("oldCorpsePlaced")]
+    [InlineData("oldCorpseStats")]
+    [InlineData("oldCorpseCell")]
+    [InlineData("thirdCorpse")]
+    [InlineData("newCell")]
+    [InlineData("gold")]
+    [InlineData("main")]
+    [InlineData("exp")]
+    public void LateSecondDefeatFinalizationRejectsFalseCleanupAndAwardsWithoutChangingSelection(string field)
+    {
+        var selected = Battle01PlayerPhysicalAttackTests.SecondDefeatSelected();
+        var frozen = JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 });
+        var d = Battle01PlayerPhysicalAttack.Decide(selected, 0, allowDefeat: true, maximumDefeats: 2);
+        var roster = selected.Roster.ToArray(); roster[0] = roster[0].WithStats(d.ActorAfterStats); roster[6] = roster[6].WithStats(d.Effect.AfterStats);
+        var occupancy = selected.Occupancy.ToArray(); uint main = d.Effect.MainSeedAfter; uint gold = d.GoldAfter!.Value;
+        switch (field)
+        {
+            case "oldCorpsePlaced": roster[7] = roster[7].WithPosition(new(12, 14)); break;
+            case "oldCorpseStats": roster[7] = roster[7].WithStats(roster[7].Stats.WithCurrentExp(1)); break;
+            case "oldCorpseCell": occupancy[14 * 48 + 12] = 132; break;
+            case "thirdCorpse": roster[5] = roster[5].WithStats(roster[5].Stats.WithCurrentHp(0)); break;
+            case "newCell": occupancy[15 * 48 + 10] = -1; break;
+            case "gold": gold += 60; break;
+            case "main": main ^= 0x10000; break;
+            case "exp": roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentExp(87)); break;
+        }
+        var placed = new Battle01InitializedState(selected, roster, Array.AsReadOnly(occupancy), selected.FirstControl!);
+        var replayed = new Battle01InitializedState(placed, roster, main, gold);
+        var error = Assert.ThrowsAny<ArgumentException>(() => Battle01TurnCompletion.CompletePlayerPhysical(
+            replayed, d, Battle01PlayerPhysicalAttackTests.SecondPolicy));
+        if (field == "thirdCorpse") Assert.Equal("cleanup.before", error.ParamName);
+        Assert.Equal(frozen, JsonSerializer.Serialize(selected, new JsonSerializerOptions { MaxDepth = 256 }));
+    }
+
     [Fact]
     public void PlayerStayRetainsPriorPhysicalDamageUnderItsOwnStrictPolicy()
     {

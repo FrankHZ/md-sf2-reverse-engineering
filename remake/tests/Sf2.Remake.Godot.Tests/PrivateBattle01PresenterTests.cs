@@ -148,6 +148,36 @@ public sealed class PrivateBattle01PresenterTests
             Battle01PlayerMovement.SelectDestination(current, 1, new(10, 17)), 1), 1);
         var final = PrivateBattle01Presenter.BuildProjection(sarahCancelled, "Sarah cancelled.");
         Assert.Equal(sarahReady.Units, final.Units); Assert.Equal(sarahReady.AttackResult, final.AttackResult);
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(sarahCancelled, 1), 1,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = CompleteAuthoredTurn(current); // actual130, then Bowie
+        current = Battle01NextPlayerControl.Enter(current, 0).State!;
+        current = Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 0), 0);
+        Assert.Equal(131, PrivateBattle01Presenter.BuildProjection(current, "Second target.").SelectedTargetIndex);
+        current = Battle01PlayerPhysicalAttack.Confirm(current, 0, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat);
+        var secondDefeat = PrivateBattle01Presenter.BuildProjection(current, "Second defeat complete.");
+        // This authored grid has plains at (10,15); the required Content/native route owns terrain0 damage4.
+        Assert.Contains("hit 3", secondDefeat.AttackResult); Assert.Contains("HP 3 -> 0", secondDefeat.AttackResult);
+        Assert.Contains("E3 (131) defeated", secondDefeat.AttackResult);
+        Assert.Contains("EXP +24: 39 -> 63", secondDefeat.AttackResult); Assert.Contains("Gold +60", secondDefeat.AttackResult);
+        Assert.Equal(((uint?)120, (ushort?)2), (secondDefeat.Gold, secondDefeat.BowieKills));
+        Assert.Equal(7, secondDefeat.Units.Count); Assert.Equal(4, secondDefeat.Units.Count(u => u.Index >= 128));
+        Assert.DoesNotContain(secondDefeat.Units, u => u.Index is 131 or 132);
+        Assert.Null(secondDefeat.ActorIndex); Assert.Null(secondDefeat.NextCandidateIndex);
+        current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
+        var roundTen = PrivateBattle01Presenter.BuildProjection(current, "Round 10. Player 2 ready.");
+        Assert.Equal(2, roundTen.ActorIndex); Assert.Equal(14, roundTen.Budget); Assert.True(roundTen.CanConfirm);
+        Assert.Equal(secondDefeat.AttackResult, roundTen.AttackResult);
+        Assert.Equal((byte?)63, roundTen.Units.Single(u => u.Index == 0).Exp);
+        Assert.Equal((9, (byte?)10), ((int)roundTen.Units.Single(u => u.Index == 2).Hp, roundTen.Units.Single(u => u.Index == 2).Exp));
+        current = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current, 2, new(12, 14)), 2);
+        var provisional = PrivateBattle01Presenter.BuildProjection(current, "Chester provisional.");
+        Assert.Equal(new MapPosition(12, 14), provisional.Units.Single(u => u.Index == 2).Position);
+        Assert.Equal(roundTen.AttackResult, provisional.AttackResult);
+        current = Battle01PlayerMovement.Cancel(current, 2);
+        var roundTenCancelled = PrivateBattle01Presenter.BuildProjection(current, "Chester cancelled.");
+        Assert.Equal(roundTen.Units, roundTenCancelled.Units); Assert.Equal(roundTen.AttackResult, roundTenCancelled.AttackResult);
+        Assert.Equal((roundTen.Gold, roundTen.BowieKills), (roundTenCancelled.Gold, roundTenCancelled.BowieKills));
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)

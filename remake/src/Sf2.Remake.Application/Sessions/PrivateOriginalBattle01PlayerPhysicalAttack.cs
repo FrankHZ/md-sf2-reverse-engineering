@@ -49,6 +49,10 @@ public sealed partial class GameSession
             current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId && actorIndex == 0
             ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat
             : Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
+        // Keep every earlier receipt's policy; the continuation starts only after the first cleanup.
+        if (current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId &&
+            actorIndex == 0 && current.Battle.Roster.Any(unit => unit.Stats.HpCurrent == 0))
+            policy = Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat;
         Battle01InitializedState battle;
         try
         {
