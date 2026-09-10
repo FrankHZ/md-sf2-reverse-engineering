@@ -188,7 +188,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}";
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
-        _status!.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
+        // Two defeated ally rows need five wrapped lines; keep the terminal result below them.
+        _status!.Position = new(456, view.Phase == Battle01Phase.DefeatPending ? 400 : 382);
+        _status.Size = new(480, view.Phase == Battle01Phase.DefeatPending ? 64 : 82);
+        _status.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
             "Controlled no-effect STAY; effective stats retained.\n" + view.Status : "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :
                 "Terrain: current cursor; dots: legal stops\n") + view.Status;
