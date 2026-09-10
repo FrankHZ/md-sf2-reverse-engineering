@@ -3895,6 +3895,394 @@ raise AssertionError('No living player endpoint within round14')
 uv run python -X utf8 local/first-ally-defeat/source-reduction.py
 ```
 
+### Planned round14 continuation: first leader-defeat boundary
+
+**Plan only.** Accepted base `15e087d371dc3fb44c10a6680995c0dc72550ad6` (tree
+`bb56da21cffa777c3940f322f345d1b3ecb86587`) closes R14 Sarah movement/cancel with107 receipts.
+The current implementation still rejects the leader's lethal hit. The proposed endpoint below is
+source-derived; it has not run through native input or production mutation.
+
+#### Actual route and first guard
+
+**Confirmed by the narrow real Content/Application diagnostic:** replay
+`AcceptedSelectedInputsContinueFirstAllyDefeatThroughRoundFourteenSarahControl` as a return-session
+helper, retaining its actual startup preparation and accepted controlled admission seam. Compare the
+entire resulting battle, including all107 linked receipts, against the accepted first-ally native
+receipt before doing anything new. This does not assert natural execution of the earlier exploration
+programs skipped by that explicitly controlled admission.
+
+Choose one route: every newly controlled player confirms at the current origin and commits STAY.
+No new movement destination, attack, HP/stat/counter, seed, order or intermediate battle is supplied.
+Stop at the first actual guard, with an upper bound of12 new player action choices; reaching that
+bound without a guard would be a completed diagnostic boundary, not a product failure.
+
+| New choice | Actual control and action | Result after unchanged production dispatch |
+| --- | --- | --- |
+| 1 | R14 Sarah1, origin(9,17)/STAY | R14/raw8 Bowie0,111 receipts; main `02A11234`/copy `0234` |
+| 2 | R14 Bowie0, origin(11,15)/STAY | R15/raw4 Bowie0,115 receipts; main `333B1234`/copy `0234` |
+| 3 | R15 Bowie0, origin(11,15)/STAY | R15/raw6 Sarah1,116 receipts; same main/copy |
+| 4 | R15 Sarah1, origin(9,17)/STAY | R16/raw0 candidate129,119 receipts; main `9B651234`/copy `0234`; physical attack rejected |
+
+The exact result is `PrivateOriginalBattle01EnemyPhysicalAttackRejected`, field **`attack.lethal`**,
+message `Physical attack rejected (attack.lethal); the current state is retained.` The diagnostic
+reinvokes only that rejected API to obtain its typed result, proves reference identity and serialized
+whole-battle equality, and stops. No production transition crosses the guard.
+
+At the guard the phase is `RoundGenerated`, no player control exists, and the64 slots are
+`[129:6,130:6,0:5,133:5,1:4,128:4]` plus58 `FF:FF`. Live positions are
+`0:(11,15),1:(9,17),128:(11,8),129:(11,10),130:(11,7),133:(10,11)`.
+Bowie remains HP3/EXP63/kills2/defeats unspecified; Sarah HP11, her EXP/kills/defeats unspecified.
+Chester is HP0/EXP10/defeats1/kills unspecified and unplaced;131/132 remain HP0/unplaced.
+All four living enemies retain HP5; gold120 is unchanged. AI words are
+`2061/2061/2061/2061/2071/2071`, memory `04/34/14/24/34/04` plus42 zeroes,
+last-target bytes `FF/02/FF/00/00/02` plus42 `FF`. Flags0–2 remain true, the other13 false;
+tested mask7. All startup/source objects and the complete107-receipt prefix retain identity.
+
+#### Independent source result and proposed stopping point
+
+Use pinned `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6` and the registered USA comparison inputs.
+The source reducer derives its R14 start from the preceding source recipe, compares it against the
+accepted source and independent root-review result, and independently reduces the four STAY choices.
+Only then does it read the observed R16 guard as an assertion input. It never seeds its reduction
+from remake output.
+
+**Confirmed static under the existing presentation-omitted comparison:**
+
+- Existing pursuit/target-list and priority owners select only Bowie0. Enemy129 moves from(11,10)
+  to attack position(11,14), cost8, path`[3,3,3,3,255]`. Terrain1/LE15 gives
+  `(8-4)*230 >> 8 = 3` potential damage. The range3 thinking roll takes66 generator steps,
+  copy`0234→0034`, result0; lethal-target priority16.
+- `code/gameflow/battle/battleactions/attack.asm` and `inflictdamage.asm`
+  (`0xACEA..0xAE32`) produce main ranges`[32,32,1,1]`, results`[28,18,0,0]`, after-images
+  `E4281234/960F1234/9ECA1234/10491234`. The strike neither dodges nor crits; damage3 yields
+  HP3→temporary0→restored3→persistent0 and reaction`(0,-3,0,0,1)`. Death returns before
+  double/counter rolls. The enemy actor and absent counter skip EXP/gold reward dispatch.
+- `cutscenes/battleendcutscenesstart.asm` (`0x47B92..0x47BE8`) tests Bowie HP first. HP0
+  branches directly to `loc_47C88`, whose tail restores registers and returns. There is no
+  enemy-leader cutscene or enemy mass-death tail on this path. The current remake's
+  `RequireDefeatedWrapperReturn` rejects dead Bowie more narrowly than this source return branch.
+- `battleloop/processkilledcombatants.asm` (`0x24518..0x24642`) processes new worklist`[0]`:
+  increment Bowie's defeats, clear his X/Y, clear status and refresh effective stats. Previously
+  cleaned Chester/131/132 do not re-enter the list. The existing controlled unchanged-effective-stats
+  assumption remains explicit; the original visual passes and timing are not implemented.
+- `battleloop/countremainingcombatants.asm` (`0x23C58..0x23CBA`) finds one placed living ally
+  (Sarah) and four enemies, then forces returned ally count`d2=0` because Bowie HP is0.
+  `battleloop_1.asm` (`0x23A84..0x23BB4`) tests that first count and branches immediately to
+  `BattleLoop_Defeat`. There is no after-turn processing, second cleanup/count, offset increment,
+  enemy130 action or next round on this path. See the accepted
+  [controller contract](../../docs/design/contracts/battle-control-lifecycle.md#post-action-and-after-turn-order).
+
+**Proposed minimum implementation:** admit this one leader-death action through its first
+post-cleanup defeat decision, and expose a frozen `DefeatPending` battle state before entering the
+ordinary defeat handler. Preserve the119 continuing-turn receipts and link one separate terminal-action
+receipt to that exact history. Reuse the existing physical decision and ally-cleanup payloads; record
+the first count`(0,4)` and that the after-turn seam was not reached. Do not fabricate a second count
+or append an ordinary advanced turn. Keep R16/raw0 and its historical64-slot buffer frozen, with no
+current player or dispatchable next actor.
+
+The proposed state has Bowie HP0/unplaced, Sarah(9,17) HP11, enemy129(11,14), and the other positions
+as at the guard. There are five live occupants. Main`10491234`/copy`0034` and enemy129 last-target0
+are the arithmetic result. Ordinary `ai/startaicontrol.asm` clears the tested-region mask to0;
+region flags, AI words/memory and other accounting values are retained. These seeds omit original
+presentation/VInt and are not natural post-animation seed claims. Gold is still120 and Bowie EXP63/
+kills2; Chester EXP10/defeats1 and prior enemy cleanups remain intact.
+
+Naturally carried Bowie defeats remains **Unknown**. Propose a separate named
+`LeaderDefeatComparison` derived from `ChesterDefeatComparison`, supplying only Bowie defeats0 at
+Prepare/Initialize. It yields defeats1 at this new cleanup and preserves Chester's existing supplement.
+The four earlier presets and accepted Chester-defeat preset remain unchanged. Validate the new counter
+against preparation in every applicable accounting rewind; never fill it in at the guard.
+The new preset's entire119-receipt prefix must equal this observed route apart from the declared
+preset identity and propagated Bowie counter.
+
+This boundary intentionally stops before `battleloop_2.asm`'s `BattleLoop_Defeat`
+(`0x23CBA..0x23D98`): that later handler changes battle unlock state, presents defeat text/music,
+restores leader HP, halves gold, obtains egress position and returns`D4=-1` for ordinary Battle01.
+Those effects, exploration re-entry, retry/save flow, and Battle4's special result require separate
+acceptance. A visible “defeat pending” diagnostic is **not** an implemented loss/return flow.
+
+#### Exact proposed implementation owners and acceptance
+
+This plan slice writes only `remake/docs/map03-playability-plan.md`. The following prospective
+implementation scope requires a separate main-gate authorization. Filenames are exact and relative
+to `remake/`; the grouped rows grant no wildcard authority.
+
+| Directory and exact filenames | Minimum responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/`: `Battle01Initialization.cs`, `Battle01EnemyPhysicalAttack.cs`, `Battle01PlayerPhysicalAttack.cs`, `Battle01TurnCompletion.cs`, `Battle01FirstRound.cs`, `Battle01EnemyStandby.cs` | Closed pending-defeat state/receipt in existing owners; source-exact129→0 policy, cleanup, first outcome count, preparation accounting and terminal history/RNG validation. Keep all continuing-turn validation and old policies intact. |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/`: `PrivateOriginalBattle01EnemyPhysicalAttack.cs`, `PrivateOriginalBattle01PlayerPhysicalAttack.cs` | Named startup supplement and policy selection across the accepted prefix; atomic terminal publication with preparation/source retention. Existing initialization already propagates nullable defeats. |
+| `game/src/`: `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` | Explicit new diagnostic selection, halt automatic dispatch at the typed terminal boundary, clear Bowie marker/control and show HP0/defeats1/pending defeat. Reuse fixed base projection. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/`: `Battle01InitializationTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01PlayerPhysicalAttackTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs` | Exact strike/cleanup/outcome and history/counter forgery tests; no next control or turn advance. |
+| `tests/Sf2.Remake.Application.Tests/`: `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs`, `PrivateOriginalBattle01PlayerPhysicalAttackTests.cs`; `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Startup supplements, stale/foreign/duplicate atomicity, and the complete real-input119-prefix/terminal route. |
+| `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Visible terminal state and a bounded native extension of the accepted first-ally route. |
+| `README.md`; `docs/`: `architecture.md`, `capability-status.md`, `development-and-verification.md`, `map03-playability-plan.md`, `presentation-and-assets.md` | Current capability, named endpoint, reproduction and proportional acceptance. |
+
+No new parser, schema, registry, engine layer, dependency or asset is justified. One owner serializes
+the affected state/history/preset/dispatch paths. A terminal receipt is necessary because the existing
+ordinary receipt represents two faction checkpoints and an advanced turn, which this source branch
+does not execute; do not weaken those ordinary invariants to represent absence.
+
+Positive acceptance must reproduce the exact119-prefix from initialization, retain107 accepted
+receipts, prove the66 thinking steps/four main draws and HP restore/replay, perform only worklist`[0]`,
+preserve previous deaths, and stop after first outcome count`(0,4)` with Sarah still alive. Validate
+the proposed explicit counter and the complete pending receipt against the previous history.
+Negative acceptance covers unknown/forged Bowie defeats, stale/foreign/duplicate requests, changed
+prior counters/accounting/AI/RNG, revived prior victims, duplicate cleanup, forged terminal target/
+policy/count, phantom after-turn effects or turn advancement, and all movement/STAY/attack/dispatch/
+next-round calls after the terminal state. Old comparisons still stop at their existing guards.
+Sarah attacks/defeat, third enemy defeat, boss128 defeat, level/spell/item/passive/double/counter
+branches, victory and full ordinary-loss handling remain unsupported.
+
+That future implementation uses its committed planner, normal public verification, affected owning
+tests, required private Content, and bounded Godot/native acceptance with individually inspected
+frames and exact source/probe copies. This document-only slice runs its own narrow diagnostic,
+source reduction, committed planner and normal verification; it does not repeat the completed
+first-ally full suite, native modes or official export. The earlier full .NET result remains
+1485P/1F/0S completed, followed by the one failed private-input node's successful narrow rerun.
+The known absent default H0 ROM remains an honestly reported local verification boundary.
+
+**Unknown:** natural inputs/seed/defeats continuity, original presentation/VInt/death animation, and
+H4. The source-only defeat-entry result does not close any of these.
+
+#### Reproduce this planning boundary
+
+Use the registered read-only private inputs from the preceding startup/first-ally recipes,
+`SF2_REQUIRE_PRIVATE_TESTS=1`, `SF2_POST_DEFEAT_ROUTE=chester-target` and
+`SF2_UPSTREAM_DISASM` pointing to the pinned checkout's `disasm` subdirectory. Keep the accepted
+first-ally native/source/root-review outputs in place; they are comparison inputs, not regenerated
+here. On a fresh isolated worktree create the new ignored output root below; if it already holds
+results, preserve them and select a distinct explicit output location instead of overwriting.
+
+The generator copies the accepted real Content method's body, changing only its private helper call
+to reflection and returning the resulting session. It copies the production dispatch body unchanged.
+The linked projects compile into the explicit artifacts directory; no full test suite or Godot
+process is launched.
+
+```powershell
+$round14Out = Join-Path (Get-Location) 'local/round14-continuation-plan'
+New-Item -ItemType Directory -Path $round14Out -ErrorAction Stop | Out-Null
+$env:SF2_ROUND14_OUTPUT = $round14Out
+$env:TEMP = Join-Path $round14Out 'tmp'
+$env:TMP = $env:TEMP
+$env:DOTNET_CLI_HOME = Join-Path $round14Out 'dotnet-home'
+$env:NUGET_PACKAGES = Join-Path $round14Out 'nuget-packages'
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+$env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
+$env:DOTNET_CLI_USE_MSBUILD_SERVER = '0'
+$env:MSBUILDDISABLENODEREUSE = '1'
+New-Item -ItemType Directory -Path $env:TEMP,$env:DOTNET_CLI_HOME,$env:NUGET_PACKAGES,(Join-Path $round14Out 'diagnostic'),(Join-Path $round14Out 'logs') | Out-Null
+@'
+from pathlib import Path
+import os
+root=Path.cwd()
+out=Path(os.environ['SF2_ROUND14_OUTPUT'])
+assert out.resolve()==(root/'local/round14-continuation-plan').resolve()
+project=out/'diagnostic'
+source=(root/'remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs').read_text(encoding='utf-8')
+def body_at(text,anchor):
+ start=text.index(anchor); brace=text.index('{',start); depth=1; end=brace+1
+ while depth:
+  depth+=(text[end]=='{')-(text[end]=='}'); end+=1
+ return text[brace+1:end-1]
+body=body_at(source,'public void AcceptedSelectedInputsContinueFirstAllyDefeatThroughRoundFourteenSarahControl()')
+needle='var session = ReachRealFirstAllyDefeatBoundary();'
+assert body.count(needle)==1
+body=body.replace(needle,'''var method=typeof(Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests).GetMethod("ReachRealFirstAllyDefeatBoundary",BindingFlags.Static|BindingFlags.NonPublic)!;
+var session=(GameSession)method.Invoke(null,null)!;''')
+driver=r'''
+var session=ReplayAcceptedRoundFourteen();
+var options=new JsonSerializerOptions {MaxDepth=256};
+string output=Environment.GetEnvironmentVariable("SF2_ROUND14_OUTPUT")!;
+var start=session.PrivateOriginalBattle01!;
+int Count(Battle01InitializedState b) { int n=0;for(var r=b.TurnCompletion;r is not null;r=r.Previous)n++;return n; }
+string Json(object value)=>JsonSerializer.Serialize(value,options);
+void Save(string name,object value)=>File.WriteAllText(Path.Combine(output,name),Json(value));
+void Retained() {
+ var s=session.PrivateOriginalBattle01!;
+ Assert.Same(start.Preparation,s.Preparation);Assert.Same(start.SourceSnapshot,s.SourceSnapshot);
+ Assert.Same(start.SourceLocomotion,s.SourceLocomotion);Assert.Same(start.SourceBridge,s.SourceBridge);
+ var r=s.Battle.TurnCompletion;for(int n=Count(s.Battle)-107;n>0;n--)r=r!.Previous;
+ Assert.Same(start.Battle.TurnCompletion,r);
+}
+using(var native=JsonDocument.Parse(File.ReadAllText("local/first-ally-defeat/native-first-ally-02/captures/receipt.json"),new JsonDocumentOptions{MaxDepth=256})) {
+ var actual=System.Text.Json.Nodes.JsonNode.Parse(Json(start.Battle),null,new JsonDocumentOptions{MaxDepth=256});
+ var expected=System.Text.Json.Nodes.JsonNode.Parse(native.RootElement.GetProperty("battle").GetRawText(),null,new JsonDocumentOptions{MaxDepth=256});
+ Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(actual,expected),"Entire accepted native R14 battle mismatch");
+}
+Save("start.json",start.Battle);
+Save("preparation.json",new {start.Preparation.Party,start.Preparation.Inputs,sourceReferencesRetained=true});
+var events=new List<object>();int choices=0;
+void Show(string stage) {
+ Retained();var b=session.PrivateOriginalBattle01!.Battle;
+ var row=new {stage,choices,round=b.FirstRound!.RoundNumber,raw=b.FirstRound.CurrentTurnOffset,
+ actor=b.FirstControl?.ActorIndex,candidate=b.FirstRound.CurrentCandidate?.CombatantIndex,receipts=Count(b),
+ main=b.RandomSeedImage.ToString("X8"),copy=b.RandomSeedCopy!.Value.ToString("X4"),
+ units=b.Roster.Select(u=>new{u.Index,u.Position,u.Stats.HpCurrent,u.Stats.CurrentExp,u.Stats.CurrentKills,u.Stats.CurrentDefeats})};
+ events.Add(row);Console.WriteLine(Json(row));
+}
+void Boundary(string action,object result,PrivateOriginalBattle01SessionSnapshot before) {
+ Save("boundary.json",new {status="ActualGuard",choices,action,result,exactSnapshotRetained=true,fullBattleUnchanged=true,
+ startupReferencesRetained=true,accepted107ReceiptPrefixRetained=true,battle=before.Battle});
+ Save("events.json",events);
+ Console.WriteLine(Json(new {status="ActualGuard",choices,action,result}));
+}
+bool Apply(string action,Func<PrivateOriginalBattle01SessionSnapshot,object> operation) {
+ var before=session.PrivateOriginalBattle01!;string json=Json(before.Battle);var result=operation(before);
+ if(result.GetType().GetProperty("Snapshot")?.GetValue(result) is not null) {Show(action);return true;}
+ Assert.Same(before,session.PrivateOriginalBattle01);Assert.Equal(json,Json(before.Battle));
+ Retained();Boundary(action,result,before);return false;
+}
+Show("accepted-round14-sarah-after-move-cancel");
+for(int choice=0;choice<12;choice++) {
+ var before=session.PrivateOriginalBattle01!;int actor=before.Battle.FirstControl!.ActorIndex;
+ if(!Apply($"player{actor}-origin-confirm",s=>session.ConfirmPrivateOriginalBattle01PlayerMovement(s,actor)))return;
+ choices++;
+ if(!Apply($"player{actor}-STAY",s=>session.CommitPrivateOriginalBattle01Stay(s,actor)))return;
+ string relay=AcceptedRelay.DispatchNext(session,session.PrivateOriginalBattle01!);
+ Show("actual-production-relay");
+ if(session.PrivateOriginalBattle01!.Battle.FirstControl is null) {
+  int failed=session.PrivateOriginalBattle01.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+  if(relay.Contains("physical attack rejected",StringComparison.OrdinalIgnoreCase))
+   Apply("first-unsupported-enemy-physical",s=>session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(s,failed));
+  else if(relay.Contains("pursuit rejected",StringComparison.OrdinalIgnoreCase))
+   Apply("first-unsupported-enemy-pursuit",s=>session.CompletePrivateOriginalBattle01EnemyPursuit(s,failed));
+  else if(relay.Contains("standby rejected",StringComparison.OrdinalIgnoreCase))
+   Apply("first-unsupported-enemy-standby",s=>session.CompletePrivateOriginalBattle01EnemyStandby(s,failed));
+  else Boundary("first-unsupported-relay",relay,session.PrivateOriginalBattle01);
+  return;
+ }
+}
+Retained();Save("boundary.json",new {status="TwelveChoicesCompleted",choices,battle=session.PrivateOriginalBattle01!.Battle});
+Save("events.json",events);
+Console.WriteLine("Completed twelve choices without a product guard; bounded diagnostic stops.");
+'''
+(project/'Program.cs').write_text(source[:source.index('namespace ')]+driver+'\nstatic GameSession ReplayAcceptedRoundFourteen() {\n'+body+'\nreturn session;\n}\n',encoding='utf-8')
+composition=(root/'remake/game/src/PrivateBattle01Composition.cs').read_text(encoding='utf-8')
+relay=body_at(composition,'internal static string DispatchNext')
+(project/'Relay.cs').write_text('using Sf2.Remake.Application.Sessions;\nusing Sf2.Remake.Domain.Battles;\ninternal static class AcceptedRelay {\ninternal static string DispatchNext(GameSession session,PrivateOriginalBattle01SessionSnapshot current) {\n'+relay+'\n}}\n',encoding='utf-8')
+(project/'Round14.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup><ItemGroup><ProjectReference Include="../../../remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj" /></ItemGroup></Project>\n',encoding='utf-8')
+print('Generated accepted startup-to-R14 replay and unchanged production relay; one origin-STAY continuation, maximum12 choices.')
+
+'@ | Set-Content -LiteralPath (Join-Path $round14Out 'generate-diagnostic.py') -Encoding utf8
+uv run python -X utf8 (Join-Path $round14Out 'generate-diagnostic.py')
+Push-Location -LiteralPath remake
+try {
+    dotnet build ../local/round14-continuation-plan/diagnostic/Round14.csproj --configuration Release --artifacts-path (Join-Path $round14Out 'artifacts') --disable-build-servers -p:RestoreLockedMode=true
+    if ($LASTEXITCODE -ne 0) { throw 'Diagnostic build failed' }
+} finally { Pop-Location }
+dotnet exec (Join-Path $round14Out 'artifacts/bin/Round14/release/Round14.dll')
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostic failed' }
+```
+
+This run produces the whole `start.json`, real `preparation.json`, action `events.json` and atomic
+`boundary.json`. They remain private/ignored. Require the actual `attack.lethal` result after four
+choices and119 receipts. The following separate source-only recipe reads those outputs only for
+comparison, checks the pinned source branch order, and writes a clearly source-derived candidate.
+It redirects exactly the preceding recipe's one output expression into this new root; earlier
+source/native/root-review files are read-only.
+
+```powershell
+@'
+from pathlib import Path
+import contextlib, io, json, os
+out=Path(os.environ['SF2_ROUND14_OUTPUT'])
+assert out.resolve()==Path('local/round14-continuation-plan').resolve()
+plan=Path('remake/docs/map03-playability-plan.md').read_text(encoding='utf-8')
+start=plan.index('from pathlib import Path\nimport contextlib, io, json, os\n',plan.index('### Implemented first nonleader ally defeat'))
+end=plan.index("\n'@ | Set-Content",start)
+prefix=plan[start:end]
+needle="Path('local/first-ally-defeat/source-result.json')"
+assert prefix.count(needle)==1
+prefix=prefix.replace(needle,"(Path(os.environ['SF2_ROUND14_OUTPUT'])/'source-start.json')")
+with (out/'logs/source-prefix-01.log').open('w',encoding='utf-8') as log,contextlib.redirect_stdout(log):
+ try: exec(compile(prefix,'accepted-source-prefix','exec'))
+ except SystemExit as e: assert e.code==0
+source_start=json.loads((out/'source-start.json').read_text())
+assert source_start==json.loads(Path('local/first-ally-defeat/source-result.json').read_text())
+assert source_start==json.loads(Path('local/first-ally-defeat/root-review/source-result.json').read_text())
+initial=json.loads((out/'start.json').read_text())
+def compare(s,b):
+ assert s['main']==f"{b['RandomSeedImage']:08X}" and s['copy']==f"{b['RandomSeedCopy']:04X}"
+ assert s['round']==b['FirstRound']['RoundNumber'] and s['raw']==b['FirstRound']['CurrentTurnOffset']
+ assert [tuple(x) for x in s['slots']]==[(x['CombatantIndex'],x['AlteredAgility']) for x in b['FirstRound']['Slots']]
+ assert s['flags']==b['RegionFlags90Through105'] and s['tested']==b['NewlyTestedRegionMask']
+ assert [s['memory'][a] for a in range(128,134)]+[0]*42==b['AiMemory']
+ assert [s['last'][a] for a in range(128,134)]+[255]*42==b['AiLastTargets']
+ assert s['words']==[u['AiBitfield'] for u in b['Roster'][3:]]
+ for u in b['Roster']:
+  p=u['Position'];a=u['Index']
+  assert s['positions'].get(a)==(None if p is None else (p['X'],p['Y']))
+  assert s['hp'][a]==u['Stats']['HpCurrent']
+ r=b['TurnCompletion'];n=0
+ while r is not None:n+=1;r=r['Previous']
+ assert n==s['receipts']
+compare(endpoint,initial)
+events=[];choices=0;guard=None
+# One route: source-reduced origin STAY in actual order, maximum12 new player choices.
+for number in range(14,21):
+ slots=slots if number==14 else alive_order()
+ for index,(actor,_) in enumerate(slots):
+  if actor==255:break
+  if actor<128:
+   choices+=1;receipts+=1
+   if choices>12:raise AssertionError('No guard within declared source route')
+   events.append(dict(kind='player-stay',actor=actor,round=number,receipt=receipts))
+   continue
+  result=pursue(actor)
+  if 'boundary' not in result:
+   tested=0;receipts+=1
+   events.append(dict(kind='pursuit',round=number,receipt=receipts,result=result))
+   continue
+  guard=state(number,index*2,slots)
+  # Source computation has stopped before the attack; the observed snapshot is compared only now.
+  observed=json.loads((out/'boundary.json').read_text())['battle']
+  compare(guard,observed)
+  tested=0 # StartAiControl clears the tested-region mask before this ordinary attack.
+  ai=(root/'code/gameflow/battle/ai/startaicontrol.asm').read_text()
+  assert 'move.w  #0,(a0)' in ai.split('(NEWLY_TRIGGERED_BATTLE_REGIONS).l,a0',1)[1].split('GetTriggerRegions',1)[0]
+  stream=io.StringIO()
+  with contextlib.redirect_stdout(stream):remaining,followups=physical(actor,None)
+  strike=json.loads(stream.getvalue().split('physical ',1)[1])
+  target=strike['selected']['target'];last[actor]=target
+  assert (number,actor,target,receipts,choices,remaining)==(16,129,0,119,4,0)
+  assert followups is None
+  removed=pos.pop(target)
+  wrapper=(root/'code/gameflow/battle/cutscenes/battleendcutscenesstart.asm').read_text()
+  wrapper_end=(root/'code/gameflow/battle/cutscenes/battleendcutscenesend.asm').read_text()
+  cleanup=(root/'code/gameflow/battle/battleloop/processkilledcombatants.asm').read_text()
+  counts=(root/'code/gameflow/battle/battleloop/countremainingcombatants.asm').read_text()
+  loop=(root/'code/gameflow/battle/battleloop_1.asm').read_text()
+  assert wrapper.index('beq.w   loc_47C88')<wrapper.index('move.w  #COMBATANT_ENEMIES_START')
+  assert 'rts' in wrapper_end.split('loc_47C88:')[1]
+  assert cleanup.index('j_IncreaseDefeats')<cleanup.index('j_SetCombatantX')<cleanup.index('j_SetCombatantY')<cleanup.index('j_UpdateCombatantStats')
+  leader=counts.split('clr.w   d0')[-1]
+  assert 'j_GetCurrentHp' in leader and 'clr.w   d2' in leader
+  first=loop.split('jsr     ProcessKilledCombatants(pc)',1)[1].split('bsr.w   ProcessAfterTurnEffects',1)[0]
+  assert first.index('CountRemainingCombatants')<first.index('BattleLoop_Defeat')<first.index('BattleLoop_Victory')
+  # Static killed-combatant cleanup, then first CountRemainingCombatants.
+  # Source counts live Sarah as1, then forces d2=0 because leader HP is0.
+  live_allies=sum(a<128 for a in pos);live_enemies=sum(a>=128 for a in pos)
+  terminal=dict(round=number,raw=index*2,completedPriorReceipts=receipts,actor=actor,target=target,
+    removed=removed,worklist=[target],defeats='Unknown -> Unknown+1 (clamped); proposed explicit initialization0 ->1',
+    livingCounts=[live_allies,live_enemies],firstOutcomeCounts=[0,live_enemies],afterTurnExecuted=False,
+    secondCleanupExecuted=False,turnAdvanced=False,main=f'{main:04X}1234',copy=f'{seed:02X}34',
+    tested=tested,flags=flags.copy(),words=words.copy(),memory=mem.copy(),slots=slots,
+    hp=hp_by_actor.copy(),positions=pos.copy(),last=last.copy(),stop='BattleLoop_Defeat entry before handler')
+  assert live_allies==1 and live_enemies==4
+  result=dict(status='Pass',choices=choices,startMatchesAcceptedSourceAndRoot=True,guardMatchesActual=True,
+    events=events,guard=guard,strike=strike,sourceDerivedOnly=terminal)
+  (out/'source-result.json').write_text(json.dumps(result),encoding='utf-8')
+  print(json.dumps(result));raise SystemExit(0)
+raise AssertionError('No actual source guard')
+
+'@ | Set-Content -LiteralPath (Join-Path $round14Out 'source-reduction.py') -Encoding utf8
+$env:SF2_FIRST_ALLY_NATIVE_RECEIPT = Join-Path (Get-Location) 'local/first-ally-defeat/native-first-ally-02/captures/receipt.json'
+uv run python -X utf8 (Join-Path $round14Out 'source-reduction.py')
+if ($LASTEXITCODE -ne 0) { throw 'Source reduction failed' }
+```
+
+
 ### Controlled Godot Battle01 consumer
 
 The existing private profile parser accepts three explicit paths, together:
