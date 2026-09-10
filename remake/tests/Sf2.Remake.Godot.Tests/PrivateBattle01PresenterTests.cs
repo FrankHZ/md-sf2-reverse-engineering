@@ -8,10 +8,12 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateBattle01PresenterTests
 {
-    [Fact]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer)
     {
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -120,6 +122,32 @@ public sealed class PrivateBattle01PresenterTests
             Battle01PlayerMovement.SelectDestination(current, 2, new(12, 14)), 2), 2);
         var chesterCancelled = PrivateBattle01Presenter.BuildProjection(current, "Cancelled.");
         Assert.Equal(chesterHit.AttackResult, chesterCancelled.AttackResult); Assert.Equal(chesterReady.Units, chesterCancelled.Units);
+        Assert.Equal(chesterPlayer ? (byte?)0 : null, chesterCancelled.Units.Single(u => u.Index == 2).Exp);
+        if (!chesterPlayer) return;
+        current = Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 2), 2);
+        var chesterTarget = PrivateBattle01Presenter.BuildProjection(current, "Chester target.");
+        Assert.Equal(2, chesterTarget.ActorIndex); Assert.Equal(131, chesterTarget.SelectedTargetIndex);
+        current = Battle01PlayerPhysicalAttack.Confirm(current, 2, Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp);
+        var chesterAttack = PrivateBattle01Presenter.BuildProjection(current, "Chester attack.");
+        Assert.Equal("A2 -> E3: hit 2. HP 5 -> 3. EXP +10: 0 -> 10.", chesterAttack.AttackResult);
+        Assert.Equal((byte?)10, chesterAttack.Units.Single(u => u.Index == 2).Exp);
+        Assert.Equal(3, chesterAttack.Units.Single(u => u.Index == 131).Hp);
+        current = CompleteAuthoredTurn(current); current = CompleteAuthoredTurn(current);
+        Assert.Equal(chesterAttack.AttackResult, PrivateBattle01Presenter.BuildProjection(current, "Standby complete.").AttackResult);
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 131, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+        current = CompleteAuthoredTurn(current);
+        current = Battle01NextPlayerControl.Enter(current, 1).State!;
+        var sarahReady = PrivateBattle01Presenter.BuildProjection(current, "Sarah ready.");
+        Assert.Equal("E3 -> A0: hit 3. HP 6 -> 3.", sarahReady.AttackResult);
+        Assert.Equal(1, sarahReady.ActorIndex); Assert.Equal(10, sarahReady.Budget); Assert.True(sarahReady.CanConfirm);
+        Assert.Equal((byte?)10, sarahReady.Units.Single(u => u.Index == 2).Exp);
+        Assert.Equal(9, sarahReady.Units.Single(u => u.Index == 2).Hp);
+        Assert.Equal(((uint?)60, (ushort?)1), (sarahReady.Gold, sarahReady.BowieKills));
+        Assert.DoesNotContain(sarahReady.Units, u => u.Index == 132);
+        var sarahCancelled = Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 1, new(10, 17)), 1), 1);
+        var final = PrivateBattle01Presenter.BuildProjection(sarahCancelled, "Sarah cancelled.");
+        Assert.Equal(sarahReady.Units, final.Units); Assert.Equal(sarahReady.AttackResult, final.AttackResult);
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -274,7 +302,8 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("Space", view.Controls); Assert.Contains(view.Tiles, tile => tile.CanStop);
     }
 
-    private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false)
+    private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
+        bool chesterPlayer=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
@@ -284,7 +313,8 @@ public sealed class PrivateBattle01PresenterTests
             regionEntry && i==1 ? [new(10,14),new(12,14),new(12,16),new(10,16)] : [new(0, 0), new(1, 0), new(1, 1), new(0, 1)], 0, 0));
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
-            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63]) :
+            chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63]) :
+            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,

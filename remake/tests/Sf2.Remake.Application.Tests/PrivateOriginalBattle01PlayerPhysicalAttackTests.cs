@@ -10,6 +10,86 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
 {
+    internal static GameSession ChesterReadySession()
+    {
+        var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.ChesterAttackSession(chesterPlayer: true);
+        var current = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01, 131)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, 2));
+        return session;
+    }
+
+    [Fact]
+    public void ChesterLifecycleCommitsOnlyOnceWithPreparedExpZeroAndRetainedSource()
+    {
+        var session = ChesterReadySession(); var ready = session.PrivateOriginalBattle01!;
+        var current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(ready, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
+        var stale = current;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.CyclePrivateOriginalBattle01PlayerAttackTarget(current, 2, 1)).Snapshot;
+        Assert.Equal(new[] { 131 }, current.Battle.FirstControl!.Movement.Attack!.Targets);
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.CancelPrivateOriginalBattle01PlayerAttackTarget(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
+        var selected = current;
+        var completed = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(selected, 2)).Snapshot;
+        Assert.Same(completed, session.PrivateOriginalBattle01);
+        Assert.Same(ready.Preparation, completed.Preparation); Assert.Same(ready.SourceSnapshot, completed.SourceSnapshot);
+        Assert.Same(ready.SourceLocomotion, completed.SourceLocomotion); Assert.Same(ready.SourceBridge, completed.SourceBridge);
+        Assert.Equal(OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId, completed.Preparation.Party.Id);
+        Assert.Equal((byte?)0, completed.Preparation.Party.Allies[2].CurrentExp);
+        Assert.Equal((byte?)0, selected.Battle.Roster[2].Stats.CurrentExp); Assert.Equal((byte?)10, completed.Battle.Roster[2].Stats.CurrentExp);
+        Assert.Equal((0xA59B1234u, (ushort?)0x0134, 3), (completed.Battle.RandomSeedImage, completed.Battle.RandomSeedCopy,
+            (int)completed.Battle.Roster[6].Stats.HpCurrent));
+        Assert.Same(Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp, completed.Battle.TurnCompletion!.Policy);
+        foreach (var request in new[] { stale, selected })
+            Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+                session.ConfirmPrivateOriginalBattle01PlayerAttack(request, 2)).Diagnostic.Field);
+        Assert.Equal("phase", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(completed, 2)).Diagnostic.Field);
+        Assert.Same(completed, session.PrivateOriginalBattle01);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("equivalent")]
+    [InlineData("foreign")]
+    public void ChesterRequiresExactSnapshotForEveryTargetOperation(string kind)
+    {
+        var session = ChesterReadySession(); var current = session.PrivateOriginalBattle01!;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, 2)).Snapshot;
+        current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
+        var request = kind == "null" ? null : kind == "foreign" ? ChesterReadySession().PrivateOriginalBattle01 :
+            new PrivateOriginalBattle01SessionSnapshot(current.Preparation, current.Battle, current.SourceLocomotion, current.SourceBridge);
+        foreach (var result in new[] { session.BeginPrivateOriginalBattle01PlayerAttack(request, 2),
+            session.CyclePrivateOriginalBattle01PlayerAttackTarget(request, 2, 1),
+            session.CancelPrivateOriginalBattle01PlayerAttackTarget(request, 2), session.ConfirmPrivateOriginalBattle01PlayerAttack(request, 2) })
+            Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(result).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PlayerPublishRejectsNullVersusZeroChesterPreparationEvenWhenTheLocalTransitionSucceeds(bool historyHasExp)
+    {
+        var session = ReadySession(firstDefeat: true, chesterPlayer: historyHasExp);
+        var original = session.PrivateOriginalBattle01!;
+        var party = historyHasExp ? OriginalBattle01ControlledPartyPreset.FirstDefeatComparison :
+            OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison;
+        var prepared = new PrivateOriginalBattle01StartupPrepared(original.Preparation.Pending, original.Preparation.Inputs, party);
+        var choice = Battle01PlayerMovement.Confirm(original.Battle, 0);
+        var current = new PrivateOriginalBattle01SessionSnapshot(prepared, choice, original.SourceLocomotion, original.SourceBridge);
+        Set(session, current);
+        var local = Battle01PlayerPhysicalAttack.Begin(choice, 0);
+        Assert.Equal(Battle01Phase.PlayerAttackTargetSelection, local.Phase);
+        Assert.Equal("accounting.input", Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.BeginPrivateOriginalBattle01PlayerAttack(current, 0)).Diagnostic.Field);
+        Assert.Same(current, session.PrivateOriginalBattle01); Assert.Same(choice.TurnCompletion, current.Battle.TurnCompletion);
+        Assert.Equal((byte?)0, current.Battle.Roster[0].Stats.CurrentExp);
+        Assert.Equal(5, current.Battle.Roster[7].Stats.HpCurrent);
+    }
+
     [Fact]
     public void ManualLifecycleReplacesOnlyTheExactSnapshotAndPreservesPreparation()
     {
@@ -209,7 +289,7 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
         return session;
     }
 
-    internal static GameSession ReadySession(bool firstDefeat = false)
+    internal static GameSession ReadySession(bool firstDefeat = false, bool chesterPlayer = false)
     {
         // Existing authored route supplies the pre-strike state; declare EXP0 before either physical receipt.
         var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.AttackSession(); var before = session.PrivateOriginalBattle01!;
@@ -217,8 +297,9 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
         var stats = new Battle01Stats(s.Level, s.HpMax, s.HpCurrent, s.MpMax, s.MpCurrent, s.Attack, s.Defense, s.Agility,
             s.Move, s.Status, s.Items, s.Spells, 0);
         roster[0] = Internal<Battle01Combatant>(actor.Deployment, stats, actor.ClassId, actor.EnemySource, actor.AiBitfield, actor.Position);
-        var preset = firstDefeat ? OriginalBattle01ControlledPartyPreset.FirstDefeatComparison : OriginalBattle01ControlledPartyPreset.PlayerAttackComparison;
-        if (firstDefeat)
+        var preset = chesterPlayer ? OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison :
+            firstDefeat ? OriginalBattle01ControlledPartyPreset.FirstDefeatComparison : OriginalBattle01ControlledPartyPreset.PlayerAttackComparison;
+        if (firstDefeat || chesterPlayer)
             for (int index = 0; index < 3; index++)
             {
                 var ally = preset.Allies[index]; var unit = roster[index];

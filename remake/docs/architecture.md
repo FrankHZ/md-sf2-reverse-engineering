@@ -197,9 +197,10 @@ current snapshot, cohort, priority, source path and supported combat profile. It
 constructs the temporary HP effect, restores the source snapshot and replays one semantic reaction
 locally before physical cleanup/after-turn validation and one Application replacement. The explicit
 class0/Wooden Sword and exact Chester class1/Wooden Stick target profiles supply prowess3;
-the latter retains HPmax11/MP0/ATT8/DEF5/AGI7/MOV7 and unspecified EXP/kills. Enemy decision
-metadata comes from the admitted selected target. Player attack admission separately requires
-Bowie0/class0, so sharing the allied validator cannot enable Chester attacks. Regular GIZMO
+the latter retains HPmax11/MP0/ATT8/DEF5/AGI7/MOV7, unspecified kills and either null or known
+EXP below100. Enemy decision metadata comes from the admitted selected target. Player attack
+admission separately requires Bowie0/class0 or exact Chester2/class1 with known EXP; player
+decision metadata comes from that actual actor. Regular GIZMO
 prowess0, difficulty0/type2 and the
 two independent RNG channels retain their source semantics. Miss/ordinary critical results are
 calculated. True validated follow-ups, lethal/status/curse/reward and unsupported after-turn effects
@@ -214,17 +215,24 @@ the presenter selects the newest physical receipt across rounds from the existin
 The post-defeat continuation brings enemy131 to(11,13), hits Chester11→9 and creates receipt71;
 eight surviving candidates generate R9 and actual Chester movement/cancel with main71D31234,
 copy0134. Reverse history admits the recorded HP11→9 and preserves receipt59's dead132,
-Bowie EXP39/kills1 and gold60. No additional preset, action model or result history is introduced.
+Bowie EXP39/kills1 and gold60. The same history admits Chester's later player receipt72, EXP0→10
+and enemy131 HP5→3, then actual128/129/131/133 through receipt76 and Sarah movement/cancel.
+Damaged131 retains HP3 and selects Bowie6→3; main25991234/copy0634 and all64 R9 slots survive.
 Original scene animation/timing, broader profiles, multi-strike/counter/death and victory remain open.
 
 Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player physical/EXP policy.
 The existing movement selection gains a target stage, holding the ordered live down/right/up/left
 range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
 then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
-snapshot and a separately named `PlayerAttackComparison` or `FirstDefeatComparison` preparation.
+snapshot and a separately named `PlayerAttackComparison`, `FirstDefeatComparison` or
+`ChesterPlayerAttackComparison` preparation.
 Nullable current EXP/gold/kills distinguish unspecified inputs from explicit authored zeroes.
-Godot uses the latter supplement; both earlier presets remain unchanged. Immutable copies preserve
-every channel, while preparation retains HP12/EXP0/gold0/kills0 as provenance.
+Godot uses the Chester supplement, which adds only Chester EXP0 at initialization to the first-defeat
+inputs; all three older presets remain unchanged. The existing reverse-history pass returns the
+rewound original Chester EXP with gold and Bowie kills. Both physical Application wrappers compare
+that tuple with preparation before publishing, rejecting null/zero mismatches even after a valid
+local effect. Immutable copies preserve live earned EXP while preparation retains its original input.
+The new preset uses the first-defeat policy for Bowie and the existing nonlethal/EXP policy for Chester.
 
 Confirmation rechecks the actor, live target list, occupancy and admitted profiles before resolving
 the player's dodge8/critical16/+quarter damage, two spread calls, both follow-ups and EXP award.
@@ -254,7 +262,8 @@ attacks. The existing finite relay reaches round7 player2, then actual131/132/13
 His explicit lethal attack creates receipt59 and immediately yields actual player1 movement/cancel.
 The presenter derives the defeated132/+24 EXP/+60 gold result from that receipt until a newer
 physical action replaces it; current gold60/kills1, Bowie EXP39 and five enemies remain live-state
-projections when the later Chester hit is displayed.
+projections when the later Chester hit is displayed. Receipt72 shows Chester's player hit/EXP;
+the subsequent enemy hit replaces it when Sarah receives control, while live Chester EXP10 remains.
 Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
 presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
 and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.

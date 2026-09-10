@@ -25,17 +25,18 @@ public sealed record Battle01PlayerPhysicalAttackDecision(Battle01Combatant Acto
     public bool DefeatedTarget => Effect.TemporaryHp == 0;
     public byte Action => 0;
     public ushort ItemOrSpellWord => (ushort)TargetIndex;
-    public string CombatProfile => "battle01-class0-wooden-sword-effective-prowess3-v1";
+    public string CombatProfile => Battle01EnemyPhysicalAttack.RequireTargetProfile(Actor);
     // Construction/reaction/award semantics only: original reaction animation and VInt RNG are omitted.
     public string RandomPolicy => "controlled-presentation-omitted-semantics-v1";
 }
 
 public static class Battle01PlayerPhysicalAttack
 {
-    public static void RequireAccountingInputs(Battle01InitializedState current, uint? gold, ushort? bowieKills)
+    public static void RequireAccountingInputs(Battle01InitializedState current, uint? gold, ushort? bowieKills,
+        byte? chesterExp)
     {
         var original = Battle01EnemyStandby.RequireThinkingHistory(current);
-        if (original != (gold, bowieKills))
+        if (original != (gold, bowieKills, chesterExp))
             throw new ArgumentException("Live accounting must retain its declared preparation inputs.", "accounting.input");
     }
 
@@ -156,8 +157,9 @@ public static class Battle01PlayerPhysicalAttack
 
     internal static void RequireActor(Battle01Combatant actor)
     {
-        // Admitting Chester as an enemy target does not admit his player attack role.
-        if (actor.Index != 0 || actor.ClassId != 0)
+        // Known EXP admits the local actor profile; preparation/history establish its origin.
+        if (!(actor.Index == 0 && actor.ClassId == 0) &&
+            !(actor.Index == 2 && actor.ClassId == 1 && actor.Stats.CurrentExp is not null))
             throw new Battle01PhysicalAttackUnsupportedException("targetProfile");
         Battle01EnemyPhysicalAttack.RequireTargetProfile(actor);
         if (actor.AiBitfield != 0 || actor.Stats.CurrentExp is null)

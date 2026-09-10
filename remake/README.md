@@ -53,8 +53,8 @@ next-player control at9 HP, with the attack summary retained during movement/can
 Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
 At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
 attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
-the movement origin. N uses the named controlled Bowie EXP0/gold0/kills0 supplement; both earlier
-presets retain their unspecified accounting inputs. The bounded class0/Wooden Sword attack against a
+the movement origin. N uses the named controlled Chester EXP0 supplement over Bowie EXP0/gold0/kills0;
+all three earlier presets retain their original unspecified inputs. The bounded class0/Wooden Sword attack against a
 regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
 on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
 control with Bowie HP9/EXP15 and enemy132 HP2. After player2's explicit origin STAY, actual131/132/133
@@ -66,9 +66,12 @@ Continuing with player1 origin STAY, R8 Chester moving to(11,14)/STAY, then Bowi
 origin STAY lets actual enemy131 hit Chester: HP11→9, receipt71 and R9 actual Chester control
 at(11,14)/budget14. His move/confirm(12,14)/cancel retains Bowie HP6/EXP39/kills1, gold60 and
 unplaced132. The exact KNTE1/Wooden Stick184 target profile uses the existing nonlethal resolver;
-Chester active attacks and additional accounting inputs remain unsupported. The latest physical
-result persists across rounds, so the Chester hit replaces the older reward message while live
-gold, kills, EXP and dead-unit state retain their own values.
+Chester can then confirm his origin and manually attack131 for2 damage: HP5→3, EXP0→10 and
+receipt72. Actual128/129 standby, damaged131's hit on Bowie6→3 and133 standby return Sarah/player1
+at(9,17), HP11/budget10, receipt76/R9 raw10, main25991234/copy0634. Her move/confirm(10,17)/cancel
+preserves Chester HP9/EXP10, Bowie EXP39/kills1, gold60 and unplaced132. The latest physical result
+shows131→Bowie hit3 while current EXP and accounting remain separate. Chester kills and further
+defeats remain unsupported; his authored EXP0 must trace back to the selected preparation.
 The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
 Misses and ordinary criticals are calculated; a validated double/counter, another defeat or other unsupported

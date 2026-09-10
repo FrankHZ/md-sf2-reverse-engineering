@@ -14,26 +14,26 @@ public sealed partial class GameSession
 {
     public PrivateOriginalBattle01PlayerAttackResult BeginPrivateOriginalBattle01PlayerAttack(
         PrivateOriginalBattle01SessionSnapshot? expected, int actorIndex) =>
-        ApplyPrivateOriginalBattle01PlayerAttack(expected, PrivateOriginalBattle01PlayerAttackOperation.Begin,
+        ApplyPrivateOriginalBattle01PlayerAttack(expected, actorIndex, PrivateOriginalBattle01PlayerAttackOperation.Begin,
             (battle, _) => Battle01PlayerPhysicalAttack.Begin(battle, actorIndex));
 
     public PrivateOriginalBattle01PlayerAttackResult CyclePrivateOriginalBattle01PlayerAttackTarget(
         PrivateOriginalBattle01SessionSnapshot? expected, int actorIndex, int direction) =>
-        ApplyPrivateOriginalBattle01PlayerAttack(expected, PrivateOriginalBattle01PlayerAttackOperation.Cycle,
+        ApplyPrivateOriginalBattle01PlayerAttack(expected, actorIndex, PrivateOriginalBattle01PlayerAttackOperation.Cycle,
             (battle, _) => Battle01PlayerPhysicalAttack.Cycle(battle, actorIndex, direction));
 
     public PrivateOriginalBattle01PlayerAttackResult CancelPrivateOriginalBattle01PlayerAttackTarget(
         PrivateOriginalBattle01SessionSnapshot? expected, int actorIndex) =>
-        ApplyPrivateOriginalBattle01PlayerAttack(expected, PrivateOriginalBattle01PlayerAttackOperation.Cancel,
+        ApplyPrivateOriginalBattle01PlayerAttack(expected, actorIndex, PrivateOriginalBattle01PlayerAttackOperation.Cancel,
             (battle, _) => Battle01PlayerPhysicalAttack.Cancel(battle, actorIndex));
 
     public PrivateOriginalBattle01PlayerAttackResult ConfirmPrivateOriginalBattle01PlayerAttack(
         PrivateOriginalBattle01SessionSnapshot? expected, int actorIndex) =>
-        ApplyPrivateOriginalBattle01PlayerAttack(expected, PrivateOriginalBattle01PlayerAttackOperation.Confirm,
+        ApplyPrivateOriginalBattle01PlayerAttack(expected, actorIndex, PrivateOriginalBattle01PlayerAttackOperation.Confirm,
             (battle, policy) => Battle01PlayerPhysicalAttack.Confirm(battle, actorIndex, policy));
 
     private PrivateOriginalBattle01PlayerAttackResult ApplyPrivateOriginalBattle01PlayerAttack(
-        PrivateOriginalBattle01SessionSnapshot? expected, PrivateOriginalBattle01PlayerAttackOperation operation,
+        PrivateOriginalBattle01SessionSnapshot? expected, int actorIndex, PrivateOriginalBattle01PlayerAttackOperation operation,
         Func<Battle01InitializedState, Battle01PlayerPhysicalCompletionPolicy, Battle01InitializedState> transition)
     {
         var current = PrivateOriginalBattle01;
@@ -42,9 +42,11 @@ public sealed partial class GameSession
         if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
             return new PrivateOriginalBattle01PlayerAttackRejected(failure);
         if (current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.PlayerAttackComparisonId &&
-            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId)
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId &&
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId)
             return PlayerAttackRejected("party.expInput");
-        var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId
+        var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId ||
+            current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId && actorIndex == 0
             ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat
             : Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
         Battle01InitializedState battle;
@@ -52,7 +54,7 @@ public sealed partial class GameSession
         {
             battle = transition(current.Battle, policy);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
-                current.Preparation.Party.Allies[0].CurrentKills);
+                current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp);
         }
         catch (ArgumentException error) { return PlayerAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge);

@@ -141,7 +141,7 @@ public static class Battle01EnemyPhysicalAttack
             return "battle01-class0-wooden-sword-effective-prowess3-v1";
         if (target.Index == 2 && target.ClassId == 1 && s.HpMax == 11 && s.MpMax == 0 && s.MpCurrent == 0 &&
             s.Attack == 8 && s.Defense == 5 && s.Agility == 7 && s.Move == 7 &&
-            s.CurrentExp is null && s.CurrentKills is null &&
+            s.CurrentExp is null or < 100 && s.CurrentKills is null &&
             s.Items.SequenceEqual(new ushort[] { 184, 0, 127, 127 }) &&
             s.Spells.SequenceEqual(new byte[] { 63, 63, 63, 63 }))
             return "battle01-class1-wooden-stick-effective-prowess3-v1";

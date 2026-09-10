@@ -8,6 +8,32 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Fact]
+    public void PostChesterStandbysKeepTheSameRoundAndIndependentThinkingChannel()
+    {
+        var after = Battle01EnemyPhysicalAttackTests.AfterChesterPlayerRelay();
+        var receipts = Battle01EnemyPursuitTests.Receipts(after).Take(4).Reverse().ToArray();
+        Assert.Equal(new[] { 128, 129, 131, 133 }, receipts.Select(r => r.CompletedActorIndex));
+        var standbys = receipts.Where(r => r.EnemyStandby is not null).Select(r => r.EnemyStandby!).ToArray();
+        Assert.Equal(new MapPosition[] { new(8, 3), new(9, 5), new(7, 5) }, standbys.Select(d => d.Destination));
+        Assert.Equal(new byte[] { 0, 3, 255 }, standbys[0].MoveString);
+        Assert.Equal(new byte[] { 3, 2, 255 }, standbys[1].MoveString);
+        Assert.Equal(new byte[] { 255 }, standbys[2].MoveString);
+        Assert.Equal(new byte[] { 4, 52, 52 }, standbys.Select(d => d.MemoryBefore));
+        Assert.Equal(new byte[] { 52, 36, 52 }, standbys.Select(d => d.MemoryAfter));
+        Assert.Equal(new ushort[] { 0x0134, 0x0434, 0x0234 }, standbys.Select(d => d.SeedCopyBefore));
+        Assert.Equal(new ushort[] { 0x0434, 0x0234, 0x0634 }, standbys.Select(d => d.SeedCopyAfter));
+        Assert.Equal(new[] { 114, 1, 3, 15, 12 }, standbys.SelectMany(d => d.Rolls).Select(r => r.GeneratorSteps));
+        Assert.Equal(new byte[] { 52, 36, 4, 36, 52, 52 }, after.AiMemory.Take(6));
+        Assert.Equal((0x25991234u, (ushort?)0x0634), (after.RandomSeedImage, after.RandomSeedCopy));
+        Assert.All(receipts, receipt =>
+        {
+            Assert.Equal(9, receipt.RoundNumber); Assert.Null(receipt.EnemyDefeat);
+            Assert.Equal(new Battle01FactionCounts(3, 5), receipt.BeforeAfterTurn);
+            Assert.Equal(receipt.BeforeAfterTurn, receipt.AfterAfterTurn);
+        });
+    }
+
+    [Fact]
     public void InactiveEnemyAfterPhysicalAttackKeepsItsOwnThinkingAndLastTargetHistory()
     {
         var before = Battle01EnemyPursuit.CompleteNext(Battle01EnemyPhysicalAttackTests.CompletedBowie(), 131, Policy);

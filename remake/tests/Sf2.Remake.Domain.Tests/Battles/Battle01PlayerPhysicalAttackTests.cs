@@ -9,25 +9,24 @@ public sealed class Battle01PlayerPhysicalAttackTests
 {
     internal static Battle01PlayerPhysicalCompletionPolicy Policy => Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ChesterTargetSupportDoesNotAdmitHisPlayerAttackEvenWithFabricatedExp(bool supplyExp)
+    [Fact]
+    public void ChesterRequiresKnownExpAndHistoryRejectsItsLateInjection()
     {
         var target = Battle01EnemyPhysicalAttackTests.ChesterAttackBoundary().Roster[2];
         Assert.Equal("battle01-class1-wooden-stick-effective-prowess3-v1", Battle01EnemyPhysicalAttack.RequireTargetProfile(target));
-        if (supplyExp) target = target.WithStats(target.Stats.WithCurrentExp(0));
         Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
             Battle01PlayerPhysicalAttack.RequireActor(target)).ParamName);
-        if (!supplyExp)
-        {
-            var after = Battle01FirstRound.EnterNext(Battle01EnemyPhysicalAttackTests.ChesterHitCompleted());
-            var ready = Battle01NextPlayerControl.Enter(after, 2).State!;
-            var provisional = Battle01PlayerMovement.Confirm(ready, 2);
-            Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
-                Battle01PlayerPhysicalAttack.Begin(provisional, 2)).ParamName);
-            Assert.Same(after.TurnCompletion, provisional.TurnCompletion);
-        }
+        Battle01PlayerPhysicalAttack.RequireActor(target.WithStats(target.Stats.WithCurrentExp(0)));
+        var after = Battle01FirstRound.EnterNext(Battle01EnemyPhysicalAttackTests.ChesterHitCompleted());
+        var ready = Battle01NextPlayerControl.Enter(after, 2).State!;
+        var provisional = Battle01PlayerMovement.Confirm(ready, 2);
+        Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.Begin(provisional, 2)).ParamName);
+        Assert.Same(after.TurnCompletion, provisional.TurnCompletion);
+        var roster = provisional.Roster.ToArray();
+        roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentExp(0));
+        var injected = Battle01FirstRoundTests.CopyCurrent(provisional, roster: roster);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01PlayerPhysicalAttack.Begin(injected, 2));
     }
     internal static Battle01InitializedState Ready() => Battle01NextPlayerControl.Enter(
         Battle01EnemyPhysicalAttack.CompleteNext(Battle01EnemyPhysicalAttackTests.AttackBoundary(0), 132,
@@ -35,11 +34,166 @@ public sealed class Battle01PlayerPhysicalAttackTests
     internal static Battle01InitializedState Selected() => Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(Ready(), 0), 0);
     internal static Battle01InitializedState Completed() => Battle01PlayerPhysicalAttack.Confirm(Selected(), 0, Policy);
 
-    internal static Battle01InitializedState FirstDefeatSelected(bool accounting = true)
+    internal static Battle01InitializedState ChesterReady() => Battle01NextPlayerControl.Enter(
+        Battle01FirstRound.EnterNext(Battle01EnemyPhysicalAttackTests.ChesterHitCompleted(0)), 2).State!;
+    internal static Battle01InitializedState ChesterSelected() =>
+        Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(ChesterReady(), 2), 2);
+    internal static Battle01InitializedState ChesterCompleted() =>
+        Battle01PlayerPhysicalAttack.Confirm(ChesterSelected(), 2, Policy);
+
+    [Theory]
+    [InlineData("level")]
+    [InlineData("maxHp")]
+    [InlineData("mp")]
+    [InlineData("attack")]
+    [InlineData("defense")]
+    [InlineData("agility")]
+    [InlineData("move")]
+    [InlineData("status")]
+    [InlineData("item")]
+    [InlineData("spell")]
+    [InlineData("exp")]
+    [InlineData("kills")]
+    public void KnownChesterExpDoesNotWidenHisOtherCombatProfileInputs(string field)
+    {
+        var actor = ChesterReady().Roster[2]; var s = actor.Stats;
+        var stats = new Battle01Stats(field == "level" ? (byte)2 : s.Level, field == "maxHp" ? (ushort)12 : s.HpMax,
+            s.HpCurrent, field == "mp" ? (byte)1 : s.MpMax, s.MpCurrent, field == "attack" ? (byte)9 : s.Attack,
+            field == "defense" ? (byte)4 : s.Defense, field == "agility" ? (byte)6 : s.Agility,
+            field == "move" ? (byte)6 : s.Move, field == "status" ? (ushort)1 : s.Status,
+            field == "item" ? new ushort[] {199,0,127,127} : s.Items,
+            field == "spell" ? new byte[] {10,63,63,63} : s.Spells,
+            field == "exp" ? (byte)100 : (byte)0, field == "kills" ? (ushort)0 : null);
+        Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.RequireActor(actor.WithStats(stats))).ParamName);
+    }
+
+    [Fact]
+    public void ChesterDoesNotAdmitLevelTransitionOrAnotherLethalStrike()
+    {
+        var ready = ChesterReady(); var actor = ready.Roster[2]; var target = ready.Roster[6];
+        var highExp = actor.Stats.WithCurrentExp(99);
+        Battle01PlayerPhysicalAttack.RequireActor(actor.WithStats(highExp));
+        Assert.Equal("attack.levelUp", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.Resolve(highExp, target.Stats, 230, ready.RandomSeedImage, target.Index,
+                actor.RequirePosition(), target.RequirePosition())).ParamName);
+        Assert.Equal("attack.lethal", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01PlayerPhysicalAttack.Resolve(actor.Stats, target.Stats.WithCurrentHp(1), 230, ready.RandomSeedImage,
+                target.Index, actor.RequirePosition(), target.RequirePosition())).ParamName);
+        Assert.Null(actor.Stats.CurrentKills); Assert.Equal((byte?)0, actor.Stats.CurrentExp);
+    }
+
+    [Fact]
+    public void ChesterAttackUsesHisActualProfileAndEarnsExpThroughReceipt72()
+    {
+        var ready = ChesterReady(); var frozen = JsonSerializer.Serialize(ready, new JsonSerializerOptions { MaxDepth = 256 });
+        var choice = Battle01PlayerMovement.Confirm(ready, 2);
+        var selected = Battle01PlayerPhysicalAttack.Begin(choice, 2);
+        var cycled = Battle01PlayerPhysicalAttack.Cycle(Battle01PlayerPhysicalAttack.Cycle(selected, 2, 1), 2, -1);
+        var cancelled = Battle01PlayerPhysicalAttack.Cancel(cycled, 2);
+        Assert.Equal(new[] { 131 }, cycled.FirstControl!.Movement.Attack!.Targets);
+        Assert.Equal(Battle01Phase.PlayerActionChoice, cancelled.Phase);
+        foreach (var state in new[] { choice, selected, cycled, cancelled })
+        {
+            Assert.Same(ready.TurnCompletion, state.TurnCompletion);
+            Assert.Same(ready.Roster[2].Stats, state.Roster[2].Stats);
+            Assert.Same(ready.Roster[6].Stats, state.Roster[6].Stats);
+            Assert.Equal((0x71D31234u, (ushort?)0x0134), (state.RandomSeedImage, state.RandomSeedCopy));
+        }
+        var after = Battle01PlayerPhysicalAttack.Confirm(Battle01PlayerPhysicalAttack.Begin(cancelled, 2), 2, Policy);
+        var receipt = after.TurnCompletion!; var d = receipt.PlayerPhysicalAttack!;
+        Assert.Equal("battle01-class1-wooden-stick-effective-prowess3-v1", d.CombatProfile);
+        Assert.Equal((2, 131, 0, 131, 1, 230), (d.ActorIndex, d.TargetIndex, (int)d.Action,
+            (int)d.ItemOrSpellWord, (int)d.TargetTerrain, d.LandMultiplier));
+        Assert.Equal(new MapPosition(11, 14), d.RangeOrigin); Assert.Equal(d.RangeOrigin, d.MovementOrigin);
+        Assert.Equal(new byte[] { 255 }, d.MoveString);
+        Assert.Equal(new ushort[] { 8, 16, 1, 1, 32, 32, 16, 16 }, d.Effect.Rolls.Select(r => r.Range));
+        Assert.Equal(new ushort[] { 6, 2, 0, 0, 24, 1, 8, 10 }, d.Effect.Rolls.Select(r => r.Result));
+        Assert.Equal(new uint[] { 0xC7BE1234, 0x24AD1234, 0xDCD01234, 0x36971234, 0xC5B21234,
+            0x0A111234, 0x82E41234, 0xA59B1234 }, d.Effect.Rolls.Select(r => r.AfterImage));
+        Assert.Equal((2, 3, 5, 3), (d.Effect.Damage, (int)d.Effect.TemporaryHp, (int)d.Effect.RestoredHp,
+            (int)after.Roster[6].Stats.HpCurrent));
+        Assert.Equal(new Battle01PhysicalReaction(131, -2, 0, 0, 1), d.Effect.Reaction);
+        Assert.False(d.Effect.Dodged); Assert.False(d.Effect.Critical); Assert.False(d.DefeatedTarget);
+        Assert.Equal((20, 10, 10, (byte?)0, (byte?)10), (d.AccumulatedExp, d.HalvedExp, d.AwardedExp,
+            d.Actor.Stats.CurrentExp, after.Roster[2].Stats.CurrentExp));
+        Assert.Equal(9, after.Roster[2].Stats.HpCurrent); Assert.Null(after.Roster[2].Stats.CurrentKills);
+        Assert.Equal((72, (byte)2, (byte?)128), (Battle01EnemyPursuitTests.Receipts(after).Count(),
+            after.FirstRound!.CurrentTurnOffset, after.FirstRound.CurrentCandidate?.CombatantIndex));
+        Assert.Same(ready.FirstRound!.Slots, after.FirstRound.Slots); Assert.Same(ready.TurnCompletion, receipt.Previous);
+        Assert.Equal(new Battle01FactionCounts(3, 5), receipt.BeforeAfterTurn); Assert.Equal(receipt.BeforeAfterTurn, receipt.AfterAfterTurn);
+        Assert.Null(receipt.EnemyDefeat); Assert.Same(Policy, receipt.Policy);
+        Assert.Same(ready.AiMemory, after.AiMemory); Assert.Same(ready.AiLastTargets, after.AiLastTargets);
+        Assert.Equal(((uint?)60, (byte?)39, (ushort?)1), (after.CurrentGold, after.Roster[0].Stats.CurrentExp, after.Roster[0].Stats.CurrentKills));
+        Assert.Null(after.Roster[7].Position); Assert.Equal(8, after.Occupancy.Count(id => id >= 0));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, 0, 0);
+        Assert.Equal("accounting.input", Assert.Throws<ArgumentException>(() =>
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, 0, null)).ParamName);
+        Assert.Equal(frozen, JsonSerializer.Serialize(ready, new JsonSerializerOptions { MaxDepth = 256 }));
+    }
+
+    [Theory]
+    [InlineData("exp")]
+    [InlineData("hp")]
+    [InlineData("main")]
+    public void ChesterLateFinalizationRejectsLocallyConstructedFalseEffects(string field)
+    {
+        var selected = ChesterSelected(); var d = Battle01PlayerPhysicalAttack.Decide(selected, 2);
+        var roster = selected.Roster.ToArray();
+        roster[2] = roster[2].WithStats(field == "exp" ? d.ActorAfterStats.WithCurrentExp(11) : d.ActorAfterStats);
+        roster[6] = roster[6].WithStats(field == "hp" ? d.Effect.AfterStats.WithCurrentHp(4) : d.Effect.AfterStats);
+        var local = new Battle01InitializedState(selected, roster,
+            d.Effect.MainSeedAfter ^ (field == "main" ? 0x10000u : 0u), d.GoldAfter);
+        // Actor EXP is rejected by the finalizer's stat refresh before receipt history is checked.
+        Assert.Equal(field == "exp" ? "stats" : "attack.history", Assert.Throws<ArgumentException>(() =>
+            Battle01TurnCompletion.CompletePlayerPhysical(local, d, Policy)).ParamName);
+        Assert.Equal((0x71D31234u, (byte?)0, 5, 71), (selected.RandomSeedImage, selected.Roster[2].Stats.CurrentExp,
+            (int)selected.Roster[6].Stats.HpCurrent, Battle01EnemyPursuitTests.Receipts(selected).Count()));
+    }
+
+    [Theory]
+    [InlineData("exp")]
+    [InlineData("hp")]
+    [InlineData("main")]
+    [InlineData("copy")]
+    [InlineData("gold")]
+    [InlineData("kills")]
+    [InlineData("actor")]
+    [InlineData("award")]
+    [InlineData("reaction")]
+    [InlineData("roll")]
+    public void ChesterReceiptHistoryRejectsEachForgedEffectChannel(string field)
+    {
+        var after = ChesterCompleted(); var roster = after.Roster.ToArray(); var receipt = after.TurnCompletion!;
+        var d = receipt.PlayerPhysicalAttack!; uint main = after.RandomSeedImage, gold = 60;
+        ushort copy = after.RandomSeedCopy!.Value;
+        switch (field)
+        {
+            case "exp": roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentExp(11)); break;
+            case "hp": roster[6] = roster[6].WithStats(roster[6].Stats.WithCurrentHp(4)); break;
+            case "main": main ^= 0x10000; break;
+            case "copy": copy ^= 0x100; break;
+            case "gold": gold++; break;
+            case "kills": roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentKills(0)); break;
+            case "actor": d = d with { Actor = d.Actor.WithStats(d.Actor.Stats.WithCurrentExp(1)) }; break;
+            case "award": d = d with { AwardedExp = 11 }; break;
+            case "reaction": d = d with { Effect = d.Effect with { Reaction = d.Effect.Reaction! with { HpDelta = -3 } } }; break;
+            case "roll":
+                var rolls = d.Effect.Rolls.ToArray(); rolls[0] = rolls[0] with { Result = 7 };
+                d = d with { Effect = d.Effect with { Rolls = rolls } }; break;
+        }
+        var forged = Battle01FirstRoundTests.CopyCurrent(after, roster: roster, mainImage: main, copy: copy,
+            gold: gold, receipt: receipt with { PlayerPhysicalAttack = d });
+        Assert.ThrowsAny<ArgumentException>(() => Battle01EnemyStandby.CompleteNext(forged, 128,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+        Assert.Equal((byte?)10, after.Roster[2].Stats.CurrentExp); Assert.Equal(3, after.Roster[6].Stats.HpCurrent);
+    }
+
+    internal static Battle01InitializedState FirstDefeatSelected(bool accounting = true, byte? chesterExp = null)
     {
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
         var current = Battle01EnemyPhysicalAttack.CompleteNext(
-            Battle01EnemyPhysicalAttackTests.AttackBoundary(0, firstDefeatAccounting: accounting), 132, Battle01EnemyPhysicalAttackTests.Policy);
+            Battle01EnemyPhysicalAttackTests.AttackBoundary(0, firstDefeatAccounting: accounting, chesterExp), 132, Battle01EnemyPhysicalAttackTests.Policy);
         current = Battle01NextPlayerControl.Enter(current, 0).State!;
         current = Battle01PlayerPhysicalAttack.Confirm(Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 0), 0), 0,
             Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat);
@@ -55,7 +209,7 @@ public sealed class Battle01PlayerPhysicalAttackTests
         return Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current, 0), 0);
     }
 
-    internal static Battle01InitializedState FirstDefeatCompleted() => Battle01PlayerPhysicalAttack.Confirm(FirstDefeatSelected(), 0,
+    internal static Battle01InitializedState FirstDefeatCompleted(byte? chesterExp = null) => Battle01PlayerPhysicalAttack.Confirm(FirstDefeatSelected(chesterExp: chesterExp), 0,
         Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat);
 
     [Fact]
@@ -191,7 +345,7 @@ public sealed class Battle01PlayerPhysicalAttackTests
         Assert.Null(generated.Roster[7].Position); Assert.Equal(0, generated.Roster[7].Stats.HpCurrent);
         Assert.Equal(8, generated.Occupancy.Count(index => index >= 0)); Assert.Equal((uint?)60, generated.CurrentGold);
         Assert.Equal((ushort?)1, generated.Roster[0].Stats.CurrentKills); Assert.Equal((byte?)39, generated.Roster[0].Stats.CurrentExp);
-        Battle01PlayerPhysicalAttack.RequireAccountingInputs(generated, 0, 0);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(generated, 0, 0, null);
     }
 
     [Fact]
@@ -204,8 +358,8 @@ public sealed class Battle01PlayerPhysicalAttackTests
         Assert.Equal((ushort)9999, Battle01PlayerPhysicalAttack.KillsAfterKill(9998));
         Assert.Equal((ushort)9999, Battle01PlayerPhysicalAttack.KillsAfterKill(9999));
         var after = FirstDefeatCompleted();
-        Assert.Throws<ArgumentException>(() => Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, null, 0));
-        Assert.Throws<ArgumentException>(() => Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, null));
+        Assert.Throws<ArgumentException>(() => Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, null, 0, null));
+        Assert.Throws<ArgumentException>(() => Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, null, null));
         Assert.Null(Completed().CurrentGold); Assert.Null(Completed().Roster[0].Stats.CurrentKills);
         var unspecified = FirstDefeatSelected(accounting: false); string frozen = JsonSerializer.Serialize(unspecified);
         Assert.Equal("attack.killAccountingInput", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>

@@ -7,12 +7,51 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
+    internal static Battle01InitializedState AfterChesterPlayerRelay()
+    {
+        var current = Battle01PlayerPhysicalAttackTests.ChesterCompleted();
+        var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        current = Battle01EnemyStandby.CompleteNext(current, 128, stay);
+        current = Battle01EnemyStandby.CompleteNext(current, 129, stay);
+        current = Battle01EnemyPhysicalAttack.CompleteNext(current, 131, Policy);
+        return Battle01EnemyStandby.CompleteNext(current, 133, stay);
+    }
+
+    [Fact]
+    public void DamagedEnemyAfterChesterAttackSelectsBowieAndPreservesEarnedExp()
+    {
+        var after = AfterChesterPlayerRelay(); var receipt = after.TurnCompletion!.Previous!;
+        var d = receipt.EnemyPhysicalAttack!;
+        Assert.Equal((131, 0, 3), (d.ActorIndex, d.TargetIndex, (int)after.Roster[6].Stats.HpCurrent));
+        Assert.Equal("battle01-class0-wooden-sword-effective-prowess3-v1", d.CombatProfile);
+        Assert.Equal(new[] { 2, 1, 0 }, d.Priorities.Select(p => p.Target.Index));
+        Assert.Equal(new[] { 230, 230, 230 }, d.Priorities.Select(p => p.LandMultiplier));
+        Assert.Equal(new[] { 2, 2, 3 }, d.Priorities.Select(p => p.PotentialDamage));
+        Assert.Equal(new[] { 7, 9, 3 }, d.Priorities.Select(p => p.RemainingHp));
+        Assert.Equal(new[] { 1, 1, 7 }, d.Priorities.Select(p => p.Priority));
+        Assert.Equal(new[] { 66, 57, 133 }, d.Priorities.Select(p => p.Roll.GeneratorSteps));
+        Assert.Equal(new byte[] { 0, 1, 2 }, d.Priorities.Select(p => p.Roll.Result));
+        Assert.Equal(new MapPosition(10, 15), d.Destination);
+        Assert.Equal(new byte[] { 2, 3, 3, 255 }, d.MoveString);
+        Assert.Equal(new ushort[] { 32, 32, 1, 1, 32, 32 }, d.Effect.Rolls.Select(r => r.Range));
+        Assert.Equal(new ushort[] { 13, 10, 0, 0, 12, 4 }, d.Effect.Rolls.Select(r => r.Result));
+        Assert.Equal(new uint[] { 0x68E61234, 0x53B51234, 0x40381234, 0x42DF1234, 0x655A1234, 0x25991234 },
+            d.Effect.Rolls.Select(r => r.AfterImage));
+        Assert.Equal((3, 3, 6, 3), (d.Effect.Damage, (int)d.Effect.TemporaryHp, (int)d.Effect.RestoredHp,
+            (int)after.Roster[0].Stats.HpCurrent));
+        Assert.False(d.Effect.Dodged); Assert.False(d.Effect.Critical);
+        Assert.Equal(new Battle01PhysicalReaction(0, -3, 0, 0, 1), d.Effect.Reaction);
+        Assert.Equal((byte?)10, after.Roster[2].Stats.CurrentExp); Assert.Null(after.Roster[2].Stats.CurrentKills);
+        Assert.Equal(new byte[] { 255, 255, 255, 0, 0, 255 }, after.AiLastTargets.Take(6));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, 0, 0);
+    }
+
     internal static Battle01PhysicalCompletionPolicy Policy => Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
 
-    internal static Battle01InitializedState ChesterAttackBoundary()
+    internal static Battle01InitializedState ChesterAttackBoundary(byte? chesterExp = null)
     {
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
-        var current = Battle01NextPlayerControl.Enter(Battle01PlayerPhysicalAttackTests.FirstDefeatCompleted(), 1).State!;
+        var current = Battle01NextPlayerControl.Enter(Battle01PlayerPhysicalAttackTests.FirstDefeatCompleted(chesterExp), 1).State!;
         current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1, stay);
         foreach (int actor in new[] { 129, 128, 130 }) current = Battle01EnemyStandby.CompleteNext(current, actor, stay);
         current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
@@ -36,7 +75,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
         return current;
     }
 
-    internal static Battle01InitializedState ChesterHitCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(), 131, Policy);
+    internal static Battle01InitializedState ChesterHitCompleted(byte? chesterExp = null) => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(chesterExp), 131, Policy);
 
     [Fact]
     public void ChesterFinalizationRejectsAFalseHpReplayAfterConstructingTheLocalPhysicalEffect()
@@ -110,7 +149,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
             mutation == "attack" ? (byte)9 : s.Attack, mutation == "defense" ? (byte)4 : s.Defense,
             s.Agility, s.Move, mutation == "status" ? (ushort)1 : s.Status,
             mutation == "equipment" ? new ushort[] { 199, 0, 127, 127 } : s.Items, s.Spells,
-            mutation == "exp" ? (byte)0 : null, mutation == "kills" ? (ushort)0 : null);
+            mutation == "exp" ? (byte)100 : null, mutation == "kills" ? (ushort)0 : null);
         var forgedTarget = new Battle01Combatant(target.Deployment, stats, mutation == "class" ? (byte)4 : target.ClassId, null)
             .WithPosition(target.Position).WithAiBitfield(0);
         var roster = before.Roster.ToArray(); roster[2] = forgedTarget;
@@ -304,7 +343,8 @@ public sealed class Battle01EnemyPhysicalAttackTests
         Assert.Equal(0, Battle01EnemyPhysicalAttack.SelectTarget([Entry(2, 1, 8, 16), Entry(1, 4, 8, 16), Entry(0, 0, 0, 16)]).Target.Index);
     }
 
-    internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false)
+    internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false,
+        byte? chesterExp = null)
     {
         var current = Battle01EnemyPursuitTests.RoundThree();
         // The earlier movement-only authored helper has no equipment. Supply the accepted combat
@@ -318,7 +358,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
             roster[1] = roster[1].WithStats(new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0,
                 [213, 0, 0, 127], [0, 63, 63, 63]));
             roster[2] = roster[2].WithStats(new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0,
-                [184, 0, 127, 127], [63, 63, 63, 63]));
+                [184, 0, 127, 127], [63, 63, 63, 63], chesterExp));
         }
         current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, gold: firstDefeatAccounting ? 0u : null);
         for (int round = 3; round <= 5; round++)
