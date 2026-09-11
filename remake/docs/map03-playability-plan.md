@@ -3895,14 +3895,16 @@ raise AssertionError('No living player endpoint within round14')
 uv run python -X utf8 local/first-ally-defeat/source-reduction.py
 ```
 
-### Planned round14 continuation: first leader-defeat boundary
+### Implemented first leader defeat pending
 
-**Plan only.** Accepted base `15e087d371dc3fb44c10a6680995c0dc72550ad6` (tree
-`bb56da21cffa777c3940f322f345d1b3ecb86587`) closes R14 Sarah movement/cancel with107 receipts.
-The current implementation still rejects the leader's lethal hit. The proposed endpoint below is
-source-derived; it has not run through native input or production mutation.
+**Implemented:** `LeaderDefeatComparison` adds only Bowie defeats0 before initialization.
+Four origin STAY choices from R14 Sarah produce the unchanged119-receipt prefix; enemy129's
+leader kill then publishes `DefeatPending` after first cleanup/count. The separate terminal receipt
+retains the previous history and freezes every gameplay input before the ordinary defeat handler.
+The older `ChesterDefeatComparison` still rejects that strike at `attack.lethal`; its diagnostic
+below is the regression reference for the unchanged prefix, not the new preset's endpoint.
 
-#### Actual route and first guard
+#### Retained older-preset route and first guard
 
 **Confirmed by the narrow real Content/Application diagnostic:** replay
 `AcceptedSelectedInputsContinueFirstAllyDefeatThroughRoundFourteenSarahControl` as a return-session
@@ -3938,7 +3940,7 @@ All four living enemies retain HP5; gold120 is unchanged. AI words are
 last-target bytes `FF/02/FF/00/00/02` plus42 `FF`. Flags0–2 remain true, the other13 false;
 tested mask7. All startup/source objects and the complete107-receipt prefix retain identity.
 
-#### Independent source result and proposed stopping point
+#### Independent source result and implemented stopping point
 
 Use pinned `ShiningForceCentral/SF2DISASM` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6` and the registered USA comparison inputs.
@@ -3960,8 +3962,8 @@ from remake output.
   double/counter rolls. The enemy actor and absent counter skip EXP/gold reward dispatch.
 - `cutscenes/battleendcutscenesstart.asm` (`0x47B92..0x47BE8`) tests Bowie HP first. HP0
   branches directly to `loc_47C88`, whose tail restores registers and returns. There is no
-  enemy-leader cutscene or enemy mass-death tail on this path. The current remake's
-  `RequireDefeatedWrapperReturn` rejects dead Bowie more narrowly than this source return branch.
+  enemy-leader cutscene or enemy mass-death tail on this path. The continuing remake's
+  `RequireDefeatedWrapperReturn` still rejects dead Bowie; the separate terminal branch owns this source return.
 - `battleloop/processkilledcombatants.asm` (`0x24518..0x24642`) processes new worklist`[0]`:
   increment Bowie's defeats, clear his X/Y, clear status and refresh effective stats. Previously
   cleaned Chester/131/132 do not re-enter the list. The existing controlled unchanged-effective-stats
@@ -3973,7 +3975,7 @@ from remake output.
   enemy130 action or next round on this path. See the accepted
   [controller contract](../../docs/design/contracts/battle-control-lifecycle.md#post-action-and-after-turn-order).
 
-**Proposed minimum implementation:** admit this one leader-death action through its first
+**Implemented boundary:** admit this one leader-death action through its first
 post-cleanup defeat decision, and expose a frozen `DefeatPending` battle state before entering the
 ordinary defeat handler. Preserve the119 continuing-turn receipts and link one separate terminal-action
 receipt to that exact history. Reuse the existing physical decision and ally-cleanup payloads; record
@@ -3981,15 +3983,15 @@ the first count`(0,4)` and that the after-turn seam was not reached. Do not fabr
 or append an ordinary advanced turn. Keep R16/raw0 and its historical64-slot buffer frozen, with no
 current player or dispatchable next actor.
 
-The proposed state has Bowie HP0/unplaced, Sarah(9,17) HP11, enemy129(11,14), and the other positions
+The terminal state has Bowie HP0/unplaced, Sarah(9,17) HP11, enemy129(11,14), and the other positions
 as at the guard. There are five live occupants. Main`10491234`/copy`0034` and enemy129 last-target0
 are the arithmetic result. Ordinary `ai/startaicontrol.asm` clears the tested-region mask to0;
 region flags, AI words/memory and other accounting values are retained. These seeds omit original
 presentation/VInt and are not natural post-animation seed claims. Gold is still120 and Bowie EXP63/
 kills2; Chester EXP10/defeats1 and prior enemy cleanups remain intact.
 
-Naturally carried Bowie defeats remains **Unknown**. Propose a separate named
-`LeaderDefeatComparison` derived from `ChesterDefeatComparison`, supplying only Bowie defeats0 at
+Naturally carried Bowie defeats remains **Unknown**. The separate named
+`LeaderDefeatComparison` derives from `ChesterDefeatComparison`, supplying only Bowie defeats0 at
 Prepare/Initialize. It yields defeats1 at this new cleanup and preserves Chester's existing supplement.
 The four earlier presets and accepted Chester-defeat preset remain unchanged. Validate the new counter
 against preparation in every applicable accounting rewind; never fill it in at the guard.
@@ -4002,11 +4004,10 @@ restores leader HP, halves gold, obtains egress position and returns`D4=-1` for 
 Those effects, exploration re-entry, retry/save flow, and Battle4's special result require separate
 acceptance. A visible “defeat pending” diagnostic is **not** an implemented loss/return flow.
 
-#### Exact proposed implementation owners and acceptance
+#### Implementation owners and acceptance
 
-This plan slice writes only `remake/docs/map03-playability-plan.md`. The following prospective
-implementation scope requires a separate main-gate authorization. Filenames are exact and relative
-to `remake/`; the grouped rows grant no wildcard authority.
+The following existing owners hold the bounded implementation and its acceptance tests.
+Filenames are exact and relative to `remake/`; grouped rows grant no wildcard authority.
 
 | Directory and exact filenames | Minimum responsibility |
 | --- | --- |
@@ -4026,7 +4027,7 @@ does not execute; do not weaken those ordinary invariants to represent absence.
 Positive acceptance must reproduce the exact119-prefix from initialization, retain107 accepted
 receipts, prove the66 thinking steps/four main draws and HP restore/replay, perform only worklist`[0]`,
 preserve previous deaths, and stop after first outcome count`(0,4)` with Sarah still alive. Validate
-the proposed explicit counter and the complete pending receipt against the previous history.
+the explicit counter and the complete pending receipt against the previous history.
 Negative acceptance covers unknown/forged Bowie defeats, stale/foreign/duplicate requests, changed
 prior counters/accounting/AI/RNG, revived prior victims, duplicate cleanup, forged terminal target/
 policy/count, phantom after-turn effects or turn advancement, and all movement/STAY/attack/dispatch/
@@ -4034,18 +4035,25 @@ next-round calls after the terminal state. Old comparisons still stop at their e
 Sarah attacks/defeat, third enemy defeat, boss128 defeat, level/spell/item/passive/double/counter
 branches, victory and full ordinary-loss handling remain unsupported.
 
-That future implementation uses its committed planner, normal public verification, affected owning
-tests, required private Content, and bounded Godot/native acceptance with individually inspected
-frames and exact source/probe copies. This document-only slice runs its own narrow diagnostic,
-source reduction, committed planner and normal verification; it does not repeat the completed
-first-ally full suite, native modes or official export. The earlier full .NET result remains
-1485P/1F/0S completed, followed by the one failed private-input node's successful narrow rerun.
-The known absent default H0 ROM remains an honestly reported local verification boundary.
+Acceptance uses the committed planner, normal public verification, affected owning tests,
+required private Content, one selected full .NET suite and the official Godot gate. Native
+`leader-defeat-pending` executes43 frames including the complete accepted first-ally prefix;
+the five affected older modes add38. Inspect every frame and exact archived production/probe
+copy. The existing default H0 ROM can remain absent; report that local boundary honestly.
+
+The required test
+`AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix` replays
+both preparations through real transport/initialization and compares every prior state field,
+normalizing only the declared Bowie counter. The native receipt exposes `start107`, `boundary119`
+and terminal `battle`. Derive the source-only result below before comparing those captures:
+main10491234/copy0034, mask0, first counts0/4, worklist[0], five live positions, HP/counters,
+all64 slots, memory/last-target/flags and119 continuing receipts must agree. The explicit counter
+is a supplied comparison input, never evidence of a naturally carried original value.
 
 **Unknown:** natural inputs/seed/defeats continuity, original presentation/VInt/death animation, and
-H4. The source-only defeat-entry result does not close any of these.
+H4. The controlled defeat-entry implementation does not close any of these.
 
-#### Reproduce this planning boundary
+#### Reproduce the retained older-preset guard and independent source reduction
 
 Use the registered read-only private inputs from the preceding startup/first-ally recipes,
 `SF2_REQUIRE_PRIVATE_TESTS=1`, `SF2_POST_DEFEAT_ROUTE=chester-target` and
@@ -4089,7 +4097,7 @@ body=body_at(source,'public void AcceptedSelectedInputsContinueFirstAllyDefeatTh
 needle='var session = ReachRealFirstAllyDefeatBoundary();'
 assert body.count(needle)==1
 body=body.replace(needle,'''var method=typeof(Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests).GetMethod("ReachRealFirstAllyDefeatBoundary",BindingFlags.Static|BindingFlags.NonPublic)!;
-var session=(GameSession)method.Invoke(null,null)!;''')
+var session=(GameSession)method.Invoke(null,new object?[]{null})!;''')
 driver=r'''
 var session=ReplayAcceptedRoundFourteen();
 var options=new JsonSerializerOptions {MaxDepth=256};
@@ -4108,6 +4116,7 @@ void Retained() {
 using(var native=JsonDocument.Parse(File.ReadAllText("local/first-ally-defeat/native-first-ally-02/captures/receipt.json"),new JsonDocumentOptions{MaxDepth=256})) {
  var actual=System.Text.Json.Nodes.JsonNode.Parse(Json(start.Battle),null,new JsonDocumentOptions{MaxDepth=256});
  var expected=System.Text.Json.Nodes.JsonNode.Parse(native.RootElement.GetProperty("battle").GetRawText(),null,new JsonDocumentOptions{MaxDepth=256});
+ expected!["DefeatPending"]=null; // Added state facet is absent from the older capture.
  Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(actual,expected),"Entire accepted native R14 battle mismatch");
 }
 Save("start.json",start.Battle);
@@ -4401,3 +4410,18 @@ emulator-work queue.
   does not authorize redistribution or an original-fidelity claim.
 - Do not bypass an evidence gap with a guessed route, hidden fallback, or diagnostic behavior
   relabelled as gameplay.
+
+
+#### Reproduce terminal acceptance
+
+Use the same registered read-only inputs and required-private switch. Run the new owning Content
+method above plus the `leader-defeat-pending` native recipe in
+[Presentation and Assets](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
+Use a fresh `local/leader-defeat-pending` root for this slice; prior diagnostic/source/native and
+root-review outputs remain read-only. To reuse the source-only recipe above there, set
+`SF2_ROUND14_OUTPUT` to the new root and change its two explicit root assertions to that same path.
+Copy its existing `start.json` and `boundary.json` comparison inputs into the new root, or regenerate
+the old-preset diagnostic there. Redirect only the earlier reducer's output expression as shown;
+never change the source arithmetic, seed it from a terminal capture, or overwrite prior results.
+Compare the resulting `sourceDerivedOnly` against the fresh native receipt only after reduction.
+Naturally carried Bowie defeats remains Unknown; the new preparation separately supplies0->1.

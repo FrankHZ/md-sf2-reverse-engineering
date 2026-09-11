@@ -17,14 +17,18 @@ public sealed class Battle01StayCompletionPolicy : Battle01TurnCompletionPolicy
 
 public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
-    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat) { AllowsAllyDefeat = allowsAllyDefeat; }
+    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false)
+    { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat; }
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new(false);
     public static Battle01PhysicalCompletionPolicy ControlledFirstAllyDefeat { get; } = new(true);
+    public static Battle01PhysicalCompletionPolicy ControlledLeaderDefeatPending { get; } = new(true, true);
     internal bool AllowsAllyDefeat { get; }
-    public override string Id => AllowsAllyDefeat
+    internal bool AllowsLeaderDefeat { get; }
+    public override string Id => AllowsLeaderDefeat ? "battle01-controlled-leader-defeat-pending-v1" : AllowsAllyDefeat
         ? "battle01-controlled-first-chester-defeat-v1" : "battle01-controlled-nonlethal-physical-strike-v1";
     internal static bool IsSupported(Battle01PhysicalCompletionPolicy? policy) =>
-        ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat);
+        ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat) ||
+        ReferenceEquals(policy, ControlledLeaderDefeatPending);
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
@@ -57,6 +61,15 @@ public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Batt
     Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null,
     Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null, Battle01EnemyDefeatCleanup? EnemyDefeat = null,
     Battle01AllyDefeatCleanup? AllyDefeat = null);
+
+// Separate from an advanced continuing turn: the first outcome exits before after-turn work.
+public sealed record Battle01DefeatPendingReceipt(Battle01PhysicalCompletionPolicy Policy,
+    Battle01EnemyPhysicalAttackDecision Attack, Battle01AllyDefeatCleanup Cleanup,
+    Battle01FactionCounts FirstOutcome, Battle01TurnCompletionReceipt Previous, int RoundNumber)
+{
+    public bool AfterTurnExecuted => false;
+    public bool TurnAdvanced => false;
+}
 
 public static class Battle01TurnCompletion
 {
@@ -154,6 +167,106 @@ public static class Battle01TurnCompletion
             decision.Actor.Stats.CurrentKills != cleanup.KillsBefore ||
             cleanup.KillsAfter != Battle01PlayerPhysicalAttack.KillsAfterKill(cleanup.KillsBefore))
             throw new ArgumentException("Retain the first-ally kill credit and both ordered worklists.", "attack.history");
+    }
+
+    internal static Battle01InitializedState CompleteLeaderDefeat(Battle01InitializedState current,
+        Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy? policy)
+    {
+        if (!ReferenceEquals(policy, Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending))
+            throw new ArgumentException("The leader-defeat policy must be explicit.", "policy");
+        Battle01EnemyPhysicalAttack.ValidateDecision(decision, allowAllyDefeat: true, allowLeaderDefeat: true);
+        var target = current.Roster.Single(unit => unit.Index == decision.TargetIndex);
+        if (decision.ActorIndex != 129 || decision.TargetIndex != 0 || !decision.DefeatedTarget ||
+            decision.Target.Stats.CurrentDefeats != 0 || target.Position != decision.Target.Position ||
+            !Battle01EnemyPhysicalAttack.SameStats(target.Stats, decision.Effect.AfterStats) ||
+            current.TurnCompletion is null)
+            throw new ArgumentException("Only the supplied first leader death enters the terminal cleanup.", "cleanup.before");
+        // Bowie's zero HP returns directly from ExecuteBattleCutscene_Defeated; no boss cutscene.
+        var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
+        int cell = Battle01PlayerMovement.Offset(target.RequirePosition());
+        if (occupancy[cell] != 0) throw new ArgumentException("Retain Bowie's cell before cleanup.", "occupancy");
+        ushort defeats = DefeatsAfterDeath(decision.Target.Stats.CurrentDefeats.Value);
+        roster[Array.IndexOf(roster, target)] = target.WithStats(target.Stats.WithCurrentDefeats(defeats)).WithPosition(null);
+        occupancy[cell] = -1;
+        var cleaned = new Battle01InitializedState(current, roster, Array.AsReadOnly(occupancy), null!);
+        // First CountRemainingCombatants overrides the living ally count to zero when Bowie is dead.
+        // Stop at BattleLoop_Defeat entry: no after-turn effects, second cleanup/count or pointer advance.
+        var result = new Battle01InitializedState(cleaned, new Battle01DefeatPendingReceipt(policy!, decision,
+            new(Array.AsReadOnly(new[] { 0 }), Array.Empty<int>(), 0, 0, defeats),
+            new(0, cleaned.Roster.Count(unit => unit.Index >= 128 && unit.Stats.HpCurrent > 0)),
+            current.TurnCompletion, current.FirstRound!.RoundNumber));
+        _ = RequireDefeatPending(result);
+        return result;
+    }
+
+    // Validate the terminal effect, then reuse the complete continuing-history validator on its before-image.
+    internal static Battle01InitializedState RequireDefeatPending(Battle01InitializedState current)
+    {
+        if (current.DefeatPending is not { } terminal || current.FirstControl is not null ||
+            current.FirstRound is not { RoundNumber: 16, CurrentTurnOffset: 0, CurrentCandidate.CombatantIndex: 129 } ||
+            terminal.RoundNumber != 16 || !ReferenceEquals(terminal.Previous, current.TurnCompletion) ||
+            !ReferenceEquals(terminal.Policy, Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending) ||
+            terminal.FirstOutcome != new Battle01FactionCounts(0, 4))
+            throw new ArgumentException("Retain the first leader-defeat boundary and unadvanced round.", "defeat.history");
+        int count = 0;
+        for (var receipt = current.TurnCompletion; receipt is not null; receipt = receipt.Previous) count++;
+        var d = terminal.Attack; var cleanup = terminal.Cleanup;
+        if (count != 119 || d.ActorIndex != 129 || d.TargetIndex != 0 || !d.DefeatedTarget ||
+            d.Target.Stats.CurrentDefeats != 0 || cleanup.DefeatedAlly != 0 || cleanup.DefeatsBefore != 0 ||
+            cleanup.DefeatsAfter != DefeatsAfterDeath(cleanup.DefeatsBefore) ||
+            !cleanup.FirstWorklist.SequenceEqual(new[] { 0 }) || cleanup.AfterTurnWorklist.Count != 0 ||
+            current.NewlyTestedRegionMask != 0 || current.RandomSeedImage != d.Effect.MainSeedAfter ||
+            current.RandomSeedCopy != d.SeedCopyAfter || current.AiLastTargets.Count != 48 || current.AiLastTargets[1] != 0 ||
+            current.AiMemory.Count != 48 || current.AiMemory[1] != d.Memory)
+            throw new ArgumentException("Retain the terminal strike, first cleanup and RNG endpoints.", "defeat.history");
+        Battle01EnemyPhysicalAttack.ValidateDecision(d, allowAllyDefeat: true, allowLeaderDefeat: true);
+        var roster = current.Roster.ToArray();
+        var actor = roster.Single(unit => unit.Index == 129); var target = roster.Single(unit => unit.Index == 0);
+        if (actor.Position != d.Destination || target.Position is not null ||
+            !SameCombatant(actor, d.Actor.WithPosition(d.Destination)) ||
+            !SameCombatant(target, d.Target.WithStats(d.Effect.AfterStats.WithCurrentDefeats(cleanup.DefeatsAfter)).WithPosition(null)) ||
+            !roster.Where(unit => unit.Stats.HpCurrent == 0).Select(unit => unit.Index).SequenceEqual(new[] { 0, 2, 131, 132 }) ||
+            roster.Count(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0) != 1)
+            throw new ArgumentException("Retain the replayed actor, cleaned leader and earlier deaths.", "defeat.history");
+        RequireOccupancy(roster, current.Occupancy);
+        roster[Array.IndexOf(roster, actor)] = d.Actor;
+        roster[Array.IndexOf(roster, target)] = d.Target;
+        var occupancy = Enumerable.Repeat(-1, 48 * 48).ToArray();
+        foreach (var unit in roster.Where(unit => unit.Position is not null))
+        {
+            int cell = Battle01PlayerMovement.Offset(unit.RequirePosition());
+            if (occupancy[cell] != -1) throw new ArgumentException("Before-image cells must be distinct.", "occupancy");
+            occupancy[cell] = unit.Index;
+        }
+        var lastTargets = current.AiLastTargets.ToArray(); lastTargets[1] = d.LastTargetBefore;
+        var prior = new Battle01InitializedState(current, roster, occupancy, d.SeedCopyBefore, d.MainSeedBefore, lastTargets, 7);
+        Battle01EnemyStandby.RequireCurrentRound(prior);
+        var expected = Battle01EnemyPhysicalAttack.Decide(prior, d.Actor, allowAllyDefeat: true, allowLeaderDefeat: true);
+        if (expected.TargetIndex != d.TargetIndex || expected.Destination != d.Destination ||
+            !expected.MoveString.SequenceEqual(d.MoveString) || expected.Priorities.Count != d.Priorities.Count ||
+            expected.Priorities.Where((p, i) => p.Candidate != d.Priorities[i].Candidate ||
+                p.LandMultiplier != d.Priorities[i].LandMultiplier || !SameCombatant(p.Target, d.Priorities[i].Target)).Any())
+            throw new ArgumentException("The terminal target cohort and path must reproduce the retained terrain.", "defeat.history");
+        return prior;
+    }
+
+    private static bool SameCombatant(Battle01Combatant a, Battle01Combatant b) =>
+        a.Deployment == b.Deployment && a.ClassId == b.ClassId && a.EnemySource == b.EnemySource &&
+        a.AiBitfield == b.AiBitfield && a.Position == b.Position && Battle01EnemyPhysicalAttack.SameStats(a.Stats, b.Stats);
+
+    private static void RequireOccupancy(IReadOnlyList<Battle01Combatant> roster, IReadOnlyList<int> actual)
+    {
+        var expected = Enumerable.Repeat(-1, 48 * 48).ToArray();
+        foreach (var unit in roster)
+        {
+            if (unit.Stats.HpCurrent == 0 && unit.Position is null) continue;
+            if (unit.Stats.HpCurrent == 0 || unit.Position is not { } position || !Battle01Initialization.WithinArea(position))
+                throw new ArgumentException("Only living units retain terminal placement.", "occupancy");
+            int cell = Battle01PlayerMovement.Offset(position);
+            if (expected[cell] != -1) throw new ArgumentException("Live cells must be distinct.", "occupancy");
+            expected[cell] = unit.Index;
+        }
+        if (!expected.SequenceEqual(actual)) throw new ArgumentException("Retain the complete terminal occupancy.", "occupancy");
     }
 
     internal static Battle01InitializedState CompletePhysical(Battle01InitializedState current,

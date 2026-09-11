@@ -10,8 +10,41 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
 {
+    [Fact]
+    public void LeaderDefeatPublishesOneTerminalSnapshotAndRejectsFurtherSessionOperations()
+    {
+        var session = FirstAllyDefeatSession(leader: true); var before = session.PrivateOriginalBattle01!;
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(before.Battle, json);
+        var after = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 129)).Snapshot;
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Equal(Battle01Phase.DefeatPending, after.Battle.Phase);
+        Assert.Same(before.Preparation, after.Preparation); Assert.Same(before.SourceSnapshot, after.SourceSnapshot);
+        Assert.Same(before.SourceBridge, after.SourceBridge); Assert.Same(before.SourceLocomotion, after.SourceLocomotion);
+        Assert.Same(before.Battle.TurnCompletion, after.Battle.TurnCompletion);
+        Assert.Equal((ushort?)0, after.Preparation.Party.Allies[0].CurrentDefeats);
+        Assert.Equal((ushort?)1, after.Battle.Roster[0].Stats.CurrentDefeats);
+        Assert.Equal(frozen, JsonSerializer.Serialize(before.Battle, json));
+        string terminal = JsonSerializer.Serialize(after.Battle, json);
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 129)).Diagnostic.Field);
+        object[] rejected = [
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(after, 129),
+            session.CompletePrivateOriginalBattle01EnemyPursuit(after, 129),
+            session.CompletePrivateOriginalBattle01EnemyStandby(after, 129),
+            session.EnterPrivateOriginalBattle01NextRound(after),
+            session.EnterPrivateOriginalBattle01NextPlayerControl(after, 1),
+            session.SelectPrivateOriginalBattle01PlayerDestination(after, 1, new(10, 17)),
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(after, 1),
+            session.CancelPrivateOriginalBattle01PlayerMovement(after, 1),
+            session.BeginPrivateOriginalBattle01PlayerAttack(after, 1),
+            session.CommitPrivateOriginalBattle01Stay(after, 1) ];
+        Assert.All(rejected, result => Assert.EndsWith("Rejected", result.GetType().Name));
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Equal(terminal, JsonSerializer.Serialize(after.Battle, json));
+        Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage);
+    }
 
-    internal static GameSession FirstAllyDefeatSession(bool completeRoute = true)
+
+    internal static GameSession FirstAllyDefeatSession(bool completeRoute = true, bool leader = false)
     {
         // Reuse the authored pre-physical fixture. Required Content coverage owns real initialization.
         var session = AttackSession(); var source = session.PrivateOriginalBattle01!;
@@ -20,7 +53,7 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
         regions[0] = new(0, 0, [new(0, 0), new(0, 19), new(15, 7), new(15, 0)], 0, 0);
         regions[2] = new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0);
         source = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session, regions: regions);
-        var preset = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var preset = leader ? OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison : OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
         var roster = source.Battle.Roster.ToArray();
         for (int i = 0; i < 3; i++)
         {
@@ -35,10 +68,11 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
         typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,
             new PrivateOriginalBattle01SessionSnapshot(prepared, initial, source.SourceLocomotion, source.SourceBridge));
         if (!completeRoute) return session;
-        for (int step = 0; step < 90; step++)
+        for (int step = 0; step < 120; step++)
         {
             var current = session.PrivateOriginalBattle01!; var order = current.Battle.FirstRound!;
-            if (order.RoundNumber == 13 && order.CurrentTurnOffset == 10 && order.CurrentCandidate?.CombatantIndex == 133) return session;
+            if (leader ? order.RoundNumber == 16 && order.CurrentTurnOffset == 0 :
+                order.RoundNumber == 13 && order.CurrentTurnOffset == 10 && order.CurrentCandidate?.CombatantIndex == 133) return session;
             if (order.CurrentCandidate is not {} candidate)
             {
                 Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current)); continue;

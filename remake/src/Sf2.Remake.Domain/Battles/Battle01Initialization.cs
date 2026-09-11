@@ -124,7 +124,7 @@ public sealed class Battle01Combatant
         ? this : new(this, stats, AiBitfield, Position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection, DefeatPending }
 
 public sealed class Battle01InitializedState
 {
@@ -146,6 +146,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         bool[] regionFlags, ushort newlyTestedRegionMask, uint randomSeedImage, Battle01FirstRoundOrder firstRound)
     {
+        DefeatPending = source.DefeatPending;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -156,6 +157,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         IReadOnlyList<int> occupancy, Battle01FirstControlState firstControl)
     {
+        DefeatPending = source.DefeatPending;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -167,6 +169,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         int[] occupancy, byte[] aiMemory, ushort randomSeedCopy)
     {
+        DefeatPending = source.DefeatPending;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain;
         Occupancy = Array.AsReadOnly(occupancy); AiMemory = Array.AsReadOnly(aiMemory);
@@ -192,6 +195,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
         Battle01TurnCompletionReceipt completion)
     {
+        DefeatPending = source.DefeatPending;
         CurrentGold = source.CurrentGold;
         Roster = source.Roster; Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -199,6 +203,18 @@ public sealed class Battle01InitializedState
         RandomSeedImage = source.RandomSeedImage; FirstRound = firstRound; TurnCompletion = completion;
         RandomSeedCopy = source.RandomSeedCopy;
         // FirstControl is intentionally absent: its provisional movement/cancel authority is consumed.
+    }
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01DefeatPendingReceipt receipt)
+        : this(source, source.Roster.ToArray(), source.Occupancy, null!)
+    {
+        DefeatPending = receipt;
+    }
+    // Validation-only before-image: this is never published as a new session state.
+    internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
+        int[] occupancy, ushort copy, uint main, byte[] lastTargets, ushort testedMask)
+        : this(source, roster, occupancy, source.AiMemory.ToArray(), copy, main, lastTargets)
+    {
+        DefeatPending = null; NewlyTestedRegionMask = testedMask;
     }
     public MapId Map { get; } = new("map57");
     public int BattleIndex => 1;
@@ -228,12 +244,13 @@ public sealed class Battle01InitializedState
     public Battle01FirstRoundOrder? FirstRound { get; }
     public Battle01FirstControlState? FirstControl { get; }
     public Battle01TurnCompletionReceipt? TurnCompletion { get; }
+    public Battle01DefeatPendingReceipt? DefeatPending { get; }
     public int ElapsedSeconds => 0;
     public bool SuspendedFlag88 => false;
     public bool IntroFlag451 => true;
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
-    public Battle01Phase Phase => FirstControl is { } control
+    public Battle01Phase Phase => DefeatPending is not null ? Battle01Phase.DefeatPending : FirstControl is { } control
         ? control.Movement.Stage switch
         {
             Battle01PlayerMovementStage.Selection => Battle01Phase.PlayerMovementSelection,

@@ -44,10 +44,11 @@ public sealed partial class GameSession
         if (current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.PlayerAttackComparisonId &&
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId &&
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId &&
-            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId)
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId &&
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId)
             return PlayerAttackRejected("party.expInput");
         bool chesterComparison = current.Preparation.Party.Id is OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId
-            or OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId;
+            or OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId or OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId;
         var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId ||
             chesterComparison && actorIndex == 0
             ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat
@@ -62,7 +63,7 @@ public sealed partial class GameSession
             battle = transition(current.Battle, policy);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
-                current.Preparation.Party.Allies[2].CurrentDefeats);
+                current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats);
         }
         catch (ArgumentException error) { return PlayerAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge);

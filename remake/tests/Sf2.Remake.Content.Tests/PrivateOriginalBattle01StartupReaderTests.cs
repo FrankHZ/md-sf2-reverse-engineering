@@ -1203,9 +1203,91 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         }
     }
 
-    private static GameSession ReachRealFirstAllyDefeatBoundary()
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix()
     {
-        var session=ReachRealRoundTenChester(OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
+        var old = ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
+        var session = ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
+        var before = session.PrivateOriginalBattle01!; var b = before.Battle;
+        var json = new JsonSerializerOptions { MaxDepth = 256 };
+        // Only the explicitly supplied Bowie counter changes in all nested prior stat images.
+        static string WithoutBowieCounter(Battle01InitializedState battle, JsonSerializerOptions options)
+        {
+            var node = System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(battle, options),
+                documentOptions: new() { MaxDepth = 256 })!;
+            void Visit(System.Text.Json.Nodes.JsonNode? value)
+            {
+                if (value is System.Text.Json.Nodes.JsonObject obj)
+                {
+                    if (obj["HpMax"]?.GetValue<int>() == 12 && obj["Items"] is System.Text.Json.Nodes.JsonArray items &&
+                        items[0]?.GetValue<int>() == 199 && obj["CurrentDefeats"]?.GetValue<int>() == 0)
+                        obj["CurrentDefeats"] = null;
+                    foreach (var child in obj.ToArray()) Visit(child.Value);
+                }
+                else if (value is System.Text.Json.Nodes.JsonArray array) foreach (var child in array) Visit(child);
+            }
+            Visit(node); return node.ToJsonString(options);
+        }
+        Assert.Equal(WithoutBowieCounter(old.PrivateOriginalBattle01!.Battle, json), WithoutBowieCounter(b, json));
+        Assert.Equal("attack.lethal", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            old.CompletePrivateOriginalBattle01EnemyPhysicalAttack(old.PrivateOriginalBattle01, 129)).Diagnostic.Field);
+        Assert.Equal((16, (byte)0, 129), (b.FirstRound!.RoundNumber, b.FirstRound.CurrentTurnOffset, b.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Equal((0x9B651234u, (ushort?)0x0234, (ushort)7), (b.RandomSeedImage, b.RandomSeedCopy, b.NewlyTestedRegionMask));
+        Assert.Equal(new[] { new Battle01TurnEntry(129, 6), new(130, 6), new(0, 5), new(133, 5), new(1, 4), new(128, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 58)), b.FirstRound.Slots);
+        int count = 0; for (var r = b.TurnCompletion; r is not null; r = r.Previous) count++;
+        Assert.Equal(119, count); string frozen = JsonSerializer.Serialize(b, json);
+        var after = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before, 129)).Snapshot;
+        var end = after.Battle; var t = Assert.IsType<Battle01DefeatPendingReceipt>(end.DefeatPending); var d = t.Attack;
+        Assert.Equal(Battle01Phase.DefeatPending, end.Phase); Assert.Same(b.FirstRound, end.FirstRound);
+        Assert.Same(b.TurnCompletion, end.TurnCompletion); Assert.Same(b.TurnCompletion, t.Previous);
+        Assert.Same(before.Preparation, after.Preparation); Assert.Same(before.SourceSnapshot, after.SourceSnapshot);
+        Assert.Same(before.SourceBridge, after.SourceBridge); Assert.Same(before.SourceLocomotion, after.SourceLocomotion);
+        Assert.Equal(new MapPosition?[] { null, new(9,17), null, new(11,8), new(11,14), new(11,7), null, null, new(10,11) }, end.Roster.Select(u => u.Position));
+        Assert.Equal(new ushort[] { 0,11,0,5,5,5,0,0,5 }, end.Roster.Select(u => u.Stats.HpCurrent));
+        Assert.Equal(new ushort?[] { 1,null,1,null,null,null,null,null,null }, end.Roster.Select(u => u.Stats.CurrentDefeats));
+        Assert.Equal(new ushort[] { 28,18,0,0 }, d.Effect.Rolls.Select(r => r.Result));
+        Assert.Equal((230,3,0,16,66), (d.Priorities[0].LandMultiplier,d.Priorities[0].PotentialDamage,
+            d.Priorities[0].RemainingHp,d.Priorities[0].Priority,d.Priorities[0].Roll.GeneratorSteps));
+        Assert.Equal((0x10491234u,(ushort?)0x0034,(ushort)0),(end.RandomSeedImage,end.RandomSeedCopy,end.NewlyTestedRegionMask));
+        Assert.Equal(new Battle01FactionCounts(0,4),t.FirstOutcome); Assert.Equal(new[]{0},t.Cleanup.FirstWorklist);
+        Assert.False(t.AfterTurnExecuted); Assert.False(t.TurnAdvanced);
+        Assert.Equal(((uint?)120,(byte?)63,(ushort?)2,(byte?)10),(end.CurrentGold,end.Roster[0].Stats.CurrentExp,end.Roster[0].Stats.CurrentKills,end.Roster[2].Stats.CurrentExp));
+        Assert.Equal(5,end.Occupancy.Count(i=>i>=0)); Assert.Equal(-1,end.OccupantAt(new(11,15)));
+        Assert.Equal(frozen,JsonSerializer.Serialize(b,json));
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before,129)).Diagnostic.Field);
+        Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(after));
+        Assert.Same(after,session.PrivateOriginalBattle01);
+    }
+
+    private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset)
+    {
+        var session = ReachRealFirstAllyDefeatBoundary(preset);
+        for (int step = 0; step < 32; step++)
+        {
+            var current = session.PrivateOriginalBattle01!; var order = current.Battle.FirstRound!;
+            if (order.RoundNumber == 16 && order.CurrentTurnOffset == 0) return session;
+            if (order.CurrentCandidate is not { } candidate)
+                Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(current));
+            else if (candidate.CombatantIndex < 128)
+            {
+                int actor = candidate.CombatantIndex;
+                current = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(current, actor)).Snapshot;
+                current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(current, actor)).Snapshot;
+                Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current, actor));
+            }
+            else if (session.CompletePrivateOriginalBattle01EnemyPursuit(current, candidate.CombatantIndex) is PrivateOriginalBattle01AttackSelectionRequired)
+                Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, candidate.CombatantIndex));
+        }
+        throw new InvalidOperationException("The real-input four-STAY route must reach R16 enemy129.");
+    }
+
+    private static GameSession ReachRealFirstAllyDefeatBoundary(OriginalBattle01ControlledPartyPreset? preset = null)
+    {
+        var session=ReachRealRoundTenChester(preset ?? OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
         for(int choice=0;choice<12;choice++)
         {
             var current=session.PrivateOriginalBattle01!;

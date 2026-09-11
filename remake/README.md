@@ -53,7 +53,7 @@ next-player control at9 HP, with the attack summary retained during movement/can
 Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
 At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
 attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
-the movement origin. N uses the named Chester EXP0/defeats0 comparison over Bowie EXP0/gold0/kills0;
+the movement origin. N uses `LeaderDefeatComparison`: Chester EXP0/defeats0 and Bowie EXP0/gold0/kills0/defeats0;
 all four earlier presets retain their original unspecified inputs. The bounded class0/Wooden Sword attack against a
 regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
 on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
@@ -80,8 +80,15 @@ reach enemy133 against Chester HP1. Its hit2 produces receipt106, defeats0->1 an
 placement/occupancy, preserving EXP10 and unspecified kills. Actual130 pursues with only two
 living ally targets; six survivors generate R14 and return Sarah HP11/budget10 at(9,17).
 Her move/confirm(10,17), cost2, and cancel retain all107 receipts, gold120/Bowie EXP63/kills2,
-Chester HP0/defeats1, main02A11234/copy0234 and both earlier enemy corpses. Stop before her action.
-Chester kills, a second ally defeat and third enemy defeat remain unsupported; authored EXP and
+Chester HP0/defeats1, main02A11234/copy0234 and both earlier enemy corpses.
+Four origin STAY choices (R14 Sarah/Bowie, R15 Bowie/Sarah) reach R16 enemy129 after119
+continuing receipts. Enemy129 moves(11,10)->(11,14), hits Bowie for3 and clears only Bowie's
+placement with defeats0->1. The first count returns0/4 despite Sarah still living. A separate
+`DefeatPending` receipt freezes R16/raw0, main10491234/copy0034, five live occupants and prior
+accounting. The view shows Bowie HP0/EXP63/defeats1 and closes input. No after-turn effects,
+second count, next turn or ordinary defeat recovery runs; gold remains120 and leader HP remains0.
+See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
+Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
 defeats must trace back to the selected preparation.
 The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
 presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
