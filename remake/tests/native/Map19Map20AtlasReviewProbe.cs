@@ -1555,6 +1555,13 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             ReferenceEquals(entered.SourceSnapshot,requested.SourceSnapshot) &&
             JsonSerializer.Serialize(entered.Battle,json)==recoveredJson,
             "Physical entry equals the direct API in full and preserves the complete historical battle/request/source");
+        var arrivalRoof=(MapBlockCopyLifecycleActiveState)arrival.RoofClear.LifecycleState;
+        var inspectedRoof=(MapBlockCopyLifecycleActiveState)inspectedEntry.Arrival!.RoofClear.LifecycleState;
+        Require(arrivalRoof.RecordOrdinal==inspectedRoof.RecordOrdinal &&
+            arrivalRoof.DestinationX==inspectedRoof.DestinationX && arrivalRoof.DestinationY==inspectedRoof.DestinationY &&
+            arrivalRoof.Width==inspectedRoof.Width && arrivalRoof.Height==inspectedRoof.Height &&
+            arrivalRoof.SavedWords.SequenceEqual(inspectedRoof.SavedWords),
+            "The derived roof lifecycle and all30 saved words also match the direct API");
         await CaptureArrival("45-granseal-entry-physical");
         var projection=_presenter.BaseProjection; var entities=arrival.Entities; string arrivalJson=JsonSerializer.Serialize(arrival,json);
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L,Key.W,Key.S,Key.D,Key.F,Key.E,Key.Enter,Key.Escape})
@@ -1570,7 +1577,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
             arrivalInputs=_initialBattle01.Preparation.ArrivalInputs,
             initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=entered.Battle,
-            defeatReturn=request,arrival,earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
+            defeatReturn=request,arrival,arrivalRoof,earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
             exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
             entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,frames=_frames

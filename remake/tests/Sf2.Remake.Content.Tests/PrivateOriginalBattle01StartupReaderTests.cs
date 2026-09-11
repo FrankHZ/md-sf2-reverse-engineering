@@ -1401,6 +1401,19 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             Assert.Equal(frozen,JsonSerializer.Serialize(requested.Battle,json));
         }
         finally { layoutField.SetValue(runtime,originalLayout); }
+        var populationField=typeof(OriginalMapExplorationRuntimeDefinition).GetField("<EntityPopulation>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var originalPopulation=runtime.EntityPopulation;
+        var changedRows=originalPopulation.Records.ToArray(); var obstructing=changedRows[2];
+        changedRows[2]=new OriginalMapEntityDefinition(obstructing.Identity,32,13,obstructing.OpaqueFacing,
+            obstructing.MapSprite,obstructing.OpaqueTail);
+        try {
+            populationField.SetValue(runtime,new OriginalMapEntityPopulation(originalPopulation.Map,originalPopulation.SelectedSetup,changedRows));
+            Assert.Equal("arrival.population",Assert.IsType<PrivateOriginalBattle01ExplorationEntryRejected>(
+                session.EnterPrivateOriginalBattle01Exploration(requested)).Diagnostic.Field);
+            Assert.Same(requested,session.PrivateOriginalBattle01); Assert.Null(requested.Arrival);
+            Assert.Equal(frozen,JsonSerializer.Serialize(requested.Battle,json));
+        }
+        finally { populationField.SetValue(runtime,originalPopulation); }
         var after = Assert.IsType<PrivateOriginalBattle01ExplorationEntered>(session.EnterPrivateOriginalBattle01Exploration(requested)).Snapshot;
         var arrival = Assert.IsType<PrivateOriginalMapReturnArrivalSnapshot>(after.Arrival);
         Assert.Same(arrival,session.PrivateOriginalMapArrival); Assert.Same(requested,arrival.Before);
