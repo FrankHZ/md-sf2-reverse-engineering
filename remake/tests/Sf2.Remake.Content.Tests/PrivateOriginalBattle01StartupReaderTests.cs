@@ -1263,7 +1263,8 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Same(after,session.PrivateOriginalBattle01);
     }
 
-    [Fact]
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
     public void AcceptedSelectedInputsApplyDefeatRecoveryOnceAfterTheReal119ReceiptTerminal()
     {
         var session = ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
