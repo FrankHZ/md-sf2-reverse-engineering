@@ -10,11 +10,12 @@ separate.
 
 ## Current Baseline
 
-The controlled Battle01 route now reaches `DefeatRecoveryPending`: one confirmation restores
-Bowie HP12 and leaves gold60, while Bowie remains unplaced and the119 ordinary receipts, lethal
-receipt and immutable HP0 before-image remain intact. Return inputs and exploration re-entry are
-not yet admitted. The [next return-request boundary](#planned-battle01-egress-and-return-request)
-plans their earliest battle preparation handoff and a visible destination request before map loading.
+The controlled Battle01 route now requests Granseal map3/(32,13)/UP after one HP/gold recovery.
+N/start explicitly supplies the separate return comparison before source admission; the request
+retains the entire recovered Battle (HP12/gold60, unplaced Bowie,119 ordinary receipts and lethal
+history) and all preparation/source references. The [implemented return request](#implemented-battle01-egress-and-return-request)
+stops before ExplorationLoop; live map57/Battle remains and later inputs freeze. Natural flag
+continuity and fresh map3 arrival/setup/partywide healing remain unimplemented or Unknown.
 
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
@@ -4573,13 +4574,13 @@ known default-H0-ROM absence and completed failures. Keep prior slices' artifact
 Draft PR for independent main-gate review; egress selection and exploration remain outside this slice.
 
 
-### Planned Battle01 egress and return request
+### Implemented Battle01 egress and return request
 
-**Proposed; not implemented.** Extend the accepted recovery endpoint to one completed, inspectable
+**Implemented controlled request.** Extend the accepted recovery endpoint to one completed, inspectable
 ordinary-defeat return request: savepoint map3/(32,13)/UP, handler result`D4=-1`, and post-`SwitchMap`
 map3/(32,13)/UP. Show that destination in the existing battle diagnostic. Stop before entering
 `ExplorationLoop`; do not create an intermediate selector phase or claim a loaded/explorable map.
-This proposal admits one named controlled comparison before battle initialization. It does not infer
+This implementation admits one named controlled comparison before battle initialization. It does not infer
 natural egress/flags from the earlier Map3 admission or inject them into the recovered terminal.
 
 #### Input ownership and continuity
@@ -4594,7 +4595,7 @@ This is the earliest existing focused battle boundary that can accept explicit r
 pretending the skipped exploration programs have already carried them. Extending the canonical map
 import or the party preset would mix unrelated authorities; neither currently owns these values.
 
-**Proposed admission:** add a separate immutable
+**Implemented admission:** a separate immutable
 `OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison`, identity
 `battle01-granseal-first-attempt-return-comparison`, supplying exactly stored egress3, F64=false and
 F640=false. They are authored inputs, not original-game observations. Pass it explicitly to the
@@ -4602,7 +4603,11 @@ existing preparation command before initialization; retain its exact reference i
 The Godot startup composition selects and names this comparison at the N/start boundary. No terminal
 argument, late environment read, new party/counter preset, inferred value or nullable-to-false fallback
 is permitted. The existing three-argument preparation route may retain an explicitly absent return
-input for older comparisons; absence allows the accepted battle/recovery route but rejects return.
+input for older comparisons; absence allows the accepted battle/recovery route but rejects return. Each preparation
+creates a distinct `Battle01DefeatReturnAdmission` reference. Initialization alone binds it into battle
+state, and every copy retains it. Request validation compares both the recovered state and its HP0
+before-image to the preparation binding. A cloned or replaced preparation has a fresh reference;
+therefore even a numerically correct late tuple cannot grant return to an unbound legacy battle.
 
 | Value | Earliest owner and validation | Continuity / excluded assumption |
 | --- | --- | --- |
@@ -4687,10 +4692,9 @@ new operation/locomotion boundary and only then enable exploration. Step counter
 allies/stat recomputation, setup flags/temporary flags, entity reload, original fade/music/VInt and
 H4 remain explicit **Unknown** or unimplemented dependencies. No current claim covers them.
 
-#### Future exact ownership and acceptance
+#### Exact ownership and acceptance
 
-Only this plan is changed now. The proposed implementation owns these exact paths relative to
-`remake/`; names of new files are proposals, not evidence that they exist. No wildcard grants apply.
+The implementation owns these exact paths relative to `remake/`. No wildcard grants apply.
 
 | Exact paths | Responsibility |
 | --- | --- |
@@ -4702,9 +4706,9 @@ Only this plan is changed now. The proposed implementation owns these exact path
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Required selected-input route from preparation through119/terminal/recovery/request and physical/API equivalence; retained modes and public unselected behavior |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current capability, exact next boundary, diagnostics and proportional gates |
 
-This is19 proposed paths, with no production turn-completion, generic map-session/warp/outbound
+This is19 owned paths, with no production turn-completion, generic map-session/warp/outbound
 lifecycle, reader/schema/fixture, canonical import or asset changes. If a real dependency requires
-another path, report it before widening the next slice. Map3 re-entry is deliberately not hidden
+another path, report it before widening the slice. Map3 re-entry is deliberately not hidden
 inside this request's acceptance.
 
 Positive checks must start from explicit real private inputs and the named return input before
@@ -4734,89 +4738,23 @@ process receipts; add a frame only for a concrete additional behavior. Check des
 marker suppression, old lethal history, input ownership and clipping. Do not add a flag to hide the
 new action from the mode meant to exercise it.
 
-The implementation uses its committed planner, owning Domain/Application/Content/Godot checks and
-selected managed/native/official gates. Preserve any completed full failure and rerun only invalidated
-nodes or owning files after correction. The **current documentation-only plan** runs the narrow check
-below, links/fences/tables/private/diff checks, committed planner, normal `uv run sf2 verify` and
-Public CI; no old119 route, source reducer, full .NET, native or official Godot gate is setup work.
-Keep new plan outputs only in `local/egress-return-plan/`, prior outputs read-only, and the known
-default-H0-ROM absence explicit. Stop at a frozen Draft PR for independent main-gate review.
+Use the committed planner, owning Domain/Application/Content/Godot checks, one required-private
+full .NET run, six native modes and the seven-step official Godot gate. Keep all new outputs in
+`local/defeat-return-request/`. Preserve completed failures and rerun only invalidated nodes or owning
+files after correction. The normal `uv run sf2 verify` and Public CI remain required; report the known
+default-H0-ROM absence explicitly. Stop at a frozen Draft PR for independent main-gate review.
 
-#### Bounded plan check
+#### Reuse the accepted source and plan boundary
 
-Set `SF2_UPSTREAM_DISASM` to the registered pinned read-only source and isolate uv/cache/TEMP/test
-scratch under `local/egress-return-plan`. The following script reuses the already accepted recovery
-and source results, checks unchanged dependencies and only inspects the additional re-entry blockers.
-It does not rerun either source recipe or any battle route. Missing prior artifacts are an availability
-failure, not permission to regenerate them. Save this block as
-`local/egress-return-plan/boundary-check.py` and run
-`uv run python -X utf8 local/egress-return-plan/boundary-check.py` from the repository root.
+Keep the accepted source check and independent plan review read-only. Before comparing a fresh
+native request, verify the pinned source paths and the retained source-recipe AST, then compare the
+admitted tuple/destination/D4/no-raft result with those accepted results. The exact commands and
+source provenance remain in the retained source block above and accepted plan Git object
+`0e93a5c73e8f1c020a917ffca92cc9b5da8c6a9a`. Do not replay that source reducer or the old plan script
+as setup for implementation. The owning Content test and native probe independently build the new
+route from early input preparation. They retain the same recovered Battle rather than copying an
+old terminal or silently normalizing gameplay differences.
 
-<!-- egress-return-plan-check:start -->
-```python
-from pathlib import Path
-import ast, json, os, subprocess
-from sf2tool.h2.map3_battle01_victory_return import _require_order
-
-repo = Path.cwd(); out = repo / 'local/egress-return-plan'
-source = Path(os.environ['SF2_UPSTREAM_DISASM'])
-def read(path): return json.loads((repo / path).read_text(encoding='utf-8-sig'))
-def text(path): return (source / path).read_text(encoding='utf-8-sig')
-pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
-assert subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip() == pin
-accepted = read('local/defeat-return-plan/source-check.json')
-review = read('local/defeat-return-plan/root-review/independent-result.json')
-recovery_review = read('local/defeat-recovery/root-review/acceptance.json')
-assert accepted['status'] == review['status'] == recovery_review['status'] == 'Pass'
-assert review['decision'] == 'ACCEPT' and review['independentSourceResultExact']
-assert recovery_review['recoveryWholeStateDeltaExact'] and recovery_review['entire107And119AndTerminalEqual']
-assert recovery_review['tree'] == 'aca10f1cd497c782bf2fbf5448ac2f361d04a69a'
-native = read('local/defeat-recovery/native-leader-02/captures/receipt.json')
-b = native['battle']; r = b['DefeatRecovery']
-assert native['status'] == 'Pass' and r['Before'] == native['terminal']
-assert (b['Phase'], b['Roster'][0]['Stats']['HpCurrent'], b['CurrentGold']) == (9, 12, 60)
-assert b['Roster'][0]['Position'] is None and sum(x >= 0 for x in b['Occupancy']) == 5
-assert (b['RandomSeedImage'], b['RandomSeedCopy'], b['NewlyTestedRegionMask']) == (0x10491234, 0x34, 0)
-assert accepted['originalEntrySets399'] and accepted['conditionalEgressMap3'] == [3, 32, 13, 1]
-assert accepted['conditionalMap3Switch'] == [3, 640, 4] and accepted['conditionalRaft3'] == [69, 42, 15]
-plan_path = 'remake/docs/map03-playability-plan.md'
-def old_recipe_ast(document):
-    block = document.split('<!-- defeat-return-source-check:start -->', 1)[1].split('<!-- defeat-return-source-check:end -->', 1)[0]
-    return ast.dump(ast.parse(block.split('```python', 1)[1].split('```', 1)[0]), include_attributes=False)
-base_plan = subprocess.check_output(['git', 'show', '6f79d11060ae58276851ec26ea949402b3838ca5:' + plan_path]).decode('utf-8')
-assert old_recipe_ast(base_plan) == old_recipe_ast((repo / plan_path).read_text(encoding='utf-8-sig'))
-extra = ['code/gameflow/battle/battleloop/heallivingandimmortalallies.asm',
-         'data/maps/mapsetups.asm', 'data/maps/entries/map03/mapsetups/s6_initfunction.asm']
-paths = sorted(set(accepted['sourcePaths'] + extra))
-subprocess.run(['git', '-C', str(source), 'diff', '--exit-code', pin, '--', *paths], check=True)
-exploration = text('code/gameflow/exploration/explorationfunctions_2.asm')
-_require_order(exploration, 'ExplorationLoop:', (
-    'clr.w ((MAP_EVENT_TYPE-$1000000)).w', 'subi.w #20000,((STEP_COUNTER-$1000000)).w',
-    'jsr HealLivingAndImmortalAllies', 'jsr FadeOutToBlackAll(pc)',
-    'move.b d0,((CURRENT_MAP-$1000000)).w',
-    'move.b #NOT_CURRENTLY_IN_BATTLE,((CURRENT_BATTLE-$1000000)).w',
-    'jsr j_GetMapSetupEntities', 'jsr j_InitializeMapEntities', 'bsr.w ClearMapSetupTempFlags',
-    'jsr (LoadMap).w', 'jsr j_RunMapSetupInitFunction', 'bsr.w WaitForEvent'), 'return re-entry boundary')
-_require_order(text(extra[0]), 'HealLivingAndImmortalAllies:', (
-    'cmpi.b #ALLY_PETER,d0', 'cmpi.b #ALLY_LEMON,d0', 'jsr j_GetCurrentHp', 'beq.s @Dead',
-    'jsr j_GetMaxHp', 'jsr j_SetCurrentHp', 'jsr j_GetMaxMp', 'jsr j_SetCurrentMp',
-    'andi.w #STATUSEFFECT_STUN|STATUSEFFECT_POISON|STATUSEFFECT_CURSE,d1',
-    'jsr j_SetStatusEffects', 'jsr j_UpdateCombatantStats'), 'later party healing')
-_require_order(text(extra[2]), 'ms_map3_InitFunction:', (
-    'chkFlg 1', 'chkFlg 602', 'chkFlg 603', 'jsr MoveEntityOutOfMap'), 'map3 conditional init')
-setup = text(extra[1]).split('msMapEnd', 1)[0]
-assert all(token in setup for token in ['msMap 3, ms_map3', 'msFlag 609', 'msFlag 506', 'msFlag 543'])
-assert not (repo / 'remake/src/Sf2.Remake.Application/Content/OriginalBattle01ControlledReturnInputs.cs').exists()
-report = dict(status='Pass', sourcePin=pin, inspectedSourcePaths=paths,
-              acceptedRecoveryReused=True, acceptedSourceResultReused=True, oldSourceAstUnchanged=True,
-              oldSourceOrBattleRouteExecuted=False, proposedInputs=dict(egress=3, flag64=False, flag640=False),
-              proposedRequest=dict(savepoint=[3,32,13,1], d4=-1, postSwitch=[3,32,13,1], raftWrite=False),
-              stop='Before ExplorationLoop; no arrival or current map change', additionalSourceCheck='Re-entry order/healing/setup dependencies only')
-out.mkdir(parents=True, exist_ok=True)
-(out / 'boundary-check.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
-print(json.dumps(report, indent=2))
-```
-<!-- egress-return-plan-check:end -->
 
 ### Controlled Godot Battle01 consumer
 

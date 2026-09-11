@@ -325,18 +325,18 @@ player-physical6 this is65 frames; preparation/shared-view changes also require 
 and enemy-pursuit4, totaling73 individually inspected frames with per-mode process receipts.
 All native modes use `LeaderDefeatComparison`, adding only Bowie defeats0 at initialization;
 their earlier HP/RNG/accounting and frame contracts remain. Preserve old null-preset artifacts separately.
-Use `leader-defeat-pending` for44 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
+Use `leader-defeat-pending` for45 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
 Sarah action choice, labeled copies of119/terminal, physical terminal, one physical recovery confirmation
-and recovered frozen-input review. Frame43 now applies recovery; frame44 verifies every later key.
+and one physical return request. Frame43 applies recovery; frame44 requests return; frame45 verifies every later key.
 Run the retained Chester-player18, first-defeat6, player-physical6, enemy-physical4 and pursuit4
-modes when changing this shared preparation/view:82 individually inspected frames in total.
+modes when changing this shared preparation/view:83 frames in total; inspect every changed frame and compare unchanged frames byte-for-byte.
 The required Content test `AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix`
 replays both old/new preparations from real inputs, compares the entire119-prefix with only the
 explicit Bowie counter normalized, retains the old lethal guard and checks the new terminal state.
 Domain tests own strike/outcome/cleanup/history forgeries and rejection of every continuing entry;
 Application tests own once-only publication, preparation/source identity and frozen session operations.
 
-For recovery keep all new outputs in `local/defeat-recovery` (or a fresh explicitly selected
+For the return request keep all new outputs in `local/defeat-return-request` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also
 needs `-p:GodotProjectDir=<absolute-new-output-root>/godot-project`, or use the isolated archived copy.
@@ -344,10 +344,15 @@ Retain completed full-suite failures and rerun only their exact nodes/owning nar
 `AcceptedSelectedInputsApplyDefeatRecoveryOnceAfterTheReal119ReceiptTerminal` additionally reaches
 the real terminal and validates the complete HP0→12/gold120→60 delta, before-image/preparation identity
 and repeated-call rejection. Domain/Application recovery tests cover state/receipt forgery, existing
-gold limits and all continuing entry points. The linked recovery receipt stops before egress selection;
-neither receipt claims original presentation/H4. Reuse the accepted defeat-return source result and
+gold limits and all continuing entry points. `AcceptedDefeatReturnUsesEarlyInputsAndRetainsTheReal119ReceiptRecovery`
+runs both legacy and explicitly admitted return routes from preparation, compares the whole recovered
+state (normalizing only binding representation), rejects a late cloned preparation and all later APIs,
+and requires exact Battle/source/preparation references across the request. It uses the same four-input
+`PrivateInputFact`: required-private executes it and unselected public runs skip it. Domain/Application
+return tests validate the tuple before source access, entry/copy continuity and rejection atomicity.
+The request stops before ExplorationLoop; neither receipt claims original presentation/H4. Reuse the accepted defeat-return source result and
 independent review after checking unchanged source/recipe dependencies; compare them to the new
-actual recovery state without replaying the old source reducer or plan script.
+actual return request without replaying the old source reducer or plan script.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. A change to the named preparation or shared view also
 requires the affected enemy physical and pursuit modes. Other modes,

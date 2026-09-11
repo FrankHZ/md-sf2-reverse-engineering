@@ -285,9 +285,20 @@ copies preserve the recovery facet. The recovered-state validator checks the ent
 against that authenticated before-image; a healed state cannot impersonate the HP0 terminal.
 Bowie remains unplaced, MP8/EXP63/kills2/defeats1 persist, F401/F501 and all other state remain.
 The single `GameSession` snapshot remains authoritative; its source exploration snapshot is frozen
-provenance. The UI handles Confirm before its absent-player guard and freezes every later input.
-Egress selection, return results and exploration remain unimplemented; original presentation/VInt
-and naturally carried defeats remain Unknown.
+provenance. At N/start, `GransealFirstAttemptComparison` supplies explicit egress3/F64=false/F640=false
+before source admission. Each preparation owns a distinct immutable `Battle01DefeatReturnAdmission`
+reference; initialization binds it into the battle and all immutable copies retain it. Cloning or
+replacing a preparation creates a different binding, so a late valid tuple cannot upgrade an older
+battle. F399 is the modeled unconditional BattleLoop entry effect, not a caller-supplied flag.
+`RequestPrivateOriginalBattle01DefeatReturn` authenticates the complete recovery and its HP0
+before-image accounting, requires both states' exact early binding, then allocates the request and
+next snapshot before one publication. `DefeatReturn` contains map3/(32,13)/opaque UP1 for savepoint
+and post-switch destination, D4=-1 and no raft write. The entire recovered Battle and all preparation/
+source objects remain reference-identical. No new phase or 120th turn exists. Confirm after recovery
+issues this request once; the session-derived projection then freezes all input. Legacy preparations
+retain return-unavailable behavior. Live map57/Battle remains until a separately admitted arrival
+consumer exists. ExplorationLoop, original presentation/VInt and natural egress/flag continuity remain
+unimplemented or Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement

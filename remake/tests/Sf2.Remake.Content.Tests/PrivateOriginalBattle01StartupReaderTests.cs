@@ -174,7 +174,8 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     public void AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending()
         => ReachRealRoundNineChester(OriginalBattle01ControlledPartyPreset.FirstDefeatComparison);
 
-    private static GameSession ReachRealRoundNineChester(OriginalBattle01ControlledPartyPreset party)
+    private static GameSession ReachRealRoundNineChester(OriginalBattle01ControlledPartyPreset party,
+        OriginalBattle01ControlledReturnInputs? returnInputs = null)
     {
         string placement = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_DATA");
         string scene = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_SCENE");
@@ -183,9 +184,11 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         var session = SeedControlledPending(canonical);
         var prepared = Assert.IsType<PrivateOriginalBattle01StartupPrepared>(session.PreparePrivateOriginalBattle01Startup(
             session.PrivateOriginalBattle01Admission, new PrivateOriginalBattle01StartupReader(placement, scene, terrain),
-            party));
+            party, returnInputs));
         var initialized = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
         var state = initialized.Battle;
+        Assert.True(state.BattleEntryFlag399); Assert.Equal(returnInputs is not null, state.ReturnAdmission is not null);
+        Assert.Same(returnInputs, prepared.ReturnInputs);
         Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage);
         Assert.Equal(new MapId("map57"), session.PrivateOriginalCurrentMap);
         Assert.Equal(new MapId("map40"), initialized.SourceSnapshot.Map); Assert.Null(session.PrivateOriginalBattle01Admission);
@@ -881,9 +884,10 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     private static GameSession ReachRealRoundNineSarah()
         => ReachRealRoundNineSarahWithParty(OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison);
 
-    private static GameSession ReachRealRoundNineSarahWithParty(OriginalBattle01ControlledPartyPreset party)
+    private static GameSession ReachRealRoundNineSarahWithParty(OriginalBattle01ControlledPartyPreset party,
+        OriginalBattle01ControlledReturnInputs? returnInputs = null)
     {
-        var session = ReachRealRoundNineChester(party);
+        var session = ReachRealRoundNineChester(party, returnInputs);
         var ready = session.PrivateOriginalBattle01!; var original = ready.Battle; var order = original.FirstRound!;
         var current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(ready, 2)).Snapshot;
         current = Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(current, 2)).Snapshot;
@@ -1011,9 +1015,10 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     public void AcceptedSelectedInputsContinueSecondEnemyDefeatThroughRoundTenChesterControl()
         => ReachRealRoundTenChester(OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison);
 
-    private static GameSession ReachRealRoundTenChester(OriginalBattle01ControlledPartyPreset party)
+    private static GameSession ReachRealRoundTenChester(OriginalBattle01ControlledPartyPreset party,
+        OriginalBattle01ControlledReturnInputs? returnInputs = null)
     {
-        var session = ReachRealRoundNineSarahWithParty(party); var start = session.PrivateOriginalBattle01!;
+        var session = ReachRealRoundNineSarahWithParty(party, returnInputs); var start = session.PrivateOriginalBattle01!;
         var current = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(start, 1)).Snapshot;
         current = Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(current, 1)).Snapshot;
         Assert.Equal((byte)12, current.Battle.FirstRound!.CurrentTurnOffset); Assert.Equal(130, current.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex);
@@ -1288,9 +1293,79 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Same(after, session.PrivateOriginalBattle01);
     }
 
-    private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset)
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void AcceptedDefeatReturnUsesEarlyInputsAndRetainsTheReal119ReceiptRecovery()
     {
-        var session = ReachRealFirstAllyDefeatBoundary(preset);
+        var json = new JsonSerializerOptions { MaxDepth = 256 };
+        PrivateOriginalBattle01SessionSnapshot Recover(GameSession session)
+        {
+            var terminal = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+                session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01, 129)).Snapshot;
+            return Assert.IsType<PrivateOriginalBattle01DefeatRecovered>(session.RecoverPrivateOriginalBattle01Defeat(terminal)).Snapshot;
+        }
+        var legacy = Recover(ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison));
+        var session = ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
+            OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison);
+        var recovered = Recover(session);
+        var admission = Assert.IsType<Battle01DefeatReturnAdmission>(recovered.Battle.ReturnAdmission);
+        Assert.Same(admission, recovered.Battle.DefeatRecovery!.Before.ReturnAdmission);
+        Assert.True(recovered.CanRequestDefeatReturn); Assert.False(legacy.CanRequestDefeatReturn);
+        JsonNode Normalize(Battle01InitializedState battle)
+        {
+            var node = JsonSerializer.SerializeToNode(battle, json)!;
+            // Only the explicit early binding representation differs between these two actual routes.
+            void Visit(JsonNode? n)
+            {
+                if (n is JsonObject o) { o.Remove("ReturnAdmission"); foreach (var item in o) Visit(item.Value); }
+                else if (n is JsonArray a) foreach (var item in a) Visit(item);
+            }
+            Visit(node); return node;
+        }
+        Assert.True(JsonNode.DeepEquals(Normalize(legacy.Battle), Normalize(recovered.Battle)));
+        string frozen = JsonSerializer.Serialize(recovered.Battle, json);
+        Assert.IsType<PrivateOriginalBattle01DefeatReturnRejected>(session.RequestPrivateOriginalBattle01DefeatReturn(null));
+        // An equal-valued preparation clone did not initialize this battle.
+        var foreign = (PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(
+            typeof(PrivateOriginalBattle01SessionSnapshot), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, new object?[] { recovered.Preparation with { }, recovered.Battle, recovered.SourceLocomotion, recovered.SourceBridge }, null)!;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, foreign);
+        Assert.False(foreign.CanRequestDefeatReturn);
+        Assert.Equal("return.binding", Assert.IsType<PrivateOriginalBattle01DefeatReturnRejected>(
+            session.RequestPrivateOriginalBattle01DefeatReturn(foreign)).Diagnostic.Field);
+        Assert.Same(foreign, session.PrivateOriginalBattle01);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, recovered);
+        var after = Assert.IsType<PrivateOriginalBattle01DefeatReturnRequested>(session.RequestPrivateOriginalBattle01DefeatReturn(recovered)).Snapshot;
+        var request = Assert.IsType<Battle01DefeatReturnRequest>(after.DefeatReturn);
+        Assert.Same(recovered.Battle, after.Battle); Assert.Same(recovered.Preparation, after.Preparation);
+        Assert.Same(recovered.SourceSnapshot, after.SourceSnapshot); Assert.Same(recovered.SourceLocomotion, after.SourceLocomotion);
+        Assert.Same(recovered.SourceBridge, after.SourceBridge); Assert.Same(admission, request.Admission);
+        Assert.Same(recovered.Battle.DefeatRecovery, request.Recovery); Assert.False(after.CanRequestDefeatReturn);
+        Assert.Equal((new MapId("map3"), new MapPosition(32,13), (byte)1),
+            (request.SavepointMap, request.SavepointPosition, request.SavepointOpaqueFacing));
+        Assert.Equal((request.SavepointMap, request.SavepointPosition, request.SavepointOpaqueFacing),
+            (request.DestinationMap, request.DestinationPosition, request.DestinationOpaqueFacing));
+        Assert.Equal((short)-1, request.HandlerResultD4); Assert.False(request.RaftWriteExecuted); Assert.False(request.ExplorationEntered);
+        Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage); Assert.Equal(new MapId("map57"), session.PrivateOriginalCurrentMap);
+        object[] closed = [session.RequestPrivateOriginalBattle01DefeatReturn(recovered), session.RequestPrivateOriginalBattle01DefeatReturn(after),
+            session.RecoverPrivateOriginalBattle01Defeat(after), session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(after,129),
+            session.CompletePrivateOriginalBattle01EnemyPursuit(after,129), session.CompletePrivateOriginalBattle01EnemyStandby(after,129),
+            session.EnterPrivateOriginalBattle01NextRound(after), session.EnterPrivateOriginalBattle01NextPlayerControl(after,1),
+            session.EnterPrivateOriginalBattle01FirstRound(after), session.EnterPrivateOriginalBattle01FirstControl(after,0),
+            session.SelectPrivateOriginalBattle01PlayerDestination(after,1,new(10,17)), session.ConfirmPrivateOriginalBattle01PlayerMovement(after,1),
+            session.CancelPrivateOriginalBattle01PlayerMovement(after,1), session.BeginPrivateOriginalBattle01PlayerAttack(after,1),
+            session.CyclePrivateOriginalBattle01PlayerAttackTarget(after,1,1), session.CancelPrivateOriginalBattle01PlayerAttackTarget(after,1),
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(after,1), session.CommitPrivateOriginalBattle01Stay(after,1),
+            session.InitializePrivateOriginalBattle01(after.Preparation)];
+        Assert.All(closed, result => Assert.EndsWith("Rejected", result.GetType().Name));
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Equal(frozen, JsonSerializer.Serialize(after.Battle, json));
+    }
+
+    private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset,
+        OriginalBattle01ControlledReturnInputs? returnInputs = null)
+    {
+        var session = ReachRealFirstAllyDefeatBoundary(preset, returnInputs);
         for (int step = 0; step < 32; step++)
         {
             var current = session.PrivateOriginalBattle01!; var order = current.Battle.FirstRound!;
@@ -1310,9 +1385,10 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         throw new InvalidOperationException("The real-input four-STAY route must reach R16 enemy129.");
     }
 
-    private static GameSession ReachRealFirstAllyDefeatBoundary(OriginalBattle01ControlledPartyPreset? preset = null)
+    private static GameSession ReachRealFirstAllyDefeatBoundary(OriginalBattle01ControlledPartyPreset? preset = null,
+        OriginalBattle01ControlledReturnInputs? returnInputs = null)
     {
-        var session=ReachRealRoundTenChester(preset ?? OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
+        var session=ReachRealRoundTenChester(preset ?? OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison, returnInputs);
         for(int choice=0;choice<12;choice++)
         {
             var current=session.PrivateOriginalBattle01!;

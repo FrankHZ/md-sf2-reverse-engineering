@@ -9,13 +9,15 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(true, false, false)]
-    [InlineData(true, true, false)]
-    [InlineData(true, true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader)
+    [InlineData(false, false, false, false)]
+    [InlineData(true, false, false, false)]
+    [InlineData(true, true, false, false)]
+    [InlineData(true, true, true, false)]
+    [InlineData(true, true, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected)
     {
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -240,7 +242,8 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("A0 defeated HP 0 EXP 63 Defeats 1", terminal.AllyStatus);
         Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", terminal.AllyStatus);
         Assert.Contains("Space", terminal.Controls); Assert.Contains("Return unavailable", terminal.Controls);
-        var recovered = PrivateBattle01Presenter.BuildProjection(Battle01DefeatRecovery.Complete(current), "Recovery applied.");
+        var recovery = Battle01DefeatRecovery.Complete(current);
+        var recovered = PrivateBattle01Presenter.BuildProjection(recovery, "Recovery applied.");
         Assert.Equal(Battle01Phase.DefeatRecoveryPending, recovered.Phase);
         Assert.Equal(terminal.Units, recovered.Units); Assert.Null(recovered.ActorIndex);
         Assert.Null(recovered.NextCandidateIndex); Assert.Null(recovered.Cursor); Assert.False(recovered.CanConfirm);
@@ -250,6 +253,21 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal((uint?)60, recovered.Gold); Assert.Equal((ushort?)2, recovered.BowieKills);
         Assert.Contains("Input closed", recovered.Controls); Assert.DoesNotContain("Space", recovered.Controls);
         Assert.Equal(((uint?)120, (ushort?)2), (terminal.Gold, terminal.BowieKills));
+        if (returnSelected)
+        {
+            Assert.Same(admission, recovery.ReturnAdmission); Assert.Same(admission, current.ReturnAdmission);
+            var eligible = PrivateBattle01Presenter.BuildProjection(recovery, "Return unavailable", true);
+            Assert.True(eligible.CanRequestDefeatReturn); Assert.Contains("Space: request", eligible.Controls);
+            var request = Battle01DefeatReturn.Select(recovery, admission);
+            var requested = PrivateBattle01Presenter.BuildProjection(recovery, PrivateBattle01Presenter.ReturnRequestedStatus, false, request);
+            Assert.Same(request, requested.DefeatReturn); Assert.False(requested.CanRequestDefeatReturn);
+            Assert.Equal(recovered.Units, requested.Units); Assert.Equal(recovered.AttackResult, requested.AttackResult);
+            Assert.Equal(recovered.AllyStatus, requested.AllyStatus); Assert.Equal(recovered.Gold, requested.Gold);
+            Assert.Contains("Input closed", requested.Controls); Assert.DoesNotContain("Space", requested.Controls);
+            Assert.Equal("Return requested: Granseal (32,13), facing up. Exploration unavailable.", requested.Status);
+            // Correct-looking status text alone cannot enable return on the legacy projection.
+            Assert.False(PrivateBattle01Presenter.BuildProjection(recovery, "Space requests return").CanRequestDefeatReturn);
+        }
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)
@@ -405,7 +423,7 @@ public sealed class PrivateBattle01PresenterTests
     }
 
     private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
-        bool chesterPlayer=false, bool firstAlly=false, bool leader=false)
+        bool chesterPlayer=false, bool firstAlly=false, bool leader=false, Battle01DefeatReturnAdmission? returnAdmission=null)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
@@ -429,7 +447,7 @@ public sealed class PrivateBattle01PresenterTests
             [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
         var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;
         var initial = Battle01Initialization.Initialize(rows, regions, terrain, party, enemy, 0x1234, 0, 0x1234,
-            combatProfile ? (uint?)0 : null);
+            combatProfile ? (uint?)0 : null, returnAdmission);
         var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(initial), 1).State!;
         var first = Stay(ready, 1, new(9, 17)); var next = Battle01NextPlayerControl.Enter(first, 2).State!;
         return Stay(next, 2, new(7, 17));

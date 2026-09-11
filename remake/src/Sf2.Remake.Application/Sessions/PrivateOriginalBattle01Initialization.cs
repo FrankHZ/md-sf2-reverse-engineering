@@ -9,12 +9,22 @@ public sealed class PrivateOriginalBattle01SessionSnapshot
     internal PrivateOriginalBattle01SessionSnapshot(PrivateOriginalBattle01StartupPrepared preparation,
         Battle01InitializedState battle, PrivateOriginalMapPlayerLocomotionSnapshot sourceLocomotion,
         PrivateOriginalMapBattleBridgeSnapshot? sourceBridge)
+        : this(preparation, battle, sourceLocomotion, sourceBridge, null) { }
+    internal PrivateOriginalBattle01SessionSnapshot(PrivateOriginalBattle01StartupPrepared preparation,
+        Battle01InitializedState battle, PrivateOriginalMapPlayerLocomotionSnapshot sourceLocomotion,
+        PrivateOriginalMapBattleBridgeSnapshot? sourceBridge, Battle01DefeatReturnRequest? defeatReturn)
     {
         Preparation = preparation; Battle = battle; SourceLocomotion = sourceLocomotion; SourceBridge = sourceBridge;
+        DefeatReturn = defeatReturn;
     }
     public GameFlowStage FlowStage => GameFlowStage.Battle;
     public MapId Map => Battle.Map;
     public Battle01InitializedState Battle { get; }
+    public Battle01DefeatReturnRequest? DefeatReturn { get; }
+    public bool CanRequestDefeatReturn => DefeatReturn is null && Battle.Phase == Battle01Phase.DefeatRecoveryPending &&
+        Preparation.ReturnInputs is { } inputs && inputs.GetAdmissionDiagnostic() is null &&
+        Preparation.ReturnAdmission is { } admission &&
+        ReferenceEquals(Battle.ReturnAdmission, admission) && ReferenceEquals(Battle.DefeatRecovery!.Before.ReturnAdmission, admission);
     // Frozen provenance only; none of these values is current exploration or a reusable admission.
     public PrivateOriginalBattle01StartupPrepared Preparation { get; }
     public PrivateOriginalMapSessionSnapshot SourceSnapshot => Preparation.Pending.SourceSnapshot;
@@ -54,11 +64,13 @@ public sealed partial class GameSession
             return InitializationRejected("pending.state", "The idle controlled new-battle route and F401 unlock are required.");
         if (prepared.Party.GetAdmissionDiagnostic() is { } partyFailure)
             return new PrivateOriginalBattle01InitializationRejected(partyFailure);
+        if (prepared.ReturnInputs?.GetAdmissionDiagnostic() is { } returnFailure)
+            return new PrivateOriginalBattle01InitializationRejected(returnFailure);
         if (prepared.Inputs.GetAdmissionDiagnostic() is { } inputFailure)
             return new PrivateOriginalBattle01InitializationRejected(inputFailure);
 
         Battle01InitializedState battle;
-        try { battle = ProjectBattle01Initialization(prepared.Inputs, prepared.Party); }
+        try { battle = ProjectBattle01Initialization(prepared.Inputs, prepared.Party, prepared.ReturnAdmission); }
         catch (ArgumentException error)
         {
             return InitializationRejected("initialization." + (error.ParamName ?? "state"),
@@ -75,7 +87,7 @@ public sealed partial class GameSession
     }
 
     private static Battle01InitializedState ProjectBattle01Initialization(
-        OriginalBattle01StartupDefinition inputs, OriginalBattle01ControlledPartyPreset party)
+        OriginalBattle01StartupDefinition inputs, OriginalBattle01ControlledPartyPreset party, Battle01DefeatReturnAdmission? returnAdmission)
     {
         var enemy = inputs.EnemyBaseline;
         return Battle01Initialization.Initialize(
@@ -92,7 +104,7 @@ public sealed partial class GameSession
                 new(enemy.Level, enemy.HpMax, enemy.HpMax, enemy.MpMax, enemy.MpMax, enemy.BaseAttack,
                     enemy.BaseDefense, enemy.BaseAgility, enemy.BaseMove, enemy.InitialStatus, enemy.Items, enemy.Spells),
                 enemy.BaseResistance, enemy.BaseProwess, enemy.MovementType, enemy.BaseAiBitfield),
-            party.RandomSeed, party.Difficulty, party.RandomSeedCopy, party.CurrentGold);
+            party.RandomSeed, party.Difficulty, party.RandomSeedCopy, party.CurrentGold, returnAdmission);
     }
 
     private static PrivateOriginalBattle01InitializationRejected InitializationRejected(string field, string message) =>

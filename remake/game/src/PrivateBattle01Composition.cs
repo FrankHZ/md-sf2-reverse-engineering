@@ -22,7 +22,8 @@ internal static class PrivateBattle01Ui
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
-            OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
+                OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
+                OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -36,7 +37,7 @@ internal static class PrivateBattle01Ui
             if (candidate is null) return "First control unavailable: current slot is sentinel.";
             return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.Value.CombatantIndex) switch
             {
-                PrivateOriginalBattle01FirstControlEntered => "First player ready. Select a reachable tile.",
+                PrivateOriginalBattle01FirstControlEntered => "Granseal return comparison selected. First player ready.",
                 PrivateOriginalBattle01FirstControlUnavailable unavailable =>
                     "First control unavailable: " + unavailable.Decision.Availability,
                 PrivateOriginalBattle01FirstControlRejected rejected =>
@@ -45,10 +46,20 @@ internal static class PrivateBattle01Ui
             };
         }
 
+        if (current.CanRequestDefeatReturn && input == PrivateBattle01Input.Confirm)
+            return session.RequestPrivateOriginalBattle01DefeatReturn(current) switch
+            {
+                PrivateOriginalBattle01DefeatReturnRequested => PrivateBattle01Presenter.ReturnRequestedStatus,
+                PrivateOriginalBattle01DefeatReturnRejected rejected => rejected.Diagnostic.Message,
+                _ => null,
+            };
+
         if (current.Battle.Phase == Battle01Phase.DefeatPending && input == PrivateBattle01Input.Confirm)
             return session.RecoverPrivateOriginalBattle01Defeat(current) switch
             {
-                PrivateOriginalBattle01DefeatRecovered => "Bowie HP restored. Gold halved. Return unavailable.",
+                PrivateOriginalBattle01DefeatRecovered recovered => recovered.Snapshot.CanRequestDefeatReturn
+                    ? "Bowie HP restored. Gold halved. Space requests the Granseal return."
+                    : "Bowie HP restored. Gold halved. Return unavailable.",
                 PrivateOriginalBattle01DefeatRecoveryRejected rejected => rejected.Diagnostic.Message,
                 _ => null,
             };
@@ -143,7 +154,9 @@ internal static class PrivateBattle01Ui
             if (current.Battle.Phase == Battle01Phase.DefeatPending)
                 return "Bowie defeated. Space applies HP/gold recovery.";
             if (current.Battle.Phase == Battle01Phase.DefeatRecoveryPending)
-                return "Recovery applied. Return unavailable.";
+                return current.DefeatReturn is not null ? PrivateBattle01Presenter.ReturnRequestedStatus
+                    : current.CanRequestDefeatReturn ? "Recovery applied. Space requests the Granseal return."
+                    : "Recovery applied. Return unavailable.";
             var order = current.Battle.FirstRound!;
             if (order.CurrentCandidate is not { } candidate)
             {
@@ -236,7 +249,7 @@ public sealed partial class Map3Root
                     return true;
                 }
             }
-            _privateBattle01Presenter.Project(battle.Battle, outcome);
+            _privateBattle01Presenter.Project(battle, outcome);
         }
         else
             _privatePresenter?.ProjectBattle01Pending(outcome);
