@@ -656,7 +656,7 @@ public sealed partial class Map3Root
         _ = delta;
         if (_runtimeProfile != Map3RuntimeProfile.PrivateLocal ||
             _session is null ||
-            _session.PrivateOriginalFlowStage == GameFlowStage.Battle ||
+            _session.PrivateOriginalBattle01 is not null ||
             !_session.PrivateOriginalMapPlayerLocomotion.IsMoving)
         {
             return;

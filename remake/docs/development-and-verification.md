@@ -328,8 +328,11 @@ their earlier HP/RNG/accounting and frame contracts remain. Preserve old null-pr
 Use `leader-defeat-pending` for46 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
 Sarah action choice, labeled119/terminal copies, physical terminal, recovery, return request and entry.
 Frame43 applies recovery;44 requests return;45 publishes Granseal;46 freezes all gameplay keys and60
-physics frames. N selects leader/return/arrival comparisons before source admission when the reviewed
-Map3 atlas is available. Compare the complete direct API and physical entry, three same-cell identities,
+physics frames, including61 direct calls to the real root physics callback that must preserve the exact
+entry and presentation state. Callback exceptions must reach the probe's failure/exit contract. Native
+acceptance also requires inspecting the complete stdout/stderr logs for Godot errors and exceptions;
+an exit0/Pass receipt alone is insufficient. N selects leader/return/arrival comparisons before source
+admission when the reviewed Map3 atlas is available. Compare the complete direct API and physical entry, three same-cell identities,
 dead Chester, party30, roof clear, current camera/resources and retained historical battle.
 Run retained Chester-player18, first-defeat6, player-physical6, enemy-physical4 and pursuit4:
 minimum84 frames. Inspect every changed frame; reuse only byte-identical accepted inspection.

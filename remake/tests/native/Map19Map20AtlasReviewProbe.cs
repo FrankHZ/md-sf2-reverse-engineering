@@ -1588,13 +1588,18 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Current entry image preserves known true/false before-image values, resets all128 temp flags and leaves unknowns absent");
         await CaptureArrival("45-granseal-entry-physical");
         var projection=_presenter.BaseProjection; var entities=arrival.Entities; string arrivalJson=JsonSerializer.Serialize(arrival,json);
+        // Invoke the real callback directly so an exception reaches the probe's failure/exit contract.
+        _root._PhysicsProcess(1.0/60.0);
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L,Key.W,Key.S,Key.D,Key.F,Key.E,Key.Enter,Key.Escape})
             await PressBattleKey(key);
-        for(int frame=0;frame<60;frame++) await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
+        for(int frame=0;frame<60;frame++) {
+            _root._PhysicsProcess(1.0/60.0);
+            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
+        }
         Require(ReferenceEquals(entered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,_presenter.BaseProjection) &&
             ReferenceEquals(entities,arrival.Entities) && JsonSerializer.Serialize(arrival,json)==arrivalJson &&
             _session.EnterPrivateOriginalBattle01Exploration(entered) is PrivateOriginalBattle01ExplorationEntryRejected,
-            "All keys and elapsed frames retain the exact entry; no follower or NPC script executes");
+            "All keys, direct physics callbacks and elapsed frames retain the exact entry; no follower or NPC script executes");
         await CaptureArrival("46-granseal-entry-inputs-frozen");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
             status="Pass",scope="controlled defeat recovery/return and fresh Granseal declaration freeze; exploration input closed",
@@ -1605,7 +1610,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
             exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
-            entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,frames=_frames
+            entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,directPhysicsCallbacks=61,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 
