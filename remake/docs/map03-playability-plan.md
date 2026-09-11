@@ -15,7 +15,8 @@ N/start explicitly supplies the separate return comparison before source admissi
 retains the entire recovered Battle (HP12/gold60, unplaced Bowie,119 ordinary receipts and lethal
 history) and all preparation/source references. The [implemented return request](#implemented-battle01-egress-and-return-request)
 stops before ExplorationLoop; live map57/Battle remains and later inputs freeze. Natural flag
-continuity and fresh map3 arrival/setup/partywide healing remain unimplemented or Unknown.
+continuity remains Unknown. The [fresh-entry plan](#planned-fresh-granseal-entry-after-battle01-defeat)
+selects a controlled Map3 entry-ready boundary; arrival/setup/partywide healing remain unimplemented.
 
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
@@ -4754,6 +4755,443 @@ source provenance remain in the retained source block above and accepted plan Gi
 as setup for implementation. The owning Content test and native probe independently build the new
 route from early input preparation. They retain the same recovered Battle rather than copying an
 old terminal or silently normalizing gameplay differences.
+
+
+### Planned fresh Granseal entry after Battle01 defeat
+
+**Proposed; not implemented.** The next implementation should publish one **fresh Map3 entry-ready
+snapshot**, after the bounded semantic entry/setup/init work and before the first `WaitForEvent`.
+It should display the actual destination map, player at(32,13)/UP, current party and fresh entity
+state, while explicitly keeping exploration input closed. This is a useful arrival boundary, not a
+claim of resumed walking, event dispatch or a continuous original playthrough. The subsequent slice
+can admit the first movement/event operation against this new visit. Do not add a separate public
+prepare/acknowledge phase merely to split this transaction.
+
+The entity view uses an explicit **declaration-position freeze**: apply the named setup-init effects,
+but execute no follower or NPC actscript. Its positions are the source-supported declaration values
+plus those explicit init effects, not an observation of original entity positions at the first
+`WaitForEvent`. The original's intervening VInt/actscript execution remains outside this comparison.
+
+#### Source boundary and newly checked dependencies
+
+**Confirmed static behavior**, pinned `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, USA baseline named by the existing private-input owner:
+
+| Owner / source seam | Required consequence for the proposed boundary |
+| --- | --- |
+| `code/gameflow/exploration/explorationfunctions_2.asm`, `ExplorationLoop` at`0x257C0` | Clear map-event word; subtract20000 from the step-counter word and clear it when the signed subtraction is negative; heal before fading. With a supplied map, write CURRENT_MAP and NOT_CURRENTLY_IN_BATTLE=255, load tilesets, get setup entities, initialize entities, load mapsprites, clear setup temp flags, set F80, initialize sprite counter, LoadMap and run setup init before the event loop. This is not the map-index-minus-one reload branch. |
+| `code/gameflow/battle/battleloop/heallivingandimmortalallies.asm` at`0x23BFC` | Visit all30 ally slots, not only joined/placed battle participants. Dead ordinary allies skip; Peter7 and Lemon28 enter healing even at HP0. Restore HP/MP, apply status mask7, then UpdateCombatantStats. |
+| `code/common/stats/updatecombatantstats.asm`, `UpdateCombatantStats` at`0x89CE` and `InitializeCurrentStats` | Refresh copies base ATT/DEF/AGI/MOV/resistance/prowess, applies status effects and equipped items. Mask7 is an intermediate value: refresh removes the old curse bit and can reapply curse from equipment. The current three effective battle-stat rows are not a complete base-stat/30-slot source. |
+| `code/common/scripting/map/mapsetupsfunctions_1.asm`, `GetCurrentMapSetup`, `GetMapSetupEntityList`, `RunMapSetupInitFunction` | Scan the current map's flag variants in order, retaining the last satisfied variant. Map3's flags are609,506,543; all false selects `ms_map3`. Entity lookup and init both query setup; no supported entry effect changes these three flags between the calls. |
+| `data/maps/entries/map03/mapsetups/s6_initfunction.asm`, `ms_map3_InitFunction` at`0x51382` | F1=true takes `hide 142`, bypassing the F602-dependent Sarah(41,10)/UP branch. F603=true also calls MoveEntityOutOfMap(142). Retain both semantic effects; do not infer a Sarah reposition from the bypassed branch. |
+| `code/common/scripting/map/mapfunctions.asm`, `InitializeMapEntities` at`0x440CC`; `followersfunctions_1.asm`; `data/scripting/entity/followers.asm` | Clear/redeclare entities, declare followers before setup rows, suppress duplicate ally setup rows already declared as followers, then declare player0 at the supplied position/facing. F66 declares both Sarah and Chester. The follower selector does not test HP. Other follower flags and F65 are separate inputs. |
+| `code/common/scripting/entity/entityfunctions_1.asm`, `DeclareNewEntity`; `mapfunctions.asm`, `loc_440E2`/`loc_44180`; `followersfunctions_1.asm` | Scale incoming d1/d2 by MAP_TILE_SIZE, save d1..d3 and declare followers using those entry values. Player0 later uses the restored values. Each declaration writes current/target X/Y and facing, clears velocity/travel, and stores its actscript address. Sarah, Chester and player0 therefore start together at(32,13)/UP; their initial targets are also(32,13), not their old setup coordinates or spaced follower positions. |
+| `code/common/scripting/map/followersfunctions_2.asm`, `sub_44404`; `code/gameflow/battle/battleloop_1.asm`; `data/scripting/entity/eas_main.asm`, `eas_Follower1/2` | Battle entry clears PLAYER_TYPE to0. With the admitted F64=false, the raft helper neither declares a raft nor calls MakeFollowersStand. Follower actscripts subsequently set entity/map uncollidable and follow offsets; storing their addresses does not execute them or prove the positions reached before WaitForEvent. |
+| `code/common/scripting/entity/getallymapsprite.asm`, `GetAllyMapsprite` at`0x449C6` | After current-battle becomes255, a dead ally resolves to MAPSPRITE_BLUE_FLAME. Chester remains dead yet can be a declared follower; neither reviving him nor silently removing his follower is justified. Original flame graphics/animation remain outside the diagnostic view. |
+| `ClearMapSetupTempFlags` and `sf2enums.asm` | Clear128 flags256..383, then set F80. Old first-visit Sarah/Zone601 temporary flags are historical facts, not the new visit's live temp image. |
+| `code/common/maps/mapload.asm`, `LoadMap` / `LoadMapBlocksAndLayout` | Load fresh blocks/layout, apply satisfied flag copies and opened-chest words, skip battle-area copies at CURRENT_BATTLE=255, load area, then ToggleRoofOnMapLoad. Map3 has two F506 copies and one F220 chest at(6,18); both flags false leave these stages unchanged. Reuse catalog-owned resources and the Map3 visual selection. |
+| `code/gameflow/exploration/exploration.asm`, `ToggleRoofOnMapLoad` / `PerformMapBlockCopyScript`; Map3 `2-areas.asm`, `3-flag-events.asm`, `5-roof-events.asm`, `7-chest-items.asm` | At(32,13), area1 foreground offset(0,32) makes roof record8's destination rectangle cover(30,9)..(34,14). Its trigger(32,15), source(255,255), size5x6 and destination(30,41) select a clear of30 second-layer words, saving their before-image. This happens before setup init and does not require walking onto the trigger. |
+
+The existing battle lifecycle contract already describes the healing mask **before** derived-stat
+rebuilding: [Battle Control Lifecycle](../../docs/design/contracts/battle-control-lifecycle.md#new-battle).
+The bounded check below adds selection/entry questions, not a new original runtime observation.
+The registered canonical import has Map3 layout word`0x0062` at(32,13), inside area1(0,0)..(50,31),
+with no blocking high bits. That corroborates the destination's static geometry, not dynamic entity
+occupancy or a successful movement. Entry must still check the fresh population and active area.
+
+#### Earliest controlled inputs and party admission
+
+Add an optional, immutable `OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison`
+to the existing startup preparation, validated before `source.Admit`. Selecting it requires the
+existing return comparison and leader-defeat party. N/start names all three choices. Old callers that
+omit arrival inputs retain the accepted return-request stop. Reuse the preparation's existing
+per-instance ReturnAdmission binding: the prepared arrival input is get-only, initialization binds
+that preparation, and request/entry authenticate its exact reference through the HP0 before-image.
+No terminal argument or late environment value may fill a missing input.
+
+| Input | First supported admission and ownership |
+| --- | --- |
+| Stored step counter | Explicit comparison word0, producing0 at entry; never derive it from119 receipts or Application SimulationStep. Test arithmetic separately at19999/20000/20001/32767 and signed-word boundaries. Map-event clear and F80=true are source effects, not supplied defaults. |
+| Setup/follower/load conditions not carried by the accepted route | Explicit F609/F506/F543/F220=false; F65 and follower flags67..77,82..84=false, excluding already-carried F66. F220 is the unopened Map3 chest comparison, not inferred progress. Validate the exact named flag set, including unused67..77 entries if represented; no missing-to-false conversion. Reject alternative setups/followers/chest state for this first comparison. F64/F640 remain the separately admitted return inputs. |
+| Already-carried story | Require F1/Sarah join from the accepted guard/messenger chain, F602 from Entity142 completion, F603/F66 from messenger, and the original palace/Astral/guard/route objects. These are carried **controlled** facts, not a new caller-supplied override. Keep F401=true/F501=false and the remaining carried story facts. |
+| Participating slots0/1/2 and gold | Read the actual recovered battle at entry, never re-read initial party vitals or input copies as current. Gold60, EXP/kills/defeats and their unspecified values persist; no second halving/reward or party join occurs. |
+| Slots3..29 | An explicitly named dormant-slot comparison lists all27 ordered slots: HP/MP maxima/current0, status0, neutral base/current stats/resistance/prowess, class0/level0 comparison, four unequipped NOTHING items and four empty spells, no joined/follower flags or invented counters. This is authored input, not inferred natural unjoined-party RAM. Peter/Lemon are explicitly present and processed; zero maxima keep their HP0. A missing row rejects, never synthesizes a zero slot. |
+| Stat refresh for eligible0/1 | Reuse the established controlled unchanged-effective-stats policy only for the exact zero-status, unchanged class/equipment/level profiles already admitted for this route. Name this as a comparison projection, not execution of general UpdateCombatantStats. Require exact profile agreement before and after; reject changed equipment/status/level or any profile outside that named comparison. Do not infer base values from effective stats; a general refresh needs separately admitted bases and item effects. Dormant7/28 use explicit neutral base/empty-item refresh. General status/equipment refresh is deferred. |
+
+The first comparison therefore processes0/1/7/28; dead Chester2 and other ordinary dead slots skip.
+Bowie remains HP12/MP8; Sarah is at her admitted maxima; Chester HP0 and his other stats remain
+unchanged. The source-shaped loop must retain skipped rows exactly and expose its processed IDs,
+before/after vitals and refresh policy. Include synthetic damaged-MP and nonzero-max immortal cases
+in the future owning tests; they must not quietly widen the production comparison.
+
+`Battle01Stats` rejects maxHP0 and move0, so do not weaken it for dormant raw slots. A focused entry
+slot representation in the new Domain entry owner is justified by those explicitly processed raw
+slots and can reuse `Battle01Stats` for the three participating profiles. Do not introduce a general
+inventory/party database, cache or second ongoing battle-stat store.
+
+The current canonical reader exposes only the Bowie-house roof definition, which requires an
+`AppliedAfterWarp` identity. Do not invent a warp to reuse that type. Extend the existing reader's
+single parse with bounded Map3 return-load facts: the exact referenced flag/chest tables, ordered10
+roof rows, area1 foreground offset and selected record8, all under the existing pinned admission.
+An immutable `OriginalMapReturnEntryLoadDefinition` in the new controlled-arrival input file holds
+these facts and source identities; an optional property on `OriginalMapImportDefinition` carries
+them. Central exact-profile validation belongs in `OriginalMapRuntimeAdmission`. Startup validates
+and binds that catalog-owned definition before `source.Admit`; missing, foreign or drifted facts
+reject arrival selection. This adds no second JSON reader, schema, manifest, asset or generic roof
+capability. Old callers need not select arrival, and the accepted house-warp definition stays intact.
+
+Entry clones the pristine runtime layout, verifies the admitted F506/F220 no-op branches, and applies
+record8 through existing `MapBlockRegionMutation.Clear` / `MapBlockCopyLifecycle`. Retain all30 saved
+words and the applied lifecycle in the completed arrival. The original load clears the copy latch
+before this first application; duplicate entry cannot clear twice. Neither roof restore nor the
+general roof scanner is enabled after entry. A full-layout comparison must show zero outside the
+selected rectangle changed and every selected word cleared; source layout and old house receipt
+remain unchanged. The existing [roof-on-load research](../../docs/research/map3-controlled-start-egress-transition.md)
+owns the call chain, but its house landing observation is not a church-return runtime receipt.
+
+#### One current owner, fresh entities and atomic publication
+
+Use a nullable completed `Arrival` facet on the existing `PrivateOriginalBattle01SessionSnapshot`,
+following its accepted DefeatReturn publication pattern. The facet owns a typed immutable
+`PrivateOriginalMapReturnArrivalSnapshot`: catalog-owned runtime3, a fresh working layout, area,
+player position/facing, idle locomotion, fresh entity placements, current entry flag/counter values,
+current party and the exact prior requested battle snapshot as history. It is a completed result,
+not a new pending phase or acknowledgement queue. The current party has one owner, `Arrival.Party`;
+the old Battle's HP/MP/gold/counters are immutable historical values after this handoff.
+
+The focused `EnterPrivateOriginalBattle01Exploration(expectedSnapshot)` command must:
+
+1. Require exact current requested snapshot, no prior Arrival, early arrival binding, unchanged
+   preparation/source objects and the authenticated recovery/return. Validate all input/profile,
+   setup, import, resource, population, destination and supported policy conditions first.
+2. Build the party result, map-event/step-counter effects, map3/not-in-battle projection, fresh entity
+   list, cleared temp image/F80, fresh layout, admitted flag/chest branches, area and church roof
+   clear, then default-init effects in source order.
+   Resolve the existing catalog instance and init/entity-list identities; retain source record
+   provenance. Declare Sarah/Chester as followers from F66, omit their duplicate setup rows, include
+   the player and other setup entities, then hide/move142 out as selected. Use a separate live
+   placement overlay; never rewrite the immutable imported EntityPopulation or source snapshot.
+3. Build idle locomotion at(32,13)/UP with an explicitly controlled counter0; reuse the existing
+   direction/sheet/camera math via a typed entry relocation overload, never a fake cross-map receipt.
+   Build the completed result and next session snapshot before **one** existing session assignment.
+   A failure at any stage retains exact session, battle, request, party, map, history and projection.
+4. Derive the host's current map/flow from Arrival when present (map3/Exploration, visibly entry-ready).
+   Keep the complete requested battle,119 ordinary receipts, terminal/recovery before-images, RNG,
+   source map40 and all palace/story objects reachable by their original references as history.
+   Existing battle commands remain rejected; old first-visit exploration getters/mutators stay
+   closed. Duplicate entry and all gameplay keys preserve the exact completed snapshot/projection.
+
+This deliberately does not construct a false `PrivateOriginalMapSessionSnapshot`. Its constructor
+requires the exact catalog runtime, active/traversable position and exactly one last operation for a
+nonzero step, excludes completed history from step0, and limits palace/guard history to their admitted
+route maps. Its Sarah/Zone601 lifecycle flags also encode the first visit. Clearing those objects,
+resetting step0, inventing a traversal/warp receipt or broadening those invariants would lose facts
+or enable the wrong event dispatcher. The new completed entry facet supplies a real new boundary
+while the old objects remain frozen history. There is no second mutable current-map authority.
+
+Fresh population validation must accept the **specific admitted same-cell group**: player0, Sarah1
+and Chester2 each retain a distinct identity, current/target position(32,13), facing UP and their own
+declaration/actscript provenance. The follower declarations retain zero velocity/travel while their
+scripts remain unexecuted; the player uses `eas_Idle`. Preserve Chester's dead/BLUE_FLAME identity and
+the skipped duplicate Sarah/Chester setup rows. Never import their old setup positions(42,8)/(44,10),
+scatter them to empty cells, remove a follower, or merge identities to pass occupancy validation.
+This exception is limited to those two authenticated F66 follower declarations with player0 at the
+entry cell. A duplicate identity, extra/unadmitted follower, or genuinely blocking non-follower at
+the player destination still rejects atomically under the existing population/destination rules;
+it does not make arbitrary overlaps legal. No general collision or following engine is needed.
+
+The existing Map3 presenter, base viewport and camera should gain small typed overloads delegating
+to their shared runtime/layout/position projection logic. They must consume the real entry object;
+do not manufacture a legacy snapshot for rendering or create another renderer/asset mount. Use the
+already reviewed local Map3 atlas/player art and diagnostic fresh-entity glyphs, explicitly marking
+dead Chester's blue-flame identity without claiming original flame art. Hide the battle canvas and
+all first-visit interaction prompts. Show “Granseal entry ready (32,13), facing up. Exploration input
+unavailable.” Party status distinguishes Chester's death from his follower declaration.
+Display the declaration-position-freeze policy and list all three identities/positions in the
+information panel if their same-cell glyphs overlap. Presentation must not change semantic positions
+to make glyphs readable. Time passage and every gameplay key leave these diagnostic positions fixed.
+
+#### Why stop before the first exploration input
+
+Entry-ready is narrower than a full exploration return but includes the work that makes a new visit
+real: party handoff/healing, setup selection, entity reset/init effects, current flags, map resources,
+player placement and a visible fresh map. Original fade/music/VInt, sprite playback, general status
+refresh, natural flags/party continuity and H4 remain **Unknown** or explicitly unimplemented.
+The controlled stat policy and static diagnostic entities must remain visible limitations.
+In particular, exact follower/NPC positions after original VInt/actscript execution and at the first
+`WaitForEvent` are **Unknown**; the frozen same-cell declaration view does not close that boundary.
+
+Movement is deferred because `ApplyPrivateOriginalMap` currently dispatches the first-visit
+Sarah/Zone601/messenger/door/warp lifecycle. Running it against newly cleared temp flags and retained
+story would replay or suppress the wrong operations. The next slice must provide a genuine new-visit
+movement/event contract and carry `Arrival.Party` and fresh entity state through its first operation;
+then reuse the pure traversal and locomotion mechanisms. It must not unfreeze old handlers merely
+because CURRENT_MAP is3. No general event framework or exploratory cache is required now.
+
+#### Future exact implementation paths and acceptance
+
+The current plan owns **only this document**. The proposed next implementation owns these31 exact
+paths relative to `remake/`; new-file names are proposals. Any additional dependency requires a new
+ownership decision before editing. No fixtures, schemas, generic warp/outbound lifecycle, canonical
+input mutation or assets are included.
+
+| Exact paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01ExplorationEntry.cs` (new) | Focused30-slot entry transform, explicit policy, counter/flag effects and immutable result |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledArrivalInputs.cs` (new); `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Startup.cs` | Exact early controlled input and validation; reuse existing preparation binding |
+| `src/Sf2.Remake.Application/Content/OriginalMapImportDefinition.cs`; `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs`; `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs`; `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs` | Bounded return-load definition from the existing parse, exact flag/chest/area/roof records and drift rejection; preserve house-warp admission |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01ExplorationEntry.cs` (new) | Completed Arrival facet/current map/flow, sole current party owner, typed fresh snapshot, once-only entry transaction |
+| `src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs`; `src/Sf2.Remake.Application/Sessions/OriginalMapPlayerLocomotionAnimation.cs` | Explicitly closed first-visit access and typed entry locomotion; retain legacy constructor/warp contracts |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs`; `game/src/PrivateMap3Composition.cs`; `game/src/PrivateMap3Presenter.cs`; `game/src/PrivateOriginalMapBaseViewport.cs`; `game/src/PrivateMap3CameraProjection.cs` | Early selection, one confirmation, current-owner routing, shared Map3 projection, idle camera/player/fresh entities and frozen controls |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01ExplorationEntryTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01ExplorationEntryTests.cs` (new) |30-slot/policy/flag/counter contracts, source-history/current-party ownership, atomic success/failure and closed old APIs |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3CameraProjectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Actual early-input119/recovery/request/entry route, exact API/physical equivalence, map-resource/current-population projection and input closure |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current capability, comparison policies, explicit stopping point and proportional reproduction |
+
+Positive implementation acceptance must begin with real selected inputs and the named arrival
+comparison at preparation. Reproduce the accepted route, authenticate every shared reference and
+compare the complete frozen battle before/after entry without normalization of gameplay state.
+Verify all30 slot decisions, unchanged gold/counters, source-supported/default setup, no duplicate
+Sarah/Chester, dead-follower identity, both142 effects, temp reset/F80, fresh map3 resources and area,
+F506/F220 no-op stages, record8 selection from all10 rows, exact30-word roof clear/before-image,
+player/idle camera, no old Map40/57 view and no current first-visit state. Missing/foreign/late
+inputs, alternate setup/followers/chest state, roof/area/table drift, malformed dormant rows, changed refresh profile, forged
+recovery/history, invalid population/resource/position, duplicate entry and forced late validation/
+allocation failures all retain the exact before-image. Legacy no-arrival preparation still stops
+after request. No input may restart recovery, battle, first-visit events or a new battle.
+
+Owning Application/Godot tests must positively admit the player/Sarah/Chester same-cell declarations,
+assert each identity, facing, current/target coordinates, zero follower velocity/travel and retained
+actscript provenance, suppress duplicate setup rows, and preserve dead Chester's BLUE_FLAME identity.
+Negative cases must reject duplicate/foreign follower identity, forged moved declaration coordinates
+and a genuinely blocking non-follower at the destination without changing the before-image. Check
+that rendering exposes all three identities without moving them and that elapsed frames/keys execute
+no follower or NPC actscript. These are entry comparison tests, not general collision-engine tests.
+
+Extend the current physical mode through its44-frame request. For the explicitly arrival-admitted
+comparison, replace the former frame45 Space-freeze check: frame45 now shows actual entry (matching
+a direct API call from the exact requested snapshot), and frame46 checks all input frozen on fresh
+Map3. The request view must advertise this one entry confirmation from session eligibility. A legacy
+preparation without arrival input retains the old request/frozen behavior and its own negative test.
+Retain the five38-frame battle regressions and the existing Map3 view/camera owning checks; expected
+minimum84 native frames. Inspect every changed frame, reuse only byte-identical accepted inspection,
+and check text/camera/clipping/resource identity and the opened church roof in area1. Use required-private four-input `PrivateInputFact`
+and its explicit public skip; committed planner determines the selected managed/native/official
+profile. Preserve completed failures and only rerun invalidated checks after correction.
+Frames45/46 must also expose the three same-cell identities and declaration-freeze policy, retain
+their exact coordinates across the frozen frame, and show Chester dead/BLUE_FLAME in the panel even
+when glyphs overlap. Compare native/API semantic placements directly; visual spacing cannot replace
+this assertion. The blocking-non-follower negative belongs to the owning automated entry test and
+must leave its prior request unchanged; it does not require another full native route.
+
+#### Reproduce this plan's bounded check
+
+For this documentation-only slice, keep outputs under `local/return-arrival-plan/`, including uv's
+environment/cache, TEMP/TMP, Ruff and pytest scratch. Create the TEMP directory before `uv sync
+--locked`. Set `SF2_UPSTREAM_DISASM` and `SF2_PRIVATE_CANONICAL_MAP_IMPORT` to the registered read-only
+inputs. Save the following block as `local/return-arrival-plan/boundary-check-06.py` and run
+`uv run python -X utf8 local/return-arrival-plan/boundary-check-06.py`. It verifies old evidence identity
+and unchanged dependencies, then only checks these new source/geometry questions. It does not run
+the old source reducer, old plan script,119 route, .NET, native, official Godot or a ROM observation.
+
+<!-- return-arrival-plan-check:start -->
+```python
+from pathlib import Path
+import ast, json, os, re, subprocess
+
+repo = Path.cwd(); out = repo / 'local/return-arrival-plan'
+source = Path(os.environ['SF2_UPSTREAM_DISASM'])
+pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
+base = 'd0b621941777ff901342efce7aea619f070b043b'
+def read(p): return json.loads((repo / p).read_text(encoding='utf-8-sig'))
+def text(p): return (source / p).read_text(encoding='utf-8-sig')
+def body(p, symbol): return text(p).split(symbol + ':', 1)[1].split('; End of function ' + symbol, 1)[0]
+def ordered(value, tokens):
+    cursor = 0
+    for token in tokens:
+        cursor = value.index(token, cursor) + len(token)
+
+accepted = read('local/defeat-return-request/root-review/acceptance.json')
+previous = read('local/egress-return-plan/boundary-check.json')
+assert accepted['decision'] == 'ACCEPT' and accepted['whole107119TerminalRecoveryExact']
+assert accepted['fullDotnet'] == dict(passed=1550, failed=0, skipped=0, repeated=False)
+assert accepted['frames'] == 83 and accepted['ownedRuntimeProcesses'] == 0
+assert subprocess.check_output(['git','rev-parse',base+'^{tree}'], text=True).strip() == accepted['tree']
+assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'], text=True).strip() == pin
+extra = ['code/common/stats/updatecombatantstats.asm',
+         'code/common/scripting/map/mapsetupsfunctions_1.asm',
+         'code/common/scripting/map/mapfunctions.asm',
+         'code/common/scripting/map/followersfunctions_1.asm',
+         'code/common/scripting/entity/getallymapsprite.asm',
+         'code/common/scripting/entity/entityfunctions_1.asm',
+         'code/common/scripting/map/followersfunctions_2.asm',
+         'data/scripting/entity/eas_main.asm',
+         'code/common/maps/mapload.asm', 'data/scripting/entity/followers.asm',
+         'data/maps/entries/map03/mapsetups/s1_entities.asm',
+         'code/gameflow/exploration/exploration.asm',
+         'data/maps/entries/map03/2-areas.asm',
+         'data/maps/entries/map03/3-flag-events.asm',
+         'data/maps/entries/map03/5-roof-events.asm',
+         'data/maps/entries/map03/7-chest-items.asm']
+paths = sorted(set(previous['inspectedSourcePaths'] + extra))
+subprocess.run(['git','-C',str(source),'diff','--exit-code',pin,'--',*paths], check=True)
+owner = 'remake/docs/map03-playability-plan.md'
+def old_ast(doc):
+    block = doc.split('<!-- defeat-return-source-check:start -->',1)[1].split('<!-- defeat-return-source-check:end -->',1)[0]
+    return ast.dump(ast.parse(block.split('```python',1)[1].split('```',1)[0]), include_attributes=False)
+assert old_ast(subprocess.check_output(['git','show',base+':'+owner]).decode('utf-8')) == old_ast((repo/owner).read_text(encoding='utf-8-sig'))
+# The accepted implementation is a dependency, not a suite to replay for this plan.
+subprocess.run(['git','diff','--exit-code',base,'--','remake/src','remake/game','remake/tests'], check=True)
+session = (repo/'remake/src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs').read_text(encoding='utf-8-sig')
+for constraint in ['The current runtime must be the exact catalog-owned instance.',
+                   'The initial private original-map snapshot cannot contain a completed operation.',
+                   'A non-initial private original-map snapshot must identify exactly one last operation.',
+                   'Controlled palace completion must retain its admitted definition, map, step, and endpoint.']:
+    assert constraint in session
+stats = (repo/'remake/src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs').read_text(encoding='utf-8-sig')
+assert 'hpMax == 0 || hpCurrent > hpMax || mpCurrent > mpMax || move == 0' in stats
+assert 'public sealed record Battle01AllyInput(byte Id, byte ClassId, Battle01Stats EffectiveStats);' in stats
+
+explore = body('code/gameflow/exploration/explorationfunctions_2.asm','ExplorationLoop')
+ordered(explore, ['MAP_EVENT_TYPE','STEP_COUNTER','bge.s','HealLivingAndImmortalAllies',
+    'CURRENT_MAP','NOT_CURRENTLY_IN_BATTLE','LoadMapTilesets','j_GetMapSetupEntities',
+    'j_InitializeMapEntities','LoadEntityMapsprites','ClearMapSetupTempFlags','setFlg  80',
+    'InitializeExplorationSpritesFrameCounter','(LoadMap).w','j_RunMapSetupInitFunction','WaitForEvent'])
+enums = text('sf2enums.asm')
+for name, value in [('COMBATANT_ALLIES_COUNTER',29),('ALLY_PETER',7),('ALLY_LEMON',28),
+                    ('MAPSETUP_TEMP_FLAGS_START',256),('MAPSETUP_TEMP_FLAGS_COUNTER',127),
+                    ('NOT_CURRENTLY_IN_BATTLE',255)]:
+    assert re.search(r'^'+name+r':\s+equ '+str(value)+r'\b',enums,re.M)
+heal = body('code/gameflow/battle/battleloop/heallivingandimmortalallies.asm','HealLivingAndImmortalAllies')
+ordered(heal,['COMBATANT_ALLIES_COUNTER','ALLY_PETER','ALLY_LEMON','j_GetCurrentHp','beq.s   @Dead',
+    'j_GetMaxHp','j_SetCurrentHp','j_GetMaxMp','j_SetCurrentMp','STATUSEFFECT_STUN|STATUSEFFECT_POISON|STATUSEFFECT_CURSE',
+    'j_SetStatusEffects','j_UpdateCombatantStats','addq.w  #1,d0','dbf'])
+refresh = body('code/common/stats/updatecombatantstats.asm','UpdateCombatantStats')
+ordered(refresh,['andi.w','InitializeCurrentStats','ApplyStatusEffectsOnStats','ITEMENTRY_BIT_EQUIPPED',
+                 'ApplyItemOnStats','ori.w   #STATUSEFFECT_CURSE','SetStatusEffects'])
+assert 'STATUSEFFECT_CURSE' not in refresh.split('andi.w',1)[1].split('\n',1)[0]
+setup = body('code/common/scripting/map/mapsetupsfunctions_1.asm','GetCurrentMapSetup')
+ordered(setup,['MapSetups','@CheckFlag_Loop:','j_CheckFlag','movea.l (a1),a0','adda.w  #4,a1','bra.s   @CheckFlag_Loop'])
+init = body('data/maps/entries/map03/mapsetups/s6_initfunction.asm','ms_map3_InitFunction')
+ordered(init,['chkFlg  1','beq.s   byte_51390','script  cs_513BA','bra.s   byte_513A8','chkFlg  602','setPos ALLY_SARAH,41,10,UP','chkFlg  603','move.w  #142,d0','MoveEntityOutOfMap'])
+assert 'cs_513BA:       hide 142' in text('data/maps/entries/map03/mapsetups/s6_initfunction.asm')
+followers = re.findall(r'follower\s+(\d+),\s*([^,\s]+)', text('data/scripting/entity/followers.asm'))
+assert [actor for flag,actor in followers if int(flag)==66] == ['ALLY_SARAH','ALLY_CHESTER']
+follower_loop = body('code/common/scripting/map/followersfunctions_1.asm','InitializeFollowerEntities')
+assert 'GetCurrentHp' not in follower_loop
+entities = text('code/common/scripting/map/mapfunctions.asm')
+ordered(entities,['loc_440E2:','ClearEntities','InitializeFollowerEntities','tst.b   (a1,d4.w)','beq.s   loc_4415A','loc_44180:','DeclareNewEntity'])
+ordered(entities,['loc_440E2:','mulu.w  #MAP_TILE_SIZE,d1','mulu.w  #MAP_TILE_SIZE,d2',
+                  'movem.w d1-d3,-(sp)','InitializeFollowerEntities',
+                  'tst.b   (a1,d4.w)','beq.s   loc_4415A','move.l  (a0)+,d5','bra.w   loc_4417E',
+                  'loc_44180:','movem.w (sp)+,d1-d3','clr.w   d0',
+                  'move.l  #eas_Idle,d5','DeclareNewEntity','sub_44404'])
+ordered(follower_loop,['movem.w d1,-(sp)','j_CheckFlag','movem.w (sp)+,d1',
+                       'move.b  d0,(a1,d6.w)','move.l  (a6)+,d5','DeclareNewEntity'])
+assert not re.search(r'^\s*(?:move|clr|add|sub|lsl|lsr|muls|mulu)\.[bwl]\s+[^;\n]*,d[23]\s*(?:;[^\n]*)?$', follower_loop, re.M)
+declaration = body('code/common/scripting/entity/entityfunctions_1.asm','DeclareNewEntity')
+ordered(declaration,['move.w  d1,(a0)','move.w  d2,ENTITYDEF_OFFSET_Y(a0)',
+    'clr.l   ENTITYDEF_OFFSET_XVELOCITY(a0)','clr.l   ENTITYDEF_OFFSET_XTRAVEL(a0)',
+    'move.w  d1,ENTITYDEF_OFFSET_XDEST(a0)','move.w  d2,ENTITYDEF_OFFSET_YDEST(a0)',
+    'move.b  d3,ENTITYDEF_OFFSET_FACING(a0)','move.b  d6,ENTITYDEF_OFFSET_ENTNUM(a0)',
+    'move.b  d4,ENTITYDEF_OFFSET_MAPSPRITE(a0)','move.l  d5,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a0)'])
+raft = body('code/common/scripting/map/followersfunctions_2.asm','sub_44404')
+ordered(text('code/common/scripting/map/followersfunctions_2.asm'),
+        ['pt_eas_Followers:','dc.l eas_Follower1','dc.l eas_Follower2','pt_eas_OverworldFollowers:'])
+ordered(raft,['PLAYERTYPE_RAFT','bne.s   byte_44420','MakeFollowersStand','byte_44420:',
+              'chkFlg  64','beq.w   return_4446A','DeclareNewEntity','return_4446A:'])
+assert 'clr.b   ((PLAYER_TYPE-$1000000)).w' in body('code/gameflow/battle/battleloop_1.asm','BattleLoop')
+actscripts = text('data/scripting/entity/eas_main.asm')
+for ordinal, target in [(1,0),(2,1)]:
+    script = actscripts.split('eas_Follower'+str(ordinal)+':',1)[1].split('eas_Follower'+str(ordinal+1)+':',1)[0]
+    ordered(script,['ac_entityObstructable OFF','ac_mapUncollidable ON',
+                    'ac_entityUncollidable ON','ac_follow '+str(target)+',-24,0'])
+sprite = body('code/common/scripting/entity/getallymapsprite.asm','GetAllyMapsprite')
+ordered(sprite,['NOT_CURRENTLY_IN_BATTLE','j_GetCurrentHp','MAPSPRITE_BLUE_FLAME'])
+load = body('code/common/maps/mapload.asm','LoadMap')
+ordered(load,['@LoadNewMap:', 'clr.w   ((word_FFAF42-$1000000)).w',
+              'LoadMapBlocksAndLayout','LoadMapArea','ToggleRoofOnMapLoad'])
+layout_load = body('code/common/maps/mapload.asm','LoadMapBlocksAndLayout')
+ordered(layout_load,['LoadMapBlocks','LoadMapLayoutData','j_CheckFlag','CopyMapBlocks',
+                     'j_CheckFlag','#$D802','NOT_CURRENTLY_IN_BATTLE','CopyMapBlocks'])
+roof_load = body('code/gameflow/exploration/exploration.asm','ToggleRoofOnMapLoad')
+ordered(roof_load,['VIEW_TARGET_ENTITY','MAPDATA_OFFSET_EVENT_ROOF','MAP_AREA_LAYER2_STARTX',
+                  'divs.w  #3','MAP_AREA_LAYER2_STARTY','divs.w  #3',
+                  'sub.w   d2,d0','sub.w   d3,d1','cmp.w   d0,d4','cmp.w   d1,d5',
+                  'cmp.w   d2,d4','cmp.w   d3,d5','PerformMapBlockCopyScript'])
+roof_copy = body('code/gameflow/exploration/exploration.asm','PerformMapBlockCopyScript')
+ordered(roof_copy,['tst.w   ((word_FFAF42-$1000000)).w','ext.w   d0','ext.w   d1',
+                  'tst.w   d1','blt.s   loc_40BA','loc_40BA:',
+                  'move.w  (a2,d2.w),(a3)+','clr.w   (a2,d2.w)'])
+# Small authored branch fixtures, not a reconstruction of the old battle route.
+step_cases = [(0,0),(19999,0),(20000,0),(20001,1),(32767,12767),(32768,0),(65535,0)]
+for word, result in step_cases:
+    signed = word if word < 32768 else word - 65536
+    assert max(signed-20000,0) == result
+hp = [0]*30; hp[0]=12; hp[1]=11
+assert [i for i in range(30) if hp[i] or i in (7,28)] == [0,1,7,28]
+canonical = json.loads(Path(os.environ['SF2_PRIVATE_CANONICAL_MAP_IMPORT']).read_text(encoding='utf-8-sig'))
+assert canonical['upstream']['commit']==pin
+assert canonical['romSha256'].upper()=='9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9'
+resources = canonical['resources']
+layout = next(r for r in resources['layouts'] if r['id']=='Map03s1_Layout')
+assert layout['width']==64 and layout['words'][13*64+32]==0x62
+areas = next(r for r in resources['areaTables'] if r['id']=='Map03s2_Areas')['records']
+assert areas[0]['mainLayerStart']==dict(x=0,y=0) and areas[0]['mainLayerEnd']==dict(x=50,y=31)
+assert areas[0]['secondLayerForegroundStart']==dict(x=0,y=32)
+flag_rows = next(r for r in resources['flagEventTables'] if r['id']=='Map03s3_FlagEvents')['records']
+assert flag_rows == [dict(flag=506,source=dict(x=23,y=23),size=dict(width=1,height=2),destination=dict(x=28,y=22)),
+                     dict(flag=506,source=dict(x=57,y=21),size=dict(width=1,height=2),destination=dict(x=57,y=23))]
+chest_rows = next(r for r in resources['itemTables'] if r['id']=='Map03s7_ChestItems')['records']
+assert chest_rows == [dict(x=6,y=18,flag=220,item=127)]
+roof_rows = next(r for r in resources['roofEventTables'] if r['id']=='Map03s5_RoofEvents')['records']
+assert len(roof_rows)==10
+foreground = areas[0]['secondLayerForegroundStart']
+matches = []
+for ordinal,row in enumerate(roof_rows,1):
+    x=row['destination']['x']-foreground['x']; y=row['destination']['y']-foreground['y']
+    if x<=32<x+row['size']['width'] and y<=13<y+row['size']['height']: matches.append(ordinal)
+assert matches==[8]
+assert roof_rows[7]==dict(trigger=dict(x=32,y=15),source=dict(x=255,y=255),
+                          size=dict(width=5,height=6),destination=dict(x=30,y=41))
+assert re.search(r'slbc 32, 15\s*; church door\s+slbcSource 255, 255\s+slbcSize\s+5, 6\s+slbcDest\s+30, 41',
+                 text('data/maps/entries/map03/5-roof-events.asm'))
+assert re.findall(r'fbcFlag (\d+)',text('data/maps/entries/map03/3-flag-events.asm'))==['506','506']
+assert 'mapItem 6, 18, 220, NOTHING' in text('data/maps/entries/map03/7-chest-items.asm')
+source_words = tuple(layout['words']); working = list(source_words)
+clear_indices = [y*64+x for y in range(41,47) for x in range(30,35)]
+roof_before = [working[i] for i in clear_indices]
+for i in clear_indices: working[i]=0
+assert len(clear_indices)==30 and all(working[i]==0 for i in clear_indices)
+assert all(working[i]==word for i,word in enumerate(source_words) if i not in clear_indices)
+assert tuple(layout['words'])==source_words and working[13*64+32]==0x62
+route = next(r for r in resources['setupRoutes'] if r['id']=='MapSetupRoute03')
+assert route['defaultSetup']=='ms_map3' and [v['flag'] for v in route['flagVariants']]==[609,506,543]
+for mask in range(8):
+    selected = 'ms_map3'
+    for bit, variant in enumerate(route['flagVariants']):
+        if mask & (1<<bit): selected = variant['setup']
+    assert selected == ('ms_map3' if not mask else route['flagVariants'][mask.bit_length()-1]['setup'])
+report = dict(status='Pass',base=base,sourcePin=pin,sourcePaths=paths,oldEvidenceReused=True,
+              oldSourceAstUnchanged=True,oldScriptsOrRuntimeReplayed=False,stepCases=step_cases,
+              processedComparisonSlots=[0,1,7,28],follower66=['Sarah','Chester'],deadFollower='MAPSPRITE_BLUE_FLAME',
+              declarationGroup=[dict(entity=i,current=[32,13],target=[32,13],facing=1) for i in [0,1,2]],
+              entityPolicy='Declaration positions frozen; no follower/NPC actscript execution',
+              originalFirstWaitForEventEntityPositions='Unknown',
+              destination=[3,32,13,1],destinationLayoutWord=0x62,setupCases=8,
+              loadNoOpFlags=[506,220],roofRecord=8,roofClearBounds=[30,41,34,46],
+              roofClearWordCount=30,roofChangedWordCount=sum(source_words[i]!=0 for i in clear_indices),
+              roofBeforeWords=roof_before,roofSourceLayoutUnchanged=True,
+              proposedStop='Fresh Map3 entry-ready; before first WaitForEvent; inputs closed')
+(out/'boundary-check-06.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(report))
+```
+<!-- return-arrival-plan-check:end -->
+
+Then check local links, fences, tables, diff/private boundaries, clean committed planner, normal
+`uv run sf2 verify` and Public CI. The normal verify's known default H0 ROM absence remains an
+explicit failure after its public checks, not a reason to copy a ROM or replay private gates.
+Freeze one plan-only Draft PR for independent review. Future implementation ownership above grants
+no permission to change those files during this plan.
 
 
 ### Controlled Godot Battle01 consumer
