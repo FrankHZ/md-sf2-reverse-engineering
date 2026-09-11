@@ -8,6 +8,27 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateOriginalMapBaseViewportTests
 {
+    [Fact]
+    public void EntryRoofClearChangesOnlyTheCurrentAreaOverlayAndKeepsTheIdlePlayerRect()
+    {
+        ushort[] before=new ushort[WorkingMapLayout.WordCount];
+        for(int y=41;y<47;y++) for(int x=30;x<35;x++) before[y*64+x]=1;
+        var clear=MapBlockCopyLifecycleReducer.Activate(new(before),MapBlockCopyLifecycleState.Inactive,
+            new(false,false),8,MapBlockRegionMutation.Clear(30,41,5,6));
+        ushort[][] blocks=[Enumerable.Repeat((ushort)0x0100,9).ToArray(),Enumerable.Repeat((ushort)0x0101,9).ToArray()];
+        var source=Snapshot(blocks,before,areaDefinitions:StaticOverlayAreas(),playerPosition:new(32,13));
+        var after=Snapshot(blocks,clear.Layout.Words.ToArray(),areaDefinitions:StaticOverlayAreas(),playerPosition:new(32,13));
+        var art=BuildNearestAtlas(VisualDefinition(),2); var animation=PrivateMap3CameraProjectionTests.EntryLocomotion();
+        var roof=PrivateOriginalMapBaseViewProjection.CreateFromAtlas(source,source.CurrentRuntime.VisualResourceSelection,art,2,currentAreaOverlay:true);
+        var opened=PrivateOriginalMapBaseViewProjection.CreateFromAtlas(after,after.CurrentRuntime.VisualResourceSelection,art,2,
+            playerLocomotion:animation,currentAreaOverlay:true);
+        Assert.Equal((26,10),(opened.OriginX,opened.OriginY)); Assert.True(opened.CurrentAreaOverlay);
+        Assert.Equal(1,opened.OverlayAreaRecordOrdinal); Assert.Equal(roof.Camera,opened.Camera);
+        Assert.Equal(PrivateOriginalMapBaseViewport.PlayerReferenceRect(opened),PrivateOriginalMapBaseViewport.PlayerLocomotionRect(opened,animation));
+        Assert.False(roof.RgbaBytes.SequenceEqual(opened.RgbaBytes));
+        Assert.Equal((ushort)1,before[41*64+30]);
+    }
+
     [Theory]
     [InlineData(2, false)]
     [InlineData(2, true)]

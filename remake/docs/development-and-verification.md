@@ -325,18 +325,21 @@ player-physical6 this is65 frames; preparation/shared-view changes also require 
 and enemy-pursuit4, totaling73 individually inspected frames with per-mode process receipts.
 All native modes use `LeaderDefeatComparison`, adding only Bowie defeats0 at initialization;
 their earlier HP/RNG/accounting and frame contracts remain. Preserve old null-preset artifacts separately.
-Use `leader-defeat-pending` for45 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
-Sarah action choice, labeled copies of119/terminal, physical terminal, one physical recovery confirmation
-and one physical return request. Frame43 applies recovery; frame44 requests return; frame45 verifies every later key.
-Run the retained Chester-player18, first-defeat6, player-physical6, enemy-physical4 and pursuit4
-modes when changing this shared preparation/view:83 frames in total; inspect every changed frame and compare unchanged frames byte-for-byte.
+Use `leader-defeat-pending` for46 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
+Sarah action choice, labeled119/terminal copies, physical terminal, recovery, return request and entry.
+Frame43 applies recovery;44 requests return;45 publishes Granseal;46 freezes all gameplay keys and60
+physics frames. N selects leader/return/arrival comparisons before source admission when the reviewed
+Map3 atlas is available. Compare the complete direct API and physical entry, three same-cell identities,
+dead Chester, party30, roof clear, current camera/resources and retained historical battle.
+Run retained Chester-player18, first-defeat6, player-physical6, enemy-physical4 and pursuit4:
+minimum84 frames. Inspect every changed frame; reuse only byte-identical accepted inspection.
 The required Content test `AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix`
 replays both old/new preparations from real inputs, compares the entire119-prefix with only the
 explicit Bowie counter normalized, retains the old lethal guard and checks the new terminal state.
 Domain tests own strike/outcome/cleanup/history forgeries and rejection of every continuing entry;
 Application tests own once-only publication, preparation/source identity and frozen session operations.
 
-For the return request keep all new outputs in `local/defeat-return-request` (or a fresh explicitly selected
+For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also
 needs `-p:GodotProjectDir=<absolute-new-output-root>/godot-project`, or use the isolated archived copy.
@@ -350,9 +353,15 @@ state (normalizing only binding representation), rejects a late cloned preparati
 and requires exact Battle/source/preparation references across the request. It uses the same four-input
 `PrivateInputFact`: required-private executes it and unselected public runs skip it. Domain/Application
 return tests validate the tuple before source access, entry/copy continuity and rejection atomicity.
-The request stops before ExplorationLoop; neither receipt claims original presentation/H4. Reuse the accepted defeat-return source result and
-independent review after checking unchanged source/recipe dependencies; compare them to the new
-actual return request without replaying the old source reducer or plan script.
+`AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` requires all four real
+inputs and the early arrival selection; it validates party ownership, immutable history, flags,
+all4096 layout words, roof before-image, declaration overlap, rejected forgeries and closed old APIs.
+Its `PrivateInputFact` must run with `SF2_REQUIRE_PRIVATE_TESTS=1`; public unselected execution explicitly
+skips it. Pair with `ExplorationEntryTests`, canonical reader and the four changed Godot test owners.
+The committed planner selects the locked full solution and official Godot gate; run the full suite
+once and preserve any completed failure. Reuse accepted source/plan evidence after checking its pinned
+dependencies; do not replay old source or plan scripts. The fresh entry stops before first exploration
+input and does not claim original presentation, script timing or H4.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. A change to the named preparation or shared view also
 requires the affected enemy physical and pursuit modes. Other modes,

@@ -43,6 +43,12 @@ public sealed partial class Map3Root
     private PrivateLocalHudPreview? _privateHudPreview;
     private bool _privateBattleBridgeEnabled;
 
+    private void ProjectGransealArrival(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    {
+        _privateBattle01Presenter?.Hide();
+        _privatePresenter!.Project(arrival);
+    }
+
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
         if (selection.IsAvailable &&

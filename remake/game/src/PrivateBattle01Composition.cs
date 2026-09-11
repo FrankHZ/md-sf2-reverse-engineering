@@ -15,7 +15,7 @@ internal static class PrivateBattle01Ui
         stage == GameFlowStage.Battle || (pending && inputsSelected);
 
     internal static string? Apply(GameSession session, IOriginalBattle01StartupSource? source,
-        PrivateBattle01Input input)
+        PrivateBattle01Input input, OriginalBattle01ControlledArrivalInputs? arrivalInputs = null)
     {
         if (session.PrivateOriginalBattle01 is not { } current)
         {
@@ -23,7 +23,7 @@ internal static class PrivateBattle01Ui
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
                 OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
-                OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison);
+                OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison, arrivalInputs);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -37,7 +37,9 @@ internal static class PrivateBattle01Ui
             if (candidate is null) return "First control unavailable: current slot is sentinel.";
             return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.Value.CombatantIndex) switch
             {
-                PrivateOriginalBattle01FirstControlEntered => "Granseal return comparison selected. First player ready.",
+                PrivateOriginalBattle01FirstControlEntered => arrivalInputs is null
+                    ? "Granseal return comparison selected. First player ready."
+                    : "Leader/Granseal return/arrival comparisons selected. First player ready.",
                 PrivateOriginalBattle01FirstControlUnavailable unavailable =>
                     "First control unavailable: " + unavailable.Decision.Availability,
                 PrivateOriginalBattle01FirstControlRejected rejected =>
@@ -46,6 +48,14 @@ internal static class PrivateBattle01Ui
             };
         }
 
+        if (current.Arrival is not null) return null;
+        if (current.CanEnterExploration && input == PrivateBattle01Input.Confirm)
+            return session.EnterPrivateOriginalBattle01Exploration(current) switch
+            {
+                PrivateOriginalBattle01ExplorationEntered => PrivateMap3PresentationPlan.ArrivalStatus,
+                PrivateOriginalBattle01ExplorationEntryRejected rejected => rejected.Diagnostic.Message,
+                _ => null,
+            };
         if (current.CanRequestDefeatReturn && input == PrivateBattle01Input.Confirm)
             return session.RequestPrivateOriginalBattle01DefeatReturn(current) switch
             {
@@ -225,14 +235,21 @@ public sealed partial class Map3Root
 
     private bool PollPrivateBattle01()
     {
+        if (_session?.PrivateOriginalMapArrival is not null) return true;
         if (_session is null || !PrivateBattle01Ui.OwnsInput(_session.PrivateOriginalFlowStage,
                 _session.PrivateOriginalBattle01Admission is not null, _privateBattle01Source is not null))
             return false;
         if (_privateBattle01Presenter?.BaseArtUnavailable == true) return true;
         var input = _inputAdapter?.PollPrivateBattle01() ?? PrivateBattle01Input.None;
         if (input == PrivateBattle01Input.None) return true;
-        string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input);
+        string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input,
+            _privatePresenter?.CanDisplayArrival == true ? OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison : null);
         if (outcome is null) return true;
+        if (_session.PrivateOriginalMapArrival is { } arrival)
+        {
+            ProjectGransealArrival(arrival);
+            return true;
+        }
         if (_session.PrivateOriginalBattle01 is { } battle)
         {
             if (_privateBattle01Presenter is null)

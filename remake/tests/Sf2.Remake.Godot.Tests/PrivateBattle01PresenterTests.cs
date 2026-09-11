@@ -265,6 +265,10 @@ public sealed class PrivateBattle01PresenterTests
             Assert.Equal(recovered.AllyStatus, requested.AllyStatus); Assert.Equal(recovered.Gold, requested.Gold);
             Assert.Contains("Input closed", requested.Controls); Assert.DoesNotContain("Space", requested.Controls);
             Assert.Equal("Return requested: Granseal (32,13), facing up. Exploration unavailable.", requested.Status);
+            var entry = PrivateBattle01Presenter.BuildProjection(recovery, requested.Status, false, request, true);
+            Assert.True(entry.CanEnterExploration); Assert.Contains("Space: enter Granseal", entry.Controls);
+            Assert.Equal(requested.Units, entry.Units); Assert.Equal(requested.AllyStatus, entry.AllyStatus);
+            Assert.False(requested.CanEnterExploration);
             // Correct-looking status text alone cannot enable return on the legacy projection.
             Assert.False(PrivateBattle01Presenter.BuildProjection(recovery, "Space requests return").CanRequestDefeatReturn);
         }

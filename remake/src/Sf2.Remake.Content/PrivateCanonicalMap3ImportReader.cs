@@ -514,7 +514,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadAcceptedMiddleTowerEntry(map20References, resources),
             ReadMiddleTowerGuard(map21Runtime, resources),
             ReadAcceptedNorthMap40Transition(map21References, resources),
-            ReadBattle01Admission(map57, map40References, resources));
+            ReadBattle01Admission(map57, map40References, resources),
+            ReadReturnEntryLoad(map3Runtime, runtimeCatalog, references, resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -530,6 +531,54 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             OriginalMapRuntimeAdmission.RequiredEvidenceOwners,
             Capabilities);
         return new OriginalMapImportAccepted(definition, receipt);
+    }
+
+    private static OriginalMapReturnEntryLoadDefinition ReadReturnEntryLoad(
+        OriginalMapExplorationRuntimeDefinition runtime, OriginalMapExplorationRuntimeCatalog catalog,
+        JsonElement references, IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map3.returnEntryLoad";
+        string flagId = RequiredString(references, "flagEventTable", field);
+        string chestId = RequiredString(references, "chestItemTable", field);
+        string roofId = RequiredString(references, "roofEventTable", field);
+        JsonElement Rows(string kind, string id)
+        {
+            var table = RequiredResource(resources, kind, id);
+            var rows = RequiredProperty(table, "records", field);
+            RequireArray(rows, field);
+            return rows;
+        }
+        var flags = new List<OriginalMapReturnFlagCopy>();
+        foreach (var row in Rows("flagEventTables", flagId).EnumerateArray())
+        {
+            RequireExactProperties(row, field, "flag", "source", "size", "destination");
+            var (sx, sy) = ReadPoint(RequiredProperty(row, "source", field), field, byteSized: true);
+            var (dx, dy) = ReadPoint(RequiredProperty(row, "destination", field), field, byteSized: true);
+            var (w, h) = ReadSize(RequiredProperty(row, "size", field), field);
+            flags.Add(new(RequiredInt(row, "flag", field), sx, sy, w, h, dx, dy));
+        }
+        var chests = new List<OriginalMapReturnChest>();
+        foreach (var row in Rows("itemTables", chestId).EnumerateArray())
+        {
+            RequireExactProperties(row, field, "x", "y", "flag", "item");
+            chests.Add(new(RequiredInt(row, "x", field), RequiredInt(row, "y", field),
+                RequiredInt(row, "flag", field), RequiredInt(row, "item", field)));
+        }
+        var roofs = new List<OriginalMapReturnRoofRow>();
+        foreach (var row in Rows("roofEventTables", roofId).EnumerateArray())
+        {
+            RequireExactProperties(row, field, "trigger", "source", "size", "destination");
+            var (tx, ty) = ReadPoint(RequiredProperty(row, "trigger", field), field, byteSized: true);
+            var (sx, sy) = ReadPoint(RequiredProperty(row, "source", field), field, byteSized: true);
+            var (dx, dy) = ReadPoint(RequiredProperty(row, "destination", field), field, byteSized: true);
+            var (w, h) = ReadSize(RequiredProperty(row, "size", field), field);
+            roofs.Add(new(roofs.Count + 1, tx, ty, sx, sy, w, h, dx, dy));
+        }
+        var definition = new OriginalMapReturnEntryLoadDefinition(runtime, flagId, flags, chestId, chests, roofId, roofs);
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(definition, catalog))
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The bounded Granseal return-load flag/chest/roof/area facts drifted.");
+        return definition;
     }
 
     private static OriginalBattle01AdmissionDefinition ReadBattle01Admission(

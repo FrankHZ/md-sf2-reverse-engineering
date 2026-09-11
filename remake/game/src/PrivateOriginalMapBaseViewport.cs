@@ -164,6 +164,24 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 subpixelColumn));
     }
 
+    internal static PrivateOriginalMapBaseViewProjection CreateFromAtlas(
+        PrivateOriginalMapReturnArrivalSnapshot arrival, OriginalMapVisualResourceSelection selection,
+        IReadOnlyList<byte> atlasRgbaBytes, int scale)
+    {
+        ArgumentNullException.ThrowIfNull(arrival);
+        ArgumentNullException.ThrowIfNull(atlasRgbaBytes);
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        int width = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth * scale;
+        int height = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight * scale;
+        if (atlasRgbaBytes.Count != checked(width * height * 4))
+            throw new ArgumentException("The Map3 atlas RGBA shape drifted.", nameof(atlasRgbaBytes));
+        return CreateCore(arrival.CurrentRuntime, arrival.WorkingLayout, arrival.PlayerPosition,
+            arrival.CurrentAreaDefinition, PrivateMap3CameraProjection.Create(arrival), selection, scale,
+            false, true, (slot, tile, row, column, subRow, subColumn) =>
+                ResolveAtlasPixel(atlasRgbaBytes, scale, width, slot, tile, row, column, subRow, subColumn), nameof(arrival));
+    }
+
     internal static bool IsExactNearestReplication(
         PrivateOriginalMapBaseViewProjection logical,
         PrivateOriginalMapBaseViewProjection physical)
@@ -449,8 +467,20 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         bool currentAreaOverlay,
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion,
         Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
+        => CreateCore(snapshot.CurrentRuntime, snapshot.WorkingLayout, snapshot.PlayerPosition,
+            snapshot.CurrentAreaDefinition, PrivateMap3CameraProjection.Create(snapshot, playerLocomotion),
+            selection, rasterScale, staticOverlayDiagnostic, currentAreaOverlay, resolvePixel, nameof(snapshot));
+
+    private static PrivateOriginalMapBaseViewProjection CreateCore(
+        OriginalMapExplorationRuntimeDefinition runtime, WorkingMapLayout workingLayout,
+        MapPosition playerPosition, OriginalMapAreaDefinition currentArea, PrivateMap3CameraProjection focus,
+        OriginalMapVisualResourceSelection selection,
+        int rasterScale,
+        bool staticOverlayDiagnostic,
+        bool currentAreaOverlay,
+        Func<int, int, int, int, int, int, SourcePixel> resolvePixel, string sourceParameter)
     {
-        if (!SameSelection(snapshot.CurrentRuntime.VisualResourceSelection, selection))
+        if (!SameSelection(runtime.VisualResourceSelection, selection))
         {
             throw new ArgumentException(
                 "The private map snapshot and visual payload must retain the same admitted selection.",
@@ -464,7 +494,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 nameof(currentAreaOverlay));
         }
 
-        if (snapshot.Map.Value != OriginalMapRuntimeAdmission.MapId)
+        if (runtime.Map.Value != OriginalMapRuntimeAdmission.MapId)
         {
             staticOverlayDiagnostic = false;
             currentAreaOverlay = false;
@@ -478,7 +508,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateMap3CameraProjection? camera = null;
         if (staticOverlayDiagnostic)
         {
-            OriginalMapAreaDefinition[] candidates = snapshot.CurrentRuntime.AreaCatalog.Records
+            OriginalMapAreaDefinition[] candidates = runtime.AreaCatalog.Records
                 .Where(record =>
                     record.SecondLayerForegroundStart != record.SecondLayerBackgroundStart)
                 .Take(2)
@@ -487,7 +517,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             {
                 throw new ArgumentException(
                     "A static overlay diagnostic requires exactly one admitted non-zero layer offset.",
-                    nameof(snapshot));
+                    sourceParameter);
             }
 
             overlayArea = candidates[0];
@@ -508,19 +538,19 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             {
                 throw new ArgumentException(
                     "The admitted static overlay crop exceeds its area or working-layout bounds.",
-                    nameof(snapshot));
+                    sourceParameter);
             }
         }
         else
         {
-            camera = PrivateMap3CameraProjection.Create(snapshot, playerLocomotion);
+            camera = focus;
             originX = camera.OriginX;
             originY = camera.OriginY;
             if (currentAreaOverlay &&
-                snapshot.CurrentAreaDefinition.SecondLayerForegroundStart !=
-                    snapshot.CurrentAreaDefinition.SecondLayerBackgroundStart)
+                currentArea.SecondLayerForegroundStart !=
+                    currentArea.SecondLayerBackgroundStart)
             {
-                overlayArea = snapshot.CurrentAreaDefinition;
+                overlayArea = currentArea;
                 overlayDeltaX = checked(
                     (int)overlayArea.SecondLayerForegroundStart.X -
                     overlayArea.SecondLayerBackgroundStart.X);
@@ -543,7 +573,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         {
             throw new ArgumentException(
                 "The admitted overlay crop exceeds the authoritative working layout.",
-                nameof(snapshot));
+                sourceParameter);
         }
 
         int renderedPixelWidth = checked(
@@ -556,8 +586,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 
         RenderLayoutRegion(
             renderedPixels,
-            snapshot.WorkingLayout,
-            snapshot.CurrentRuntime.BlockCatalog,
+            workingLayout,
+            runtime.BlockCatalog,
             originX,
             originY,
             renderedColumns,
@@ -570,8 +600,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         {
             RenderLayoutRegion(
                 renderedPixels,
-                snapshot.WorkingLayout,
-                snapshot.CurrentRuntime.BlockCatalog,
+                workingLayout,
+                runtime.BlockCatalog,
                 checked(originX + overlayDeltaX),
                 checked(originY + overlayDeltaY),
                 renderedColumns,
@@ -593,13 +623,13 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 rasterPixelHeight);
 
         return new PrivateOriginalMapBaseViewProjection(
-            snapshot.Map,
+            runtime.Map,
             originX,
             originY,
             camera?.PlayerPixelX / BlockPixelSize ??
-                snapshot.PlayerPosition.X - originX,
+                playerPosition.X - originX,
             camera?.PlayerPixelY / BlockPixelSize ??
-                snapshot.PlayerPosition.Y - originY,
+                playerPosition.Y - originY,
             camera,
             rasterScale,
             staticOverlayDiagnostic,
@@ -988,6 +1018,7 @@ internal enum PrivateMap3LiveRouteActorGlyphKind
     Zone601Square,
     AstralDiamond,
     MiddleTowerGuardDiamond,
+    DeadFollowerDiamond,
 }
 
 internal sealed record PrivateMap3LiveRouteActorGlyph(
@@ -1028,6 +1059,16 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
     }
 
     internal IReadOnlyList<PrivateMap3LiveRouteActorGlyph> Actors => _actors;
+
+    internal static IReadOnlyList<PrivateMap3LiveRouteActorGlyph> CreateArrival(
+        PrivateOriginalMapReturnArrivalSnapshot arrival, PrivateOriginalMapBaseViewProjection projection)
+    {
+        if (projection.Map != arrival.Map) throw new ArgumentException("Arrival glyphs require the current Map3 projection.");
+        return Array.AsReadOnly(arrival.Entities.Where(entity => entity.Id != 0 && !entity.Hidden && entity.Position is not null)
+            .Select(entity => Create(entity.Dead ? PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond :
+                entity.IsFollower ? PrivateMap3LiveRouteActorGlyphKind.SarahDiamond : PrivateMap3LiveRouteActorGlyphKind.Zone601Square,
+                entity.Id, entity.SourceRecord!.Identity, entity.Position!, entity.Facing, projection)).ToArray());
+    }
 
     internal static bool TryCreate(
         PrivateOriginalMapSessionSnapshot snapshot,
@@ -1289,6 +1330,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private ImageTexture[]? _entity142DiagnosticTextures;
     private PrivateMap3Entity142DiagnosticProjection? _entity142DiagnosticProjection;
     private PrivateMap3LiveRouteActorGlyphProjection? _liveRouteActorProjection;
+    private IReadOnlyList<PrivateMap3LiveRouteActorGlyph>? _arrivalActorGlyphs;
+    internal IReadOnlyList<PrivateMap3LiveRouteActorGlyph>? ArrivalActorGlyphs => _arrivalActorGlyphs;
     private PrivateMap3Entity142DiagnosticAnimationState _entity142DiagnosticAnimation =
         PrivateMap3Entity142DiagnosticAnimationState.Initial;
     private string? _entity142DiagnosticAssetId;
@@ -1386,9 +1429,25 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         bool staticOverlayDiagnostic,
         bool currentAreaOverlay,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+        => TryBindLocalAtlasCore(mount, snapshot.CurrentRuntime.VisualResourceSelection, worldTreatment,
+            (bytes, scale) => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+                snapshot.CurrentRuntime.VisualResourceSelection, bytes, scale, staticOverlayDiagnostic,
+                currentAreaOverlay: currentAreaOverlay), out diagnostic);
+
+    internal bool TryBindLocalAtlas(PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapReturnArrivalSnapshot arrival, PrivateMap3WorldTreatment treatment,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic) =>
+        TryBindLocalAtlasCore(mount, arrival.CurrentRuntime.VisualResourceSelection, treatment,
+            (bytes, scale) => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(arrival,
+                arrival.CurrentRuntime.VisualResourceSelection, bytes, scale), out diagnostic);
+
+    private bool TryBindLocalAtlasCore(PrivateLocalPresentationRasterMount mount,
+        OriginalMapVisualResourceSelection selection, PrivateMap3WorldTreatment worldTreatment,
+        Func<IReadOnlyList<byte>, int, PrivateOriginalMapBaseViewProjection> createProjection,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
-        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(selection);
         if (worldTreatment is not PrivateMap3WorldTreatment.ExactNearest and
             not PrivateMap3WorldTreatment.EdgeScale2x)
         {
@@ -1397,7 +1456,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
         diagnostic = null;
         if (PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
-                snapshot.CurrentRuntime.VisualResourceSelection) != mount.Definition.AssetId ||
+                selection) != mount.Definition.AssetId ||
             !(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(mount.Definition, mount.Bucket) ||
                 PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(mount.Definition, mount.Bucket) ||
                 PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(mount.Definition, mount.Bucket) ||
@@ -1439,15 +1498,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             return false;
         }
 
-        PrivateOriginalMapBaseViewProjection atlasProjection =
-            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
-                snapshot,
-                snapshot.CurrentRuntime.VisualResourceSelection,
-                rgbaBytes,
-                mount.Bucket.Scale,
-                staticOverlayDiagnostic,
-                playerLocomotion: null,
-                currentAreaOverlay: currentAreaOverlay);
+        PrivateOriginalMapBaseViewProjection atlasProjection = createProjection(rgbaBytes, mount.Bucket.Scale);
         try
         {
             _ = PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(
@@ -1462,7 +1513,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         _atlasRgbaBytes = [.. rgbaBytes];
-        _atlasSelection = snapshot.CurrentRuntime.VisualResourceSelection;
+        _atlasSelection = selection;
         _atlasScale = mount.Bucket.Scale;
         _atlasAssetId = mount.Definition.AssetId;
         _atlasBucketDigest = mount.Bucket.Sha256;
@@ -1744,6 +1795,23 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         QueueRedraw();
     }
 
+    internal void ProjectMountedAtlas(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    {
+        if (_atlasRgbaBytes is null || _atlasSelection is null)
+            throw new InvalidOperationException("Granseal entry requires the explicitly selected Map3 atlas.");
+        var atlas = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(arrival, _atlasSelection, _atlasRgbaBytes, _atlasScale);
+        _projection = _worldTreatment == PrivateMap3WorldTreatment.ExactNearest ? atlas :
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(atlas), _atlasScale);
+        using Image image = Image.CreateFromData(_projection.RasterPixelWidth, _projection.RasterPixelHeight,
+            false, Image.Format.Rgba8, _projection.RgbaBytes.ToArray());
+        _texture = ImageTexture.CreateFromImage(image);
+        _playerLocomotion = arrival.Locomotion;
+        _liveRouteActorProjection = null; _entity142DiagnosticProjection = null;
+        _arrivalActorGlyphs = PrivateMap3LiveRouteActorGlyphProjection.CreateArrival(arrival, _projection);
+        QueueRedraw();
+    }
+
     public override void _Draw()
     {
         if (_projection is null || _texture is null)
@@ -1752,6 +1820,9 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
+        if (_arrivalActorGlyphs is not null)
+            foreach (var actor in _arrivalActorGlyphs.Where(actor => actor.DestinationRect.Intersects(LogicalTextureRect)))
+                DrawLiveRouteActor(actor);
         if (_projection.ShowsPlayerMarker && _liveRouteActorProjection is not null)
         {
             foreach (PrivateMap3LiveRouteActorGlyph actor in
@@ -1850,6 +1921,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
     private void ProjectLiveRouteActors(PrivateOriginalMapSessionSnapshot snapshot)
     {
+        _arrivalActorGlyphs = null;
         if (_projection is null ||
             !PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
                 snapshot,
@@ -1868,6 +1940,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         Vector2 center = rectangle.GetCenter();
         float half = rectangle.Size.X / 2;
         if (actor.Kind is PrivateMap3LiveRouteActorGlyphKind.SarahDiamond or
+            PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond or
             PrivateMap3LiveRouteActorGlyphKind.AstralDiamond or
             PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond)
         {
@@ -1878,8 +1951,9 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 center + new Vector2(0, half),
                 center + new Vector2(-half, 0),
             ];
-            DrawColoredPolygon(points, actor.Kind == PrivateMap3LiveRouteActorGlyphKind.SarahDiamond
-                ? SarahGlyphColor : new Color("b5a0ff"));
+            DrawColoredPolygon(points, actor.Kind == PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond
+                ? new Color("69cfff") : actor.Kind == PrivateMap3LiveRouteActorGlyphKind.SarahDiamond
+                    ? SarahGlyphColor : new Color("b5a0ff"));
             DrawPolyline([.. points, points[0]], RouteActorOutlineColor, width: 2);
         }
         else

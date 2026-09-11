@@ -91,11 +91,17 @@ immutable terminal before-image and119 ordinary receipts. N/start also explicitl
 `GransealFirstAttemptComparison` return input (egress3/F64=false/F640=false) before source admission.
 A further Space requests Granseal map3/(32,13)/UP with D4=-1 and no raft write. The entire recovered
 battle stays reference-identical: HP12/gold60, unplaced Bowie, five markers and lethal history persist.
-The host remains Battle/live map57 and shows “Return requested: Granseal (32,13), facing up.
-Exploration unavailable.” All later inputs freeze. A preparation without return inputs cannot request
-return, even if replaced after recovery. F399 is the unconditional modeled BattleLoop entry effect;
-F401 stays set/F501 false. No map arrival, ExplorationLoop, retry or save runs.
-See the [return request boundary](./docs/map03-playability-plan.md#implemented-battle01-egress-and-return-request).
+With the reviewed Map3 atlas selected, N also names the early arrival comparison. A final Space
+publishes fresh Granseal Map3/(32,13)/UP, area1 with its church roof open. The new `Arrival.Party`
+owns all30 current slots: Bowie/Sarah heal, Peter7/Lemon28 process explicit neutral dormant rows,
+and dead Chester remains HP0. Gold60 and all battle accounting/history remain unchanged.
+Player0, Sarah1 and dead/BLUE_FLAME Chester2 share their declared current/target(32,13)/UP;
+the diagnostic view freezes those positions and runs no follower/NPC script. Entity142 is hidden
+and moved out, temp flags256..383 clear and F80 is set. All exploration controls stay closed.
+Legacy preparations without arrival inputs retain the map57 return-request stop. Missing/late or
+replaced bindings reject. Original VInt/actscript positions, general stat refresh, natural continuity,
+fade/music and H4 remain Unknown; retry and save are unavailable.
+See the [fresh-entry boundary](./docs/map03-playability-plan.md#implemented-fresh-granseal-entry-after-battle01-defeat).
 See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
 Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
 defeats must trace back to the selected preparation.

@@ -14,9 +14,10 @@ The controlled Battle01 route now requests Granseal map3/(32,13)/UP after one HP
 N/start explicitly supplies the separate return comparison before source admission; the request
 retains the entire recovered Battle (HP12/gold60, unplaced Bowie,119 ordinary receipts and lethal
 history) and all preparation/source references. The [implemented return request](#implemented-battle01-egress-and-return-request)
-stops before ExplorationLoop; live map57/Battle remains and later inputs freeze. Natural flag
-continuity remains Unknown. The [fresh-entry plan](#planned-fresh-granseal-entry-after-battle01-defeat)
-selects a controlled Map3 entry-ready boundary; arrival/setup/partywide healing remain unimplemented.
+stops before ExplorationLoop for legacy preparations. The optional early arrival comparison admits
+the [fresh-entry boundary](#implemented-fresh-granseal-entry-after-battle01-defeat): Map3 area1,
+church roof clear,30-slot party handoff and frozen same-cell player/Sarah/Chester declarations.
+Exploration input stays closed. Natural continuity and original post-script positions remain Unknown.
 
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
@@ -4757,11 +4758,11 @@ route from early input preparation. They retain the same recovered Battle rather
 old terminal or silently normalizing gameplay differences.
 
 
-### Planned fresh Granseal entry after Battle01 defeat
+### Implemented fresh Granseal entry after Battle01 defeat
 
-**Proposed; not implemented.** The next implementation should publish one **fresh Map3 entry-ready
+**Implemented as a controlled comparison.** One confirmation publishes one **fresh Map3 entry-ready
 snapshot**, after the bounded semantic entry/setup/init work and before the first `WaitForEvent`.
-It should display the actual destination map, player at(32,13)/UP, current party and fresh entity
+It displays the actual destination map, player at(32,13)/UP, current party and fresh entity
 state, while explicitly keeping exploration input closed. This is a useful arrival boundary, not a
 claim of resumed walking, event dispatch or a continuous original playthrough. The subsequent slice
 can admit the first movement/event operation against this new visit. Do not add a separate public
@@ -4928,7 +4929,7 @@ movement/event contract and carry `Arrival.Party` and fresh entity state through
 then reuse the pure traversal and locomotion mechanisms. It must not unfreeze old handlers merely
 because CURRENT_MAP is3. No general event framework or exploratory cache is required now.
 
-#### Future exact implementation paths and acceptance
+#### Entry implementation ownership and acceptance
 
 The current plan owns **only this document**. The proposed next implementation owns these31 exact
 paths relative to `remake/`; new-file names are proposals. Any additional dependency requires a new
@@ -4983,216 +4984,25 @@ when glyphs overlap. Compare native/API semantic placements directly; visual spa
 this assertion. The blocking-non-follower negative belongs to the owning automated entry test and
 must leave its prior request unchanged; it does not require another full native route.
 
-#### Reproduce this plan's bounded check
+#### Reproduce entry acceptance
 
-For this documentation-only slice, keep outputs under `local/return-arrival-plan/`, including uv's
-environment/cache, TEMP/TMP, Ruff and pytest scratch. Create the TEMP directory before `uv sync
---locked`. Set `SF2_UPSTREAM_DISASM` and `SF2_PRIVATE_CANONICAL_MAP_IMPORT` to the registered read-only
-inputs. Save the following block as `local/return-arrival-plan/boundary-check-06.py` and run
-`uv run python -X utf8 local/return-arrival-plan/boundary-check-06.py`. It verifies old evidence identity
-and unchanged dependencies, then only checks these new source/geometry questions. It does not run
-the old source reducer, old plan script,119 route, .NET, native, official Godot or a ROM observation.
+Use a fresh ignored `local/granseal-entry/` output root with isolated uv/TEMP/test/native output.
+The required-private Content test
+`AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` starts from the selected
+canonical/placement/scene/terrain inputs and threads arrival input through the real119-receipt route.
+Run it with the Domain/Application `ExplorationEntryTests`, canonical import reader tests and the four
+Godot projection owners above. Keep the public unselected skip explicit. Use the committed
+`uv run sf2 verify plan --base origin/main --head HEAD` selection for the locked solution, official
+Godot and normal public gates; preserve completed failures and rerun only invalidated narrow checks.
 
-<!-- return-arrival-plan-check:start -->
-```python
-from pathlib import Path
-import ast, json, os, re, subprocess
-
-repo = Path.cwd(); out = repo / 'local/return-arrival-plan'
-source = Path(os.environ['SF2_UPSTREAM_DISASM'])
-pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
-base = 'd0b621941777ff901342efce7aea619f070b043b'
-def read(p): return json.loads((repo / p).read_text(encoding='utf-8-sig'))
-def text(p): return (source / p).read_text(encoding='utf-8-sig')
-def body(p, symbol): return text(p).split(symbol + ':', 1)[1].split('; End of function ' + symbol, 1)[0]
-def ordered(value, tokens):
-    cursor = 0
-    for token in tokens:
-        cursor = value.index(token, cursor) + len(token)
-
-accepted = read('local/defeat-return-request/root-review/acceptance.json')
-previous = read('local/egress-return-plan/boundary-check.json')
-assert accepted['decision'] == 'ACCEPT' and accepted['whole107119TerminalRecoveryExact']
-assert accepted['fullDotnet'] == dict(passed=1550, failed=0, skipped=0, repeated=False)
-assert accepted['frames'] == 83 and accepted['ownedRuntimeProcesses'] == 0
-assert subprocess.check_output(['git','rev-parse',base+'^{tree}'], text=True).strip() == accepted['tree']
-assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'], text=True).strip() == pin
-extra = ['code/common/stats/updatecombatantstats.asm',
-         'code/common/scripting/map/mapsetupsfunctions_1.asm',
-         'code/common/scripting/map/mapfunctions.asm',
-         'code/common/scripting/map/followersfunctions_1.asm',
-         'code/common/scripting/entity/getallymapsprite.asm',
-         'code/common/scripting/entity/entityfunctions_1.asm',
-         'code/common/scripting/map/followersfunctions_2.asm',
-         'data/scripting/entity/eas_main.asm',
-         'code/common/maps/mapload.asm', 'data/scripting/entity/followers.asm',
-         'data/maps/entries/map03/mapsetups/s1_entities.asm',
-         'code/gameflow/exploration/exploration.asm',
-         'data/maps/entries/map03/2-areas.asm',
-         'data/maps/entries/map03/3-flag-events.asm',
-         'data/maps/entries/map03/5-roof-events.asm',
-         'data/maps/entries/map03/7-chest-items.asm']
-paths = sorted(set(previous['inspectedSourcePaths'] + extra))
-subprocess.run(['git','-C',str(source),'diff','--exit-code',pin,'--',*paths], check=True)
-owner = 'remake/docs/map03-playability-plan.md'
-def old_ast(doc):
-    block = doc.split('<!-- defeat-return-source-check:start -->',1)[1].split('<!-- defeat-return-source-check:end -->',1)[0]
-    return ast.dump(ast.parse(block.split('```python',1)[1].split('```',1)[0]), include_attributes=False)
-assert old_ast(subprocess.check_output(['git','show',base+':'+owner]).decode('utf-8')) == old_ast((repo/owner).read_text(encoding='utf-8-sig'))
-# The accepted implementation is a dependency, not a suite to replay for this plan.
-subprocess.run(['git','diff','--exit-code',base,'--','remake/src','remake/game','remake/tests'], check=True)
-session = (repo/'remake/src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs').read_text(encoding='utf-8-sig')
-for constraint in ['The current runtime must be the exact catalog-owned instance.',
-                   'The initial private original-map snapshot cannot contain a completed operation.',
-                   'A non-initial private original-map snapshot must identify exactly one last operation.',
-                   'Controlled palace completion must retain its admitted definition, map, step, and endpoint.']:
-    assert constraint in session
-stats = (repo/'remake/src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs').read_text(encoding='utf-8-sig')
-assert 'hpMax == 0 || hpCurrent > hpMax || mpCurrent > mpMax || move == 0' in stats
-assert 'public sealed record Battle01AllyInput(byte Id, byte ClassId, Battle01Stats EffectiveStats);' in stats
-
-explore = body('code/gameflow/exploration/explorationfunctions_2.asm','ExplorationLoop')
-ordered(explore, ['MAP_EVENT_TYPE','STEP_COUNTER','bge.s','HealLivingAndImmortalAllies',
-    'CURRENT_MAP','NOT_CURRENTLY_IN_BATTLE','LoadMapTilesets','j_GetMapSetupEntities',
-    'j_InitializeMapEntities','LoadEntityMapsprites','ClearMapSetupTempFlags','setFlg  80',
-    'InitializeExplorationSpritesFrameCounter','(LoadMap).w','j_RunMapSetupInitFunction','WaitForEvent'])
-enums = text('sf2enums.asm')
-for name, value in [('COMBATANT_ALLIES_COUNTER',29),('ALLY_PETER',7),('ALLY_LEMON',28),
-                    ('MAPSETUP_TEMP_FLAGS_START',256),('MAPSETUP_TEMP_FLAGS_COUNTER',127),
-                    ('NOT_CURRENTLY_IN_BATTLE',255)]:
-    assert re.search(r'^'+name+r':\s+equ '+str(value)+r'\b',enums,re.M)
-heal = body('code/gameflow/battle/battleloop/heallivingandimmortalallies.asm','HealLivingAndImmortalAllies')
-ordered(heal,['COMBATANT_ALLIES_COUNTER','ALLY_PETER','ALLY_LEMON','j_GetCurrentHp','beq.s   @Dead',
-    'j_GetMaxHp','j_SetCurrentHp','j_GetMaxMp','j_SetCurrentMp','STATUSEFFECT_STUN|STATUSEFFECT_POISON|STATUSEFFECT_CURSE',
-    'j_SetStatusEffects','j_UpdateCombatantStats','addq.w  #1,d0','dbf'])
-refresh = body('code/common/stats/updatecombatantstats.asm','UpdateCombatantStats')
-ordered(refresh,['andi.w','InitializeCurrentStats','ApplyStatusEffectsOnStats','ITEMENTRY_BIT_EQUIPPED',
-                 'ApplyItemOnStats','ori.w   #STATUSEFFECT_CURSE','SetStatusEffects'])
-assert 'STATUSEFFECT_CURSE' not in refresh.split('andi.w',1)[1].split('\n',1)[0]
-setup = body('code/common/scripting/map/mapsetupsfunctions_1.asm','GetCurrentMapSetup')
-ordered(setup,['MapSetups','@CheckFlag_Loop:','j_CheckFlag','movea.l (a1),a0','adda.w  #4,a1','bra.s   @CheckFlag_Loop'])
-init = body('data/maps/entries/map03/mapsetups/s6_initfunction.asm','ms_map3_InitFunction')
-ordered(init,['chkFlg  1','beq.s   byte_51390','script  cs_513BA','bra.s   byte_513A8','chkFlg  602','setPos ALLY_SARAH,41,10,UP','chkFlg  603','move.w  #142,d0','MoveEntityOutOfMap'])
-assert 'cs_513BA:       hide 142' in text('data/maps/entries/map03/mapsetups/s6_initfunction.asm')
-followers = re.findall(r'follower\s+(\d+),\s*([^,\s]+)', text('data/scripting/entity/followers.asm'))
-assert [actor for flag,actor in followers if int(flag)==66] == ['ALLY_SARAH','ALLY_CHESTER']
-follower_loop = body('code/common/scripting/map/followersfunctions_1.asm','InitializeFollowerEntities')
-assert 'GetCurrentHp' not in follower_loop
-entities = text('code/common/scripting/map/mapfunctions.asm')
-ordered(entities,['loc_440E2:','ClearEntities','InitializeFollowerEntities','tst.b   (a1,d4.w)','beq.s   loc_4415A','loc_44180:','DeclareNewEntity'])
-ordered(entities,['loc_440E2:','mulu.w  #MAP_TILE_SIZE,d1','mulu.w  #MAP_TILE_SIZE,d2',
-                  'movem.w d1-d3,-(sp)','InitializeFollowerEntities',
-                  'tst.b   (a1,d4.w)','beq.s   loc_4415A','move.l  (a0)+,d5','bra.w   loc_4417E',
-                  'loc_44180:','movem.w (sp)+,d1-d3','clr.w   d0',
-                  'move.l  #eas_Idle,d5','DeclareNewEntity','sub_44404'])
-ordered(follower_loop,['movem.w d1,-(sp)','j_CheckFlag','movem.w (sp)+,d1',
-                       'move.b  d0,(a1,d6.w)','move.l  (a6)+,d5','DeclareNewEntity'])
-assert not re.search(r'^\s*(?:move|clr|add|sub|lsl|lsr|muls|mulu)\.[bwl]\s+[^;\n]*,d[23]\s*(?:;[^\n]*)?$', follower_loop, re.M)
-declaration = body('code/common/scripting/entity/entityfunctions_1.asm','DeclareNewEntity')
-ordered(declaration,['move.w  d1,(a0)','move.w  d2,ENTITYDEF_OFFSET_Y(a0)',
-    'clr.l   ENTITYDEF_OFFSET_XVELOCITY(a0)','clr.l   ENTITYDEF_OFFSET_XTRAVEL(a0)',
-    'move.w  d1,ENTITYDEF_OFFSET_XDEST(a0)','move.w  d2,ENTITYDEF_OFFSET_YDEST(a0)',
-    'move.b  d3,ENTITYDEF_OFFSET_FACING(a0)','move.b  d6,ENTITYDEF_OFFSET_ENTNUM(a0)',
-    'move.b  d4,ENTITYDEF_OFFSET_MAPSPRITE(a0)','move.l  d5,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a0)'])
-raft = body('code/common/scripting/map/followersfunctions_2.asm','sub_44404')
-ordered(text('code/common/scripting/map/followersfunctions_2.asm'),
-        ['pt_eas_Followers:','dc.l eas_Follower1','dc.l eas_Follower2','pt_eas_OverworldFollowers:'])
-ordered(raft,['PLAYERTYPE_RAFT','bne.s   byte_44420','MakeFollowersStand','byte_44420:',
-              'chkFlg  64','beq.w   return_4446A','DeclareNewEntity','return_4446A:'])
-assert 'clr.b   ((PLAYER_TYPE-$1000000)).w' in body('code/gameflow/battle/battleloop_1.asm','BattleLoop')
-actscripts = text('data/scripting/entity/eas_main.asm')
-for ordinal, target in [(1,0),(2,1)]:
-    script = actscripts.split('eas_Follower'+str(ordinal)+':',1)[1].split('eas_Follower'+str(ordinal+1)+':',1)[0]
-    ordered(script,['ac_entityObstructable OFF','ac_mapUncollidable ON',
-                    'ac_entityUncollidable ON','ac_follow '+str(target)+',-24,0'])
-sprite = body('code/common/scripting/entity/getallymapsprite.asm','GetAllyMapsprite')
-ordered(sprite,['NOT_CURRENTLY_IN_BATTLE','j_GetCurrentHp','MAPSPRITE_BLUE_FLAME'])
-load = body('code/common/maps/mapload.asm','LoadMap')
-ordered(load,['@LoadNewMap:', 'clr.w   ((word_FFAF42-$1000000)).w',
-              'LoadMapBlocksAndLayout','LoadMapArea','ToggleRoofOnMapLoad'])
-layout_load = body('code/common/maps/mapload.asm','LoadMapBlocksAndLayout')
-ordered(layout_load,['LoadMapBlocks','LoadMapLayoutData','j_CheckFlag','CopyMapBlocks',
-                     'j_CheckFlag','#$D802','NOT_CURRENTLY_IN_BATTLE','CopyMapBlocks'])
-roof_load = body('code/gameflow/exploration/exploration.asm','ToggleRoofOnMapLoad')
-ordered(roof_load,['VIEW_TARGET_ENTITY','MAPDATA_OFFSET_EVENT_ROOF','MAP_AREA_LAYER2_STARTX',
-                  'divs.w  #3','MAP_AREA_LAYER2_STARTY','divs.w  #3',
-                  'sub.w   d2,d0','sub.w   d3,d1','cmp.w   d0,d4','cmp.w   d1,d5',
-                  'cmp.w   d2,d4','cmp.w   d3,d5','PerformMapBlockCopyScript'])
-roof_copy = body('code/gameflow/exploration/exploration.asm','PerformMapBlockCopyScript')
-ordered(roof_copy,['tst.w   ((word_FFAF42-$1000000)).w','ext.w   d0','ext.w   d1',
-                  'tst.w   d1','blt.s   loc_40BA','loc_40BA:',
-                  'move.w  (a2,d2.w),(a3)+','clr.w   (a2,d2.w)'])
-# Small authored branch fixtures, not a reconstruction of the old battle route.
-step_cases = [(0,0),(19999,0),(20000,0),(20001,1),(32767,12767),(32768,0),(65535,0)]
-for word, result in step_cases:
-    signed = word if word < 32768 else word - 65536
-    assert max(signed-20000,0) == result
-hp = [0]*30; hp[0]=12; hp[1]=11
-assert [i for i in range(30) if hp[i] or i in (7,28)] == [0,1,7,28]
-canonical = json.loads(Path(os.environ['SF2_PRIVATE_CANONICAL_MAP_IMPORT']).read_text(encoding='utf-8-sig'))
-assert canonical['upstream']['commit']==pin
-assert canonical['romSha256'].upper()=='9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9'
-resources = canonical['resources']
-layout = next(r for r in resources['layouts'] if r['id']=='Map03s1_Layout')
-assert layout['width']==64 and layout['words'][13*64+32]==0x62
-areas = next(r for r in resources['areaTables'] if r['id']=='Map03s2_Areas')['records']
-assert areas[0]['mainLayerStart']==dict(x=0,y=0) and areas[0]['mainLayerEnd']==dict(x=50,y=31)
-assert areas[0]['secondLayerForegroundStart']==dict(x=0,y=32)
-flag_rows = next(r for r in resources['flagEventTables'] if r['id']=='Map03s3_FlagEvents')['records']
-assert flag_rows == [dict(flag=506,source=dict(x=23,y=23),size=dict(width=1,height=2),destination=dict(x=28,y=22)),
-                     dict(flag=506,source=dict(x=57,y=21),size=dict(width=1,height=2),destination=dict(x=57,y=23))]
-chest_rows = next(r for r in resources['itemTables'] if r['id']=='Map03s7_ChestItems')['records']
-assert chest_rows == [dict(x=6,y=18,flag=220,item=127)]
-roof_rows = next(r for r in resources['roofEventTables'] if r['id']=='Map03s5_RoofEvents')['records']
-assert len(roof_rows)==10
-foreground = areas[0]['secondLayerForegroundStart']
-matches = []
-for ordinal,row in enumerate(roof_rows,1):
-    x=row['destination']['x']-foreground['x']; y=row['destination']['y']-foreground['y']
-    if x<=32<x+row['size']['width'] and y<=13<y+row['size']['height']: matches.append(ordinal)
-assert matches==[8]
-assert roof_rows[7]==dict(trigger=dict(x=32,y=15),source=dict(x=255,y=255),
-                          size=dict(width=5,height=6),destination=dict(x=30,y=41))
-assert re.search(r'slbc 32, 15\s*; church door\s+slbcSource 255, 255\s+slbcSize\s+5, 6\s+slbcDest\s+30, 41',
-                 text('data/maps/entries/map03/5-roof-events.asm'))
-assert re.findall(r'fbcFlag (\d+)',text('data/maps/entries/map03/3-flag-events.asm'))==['506','506']
-assert 'mapItem 6, 18, 220, NOTHING' in text('data/maps/entries/map03/7-chest-items.asm')
-source_words = tuple(layout['words']); working = list(source_words)
-clear_indices = [y*64+x for y in range(41,47) for x in range(30,35)]
-roof_before = [working[i] for i in clear_indices]
-for i in clear_indices: working[i]=0
-assert len(clear_indices)==30 and all(working[i]==0 for i in clear_indices)
-assert all(working[i]==word for i,word in enumerate(source_words) if i not in clear_indices)
-assert tuple(layout['words'])==source_words and working[13*64+32]==0x62
-route = next(r for r in resources['setupRoutes'] if r['id']=='MapSetupRoute03')
-assert route['defaultSetup']=='ms_map3' and [v['flag'] for v in route['flagVariants']]==[609,506,543]
-for mask in range(8):
-    selected = 'ms_map3'
-    for bit, variant in enumerate(route['flagVariants']):
-        if mask & (1<<bit): selected = variant['setup']
-    assert selected == ('ms_map3' if not mask else route['flagVariants'][mask.bit_length()-1]['setup'])
-report = dict(status='Pass',base=base,sourcePin=pin,sourcePaths=paths,oldEvidenceReused=True,
-              oldSourceAstUnchanged=True,oldScriptsOrRuntimeReplayed=False,stepCases=step_cases,
-              processedComparisonSlots=[0,1,7,28],follower66=['Sarah','Chester'],deadFollower='MAPSPRITE_BLUE_FLAME',
-              declarationGroup=[dict(entity=i,current=[32,13],target=[32,13],facing=1) for i in [0,1,2]],
-              entityPolicy='Declaration positions frozen; no follower/NPC actscript execution',
-              originalFirstWaitForEventEntityPositions='Unknown',
-              destination=[3,32,13,1],destinationLayoutWord=0x62,setupCases=8,
-              loadNoOpFlags=[506,220],roofRecord=8,roofClearBounds=[30,41,34,46],
-              roofClearWordCount=30,roofChangedWordCount=sum(source_words[i]!=0 for i in clear_indices),
-              roofBeforeWords=roof_before,roofSourceLayoutUnchanged=True,
-              proposedStop='Fresh Map3 entry-ready; before first WaitForEvent; inputs closed')
-(out/'boundary-check-06.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-print(json.dumps(report))
-```
-<!-- return-arrival-plan-check:end -->
-
-Then check local links, fences, tables, diff/private boundaries, clean committed planner, normal
-`uv run sf2 verify` and Public CI. The normal verify's known default H0 ROM absence remains an
-explicit failure after its public checks, not a reason to copy a ROM or replay private gates.
-Freeze one plan-only Draft PR for independent review. Future implementation ownership above grants
-no permission to change those files during this plan.
-
+The [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review) owns
+six modes and minimum84 frames. Frames45/46 verify actual entry, full API/physical equality, church
+roof pixels, all three same-cell identities and frozen inputs/time. Build/import/export only in a
+fresh archive of the committed source. Inspect every changed PNG at original resolution and reuse
+only byte-identical accepted inspections. The named pinned sources above and accepted planning Git
+object own the source boundary; unchanged source recipes are reused, not replayed as setup work.
+General stat refresh, original VInt/entity-script positions, natural party/flags, fade/music, H4 and
+the first new-visit movement/event operation remain explicit Unknowns or unsupported capabilities.
 
 ### Controlled Godot Battle01 consumer
 

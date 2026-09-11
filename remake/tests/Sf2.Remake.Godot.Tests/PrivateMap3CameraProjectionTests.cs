@@ -9,6 +9,30 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateMap3CameraProjectionTests
 {
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot EntryLocomotion()
+    {
+        // Only the immutable destination request is needed by pure camera/frame math.
+        var request = Activator.CreateInstance(typeof(Sf2.Remake.Domain.Battles.Battle01DefeatReturnRequest),
+            BindingFlags.Instance|BindingFlags.NonPublic,null,
+            new object?[] { null, new Sf2.Remake.Domain.Battles.Battle01DefeatReturnAdmission(3,false,false) },null)!;
+        return (PrivateOriginalMapPlayerLocomotionSnapshot)typeof(PrivateOriginalMapPlayerLocomotionSnapshot)
+            .GetMethod("EnterGranseal",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[request])!;
+    }
+
+    [Fact]
+    public void EntryCameraCentersTheIdleUpDeclarationWithoutAnOldMapOffset()
+    {
+        var locomotion=EntryLocomotion(); var snapshot=Snapshot(new(32,13));
+        var camera=PrivateMap3CameraProjection.Create(snapshot,locomotion);
+        Assert.Equal((26,10),(camera.OriginX,camera.OriginY));
+        Assert.Equal((144,72),(camera.PlayerPixelX,camera.PlayerPixelY));
+        Assert.Equal((768,312),(camera.FocusPixelX,camera.FocusPixelY));
+        Assert.Equal((byte)1,locomotion.OpaqueFacing); Assert.False(locomotion.IsMoving);
+        Assert.Equal(new MapPosition(32,13),locomotion.SourcePosition);
+        Assert.Equal(locomotion.SourcePosition,locomotion.DestinationPosition);
+        Assert.Equal((0,0),(locomotion.OffsetXUnits,locomotion.OffsetYUnits));
+    }
+
     [Theory]
     [InlineData(22, 4, 23, 37)]
     [InlineData(5, 3, 6, 37)]

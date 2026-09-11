@@ -152,6 +152,15 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetXUnits: 0,
             offsetYUnits: 0);
 
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot EnterGranseal(
+        Sf2.Remake.Domain.Battles.Battle01DefeatReturnRequest request)
+    {
+        var direction = DirectionFromOpaqueFacing(request.DestinationOpaqueFacing, nameof(request));
+        var (facing, sheet, slot, mirror) = Selection(direction);
+        return new(PrivateOriginalMapPlayerLocomotionPhase.Relocated, direction, facing, sheet, slot, mirror,
+            0, 0, 0, 0, request.DestinationPosition, request.DestinationPosition, 0, 0);
+    }
+
     internal static PrivateOriginalMapPlayerLocomotionSnapshot Begin(
         PrivateOriginalMapPlayerLocomotionSnapshot current,
         ExplorationDirection direction,

@@ -13,6 +13,38 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateCanonicalMap3ImportReaderTests
 {
+    [Fact]
+    public void ReturnEntryLoadRetainsCatalogResourcesAndSelectsChurchWithoutAWarp()
+    {
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        var load = Assert.IsType<OriginalMapReturnEntryLoadDefinition>(definition.ReturnEntryLoad);
+        Assert.Same(definition.RuntimeCatalog.Resolve(new("map3")), load.Runtime);
+        Assert.Same(load.Runtime.AreaCatalog.Records[0], load.Area);
+        Assert.Equal(10, load.Roofs.Count); Assert.Equal(2, load.FlagCopies.Count); Assert.Single(load.Chests);
+        Assert.Equal(new OriginalMapReturnRoofRow(8,32,15,255,255,5,6,30,41), load.SelectRoof(new(32,13)));
+        Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(null, definition.RuntimeCatalog));
+        var other = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(load, other.RuntimeCatalog));
+    }
+
+    [Theory]
+    [InlineData("roof8")] [InlineData("roof6")] [InlineData("roof-count")]
+    [InlineData("flag")] [InlineData("chest")] [InlineData("missing-chest")]
+    public void ReturnEntryResourceDriftRejectsTheCompleteImport(string mutation)
+    {
+        var doc = SampleDocument();
+        switch (mutation)
+        {
+            case "roof8": RoofRecords(doc)[7]!["destination"]!["x"] = 31; break;
+            case "roof6": RoofRecords(doc)[5]!["source"]!["x"] = 50; break;
+            case "roof-count": RoofRecords(doc).RemoveAt(9); break;
+            case "flag": ResourceArray(doc,"flagEventTables")[0]!["records"]![0]!["flag"] = 507; break;
+            case "chest": ResourceArray(doc,"itemTables")[0]!["records"]![0]!["item"] = 1; break;
+            case "missing-chest": ResourceArray(doc,"itemTables")[0]!.AsObject().Remove("records"); break;
+        }
+        Assert.IsType<OriginalMapImportRejected>(Admit(doc));
+    }
+
     [Theory]
     [InlineData(19, "palette")]
     [InlineData(20, "palette")]
@@ -1650,7 +1682,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         },
                     },
                 },
-                flagEventTables = Resources("Map03s3_FlagEvents", "Map19s3_FlagEvents"),
+                flagEventTables = new object[] {
+                    new { id = "Map03s3_FlagEvents", records = new[] {
+                        new { flag = 506, source = Point(23,23), size = new { width=1, height=2 }, destination=Point(28,22) },
+                        new { flag = 506, source = Point(57,21), size = new { width=1, height=2 }, destination=Point(57,23) } } },
+                    new { id = "Map19s3_FlagEvents" } },
                 stepEventTables = new object[]
                 {
                     new
@@ -1711,7 +1747,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 },
                 itemTables = new object[]
                 {
-                    new { id = "Map03s7_ChestItems" },
+                    new { id = "Map03s7_ChestItems", records = new[] { new { x=6, y=18, flag=220, item=127 } } },
                     new { id = "Map03s8_OtherItems" },
                     new { id = "Map19s7_ChestItems" },
                     new { id = "Map19s8_OtherItems" },
@@ -2746,8 +2782,8 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         RoofRecord(8, 22, 255, 255, 6, 6, 5, 48),
         RoofRecord(12, 12, 255, 255, 6, 6, 10, 38),
         RoofRecord(19, 12, 255, 255, 6, 5, 17, 39),
-        RoofRecord(20, 20, 0, 0, 1, 1, 20, 20),
-        RoofRecord(21, 20, 1, 1, 1, 1, 21, 20),
+        RoofRecord(24, 26, 51, 20, 9, 7, 22, 51),
+        RoofRecord(25, 26, 51, 20, 9, 7, 22, 51),
         RoofRecord(32, 15, 255, 255, 5, 6, 30, 41),
         RoofRecord(38, 24, 255, 255, 5, 5, 36, 51),
         RoofRecord(41, 13, 255, 255, 9, 8, 39, 37),

@@ -1155,18 +1155,23 @@ with the same Application API invoked on the exact terminal. Capture restored Bo
 then press Space again to request return to Granseal. Compare that request against an independent
 API call from the exact same recovered snapshot; require the Battle and preparation/source references
 to stay identical. Frame44 shows “Return requested: Granseal (32,13), facing up. Exploration unavailable.”
-Then press N/Space/Backspace/A/I/J/K/L; requested snapshot and projection must remain identical,
-as must a repeated dispatcher call. Frame45 checks frozen input. The45-frame receipt exposes
-`initialBattle`, `returnInputs`, `start107`, `boundary119`, `terminal`, recovered `battle`, `defeatReturn`,
-initial preparation/source binding, physical/API equivalence and frozen-input results.
-The immutable terminal records HP0/EXP63/defeats1 and the first count0/4; recovery changes only current
-leader HP and gold. Bowie still has no marker, Sarah remains alive, accounting stays readable and no
-cursor or next actor appears. There is no second faction count. With the five affected earlier modes
-above this is83 frames. Inspect every new/changed PNG and verify unchanged accepted frames
-by exact comparison; verify archived production/probe copies and bounded process receipts. Reuse the
-accepted independent source result when its dependencies are unchanged; do not replay older reducers.
-The request stops before ExplorationLoop: live map57/Battle stays visible, with no map3 load,
-arrival, partywide healing, original visual/timing or exploration-continuity claim.
+With early arrival selected, frame44 advertises one more Space. Frame45 shows actual Granseal
+entry and must equal a direct API call from the exact requested snapshot, including every entity
+placement and the complete retained battle. Hide map57 and first-visit prompts. The current Map3 atlas,
+area1 overlay and idle UP camera center(32,13); church roof record8 has30 cleared words. Player0,
+Sarah1 and dead/BLUE_FLAME Chester2 occupy that same current/target cell. Their diagnostic glyphs
+may overlap; the information panel names each identity and the declaration-position-freeze policy.
+Never move semantic positions for legibility. Entity142 is hidden/out. No follower/NPC actscript runs.
+
+Frame46 exercises N/Space/Backspace/A/I/J/K/L/W/S/D/F/E/Enter/Escape and60 physics frames; the exact
+entry object, entity array, projection and serialized state remain unchanged. The46-frame receipt adds
+`arrivalInputs`, `arrival` and full API/physical entry equivalence. With the five retained modes this is
+minimum84 frames. Inspect every changed PNG at original resolution, compare unchanged accepted PNGs
+byte-for-byte, and verify archived production/probe copies and bounded process receipts. No-atlas
+legacy preparation omits arrival selection and retains the return-request stop; the new comparison
+uses the already reviewed Map3 atlas/player art. Current party30, gold60, dead Chester and input closure
+must be readable. Original flame art, original post-script positions/VInt, general stat refresh,
+natural continuity and H4 remain Unknown or unimplemented.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu
