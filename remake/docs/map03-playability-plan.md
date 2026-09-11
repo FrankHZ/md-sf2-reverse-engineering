@@ -4767,6 +4767,11 @@ claim of resumed walking, event dispatch or a continuous original playthrough. T
 can admit the first movement/event operation against this new visit. Do not add a separate public
 prepare/acknowledge phase merely to split this transaction.
 
+The entity view uses an explicit **declaration-position freeze**: apply the named setup-init effects,
+but execute no follower or NPC actscript. Its positions are the source-supported declaration values
+plus those explicit init effects, not an observation of original entity positions at the first
+`WaitForEvent`. The original's intervening VInt/actscript execution remains outside this comparison.
+
 #### Source boundary and newly checked dependencies
 
 **Confirmed static behavior**, pinned `ShiningForceCentral/SF2DISASM` commit
@@ -4780,6 +4785,8 @@ prepare/acknowledge phase merely to split this transaction.
 | `code/common/scripting/map/mapsetupsfunctions_1.asm`, `GetCurrentMapSetup`, `GetMapSetupEntityList`, `RunMapSetupInitFunction` | Scan the current map's flag variants in order, retaining the last satisfied variant. Map3's flags are609,506,543; all false selects `ms_map3`. Entity lookup and init both query setup; no supported entry effect changes these three flags between the calls. |
 | `data/maps/entries/map03/mapsetups/s6_initfunction.asm`, `ms_map3_InitFunction` at`0x51382` | F1=true takes `hide 142`, bypassing the F602-dependent Sarah(41,10)/UP branch. F603=true also calls MoveEntityOutOfMap(142). Retain both semantic effects; do not infer a Sarah reposition from the bypassed branch. |
 | `code/common/scripting/map/mapfunctions.asm`, `InitializeMapEntities` at`0x440CC`; `followersfunctions_1.asm`; `data/scripting/entity/followers.asm` | Clear/redeclare entities, declare followers before setup rows, suppress duplicate ally setup rows already declared as followers, then declare player0 at the supplied position/facing. F66 declares both Sarah and Chester. The follower selector does not test HP. Other follower flags and F65 are separate inputs. |
+| `code/common/scripting/entity/entityfunctions_1.asm`, `DeclareNewEntity`; `mapfunctions.asm`, `loc_440E2`/`loc_44180`; `followersfunctions_1.asm` | Scale incoming d1/d2 by MAP_TILE_SIZE, save d1..d3 and declare followers using those entry values. Player0 later uses the restored values. Each declaration writes current/target X/Y and facing, clears velocity/travel, and stores its actscript address. Sarah, Chester and player0 therefore start together at(32,13)/UP; their initial targets are also(32,13), not their old setup coordinates or spaced follower positions. |
+| `code/common/scripting/map/followersfunctions_2.asm`, `sub_44404`; `code/gameflow/battle/battleloop_1.asm`; `data/scripting/entity/eas_main.asm`, `eas_Follower1/2` | Battle entry clears PLAYER_TYPE to0. With the admitted F64=false, the raft helper neither declares a raft nor calls MakeFollowersStand. Follower actscripts subsequently set entity/map uncollidable and follow offsets; storing their addresses does not execute them or prove the positions reached before WaitForEvent. |
 | `code/common/scripting/entity/getallymapsprite.asm`, `GetAllyMapsprite` at`0x449C6` | After current-battle becomes255, a dead ally resolves to MAPSPRITE_BLUE_FLAME. Chester remains dead yet can be a declared follower; neither reviving him nor silently removing his follower is justified. Original flame graphics/animation remain outside the diagnostic view. |
 | `ClearMapSetupTempFlags` and `sf2enums.asm` | Clear128 flags256..383, then set F80. Old first-visit Sarah/Zone601 temporary flags are historical facts, not the new visit's live temp image. |
 | `code/common/maps/mapload.asm`, `LoadMap` / `LoadMapBlocksAndLayout` | Load fresh blocks/layout, apply satisfied flag copies and opened-chest words, skip battle-area copies at CURRENT_BATTLE=255, load area, then ToggleRoofOnMapLoad. Map3 has two F506 copies and one F220 chest at(6,18); both flags false leave these stages unchanged. Reuse catalog-owned resources and the Map3 visual selection. |
@@ -4882,6 +4889,17 @@ resetting step0, inventing a traversal/warp receipt or broadening those invarian
 or enable the wrong event dispatcher. The new completed entry facet supplies a real new boundary
 while the old objects remain frozen history. There is no second mutable current-map authority.
 
+Fresh population validation must accept the **specific admitted same-cell group**: player0, Sarah1
+and Chester2 each retain a distinct identity, current/target position(32,13), facing UP and their own
+declaration/actscript provenance. The follower declarations retain zero velocity/travel while their
+scripts remain unexecuted; the player uses `eas_Idle`. Preserve Chester's dead/BLUE_FLAME identity and
+the skipped duplicate Sarah/Chester setup rows. Never import their old setup positions(42,8)/(44,10),
+scatter them to empty cells, remove a follower, or merge identities to pass occupancy validation.
+This exception is limited to those two authenticated F66 follower declarations with player0 at the
+entry cell. A duplicate identity, extra/unadmitted follower, or genuinely blocking non-follower at
+the player destination still rejects atomically under the existing population/destination rules;
+it does not make arbitrary overlaps legal. No general collision or following engine is needed.
+
 The existing Map3 presenter, base viewport and camera should gain small typed overloads delegating
 to their shared runtime/layout/position projection logic. They must consume the real entry object;
 do not manufacture a legacy snapshot for rendering or create another renderer/asset mount. Use the
@@ -4889,6 +4907,9 @@ already reviewed local Map3 atlas/player art and diagnostic fresh-entity glyphs,
 dead Chester's blue-flame identity without claiming original flame art. Hide the battle canvas and
 all first-visit interaction prompts. Show “Granseal entry ready (32,13), facing up. Exploration input
 unavailable.” Party status distinguishes Chester's death from his follower declaration.
+Display the declaration-position-freeze policy and list all three identities/positions in the
+information panel if their same-cell glyphs overlap. Presentation must not change semantic positions
+to make glyphs readable. Time passage and every gameplay key leave these diagnostic positions fixed.
 
 #### Why stop before the first exploration input
 
@@ -4897,6 +4918,8 @@ real: party handoff/healing, setup selection, entity reset/init effects, current
 player placement and a visible fresh map. Original fade/music/VInt, sprite playback, general status
 refresh, natural flags/party continuity and H4 remain **Unknown** or explicitly unimplemented.
 The controlled stat policy and static diagnostic entities must remain visible limitations.
+In particular, exact follower/NPC positions after original VInt/actscript execution and at the first
+`WaitForEvent` are **Unknown**; the frozen same-cell declaration view does not close that boundary.
 
 Movement is deferred because `ApplyPrivateOriginalMap` currently dispatches the first-visit
 Sarah/Zone601/messenger/door/warp lifecycle. Running it against newly cleared temp flags and retained
@@ -4936,6 +4959,14 @@ recovery/history, invalid population/resource/position, duplicate entry and forc
 allocation failures all retain the exact before-image. Legacy no-arrival preparation still stops
 after request. No input may restart recovery, battle, first-visit events or a new battle.
 
+Owning Application/Godot tests must positively admit the player/Sarah/Chester same-cell declarations,
+assert each identity, facing, current/target coordinates, zero follower velocity/travel and retained
+actscript provenance, suppress duplicate setup rows, and preserve dead Chester's BLUE_FLAME identity.
+Negative cases must reject duplicate/foreign follower identity, forged moved declaration coordinates
+and a genuinely blocking non-follower at the destination without changing the before-image. Check
+that rendering exposes all three identities without moving them and that elapsed frames/keys execute
+no follower or NPC actscript. These are entry comparison tests, not general collision-engine tests.
+
 Extend the current physical mode through its44-frame request. For the explicitly arrival-admitted
 comparison, replace the former frame45 Space-freeze check: frame45 now shows actual entry (matching
 a direct API call from the exact requested snapshot), and frame46 checks all input frozen on fresh
@@ -4946,14 +4977,19 @@ minimum84 native frames. Inspect every changed frame, reuse only byte-identical 
 and check text/camera/clipping/resource identity and the opened church roof in area1. Use required-private four-input `PrivateInputFact`
 and its explicit public skip; committed planner determines the selected managed/native/official
 profile. Preserve completed failures and only rerun invalidated checks after correction.
+Frames45/46 must also expose the three same-cell identities and declaration-freeze policy, retain
+their exact coordinates across the frozen frame, and show Chester dead/BLUE_FLAME in the panel even
+when glyphs overlap. Compare native/API semantic placements directly; visual spacing cannot replace
+this assertion. The blocking-non-follower negative belongs to the owning automated entry test and
+must leave its prior request unchanged; it does not require another full native route.
 
 #### Reproduce this plan's bounded check
 
 For this documentation-only slice, keep outputs under `local/return-arrival-plan/`, including uv's
 environment/cache, TEMP/TMP, Ruff and pytest scratch. Create the TEMP directory before `uv sync
 --locked`. Set `SF2_UPSTREAM_DISASM` and `SF2_PRIVATE_CANONICAL_MAP_IMPORT` to the registered read-only
-inputs. Save the following block as `local/return-arrival-plan/boundary-check.py` and run
-`uv run python -X utf8 local/return-arrival-plan/boundary-check.py`. It verifies old evidence identity
+inputs. Save the following block as `local/return-arrival-plan/boundary-check-06.py` and run
+`uv run python -X utf8 local/return-arrival-plan/boundary-check-06.py`. It verifies old evidence identity
 and unchanged dependencies, then only checks these new source/geometry questions. It does not run
 the old source reducer, old plan script,119 route, .NET, native, official Godot or a ROM observation.
 
@@ -4986,6 +5022,9 @@ extra = ['code/common/stats/updatecombatantstats.asm',
          'code/common/scripting/map/mapfunctions.asm',
          'code/common/scripting/map/followersfunctions_1.asm',
          'code/common/scripting/entity/getallymapsprite.asm',
+         'code/common/scripting/entity/entityfunctions_1.asm',
+         'code/common/scripting/map/followersfunctions_2.asm',
+         'data/scripting/entity/eas_main.asm',
          'code/common/maps/mapload.asm', 'data/scripting/entity/followers.asm',
          'data/maps/entries/map03/mapsetups/s1_entities.asm',
          'code/gameflow/exploration/exploration.asm',
@@ -5041,6 +5080,31 @@ follower_loop = body('code/common/scripting/map/followersfunctions_1.asm','Initi
 assert 'GetCurrentHp' not in follower_loop
 entities = text('code/common/scripting/map/mapfunctions.asm')
 ordered(entities,['loc_440E2:','ClearEntities','InitializeFollowerEntities','tst.b   (a1,d4.w)','beq.s   loc_4415A','loc_44180:','DeclareNewEntity'])
+ordered(entities,['loc_440E2:','mulu.w  #MAP_TILE_SIZE,d1','mulu.w  #MAP_TILE_SIZE,d2',
+                  'movem.w d1-d3,-(sp)','InitializeFollowerEntities',
+                  'tst.b   (a1,d4.w)','beq.s   loc_4415A','move.l  (a0)+,d5','bra.w   loc_4417E',
+                  'loc_44180:','movem.w (sp)+,d1-d3','clr.w   d0',
+                  'move.l  #eas_Idle,d5','DeclareNewEntity','sub_44404'])
+ordered(follower_loop,['movem.w d1,-(sp)','j_CheckFlag','movem.w (sp)+,d1',
+                       'move.b  d0,(a1,d6.w)','move.l  (a6)+,d5','DeclareNewEntity'])
+assert not re.search(r'^\s*(?:move|clr|add|sub|lsl|lsr|muls|mulu)\.[bwl]\s+[^;\n]*,d[23]\s*(?:;[^\n]*)?$', follower_loop, re.M)
+declaration = body('code/common/scripting/entity/entityfunctions_1.asm','DeclareNewEntity')
+ordered(declaration,['move.w  d1,(a0)','move.w  d2,ENTITYDEF_OFFSET_Y(a0)',
+    'clr.l   ENTITYDEF_OFFSET_XVELOCITY(a0)','clr.l   ENTITYDEF_OFFSET_XTRAVEL(a0)',
+    'move.w  d1,ENTITYDEF_OFFSET_XDEST(a0)','move.w  d2,ENTITYDEF_OFFSET_YDEST(a0)',
+    'move.b  d3,ENTITYDEF_OFFSET_FACING(a0)','move.b  d6,ENTITYDEF_OFFSET_ENTNUM(a0)',
+    'move.b  d4,ENTITYDEF_OFFSET_MAPSPRITE(a0)','move.l  d5,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a0)'])
+raft = body('code/common/scripting/map/followersfunctions_2.asm','sub_44404')
+ordered(text('code/common/scripting/map/followersfunctions_2.asm'),
+        ['pt_eas_Followers:','dc.l eas_Follower1','dc.l eas_Follower2','pt_eas_OverworldFollowers:'])
+ordered(raft,['PLAYERTYPE_RAFT','bne.s   byte_44420','MakeFollowersStand','byte_44420:',
+              'chkFlg  64','beq.w   return_4446A','DeclareNewEntity','return_4446A:'])
+assert 'clr.b   ((PLAYER_TYPE-$1000000)).w' in body('code/gameflow/battle/battleloop_1.asm','BattleLoop')
+actscripts = text('data/scripting/entity/eas_main.asm')
+for ordinal, target in [(1,0),(2,1)]:
+    script = actscripts.split('eas_Follower'+str(ordinal)+':',1)[1].split('eas_Follower'+str(ordinal+1)+':',1)[0]
+    ordered(script,['ac_entityObstructable OFF','ac_mapUncollidable ON',
+                    'ac_entityUncollidable ON','ac_follow '+str(target)+',-24,0'])
 sprite = body('code/common/scripting/entity/getallymapsprite.asm','GetAllyMapsprite')
 ordered(sprite,['NOT_CURRENTLY_IN_BATTLE','j_GetCurrentHp','MAPSPRITE_BLUE_FLAME'])
 load = body('code/common/maps/mapload.asm','LoadMap')
@@ -5110,12 +5174,15 @@ for mask in range(8):
 report = dict(status='Pass',base=base,sourcePin=pin,sourcePaths=paths,oldEvidenceReused=True,
               oldSourceAstUnchanged=True,oldScriptsOrRuntimeReplayed=False,stepCases=step_cases,
               processedComparisonSlots=[0,1,7,28],follower66=['Sarah','Chester'],deadFollower='MAPSPRITE_BLUE_FLAME',
+              declarationGroup=[dict(entity=i,current=[32,13],target=[32,13],facing=1) for i in [0,1,2]],
+              entityPolicy='Declaration positions frozen; no follower/NPC actscript execution',
+              originalFirstWaitForEventEntityPositions='Unknown',
               destination=[3,32,13,1],destinationLayoutWord=0x62,setupCases=8,
               loadNoOpFlags=[506,220],roofRecord=8,roofClearBounds=[30,41,34,46],
               roofClearWordCount=30,roofChangedWordCount=sum(source_words[i]!=0 for i in clear_indices),
               roofBeforeWords=roof_before,roofSourceLayoutUnchanged=True,
               proposedStop='Fresh Map3 entry-ready; before first WaitForEvent; inputs closed')
-(out/'boundary-check.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+(out/'boundary-check-06.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report))
 ```
 <!-- return-arrival-plan-check:end -->
