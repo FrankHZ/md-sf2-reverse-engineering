@@ -92,6 +92,15 @@ Keep ignored writable state isolated per worktree. A specifically registered imm
 may be resolved read-only as described by the local-private-input owner, but writable emulator state,
 derived assets, exports, traces, reports, and scratch remain local to their owning worktree.
 
+The authorized exception is one shared .NET installation and one explicitly configured
+`DOTNET_CLI_HOME` for this project's worktrees on the same host. Use absolute `DOTNET_BIN` and
+`DOTNET_CLI_HOME` selections and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` before every controlled
+SDK launch, including informational commands. Only SDK-owned CLI state belongs in the shared home;
+NuGet/Python environments and caches, TEMP, builds, imports, exports and evidence remain worktree-local.
+Never change user or machine registry PATH as part of a gate. Follow the
+[remake environment route](./remake/docs/development-and-verification.md#locked-net-workflow) for
+selection and verification; do not replay historical per-run CLI-home launchers.
+
 Before handoff, update onto current `origin/main`, resolve ownership conflicts semantically, run the
 selected gates, stage only the declared paths, inspect the cached diff and private boundary, commit,
 push, and leave a Draft PR for independent integration. An unmerged branch is collaboration state,

@@ -17,6 +17,11 @@ jobs:
   tracked-inputs:
     runs-on: windows-latest
     timeout-minutes: 15
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
+      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
 
     steps:
       - name: Check out repository
@@ -41,6 +46,12 @@ jobs:
           cache: true
           cache-dependency-path: remake/**/packages.lock.json
 
+      - name: Select installed shared .NET CLI
+        shell: pwsh
+        run: |
+          $dotnetBinary = (Get-Command dotnet -CommandType Application).Source
+          "DOTNET_BIN=$dotnetBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Sync locked dependencies
         run: uv sync --locked
 
@@ -50,6 +61,9 @@ jobs:
       - name: Run tracked-input harness tests
         run: uv run pytest tests/python/test_native_harness.py
 
+      - name: Verify protected CLI and process environments
+        run: uv run pytest tests/python/test_dotnet_environment.py tests/python/test_remake_godot.py tests/python/test_godot_ai_probe.py
+
       - name: Verify remake architecture, planner, and asset preflight
         run: uv run pytest tests/python/test_remake_architecture.py tests/python/test_verification_plan.py tests/python/test_remake_assets.py
 
@@ -58,12 +72,12 @@ jobs:
 
       - name: Restore remake dependencies
         working-directory: remake
-        run: dotnet restore Sf2.Remake.sln --locked-mode
+        run: '& $env:DOTNET_BIN restore Sf2.Remake.sln --locked-mode'
 
       - name: Build remake solution
         working-directory: remake
-        run: dotnet build Sf2.Remake.sln --configuration Release --no-restore
+        run: '& $env:DOTNET_BIN build Sf2.Remake.sln --configuration Release --no-restore'
 
       - name: Test remake solution
         working-directory: remake
-        run: dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
+        run: '& $env:DOTNET_BIN test Sf2.Remake.sln --configuration Release --no-build --no-restore'
