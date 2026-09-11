@@ -14,6 +14,7 @@ namespace Sf2.Remake.GodotAdapter;
 public partial class Map19Map20AtlasReviewProbe : Node2D
 {
     private GameSession _session = null!;
+    private PrivateOriginalBattle01SessionSnapshot? _initialBattle01;
     private Map3Root _root = null!;
     private PrivateMap3Presenter _presenter = null!;
     private readonly List<object> _frames = [];
@@ -202,6 +203,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         var ready = _session.PrivateOriginalBattle01!;
         Require(ready is not null && _session.PrivateOriginalBattle01Admission is null &&
             ready.Battle.Phase == Battle01Phase.PlayerMovementSelection, "N reaches real first control");
+        _initialBattle01 = ready;
+        Require(ready!.Preparation.ReturnInputs == OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison &&
+            ready.Battle.ReturnAdmission is not null && ready.Battle.BattleEntryFlag399,
+            "N explicitly selected the return comparison before source admission and first control");
         var battle = ready!.Battle;
         int actor = battle.FirstControl!.ActorIndex;
         var origin = battle.FirstControl.Movement.Range.Origin;
@@ -1512,17 +1517,44 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(JsonSerializer.Serialize(final.Battle,json)==finalJson,"Terminal before-image remains frozen after recovery");
         await CaptureControl("43-defeat-recovery-physical");
         string recoveredJson=JsonSerializer.Serialize(recovered.Battle,json);
+        Require(recovered.CanRequestDefeatReturn && ReferenceEquals(_initialBattle01!.Preparation,recovered.Preparation) &&
+            ReferenceEquals(_initialBattle01.SourceSnapshot,recovered.SourceSnapshot) &&
+            ReferenceEquals(_initialBattle01.SourceLocomotion,recovered.SourceLocomotion) &&
+            ReferenceEquals(_initialBattle01.SourceBridge,recovered.SourceBridge) &&
+            ReferenceEquals(_initialBattle01.Battle.ReturnAdmission,recovered.Battle.ReturnAdmission) &&
+            ReferenceEquals(recovered.Battle.ReturnAdmission,final.Battle.ReturnAdmission),
+            "The actual initial preparation, source references and return binding survive the entire physical route");
+        var inspectedReturn=((PrivateOriginalBattle01DefeatReturnRequested)_session.RequestPrivateOriginalBattle01DefeatReturn(recovered)).Snapshot;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,recovered);
+        await PressBattleKey(Key.Space);
+        var requested=_session.PrivateOriginalBattle01!; var request=requested.DefeatReturn!;
+        Require(JsonSerializer.Serialize(request,json)==JsonSerializer.Serialize(inspectedReturn.DefeatReturn,json) &&
+            ReferenceEquals(recovered.Battle,requested.Battle) && ReferenceEquals(recovered.Preparation,requested.Preparation) &&
+            ReferenceEquals(recovered.SourceSnapshot,requested.SourceSnapshot) && ReferenceEquals(recovered.SourceBridge,requested.SourceBridge) &&
+            ReferenceEquals(recovered.SourceLocomotion,requested.SourceLocomotion) && ReferenceEquals(request.Recovery,recovered.Battle.DefeatRecovery),
+            "Physical Space reproduces the return API and retains the complete recovered battle and source references");
+        Require(request.SavepointMap==new MapId("map3") && request.SavepointPosition==new MapPosition(32,13) &&
+            request.SavepointOpaqueFacing==1 && request.DestinationMap==request.SavepointMap &&
+            request.DestinationPosition==request.SavepointPosition && request.DestinationOpaqueFacing==1 &&
+            !request.RaftWriteExecuted && request.HandlerResultD4==-1 && !request.ExplorationEntered &&
+            _session.PrivateOriginalFlowStage==GameFlowStage.Battle && _session.PrivateOriginalCurrentMap==new MapId("map57") &&
+            !requested.CanRequestDefeatReturn && presenter.Projection!.Status==PrivateBattle01Presenter.ReturnRequestedStatus,
+            "Only the admitted Granseal request is published; live map57/Battle remains before ExplorationLoop");
+        await CaptureControl("44-defeat-return-request-physical");
         var projection=presenter.Projection;
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L}) await PressBattleKey(key);
-        Require(PrivateBattle01Ui.DispatchNext(_session,recovered)=="Recovery applied. Return unavailable.",
-            "Recovered dispatcher stops and does not advertise another recovery");
-        Require(ReferenceEquals(recovered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
-            JsonSerializer.Serialize(recovered.Battle,json)==recoveredJson,"All actual battle keys and dispatcher remain frozen after recovery");
-        await CaptureControl("44-defeat-recovery-inputs-frozen");
+        Require(PrivateBattle01Ui.DispatchNext(_session,requested)==PrivateBattle01Presenter.ReturnRequestedStatus,
+            "Return dispatcher stops and retains the explicit destination status");
+        Require(ReferenceEquals(requested,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
+            JsonSerializer.Serialize(requested.Battle,json)==recoveredJson,"All actual battle keys and dispatcher remain frozen after return");
+        await CaptureControl("45-defeat-return-inputs-frozen");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled leader death and one HP/gold recovery; egress, natural inputs and H4 excluded",
-            preparation=final.Preparation.Party,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=recovered.Battle,
-            exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,frozenPhysicalKeys=8,frames=_frames
+            status="Pass",scope="controlled leader death, HP/gold recovery and Granseal return request; stop before ExplorationLoop",
+            preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
+            initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=requested.Battle,
+            defeatReturn=request,earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
+            exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
+            actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,frozenPhysicalKeys=8,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 

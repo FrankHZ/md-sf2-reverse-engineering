@@ -1,5 +1,6 @@
 using Godot;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -13,7 +14,7 @@ internal sealed record PrivateBattle01Projection(
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
-    string AllyStatus);
+    string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -21,6 +22,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     internal const string Heading = "DIAGNOSTIC | MAP 57 / BATTLE 01";
     internal const string Boundary = "Controlled inputs. Original Map 57 graphics unavailable.";
     internal const string BaseArtHeading = "MAP 57 BASE ART + DIAGNOSTIC UNITS";
+    internal const string ReturnRequestedStatus = "Return requested: Granseal (32,13), facing up. Exploration unavailable.";
     internal const string BaseArtBoundary = "Reviewed fixed base art. Controlled inputs.\nOriginal scene, layers and animation are not reproduced.";
     internal const int TileSize = PrivateOriginalMapBaseViewProjection.BlockPixelSize;
     internal static readonly Vector2 GridOrigin = new(40, 32);
@@ -75,7 +77,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         QueueRedraw();
     }
 
-    internal static PrivateBattle01Projection BuildProjection(Battle01InitializedState battle, string status)
+    internal static PrivateBattle01Projection BuildProjection(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
+        BuildProjection(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn);
+
+    internal static PrivateBattle01Projection BuildProjection(Battle01InitializedState battle, string status,
+        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null)
     {
         var control = battle.FirstControl;
         var movement = control?.Movement;
@@ -127,7 +133,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string controls = battle.Phase switch
         {
             Battle01Phase.DefeatPending => "Space: restore Bowie HP and halve gold. Return unavailable.",
-            Battle01Phase.DefeatRecoveryPending => "Recovery applied. Input closed. Return unavailable.",
+            Battle01Phase.DefeatRecoveryPending => defeatReturn is not null ? "Return requested. Input closed. Exploration unavailable."
+                : canRequestDefeatReturn ? "Space: request Granseal return. Exploration unavailable."
+                : "Recovery applied. Input closed. Return unavailable.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "A: Attack   Space: STAY   Backspace: cancel relocation",
             Battle01Phase.PlayerAttackTargetSelection => "I/J: previous   K/L: next   Space: attack   Backspace: action choice",
@@ -149,12 +157,16 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
-                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))));
+                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn);
     }
 
-    internal void Project(Battle01InitializedState battle, string status)
+    internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
+        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn);
+
+    internal void Project(Battle01InitializedState battle, string status,
+        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null)
     {
-        _projection = BuildProjection(battle, status);
+        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn);
         if (_details is null)
         {
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);
@@ -172,8 +184,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
         string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
-        _details.Text = view.Phase == Battle01Phase.DefeatRecoveryPending
-            ? "Round 16: DefeatRecoveryPending\nBowie HP 0 -> 12. Gold 120 -> 60.\nBowie remains unplaced. Input closed.\nReturn unavailable; egress not selected."
+        _details.Text = view.DefeatReturn is { } requested
+            ? $"Round 16: DefeatRecoveryPending\nReturn request: {requested.DestinationMap.Value} ({requested.DestinationPosition.X},{requested.DestinationPosition.Y}), UP\nBowie remains unplaced. Input closed.\nExploration unavailable; live map57 retained."
+            : view.Phase == Battle01Phase.DefeatRecoveryPending
+            ? "Round 16: DefeatRecoveryPending\nBowie HP 0 -> 12. Gold 120 -> 60.\nBowie remains unplaced.\n" +
+                (view.CanRequestDefeatReturn ? "Space requests the admitted Granseal return." : "Input closed. Return unavailable; egress not selected.")
             : view.Phase == Battle01Phase.DefeatPending
             ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nSpace applies defeat recovery once."
             : view.CompletedActorIndex is { } completed ?

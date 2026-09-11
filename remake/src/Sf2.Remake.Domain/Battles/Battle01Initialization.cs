@@ -136,17 +136,20 @@ public sealed class Battle01InitializedState
         : this(roster, regions, terrain, occupancy, randomSeedImage, randomSeedCopy, null) { }
     internal Battle01InitializedState(Battle01Combatant[] roster, Battle01Region[] regions,
         byte[] terrain, int[] occupancy, uint randomSeedImage, ushort? randomSeedCopy, uint? currentGold)
+        : this(roster, regions, terrain, occupancy, randomSeedImage, randomSeedCopy, currentGold, null) { }
+    internal Battle01InitializedState(Battle01Combatant[] roster, Battle01Region[] regions,
+        byte[] terrain, int[] occupancy, uint randomSeedImage, ushort? randomSeedCopy, uint? currentGold, Battle01DefeatReturnAdmission? returnAdmission)
     {
         Roster = Array.AsReadOnly(roster); Regions = Array.AsReadOnly(regions);
         Terrain = Array.AsReadOnly(terrain); Occupancy = Array.AsReadOnly(occupancy); RandomSeedImage = randomSeedImage;
         RandomSeedCopy = randomSeedCopy;
         if (currentGold > 9999999) throw new ArgumentOutOfRangeException(nameof(currentGold));
-        CurrentGold = currentGold;
+        CurrentGold = currentGold; ReturnAdmission = returnAdmission;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         bool[] regionFlags, ushort newlyTestedRegionMask, uint randomSeedImage, Battle01FirstRoundOrder firstRound)
     {
-        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery;
+        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery; ReturnAdmission = source.ReturnAdmission;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -157,7 +160,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         IReadOnlyList<int> occupancy, Battle01FirstControlState firstControl)
     {
-        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery;
+        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery; ReturnAdmission = source.ReturnAdmission;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain; Occupancy = occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -169,7 +172,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01Combatant[] roster,
         int[] occupancy, byte[] aiMemory, ushort randomSeedCopy)
     {
-        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery;
+        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery; ReturnAdmission = source.ReturnAdmission;
         CurrentGold = source.CurrentGold;
         Roster = Array.AsReadOnly(roster); Regions = source.Regions; Terrain = source.Terrain;
         Occupancy = Array.AsReadOnly(occupancy); AiMemory = Array.AsReadOnly(aiMemory);
@@ -195,7 +198,7 @@ public sealed class Battle01InitializedState
     internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
         Battle01TurnCompletionReceipt completion)
     {
-        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery;
+        DefeatPending = source.DefeatPending; DefeatRecovery = source.DefeatRecovery; ReturnAdmission = source.ReturnAdmission;
         CurrentGold = source.CurrentGold;
         Roster = source.Roster; Regions = source.Regions; Terrain = source.Terrain; Occupancy = source.Occupancy;
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
@@ -252,6 +255,8 @@ public sealed class Battle01InitializedState
     public Battle01TurnCompletionReceipt? TurnCompletion { get; }
     public Battle01DefeatPendingReceipt? DefeatPending { get; }
     public Battle01DefeatRecoveryReceipt? DefeatRecovery { get; }
+    public Battle01DefeatReturnAdmission? ReturnAdmission { get; }
+    public bool BattleEntryFlag399 => true;
     public int ElapsedSeconds => 0;
     public bool SuspendedFlag88 => false;
     public bool IntroFlag451 => true;
@@ -285,7 +290,7 @@ public static class Battle01Initialization
     public static Battle01InitializedState Initialize(IEnumerable<Battle01Deployment> deployment,
         IEnumerable<Battle01Region> regions, IEnumerable<byte> terrain,
         IEnumerable<Battle01AllyInput> allies, Battle01EnemyInput enemy, uint randomSeedImage, byte difficulty,
-        ushort? randomSeedCopy = null, uint? currentGold = null)
+        ushort? randomSeedCopy = null, uint? currentGold = null, Battle01DefeatReturnAdmission? returnAdmission = null)
     {
         ArgumentNullException.ThrowIfNull(deployment); ArgumentNullException.ThrowIfNull(regions);
         ArgumentNullException.ThrowIfNull(terrain); ArgumentNullException.ThrowIfNull(allies);
@@ -337,7 +342,7 @@ public static class Battle01Initialization
             roster[index] = new(rows[index], stats, index < 3 ? party[index].ClassId : null, index < 3 ? null : enemy);
             occupancy[rows[index].Position.Y * 48 + rows[index].Position.X] = rows[index].CombatantIndex;
         }
-        return new(roster, regionCopy, rawTerrain, occupancy, randomSeedImage, randomSeedCopy, currentGold);
+        return new(roster, regionCopy, rawTerrain, occupancy, randomSeedImage, randomSeedCopy, currentGold, returnAdmission);
     }
     internal static bool WithinArea(MapPosition position) => position.X >= 0 && position.X < 16 &&
         position.Y >= 0 && position.Y < 20;

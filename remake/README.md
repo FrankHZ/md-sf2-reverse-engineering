@@ -87,9 +87,15 @@ placement with defeats0->1. The first count returns0/4 despite Sarah still livin
 `DefeatPending` receipt freezes R16/raw0, main10491234/copy0034, five live occupants and prior
 accounting. The view shows Bowie HP0/EXP63/defeats1. One explicit Space restores HP to12 and
 halves current gold120 to60, entering `DefeatRecoveryPending`. The linked receipt preserves the
-immutable terminal before-image and119 ordinary receipts; Bowie remains unplaced and all later
-inputs freeze. F401 remains set because F501 is false. No after-turn effects, second count, next
-turn, egress lookup, return result, exploration, retry or save runs.
+immutable terminal before-image and119 ordinary receipts. N/start also explicitly selects the separate
+`GransealFirstAttemptComparison` return input (egress3/F64=false/F640=false) before source admission.
+A further Space requests Granseal map3/(32,13)/UP with D4=-1 and no raft write. The entire recovered
+battle stays reference-identical: HP12/gold60, unplaced Bowie, five markers and lethal history persist.
+The host remains Battle/live map57 and shows “Return requested: Granseal (32,13), facing up.
+Exploration unavailable.” All later inputs freeze. A preparation without return inputs cannot request
+return, even if replaced after recovery. F399 is the unconditional modeled BattleLoop entry effect;
+F401 stays set/F501 false. No map arrival, ExplorationLoop, retry or save runs.
+See the [return request boundary](./docs/map03-playability-plan.md#implemented-battle01-egress-and-return-request).
 See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
 Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
 defeats must trace back to the selected preparation.
