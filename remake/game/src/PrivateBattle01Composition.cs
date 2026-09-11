@@ -140,8 +140,10 @@ internal static class PrivateBattle01Ui
         int limit = current.Battle.FirstRound!.Slots.Count * 2;
         for (int attempt = 0; attempt < limit; attempt++)
         {
-            if (current.Battle.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending)
-                return "Bowie defeated. Battle stopped. Defeat recovery is unavailable.";
+            if (current.Battle.Phase == Battle01Phase.DefeatPending)
+                return "Bowie defeated. Space applies HP/gold recovery.";
+            if (current.Battle.Phase == Battle01Phase.DefeatRecoveryPending)
+                return "Recovery applied. Return unavailable.";
             var order = current.Battle.FirstRound!;
             if (order.CurrentCandidate is not { } candidate)
             {

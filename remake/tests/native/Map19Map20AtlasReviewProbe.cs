@@ -1485,6 +1485,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(JsonSerializer.Serialize(inspected,json)==JsonSerializer.Serialize(final.Battle,json),
             "Actual physical STAY and automatic dispatch reproduce the complete inspected terminal state");
         CheckTerminal(final.Battle,boundary!);
+        Require(PrivateBattle01Ui.DispatchNext(_session,final)=="Bowie defeated. Space applies HP/gold recovery.",
+            "Terminal dispatcher stops and advertises the available recovery confirmation");
         await CaptureControl("42-defeat-pending-physical");
         string finalJson=JsonSerializer.Serialize(final.Battle,json);
         var inspectedRecovery=((PrivateOriginalBattle01DefeatRecovered)_session.RecoverPrivateOriginalBattle01Defeat(final)).Snapshot;
@@ -1512,7 +1514,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         string recoveredJson=JsonSerializer.Serialize(recovered.Battle,json);
         var projection=presenter.Projection;
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L}) await PressBattleKey(key);
-        PrivateBattle01Ui.DispatchNext(_session,recovered);
+        Require(PrivateBattle01Ui.DispatchNext(_session,recovered)=="Recovery applied. Return unavailable.",
+            "Recovered dispatcher stops and does not advertise another recovery");
         Require(ReferenceEquals(recovered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
             JsonSerializer.Serialize(recovered.Battle,json)==recoveredJson,"All actual battle keys and dispatcher remain frozen after recovery");
         await CaptureControl("44-defeat-recovery-inputs-frozen");
