@@ -239,7 +239,16 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("HP 3 -> 0. Bowie defeated. Defeats 0 -> 1", terminal.AttackResult);
         Assert.Contains("A0 defeated HP 0 EXP 63 Defeats 1", terminal.AllyStatus);
         Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", terminal.AllyStatus);
-        Assert.Contains("Input closed", terminal.Controls); Assert.DoesNotContain("Space", terminal.Controls);
+        Assert.Contains("Space", terminal.Controls); Assert.Contains("Return unavailable", terminal.Controls);
+        var recovered = PrivateBattle01Presenter.BuildProjection(Battle01DefeatRecovery.Complete(current), "Recovery applied.");
+        Assert.Equal(Battle01Phase.DefeatRecoveryPending, recovered.Phase);
+        Assert.Equal(terminal.Units, recovered.Units); Assert.Null(recovered.ActorIndex);
+        Assert.Null(recovered.NextCandidateIndex); Assert.Null(recovered.Cursor); Assert.False(recovered.CanConfirm);
+        Assert.Contains("A0 unplaced HP 12 EXP 63 Defeats 1", recovered.AllyStatus);
+        Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", recovered.AllyStatus);
+        Assert.Equal(terminal.AttackResult, recovered.AttackResult);
+        Assert.Equal((uint?)60, recovered.Gold); Assert.Equal((ushort?)2, recovered.BowieKills);
+        Assert.Contains("Input closed", recovered.Controls); Assert.DoesNotContain("Space", recovered.Controls);
         Assert.Equal(((uint?)120, (ushort?)2), (terminal.Gold, terminal.BowieKills));
     }
 

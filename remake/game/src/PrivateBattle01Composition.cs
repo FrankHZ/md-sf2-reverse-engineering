@@ -45,6 +45,14 @@ internal static class PrivateBattle01Ui
             };
         }
 
+        if (current.Battle.Phase == Battle01Phase.DefeatPending && input == PrivateBattle01Input.Confirm)
+            return session.RecoverPrivateOriginalBattle01Defeat(current) switch
+            {
+                PrivateOriginalBattle01DefeatRecovered => "Bowie HP restored. Gold halved. Return unavailable.",
+                PrivateOriginalBattle01DefeatRecoveryRejected rejected => rejected.Diagnostic.Message,
+                _ => null,
+            };
+
         // An unavailable next dispatch has already been reported. Unrelated keys cannot retry it
         // or overwrite its precise reason; the existing presenter retains that result.
         if (current.Battle.FirstControl is not { } control) return null;
@@ -133,7 +141,9 @@ internal static class PrivateBattle01Ui
         for (int attempt = 0; attempt < limit; attempt++)
         {
             if (current.Battle.Phase == Battle01Phase.DefeatPending)
-                return "Bowie defeated. Battle stopped. Defeat recovery is unavailable.";
+                return "Bowie defeated. Space applies HP/gold recovery.";
+            if (current.Battle.Phase == Battle01Phase.DefeatRecoveryPending)
+                return "Recovery applied. Return unavailable.";
             var order = current.Battle.FirstRound!;
             if (order.CurrentCandidate is not { } candidate)
             {

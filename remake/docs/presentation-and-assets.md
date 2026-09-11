@@ -1150,14 +1150,18 @@ For `SF2_BATTLE01_CONTROL_REVIEW=leader-defeat-pending`, retain those35 frames, 
 R14 Bowie111, R15 Bowie115, R15 Sarah116 and her origin action choice. Inspect the exact action-choice
 copy at R16/raw0/119 before attack, then the separately typed terminal state. Restore that same
 physical choice and press Space: automatic production dispatch must reproduce the whole terminal
-battle. Capture it and press N/Space/Backspace/A/I/J/K/L; snapshot and projection must remain
-identical, as must a repeated dispatcher call. The43-frame receipt exposes `start107`, `boundary119`,
-`battle`, preparation and frozen-input results. Only the first cleanup/count executes, Bowie has no
-marker, Sarah remains alive, HP0/EXP63/defeats1 is readable, and no cursor or next actor appears.
-With the five affected earlier modes above this is81 individually inspected frames. Compare source
-reduction to native only after deriving it independently; inspect all PNGs and exact archived
-production/probe copies, and retain bounded process/exit/cleanup receipts. This is a diagnostic
-stop before ordinary defeat recovery; it adds no original visual, timing or return-flow claim.
+battle. Capture it, then press Space once to apply the HP/gold recovery and compare its entire result
+with the same Application API invoked on the exact terminal. Capture restored Bowie HP12/gold60,
+then press N/Space/Backspace/A/I/J/K/L; recovered snapshot and projection must remain identical,
+as must a repeated dispatcher call. The44-frame receipt exposes `start107`, `boundary119`,
+`terminal`, recovered `battle`, preparation, physical/API equivalence and frozen-input results.
+The immutable terminal records HP0/EXP63/defeats1 and the first count0/4; recovery changes only current
+leader HP and gold. Bowie still has no marker, Sarah remains alive, accounting stays readable and no
+cursor or next actor appears. There is no second faction count. With the five affected earlier modes
+above this is82 inspected frames. Inspect every new/changed PNG and verify unchanged accepted frames
+by exact comparison; verify archived production/probe copies and bounded process receipts. Reuse the
+accepted independent source result when its dependencies are unchanged; do not replay older reducers.
+This stops before egress selection and adds no original visual, timing or exploration-return claim.
 
 The receipt records construction/reaction/award semantics under the diagnostic presentation-omitted
 policy. Original flags1 reaction playback adds24 range7 jitter draws and VInt waits; original menu

@@ -276,9 +276,18 @@ history and generation checks, then reproduces the actual terrain-based target c
 Both physical Application facades compare the rewound Bowie counter with preparation.
 Godot stops before dispatching historical candidate129 again and projects no actor, target or
 movement overlay. Bowie and Chester remain on the ally status list at HP0; five living markers
-remain. All battle keys, repeated terminal dispatch and session gameplay commands preserve the
-snapshot. Ordinary defeat recovery, restored leader HP, gold halving, unlock changes and return
-flow remain unsupported; original presentation/VInt and naturally carried defeats remain Unknown.
+remain. Ordinary gameplay and automatic dispatch preserve this snapshot. One explicit recovery
+confirmation calls the focused `Battle01DefeatRecovery` reducer and Application facade. It authenticates
+the HP0 terminal and preparation accounting, restores only leader currentHP to maxHP12 and halves
+gold120 to60, then publishes `DefeatRecoveryPending` once. `Battle01DefeatRecoveryReceipt.Before`
+retains the immutable terminal; its119 ordinary and separate lethal receipts remain history. All state
+copies preserve the recovery facet. The recovered-state validator checks the entire HP/gold delta
+against that authenticated before-image; a healed state cannot impersonate the HP0 terminal.
+Bowie remains unplaced, MP8/EXP63/kills2/defeats1 persist, F401/F501 and all other state remain.
+The single `GameSession` snapshot remains authoritative; its source exploration snapshot is frozen
+provenance. The UI handles Confirm before its absent-player guard and freezes every later input.
+Egress selection, return results and exploration remain unimplemented; original presentation/VInt
+and naturally carried defeats remain Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement
