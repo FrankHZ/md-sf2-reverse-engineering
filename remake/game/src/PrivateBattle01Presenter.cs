@@ -164,12 +164,12 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
-        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn);
+        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn, snapshot.CanEnterExploration);
 
     internal void Project(Battle01InitializedState battle, string status,
-        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null)
+        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null, bool canEnterExploration = false)
     {
-        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn);
+        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn, canEnterExploration);
         if (_details is null)
         {
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);
