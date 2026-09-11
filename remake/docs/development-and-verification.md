@@ -457,6 +457,40 @@ sessions, original-fidelity checks, or Godot import/export.
 
 ## Process, Path, and Artifact Safety
 
+### Worktree Environment and Run Evidence
+
+Reuse one existing Python environment and dependency caches within the same dedicated worktree.
+Keep their explicit configuration in an ignored worktree environment script, separate from historical
+per-slice launch scripts. The script should accept a fresh run output directory and resolve these paths
+before launching tools:
+
+| State | Lifetime and configuration |
+| --- | --- |
+| Python environment and uv cache | Reuse existing `UV_PROJECT_ENVIRONMENT` and `UV_CACHE_DIR`; run `uv sync --locked` against the current checkout and confirm the interpreter and `sf2tool` module paths. |
+| NuGet packages and HTTP cache | Reuse existing `NUGET_PACKAGES` and `NUGET_HTTP_CACHE_PATH` in this worktree. Check `dotnet nuget locals all --list` in the actual child environment, including when a wrapper replaces `LOCALAPPDATA`. |
+| CLI state | Keep `DOTNET_CLI_HOME` inside the worktree. A gate may intentionally override it with run-local state; explicit package and HTTP cache paths still apply. |
+| Run outputs | Give each run separate source/build/import/export workspace, `TEMP`/`TMP`, test caches, logs, receipts and failure evidence. Scope test and private-input environment variables to the owning command. |
+
+Do not create another environment or copy a populated cache merely because the slice or branch changed.
+Do not share writable environments, caches or scratch across worktrees. Registered immutable private
+inputs and pinned toolchain archives keep their existing read-only admission rules. The official Godot
+runner still creates fresh editor/template and project/export scratch; environment reuse does not alter
+its manifest checks, copy policy or process cleanup contract.
+
+After acceptance, inspect live processes, Git state, active environment references and the exact
+reproduction dependencies before selecting removable duplicates. Keep source archives, captures, TRX,
+complete logs and receipts, failed attempts, private inputs, required reproduction state and any editor
+still selected by an active environment. Historical command paths remain evidence of their original
+run; a cleanup record must identify any removed rebuildable paths and their reconstruction inputs.
+Do not replay an old launcher or cleanup script as current authority.
+
+Record an exact deletion list and a retained-evidence inventory first. Delete only authorized,
+unreferenced rebuildable caches or compiled/export/editor/template copies, using resolved paths that
+remain strictly inside the owning worktree and without following reparse points. Record actual volume
+free-space change separately from logical file sizes, since hard links and concurrent disk activity
+affect the result. Verify retained evidence and environment resolution afterward. Cleanup alone does
+not invalidate completed gates or justify repeating full managed, native or official Godot runs.
+
 - Launch native tools with argument lists and finite timeouts.
 - Cleanup must own the launched process tree; do not kill machine-global processes by name or PID delta.
 - Use a fresh ignored scratch directory per gate and verify it is inside the intended local root.
