@@ -126,7 +126,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
-            Battle01Phase.DefeatPending => "Battle stopped. Input closed. Relaunch starts Map 3.",
+            Battle01Phase.DefeatPending => "Space: restore Bowie HP and halve gold. Return unavailable.",
+            Battle01Phase.DefeatRecoveryPending => "Recovery applied. Input closed. Return unavailable.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "A: Attack   Space: STAY   Backspace: cancel relocation",
             Battle01Phase.PlayerAttackTargetSelection => "I/J: previous   K/L: next   Space: attack   Backspace: action choice",
@@ -146,9 +147,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills,
             string.Join("\n", battle.Roster.Where(unit => unit.Index < 128).Select(unit =>
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
-                    : $"{UnitTag(unit.Index)} defeated HP {unit.Stats.HpCurrent}") +
+                    : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
-                (unit.Stats.HpCurrent == 0 ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))));
+                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))));
     }
 
     internal void Project(Battle01InitializedState battle, string status)
@@ -171,8 +172,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
         string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
-        _details.Text = view.Phase == Battle01Phase.DefeatPending
-            ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nDefeat recovery is unavailable."
+        _details.Text = view.Phase == Battle01Phase.DefeatRecoveryPending
+            ? "Round 16: DefeatRecoveryPending\nBowie HP 0 -> 12. Gold 120 -> 60.\nBowie remains unplaced. Input closed.\nReturn unavailable; egress not selected."
+            : view.Phase == Battle01Phase.DefeatPending
+            ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nSpace applies defeat recovery once."
             : view.CompletedActorIndex is { } completed ?
             $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completionKind} completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
@@ -189,8 +192,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         // Two defeated ally rows need five wrapped lines; keep the terminal result below them.
-        _status!.Position = new(456, view.Phase == Battle01Phase.DefeatPending ? 400 : 382);
-        _status.Size = new(480, view.Phase == Battle01Phase.DefeatPending ? 64 : 82);
+        _status!.Position = new(456, view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending ? 400 : 382);
+        _status.Size = new(480, view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending ? 64 : 82);
         _status.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
             "Controlled no-effect STAY; effective stats retained.\n" + view.Status : "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :

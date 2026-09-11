@@ -1292,13 +1292,13 @@ The bounded implementation owners, all relative to `remake/`, are:
 | --- | --- |
 | `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs` | Explicit seed-copy input/provenance and forwarding into the existing initialized state |
 | `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs` | Independent seed-copy word carried by every immutable copy; single AI-memory update and enemy-completed phase |
-| `src/Sf2.Remake.Domain/Battles/Battle01EnemyStandby.cs` (new) | Bounded first-enemy classifier/standby decision, checked memory/tables, source move-string result and atomic completion projection |
+| `src/Sf2.Remake.Domain/Battles/Battle01EnemyStandby.cs` | Bounded first-enemy classifier/standby decision, checked memory/tables, source move-string result and atomic completion projection |
 | `src/Sf2.Remake.Domain/Battles/Battle01PlayerMovement.cs` | Reuse existing weighted propagation; admit fixed Hovering6 facts without opening enemy player-control profiles |
 | `src/Sf2.Remake.Domain/Battles/Battle01TurnCompletion.cs`; `Battle01FirstRound.cs` in the same directory | Share ordered no-effect finalization for an explicitly admitted enemy; one-entry advance and receipt preservation |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyStandby.cs` (new) | Exact snapshot/actor/phase facade; allocate all output before one session replacement |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyStandby.cs` | Exact snapshot/actor/phase facade; allocate all output before one session replacement |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | One enemy attempt following the second STAY's actual AI result, visible move/STAY outcome, then closed input |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` (new); `Battle01InitializationTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in the same directory | Branch/RNG/source-path/atomicity and state-retention checks |
-| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyStandbyTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in the same directory | Explicit missing/drifted seed-copy, exact requests and failure preservation |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs`; `Battle01InitializationTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in the same directory | Branch/RNG/source-path/atomicity and state-retention checks |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyStandbyTests.cs`; `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs` in the same directory | Explicit missing/drifted seed-copy, exact requests and failure preservation |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Required actual-input chain and one bounded native consumer |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current behavior, controlled policy, reproduction and remaining boundary |
 
@@ -2576,11 +2576,11 @@ follow-up resolver coverage and snapshot retention assertions remain intact:
 
 | Paths | Responsibility |
 | --- | --- |
-| `src/Sf2.Remake.Domain/Battles/Battle01PlayerPhysicalAttack.cs` (new); `Battle01EnemyPhysicalAttack.cs`, `Battle01Initialization.cs`, `Battle01PlayerMovement.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs` in that directory | Manual legal target/selection/attack; focused shared arithmetic; EXP copies; both-faction history and damaged-enemy continuation; distinct completion policy. |
+| `src/Sf2.Remake.Domain/Battles/Battle01PlayerPhysicalAttack.cs`; `Battle01EnemyPhysicalAttack.cs`, `Battle01Initialization.cs`, `Battle01PlayerMovement.cs`, `Battle01EnemyStandby.cs`, `Battle01FirstRound.cs`, `Battle01TurnCompletion.cs` in that directory | Manual legal target/selection/attack; focused shared arithmetic; EXP copies; both-faction history and damaged-enemy continuation; distinct completion policy. |
 | `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (new) in the latter directory | Explicit EXP0 input supplement, live projection, atomic selection/cancel/confirmation facade. |
 | `game/src/Map3InputAdapter.cs`, `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` | Map existing A binding only in battle context, manual action flow, actual relay and persistent HP/EXP/result projection. |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerPhysicalAttackTests.cs` (new); `Battle01InitializationTests.cs`, `Battle01PlayerMovementTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in that directory | Source branches, cancellation, EXP/provenance, strict old policies, linked HP/EXP and later AI/generation. |
-| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs` (new); `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` in that directory | Named input admission, exact snapshots, action lifecycle and early/late atomic rejection; the existing enemy test method preserves fabricated HP/seed provenance rejection. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerPhysicalAttackTests.cs`; `Battle01InitializationTests.cs`, `Battle01PlayerMovementTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01TurnCompletionTests.cs` in that directory | Source branches, cancellation, EXP/provenance, strict old policies, linked HP/EXP and later AI/generation. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs`; `PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` in that directory | Named input admission, exact snapshots, action lifecycle and early/late atomic rejection; the existing enemy test method preserves fabricated HP/seed provenance rejection. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Both existing required real Content methods and the complete selected-input continuation. |
 | `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`, `PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Input ownership/no-repeat, nested cancel, visible EXP/result and bounded native checkpoints. |
 | `README.md`; `docs/architecture.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/map03-playability-plan.md`, `docs/presentation-and-assets.md` | Current boundary, EXP input provenance, semantic RNG policy, reproducible recipes and remaining unsupported behavior. |
@@ -3900,7 +3900,8 @@ uv run python -X utf8 local/first-ally-defeat/source-reduction.py
 **Implemented:** `LeaderDefeatComparison` adds only Bowie defeats0 before initialization.
 Four origin STAY choices from R14 Sarah produce the unchanged119-receipt prefix; enemy129's
 leader kill then publishes `DefeatPending` after first cleanup/count. The separate terminal receipt
-retains the previous history and freezes every gameplay input before the ordinary defeat handler.
+retains the previous history and freezes ordinary battle input before the handler. A separate explicit
+recovery confirmation is described below; automatic dispatch never performs it.
 The older `ChesterDefeatComparison` still rejects that strike at `attack.lethal`; its diagnostic
 below is the regression reference for the unchanged prefix, not the new preset's endpoint.
 
@@ -4002,7 +4003,7 @@ This boundary intentionally stops before `battleloop_2.asm`'s `BattleLoop_Defeat
 (`0x23D44..0x23D98`): that later handler conditionally updates unlock state, requests defeat
 text/music, restores leader HP, halves gold, obtains egress position and returns`D4=-1` for ordinary
 Battle01. Its first-attempt F501=false branch preserves F401. The
-[planned recovery boundary](#planned-ordinary-defeat-recovery-before-egress-selection) separates the
+[recovery boundary](#implemented-ordinary-defeat-recovery-before-egress-selection) separates the
 HP/gold step from the still-unprovided return inputs and exploration lifecycle. Those effects,
 retry/save flow, and Battle4's special result require separate acceptance. A visible “defeat pending”
 diagnostic is **not** an implemented loss/return flow.
@@ -4040,7 +4041,8 @@ branches, victory and full ordinary-loss handling remain unsupported.
 
 Acceptance uses the committed planner, normal public verification, affected owning tests,
 required private Content, one selected full .NET suite and the official Godot gate. Native
-`leader-defeat-pending` executes43 frames including the complete accepted first-ally prefix;
+`leader-defeat-pending` now executes44 frames including the complete accepted first-ally prefix
+and the separate explicit recovery/freeze checks below;
 the five affected older modes add38. Inspect every frame and exact archived production/probe
 copy. The existing default H0 ROM can remain absent; report that local boundary honestly.
 
@@ -4048,7 +4050,8 @@ The required test
 `AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix` replays
 both preparations through real transport/initialization and compares every prior state field,
 normalizing only the declared Bowie counter. The native receipt exposes `start107`, `boundary119`
-and terminal `battle`. Derive the source-only result below before comparing those captures:
+and `terminal` (the recovered state is now `battle`). The retained source-only result below was
+derived before those captures; reuse it when its dependencies are unchanged:
 main10491234/copy0034, mask0, first counts0/4, worklist[0], five live positions, HP/counters,
 all64 slots, memory/last-target/flags and119 continuing receipts must agree. The explicit counter
 is a supplied comparison input, never evidence of a naturally carried original value.
@@ -4119,7 +4122,8 @@ void Retained() {
 using(var native=JsonDocument.Parse(File.ReadAllText("local/first-ally-defeat/native-first-ally-02/captures/receipt.json"),new JsonDocumentOptions{MaxDepth=256})) {
  var actual=System.Text.Json.Nodes.JsonNode.Parse(Json(start.Battle),null,new JsonDocumentOptions{MaxDepth=256});
  var expected=System.Text.Json.Nodes.JsonNode.Parse(native.RootElement.GetProperty("battle").GetRawText(),null,new JsonDocumentOptions{MaxDepth=256});
- expected!["DefeatPending"]=null; // Added state facet is absent from the older capture.
+ expected!["DefeatPending"]=null; // Added state facets are absent from the older capture.
+ expected!["DefeatRecovery"]=null;
  Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(actual,expected),"Entire accepted native R14 battle mismatch");
 }
 Save("start.json",start.Battle);
@@ -4295,11 +4299,11 @@ if ($LASTEXITCODE -ne 0) { throw 'Source reduction failed' }
 ```
 
 
-### Planned ordinary-defeat recovery before egress selection
+### Implemented ordinary-defeat recovery before egress selection
 
-**Proposed; not implemented.** Continue the accepted `DefeatPending` result only through the
-ordinary handler's leader-HP and gold mutations, then stop immediately before
-`GetEgressPositionForBattle`. The next user-visible result is Bowie HP0→12 and gold120→60,
+**Implemented:** one explicit Confirm/Space continues the accepted `DefeatPending` result through the
+ordinary handler's leader-HP and gold mutations, then stops immediately before
+`GetEgressPositionForBattle`. The user-visible result is Bowie HP0→12 and gold120→60,
 with a readable recovery/return-unavailable status and battle controls closed. It is not a map
 arrival, an exploration-ready state, or a completed `D4=-1` return. No new party preset or
 late counter, HP, seed, flag or destination injection is needed for this smaller boundary.
@@ -4326,7 +4330,7 @@ registered USA identity `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4
 | Same handler, before healing | Clear dialogue name index1 to leader0; request `MUSIC_SAD_THEME_2` (12), text363, then close text. These ordered requests do not prove displayed frames, audio completion, input timing or VInt RNG. The remake may show its existing authored diagnostic, explicitly omitting original presentation. |
 | Same handler; `code/common/stats/combatantstats_1.asm` `GetMaxHp`, `combatantstats_2.asm` `SetCurrentHp` | Set combatant index0, read its maximum HP word, write current HP word. This is HP restoration only: no MP/status refresh, ally-wide healing, defeat-counter change, X/Y restoration or occupancy insertion here. The selected comparison supplies maxHP12. |
 | Same handler; `code/common/stats/gold.asm` `GetGold`/`SetGold`, `0x898E..0x89CE` | Read the current gold longword, unsigned logical shift right1, write it. Selected120 becomes60, not the startup gold0. No reward replay or subtraction based on EXP occurs. |
-| **Proposed stop** | The next instruction is the call to `GetEgressPositionForBattle`. Recovery has applied exactly once; the egress query and later return have not executed. |
+| **Implemented stop** | The next instruction is the call to `GetEgressPositionForBattle`. Recovery has applied exactly once; the egress query and later return have not executed. |
 | Later `battleloop/getegresspositionforbattle.asm`, `0x23E50..0x23EB0` | Battle01 matches none of the seven special battle checks. It reads the stored `EGRESS_MAP` byte and calls `GetSavepointForMap`; current battle map57 and Bowie's old battle coordinates are not the destination source. |
 | `code/common/maps/egressinit.asm`, `GetSavepointForMap`, `0x75EC..0x764E` | F399 selects the ordinary four-byte savepoint scan, with missing-map fallback X1/Y1/UP and the queried map retained. Only F64=true enters the subsequent raft-reset table. The pre-399 return `(3,56,3,DOWN)` is a helper alternative excluded by the original `BattleLoop` entry above. |
 | Back in the defeat handler | Only after egress lookup returns, assign `D4=-1`; Battle01 takes the not-Battle4 branch to RTS. The F404/F504/upgrade/map rewrite/`D4=0` tail is excluded. Egress spell/Angel Wing's separate zero result is also excluded. |
@@ -4362,7 +4366,7 @@ main`10491234`/copy`0034` and first count0/4. The source check derives the handl
 from declared inputs before reading the accepted native terminal as a comparison input. The latter
 proves current remake state only. Natural inputs, seeds and defeats continuity remain **Unknown**.
 
-Propose one explicit confirmation from `DefeatPending` to a typed `DefeatRecoveryPending` state:
+One explicit confirmation changes `DefeatPending` to typed `DefeatRecoveryPending`:
 
 - Authenticate the current terminal, complete119 history, preparation accounting and immutable
   source identity before mutation. Retain an immutable before-image and link one recovery receipt
@@ -4382,17 +4386,16 @@ Propose one explicit confirmation from `DefeatPending` to a typed `DefeatRecover
   Show healed HP, gold before/after and “return unavailable”; preserve the lethal strike as history.
   This confirmation is authored diagnostic pacing, not reproduced original dialogue timing.
 
-Future implementation owns exactly the following paths (relative to `remake/`); no changes to them
-are made by this plan. Reuse current immutable snapshots, stat-copy helpers, terminal/history
+The implementation uses the following exact paths (relative to `remake/`). Reuse current immutable snapshots, stat-copy helpers, terminal/history
 validation, preparation trust and single `GameSession` publication. No generic outcome framework,
 new parser, savepoint importer, cache, manifest, renderer or second session state store is needed.
 
 | Exact paths | Bounded responsibility |
 | --- | --- |
-| `src/Sf2.Remake.Domain/Battles/Battle01DefeatRecovery.cs` (new); `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs` | One recovery reducer/receipt and state facet/copy/phase. Validate the retained before-image with existing `Battle01TurnCompletion.RequireDefeatPending`; compare the entire resulting delta, allowing only the two mutations above. A healed current state must never pass as the earlier HP0 terminal. |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01DefeatRecovery.cs` (new) | One expected-current-snapshot command/result; validate party and `Battle01PlayerPhysicalAttack.RequireAccountingInputs` against the immutable terminal before-image, allocate/validate everything, then assign `PrivateOriginalBattle01` once. Keep the existing source/preparation references. No new Content input is required. |
+| `src/Sf2.Remake.Domain/Battles/Battle01DefeatRecovery.cs`; `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs` | One recovery reducer/receipt and state facet/copy/phase. Validate the retained before-image with existing `Battle01TurnCompletion.RequireDefeatPending`; compare the entire resulting delta, allowing only the two mutations above. A healed current state must never pass as the earlier HP0 terminal. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01DefeatRecovery.cs` | One expected-current-snapshot command/result; validate party and `Battle01PlayerPhysicalAttack.RequireAccountingInputs` against the immutable terminal before-image, allocate/validate everything, then assign `PrivateOriginalBattle01` once. Keep the existing source/preparation references. No new Content input is required. |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Explicit confirmation, both terminal dispatch guards, state-derived HP/gold/status and marker suppression. Preserve the corrected terminal text layout and every older diagnostic mode. |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01DefeatRecoveryTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01DefeatRecoveryTests.cs` (new) | Source arithmetic/ordered boundary, full state delta, preparation/history authenticity, rejection atomicity and input freeze. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01DefeatRecoveryTests.cs`; `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01DefeatRecoveryTests.cs` | Source arithmetic/ordered boundary, full state delta, preparation/history authenticity, rejection atomicity and input freeze. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Extend the existing required real-input terminal helper and native route through one actual recovery confirmation; no reconstructed mid-battle seed or screenshot-only success. |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Align implemented status, the new action, narrow reproduction and the still-unimplemented return boundary. |
 
@@ -4555,12 +4558,13 @@ Passing the existing reader an exact directive plus its separating space correct
 caller; the subsequent check passed. Retain both logs under the new output root. No maintained
 parser, source formula, fixture or accepted result changed.
 
-For this documentation-only slice, run link/fence/table/private/diff checks, the clean committed
-planner, normal `uv run sf2 verify`, this new narrow check and lightweight Public CI. Preserve the
-known default-H0-ROM absence as a failure boundary. No .NET full/native/official run or prior source
-reduction is selected merely to prepare this plan. The future implementation follows the proportional
-gate owner and committed planner for its actual changed dependencies. Stop after a frozen Draft PR
-for independent main-gate review; do not implement the proposed recovery or continue into return.
+For recovery implementation, use the committed planner, required-private selected .NET solution,
+focused recovery/presenter/Content tests, the44-frame native mode plus its affected earlier modes,
+the official Godot gate, normal verify and Public CI. Keep new artifacts in `local/defeat-recovery`.
+Reuse the accepted source-check and independent result after checking unchanged AST/source dependencies;
+validate the new actual whole-state delta without rerunning this retained source recipe. Preserve the
+known default-H0-ROM absence and completed failures. Keep prior slices' artifacts read-only. Freeze a
+Draft PR for independent main-gate review; egress selection and exploration remain outside this slice.
 
 
 ### Controlled Godot Battle01 consumer

@@ -85,8 +85,11 @@ Four origin STAY choices (R14 Sarah/Bowie, R15 Bowie/Sarah) reach R16 enemy129 a
 continuing receipts. Enemy129 moves(11,10)->(11,14), hits Bowie for3 and clears only Bowie's
 placement with defeats0->1. The first count returns0/4 despite Sarah still living. A separate
 `DefeatPending` receipt freezes R16/raw0, main10491234/copy0034, five live occupants and prior
-accounting. The view shows Bowie HP0/EXP63/defeats1 and closes input. No after-turn effects,
-second count, next turn or ordinary defeat recovery runs; gold remains120 and leader HP remains0.
+accounting. The view shows Bowie HP0/EXP63/defeats1. One explicit Space restores HP to12 and
+halves current gold120 to60, entering `DefeatRecoveryPending`. The linked receipt preserves the
+immutable terminal before-image and119 ordinary receipts; Bowie remains unplaced and all later
+inputs freeze. F401 remains set because F501 is false. No after-turn effects, second count, next
+turn, egress lookup, return result, exploration, retry or save runs.
 See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
 Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
 defeats must trace back to the selected preparation.

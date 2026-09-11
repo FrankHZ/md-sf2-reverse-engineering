@@ -1487,16 +1487,39 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         CheckTerminal(final.Battle,boundary!);
         await CaptureControl("42-defeat-pending-physical");
         string finalJson=JsonSerializer.Serialize(final.Battle,json);
+        var inspectedRecovery=((PrivateOriginalBattle01DefeatRecovered)_session.RecoverPrivateOriginalBattle01Defeat(final)).Snapshot;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,final);
+        await PressBattleKey(Key.Space);
+        var recovered=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(recovered.Battle,json)==JsonSerializer.Serialize(inspectedRecovery.Battle,json),
+            "Actual Space exactly matches the independently invoked recovery API");
+        Require(ReferenceEquals(recovered.Battle.DefeatRecovery!.Before,final.Battle) &&
+            ReferenceEquals(recovered.Battle.DefeatPending,final.Battle.DefeatPending) &&
+            ReferenceEquals(recovered.Battle.TurnCompletion,final.Battle.TurnCompletion) &&
+            recovered.Battle.Phase==Battle01Phase.DefeatRecoveryPending && recovered.Battle.Roster[0].Stats.HpCurrent==12 &&
+            recovered.Battle.Roster[0].Position is null && recovered.Battle.CurrentGold==60 &&
+            recovered.Battle.Occupancy.Count(i=>i>=0)==5 && ReceiptCount(recovered.Battle)==119,
+            "Recovery preserves the terminal before-image, historical count and absent leader placement");
+        var expectedRecovery=JsonSerializer.SerializeToNode(final.Battle,json)!;
+        expectedRecovery["Roster"]![0]!["Stats"]!["HpCurrent"]=12;
+        expectedRecovery["CurrentGold"]=60; expectedRecovery["Phase"]=(int)Battle01Phase.DefeatRecoveryPending;
+        var actualRecovery=JsonSerializer.SerializeToNode(recovered.Battle,json)!;
+        actualRecovery["DefeatRecovery"]=null;
+        Require(System.Text.Json.Nodes.JsonNode.DeepEquals(expectedRecovery,actualRecovery),
+            "Only leader HP and gold change in the complete state, plus the linked recovery facet/phase");
+        Require(JsonSerializer.Serialize(final.Battle,json)==finalJson,"Terminal before-image remains frozen after recovery");
+        await CaptureControl("43-defeat-recovery-physical");
+        string recoveredJson=JsonSerializer.Serialize(recovered.Battle,json);
         var projection=presenter.Projection;
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L}) await PressBattleKey(key);
-        PrivateBattle01Ui.DispatchNext(_session,final);
-        Require(ReferenceEquals(final,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
-            JsonSerializer.Serialize(final.Battle,json)==finalJson,"All actual battle keys and dispatcher remain frozen after defeat");
-        await CaptureControl("43-defeat-pending-inputs-frozen");
+        PrivateBattle01Ui.DispatchNext(_session,recovered);
+        Require(ReferenceEquals(recovered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
+            JsonSerializer.Serialize(recovered.Battle,json)==recoveredJson,"All actual battle keys and dispatcher remain frozen after recovery");
+        await CaptureControl("44-defeat-recovery-inputs-frozen");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled first leader death through first cleanup/count and DefeatPending; handler, natural inputs and H4 excluded",
-            preparation=final.Preparation.Party,start107=sarah.Battle,boundary119=boundary,battle=final.Battle,
-            exactCopiedAndPhysicalSnapshotMatch=true,actualPlayerChoices=4,frozenPhysicalKeys=8,frames=_frames
+            status="Pass",scope="controlled leader death and one HP/gold recovery; egress, natural inputs and H4 excluded",
+            preparation=final.Preparation.Party,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=recovered.Battle,
+            exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,frozenPhysicalKeys=8,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 

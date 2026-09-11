@@ -1263,6 +1263,30 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Same(after,session.PrivateOriginalBattle01);
     }
 
+    [Fact]
+    public void AcceptedSelectedInputsApplyDefeatRecoveryOnceAfterTheReal119ReceiptTerminal()
+    {
+        var session = ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
+        var terminal = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01, 129)).Snapshot;
+        var json = new JsonSerializerOptions { MaxDepth = 256 };
+        string frozen = JsonSerializer.Serialize(terminal.Battle, json);
+        var after = Assert.IsType<PrivateOriginalBattle01DefeatRecovered>(session.RecoverPrivateOriginalBattle01Defeat(terminal)).Snapshot;
+        Assert.Same(terminal.Preparation, after.Preparation); Assert.Same(terminal.SourceSnapshot, after.SourceSnapshot);
+        Assert.Same(terminal.Battle, after.Battle.DefeatRecovery!.Before);
+        Assert.Same(terminal.Battle.DefeatPending, after.Battle.DefeatRecovery.Terminal);
+        Assert.Same(terminal.Battle.TurnCompletion, after.Battle.TurnCompletion);
+        var expected = JsonSerializer.SerializeToNode(terminal.Battle, json)!;
+        expected["Roster"]![0]!["Stats"]!["HpCurrent"] = 12;
+        expected["CurrentGold"] = 60; expected["Phase"] = (int)Battle01Phase.DefeatRecoveryPending;
+        var actual = JsonSerializer.SerializeToNode(after.Battle, json)!; actual["DefeatRecovery"] = null;
+        Assert.True(JsonNode.DeepEquals(expected, actual));
+        Assert.Equal(frozen, JsonSerializer.Serialize(terminal.Battle, json));
+        Assert.IsType<PrivateOriginalBattle01DefeatRecoveryRejected>(session.RecoverPrivateOriginalBattle01Defeat(after));
+        Assert.IsType<PrivateOriginalBattle01DefeatRecoveryRejected>(session.RecoverPrivateOriginalBattle01Defeat(terminal));
+        Assert.Same(after, session.PrivateOriginalBattle01);
+    }
+
     private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset)
     {
         var session = ReachRealFirstAllyDefeatBoundary(preset);
