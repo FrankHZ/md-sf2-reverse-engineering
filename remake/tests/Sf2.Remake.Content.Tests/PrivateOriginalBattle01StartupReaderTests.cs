@@ -1434,9 +1434,31 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal((ushort)12,arrival.Party.Slots[0].HpCurrent); Assert.Equal((byte)8,arrival.Party.Slots[0].MpCurrent);
         Assert.Equal((ushort)0,arrival.Party.Slots[2].HpCurrent); Assert.Equal((byte?)10,arrival.Party.Slots[2].Exp);
         Assert.Equal((ushort?)1,arrival.Party.Slots[2].Defeats);
+        // Discover represented flag values from the exact before-image owners, independently of
+        // the entry reducer's ID list. Earlier interaction receipts are historical, not current.
+        var story = requested.SourceSnapshot;
+        object[] flagOwners = [story.MiddleTowerGuard!,story.Zone601!,story.Sarah!,story.Entity142!,
+            story.MessengerAcceptance!,story.CastleGate!,story.PalaceFirstVisit!,story.AstralAcceptance!,
+            requested.Battle,requested.DefeatReturn!.Admission];
+        var beforeFlags = new Dictionary<int,bool>();
+        foreach(var owner in flagOwners) foreach(var property in owner.GetType().GetProperties()) {
+            var match=System.Text.RegularExpressions.Regex.Match(property.Name,@"Flag(\d+)(?:Set)?$");
+            if(property.PropertyType!=typeof(bool) || !match.Success) continue;
+            int flag=int.Parse(match.Groups[1].Value); bool value=(bool)property.GetValue(owner)!;
+            if(beforeFlags.TryGetValue(flag,out bool earlier)) Assert.Equal(earlier,value);
+            beforeFlags[flag]=value;
+        }
+        foreach(var (value,index) in requested.Battle.RegionFlags90Through105.Select((v,i)=>(v,i)))
+            beforeFlags.Add(90+index,value);
+        Assert.Contains(beforeFlags,p=>p.Value); Assert.Contains(beforeFlags,p=>!p.Value);
+        Assert.True(beforeFlags[256]); Assert.True(beforeFlags[260]); Assert.True(beforeFlags[261]);
+        var expectedFlags=beforeFlags.ToDictionary(p=>p.Key,p=>p.Value);
+        foreach(var pair in requested.Preparation.ArrivalInputs!.Flags) expectedFlags.Add(pair.Key,pair.Value);
+        foreach(int flag in Enumerable.Range(256,128)) expectedFlags[flag]=false;
+        expectedFlags[80]=true;
+        Assert.Equal(expectedFlags.OrderBy(p=>p.Key),arrival.Flags.OrderBy(p=>p.Key));
         Assert.All(Enumerable.Range(256,128),flag=>Assert.False(arrival.Flags[flag]));
-        Assert.All(new[]{1,66,80,399,401,600,601,602,603,608},flag=>Assert.True(arrival.Flags[flag]));
-        Assert.All(new[]{64,220,501,506,543,609,640},flag=>Assert.False(arrival.Flags[flag]));
+        Assert.False(arrival.Flags.ContainsKey(89)); Assert.False(arrival.Flags.ContainsKey(606));
         var load = arrival.LoadDefinition; var pristine = load.Runtime.WorkingLayout;
         Assert.NotSame(pristine,arrival.WorkingLayout); Assert.Same(load.Area,arrival.CurrentAreaDefinition);
         for(int y=0;y<64;y++) for(int x=0;x<64;x++)

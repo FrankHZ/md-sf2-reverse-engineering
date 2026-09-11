@@ -1562,6 +1562,30 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             arrivalRoof.Width==inspectedRoof.Width && arrivalRoof.Height==inspectedRoof.Height &&
             arrivalRoof.SavedWords.SequenceEqual(inspectedRoof.SavedWords),
             "The derived roof lifecycle and all30 saved words also match the direct API");
+        // Read the exact before-image owners rather than duplicate the entry reducer's flag list.
+        var story=requested.SourceSnapshot;
+        object[] flagOwners=[story.MiddleTowerGuard!,story.Zone601!,story.Sarah!,story.Entity142!,
+            story.MessengerAcceptance!,story.CastleGate!,story.PalaceFirstVisit!,story.AstralAcceptance!,
+            requested.Battle,requested.DefeatReturn!.Admission];
+        var knownFlagsBefore=new Dictionary<int,bool>();
+        foreach(var owner in flagOwners) foreach(var property in owner.GetType().GetProperties()) {
+            var match=System.Text.RegularExpressions.Regex.Match(property.Name,@"Flag(\d+)(?:Set)?$");
+            if(property.PropertyType!=typeof(bool) || !match.Success)continue;
+            int flag=int.Parse(match.Groups[1].Value);bool value=(bool)property.GetValue(owner)!;
+            Require(!knownFlagsBefore.TryGetValue(flag,out bool earlier) || earlier==value,"Before-image flag owners agree");
+            knownFlagsBefore[flag]=value;
+        }
+        foreach(var (value,index) in requested.Battle.RegionFlags90Through105.Select((v,i)=>(v,i)))
+            knownFlagsBefore.Add(90+index,value);
+        var expectedFlags=knownFlagsBefore.ToDictionary(p=>p.Key,p=>p.Value);
+        foreach(var pair in requested.Preparation.ArrivalInputs!.Flags)expectedFlags.Add(pair.Key,pair.Value);
+        foreach(int flag in Enumerable.Range(256,128))expectedFlags[flag]=false;
+        expectedFlags[80]=true;
+        Require(expectedFlags.OrderBy(p=>p.Key).SequenceEqual(arrival.Flags.OrderBy(p=>p.Key)) &&
+            knownFlagsBefore.Any(p=>p.Value) && knownFlagsBefore.Any(p=>!p.Value) &&
+            Enumerable.Range(256,128).All(flag=>!arrival.Flags[flag]) &&
+            !arrival.Flags.ContainsKey(89) && !arrival.Flags.ContainsKey(606),
+            "Current entry image preserves known true/false before-image values, resets all128 temp flags and leaves unknowns absent");
         await CaptureArrival("45-granseal-entry-physical");
         var projection=_presenter.BaseProjection; var entities=arrival.Entities; string arrivalJson=JsonSerializer.Serialize(arrival,json);
         foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L,Key.W,Key.S,Key.D,Key.F,Key.E,Key.Enter,Key.Escape})
@@ -1577,7 +1601,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
             arrivalInputs=_initialBattle01.Preparation.ArrivalInputs,
             initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=entered.Battle,
-            defeatReturn=request,arrival,arrivalRoof,earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
+            defeatReturn=request,arrival,arrivalRoof,knownFlagsBefore,entryFlagImagePreserved=true,
+            earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
             exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
             entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,frames=_frames

@@ -4930,10 +4930,17 @@ because CURRENT_MAP is3. No general event framework or exploratory cache is requ
 
 #### Entry implementation ownership and acceptance
 
-The current plan owns **only this document**. The proposed next implementation owns these31 exact
-paths relative to `remake/`; new-file names are proposals. Any additional dependency requires a new
+The implemented entry slice owns these31 exact paths relative to `remake/`; the listed files now
+exist under their respective implementation and acceptance owners. Any additional dependency requires a new
 ownership decision before editing. No fixtures, schemas, generic warp/outbound lifecycle, canonical
 input mutation or assets are included.
+
+The current Arrival flag image preserves represented permanent values from its exact battle/story
+before-image, including the F90–F105 region array, F88/F451 and castle/palace/Astral completion
+F604/F605/F607. It then adds the explicitly admitted comparison flags, clears all128 temporary
+flags256..383 and sets F80. Known false values remain present; unmodeled flags such as F89/F606
+remain absent. Content and native acceptance derive the preserved set from the before-image owners,
+so retaining old objects as history cannot conceal an omitted current flag.
 
 | Exact paths | Responsibility |
 | --- | --- |

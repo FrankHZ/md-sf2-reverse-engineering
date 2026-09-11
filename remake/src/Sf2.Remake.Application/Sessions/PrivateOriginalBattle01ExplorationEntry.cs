@@ -163,10 +163,34 @@ public sealed partial class GameSession
             var party = Battle01ExplorationEntry.Complete(current.Battle, request, inputs.DormantSlots, profiles, inputs.StepCounter);
             var declarations = PrivateOriginalMapReturnArrivalSnapshot.DeclareEntities(load.Runtime.EntityPopulation,
                 party, request.DestinationPosition, request.DestinationOpaqueFacing);
-            var flags = inputs.Flags.ToDictionary(pair => pair.Key, pair => pair.Value);
+            // Preserve only known permanent values from the authenticated current owners.
+            // Earlier interaction receipts and unmodeled flags do not supply current defaults.
+            var source = current.SourceSnapshot; var battle = current.Battle;
+            var flags = new Dictionary<int, bool>
+            {
+                [1] = source.MiddleTowerGuard!.ProgramStoryFlag1Set,
+                [64] = request.Admission.Flag64,
+                [66] = source.MessengerAcceptance!.Flag66Set,
+                [88] = battle.SuspendedFlag88,
+                [399] = battle.BattleEntryFlag399,
+                [401] = battle.UnlockFlag401,
+                [451] = battle.IntroFlag451,
+                [501] = battle.CompletedFlag501,
+                [600] = source.MessengerAcceptance.Flag600Set,
+                [601] = source.Zone601!.Flag601Set,
+                [602] = source.Entity142!.Flag602Set,
+                [603] = source.MessengerAcceptance.Flag603Set,
+                [604] = source.CastleGate!.Flag604Set,
+                [605] = source.PalaceFirstVisit!.CompletionFlag605Set,
+                [607] = source.AstralAcceptance!.HandlerFlag607Set,
+                [608] = source.AstralAcceptance.ProgramFlag608Set,
+                [640] = request.Admission.Flag640,
+            };
+            for (int index = 0; index < battle.RegionFlags90Through105.Count; index++)
+                flags.Add(90 + index, battle.RegionFlags90Through105[index]);
+            foreach (var pair in inputs.Flags) flags.Add(pair.Key, pair.Value);
             foreach (int flag in Enumerable.Range(256, 128)) flags[flag] = false;
-            foreach (int flag in new[] { 1, 66, 80, 399, 401, 600, 601, 602, 603, 608 }) flags[flag] = true;
-            flags[64] = prepared.ReturnInputs!.Flag64; flags[640] = prepared.ReturnInputs.Flag640; flags[501] = false;
+            flags[80] = true;
             var layout = new WorkingMapLayout(load.Runtime.WorkingLayout.Words);
             if (load.FlagCopies.Any(row => flags[row.Flag]) || load.Chests.Any(row => flags[row.Flag]))
                 return EntryRejected("arrival.load.flags");
