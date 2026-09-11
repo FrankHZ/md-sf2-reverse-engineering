@@ -4778,7 +4778,7 @@ plus those explicit init effects, not an observation of original entity position
 **Confirmed static behavior**, pinned `ShiningForceCentral/SF2DISASM` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, USA baseline named by the existing private-input owner:
 
-| Owner / source seam | Required consequence for the proposed boundary |
+| Owner / source seam | Required consequence for this boundary |
 | --- | --- |
 | `code/gameflow/exploration/explorationfunctions_2.asm`, `ExplorationLoop` at`0x257C0` | Clear map-event word; subtract20000 from the step-counter word and clear it when the signed subtraction is negative; heal before fading. With a supplied map, write CURRENT_MAP and NOT_CURRENTLY_IN_BATTLE=255, load tilesets, get setup entities, initialize entities, load mapsprites, clear setup temp flags, set F80, initialize sprite counter, LoadMap and run setup init before the event loop. This is not the map-index-minus-one reload branch. |
 | `code/gameflow/battle/battleloop/heallivingandimmortalallies.asm` at`0x23BFC` | Visit all30 ally slots, not only joined/placed battle participants. Dead ordinary allies skip; Peter7 and Lemon28 enter healing even at HP0. Restore HP/MP, apply status mask7, then UpdateCombatantStats. |
@@ -4823,20 +4823,19 @@ The first comparison therefore processes0/1/7/28; dead Chester2 and other ordina
 Bowie remains HP12/MP8; Sarah is at her admitted maxima; Chester HP0 and his other stats remain
 unchanged. The source-shaped loop must retain skipped rows exactly and expose its processed IDs,
 before/after vitals and refresh policy. Include synthetic damaged-MP and nonzero-max immortal cases
-in the future owning tests; they must not quietly widen the production comparison.
+in the owning tests; they must not quietly widen the production comparison.
 
 `Battle01Stats` rejects maxHP0 and move0, so do not weaken it for dormant raw slots. A focused entry
 slot representation in the new Domain entry owner is justified by those explicitly processed raw
 slots and can reuse `Battle01Stats` for the three participating profiles. Do not introduce a general
 inventory/party database, cache or second ongoing battle-stat store.
 
-The current canonical reader exposes only the Bowie-house roof definition, which requires an
-`AppliedAfterWarp` identity. Do not invent a warp to reuse that type. Extend the existing reader's
-single parse with bounded Map3 return-load facts: the exact referenced flag/chest tables, ordered10
+The Bowie-house roof definition retains its required `AppliedAfterWarp` identity. The existing
+reader also exposes bounded Map3 return-load facts from the same parse: the exact referenced flag/chest tables, ordered10
 roof rows, area1 foreground offset and selected record8, all under the existing pinned admission.
 An immutable `OriginalMapReturnEntryLoadDefinition` in the new controlled-arrival input file holds
 these facts and source identities; an optional property on `OriginalMapImportDefinition` carries
-them. Central exact-profile validation belongs in `OriginalMapRuntimeAdmission`. Startup validates
+them. `OriginalMapRuntimeAdmission` owns central exact-profile validation. Startup validates
 and binds that catalog-owned definition before `source.Admit`; missing, foreign or drifted facts
 reject arrival selection. This adds no second JSON reader, schema, manifest, asset or generic roof
 capability. Old callers need not select arrival, and the accepted house-warp definition stays intact.
@@ -4938,13 +4937,13 @@ input mutation or assets are included.
 
 | Exact paths | Responsibility |
 | --- | --- |
-| `src/Sf2.Remake.Domain/Battles/Battle01ExplorationEntry.cs` (new) | Focused30-slot entry transform, explicit policy, counter/flag effects and immutable result |
-| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledArrivalInputs.cs` (new); `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Startup.cs` | Exact early controlled input and validation; reuse existing preparation binding |
+| `src/Sf2.Remake.Domain/Battles/Battle01ExplorationEntry.cs` | Focused30-slot entry transform, explicit policy, counter/flag effects and immutable result |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledArrivalInputs.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Startup.cs` | Exact early controlled input and validation; reuse existing preparation binding |
 | `src/Sf2.Remake.Application/Content/OriginalMapImportDefinition.cs`; `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs`; `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs`; `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs` | Bounded return-load definition from the existing parse, exact flag/chest/area/roof records and drift rejection; preserve house-warp admission |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01ExplorationEntry.cs` (new) | Completed Arrival facet/current map/flow, sole current party owner, typed fresh snapshot, once-only entry transaction |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01Initialization.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01ExplorationEntry.cs` | Completed Arrival facet/current map/flow, sole current party owner, typed fresh snapshot, once-only entry transaction |
 | `src/Sf2.Remake.Application/Sessions/OriginalMapGameSession.cs`; `src/Sf2.Remake.Application/Sessions/OriginalMapPlayerLocomotionAnimation.cs` | Explicitly closed first-visit access and typed entry locomotion; retain legacy constructor/warp contracts |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs`; `game/src/PrivateMap3Composition.cs`; `game/src/PrivateMap3Presenter.cs`; `game/src/PrivateOriginalMapBaseViewport.cs`; `game/src/PrivateMap3CameraProjection.cs` | Early selection, one confirmation, current-owner routing, shared Map3 projection, idle camera/player/fresh entities and frozen controls |
-| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01ExplorationEntryTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01ExplorationEntryTests.cs` (new) |30-slot/policy/flag/counter contracts, source-history/current-party ownership, atomic success/failure and closed old APIs |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01ExplorationEntryTests.cs`; `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01ExplorationEntryTests.cs` |30-slot/policy/flag/counter contracts, source-history/current-party ownership, atomic success/failure and closed old APIs |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3CameraProjectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Actual early-input119/recovery/request/entry route, exact API/physical equivalence, map-resource/current-population projection and input closure |
 | `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Current capability, comparison policies, explicit stopping point and proportional reproduction |
 
