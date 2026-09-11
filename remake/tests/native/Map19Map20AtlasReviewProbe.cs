@@ -1730,9 +1730,12 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(roof.RecordOrdinal==8 && roof.SavedWords.Count==30,"Church roof clear and before-image");
         for(int y=41;y<47;y++) for(int x=30;x<35;x++) Require(arrival.WorkingLayout[x,y]==0,"All30 church words cleared");
         await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
+        using var image=GetViewport().GetTexture().GetImage();
+        Require(image.SavePng(Path.Combine(_output,name+".png"))==Error.Ok,"Arrival PNG");
         Require(status.GetLineCount()==status.GetVisibleLineCount() && status.Position.Y+status.GetMinimumSize().Y<=540 &&
-            status.Position.X+status.GetMinimumSize().X<=960,"All arrival text fits the logical canvas");
-        using var image=GetViewport().GetTexture().GetImage();int samples=0;
+            status.Position.X+status.GetMinimumSize().X<=960,
+            $"All arrival text fits the logical canvas: lines={status.GetLineCount()}/{status.GetVisibleLineCount()}, minimum={status.GetMinimumSize()}, size={status.Size}");
+        int samples=0;
         for(int row=0;row<5;row++) for(int column=4;column<9;column++) {
             if(column==6 && row==3)continue;
             int x=column*24+2,y=row*24+2;int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
@@ -1740,7 +1743,6 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
             Require(actual.IsEqualApprox(expected),"Visible church texel equals current typed arrival projection");samples++;
         }
-        Require(image.SavePng(Path.Combine(_output,name+".png"))==Error.Ok,"Arrival PNG");
         _frames.Add(new {name,map=arrival.Map.Value,phase="EntryReady",status=status.Text,entities=arrival.Entities,
             glyphs,camera=view.Camera,roofRecord=roof.RecordOrdinal,roofWords=roof.SavedWords.Count,
             samples,width=image.GetWidth(),height=image.GetHeight(),policy=arrival.EntityPolicy});

@@ -639,6 +639,7 @@ internal sealed class PrivateMap3Presenter
         _viewport?.Hide(); _baseViewport.Show(); _banner.Show(); _explanation.Show(); _status.Show();
         _explanation.Text = "Fresh Granseal entry with diagnostic entities. Not full original fidelity.";
         _status.Position = new Vector2(StatusX, 310); _status.Size = new Vector2(912, 210);
+        _status.AddThemeFontSizeOverride("font_size", 16);
         _status.Text = PrivateMap3PresentationPlan.FormatArrivalStatus(arrival);
     }
 
