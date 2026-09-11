@@ -3999,10 +3999,13 @@ The new preset's entire119-receipt prefix must equal this observed route apart f
 preset identity and propagated Bowie counter.
 
 This boundary intentionally stops before `battleloop_2.asm`'s `BattleLoop_Defeat`
-(`0x23CBA..0x23D98`): that later handler changes battle unlock state, presents defeat text/music,
-restores leader HP, halves gold, obtains egress position and returns`D4=-1` for ordinary Battle01.
-Those effects, exploration re-entry, retry/save flow, and Battle4's special result require separate
-acceptance. A visible “defeat pending” diagnostic is **not** an implemented loss/return flow.
+(`0x23D44..0x23D98`): that later handler conditionally updates unlock state, requests defeat
+text/music, restores leader HP, halves gold, obtains egress position and returns`D4=-1` for ordinary
+Battle01. Its first-attempt F501=false branch preserves F401. The
+[planned recovery boundary](#planned-ordinary-defeat-recovery-before-egress-selection) separates the
+HP/gold step from the still-unprovided return inputs and exploration lifecycle. Those effects,
+retry/save flow, and Battle4's special result require separate acceptance. A visible “defeat pending”
+diagnostic is **not** an implemented loss/return flow.
 
 #### Implementation owners and acceptance
 
@@ -4290,6 +4293,274 @@ $env:SF2_FIRST_ALLY_NATIVE_RECEIPT = Join-Path (Get-Location) 'local/first-ally-
 uv run python -X utf8 (Join-Path $round14Out 'source-reduction.py')
 if ($LASTEXITCODE -ne 0) { throw 'Source reduction failed' }
 ```
+
+
+### Planned ordinary-defeat recovery before egress selection
+
+**Proposed; not implemented.** Continue the accepted `DefeatPending` result only through the
+ordinary handler's leader-HP and gold mutations, then stop immediately before
+`GetEgressPositionForBattle`. The next user-visible result is Bowie HP0→12 and gold120→60,
+with a readable recovery/return-unavailable status and battle controls closed. It is not a map
+arrival, an exploration-ready state, or a completed `D4=-1` return. No new party preset or
+late counter, HP, seed, flag or destination injection is needed for this smaller boundary.
+
+#### Source order, selector inputs and caller boundary
+
+**Confirmed:** the following source structure at pinned `ShiningForceCentral/SF2DISASM`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. Existing evidence owners are
+[battle loop](../../docs/research/battle-loop.md),
+[battle control lifecycle](../../docs/design/contracts/battle-control-lifecycle.md#outcome-contract),
+[map entry routing](../../docs/design/contracts/map-entry-routing-state.md#savepoint-and-raft-reset-selection),
+[common maps](../../docs/research/common-maps.md), and
+[main/exploration flow](../../docs/research/gameflow-core.md#main-and-exploration-contract).
+The [victory/return owner](../../docs/research/map3-battle01-victory-return.md) confirms the shared
+caller edge but explicitly excludes the defeat handler; its victory flags and cutscene are not
+defeat evidence. The source check below composes these bounded seams and reads the selected data;
+it adds no H1/ROM-byte, natural-runtime, presentation or H4 claim. The ROM baseline remains the
+registered USA identity `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+
+| Order / owning source under `disasm/` | Selected ordinary Battle01 behavior |
+| --- | --- |
+| Earlier `code/gameflow/battle/battleloop_1.asm`, `BattleLoop`, `0x23A84` | Clears player type, unconditionally sets F399, then checks suspension F88. Thus the actual original battle entry establishes F399; the comment's question about its meaning does not override the instruction. Current remake initialization does not expose this flag. |
+| `code/gameflow/battle/battleloop_2.asm`, `BattleLoop_Defeat`, `0x23D44..0x23D98`; `battlefunctions/battlefunctions_1.asm`, `UpdateBattleUnlockedFlag` | First query `CURRENT_BATTLE + 500`. Only a set completed flag leads to clearing the corresponding unlocked flag by subtracting100. Battle01 F501=false therefore preserves F401=true; it neither completes the battle nor clears its first-attempt unlock. |
+| Same handler, before healing | Clear dialogue name index1 to leader0; request `MUSIC_SAD_THEME_2` (12), text363, then close text. These ordered requests do not prove displayed frames, audio completion, input timing or VInt RNG. The remake may show its existing authored diagnostic, explicitly omitting original presentation. |
+| Same handler; `code/common/stats/combatantstats_1.asm` `GetMaxHp`, `combatantstats_2.asm` `SetCurrentHp` | Set combatant index0, read its maximum HP word, write current HP word. This is HP restoration only: no MP/status refresh, ally-wide healing, defeat-counter change, X/Y restoration or occupancy insertion here. The selected comparison supplies maxHP12. |
+| Same handler; `code/common/stats/gold.asm` `GetGold`/`SetGold`, `0x898E..0x89CE` | Read the current gold longword, unsigned logical shift right1, write it. Selected120 becomes60, not the startup gold0. No reward replay or subtraction based on EXP occurs. |
+| **Proposed stop** | The next instruction is the call to `GetEgressPositionForBattle`. Recovery has applied exactly once; the egress query and later return have not executed. |
+| Later `battleloop/getegresspositionforbattle.asm`, `0x23E50..0x23EB0` | Battle01 matches none of the seven special battle checks. It reads the stored `EGRESS_MAP` byte and calls `GetSavepointForMap`; current battle map57 and Bowie's old battle coordinates are not the destination source. |
+| `code/common/maps/egressinit.asm`, `GetSavepointForMap`, `0x75EC..0x764E` | F399 selects the ordinary four-byte savepoint scan, with missing-map fallback X1/Y1/UP and the queried map retained. Only F64=true enters the subsequent raft-reset table. The pre-399 return `(3,56,3,DOWN)` is a helper alternative excluded by the original `BattleLoop` entry above. |
+| Back in the defeat handler | Only after egress lookup returns, assign `D4=-1`; Battle01 takes the not-Battle4 branch to RTS. The F404/F504/upgrade/map rewrite/`D4=0` tail is excluded. Egress spell/Angel Wing's separate zero result is also excluded. |
+| `code/gameflow/mainloop.asm`, `0x75DA..0x75EA`; `code/common/maps/mapinit_0.asm`, `SwitchMap`, `0x7956..0x7988` | The BattleLoop call returns directly to SwitchMap, then ExplorationLoop. There is no CheckBattle or test of D4 between these calls. SwitchMap selects the first source-map/set-flag row, preserves X/Y, and does not recompute savepoint coordinates or facing. |
+| Later `code/gameflow/exploration/explorationfunctions_2.asm`, `ExplorationLoop`, `0x257C0` | Clears the event, adjusts step count, heals eligible allies and fades before map/entity load, temporary-flag clearing and selected map init. Merely obtaining a destination does not perform these steps or reach a controllable endpoint. |
+
+The selected private rows and constants give these **conditional static results**, not a chosen
+remake return endpoint:
+
+| Explicit condition | Source-selected result and required state |
+| --- | --- |
+| F399=true, stored egress map3 | `data/maps/global/savepointmapcoords.asm` selects `MAP_GRANSEAL,32,13,UP`: map3/(32,13)/facing1. This differs from the initial bedroom admission `(56,3)/DOWN`. |
+| Above, F64=false | Skip all raft writes. With F64=true, map3 instead reaches the `MAP_CURRENT` fallback row in `raftresetmapcoords.asm` and writes raft map69/X42/Y15; silently treating an unavailable F64 as false would lose an observable mutation. |
+| Above, F640=false | `flagswitchedmaps.asm` leaves returned map3 unchanged. With F640=true, its row changes only map3→4, retaining X32/Y13/facing1 rather than looking up map4's savepoint. Neither case proves destination setup or exploration. |
+| Egress map unavailable | No selected savepoint or final map/position/facing can be asserted. The earlier admitted-start fixture records egress3 at its own handoff; it does not prove the current value across the skipped controlled programs and battle route. |
+
+`sf2enums.asm` owns these numeric map/facing/constants; table declarations are read directly, not
+copied into a new manifest. F399's original entry write is source-known. Current egress/raft/F640
+state and their continuity into this remake route are **Unknown/unprovided**: the current
+`PrivateOriginalBattle01SessionSnapshot` retains a frozen `SourceSnapshot`, not a live return
+context; `Battle01InitializedState` has F401/F501 but no egress/F399/F64/F640 state. The
+public-synthetic `ScenarioAdmissionFacts.EgressMap` is a different profile and is not a fallback.
+A later return slice must admit the missing inputs at their owning earlier boundary, retain them
+through the session, select the actual row and post-switch map, and accept the required map/entity/
+init state. It must not reactivate the frozen pre-battle snapshot as if it were a fresh arrival.
+
+#### Minimal state delta and implementation owners
+
+Start from the actually accepted terminal:119 linked ordinary receipts plus the separate terminal
+receipt, R16/raw0 with64 historical slots, five occupied cells, Bowie HP0/unplaced/defeats1,
+Sarah HP11/alive, Chester HP0/unplaced/EXP10/defeats1, prior131/132 deaths, gold120,
+main`10491234`/copy`0034` and first count0/4. The source check derives the handler arithmetic
+from declared inputs before reading the accepted native terminal as a comparison input. The latter
+proves current remake state only. Natural inputs, seeds and defeats continuity remain **Unknown**.
+
+Propose one explicit confirmation from `DefeatPending` to a typed `DefeatRecoveryPending` state:
+
+- Authenticate the current terminal, complete119 history, preparation accounting and immutable
+  source identity before mutation. Retain an immutable before-image and link one recovery receipt
+  to its exact terminal receipt; neither receipt becomes a120th ordinary completed turn.
+- Apply only Bowie currentHP0→its admitted maxHP12 and gold120→60, then publish atomically. Retain
+  HPmax, MP8, status0, EXP63/kills2/defeats1, all other roster fields, placements/occupancy, AI,
+  flags, seeds, region mask0, turn buffer and cursor. Restored Bowie is still unplaced: no marker,
+  movement range or scheduled turn appears. Do not recount factions after revival; stored0/4
+  remains the historical first-decision result, not a newly observed count.
+- Keep current map57 and the existing Battle flow stage until a later accepted return transaction.
+  The source `D4=-1` remains an unexecuted later result; do not fabricate that result or a map
+  request in the recovery receipt. Omit original presentation/VInt explicitly and retain the
+  comparison RNG images, rather than claiming a natural post-message seed.
+- Keep automatic dispatch stopped at `DefeatPending`. Reuse the existing semantic Confirm/Space
+  input for the explicit recovery step before the UI's no-current-player guard. After recovery,
+  every further gameplay/dispatch/recovery input is inert or rejected without snapshot mutation.
+  Show healed HP, gold before/after and “return unavailable”; preserve the lethal strike as history.
+  This confirmation is authored diagnostic pacing, not reproduced original dialogue timing.
+
+Future implementation owns exactly the following paths (relative to `remake/`); no changes to them
+are made by this plan. Reuse current immutable snapshots, stat-copy helpers, terminal/history
+validation, preparation trust and single `GameSession` publication. No generic outcome framework,
+new parser, savepoint importer, cache, manifest, renderer or second session state store is needed.
+
+| Exact paths | Bounded responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01DefeatRecovery.cs` (new); `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs` | One recovery reducer/receipt and state facet/copy/phase. Validate the retained before-image with existing `Battle01TurnCompletion.RequireDefeatPending`; compare the entire resulting delta, allowing only the two mutations above. A healed current state must never pass as the earlier HP0 terminal. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01DefeatRecovery.cs` (new) | One expected-current-snapshot command/result; validate party and `Battle01PlayerPhysicalAttack.RequireAccountingInputs` against the immutable terminal before-image, allocate/validate everything, then assign `PrivateOriginalBattle01` once. Keep the existing source/preparation references. No new Content input is required. |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs` | Explicit confirmation, both terminal dispatch guards, state-derived HP/gold/status and marker suppression. Preserve the corrected terminal text layout and every older diagnostic mode. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01DefeatRecoveryTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01DefeatRecoveryTests.cs` (new) | Source arithmetic/ordered boundary, full state delta, preparation/history authenticity, rejection atomicity and input freeze. |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Extend the existing required real-input terminal helper and native route through one actual recovery confirmation; no reconstructed mid-battle seed or screenshot-only success. |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/map03-playability-plan.md`; `docs/presentation-and-assets.md` | Align implemented status, the new action, narrow reproduction and the still-unimplemented return boundary. |
+
+These two focused new code files separate a post-outcome mutation from ordinary turn completion and
+reuse its existing validator. They do not justify moving or weakening existing combat/history logic.
+If implementation requires another tracked path, stop and declare the precise dependency before
+expanding ownership.
+
+Positive acceptance must compare the complete before/after state and source-derived ordered delta,
+prove HP0→12/gold120→60/F401 retained/F501 false, unchanged119-plus-terminal chain and historical
+count0/4, and prove old source snapshots remain frozen. Unit arithmetic includes odd and boundary
+unsigned gold values; those authored checks do not expand the real preset. Required Content acceptance
+must reach the current terminal via its real preparation and actions, then recover once. Native
+acceptance adds before/after/repeated-input frames over the actual terminal, shows Bowie still absent
+from the map, keeps Sarah present and accounting legible, and compares complete physical/API results.
+Use the existing relevant older modes for adapter regressions; do not replay prior slices' gates as
+setup work for this plan.
+
+Negative acceptance rejects wrong phase/leader/HPmax/gold, unspecified or forged preparation,
+modified prior receipts/counts/seeds/placements/occupancy, foreign/stale/null snapshot, duplicate
+recovery and a forged recovered before-image. Failures after local construction must leave the exact
+session reference and whole state unchanged. Verify no repeated penalty or counter increment, no
+healing Chester/MP, no marker reinsertion, after-turn/second count/turn advance/enemy dispatch,
+F401 clear/F501 set, egress selection, D4 result, exploration/retry/save, victory or Battle4 path.
+Every existing gameplay entry point must remain closed in the new phase; no optional-input skip may
+be counted as required-private acceptance.
+
+#### Narrow source and terminal-input check
+
+This is a source-structure check plus independently calculated comparison results, not an emulator,
+new H2 framework, or an implementation of recovery. It reuses existing function/table/equate readers.
+Set `SF2_UPSTREAM_DISASM` to the registered pinned read-only `disasm` directory. The accepted
+`local/leader-defeat-pending/native-leader-02/captures/receipt.json` and
+`local/leader-defeat-pending/root-review/acceptance.json` are read-only comparison inputs; if missing,
+report availability instead of rerunning the old route. Write the following block to
+`local/defeat-return-plan/source-check.py`, then run
+`uv run python -X utf8 local/defeat-return-plan/source-check.py`. Its only explicit output is
+`local/defeat-return-plan/source-check.json`; isolate interpreter/cache/test scratch under the same
+root. No ROM or prior generated payload is modified or copied into Git.
+
+<!-- defeat-return-source-check:start -->
+```python
+from pathlib import Path
+import json, os, subprocess
+from sf2tool.h2.battlefield import _load_equates, _evaluate_equate
+from sf2tool.h2.map3_battle01_victory_return import (
+    _function_section, _normal, _without_comments, _require_order, _table_rows,
+)
+
+root = Path(os.environ['SF2_UPSTREAM_DISASM'])
+pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
+assert subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip() == pin
+paths = {
+    'entry': 'code/gameflow/battle/battleloop_1.asm',
+    'defeat': 'code/gameflow/battle/battleloop_2.asm',
+    'unlock': 'code/gameflow/battle/battlefunctions/battlefunctions_1.asm',
+    'egress': 'code/gameflow/battle/battleloop/getegresspositionforbattle.asm',
+    'savepoint': 'code/common/maps/egressinit.asm',
+    'switch': 'code/common/maps/mapinit_0.asm',
+    'caller': 'code/gameflow/mainloop.asm',
+    'exploration': 'code/gameflow/exploration/explorationfunctions_2.asm',
+    'maxhp': 'code/common/stats/combatantstats_1.asm',
+    'hp': 'code/common/stats/combatantstats_2.asm',
+    'gold': 'code/common/stats/gold.asm',
+    'flags': 'code/common/stats/gameflags.asm',
+    'saveRows': 'data/maps/global/savepointmapcoords.asm',
+    'switchRows': 'data/maps/global/flagswitchedmaps.asm',
+    'raftRows': 'data/maps/global/raftresetmapcoords.asm',
+    'equates': 'sf2enums.asm',
+}
+subprocess.run(['git', '-C', str(root), 'diff', '--exit-code', 'HEAD', '--', *paths.values()], check=True)
+source = {key: (root / path).read_text(encoding='utf-8') for key, path in paths.items()}
+equates = _load_equates(root / paths['equates'])
+def number(value):
+    return int(value) if value.lstrip('-').isdigit() else _evaluate_equate(value, equates, {})
+def guard(key, entry, sequence):
+    _require_order(source[key], entry + ':', tuple(sequence.split('|')), paths[key])
+def rows(key, directive):
+    return [tuple(number(v) for v in row.split(',')) for row in _table_rows(source[key], directive + ' ')]
+
+guard('entry', 'BattleLoop', 'clr.b ((PLAYER_TYPE-$1000000)).w|setFlg 399|chkFlg 88')
+guard('unlock', 'UpdateBattleUnlockedFlag', 'clr.w d1|move.b ((CURRENT_BATTLE-$1000000)).w,d1|addi.w #BATTLE_COMPLETED_FLAGS_START,d1|jsr j_CheckFlag|beq.s @Return|subi.w #BATTLE_UNLOCKED_TO_COMPLETED_FLAGS_OFFSET,d1|jsr j_ClearFlag|@Return:|rts')
+guard('defeat', 'BattleLoop_Defeat', 'bsr.w UpdateBattleUnlockedFlag|clr.w ((DIALOGUE_NAME_INDEX_1-$1000000)).w|sndCom MUSIC_SAD_THEME_2|txt 363|clsTxt|clr.w d0|jsr j_GetMaxHp|jsr j_SetCurrentHp|jsr j_GetGold|lsr.l #1,d1|jsr j_SetGold|jsr GetEgressPositionForBattle(pc)|nop|moveq #-1,d4|cmpi.b #BATTLE_AMBUSHED_BY_GALAM_SOLDIERS,((CURRENT_BATTLE-$1000000)).w|bne.s @Return|@Return:|rts')
+guard('maxhp', 'GetMaxHp', 'moveq #COMBATANT_OFFSET_HP_MAX,d7|bsr.w GetCombatantWord')
+guard('hp', 'SetCurrentHp', 'moveq #COMBATANT_OFFSET_HP_CURRENT,d7|bsr.w SetCombatantWord')
+guard('gold', 'GetGold', 'move.l ((CURRENT_GOLD-$1000000)).w,d1|rts')
+guard('gold', 'SetGold', 'move.l d1,((CURRENT_GOLD-$1000000)).w|rts')
+guard('flags', 'CheckFlag', 'movem.l d0-d1/a0,-(sp)|bsr.w GetFlag|and.b (a0),d0|movem.l (sp)+,d0-d1/a0|rts')
+flag_helper = _function_section(source['flags'], 'GetFlag:', 'flag register preservation')
+assert 'd3' not in flag_helper.lower()  # SwitchMap's flag callee does not replace facing.
+assert number('BATTLE_COMPLETED_FLAGS_START') == 500
+assert number('BATTLE_UNLOCKED_TO_COMPLETED_FLAGS_OFFSET') == 100
+assert number('BATTLE_AMBUSHED_BY_GALAM_SOLDIERS') == 4
+assert number('MUSIC_SAD_THEME_2') == 12
+# Guard the entire selector's ordered special-case tests; Battle01 takes every bne.
+specials = ['VERSUS_GESHP', 'TO_ANCIENT_SHRINE', 'VERSUS_KRAKEN', 'TO_TAROS_SHRINE', 'POLCA_VILLAGE', 'PACALON', 'TO_MOUN']
+labels = ['23E60', '23E6A', '23E76', '23E82', '23E8E', '23E9A', '23EA6']
+sequence = ['clr.b d7', 'move.b ((CURRENT_BATTLE-$1000000)).w,d7']
+for battle, label in zip(specials, labels):
+    assert number('BATTLE_' + battle) != 1
+    sequence += ['cmpi.b #BATTLE_' + battle + ',d7', 'bne.s loc_' + label, 'loc_' + label + ':']
+sequence += ['move.b ((EGRESS_MAP-$1000000)).w,d0', 'jsr (GetSavepointForMap).w', 'rts']
+guard('egress', 'GetEgressPositionForBattle', '|'.join(sequence))
+guard('savepoint', 'GetSavepointForMap', 'chkFlg 399|bne.s @Continue|moveq #GAMESTART_MAP,d0|moveq #GAMESTART_SAVEPOINT_X,d1|moveq #GAMESTART_SAVEPOINT_Y,d2|moveq #GAMESTART_FACING,d3|rts|@Continue:|moveq #1,d1|moveq #1,d2|moveq #UP,d3|lea table_SavepointMapCoordinates(pc),a0|cmpi.b #-1,(a0)|beq.w byte_7620|cmp.b (a0),d0|beq.s @EgressEntryFound|addq.l #4,a0|@EgressEntryFound:|move.b (a0)+,d0|move.b (a0)+,d1|move.b (a0)+,d2|move.b (a0)+,d3|byte_7620:|chkFlg 64|beq.s @Done|cmpi.b #MAP_CURRENT,(a0)|beq.w @RaftEntry|move.b 1(a0),((RAFT_MAP-$1000000)).w|move.b 2(a0),((RAFT_X-$1000000)).w|move.b 3(a0),((RAFT_Y-$1000000)).w|@Done:|rts')
+guard('switch', 'SwitchMap', 'movem.l d1-d2/a0,-(sp)|lea table_FlagSwitchedMaps(pc),a0|move.w (a0),d2|bmi.w @Done|cmp.w d0,d2|bne.w @Next|move.w 2(a0),d1|jsr j_CheckFlag|beq.s @Next|move.w 4(a0),d0|bra.w @Done|@Next:|addq.l #6,a0|@Done:|movem.l (sp)+,d1-d2/a0|rts')
+caller = [_normal(line) for line in _without_comments(_function_section(source['caller'], 'MainLoop:', 'caller')) if line.strip()]
+start = caller.index('jsr j_BattleLoop')
+assert caller[start:start + 5] == ['jsr j_BattleLoop', 'alt_MainLoopEntry:', 'bsr.w SwitchMap', '@Exploration:', 'jsr j_ExplorationLoop']
+guard('exploration', 'ExplorationLoop', 'clr.w ((MAP_EVENT_TYPE-$1000000)).w|subi.w #20000,((STEP_COUNTER-$1000000)).w|jsr HealLivingAndImmortalAllies|jsr FadeOutToBlackAll(pc)|move.b d0,((CURRENT_MAP-$1000000)).w|move.b #NOT_CURRENTLY_IN_BATTLE,((CURRENT_BATTLE-$1000000)).w|jsr j_InitializeMapEntities|bsr.w ClearMapSetupTempFlags|jsr (LoadMap).w|jsr j_RunMapSetupInitFunction|bsr.w WaitForEvent')
+
+# Independent source-selected arithmetic on declared comparison inputs, before reading remake evidence.
+gold_cases = [(g, (g & 0xFFFFFFFF) >> 1) for g in (0, 1, 3, 120, 121, 0xFFFFFFFF)]
+assert [after for _, after in gold_cases] == [0, 0, 1, 60, 60, 0x7FFFFFFF]
+selected = dict(battle=1, completed=False, unlockedBefore=True,
+                leaderHpBefore=0, leaderHpMax=12, goldBefore=120)
+selected.update(unlockedAfter=False if selected['completed'] else selected['unlockedBefore'],
+                leaderHpAfter=selected['leaderHpMax'], goldAfter=selected['goldBefore'] >> 1)
+assert (selected['unlockedAfter'], selected['leaderHpAfter'], selected['goldAfter']) == (True, 12, 60)
+assert 500 + selected['battle'] == 501 and not selected['completed']
+save_rows = rows('saveRows', 'savePointMapCoordinates')
+map3 = next(row for row in save_rows if row[0] == 3)
+switch3 = next(row for row in rows('switchRows', 'flagSwitchedMap') if row[0] == 3)
+raft_rows = rows('raftRows', 'raftResetMapCoordinates')
+raft3 = next(row for row in raft_rows if row[0] in (3, number('MAP_CURRENT')))
+assert map3 == (3, 32, 13, 1) and switch3 == (3, 640, 4)
+pre399 = [number('GAMESTART_' + name) for name in ('MAP', 'SAVEPOINT_X', 'SAVEPOINT_Y', 'FACING')]
+assert pre399 == [3, 56, 3, 3]  # Helper exclusion: BattleLoop has already set399.
+
+# Read-only accepted terminal check; this does not replay the battle or prove recovery implemented.
+accepted = Path('local/leader-defeat-pending')
+review = json.loads((accepted / 'root-review/acceptance.json').read_text(encoding='utf-8-sig'))
+native = json.loads((accepted / 'native-leader-02/captures/receipt.json').read_text(encoding='utf-8-sig'))
+assert review['acceptance'] == 'ACCEPT' and review['terminalReceiptAndWholeStateDeltaExact']
+b = native['battle']; leader = next(unit for unit in b['Roster'] if unit['Index'] == 0)
+assert b['BattleIndex'] == 1 and b['CompletedFlag501'] is False and b['UnlockFlag401'] is True
+assert (leader['Stats']['HpCurrent'], leader['Stats']['HpMax'], b['CurrentGold']) == (0, 12, 120)
+assert leader['Position'] is None and leader['Stats']['CurrentDefeats'] == 1
+assert b['RandomSeedImage'] == 0x10491234 and b['RandomSeedCopy'] == 0x0034
+assert native['exactCopiedAndPhysicalSnapshotMatch'] and b['DefeatPending']['Previous'] == b['TurnCompletion']
+history = b['TurnCompletion']; count = 0
+while history is not None:
+    count += 1; history = history['Previous']
+assert count == 119 and len([v for v in b['Occupancy'] if v != -1]) == 5
+report = dict(status='Pass', sourcePin=pin, sourcePaths=list(paths.values()),
+              evidence='Source structure and authored arithmetic; no new ROM/runtime observation',
+              selectedRecovery=selected, goldCases=gold_cases, acceptedHistory=count,
+              originalEntrySets399=True, conditionalEgressMap3=map3,
+              conditionalMap3Switch=switch3, conditionalRaft3=raft3[1:],
+              excludedPre399=pre399, plannedStop='Before GetEgressPositionForBattle; D4 result not yet assigned',
+              unprovidedProductState=['current egress map', 'F64 / raft state', 'F640'],
+              recoveryImplementationRun=False, oldSuitesReplayed=False)
+Path('local/defeat-return-plan/source-check.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+print(json.dumps(report, indent=2))
+```
+<!-- defeat-return-source-check:end -->
+
+The initial local narrow check completed with a table-reader prefix collision:
+`flagSwitchedMapsEnd` was treated as a `flagSwitchedMap` row (`missing upstream equate: sEnd`).
+Passing the existing reader an exact directive plus its separating space corrected only that
+caller; the subsequent check passed. Retain both logs under the new output root. No maintained
+parser, source formula, fixture or accepted result changed.
+
+For this documentation-only slice, run link/fence/table/private/diff checks, the clean committed
+planner, normal `uv run sf2 verify`, this new narrow check and lightweight Public CI. Preserve the
+known default-H0-ROM absence as a failure boundary. No .NET full/native/official run or prior source
+reduction is selected merely to prepare this plan. The future implementation follows the proportional
+gate owner and committed planner for its actual changed dependencies. Stop after a frozen Draft PR
+for independent main-gate review; do not implement the proposed recovery or continue into return.
 
 
 ### Controlled Godot Battle01 consumer
