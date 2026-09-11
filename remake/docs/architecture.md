@@ -295,10 +295,23 @@ before-image accounting, requires both states' exact early binding, then allocat
 next snapshot before one publication. `DefeatReturn` contains map3/(32,13)/opaque UP1 for savepoint
 and post-switch destination, D4=-1 and no raft write. The entire recovered Battle and all preparation/
 source objects remain reference-identical. No new phase or 120th turn exists. Confirm after recovery
-issues this request once; the session-derived projection then freezes all input. Legacy preparations
-retain return-unavailable behavior. Live map57/Battle remains until a separately admitted arrival
-consumer exists. ExplorationLoop, original presentation/VInt and natural egress/flag continuity remain
-unimplemented or Unknown.
+issues this request once. Without the optional early arrival comparison the request freezes input.
+With it, `EnterPrivateOriginalBattle01Exploration` authenticates the same preparation/recovery,
+validates the catalog-owned return-load facts, projects all30 party slots and fresh Map3 state,
+then publishes one completed `Arrival` facet on the existing session snapshot. `Arrival.Party` is
+the sole current party; `Arrival.Before` retains the exact request and the whole battle/source chain.
+Map/flow derive from that facet. The old first-visit getters and commands remain closed.
+
+The entry uses explicit neutral dormant inputs and a restricted unchanged-effective-stat policy;
+it does not infer base stats or execute general UpdateCombatantStats. It clones pristine Map3,
+applies the F506/F220 false branches, area1 and record8's30-word roof clear, then default setup init.
+A separate immutable placement overlay declares player0 and authenticated F66 followers1/2 at the
+same(32,13)/UP current/target, skips their duplicate setup rows, and hides/moves142 out. Dead Chester
+retains BLUE_FLAME identity. No follower/NPC script runs; exact original positions before the first
+WaitForEvent remain Unknown. Typed arrival overloads share the existing camera/atlas/pixel math.
+Godot hides the battle and old prompts, shows the fresh map and explicit overlapping identities,
+and closes all input. No fake legacy snapshot or second mutable map authority is introduced.
+Original presentation/VInt, general stat refresh and natural egress/flag continuity remain Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
 source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement

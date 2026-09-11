@@ -7,6 +7,28 @@ namespace Sf2.Remake.Application.Content;
 
 public static class OriginalMapRuntimeAdmission
 {
+    public static bool HasExactAcceptedReturnEntryLoad(OriginalMapReturnEntryLoadDefinition? definition,
+        OriginalMapExplorationRuntimeCatalog catalog)
+    {
+        if (definition is null || !ReferenceEquals(definition.Runtime, catalog.Resolve(new("map3")))) return false;
+        var runtime = definition.Runtime;
+        OriginalMapReturnFlagCopy[] flags = [new(506, 23, 23, 1, 2, 28, 22), new(506, 57, 21, 1, 2, 57, 23)];
+        OriginalMapReturnRoofRow[] roofs = [
+            new(1, 4, 8, 255, 255, 7, 8, 2, 32), new(2, 7, 22, 255, 255, 6, 6, 5, 48),
+            new(3, 8, 22, 255, 255, 6, 6, 5, 48), new(4, 12, 12, 255, 255, 6, 6, 10, 38),
+            new(5, 19, 12, 255, 255, 6, 5, 17, 39), new(6, 24, 26, 51, 20, 9, 7, 22, 51),
+            new(7, 25, 26, 51, 20, 9, 7, 22, 51), new(8, 32, 15, 255, 255, 5, 6, 30, 41),
+            new(9, 38, 24, 255, 255, 5, 5, 36, 51), new(10, 41, 13, 255, 255, 9, 8, 39, 37)];
+        return runtime.SelectedSetup == new MapSetupId("ms_map3") && runtime.SelectedInitIdentity == SelectedInitIdentity &&
+            definition.Area.Identity == new OriginalMapAreaRecordIdentity("Map03s2_Areas", 1) &&
+            definition.Area.SecondLayerForegroundStart == new OriginalMapAreaWordPair(0, 32) &&
+            definition.FlagResource == "Map03s3_FlagEvents" && definition.FlagCopies.SequenceEqual(flags) &&
+            definition.ChestResource == "Map03s7_ChestItems" &&
+            definition.Chests.SequenceEqual(new OriginalMapReturnChest[] { new(6, 18, 220, 127) }) &&
+            definition.RoofResource == "Map03s5_RoofEvents" && definition.Roofs.SequenceEqual(roofs) &&
+            definition.SelectRoof(new(32, 13)).Ordinal == 8;
+    }
+
     public const string PackageId = "sf2-canonical-map-import-v1";
     public const int SchemaVersion = 1;
     public const string AcceptedContentDigest =

@@ -17,6 +17,24 @@ internal sealed record PrivateMap3PresentationPlan(
     bool CurrentAreaOverlay,
     float StatusY)
 {
+    internal const string ArrivalStatus = "Granseal entry ready (32,13), facing up. Exploration input unavailable.";
+    internal static string FormatArrivalStatus(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    {
+        var party = arrival.Party;
+        string Ally(int id, string name)
+        {
+            var slot = party.Slots[id];
+            return $"{(id == 0 ? "Player" : "Follower")} {id} {name}: (32,13)/UP, target (32,13), " +
+                $"HP {slot.HpCurrent}/{slot.HpMax} MP {slot.MpCurrent}/{slot.MpMax}" +
+                (id == 2 ? "  DEAD / BLUE_FLAME" : "");
+        }
+        return ArrivalStatus + "\n" + arrival.EntityPolicy + "\n" +
+            Ally(0, "Bowie") + "\n" + Ally(1, "Sarah") + "\n" + Ally(2, "Chester") + "\n" +
+            $"Gold {party.Gold}; healed slots {string.Join('/', party.ProcessedIds)} of30. History retained.\n" +
+            "Default Map3; church roof open; entity142 hidden/out; temporary flags reset.\n" +
+            "Original positions after scripts: Unknown. All exploration controls closed.";
+    }
+
     private const string DiagnosticExplanation =
         "Project-authored traversal diagnostics from accepted Domain policy. " +
         "Original presentation remains unavailable.";
@@ -297,6 +315,8 @@ internal sealed class PrivateMap3Presenter
     private readonly bool _currentAreaOverlay;
     private readonly bool _showTraversalOnInitialMap;
     private readonly float _initialStatusY;
+    private readonly Label _banner;
+    private readonly Label _explanation;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
@@ -305,7 +325,7 @@ internal sealed class PrivateMap3Presenter
         PrivateMap3WorldTreatment requestedWorldTreatment,
         bool staticOverlayDiagnostic,
         bool currentAreaOverlay,
-        bool showTraversalOnInitialMap)
+        bool showTraversalOnInitialMap, Label banner, Label explanation)
     {
         _baseViewport = baseViewport;
         _viewport = viewport;
@@ -315,6 +335,7 @@ internal sealed class PrivateMap3Presenter
         _staticOverlayDiagnostic = staticOverlayDiagnostic;
         _currentAreaOverlay = currentAreaOverlay;
         _showTraversalOnInitialMap = showTraversalOnInitialMap;
+        _banner = banner; _explanation = explanation;
     }
 
     internal PrivateOriginalMapTraversalViewProjection? Projection =>
@@ -324,6 +345,7 @@ internal sealed class PrivateMap3Presenter
         _baseViewport?.Projection;
 
     internal bool ExpectsBaseProjection => _baseViewport is not null;
+    internal bool CanDisplayArrival => _baseViewport is not null && _map3Atlas is not null;
 
     internal bool UsesLocalBaseAtlas => _baseViewport?.UsesLocalAtlas == true;
 
@@ -430,7 +452,7 @@ internal sealed class PrivateMap3Presenter
             plan.WorldTreatment,
             plan.StaticOverlayDiagnostic,
             plan.CurrentAreaOverlay,
-            plan.ShowTraversalViewport);
+            plan.ShowTraversalViewport, banner, explanation);
     }
 
     internal bool TryBindBaseAtlas(
@@ -607,6 +629,20 @@ internal sealed class PrivateMap3Presenter
         _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
 
+    internal void Project(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    {
+        if (_baseViewport is null || _map3Atlas is null)
+            throw new InvalidOperationException("Select the reviewed Map3 base atlas before starting the arrival comparison.");
+        if (!_baseViewport.TryBindLocalAtlas(_map3Atlas, arrival, _requestedWorldTreatment, out var diagnostic))
+            throw new InvalidOperationException("The arrival atlas could not bind: " + diagnostic!.Message);
+        _baseViewport.ProjectMountedAtlas(arrival);
+        _viewport?.Hide(); _baseViewport.Show(); _banner.Show(); _explanation.Show(); _status.Show();
+        _explanation.Text = "Fresh Granseal entry with diagnostic entities. Not full original fidelity.";
+        _status.Position = new Vector2(StatusX, 310); _status.Size = new Vector2(912, 210);
+        _status.AddThemeFontSizeOverride("font_size", 16);
+        _status.Text = PrivateMap3PresentationPlan.FormatArrivalStatus(arrival);
+    }
+
     internal static float ProjectionStatusY(bool traversalVisible, float initialStatusY) =>
         traversalVisible ? Math.Max(450, initialStatusY) : initialStatusY;
 
@@ -631,17 +667,18 @@ internal sealed class PrivateMap3Presenter
             BaseVisible: baseVisible);
     }
 
-    internal static string Battle01PendingStatus(string? failure = null) =>
+    internal static string Battle01PendingStatus(string? failure = null, bool arrivalSelected = false) =>
         "Battle 01 pending. Map 40 retained.\n" +
         (failure is null ? "N: start controlled diagnostic Battle 01.\n" : failure + "\n") +
-        "Destination Map 57; restart returns to Map 3.";
+        (arrivalSelected ? "Leader defeat + Granseal return + entry comparisons selected." :
+            "Destination Map 57; restart returns to Map 3.");
 
     internal void ProjectBattle01Pending(string? failure = null)
     {
         // Pending cannot coexist with an active synthetic battle. Use the whole status
         // row so Content rejection details and recovery still fit below traversal.
         _status.Size = new Vector2(912, StatusSize.Y);
-        _status.Text = Battle01PendingStatus(failure);
+        _status.Text = Battle01PendingStatus(failure, CanDisplayArrival);
     }
 
     internal void ProjectStatus(string message)

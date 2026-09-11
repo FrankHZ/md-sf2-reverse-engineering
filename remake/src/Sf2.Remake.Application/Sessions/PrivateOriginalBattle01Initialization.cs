@@ -12,15 +12,24 @@ public sealed class PrivateOriginalBattle01SessionSnapshot
         : this(preparation, battle, sourceLocomotion, sourceBridge, null) { }
     internal PrivateOriginalBattle01SessionSnapshot(PrivateOriginalBattle01StartupPrepared preparation,
         Battle01InitializedState battle, PrivateOriginalMapPlayerLocomotionSnapshot sourceLocomotion,
-        PrivateOriginalMapBattleBridgeSnapshot? sourceBridge, Battle01DefeatReturnRequest? defeatReturn)
+        PrivateOriginalMapBattleBridgeSnapshot? sourceBridge, Battle01DefeatReturnRequest? defeatReturn,
+        PrivateOriginalMapReturnArrivalSnapshot? arrival = null)
     {
         Preparation = preparation; Battle = battle; SourceLocomotion = sourceLocomotion; SourceBridge = sourceBridge;
         DefeatReturn = defeatReturn;
+        Arrival = arrival;
     }
-    public GameFlowStage FlowStage => GameFlowStage.Battle;
-    public MapId Map => Battle.Map;
+    public GameFlowStage FlowStage => Arrival is null ? GameFlowStage.Battle : GameFlowStage.Exploration;
+    public MapId Map => Arrival?.Map ?? Battle.Map;
     public Battle01InitializedState Battle { get; }
     public Battle01DefeatReturnRequest? DefeatReturn { get; }
+    public PrivateOriginalMapReturnArrivalSnapshot? Arrival { get; }
+    public bool CanEnterExploration => Arrival is null && DefeatReturn is not null &&
+        Battle.Phase == Battle01Phase.DefeatRecoveryPending && ReferenceEquals(DefeatReturn.Recovery, Battle.DefeatRecovery) &&
+        Preparation.ArrivalInputs?.GetAdmissionDiagnostic() is null && Preparation.ArrivalInputs is not null &&
+        Preparation.ArrivalLoad is not null && ReferenceEquals(DefeatReturn.Admission, Preparation.ReturnAdmission) &&
+        ReferenceEquals(Battle.ReturnAdmission, Preparation.ReturnAdmission) &&
+        ReferenceEquals(Battle.DefeatRecovery?.Before.ReturnAdmission, Preparation.ReturnAdmission);
     public bool CanRequestDefeatReturn => DefeatReturn is null && Battle.Phase == Battle01Phase.DefeatRecoveryPending &&
         Preparation.ReturnInputs is { } inputs && inputs.GetAdmissionDiagnostic() is null &&
         Preparation.ReturnAdmission is { } admission &&
@@ -44,7 +53,7 @@ public sealed partial class GameSession
 
     public GameFlowStage PrivateOriginalFlowStage => _privateOriginalMapSnapshot is null
         ? throw new InvalidOperationException("This session does not own the private original profile.")
-        : PrivateOriginalBattle01 is null ? GameFlowStage.Exploration : GameFlowStage.Battle;
+        : PrivateOriginalBattle01?.FlowStage ?? GameFlowStage.Exploration;
     public MapId PrivateOriginalCurrentMap => PrivateOriginalBattle01?.Map ?? PrivateOriginalMapSnapshot.Map;
 
     public PrivateOriginalBattle01InitializationResult InitializePrivateOriginalBattle01(
@@ -66,6 +75,15 @@ public sealed partial class GameSession
             return new PrivateOriginalBattle01InitializationRejected(partyFailure);
         if (prepared.ReturnInputs?.GetAdmissionDiagnostic() is { } returnFailure)
             return new PrivateOriginalBattle01InitializationRejected(returnFailure);
+        if (prepared.ArrivalInputs is not null)
+        {
+            if (prepared.ArrivalInputs.GetAdmissionDiagnostic() is { } arrivalFailure)
+                return new PrivateOriginalBattle01InitializationRejected(arrivalFailure);
+            if (prepared.ReturnInputs is null || prepared.Party.Id != OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId)
+                return InitializationRejected("arrival.binding", "Retain the early return/leader comparison.");
+            if (GetArrivalSourceDiagnostic(prepared.Pending.SourceSnapshot, prepared.ArrivalLoad) is { } sourceFailure)
+                return new PrivateOriginalBattle01InitializationRejected(sourceFailure);
+        }
         if (prepared.Inputs.GetAdmissionDiagnostic() is { } inputFailure)
             return new PrivateOriginalBattle01InitializationRejected(inputFailure);
 

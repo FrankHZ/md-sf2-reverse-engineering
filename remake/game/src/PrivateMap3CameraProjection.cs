@@ -64,12 +64,26 @@ internal sealed record PrivateMap3CameraProjection
         PrivateOriginalMapPlayerLocomotionSnapshot? locomotion = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        MapPosition source = snapshot.PlayerPosition;
+        return Create(snapshot.Map, snapshot.PlayerPosition, locomotion);
+    }
+
+    internal static PrivateMap3CameraProjection Create(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    {
+        ArgumentNullException.ThrowIfNull(arrival);
+        return Create(arrival.Map, arrival.PlayerPosition, arrival.Locomotion);
+    }
+
+    private static PrivateMap3CameraProjection Create(
+        MapId map, MapPosition playerPosition,
+        PrivateOriginalMapPlayerLocomotionSnapshot? locomotion = null)
+    {
+        ArgumentNullException.ThrowIfNull(playerPosition);
+        MapPosition source = playerPosition;
         int offsetXUnits = 0;
         int offsetYUnits = 0;
         if (locomotion is not null)
         {
-            if (locomotion.DestinationPosition != snapshot.PlayerPosition)
+            if (locomotion.DestinationPosition != playerPosition)
             {
                 throw new ArgumentException(
                     "The camera locomotion destination must match the authoritative private-map position.",
@@ -127,7 +141,7 @@ internal sealed record PrivateMap3CameraProjection
             0,
             maximumTopLeftPixelY);
         return new PrivateMap3CameraProjection(
-            snapshot.Map,
+            map,
             focusXUnits,
             focusYUnits,
             topLeftPixelX,

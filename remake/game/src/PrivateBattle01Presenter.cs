@@ -14,7 +14,8 @@ internal sealed record PrivateBattle01Projection(
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
-    string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null);
+    string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null,
+    bool CanEnterExploration = false);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -78,10 +79,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     }
 
     internal static PrivateBattle01Projection BuildProjection(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
-        BuildProjection(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn);
+        BuildProjection(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn, snapshot.CanEnterExploration);
 
     internal static PrivateBattle01Projection BuildProjection(Battle01InitializedState battle, string status,
-        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null)
+        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null, bool canEnterExploration = false)
     {
         var control = battle.FirstControl;
         var movement = control?.Movement;
@@ -133,7 +134,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string controls = battle.Phase switch
         {
             Battle01Phase.DefeatPending => "Space: restore Bowie HP and halve gold. Return unavailable.",
-            Battle01Phase.DefeatRecoveryPending => defeatReturn is not null ? "Return requested. Input closed. Exploration unavailable."
+            Battle01Phase.DefeatRecoveryPending => defeatReturn is not null ? canEnterExploration
+                ? "Space: enter Granseal. Exploration controls remain closed."
+                : "Return requested. Input closed. Exploration unavailable."
                 : canRequestDefeatReturn ? "Space: request Granseal return. Exploration unavailable."
                 : "Recovery applied. Input closed. Return unavailable.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
@@ -157,16 +160,16 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
-                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn);
+                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration);
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
-        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn);
+        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn, snapshot.CanEnterExploration);
 
     internal void Project(Battle01InitializedState battle, string status,
-        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null)
+        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null, bool canEnterExploration = false)
     {
-        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn);
+        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn, canEnterExploration);
         if (_details is null)
         {
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);

@@ -201,7 +201,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapCrossMapTransitionDefinition? middleTowerMap21Transition = null,
         OriginalMapMiddleTowerGuardDefinition? middleTowerGuard = null,
         OriginalMapCrossMapTransitionDefinition? northMap40Transition = null,
-        OriginalBattle01AdmissionDefinition? battle01Admission = null)
+        OriginalBattle01AdmissionDefinition? battle01Admission = null,
+        OriginalMapReturnEntryLoadDefinition? returnEntryLoad = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -735,6 +736,9 @@ public sealed class OriginalMapImportDefinition
         MiddleTowerMap21Transition = middleTowerMap21Transition;
         NorthMap40Transition = northMap40Transition;
         Battle01Admission = battle01Admission;
+        if (returnEntryLoad is not null && !OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(returnEntryLoad, RuntimeCatalog))
+            throw new ArgumentException("The return-load facts must bind the exact Map3 catalog runtime.", nameof(returnEntryLoad));
+        ReturnEntryLoad = returnEntryLoad;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -807,6 +811,7 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCrossMapTransitionDefinition? NorthMap40Transition { get; }
 
     public OriginalBattle01AdmissionDefinition? Battle01Admission { get; }
+    public OriginalMapReturnEntryLoadDefinition? ReturnEntryLoad { get; }
 
     internal OriginalMapCrossMapTransitionDefinition? FindCrossMapTransition(
         OriginalMapCrossMapTransitionIdentity identity) =>

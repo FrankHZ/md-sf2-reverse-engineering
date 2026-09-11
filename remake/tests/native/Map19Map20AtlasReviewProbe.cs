@@ -1541,20 +1541,76 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             !requested.CanRequestDefeatReturn && presenter.Projection!.Status==PrivateBattle01Presenter.ReturnRequestedStatus,
             "Only the admitted Granseal request is published; live map57/Battle remains before ExplorationLoop");
         await CaptureControl("44-defeat-return-request-physical");
-        var projection=presenter.Projection;
-        foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L}) await PressBattleKey(key);
-        Require(PrivateBattle01Ui.DispatchNext(_session,requested)==PrivateBattle01Presenter.ReturnRequestedStatus,
-            "Return dispatcher stops and retains the explicit destination status");
-        Require(ReferenceEquals(requested,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,presenter.Projection) &&
-            JsonSerializer.Serialize(requested.Battle,json)==recoveredJson,"All actual battle keys and dispatcher remain frozen after return");
-        await CaptureControl("45-defeat-return-inputs-frozen");
+        Require(requested.CanEnterExploration && requested.Preparation.ArrivalInputs ==
+            OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison &&
+            presenter.Projection!.CanEnterExploration && presenter.Projection.Controls.Contains("Space: enter Granseal"),
+            "The original early preparation enables exactly one visible entry confirmation");
+        var inspectedEntry=((PrivateOriginalBattle01ExplorationEntered)_session.EnterPrivateOriginalBattle01Exploration(requested)).Snapshot;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,requested);
+        await PressBattleKey(Key.Space);
+        var entered=_session.PrivateOriginalBattle01!; var arrival=entered.Arrival!;
+        Require(JsonSerializer.Serialize(arrival,json)==JsonSerializer.Serialize(inspectedEntry.Arrival,json) &&
+            ReferenceEquals(arrival.Before,requested) && ReferenceEquals(entered.Battle,requested.Battle) &&
+            ReferenceEquals(entered.DefeatReturn,request) && ReferenceEquals(entered.Preparation,requested.Preparation) &&
+            ReferenceEquals(entered.SourceSnapshot,requested.SourceSnapshot) &&
+            JsonSerializer.Serialize(entered.Battle,json)==recoveredJson,
+            "Physical entry equals the direct API in full and preserves the complete historical battle/request/source");
+        var arrivalRoof=(MapBlockCopyLifecycleActiveState)arrival.RoofClear.LifecycleState;
+        var inspectedRoof=(MapBlockCopyLifecycleActiveState)inspectedEntry.Arrival!.RoofClear.LifecycleState;
+        Require(arrivalRoof.RecordOrdinal==inspectedRoof.RecordOrdinal &&
+            arrivalRoof.DestinationX==inspectedRoof.DestinationX && arrivalRoof.DestinationY==inspectedRoof.DestinationY &&
+            arrivalRoof.Width==inspectedRoof.Width && arrivalRoof.Height==inspectedRoof.Height &&
+            arrivalRoof.SavedWords.SequenceEqual(inspectedRoof.SavedWords),
+            "The derived roof lifecycle and all30 saved words also match the direct API");
+        // Read the exact before-image owners rather than duplicate the entry reducer's flag list.
+        var story=requested.SourceSnapshot;
+        object[] flagOwners=[story.MiddleTowerGuard!,story.Zone601!,story.Sarah!,story.Entity142!,
+            story.MessengerAcceptance!,story.CastleGate!,story.PalaceFirstVisit!,story.AstralAcceptance!,
+            requested.Battle,requested.DefeatReturn!.Admission];
+        var knownFlagsBefore=new Dictionary<int,bool>();
+        foreach(var owner in flagOwners) foreach(var property in owner.GetType().GetProperties()) {
+            var match=System.Text.RegularExpressions.Regex.Match(property.Name,@"Flag(\d+)(?:Set)?$");
+            if(property.PropertyType!=typeof(bool) || !match.Success)continue;
+            int flag=int.Parse(match.Groups[1].Value);bool value=(bool)property.GetValue(owner)!;
+            Require(!knownFlagsBefore.TryGetValue(flag,out bool earlier) || earlier==value,"Before-image flag owners agree");
+            knownFlagsBefore[flag]=value;
+        }
+        foreach(var (value,index) in requested.Battle.RegionFlags90Through105.Select((v,i)=>(v,i)))
+            knownFlagsBefore.Add(90+index,value);
+        var expectedFlags=knownFlagsBefore.ToDictionary(p=>p.Key,p=>p.Value);
+        foreach(var pair in requested.Preparation.ArrivalInputs!.Flags)expectedFlags.Add(pair.Key,pair.Value);
+        foreach(int flag in Enumerable.Range(256,128))expectedFlags[flag]=false;
+        expectedFlags[80]=true;
+        Require(expectedFlags.OrderBy(p=>p.Key).SequenceEqual(arrival.Flags.OrderBy(p=>p.Key)) &&
+            knownFlagsBefore.Any(p=>p.Value) && knownFlagsBefore.Any(p=>!p.Value) &&
+            Enumerable.Range(256,128).All(flag=>!arrival.Flags[flag]) &&
+            !arrival.Flags.ContainsKey(89) && !arrival.Flags.ContainsKey(606),
+            "Current entry image preserves known true/false before-image values, resets all128 temp flags and leaves unknowns absent");
+        await CaptureArrival("45-granseal-entry-physical");
+        var projection=_presenter.BaseProjection; var entities=arrival.Entities; string arrivalJson=JsonSerializer.Serialize(arrival,json);
+        // Invoke the real callback directly so an exception reaches the probe's failure/exit contract.
+        _root._PhysicsProcess(1.0/60.0);
+        foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L,Key.W,Key.S,Key.D,Key.F,Key.E,Key.Enter,Key.Escape})
+            await PressBattleKey(key);
+        for(int frame=0;frame<60;frame++) {
+            _root._PhysicsProcess(1.0/60.0);
+            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
+        }
+        Require(ReferenceEquals(entered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,_presenter.BaseProjection) &&
+            ReferenceEquals(entities,arrival.Entities) && JsonSerializer.Serialize(arrival,json)==arrivalJson &&
+            _session.EnterPrivateOriginalBattle01Exploration(entered) is PrivateOriginalBattle01ExplorationEntryRejected,
+            "All keys, direct physics callbacks and elapsed frames retain the exact entry; no follower or NPC script executes");
+        await CaptureArrival("46-granseal-entry-inputs-frozen");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled leader death, HP/gold recovery and Granseal return request; stop before ExplorationLoop",
+            status="Pass",scope="controlled defeat recovery/return and fresh Granseal declaration freeze; exploration input closed",
             preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
-            initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=requested.Battle,
-            defeatReturn=request,earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
+            arrivalInputs=_initialBattle01.Preparation.ArrivalInputs,
+            initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=entered.Battle,
+            defeatReturn=request,arrival,arrivalRoof,knownFlagsBefore,entryFlagImagePreserved=true,
+            earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
-            actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,frozenPhysicalKeys=8,frames=_frames
+            exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
+            entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,directPhysicsCallbacks=61,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 
@@ -1678,6 +1734,55 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = key, Pressed = false });
         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+    }
+
+    private async Task CaptureArrival(string name)
+    {
+        var arrival=_session.PrivateOriginalMapArrival!; var view=_presenter.BaseProjection!;
+        var viewport=Field<PrivateOriginalMapBaseViewport>(_presenter,"_baseViewport");
+        var battle=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
+        var status=Field<Label>(_presenter,"_status");
+        Require(!battle.Visible && viewport.Visible && _session.PrivateOriginalFlowStage==GameFlowStage.Exploration &&
+            view.Map==new MapId("map3") && _presenter.BaseAtlasAssetId=="world.map3.base-tileset-atlas" &&
+            view.CurrentAreaOverlay && view.OverlayAreaRecordOrdinal==1 && view.OriginX==26 && view.OriginY==10 &&
+            ReferenceEquals(_presenter.PlayerLocomotion,arrival.Locomotion) && !arrival.Locomotion.IsMoving,
+            "Fresh Map3 atlas/area1/idle camera owns the visible arrival; battle and old view are hidden");
+        Require(arrival.PlayerPosition==new MapPosition(32,13) && arrival.PlayerOpaqueFacing==1 &&
+            arrival.Party.Gold==60 && arrival.Party.Slots.Count==30 && arrival.Party.ProcessedIds.SequenceEqual(new byte[]{0,1,7,28}) &&
+            arrival.Entity142Hidden && arrival.Entity142MovedOut && !arrival.ExplorationInputAvailable,
+            "Current party, default-init effects and closed input");
+        foreach(int id in new[]{0,1,2}) {
+            var e=arrival.Entities.Single(e=>e.Id==id);
+            Require(e.Position==arrival.PlayerPosition && e.TargetPosition==arrival.PlayerPosition &&
+                e.DeclarationPosition==arrival.PlayerPosition && e.Facing==1 && e.VelocityXUnits==0 && e.TravelYUnits==0,
+                "Each player/F66 follower identity retains its same-cell current/target declaration and zero travel");
+        }
+        var glyphs=viewport.ArrivalActorGlyphs!;var sarah=glyphs.Single(e=>e.LogicalActorId==1);var chester=glyphs.Single(e=>e.LogicalActorId==2);
+        Require(sarah.Position==chester.Position && sarah.DestinationRect==chester.DestinationRect &&
+            chester.Kind==PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond &&
+            status.Text.Contains("Player 0 Bowie: (32,13)/UP") && status.Text.Contains("Follower 1 Sarah: (32,13)/UP") &&
+            status.Text.Contains("Follower 2 Chester: (32,13)/UP") && status.Text.Contains("DEAD / BLUE_FLAME") &&
+            status.Text.Contains(arrival.EntityPolicy),"Panel exposes all overlapping identities without moving their glyphs");
+        var roof=(MapBlockCopyLifecycleActiveState)arrival.RoofClear.LifecycleState;
+        Require(roof.RecordOrdinal==8 && roof.SavedWords.Count==30,"Church roof clear and before-image");
+        for(int y=41;y<47;y++) for(int x=30;x<35;x++) Require(arrival.WorkingLayout[x,y]==0,"All30 church words cleared");
+        await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
+        using var image=GetViewport().GetTexture().GetImage();
+        Require(image.SavePng(Path.Combine(_output,name+".png"))==Error.Ok,"Arrival PNG");
+        Require(status.GetLineCount()==status.GetVisibleLineCount() && status.Position.Y+status.GetMinimumSize().Y<=540 &&
+            status.Position.X+status.GetMinimumSize().X<=960,
+            $"All arrival text fits the logical canvas: lines={status.GetLineCount()}/{status.GetVisibleLineCount()}, minimum={status.GetMinimumSize()}, size={status.Size}");
+        int samples=0;
+        for(int row=0;row<5;row++) for(int column=4;column<9;column++) {
+            if(column==6 && row==3)continue;
+            int x=column*24+2,y=row*24+2;int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
+            var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
+            var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+            Require(actual.IsEqualApprox(expected),"Visible church texel equals current typed arrival projection");samples++;
+        }
+        _frames.Add(new {name,map=arrival.Map.Value,phase="EntryReady",status=status.Text,entities=arrival.Entities,
+            glyphs,camera=view.Camera,roofRecord=roof.RecordOrdinal,roofWords=roof.SavedWords.Count,
+            samples,width=image.GetWidth(),height=image.GetHeight(),policy=arrival.EntityPolicy});
     }
 
     private async Task CaptureControl(string name, string provenance="physical Godot key events from controlled Map40 seed")
