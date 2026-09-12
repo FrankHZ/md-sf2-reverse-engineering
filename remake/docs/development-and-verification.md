@@ -386,23 +386,27 @@ the retained fixed SDK/editor and committed archive. Run the planner-selected fu
 once and official Godot gate; preserve completed failures and correct/rerun only their owning nodes.
 No H3 or full Python suite is added by this slice. Normal public verification remains a separate gate.
 
-For Chester's first kill, required-private
-`AcceptedSelectedInputsCreditChesterFirstKillAndActuallyRejectEnemy128` replays both complete early
+For Chester's first kill and subsequent enemy128 defeat, required-private
+`AcceptedSelectedInputsContinueEnemy128DefeatThroughBowieMovementCancel` replays both complete early
 input histories through93. Use `LeaderDefeatComparison` with no return/arrival as the comparison
-baseline; normalize only the named Chester kills before-images. The test then cancels/reselects129,
-commits94 (HP1/EXP54/kills1/gold180/main323E1234/copy0134), and actually attempts128's lethal branch,
-requiring exact94 retention. It also retains the old-preset129 lethal guard. Both physical wrappers
-must reject a late preparation changing only Chester kills after successful local construction.
-Domain owning tests cover separate kill/EXP/gold/counter rewind, forgery, cleanup/after-turn and
-finalization rollback. Godot covers launch rejection/defaults and visible current/credited kills.
+baseline; normalize only the named Chester kills before-images. The test cancels/reselects129,
+commits94 (HP1/EXP54/kills1/gold180/main323E1234/copy0134), proves explicit old enemy policies retain
+exact94, then admits actual128 defeat95 and Bowie movement/confirm/cancel. Verify HP0/EXP54/kills1/
+defeats1, worklists[2]/[], both2/3 counts, mask7→0, main98321234/copy0234, same R12/raw4 and budget12;
+cancel must restore the whole battle at(11,15). Require `SF2_REQUIRE_PRIVATE_TESTS=1`, all selected
+input paths and zero skips. Retain old-preset129 refusal and both physical facades' late preparation
+rejection. Owning tests cover separate death/kill/EXP/gold/counter rewind, credited predecessor and
+receipt forgery, dead-unit exclusion, stale/repeated snapshots and late atomic finalization failures.
 
-Native `chester-first-kill` adds the launch opt-in before physical N. Its37-frame route compares the
-entire physical/API battle, keeps actual cancel/reselect, then shows the actual128 refusal. Inspect
-new frames33–37 at original resolution; earlier images may be reused only after byte comparison.
-Pair it with ordinary `leader-defeat-pending`119-return, `chester-counterattack`, enemy-physical and
-pursuit native regressions. Run the committed planner-selected full managed suite once after focused
-checks and the official locked Godot gate; preserve completed failures and rerun only failed/newly
-invalidated nodes or owning files. No new H3 or full Python suite is selected by this capability.
+Native `chester-first-kill` adds the existing launch opt-in before physical N. Its40-frame route
+keeps the first36 captures through copied94, adds copied95 before actual0 dispatch, then physical
+Space/Bowie ready, provisional(11,14) and cancel(11,15). Require complete physical/API battle equality.
+Inspect new frames37–40 individually at original resolution; earlier images may be reused only after
+byte comparison. Pair it with ordinary `leader-defeat-pending`119-return, older `first-ally-defeat`,
+`chester-counterattack`, enemy-physical and pursuit native regressions. Run the committed
+planner-selected full managed suite once after focused checks and the official locked Godot gate;
+preserve completed failures and rerun only failed/newly invalidated nodes or owning files. Normal
+public verification remains separate. No new H3 or full Python suite is selected.
 
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.

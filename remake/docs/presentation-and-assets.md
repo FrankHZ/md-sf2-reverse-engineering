@@ -1161,24 +1161,29 @@ the maintained recipe does this only for that review mode. It selects `ChesterFi
 changing only early Chester kills to0, with no return/arrival inputs. Public, duplicate, valued or
 missing-Battle01 selections reject. Existing modes keep their ordinary startup. After the32-frame
 counter prefix, Sarah/Bowie each confirm origin/STAY once; actual R12 Chester selects129, cancels,
-reselects and attacks. The37-frame review adds:
+reselects and attacks. The40-frame review adds:
 
 | Frame | Actual view/acceptance |
 | --- | --- |
 |33|R12 Chester ready at(9,4), HP1/EXP30;129 HP2, gold120/Bowie kills2.|
 |34–35|Target129 selected, then cancelled to action choice without changing93 receipts.|
 |36|Labeled selected-copy receipt94:129 removed, HP1/EXP54, Chester kills1 versus Bowie kills2, gold180; actual128 next.|
-|37|Physical Space and full relay equal the copied battle; actual enemy128 `attack.lethal` is visible, committed94/main323E1234/copy0134 retained.|
+|37|Labeled copied95: enemy128 defeats Chester, HP0/EXP54/defeats1, marker removed; actual Bowie0 next, main98321234/copy0234.|
+|38|Physical Space and actual relay equal the copied API battle; R12 Bowie0 ready at(11,15), budget12, persistent Chester death/kill accounting.|
+|39|Physical I/Space confirms provisional(11,14), cost2, with95 receipts retained.|
+|40|Backspace restores(11,15) and the complete ready battle, including all95 receipts and RNG/accounting.|
 
-The copied frame is test instrumentation, not a production pause. Do not publish its hypothetical
-next attack or skip128. Inspect all changed PNGs at original resolution, including the accounting,
-reward, refusal and controls for clipping/overlap; compare preserved prefix images by exact bytes.
-The accounting label receives the complete line in one assignment. For frames36–37 the native probe
+The copied94/95 frames are test instrumentation, not production pauses. Dispatch actual128 and
+actual Bowie through existing APIs; keep explicit old-policy rejection at94. Inspect each changed
+PNG separately at original resolution, including accounting, death status, result and controls for
+clipping/overlap; compare preserved first36 images by exact bytes. The accounting label receives
+the complete line in one assignment. For frames36–40 the native probe
 requires the exact `Live units | Gold 180 | Bowie kills 2 | Chester kills 1` text, one fully visible
 line and a measured font width within the label. Its receipt retains those measurements; they do not
 replace inspection of the rendered Gold180, Bowie kills2 and Chester kills1 as separate readable values.
-Keep complete process logs and ordinary119 return, counter, enemy-physical and pursuit regressions.
-The new comparison does not authorize128 defeating Chester, victory, a fourth enemy defeat or H4.
+Keep complete process logs and ordinary119 return, older133 defeat, counter, enemy-physical and
+pursuit regressions. This comparison admits only the bounded128→Chester death and actual Bowie
+movement/cancel; later five-survivor generation, further deaths, victory and H4 remain outside it.
 
 All other modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
 preparation before initialization while preserving unspecified kills and all five earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains

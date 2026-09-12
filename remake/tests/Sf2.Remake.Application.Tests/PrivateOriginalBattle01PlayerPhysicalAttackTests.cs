@@ -11,6 +11,21 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
 {
     [Fact]
+    public void Enemy128DefeatCannotReplayTheCreditedPlayerKillOrControlDeadChester()
+    {
+        var session=PrivateOriginalBattle01EnemyPhysicalAttackTests.Enemy128DefeatSession();var killed=session.PrivateOriginalBattle01!;
+        var defeated=Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(killed,128)).Snapshot;
+        var json=new JsonSerializerOptions {MaxDepth=256};string frozen=JsonSerializer.Serialize(defeated.Battle,json);
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.ConfirmPrivateOriginalBattle01PlayerAttack(killed,2)).Diagnostic.Field);
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.BeginPrivateOriginalBattle01PlayerAttack(defeated,2));
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(session.ConfirmPrivateOriginalBattle01PlayerAttack(defeated,2));
+        Assert.Same(defeated,session.PrivateOriginalBattle01);Assert.Equal(frozen,JsonSerializer.Serialize(defeated.Battle,json));
+        Assert.Equal(((uint?)180,(byte?)54,(ushort?)1),(defeated.Battle.CurrentGold,defeated.Battle.Roster[2].Stats.CurrentExp,defeated.Battle.Roster[2].Stats.CurrentKills));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(defeated.Battle,0,0,0,0,0,0);
+        Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(()=>Battle01PlayerPhysicalAttack.RequireAccountingInputs(defeated.Battle,0,0,0,0,0)).ParamName);
+    }
+
+    [Fact]
     public void ChesterFirstKillPreparationCannotBeRetrofittedAfterPlayerAttackConstruction()
     {
         var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.FirstAllyDefeatSession(completeRoute:false,

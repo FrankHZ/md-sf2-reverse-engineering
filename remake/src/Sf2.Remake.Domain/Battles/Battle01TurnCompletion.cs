@@ -21,17 +21,20 @@ public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPol
     { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat; AllowsChesterCounter = allowsChesterCounter; }
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new(false);
     public static Battle01PhysicalCompletionPolicy ControlledFirstAllyDefeat { get; } = new(true);
+    public static Battle01PhysicalCompletionPolicy ControlledChesterDefeatAfterFirstKill { get; } = new(true);
     public static Battle01PhysicalCompletionPolicy ControlledLeaderDefeatPending { get; } = new(true, true);
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalChesterCounterAndExp { get; } = new(false, allowsChesterCounter: true);
     internal bool AllowsAllyDefeat { get; }
     internal bool AllowsLeaderDefeat { get; }
     internal bool AllowsChesterCounter { get; }
-    public override string Id => AllowsChesterCounter ? "battle01-controlled-nonlethal-chester-counter-exp-v1" :
+    public override string Id => ReferenceEquals(this, ControlledChesterDefeatAfterFirstKill)
+        ? "battle01-controlled-chester-defeat-after-first-kill-v1" : AllowsChesterCounter ? "battle01-controlled-nonlethal-chester-counter-exp-v1" :
         AllowsLeaderDefeat ? "battle01-controlled-leader-defeat-pending-v1" : AllowsAllyDefeat
         ? "battle01-controlled-first-chester-defeat-v1" : "battle01-controlled-nonlethal-physical-strike-v1";
     internal static bool IsSupported(Battle01PhysicalCompletionPolicy? policy) =>
         ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat) ||
-        ReferenceEquals(policy, ControlledLeaderDefeatPending) || ReferenceEquals(policy, ControlledNonlethalChesterCounterAndExp);
+        ReferenceEquals(policy, ControlledLeaderDefeatPending) || ReferenceEquals(policy, ControlledNonlethalChesterCounterAndExp) ||
+        ReferenceEquals(policy, ControlledChesterDefeatAfterFirstKill);
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
@@ -101,7 +104,12 @@ public static class Battle01TurnCompletion
                 (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat) &&
                     receipt.EnemyPhysicalAttack.Counterattack is null &&
                     receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is not null &&
-                    receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 4))) &&
+                    receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 4)) ||
+                (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill) &&
+                    receipt.EnemyPhysicalAttack.Counterattack is null &&
+                    receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is not null &&
+                    receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 3) &&
+                    FollowsChesterFirstKill(receipt.EnemyPhysicalAttack, receipt.Previous))) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
             : receipt.AllyDefeat is null && ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
 
@@ -229,6 +237,21 @@ public static class Battle01TurnCompletion
         return count == 2;
     }
 
+    private static bool FollowsChesterFirstKill(Battle01EnemyPhysicalAttackDecision decision,
+        Battle01TurnCompletionReceipt? previous)
+    {
+        if (decision.ActorIndex != 128 || decision.TargetIndex != 2 ||
+            decision.Target.Stats is not { HpCurrent: 1, CurrentExp: 54, CurrentKills: 1, CurrentDefeats: 0 } ||
+            previous?.PlayerPhysicalAttack is not { ActorIndex: 2, TargetIndex: 129, DefeatedTarget: true } kill ||
+            previous.EnemyDefeat is not { CreditedAlly: 2, KillsBefore: 0, KillsAfter: 1 } credit ||
+            !ReferenceEquals(previous.Policy, Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill) ||
+            !HasValidPolicy(previous) || previous.AfterAfterTurn != previous.BeforeAfterTurn ||
+            !credit.FirstWorklist.SequenceEqual(new[] { 129 }) || credit.AfterTurnWorklist.Count != 0)
+            return false;
+        // Death follows the credited after-image, not merely an independently supplied kills1.
+        return SameCombatant(decision.Target, kill.Actor.WithStats(kill.ActorAfterStats.WithCurrentKills(credit.KillsAfter)));
+    }
+
     // Validate the terminal effect, then reuse the complete continuing-history validator on its before-image.
     internal static Battle01InitializedState RequireDefeatPending(Battle01InitializedState current)
     {
@@ -307,7 +330,7 @@ public static class Battle01TurnCompletion
         Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat, allowChesterCounter: policy.AllowsChesterCounter);
         RequireDefeatedWrapperReturn(current);
         Battle01AllyDefeatCleanup? cleanup = null;
-        if (decision.DefeatedTarget) (current, cleanup) = ApplyAllyDefeatCleanup(current, decision);
+        if (decision.DefeatedTarget) (current, cleanup) = ApplyAllyDefeatCleanup(current, decision, policy);
         else RequireEmptyKilledCleanup(current, "cleanup.before");
         var before = RequireContinuingFactions(current, "outcome.before");
         // The admitted actor's after-turn refresh changes no modifiers, status, MP or equipment.
@@ -329,15 +352,18 @@ public static class Battle01TurnCompletion
     internal static ushort DefeatsAfterDeath(ushort before) => (ushort)Math.Min(9999, before + 1);
 
     private static (Battle01InitializedState State, Battle01AllyDefeatCleanup Cleanup) ApplyAllyDefeatCleanup(
-        Battle01InitializedState current, Battle01EnemyPhysicalAttackDecision decision)
+        Battle01InitializedState current, Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy policy)
     {
         var target = current.Roster.Single(unit => unit.Index == decision.TargetIndex);
-        if (decision.ActorIndex != 133 || decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 ||
-            decision.Target.Stats.CurrentDefeats != 0 || decision.Target.Stats.CurrentKills is not null ||
+        bool afterFirstKill = ReferenceEquals(policy, Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
+        if ((afterFirstKill ? !FollowsChesterFirstKill(decision, current.TurnCompletion) :
+                decision.ActorIndex != 133 || decision.Target.Stats.CurrentKills is not null) ||
+            decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 || decision.Target.Stats.CurrentDefeats != 0 ||
             target.Position is not { } position || position != decision.Target.Position ||
             !Battle01EnemyPhysicalAttack.SameStats(target.Stats, decision.Effect.AfterStats) ||
-            !current.Roster.Where(unit => unit.Stats.HpCurrent == 0).Select(unit => unit.Index).SequenceEqual(new[] { 2, 131, 132 }))
-            throw new ArgumentException("Only the first supplied Chester defeat after the two enemy cleanups is admitted.", "cleanup.before");
+            !current.Roster.Where(unit => unit.Stats.HpCurrent == 0).Select(unit => unit.Index).SequenceEqual(
+                afterFirstKill ? new[] { 2, 129, 131, 132 } : new[] { 2, 131, 132 }))
+            throw new ArgumentException("Retain the selected Chester defeat policy and its distinct credited enemy cleanups.", "cleanup.before");
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         int cell = Battle01PlayerMovement.Offset(position);
         if (occupancy[cell] != 2) throw new ArgumentException("Retain Chester's cell before cleanup.", "occupancy");
@@ -351,9 +377,10 @@ public static class Battle01TurnCompletion
 
     internal static void ValidateAllyDefeatReceipt(Battle01TurnCompletionReceipt receipt)
     {
+        bool afterFirstKill = ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
         if (receipt.EnemyPhysicalAttack is not { DefeatedTarget: true } decision || receipt.AllyDefeat is not { } cleanup ||
-            !HasValidPolicy(receipt) || decision.ActorIndex != 133 || receipt.CompletedActorIndex != 133 ||
-            decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 || decision.Target.Stats.CurrentKills is not null ||
+            !HasValidPolicy(receipt) || decision.ActorIndex != (afterFirstKill ? 128 : 133) || receipt.CompletedActorIndex != decision.ActorIndex ||
+            decision.TargetIndex != 2 || decision.Target.Stats.HpCurrent == 0 || (!afterFirstKill && decision.Target.Stats.CurrentKills is not null) ||
             decision.Target.Stats.CurrentDefeats != 0 || cleanup.DefeatedAlly != 2 || cleanup.DefeatsBefore != 0 ||
             cleanup.DefeatsAfter != DefeatsAfterDeath(cleanup.DefeatsBefore) ||
             !cleanup.FirstWorklist.SequenceEqual(new[] { 2 }) || cleanup.AfterTurnWorklist.Count != 0 ||

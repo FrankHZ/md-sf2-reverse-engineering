@@ -225,7 +225,7 @@ public sealed class PrivateBattle01PresenterTests
                     Assert.InRange(i,0,3); current = Battle01PlayerPhysicalAttack.Cycle(current,2,1);
                 }
                 current = Battle01PlayerPhysicalAttack.Confirm(current,2,Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill);
-                var killed = PrivateBattle01Presenter.BuildProjection(current,"Physical attack rejected (attack.lethal); current state retained.");
+                var killed = PrivateBattle01Presenter.BuildProjection(current,"Chester first kill complete.");
                 Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(killed.Gold,killed.BowieKills,killed.ChesterKills));
                 Assert.Equal((2,128),(killed.CompletedActorIndex,killed.NextCandidateIndex));
                 Assert.DoesNotContain(killed.Units,u => u.Index == 129);
@@ -235,6 +235,27 @@ public sealed class PrivateBattle01PresenterTests
                 Assert.False(killed.CanConfirm); Assert.Contains("Input closed",killed.Controls);
                 Assert.Equal("attack.lethal",Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
                     Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike)).ParamName);
+                current=Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
+                var chesterDefeated=PrivateBattle01Presenter.BuildProjection(current,"Enemy128 completed.");
+                Assert.Equal((128,0),(chesterDefeated.CompletedActorIndex,chesterDefeated.NextCandidateIndex));
+                Assert.Equal(5,chesterDefeated.Units.Count);Assert.DoesNotContain(chesterDefeated.Units,u=>u.Index is 2 or 129 or 131 or 132);
+                Assert.Contains("A2 defeated HP 0 EXP 54 Defeats 1",chesterDefeated.AllyStatus);
+                Assert.Contains("E0 -> A2: hit 2. HP 1 -> 0.",chesterDefeated.AttackResult);
+                Assert.Contains("A2 (2) defeated. Defeats 0 -> 1.",chesterDefeated.AttackResult);
+                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(chesterDefeated.Gold,chesterDefeated.BowieKills,chesterDefeated.ChesterKills));
+                Assert.False(chesterDefeated.CanRequestDefeatReturn);Assert.False(chesterDefeated.CanEnterExploration);
+                current=Battle01NextPlayerControl.Enter(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
+                var bowieReady=PrivateBattle01Presenter.BuildProjection(current,"Actual Bowie ready.");
+                Assert.Equal((0,12),(bowieReady.ActorIndex,bowieReady.Budget));Assert.True(bowieReady.CanConfirm);
+                Assert.Equal(chesterDefeated.AttackResult,bowieReady.AttackResult);
+                current=Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,0,new(11,14)),0);
+                var bowieMoved=PrivateBattle01Presenter.BuildProjection(current,"Bowie provisional.");
+                Assert.Equal(new MapPosition(11,14),bowieMoved.Units.Single(u=>u.Index==0).Position);
+                Assert.Contains("Backspace",bowieMoved.Controls);
+                current=Battle01PlayerMovement.Cancel(current,0);
+                var bowieCancelled=PrivateBattle01Presenter.BuildProjection(current,"Bowie cancelled.");
+                Assert.Equal(bowieReady.Units,bowieCancelled.Units);Assert.Equal(chesterDefeated.AttackResult,bowieCancelled.AttackResult);
+                Assert.Equal((0x98321234u,(ushort?)0x0234),(current.RandomSeedImage,current.RandomSeedCopy));
             }
             return;
         }
@@ -497,7 +518,7 @@ public sealed class PrivateBattle01PresenterTests
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63]) :
-            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, firstKill ? (ushort?)0 : null, firstAlly ? (ushort?)0 : null) :
+            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, firstKill ? (ushort?)0 : null, firstAlly || firstKill ? (ushort?)0 : null) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,

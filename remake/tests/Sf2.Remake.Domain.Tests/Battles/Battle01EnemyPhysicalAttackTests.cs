@@ -7,8 +7,51 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
+    internal static Battle01InitializedState Enemy128DefeatBoundary() =>
+        FirstAllyDefeatBoundary(bowieDefeats:0,afterFirstKill:true);
+
+    internal static Battle01InitializedState Enemy128DefeatCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
+        Enemy128DefeatBoundary(),128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
+
     [Fact]
-    public void ChesterFirstKillDoesNotAdmitEnemy128LethalOrReuseTheOldAllyDefeatPolicy()
+    public void Enemy128DefeatPreservesChestersCreditedKillAndEveryPriorReceipt()
+    {
+        var before=Enemy128DefeatBoundary();var options=new JsonSerializerOptions {MaxDepth=256};
+        string frozen=JsonSerializer.Serialize(before,options);
+        var after=Battle01EnemyPhysicalAttack.CompleteNext(before,128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
+        var r=after.TurnCompletion!;var d=r.EnemyPhysicalAttack!;
+        Assert.Equal((94,95),(Battle01EnemyPursuitTests.Receipts(before).Count(),Battle01EnemyPursuitTests.Receipts(after).Count()));
+        Assert.Same(before.TurnCompletion,r.Previous);Assert.Same(Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill,r.Policy);
+        Assert.Equal("battle01-controlled-chester-defeat-after-first-kill-v1",r.Policy.Id);
+        Assert.Equal((128,2,2,0,1),(d.ActorIndex,d.TargetIndex,d.Effect.Damage,(int)d.Effect.TemporaryHp,(int)d.Effect.RestoredHp));
+        Assert.Equal(new Battle01PhysicalReaction(2,-2,0,0,1),d.Effect.Reaction);Assert.Null(d.Counterattack);
+        Assert.Equal(new ushort[] {32,32,1,1},d.Effect.Rolls.Select(roll=>roll.Range));
+        Assert.Equal(new ushort[] {17,5,0,0},d.Effect.Rolls.Select(roll=>roll.Result));
+        Assert.Equal((133,(byte)2), (Assert.Single(d.Priorities).Roll.GeneratorSteps,d.Priorities[0].Roll.Result));
+        Assert.Equal((12,(byte)4,0,0x98321234u,(ushort?)0x0234),
+            (after.FirstRound!.RoundNumber,after.FirstRound.CurrentTurnOffset,after.FirstRound.CurrentCandidate!.Value.CombatantIndex,after.RandomSeedImage,after.RandomSeedCopy));
+        Assert.Same(before.FirstRound!.Slots,after.FirstRound.Slots);
+        Assert.Equal(new[] {2},r.AllyDefeat!.FirstWorklist);Assert.Empty(r.AllyDefeat.AfterTurnWorklist);
+        Assert.Equal(new Battle01FactionCounts(2,3),r.BeforeAfterTurn);Assert.Equal(r.BeforeAfterTurn,r.AfterAfterTurn);
+        Assert.Null(after.Roster[2].Position);Assert.Equal(-1,after.OccupantAt(new(9,4)));
+        Assert.Equal(((ushort)0,(byte?)54,(ushort?)1,(ushort?)1),
+            (after.Roster[2].Stats.HpCurrent,after.Roster[2].Stats.CurrentExp,after.Roster[2].Stats.CurrentKills,after.Roster[2].Stats.CurrentDefeats));
+        Assert.Equal((uint?)180,after.CurrentGold);
+        foreach(int index in new[] {0,1,129,130,131,132,133})
+            Assert.Same(before.Roster.Single(u=>u.Index==index),after.Roster.Single(u=>u.Index==index));
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,options));
+    }
+
+    [Fact]
+    public void Enemy128DefeatPolicyDoesNotAdmitTheOlder133Death()
+    {
+        var before=FirstAllyDefeatBoundary();
+        Assert.Equal("cleanup.before",Assert.Throws<ArgumentException>(()=>Battle01EnemyPhysicalAttack.CompleteNext(
+            before,133,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill)).ParamName);
+    }
+
+    [Fact]
+    public void ChesterFirstKillCannotReuseNonlethalOrTheOldAllyDefeatPolicy()
     {
         var before = Battle01PlayerPhysicalAttackTests.ChesterFirstKillCompleted();
         var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(before,json);
@@ -192,15 +235,18 @@ public sealed class Battle01EnemyPhysicalAttackTests
         Assert.Equal(3, known.Roster[0].Stats.HpCurrent); Assert.Null(unknown.Roster[0].Stats.CurrentDefeats);
     }
 
-    internal static Battle01InitializedState FirstAllyDefeatBoundary(ushort? defeats = 0, ushort? bowieDefeats = null)
+    internal static Battle01InitializedState FirstAllyDefeatBoundary(ushort? defeats = 0, ushort? bowieDefeats = null,
+        bool afterFirstKill = false)
     {
         // Existing authored combat fixture supplies the comparison before any physical receipt.
         // The separate required Content test owns real transport, initialization and terrain.
-        var current = AttackBoundary(0, firstDefeatAccounting: true, chesterExp: 0, chesterDefeats: defeats, bowieDefeats: bowieDefeats);
+        var current = AttackBoundary(0, firstDefeatAccounting: true, chesterExp: 0, chesterDefeats: defeats,
+            bowieDefeats: bowieDefeats, chesterKills: afterFirstKill ? (ushort)0 : null);
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
         for (int step=0;step<80;step++)
         {
             var order=current.FirstRound!;
+            if(afterFirstKill && order.RoundNumber==12 && order.CurrentTurnOffset==2 && order.CurrentCandidate?.CombatantIndex==128)return current;
             if(order.RoundNumber==13 && order.CurrentTurnOffset==10 && order.CurrentCandidate?.CombatantIndex==133)return current;
             if(order.CurrentCandidate is not {} candidate) { current=Battle01FirstRound.EnterNext(current);continue; }
             int actor=candidate.CombatantIndex;
@@ -211,18 +257,24 @@ public sealed class Battle01EnemyPhysicalAttackTests
                 else
                 {
                     try { current=Battle01EnemyPursuit.CompleteNext(current,actor,stay); }
-                    catch(Battle01AttackSelectionRequiredException) { current=Battle01EnemyPhysicalAttack.CompleteNext(current,actor,Policy); }
+                    catch(Battle01AttackSelectionRequiredException) { current=Battle01EnemyPhysicalAttack.CompleteNext(current,actor,Policy,allowChesterCounter:afterFirstKill); }
                 }
                 continue;
             }
             current=Battle01NextPlayerControl.Enter(current,actor).State!;
             if(actor==2 && order.RoundNumber is 8 or 10)
                 current=Battle01PlayerMovement.SelectDestination(current,actor,order.RoundNumber==8 ? new(11,14) : new(9,9));
+            if(afterFirstKill && actor==2 && order.RoundNumber==11)
+                current=Battle01PlayerMovement.SelectDestination(current,actor,new(9,4));
             current=Battle01PlayerMovement.Confirm(current,actor);
-            if(actor==0 && order.RoundNumber is 6 or 7 or 9 || actor==2 && order.RoundNumber==9)
+            if(actor==0 && order.RoundNumber is 6 or 7 or 9 || actor==2 && (order.RoundNumber==9 || afterFirstKill && order.RoundNumber is 11 or 12))
             {
                 current=Battle01PlayerPhysicalAttack.Begin(current,actor);
-                var policy=actor==2 ? Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp
+                if(afterFirstKill && actor==2 && order.RoundNumber==12)
+                    for(int i=0;current.FirstControl!.Movement.Attack!.TargetIndex!=129;i++)
+                    { Assert.InRange(i,0,3);current=Battle01PlayerPhysicalAttack.Cycle(current,2,1); }
+                var policy=afterFirstKill && actor==2 && order.RoundNumber==12 ? Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill
+                    : actor==2 ? Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp
                     : order.RoundNumber==9 ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat
                     : Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat;
                 current=Battle01PlayerPhysicalAttack.Confirm(current,actor,policy);
