@@ -8,6 +8,10 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
+Next: [complete the first reached Chester counterattack](#planned-next-combat-slice-first-reached-chester-counterattack)
+on the real round10 continuation. Optional church services and free-town expansion are outside this
+next slice; the direction remains playable Battle01 completion under ADR0010.
+
 ## Current Baseline
 
 The controlled Battle01 route now requests Granseal map3/(32,13)/UP after one HP/gold recovery.
@@ -528,12 +532,139 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 ## Ordered Queue
 
-Current controlled play reaches diagnostic Battle 01 first-player movement, provisional confirmation
-and cancellation through the explicit selected-input N entry at Pending, followed by one controlled
-no-effect STAY, then the next supported player's movement/cancel/STAY before stopping at enemy AI. The manual battle bridge
-remains public-synthetic. An explicit base-atlas launch now shows reviewed fixed Map57 base art with
-diagnostic units. Natural castle continuity, original Map57 presentation fidelity and complete
-Battle 01 play remain **Unknown**.
+Resume combat from the [accepted second-defeat round10 control](#implemented-terrain0-second-enemy-defeat-and-round10-chester-control),
+using its real input/receipt prefix. The next bounded capability is the counterattack below, reached
+while advancing toward another enemy defeat. Natural castle continuity, original presentation and
+complete Battle01 play remain **Unknown**; the controlled route is not the ADR0010 milestone.
+
+### Planned next combat slice: first reached Chester counterattack
+
+**Decision:** complete one nonlethal enemy attack with Chester's actual automatic counter and its
+EXP, before adding third-defeat accounting. This is a required combat-resolution branch reached by
+manual movement/Attack, not another STAY loop or status-only extension. It follows
+[ADR0010's minimum-route and playable-battle direction](../../docs/decisions/0010-map3-battle01-product-acceptance.md).
+This section is a plan; the counter is currently Unsupported.
+
+#### Reproduced starting point and choice
+
+**Confirmed:** on accepted commit `564db02e9cf3fa71ba7077e24257543a09a1eeeb`, the existing
+`ReachRealRoundTenChester(ChesterPlayerAttackComparison, null, null)` helper in the
+[startup tests](../tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs)
+replays startup and all79 actual receipts through public Application operations. Its named preset is
+`private-local-battle01-chester-player-attack-exp0-inputs-v1`, with early seed/copy1234, Bowie
+EXP0/kills0/gold0 and Chester EXP0. The endpoint is R10/raw0 Chester2 at(11,14), HP9/EXP10/kills
+unspecified, main9F861234/copy0034. Bowie is(11,15), HP3/EXP63/kills2; Sarah(9,17), HP11 with
+EXP/kills unspecified; gold120, cleaned131/132 and all preparation/source/history references persist.
+
+The read-only continuation used the same accepted canonical import, selected Battle01 data/scene/
+terrain and public API relay as that helper; no battle snapshot, HP, position, order or RNG was patched.
+To reproduce, invoke the helper from a temporary console referencing its Content test project, then
+use the operations below. Confirm an origin directly; requesting the unchanged cursor as a new
+destination rejects. After each completion, dispatch the actual candidate via the existing
+`EnterPrivateOriginalBattle01NextRound`, `EnterPrivateOriginalBattle01NextPlayerControl`, enemy
+standby/pursuit and physical-attack APIs, exactly as `ReachRealFirstAllyDefeatBoundary` does.
+
+| Player input / actual boundary | Observed accepted-API result |
+| --- | --- |
+| R10 Chester select(9,9), confirm, STAY; Sarah origin confirm/STAY; Bowie origin confirm/STAY | Receipts80–86, including the actual inactive-enemy dispatches. R11 first actor is Chester; mainEFC91234/copy0034. No R10 reachable stop has a live enemy in the admitted range1 ring. |
+| R11 Chester select(9,4), confirm, Begin Attack, select129, confirm | Cost14;129 at(10,4), terrain0. Receipt87: damage3, target HP5→2, Chester EXP10→25, main42511234/copy0034. Both follow-up draws are nonzero. |
+| Actual128 attacks Chester | Receipt88:128 moves to(9,3), Chester HP9→7; main691F1234/copy0134. |
+| Actual130 is next, with sole target Chester and attack stop(8,4), cost10 | `CompletePrivateOriginalBattle01EnemyPhysicalAttack` rejects `attack.counter`; exact snapshot reference and full serialized battle remain unchanged. The turn order is2,128,130,133,129,1,0. |
+
+The other immediately reachable R11 attack, Chester(6,5)→133 at(6,4)/terrain1, deals2 and awards10;
+the relay reaches the same counter refusal after receipt88. The selected129 route makes more progress
+against its target. These are two evaluated routes, not a proof that every possible route needs this
+counter or that either is already a winning trace.
+
+The targets retain the admitted GIZMO definition39 profile: level0, HPmax5, DEF5, Hovering movement,
+current enemy ATT8 and prowess0. Hovering terrain0 uses multiplier256; terrain1 uses230. The selected
+manual target129 and later counter target130 therefore have different land multipliers. The equipped
+item identities/ranges below are pinned by `data/stats/items/itemdefs.asm` (56/71/85); no new target,
+weapon or movement profile is substituted.
+
+| Candidate | Dependency comparison and selection |
+| --- | --- |
+| Bowie third defeat | Class0, equipped Wooden Sword199, range1, effective ATT9; EXP63/kills2 are known. A direct subsequent kill award23–25 alone would remain below100, but a prior nonlethal attack also awards EXP: the ordinary damage3–4 cases followed by a kill can cross100. Evaluate actual draws/order and the level replay; do not cap EXP, assume a one-hit kill, or assign Bowie the next kill. No R10 range1 target is reachable on this prefix. |
+| Chester third defeat | Class1/Centaur, equipped Wooden Stick184, range1, ATT8/DEF5/AGI7/MOV7; this is not a Short Spear or an extra weapon bonus. His kills are null. A lethal continuation needs a new **early** kills0 comparison plus profile/history/accounting admission and third-death cleanup. Current nonlethal/profile and two-death guards must not be relaxed just to select it. Both evaluated attacks first encounter a true counter. |
+| Sarah attack or changed equipment/profile | Class4, equipped Wooden Rod213/range1 and supplied ATT9; current EXP/kills are unspecified and her attacking profile is not admitted. New accounting and weapon/class/action admission exceed this reached prerequisite; no stat/equipment substitution is authorized. |
+| **Selected: enemy130 attack + Chester counter** | Existing known Chester EXP suffices. Both participants survive the source reduction below, so kills stay null and no new comparison, level, drop, death or victory capability is required. |
+
+#### Source boundary and expected effect
+
+**Confirmed:** pinned `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies the following static seams, relative to `disasm/`.
+The [action-completion owner](../../docs/research/map3-battle01-action-completion.md) and
+[action-construction contract](../../docs/design/contracts/battle-action-construction.md) own their
+control topology; neither is a natural counterattack observation.
+
+| Named source | Required bounded semantics |
+| --- | --- |
+| `code/gameflow/battle/battleactions/{attack,determinedoubleandcounter,isabletocounterattack,battleactionsengine_1}.asm` | Preserve primary dodge/critical/spread and both follow-up draws; validate survival, opposing sides, no sleep/stun/muddle/debug exceptions and range1. Swap attacker/target for the counter after the primary action. The counter's own attack still consumes its double/counter draws; the enclosing counter block does not recursively dispatch another attack. |
+| Same directory: `calculatedamage.asm`, `inflictdamage.asm` | Use the counter target's current terrain/defense and Chester's already-adjusted ATT8. Counter damage is halved **before** the two downward-spread draws and minimum1 clamp; this is not an ordinary full-damage player attack. Both actual cells(9,4)/(8,4) are terrain1. |
+| Same directory: `earnexp.asm`, `giveexpandgold.asm`, `battleactionsengine_2.asm`; `code/gameflow/battle/battlescenes/battlesceneengine_0.asm` / `bsc0F_giveExp` | The surviving allied counterattacker receives damage EXP, Battle01 halving and two award draws; the replay consumer applies it to `BATTLESCENE_ALLY` and checks100 before LevelUp. Restore construction HP before ordered primary/counter reaction replay. |
+
+Reproduce the bounded main-RNG arithmetic with the accepted pure helper; this does not run H3:
+
+```powershell
+@'
+from sf2tool.h3.rng import _rng_step
+word=0x691F
+for bound in [32,32,1,1,32,32, 8,16,1,1,32,32, 16,16]:
+    word,value=_rng_step(word,bound)
+    print(bound,value,f'{word:04X}1234')
+'@ | uv run python -X utf8 -
+```
+
+Results are `10,12,0,0,2,0; 3,4,0,0,6,25; 4,10`. **Inferred:** composing those source semantics
+with the observed remake input should produce receipt89 owned by enemy130: primary damage2 leaves
+Chester HP5; his counter damage1 leaves130 HP4 and awards5 EXP, Chester25→30; mainA1051234.
+The single range3 priority draw changes copy0134→0234. Gold120, Bowie EXP63/kills2, Chester kills
+null and the two old corpses remain. This is not a third defeat or a required level transition, and
+is not yet a reproduced counter-capable Application result.
+
+#### Implementation boundary and acceptance stop
+
+Reuse the existing physical candidate/priority, movement, RNG, damage-EXP, completion, reverse-history
+and Godot relay mechanisms. Add a bounded typed counter effect to the same enemy-turn receipt, with
+both roles' construction inputs, ordered reactions and EXP before-image. Publish primary movement,
+both HP changes, Chester EXP, RNG/AI memory and the single completed enemy turn atomically. Failure in
+counter validation, award, replay or finalization must retain the exact **pre-primary** snapshot;
+there must be no partially committed primary hit, second enemy receipt or counter-triggered player turn.
+Countering does not overwrite the enemy's selected-target memory with a player targeting action.
+
+No new initialization field is needed: retain the existing early Chester EXP0 comparison and prove
+its rewind through counter EXP. Select a distinct counter receipt policy only when this validated
+branch occurs; preserve all88 prefix policies and before-images. Unspecified EXP, unsupported
+equipment/class/terrain/status, true double, lethal primary/counter, level100+, drops and additional
+follow-ups keep explicit rejection. Do not route on exception text or hardcode actor130/round11 as
+the production rule. The native case names this actual seam; the rule uses admitted profiles and roles.
+
+Proposed exact implementation ownership, relative to `remake/`:
+
+| Surface | Paths |
+| --- | --- |
+| Existing Domain effects/history/completion | `src/Sf2.Remake.Domain/Battles/Battle01EnemyPhysicalAttack.cs`, `Battle01EnemyStandby.cs`, `Battle01TurnCompletion.cs` in that same directory |
+| Application and view | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs`; `game/src/PrivateBattle01Presenter.cs` |
+| Owning tests | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs` in that directory; `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPhysicalAttackTests.cs`; `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` |
+| Current capability and reproduction | `docs/map03-playability-plan.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/presentation-and-assets.md` |
+
+First useful acceptance point: the player's R11 move/Attack produces the real enemy attack and
+automatic damaging counter, visible as two ordered effects with Chester's live HP/EXP and130's HP,
+then one enemy completion with actual133 next. Exercise target cancel/reselect before the manual
+attack, and keep its receipt87 and the entire startup prefix intact. Let the existing relay attempt
+ordinary continuation toward the next actual allied movement/cancel; **Unknown:** the post-counter
+relay and first subsequent usable control have not been reproduced. Stop at the first new unsupported
+branch, retaining receipt89 if committed, and report that boundary for root review. Do not silently
+expand this slice into double attacks, deaths, levels or another STAY route to obtain a green endpoint.
+
+The implementation must add focused primary/counter ordering, halving-before-spread, all14 draws,
+EXP recipient, rollback/late-failure, stale/duplicate and reverse-history assertions. Its required
+private Content test must replay the exact table above without a supplied battle state, and its real
+native probe must prove physical-input equivalence, both visible HP changes, counter EXP, readable
+result/controls and process completion. Use the [current verification owner](./development-and-verification.md)
+and committed planner for gates/fanout; retain completed failures and rerun only affected checks.
+The present planning slice changes only this document, requires public-core, and runs no broad
+.NET, Godot or H3 suite. Root reviews the frozen Draft plan before implementation authorization.
 
 ### Accepted inputs and incompatible existing assumptions
 
