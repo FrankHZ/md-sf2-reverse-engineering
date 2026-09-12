@@ -1986,6 +1986,9 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(viewport.GetParent() is Control { ClipContents: true, MouseFilter: Control.MouseFilterEnum.Ignore } clip &&
             clip.GetGlobalRect() == new Rect2(viewport.GlobalPosition, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size) &&
             viewport.GlobalPosition == new Vector2(24, 105), "The clipping host preserves the existing global map rectangle");
+        var renderedClip = RenderingServer.DebugCanvasItemGetRect(((Control)viewport.GetParent()).GetCanvasItem());
+        Require(renderedClip == PrivateOriginalMapBaseViewport.LogicalTextureRect,
+            $"The clipping host's render rectangle matches its control size: {renderedClip}");
         var rectangle = new Rect2(viewport.GlobalPosition, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size);
         int scaleX = image.GetWidth() / 960, scaleY = image.GetHeight() / 540;
         Require(scaleX > 0 && scaleY > 0 && image.GetWidth() == 960 * scaleX && image.GetHeight() == 540 * scaleY,
