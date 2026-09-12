@@ -13,6 +13,7 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateCanonicalMap3ImportReaderTests
 {
+    private const int SampleBlockCount = 0x90; // Authored zero blocks through the admitted doorway index0x8F.
     [Fact]
     public void ReturnEntryLoadRetainsCatalogResourcesAndSelectsChurchWithoutAWarp()
     {
@@ -141,7 +142,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.VisualResourceSelection.ProjectionDigest);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
         Assert.Equal("Map03s0_Blocks", accepted.Definition.BlockCatalog.ResourceId);
-        Assert.Equal(3, accepted.Definition.BlockCatalog.Records.Count);
+        Assert.Equal(SampleBlockCount, accepted.Definition.BlockCatalog.Records.Count);
         Assert.Equal(
             0,
             accepted.Definition.BlockCatalog.Resolve(
@@ -583,7 +584,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject missingBlock = SampleDocument();
-        LayoutWords(missingBlock)[0] = 3;
+        LayoutWords(missingBlock)[0] = SampleBlockCount;
         AssertCode(Admit(missingBlock), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject wrongDefault = SampleDocument();
@@ -609,7 +610,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject danglingLayout = SampleDocument();
-        LayoutWords(danglingLayout)[0] = 3;
+        LayoutWords(danglingLayout)[0] = SampleBlockCount;
         AssertCode(Admit(danglingLayout), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
@@ -1554,6 +1555,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     private static JsonObject SampleDocument()
     {
         int[] layoutWords = new int[WorkingMapLayout.WordCount];
+        layoutWords[Index(32, 15)] = 0xC48F;
+        layoutWords[Index(62, 0)] = 0x080E;
+        layoutWords[Index(32, 16)] = 0x0C57;
         layoutWords[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
         layoutWords[Index(4, 8)] = OriginalMapTraversal.CollisionMask;
         layoutWords[Index(3, 3)] = OriginalMapTraversal.LeftStairMask;
@@ -1638,7 +1642,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     {
                         id = "Map03s0_Blocks",
                         address = 1,
-                        blocks = Enumerable.Range(0, 3).Select(_ => new int[9]).ToArray(),
+                        blocks = Enumerable.Range(0, SampleBlockCount).Select(_ => new int[9]).ToArray(),
                     },
                     new
                     {
@@ -1716,10 +1720,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             .Concat(Enumerable.Range(1, 4)
                                 .Select(index => new
                                 {
-                                    trigger = Point(index, 60),
-                                    source = Point(index, 61),
+                                    trigger = index == 3 ? Point(32, 15) : Point(index, 60),
+                                    source = index == 3 ? Point(62, 0) : Point(index, 61),
                                     size = new { width = 1, height = 1 },
-                                    destination = Point(index, 62),
+                                    destination = index == 3 ? Point(32, 15) : Point(index, 62),
                                 }))
                             .Append(new
                             {

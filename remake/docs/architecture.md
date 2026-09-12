@@ -310,14 +310,20 @@ same(32,13)/UP current/target, skips their duplicate setup rows, and hides/moves
 retains BLUE_FLAME identity. No follower/NPC script runs; exact original positions before the first
 WaitForEvent remain Unknown. Typed arrival overloads share the existing camera/atlas/pixel math.
 Godot hides the battle and old prompts and shows the fresh map and explicit overlapping identities.
-`PrivateOriginalMapReturnMovement` admits player-only input in x31..33/y12..14. It checks the
-capability boundary before real terrain traversal: the frozen follower cell and outside targets
-are Unsupported; (32,12) is a terrain block. Each supported attempt publishes one return-input
-ordinal and the pure locomotion Begin result. Physics Advance retains that receipt through settlement.
-The successor keeps the authenticated entry in `EntryBeforeMovement`, validates its strict original
-declarations, and projects only the live player pose. Party, flags, layout, roof, non-player records
-and all preparation/battle history retain their original references. Construction precedes the sole
-session publication; stale, busy, unsupported and failed inputs retain the current snapshot.
+`PrivateOriginalMapReturnMovement` admits player-only input in x31..33/y12..14 plus (32,15)/(32,16).
+The frozen follower cell and targets outside this union are Unsupported; (32,12) is a terrain block.
+The catalog-owned return load binds step row4 and all ten ordered roof rows. The first door Begin
+copies C48F to080E, re-reads the marker and checks traversal before publication; its receipt retains
+the exact entry and input. Current `Arrival.Party.CurrentBattle` supplies the exploration255 guard.
+Each supported attempt publishes one return-input ordinal, retained through the existing13 ticks.
+At the final moving Advance, `MapBlockCopyActionReducer` consumes the settled player cell using
+the controlled no-fade policy. Outside restores saved30; re-entry selects ordinal8 and clears30.
+`WorkingLayout` and `RoofLifecycle` own the current image. `EntryBeforeMovement` and `RoofClear`
+retain the strict original entry, saved words and declarations; only the door word and roof rectangle
+may differ in the live layout. `LastRoofAction` links settlement to the same input without replacing
+its traversal receipt. Party, flags, non-player records and preparation/battle history retain their
+references. All layout, lifecycle, locomotion and successor validation precedes one session publication;
+rejection, overflow or a failed final successor preserves the exact calling snapshot.
 Godot routes this Arrival before old handlers and shares existing typed camera/atlas projection.
 No fake legacy snapshot or second mutable map authority is introduced. F/G and other gameplay remain closed.
 Original presentation/VInt, general stat refresh and natural egress/flag continuity remain Unknown.

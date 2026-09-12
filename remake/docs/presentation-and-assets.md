@@ -829,8 +829,8 @@ def hidden_popen(*args, **kwargs):
     return original_popen(*args, **kwargs)
 gate.subprocess.Popen = hidden_popen
 steps = [
-    ("restore", ["dotnet", "restore", str(game / "Sf2.Remake.Godot.csproj"), "--locked-mode"]),
-    ("build", ["dotnet", "build", str(game / "Sf2.Remake.Godot.csproj"), "--configuration", "Debug",
+    ("restore", [environment["DOTNET_BIN"], "restore", str(game / "Sf2.Remake.Godot.csproj"), "--locked-mode"]),
+    ("build", [environment["DOTNET_BIN"], "build", str(game / "Sf2.Remake.Godot.csproj"), "--configuration", "Debug",
                "--no-restore", "-p:UseSharedCompilation=false", "--disable-build-servers"]),
     ("native", [os.environ["SF2_CASTLE_REVIEW_EDITOR"], "--path", str(game),
                 "--resolution", "1920x1080", "res://ReviewProbe.tscn", "--",
@@ -1165,11 +1165,21 @@ Never move semantic positions for legibility. Entity142 is hidden/out. No follow
 
 After frame45, WASD exercises player movement in x31..33/y12..14. North from entry blocks; west
 begins the reversible loop. Frames capture initial/middle/settled motion, blocked facing, both sides
-of the pocket, the Unsupported door/follower cell and F/G. The live player and camera follow Arrival
+of the pocket, the Unsupported side/follower cells and F/G. The live player and camera follow Arrival
 locomotion; Sarah/Chester stay at(32,13)/UP and all NPC declarations remain frozen. Status shows the
 current player pose, input ordinal, historical entry and capability restrictions. Closed battle keys
 and60 idle callbacks preserve the settled snapshot. The receipt retains entry/API equivalence and
 adds `returnMovement` with per-direction API ticks and actual physics callback counts.
+The same native route then approaches (32,14) through (31,14). It captures the closed door, first
+door Begin, middle, pre-settlement and settled states; outside (32,16) keeps the roof clear until
+settlement restores saved30, and north re-entry keeps it restored until settlement clears30.
+Two further full cycles retain the single first-door receipt and finish inside at (32,14).
+Door/roof pixel comparisons use the same world tiles despite camera motion, test actual uncovered
+rendered pixels against the current typed projection, and distinguish visible changes from status text.
+The current panel derives door status from the receipt and roof status from the live lifecycle,
+while entry history and all frozen follower/NPC records remain unchanged. Side cells at y15/y16,
+(32,17), the follower cell and F/G are refused; closed keys and another60 idle callbacks retain the
+final snapshot. This is a controlled settlement/no-fade policy, not original script or VInt timing.
 Inspect every changed PNG at original resolution, compare unchanged accepted PNGs
 byte-for-byte, and verify archived production/probe copies and bounded process receipts. No-atlas
 legacy preparation omits arrival selection and retains the return-request stop; the new comparison
