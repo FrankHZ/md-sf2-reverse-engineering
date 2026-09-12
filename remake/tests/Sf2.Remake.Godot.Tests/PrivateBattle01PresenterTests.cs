@@ -211,7 +211,12 @@ public sealed class PrivateBattle01PresenterTests
                 for (int step = 0; current.FirstRound!.RoundNumber != 12; step++)
                 {
                     Assert.InRange(step,0,15);
-                    current = current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current) : CompleteAuthoredTurn(current);
+                    try { current = current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current) : CompleteAuthoredTurn(current); }
+                    catch (Battle01AttackSelectionRequiredException)
+                    {
+                        current = Battle01EnemyPhysicalAttack.CompleteNext(current,current.FirstRound.CurrentCandidate!.Value.CombatantIndex,
+                            Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+                    }
                 }
                 current = Battle01NextPlayerControl.Enter(current,2).State!;
                 current = Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current,2),2);

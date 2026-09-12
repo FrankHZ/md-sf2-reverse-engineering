@@ -420,7 +420,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
             mutation == "attack" ? (byte)9 : s.Attack, mutation == "defense" ? (byte)4 : s.Defense,
             s.Agility, s.Move, mutation == "status" ? (ushort)1 : s.Status,
             mutation == "equipment" ? new ushort[] { 199, 0, 127, 127 } : s.Items, s.Spells,
-            mutation == "exp" ? (byte)100 : null, mutation == "kills" ? (ushort)0 : null);
+            mutation == "exp" ? (byte)100 : null, mutation == "kills" ? (ushort)2 : null);
         var forgedTarget = new Battle01Combatant(target.Deployment, stats, mutation == "class" ? (byte)4 : target.ClassId, null)
             .WithPosition(target.Position).WithAiBitfield(0);
         var roster = before.Roster.ToArray(); roster[2] = forgedTarget;

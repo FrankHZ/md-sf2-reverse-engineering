@@ -290,7 +290,7 @@ public sealed class Battle01PlayerPhysicalAttackTests
             field == "move" ? (byte)6 : s.Move, field == "status" ? (ushort)1 : s.Status,
             field == "item" ? new ushort[] {199,0,127,127} : s.Items,
             field == "spell" ? new byte[] {10,63,63,63} : s.Spells,
-            field == "exp" ? (byte)100 : (byte)0, field == "kills" ? (ushort)0 : null);
+            field == "exp" ? (byte)100 : (byte)0, field == "kills" ? (ushort)2 : null);
         Assert.Equal("attack.targetProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
             Battle01PlayerPhysicalAttack.RequireActor(actor.WithStats(stats))).ParamName);
     }
