@@ -925,6 +925,95 @@ def test_map3_battle01_player_ready_artifacts_select_only_their_bounded_command(
     assert plan["unclassifiedPaths"] == []
 
 
+def test_native_harness_test_change_does_not_invalidate_imported_evidence() -> None:
+    path = "tests/python/test_native_harness.py"
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "tooling-python"}
+    assert _partition(plan, "tooling-python")["commands"] == [f"uv run pytest {path}"]
+    assert plan["unclassifiedPaths"] == []
+
+
+@pytest.mark.parametrize(
+    "import_statement",
+    (
+        "from sf2tool.h2.battle_ai import _direct_target",
+        "import sf2tool.h3.rng",
+        "from sf2tool.h3.bizhawk import run_observer",
+    ),
+)
+def test_generic_test_imports_do_not_invalidate_unchanged_evidence(
+    tmp_path: Path, import_statement: str
+) -> None:
+    path = "tests/python/test_example.py"
+    test_file = tmp_path / path
+    test_file.parent.mkdir(parents=True)
+    test_file.write_text(import_statement + "\n", encoding="utf-8")
+    source = tmp_path / "src/sf2tool/h3"
+    source.mkdir(parents=True)
+    (source / "bizhawk.py").write_text("", encoding="utf-8")
+    (source / "rng.py").write_text(
+        "from sf2tool.h3.bizhawk import run_observer\n", encoding="utf-8"
+    )
+
+    plan = plan_paths((path,), root=tmp_path)
+
+    assert _partition_ids(plan) == {"public-core", "tooling-python"}
+    assert _partition(plan, "tooling-python")["commands"] == [f"uv run pytest {path}"]
+    assert plan["unclassifiedPaths"] == []
+
+
+@pytest.mark.parametrize(
+    ("changed_path", "partition_id", "command"),
+    (
+        ("src/sf2tool/h3/bizhawk.py", "h3-battle01", "uv run sf2 h3 rng"),
+        (
+            "src/sf2tool/compression.py",
+            "h2-presentation",
+            "uv run sf2 h2 map-tilesets",
+        ),
+        ("tests/fixtures/h3/rng-v1.json", "h3-battle01", "uv run sf2 h3 rng"),
+        ("schemas/h3-rng-fixture.schema.json", "h3-battle01", "uv run sf2 h3 rng"),
+        (
+            "tools/bizhawk/map_script_entity_presentation_fx_observer.lua",
+            "h3-map-debug",
+            "uv run sf2 h3 map-script-entity-presentation-fx",
+        ),
+        (
+            "manifests/extractions/map-events-static.json",
+            "h2-map-scripting",
+            "uv run sf2 h2 map-events",
+        ),
+    ),
+)
+def test_test_change_preserves_separately_changed_production_and_evidence_owners(
+    changed_path: str, partition_id: str, command: str
+) -> None:
+    test_path = "tests/python/test_native_harness.py"
+    evidence = plan_paths((changed_path,), root=ROOT)
+    combined = plan_paths((test_path, changed_path), root=ROOT)
+
+    assert command in _partition(combined, partition_id)["commands"]
+    assert _partition_ids(combined) == _partition_ids(evidence) | {"tooling-python"}
+    assert [row for row in combined["partitions"] if row["id"] != "tooling-python"] == [
+        row for row in evidence["partitions"] if row["id"] != "tooling-python"
+    ]
+    assert f"uv run pytest {test_path}" in _partition(combined, "tooling-python")["commands"]
+    assert combined["unclassifiedPaths"] == evidence["unclassifiedPaths"] == []
+
+
+def test_test_only_change_can_explicitly_select_runtime_acceptance() -> None:
+    plan = plan_paths(
+        ("tests/python/test_native_harness.py",),
+        root=ROOT,
+        include_partitions=("h3-battle01",),
+    )
+
+    assert _partition_ids(plan) == {"public-core", "tooling-python", "h3-battle01"}
+    assert _partition(plan, "h3-battle01")["reasons"] == ["explicit --include-partition"]
+    assert "uv run sf2 h3 rng" in _partition(plan, "h3-battle01")["commands"]
+
+
 def test_shared_python_module_uses_transitive_reverse_dependencies() -> None:
     plan = plan_paths(("src/sf2tool/compression.py",), root=ROOT)
 
@@ -1207,7 +1296,31 @@ def test_verification_planner_owner_change_selects_both_remake_partitions() -> N
         "remake-dotnet",
         "remake-godot",
     }
+    assert _partition(plan, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_native_harness.py",
+        "uv run pytest tests/python/test_verification_plan.py",
+    ]
     assert plan["unclassifiedPaths"] == []
+
+
+def test_verification_planner_owner_preserves_future_reverse_dependents(tmp_path: Path) -> None:
+    source = tmp_path / "src/sf2tool"
+    source.mkdir(parents=True)
+    (source / "verification_plan.py").write_text("", encoding="utf-8")
+    (source / "harness.py").write_text("import sf2tool.verification_plan\n", encoding="utf-8")
+
+    plan = plan_paths(("src/sf2tool/verification_plan.py",), root=tmp_path)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "remake-dotnet",
+        "remake-godot",
+        "h1-original",
+    }
+    assert _partition(plan, "h1-original")["reasons"] == [
+        "src/sf2tool/verification_plan.py reaches sf2tool.harness"
+    ]
 
 
 def test_aggregate_indexes_are_owned_by_the_always_run_public_core() -> None:
