@@ -347,7 +347,7 @@ their earlier HP/RNG/accounting and frame contracts remain. Preserve old null-pr
 Use `leader-defeat-pending`: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
 Sarah action choice, labeled119/terminal copies, physical terminal, recovery, return request and entry.
 Frame43 applies recovery;44 requests return;45 publishes Granseal. Subsequent frames exercise WASD
-around the bounded church pocket, terrain blocks, follower/door and F/G refusal. The probe compares
+around the bounded church pocket, terrain blocks, follower/side-boundary and F/G refusal. The probe compares
 physical input with API results from the same snapshot and schedules the production physics callback
 explicitly on physics frames for initial/middle/settled captures. It then checks closed battle keys
 and60 idle callbacks. Party/history/non-player declarations remain exact throughout.
@@ -384,14 +384,29 @@ inputs and the early arrival selection; it validates party ownership, immutable 
 all4096 layout words, roof before-image, declaration overlap, rejected forgeries and closed old APIs.
 It then uses that real Arrival for repeated player movement and terrain blocks, exact event/zone-table
 exclusion, Unsupported targets, stale/busy input, ordinal overflow and successor-construction failure.
+It continues through the door, outside restoration and repeated re-entry. Every Begin and tick checks
+all4096 current words against the entry plus only the admitted door/roof changes. Malformed step
+bindings, wrong markers, saved words/ordinal/rectangle, unrelated layout changes, first-door ordinal
+overflow and a final roof successor failure must retain each calling before-image.
 Every input and animation tick retains the complete Battle, party, flags, resources and non-player records.
 Its `PrivateInputFact` must run with `SF2_REQUIRE_PRIVATE_TESTS=1`; public unselected execution explicitly
 skips it. Pair with `ExplorationEntryTests`, canonical reader and the four owning Godot test classes.
 The committed planner selects the locked full solution and official Godot gate; run the full suite
 once and preserve any completed failure. Reuse accepted source/plan evidence after checking its pinned
-dependencies; do not replay old source or plan scripts. Return movement uses a fresh ignored
-`local/granseal-return-movement/` run root with the existing environment/input selections. It admits
-only the documented church pocket and does not claim original presentation, script timing or H4.
+dependencies; do not replay old source or plan scripts. Doorway-cycle verification uses a fresh ignored
+`local/granseal-doorway-cycle/` run root with the existing environment/input selections and fixed
+absolute `DOTNET_BIN` / shared `DOTNET_CLI_HOME`, always setting
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` before SDK launch. Pair the owning tests with
+`MapBlockCopyActionTests` and `MapBlockCopyLifecycleTests`; preserve the natural full-suite result
+and correct only failed or otherwise invalidated owning tests. The public canonical sample uses
+authored zero blocks with only the admitted doorway words/row needed by the contract.
+The [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
+continues `leader-defeat-pending` after its71-frame pocket prefix through door Begin/middle/settled,
+outside roof restore and re-entry clear, repeated cycles, side/outside/F/G refusals and idle callbacks.
+It compares physical input with API snapshots from the same state and samples actual uncovered
+door/roof pixels at stable world coordinates. Inspect every changed PNG and complete stdout/stderr;
+reuse only byte-identical previously inspected frames. No original script, H3 or full Python run is
+part of this bounded implementation. Natural continuity, original presentation/timing and H4 stay Unknown.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. A change to the named preparation or shared view also
 requires the affected enemy physical and pursuit modes. Other modes,

@@ -29,6 +29,35 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.Equal((ushort)1,before[41*64+30]);
     }
 
+    [Fact]
+    public void DoorAndSavedRoofChangeSeparateCurrentProjectionPixelsAndRepeatWithoutClosingDoor()
+    {
+        ushort[] before=new ushort[WorkingMapLayout.WordCount];
+        for(int y=41;y<47;y++) for(int x=30;x<35;x++) before[y*64+x]=1;
+        before[15*64+32]=0xC400; before[62]=0x0801;
+        var clear=MapBlockCopyLifecycleReducer.Activate(new(before),MapBlockCopyLifecycleState.Inactive,
+            new(false,false),8,MapBlockRegionMutation.Clear(30,41,5,6));
+        var door=clear.Layout.ApplyBlockCopy(new(62,0,32,15,1,1));
+        var restored=MapBlockCopyLifecycleReducer.Restore(door,clear.LifecycleState,clear.UpdateState);
+        var reentered=MapBlockCopyLifecycleReducer.Activate(restored.Layout,restored.LifecycleState,
+            restored.UpdateState,8,MapBlockRegionMutation.Clear(30,41,5,6));
+        ushort[][] blocks=[Enumerable.Repeat((ushort)0x0100,9).ToArray(),Enumerable.Repeat((ushort)0x0101,9).ToArray()];
+        var art=BuildNearestAtlas(VisualDefinition(),2);
+        PrivateOriginalMapBaseViewProjection Project(WorkingMapLayout layout) {
+            var snapshot=Snapshot(blocks,layout.Words.ToArray(),areaDefinitions:StaticOverlayAreas(),playerPosition:new(32,13));
+            return PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,snapshot.CurrentRuntime.VisualResourceSelection,
+                art,2,currentAreaOverlay:true);
+        }
+        var closed=Project(clear.Layout); var opened=Project(door); var outside=Project(restored.Layout); var inside=Project(reentered.Layout);
+        int doorX=(32-opened.OriginX)*48+4,doorY=(15-opened.OriginY)*48+4;
+        int roofX=(30-opened.OriginX)*48+4,roofY=(12-opened.OriginY)*48+4;
+        Assert.False(Pixel(closed,doorX,doorY).SequenceEqual(Pixel(opened,doorX,doorY)));
+        Assert.Equal(Pixel(opened,doorX,doorY),Pixel(outside,doorX,doorY));
+        Assert.False(Pixel(opened,roofX,roofY).SequenceEqual(Pixel(outside,roofX,roofY)));
+        Assert.Equal(opened.RgbaBytes,inside.RgbaBytes); Assert.Equal(opened.Camera,outside.Camera);
+        Assert.Equal((ushort)0x0801,reentered.Layout[32,15]); Assert.Equal((ushort)0xC400,clear.Layout[32,15]);
+    }
+
     [Theory]
     [InlineData(2, false)]
     [InlineData(2, true)]

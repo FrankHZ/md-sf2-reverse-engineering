@@ -13,6 +13,7 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateCanonicalMap3ImportReaderTests
 {
+    private const int SampleBlockCount = 0x90; // Authored zero blocks through the admitted doorway index0x8F.
     [Fact]
     public void ReturnEntryLoadRetainsCatalogResourcesAndSelectsChurchWithoutAWarp()
     {
@@ -22,6 +23,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Same(load.Runtime.AreaCatalog.Records[0], load.Area);
         Assert.Equal(10, load.Roofs.Count); Assert.Equal(2, load.FlagCopies.Count); Assert.Single(load.Chests);
         Assert.Equal(new OriginalMapReturnRoofRow(8,32,15,255,255,5,6,30,41), load.SelectRoof(new(32,13)));
+        Assert.Equal(new OriginalMapStepCopyIdentity(ContentProfile.PrivateLocal,new("map3"),"Map03s4_StepEvents",4),load.ChurchDoor.Identity);
+        Assert.Equal(new MapPosition(32,15),load.ChurchDoor.Trigger);
+        Assert.Equal(new WorkingMapBlockCopy(62,0,32,15,1,1),load.ChurchDoor.Copy);
+        Assert.Equal(10,load.RoofActions.Records.Count);
+        Assert.Equal(new MapCellCoordinate(32,15),load.RoofActions.Records[7].Trigger);
         Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(null, definition.RuntimeCatalog));
         var other = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
         Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(load, other.RuntimeCatalog));
@@ -30,6 +36,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     [Theory]
     [InlineData("roof8")] [InlineData("roof6")] [InlineData("roof-count")]
     [InlineData("flag")] [InlineData("chest")] [InlineData("missing-chest")]
+    [InlineData("door-trigger")] [InlineData("door-source")] [InlineData("door-destination")]
     public void ReturnEntryResourceDriftRejectsTheCompleteImport(string mutation)
     {
         var doc = SampleDocument();
@@ -41,6 +48,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             case "flag": ResourceArray(doc,"flagEventTables")[0]!["records"]![0]!["flag"] = 507; break;
             case "chest": ResourceArray(doc,"itemTables")[0]!["records"]![0]!["item"] = 1; break;
             case "missing-chest": ResourceArray(doc,"itemTables")[0]!.AsObject().Remove("records"); break;
+            case "door-trigger": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["trigger"]!["x"] = 31; break;
+            case "door-source": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["source"]!["x"] = 61; break;
+            case "door-destination": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["destination"]!["y"] = 16; break;
         }
         Assert.IsType<OriginalMapImportRejected>(Admit(doc));
     }
@@ -132,7 +142,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.VisualResourceSelection.ProjectionDigest);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
         Assert.Equal("Map03s0_Blocks", accepted.Definition.BlockCatalog.ResourceId);
-        Assert.Equal(3, accepted.Definition.BlockCatalog.Records.Count);
+        Assert.Equal(SampleBlockCount, accepted.Definition.BlockCatalog.Records.Count);
         Assert.Equal(
             0,
             accepted.Definition.BlockCatalog.Resolve(
@@ -574,7 +584,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject missingBlock = SampleDocument();
-        LayoutWords(missingBlock)[0] = 3;
+        LayoutWords(missingBlock)[0] = SampleBlockCount;
         AssertCode(Admit(missingBlock), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject wrongDefault = SampleDocument();
@@ -600,7 +610,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject danglingLayout = SampleDocument();
-        LayoutWords(danglingLayout)[0] = 3;
+        LayoutWords(danglingLayout)[0] = SampleBlockCount;
         AssertCode(Admit(danglingLayout), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
@@ -1545,6 +1555,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     private static JsonObject SampleDocument()
     {
         int[] layoutWords = new int[WorkingMapLayout.WordCount];
+        layoutWords[Index(32, 15)] = 0xC48F;
+        layoutWords[Index(62, 0)] = 0x080E;
+        layoutWords[Index(32, 16)] = 0x0C57;
         layoutWords[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
         layoutWords[Index(4, 8)] = OriginalMapTraversal.CollisionMask;
         layoutWords[Index(3, 3)] = OriginalMapTraversal.LeftStairMask;
@@ -1629,7 +1642,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     {
                         id = "Map03s0_Blocks",
                         address = 1,
-                        blocks = Enumerable.Range(0, 3).Select(_ => new int[9]).ToArray(),
+                        blocks = Enumerable.Range(0, SampleBlockCount).Select(_ => new int[9]).ToArray(),
                     },
                     new
                     {
@@ -1707,10 +1720,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             .Concat(Enumerable.Range(1, 4)
                                 .Select(index => new
                                 {
-                                    trigger = Point(index, 60),
-                                    source = Point(index, 61),
+                                    trigger = index == 3 ? Point(32, 15) : Point(index, 60),
+                                    source = index == 3 ? Point(62, 0) : Point(index, 61),
                                     size = new { width = 1, height = 1 },
-                                    destination = Point(index, 62),
+                                    destination = index == 3 ? Point(32, 15) : Point(index, 62),
                                 }))
                             .Append(new
                             {
