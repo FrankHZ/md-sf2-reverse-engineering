@@ -1983,6 +1983,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
     {
         var viewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
         if (viewport is null || !viewport.IsVisibleInTree() || _presenter.BaseProjection is null) return 0;
+        Require(RenderingServer.DebugCanvasItemGetRect(viewport.GetCanvasItem()) ==
+            PrivateOriginalMapBaseViewport.LogicalTextureRect, "The live canvas item keeps the fixed map rectangle");
         var rectangle = new Rect2(viewport.Position, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size);
         int scaleX = image.GetWidth() / 960, scaleY = image.GetHeight() / 540;
         Require(scaleX > 0 && scaleY > 0 && image.GetWidth() == 960 * scaleX && image.GetHeight() == 540 * scaleY,
