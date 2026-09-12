@@ -580,34 +580,6 @@ def _select_all(
         _selection_entry(selected, partition_id, reason)
 
 
-def _select_imports(
-    selected: dict[str, dict[str, set[str]]], root: Path, path: str
-) -> bool:
-    matched = False
-    for module in _imports_for_path(root, path):
-        if module.startswith("sf2tool.h2."):
-            command = H2_MODULE_COMMANDS.get(module.rsplit(".", 1)[1])
-            if command is not None:
-                _select_h2_command(selected, command, f"{path} imports {module}")
-                matched = True
-            else:
-                source = (root / "src" / Path(*module.split("."))).with_suffix(".py")
-                if source.is_file():
-                    relative = source.relative_to(root).as_posix()
-                    matched = _select_dependents(selected, root, relative) or matched
-        elif module.startswith("sf2tool.h3."):
-            commands = H3_MODULE_COMMANDS.get(module.rsplit(".", 1)[1], ())
-            for command in commands:
-                _select_h3_command(selected, command, f"{path} imports {module}")
-                matched = True
-            if not commands:
-                source = (root / "src" / Path(*module.split("."))).with_suffix(".py")
-                if source.is_file():
-                    relative = source.relative_to(root).as_posix()
-                    matched = _select_dependents(selected, root, relative) or matched
-    return matched
-
-
 def _select_dependents(
     selected: dict[str, dict[str, set[str]]], root: Path, path: str
 ) -> bool:
@@ -840,7 +812,6 @@ def plan_paths(
                 normalized,
                 commands,
             )
-            _select_imports(selected, root, normalized)
             continue
 
         if normalized in {"pyproject.toml", "uv.lock", ".python-version"}:
@@ -873,7 +844,15 @@ def plan_paths(
             continue
 
         if normalized == "src/sf2tool/verification_plan.py":
-            _selection_entry(selected, "tooling-python", normalized)
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                (
+                    "uv run pytest tests/python/test_verification_plan.py",
+                    "uv run pytest tests/python/test_native_harness.py",
+                ),
+            )
             _selection_entry(selected, "remake-dotnet", normalized)
             _selection_entry(selected, "remake-godot", normalized)
             _select_dependents(selected, root, normalized)

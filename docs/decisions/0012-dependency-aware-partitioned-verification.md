@@ -76,8 +76,10 @@ ownership with no unclassified owner artifact.
   to narrow commands;
 - maps H3 dispatch modules, declared/recursive fixtures and schemas, observers, and case fixtures
   through the accepted bootstrap profile registry;
-- scans Python test imports and transitive reverse dependencies of shared Python modules to retain
-  their H1/H2/H3 owners while suggesting the changed test file;
+- selects an existing ordinary Python test file's own pytest command; importing a production module
+  does not mean that module changed and does not invalidate its H1/H2/H3 owners;
+- scans transitive reverse dependencies when a shared production Python module actually changes,
+  retaining its H1/H2/H3 owners;
 - fans the CLI, harness, ROM/toolchain identity manifests, Python toolchain/lock inputs, and legacy
   scripts to every evidence partition; a shared Python module that transitively reaches the harness
   also selects H1;
@@ -96,6 +98,31 @@ unmodified `verify plan` retain their separate dispatch behavior.
 path under an evidence-owning root selects all plausible partitions. Documentation-only paths select
 only the always-run public core unless their change is accompanied by, or explicitly declares, an
 evidence dependency.
+
+### Test Changes and Production Invalidation
+
+This replaces the earlier test-import propagation rule. A historical-wording change in
+`tests/python/test_native_harness.py` still imports the unchanged shared BizHawk helper and direct H2
+owners for other tests in the file. Following those imports backward through production consumers
+would incorrectly treat the helper and its consumers as changed. Ordinary existing test files now
+select their own pytest command without that propagation, whether they import a direct H2/H3 command
+owner or a shared helper.
+
+Actual production, fixture, schema, manifest, and observer changes still select their owners and
+reverse dependencies. Explicit remake, asset, and runner test mappings retain their additional gates;
+a deleted ordinary test still falls back to the complete Python suite. If a test change introduces an
+original-runtime acceptance requirement that the changed source paths do not express, the lane must
+declare that semantic dependency through the existing `--include-partition` option. Test selection is
+not permission to omit such a requirement.
+
+The planner's own existing production-path mapping selects the complete `test_verification_plan.py`
+and `test_native_harness.py` files for its Python gate. Its direct production consumer is the CLI;
+the planner tests cover CLI parsing, dispatch, execution-mode separation, Git-range admission,
+partition selection, and artifact ownership, while the native harness covers the shared public CLI
+contract. This scoped command selection keeps the mapping's .NET/Godot gates and production reverse
+dependencies. It does not narrow any other shared production module's default Python gate.
+
+### Checked-Out Candidate Consistency
 
 The planner operates only on a clean checked-out committed head. It rejects a different committed
 head, including an arbitrary remote head, because artifact and import ownership are derived from the
