@@ -8,9 +8,9 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
-Next: independently review the [bounded Chester first kill](#implemented-chester-first-kill-and-third-enemy-cleanup)
-and its actual enemy128 lethal refusal with94 receipts retained. Further Battle01 completion remains
-the ADR0010 direction; enemy128 defeating Chester requires separate scope.
+Next: review the [enemy128 defeat continuation plan](#proposed-enemy128-defeat-and-r12-bowie-control)
+from the accepted94-receipt Chester-first-kill boundary. The proposed stop is actual R12 Bowie
+movement/cancel after Chester's defeat; implementation requires independent acceptance of this plan.
 
 ## Current Baseline
 
@@ -738,6 +738,209 @@ and official locked Godot gate. Native `chester-first-kill` supplies the opt-in 
 receipt94 and physical Space/actual128 refusal. The full physical/API battle matches; inspect changed
 PNGs at original resolution and retain complete logs. Keep ordinary119, counter, enemy-physical and
 pursuit regressions; preserve completed failures and correct only their owning nodes.
+
+### Proposed enemy128 defeat and R12 Bowie control
+
+**Proposed, not implemented:** admit the actual128 attack already selected after Chester's first
+kill, then dispatch the actual subsequent candidate until the first Unsupported or usable player
+movement/cancel. The expected next player is Bowie0 in the same R12 buffer. This is one nonleader
+ally cleanup after three enemy cleanups, using existing selected inputs and completion mechanisms.
+This planning slice owns only `remake/docs/map03-playability-plan.md`; no production capability,
+fixture, preset, seed, runtime profile, battle state or policy is changed by the plan.
+
+#### Confirmed starting point and present guards
+
+The preceding [first-kill section](#implemented-chester-first-kill-and-third-enemy-cleanup) owns the
+accepted real-input prefix. Keep early `ChesterFirstKillComparison`, including kills0/defeats0/EXP0
+before initialization, and its existing private launch opt-in. Return/arrival remain unselected.
+There is no new preset or late input supplement. Receipt94 is R12/raw2, actual128 at(9,3),
+Chester2 at(9,4) HP1/EXP54/kills1/defeats0, Bowie0 at(11,15) HP3/EXP63/kills2, Sarah1 at(9,17) HP11,
+gold180, main323E1234/copy0134. Enemy129/131/132 are HP0/unplaced; living enemies are128 HP5,
+130 HP4 and133 HP5. The complete order remains
+`[2:6,128:6,0:5,129:5,130:5,1:4,133:4]` plus57 sentinels.
+
+**Confirmed controlled execution:** the existing required-private Content method
+`AcceptedSelectedInputsCreditChesterFirstKillAndActuallyRejectEnemy128` and its
+`ReachRealChesterFirstKillSelection` / `ReachRealRoundTenChester` helpers reproduce the early-input
+route without inserted states. Application pursuit reports `AttackSelectionRequired` for128;
+physical completion reports `attack.lethal` and retains the exact94 snapshot and serialized battle.
+A narrow diagnostic reusing source-matched compiled helpers also calls the current Domain policies
+on that unchanged battle: `ControlledNonlethalStrike` rejects `attack.lethal`, while
+`ControlledFirstAllyDefeat` and `ControlledLeaderDefeatPending` reject `cleanup.before`.
+Calling the pure `Decide` helper with `allowAllyDefeat:true` only constructs an unpublished decision;
+it does not prove death cleanup, receipt95, Application publication or player control.
+
+The concrete current restrictions are:
+
+| Existing owner / method | Restriction and proposed treatment |
+| --- | --- |
+| Application `PrivateOriginalBattle01EnemyPhysicalAttack.cs` | Only the leader and older Chester-defeat preset IDs select a lethal policy. Select the new bounded policy for the already prepared `ChesterFirstKillComparison`; preserve other branches and both facades' complete rewound-input validation. |
+| Domain `Battle01TurnCompletion.cs`: `HasValidPolicy`, `ApplyAllyDefeatCleanup`, `ValidateAllyDefeatReceipt` | The older ally-death policy requires actor133, Chester kills unspecified, dead rows2/131/132 and post-cleanup counts2/4. Keep that admission unchanged; distinguish the new128/credited-Chester/three-enemy-corpse case by policy before using the same cleanup tail. |
+| Domain `Battle01EnemyStandby.cs`: `RequireThinkingHistory` | Ally-death rewind hard-codes living enemies4. Use the validated receipt's policy-specific count boundary for the new2/3 case, while preserving the older2/4 check and all HP/position/RNG/accounting rewinds. |
+| Domain `Battle01FirstRound.cs`: `GenerationRoster`, `RequireCurrentPrefix`; `Battle01NextPlayerControl.cs` | Existing death before-images restore the current generation's seven participants, including Chester and129. Reuse this reconstruction and current-candidate entry. Do not regenerate from the five survivors or change the seven-entry R12 order. |
+
+#### Pinned source and inferred consequence
+
+**Confirmed static provenance:** `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`. Reuse the registered USA input
+identity checked by the real-input helpers and the [existing first-ally source boundary](#source-boundary-and-usable-endpoint).
+The primary source distinguishes ally defeat from the victim's earlier kill credit:
+
+| Source owner | Required consequence |
+| --- | --- |
+| [`attack.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/attack.asm), `battlesceneScript_Attack` (`0xAAB6..0xAAFC`); [`inflictdamage.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictdamage.asm), `battlesceneScript_InflictDamage` (`0xACEA..0xAE32`) | Damage variance makes two calls even at range1. Lethal HP sets the death flag, writes the signed ally reaction and returns before double/counter selection. |
+| [`earnexp.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/earnexp.asm), `battlesceneScript_CalculateDamageExp` / `battlesceneScript_AddExpAndGoldForKill` (`0xA872..0xA9CC`); `battleactionsengine_2.asm` (`0xA34E..0xA49C`) | The enemy actor skips damage/kill rewards; no counter means no allied reward dispatch. Restore construction HP before reaction replay. Chester's existing EXP54/kills1 and gold180 are not new rewards or reset inputs. |
+| [`processkilledcombatants.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processkilledcombatants.asm), `ProcessKilledCombatants` (`0x24518..0x24642`); `code/common/stats/combatantstats_2.asm`, `IncreaseDefeats` | The newly dead allied index2 takes the defeats branch, independently of kills, then clears X/Y/status and refreshes effective stats. Reuse the admitted status0/unchanged-effective-stats boundary and existing9999 defeat cap. Do not process old enemy corpses again. |
+| [`countremainingcombatants.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/countremainingcombatants.asm) (`0x23C58..0x23CBA`); `processafterturneffects.asm`, `battleloop_1.asm`; [death worklists contract](../../docs/design/contracts/battle-control-lifecycle.md#death-worklists-and-combatant-cleanup) | Count living placed units after first cleanup, then after-turn/second cleanup and the second outcome check. Bowie and enemy128 remain alive; this is a continuing turn, not a defeat-return transition. |
+
+**Confirmed bounded calculation, Inferred post-refusal behavior:** pure construction from the actual94
+battle selects only Chester2;128 stays at(9,3), cost0/path`[255]`. Thinking range3 takes133 steps,
+copy0134→0234, result2/priority19. Terrain1 gives `(8−5)*230 >> 8 = 2`, versus HP1. Main ranges
+`[32,32,1,1]` produce `[17,5,0,0]`, after-images
+`8D2D1234/2B501234/33171234/98321234`. The reaction is `(2,-2,0,0,1)`;
+HP goes1→temporary0→restored1 before persistent replay to0. There are no double/counter,
+EXP-jitter, gold, enemy-kill or generation draws. These calculations agree with the independent
+source arithmetic below; main98321234/copy0234 remain unpublished in accepted code.
+
+The proposed receipt95 has actor128, first worklist`[2]`, empty after-turn worklist, defeats0→1,
+both post-cleanup counts2/3, same R12 slots and raw2→4. Clear only Chester's occupancy at(9,4);
+retain all nine identity rows and the three existing enemy corpses, whose cells remain empty.
+Retain Chester EXP54/kills1, Bowie HP3/EXP63/kills2, Sarah HP11, gold180 and all94 earlier receipts,
+including counter89 and the independently credited129 kill94. Preserve actor128's origin/HP,
+AI memory, flags and other last-target entries; its last target becomes2. There is no fresh
+initialization, region test, HP/stat refresh beyond the already bounded policy or history rewriting.
+
+The next slot is **Confirmed** as Bowie0/raw4; successful post-death dispatch and movement remain
+**Inferred** until implementation. Use actual `PrivateBattle01Ui.DispatchNext` / Application APIs,
+without skipping a candidate. Expected stop: Bowie at(11,15), budget12, preview/confirm(11,14)
+at cost2, then cancel back to(11,15), retaining95 receipts, all combat accounting and both RNG
+channels. The accepted terrain has empty type1 at(11,14); the existing Regular profile costs2.
+Do not supply a hypothetical post-death snapshot to obtain this control. Any earlier Unsupported
+must retain the exact last committed snapshot and become the reported stop.
+
+#### Proposed policy, ownership and acceptance
+
+Use the existing singleton policy mechanism for `ControlledChesterDefeatAfterFirstKill`, proposed ID
+`battle01-controlled-chester-defeat-after-first-kill-v1`. Admit only lethal128→2 after the validated
+Chester-credited129 receipt with two prior Bowie-credited enemy deaths, Chester kills1/defeats0,
+the corresponding three cleaned enemies and new2/3 count boundary. Cross-check that predecessor's
+credited actor/after-stats against the current victim before-image. Use one cleanup implementation
+with distinct old/new admission checks; neither an arbitrary enemy count nor known kills alone is
+sufficient. Earlier nonlethal/counter receipts keep their existing policy IDs. The old133 policy
+continues to require its two-corpse/kills-unspecified boundary; it must still reject this94 state.
+
+Reverse95 before94: restore Chester HP1/defeats0/placement and preserve kills1/EXP54, then rewind
+the129 kill to kills0/EXP30/gold120, then the counter and earlier player/enemy history to the
+declared zero inputs. Keep each owner's count, placement, main/copy and reward before-image attached
+to its receipt. Both physical Application facades must still reject late copied preparation,
+forged accounting and replayed/relabeled receipts before publishing a session snapshot.
+
+Proposed implementation ownership is the following exact17 paths, relative to `remake/`.
+This table is a reviewable proposal, not authorization to edit them in the planning slice.
+
+| Directory / exact filenames | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/`: `Battle01TurnCompletion.cs`, `Battle01EnemyStandby.cs` | New bounded policy, shared cleanup admission/receipt validation and history/count rewind. |
+| `src/Sf2.Remake.Application/Sessions/`: `PrivateOriginalBattle01EnemyPhysicalAttack.cs` | Select the new policy from the existing early comparison and retain atomic publication. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/`: `Battle01EnemyPhysicalAttackTests.cs`, `Battle01TurnCompletionTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01NextPlayerControlTests.cs` | Exact decision/cleanup, rollback, old-policy refusal, accounting and unchanged generation reconstruction through actual0 entry. |
+| `tests/Sf2.Remake.Application.Tests/`: `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs`, `PrivateOriginalBattle01PlayerPhysicalAttackTests.cs`; `tests/Sf2.Remake.Content.Tests/`: `PrivateOriginalBattle01StartupReaderTests.cs` | Both accounting facades, stale/late publication failures and complete required-private startup→94→95→Bowie movement/cancel. |
+| `tests/Sf2.Remake.Godot.Tests/`: `PrivateBattle01PresenterTests.cs`; `tests/native/`: `Map19Map20AtlasReviewProbe.cs` | Existing display/dispatcher behavior with dead Chester, persistent kill/EXP/defeats accounting and actual physical input. |
+| `docs/`: `map03-playability-plan.md`, `capability-status.md`, `development-and-verification.md`, `presentation-and-assets.md` | Admitted behavior, source/Unknown boundary, reproduction and proportional visual acceptance. |
+
+The existing target selector, reaction, movement, player accounting, generation reconstruction,
+presenter and dispatcher are reused without proposed production changes. No new schema, registry,
+fixture, importer, profile/CLI option, dependency or parallel state authority is required. A concrete
+failure requiring another path must first revise this ownership proposal. In particular, the later
+five-survivor generation would encounter `RequireCurrentPrefix`'s current minimum-six generation
+guard. That is a separate continuation boundary: this slice stops at same-generation Bowie control,
+before Bowie STAY or a new generation, and must not silently widen that guard.
+
+Positive acceptance must reproduce all94 committed before-images and the exact new95 effect, then
+actually dispatch to the first Unsupported or usable movement/cancel. Existing first-kill assertions
+remain; after this extension its old Application128-refusal assertion is replaced explicitly by
+the admitted95 result, while an explicit old-policy refusal still proves exact94 retention.
+Old leader/119-return, older133 defeat, first-kill/third-enemy credit and counter routes retain their
+input/policy/accounting boundaries. Prove old94 is unchanged after successful95 and every earlier
+receipt remains linked; never normalize away kills/EXP/defeats or replace the recorded round.
+
+Negative acceptance includes wrong actor/target, missing or forged early kills/defeats, wrong prior
+credit or extra enemy corpse, policy relabeling, duplicate death/reward, wrong live/dead stats,
+occupancy/worklist/count/AI/RNG/history drift and stale/foreign/repeated snapshots. Exercise failures
+after local damage construction, cleanup, after-turn/history validation and final facade accounting:
+none may publish partial HP0, defeats1, removed occupancy, changed seeds or a95 receipt. Dead Chester
+must not receive control, block occupancy or enter a live target cohort; the historical generation
+must still include him and129 before their deaths. Use authored negative fixtures for corruption,
+not a patched positive real-input route. No second ally defeat, fourth enemy defeat, player level,
+victory/leader return, item/status expansion or post-presentation/VInt RNG is included.
+
+Reuse native `chester-first-kill` and its existing launch opt-in. Retain the first36 captures,
+including exact selected-copy94; the old37 refusal remains historical evidence. Add a labeled copied
+95 before next dispatch, the physical-Space/actual-Bowie ready result, Bowie provisional(11,14) and
+cancel(11,15). Require whole-battle equality between copied API relay and physical input, not just
+matching counts. Expected total40 frames; independently inspect every changed PNG at original
+resolution, including absent Chester marker, HP0/EXP54/defeats1, Gold180/Bowie kills2/Chester kills1,
+enemy128's result and usable controls. The copied seam is test instrumentation, not a production
+pause. Compare retained images by bytes and preserve complete bounded process logs.
+
+Planning acceptance is one-file decision/queue review, committed planner/public-core, named narrow
+reproduction and a clean pushed Draft. No full managed, Godot, Python or H3 suite is selected for
+this plan. Later implementation must use its committed dependency planner, normal public gate,
+owning managed tests, required-private positive route, official Godot and affected native checks.
+Preserve completed failures and already valid regression results; do not replay an old full suite
+or matrix merely for a new SHA. The final implementation stopping condition is the first actual
+Unsupported or Bowie movement/cancel, followed by an independently reviewable frozen Draft.
+
+#### Narrow reproduction and remaining Unknowns
+
+In a source-matched existing Release workspace, use the registered private inputs,
+`SF2_REQUIRE_PRIVATE_TESTS=1`, fixed absolute `DOTNET_BIN`, the shared CLI home and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. From its `remake/` directory, the existing owning command is:
+
+```powershell
+& $env:DOTNET_BIN @('test', 'tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj',
+  '--configuration', 'Release', '--no-build', '--no-restore',
+  '--filter', 'FullyQualifiedName~AcceptedSelectedInputsCreditChesterFirstKillAndActuallyRejectEnemy128',
+  '--results-directory', $env:SF2_RUN_OUTPUT)
+```
+
+For the new guard diagnostic, invoke the existing private
+`ReachRealChesterFirstKillSelection(ChesterFirstKillComparison)` helper, confirm129 through
+Application, then attempt actual128 and the three current Domain policies listed above. A
+reflection call to existing `Decide(battle, actor128, true, false, false)` may inspect the pure
+decision only. Keep the original battle object and full serialization unchanged. Reuse compiled
+dependencies only after comparing their source archives/workspaces with the accepted Git source;
+write the tiny diagnostic and complete outputs to a fresh ignored worktree-local destination.
+
+Independently reproduce the main/thinking arithmetic with the existing locked `uv` environment
+from the repository root. This invokes a source helper, not an H3 observation:
+
+```powershell
+@'
+from sf2tool.h3.rng import _rng_step
+word = 0x323E
+actual = []
+for size in (32, 32, 1, 1):
+    word, value = _rng_step(word, size)
+    actual.append((value, word))
+assert actual == [(17, 0x8D2D), (5, 0x2B50), (0, 0x3317), (0, 0x9832)]
+copy, steps = 0x0134, 0
+while True:
+    high = copy >> 8
+    signed = high if high < 128 else high - 256
+    value = (((signed & 0xFFFF) * 541) + 12345) & 255
+    copy, steps = (value << 8) | (copy & 255), steps + 1
+    if value < 3:
+        break
+assert (steps, value, copy) == (133, 2, 0x0234)
+assert ((8 - 5) * 230) >> 8 == 2
+print('PASS: bounded arithmetic; inferred main98321234/copy0234 remain unpublished')
+'@ | uv run python -X utf8 -
+```
+
+**Unknown:** successful95 publication and actual subsequent usable control until implementation;
+natural input/seed continuity, carried defeat counters, original death/reaction presentation and
+VInt consumption, further combat continuation and H4. A pure constructed effect or hypothetical
+source endpoint does not close any of those boundaries.
 
 ### Accepted inputs and incompatible existing assumptions
 
