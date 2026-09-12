@@ -562,11 +562,10 @@ class _WindowsJobObject:
                     elif result != _WAIT_OBJECT_0:
                         self._tracker_failed = True
                 for handle in alive_handles:
-                    if (
-                        not self._kernel32.TerminateProcess(handle, 1)
-                        and self._kernel32.WaitForSingleObject(handle, 0) == _WAIT_TIMEOUT
-                    ):
-                        self._tracker_failed = True
+                    # A prior asynchronous termination can reject this request before
+                    # the handle is signaled. The bounded polls and final handle/job
+                    # checks determine completion, not an individual request's result.
+                    self._kernel32.TerminateProcess(handle, 1)
                 tree_empty = self._active_processes() == 0 and not alive_handles
                 if tree_empty and opened == 0:
                     stable_empty_scans += 1
