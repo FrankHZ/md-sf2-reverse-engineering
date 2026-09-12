@@ -48,7 +48,8 @@ internal static class PrivateBattle01Ui
             };
         }
 
-        if (current.Arrival is not null) return null;
+        if (current.Arrival is not null) return input == PrivateBattle01Input.None ? null :
+            "Battle controls unavailable. Use the church-pocket movement controls.";
         if (current.CanEnterExploration && input == PrivateBattle01Input.Confirm)
             return session.EnterPrivateOriginalBattle01Exploration(current) switch
             {
@@ -235,7 +236,11 @@ public sealed partial class Map3Root
 
     private bool PollPrivateBattle01()
     {
-        if (_session?.PrivateOriginalMapArrival is not null) return true;
+        if (_session?.PrivateOriginalMapArrival is not null)
+        {
+            PollGransealMovement();
+            return true;
+        }
         if (_session is null || !PrivateBattle01Ui.OwnsInput(_session.PrivateOriginalFlowStage,
                 _session.PrivateOriginalBattle01Admission is not null, _privateBattle01Source is not null))
             return false;

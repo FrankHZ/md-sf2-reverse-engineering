@@ -17,22 +17,32 @@ internal sealed record PrivateMap3PresentationPlan(
     bool CurrentAreaOverlay,
     float StatusY)
 {
-    internal const string ArrivalStatus = "Granseal entry ready (32,13), facing up. Exploration input unavailable.";
-    internal static string FormatArrivalStatus(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    internal const string ArrivalStatus = "Granseal entry ready. Church-pocket movement available.";
+    internal static string ReturnMovementOutcome(PrivateOriginalMapReturnMovementResult result) => result switch
+    {
+        PrivateOriginalMapReturnMovementApplied applied => applied.Snapshot.Arrival!.Locomotion.IsMoving ? "Moving" :
+            applied.Snapshot.Arrival.LastInput!.Traversal.Outcome == OriginalMapTraversalOutcome.Moved ? "Moved" : "Blocked by terrain",
+        PrivateOriginalMapReturnMovementUnsupported unsupported => unsupported.Diagnostic.Message,
+        PrivateOriginalMapReturnMovementRejected rejected => rejected.Diagnostic.Message,
+        _ => throw new ArgumentOutOfRangeException(nameof(result)),
+    };
+    internal static string FormatArrivalStatus(PrivateOriginalMapReturnArrivalSnapshot arrival, string? outcome = null)
     {
         var party = arrival.Party;
         string Ally(int id, string name)
         {
             var slot = party.Slots[id];
-            return $"{(id == 0 ? "Player" : "Follower")} {id} {name}: (32,13)/UP, target (32,13), " +
+            var entity = arrival.Entities.Single(e => e.Id == id);
+            string facing = entity.Facing switch { 0 => "RIGHT", 1 => "UP", 2 => "LEFT", 3 => "DOWN", _ => "Unknown" };
+            return $"{(id == 0 ? "Player" : "Follower")} {id} {name}: ({entity.Position!.X},{entity.Position.Y})/{facing}, " +
                 $"HP {slot.HpCurrent}/{slot.HpMax} MP {slot.MpCurrent}/{slot.MpMax}" +
                 (id == 2 ? "  DEAD / BLUE_FLAME" : "");
         }
-        return ArrivalStatus + "\n" + arrival.EntityPolicy + "\n" +
+        return (outcome ?? ArrivalStatus) + "\n" + arrival.EntityPolicy + "\n" +
             Ally(0, "Bowie") + "\n" + Ally(1, "Sarah") + "\n" + Ally(2, "Chester") + "\n" +
-            $"Gold {party.Gold}; healed slots {string.Join('/', party.ProcessedIds)} of30. History retained.\n" +
-            "Default Map3; church roof open; entity142 hidden/out; temporary flags reset.\n" +
-            "Original positions after scripts: Unknown. All exploration controls closed.";
+            $"Gold {party.Gold}; input {arrival.InputOrdinal}. Entry (32,13)/UP and battle history retained.\n" +
+            "Move within x31-33/y12-14. Door, follower cell and F/G unavailable.\n" +
+            "Church roof open; entity142 hidden/out. Original post-script positions: Unknown.";
     }
 
     private const string DiagnosticExplanation =
@@ -629,7 +639,7 @@ internal sealed class PrivateMap3Presenter
         _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
 
-    internal void Project(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    internal void Project(PrivateOriginalMapReturnArrivalSnapshot arrival, string? outcome = null)
     {
         if (_baseViewport is null || _map3Atlas is null)
             throw new InvalidOperationException("Select the reviewed Map3 base atlas before starting the arrival comparison.");
@@ -640,7 +650,7 @@ internal sealed class PrivateMap3Presenter
         _explanation.Text = "Fresh Granseal entry with diagnostic entities. Not full original fidelity.";
         _status.Position = new Vector2(StatusX, 310); _status.Size = new Vector2(912, 210);
         _status.AddThemeFontSizeOverride("font_size", 16);
-        _status.Text = PrivateMap3PresentationPlan.FormatArrivalStatus(arrival);
+        _status.Text = PrivateMap3PresentationPlan.FormatArrivalStatus(arrival, outcome);
     }
 
     internal static float ProjectionStatusY(bool traversalVisible, float initialStatusY) =>

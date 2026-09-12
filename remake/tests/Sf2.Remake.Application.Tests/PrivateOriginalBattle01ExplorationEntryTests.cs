@@ -8,6 +8,57 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01ExplorationEntryTests
 {
     [Theory]
+    [InlineData(32, 13, ExplorationDirection.North, 32, 13, "wall")]
+    [InlineData(32, 13, ExplorationDirection.East, 33, 13, "move")]
+    [InlineData(32, 13, ExplorationDirection.West, 31, 13, "move")]
+    [InlineData(32, 13, ExplorationDirection.South, 32, 14, "move")]
+    [InlineData(31, 12, ExplorationDirection.East, 31, 12, "wall")]
+    [InlineData(33, 12, ExplorationDirection.West, 33, 12, "wall")]
+    [InlineData(31, 13, ExplorationDirection.East, 31, 13, "return.followers")]
+    [InlineData(32, 14, ExplorationDirection.North, 32, 14, "return.followers")]
+    [InlineData(32, 14, ExplorationDirection.South, 32, 14, "return.region")]
+    [InlineData(31, 13, ExplorationDirection.West, 31, 13, "return.region")]
+    [InlineData(33, 13, ExplorationDirection.East, 33, 13, "return.region")]
+    [InlineData(31, 12, ExplorationDirection.North, 31, 12, "return.region")]
+    public void ReturnPocketDistinguishesRealTerrainFromUnsupportedEventsAndFollowerCollision(
+        int x, int y, ExplorationDirection direction, int targetX, int targetY, string outcome)
+    {
+        var words = new ushort[64 * 64];
+        words[12 * 64 + 32] = 0xE8DC;
+        // This blocked threshold must still be refused before terrain resolution.
+        words[15 * 64 + 32] = 0xC48F;
+        var layout = new WorkingMapLayout(words);
+        var traversal = new OriginalMapTraversal([new(0, 0, 50, 31)]);
+        var (result, unsupported) = GameSession.EvaluateReturnMovement(traversal, layout, new(x, y), direction);
+        if (outcome.StartsWith("return.", StringComparison.Ordinal))
+        {
+            Assert.Null(result); Assert.Equal(outcome, unsupported!.Field);
+            if (outcome == "return.followers") Assert.Contains("Unknown", unsupported.Message);
+        }
+        else
+        {
+            Assert.Null(unsupported); Assert.NotNull(result);
+            Assert.Equal(new MapPosition(targetX, targetY), result.Position);
+            Assert.Equal(new MapPosition(x, y), result.Source); Assert.Equal(direction, result.Direction);
+            Assert.Equal(outcome == "move" ? OriginalMapTraversalOutcome.Moved : OriginalMapTraversalOutcome.BlockedByCollision,
+                result.Outcome);
+            if (outcome == "wall") Assert.Equal((ushort)0xE8DC, result.DestinationWord);
+        }
+        Assert.Equal(words, layout.Words);
+    }
+
+    [Fact]
+    public void ReturnInputsCannotBypassPendingBattleAdmission()
+    {
+        var session = PrivateOriginalBattle01StartupTests.PendingSession();
+        var pending = session.PrivateOriginalBattle01Admission;
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(null, new(ExplorationDirection.North)));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(null));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.RefusePrivateOriginalMapReturnInteraction(null));
+        Assert.Same(pending, session.PrivateOriginalBattle01Admission); Assert.Null(session.PrivateOriginalBattle01);
+    }
+
+    [Theory]
     [InlineData("accepted")] [InlineData("duplicate")] [InlineData("foreign-source")]
     [InlineData("moved")] [InlineData("blocking-npc")] [InlineData("extra-follower")]
     [InlineData("missing-blue-flame")] [InlineData("wrong-target")]
