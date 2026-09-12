@@ -84,7 +84,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     [Theory]
-    [InlineData("exp", "attack.actorExpProfile")]
+    [InlineData("exp", "attack.targetProfile")]
     [InlineData("level", "attack.levelUp")]
     [InlineData("terrain", "attack.targetTerrain")]
     [InlineData("lethal", "attack.lethal")]

@@ -14,7 +14,7 @@ public sealed class PrivateBattle01PresenterTests
     [InlineData(true, true, false, false, false)]
     [InlineData(true, true, true, false, false)]
     [InlineData(true, true, true, true, false)]
-    [InlineData(true, false, false, false, true)]
+    [InlineData(true, true, false, false, true)]
     public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
