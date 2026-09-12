@@ -9,12 +9,13 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false, false, false, false)]
-    [InlineData(true, false, false, false)]
-    [InlineData(true, true, false, false)]
-    [InlineData(true, true, true, false)]
-    [InlineData(true, true, true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected)
+    [InlineData(false, false, false, false, false)]
+    [InlineData(true, false, false, false, false)]
+    [InlineData(true, true, false, false, false)]
+    [InlineData(true, true, true, false, false)]
+    [InlineData(true, true, true, true, false)]
+    [InlineData(true, true, false, false, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
         var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
@@ -183,6 +184,28 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal(roundTen.Units, roundTenCancelled.Units); Assert.Equal(roundTen.AttackResult, roundTenCancelled.AttackResult);
         Assert.Equal((roundTen.Gold, roundTen.BowieKills), (roundTenCancelled.Gold, roundTenCancelled.BowieKills));
 
+        if (counter)
+        {
+            current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+                Battle01PlayerMovement.SelectDestination(current,2,new(9,9)),2),2,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+            for(int step=0;step<16;step++)
+            {
+                if(current.FirstRound!.RoundNumber==11 && current.FirstRound.CurrentCandidate?.CombatantIndex==2)break;
+                current=current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current):CompleteAuthoredTurn(current);
+            }
+            current=Battle01NextPlayerControl.Enter(current,2).State!;
+            current=Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,2,new(9,4)),2);
+            current=Battle01PlayerPhysicalAttack.Confirm(Battle01PlayerPhysicalAttack.Begin(current,2),2,Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp);
+            current=Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+            current=Battle01EnemyPhysicalAttack.CompleteNext(current,130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
+            var view=PrivateBattle01Presenter.BuildProjection(current,"Counter complete.");
+            Assert.Equal("E2 -> A2: hit 2. HP 7 -> 5.\nCounter: A2 -> E2: hit 1. HP 5 -> 4. EXP +5: 20 -> 25.",view.AttackResult);
+            Assert.Equal((130,133),(view.CompletedActorIndex,view.NextCandidateIndex));Assert.Null(view.ActorIndex);
+            Assert.Equal((5,(byte?)25),((int)view.Units.Single(u=>u.Index==2).Hp,view.Units.Single(u=>u.Index==2).Exp));
+            Assert.Equal(4,view.Units.Single(u=>u.Index==130).Hp);
+            Assert.Contains("A2 (9,4) HP 5 EXP 25",view.AllyStatus);Assert.Contains("Input closed",view.Controls);
+            return;
+        }
         if (!firstAlly) return;
         current = Battle01PlayerMovement.SelectDestination(current, 2, new(9, 9));
         current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 2), 2,

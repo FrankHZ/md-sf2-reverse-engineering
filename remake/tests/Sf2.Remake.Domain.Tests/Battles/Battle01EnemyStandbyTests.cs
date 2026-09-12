@@ -7,6 +7,33 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyStandbyTests
 {
+    [Theory]
+    [InlineData("exp")]
+    [InlineData("hp")]
+    [InlineData("award")]
+    [InlineData("seed")]
+    [InlineData("role")]
+    [InlineData("policy")]
+    [InlineData("missing")]
+    public void CounterHistoryRewindsBothHpAndChesterExpAndRejectsBrokenLinks(string mutation)
+    {
+        var current=Battle01EnemyPhysicalAttackTests.CounterattackCompleted();
+        var original=Battle01EnemyStandby.RequireThinkingHistory(current);
+        Assert.Equal((byte?)0,original.ChesterExp);
+        var receipt=current.TurnCompletion!;var d=receipt.EnemyPhysicalAttack!;var c=d.Counterattack!;
+        var roster=current.Roster.ToArray();
+        if(mutation=="exp")roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentExp((byte)(roster[2].Stats.CurrentExp!.Value+1)));
+        if(mutation=="hp")roster[5]=roster[5].WithStats(roster[5].Stats.WithCurrentHp(5));
+        if(mutation=="award")d=d with {Counterattack=c with {AwardedExp=c.AwardedExp+1}};
+        if(mutation=="role")d=d with {Counterattack=c with {Target=c.Actor}};
+        if(mutation=="missing")d=d with {Counterattack=null};
+        if(mutation=="seed")d=d with {Counterattack=c with {Effect=c.Effect with {Rolls=c.Effect.Rolls.SkipLast(1).ToArray()}}};
+        receipt=receipt with {EnemyPhysicalAttack=d,Policy=mutation=="policy" ? Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike:receipt.Policy};
+        var forged=Battle01FirstRoundTests.CopyCurrent(current,roster:roster,receipt:receipt);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01EnemyStandby.RequireThinkingHistory(forged));
+        Assert.Equal(original,Battle01EnemyStandby.RequireThinkingHistory(current));
+    }
+
     [Fact]
     public void Actual130AfterSarahStayRetainsAllEarlierAccountingAndProducesReceipt78()
     {

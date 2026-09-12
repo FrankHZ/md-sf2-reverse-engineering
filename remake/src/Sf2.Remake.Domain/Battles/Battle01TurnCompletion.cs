@@ -17,18 +17,21 @@ public sealed class Battle01StayCompletionPolicy : Battle01TurnCompletionPolicy
 
 public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
-    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false)
-    { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat; }
+    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false, bool allowsChesterCounter = false)
+    { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat; AllowsChesterCounter = allowsChesterCounter; }
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new(false);
     public static Battle01PhysicalCompletionPolicy ControlledFirstAllyDefeat { get; } = new(true);
     public static Battle01PhysicalCompletionPolicy ControlledLeaderDefeatPending { get; } = new(true, true);
+    public static Battle01PhysicalCompletionPolicy ControlledNonlethalChesterCounterAndExp { get; } = new(false, allowsChesterCounter: true);
     internal bool AllowsAllyDefeat { get; }
     internal bool AllowsLeaderDefeat { get; }
-    public override string Id => AllowsLeaderDefeat ? "battle01-controlled-leader-defeat-pending-v1" : AllowsAllyDefeat
+    internal bool AllowsChesterCounter { get; }
+    public override string Id => AllowsChesterCounter ? "battle01-controlled-nonlethal-chester-counter-exp-v1" :
+        AllowsLeaderDefeat ? "battle01-controlled-leader-defeat-pending-v1" : AllowsAllyDefeat
         ? "battle01-controlled-first-chester-defeat-v1" : "battle01-controlled-nonlethal-physical-strike-v1";
     internal static bool IsSupported(Battle01PhysicalCompletionPolicy? policy) =>
         ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat) ||
-        ReferenceEquals(policy, ControlledLeaderDefeatPending);
+        ReferenceEquals(policy, ControlledLeaderDefeatPending) || ReferenceEquals(policy, ControlledNonlethalChesterCounterAndExp);
 }
 
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
@@ -87,8 +90,11 @@ public static class Battle01TurnCompletion
                 receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null
             : receipt.EnemyDefeat is null && (receipt.EnemyPhysicalAttack is not null
             ? ((ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
-                    !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
+                    receipt.EnemyPhysicalAttack.Counterattack is null && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
+                (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp) &&
+                    receipt.EnemyPhysicalAttack.Counterattack is not null && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
                 (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat) &&
+                    receipt.EnemyPhysicalAttack.Counterattack is null &&
                     receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is not null &&
                     receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 4))) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
@@ -250,7 +256,7 @@ public static class Battle01TurnCompletion
         return prior;
     }
 
-    private static bool SameCombatant(Battle01Combatant a, Battle01Combatant b) =>
+    internal static bool SameCombatant(Battle01Combatant a, Battle01Combatant b) =>
         a.Deployment == b.Deployment && a.ClassId == b.ClassId && a.EnemySource == b.EnemySource &&
         a.AiBitfield == b.AiBitfield && a.Position == b.Position && Battle01EnemyPhysicalAttack.SameStats(a.Stats, b.Stats);
 
@@ -274,7 +280,7 @@ public static class Battle01TurnCompletion
     {
         if (!Battle01PhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("An explicit controlled physical completion policy is required.", "policy");
-        Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat);
+        Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat, allowChesterCounter: policy.AllowsChesterCounter);
         RequireDefeatedWrapperReturn(current);
         Battle01AllyDefeatCleanup? cleanup = null;
         if (decision.DefeatedTarget) (current, cleanup) = ApplyAllyDefeatCleanup(current, decision);
@@ -282,12 +288,13 @@ public static class Battle01TurnCompletion
         var before = RequireContinuingFactions(current, "outcome.before");
         // The admitted actor's after-turn refresh changes no modifiers, status, MP or equipment.
         // Its target HP has already been authorized by the physical reaction, not by STAY.
-        NormalizeControlledNoEffectTurn(current, decision.ActorIndex, decision.Actor.Stats,
+        NormalizeControlledNoEffectTurn(current, decision.ActorIndex, decision.ActorAfterStats,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         RequireEmptyKilledCleanup(current, "cleanup.after", cleanup?.DefeatedAlly);
         var after = RequireContinuingFactions(current, "outcome.after");
         var result = new Battle01InitializedState(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
-            new(decision.ActorIndex, cleanup is null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike : policy!,
+            new(decision.ActorIndex, decision.Counterattack is not null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp :
+                cleanup is null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike : policy!,
                 before, after, current.TurnCompletion, RoundNumber: current.FirstRound.RoundNumber,
                 EnemyPhysicalAttack: decision, AllyDefeat: cleanup));
         Battle01FirstRound.RequireCurrentPrefix(result);

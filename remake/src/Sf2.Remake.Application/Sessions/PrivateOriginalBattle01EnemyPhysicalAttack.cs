@@ -27,7 +27,8 @@ public sealed partial class GameSession
                 : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId
                 ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat
                 : Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
-            battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex, policy);
+            battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex, policy,
+                allowChesterCounter: current.Preparation.Party.Allies[2].CurrentExp is not null);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
                 current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats);

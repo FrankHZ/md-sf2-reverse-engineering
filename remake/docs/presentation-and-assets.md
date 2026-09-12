@@ -1138,6 +1138,22 @@ For `SF2_BATTLE01_CONTROL_REVIEW=second-enemy-defeat`, retain these18 frames and
 Inspect25 images plus `chester-player-attack`18, `first-enemy-defeat`6 and `player-physical-attack`6:
 55 images across four modes, each retaining all three bounded process receipts. The same source
 head owns every archived production copy and the copied tracked probe.
+`chester-counterattack` continues the25-frame second-defeat prefix through seven more frames:
+R10 Chester(9,9) confirmation, R11 target129, target cancel, labeled copied counter receipt89,
+physical Sarah control after91, Sarah provisional(10,17), and cancel to(9,17). The copied primary/
+counter frame shows `E2 -> A2: hit 2. HP 7 -> 5`, then `Counter: A2 -> E2: hit 1. HP 5 -> 4`,
+with `EXP +5: 25 -> 30`; live allies/enemies independently show Chester HP5/EXP30 and enemy130 HP4.
+The actual physical Space continues the existing relay through133/129 to Sarah, with Chester HP1,
+EXP30 and enemy130 HP4. The entire battle must match the copy; all79 prefix references and the
+subsequent12 receipt identities remain linked. Confirm/cancel must preserve all91 receipts and RNG.
+
+Add `chester-counterattack` to the ignored recipe's Battle01-input mode set and select it through
+`SF2_BATTLE01_CONTROL_REVIEW`. Production startup and relay remain the existing ones. Images are
+1920-by-1080 actual renderer captures; inspect every changed frame at original resolution and retain
+the complete stdout/stderr plus clean restore/build/native exit evidence. Shared view regressions
+include enemy physical and pursuit modes. This is controlled diagnostic presentation, without original
+reaction animation, VInt RNG, natural continuity or H4 claims.
+
 All modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
 preparation before initialization while preserving unspecified kills and all five earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains
 its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
