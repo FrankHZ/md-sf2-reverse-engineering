@@ -105,6 +105,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 attackResult = $"{UnitTag(enemy.ActorIndex)} -> {UnitTag(enemy.TargetIndex)}: " +
                     (enemy.Effect.Dodged ? "miss" : (enemy.Effect.Critical ? "critical " : "hit ") + enemy.Effect.Damage) +
                     $". HP {enemy.Effect.BeforeStats.HpCurrent} -> {enemy.Effect.AfterStats.HpCurrent}.";
+                if (enemy.Counterattack is { } counter)
+                    attackResult += $"\nCounter: {UnitTag(counter.Actor.Index)} -> {UnitTag(counter.Target.Index)}: " +
+                        (counter.Effect.Dodged ? "miss" : (counter.Effect.Critical ? "critical " : "hit ") + counter.Effect.Damage) +
+                        $". HP {counter.Effect.BeforeStats.HpCurrent} -> {counter.Effect.AfterStats.HpCurrent}. " +
+                        $"EXP +{counter.AwardedExp}: {counter.Actor.Stats.CurrentExp} -> {counter.ActorAfterStats.CurrentExp}.";
                 if (receipt.AllyDefeat is { } cleanup)
                     attackResult += $" {UnitTag(cleanup.DefeatedAlly)} ({cleanup.DefeatedAlly}) defeated. " +
                         $"Defeats {cleanup.DefeatsBefore} -> {cleanup.DefeatsAfter}.";

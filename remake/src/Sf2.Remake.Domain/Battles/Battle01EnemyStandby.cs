@@ -198,10 +198,13 @@ public static class Battle01EnemyStandby
             {
                 if (receipt.RoundNumber <= 1)
                     throw new ArgumentException("Physical decisions cannot replace first-round standby.", "completion");
-                Battle01EnemyPhysicalAttack.ValidateDecision(attack, receipt.AllyDefeat is not null);
+                Battle01EnemyPhysicalAttack.ValidateDecision(attack, receipt.AllyDefeat is not null,
+                    allowChesterCounter: ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp));
+                if (attack.Counterattack is { } counter && current.TerrainAt(attack.Destination) != counter.TargetTerrain)
+                    throw new ArgumentException("Retain the counter target's actual terrain at the enemy attack stop.", "attack.history");
                 actor = attack.ActorIndex; before = attack.SeedCopyBefore; after = attack.SeedCopyAfter;
                 memoryBefore = attack.Memory; memoryAfter = attack.Memory;
-                var targetAfter = attack.Effect.AfterStats;
+                var targetAfter = attack.TargetAfterStats;
                 if (receipt.AllyDefeat is { } allyCleanup)
                 {
                     Battle01TurnCompletion.ValidateAllyDefeatReceipt(receipt);
@@ -211,13 +214,15 @@ public static class Battle01EnemyStandby
                     positions[attack.TargetIndex] = attack.Target.Position;
                     livingAllies++;
                 }
-                if ((mainAnchored && main != attack.Effect.MainSeedAfter) ||
+                if ((mainAnchored && main != attack.MainSeedAfter) ||
                     targets[actor - 128] != attack.TargetIndex ||
-                    !Battle01EnemyPhysicalAttack.SameStats(stats[actor], attack.Actor.Stats) ||
+                    !Battle01EnemyPhysicalAttack.SameStats(stats[actor], attack.ActorAfterStats) ||
                     !Battle01EnemyPhysicalAttack.SameStats(stats[attack.TargetIndex], targetAfter))
                     throw new ArgumentException("Physical main RNG, last target and HP history must remain linked.", "attack.history");
-                RewindMain(attack.MainSeedBefore, attack.Effect.MainSeedAfter);
+                RewindMain(attack.MainSeedBefore, attack.MainSeedAfter);
                 targets[actor - 128] = attack.LastTargetBefore;
+                stats[actor] = attack.Actor.Stats;
+                if (attack.Counterattack is not null) damaged.Add(actor);
                 stats[attack.TargetIndex] = attack.Effect.BeforeStats; damaged.Add(attack.TargetIndex);
             }
             else if (receipt.EnemyPursuit is { } pursuit)
