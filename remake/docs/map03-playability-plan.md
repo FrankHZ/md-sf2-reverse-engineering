@@ -8,9 +8,9 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
-Next: [Chester's first kill and the third enemy cleanup](#planned-next-combat-slice-chesters-first-kill),
-from the accepted counter/Sarah control endpoint. This is a plan for independent review before
-implementation; further Battle01 completion remains the ADR0010 direction.
+Next: independently review the [bounded Chester first kill](#implemented-chester-first-kill-and-third-enemy-cleanup)
+and its actual enemy128 lethal refusal with94 receipts retained. Further Battle01 completion remains
+the ADR0010 direction; enemy128 defeating Chester requires separate scope.
 
 ## Current Baseline
 
@@ -533,7 +533,7 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 ## Ordered Queue
 
 Resume combat from the [accepted counter/Sarah control](#implemented-first-reached-chester-counterattack),
-using its real input/receipt prefix. The next plan below targets Chester's first credited enemy kill.
+using its real input/receipt prefix. The first-kill section below continues to the actual next refusal.
 Natural castle continuity, original presentation and complete Battle01 play remain **Unknown**;
 the controlled route is not the ADR0010 milestone.
 
@@ -652,8 +652,8 @@ policy adds no death, kill, gold or level capability.
 returns Sarah movement/cancel after receipt91. No STAY detour or unsupported branch is bypassed.
 Chester remains at(9,4), HP1/EXP30/kills unspecified; enemy130 at(8,4), HP4. Bowie HP3/EXP63/kills2,
 gold120, two old corpses and all provenance persist. The next chosen combat boundary is planned
-below. Third-defeat implementation, level transition, a winning route, natural castle continuity
-and H4 remain **Unknown** and require separate scope.
+below. Continuation beyond the first-kill endpoint, level transition, a winning route, natural castle
+continuity and H4 remain **Unknown** and require separate scope.
 
 The owning Domain tests cover halving before spread, the14-draw chain, reversed roles, EXP recipient,
 unsupported inputs, receipt forgery and late replay/finalization failure. Application tests reject
@@ -664,136 +664,80 @@ for physical/API equivalence and the two ordered HP effects, EXP30 and actual Sa
 Use the [verification owner](./development-and-verification.md) for committed gates and shared-view
 fanout; inspect actual PNGs and retain any completed failures for narrow correction.
 
-### Planned next combat slice: Chester's first kill
+### Implemented Chester first kill and third enemy cleanup
 
-**Decision:** admit Chester's first credited enemy kill and the third enemy cleanup in one player
-action. The actual current route reaches this useful boundary before any new enemy action or level
-transition. Do not add another STAY cycle, optional town service or display-only capability.
+**Implemented:** one Chester-credited enemy kill after the two validated Bowie defeats, using
+the existing player physical/EXP/gold, cleanup, completion and reverse-history mechanisms.
+The distinct `battle01-controlled-chester-first-kill-third-enemy-exp-gold-v1` policy belongs only
+to the new lethal129 receipt; all93 earlier policy identities, including counter89, persist.
+Nonlethal Chester actions retain their prior policy even when the new capability is selected.
 
-#### Actual starting point and first refusal
+#### Early input and actual route
 
-**Confirmed:** accepted `1651e365d1cf7ec2607e10339a9d5e1cb88a39a6` reaches receipt91/R11 raw10
-Sarah1 movement/cancel as described above. Sarah is(9,17), HP11, EXP/kills unspecified; Bowie is
-(11,15), HP3/EXP63/kills2; Chester is(9,4), HP1/EXP30/kills unspecified. Enemies128/129/130/133
-occupy(9,3)/(10,4)/(8,4)/(9,5), HP5/2/4/5. Gold120, cleaned131/132, mainF6711234/copy0134 and
-all startup/source/receipt references persist. Sarah and Bowie each have no enemy adjacent to any
-reachable attack stop at their current R11 control point; Sarah's attacking/EXP profile also remains
-Unsupported. A possible later Bowie award/level transition is not assumed away.
+`ChesterFirstKillComparison`, ID `private-local-battle01-chester-kills0-inputs-v1`, copies
+`LeaderDefeatComparison` and changes only Chester's early nullable kills to0. All old presets remain
+unchanged. Both physical Application wrappers compare the complete rewound accounting origin,
+including Chester kills, with the declared preparation. A late copied preparation cannot supply
+the missing input after construction; it rejects without publishing HP, EXP, gold or a receipt.
 
-Reproduce the bounded continuation with the existing real `ReachRealRoundTenChester` helper and
-the public-API sequence in the counter section, then the following inputs. The planning diagnostic
-reused the compiled counter diagnostic only after comparing its complete production dependencies
-and existing Content helper with the accepted archive; the later added test is unused by that driver.
-No battle snapshot, HP, position, EXP, kills or RNG was patched. These are new continuation checks,
-not reruns of an old verification suite.
+The private launch opt-in `--private-battle01-chester-first-kill` is bound before physical N/start.
+It requires explicit PrivateLocal and all three Battle01 input paths, accepts no value or duplicate,
+and selects no return/arrival inputs. Ordinary launch keeps the existing leader/return/arrival
+comparison and119-receipt route. Changing the selection after battle startup has no effect.
 
-| Actual input | Observed result |
+**Confirmed controlled execution:** required-private Content test
+`AcceptedSelectedInputsCreditChesterFirstKillAndActuallyRejectEnemy128` starts both the new preset
+and `LeaderDefeatComparison` with return/arrival unselected, using `ReachRealRoundTenChester` and
+public Application operations. It compares the entire selected battle and93 receipts after
+normalizing only the explicitly identified Chester kills0 stats before-images. Defeat counters,
+all other stats, effects, seeds, buffers and policies are unchanged. The earlier planning diagnostic
+used `ChesterPlayerAttackComparison`, which has different defeat inputs; it is not that comparison
+baseline. No battle state, position, HP, EXP or RNG is patched in the real-input test.
+
+| Actual input | Confirmed result |
 | --- | --- |
-| Sarah1 origin confirm/STAY | Receipt92; actual Bowie0 receives R11 raw12 control. MainF6711234/copy0134 and all combat/accounting state remain. |
-| Bowie0 origin confirm/STAY | Receipt93, then actual R12 generation. Order is2:6,128:6,0:5,129:5,130:5,1:4,133:4; Chester2 receives raw0 control first, still HP1/EXP30. Main44E81234/copy0134, tested mask7. |
-| Chester2 origin confirm, Begin Attack, cycle to129, confirm | Target129 is still(10,4), terrain0, HP2. `attack.lethal` rejects before publication; exact selected snapshot reference and its full serialized battle remain unchanged at93 receipts/main44E81234/copy0134. |
+| Accepted counter/Sarah control | Receipt91/R11 raw10: Sarah1(9,17) HP11, Bowie0(11,15) HP3/EXP63/kills2, Chester2(9,4) HP1/EXP30, gold120, mainF6711234/copy0134; old131/132 corpses persist. |
+| Sarah and Bowie each origin confirm/STAY once | Receipts92/93; actual R12 order2:6,128:6,0:5,129:5,130:5,1:4,133:4. Chester receives raw0, main44E81234/copy0134, tested mask7. No additional STAY cycle changes the seed or bypasses a refusal. |
+| Chester origin confirm/Attack, select129, cancel/reselect, confirm | Receipt94: terrain0 damage3 against HP2;129 becomes HP0/unplaced, cell(10,4) clears. Chester HP1/EXP30→54/kills0→1, gold120→180; Bowie EXP63/kills2 unchanged. First worklist[129], after-turn worklist[], both faction counts3/3. Main323E1234/copy0134; same64-slot R12 buffer, raw0→2, actual128 next. |
+| Actually dispatch128 through pursuit selection and physical attack | `attack.lethal`; exact committed94 snapshot and complete serialized battle remain. HP1/EXP54/kills1/gold180, main323E1234/copy0134 persist. No enemy receipt, new generation, ally defeat or usable player control is published. |
 
-The existing diagnostic command inputs are
-`2:9:9:S 1:9:17:S 0:11:15:S 2:9:4:A129 1:9:17:S 0:11:15:S 2:9:4:A129`, where the first
-four commands reconstruct the already accepted counter prefix and the final three extend it.
-An unchanged cursor is confirmed directly. Relay always reads the actual candidate and dispatches
-the existing next-round, next-player, standby/pursuit and physical-attack operations. The two R11
-STAY choices finish the current buffer once; they do not loop to change RNG or bypass a rejection.
+The old `LeaderDefeatComparison` still refuses the same129 selection with `attack.lethal` at93.
+The new action publishes HP/reaction, EXP, gold, kill credit, placement/occupancy cleanup, both counts
+and turn advance atomically. Late replay, gold, occupancy, old-corpse/after-turn and history failures
+retain the exact pre-confirm selection. Stale/repeated confirmation and forged kills, EXP, gold,
+worklists, credit, placement, RNG, counter or relabeled policies cannot award again. Reverse history
+keeps Bowie and Chester accounting separate and restores their explicit zero inputs.
 
-Choose129 because the already damaged adjacent enemy is killable with the existing Wooden Stick184,
-class1, ATT8/range1 profile. Targets128/130/133 are also adjacent but retain HP5/4/5, so an ordinary
-hit does not produce the same useful defeat. Do not substitute a stronger weapon, heal/relocate
-Chester, skip128's next candidate, or change seeds to make the later relay survive.
+#### Source boundary and acceptance
 
-#### Required early input and bounded source consequence
+**Confirmed static provenance:** `ShiningForceCentral/SF2DISASM`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`, with the
+[first-defeat source boundary](#source-and-contract-boundary-for-the-completed-defeat):
 
-Add one named `ChesterFirstKillComparison` by copying the existing `LeaderDefeatComparison` and
-changing only Chester's **early** `CurrentKills` from unspecified to0. Preserve all old presets
-exactly, including their unspecified values. Existing stats/initialization already carry nullable
-kills; no new inventory, accounting store or initializer field is required. Admit known Chester
-kills only through this preset and its validated first-kill history; a late copied preparation or
-unreceipted live kills/EXP is rejected.
-
-Use one explicit private launch opt-in, `--private-battle01-chester-first-kill`, parsed by the
-existing profile selector and bound before N/start. This combat comparison does not select return/
-arrival inputs; ordinary launches retain the existing leader/return/arrival selection. This avoids
-changing the accepted119-receipt return route or widening its preset-ID guards merely to test a kill.
-Reject the opt-in for public or missing Battle01 input selections. It is not an in-battle switch.
-
-**Confirmed static sources:** pinned `ShiningForceCentral/SF2DISASM`
-`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`, and the
-[existing first-defeat source boundary](#source-and-contract-boundary-for-the-completed-defeat):
-
-| Owner | Required meaning |
+| Source owner | Required meaning |
 | --- | --- |
-| `code/gameflow/battle/battleactions/{attack,inflictdamage,earnexp,giveexpandgold,battleactionsengine_2}.asm` | Physical damage3 against HP2 clamps to0 and exits before double/counter draws. Damage and kill EXP accumulate with cap49; Battle01 halves to24 and applies the two range16 award draws. Gold changes during unpublished construction; restore HP before reaction replay. |
-| `data/stats/enemies/enemygold.asm`, `data/battles/global/enemyitemdrops.asm` | Definition39 gold60; no Battle01 drop row and empty item127 slots. No item/deals/drop capability is needed. |
-| `code/gameflow/battle/battlescenes/battlesceneengine_0.asm`; `code/gameflow/battle/battleloop/{processkilledcombatants,processafterturneffects}.asm`; `code/common/stats/combatantstats_2.asm` | Replay the enemy reaction/dead list and allied EXP. First worklist `[129]` credits `BATTLESCENE_FIRST_ALLY` (Chester2), increments kills with the existing9999 cap, clears129 placement/status and refreshes it. After-turn clears the worklist; second list is empty. Historical131/132 are not awarded or cleaned again. |
+| `code/gameflow/battle/battleactions/{attack,inflictdamage,earnexp,giveexpandgold,battleactionsengine_2}.asm` | Wooden Stick184/class1 ATT8 versus definition39 DEF5, terrain0/256: damage3 clamps HP2 to0, then lethal early return omits double/counter draws. Accumulated damage/kill EXP caps49, Battle01 halves to24, then two range16 draws yield award24. Gold changes during unpublished construction; HP restores before reaction replay. |
+| `data/stats/enemies/enemygold.asm`, `data/battles/global/enemyitemdrops.asm` | Definition39 gold60; no Battle01 drop row, empty item127 slots. No new drop/item capability. |
+| `code/gameflow/battle/battlescenes/battlesceneengine_0.asm`; `code/gameflow/battle/battleloop/{processkilledcombatants,processafterturneffects}.asm`; `code/common/stats/combatantstats_2.asm` | Enemy reaction/dead list then allied EXP. First cleanup credits `BATTLESCENE_FIRST_ALLY` Chester2 with the existing9999 kill cap, clears129 placement/status and refreshes it. After-turn clears the worklist; historical131/132 receive no repeated award or cleanup. |
 
-**Inferred, not an implemented result:** the first new player receipt should be94: Chester HP1
-unchanged,129 HP2→0/unplaced, Chester EXP30→54/kills0→1, gold120→180; Bowie EXP63/kills2 unchanged.
-From main44E81234 the six ranges `8,16,1,1,16,16` produce `3,7,0,0,6,3`, with after-words
-`7FCF,7D8A,6009,E07C,6653,323E`; final main323E1234/copy0134. Use the existing pure
-`sf2tool.h3.rng._rng_step` arithmetic to reproduce these values; this is not H3 execution.
-Both faction counts should be3/3. Retain the current64-slot R12 buffer (including the historical129
-slot) and advance raw0→2, actual128 next; no generation or extra receipt is part of this kill.
+The six actual main ranges `8,16,1,1,16,16` yield `3,7,0,0,6,3`; after-words are
+`7FCF,7D8A,6009,E07C,6653,323E`, retaining low1234 and copy0134. They agree with the earlier
+source-only `sf2tool.h3.rng._rng_step` arithmetic; no H3 execution is implied.
 
-The new preset is not implemented in this planning slice. Therefore receipt94 and its successor
-are **Inferred**, not claimed Application observations. **Inferred next boundary:**128 is already
-adjacent to HP1 Chester; Sarah/Bowie are beyond its movement-plus-range reach. With the expected
-post-kill main, primary ranges32,32,1,1 yield17,5,0,0 and temporary Chester HP0. This new combat
-comparison must reject the unadmitted enemy128 lethal branch, retaining committed94 and its seeds.
-The existing first-ally-defeat admission belongs to a different133/two-corpse boundary; known
-defeats0 alone does not authorize this new death. Actual post94 relay and usable control remain
-**Unknown** until implementation; do not present unpublished main98321234 as a committed endpoint.
+The subsequent128 primary remains **Inferred** beyond its actual lethal refusal: source-only
+ranges32,32,1,1 yield17,5,0,0 and damage2 against Chester HP1. Temporary main98321234 is unpublished,
+not a new endpoint. The existing133/two-corpse first-ally-defeat capability does not admit this
+128/three-corpse death. Fourth enemy defeat,128 death, levels100+, other class/item/status/drop
+profiles, true double/further counters, victory, return changes, natural reach/presentation and H4
+remain Unsupported or **Unknown**. This route deliberately stops at the first actual refusal.
 
-#### Implementation ownership and acceptance
-
-Reuse `Battle01PlayerPhysicalAttack`, existing kill/gold helpers, `Battle01EnemyDefeatCleanup`,
-completion, reverse-history and Godot relay. Add a distinct Chester-first-kill/third-enemy policy
-only on the actual new lethal receipt. Keep all93 earlier policy identities. Compare the new preset
-with `LeaderDefeatComparison`, both with return/arrival inputs unselected; normalize only the
-declared Chester kills before-image and preset binding. The observed planning run instead used
-`ChesterPlayerAttackComparison`, whose independent defeat counters remain unspecified; do not
-silently equate those early inputs or normalize additional state to force equality.
-The new policy admits one credited Chester kill after the two validated Bowie deaths, not arbitrary
-additional defeats. Preserve separate gold, Bowie kills, Chester kills/EXP and counter receipt89
-rewinds. Both physical Application wrappers must check the declared Chester kills input.
-
-Publish HP/reaction, EXP, gold, kill credit, cleared placement/occupancy, both cleanup/count passes
-and turn advance atomically. Replay, accounting, cleanup or after-turn failure retains the exact
-pre-confirm target-selection snapshot. Cancellation, stale/repeated confirmation, a forged before-
-image or a third-death receipt relabeled as an older policy cannot award twice. Keep128 death,
-enemy128 killing Chester, fourth enemy defeat, levels100+, new class/item/status/drop profiles,
-counter/double extensions, victory and return-route changes outside this slice.
-
-Proposed exact implementation paths, relative to `remake/`:
-
-| Surface | Paths |
-| --- | --- |
-| Existing Domain | `src/Sf2.Remake.Domain/Battles/Battle01PlayerPhysicalAttack.cs`, `Battle01EnemyPhysicalAttack.cs`, `Battle01EnemyStandby.cs`, `Battle01TurnCompletion.cs` in that directory |
-| Early input and Application | `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01PlayerPhysicalAttack.cs`, `PrivateOriginalBattle01EnemyPhysicalAttack.cs` in that directory |
-| Private launch and view | `game/src/Map3RuntimeProfileSelection.cs`, `Map3Root.cs`, `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` in that directory; only opt-in propagation before startup, existing relay and credited/live Chester kills display |
-| Domain tests | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerPhysicalAttackTests.cs`, `Battle01EnemyPhysicalAttackTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01TurnCompletionTests.cs` in that directory |
-| Application and real-input tests | `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01StartupTests.cs`, `PrivateOriginalBattle01InitializationTests.cs`, `PrivateOriginalBattle01PlayerPhysicalAttackTests.cs`, `PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` in that directory; `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` |
-| Godot/native tests | `tests/Sf2.Remake.Godot.Tests/Map3RuntimeProfileSelectionTests.cs`, `PrivateBattle01PresenterTests.cs` in that directory; `tests/native/Map19Map20AtlasReviewProbe.cs` |
-| Current documentation | `docs/map03-playability-plan.md`, `docs/capability-status.md`, `docs/development-and-verification.md`, `docs/presentation-and-assets.md` |
-
-Required Content coverage starts the new comparison before initialization and replays the complete
-actual prefix, R11 Sarah/Bowie choices, R12 target cancel/reselect and kill. Retain old-preset lethal
-rejection and compare the full early-input histories. Native input must select the opt-in before N,
-show129 removed, HP/EXP54, Chester kills1 versus Bowie kills2 and gold180, and compare the complete
-physical/API result. Then **actually dispatch128 and later candidates** until the first unsupported
-branch or usable player movement/cancel. If128 rejects as inferred, show that boundary with94
-committed; do not stop before attempting it, replay STAY to alter it, or silently add ally death.
-
-Pair the owning tests with committed planner gates, required-private Content and proportional native
-fanout for the new startup option/shared view; retain the ordinary launch/119-route regression and
-existing counter, enemy-physical and pursuit coverage. Full managed runs at most once after focused
-checks; preserve completed failures and correct them narrowly. Inspect changed native PNGs at
-original resolution and complete process logs. This planning commit changes only this document,
-selects public-core, and adds no full .NET/Godot/Python/H3 run. Main gate reviews the frozen Draft
-plan before authorizing implementation.
+Use the [verification owner](./development-and-verification.md) for required-private Content,
+owning Domain/Application/Godot tests, committed planner, normal public gate, one full managed run
+and official locked Godot gate. Native `chester-first-kill` supplies the opt-in before N and captures
+37 frames: the32-frame counter prefix, actual R12 ready, target129, target cancel, labeled copied
+receipt94 and physical Space/actual128 refusal. The full physical/API battle matches; inspect changed
+PNGs at original resolution and retain complete logs. Keep ordinary119, counter, enemy-physical and
+pursuit regressions; preserve completed failures and correct only their owning nodes.
 
 ### Accepted inputs and incompatible existing assumptions
 

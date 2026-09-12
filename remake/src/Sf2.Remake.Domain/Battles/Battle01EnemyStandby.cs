@@ -117,7 +117,7 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
-    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp, ushort? ChesterDefeats, ushort? BowieDefeats) RequireThinkingHistory(Battle01InitializedState current)
+    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp, ushort? ChesterDefeats, ushort? BowieDefeats, ushort? ChesterKills) RequireThinkingHistory(Battle01InitializedState current)
     {
         if (current.DefeatPending is not null)
             return RequireThinkingHistory(Battle01TurnCompletion.RequireDefeatPending(current));
@@ -272,14 +272,14 @@ public static class Battle01EnemyStandby
             }
             if (original.HpCurrent != original.HpMax)
                 throw new ArgumentException("Physical HP history must retain the initialized full-HP origin.", "attack.history");
-            if (original.CurrentKills is not null && (unit.Index != 0 || original.CurrentKills != 0))
-                throw new ArgumentException("Known kills must rewind to the explicit Bowie zero input.", "attack.history");
+            if (original.CurrentKills is not null && (unit.Index is not (0 or 2) || original.CurrentKills != 0))
+                throw new ArgumentException("Known kills must rewind to the explicit Bowie/Chester zero input.", "attack.history");
             if (original.CurrentDefeats is not null && (unit.Index is not (0 or 2) || original.CurrentDefeats != 0))
                 throw new ArgumentException("Known defeats must rewind to the explicit leader/Chester zero input.", "attack.history");
         }
         if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             Battle01TurnCompletion.RequireContinuingNoEffectState(current);
-        return (gold, stats[0].CurrentKills, stats[2].CurrentExp, stats[2].CurrentDefeats, stats[0].CurrentDefeats);
+        return (gold, stats[0].CurrentKills, stats[2].CurrentExp, stats[2].CurrentDefeats, stats[0].CurrentDefeats, stats[2].CurrentKills);
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,

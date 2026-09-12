@@ -45,10 +45,12 @@ public sealed partial class GameSession
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId &&
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId &&
             current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId &&
-            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId)
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId &&
+            current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId)
             return PlayerAttackRejected("party.expInput");
         bool chesterComparison = current.Preparation.Party.Id is OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparisonId
-            or OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId or OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId;
+            or OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId or OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId
+            or OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId;
         var policy = current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.FirstDefeatComparisonId ||
             chesterComparison && actorIndex == 0
             ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndFirstDefeat
@@ -57,13 +59,17 @@ public sealed partial class GameSession
         if (chesterComparison &&
             actorIndex == 0 && current.Battle.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             policy = Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat;
+        if (current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId &&
+            actorIndex == 2 && current.Battle.Roster.Count(unit => unit.Stats.HpCurrent == 0) == 2)
+            policy = Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill;
         Battle01InitializedState battle;
         try
         {
             battle = transition(current.Battle, policy);
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
-                current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats);
+                current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats,
+                current.Preparation.Party.Allies[2].CurrentKills);
         }
         catch (ArgumentException error) { return PlayerAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle, current.SourceLocomotion, current.SourceBridge);

@@ -860,12 +860,14 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat", "leader-defeat-pending"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat", "leader-defeat-pending", "chester-counterattack", "chester-first-kill"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
         "--private-battle01-terrain=" + environment["SF2_PRIVATE_BATTLE01_TERRAIN"],
     ])
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "chester-first-kill":
+    steps[-1][1].append("--private-battle01-chester-first-kill")
 if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic":
     steps[-1][1][:] = [arg for arg in steps[-1][1] if arg not in {"--private-map3-base-view", "--private-map3-base-atlas"}
                        and not arg.startswith("--presentation-")]
@@ -1147,14 +1149,38 @@ The actual physical Space continues the existing relay through133/129 to Sarah, 
 EXP30 and enemy130 HP4. The entire battle must match the copy; all79 prefix references and the
 subsequent12 receipt identities remain linked. Confirm/cancel must preserve all91 receipts and RNG.
 
-Add `chester-counterattack` to the ignored recipe's Battle01-input mode set and select it through
+The recipe includes `chester-counterattack` in its Battle01-input mode set; select it through
 `SF2_BATTLE01_CONTROL_REVIEW`. Production startup and relay remain the existing ones. Images are
 1920-by-1080 actual renderer captures; inspect every changed frame at original resolution and retain
 the complete stdout/stderr plus clean restore/build/native exit evidence. Shared view regressions
 include enemy physical and pursuit modes. This is controlled diagnostic presentation, without original
 reaction animation, VInt RNG, natural continuity or H4 claims.
 
-All modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
+For `chester-first-kill`, add `--private-battle01-chester-first-kill` to the private launch before N;
+the maintained recipe does this only for that review mode. It selects `ChesterFirstKillComparison`,
+changing only early Chester kills to0, with no return/arrival inputs. Public, duplicate, valued or
+missing-Battle01 selections reject. Existing modes keep their ordinary startup. After the32-frame
+counter prefix, Sarah/Bowie each confirm origin/STAY once; actual R12 Chester selects129, cancels,
+reselects and attacks. The37-frame review adds:
+
+| Frame | Actual view/acceptance |
+| --- | --- |
+|33|R12 Chester ready at(9,4), HP1/EXP30;129 HP2, gold120/Bowie kills2.|
+|34–35|Target129 selected, then cancelled to action choice without changing93 receipts.|
+|36|Labeled selected-copy receipt94:129 removed, HP1/EXP54, Chester kills1 versus Bowie kills2, gold180; actual128 next.|
+|37|Physical Space and full relay equal the copied battle; actual enemy128 `attack.lethal` is visible, committed94/main323E1234/copy0134 retained.|
+
+The copied frame is test instrumentation, not a production pause. Do not publish its hypothetical
+next attack or skip128. Inspect all changed PNGs at original resolution, including the accounting,
+reward, refusal and controls for clipping/overlap; compare preserved prefix images by exact bytes.
+The accounting label receives the complete line in one assignment. For frames36–37 the native probe
+requires the exact `Live units | Gold 180 | Bowie kills 2 | Chester kills 1` text, one fully visible
+line and a measured font width within the label. Its receipt retains those measurements; they do not
+replace inspection of the rendered Gold180, Bowie kills2 and Chester kills1 as separate readable values.
+Keep complete process logs and ordinary119 return, counter, enemy-physical and pursuit regressions.
+The new comparison does not authorize128 defeating Chester, victory, a fourth enemy defeat or H4.
+
+All other modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
 preparation before initialization while preserving unspecified kills and all five earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains
 its bounded restore/build/native exit/cleanup and exact production/probe-copy checks.
 

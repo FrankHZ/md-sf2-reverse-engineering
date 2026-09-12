@@ -10,6 +10,28 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01InitializationTests
 {
     [Fact]
+    public void ChesterFirstKillSupplementInitializesOnlyHisEarlyKillsZero()
+    {
+        var old = OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison;
+        var preset = OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison;
+        Assert.Null(preset.GetAdmissionDiagnostic()); Assert.Null(old.Allies[2].CurrentKills);
+        Assert.Same(old.Allies[0],preset.Allies[0]); Assert.Same(old.Allies[1],preset.Allies[1]);
+        var a = old.Allies[2];
+        Assert.True(preset.Allies[2].Matches(new(a.Id,a.ClassId,a.Level,a.HpMax,a.HpCurrent,a.MpMax,a.MpCurrent,
+            a.EffectiveAttack,a.EffectiveDefense,a.EffectiveAgility,a.EffectiveMove,a.StatusEffects,a.Items,a.Spells,a.CurrentExp,0,a.CurrentDefeats)));
+        Assert.Equal(old.RandomSeed,preset.RandomSeed); Assert.Equal(old.RandomSeedCopy,preset.RandomSeedCopy);
+        Assert.Equal(old.CurrentGold,preset.CurrentGold); Assert.Equal(old.Difficulty,preset.Difficulty);
+        var session = PrivateOriginalBattle01StartupTests.PendingSession(); var source = Prepare(session);
+        var prepared = new PrivateOriginalBattle01StartupPrepared(source.Pending,source.Inputs,preset);
+        var current = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        Assert.Same(prepared,current.Preparation); Assert.Null(prepared.ReturnInputs); Assert.Null(prepared.ArrivalInputs);
+        Assert.Equal(new ushort?[] {0,null,0},current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentKills));
+        Assert.Equal(new ushort?[] {0,null,0},current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentDefeats));
+        Assert.Equal(new byte?[] {0,null,0},current.Battle.Roster.Take(3).Select(u => u.Stats.CurrentExp));
+        Assert.Null(current.Battle.TurnCompletion);
+    }
+
+    [Fact]
     public void LeaderSupplementAddsOnlyBowieDefeatsZeroAtInitialization()
     {
         var old = OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;

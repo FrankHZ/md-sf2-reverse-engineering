@@ -33,10 +33,10 @@ public sealed record Battle01PlayerPhysicalAttackDecision(Battle01Combatant Acto
 public static class Battle01PlayerPhysicalAttack
 {
     public static void RequireAccountingInputs(Battle01InitializedState current, uint? gold, ushort? bowieKills,
-        byte? chesterExp, ushort? chesterDefeats = null, ushort? bowieDefeats = null)
+        byte? chesterExp, ushort? chesterDefeats = null, ushort? bowieDefeats = null, ushort? chesterKills = null)
     {
         var original = Battle01EnemyStandby.RequireThinkingHistory(current);
-        if (original != (gold, bowieKills, chesterExp, chesterDefeats, bowieDefeats))
+        if (original != (gold, bowieKills, chesterExp, chesterDefeats, bowieDefeats, chesterKills))
             throw new ArgumentException("Live accounting must retain its declared preparation inputs.", "accounting.input");
     }
 
@@ -72,6 +72,8 @@ public static class Battle01PlayerPhysicalAttack
             throw new ArgumentException("The player physical/EXP completion policy must be explicit.", "policy");
         if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) && actorIndex != 0)
             throw new ArgumentException("The second-defeat policy belongs to Bowie only.", "policy");
+        if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill) && actorIndex != 2)
+            throw new ArgumentException("The third-defeat policy belongs to Chester only.", "policy");
         var decision = Decide(current, actorIndex, policy!.AllowsDefeat, policy.MaximumDefeats);
         var roster = current.Roster.ToArray();
         int actor = Array.FindIndex(roster, unit => unit.Index == actorIndex);

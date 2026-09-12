@@ -15,7 +15,7 @@ internal sealed record PrivateBattle01Projection(
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
     string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null,
-    bool CanEnterExploration = false);
+    bool CanEnterExploration = false, ushort? ChesterKills = null);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -123,6 +123,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                     $"EXP +{player.AwardedExp}: {player.Actor.Stats.CurrentExp} -> {player.ActorAfterStats.CurrentExp}.";
                 if (receipt.EnemyDefeat is not null)
                     attackResult += $" {UnitTag(player.TargetIndex)} ({player.TargetIndex}) defeated. Gold +{player.GoldAfter - player.GoldBefore}.";
+                if (receipt.EnemyDefeat is { CreditedAlly: 2 } credited)
+                    attackResult += $" Chester kills {credited.KillsBefore} -> {credited.KillsAfter}.";
                 break;
             }
         }
@@ -165,7 +167,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
-                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration);
+                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration,
+            battle.Roster[2].Stats.CurrentKills);
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
@@ -211,7 +214,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +
             (unit.Index < 128 ? $" EXP {unit.Exp?.ToString() ?? "?"}" : "");
         _allies!.Text = view.AllyStatus;
-        _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}";
+        _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}" +
+            (view.ChesterKills is > 0 ? $" | Chester kills {view.ChesterKills}" : "");
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         // Two defeated ally rows need five wrapped lines; keep the terminal result below them.

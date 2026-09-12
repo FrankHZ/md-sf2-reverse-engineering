@@ -7,6 +7,16 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyStandbyTests
 {
+    [Fact]
+    public void ChesterFirstKillRewindsBothKillOwnersExpGoldAndCounterToSeparateEarlyInputs()
+    {
+        var after = Battle01PlayerPhysicalAttackTests.ChesterFirstKillCompleted();
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)null,(ushort?)null,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,chesterKills:0);
+        Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(() =>
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,chesterKills:1)).ParamName);
+    }
+
     [Theory]
     [InlineData("exp")]
     [InlineData("hp")]

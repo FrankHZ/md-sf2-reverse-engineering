@@ -9,16 +9,17 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false, false, false, false, false)]
-    [InlineData(true, false, false, false, false)]
-    [InlineData(true, true, false, false, false)]
-    [InlineData(true, true, true, false, false)]
-    [InlineData(true, true, true, true, false)]
-    [InlineData(true, true, false, false, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter)
+    [InlineData(false, false, false, false, false, false)]
+    [InlineData(true, false, false, false, false, false)]
+    [InlineData(true, true, false, false, false, false)]
+    [InlineData(true, true, true, false, false, false)]
+    [InlineData(true, true, true, true, false, false)]
+    [InlineData(true, true, false, false, true, false)]
+    [InlineData(true, true, false, false, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission,firstKill),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -199,11 +200,42 @@ public sealed class PrivateBattle01PresenterTests
             current=Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
             current=Battle01EnemyPhysicalAttack.CompleteNext(current,130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
             var view=PrivateBattle01Presenter.BuildProjection(current,"Counter complete.");
-            Assert.Equal("E2 -> A2: hit 2. HP 7 -> 5.\nCounter: A2 -> E2: hit 1. HP 5 -> 4. EXP +5: 20 -> 25.",view.AttackResult);
+            int counterExp = firstKill ? 30 : 25;
+            Assert.Equal($"E2 -> A2: hit 2. HP 7 -> 5.\nCounter: A2 -> E2: hit 1. HP 5 -> 4. EXP +5: {counterExp - 5} -> {counterExp}.",view.AttackResult);
             Assert.Equal((130,133),(view.CompletedActorIndex,view.NextCandidateIndex));Assert.Null(view.ActorIndex);
-            Assert.Equal((5,(byte?)25),((int)view.Units.Single(u=>u.Index==2).Hp,view.Units.Single(u=>u.Index==2).Exp));
+            Assert.Equal((5,(byte?)counterExp),((int)view.Units.Single(u=>u.Index==2).Hp,view.Units.Single(u=>u.Index==2).Exp));
             Assert.Equal(4,view.Units.Single(u=>u.Index==130).Hp);
-            Assert.Contains("A2 (9,4) HP 5 EXP 25",view.AllyStatus);Assert.Contains("Input closed",view.Controls);
+            Assert.Contains($"A2 (9,4) HP 5 EXP {counterExp}",view.AllyStatus);Assert.Contains("Input closed",view.Controls);
+            if (firstKill)
+            {
+                for (int step = 0; current.FirstRound!.RoundNumber != 12; step++)
+                {
+                    Assert.InRange(step,0,15);
+                    try { current = current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current) : CompleteAuthoredTurn(current); }
+                    catch (Battle01AttackSelectionRequiredException)
+                    {
+                        current = Battle01EnemyPhysicalAttack.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
+                            Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+                    }
+                }
+                current = Battle01NextPlayerControl.Enter(current,2).State!;
+                current = Battle01PlayerPhysicalAttack.Begin(Battle01PlayerMovement.Confirm(current,2),2);
+                for (int i = 0; current.FirstControl!.Movement.Attack!.TargetIndex != 129; i++)
+                {
+                    Assert.InRange(i,0,3); current = Battle01PlayerPhysicalAttack.Cycle(current,2,1);
+                }
+                current = Battle01PlayerPhysicalAttack.Confirm(current,2,Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill);
+                var killed = PrivateBattle01Presenter.BuildProjection(current,"Physical attack rejected (attack.lethal); current state retained.");
+                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(killed.Gold,killed.BowieKills,killed.ChesterKills));
+                Assert.Equal((2,128),(killed.CompletedActorIndex,killed.NextCandidateIndex));
+                Assert.DoesNotContain(killed.Units,u => u.Index == 129);
+                Assert.Contains("A2 (9,4) HP 1 EXP 54",killed.AllyStatus);
+                Assert.Contains("EXP +24: 30 -> 54",killed.AttackResult);
+                Assert.Contains("Chester kills 0 -> 1",killed.AttackResult);
+                Assert.False(killed.CanConfirm); Assert.Contains("Input closed",killed.Controls);
+                Assert.Equal("attack.lethal",Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+                    Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike)).ParamName);
+            }
             return;
         }
         if (!firstAlly) return;
@@ -450,7 +482,7 @@ public sealed class PrivateBattle01PresenterTests
     }
 
     private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
-        bool chesterPlayer=false, bool firstAlly=false, bool leader=false, Battle01DefeatReturnAdmission? returnAdmission=null)
+        bool chesterPlayer=false, bool firstAlly=false, bool leader=false, Battle01DefeatReturnAdmission? returnAdmission=null, bool firstKill=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
@@ -465,7 +497,7 @@ public sealed class PrivateBattle01PresenterTests
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
             chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63]) :
-            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, currentDefeats: firstAlly ? (ushort?)0 : null) :
+            combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, firstKill ? (ushort?)0 : null, firstAlly ? (ushort?)0 : null) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],
                 combatProfile && i==0 ? [10,63,63,63] : [63,63,63,63], combatProfile && i==0 ? (byte?)0 : null,
@@ -473,6 +505,7 @@ public sealed class PrivateBattle01PresenterTests
         var enemy = new Battle01EnemyInput(39, 39, 0, new(0, 5, 5, 0, 0, 7, 5, 5, 5, 0,
             [127, 127, 127, 127], [63, 63, 63, 63]), 0x40E3, 0, 6, 0x2000);
         var terrain = Enumerable.Repeat((byte)1, 2304).ToArray(); terrain[4 * 48 + 7] = 255;
+        if (firstKill) terrain[4 * 48 + 10] = 0;
         var initial = Battle01Initialization.Initialize(rows, regions, terrain, party, enemy, 0x1234, 0, 0x1234,
             combatProfile ? (uint?)0 : null, returnAdmission);
         var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(initial), 1).State!;

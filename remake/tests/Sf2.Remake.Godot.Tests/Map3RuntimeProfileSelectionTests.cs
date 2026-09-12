@@ -5,6 +5,25 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class Map3RuntimeProfileSelectionTests
 {
+    [Fact]
+    public void ChesterFirstKillRequiresOneValuelessPrivateOptInWithCompleteBattleInputs()
+    {
+        const string flag = "--private-battle01-chester-first-kill";
+        var selected = Map3RuntimeProfileSelection.Parse(Battle01Arguments().Append(flag));
+        Assert.True(selected.IsAvailable); Assert.True(selected.ChesterFirstKillRequested);
+        Assert.NotNull(selected.Battle01Inputs);
+        Assert.False(Map3RuntimeProfileSelection.Parse(Battle01Arguments()).ChesterFirstKillRequested);
+        foreach (var args in new IEnumerable<string>[] {
+            [flag], ["--runtime-profile=public-synthetic",flag],
+            Battle01Arguments().Take(2).Append(flag), Battle01Arguments().Append(flag).Append(flag),
+            Battle01Arguments().Append(flag + "=true") })
+        {
+            var rejected = Map3RuntimeProfileSelection.Parse(args);
+            Assert.False(rejected.IsAvailable); Assert.False(rejected.ChesterFirstKillRequested);
+            Assert.Null(rejected.Battle01Inputs);
+        }
+    }
+
     private static string[] Battle01Arguments() =>
     [
         "--runtime-profile=private-local", "--canonical-map-import=" + Path.GetFullPath("private-import.json"),
