@@ -116,7 +116,9 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             Assert.Same(after.Battle.Roster.Single(u => u.Index == index),defeated.Battle.Roster.Single(u => u.Index == index));
         Assert.Equal(after.Battle.CurrentGold,defeated.Battle.CurrentGold); Assert.Equal(after.Battle.AiMemory,defeated.Battle.AiMemory);
         Assert.Equal(after.Battle.RegionFlags90Through105,defeated.Battle.RegionFlags90Through105);
-        Assert.Equal(after.Battle.NewlyTestedRegionMask,defeated.Battle.NewlyTestedRegionMask);
+        // The existing enemy-completion constructor clears the round's newly tested mask.
+        Assert.Equal((byte)7,after.Battle.NewlyTestedRegionMask);
+        Assert.Equal((byte)0,defeated.Battle.NewlyTestedRegionMask);
         Assert.Equal((byte)2,defeated.Battle.AiLastTargets[0]); Assert.Equal(after.Battle.AiLastTargets.Skip(1),defeated.Battle.AiLastTargets.Skip(1));
         Battle01PlayerPhysicalAttack.RequireAccountingInputs(defeated.Battle,0,0,0,0,0,0);
         Assert.Equal(committed,JsonSerializer.Serialize(after.Battle,json)); Assert.Same(after.Preparation,defeated.Preparation);
