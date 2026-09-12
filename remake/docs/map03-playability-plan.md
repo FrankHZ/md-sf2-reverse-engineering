@@ -22,6 +22,9 @@ player-only WASD in x31..33/y12..14, real terrain-blocked facing and repeated mo
 remain frozen; their shared cell, outside targets and F/G are explicitly Unsupported. Natural
 continuity and original post-script positions remain Unknown.
 
+The next bounded slice is the [church doorway and roof plan](#planned-granseal-church-doorway-and-roof-cycle).
+It is planning only: doorway exit/re-entry and the ongoing roof lifecycle are not yet implemented.
+
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
 population, reviewed local base atlas, player locomotion, a project-authored camera, one bounded
@@ -5215,6 +5218,288 @@ and locomotion/entity rails first. Only main-gate may route a bounded research r
 three conditions in [ADR0014](../../docs/decisions/0014-static-first-runtime-evidence-after-map3-battle01.md#admit-new-h3-only-through-a-three-part-gate-now)
 and [ADR0016](../../docs/decisions/0016-remake-start-evidence-deferral.md#use-static-first-conditional-evidence-routing-now)
 are met; do not reopen failed original-reference/R2b candidates or the historical H3 queue.
+
+### Planned Granseal church doorway and roof cycle
+
+**Planned, not implemented.** Extend the accepted real119-receipt defeat/recovery/entry and
+player-only movement with one walk outside the church and back inside. Retain the current pocket
+and add only `(32,15)` and `(32,16)`: the allowed region is the union of those two cells with
+`31 <= x <= 33, 12 <= y <= 14`, not a larger bounding rectangle. The useful outside stopping point
+is `(32,16)` with the roof restored; the inside return point is `(32,14)` with the roof cleared.
+The repeatable cycle is `(32,14) -> (32,15) -> (32,16) -> (32,15) -> (32,14)`.
+It needs no follower movement: the initial player can leave `(32,13)` southward, and a player already
+at `(31,13)` can approach through `(31,14)`. The shared follower cell `(32,13)` stays Unsupported
+after departure. This does not open general Granseal movement or church services.
+
+**Inferred feasibility:** the admitted static data and existing pure reducers support this isolated
+cycle without an NPC/follower script dependency. The future implementation must still demonstrate
+the complete real-entry continuation and visible roof changes. Original natural reach, follower
+positions and VInt timing are not established by this plan; no new H3 or research session is needed
+for the selected controlled comparison. If implementation discovers a missing prerequisite, report
+the exact operation to main-gate before expanding scope.
+
+#### Doorway data, layers and source order
+
+**Confirmed static facts:** the byte-admitted canonical import uses USA ROM identity and upstream
+commit pinned by `OriginalMapRuntimeAdmission`, including SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. `Map03s1_Layout` is at `0x984E8`.
+The following are main-layer cells; existing pocket cells and its north terrain block remain unchanged.
+
+| Cell | Initial word | Relevant masked marker / role |
+| --- | --- | --- |
+| `(32,14)` | `0x0077` | Interior floor, neutral roof action |
+| `(32,15)` | `0xC48F` | Collision plus `word & 0x3C00 == 0x0400`: door processing precedes passability |
+| `(62,0)` | `0x080E` | Door-copy source; its `0x0800` marker is not collision |
+| `(32,16)` | `0x0C57` | Outside floor, `0x0C00` restore marker |
+
+`Map03s4_StepEvents` (`0x9786C`) has six rows. Its one-based row4 copies `(62,0)`, size1x1,
+to `(32,15)` when that door target is checked. The target becomes `0x080E`: re-read that word
+before checking warp, zone and collision. This is one main-layer word and remains open for this
+visit; roof restoration must not close it or restore a pristine whole layout. A later pass through
+`0x080E` no longer selects `OpenDoor` and creates no second door-copy receipt.
+
+`Map03s5_RoofEvents` (`0x9789E`) has ten ordered rows. Its row8 has the same trigger `(32,15)`,
+source255/255 and size5x6, but destination `(30,41)` is in the second-layer storage rows41..46.
+Area1's second-layer foreground start is `(0,32)`, so that rectangle projects to world
+`x30..34/y9..14`, not the doorway's main-layer coordinates. The initial `(32,13)` is inside it.
+The existing entry load selects row8, saves its30 nonzero words, clears that rectangle and retains
+an active lifecycle with ordinal8. This saved entry image, not a newly fabricated roof baseline,
+is the starting state for the cycle. Door storage and roof storage do not overlap.
+
+The [map/exploration contract](../../docs/design/contracts/map-exploration.md) and these pinned
+source owners distinguish the two phases:
+
+- `code/common/scripting/entity/entityscriptengine_2.asm`, `esc02_controlCharacter`: inspect the
+  candidate marker in caravan/raft/door/warp/zone order, call `OpenDoor`, re-read the target word,
+  then test passability. `code/gameflow/exploration/exploration.asm::OpenDoor` consumes the first
+  exact step-table coordinate match and requests the existing plane update; its SFX is outside this slice.
+  Its `CURRENT_BATTLE == 255` gate is already supplied by the current `Arrival.Party.CurrentBattle`
+  entry result. Keep that current exploration owner distinct from the retained historical Battle;
+  do not add another battle flag or bypass the original helper's mode restriction.
+- `data/scripting/entity/eas_main.asm`, `byte_44E5A`: `ac_checkMapBlockCopy`, control, `ac_waitDest`,
+  then loop. The `$40` action reads the block under the player, independently of the earlier door
+  target check. `esc40_checkMapBlockCopy` skips while fading; masked `0x0800` calls
+  `PerformMapBlockCopyScript`, and `0x0C00` calls `csub_40F2`.
+- `exploration.asm::ToggleRoofOnMapLoad` chooses the first containing roof rectangle only on load.
+  `PerformMapBlockCopyScript` instead scans trigger coordinates, preserves the one-based row ordinal
+  in the busy state, and saves then copies/clears the rectangle. An already active state is a no-op.
+  `csub_40F2` restores the saved rectangle and becomes inactive; an inactive restore is a no-op.
+  Both actual mutations mark view channel0. The existing
+  [bounded lifecycle fixture](../../tests/fixtures/h3/map-block-copy-lifecycle-v1.json) confirms these
+  helper seams, including dispatcher `0x5D12`, perform `0x3FEA` and restore `0x40F2`; it does not
+  establish natural-story reach or visible-frame timing. Reuse it without running new H3.
+
+The complete step/roof tables have no other match in the proposed region, including wildcard
+coordinates; the warp table has no match. The default setup's nine specific zone records, including
+the x2/y255 row, also have no match, and `Map3_DefaultZoneEvent` is a direct `rts`.
+No canonical NPC declaration occupies this region. The return overlay's two followers still occupy
+only `(32,13)`; entity142 remains hidden/out. The accepted false F609/F506/F543 setup selection,
+false F506 flag copies and false F220 chest condition remain fixed. No door/roof operation changes
+party, story/temp flags, setup, area1, chest state or a warp/zone receipt. Outside the union, including
+side cells at y15/y16 and `(32,17)`, refuse before any copy or terrain decision even when a floor is visible.
+
+#### One live layout and a bounded settlement phase
+
+Use the already authenticated completed Arrival; add no startup preset, late input injection,
+prepare/acknowledge phase or fake first-visit snapshot. Extend its catalog-owned return-load facts
+with the exact step row4 using `OriginalMapStepCopyDefinition` and the existing canonical reader.
+Strengthen `HasExactAcceptedReturnEntryLoad` for this row and its source/target words. Build the roof
+action table from all ten admitted rows in their original order: a one-row table would incorrectly
+turn the church's busy ordinal8 into1. No importer/schema/manifest or generic event framework is needed.
+
+`Arrival.WorkingLayout` remains the sole live whole-layout owner. `EntryBeforeMovement`, its strict
+same-cell declarations, and the original `RoofClear` result remain immutable entry history.
+Give the live Arrival a current `MapBlockCopyLifecycleState`, initially the entry result's active8
+state. Its saved rectangle is lifecycle state, not another current map. Derive visible roof state
+from that validated lifecycle/layout pair; do not add an independent mutable roof-visible flag.
+Replace the current successor's blanket layout-reference equality with validation of only the
+authenticated door-word/roof-rectangle changes. Keep strict original-entry validation intact.
+
+Reuse `WorkingMapLayout.ApplyBlockCopy`, `OriginalMapTraversal`, the pure locomotion Begin/Advance,
+and `MapBlockCopyActionReducer`/`MapBlockCopyLifecycleReducer`. The existing natural door owner shows
+copy-before-recheck/traversal sequencing; do not call its first-visit dispatcher or reuse its
+`SimulationStep` receipt as a return-input counter. Retain a single entry-bound first door-copy
+receipt with row identity, before/after word and return-input ordinal; a separate door-open Boolean
+or repeated copy history is unnecessary. A settlement roof-action result is linked to the same
+input ordinal without creating another directional input or replacing its traversal receipt.
+
+This slice selects a **controlled presentation policy**: perform the roof action once when the
+accepted13-tick player motion settles, before another input is admitted. It consumes the now-settled
+player cell, not the logical destination exposed at Begin. The source script order supports keeping
+the phases separate; coalescing the action with the final Advance publication does not claim the
+original VInt, fade or action-cursor timing. Original player/follower/NPC actscripts remain unexecuted.
+The reducer's `isFading:false` is the controlled no-fade presentation policy, not an observation of
+original `FADING_SETTING`. Preserve its view-update marks without inventing VDP acknowledgement timing.
+
+| Operation from a settled state | Begin / movement | Final settlement |
+| --- | --- | --- |
+| First south from `(32,14)` | Validate region/current state, copy door `C48F -> 080E`, re-read and traverse to `(32,15)`; roof stays clear/active8 through intermediate ticks | `0x0800` yields `ShowBusy`: preserve the exact saved30 and clear rectangle |
+| South from `(32,15)` | Move to `(32,16)`; keep the prior roof until settlement | `0x0C00` yields `Restored`: restore exactly saved30 and become inactive; door remains `080E` |
+| North from `(32,16)` | Traverse already-open `(32,15)` without another step copy; roof remains restored during motion | `0x0800` yields `Activated`: select row8, save the current30 roof words, clear them and become active8 |
+| North from `(32,15)` | Move to `(32,14)` | Neutral: roof remains clear/active8; the next south/north cycle is available |
+
+Publish each Begin/Advance successor and its result only after validating all derived state.
+At Begin, region/follower refusal happens before mutation; after a door copy, validate the new word
+and exclude unsupported warp/zone behavior before traversal or publication. At settlement, build and
+validate the roof result, player pose and successor before the single session assignment. A failed
+call retains its exact before-image, including on checked-ordinal overflow or roof-result construction
+failure; it does not undo earlier accepted calls. Do not force settlement, reset entry, replay a
+door copy or mutate the saved image to recover from a rejected final tick.
+
+The input ordinal increments once for each supported directional attempt and is retained through
+all ticks. Busy/stale/foreign/null/wrong-phase, unsupported directions and F/G retain snapshot
+identity, facing, counter, ordinal, layout and lifecycle. Existing terrain-blocked attempts keep
+their one-tick behavior. Run no roof action on arbitrary idle frames, rejected input or an extra
+Advance after settlement. Party, all non-player records, flags, resources and complete119-receipt
+Battle/preparation/recovery/request/source history stay identical. The only layout differences from
+entry are the opened door word and either the saved or cleared30-word roof rectangle; no hash/cache
+or reset of the full layout is justified.
+
+Godot keeps its existing exclusive Arrival input/physics route. The typed presenter consumes the
+same current Arrival after each publication: door art changes with the accepted Begin, while the
+roof changes with settlement; camera/player offsets advance together. Show truthful open/restored
+roof and doorway status and the bounded controls. Retain frozen follower coordinates and diagnostic
+glyphs, including Chester's dead identity, without claiming original roof/sprite occlusion or moving
+glyphs semantically to improve visibility. Existing viewport/camera projection should consume the
+new current layout without production changes; report any actual limitation before expanding ownership.
+
+#### Doorway implementation scope and acceptance
+
+This planning slice owns only this document. The proposed implementation owns the following18
+existing paths relative to `remake/`; any extra path requires a concrete main-gate ownership decision.
+
+| Exact paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledArrivalInputs.cs`; `src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs` | Extend only catalog-owned return-load facts/admission for step row4 and ordered roof actions; keep named input presets unchanged. |
+| `src/Sf2.Remake.Content/PrivateCanonicalMap3ImportReader.cs` | Bind the church step row from the existing admitted parse and existing row types. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01ExplorationEntry.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalMapReturnMovement.cs` | Live layout/lifecycle versus entry history, two-cell extension, door-before-traversal and atomic settlement action. |
+| `game/src/PrivateMap3Presenter.cs` | Current doorway/roof status from the live Arrival; use existing rendering and input routes. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01ExplorationEntryTests.cs`; `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Content.Tests/PrivateCanonicalMap3ImportReaderTests.cs` | Admission/forgery/atomicity checks and the real entry-to-doorway cycle with complete state comparisons. |
+| `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Current-layout/status projection and real physical exit/re-entry, roof pixels and phase ordering. |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md`; `docs/map03-playability-plan.md` | Update affected current capability and reproduction routes; retain explicit unsupported/Unknown boundaries. |
+
+Domain reducers, natural-step-copy/first-visit dispatch, battle composition, root input/physics,
+camera/viewport production, fixtures/schemas and shared Python tooling remain read-only.
+No new file, renderer, asset pack or shared registry is proposed.
+
+Future owning acceptance must include:
+
+- Required-private `AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit`
+  continues its actual early four-input119-step route and existing pocket movement, then exits,
+  re-enters and repeats the doorway cycle. Compare all4096 words after Begin, intermediate/final
+  Advance and every refusal. Check exactly one door change,30-word roof restore/clear, active8
+  versus inactive, saved words and entry history never overwritten, and door persistence over cycles.
+  Compare the complete party/flags/Battle/source history and every non-player reference throughout.
+- Cover a malformed/foreign step binding, wrong post-copy marker, incorrect roof ordinal/saved
+  rectangle or unrelated layout change, overflow at first door Begin, and failure constructing the
+  final roof successor. Preserve each failing call's complete before-image. Verify busy and repeated
+  input/Advance, duplicate entry, old battle/interaction APIs, frozen follower target, side targets
+  and `(32,17)` refusal. Public unselected execution retains an explicit private skip.
+- Extend the existing native `leader-defeat-pending` route after its71-frame acceptance, approaching
+  `(32,14)` through `(31,14)`. Compare physical keys to API calls from the same current snapshot.
+  Capture door-copy Begin/middle/settled, outside Begin/middle before restore and settled restored
+  roof, then re-entry Begin/middle before clear and settled clear roof. Return to `(32,14)`, repeat,
+  and record side/outside/F/G refusals and idle callbacks. Sample the actual changed door tile and
+  uncovered roof pixels from the current projection; a text change alone cannot prove visibility.
+  Inspect every changed PNG for camera/player synchronization, roof, frozen identities and clipping;
+  reuse only byte-identical accepted frames and rerun other modes only for an invalidated path.
+
+For implementation, obtain the committed dependency-aware planner; expected partitions are
+public-core, remake-dotnet and remake-godot. Pair selected gates with the named Application/Content
+tests, existing `MapBlockCopyActionTests`/`MapBlockCopyLifecycleTests`, and the four owning Godot
+test classes. Use the existing seven-step official gate and bounded native runner when invalidated;
+preserve full-suite failures and rerun only their owning failed/invalidated checks after correction.
+Stop at repeatable `(32,16)` outside / `(32,14)` inside, typed refusal and preserved history, then
+freeze a Draft PR for independent review. Natural followers/first WaitForEvent/VInt, original script
+timing and continuity, services/spells/revive, wider events, SFX/fade/music and H4 stay Unknown or
+Unsupported. This plan grants no implementation or broader research authority before main-gate review.
+
+#### Reproduce the doorway planning check
+
+Load the current ignored shared environment and read-only canonical/upstream selections in the same
+process. Save the following check into a fresh ignored `local/granseal-doorway-plan/` run directory
+and execute `uv run python -X utf8 <ignored-run>/check.py` from the owning worktree, saving its JSON under
+that run directory. It checks admitted identity, exact words/tables, source order and a static copy/
+restore comparison; it executes no GameSession, emulator, Godot or original script. The saved-buffer
+and route observations above are static facts, not a new runtime fixture. Run document/link and
+private-boundary checks, `git diff --check`, committed planner and normal `uv run sf2 verify` for this
+one-document planning PR. Report a missing upstream/toolchain dependency separately from ROM
+verification. Do not rerun .NET/Godot/H3/full Python or historical launchers for the plan.
+
+<!-- granseal-doorway-static-check:start -->
+```python
+import hashlib, json, os, re, subprocess
+from pathlib import Path
+
+repo = Path.cwd()
+admission = (repo / 'remake/src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs').read_text(encoding='utf-8-sig')
+expected_digest = re.search(r'AcceptedContentDigest\s*=\s*"([A-F0-9]+)"', admission).group(1)
+pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
+raw = Path(os.environ['SF2_PRIVATE_CANONICAL_MAP_IMPORT']).read_bytes()
+assert hashlib.sha256(raw).hexdigest().upper() == expected_digest
+data = json.loads(raw); assert data['upstream']['commit'] == pin
+source = Path(os.environ['SF2_UPSTREAM_DISASM'])
+assert subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip() == pin
+named = ['code/gameflow/exploration/exploration.asm',
+         'code/common/scripting/entity/entityscriptengine_2.asm', 'data/scripting/entity/eas_main.asm',
+         'data/maps/entries/map03/4-step-events.asm', 'data/maps/entries/map03/5-roof-events.asm',
+         'data/maps/entries/map03/mapsetups/s3_zoneevents.asm', 'data/maps/entries/map03/mapsetups/s1_entities.asm']
+subprocess.run(['git', '-C', str(source), 'diff', '--exit-code', pin, '--', *named], check=True)
+resources = data['resources']; map3 = next(m for m in data['maps'] if m['id'] == 3)
+def resource(kind, identity): return next(r for r in resources[kind] if r['id'] == identity)
+def table(kind, reference): return resource(kind, map3['references'][reference])['records']
+layout = resource('layouts', map3['references']['layout']); words = layout['words']
+assert layout['address'] == 0x984E8 and len(words) == 4096
+region = {(x,y) for y in range(12,15) for x in range(31,34)} | {(32,15),(32,16)}
+assert [words[y*64+x] for y in range(12,15) for x in range(31,34)] == [0xDB,0xE8DC,0xDD,0x61,0x62,0x63,0x76,0x77,0x78]
+assert [words[15*64+32], words[62], words[16*64+32]] == [0xC48F,0x080E,0x0C57]
+def matches(point): return any(point['x'] in (255,x) and point['y'] in (255,y) for x,y in region)
+steps = table('stepEventTables','stepEventTable'); roofs = table('roofEventTables','roofEventTable')
+assert len(steps) == 6 and [i+1 for i,r in enumerate(steps) if matches(r['trigger'])] == [4]
+assert len(roofs) == 10 and [i+1 for i,r in enumerate(roofs) if matches(r['trigger'])] == [8]
+assert steps[3] == dict(trigger=dict(x=32,y=15),source=dict(x=62,y=0),size=dict(width=1,height=1),destination=dict(x=32,y=15))
+assert roofs[7] == dict(trigger=dict(x=32,y=15),source=dict(x=255,y=255),size=dict(width=5,height=6),destination=dict(x=30,y=41))
+areas = table('areaTables','areaTable'); area = areas[0]
+assert area['mainLayerStart'] == dict(x=0,y=0) and area['mainLayerEnd'] == dict(x=50,y=31)
+assert area['secondLayerForegroundStart'] == dict(x=0,y=32)
+assert [i+1 for i,r in enumerate(roofs) if r['destination']['x'] <= 32 < r['destination']['x']+r['size']['width'] and r['destination']['y']-32 <= 13 < r['destination']['y']-32+r['size']['height']] == [8]
+assert not any(matches(r['trigger']) for r in table('warpEventTables','warpEventTable'))
+zones = resource('zoneEventHandlers','ms_map3_ZoneEvents')['records']
+assert len([r for r in zones if r['kind']=='specific']) == 9
+assert not any(matches(r) for r in zones if r['kind']=='specific')
+assert re.search(r'Map3_DefaultZoneEvent:\s+rts', (source/named[5]).read_text(encoding='utf-8-sig'))
+assert not any((e['x'],e['y']) in region for e in resource('entityLists','ms_map3_Entities')['records'])
+assert {r['flag'] for r in table('flagEventTables','flagEventTable')} == {506}
+assert table('itemTables','chestItemTable') == [dict(x=6,y=18,flag=220,item=127)]
+engine = (source/named[1]).read_text(encoding='utf-8-sig')
+def ordered(text, needles):
+    text=' '.join(text.split()); at=0
+    for needle in needles: at=text.index(needle,at)+len(needle)
+control=engine.split('esc02_controlCharacter:',1)[1].split('; End of function esc02_controlCharacter',1)[0]
+ordered(control,['cmpi.w #$3800,d3','cmpi.w #$3C00,d3','cmpi.w #$400,d3','bsr.w OpenDoor','move.w (a4,d2.w),d3','andi.w #$3C00,d3','cmpi.w #$1000,d3','cmpi.w #$1400,d3','cmpi.w #$C000,(a4,d2.w)'])
+action=engine.split('esc40_checkMapBlockCopy:',1)[1].split('; End of function esc40_checkMapBlockCopy',1)[0]
+ordered(action,['tst.b ((FADING_SETTING-$1000000)).w','move.w (a0),d0','andi.w #$3C00,d2','cmpi.w #$800,d2','bsr.w PerformMapBlockCopyScript','cmpi.w #$C00,d2','bsr.w csub_40F2'])
+ordered((source/named[2]).read_text(encoding='utf-8-sig'),['byte_44E5A: ac_checkMapBlockCopy','ac_controlCharacter','ac_waitDest','dc.w (byte_44E5A-word_44E60)'])
+indices=[y*64+x for y in range(41,47) for x in range(30,35)]; saved=[words[i] for i in indices]
+assert len(saved)==30 and all(saved)  # area1 world rectangle x30..34/y9..14
+entry=words.copy()
+for i in indices: entry[i]=0
+door=entry.copy(); door[15*64+32]=door[62]
+outside=door.copy()
+for i,v in zip(indices,saved): outside[i]=v
+reentered=outside.copy()
+for i in indices: reentered[i]=0
+assert sum(a!=b for a,b in zip(entry,door))==1
+assert sum(a!=b for a,b in zip(door,outside))==30 and reentered==door
+assert all(outside[i]==words[i] for i in range(4096) if i!=15*64+32)
+assert door[15*64+32]&0x3C00==0x800 and outside[16*64+32]&0x3C00==0xC00
+print(json.dumps(dict(status='Pass',boundary='Static data/source inspection; no gameplay or original timing execution',
+    upstreamCommit=pin,layout=layout['id'],doorWords=['C48F','080E'],outsideWord='0C57',
+    stepOrdinal=4,roofOrdinal=8,savedWords=30,roofWorldBounds=[30,9,34,14],
+    noOtherRegionEventsOrDeclaredNpcs=True,doorAndRoofStorageDisjoint=True,
+    firstDoorChangedWords=1,roofChangedWords=30,staticReentryMatchesOpenInterior=True),indent=2))
+```
+<!-- granseal-doorway-static-check:end -->
 
 ### Controlled Godot Battle01 consumer
 
