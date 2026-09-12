@@ -1609,8 +1609,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             session.BeginPrivateOriginalMapReturnMovement(foreign,new(ExplorationDirection.West))).Diagnostic.Field);
         Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(foreign));
         Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.RefusePrivateOriginalMapReturnInteraction(foreign));
-        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
-            session.BeginPrivateOriginalMapReturnMovement(entered,new((ExplorationDirection)255)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MoveExplorationCommand((ExplorationDirection)255));
         Assert.Same(entered,session.PrivateOriginalBattle01);
         Input(ExplorationDirection.North,new(32,13),false);
         Assert.Equal(1,session.PrivateOriginalMapArrival!.Locomotion.StoredCounter);
