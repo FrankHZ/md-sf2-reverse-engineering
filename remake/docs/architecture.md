@@ -309,8 +309,17 @@ A separate immutable placement overlay declares player0 and authenticated F66 fo
 same(32,13)/UP current/target, skips their duplicate setup rows, and hides/moves142 out. Dead Chester
 retains BLUE_FLAME identity. No follower/NPC script runs; exact original positions before the first
 WaitForEvent remain Unknown. Typed arrival overloads share the existing camera/atlas/pixel math.
-Godot hides the battle and old prompts, shows the fresh map and explicit overlapping identities,
-and closes all input. No fake legacy snapshot or second mutable map authority is introduced.
+Godot hides the battle and old prompts and shows the fresh map and explicit overlapping identities.
+`PrivateOriginalMapReturnMovement` admits player-only input in x31..33/y12..14. It checks the
+capability boundary before real terrain traversal: the frozen follower cell and outside targets
+are Unsupported; (32,12) is a terrain block. Each supported attempt publishes one return-input
+ordinal and the pure locomotion Begin result. Physics Advance retains that receipt through settlement.
+The successor keeps the authenticated entry in `EntryBeforeMovement`, validates its strict original
+declarations, and projects only the live player pose. Party, flags, layout, roof, non-player records
+and all preparation/battle history retain their original references. Construction precedes the sole
+session publication; stale, busy, unsupported and failed inputs retain the current snapshot.
+Godot routes this Arrival before old handlers and shares existing typed camera/atlas projection.
+No fake legacy snapshot or second mutable map authority is introduced. F/G and other gameplay remain closed.
 Original presentation/VInt, general stat refresh and natural egress/flag continuity remain Unknown.
 
 Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,

@@ -344,17 +344,21 @@ player-physical6 this is65 frames; preparation/shared-view changes also require 
 and enemy-pursuit4, totaling73 individually inspected frames with per-mode process receipts.
 All native modes use `LeaderDefeatComparison`, adding only Bowie defeats0 at initialization;
 their earlier HP/RNG/accounting and frame contracts remain. Preserve old null-preset artifacts separately.
-Use `leader-defeat-pending` for46 frames: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
+Use `leader-defeat-pending`: the preceding35, actual R14 Bowie/R15 Bowie/R15 Sarah,
 Sarah action choice, labeled119/terminal copies, physical terminal, recovery, return request and entry.
-Frame43 applies recovery;44 requests return;45 publishes Granseal;46 freezes all gameplay keys and60
-physics frames, including61 direct calls to the real root physics callback that must preserve the exact
-entry and presentation state. Callback exceptions must reach the probe's failure/exit contract. Native
+Frame43 applies recovery;44 requests return;45 publishes Granseal. Subsequent frames exercise WASD
+around the bounded church pocket, terrain blocks, follower/door and F/G refusal. The probe compares
+physical input with API results from the same snapshot and schedules the production physics callback
+explicitly on physics frames for initial/middle/settled captures. It then checks closed battle keys
+and60 idle callbacks. Party/history/non-player declarations remain exact throughout.
+Callback exceptions must reach the probe's failure/exit contract. Native
 acceptance also requires inspecting the complete stdout/stderr logs for Godot errors and exceptions;
 an exit0/Pass receipt alone is insufficient. N selects leader/return/arrival comparisons before source
 admission when the reviewed Map3 atlas is available. Compare the complete direct API and physical entry, three same-cell identities,
 dead Chester, party30, roof clear, current camera/resources and retained historical battle.
-Run retained Chester-player18, first-defeat6, player-physical6, enemy-physical4 and pursuit4:
-minimum84 frames. Inspect every changed frame; reuse only byte-identical accepted inspection.
+Retain accepted Chester-player, first-defeat, player-physical, enemy-physical and pursuit artifacts;
+rerun a mode only for an invalidated input/presentation path. Inspect every changed frame; reuse
+only byte-identical accepted inspection.
 The required Content test `AcceptedSelectedInputsReachFirstLeaderDefeatPendingWithTheUnchanged119ReceiptPrefix`
 replays both old/new preparations from real inputs, compares the entire119-prefix with only the
 explicit Bowie counter normalized, retains the old lethal guard and checks the new terminal state.
@@ -378,12 +382,16 @@ return tests validate the tuple before source access, entry/copy continuity and 
 `AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` requires all four real
 inputs and the early arrival selection; it validates party ownership, immutable history, flags,
 all4096 layout words, roof before-image, declaration overlap, rejected forgeries and closed old APIs.
+It then uses that real Arrival for repeated player movement and terrain blocks, exact event/zone-table
+exclusion, Unsupported targets, stale/busy input, ordinal overflow and successor-construction failure.
+Every input and animation tick retains the complete Battle, party, flags, resources and non-player records.
 Its `PrivateInputFact` must run with `SF2_REQUIRE_PRIVATE_TESTS=1`; public unselected execution explicitly
 skips it. Pair with `ExplorationEntryTests`, canonical reader and the four changed Godot test owners.
 The committed planner selects the locked full solution and official Godot gate; run the full suite
 once and preserve any completed failure. Reuse accepted source/plan evidence after checking its pinned
-dependencies; do not replay old source or plan scripts. The fresh entry stops before first exploration
-input and does not claim original presentation, script timing or H4.
+dependencies; do not replay old source or plan scripts. Return movement uses a fresh ignored
+`local/granseal-return-movement/` run root with the existing environment/input selections. It admits
+only the documented church pocket and does not claim original presentation, script timing or H4.
 The source semantics omit reaction-animation/VInt/menu/text RNG, so these captures do not establish
 original post-playback main/copy values. A change to the named preparation or shared view also
 requires the affected enemy physical and pursuit modes. Other modes,

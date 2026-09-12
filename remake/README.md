@@ -95,13 +95,16 @@ With the reviewed Map3 atlas selected, N also names the early arrival comparison
 publishes fresh Granseal Map3/(32,13)/UP, area1 with its church roof open. The new `Arrival.Party`
 owns all30 current slots: Bowie/Sarah heal, Peter7/Lemon28 process explicit neutral dormant rows,
 and dead Chester remains HP0. Gold60 and all battle accounting/history remain unchanged.
-Player0, Sarah1 and dead/BLUE_FLAME Chester2 share their declared current/target(32,13)/UP;
-the diagnostic view freezes those positions and runs no follower/NPC script. Entity142 is hidden
-and moved out, temp flags256..383 clear and F80 is set. All exploration controls stay closed.
+Player0, Sarah1 and dead/BLUE_FLAME Chester2 initially share current/target(32,13)/UP.
+WASD then moves only the player within x31..33/y12..14 using the current Arrival. The north tile
+(32,12) blocks and turns the player; the frozen follower cell, outside targets and F/G explicitly
+remain Unsupported. Sarah/Chester and all NPC declarations stay fixed; no script runs. Entity142
+is hidden/out, temp flags256..383 clear and F80 is retained. Party, flags and battle history are unchanged.
 Legacy preparations without arrival inputs retain the map57 return-request stop. Missing/late or
 replaced bindings reject. Original VInt/actscript positions, general stat refresh, natural continuity,
 fade/music and H4 remain Unknown; retry and save are unavailable.
 See the [fresh-entry boundary](./docs/map03-playability-plan.md#implemented-fresh-granseal-entry-after-battle01-defeat).
+See the [bounded return movement](./docs/map03-playability-plan.md#implemented-return-visit-church-pocket-movement).
 See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
 Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
 defeats must trace back to the selected preparation.

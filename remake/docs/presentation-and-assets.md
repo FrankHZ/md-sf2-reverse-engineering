@@ -1163,13 +1163,17 @@ Sarah1 and dead/BLUE_FLAME Chester2 occupy that same current/target cell. Their 
 may overlap; the information panel names each identity and the declaration-position-freeze policy.
 Never move semantic positions for legibility. Entity142 is hidden/out. No follower/NPC actscript runs.
 
-Frame46 exercises N/Space/Backspace/A/I/J/K/L/W/S/D/F/E/Enter/Escape and60 physics frames; the exact
-entry object, entity array, projection and serialized state remain unchanged. The46-frame receipt adds
-`arrivalInputs`, `arrival` and full API/physical entry equivalence. With the five retained modes this is
-minimum84 frames. Inspect every changed PNG at original resolution, compare unchanged accepted PNGs
+After frame45, WASD exercises player movement in x31..33/y12..14. North from entry blocks; west
+begins the reversible loop. Frames capture initial/middle/settled motion, blocked facing, both sides
+of the pocket, the Unsupported door/follower cell and F/G. The live player and camera follow Arrival
+locomotion; Sarah/Chester stay at(32,13)/UP and all NPC declarations remain frozen. Status shows the
+current player pose, input ordinal, historical entry and capability restrictions. Closed battle keys
+and60 idle callbacks preserve the settled snapshot. The receipt retains entry/API equivalence and
+adds `returnMovement` with per-direction API ticks and actual physics callback counts.
+Inspect every changed PNG at original resolution, compare unchanged accepted PNGs
 byte-for-byte, and verify archived production/probe copies and bounded process receipts. No-atlas
 legacy preparation omits arrival selection and retains the return-request stop; the new comparison
-uses the already reviewed Map3 atlas/player art. Current party30, gold60, dead Chester and input closure
+uses the already reviewed Map3 atlas/player art. Current party30, gold60, dead Chester and input limits
 must be readable. Original flame art, original post-script positions/VInt, general stat refresh,
 natural continuity and H4 remain Unknown or unimplemented.
 

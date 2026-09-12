@@ -1603,6 +1603,14 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
 
         Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(null,new(ExplorationDirection.West)));
         Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(entered,null));
+        var foreign = (PrivateOriginalBattle01SessionSnapshot)typeof(object)
+            .GetMethod("MemberwiseClone",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entered,null)!;
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+            session.BeginPrivateOriginalMapReturnMovement(foreign,new(ExplorationDirection.West))).Diagnostic.Field);
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(foreign));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.RefusePrivateOriginalMapReturnInteraction(foreign));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+            session.BeginPrivateOriginalMapReturnMovement(entered,new((ExplorationDirection)255)));
         Assert.Same(entered,session.PrivateOriginalBattle01);
         Input(ExplorationDirection.North,new(32,13),false);
         Assert.Equal(1,session.PrivateOriginalMapArrival!.Locomotion.StoredCounter);
