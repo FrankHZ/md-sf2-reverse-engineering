@@ -7,10 +7,21 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
-    internal static Battle01InitializedState CounterattackBoundary()
+    [Fact]
+    public void ChesterFirstKillDoesNotAdmitEnemy128LethalOrReuseTheOldAllyDefeatPolicy()
+    {
+        var before = Battle01PlayerPhysicalAttackTests.ChesterFirstKillCompleted();
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(before,json);
+        foreach (var policy in new[] {Policy,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat})
+            Assert.ThrowsAny<ArgumentException>(() => Battle01EnemyPhysicalAttack.CompleteNext(before,128,policy));
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+        Assert.Equal((0x323E1234u,(ushort?)0x0134,(ushort)1),(before.RandomSeedImage,before.RandomSeedCopy,before.Roster[2].Stats.HpCurrent));
+    }
+
+    internal static Battle01InitializedState CounterattackBoundary(ushort? chesterKills = null)
     {
         // Authored terrain fixture; the Content test separately owns the real 79-receipt prefix.
-        var current = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();
+        var current = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted(chesterKills);
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
         for (int step = 0; step < 32; step++)
         {
@@ -40,8 +51,8 @@ public sealed class Battle01EnemyPhysicalAttackTests
         throw new InvalidOperationException("Authored counter prefix did not reach its actual enemy candidate.");
     }
 
-    internal static Battle01InitializedState CounterattackCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
-        CounterattackBoundary(),130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
+    internal static Battle01InitializedState CounterattackCompleted(ushort? chesterKills = null) => Battle01EnemyPhysicalAttack.CompleteNext(
+        CounterattackBoundary(chesterKills),130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
 
     [Fact]
     public void CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt()
@@ -267,9 +278,9 @@ public sealed class Battle01EnemyPhysicalAttackTests
         Assert.Equal(before,JsonSerializer.Serialize(unknown,json));
     }
 
-    internal static Battle01InitializedState AfterChesterPlayerRelay()
+    internal static Battle01InitializedState AfterChesterPlayerRelay(ushort? chesterKills = null)
     {
-        var current = Battle01PlayerPhysicalAttackTests.ChesterCompleted();
+        var current = Battle01PlayerPhysicalAttackTests.ChesterCompleted(chesterKills);
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
         current = Battle01EnemyStandby.CompleteNext(current, 128, stay);
         current = Battle01EnemyStandby.CompleteNext(current, 129, stay);
@@ -308,10 +319,10 @@ public sealed class Battle01EnemyPhysicalAttackTests
 
     internal static Battle01PhysicalCompletionPolicy Policy => Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
 
-    internal static Battle01InitializedState ChesterAttackBoundary(byte? chesterExp = null)
+    internal static Battle01InitializedState ChesterAttackBoundary(byte? chesterExp = null, ushort? chesterKills = null)
     {
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
-        var current = Battle01NextPlayerControl.Enter(Battle01PlayerPhysicalAttackTests.FirstDefeatCompleted(chesterExp), 1).State!;
+        var current = Battle01NextPlayerControl.Enter(Battle01PlayerPhysicalAttackTests.FirstDefeatCompleted(chesterExp, chesterKills), 1).State!;
         current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(current, 1), 1, stay);
         foreach (int actor in new[] { 129, 128, 130 }) current = Battle01EnemyStandby.CompleteNext(current, actor, stay);
         current = Battle01NextPlayerControl.Enter(Battle01FirstRound.EnterNext(current), 2).State!;
@@ -335,7 +346,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
         return current;
     }
 
-    internal static Battle01InitializedState ChesterHitCompleted(byte? chesterExp = null) => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(chesterExp), 131, Policy);
+    internal static Battle01InitializedState ChesterHitCompleted(byte? chesterExp = null, ushort? chesterKills = null) => Battle01EnemyPhysicalAttack.CompleteNext(ChesterAttackBoundary(chesterExp, chesterKills), 131, Policy);
 
     [Fact]
     public void ChesterFinalizationRejectsAFalseHpReplayAfterConstructingTheLocalPhysicalEffect()
@@ -604,7 +615,7 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false,
-        byte? chesterExp = null, ushort? chesterDefeats = null, ushort? bowieDefeats = null)
+        byte? chesterExp = null, ushort? chesterDefeats = null, ushort? bowieDefeats = null, ushort? chesterKills = null)
     {
         var current = Battle01EnemyPursuitTests.RoundThree();
         // The earlier movement-only authored helper has no equipment. Supply the accepted combat
@@ -618,9 +629,13 @@ public sealed class Battle01EnemyPhysicalAttackTests
             roster[1] = roster[1].WithStats(new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0,
                 [213, 0, 0, 127], [0, 63, 63, 63]));
             roster[2] = roster[2].WithStats(new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0,
-                [184, 0, 127, 127], [63, 63, 63, 63], chesterExp, currentDefeats: chesterDefeats));
+                [184, 0, 127, 127], [63, 63, 63, 63], chesterExp, chesterKills, chesterDefeats));
         }
-        current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, gold: firstDefeatAccounting ? 0u : null);
+        var terrain = current.Terrain.ToArray();
+        // The new authored fixture supplies Low Sky at the future129 stop before any combat.
+        // Real-input coverage independently supplies the complete original grid from initialization.
+        if (chesterKills is not null) terrain[4 * 48 + 10] = 0;
+        current = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, terrain: terrain, gold: firstDefeatAccounting ? 0u : null);
         for (int round = 3; round <= 5; round++)
         {
             while (current.FirstRound!.CurrentCandidate is not null) current = Battle01EnemyPursuitTests.CompleteTurn(current);

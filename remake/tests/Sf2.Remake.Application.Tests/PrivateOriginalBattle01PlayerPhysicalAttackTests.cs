@@ -10,6 +10,21 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
 {
+    [Fact]
+    public void ChesterFirstKillPreparationCannotBeRetrofittedAfterThePlayerKillHasBeenConstructed()
+    {
+        var session = SecondDefeatSelectedSession(); var source = session.PrivateOriginalBattle01!;
+        var preparation = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending,source.Preparation.Inputs,
+            OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
+        var selected = new PrivateOriginalBattle01SessionSnapshot(preparation,source.Battle,source.SourceLocomotion,source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,selected);
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(selected.Battle,json);
+        Assert.Equal("accounting.input",Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+            session.ConfirmPrivateOriginalBattle01PlayerAttack(selected,0)).Diagnostic.Field);
+        Assert.Same(selected,session.PrivateOriginalBattle01); Assert.Equal(frozen,JsonSerializer.Serialize(selected.Battle,json));
+        Assert.Equal((uint?)60,selected.Battle.CurrentGold); Assert.Equal((ushort?)1,selected.Battle.Roster[0].Stats.CurrentKills);
+    }
+
     internal static GameSession SecondDefeatSelectedSession()
     {
         var session = ChesterReadySession(); var current = session.PrivateOriginalBattle01!;

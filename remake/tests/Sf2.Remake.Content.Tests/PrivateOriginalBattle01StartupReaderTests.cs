@@ -428,7 +428,8 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(new MapId("map40"), initialized.SourceSnapshot.Map); Assert.Null(session.PrivateOriginalBattle01Admission);
         Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase); Assert.Equal(0x1234u, state.RandomSeedImage);
         Assert.Equal((uint?)0, state.CurrentGold); Assert.Equal((ushort?)0, state.Roster[0].Stats.CurrentKills);
-        Assert.All(state.Roster.Skip(1), unit => Assert.Null(unit.Stats.CurrentKills));
+        Assert.Equal(party.Allies[2].CurrentKills, state.Roster[2].Stats.CurrentKills);
+        Assert.All(state.Roster.Where(unit => unit.Index is not (0 or 2)), unit => Assert.Null(unit.Stats.CurrentKills));
         Assert.Equal(party.Allies.Select(ally => ally.CurrentExp), state.Roster.Take(3).Select(unit => unit.Stats.CurrentExp));
         Assert.Equal(9, state.Roster.Count); Assert.Equal(9, state.Occupancy.Count(index => index >= 0));
         Assert.Equal(prepared.Inputs.Terrain, state.Terrain); Assert.NotSame(prepared.Inputs.Terrain, state.Terrain);
@@ -1084,7 +1085,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(new MapPosition?[] { new(11, 15), new(9, 17), new(11, 14), new(7, 2), new(10, 4), new(6, 3), new(11, 13), null, new(7, 5) }, current.Battle.Roster.Select(u => u.Position));
         Assert.Equal(new ushort[] { 6, 11, 9, 5, 5, 5, 5, 0, 5 }, current.Battle.Roster.Select(u => u.Stats.HpCurrent));
         Assert.Equal(((uint?)60, (byte?)39, (ushort?)1), (current.Battle.CurrentGold, current.Battle.Roster[0].Stats.CurrentExp, current.Battle.Roster[0].Stats.CurrentKills));
-        Assert.Equal(party.Allies[2].CurrentExp, current.Battle.Roster[2].Stats.CurrentExp); Assert.Null(current.Battle.Roster[2].Stats.CurrentKills);
+        Assert.Equal(party.Allies[2].CurrentExp, current.Battle.Roster[2].Stats.CurrentExp); Assert.Equal(party.Allies[2].CurrentKills,current.Battle.Roster[2].Stats.CurrentKills);
         Assert.Equal(8, current.Battle.Occupancy.Count(id => id >= 0)); Assert.Same(prepared, current.Preparation);
         Assert.Equal(11, prepared.Party.Allies[2].HpCurrent); Assert.Equal(party.Allies[2].CurrentExp, prepared.Party.Allies[2].CurrentExp);
         Assert.Same(initialized.SourceLocomotion, current.SourceLocomotion); Assert.Same(initialized.SourceBridge, current.SourceBridge);
@@ -1149,7 +1150,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(new Battle01PhysicalReaction(131, -2, 0, 0, 1), d.Effect.Reaction);
         Assert.False(d.Effect.Dodged); Assert.False(d.Effect.Critical); Assert.False(d.DefeatedTarget);
         Assert.Equal((byte?)0, d.Actor.Stats.CurrentExp); Assert.Equal((byte?)10, current.Battle.Roster[2].Stats.CurrentExp);
-        Assert.Equal(9, current.Battle.Roster[2].Stats.HpCurrent); Assert.Null(current.Battle.Roster[2].Stats.CurrentKills);
+        Assert.Equal(9, current.Battle.Roster[2].Stats.HpCurrent); Assert.Equal(party.Allies[2].CurrentKills,current.Battle.Roster[2].Stats.CurrentKills);
         Assert.Same(Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp, attackReceipt.Policy);
         Assert.Same(original.TurnCompletion, attackReceipt.Previous); Assert.Null(attackReceipt.EnemyDefeat);
         Assert.Same(original.AiLastTargets, current.Battle.AiLastTargets); Assert.Same(original.AiMemory, current.Battle.AiMemory);
@@ -1229,7 +1230,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(original.Roster.Select(u => u.AiBitfield), end.Roster.Select(u => u.AiBitfield));
         Assert.Equal(((uint?)60, (byte?)39, (ushort?)1, (byte?)10), (end.CurrentGold,
             end.Roster[0].Stats.CurrentExp, end.Roster[0].Stats.CurrentKills, end.Roster[2].Stats.CurrentExp));
-        Assert.Null(end.Roster[2].Stats.CurrentKills); Assert.Equal(9, end.Roster.Count); Assert.Equal(8, end.Occupancy.Count(id => id >= 0));
+        Assert.Equal(party.Allies[2].CurrentKills,end.Roster[2].Stats.CurrentKills); Assert.Equal(9, end.Roster.Count); Assert.Equal(8, end.Occupancy.Count(id => id >= 0));
         var receipts = new List<Battle01TurnCompletionReceipt>();
         for (var r = end.TurnCompletion; r is not null; r = r.Previous) receipts.Add(r);
         Assert.Equal(76, receipts.Count);
@@ -1336,7 +1337,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(new ushort[] { 3, 11, 9, 5, 5, 5, 0, 0, 5 }, end.Roster.Select(u => u.Stats.HpCurrent));
         Assert.Equal(((uint?)120, (byte?)63, (ushort?)2, (byte?)10), (end.CurrentGold, end.Roster[0].Stats.CurrentExp,
             end.Roster[0].Stats.CurrentKills, end.Roster[2].Stats.CurrentExp));
-        Assert.Null(end.Roster[2].Stats.CurrentKills); Assert.Equal(9, end.Roster.Count); Assert.Equal(7, end.Occupancy.Count(id => id >= 0));
+        Assert.Equal(party.Allies[2].CurrentKills,end.Roster[2].Stats.CurrentKills); Assert.Equal(9, end.Roster.Count); Assert.Equal(7, end.Occupancy.Count(id => id >= 0));
         Assert.Equal((0x9F861234u, (ushort?)0x0034, (ushort)7), (end.RandomSeedImage, end.RandomSeedCopy, end.NewlyTestedRegionMask));
         Assert.Equal(new byte[] { 52, 36, 20, 36, 52, 52 }.Concat(Enumerable.Repeat((byte)0, 42)), end.AiMemory);
         Assert.Equal(new byte[] { 255, 255, 255, 0, 0, 255 }.Concat(Enumerable.Repeat((byte)255, 42)), end.AiLastTargets);

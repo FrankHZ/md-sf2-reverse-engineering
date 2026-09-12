@@ -11,6 +11,20 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
 {
     [Fact]
+    public void ChesterFirstKillPreparationCannotBeRetrofittedAfterCounterConstruction()
+    {
+        var session = FirstAllyDefeatSession(counter:true); var source = session.PrivateOriginalBattle01!;
+        var preparation = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending,source.Preparation.Inputs,
+            OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
+        var selected = new PrivateOriginalBattle01SessionSnapshot(preparation,source.Battle,source.SourceLocomotion,source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,selected);
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(selected.Battle,json);
+        Assert.Equal("accounting.input",Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(selected,130)).Diagnostic.Field);
+        Assert.Same(selected,session.PrivateOriginalBattle01); Assert.Equal(frozen,JsonSerializer.Serialize(selected.Battle,json));
+    }
+
+    [Fact]
     public void CounterPublishesOnceAndLateDeclaredAccountingFailureRollsBackBeforePrimary()
     {
         var session=FirstAllyDefeatSession(counter:true);var before=session.PrivateOriginalBattle01!;
