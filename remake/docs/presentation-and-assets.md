@@ -755,10 +755,11 @@ the supplied asset input.
 
 The map viewport clips its own drawing to the existing `LogicalTextureRect` (288 by 168 logical
 pixels). Merely checking whether a diagnostic rectangle intersects the map allows a partial glyph
-to draw past the edge. `PrivateOriginalMapBaseViewport` instead uses Godot's existing
-[`canvas_item_set_clip`](https://docs.godotengine.org/en/stable/classes/class_renderingserver.html#class-renderingserver-method-canvas-item-set-clip)
-with that fixed custom rectangle. It preserves the visible portion of partial glyphs, their original
-projected rectangles, the player, camera and node hierarchy. The current map view is axis-aligned;
+to draw past the edge. `PrivateMap3Presenter` gives the existing viewport a `Control` host with
+[`ClipContents`](https://docs.godotengine.org/en/stable/classes/class_control.html#class-control-property-clip-contents)
+and that fixed size. The host occupies the original global map position; the drawing node uses zero
+local offset. This preserves partial glyphs' visible portions, their original projected rectangles,
+the global player/map positions and camera. The host ignores mouse input. The map view is axis-aligned;
 this does not introduce rotated-view clipping. Frozen follower glyphs remain diagnostic overlays
 above the roof texture, not evidence of original sprite/roof priority.
 

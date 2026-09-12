@@ -437,11 +437,16 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapBaseViewport? baseViewport = null;
         if (plan.IncludeBaseVisualViewport)
         {
-            baseViewport = new PrivateOriginalMapBaseViewport
+            Control mapClip = new()
             {
                 Position = ViewportPosition,
+                Size = PrivateOriginalMapBaseViewport.LogicalTextureRect.Size,
+                ClipContents = true,
+                MouseFilter = Control.MouseFilterEnum.Ignore,
             };
-            parent.AddChild(baseViewport);
+            baseViewport = new PrivateOriginalMapBaseViewport();
+            mapClip.AddChild(baseViewport);
+            parent.AddChild(mapClip);
         }
 
         Label status = new()

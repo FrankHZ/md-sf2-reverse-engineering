@@ -1932,8 +1932,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 "The real top-edge diagnostic retains its semantic position and unclamped rectangle");
             for (int y = 0; y < 7; y++)
             for (int x = 149; x < 163; x++)
-                if (image.GetPixel((int)((viewport.Position.X + x) * image.GetWidth() / 960),
-                    (int)((viewport.Position.Y + y) * image.GetHeight() / 540)).IsEqualApprox(new Color("ff70a6")))
+                if (image.GetPixel((int)((viewport.GlobalPosition.X + x) * image.GetWidth() / 960),
+                    (int)((viewport.GlobalPosition.Y + y) * image.GetHeight() / 540)).IsEqualApprox(new Color("ff70a6")))
                     partialGlyphPixels++;
             Require(partialGlyphPixels > 0, "The clipped glyph's in-map pink interior remains actually visible");
         }
@@ -1946,7 +1946,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             if(playerRect.HasPoint(point) || glyphs.Any(g=>g.DestinationRect.HasPoint(point)))continue;
             int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
             var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
-            var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+            var actual=image.GetPixel((int)((viewport.GlobalPosition.X+x)*image.GetWidth()/960),(int)((viewport.GlobalPosition.Y+y)*image.GetHeight()/540));
             Require(actual.IsEqualApprox(expected),"Visible church texel matches the current moving-camera projection");samples++;
         }
         Require(samples>0,"Church background remains visibly sampled");
@@ -1961,7 +1961,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 var point=new Vector2(x,y);
                 if(playerRect.HasPoint(point) || glyphs.Any(g=>g.DestinationRect.HasPoint(point)))continue;
                 var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
-                var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+                var actual=image.GetPixel((int)((viewport.GlobalPosition.X+x)*image.GetWidth()/960),(int)((viewport.GlobalPosition.Y+y)*image.GetHeight()/540));
                 Require(actual.IsEqualApprox(expected),"Named door/roof world pixel matches actual native rendering"); visible++;
             }
             var tileStart=new Vector2(worldX*24-view.Camera!.TopLeftPixelX,worldY*24-view.Camera.TopLeftPixelY);
@@ -1983,9 +1983,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
     {
         var viewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
         if (viewport is null || !viewport.IsVisibleInTree() || _presenter.BaseProjection is null) return 0;
-        Require(RenderingServer.DebugCanvasItemGetRect(viewport.GetCanvasItem()) ==
-            PrivateOriginalMapBaseViewport.LogicalTextureRect, "The live canvas item keeps the fixed map rectangle");
-        var rectangle = new Rect2(viewport.Position, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size);
+        Require(viewport.GetParent() is Control { ClipContents: true, MouseFilter: Control.MouseFilterEnum.Ignore } clip &&
+            clip.GetGlobalRect() == new Rect2(viewport.GlobalPosition, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size) &&
+            viewport.GlobalPosition == new Vector2(24, 105), "The clipping host preserves the existing global map rectangle");
+        var rectangle = new Rect2(viewport.GlobalPosition, PrivateOriginalMapBaseViewport.LogicalTextureRect.Size);
         int scaleX = image.GetWidth() / 960, scaleY = image.GetHeight() / 540;
         Require(scaleX > 0 && scaleY > 0 && image.GetWidth() == 960 * scaleX && image.GetHeight() == 540 * scaleY,
             "Native clipping samples use exact logical-to-rendered pixel scales");
@@ -2056,7 +2057,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             if(column==6 && row==3)continue;
             int x=column*24+2,y=row*24+2;int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
             var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
-            var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+            var actual=image.GetPixel((int)((viewport.GlobalPosition.X+x)*image.GetWidth()/960),(int)((viewport.GlobalPosition.Y+y)*image.GetHeight()/540));
             Require(actual.IsEqualApprox(expected),"Visible church texel equals current typed arrival projection");samples++;
         }
         _frames.Add(new {name,map=arrival.Map.Value,phase="EntryReady",status=status.Text,entities=arrival.Entities,
@@ -2334,7 +2335,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Map40 camera and player use the relocated destination");
         var status = Field<Label>(_presenter, "_status");
         Require(status.Position.Y == 310 &&
-            status.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+            status.Position.Y >= baseViewport.GlobalPosition.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
             status.Text.StartsWith("Map 40 controlled arrival. Base atlas; init not executed.", StringComparison.Ordinal),
             "Map40 atlas status below the base viewport");
         VerifyMap40BucketPixels(snapshot, movement);
@@ -2434,7 +2435,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _presenter.UsesRequiredBaseAtlasSampling && baseViewport.LiveRouteActorProjection is null,
             "Pending retains the Map40 atlas and no Map57 or guard projection");
         Require(status.Position.Y == 310 &&
-            status.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+            status.Position.Y >= baseViewport.GlobalPosition.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
             pendingText.StartsWith("Battle 01 admission pending. Battle not started.", StringComparison.Ordinal) &&
             pendingText.Contains("destination Map 57 (8,18)/UP.", StringComparison.Ordinal) &&
             pendingText.Contains("Map 40 retained", StringComparison.Ordinal) &&
@@ -2578,7 +2579,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 guardPosition.Y * 24 - camera.TopLeftPixelY + 5),
             "Live guard diamond uses current occupancy within the current camera");
         var label = Field<Label>(_presenter, "_status");
-        Require(label.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+        Require(label.Position.Y >= baseViewport.GlobalPosition.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
             label.Text.StartsWith(arrival ? "Middle tower Map 21 reached." :
                 completed ? "Guard moved; passage open." : "F apply controlled guard result",
                 StringComparison.Ordinal), "Current action/status is readable below the base viewport");

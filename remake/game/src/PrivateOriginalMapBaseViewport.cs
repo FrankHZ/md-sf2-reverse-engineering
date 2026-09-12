@@ -1304,13 +1304,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         TextureRepeat = RequiredTextureRepeat;
     }
 
-    public override void _Ready()
-    {
-        // Clip drawing, not actor coordinates: partially visible diagnostics keep their visible part.
-        RenderingServer.CanvasItemSetCustomRect(GetCanvasItem(), true, LogicalTextureRect);
-        RenderingServer.CanvasItemSetClip(GetCanvasItem(), true);
-    }
-
     internal static TextureFilterEnum RequiredTextureFilter =>
         TextureFilterEnum.Nearest;
 
