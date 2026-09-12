@@ -386,6 +386,24 @@ the retained fixed SDK/editor and committed archive. Run the planner-selected fu
 once and official Godot gate; preserve completed failures and correct/rerun only their owning nodes.
 No H3 or full Python suite is added by this slice. Normal public verification remains a separate gate.
 
+For Chester's first kill, required-private
+`AcceptedSelectedInputsCreditChesterFirstKillAndActuallyRejectEnemy128` replays both complete early
+input histories through93. Use `LeaderDefeatComparison` with no return/arrival as the comparison
+baseline; normalize only the named Chester kills before-images. The test then cancels/reselects129,
+commits94 (HP1/EXP54/kills1/gold180/main323E1234/copy0134), and actually attempts128's lethal branch,
+requiring exact94 retention. It also retains the old-preset129 lethal guard. Both physical wrappers
+must reject a late preparation changing only Chester kills after successful local construction.
+Domain owning tests cover separate kill/EXP/gold/counter rewind, forgery, cleanup/after-turn and
+finalization rollback. Godot covers launch rejection/defaults and visible current/credited kills.
+
+Native `chester-first-kill` adds the launch opt-in before physical N. Its37-frame route compares the
+entire physical/API battle, keeps actual cancel/reselect, then shows the actual128 refusal. Inspect
+new frames33–37 at original resolution; earlier images may be reused only after byte comparison.
+Pair it with ordinary `leader-defeat-pending`119-return, `chester-counterattack`, enemy-physical and
+pursuit native regressions. Run the committed planner-selected full managed suite once after focused
+checks and the official locked Godot gate; preserve completed failures and rerun only failed/newly
+invalidated nodes or owning files. No new H3 or full Python suite is selected by this capability.
+
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also
