@@ -4,6 +4,10 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Sessions;
 
 public sealed record PrivateOriginalMapReturnInputReceipt(long Ordinal, OriginalMapTraversalResult Traversal);
+public sealed record PrivateOriginalMapReturnDoorCopyReceipt(PrivateOriginalMapReturnArrivalSnapshot Entry,
+    OriginalMapStepCopyDefinition Definition, PrivateOriginalMapReturnInputReceipt Input,
+    ushort BeforeWord, ushort AfterWord);
+public sealed record PrivateOriginalMapReturnRoofActionReceipt(long InputOrdinal, MapBlockCopyActionResult Action);
 
 public abstract record PrivateOriginalMapReturnMovementResult;
 public sealed record PrivateOriginalMapReturnMovementApplied(PrivateOriginalBattle01SessionSnapshot Snapshot)
@@ -25,11 +29,15 @@ public sealed partial class GameSession
         if (arrival.Locomotion.IsMoving) return ReturnRejected("return.busy");
         try
         {
-            var (traversal, unsupported) = EvaluateReturnMovement(arrival.CurrentRuntime.Traversal,
-                arrival.WorkingLayout, arrival.PlayerPosition, command.Direction);
+            var (traversal, unsupported, layout) = EvaluateReturnMovement(arrival.CurrentRuntime.Traversal,
+                arrival.WorkingLayout, arrival.PlayerPosition, command.Direction,
+                arrival.LoadDefinition.ChurchDoor, arrival.Party.CurrentBattle);
             if (unsupported is not null) return new PrivateOriginalMapReturnMovementUnsupported(unsupported);
             var input = new PrivateOriginalMapReturnInputReceipt(checked(arrival.InputOrdinal + 1), traversal!);
-            return PublishReturnMovement(current, new(arrival, input, advance: false));
+            var door = ReferenceEquals(layout, arrival.WorkingLayout) ? arrival.DoorCopy :
+                new PrivateOriginalMapReturnDoorCopyReceipt(arrival.EntryBeforeMovement ?? arrival,
+                    arrival.LoadDefinition.ChurchDoor, input, arrival.WorkingLayout[32, 15], layout[32, 15]);
+            return PublishReturnMovement(current, new(arrival, input, advance: false, layout, door));
         }
         catch (ArgumentException error) { return ReturnRejected(error.ParamName ?? "return.state"); }
         catch (OverflowException) { return ReturnRejected("return.ordinal"); }
@@ -42,7 +50,8 @@ public sealed partial class GameSession
         var current = PrivateOriginalBattle01!;
         var arrival = current.Arrival!;
         if (!arrival.Locomotion.IsMoving || arrival.LastInput is null) return ReturnRejected("return.idle");
-        try { return PublishReturnMovement(current, new(arrival, arrival.LastInput, advance: true)); }
+        try { return PublishReturnMovement(current, new(arrival, arrival.LastInput, advance: true,
+            arrival.WorkingLayout, arrival.DoorCopy)); }
         catch (ArgumentException error) { return ReturnRejected(error.ParamName ?? "return.state"); }
         catch (OverflowException) { return ReturnRejected("return.ordinal"); }
     }
@@ -56,16 +65,31 @@ public sealed partial class GameSession
             "Unsupported: interactions, services and other gameplay actions remain unavailable."));
     }
 
-    internal static (OriginalMapTraversalResult? Traversal, OriginalBattle01StartupDiagnostic? Unsupported)
+    internal static (OriginalMapTraversalResult? Traversal, OriginalBattle01StartupDiagnostic? Unsupported, WorkingMapLayout Layout)
         EvaluateReturnMovement(OriginalMapTraversal traversal, WorkingMapLayout layout, MapPosition source,
-            ExplorationDirection direction)
+            ExplorationDirection direction, OriginalMapStepCopyDefinition? churchDoor, byte currentBattle)
     {
         var candidate = traversal.ResolveCandidateTarget(layout, source, direction);
-        if (candidate is null || candidate.X is < 31 or > 33 || candidate.Y is < 12 or > 14)
-            return (null, new("return.region", "Unsupported: outside the church pocket; door and roof events remain closed."));
+        if (candidate is null || !(candidate.X is >= 31 and <= 33 && candidate.Y is >= 12 and <= 14 ||
+            candidate.X == 32 && candidate.Y is 15 or 16))
+            return (null, new("return.region", "Unsupported: outside the church pocket and two-cell doorway route."), layout);
         if (candidate == new MapPosition(32, 13))
-            return (null, new("return.followers", "Unsupported: the frozen follower cell is unavailable; original collision is Unknown."));
-        return (traversal.TryMove(layout, source, direction), null);
+            return (null, new("return.followers", "Unsupported: the frozen follower cell is unavailable; original collision is Unknown."), layout);
+        // esc02 calls OpenDoor before re-reading the target marker and checking passability.
+        if ((layout[candidate.X, candidate.Y] & 0x3C00) == 0x0400)
+        {
+            if (currentBattle != 255 || !OriginalMapRuntimeAdmission.HasExactAcceptedChurchDoorStepCopy(churchDoor) ||
+                candidate != churchDoor!.Trigger || source != new MapPosition(32, 14) ||
+                direction != ExplorationDirection.South || layout[32, 15] != 0xC48F)
+                throw new ArgumentException("Retain the admitted exploration doorway binding.", "return.door");
+            layout = layout.ApplyBlockCopy(churchDoor.Copy);
+            if (layout[32, 15] != 0x080E)
+                throw new ArgumentException("The door copy must re-read as the admitted passable show marker.", "return.door");
+        }
+        int marker = layout[candidate.X, candidate.Y] & 0x3C00;
+        if (marker is 0x0400 or 0x1000 or 0x1400 or 0x3800 or 0x3C00)
+            return (null, new("return.event", "Unsupported: an unadmitted door, warp, zone or transport marker."), layout);
+        return (traversal.TryMove(layout, source, direction), null, layout);
     }
 
     private OriginalBattle01StartupDiagnostic? ReturnMovementDiagnostic(PrivateOriginalBattle01SessionSnapshot? expected)
@@ -83,6 +107,8 @@ public sealed partial class GameSession
             !ReferenceEquals(arrival.LoadDefinition, current.Preparation.ArrivalLoad) ||
             GetArrivalSourceDiagnostic(current.SourceSnapshot, arrival.LoadDefinition) is not null)
             return ReturnDiagnostic("return.binding");
+        try { arrival.ValidateCurrentState(); }
+        catch (ArgumentException error) { return ReturnDiagnostic(error.ParamName ?? "return.state"); }
         // Exact admitted pocket, not a generic event-free map or an alternate import.
         ushort[] words = [0x00DB, 0xE8DC, 0x00DD, 0x0061, 0x0062, 0x0063, 0x0076, 0x0077, 0x0078];
         for (int y = 12, index = 0; y <= 14; y++) for (int x = 31; x <= 33; x++, index++)

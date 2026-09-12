@@ -574,7 +574,19 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             var (w, h) = ReadSize(RequiredProperty(row, "size", field), field);
             roofs.Add(new(roofs.Count + 1, tx, ty, sx, sy, w, h, dx, dy));
         }
-        var definition = new OriginalMapReturnEntryLoadDefinition(runtime, flagId, flags, chestId, chests, roofId, roofs);
+        string stepId = RequiredString(references, "stepEventTable", field);
+        var steps = Rows("stepEventTables", stepId);
+        if (steps.GetArrayLength() != 6)
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field, "Retain the six step rows.");
+        var door = steps[3];
+        RequireExactProperties(door, field, "trigger", "source", "size", "destination");
+        var (doorX, doorY) = ReadPoint(RequiredProperty(door, "trigger", field), field, byteSized: true);
+        var (sourceX, sourceY) = ReadPoint(RequiredProperty(door, "source", field), field, byteSized: true);
+        var (destX, destY) = ReadPoint(RequiredProperty(door, "destination", field), field, byteSized: true);
+        var (width, height) = ReadSize(RequiredProperty(door, "size", field), field);
+        var churchDoor = new OriginalMapStepCopyDefinition(new(ContentProfile.PrivateLocal, runtime.Map, stepId, 4),
+            new(doorX, doorY), new(sourceX, sourceY, destX, destY, width, height));
+        var definition = new OriginalMapReturnEntryLoadDefinition(runtime, flagId, flags, chestId, chests, roofId, roofs, churchDoor);
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(definition, catalog))
             throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
                 "The bounded Granseal return-load flag/chest/roof/area facts drifted.");

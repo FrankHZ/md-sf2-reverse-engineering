@@ -25,20 +25,23 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
         IReadOnlyDictionary<int, bool> flags)
     {
         Before = before; Party = party; LoadDefinition = load; WorkingLayout = layout; RoofClear = roof;
+        RoofLifecycle = roof.LifecycleState; ViewUpdateState = roof.UpdateState;
         Entities = Array.AsReadOnly(entities.ToArray());
         Flags = new ReadOnlyDictionary<int, bool>(flags.ToDictionary(pair => pair.Key, pair => pair.Value));
         ValidateEntities(Entities, load.Runtime.EntityPopulation, before.DefeatReturn!.DestinationPosition);
         Locomotion = PrivateOriginalMapPlayerLocomotionSnapshot.EnterGranseal(before.DefeatReturn);
+        ValidateCurrentState();
     }
 
     internal PrivateOriginalMapReturnArrivalSnapshot(PrivateOriginalMapReturnArrivalSnapshot current,
-        PrivateOriginalMapReturnInputReceipt input, bool advance)
+        PrivateOriginalMapReturnInputReceipt input, bool advance, WorkingMapLayout layout,
+        PrivateOriginalMapReturnDoorCopyReceipt? doorCopy)
     {
+        current.ValidateCurrentState();
         var entry = current.EntryBeforeMovement ?? current;
         ValidateEntities(entry.Entities, entry.CurrentRuntime.EntityPopulation, entry.PlayerPosition);
         if (entry.EntryBeforeMovement is not null || entry.LastInput is not null ||
             !ReferenceEquals(current.Before, entry.Before) || !ReferenceEquals(current.Party, entry.Party) ||
-            !ReferenceEquals(current.WorkingLayout, entry.WorkingLayout) ||
             !ReferenceEquals(current.Flags, entry.Flags) || !ReferenceEquals(current.RoofClear, entry.RoofClear))
             throw new ArgumentException("Return movement must retain its authenticated entry.", "return.entry");
         if (advance ? !ReferenceEquals(input, current.LastInput) :
@@ -49,12 +52,25 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
             PrivateOriginalMapPlayerLocomotionSnapshot.Begin(current.Locomotion, input.Traversal.Direction,
                 current.PlayerPosition, input.Traversal);
         Before = entry.Before; Party = entry.Party; LoadDefinition = entry.LoadDefinition;
-        WorkingLayout = entry.WorkingLayout; RoofClear = entry.RoofClear; Flags = entry.Flags;
+        WorkingLayout = layout; RoofClear = entry.RoofClear; Flags = entry.Flags;
+        DoorCopy = doorCopy; RoofLifecycle = current.RoofLifecycle; LastRoofAction = current.LastRoofAction;
+        ViewUpdateState = ReferenceEquals(doorCopy, current.DoorCopy) ? current.ViewUpdateState :
+            new(true, current.ViewUpdateState.Channel1Requested);
         EntryBeforeMovement = entry; LastInput = input;
+        if (advance && !Locomotion.IsMoving)
+        {
+            // Controlled no-fade settlement policy. This is not original VInt/actscript timing.
+            var action = MapBlockCopyActionReducer.Apply(WorkingLayout, RoofLifecycle, ViewUpdateState,
+                new(PlayerPosition.X, PlayerPosition.Y), isFading: false, LoadDefinition.RoofActions);
+            WorkingLayout = action.Layout; RoofLifecycle = action.LifecycleState; ViewUpdateState = action.UpdateState;
+            LastRoofAction = new(input.Ordinal, action);
+        }
+        CurrentRuntime.BlockCatalog.ValidateLayoutReferences(WorkingLayout, "return.layout");
         Entities = Array.AsReadOnly(entry.Entities.Select(entity => entity.Id == 0
             ? entity with { Position = PlayerPosition, TargetPosition = PlayerPosition,
                 Facing = PlayerOpaqueFacing, IsLivePlayerPose = true }
             : entity).ToArray());
+        ValidateCurrentState();
     }
     public PrivateOriginalBattle01SessionSnapshot Before { get; }
     public Battle01EntryParty Party { get; }
@@ -67,6 +83,10 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
     public byte PlayerOpaqueFacing => Locomotion.OpaqueFacing;
     public OriginalMapAreaDefinition CurrentAreaDefinition => LoadDefinition.Area;
     public MapBlockCopyLifecycleResult RoofClear { get; }
+    public MapBlockCopyLifecycleState RoofLifecycle { get; }
+    public MapViewUpdateState ViewUpdateState { get; }
+    public PrivateOriginalMapReturnDoorCopyReceipt? DoorCopy { get; }
+    public PrivateOriginalMapReturnRoofActionReceipt? LastRoofAction { get; }
     public IReadOnlyList<PrivateOriginalMapReturnEntity> Entities { get; }
     public IReadOnlyDictionary<int, bool> Flags { get; }
     public PrivateOriginalMapPlayerLocomotionSnapshot Locomotion { get; }
@@ -77,6 +97,60 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
     public string EntityPolicy => "Player-only movement; follower/NPC declarations frozen. Scripts are not running.";
     public bool Entity142Hidden => Entities.Single(entity => entity.Id == 142).Hidden;
     public bool Entity142MovedOut => Entities.Single(entity => entity.Id == 142).MovedOutOfMap;
+
+    internal void ValidateCurrentState()
+    {
+        var entry = EntryBeforeMovement ?? this;
+        ValidateEntities(entry.Entities, entry.CurrentRuntime.EntityPopulation, entry.Before.DefeatReturn!.DestinationPosition);
+        if (entry.EntryBeforeMovement is not null || entry.LastInput is not null || entry.DoorCopy is not null ||
+            entry.LastRoofAction is not null || !ReferenceEquals(entry.WorkingLayout, entry.RoofClear.Layout) ||
+            !ReferenceEquals(entry.RoofLifecycle, entry.RoofClear.LifecycleState) ||
+            !ReferenceEquals(Before, entry.Before) || !ReferenceEquals(Party, entry.Party) || Party.CurrentBattle != 255 ||
+            !ReferenceEquals(LoadDefinition, entry.LoadDefinition) || !ReferenceEquals(Flags, entry.Flags) ||
+            !ReferenceEquals(RoofClear, entry.RoofClear))
+            throw new ArgumentException("Retain the strict entry before-image and current exploration owners.", "return.entry");
+        if (entry.RoofLifecycle is not MapBlockCopyLifecycleActiveState saved || !IsChurchRoof(saved) ||
+            !saved.SavedWords.SequenceEqual(Enumerable.Range(41, 6).SelectMany(y =>
+                Enumerable.Range(30, 5).Select(x => CurrentRuntime.WorkingLayout[x, y]))))
+            throw new ArgumentException("Retain the original church saved30 and ordinal8.", "return.roof");
+        if (RoofLifecycle is MapBlockCopyLifecycleActiveState active)
+        {
+            if (!IsChurchRoof(active) || !active.SavedWords.SequenceEqual(saved.SavedWords))
+                throw new ArgumentException("The live roof must retain the authenticated saved rectangle.", "return.roof");
+        }
+        else if (RoofLifecycle is not MapBlockCopyLifecycleInactiveState || DoorCopy is null)
+            throw new ArgumentException("The live roof must be active8 or a doorway restoration.", "return.roof");
+        if (DoorCopy is { } door && (!ReferenceEquals(door.Entry, entry) ||
+            !ReferenceEquals(door.Definition, LoadDefinition.ChurchDoor) || door.Input.Ordinal < 1 ||
+            door.Input.Ordinal > InputOrdinal || door.BeforeWord != 0xC48F || door.AfterWord != 0x080E ||
+            door.Input.Traversal.Source != new MapPosition(32, 14) ||
+            door.Input.Traversal.Position != new MapPosition(32, 15) ||
+            door.Input.Traversal.Direction != ExplorationDirection.South ||
+            door.Input.Traversal.Outcome != OriginalMapTraversalOutcome.Moved ||
+            door.Input.Traversal.DestinationWord != 0x080E))
+            throw new ArgumentException("Retain the single entry-bound door-copy input receipt.", "return.door");
+        for (int i = 0; i < WorkingMapLayout.WordCount; i++)
+        {
+            int x = i % 64, y = i / 64;
+            ushort entryWord = x is >= 30 and <= 34 && y is >= 41 and <= 46 ? (ushort)0 :
+                CurrentRuntime.WorkingLayout.Words[i];
+            if (entry.WorkingLayout.Words[i] != entryWord)
+                throw new ArgumentException("The entry layout must retain the original once-only roof clear.", "return.entry");
+            ushort expected = i == 15 * 64 + 32 && DoorCopy is not null ? (ushort)0x080E :
+                x is >= 30 and <= 34 && y is >= 41 and <= 46 && RoofLifecycle is MapBlockCopyLifecycleInactiveState
+                    ? saved.SavedWords[(y - 41) * 5 + x - 30] : entry.WorkingLayout.Words[i];
+            if (WorkingLayout.Words[i] != expected)
+                throw new ArgumentException("Only the door word and saved church roof may differ from entry.", "return.layout");
+        }
+        if (LastRoofAction is { } roof && (roof.InputOrdinal < 1 || roof.InputOrdinal > InputOrdinal ||
+            !ReferenceEquals(roof.Action.LifecycleState, RoofLifecycle) ||
+            roof.Action.UpdateState != ViewUpdateState ||
+            roof.InputOrdinal == InputOrdinal && Locomotion.IsMoving))
+            throw new ArgumentException("Roof actions belong only to a settled input.", "return.roof");
+    }
+
+    private static bool IsChurchRoof(MapBlockCopyLifecycleActiveState state) => state.RecordOrdinal == 8 &&
+        state.DestinationX == 30 && state.DestinationY == 41 && state.Width == 5 && state.Height == 6;
 
     internal static PrivateOriginalMapReturnEntity[] DeclareEntities(OriginalMapEntityPopulation population,
         Battle01EntryParty party, MapPosition destination, byte facing)

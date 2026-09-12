@@ -52,12 +52,14 @@ public sealed class OriginalMapReturnEntryLoadDefinition
     public OriginalMapReturnEntryLoadDefinition(OriginalMapExplorationRuntimeDefinition runtime,
         string flagResource, IEnumerable<OriginalMapReturnFlagCopy> flags,
         string chestResource, IEnumerable<OriginalMapReturnChest> chests,
-        string roofResource, IEnumerable<OriginalMapReturnRoofRow> roofs)
+        string roofResource, IEnumerable<OriginalMapReturnRoofRow> roofs,
+        OriginalMapStepCopyDefinition churchDoor)
     {
         Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         FlagResource = flagResource; ChestResource = chestResource; RoofResource = roofResource;
         FlagCopies = Array.AsReadOnly(flags.ToArray()); Chests = Array.AsReadOnly(chests.ToArray());
         Roofs = Array.AsReadOnly(roofs.ToArray());
+        ChurchDoor = churchDoor ?? throw new ArgumentNullException(nameof(churchDoor));
     }
     public OriginalMapExplorationRuntimeDefinition Runtime { get; }
     public OriginalMapAreaDefinition Area => Runtime.AreaCatalog.Records[0];
@@ -67,6 +69,13 @@ public sealed class OriginalMapReturnEntryLoadDefinition
     public IReadOnlyList<OriginalMapReturnFlagCopy> FlagCopies { get; }
     public IReadOnlyList<OriginalMapReturnChest> Chests { get; }
     public IReadOnlyList<OriginalMapReturnRoofRow> Roofs { get; }
+    public OriginalMapStepCopyDefinition ChurchDoor { get; }
+    // Keep the complete source order: the church is ordinal8, not the first filtered record.
+    public MapBlockCopyActionTable RoofActions => new(Roofs.Select(row => new MapBlockCopyActionRecord(
+        new(row.TriggerX, row.TriggerY), row.SourceX == 255
+            ? MapBlockRegionMutation.Clear(row.DestinationX, row.DestinationY, row.Width, row.Height)
+            : MapBlockRegionMutation.CopyFrom(new(row.SourceX, row.SourceY,
+                row.DestinationX, row.DestinationY, row.Width, row.Height)))));
     public OriginalMapReturnRoofRow SelectRoof(MapPosition position) => Roofs.First(row =>
         position.X >= row.DestinationX - Area.SecondLayerForegroundStart.X &&
         position.X < row.DestinationX - Area.SecondLayerForegroundStart.X + row.Width &&

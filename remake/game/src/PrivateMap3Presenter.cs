@@ -17,7 +17,7 @@ internal sealed record PrivateMap3PresentationPlan(
     bool CurrentAreaOverlay,
     float StatusY)
 {
-    internal const string ArrivalStatus = "Granseal entry ready. Church-pocket movement available.";
+    internal const string ArrivalStatus = "Granseal entry ready. Church doorway movement available.";
     internal static string ReturnMovementOutcome(PrivateOriginalMapReturnMovementResult result) => result switch
     {
         PrivateOriginalMapReturnMovementApplied applied => applied.Snapshot.Arrival!.Locomotion.IsMoving ? "Moving" :
@@ -41,8 +41,9 @@ internal sealed record PrivateMap3PresentationPlan(
         return (outcome ?? ArrivalStatus) + "\n" + arrival.EntityPolicy + "\n" +
             Ally(0, "Bowie") + "\n" + Ally(1, "Sarah") + "\n" + Ally(2, "Chester") + "\n" +
             $"Gold {party.Gold}; input {arrival.InputOrdinal}. Entry (32,13)/UP and battle history retained.\n" +
-            "Move within x31-33/y12-14. Door, follower cell and F/G unavailable.\n" +
-            "Church roof open; entity142 hidden/out. Original post-script positions: Unknown.";
+            "Move in x31-33/y12-14 and (32,15-16). Follower cell and F/G unavailable.\n" +
+            $"Door {(arrival.DoorCopy is null ? "closed" : "open")}; roof {(arrival.RoofLifecycle is MapBlockCopyLifecycleActiveState ? "open" : "restored")}. " +
+            "Entity142 hidden/out; original post-script positions Unknown.";
     }
 
     private const string DiagnosticExplanation =

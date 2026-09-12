@@ -1542,8 +1542,23 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             Assert.Same(entered.SourceBridge,current.SourceBridge); Assert.Same(entry.Before,arrival.Before);
             Assert.Same(entry.Party,arrival.Party); Assert.Equal(partyBefore,JsonSerializer.Serialize(arrival.Party,json));
             Assert.Same(entry.Flags,arrival.Flags); Assert.Same(entry.LoadDefinition,arrival.LoadDefinition);
-            Assert.Same(entry.RoofClear,arrival.RoofClear); Assert.Same(entry.WorkingLayout,arrival.WorkingLayout);
-            Assert.Equal(layoutBefore,arrival.WorkingLayout.Words); Assert.Same(entry.CurrentAreaDefinition,arrival.CurrentAreaDefinition);
+            Assert.Same(entry.RoofClear,arrival.RoofClear); Assert.Equal(layoutBefore,entry.WorkingLayout.Words);
+            var saved = Assert.IsType<MapBlockCopyLifecycleActiveState>(entry.RoofClear.LifecycleState);
+            var expectedWords = layoutBefore.ToArray();
+            if(arrival.DoorCopy is { } door) {
+                Assert.Same(entry,door.Entry); Assert.Same(entry.LoadDefinition.ChurchDoor,door.Definition);
+                Assert.Equal(4,door.Definition.Identity.OneBasedRecordOrdinal);
+                Assert.Equal((ushort)0xC48F,door.BeforeWord); Assert.Equal((ushort)0x080E,door.AfterWord);
+                expectedWords[15*64+32]=0x080E;
+            }
+            if(arrival.RoofLifecycle is MapBlockCopyLifecycleInactiveState) {
+                for(int y=41;y<47;y++) for(int x=30;x<35;x++) expectedWords[y*64+x]=saved.SavedWords[(y-41)*5+x-30];
+            } else {
+                var active=Assert.IsType<MapBlockCopyLifecycleActiveState>(arrival.RoofLifecycle);
+                Assert.Equal(8,active.RecordOrdinal); Assert.Equal((30,41,5,6),(active.DestinationX,active.DestinationY,active.Width,active.Height));
+                Assert.Equal(saved.SavedWords,active.SavedWords);
+            }
+            Assert.Equal(expectedWords,arrival.WorkingLayout.Words); Assert.Same(entry.CurrentAreaDefinition,arrival.CurrentAreaDefinition);
             foreach(var entity in entry.Entities.Where(e => e.Id != 0))
                 Assert.Same(entity,arrival.Entities.Single(e => e.Id == entity.Id));
             var player = arrival.Entities.Single(e => e.Id == 0);
@@ -1566,11 +1581,20 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             Assert.Same(before,session.PrivateOriginalBattle01); Invariant();
         }
 
-        void Input(ExplorationDirection direction, MapPosition destination, bool moves, bool firstWest = false)
+        void Input(ExplorationDirection direction, MapPosition destination, bool moves, bool firstWest = false,
+            bool failFinalRestore = false)
         {
             var before = session.PrivateOriginalBattle01!; long ordinal = before.Arrival!.InputOrdinal;
+            var beforeArrival=before.Arrival; var beginWords=beforeArrival.WorkingLayout.Words.ToArray();
+            bool opensDoor=destination==new MapPosition(32,15) && beforeArrival.DoorCopy is null;
+            if(opensDoor) beginWords[15*64+32]=0x080E;
             var applied = Assert.IsType<PrivateOriginalMapReturnMovementApplied>(
                 session.BeginPrivateOriginalMapReturnMovement(before,new(direction))).Snapshot;
+            Assert.Equal(beginWords,applied.Arrival!.WorkingLayout.Words);
+            Assert.Same(beforeArrival.RoofLifecycle,applied.Arrival.RoofLifecycle);
+            Assert.Same(beforeArrival.LastRoofAction,applied.Arrival.LastRoofAction);
+            if(opensDoor) Assert.Same(applied.Arrival.LastInput,applied.Arrival.DoorCopy!.Input);
+            else Assert.Same(beforeArrival.DoorCopy,applied.Arrival.DoorCopy);
             Assert.Equal(ordinal+1,applied.Arrival!.InputOrdinal); Assert.Equal(destination,applied.Arrival.PlayerPosition);
             Assert.Equal(direction,applied.Arrival.Locomotion.Direction); Assert.Equal(1,applied.Arrival.Locomotion.Tick);
             Assert.Equal(moves,applied.Arrival.Locomotion.IsMoving);
@@ -1591,14 +1615,65 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             if(firstWest) Assert.Equal(2,applied.Arrival.Locomotion.StoredCounter);
             for(int tick=2;tick<=13;tick++) {
                 var previous = session.PrivateOriginalBattle01!;
+                if(tick==13 && failFinalRestore) {
+                    // The reducer can derive a restored layout, but final catalog validation fails
+                    // before publication. No production fault hook or fabricated gameplay prefix.
+                    var runtime=previous.Arrival!.CurrentRuntime;
+                    RejectMutation(runtime,"BlockCatalog",new OriginalMapBlockCatalog(runtime.BlockCatalog.Records.Take(1)),
+                        "return.layout",advance:true);
+                }
                 var advanced = Assert.IsType<PrivateOriginalMapReturnMovementApplied>(session.AdvancePrivateOriginalMapReturnMovement(previous)).Snapshot;
                 Assert.Same(receipt,advanced.Arrival!.LastInput); Assert.Equal(ordinal+1,advanced.Arrival.InputOrdinal);
                 Assert.Equal(tick,advanced.Arrival.Locomotion.Tick); Assert.Equal(tick<13,advanced.Arrival.Locomotion.IsMoving);
                 if(firstWest) Assert.Equal(tick*2,advanced.Arrival.Locomotion.StoredCounter);
+                if(tick<13) {
+                    Assert.Equal(beginWords,advanced.Arrival.WorkingLayout.Words);
+                    Assert.Same(beforeArrival.RoofLifecycle,advanced.Arrival.RoofLifecycle);
+                    Assert.Same(beforeArrival.LastRoofAction,advanced.Arrival.LastRoofAction);
+                } else {
+                    var roof=advanced.Arrival.LastRoofAction!;
+                    Assert.Equal(ordinal+1,roof.InputOrdinal);
+                    var expectedOutcome=destination==new MapPosition(32,16) ? MapBlockCopyActionOutcome.Restored :
+                        destination==new MapPosition(32,15) ? beforeArrival.RoofLifecycle is MapBlockCopyLifecycleActiveState
+                            ? MapBlockCopyActionOutcome.ShowBusy : MapBlockCopyActionOutcome.Activated : MapBlockCopyActionOutcome.Neutral;
+                    Assert.Equal(expectedOutcome,roof.Action.Outcome);
+                    Assert.Same(roof.Action.Layout,advanced.Arrival.WorkingLayout);
+                    Assert.Same(roof.Action.LifecycleState,advanced.Arrival.RoofLifecycle);
+                    if(expectedOutcome is MapBlockCopyActionOutcome.Restored or MapBlockCopyActionOutcome.Activated) {
+                        Assert.Equal(30,beginWords.Zip(advanced.Arrival.WorkingLayout.Words).Count(pair=>pair.First!=pair.Second));
+                        Assert.Equal(new[]{MapViewUpdateChannel.Channel0},roof.Action.UpdateMarks);
+                    } else {
+                        Assert.Equal(beginWords,advanced.Arrival.WorkingLayout.Words);
+                        Assert.Same(beforeArrival.RoofLifecycle,advanced.Arrival.RoofLifecycle); Assert.Empty(roof.Action.UpdateMarks);
+                    }
+                }
                 Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(previous));
                 Assert.Same(advanced,session.PrivateOriginalBattle01); Invariant();
             }
             Assert.True(session.PrivateOriginalMapArrival!.ExplorationInputAvailable);
+            var settled=session.PrivateOriginalBattle01!;
+            Assert.Equal("return.idle",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                session.AdvancePrivateOriginalMapReturnMovement(settled)).Diagnostic.Field);
+            Assert.Same(settled,session.PrivateOriginalBattle01); Invariant();
+        }
+
+        void RejectMutation(object owner,string property,object altered,string field,bool advance=false)
+        {
+            var backing=owner.GetType().GetField("<"+property+">k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            object? original=backing.GetValue(owner); var before=session.PrivateOriginalBattle01!;
+            var arrival=before.Arrival!;
+            try {
+                backing.SetValue(owner,altered);
+                var words=arrival.WorkingLayout.Words.ToArray(); var input=arrival.LastInput;
+                var roof=arrival.RoofLifecycle; var action=arrival.LastRoofAction; var door=arrival.DoorCopy;
+                var result=advance ? session.AdvancePrivateOriginalMapReturnMovement(before) :
+                    session.BeginPrivateOriginalMapReturnMovement(before,new(ExplorationDirection.South));
+                Assert.Equal(field,Assert.IsType<PrivateOriginalMapReturnMovementRejected>(result).Diagnostic.Field);
+                Assert.Same(before,session.PrivateOriginalBattle01); Assert.Equal(words,arrival.WorkingLayout.Words);
+                Assert.Same(input,arrival.LastInput); Assert.Same(roof,arrival.RoofLifecycle);
+                Assert.Same(action,arrival.LastRoofAction); Assert.Same(door,arrival.DoorCopy);
+            } finally { backing.SetValue(owner,original); }
+            Invariant();
         }
 
         Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(null,new(ExplorationDirection.West)));
@@ -1620,8 +1695,9 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Input(ExplorationDirection.East,new(31,12),false);
         Input(ExplorationDirection.South,new(31,13),true);
         Input(ExplorationDirection.South,new(31,14),true);
+        Refused(ExplorationDirection.South,"return.region");
         Input(ExplorationDirection.East,new(32,14),true);
-        Refused(ExplorationDirection.South,"return.region"); Refused(ExplorationDirection.North,"return.followers");
+        Refused(ExplorationDirection.North,"return.followers");
         Input(ExplorationDirection.East,new(33,14),true); Input(ExplorationDirection.North,new(33,13),true);
         Input(ExplorationDirection.North,new(33,12),true); Input(ExplorationDirection.West,new(33,12),false);
         Input(ExplorationDirection.South,new(33,13),true); Input(ExplorationDirection.South,new(33,14),true);
@@ -1656,6 +1732,41 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         }
         finally { entitiesField.SetValue(entry,declarations); }
         Invariant();
+
+        Input(ExplorationDirection.South,new(31,14),true); Input(ExplorationDirection.East,new(32,14),true);
+        var atDoor=session.PrivateOriginalMapArrival!; var doorLoad=atDoor.LoadDefinition;
+        RejectMutation(atDoor,"LastInput",atDoor.LastInput! with {Ordinal=long.MaxValue},"return.ordinal");
+        RejectMutation(doorLoad,"ChurchDoor",new OriginalMapStepCopyDefinition(
+            new(ContentProfile.PrivateLocal,new("map3"),"Map03s4_StepEvents",1),new(32,15),new(62,0,32,15,1,1)),"return.binding");
+        var entryRoof=(MapBlockCopyLifecycleActiveState)entry.RoofLifecycle;
+        RejectMutation(atDoor,"RoofLifecycle",new MapBlockCopyLifecycleActiveState(1,30,41,5,6,entryRoof.SavedWords),"return.roof");
+        RejectMutation(atDoor,"RoofLifecycle",new MapBlockCopyLifecycleActiveState(8,31,41,5,6,entryRoof.SavedWords),"return.roof");
+        RejectMutation(atDoor,"RoofLifecycle",new MapBlockCopyLifecycleActiveState(8,30,41,5,6,new ushort[30]),"return.roof");
+        var unrelated=atDoor.WorkingLayout.Words.ToArray(); unrelated[0]^=1;
+        RejectMutation(atDoor,"WorkingLayout",new WorkingMapLayout(unrelated),"return.layout");
+        var wrongMarker=atDoor.WorkingLayout.Words.ToArray(); wrongMarker[62]=0x100E;
+        RejectMutation(atDoor,"WorkingLayout",new WorkingMapLayout(wrongMarker),"return.layout");
+
+        Input(ExplorationDirection.South,new(32,15),true);
+        var firstDoor=session.PrivateOriginalMapArrival!.DoorCopy!;
+        Assert.Equal(1,layoutBefore.Zip(session.PrivateOriginalMapArrival.WorkingLayout.Words).Count(pair=>pair.First!=pair.Second));
+        Refused(ExplorationDirection.West,"return.region"); Refused(ExplorationDirection.East,"return.region");
+        Input(ExplorationDirection.South,new(32,16),true,failFinalRestore:true);
+        Refused(ExplorationDirection.South,"return.region"); Refused(ExplorationDirection.West,"return.region"); Refused(ExplorationDirection.East,"return.region");
+        Input(ExplorationDirection.North,new(32,15),true); Input(ExplorationDirection.North,new(32,14),true);
+        Refused(ExplorationDirection.North,"return.followers");
+        for(int cycle=0;cycle<2;cycle++) {
+            Input(ExplorationDirection.South,new(32,15),true); Input(ExplorationDirection.South,new(32,16),true);
+            Input(ExplorationDirection.North,new(32,15),true); Input(ExplorationDirection.North,new(32,14),true);
+            Assert.Same(firstDoor,session.PrivateOriginalMapArrival!.DoorCopy);
+        }
+        var final=session.PrivateOriginalBattle01!;
+        var foreignEntry=(PrivateOriginalMapReturnArrivalSnapshot)typeof(object)
+            .GetMethod("MemberwiseClone",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,null)!;
+        RejectMutation(final.Arrival!,"DoorCopy",firstDoor with {Entry=foreignEntry},"return.door");
+        Assert.IsType<PrivateOriginalMapReturnMovementUnsupported>(session.RefusePrivateOriginalMapReturnInteraction(final));
+        Assert.IsType<PrivateOriginalBattle01ExplorationEntryRejected>(session.EnterPrivateOriginalBattle01Exploration(final));
+        Assert.Same(final,session.PrivateOriginalBattle01); Invariant();
     }
 
     private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset,

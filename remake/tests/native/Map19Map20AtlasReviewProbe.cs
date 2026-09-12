@@ -1589,7 +1589,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         await CaptureArrival("45-granseal-entry-physical");
         var returnMovement = await ExerciseReturnMovement(entered);
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled defeat recovery/return and player-only church-pocket movement; follower scripts and events unsupported",
+            status="Pass",scope="controlled defeat recovery/return, church doorway cycle and settlement roof actions; original scripts unsupported",
             preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
             arrivalInputs=_initialBattle01.Preparation.ArrivalInputs,
             initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=entered.Battle,
@@ -1720,6 +1720,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         string partyBefore = JsonSerializer.Serialize(entry.Party,json);
         var layoutBefore = entry.WorkingLayout.Words.ToArray();
         var operations = new List<object>(); int nextFrame=46, callbacks=0, idleCallbacks=0;
+        Dictionary<string,byte[]>? lastPixels=null;
         // Retain real physical-key polling. Schedule each production physics callback explicitly
         // on a physics frame so initial/mid/settled captures cannot skip or double-advance a tick.
         _root.SetPhysicsProcess(false);
@@ -1731,9 +1732,22 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 ReferenceEquals(entered.SourceSnapshot,current.SourceSnapshot) && ReferenceEquals(entered.SourceLocomotion,current.SourceLocomotion) &&
                 ReferenceEquals(entered.SourceBridge,current.SourceBridge) && ReferenceEquals(entry.Before,live.Before),"Complete battle/source history remains immutable");
             Require(ReferenceEquals(entry.Party,live.Party) && JsonSerializer.Serialize(live.Party,json)==partyBefore &&
-                ReferenceEquals(entry.Flags,live.Flags) && ReferenceEquals(entry.WorkingLayout,live.WorkingLayout) &&
-                layoutBefore.SequenceEqual(live.WorkingLayout.Words) && ReferenceEquals(entry.RoofClear,live.RoofClear) &&
+                ReferenceEquals(entry.Flags,live.Flags) && layoutBefore.SequenceEqual(entry.WorkingLayout.Words) &&
+                ReferenceEquals(entry.RoofClear,live.RoofClear) &&
                 ReferenceEquals(entry.LoadDefinition,live.LoadDefinition),"Current party, flags, resources and roof before-image are retained");
+            var saved=(MapBlockCopyLifecycleActiveState)entry.RoofLifecycle;
+            var expected=layoutBefore.ToArray();
+            if(live.DoorCopy is { } door) {
+                Require(ReferenceEquals(door.Entry,entry) && ReferenceEquals(door.Definition,entry.LoadDefinition.ChurchDoor) &&
+                    door.BeforeWord==0xC48F && door.AfterWord==0x080E && door.Definition.Identity.OneBasedRecordOrdinal==4,
+                    "Only the entry-bound row4 door receipt can open the main-layer word");
+                expected[15*64+32]=0x080E;
+            }
+            if(live.RoofLifecycle is MapBlockCopyLifecycleInactiveState)
+                for(int y=41;y<47;y++) for(int x=30;x<35;x++) expected[y*64+x]=saved.SavedWords[(y-41)*5+x-30];
+            else Require(live.RoofLifecycle is MapBlockCopyLifecycleActiveState active && active.RecordOrdinal==8 &&
+                active.SavedWords.SequenceEqual(saved.SavedWords),"The full ordered roof table retains saved30/ordinal8");
+            Require(expected.SequenceEqual(live.WorkingLayout.Words),"All4096 current words equal entry plus only the door/roof deltas");
             Require(entry.Entities.Where(e=>e.Id!=0).All(e=>ReferenceEquals(e,live.Entities.Single(r=>r.Id==e.Id))),
                 "All non-player declarations, including dead Chester and both entity142 effects, stay exact");
             var player=live.Entities.Single(e=>e.Id==0);
@@ -1742,11 +1756,13 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         }
         async Task Capture(string suffix)
         {
-            Invariant(); await CaptureReturnMovement($"{nextFrame++:00}-granseal-{suffix}");
+            Invariant(); lastPixels=await CaptureReturnMovement($"{nextFrame++:00}-granseal-{suffix}");
         }
-        async Task Direction(Key key, ExplorationDirection direction, MapPosition destination, bool moved, string? unsupported=null, bool detailed=false)
+        async Task Direction(Key key, ExplorationDirection direction, MapPosition destination, bool moved, string? unsupported=null,
+            bool detailed=false,string? phase=null)
         {
             var before=_session.PrivateOriginalBattle01!;
+            var beforePixels=lastPixels; Dictionary<string,byte[]>? preSettlementPixels=null;
             var expectedResult=_session.BeginPrivateOriginalMapReturnMovement(before,new(direction));
             var expectedStart=_session.PrivateOriginalBattle01!;
             var expectedTicks=new List<PrivateOriginalBattle01SessionSnapshot>{expectedStart};
@@ -1769,21 +1785,42 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "Supported move/block has the expected position and exactly one input ordinal");
                 Require(actual.Arrival!.LastInput!.Traversal.Outcome==(moved?OriginalMapTraversalOutcome.Moved:OriginalMapTraversalOutcome.BlockedByCollision),
                     "Terrain collision remains distinct from unavailable events");
-                if(detailed) await Capture("move-initial");
+                if(detailed) {
+                    await Capture(phase is null ? "move-initial" : phase+"-begin");
+                    if(phase is not null && beforePixels is not null) {
+                        Require(lastPixels!["roof"].SequenceEqual(beforePixels["roof"]),"Begin cannot change visible roof pixels");
+                        if(before.Arrival!.DoorCopy is null && actual.Arrival.DoorCopy is not null)
+                            Require(!lastPixels["door"].SequenceEqual(beforePixels["door"]),"Door pixels change at the actual first Begin");
+                    }
+                }
                 for(int index=1;index<expectedTicks.Count;index++) {
                     await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
                     _root._PhysicsProcess(1.0/60.0); callbacks++;
                     Require(JsonSerializer.Serialize(_session.PrivateOriginalMapArrival,json)==JsonSerializer.Serialize(expectedTicks[index].Arrival,json),
                         "Every real production physics callback equals the corresponding API tick");
                     Invariant();
-                    if(detailed && _session.PrivateOriginalMapArrival!.Locomotion.Tick==7) await Capture("move-middle");
+                    if(detailed && _session.PrivateOriginalMapArrival!.Locomotion.Tick==7)
+                        await Capture(phase is null ? "move-middle" : phase+"-middle");
+                    if(phase is not null && _session.PrivateOriginalMapArrival!.Locomotion.Tick==12) {
+                        await Capture(phase+"-before-settlement"); preSettlementPixels=lastPixels;
+                    }
                 }
                 Require(!_session.PrivateOriginalMapArrival!.Locomotion.IsMoving,"Movement is settled before the next input");
-                await Capture(moved?"move-settled":"terrain-blocked-facing");
+                await Capture(phase is not null ? phase+"-settled" : moved?"move-settled":"terrain-blocked-facing");
+                if(preSettlementPixels is not null) {
+                    var action=_session.PrivateOriginalMapArrival!.LastRoofAction!;
+                    bool changes=action.Action.Outcome is MapBlockCopyActionOutcome.Restored or MapBlockCopyActionOutcome.Activated;
+                    Require(changes!=lastPixels!["roof"].SequenceEqual(preSettlementPixels["roof"]),
+                        "Settlement alone changes the sampled visible roof pixels on restore/activation");
+                    Require(lastPixels["door"].SequenceEqual(preSettlementPixels["door"]),"Roof settlement never recloses the doorway art");
+                }
             }
             operations.Add(new {key=key.ToString(),direction,destination,moved,unsupported,
                 beforeOrdinal=before.Arrival!.InputOrdinal,afterOrdinal=_session.PrivateOriginalMapArrival!.InputOrdinal,
-                apiTicks=expectedTicks.Select(t=>t.Arrival!.Locomotion).ToArray()});
+                phase,apiTicks=expectedTicks.Select(t=>new {t.Arrival!.Locomotion,t.Arrival.InputOrdinal,
+                    roof=t.Arrival.LastRoofAction?.Action.Outcome,roofInput=t.Arrival.LastRoofAction?.InputOrdinal,
+                    activeRoof=(t.Arrival.RoofLifecycle as MapBlockCopyLifecycleActiveState)?.RecordOrdinal,
+                    doorInput=t.Arrival.DoorCopy?.Input.Ordinal}).ToArray()});
         }
         await Direction(Key.W,ExplorationDirection.North,new(32,13),false);
         await Direction(Key.A,ExplorationDirection.West,new(31,13),true,detailed:true);
@@ -1792,8 +1829,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         await Direction(Key.D,ExplorationDirection.East,new(31,12),false);
         await Direction(Key.S,ExplorationDirection.South,new(31,13),true);
         await Direction(Key.S,ExplorationDirection.South,new(31,14),true);
+        await Direction(Key.S,ExplorationDirection.South,new(31,14),false,"return.region");
         await Direction(Key.D,ExplorationDirection.East,new(32,14),true);
-        await Direction(Key.S,ExplorationDirection.South,new(32,14),false,"return.region");
         await Direction(Key.W,ExplorationDirection.North,new(32,14),false,"return.followers");
         await Direction(Key.D,ExplorationDirection.East,new(33,14),true);
         await Direction(Key.W,ExplorationDirection.North,new(33,13),true);
@@ -1821,14 +1858,50 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         }
         Require(_session.EnterPrivateOriginalBattle01Exploration(retained) is PrivateOriginalBattle01ExplorationEntryRejected,"Entry cannot repeat");
         await Capture("idle-history-and-followers-retained");
+        Require(nextFrame==72,"The existing pocket prefix retains71 captures before the doorway continuation");
+        await Direction(Key.S,ExplorationDirection.South,new(31,14),true);
+        await Direction(Key.D,ExplorationDirection.East,new(32,14),true);
+        await Capture("door-before-copy");
+        await Direction(Key.S,ExplorationDirection.South,new(32,15),true,detailed:true,phase:"door-copy");
+        var firstDoor=_session.PrivateOriginalMapArrival!.DoorCopy;
+        await Direction(Key.A,ExplorationDirection.West,new(32,15),false,"return.region");
+        await Direction(Key.D,ExplorationDirection.East,new(32,15),false,"return.region");
+        await Direction(Key.S,ExplorationDirection.South,new(32,16),true,detailed:true,phase:"outside-roof-restore");
+        await Direction(Key.A,ExplorationDirection.West,new(32,16),false,"return.region");
+        await Direction(Key.D,ExplorationDirection.East,new(32,16),false,"return.region");
+        await Direction(Key.S,ExplorationDirection.South,new(32,16),false,"return.region");
+        var outside=_session.PrivateOriginalBattle01!;
+        foreach(var key in interactionKeys) {
+            await PressBattleKey(key); Require(ReferenceEquals(outside,_session.PrivateOriginalBattle01),"Outside F/G remain unsupported");
+            await Capture("outside-interaction-"+key.ToString().ToLowerInvariant()+"-unsupported");
+        }
+        await Direction(Key.W,ExplorationDirection.North,new(32,15),true,detailed:true,phase:"reentry-roof-clear");
+        await Direction(Key.W,ExplorationDirection.North,new(32,14),true);
+        for(int cycle=0;cycle<2;cycle++) {
+            await Direction(Key.S,ExplorationDirection.South,new(32,15),true);
+            await Direction(Key.S,ExplorationDirection.South,new(32,16),true);
+            await Direction(Key.W,ExplorationDirection.North,new(32,15),true);
+            await Direction(Key.W,ExplorationDirection.North,new(32,14),true);
+            Require(ReferenceEquals(firstDoor,_session.PrivateOriginalMapArrival!.DoorCopy),"Repeated cycles retain the one door-copy receipt");
+        }
+        await Direction(Key.W,ExplorationDirection.North,new(32,14),false,"return.followers");
+        var final=_session.PrivateOriginalBattle01!;
+        foreach(var key in closedKeys) await PressBattleKey(key);
+        for(int frame=0;frame<60;frame++) {
+            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame); _root._PhysicsProcess(1.0/60.0); callbacks++; idleCallbacks++;
+            Require(ReferenceEquals(final,_session.PrivateOriginalBattle01),"Idle/closed keys cannot trigger another roof action or reset the cycle");
+        }
+        Require(_session.EnterPrivateOriginalBattle01Exploration(final) is PrivateOriginalBattle01ExplorationEntryRejected,"Post-cycle entry cannot repeat");
+        await Capture("doorway-cycle-idle-history-retained");
         _root.SetPhysicsProcess(true);
         return new {status="Pass",operations,actualPhysicsCallbacks=callbacks,idlePhysicsCallbacks=idleCallbacks,
             unsupportedInteractionKeys=interactionKeys.Select(k=>k.ToString()).ToArray(),
             closedGameplayKeys=closedKeys.Select(k=>k.ToString()).ToArray(),entry=entered.Arrival,
-            current=_session.PrivateOriginalMapArrival,followersExecuted=false,eventsExecuted=false};
+            current=_session.PrivateOriginalMapArrival,followersExecuted=false,originalScriptsExecuted=false,
+            controlledDoorCopy=true,controlledRoofSettlement=true};
     }
 
-    private async Task CaptureReturnMovement(string name)
+    private async Task<Dictionary<string,byte[]>> CaptureReturnMovement(string name)
     {
         var arrival=_session.PrivateOriginalMapArrival!;var view=_presenter.BaseProjection!;
         var viewport=Field<PrivateOriginalMapBaseViewport>(_presenter,"_baseViewport");
@@ -1842,7 +1915,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Both frozen followers keep the same semantic position and Chester's dead marker");
         Require(status.Text.Contains($"Player 0 Bowie: ({arrival.PlayerPosition.X},{arrival.PlayerPosition.Y})") &&
             status.Text.Contains("Follower 1 Sarah: (32,13)/UP") && status.Text.Contains("DEAD / BLUE_FLAME") &&
-            status.Text.Contains("Original post-script positions: Unknown"),"Status separates current player, frozen declarations and Unknowns");
+            status.Text.Contains("original post-script positions Unknown") &&
+            status.Text.Contains(arrival.RoofLifecycle is MapBlockCopyLifecycleActiveState ? "roof open" : "roof restored") &&
+            status.Text.Contains(arrival.DoorCopy is null ? "Door closed" : "Door open"),
+            "Status separates the live door/roof, current player, frozen declarations and Unknowns");
         await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
         using var image=GetViewport().GetTexture().GetImage();
         Require(image.SavePng(Path.Combine(_output,name+".png"))==Error.Ok,"Return movement PNG");
@@ -1859,9 +1935,29 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             Require(actual.IsEqualApprox(expected),"Visible church texel matches the current moving-camera projection");samples++;
         }
         Require(samples>0,"Church background remains visibly sampled");
+        var worldPixels=new Dictionary<string,byte[]>(); var worldSampleCounts=new Dictionary<string,int>();
+        foreach(var (label,worldX,worldY) in new[]{("door",32,15),("roof",30,14)}) {
+            var rgba=new List<byte>(); int visible=0;
+            for(int dy=0;dy<24;dy++) for(int dx=0;dx<24;dx++) {
+                int x=worldX*24+dx-view.Camera!.TopLeftPixelX,y=worldY*24+dy-view.Camera.TopLeftPixelY;
+                Require(x>=0 && y>=0 && x<288 && y<168,"Named doorway/roof world tile remains in the viewport");
+                int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
+                rgba.AddRange(view.RgbaBytes.Skip(at).Take(4));
+                var point=new Vector2(x,y);
+                if(playerRect.HasPoint(point) || glyphs.Any(g=>g.DestinationRect.HasPoint(point)))continue;
+                var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
+                var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+                Require(actual.IsEqualApprox(expected),"Named door/roof world pixel matches actual native rendering"); visible++;
+            }
+            Require(visible>0,"The named door/roof has uncovered visible pixels");
+            worldPixels.Add(label,rgba.ToArray()); worldSampleCounts.Add(label,visible);
+        }
         _frames.Add(new {name,map=arrival.Map.Value,phase="ReturnMovement",status=status.Text,
             position=arrival.PlayerPosition,facing=arrival.PlayerOpaqueFacing,arrival.InputOrdinal,arrival.Locomotion,
-            glyphs,camera=view.Camera,playerRect,samples,width=image.GetWidth(),height=image.GetHeight()});
+            glyphs,camera=view.Camera,playerRect,samples,worldSampleCounts,
+            doorInput=arrival.DoorCopy?.Input.Ordinal,roofInput=arrival.LastRoofAction?.InputOrdinal,
+            roofAction=arrival.LastRoofAction?.Action.Outcome,width=image.GetWidth(),height=image.GetHeight()});
+        return worldPixels;
     }
 
     private async Task PressBattleKey(Key key)

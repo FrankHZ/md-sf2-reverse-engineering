@@ -22,6 +22,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Same(load.Runtime.AreaCatalog.Records[0], load.Area);
         Assert.Equal(10, load.Roofs.Count); Assert.Equal(2, load.FlagCopies.Count); Assert.Single(load.Chests);
         Assert.Equal(new OriginalMapReturnRoofRow(8,32,15,255,255,5,6,30,41), load.SelectRoof(new(32,13)));
+        Assert.Equal(new OriginalMapStepCopyIdentity(ContentProfile.PrivateLocal,new("map3"),"Map03s4_StepEvents",4),load.ChurchDoor.Identity);
+        Assert.Equal(new MapPosition(32,15),load.ChurchDoor.Trigger);
+        Assert.Equal(new WorkingMapBlockCopy(62,0,32,15,1,1),load.ChurchDoor.Copy);
+        Assert.Equal(10,load.RoofActions.Records.Count);
+        Assert.Equal(new MapCellCoordinate(32,15),load.RoofActions.Records[7].Trigger);
         Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(null, definition.RuntimeCatalog));
         var other = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
         Assert.False(OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(load, other.RuntimeCatalog));
@@ -30,6 +35,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     [Theory]
     [InlineData("roof8")] [InlineData("roof6")] [InlineData("roof-count")]
     [InlineData("flag")] [InlineData("chest")] [InlineData("missing-chest")]
+    [InlineData("door-trigger")] [InlineData("door-source")] [InlineData("door-destination")]
     public void ReturnEntryResourceDriftRejectsTheCompleteImport(string mutation)
     {
         var doc = SampleDocument();
@@ -41,6 +47,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             case "flag": ResourceArray(doc,"flagEventTables")[0]!["records"]![0]!["flag"] = 507; break;
             case "chest": ResourceArray(doc,"itemTables")[0]!["records"]![0]!["item"] = 1; break;
             case "missing-chest": ResourceArray(doc,"itemTables")[0]!.AsObject().Remove("records"); break;
+            case "door-trigger": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["trigger"]!["x"] = 31; break;
+            case "door-source": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["source"]!["x"] = 61; break;
+            case "door-destination": ResourceArray(doc,"stepEventTables")[0]!["records"]![3]!["destination"]!["y"] = 16; break;
         }
         Assert.IsType<OriginalMapImportRejected>(Admit(doc));
     }

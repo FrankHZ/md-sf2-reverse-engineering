@@ -26,8 +26,17 @@ public static class OriginalMapRuntimeAdmission
             definition.ChestResource == "Map03s7_ChestItems" &&
             definition.Chests.SequenceEqual(new OriginalMapReturnChest[] { new(6, 18, 220, 127) }) &&
             definition.RoofResource == "Map03s5_RoofEvents" && definition.Roofs.SequenceEqual(roofs) &&
-            definition.SelectRoof(new(32, 13)).Ordinal == 8;
+            definition.SelectRoof(new(32, 13)).Ordinal == 8 &&
+            HasExactAcceptedChurchDoorStepCopy(definition.ChurchDoor) &&
+            runtime.WorkingLayout[32, 15] == 0xC48F && runtime.WorkingLayout[62, 0] == 0x080E &&
+            runtime.WorkingLayout[32, 16] == 0x0C57;
     }
+
+    internal static bool HasExactAcceptedChurchDoorStepCopy(OriginalMapStepCopyDefinition? definition) =>
+        definition is not null && definition.Identity == new OriginalMapStepCopyIdentity(
+            ContentProfile.PrivateLocal, new("map3"), "Map03s4_StepEvents", 4) &&
+        definition.Trigger == new MapPosition(32, 15) &&
+        definition.Copy == new WorkingMapBlockCopy(62, 0, 32, 15, 1, 1);
 
     public const string PackageId = "sf2-canonical-map-import-v1";
     public const int SchemaVersion = 1;

@@ -16,7 +16,12 @@ public sealed class PrivateOriginalBattle01ExplorationEntryTests
     [InlineData(33, 12, ExplorationDirection.West, 33, 12, "wall")]
     [InlineData(31, 13, ExplorationDirection.East, 31, 13, "return.followers")]
     [InlineData(32, 14, ExplorationDirection.North, 32, 14, "return.followers")]
-    [InlineData(32, 14, ExplorationDirection.South, 32, 14, "return.region")]
+    [InlineData(32, 14, ExplorationDirection.South, 32, 15, "move")]
+    [InlineData(32, 15, ExplorationDirection.South, 32, 16, "move")]
+    [InlineData(31, 14, ExplorationDirection.South, 31, 14, "return.region")]
+    [InlineData(32, 15, ExplorationDirection.West, 32, 15, "return.region")]
+    [InlineData(32, 16, ExplorationDirection.East, 32, 16, "return.region")]
+    [InlineData(32, 16, ExplorationDirection.South, 32, 16, "return.region")]
     [InlineData(31, 13, ExplorationDirection.West, 31, 13, "return.region")]
     [InlineData(33, 13, ExplorationDirection.East, 33, 13, "return.region")]
     [InlineData(31, 12, ExplorationDirection.North, 31, 12, "return.region")]
@@ -25,11 +30,13 @@ public sealed class PrivateOriginalBattle01ExplorationEntryTests
     {
         var words = new ushort[64 * 64];
         words[12 * 64 + 32] = 0xE8DC;
-        // This blocked threshold must still be refused before terrain resolution.
         words[15 * 64 + 32] = 0xC48F;
+        words[62] = 0x080E;
+        words[16 * 64 + 32] = 0x0C57;
         var layout = new WorkingMapLayout(words);
         var traversal = new OriginalMapTraversal([new(0, 0, 50, 31)]);
-        var (result, unsupported) = GameSession.EvaluateReturnMovement(traversal, layout, new(x, y), direction);
+        var (result, unsupported, after) = GameSession.EvaluateReturnMovement(traversal, layout, new(x, y), direction,
+            ChurchDoor(), 255);
         if (outcome.StartsWith("return.", StringComparison.Ordinal))
         {
             Assert.Null(result); Assert.Equal(outcome, unsupported!.Field);
@@ -45,6 +52,46 @@ public sealed class PrivateOriginalBattle01ExplorationEntryTests
             if (outcome == "wall") Assert.Equal((ushort)0xE8DC, result.DestinationWord);
         }
         Assert.Equal(words, layout.Words);
+        if (x == 32 && y == 14 && direction == ExplorationDirection.South)
+        {
+            Assert.Equal((ushort)0x080E, result!.DestinationWord);
+            Assert.Equal(1, layout.Words.Zip(after.Words).Count(pair => pair.First != pair.Second));
+        }
+        else Assert.Same(layout, after);
+    }
+
+    private static OriginalMapStepCopyDefinition ChurchDoor() => new(
+        new(ContentProfile.PrivateLocal, new("map3"), "Map03s4_StepEvents", 4),
+        new(32, 15), new(62, 0, 32, 15, 1, 1));
+
+    [Theory]
+    [InlineData("battle")] [InlineData("binding")] [InlineData("ordinal")]
+    [InlineData("warp")] [InlineData("zone")] [InlineData("blocked")] [InlineData("wrong-show")]
+    public void DoorCopyRejectsForeignModeBindingAndPostCopyWordsWithoutChangingInput(string mutation)
+    {
+        var words = new ushort[4096]; words[32 + 15 * 64] = 0xC48F;
+        words[62] = mutation switch { "warp" => 0x100E, "zone" => 0x140E,
+            "blocked" => 0xC80E, "wrong-show" => 0x080F, _ => 0x080E };
+        var layout = new WorkingMapLayout(words); var door = ChurchDoor();
+        if (mutation == "ordinal") door = new(new(ContentProfile.PrivateLocal, new("map3"),
+            "Map03s4_StepEvents", 1), door.Trigger, door.Copy);
+        Assert.Equal("return.door", Assert.Throws<ArgumentException>(() => GameSession.EvaluateReturnMovement(
+            new([new(0, 0, 50, 31)]), layout, new(32, 14), ExplorationDirection.South,
+            mutation == "binding" ? null : door, mutation == "battle" ? (byte)0 : (byte)255)).ParamName);
+        Assert.Equal(words, layout.Words);
+    }
+
+    [Fact]
+    public void OpenDoorAndOutsideMarkersTraverseWithoutAnotherCopy()
+    {
+        var words = new ushort[4096]; words[32 + 15 * 64] = 0x080E; words[32 + 16 * 64] = 0x0C57;
+        var layout = new WorkingMapLayout(words); var traversal = new OriginalMapTraversal([new(0, 0, 50, 31)]);
+        var (result, unsupported, after) = GameSession.EvaluateReturnMovement(traversal, layout,
+            new(32, 16), ExplorationDirection.North, ChurchDoor(), 255);
+        Assert.Null(unsupported); Assert.Equal(new MapPosition(32, 15), result!.Position); Assert.Same(layout, after);
+        var (refused, boundary, unchanged) = GameSession.EvaluateReturnMovement(traversal, layout,
+            new(32, 16), ExplorationDirection.South, null, 0);
+        Assert.Null(refused); Assert.Equal("return.region", boundary!.Field); Assert.Same(layout, unchanged);
     }
 
     [Fact]
