@@ -1597,7 +1597,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
             exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
-            entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,directPhysicsCallbacks=61,frames=_frames
+            entryConfirmations=1,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 
@@ -1719,7 +1719,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         string battleBefore = JsonSerializer.Serialize(entered.Battle,json);
         string partyBefore = JsonSerializer.Serialize(entry.Party,json);
         var layoutBefore = entry.WorkingLayout.Words.ToArray();
-        var operations = new List<object>(); int nextFrame=46, callbacks=0;
+        var operations = new List<object>(); int nextFrame=46, callbacks=0, idleCallbacks=0;
         // Retain real physical-key polling. Schedule each production physics callback explicitly
         // on a physics frame so initial/mid/settled captures cannot skip or double-advance a tick.
         _root.SetPhysicsProcess(false);
@@ -1807,20 +1807,24 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         await Direction(Key.W,ExplorationDirection.North,new(31,12),true);
         await Direction(Key.S,ExplorationDirection.South,new(31,13),true);
         var retained=_session.PrivateOriginalBattle01!;
-        foreach(var key in new[]{Key.F,Key.G}) {
+        var interactionKeys = new[]{Key.F,Key.G};
+        foreach(var key in interactionKeys) {
             await PressBattleKey(key); Require(ReferenceEquals(retained,_session.PrivateOriginalBattle01),"Interaction cannot dispatch old handlers");
             Require(Field<Label>(_presenter,"_status").Text.Contains("Unsupported: interactions"),"Interaction refusal is explicit");
             await Capture("interaction-"+key.ToString().ToLowerInvariant()+"-unsupported");
         }
-        foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.I,Key.J,Key.K,Key.L,Key.E,Key.Enter,Key.Escape}) await PressBattleKey(key);
+        var closedKeys = new[]{Key.N,Key.Space,Key.Backspace,Key.I,Key.J,Key.K,Key.L,Key.E,Key.Enter,Key.Escape};
+        foreach(var key in closedKeys) await PressBattleKey(key);
         for(int frame=0;frame<60;frame++) {
-            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame); _root._PhysicsProcess(1.0/60.0); callbacks++;
+            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame); _root._PhysicsProcess(1.0/60.0); callbacks++; idleCallbacks++;
             Require(ReferenceEquals(retained,_session.PrivateOriginalBattle01),"Idle time and closed gameplay keys do not mutate the visit");
         }
         Require(_session.EnterPrivateOriginalBattle01Exploration(retained) is PrivateOriginalBattle01ExplorationEntryRejected,"Entry cannot repeat");
         await Capture("idle-history-and-followers-retained");
         _root.SetPhysicsProcess(true);
-        return new {status="Pass",operations,actualPhysicsCallbacks=callbacks,entry=entered.Arrival,
+        return new {status="Pass",operations,actualPhysicsCallbacks=callbacks,idlePhysicsCallbacks=idleCallbacks,
+            unsupportedInteractionKeys=interactionKeys.Select(k=>k.ToString()).ToArray(),
+            closedGameplayKeys=closedKeys.Select(k=>k.ToString()).ToArray(),entry=entered.Arrival,
             current=_session.PrivateOriginalMapArrival,followersExecuted=false,eventsExecuted=false};
     }
 
