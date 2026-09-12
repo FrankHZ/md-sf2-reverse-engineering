@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from sf2tool import remake_godot
 from sf2tool.remake_godot import (
     ArtifactSpec,
     ProcessReceipt,
@@ -224,8 +225,8 @@ def test_bounded_process_records_success_without_shell(tmp_path: Path) -> None:
     assert receipt.cleanup_status == "clean"
 
 
-def test_bounded_timeout_reaps_owned_descendant_and_preserves_unrelated_process(
-    tmp_path: Path,
+def _assert_timeout_cleanup(
+    tmp_path: Path, *, expected_cleanup: str = "clean"
 ) -> None:
     owned_pid_path = tmp_path / "owned-timeout.pid"
     unrelated = subprocess.Popen(
@@ -247,11 +248,11 @@ def test_bounded_timeout_reaps_owned_descendant_and_preserves_unrelated_process(
 
         owned_pid = int(owned_pid_path.read_text(encoding="utf-8"))
         assert receipt.timed_out
-        assert receipt.cleanup_status == "clean"
         assert "output-before-cleanup" in receipt.stdout_tail
         assert not receipt.passed
         assert not _pid_is_running(owned_pid)
         assert _pid_is_running(unrelated.pid)
+        assert receipt.cleanup_status == expected_cleanup, receipt.as_dict()
     finally:
         unrelated.terminate()
         try:
@@ -259,6 +260,77 @@ def test_bounded_timeout_reaps_owned_descendant_and_preserves_unrelated_process(
         except subprocess.TimeoutExpired:
             unrelated.kill()
             unrelated.wait(timeout=5)
+
+
+def test_bounded_timeout_reaps_owned_descendant_and_preserves_unrelated_process(
+    tmp_path: Path,
+) -> None:
+    _assert_timeout_cleanup(tmp_path)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows process handle observation")
+@pytest.mark.parametrize(
+    ("observation", "expected_cleanup"),
+    [("eventual-exit", "clean"), ("still-pending", "survivor"), ("wait-failed", "survivor")],
+)
+def test_bounded_timeout_uses_confirmed_exit_after_termination_race(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    observation: str,
+    expected_cleanup: str,
+) -> None:
+    original_cleanup = remake_godot._WindowsJobObject.cleanup
+    observed_apis = []
+
+    class PendingTerminationApi:
+        def __init__(self, kernel32, handle):
+            self.kernel32 = kernel32
+            self.handle = handle
+            self.pending_polls = 2
+            self.termination_requests = 0
+
+        def __getattr__(self, name):
+            return getattr(self.kernel32, name)
+
+        def WaitForSingleObject(self, handle, milliseconds):
+            if handle == self.handle:
+                if observation == "still-pending":
+                    return remake_godot._WAIT_TIMEOUT
+                if observation == "wait-failed":
+                    ctypes.set_last_error(6)
+                    return 0xFFFFFFFF
+                if self.pending_polls:
+                    self.pending_polls -= 1
+                    return remake_godot._WAIT_TIMEOUT
+            return self.kernel32.WaitForSingleObject(handle, milliseconds)
+
+        def TerminateProcess(self, handle, exit_code):
+            result = self.kernel32.TerminateProcess(handle, exit_code)
+            if handle == self.handle:
+                self.termination_requests += 1
+                # Model the observed ERROR_ACCESS_DENIED while termination is pending.
+                # The real request still kills only the original scenario's owned child.
+                ctypes.set_last_error(5)
+                return 0
+            return result
+
+    def cleanup(job, process, timeout, reap_timeout):
+        job._tracker_stop.set()
+        job._tracker.join(timeout=timeout)
+        assert not job._tracker.is_alive()
+        job._discover_descendants()
+        child_pid = int((tmp_path / "owned-timeout.pid").read_text(encoding="utf-8"))
+        api = PendingTerminationApi(job._kernel32, job._descendant_handles[child_pid])
+        job._kernel32 = api
+        observed_apis.append(api)
+        return original_cleanup(job, process, timeout, reap_timeout)
+
+    monkeypatch.setattr(remake_godot._WindowsJobObject, "cleanup", cleanup)
+    _assert_timeout_cleanup(tmp_path, expected_cleanup=expected_cleanup)
+    assert len(observed_apis) == 1
+    if observation == "eventual-exit":
+        assert observed_apis[0].pending_polls == 0
+        assert observed_apis[0].termination_requests > 0
 
 
 def test_bounded_failure_reaps_owned_descendant(tmp_path: Path) -> None:
