@@ -43,11 +43,24 @@ public sealed partial class Map3Root
     private PrivateLocalHudPreview? _privateHudPreview;
     private bool _privateBattleBridgeEnabled;
 
-    private void ProjectGransealArrival(PrivateOriginalMapReturnArrivalSnapshot arrival)
+    private void ProjectGransealArrival(PrivateOriginalMapReturnArrivalSnapshot arrival, string? outcome = null)
     {
         _privateBattle01Presenter?.Hide();
-        _privatePresenter!.Project(arrival);
+        _privatePresenter!.Project(arrival, outcome);
     }
+
+    private void PollGransealMovement()
+    {
+        if (_inputAdapter?.PollPrivateOriginalMapMovement() is ExplorationDirection direction)
+            ProjectGransealMovementResult(_session!.BeginPrivateOriginalMapReturnMovement(
+                _session.PrivateOriginalBattle01, new(direction)));
+    }
+
+    private void ProjectGransealMovementResult(PrivateOriginalMapReturnMovementResult result) =>
+        ProjectGransealArrival(_session!.PrivateOriginalMapArrival!, PrivateMap3PresentationPlan.ReturnMovementOutcome(result));
+
+    private void RefuseGransealInteraction() => ProjectGransealMovementResult(
+        _session!.RefusePrivateOriginalMapReturnInteraction(_session.PrivateOriginalBattle01));
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
@@ -654,6 +667,12 @@ public sealed partial class Map3Root
     public override void _PhysicsProcess(double delta)
     {
         _ = delta;
+        if (_runtimeProfile == Map3RuntimeProfile.PrivateLocal && _session?.PrivateOriginalMapArrival is { } arrival)
+        {
+            if (arrival.Locomotion.IsMoving)
+                ProjectGransealMovementResult(_session.AdvancePrivateOriginalMapReturnMovement(_session.PrivateOriginalBattle01));
+            return;
+        }
         if (_runtimeProfile != Map3RuntimeProfile.PrivateLocal ||
             _session is null ||
             _session.PrivateOriginalBattle01 is not null ||
@@ -697,6 +716,7 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateInteractionRequest()
     {
+        if (_session?.PrivateOriginalMapArrival is not null) { RefuseGransealInteraction(); return; }
         if (_session?.PrivateOriginalBattle01Admission is not null) return;
         if (_session is null)
         {
@@ -773,6 +793,7 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateEntity142Acknowledgement()
     {
+        if (_session?.PrivateOriginalMapArrival is not null) { RefuseGransealInteraction(); return; }
         if (_session?.PrivateOriginalMapSnapshot.PendingEntity142 is not
             PrivateOriginalMapEntity142Request pending)
         {

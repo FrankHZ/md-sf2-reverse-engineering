@@ -1467,7 +1467,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(8,roofState.RecordOrdinal); Assert.Equal(30,roofState.SavedWords.Count);
         Assert.Equal(Enumerable.Range(41,6).SelectMany(y=>Enumerable.Range(30,5).Select(x=>pristine[x,y])),roofState.SavedWords);
         Assert.Equal(new MapPosition(32,13),arrival.PlayerPosition); Assert.Equal((byte)1,arrival.PlayerOpaqueFacing);
-        Assert.False(arrival.Locomotion.IsMoving); Assert.False(arrival.ExplorationInputAvailable);
+        Assert.False(arrival.Locomotion.IsMoving); Assert.True(arrival.ExplorationInputAvailable);
         Assert.Equal(20,arrival.Entities.Count); Assert.Equal(20,arrival.Entities.Select(e=>e.Id).Distinct().Count());
         foreach(int id in new[]{0,1,2}) {
             var e=arrival.Entities.Single(e=>e.Id==id);
@@ -1498,6 +1498,164 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Throws<InvalidOperationException>(()=>session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
         Assert.Throws<InvalidOperationException>(()=>session.PrivateOriginalMapSnapshot);
         Assert.Same(after,session.PrivateOriginalBattle01); Assert.Equal(frozen,JsonSerializer.Serialize(after.Battle,json));
+        VerifyRealReturnMovement(session, after, json, frozen);
+    }
+
+    private static void VerifyRealReturnMovement(GameSession session, PrivateOriginalBattle01SessionSnapshot entered,
+        JsonSerializerOptions json, string battleBefore)
+    {
+        var entry = entered.Arrival!;
+        var layoutBefore = entry.WorkingLayout.Words.ToArray();
+        string partyBefore = JsonSerializer.Serialize(entry.Party, json);
+        ushort[] pocket = [0x00DB,0xE8DC,0x00DD,0x0061,0x0062,0x0063,0x0076,0x0077,0x0078];
+        Assert.Equal(pocket, Enumerable.Range(12,3).SelectMany(y => Enumerable.Range(31,3).Select(x => entry.WorkingLayout[x,y])));
+        // Read the admitted complete tables, including wildcard coordinates, rather than
+        // assuming that unimplemented handlers imply an event-free destination.
+        var canonical = JsonNode.Parse(File.ReadAllText(Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT")!))!;
+        var map = canonical["maps"]!.AsArray().Single(m => m!["id"]!.GetValue<int>() == 3)!;
+        foreach (var (collection, reference) in new[] { ("stepEventTables","stepEventTable"),
+            ("roofEventTables","roofEventTable"), ("warpEventTables","warpEventTable") })
+        {
+            string id = map["references"]![reference]!.GetValue<string>();
+            var records = canonical["resources"]![collection]!.AsArray().Single(r => r!["id"]!.GetValue<string>() == id)!["records"]!.AsArray();
+            Assert.DoesNotContain(records, record => Enumerable.Range(12,3).Any(y => Enumerable.Range(31,3).Any(x =>
+                (record!["trigger"]!["x"]!.GetValue<int>() is 255 || record["trigger"]!["x"]!.GetValue<int>() == x) &&
+                (record["trigger"]!["y"]!.GetValue<int>() is 255 || record["trigger"]!["y"]!.GetValue<int>() == y))));
+        }
+
+        var zone = canonical["resources"]!["zoneEventHandlers"]!.AsArray()
+            .Single(r => r!["id"]!.GetValue<string>() == "ms_map3_ZoneEvents")!["records"]!.AsArray();
+        var specificZones = zone.Where(r => r!["kind"]!.GetValue<string>() == "specific").ToArray();
+        Assert.Equal(9, specificZones.Length);
+        Assert.DoesNotContain(specificZones, record => Enumerable.Range(12,3).Any(y => Enumerable.Range(31,3).Any(x =>
+            (record!["x"]!.GetValue<int>() is 255 || record["x"]!.GetValue<int>() == x) &&
+            (record["y"]!.GetValue<int>() is 255 || record["y"]!.GetValue<int>() == y))));
+        // The accepted source inspection identifies this exact default target as a direct rts.
+        Assert.Equal(331496, zone.Single(r => r!["kind"]!.GetValue<string>() == "default")!["resolvedTargetAddress"]!.GetValue<int>());
+
+        void Invariant()
+        {
+            var current = session.PrivateOriginalBattle01!; var arrival = current.Arrival!;
+            Assert.Same(entered.Battle, current.Battle); Assert.Equal(battleBefore, JsonSerializer.Serialize(current.Battle,json));
+            Assert.Same(entered.Preparation,current.Preparation); Assert.Same(entered.DefeatReturn,current.DefeatReturn);
+            Assert.Same(entered.SourceSnapshot,current.SourceSnapshot); Assert.Same(entered.SourceLocomotion,current.SourceLocomotion);
+            Assert.Same(entered.SourceBridge,current.SourceBridge); Assert.Same(entry.Before,arrival.Before);
+            Assert.Same(entry.Party,arrival.Party); Assert.Equal(partyBefore,JsonSerializer.Serialize(arrival.Party,json));
+            Assert.Same(entry.Flags,arrival.Flags); Assert.Same(entry.LoadDefinition,arrival.LoadDefinition);
+            Assert.Same(entry.RoofClear,arrival.RoofClear); Assert.Same(entry.WorkingLayout,arrival.WorkingLayout);
+            Assert.Equal(layoutBefore,arrival.WorkingLayout.Words); Assert.Same(entry.CurrentAreaDefinition,arrival.CurrentAreaDefinition);
+            foreach(var entity in entry.Entities.Where(e => e.Id != 0))
+                Assert.Same(entity,arrival.Entities.Single(e => e.Id == entity.Id));
+            var player = arrival.Entities.Single(e => e.Id == 0);
+            Assert.Equal(new MapPosition(32,13),player.DeclarationPosition);
+            Assert.Equal(arrival.PlayerPosition,player.Position); Assert.Equal(player.Position,player.TargetPosition);
+            Assert.Equal(arrival.PlayerOpaqueFacing,player.Facing);
+            if(arrival.InputOrdinal > 0) {
+                Assert.Same(entry,arrival.EntryBeforeMovement); Assert.True(player.IsLivePlayerPose);
+                Assert.Null(player.VelocityXUnits); Assert.Null(player.TravelYUnits);
+            }
+            Assert.Equal(GameFlowStage.Exploration,session.PrivateOriginalFlowStage);
+            Assert.Equal(new MapId("map3"),session.PrivateOriginalCurrentMap);
+        }
+
+        void Refused(ExplorationDirection direction, string field)
+        {
+            var before = session.PrivateOriginalBattle01!;
+            Assert.Equal(field,Assert.IsType<PrivateOriginalMapReturnMovementUnsupported>(
+                session.BeginPrivateOriginalMapReturnMovement(before,new(direction))).Diagnostic.Field);
+            Assert.Same(before,session.PrivateOriginalBattle01); Invariant();
+        }
+
+        void Input(ExplorationDirection direction, MapPosition destination, bool moves, bool firstWest = false)
+        {
+            var before = session.PrivateOriginalBattle01!; long ordinal = before.Arrival!.InputOrdinal;
+            var applied = Assert.IsType<PrivateOriginalMapReturnMovementApplied>(
+                session.BeginPrivateOriginalMapReturnMovement(before,new(direction))).Snapshot;
+            Assert.Equal(ordinal+1,applied.Arrival!.InputOrdinal); Assert.Equal(destination,applied.Arrival.PlayerPosition);
+            Assert.Equal(direction,applied.Arrival.Locomotion.Direction); Assert.Equal(1,applied.Arrival.Locomotion.Tick);
+            Assert.Equal(moves,applied.Arrival.Locomotion.IsMoving);
+            Assert.Equal(moves ? OriginalMapTraversalOutcome.Moved : OriginalMapTraversalOutcome.BlockedByCollision,
+                applied.Arrival.LastInput!.Traversal.Outcome);
+            Assert.Equal("snapshot",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                session.BeginPrivateOriginalMapReturnMovement(before,new(direction))).Diagnostic.Field);
+            Assert.Same(applied,session.PrivateOriginalBattle01); Invariant();
+            if(!moves) {
+                Assert.Equal("return.idle",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                    session.AdvancePrivateOriginalMapReturnMovement(applied)).Diagnostic.Field);
+                Assert.Same(applied,session.PrivateOriginalBattle01); return;
+            }
+            Assert.Equal("return.busy",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                session.BeginPrivateOriginalMapReturnMovement(applied,new(direction))).Diagnostic.Field);
+            Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.RefusePrivateOriginalMapReturnInteraction(applied));
+            var receipt = applied.Arrival.LastInput;
+            if(firstWest) Assert.Equal(2,applied.Arrival.Locomotion.StoredCounter);
+            for(int tick=2;tick<=13;tick++) {
+                var previous = session.PrivateOriginalBattle01!;
+                var advanced = Assert.IsType<PrivateOriginalMapReturnMovementApplied>(session.AdvancePrivateOriginalMapReturnMovement(previous)).Snapshot;
+                Assert.Same(receipt,advanced.Arrival!.LastInput); Assert.Equal(ordinal+1,advanced.Arrival.InputOrdinal);
+                Assert.Equal(tick,advanced.Arrival.Locomotion.Tick); Assert.Equal(tick<13,advanced.Arrival.Locomotion.IsMoving);
+                if(firstWest) Assert.Equal(tick*2,advanced.Arrival.Locomotion.StoredCounter);
+                Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(previous));
+                Assert.Same(advanced,session.PrivateOriginalBattle01); Invariant();
+            }
+            Assert.True(session.PrivateOriginalMapArrival!.ExplorationInputAvailable);
+        }
+
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(null,new(ExplorationDirection.West)));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.BeginPrivateOriginalMapReturnMovement(entered,null));
+        var foreign = (PrivateOriginalBattle01SessionSnapshot)typeof(object)
+            .GetMethod("MemberwiseClone",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entered,null)!;
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+            session.BeginPrivateOriginalMapReturnMovement(foreign,new(ExplorationDirection.West))).Diagnostic.Field);
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.AdvancePrivateOriginalMapReturnMovement(foreign));
+        Assert.IsType<PrivateOriginalMapReturnMovementRejected>(session.RefusePrivateOriginalMapReturnInteraction(foreign));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MoveExplorationCommand((ExplorationDirection)255));
+        Assert.Same(entered,session.PrivateOriginalBattle01);
+        Input(ExplorationDirection.North,new(32,13),false);
+        Assert.Equal(1,session.PrivateOriginalMapArrival!.Locomotion.StoredCounter);
+        Input(ExplorationDirection.West,new(31,13),true,firstWest:true);
+        Refused(ExplorationDirection.East,"return.followers");
+        Refused(ExplorationDirection.West,"return.region");
+        Input(ExplorationDirection.North,new(31,12),true);
+        Input(ExplorationDirection.East,new(31,12),false);
+        Input(ExplorationDirection.South,new(31,13),true);
+        Input(ExplorationDirection.South,new(31,14),true);
+        Input(ExplorationDirection.East,new(32,14),true);
+        Refused(ExplorationDirection.South,"return.region"); Refused(ExplorationDirection.North,"return.followers");
+        Input(ExplorationDirection.East,new(33,14),true); Input(ExplorationDirection.North,new(33,13),true);
+        Input(ExplorationDirection.North,new(33,12),true); Input(ExplorationDirection.West,new(33,12),false);
+        Input(ExplorationDirection.South,new(33,13),true); Input(ExplorationDirection.South,new(33,14),true);
+        Input(ExplorationDirection.West,new(32,14),true); Input(ExplorationDirection.West,new(31,14),true);
+        Input(ExplorationDirection.North,new(31,13),true);
+        for(int cycle=0;cycle<2;cycle++) { Input(ExplorationDirection.North,new(31,12),true); Input(ExplorationDirection.South,new(31,13),true); }
+
+        var retained = session.PrivateOriginalBattle01!; var live = retained.Arrival!;
+        Assert.Equal("return.interaction",Assert.IsType<PrivateOriginalMapReturnMovementUnsupported>(
+            session.RefusePrivateOriginalMapReturnInteraction(retained)).Diagnostic.Field);
+        Assert.IsType<PrivateOriginalBattle01ExplorationEntryRejected>(session.EnterPrivateOriginalBattle01Exploration(retained));
+        Assert.Throws<InvalidOperationException>(()=>session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+        Assert.Same(retained,session.PrivateOriginalBattle01);
+        // Fault injection occurs only after the real119-entry-movement route. It does not prepare
+        // a fake gameplay entry or add a production hook. Failure leaves the injected before-image.
+        var inputField = typeof(PrivateOriginalMapReturnArrivalSnapshot).GetField("<LastInput>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var originalInput = live.LastInput;
+        try {
+            inputField.SetValue(live,originalInput! with { Ordinal=long.MaxValue });
+            Assert.Equal("return.ordinal",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                session.BeginPrivateOriginalMapReturnMovement(retained,new(ExplorationDirection.North))).Diagnostic.Field);
+            Assert.Same(retained,session.PrivateOriginalBattle01); Assert.Equal(long.MaxValue,live.InputOrdinal);
+        }
+        finally { inputField.SetValue(live,originalInput); }
+        var entitiesField = typeof(PrivateOriginalMapReturnArrivalSnapshot).GetField("<Entities>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var declarations = entry.Entities;
+        try {
+            entitiesField.SetValue(entry,Array.AsReadOnly(declarations.Select(e=>e.Id==1?e with {Position=new(31,13)}:e).ToArray()));
+            Assert.Equal("arrival.followers",Assert.IsType<PrivateOriginalMapReturnMovementRejected>(
+                session.BeginPrivateOriginalMapReturnMovement(retained,new(ExplorationDirection.North))).Diagnostic.Field);
+            Assert.Same(retained,session.PrivateOriginalBattle01); Assert.Same(originalInput,live.LastInput);
+        }
+        finally { entitiesField.SetValue(entry,declarations); }
+        Invariant();
     }
 
     private static GameSession ReachRealLeaderDefeatBoundary(OriginalBattle01ControlledPartyPreset preset,

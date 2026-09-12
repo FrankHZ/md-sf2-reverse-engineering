@@ -1587,30 +1587,17 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             !arrival.Flags.ContainsKey(89) && !arrival.Flags.ContainsKey(606),
             "Current entry image preserves known true/false before-image values, resets all128 temp flags and leaves unknowns absent");
         await CaptureArrival("45-granseal-entry-physical");
-        var projection=_presenter.BaseProjection; var entities=arrival.Entities; string arrivalJson=JsonSerializer.Serialize(arrival,json);
-        // Invoke the real callback directly so an exception reaches the probe's failure/exit contract.
-        _root._PhysicsProcess(1.0/60.0);
-        foreach(var key in new[]{Key.N,Key.Space,Key.Backspace,Key.A,Key.I,Key.J,Key.K,Key.L,Key.W,Key.S,Key.D,Key.F,Key.E,Key.Enter,Key.Escape})
-            await PressBattleKey(key);
-        for(int frame=0;frame<60;frame++) {
-            _root._PhysicsProcess(1.0/60.0);
-            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
-        }
-        Require(ReferenceEquals(entered,_session.PrivateOriginalBattle01) && ReferenceEquals(projection,_presenter.BaseProjection) &&
-            ReferenceEquals(entities,arrival.Entities) && JsonSerializer.Serialize(arrival,json)==arrivalJson &&
-            _session.EnterPrivateOriginalBattle01Exploration(entered) is PrivateOriginalBattle01ExplorationEntryRejected,
-            "All keys, direct physics callbacks and elapsed frames retain the exact entry; no follower or NPC script executes");
-        await CaptureArrival("46-granseal-entry-inputs-frozen");
+        var returnMovement = await ExerciseReturnMovement(entered);
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="controlled defeat recovery/return and fresh Granseal declaration freeze; exploration input closed",
+            status="Pass",scope="controlled defeat recovery/return and player-only church-pocket movement; follower scripts and events unsupported",
             preparation=final.Preparation.Party,returnInputs=_initialBattle01!.Preparation.ReturnInputs,
             arrivalInputs=_initialBattle01.Preparation.ArrivalInputs,
             initialBattle=_initialBattle01.Battle,start107=sarah.Battle,boundary119=boundary,terminal=final.Battle,battle=entered.Battle,
-            defeatReturn=request,arrival,arrivalRoof,knownFlagsBefore,entryFlagImagePreserved=true,
+            defeatReturn=request,arrival,arrivalRoof,knownFlagsBefore,entryFlagImagePreserved=true,returnMovement,
             earlyBindingAndSourceReferencesRetained=true,exactRecoveredBattleReferenceRetained=true,
             exactCopiedAndPhysicalSnapshotMatch=true,exactRecoveryApiAndPhysicalMatch=true,exactReturnApiAndPhysicalMatch=true,
             exactEntryApiAndPhysicalMatch=true,actualPlayerChoices=4,recoveryConfirmations=1,returnConfirmations=1,
-            entryConfirmations=1,frozenPhysicalKeys=15,frozenPhysicsFrames=60,directPhysicsCallbacks=61,frames=_frames
+            entryConfirmations=1,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} leader-defeat-pending");
 
@@ -1726,6 +1713,157 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,actualRound3);
     }
 
+    private async Task<object> ExerciseReturnMovement(PrivateOriginalBattle01SessionSnapshot entered)
+    {
+        var entry = entered.Arrival!; var json = new JsonSerializerOptions { MaxDepth=256 };
+        string battleBefore = JsonSerializer.Serialize(entered.Battle,json);
+        string partyBefore = JsonSerializer.Serialize(entry.Party,json);
+        var layoutBefore = entry.WorkingLayout.Words.ToArray();
+        var operations = new List<object>(); int nextFrame=46, callbacks=0, idleCallbacks=0;
+        // Retain real physical-key polling. Schedule each production physics callback explicitly
+        // on a physics frame so initial/mid/settled captures cannot skip or double-advance a tick.
+        _root.SetPhysicsProcess(false);
+        void Invariant()
+        {
+            var current = _session.PrivateOriginalBattle01!; var live = current.Arrival!;
+            Require(ReferenceEquals(entered.Battle,current.Battle) && JsonSerializer.Serialize(current.Battle,json)==battleBefore &&
+                ReferenceEquals(entered.Preparation,current.Preparation) && ReferenceEquals(entered.DefeatReturn,current.DefeatReturn) &&
+                ReferenceEquals(entered.SourceSnapshot,current.SourceSnapshot) && ReferenceEquals(entered.SourceLocomotion,current.SourceLocomotion) &&
+                ReferenceEquals(entered.SourceBridge,current.SourceBridge) && ReferenceEquals(entry.Before,live.Before),"Complete battle/source history remains immutable");
+            Require(ReferenceEquals(entry.Party,live.Party) && JsonSerializer.Serialize(live.Party,json)==partyBefore &&
+                ReferenceEquals(entry.Flags,live.Flags) && ReferenceEquals(entry.WorkingLayout,live.WorkingLayout) &&
+                layoutBefore.SequenceEqual(live.WorkingLayout.Words) && ReferenceEquals(entry.RoofClear,live.RoofClear) &&
+                ReferenceEquals(entry.LoadDefinition,live.LoadDefinition),"Current party, flags, resources and roof before-image are retained");
+            Require(entry.Entities.Where(e=>e.Id!=0).All(e=>ReferenceEquals(e,live.Entities.Single(r=>r.Id==e.Id))),
+                "All non-player declarations, including dead Chester and both entity142 effects, stay exact");
+            var player=live.Entities.Single(e=>e.Id==0);
+            Require(player.Position==live.PlayerPosition && player.TargetPosition==live.PlayerPosition && player.Facing==live.PlayerOpaqueFacing &&
+                player.DeclarationPosition==new MapPosition(32,13),"Current player pose and historical declaration stay distinct");
+        }
+        async Task Capture(string suffix)
+        {
+            Invariant(); await CaptureReturnMovement($"{nextFrame++:00}-granseal-{suffix}");
+        }
+        async Task Direction(Key key, ExplorationDirection direction, MapPosition destination, bool moved, string? unsupported=null, bool detailed=false)
+        {
+            var before=_session.PrivateOriginalBattle01!;
+            var expectedResult=_session.BeginPrivateOriginalMapReturnMovement(before,new(direction));
+            var expectedStart=_session.PrivateOriginalBattle01!;
+            var expectedTicks=new List<PrivateOriginalBattle01SessionSnapshot>{expectedStart};
+            while(_session.PrivateOriginalMapArrival!.Locomotion.IsMoving)
+                expectedTicks.Add(((PrivateOriginalMapReturnMovementApplied)_session.AdvancePrivateOriginalMapReturnMovement(_session.PrivateOriginalBattle01)).Snapshot);
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,before);
+            await PressBattleKey(key);
+            var actual=_session.PrivateOriginalBattle01!;
+            Require(JsonSerializer.Serialize(actual.Arrival,json)==JsonSerializer.Serialize(expectedStart.Arrival,json),
+                "Physical direction has the exact independently invoked API result from the same current snapshot");
+            if(unsupported is not null) {
+                Require(expectedResult is PrivateOriginalMapReturnMovementUnsupported denied && denied.Diagnostic.Field==unsupported &&
+                    ReferenceEquals(before,actual),"Unsupported target has no traversal, facing, counter or snapshot mutation");
+                Require(Field<Label>(_presenter,"_status").Text.Contains("Unsupported"),"Unsupported capability is visible");
+                await Capture(unsupported=="return.followers"?"follower-cell-unsupported":"door-or-boundary-unsupported");
+            }
+            else {
+                Require(expectedResult is PrivateOriginalMapReturnMovementApplied && actual.Arrival!.PlayerPosition==destination &&
+                    actual.Arrival.Locomotion.IsMoving==moved && actual.Arrival.InputOrdinal==before.Arrival!.InputOrdinal+1,
+                    "Supported move/block has the expected position and exactly one input ordinal");
+                Require(actual.Arrival!.LastInput!.Traversal.Outcome==(moved?OriginalMapTraversalOutcome.Moved:OriginalMapTraversalOutcome.BlockedByCollision),
+                    "Terrain collision remains distinct from unavailable events");
+                if(detailed) await Capture("move-initial");
+                for(int index=1;index<expectedTicks.Count;index++) {
+                    await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame);
+                    _root._PhysicsProcess(1.0/60.0); callbacks++;
+                    Require(JsonSerializer.Serialize(_session.PrivateOriginalMapArrival,json)==JsonSerializer.Serialize(expectedTicks[index].Arrival,json),
+                        "Every real production physics callback equals the corresponding API tick");
+                    Invariant();
+                    if(detailed && _session.PrivateOriginalMapArrival!.Locomotion.Tick==7) await Capture("move-middle");
+                }
+                Require(!_session.PrivateOriginalMapArrival!.Locomotion.IsMoving,"Movement is settled before the next input");
+                await Capture(moved?"move-settled":"terrain-blocked-facing");
+            }
+            operations.Add(new {key=key.ToString(),direction,destination,moved,unsupported,
+                beforeOrdinal=before.Arrival!.InputOrdinal,afterOrdinal=_session.PrivateOriginalMapArrival!.InputOrdinal,
+                apiTicks=expectedTicks.Select(t=>t.Arrival!.Locomotion).ToArray()});
+        }
+        await Direction(Key.W,ExplorationDirection.North,new(32,13),false);
+        await Direction(Key.A,ExplorationDirection.West,new(31,13),true,detailed:true);
+        await Direction(Key.D,ExplorationDirection.East,new(31,13),false,"return.followers");
+        await Direction(Key.W,ExplorationDirection.North,new(31,12),true);
+        await Direction(Key.D,ExplorationDirection.East,new(31,12),false);
+        await Direction(Key.S,ExplorationDirection.South,new(31,13),true);
+        await Direction(Key.S,ExplorationDirection.South,new(31,14),true);
+        await Direction(Key.D,ExplorationDirection.East,new(32,14),true);
+        await Direction(Key.S,ExplorationDirection.South,new(32,14),false,"return.region");
+        await Direction(Key.W,ExplorationDirection.North,new(32,14),false,"return.followers");
+        await Direction(Key.D,ExplorationDirection.East,new(33,14),true);
+        await Direction(Key.W,ExplorationDirection.North,new(33,13),true);
+        await Direction(Key.W,ExplorationDirection.North,new(33,12),true);
+        await Direction(Key.A,ExplorationDirection.West,new(33,12),false);
+        await Direction(Key.S,ExplorationDirection.South,new(33,13),true);
+        await Direction(Key.S,ExplorationDirection.South,new(33,14),true);
+        await Direction(Key.A,ExplorationDirection.West,new(32,14),true);
+        await Direction(Key.A,ExplorationDirection.West,new(31,14),true);
+        await Direction(Key.W,ExplorationDirection.North,new(31,13),true);
+        await Direction(Key.W,ExplorationDirection.North,new(31,12),true);
+        await Direction(Key.S,ExplorationDirection.South,new(31,13),true);
+        var retained=_session.PrivateOriginalBattle01!;
+        var interactionKeys = new[]{Key.F,Key.G};
+        foreach(var key in interactionKeys) {
+            await PressBattleKey(key); Require(ReferenceEquals(retained,_session.PrivateOriginalBattle01),"Interaction cannot dispatch old handlers");
+            Require(Field<Label>(_presenter,"_status").Text.Contains("Unsupported: interactions"),"Interaction refusal is explicit");
+            await Capture("interaction-"+key.ToString().ToLowerInvariant()+"-unsupported");
+        }
+        var closedKeys = new[]{Key.N,Key.Space,Key.Backspace,Key.I,Key.J,Key.K,Key.L,Key.E,Key.Enter,Key.Escape};
+        foreach(var key in closedKeys) await PressBattleKey(key);
+        for(int frame=0;frame<60;frame++) {
+            await ToSignal(GetTree(),SceneTree.SignalName.PhysicsFrame); _root._PhysicsProcess(1.0/60.0); callbacks++; idleCallbacks++;
+            Require(ReferenceEquals(retained,_session.PrivateOriginalBattle01),"Idle time and closed gameplay keys do not mutate the visit");
+        }
+        Require(_session.EnterPrivateOriginalBattle01Exploration(retained) is PrivateOriginalBattle01ExplorationEntryRejected,"Entry cannot repeat");
+        await Capture("idle-history-and-followers-retained");
+        _root.SetPhysicsProcess(true);
+        return new {status="Pass",operations,actualPhysicsCallbacks=callbacks,idlePhysicsCallbacks=idleCallbacks,
+            unsupportedInteractionKeys=interactionKeys.Select(k=>k.ToString()).ToArray(),
+            closedGameplayKeys=closedKeys.Select(k=>k.ToString()).ToArray(),entry=entered.Arrival,
+            current=_session.PrivateOriginalMapArrival,followersExecuted=false,eventsExecuted=false};
+    }
+
+    private async Task CaptureReturnMovement(string name)
+    {
+        var arrival=_session.PrivateOriginalMapArrival!;var view=_presenter.BaseProjection!;
+        var viewport=Field<PrivateOriginalMapBaseViewport>(_presenter,"_baseViewport");
+        var status=Field<Label>(_presenter,"_status");var glyphs=viewport.ArrivalActorGlyphs!;
+        Require(!Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter").Visible && viewport.Visible &&
+            view.Map==new MapId("map3") && view.CurrentAreaOverlay && view.OverlayAreaRecordOrdinal==1 &&
+            ReferenceEquals(_presenter.PlayerLocomotion,arrival.Locomotion),"Real current Arrival owns camera, player and opened-roof view");
+        Require(glyphs.Single(g=>g.LogicalActorId==1).Position==new MapPosition(32,13) &&
+            glyphs.Single(g=>g.LogicalActorId==2).Position==new MapPosition(32,13) &&
+            glyphs.Single(g=>g.LogicalActorId==2).Kind==PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond,
+            "Both frozen followers keep the same semantic position and Chester's dead marker");
+        Require(status.Text.Contains($"Player 0 Bowie: ({arrival.PlayerPosition.X},{arrival.PlayerPosition.Y})") &&
+            status.Text.Contains("Follower 1 Sarah: (32,13)/UP") && status.Text.Contains("DEAD / BLUE_FLAME") &&
+            status.Text.Contains("Original post-script positions: Unknown"),"Status separates current player, frozen declarations and Unknowns");
+        await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
+        using var image=GetViewport().GetTexture().GetImage();
+        Require(image.SavePng(Path.Combine(_output,name+".png"))==Error.Ok,"Return movement PNG");
+        Require(status.GetLineCount()==status.GetVisibleLineCount() && status.Position.Y+status.GetMinimumSize().Y<=540 &&
+            status.Position.X+status.GetMinimumSize().X<=960,"Return movement status fits the logical canvas");
+        var playerRect=PrivateOriginalMapBaseViewport.PlayerLocomotionRect(view,arrival.Locomotion);
+        int samples=0;
+        for(int row=0;row<5;row++) for(int column=4;column<9;column++) {
+            int x=column*24+2,y=row*24+2;var point=new Vector2(x,y);
+            if(playerRect.HasPoint(point) || glyphs.Any(g=>g.DestinationRect.HasPoint(point)))continue;
+            int at=((y*view.RasterScale)*view.RasterPixelWidth+x*view.RasterScale)*4;
+            var expected=new Color(view.RgbaBytes[at]/255f,view.RgbaBytes[at+1]/255f,view.RgbaBytes[at+2]/255f,view.RgbaBytes[at+3]/255f);
+            var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
+            Require(actual.IsEqualApprox(expected),"Visible church texel matches the current moving-camera projection");samples++;
+        }
+        Require(samples>0,"Church background remains visibly sampled");
+        _frames.Add(new {name,map=arrival.Map.Value,phase="ReturnMovement",status=status.Text,
+            position=arrival.PlayerPosition,facing=arrival.PlayerOpaqueFacing,arrival.InputOrdinal,arrival.Locomotion,
+            glyphs,camera=view.Camera,playerRect,samples,width=image.GetWidth(),height=image.GetHeight()});
+    }
+
     private async Task PressBattleKey(Key key)
     {
         Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = key, Pressed = true });
@@ -1749,8 +1887,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Fresh Map3 atlas/area1/idle camera owns the visible arrival; battle and old view are hidden");
         Require(arrival.PlayerPosition==new MapPosition(32,13) && arrival.PlayerOpaqueFacing==1 &&
             arrival.Party.Gold==60 && arrival.Party.Slots.Count==30 && arrival.Party.ProcessedIds.SequenceEqual(new byte[]{0,1,7,28}) &&
-            arrival.Entity142Hidden && arrival.Entity142MovedOut && !arrival.ExplorationInputAvailable,
-            "Current party, default-init effects and closed input");
+            arrival.Entity142Hidden && arrival.Entity142MovedOut && arrival.ExplorationInputAvailable,
+            "Current party, default-init effects and bounded movement availability");
         foreach(int id in new[]{0,1,2}) {
             var e=arrival.Entities.Single(e=>e.Id==id);
             Require(e.Position==arrival.PlayerPosition && e.TargetPosition==arrival.PlayerPosition &&

@@ -8,10 +8,10 @@ namespace Sf2.Remake.Application.Sessions;
 public sealed record PrivateOriginalMapReturnEntity(int Id, int PhysicalSlot, bool IsFollower,
     OriginalMapEntityDefinition? SourceRecord, string ActscriptIdentity, MapPosition DeclarationPosition,
     MapPosition? Position, MapPosition? TargetPosition, byte Facing, byte MapSprite,
-    bool Dead, bool Hidden = false, bool MovedOutOfMap = false)
+    bool Dead, bool Hidden = false, bool MovedOutOfMap = false, bool IsLivePlayerPose = false)
 {
     // No follower/NPC actscript is run. NPC generated-script internals are not projected as facts.
-    public int? VelocityXUnits => IsFollower || Id == 0 ? 0 : null;
+    public int? VelocityXUnits => IsFollower || (Id == 0 && !IsLivePlayerPose) ? 0 : null;
     public int? VelocityYUnits => VelocityXUnits;
     public int? TravelXUnits => VelocityXUnits;
     public int? TravelYUnits => VelocityXUnits;
@@ -30,6 +30,32 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
         ValidateEntities(Entities, load.Runtime.EntityPopulation, before.DefeatReturn!.DestinationPosition);
         Locomotion = PrivateOriginalMapPlayerLocomotionSnapshot.EnterGranseal(before.DefeatReturn);
     }
+
+    internal PrivateOriginalMapReturnArrivalSnapshot(PrivateOriginalMapReturnArrivalSnapshot current,
+        PrivateOriginalMapReturnInputReceipt input, bool advance)
+    {
+        var entry = current.EntryBeforeMovement ?? current;
+        ValidateEntities(entry.Entities, entry.CurrentRuntime.EntityPopulation, entry.PlayerPosition);
+        if (entry.EntryBeforeMovement is not null || entry.LastInput is not null ||
+            !ReferenceEquals(current.Before, entry.Before) || !ReferenceEquals(current.Party, entry.Party) ||
+            !ReferenceEquals(current.WorkingLayout, entry.WorkingLayout) ||
+            !ReferenceEquals(current.Flags, entry.Flags) || !ReferenceEquals(current.RoofClear, entry.RoofClear))
+            throw new ArgumentException("Return movement must retain its authenticated entry.", "return.entry");
+        if (advance ? !ReferenceEquals(input, current.LastInput) :
+            input.Ordinal != checked(current.InputOrdinal + 1) || input.Traversal.Source != current.PlayerPosition)
+            throw new ArgumentException("Retain the exact current return input and ordinal.", "return.input");
+
+        Locomotion = advance ? current.Locomotion.Advance() :
+            PrivateOriginalMapPlayerLocomotionSnapshot.Begin(current.Locomotion, input.Traversal.Direction,
+                current.PlayerPosition, input.Traversal);
+        Before = entry.Before; Party = entry.Party; LoadDefinition = entry.LoadDefinition;
+        WorkingLayout = entry.WorkingLayout; RoofClear = entry.RoofClear; Flags = entry.Flags;
+        EntryBeforeMovement = entry; LastInput = input;
+        Entities = Array.AsReadOnly(entry.Entities.Select(entity => entity.Id == 0
+            ? entity with { Position = PlayerPosition, TargetPosition = PlayerPosition,
+                Facing = PlayerOpaqueFacing, IsLivePlayerPose = true }
+            : entity).ToArray());
+    }
     public PrivateOriginalBattle01SessionSnapshot Before { get; }
     public Battle01EntryParty Party { get; }
     public OriginalMapReturnEntryLoadDefinition LoadDefinition { get; }
@@ -37,15 +63,18 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
     public OriginalMapImportDefinition Definition => Before.SourceSnapshot.Definition;
     public MapId Map => CurrentRuntime.Map;
     public WorkingMapLayout WorkingLayout { get; }
-    public MapPosition PlayerPosition => Before.DefeatReturn!.DestinationPosition;
-    public byte PlayerOpaqueFacing => Before.DefeatReturn!.DestinationOpaqueFacing;
+    public MapPosition PlayerPosition => LastInput?.Traversal.Position ?? Before.DefeatReturn!.DestinationPosition;
+    public byte PlayerOpaqueFacing => Locomotion.OpaqueFacing;
     public OriginalMapAreaDefinition CurrentAreaDefinition => LoadDefinition.Area;
     public MapBlockCopyLifecycleResult RoofClear { get; }
     public IReadOnlyList<PrivateOriginalMapReturnEntity> Entities { get; }
     public IReadOnlyDictionary<int, bool> Flags { get; }
     public PrivateOriginalMapPlayerLocomotionSnapshot Locomotion { get; }
-    public bool ExplorationInputAvailable => false;
-    public string EntityPolicy => "Declared positions frozen; follower/NPC scripts are not running.";
+    public PrivateOriginalMapReturnArrivalSnapshot? EntryBeforeMovement { get; }
+    public PrivateOriginalMapReturnInputReceipt? LastInput { get; }
+    public long InputOrdinal => LastInput?.Ordinal ?? 0;
+    public bool ExplorationInputAvailable => !Locomotion.IsMoving;
+    public string EntityPolicy => "Player-only movement; follower/NPC declarations frozen. Scripts are not running.";
     public bool Entity142Hidden => Entities.Single(entity => entity.Id == 142).Hidden;
     public bool Entity142MovedOut => Entities.Single(entity => entity.Id == 142).MovedOutOfMap;
 
@@ -81,6 +110,8 @@ public sealed class PrivateOriginalMapReturnArrivalSnapshot
             throw new ArgumentException("Retain distinct admitted declarations, without duplicate setup rows.", "arrival.entities");
         foreach (var entity in entities)
         {
+            if (entity.IsLivePlayerPose)
+                throw new ArgumentException("A live player pose is not an initial declaration.", "arrival.entities");
             if (entity.Id is >= 0 and <= 2)
             {
                 if (entity.PhysicalSlot != entity.Id || entity.IsFollower != (entity.Id != 0) ||

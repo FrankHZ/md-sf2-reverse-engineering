@@ -20,7 +20,7 @@ public sealed class PrivateMap3PresenterTests
         string arrival = PrivateMap3Presenter.Battle01PendingStatus(arrivalSelected: true);
         Assert.Contains("Leader defeat + Granseal return + entry comparisons selected", arrival);
         Assert.DoesNotContain("entry comparisons", pending);
-        Assert.Contains("Exploration input unavailable", PrivateMap3PresentationPlan.ArrivalStatus);
+        Assert.Contains("Church-pocket movement available", PrivateMap3PresentationPlan.ArrivalStatus);
     }
 
     [Theory]
