@@ -13,7 +13,8 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
     [Fact]
     public void ChesterFirstKillPreparationCannotBeRetrofittedAfterCounterConstruction()
     {
-        var session = FirstAllyDefeatSession(counter:true); var source = session.PrivateOriginalBattle01!;
+        var session = FirstAllyDefeatSession(counter:true,comparison:OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
+        var source = session.PrivateOriginalBattle01!;
         var preparation = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending,source.Preparation.Inputs,
             OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
         var selected = new PrivateOriginalBattle01SessionSnapshot(preparation,source.Battle,source.SourceLocomotion,source.SourceBridge);
@@ -82,7 +83,8 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
     }
 
 
-    internal static GameSession FirstAllyDefeatSession(bool completeRoute = true, bool leader = false, bool counter = false)
+    internal static GameSession FirstAllyDefeatSession(bool completeRoute = true, bool leader = false, bool counter = false,
+        OriginalBattle01ControlledPartyPreset? comparison = null)
     {
         // Reuse the authored pre-physical fixture. Required Content coverage owns real initialization.
         var session = AttackSession(); var source = session.PrivateOriginalBattle01!;
@@ -91,8 +93,8 @@ public sealed class PrivateOriginalBattle01EnemyPhysicalAttackTests
         regions[0] = new(0, 0, [new(0, 0), new(0, 19), new(15, 7), new(15, 0)], 0, 0);
         regions[2] = new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0);
         source = PrivateOriginalBattle01FirstRoundTests.CopyCurrent(session, regions: regions);
-        var preset = counter ? OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison :
-            leader ? OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison : OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison;
+        var preset = comparison ?? (counter ? OriginalBattle01ControlledPartyPreset.ChesterPlayerAttackComparison :
+            leader ? OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison : OriginalBattle01ControlledPartyPreset.ChesterDefeatComparison);
         var roster = source.Battle.Roster.ToArray();
         for (int i = 0; i < 3; i++)
         {

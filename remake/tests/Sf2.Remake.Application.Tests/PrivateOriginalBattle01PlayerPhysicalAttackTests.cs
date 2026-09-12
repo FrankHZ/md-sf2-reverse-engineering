@@ -11,9 +11,15 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
 {
     [Fact]
-    public void ChesterFirstKillPreparationCannotBeRetrofittedAfterThePlayerKillHasBeenConstructed()
+    public void ChesterFirstKillPreparationCannotBeRetrofittedAfterPlayerAttackConstruction()
     {
-        var session = SecondDefeatSelectedSession(); var source = session.PrivateOriginalBattle01!;
+        var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.FirstAllyDefeatSession(completeRoute:false,
+            comparison:OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
+        Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,132));
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01,0));
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,0));
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.BeginPrivateOriginalBattle01PlayerAttack(session.PrivateOriginalBattle01,0));
+        var source = session.PrivateOriginalBattle01!;
         var preparation = new PrivateOriginalBattle01StartupPrepared(source.Preparation.Pending,source.Preparation.Inputs,
             OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
         var selected = new PrivateOriginalBattle01SessionSnapshot(preparation,source.Battle,source.SourceLocomotion,source.SourceBridge);
@@ -22,7 +28,7 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
         Assert.Equal("accounting.input",Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
             session.ConfirmPrivateOriginalBattle01PlayerAttack(selected,0)).Diagnostic.Field);
         Assert.Same(selected,session.PrivateOriginalBattle01); Assert.Equal(frozen,JsonSerializer.Serialize(selected.Battle,json));
-        Assert.Equal((uint?)60,selected.Battle.CurrentGold); Assert.Equal((ushort?)1,selected.Battle.Roster[0].Stats.CurrentKills);
+        Assert.Equal((uint?)0,selected.Battle.CurrentGold); Assert.Equal((ushort?)0,selected.Battle.Roster[0].Stats.CurrentKills);
     }
 
     internal static GameSession SecondDefeatSelectedSession()

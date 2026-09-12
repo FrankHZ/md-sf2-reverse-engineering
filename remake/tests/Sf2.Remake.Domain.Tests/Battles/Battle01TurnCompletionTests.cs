@@ -8,6 +8,32 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01TurnCompletionTests
 {
     [Theory]
+    [InlineData("exp")]
+    [InlineData("gold")]
+    [InlineData("occupancy")]
+    [InlineData("oldCorpse")]
+    [InlineData("main")]
+    [InlineData("policy")]
+    public void ChesterFirstKillLateFinalizationFailuresRetainTheEntireTargetSelection(string field)
+    {
+        var selected = Battle01PlayerPhysicalAttackTests.ChesterFirstKillSelected();
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(selected,json);
+        var d = Battle01PlayerPhysicalAttack.Decide(selected,2,allowDefeat:true,maximumDefeats:3);
+        var roster = selected.Roster.ToArray(); var occupancy = selected.Occupancy.ToArray();
+        roster[2] = roster[2].WithStats(field == "exp" ? d.ActorAfterStats.WithCurrentExp(55) : d.ActorAfterStats);
+        roster[4] = roster[4].WithStats(d.Effect.AfterStats);
+        if (field == "occupancy") occupancy[4 * 48 + 10] = -1;
+        if (field == "oldCorpse") roster[6] = roster[6].WithPosition(new(10,15));
+        var local = new Battle01InitializedState(selected,roster,d.Effect.MainSeedAfter ^ (field == "main" ? 0x10000u : 0u),
+            d.GoldAfter + (field == "gold" ? 1u : 0u));
+        local = new Battle01InitializedState(local,roster,Array.AsReadOnly(occupancy),local.FirstControl!);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01TurnCompletion.CompletePlayerPhysical(local,d,
+            field == "policy" ? Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat : Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill));
+        Assert.Equal(frozen,JsonSerializer.Serialize(selected,json));
+        Assert.Equal((93,(uint?)120,(ushort?)0),(Battle01EnemyPursuitTests.Receipts(selected).Count(),selected.CurrentGold,selected.Roster[2].Stats.CurrentKills));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void CounterLateReplayAndFinalizationFailurePreserveThePrePrimaryState(bool omitExp)
