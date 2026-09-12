@@ -5190,7 +5190,10 @@ and source/preparation/recovery/request history stay unchanged.
 Content admission lives in `OriginalBattle01ControlledArrivalInputs`, `OriginalMapRuntimeAdmission`
 and `PrivateCanonicalMap3ImportReader`; `PrivateOriginalBattle01ExplorationEntry` and
 `PrivateOriginalMapReturnMovement` own live state and publication. `PrivateMap3Presenter` projects
-status. Existing Domain reducers, root input/physics and camera/viewport production remain reused.
+status. Existing Domain reducers, root input/physics and camera remain reused. The existing viewport
+clips map drawing to its fixed logical rectangle, preserving partially visible diagnostics without
+clamping their projected coordinates. Frozen follower glyphs still draw above the roof as a modern
+diagnostic policy; original sprite/roof priority remains Unknown.
 
 The required-private `AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit`
 compares all4096 words after Begin, intermediate/final Advance and refusals, exact saved30/active8,
@@ -5205,7 +5208,13 @@ respective boundaries. The native `leader-defeat-pending` probe retains its71-fr
 then captures first door Begin/middle/pre-settlement/settled, outside restore, re-entry clear,
 two additional cycles and side/outside/follower/F/G/idle refusals. Actual uncovered door/roof pixels
 must match the current projection and show changes at the selected phase; status text alone is
-insufficient. Every changed PNG needs inspection; only byte-identical accepted images are reusable.
+insufficient. The real door-copy middle frame also checks the partial actor141 glyph: no pixels may
+escape the map's top edge, while its visible interior and original projected rectangle remain. The
+probe checks the rendered background outside all four map edges on visible base views; the shared
+multi-map review covers existing castle, tower and north-arrival consumers. The clipping mechanism
+and before/after pixel comparison are described in the
+[presentation owner](./presentation-and-assets.md#reproduce-the-bounded-native-image-review).
+Every changed PNG needs inspection; only byte-identical accepted images are reusable.
 
 Use the single current [verification route](./development-and-verification.md) and
 [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review), with fresh

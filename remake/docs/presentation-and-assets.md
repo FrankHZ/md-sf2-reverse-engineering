@@ -753,6 +753,25 @@ input variables above. Point both `TEMP` and `TMP` at this worktree's ignored te
 the missing/changed-payload checks copy only manifests and runtime buckets there and never alter
 the supplied asset input.
 
+The map viewport clips its own drawing to the existing `LogicalTextureRect` (288 by 168 logical
+pixels). Merely checking whether a diagnostic rectangle intersects the map allows a partial glyph
+to draw past the edge. `PrivateMap3Presenter` gives the existing viewport a `Control` host with
+[`ClipContents`](https://docs.godotengine.org/en/stable/classes/class_control.html#class-control-property-clip-contents)
+and that fixed size. The host occupies the original global map position; the drawing node uses zero
+local offset. This preserves partial glyphs' visible portions, their original projected rectangles,
+the global player/map positions and camera. The host ignores mouse input and is shown again with
+the map when returning from battle, whose existing presentation hides root canvas subtrees. The view is axis-aligned;
+this does not introduce rotated-view clipping. Frozen follower glyphs remain diagnostic overlays
+above the roof texture, not evidence of original sprite/roof priority.
+
+The native probe samples the actual rendered background in a 12-logical-pixel strip outside all four
+map edges whenever the base view is visible, including the existing multi-map review. The real
+doorway frame76 (`76-granseal-door-copy-middle.png`) additionally requires actor141 to remain at
+semantic `(32,11)` with projected rectangle `(149,-7,14,14)` at movement tick7. Its in-map pink
+interior must remain visible, so hiding the whole partial glyph cannot pass. Retain the uncropped
+before sample read-only; compare before/after interior, player, layout and status pixels as well as
+the newly cleared outside area. All private images and comparison reports stay in ignored output.
+
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
 all twelve PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
 the rendered guard diamond's center and downward interior to reject a spurious facing line.
