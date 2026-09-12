@@ -652,6 +652,8 @@ internal sealed class PrivateMap3Presenter
         if (!_baseViewport.TryBindLocalAtlas(_map3Atlas, arrival, _requestedWorldTreatment, out var diagnostic))
             throw new InvalidOperationException("The arrival atlas could not bind: " + diagnostic!.Message);
         _baseViewport.ProjectMountedAtlas(arrival);
+        // Battle entry hides root canvas subtrees, including the map's clipping host.
+        _baseViewport.GetParent<Control>().Show();
         _viewport?.Hide(); _baseViewport.Show(); _banner.Show(); _explanation.Show(); _status.Show();
         _explanation.Text = "Fresh Granseal entry with diagnostic entities. Not full original fidelity.";
         _status.Position = new Vector2(StatusX, 310); _status.Size = new Vector2(912, 210);

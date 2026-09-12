@@ -759,7 +759,8 @@ to draw past the edge. `PrivateMap3Presenter` gives the existing viewport a `Con
 [`ClipContents`](https://docs.godotengine.org/en/stable/classes/class_control.html#class-control-property-clip-contents)
 and that fixed size. The host occupies the original global map position; the drawing node uses zero
 local offset. This preserves partial glyphs' visible portions, their original projected rectangles,
-the global player/map positions and camera. The host ignores mouse input. The map view is axis-aligned;
+the global player/map positions and camera. The host ignores mouse input and is shown again with
+the map when returning from battle, whose existing presentation hides root canvas subtrees. The view is axis-aligned;
 this does not introduce rotated-view clipping. Frozen follower glyphs remain diagnostic overlays
 above the roof texture, not evidence of original sprite/roof priority.
 
