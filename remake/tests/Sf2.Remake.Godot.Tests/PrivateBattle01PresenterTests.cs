@@ -236,25 +236,25 @@ public sealed class PrivateBattle01PresenterTests
                 Assert.Equal("attack.lethal",Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
                     Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike)).ParamName);
                 current=Battle01EnemyPhysicalAttack.CompleteNext(current,128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
-                var defeated=PrivateBattle01Presenter.BuildProjection(current,"Enemy128 completed.");
-                Assert.Equal((128,0),(defeated.CompletedActorIndex,defeated.NextCandidateIndex));
-                Assert.Equal(5,defeated.Units.Count);Assert.DoesNotContain(defeated.Units,u=>u.Index is 2 or 129 or 131 or 132);
-                Assert.Contains("A2 defeated HP 0 EXP 54 Defeats 1",defeated.AllyStatus);
-                Assert.Contains("E0 -> A2: hit 2. HP 1 -> 0.",defeated.AttackResult);
-                Assert.Contains("A2 (2) defeated. Defeats 0 -> 1.",defeated.AttackResult);
-                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(defeated.Gold,defeated.BowieKills,defeated.ChesterKills));
-                Assert.False(defeated.CanRequestDefeatReturn);Assert.False(defeated.CanEnterExploration);
+                var chesterDefeated=PrivateBattle01Presenter.BuildProjection(current,"Enemy128 completed.");
+                Assert.Equal((128,0),(chesterDefeated.CompletedActorIndex,chesterDefeated.NextCandidateIndex));
+                Assert.Equal(5,chesterDefeated.Units.Count);Assert.DoesNotContain(chesterDefeated.Units,u=>u.Index is 2 or 129 or 131 or 132);
+                Assert.Contains("A2 defeated HP 0 EXP 54 Defeats 1",chesterDefeated.AllyStatus);
+                Assert.Contains("E0 -> A2: hit 2. HP 1 -> 0.",chesterDefeated.AttackResult);
+                Assert.Contains("A2 (2) defeated. Defeats 0 -> 1.",chesterDefeated.AttackResult);
+                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(chesterDefeated.Gold,chesterDefeated.BowieKills,chesterDefeated.ChesterKills));
+                Assert.False(chesterDefeated.CanRequestDefeatReturn);Assert.False(chesterDefeated.CanEnterExploration);
                 current=Battle01NextPlayerControl.Enter(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
                 var bowieReady=PrivateBattle01Presenter.BuildProjection(current,"Actual Bowie ready.");
                 Assert.Equal((0,12),(bowieReady.ActorIndex,bowieReady.Budget));Assert.True(bowieReady.CanConfirm);
-                Assert.Equal(defeated.AttackResult,bowieReady.AttackResult);
+                Assert.Equal(chesterDefeated.AttackResult,bowieReady.AttackResult);
                 current=Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,0,new(11,14)),0);
                 var bowieMoved=PrivateBattle01Presenter.BuildProjection(current,"Bowie provisional.");
                 Assert.Equal(new MapPosition(11,14),bowieMoved.Units.Single(u=>u.Index==0).Position);
                 Assert.Contains("Backspace",bowieMoved.Controls);
                 current=Battle01PlayerMovement.Cancel(current,0);
                 var bowieCancelled=PrivateBattle01Presenter.BuildProjection(current,"Bowie cancelled.");
-                Assert.Equal(bowieReady.Units,bowieCancelled.Units);Assert.Equal(defeated.AttackResult,bowieCancelled.AttackResult);
+                Assert.Equal(bowieReady.Units,bowieCancelled.Units);Assert.Equal(chesterDefeated.AttackResult,bowieCancelled.AttackResult);
                 Assert.Equal((0x98321234u,(ushort?)0x0234),(current.RandomSeedImage,current.RandomSeedCopy));
             }
             return;
