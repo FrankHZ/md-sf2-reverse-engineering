@@ -18,6 +18,9 @@ stops before ExplorationLoop for legacy preparations. The optional early arrival
 the [fresh-entry boundary](#implemented-fresh-granseal-entry-after-battle01-defeat): Map3 area1,
 church roof clear,30-slot party handoff and frozen same-cell player/Sarah/Chester declarations.
 Exploration input stays closed. Natural continuity and original post-script positions remain Unknown.
+The next bounded implementation is the [return-visit church-pocket movement plan](#planned-return-visit-church-pocket-movement).
+It adds player movement and terrain-blocked facing inside one admitted region while retaining frozen
+followers and rejecting unsupported event boundaries; it is not implemented by this planning change.
 
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
@@ -4927,6 +4930,8 @@ story would replay or suppress the wrong operations. The next slice must provide
 movement/event contract and carry `Arrival.Party` and fresh entity state through its first operation;
 then reuse the pure traversal and locomotion mechanisms. It must not unfreeze old handlers merely
 because CURRENT_MAP is3. No general event framework or exploratory cache is required now.
+The [church-pocket plan](#planned-return-visit-church-pocket-movement) below defines that next boundary
+without requiring a natural follower/script endpoint or reopening the first-visit handlers.
 
 #### Entry implementation ownership and acceptance
 
@@ -5009,6 +5014,213 @@ only byte-identical accepted inspections. The named pinned sources above and acc
 object own the source boundary; unchanged source recipes are reused, not replayed as setup work.
 General stat refresh, original VInt/entity-script positions, natural party/flags, fade/music, H4 and
 the first new-visit movement/event operation remain explicit Unknowns or unsupported capabilities.
+
+### Planned return-visit church-pocket movement
+
+**Planned, not implemented.** After the existing fresh-entry confirmation, let the player turn on a
+terrain block and walk repeatedly within the church interior around the landing. This is a controlled
+player-only continuation of the admitted declaration freeze. It does not claim that the original
+first `WaitForEvent` has been observed, that follower scripts have run, or that Granseal exploration
+and church services are generally available. No extra prepare/acknowledge phase or new startup preset
+is needed: eligibility comes from the already authenticated completed Arrival.
+
+#### Accepted start and bounded geometry
+
+Require the exact current `PrivateOriginalBattle01SessionSnapshot` with its completed Arrival,
+early `GransealFirstAttemptComparison` binding and catalog-owned Map3 default runtime. Retain area1,
+the entry roof clear, F80 and the complete current flag image, and `Arrival.Party` as the current party
+owner. The initial player/Sarah/Chester declarations remain distinct at(32,13)/UP; Chester remains
+dead/BLUE_FLAME. The recovered/requested Battle,119 receipts, lethal/recovery/return history and all
+preparation/source references remain immutable history. Legacy preparations without Arrival cannot
+use this input path.
+
+The first allowed candidate region is exactly `31 <= x <= 33`, `12 <= y <= 14`. This is a
+**project-selected capability boundary**, not the original active-area boundary. It lies wholly in
+area1 and the already opened church roof rectangle. Its eight floor cells and one blocked cell are
+small enough to establish the first useful movement loop without door, roof-restore, warp or story
+execution. Do not broaden to all of Map3 based on the map ID.
+
+**Confirmed static data:** the existing canonical-import admission pins `Map03s1_Layout` at
+`0x984E8`; its main-layer words in this region are:
+
+| y / x |31|32|33|
+| --- | --- | --- | --- |
+|12|`0x00DB`|`0xE8DC` (blocked)|`0x00DD`|
+|13|`0x0061`|`0x0062` (entry group)|`0x0063`|
+|14|`0x0076`|`0x0077`|`0x0078`|
+
+The entry clear affects second-layer rows41..46, leaving these main-layer words intact. In particular,
+north from the landing is blocked by `word & 0xC000 == 0xC000`; it is not a successful move to(32,12).
+The existing [map/exploration contract](../../docs/design/contracts/map-exploration.md),
+[canonical-import owner](../../docs/research/map-data-inventory.md), `OriginalMapRuntimeAdmission`
+and `PrivateCanonicalMap3ImportReader` own the admitted data, rather than a new map patch or fixture.
+Their reproduction owners are `uv run sf2 h2 map-import` with
+`tests/fixtures/h2/canonical-map-import-v1.json` and `uv run sf2 h2 map-events` with
+`tests/fixtures/h2/map-events-static-v1.json`, using the named pinned inputs. Reuse these accepted
+owners; this planning slice's read-only inspection of the byte-pinned canonical export is not a new
+H2/H3 gate or a replacement runtime observation.
+
+For pinned upstream `c834c652b6862bc5679fd7f69a38a7093206efc6`, the actual referenced Map3
+`4-step-events.asm` and `5-roof-events.asm` place the church trigger at(32,15), outside this region.
+`6-warp-events.asm` has no matching trigger here, including its x/y wildcards. The default setup's
+`mapsetups/s3_zoneevents.asm` likewise has no matching record here (including x2/y255); its
+`Map3_DefaultZoneEvent` is a direct `rts`. These are table/target facts, not proof of natural dispatcher
+reach. The new capability admits only their no-matching-event consequence within the pinned region;
+it executes no opaque default program. The fixed priest declaration is entity141 at(32,11)/DOWN,
+from default `mapsetups/s1_entities.asm`, outside the region. Do not move him to create a route.
+
+The allowed region's geometry and event exclusion must be checked against the existing admitted
+runtime and canonical input in the owning Content acceptance, including wildcard semantics. Missing,
+foreign or changed admission rejects capability; never infer an event-free region from a partial
+table or a missing resource. The first implementation uses the already pinned exact Map3 profile,
+not a general table scanner or another Content parser.
+
+#### Input results and explicit event refusal
+
+Reuse the existing semantic direction commands and `OriginalMapTraversal.ResolveCandidateTarget` /
+`TryMove` arithmetic on the current working layout. Keep scope and event admission ahead of ordinary
+passability: the church door at(32,15) cannot be dismissed as an ordinary wall, because its original
+step effect precedes collision. The bounded command returns one of the following visible outcomes:
+
+| Candidate / action | Result and mutation boundary |
+| --- | --- |
+| In-region unoccupied floor | Commit one move and facing, then play the existing player locomotion cycle. Further moves are admitted only after settlement. |
+| In-region terrain block, notably(32,12) | Return the real `BlockedByCollision` traversal result; retain position, turn to the attempted direction and perform the existing blocked animation/counter selection. This is a supported attempt, not an unsupported event. |
+| The frozen follower cell(32,13), after the player has left | Explicit `Unsupported` with a frozen-follower-occupancy reason; retain the entire current snapshot and animation. Do not label this original entity collision or manufacture `BlockedByOccupiedEntity`: their original collision state at the first input remains Unknown. |
+| Any candidate outside the region, including(32,15) | Explicit `Unsupported` region/event boundary; retain position, facing, layout, counters and history. The door/roof trigger is not executed and gets no success receipt. |
+| Interaction, acknowledgement, church service, menu, warp, battle or first-visit action | Explicit unavailable capability, with no event request, flag write, receipt or session mutation. F/G must not reach Sarah/Entity142/other old handlers. Remaining gameplay keys cannot restart the battle or bypass this owner. |
+| Missing/foreign/stale expected snapshot, wrong phase or input while moving | Typed rejection before mutation; no queued or partially applied second input. |
+
+The initial overlap is still valid admission. Departing into an empty floor cell does not require
+moving the followers or deciding their original pass-through behavior. After departure their shared
+cell is conservatively unavailable. This restriction leaves useful reversible paths through the
+remaining seven floor cells: for example(31,13) to(31,12) and back, or through(31,14),(32,14),(33,14)
+to(33,13)/(33,12). The UI must explain why returning onto the followers is unavailable, rather than
+silently treating a frozen comparison as a complete following system.
+
+#### One session owner and preserved entry facts
+
+Extend the existing immutable Arrival representation with the current return-visit player pose,
+locomotion and a typed last-input result. Publish it only by replacing the existing
+`GameSession.PrivateOriginalBattle01` snapshot once, retaining its same Battle, preparation and
+DefeatReturn. `Arrival.Party` remains the same object; there is no second party, mutable current-map
+field or legacy exploration snapshot. A focused new Application return-movement owner is justified
+by the existing first-visit dispatcher's incompatible invariants; it must not copy that dispatcher.
+
+Preserve an authenticated entry before-image, including the original player declaration and all
+entity identities/provenance. Keep the existing entry constructor's same-cell validation strict.
+Validate movement successors against that entry and the exact current snapshot; do not relax entry
+validation to accept arbitrary moved declarations. Current player position/facing and its displayed
+entity projection must agree with the new operation. Original declaration coordinates stay available
+as declaration data, not a competing current position. Non-player records remain identical: Sarah
+and Chester keep position/target(32,13), UP, zero declared travel/velocity, their follower identities
+and actscripts; NPCs retain their admitted declarations and entity142 remains hidden/out.
+
+Use `PrivateOriginalMapPlayerLocomotionSnapshot.Begin` and `Advance` directly in this new transaction,
+not `BeginPrivateOriginalMapPlayerLocomotion`, which invokes the old dispatcher. Preserve the existing
+counter/half arithmetic and13-tick movement/one-tick blocked policy. Start from Arrival's explicitly
+controlled counter0 and carry subsequent values; do not substitute the old locomotion rail's seed26
+or derive animation phase from receipt counts. See the accepted
+[locomotion evidence boundary](../../docs/research/map3-original-player-locomotion-animation.md#evidence-boundary):
+reusing its arithmetic is a remake timing policy here, not a new observation of original return-entry
+VInt cadence. Continuous visual offsets come from locomotion; do not report invented original RAM
+velocity/current-coordinate values for the moving player.
+
+Give actual supported directional attempts a monotonic return-input ordinal and one typed result;
+animation ticks do not create another input receipt. This new visit's ordinal is distinct from the
+preserved first-visit SimulationStep, Battle receipt count and entry STEP_COUNTER_WORD transform.
+It does not reset any historical counter to step0 or claim ongoing original step-word/random-battle
+semantics. Unsupported or rejected commands retain the exact snapshot reference and ordinal.
+Build and validate player pose, result, locomotion and successor before publication; a construction,
+validation or checked-counter failure leaves every before-image intact. Settlement publishes through
+the same owner and cannot run events or touch party/history.
+
+Godot must route the completed Arrival before its old battle/first-visit input branches, while keeping
+their behavior for non-Arrival states. Polling and physics advancement use the actual session API.
+Reuse the existing typed Arrival presenter, base viewport and camera projection; no fake legacy
+snapshot, extra renderer, asset mount or event framework. Replace the constant player coordinates
+and blanket input-closed text with current position/facing, movement outcome and the precise pocket,
+follower and interaction limitations. Keep the historical entry group visible as such, dead Chester
+and the fixed followers readable, and camera/player projection synchronized during motion. Do not
+scatter glyphs by changing semantic positions. Idle time leaves followers, NPCs and gameplay state
+unchanged; only an already admitted player animation may advance.
+
+#### Next implementation ownership
+
+This plan changes only this document. The following is the exact proposed implementation scope,
+relative to `remake/`; all paths already exist except the explicitly named new Application owner.
+Any extra path needs a concrete ownership decision before editing.
+
+| Exact paths | Purpose |
+| --- | --- |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalMapReturnMovement.cs` (new) | Focused return-input eligibility, results and atomic GameSession operations; reuse pure traversal/locomotion. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01ExplorationEntry.cs` | Authenticated entry/current player separation inside Arrival; preserve strict initial entity validation and immutable party/history. |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateMap3Composition.cs`; `game/src/PrivateMap3Presenter.cs` | Exclusive Arrival input/physics routing and accurate live status, using existing projection overloads. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01ExplorationEntryTests.cs`; `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Rejection/atomicity and real admitted entry-to-movement continuation with exact private data and complete retained state. |
+| `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateMap3CameraProjectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs` | Actual input ownership, status and current player/frozen follower projection; behavior assertions rather than source-format locks. |
+| `tests/native/Map19Map20AtlasReviewProbe.cs` | Extend the existing physical leader-defeat/entry route through real return input and physics callbacks. |
+| `README.md`; `docs/architecture.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md`; `docs/map03-playability-plan.md` | Replace only affected current input-closed capability/reproduction claims and retain the comparison limits. |
+
+Read-only reuse includes `OriginalMapTraversal.cs`, `OriginalMapPlayerLocomotionAnimation.cs`, the
+existing Battle01 snapshot constructor, `Map3InputAdapter`, `PrivateOriginalMapBaseViewport` and
+`PrivateMap3CameraProjection`, plus the admitted Content reader/runtime. Their existing typed seams
+already supply traversal, animation, current-map projection and replacement. No new Domain behavior,
+schema, fixture, importer, generalized occupancy model or registry is planned.
+
+#### Acceptance and stopping condition
+
+For this planning PR, use a clean committed head and
+`uv run sf2 verify plan --base origin/main --head HEAD`, document/link and private-boundary inspection,
+`git diff --check`, and normal `uv run sf2 verify`. Load the current ignored private-input/environment
+configuration in the same process; use `uv run sf2 rom verify` to distinguish ROM identity from later
+upstream/toolchain availability. Do not run .NET, Godot, H3 or the complete Python suite for this
+document. Freeze a clean pushed Draft PR for main-gate review before implementation.
+
+For the subsequent implementation, the committed planner determines invalidation. Run locked restore/
+build and the selected owning .NET tests using the explicit shared CLI configuration. Focused filters
+are `FullyQualifiedName~PrivateOriginalBattle01ExplorationEntryTests` in the Application project,
+`FullyQualifiedName~AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` in the
+Content project (extend its continuation rather than duplicating the entire route), and the four
+named Godot test classes above in the Godot test project. Use `& $env:DOTNET_BIN test <owning.csproj>
+--configuration Release --no-build --no-restore --filter <filter>` after the selected build. The real
+Content check loads the existing four private inputs and `SF2_REQUIRE_PRIVATE_TESTS=1`; it must execute
+without private skips. Public unselected CI retains explicit skips. Planner-selected broader checks,
+normal verification and Public CI remain authoritative; do not rerun prior completed suites merely
+because HEAD changed.
+
+The real Content route must build from the early named inputs through the existing119 receipts,
+recovery/request/entry, then operate on that exact fresh Arrival. Check every in-region candidate
+against the pinned layout, event exclusion and fresh declarations; exercise all directions, wall
+facing, both directions of a reversible path and repeated cycles. Compare the complete Battle,
+party, flags, resources,30-word roof before-image/current layout and every non-player declaration
+before/after all inputs and animation ticks. Cover stale/foreign/no-Arrival/busy input, duplicate
+entry, construction failure, unsupported follower/door/outside targets and interaction keys. Rejected
+operations preserve identity; supported blocks preserve position while changing only their stated
+facing/animation/input result. A moved-player successor must not weaken malformed initial-entry
+rejection. Do not create a late-arrival input or forge a legacy snapshot to shorten the route.
+
+Extend the existing `leader-defeat-pending` native mode after its actual entry frame45; replace only
+the directional part of the former frame46 freeze assertion. Begin with north blocked at(32,13),
+then west to(31,13), north to(31,12), south back, south to(31,14), east to(32,14), and attempts south
+onto the unsupported church trigger and north onto the frozen follower cell. Include an east-side
+loop through(33,14)/(33,13)/(33,12), a terrain block and unsupported F/G. Compare physical commands
+with API results from the same admitted state; record a successful move's initial, intermediate and
+settled physics ticks, plus rejected-input and changed-facing frames. Capture and inspect each changed
+PNG for camera/player position, follower/dead marker, opened roof, truthful status and clipping.
+Retain the original entry frame and all prior battle evidence; reuse unchanged accepted frames and
+run other native modes only for a concrete invalidated input/presentation path. Use the existing
+seven-step official Godot gate when selected; all new outputs use a fresh ignored run directory.
+
+Stop implementation at the bounded region with repeatable movement, typed refusal and preserved
+history, then freeze for independent review. General church/service events, door/roof restore,
+first-visit handlers, follower/NPC execution, natural party/flags, original first-input positions,
+step-word/random-battle behavior, fade/music, original presentation timing and H4 remain explicitly
+Unsupported or **Unknown**. None is silently enabled by this pocket. If a larger region needs follower
+collision or event semantics, state the exact operation affected and reuse the accepted static owners
+and locomotion/entity rails first. Only main-gate may route a bounded research request after the
+three conditions in [ADR0014](../../docs/decisions/0014-static-first-runtime-evidence-after-map3-battle01.md#admit-new-h3-only-through-a-three-part-gate-now)
+and [ADR0016](../../docs/decisions/0016-remake-start-evidence-deferral.md#use-static-first-conditional-evidence-routing-now)
+are met; do not reopen failed original-reference/R2b candidates or the historical H3 queue.
 
 ### Controlled Godot Battle01 consumer
 
