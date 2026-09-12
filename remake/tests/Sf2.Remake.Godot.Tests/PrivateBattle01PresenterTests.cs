@@ -214,7 +214,7 @@ public sealed class PrivateBattle01PresenterTests
                     try { current = current.FirstRound.CurrentCandidate is null ? Battle01FirstRound.EnterNext(current) : CompleteAuthoredTurn(current); }
                     catch (Battle01AttackSelectionRequiredException)
                     {
-                        current = Battle01EnemyPhysicalAttack.CompleteNext(current,current.FirstRound.CurrentCandidate!.Value.CombatantIndex,
+                        current = Battle01EnemyPhysicalAttack.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
                             Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
                     }
                 }
