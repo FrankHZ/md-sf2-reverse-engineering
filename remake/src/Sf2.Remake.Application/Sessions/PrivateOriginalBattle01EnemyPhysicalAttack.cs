@@ -26,6 +26,8 @@ public sealed partial class GameSession
                 ? Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending
                 : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId
                 ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat
+                : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId
+                ? Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill
                 : Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
             battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex, policy,
                 allowChesterCounter: current.Preparation.Party.Allies[2].CurrentExp is not null);

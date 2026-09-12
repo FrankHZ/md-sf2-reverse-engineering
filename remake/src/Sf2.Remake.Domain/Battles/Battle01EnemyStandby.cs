@@ -208,8 +208,9 @@ public static class Battle01EnemyStandby
                 if (receipt.AllyDefeat is { } allyCleanup)
                 {
                     Battle01TurnCompletion.ValidateAllyDefeatReceipt(receipt);
-                    if (positions[attack.TargetIndex] is not null || livingAllies != 2 || livingEnemies != 4)
-                        throw new ArgumentException("Retain the unique unplaced ally and both prior enemy defeats.", "attack.history");
+                    if (positions[attack.TargetIndex] is not null ||
+                        receipt.BeforeAfterTurn != new Battle01FactionCounts(livingAllies, livingEnemies))
+                        throw new ArgumentException("Retain the unique unplaced ally and its validated policy's prior enemy defeats.", "attack.history");
                     targetAfter = targetAfter.WithCurrentDefeats(allyCleanup.DefeatsAfter);
                     positions[attack.TargetIndex] = attack.Target.Position;
                     livingAllies++;
