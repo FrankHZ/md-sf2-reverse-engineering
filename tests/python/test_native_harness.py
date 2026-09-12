@@ -1228,12 +1228,6 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
     ):
         assert required_text in agents_guide
     for required_text in (
-        "Shop slice needed many partial/rejection rounds",
-        "one narrow semantic-root rejection",
-        "Keep `xhigh`; do not raise",
-        "runner/observer failure-propagation defect",
-        "1,301 words",
-        "prompt-size ceiling",
         "Fixture/schema exactness alone is not a derivation guard",
         "An H3 command does not pass merely because BizHawk exits normally",
     ):

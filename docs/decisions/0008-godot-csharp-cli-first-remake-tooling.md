@@ -250,7 +250,9 @@ iterate on Godot C# directly without an editor plugin owning the project. It rej
 non-reproducible local integration as a durable project contract.
 
 Acceptance of this ADR selects the engine/tooling boundary but does not authorize the Phase 4
-transition. [ADR 0009](./0009-first-phase4-playable-slice.md) selects the first playable milestone
-and its pre-entry gap gate; Phase 4 still requires a separate explicit start action after that gate
-closes. Asset licensing and replacement, save/UI scope, visual parity targets, and any optional MCP
-winner remain separate decisions or acceptance slices.
+transition. Its original requirement to close ADR 0009's pre-entry gaps before the separate start
+action is superseded by [ADR 0016](./0016-remake-start-evidence-deferral.md). A user-authorized bounded
+implementation requires its concrete accepted dependencies; the full continuous-scenario and H4
+evidence is not a default start prerequisite. [ADR 0009](./0009-first-phase4-playable-slice.md) still
+owns the eventual first playable milestone. Asset licensing and replacement, save/UI scope, visual
+parity targets, and any optional MCP winner remain separate decisions or acceptance slices.
