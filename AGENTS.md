@@ -153,6 +153,12 @@ vendoring. A public repository is not itself permission to copy or relicense its
 `uv` owns the Python environment and lock. Use `uv sync --locked`; do not create a parallel
 requirements workflow or install project dependencies into the system interpreter.
 
+Before local verification, load the current ignored private-input configuration in the same process
+that launches the command; follow [Local Private Inputs](./docs/operations/local-private-inputs.md).
+An absent worktree-default ROM does not establish that the registered shared ROM is unavailable.
+Check input selection and run the narrow ROM verifier before reporting a ROM blocker. Keep missing
+configuration, missing input, identity mismatch, and later toolchain failures distinct in handoffs.
+
 The normal public commit gate is:
 
 ```powershell

@@ -22,13 +22,33 @@ input, extract an archive, or read the ROM payload. The existing ROM verifier re
 the accepted ROM size and hashes.
 
 When the variable is absent, the default remains the worktree-local ignored
-`local/roms/sf2-us.bin`. An explicit `--rom-path` still overrides either default. Configure a shell
-with a machine-local value, never a tracked absolute path:
+`local/roms/sf2-us.bin`. An explicit `--rom-path` still overrides either default. Save the selection
+in the worktree's existing ignored environment configuration. If none exists, a local
+`local/private-inputs.ps1` containing this assignment is sufficient; keep the actual value untracked:
 
 ```powershell
 $env:SF2_SHARED_INPUT_ROOT = '<absolute-machine-private-shared-root>'
+```
+
+Load that configuration in the same PowerShell process that launches local verification. For the
+standalone configuration above, run from the owning worktree root:
+
+```powershell
+. ./local/private-inputs.ps1
 uv run sf2 rom verify
 ```
+
+Each fresh shell or agent command process must load the configuration again; setting it in an earlier
+command does not configure later processes. Preserve the selection when reusing a worktree, and carry
+the current configuration location in a local handoff. Historical per-slice launch scripts are not
+the setup entrypoint. This is process-scoped configuration, not a user or machine environment change.
+
+Before reporting ROM verification as unavailable, distinguish an unconfigured shared root and absent
+worktree default from a missing selected file or a manifest identity mismatch. Load the known
+configuration and use `uv run sf2 rom verify` to check the ROM boundary. If it passes, report the ROM
+as verified and identify any later normal-verifier dependency separately. Preserve previous failed
+results; a corrected input selection does not retroactively make those runs pass or establish H1/H3
+readiness. Do not search for alternate ROMs or copy inputs merely to fill the default path.
 
 Do not include the private root's absolute machine path or any private input filename supplied by the
 user in a public handoff. Report the registered repository-owned identity and its allowed provenance

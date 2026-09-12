@@ -412,15 +412,19 @@ The plan reports changed paths, selected partitions, reasons, resource locks, co
 unclassified paths, and whether execution semantics changed. Unknown runtime-shaped `remake/**` paths
 fan out conservatively; tracked Markdown is public-core documentation.
 
-The normal repository gate is:
+Before the normal repository gate, load the current ignored private-input configuration in the same
+command process, following [Local Private Inputs](../../docs/operations/local-private-inputs.md).
+Then run:
 
 ```powershell
 uv run sf2 verify
 ```
 
-It may require registered local private inputs after its public stages. Do not copy private inputs into
-a worktree merely to convert an unavailable optional local stage into a claimed pass. Follow the owning
-slice and [Local Private Inputs](../../docs/operations/local-private-inputs.md).
+It may require registered local private inputs after its public stages. A missing worktree-default ROM
+requires checking the configured shared input before declaring ROM verification unavailable. Report
+ROM identity and later upstream/toolchain availability separately. Do not copy private inputs into a
+worktree merely to convert an unavailable optional local stage into a claimed pass. Follow the owning
+slice and the private-input owner above.
 
 `uv run sf2 verify --full` is reserved for milestone, release, shared-harness, or explicit full-parity
 work. It is not the default remake feature or documentation gate.
