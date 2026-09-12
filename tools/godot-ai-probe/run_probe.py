@@ -6,7 +6,8 @@ Usage:
 
 Environment:
     GODOT_BIN   path to the exact accepted Godot .NET editor executable
-    DOTNET_BIN  dotnet executable (default: ``dotnet`` from PATH)
+    DOTNET_BIN       absolute shared dotnet executable
+    DOTNET_CLI_HOME  absolute shared CLI state directory
 
 The Godot version preflight runs before scratch creation or any build/import.
 Exit code 0 means every gate passed; otherwise 1 with bounded diagnostics.
@@ -23,7 +24,13 @@ import sys
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import suppress
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
+
+from sf2tool.dotnet_environment import (
+    prevent_dotnet_path_changes,
+    shared_dotnet_environment,
+)
 
 PROBE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PROBE_DIR.parents[1]
@@ -162,6 +169,7 @@ def _run(
     *,
     popen_factory: Callable[..., subprocess.Popen[str]] | None = None,
     tree_terminator: TreeTerminator | None = None,
+    environment: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run one process with bounded execution, tree cleanup, and pipe reaping."""
 
@@ -184,6 +192,7 @@ def _run(
             encoding="utf-8",
             errors="replace",
             shell=False,
+            env=prevent_dotnet_path_changes(os.environ if environment is None else environment),
             **platform_options,
         )
     except OSError as exc:
@@ -277,12 +286,16 @@ def _prepare_scratch(
         raise ProbeError(f"FAIL scratch freshness: path already exists: {candidate}")
 
     missing = [str(path) for path in PROJECT_FILES if not (source_dir / path).is_file()]
+    sdk_pin = repo_root / "remake" / "global.json"
+    if not sdk_pin.is_file():
+        missing.append("remake/global.json")
     if missing:
         raise ProbeError(f"FAIL scratch source inventory: missing {', '.join(missing)}")
 
     candidate.parent.mkdir(parents=True, exist_ok=True)
     try:
         candidate.mkdir()
+        shutil.copy2(sdk_pin, candidate / "global.json")
         for relative in PROJECT_FILES:
             destination = candidate / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -336,22 +349,30 @@ def main(
 ) -> int:
     args = _parse_args(argv)
     environment = os.environ if environ is None else environ
-    run_command = _run if runner is None else runner
 
     godot = environment.get("GODOT_BIN")
     if not godot or not Path(godot).is_file():
         print("GODOT_BIN must point to the Godot 4.7.2 .NET editor executable")
         return 1
     godot = str(Path(godot).resolve())
-    dotnet = environment.get("DOTNET_BIN", "dotnet")
-
     try:
+        environment = shared_dotnet_environment(environment, REPO_ROOT)
+        run_command = partial(_run, environment=environment) if runner is None else runner
+        dotnet = environment["DOTNET_BIN"]
         version = run_command(
             [godot, "--version"], PROBE_DIR, VERSION_TIMEOUT_SECONDS, "Godot version"
         )
         _require_godot_version(version)
 
         scratch = _prepare_scratch(args.work_dir)
+        temporary = scratch / "tmp"
+        temporary.mkdir()
+        environment.update({
+            "APPDATA": str(scratch / "appdata"),
+            "LOCALAPPDATA": str(scratch / "localappdata"),
+            "TEMP": str(temporary),
+            "TMP": str(temporary),
+        })
         project = scratch / "probe.csproj"
         print(f"SCRATCH_DIR={scratch}")
 
@@ -398,7 +419,7 @@ def main(
 
         if outputs[0] != outputs[1]:
             raise ProbeError("FAIL determinism: run outputs differ")
-    except ProbeError as exc:
+    except (ProbeError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 

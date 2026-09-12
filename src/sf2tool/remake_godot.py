@@ -21,6 +21,10 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from sf2tool.dotnet_environment import (
+    prevent_dotnet_path_changes,
+    shared_dotnet_environment,
+)
 from sf2tool.paths import REPO_ROOT, display_path, repo_path
 
 DEFAULT_MANIFEST = repo_path("remake/toolchain.json")
@@ -679,7 +683,7 @@ def run_bounded_process(
     process = subprocess.Popen(
         arguments,
         cwd=cwd,
-        env=dict(environment),
+        env=prevent_dotnet_path_changes(environment),
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -786,12 +790,15 @@ def _new_scratch(scratch_parent: Path) -> Path:
 
 
 def _gate_environment(scratch: Path) -> dict[str, str]:
-    environment = dict(os.environ)
+    environment = shared_dotnet_environment(os.environ, REPO_ROOT)
+    temporary = scratch / "tmp"
+    temporary.mkdir(parents=True, exist_ok=True)
     environment.update(
         {
             "APPDATA": str(scratch / "appdata"),
             "LOCALAPPDATA": str(scratch / "localappdata"),
-            "DOTNET_CLI_HOME": str(scratch / "dotnet-home"),
+            "TEMP": str(temporary),
+            "TMP": str(temporary),
             "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
             "DOTNET_CLI_UI_LANGUAGE": "en-US",
             "DOTNET_CLI_USE_MSBUILD_SERVER": "false",
@@ -1004,7 +1011,7 @@ def verify_remake_godot(
         run(
             "restore",
             [
-                "dotnet",
+                environment["DOTNET_BIN"],
                 "restore",
                 solution,
                 "--locked-mode",
@@ -1015,7 +1022,7 @@ def verify_remake_godot(
         run(
             "build",
             [
-                "dotnet",
+                environment["DOTNET_BIN"],
                 "build",
                 solution,
                 "--configuration",

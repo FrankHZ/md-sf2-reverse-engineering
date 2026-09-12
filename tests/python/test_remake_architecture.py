@@ -540,21 +540,44 @@ def test_public_workflow_is_one_lightweight_tracked_input_job() -> None:
     assert len(jobs) == 2
     assert re.findall(r"(?m)^  ([a-z0-9-]+):$", jobs[1]) == ["tracked-inputs"]
 
+    assert (
+        "    env:\n"
+        '      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"\n'
+        "      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home\n"
+        "      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages\n"
+        "      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache\n"
+    ) in jobs[1]
+    cli_selection = (
+        "|\n"
+        "          $dotnetBinary = (Get-Command dotnet -CommandType Application).Source\n"
+        '          "DOTNET_BIN=$dotnetBinary" | Out-File -FilePath $env:GITHUB_ENV '
+        "-Encoding utf8 -Append"
+    )
+    assert (
+        "      - name: Select installed shared .NET CLI\n"
+        "        shell: pwsh\n"
+        f"        run: {cli_selection}\n"
+    ) in jobs[1]
     expected_run_commands = (
+        cli_selection,
         "uv sync --locked",
         "uv run ruff check src tests/python",
         "uv run pytest tests/python/test_native_harness.py",
+        (
+            "uv run pytest tests/python/test_dotnet_environment.py "
+            "tests/python/test_remake_godot.py tests/python/test_godot_ai_probe.py"
+        ),
         (
             "uv run pytest tests/python/test_remake_architecture.py "
             "tests/python/test_verification_plan.py "
             "tests/python/test_remake_assets.py"
         ),
         "uv run sf2 design-contracts test",
-        "dotnet restore Sf2.Remake.sln --locked-mode",
-        "dotnet build Sf2.Remake.sln --configuration Release --no-restore",
-        "dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore",
+        "'& $env:DOTNET_BIN restore Sf2.Remake.sln --locked-mode'",
+        "'& $env:DOTNET_BIN build Sf2.Remake.sln --configuration Release --no-restore'",
+        "'& $env:DOTNET_BIN test Sf2.Remake.sln --configuration Release --no-build --no-restore'",
     )
-    assert re.findall(r"(?m)^        run: (.+)$", jobs[1]) == list(
+    assert re.findall(r"(?m)^        run: (.+(?:\n          .+)*)", jobs[1]) == list(
         expected_run_commands
     )
     for command in expected_run_commands:

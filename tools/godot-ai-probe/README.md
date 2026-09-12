@@ -27,8 +27,9 @@ that pin the editor artifact, .NET SDK, packages, and restore/build commands.
 
 - `project.godot`, `probe.csproj`, `Main.tscn`, and `src/` are immutable probe
   inputs during a run.
-- `run_probe.py` copies only those nine declared inputs into a new ignored
-  directory under `local/`, then builds, imports, and runs there.
+- `run_probe.py` copies those nine declared inputs and the accepted
+  `remake/global.json` SDK pin into a new ignored directory under `local/`, then
+  builds, imports, and runs there.
 - Generated `.godot/`, `bin/`, and `obj/` state therefore belongs to the scratch
   copy, not to the tracked probe source.
 - An explicit `--work-dir` must be a nonexistent child of this repository's
@@ -41,7 +42,17 @@ the caller decides when to remove them.
 
 ## Reproduce
 
+First load the host's absolute `DOTNET_BIN` and fixed shared `DOTNET_CLI_HOME`
+configuration described by the [remake environment route](../../remake/docs/development-and-verification.md#locked-net-workflow).
+Missing or relative selections fail explicitly. The runner forces
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` in every child environment, overriding
+inherited values and preserving an explicit caller mapping. The shared home
+contains SDK state only; package/HTTP caches stay worktree-local and APPDATA,
+TEMP, builds and evidence stay in fresh run scratch. The obsolete
+`DOTNET_SKIP_FIRST_TIME_EXPERIENCE` is not a PATH protection mechanism.
+
 ```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $env:GODOT_BIN = '<path-to-Godot-4.7.2-.NET-editor.exe>'
 uv run python tools/godot-ai-probe/run_probe.py
 ```

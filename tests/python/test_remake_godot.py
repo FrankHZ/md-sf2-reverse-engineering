@@ -89,13 +89,57 @@ def test_tracked_toolchain_manifest_locks_official_godot_dotnet_release() -> Non
     )
 
 
-def test_gate_environment_disables_persistent_dotnet_build_servers(tmp_path: Path) -> None:
+def test_gate_environment_disables_persistent_dotnet_build_servers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DOTNET_BIN", sys.executable)
+    monkeypatch.setenv("DOTNET_CLI_HOME", str(tmp_path / "shared-cli"))
     environment = _gate_environment(tmp_path)
 
     assert environment["DOTNET_CLI_USE_MSBUILD_SERVER"] == "false"
     assert environment["MSBUILDUSESERVER"] == "0"
     assert environment["MSBUILDDISABLENODEREUSE"] == "1"
     assert environment["UseSharedCompilation"] == "false"
+
+
+def test_gate_runs_share_cli_home_but_isolate_scratch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DOTNET_BIN", sys.executable)
+    monkeypatch.setenv("DOTNET_CLI_HOME", str(tmp_path / "shared-cli"))
+    monkeypatch.setenv("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true")
+    original = dict(os.environ)
+    first = _gate_environment(tmp_path / "one")
+    second = _gate_environment(tmp_path / "two")
+    assert first["DOTNET_CLI_HOME"] == second["DOTNET_CLI_HOME"] == original["DOTNET_CLI_HOME"]
+    assert first["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] == "false"
+    assert second["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] == "false"
+    for key in ("APPDATA", "LOCALAPPDATA", "TEMP", "TMP"):
+        assert first[key] != second[key]
+    assert dict(os.environ) == original
+
+
+@pytest.mark.parametrize("inherited", [None, "DOTNET_ADD_GLOBAL_TOOLS_TO_PATH",
+    "dotnet_add_global_tools_to_path"])
+def test_actual_non_dotnet_child_receives_path_opt_out_without_cli_configuration(
+    tmp_path: Path, inherited: str | None
+) -> None:
+    environment = {"CALLER_VALUE": "retained"}
+    if inherited is not None:
+        environment[inherited] = "true"
+    before = environment.copy()
+    command = [sys.executable, "-c", (
+        "import json,os; print(json.dumps({k:os.environ.get(k) for k in "
+        "['DOTNET_ADD_GLOBAL_TOOLS_TO_PATH','DOTNET_CLI_HOME','CALLER_VALUE']}))"
+    )]
+    receipt = run_bounded_process("environment", command, cwd=tmp_path, environment=environment,
+        timeout=10, termination_timeout=5, reap_timeout=5)
+    assert receipt.passed and receipt.cleanup_status == "clean"
+    assert json.loads(receipt.stdout_tail) == {
+        "DOTNET_ADD_GLOBAL_TOOLS_TO_PATH": "false", "DOTNET_CLI_HOME": None,
+        "CALLER_VALUE": "retained"
+    }
+    assert environment == before
 
 
 def test_artifact_verification_is_exact_for_size_and_sha256(tmp_path: Path) -> None:

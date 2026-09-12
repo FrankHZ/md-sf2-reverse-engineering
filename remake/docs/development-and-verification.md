@@ -12,12 +12,31 @@ any explicitly justified semantic dependency.
 
 ## Locked .NET Workflow
 
-Run from `remake/` so the pinned SDK is authoritative:
+Before any SDK command, including `--info` or `nuget locals`, load the host's explicit shared CLI
+configuration and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. `DOTNET_BIN` selects one existing
+absolute executable and `DOTNET_CLI_HOME` selects one fixed absolute SDK state directory shared by
+this project's worktrees. The maintained Godot and probe entrypoints reject missing or relative
+selections before launching tools. They force the opt-out again at the actual process boundary and
+use the selected installation for child lookups without modifying registry PATH.
+
+The SDK otherwise adds its global-tools directory to PATH by default. Creating a new CLI home per
+run can repeat first-run configuration. `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` is unsupported in .NET
+Core 3.0 and later and does not provide this protection. See the official
+[.NET environment variable reference](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-environment-variables#dotnet_add_global_tools_to_path).
+
+Use the existing installation and the SDK pinned by `remake/global.json`; do not install or upgrade
+an SDK to configure sharing. Keep the host-specific selections in ignored configuration. Preserve
+worktree-local `NUGET_PACKAGES` and `NUGET_HTTP_CACHE_PATH`: without explicit overrides the maintained
+entrypoints use this worktree's `local/nuget-packages` and `local/nuget-http-cache`, keeping packages
+out of the shared CLI home. Only SDK-owned CLI state may be shared.
+
+After loading that configuration, run from `remake/` so the pinned SDK is authoritative:
 
 ```powershell
-dotnet restore Sf2.Remake.sln --locked-mode
-dotnet build Sf2.Remake.sln --configuration Release --no-restore
-dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN restore Sf2.Remake.sln --locked-mode
+& $env:DOTNET_BIN build Sf2.Remake.sln --configuration Release --no-restore
+& $env:DOTNET_BIN test Sf2.Remake.sln --configuration Release --no-build --no-restore
 ```
 
 The solution contains the four production assemblies and their four owning test projects. Package
@@ -59,7 +78,7 @@ configuring the canonical input:
 ```powershell
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
 try {
-    dotnet test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
+    & $env:DOTNET_BIN test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
     if ($LASTEXITCODE -ne 0) { throw 'Required private canonical check failed.' }
 } finally {
     Remove-Item Env:SF2_REQUIRE_PRIVATE_TESTS
@@ -96,7 +115,7 @@ $env:SF2_PRIVATE_BATTLE01_TERRAIN = Join-Path $upstream 'disasm/data/battles/ent
 & ./scripts/Export-Battle01Data.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_DATA
 & ./scripts/Export-Battle01Scene.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_SCENE
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
-dotnet test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName=Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests.AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader'
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName=Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests.AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader'
 ```
 
 Verify the two export SHA values against `manifests/extractions/battle01-data.json` and
@@ -468,14 +487,21 @@ before launching tools:
 | --- | --- |
 | Python environment and uv cache | Reuse existing `UV_PROJECT_ENVIRONMENT` and `UV_CACHE_DIR`; run `uv sync --locked` against the current checkout and confirm the interpreter and `sf2tool` module paths. |
 | NuGet packages and HTTP cache | Reuse existing `NUGET_PACKAGES` and `NUGET_HTTP_CACHE_PATH` in this worktree. Check `dotnet nuget locals all --list` in the actual child environment, including when a wrapper replaces `LOCALAPPDATA`. |
-| CLI state | Keep `DOTNET_CLI_HOME` inside the worktree. A gate may intentionally override it with run-local state; explicit package and HTTP cache paths still apply. |
+| CLI state | All project worktrees on a host select the same absolute `DOTNET_BIN` and `DOTNET_CLI_HOME`. Force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`; gates preserve the shared home and isolate other writable state. |
 | Run outputs | Give each run separate source/build/import/export workspace, `TEMP`/`TMP`, test caches, logs, receipts and failure evidence. Scope test and private-input environment variables to the owning command. |
 
 Do not create another environment or copy a populated cache merely because the slice or branch changed.
-Do not share writable environments, caches or scratch across worktrees. Registered immutable private
+The shared SDK-owned CLI home is the sole writable exception. Do not share package/Python environments,
+caches or scratch across worktrees. Registered immutable private
 inputs and pinned toolchain archives keep their existing read-only admission rules. The official Godot
 runner still creates fresh editor/template and project/export scratch; environment reuse does not alter
 its manifest checks, copy policy or process cleanup contract.
+
+When changing CLI launch policy, test the actual child environment, including an inherited opt-in and
+an explicit caller mapping. From two project worktree contexts, use only protected lightweight SDK
+commands to verify the same executable, pinned SDK and CLI home with distinct run scratch. Read the
+raw user and machine registry PATH values before and after; require exact equality without writing a
+test value or reproducing a broken PATH. Retain raw values privately and publish only the comparison.
 
 After acceptance, inspect live processes, Git state, active environment references and the exact
 reproduction dependencies before selecting removable duplicates. Keep source archives, captures, TRX,

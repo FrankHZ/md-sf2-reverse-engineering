@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +28,80 @@ def _load_runner() -> ModuleType:
 
 
 PROBE = _load_runner()
+
+
+def test_main_missing_shared_cli_configuration_does_not_launch(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def forbidden_launch(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("Unconfigured probe must not launch a child")
+
+    monkeypatch.setattr(PROBE.subprocess, "Popen", forbidden_launch)
+    assert PROBE.main([], environ={"GODOT_BIN": sys.executable}) == 1
+    assert "DOTNET_BIN must explicitly select" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("inherited", [None, "true"])
+def test_run_passes_protected_mapping_to_an_actual_child(
+    tmp_path: Path, inherited: str | None
+) -> None:
+    environment = {"PROBE_CALLER": "selected"}
+    if inherited is not None:
+        environment["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = inherited
+    before = environment.copy()
+    result = PROBE._run([sys.executable, "-c",
+        "import os,json;print(json.dumps([os.environ.get('DOTNET_ADD_GLOBAL_TOOLS_TO_PATH'),"
+        "os.environ.get('PROBE_CALLER')]))"],
+        tmp_path, 10, "environment", environment=environment)
+    assert result.returncode == 0
+    assert json.loads(result.stdout) == ["false", "selected"]
+    assert environment == before
+
+
+def test_main_supplied_environment_reaches_all_real_child_launches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PROBE_CALLER", "wrong inherited value")
+    monkeypatch.setenv("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true")
+    environment = dict(os.environ)
+    environment.update({"GODOT_BIN": sys.executable, "DOTNET_BIN": sys.executable,
+        "DOTNET_CLI_HOME": str(tmp_path / "shared-cli"), "PROBE_CALLER": "explicit mapping"})
+    before = environment.copy()
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    monkeypatch.setattr(PROBE, "_prepare_scratch", lambda _requested: scratch)
+    real_popen = subprocess.Popen
+    calls = []
+
+    def launch(_command: list[str], **kwargs: object) -> subprocess.Popen[str]:
+        index = len(calls)
+        record = tmp_path / f"child-{index}.json"
+        calls.append(record)
+        output = (
+            PROBE.EXPECTED_GODOT_VERSION if index == 0
+            else _valid_run_output() if index >= 3 else ""
+        )
+        code = (
+            "import os,json;from pathlib import Path;"
+            f"Path({str(record)!r}).write_text(json.dumps({{k:os.environ.get(k) for k in "
+            "['PROBE_CALLER','DOTNET_ADD_GLOBAL_TOOLS_TO_PATH','DOTNET_CLI_HOME','DOTNET_BIN','TEMP','APPDATA']}));"
+            f"print({output!r})"
+        )
+        return real_popen([sys.executable, "-c", code], **kwargs)
+
+    monkeypatch.setattr(PROBE.subprocess, "Popen", launch)
+    assert PROBE.main([], environ=environment) == 0
+    assert len(calls) == 5
+    for index, path in enumerate(calls):
+        child = json.loads(path.read_text())
+        assert child["PROBE_CALLER"] == "explicit mapping"
+        assert child["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] == "false"
+        assert child["DOTNET_CLI_HOME"] == environment["DOTNET_CLI_HOME"]
+        assert child["DOTNET_BIN"] == str(Path(sys.executable).resolve())
+        if index:
+            assert child["TEMP"] == str(scratch / "tmp")
+            assert child["APPDATA"] == str(scratch / "appdata")
+    assert environment == before
 
 
 def _completed(
@@ -81,7 +157,8 @@ def test_wrong_version_fails_before_scratch_or_build(
         raise AssertionError("wrong-version preflight must not create scratch")
 
     monkeypatch.setattr(PROBE, "_prepare_scratch", forbidden_scratch)
-    result = PROBE.main([], environ={"GODOT_BIN": str(godot)}, runner=fake_runner)
+    result = PROBE.main([], environ={"GODOT_BIN": str(godot), "DOTNET_BIN": sys.executable,
+        "DOTNET_CLI_HOME": str(tmp_path / "shared-cli")}, runner=fake_runner)
 
     assert result == 1
     assert calls == [([str(godot), "--version"], "Godot version")]
@@ -111,7 +188,8 @@ def test_each_step_has_an_explicit_timeout_and_deterministic_result(
         return _completed()
 
     monkeypatch.setattr(PROBE, "_prepare_scratch", fake_prepare)
-    result = PROBE.main([], environ={"GODOT_BIN": str(godot)}, runner=fake_runner)
+    result = PROBE.main([], environ={"GODOT_BIN": str(godot), "DOTNET_BIN": sys.executable,
+        "DOTNET_CLI_HOME": str(tmp_path / "shared-cli")}, runner=fake_runner)
 
     assert result == 0
     assert [(timeout, step) for _, timeout, step in calls] == [
@@ -330,6 +408,9 @@ def test_scratch_must_be_fresh_safe_and_contains_only_project_inputs(tmp_path: P
     repo_root = tmp_path / "repo"
     source = tmp_path / "source"
     _make_probe_source(source)
+    sdk_pin = repo_root / "remake" / "global.json"
+    sdk_pin.parent.mkdir(parents=True)
+    sdk_pin.write_text('{"sdk":{"version":"10.0.204","rollForward":"disable"}}', encoding="utf-8")
     scratch = repo_root / "local" / "derived" / "godot-ai-probe" / "case-one"
 
     created = PROBE._prepare_scratch(
@@ -340,7 +421,8 @@ def test_scratch_must_be_fresh_safe_and_contains_only_project_inputs(tmp_path: P
     }
 
     assert created == scratch.resolve()
-    assert copied == {path.as_posix() for path in PROBE.PROJECT_FILES}
+    assert copied == {path.as_posix() for path in PROBE.PROJECT_FILES} | {"global.json"}
+    assert (created / "global.json").read_bytes() == sdk_pin.read_bytes()
     assert not (created / ".godot").exists()
 
     sentinel = created / "sentinel.txt"
