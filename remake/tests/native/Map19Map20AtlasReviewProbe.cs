@@ -1278,7 +1278,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         }
         Require(_session.PrivateOriginalBattle01!.Battle.FirstControl?.ActorIndex==2 &&
             _session.PrivateOriginalBattle01.Battle.FirstRound!.RoundNumber==11,"Real R11 Chester control");
+        // Actual reachable preview skirts the impassable column: (9,9)->(8,9)->(8,4)->(9,4).
+        await PressBattleKey(Key.J);
         for(int i=0;i<5;i++)await PressBattleKey(Key.I);
+        await PressBattleKey(Key.L);
         Require(_session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.Cursor==new MapPosition(9,4) &&
             _session.PrivateOriginalBattle01.Battle.FirstControl.Movement.GridCost==14,"Actual cost14 R11 move");
         await PressBattleKey(Key.Space);await PressBattleKey(Key.A);

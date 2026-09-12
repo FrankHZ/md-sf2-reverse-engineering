@@ -365,6 +365,27 @@ explicit Bowie counter normalized, retains the old lethal guard and checks the n
 Domain tests own strike/outcome/cleanup/history forgeries and rejection of every continuing entry;
 Application tests own once-only publication, preparation/source identity and frozen session operations.
 
+For the bounded Chester counter, run required-private
+`AcceptedSelectedInputsCounterOnReceipt89AndReachActualSarahMovementCancel` with the four existing
+selected Battle01/canonical inputs and `SF2_REQUIRE_PRIVATE_TESTS=1`. It replays the79-receipt prefix,
+R10 Chester(9,9)/STAY plus Sarah/Bowie origin STAY, R11 Chester(9,4) target129 cancel/reselect, receipt87,
+actual128 and atomic130 primary/counter/EXP89. It then actually dispatches133/129 and confirms Sarah
+movement/cancel after91. The owning Domain/Application/view tests cover both HP before-images,
+halving-before-spread, all14 draws, EXP origin/recipient, reversed role and policy forgeries,
+late replay/finalization/accounting rollback, and stale/duplicate requests. No late EXP or HP patch
+substitutes for the real-input check.
+
+Use native `chester-counterattack` for32 frames, including the25-frame accepted prefix. Compare
+physical Space with the exact selected-copy Application completion and the complete production relay.
+Inspect frame29's ordered primary/counter HP and EXP25→30, then Sarah ready/provisional/cancel with
+live Chester HP1/EXP30 and enemy130 HP4. The copied immediate frame is explicitly labeled test
+instrumentation; production input is not paused. Preserve existing startup comparisons. The shared
+Battle01 view requires affected `enemy-physical-attack` and `enemy-pursuit` native regressions;
+reuse only byte-identical previously inspected images. Use a fresh worktree-local ignored run root,
+the retained fixed SDK/editor and committed archive. Run the planner-selected full managed suite
+once and official Godot gate; preserve completed failures and correct/rerun only their owning nodes.
+No H3 or full Python suite is added by this slice. Normal public verification remains a separate gate.
+
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also
