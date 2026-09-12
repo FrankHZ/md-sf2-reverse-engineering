@@ -4994,23 +4994,21 @@ must leave its prior request unchanged; it does not require another full native 
 
 #### Reproduce entry acceptance
 
-Use a fresh ignored `local/granseal-entry/` output root with isolated uv/TEMP/test/native output.
-The required-private Content test
-`AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` starts from the selected
-canonical/placement/scene/terrain inputs and threads arrival input through the real119-receipt route.
-Run it with the Domain/Application `ExplorationEntryTests`, canonical import reader tests and the four
-Godot projection owners above. Keep the public unselected skip explicit. Use the committed
-`uv run sf2 verify plan --base origin/main --head HEAD` selection for the locked solution, official
-Godot and normal public gates; preserve completed failures and rerun only invalidated narrow checks.
+Use the [return-movement acceptance](#return-movement-acceptance-and-stopping-condition) below and
+the [current native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
+for the real119-receipt route through recovery/request/entry and its bounded movement continuation.
+Entry itself publishes the fresh party, flags, layout/roof and distinct same-cell declarations;
+that authenticated entry remains the before-image when later inputs publish a current player pose.
+Frame45 verifies actual entry and full API/physical equality. Subsequent frames exercise movement,
+terrain blocks, Unsupported targets/interactions and settled idle time while followers/NPCs remain
+frozen. Movement does not rerun entry or the first-visit handlers.
 
-The [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review) owns
-six modes and minimum84 frames. Frames45/46 verify actual entry, full API/physical equality, church
-roof pixels, all three same-cell identities and frozen inputs/time. Build/import/export only in a
-fresh archive of the committed source. Inspect every changed PNG at original resolution and reuse
-only byte-identical accepted inspections. The named pinned sources above and accepted planning Git
-object own the source boundary; unchanged source recipes are reused, not replayed as setup work.
-General stat refresh, original VInt/entity-script positions, natural party/flags, fade/music, H4 and
-the first new-visit movement/event operation remain explicit Unknowns or unsupported capabilities.
+Build/import/export only in a fresh archive of the committed source under an ignored output root,
+reusing the existing environment. Inspect every changed PNG at original resolution and reuse only
+byte-identical accepted inspections. The named pinned sources above own the source boundary;
+unchanged source recipes are reused, not replayed as setup work. General stat refresh, original
+VInt/entity-script positions, natural party/flags, fade/music and H4 remain Unknown. Church services,
+follower/NPC scripts and movement/events beyond the admitted pocket remain unsupported.
 
 ### Implemented return-visit church-pocket movement
 
@@ -5164,20 +5162,19 @@ existing Battle01 snapshot constructor, `Map3InputAdapter`, `PrivateOriginalMapB
 already supply traversal, animation, current-map projection and replacement. No new Domain behavior,
 schema, fixture, importer, generalized occupancy model or registry is planned.
 
-#### Acceptance and stopping condition
+#### Return-movement acceptance and stopping condition
 
-For this planning PR, use a clean committed head and
-`uv run sf2 verify plan --base origin/main --head HEAD`, document/link and private-boundary inspection,
-`git diff --check`, and normal `uv run sf2 verify`. Load the current ignored private-input/environment
-configuration in the same process; use `uv run sf2 rom verify` to distinguish ROM identity from later
-upstream/toolchain availability. Do not run .NET, Godot, H3 or the complete Python suite for this
-document. Freeze a clean pushed Draft PR for main-gate review before implementation.
+Use `uv run sf2 verify plan --base origin/main --head HEAD` on a clean committed head to select
+affected gates, alongside document/link and private-boundary inspection, `git diff --check`, and
+normal `uv run sf2 verify`. Load the current ignored private-input/environment configuration in the
+same process; distinguish ROM identity from later upstream/toolchain availability when reporting a
+missing dependency. Preserve completed failures and rerun only invalidated owning checks.
 
-For the subsequent implementation, the committed planner determines invalidation. Run locked restore/
-build and the selected owning .NET tests using the explicit shared CLI configuration. Focused filters
-are `FullyQualifiedName~PrivateOriginalBattle01ExplorationEntryTests` in the Application project,
+When selected, run locked restore/build and the owning .NET tests using the explicit shared CLI
+configuration. Focused filters are `FullyQualifiedName~PrivateOriginalBattle01ExplorationEntryTests`
+in the Application project,
 `FullyQualifiedName~AcceptedExplorationEntryRetains119ReceiptsAndPublishesOneFreshFrozenVisit` in the
-Content project (extend its continuation rather than duplicating the entire route), and the four
+Content project (the same test continues from entry through movement), and the four
 named Godot test classes above in the Godot test project. Use `& $env:DOTNET_BIN test <owning.csproj>
 --configuration Release --no-build --no-restore --filter <filter>` after the selected build. The real
 Content check loads the existing four private inputs and `SF2_REQUIRE_PRIVATE_TESTS=1`; it must execute
@@ -5196,8 +5193,8 @@ operations preserve identity; supported blocks preserve position while changing 
 facing/animation/input result. A moved-player successor must not weaken malformed initial-entry
 rejection. Do not create a late-arrival input or forge a legacy snapshot to shorten the route.
 
-Extend the existing `leader-defeat-pending` native mode after its actual entry frame45; replace only
-the directional part of the former frame46 freeze assertion. Begin with north blocked at(32,13),
+The existing `leader-defeat-pending` native mode continues after its actual entry frame45 with
+player-only input and physics. Begin with north blocked at(32,13),
 then west to(31,13), north to(31,12), south back, south to(31,14), east to(32,14), and attempts south
 onto the unsupported church trigger and north onto the frozen follower cell. Include an east-side
 loop through(33,14)/(33,13)/(33,12), a terrain block and unsupported F/G. Compare physical commands
@@ -5208,8 +5205,8 @@ Retain the original entry frame and all prior battle evidence; reuse unchanged a
 run other native modes only for a concrete invalidated input/presentation path. Use the existing
 seven-step official Godot gate when selected; all new outputs use a fresh ignored run directory.
 
-Stop implementation at the bounded region with repeatable movement, typed refusal and preserved
-history, then freeze for independent review. General church/service events, door/roof restore,
+The accepted capability stops at the bounded region with repeatable movement, typed refusal and
+preserved history. Freeze changes for independent review. General church/service events, door/roof restore,
 first-visit handlers, follower/NPC execution, natural party/flags, original first-input positions,
 step-word/random-battle behavior, fade/music, original presentation timing and H4 remain explicitly
 Unsupported or **Unknown**. None is silently enabled by this pocket. If a larger region needs follower

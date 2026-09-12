@@ -386,7 +386,7 @@ It then uses that real Arrival for repeated player movement and terrain blocks, 
 exclusion, Unsupported targets, stale/busy input, ordinal overflow and successor-construction failure.
 Every input and animation tick retains the complete Battle, party, flags, resources and non-player records.
 Its `PrivateInputFact` must run with `SF2_REQUIRE_PRIVATE_TESTS=1`; public unselected execution explicitly
-skips it. Pair with `ExplorationEntryTests`, canonical reader and the four changed Godot test owners.
+skips it. Pair with `ExplorationEntryTests`, canonical reader and the four owning Godot test classes.
 The committed planner selects the locked full solution and official Godot gate; run the full suite
 once and preserve any completed failure. Reuse accepted source/plan evidence after checking its pinned
 dependencies; do not replay old source or plan scripts. Return movement uses a fresh ignored
