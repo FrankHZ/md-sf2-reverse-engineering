@@ -1949,7 +1949,11 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 var actual=image.GetPixel((int)((viewport.Position.X+x)*image.GetWidth()/960),(int)((viewport.Position.Y+y)*image.GetHeight()/540));
                 Require(actual.IsEqualApprox(expected),"Named door/roof world pixel matches actual native rendering"); visible++;
             }
-            Require(visible>0,"The named door/roof has uncovered visible pixels");
+            var tileStart=new Vector2(worldX*24-view.Camera!.TopLeftPixelX,worldY*24-view.Camera.TopLeftPixelY);
+            bool doorCoveredByPlayer=label=="door" && playerRect.HasPoint(tileStart) &&
+                playerRect.HasPoint(tileStart+new Vector2(23,23));
+            Require(visible>0 || doorCoveredByPlayer,
+                "Require uncovered samples unless the complete door tile is inside the current player rectangle");
             worldPixels.Add(label,rgba.ToArray()); worldSampleCounts.Add(label,visible);
         }
         _frames.Add(new {name,map=arrival.Map.Value,phase="ReturnMovement",status=status.Text,

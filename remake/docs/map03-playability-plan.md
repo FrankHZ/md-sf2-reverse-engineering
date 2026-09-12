@@ -4997,7 +4997,7 @@ must leave its prior request unchanged; it does not require another full native 
 
 #### Reproduce entry acceptance
 
-Use the [return-movement acceptance](#return-movement-acceptance-and-stopping-condition) below and
+Use the [doorway acceptance](#doorway-owners-and-acceptance) below and
 the [current native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
 for the real119-receipt route through recovery/request/entry and its bounded movement continuation.
 Entry itself publishes the fresh party, flags, layout/roof and distinct same-cell declarations;
