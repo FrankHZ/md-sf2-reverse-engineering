@@ -2276,6 +2276,14 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 view.Units.All(unit => unit.Position == current.Battle.Roster.Single(row => row.Index == unit.Index).Position),
                 "Visible projection matches live battle");
             var labels = presenter.GetChildren().OfType<Label>().ToArray();
+            var accounting = Field<Label>(presenter, "_accounting");
+            var accountingSize = accounting.GetThemeFont("font").GetStringSize(accounting.Text,
+                fontSize: accounting.GetThemeFontSize("font_size"));
+            if (FirstKillReview && view.ChesterKills == 1)
+                Require(accounting.Text == "Live units | Gold 180 | Bowie kills 2 | Chester kills 1" &&
+                    accounting.GetLineCount() == 1 && accounting.GetVisibleLineCount() == 1 &&
+                    accountingSize.X <= accounting.Size.X && accountingSize.Y <= accounting.Size.Y,
+                    "All three first-kill accounting values fit one fully visible line; inspect captured pixels separately");
             foreach (var label in labels)
                 Require(label.GetLineCount() == label.GetVisibleLineCount() &&
                     label.Position.Y + label.GetMinimumSize().Y <= 540 &&
@@ -2290,7 +2298,9 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 budget = view.Budget, status = view.Status, controls = view.Controls, baseArt, baseSamples,
                 blockPixels = PrivateBattle01Presenter.TileSize, width = image.GetWidth(), height = image.GetHeight(),
                 provenance, pursuitCompleted=view.PursuitCompleted, physicalAttackCompleted=view.PhysicalAttackCompleted, attackResult=view.AttackResult,
-                allyStatus=view.AllyStatus });
+                allyStatus=view.AllyStatus,
+                accounting = new { text=accounting.Text, measuredWidth=accountingSize.X,
+                    labelWidth=accounting.Size.X, lines=accounting.GetLineCount(), visibleLines=accounting.GetVisibleLineCount() } });
         }
         else
         {

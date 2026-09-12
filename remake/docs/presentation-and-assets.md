@@ -1173,6 +1173,10 @@ reselects and attacks. The37-frame review adds:
 The copied frame is test instrumentation, not a production pause. Do not publish its hypothetical
 next attack or skip128. Inspect all changed PNGs at original resolution, including the accounting,
 reward, refusal and controls for clipping/overlap; compare preserved prefix images by exact bytes.
+The accounting label receives the complete line in one assignment. For frames36–37 the native probe
+requires the exact `Live units | Gold 180 | Bowie kills 2 | Chester kills 1` text, one fully visible
+line and a measured font width within the label. Its receipt retains those measurements; they do not
+replace inspection of the rendered Gold180, Bowie kills2 and Chester kills1 as separate readable values.
 Keep complete process logs and ordinary119 return, counter, enemy-physical and pursuit regressions.
 The new comparison does not authorize128 defeating Chester, victory, a fourth enemy defeat or H4.
 

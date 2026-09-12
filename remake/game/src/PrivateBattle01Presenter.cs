@@ -214,8 +214,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +
             (unit.Index < 128 ? $" EXP {unit.Exp?.ToString() ?? "?"}" : "");
         _allies!.Text = view.AllyStatus;
-        _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}";
-        if (view.ChesterKills is > 0) _accounting.Text += $" | Chester kills {view.ChesterKills}";
+        _accounting!.Text = $"Live units | Gold {view.Gold?.ToString() ?? "?"} | Bowie kills {view.BowieKills?.ToString() ?? "?"}" +
+            (view.ChesterKills is > 0 ? $" | Chester kills {view.ChesterKills}" : "");
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         // Two defeated ally rows need five wrapped lines; keep the terminal result below them.
