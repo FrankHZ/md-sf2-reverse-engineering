@@ -87,14 +87,9 @@ def test_public_and_private_input_polling_share_one_internal_godot_adapter() -> 
     assert "internal sealed record Map3InputActions" in adapter_source
     assert "internal sealed record Map3InputBinding" in adapter_source
     assert "Map3InputIntent" not in adapter_source
-    assert "internal void PollPublicSynthetic()" in adapter_source
-    assert "internal ExplorationDirection? PollPrivateOriginalMapMovement()" in (
-        adapter_source
-    )
     assert "public " not in adapter_source
-    # Exact action names, keys, and ordering remain owned by Map3InputAdapterTests.
-    # This characterization closes only the internal dispatch count and authority boundary.
-    assert adapter_source.count("static actions =>") == 31
+    # Map3InputAdapterTests executes every binding and checks exact keys, order,
+    # dispatch and private movement results; keep this guard on adapter authority.
     for forbidden in (
         "GameSession",
         "GameFlowStage",
@@ -140,13 +135,11 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
     assert "_admissionReceipt" not in root_source
     assert "RunHeadlessSmoke" not in root_source
     assert "PublicSyntheticMap3SmokeDriver.Run(" in root_source
-    assert "SceneTree sceneTree = GetTree();" in root_source
     assert "GameSession.Start(" in root_source
     assert "PublicSyntheticMap3PackageReader.FromDocumentBytes" in root_source
     assert "Godot.FileAccess.GetFileAsBytes" in root_source
-    assert "private void FailStartup(string message)" in root_source
-    assert "private void ProjectSnapshot(" in root_source
-    assert "string outcome," in root_source
+    # Presenter tests cover authoritative projection and legacy receipt bytes;
+    # retain composition, state ownership and smoke exits without naming root helpers.
     assert "GameSessionCommandResult? result = null" in root_source
     assert "_battlePresenter?.Project(_session.Snapshot, outcome, result);" in root_source
     assert "TacticalBattleState" not in root_source
