@@ -8,6 +8,75 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01TurnCompletionTests
 {
     [Theory]
+    [InlineData("kills")][InlineData("exp")][InlineData("defeats")][InlineData("creditOwner")]
+    [InlineData("creditedStats")][InlineData("creditPolicy")][InlineData("deathPolicy")][InlineData("counts")]
+    [InlineData("afterCounts")][InlineData("worklist")][InlineData("afterWorklist")][InlineData("oldCorpse")]
+    [InlineData("occupancy")][InlineData("main")][InlineData("copy")][InlineData("gold")][InlineData("duplicate")]
+    public void Enemy128DefeatHistoryRejectsIndependentDeathAndCreditedKillForgery(string field)
+    {
+        var accepted=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
+        var roster=accepted.Roster.ToArray();var occupancy=accepted.Occupancy.ToArray();var r=accepted.TurnCompletion!;
+        uint main=accepted.RandomSeedImage;ushort copy=accepted.RandomSeedCopy!.Value;uint? gold=accepted.CurrentGold;
+        switch(field)
+        {
+            case "kills":roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentKills(2));break;
+            case "exp":roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentExp(55));break;
+            case "defeats":r=r with {AllyDefeat=r.AllyDefeat! with {DefeatsAfter=2}};break;
+            case "creditOwner":r=r with {Previous=r.Previous! with {EnemyDefeat=r.Previous!.EnemyDefeat! with {CreditedAlly=0}}};break;
+            case "creditedStats":r=r with {Previous=r.Previous! with {PlayerPhysicalAttack=r.Previous!.PlayerPhysicalAttack! with {
+                ActorAfterStats=r.Previous.PlayerPhysicalAttack.ActorAfterStats.WithCurrentExp(55)}}};break;
+            case "creditPolicy":r=r with {Previous=r.Previous! with {Policy=Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat}};break;
+            case "deathPolicy":r=r with {Policy=Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat};break;
+            case "counts":r=r with {BeforeAfterTurn=new(2,4)};break;
+            case "afterCounts":r=r with {AfterAfterTurn=new(2,4)};break;
+            case "worklist":r=r with {AllyDefeat=r.AllyDefeat! with {FirstWorklist=new[] {2,129}}};break;
+            case "afterWorklist":r=r with {AllyDefeat=r.AllyDefeat! with {AfterTurnWorklist=new[] {2}}};break;
+            case "oldCorpse":roster[4]=roster[4].WithStats(roster[4].Stats.WithCurrentHp(1));break;
+            case "occupancy":occupancy[4*48+9]=2;break;
+            case "main":main^=0x10000;break;
+            case "copy":copy^=0x100;break;
+            case "gold":gold=181;break;
+            case "duplicate":r=r with {Previous=r.Previous! with {AllyDefeat=r.AllyDefeat}};break;
+        }
+        var forged=Battle01FirstRoundTests.CopyCurrent(accepted,roster:roster,occupancy:occupancy,receipt:r,mainImage:main,copy:copy,gold:gold);
+        var json=new JsonSerializerOptions {MaxDepth=256};string frozen=JsonSerializer.Serialize(forged,json);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01NextPlayerControl.Enter(forged,0));
+        Assert.Equal(frozen,JsonSerializer.Serialize(forged,json));
+    }
+
+    [Theory]
+    [InlineData("hpReplay")][InlineData("kills")][InlineData("exp")][InlineData("defeats")]
+    [InlineData("occupancy")][InlineData("oldCorpse")][InlineData("afterTurn")][InlineData("main")]
+    [InlineData("copy")][InlineData("gold")][InlineData("predecessor")][InlineData("oldPolicy")]
+    public void Enemy128DefeatLateFinalizationFailureNeverPublishesPartOfNinetyFive(string field)
+    {
+        var before=Battle01EnemyPhysicalAttackTests.Enemy128DefeatBoundary();
+        var json=new JsonSerializerOptions {MaxDepth=256};string frozen=JsonSerializer.Serialize(before,json);
+        var d=Battle01EnemyPhysicalAttack.Decide(before,before.Roster[3],allowAllyDefeat:true);
+        var roster=before.Roster.ToArray();var occupancy=before.Occupancy.ToArray();var targets=before.AiLastTargets.ToArray();targets[0]=2;
+        roster[2]=roster[2].WithStats(field switch {
+            "hpReplay"=>d.Effect.BeforeStats,"kills"=>d.Effect.AfterStats.WithCurrentKills(0),
+            "exp"=>d.Effect.AfterStats.WithCurrentExp(55),"defeats"=>d.Effect.AfterStats.WithCurrentDefeats(1),_=>d.Effect.AfterStats});
+        if(field=="occupancy")occupancy[4*48+9]=-1;
+        if(field=="oldCorpse")roster[4]=roster[4].WithPosition(new(10,4));
+        if(field=="afterTurn")
+        {
+            var s=roster[3].Stats;
+            roster[3]=roster[3].WithStats(new(s.Level,s.HpMax,s.HpCurrent,s.MpMax,s.MpCurrent,s.Attack,s.Defense,
+                s.Agility,s.Move,1,s.Items,s.Spells,s.CurrentExp,s.CurrentKills,s.CurrentDefeats));
+        }
+        var local=new Battle01InitializedState(before,roster,occupancy,before.AiMemory.ToArray(),
+            (ushort)(d.SeedCopyAfter^(field=="copy"?0x100:0)),d.MainSeedAfter^(field=="main"?0x10000u:0u),targets);
+        if(field=="gold")local=Battle01FirstRoundTests.CopyCurrent(local,gold:181);
+        if(field=="predecessor")local=Battle01FirstRoundTests.CopyCurrent(local,receipt:before.TurnCompletion! with {
+            EnemyDefeat=before.TurnCompletion!.EnemyDefeat! with {CreditedAlly=0}});
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01TurnCompletion.CompletePhysical(local,d,field=="oldPolicy"
+            ?Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat:Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill));
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+        Assert.Equal((94,(ushort)1,(ushort?)0),(Battle01EnemyPursuitTests.Receipts(before).Count(),before.Roster[2].Stats.HpCurrent,before.Roster[2].Stats.CurrentDefeats));
+    }
+
+    [Theory]
     [InlineData("exp")]
     [InlineData("gold")]
     [InlineData("occupancy")]

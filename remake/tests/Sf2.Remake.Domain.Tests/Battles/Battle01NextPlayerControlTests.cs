@@ -8,6 +8,25 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void Enemy128DefeatDispatchesActualBowieAndMoveCancelKeepsAllNinetyFiveReceipts()
+    {
+        var defeated=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
+        Assert.Throws<ArgumentException>(()=>Battle01NextPlayerControl.Enter(defeated,2));
+        var ready=Battle01NextPlayerControl.Enter(defeated,defeated.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
+        Assert.Equal((0,12),(ready.FirstControl!.ActorIndex,ready.FirstControl.Movement.Range.Budget));
+        var selected=Battle01PlayerMovement.SelectDestination(ready,0,new(11,14));
+        Assert.Equal(2,selected.FirstControl!.Movement.GridCost);
+        var moved=Battle01PlayerMovement.Confirm(selected,0);Assert.Equal(new MapPosition(11,14),moved.Roster[0].Position);
+        var cancelled=Battle01PlayerMovement.Cancel(moved,0);
+        var options=new JsonSerializerOptions {MaxDepth=256};
+        Assert.Equal(JsonSerializer.Serialize(ready,options),JsonSerializer.Serialize(cancelled,options));
+        Assert.Same(defeated.TurnCompletion,cancelled.TurnCompletion);Assert.Equal(95,Battle01EnemyPursuitTests.Receipts(cancelled).Count());
+        Assert.Null(cancelled.Roster[2].Position);Assert.Equal(-1,cancelled.OccupantAt(new(9,4)));
+        Assert.Empty(Battle01EnemyPursuit.PhysicalCandidates(defeated,defeated.Roster[5]).Targets);
+        Assert.DoesNotContain(Battle01EnemyPursuit.Decide(defeated,defeated.Roster[5]).TargetCosts,c=>c.ActorIndex==2);
+    }
+
+    [Fact]
     public void SarahCanMoveAndCancelAfterChesterDefeatWithoutRestoringADeadOccupant()
     {
         var defeated=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();

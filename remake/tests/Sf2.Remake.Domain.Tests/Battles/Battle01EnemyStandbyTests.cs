@@ -8,6 +8,26 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Fact]
+    public void Enemy128DefeatRewindsDeathThenTheIndependentChesterKillAndCounter()
+    {
+        var after=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,0,0,0);
+        var death=after.TurnCompletion!;var kill=death.Previous!;
+        Assert.Equal(((ushort)1,(byte?)54,(ushort?)1,(ushort?)0),
+            (death.EnemyPhysicalAttack!.Target.Stats.HpCurrent,death.EnemyPhysicalAttack.Target.Stats.CurrentExp,
+            death.EnemyPhysicalAttack.Target.Stats.CurrentKills,death.EnemyPhysicalAttack.Target.Stats.CurrentDefeats));
+        Assert.Equal(((byte?)30,(ushort?)0,(uint?)120),
+            (kill.PlayerPhysicalAttack!.Actor.Stats.CurrentExp,kill.PlayerPhysicalAttack.Actor.Stats.CurrentKills,kill.PlayerPhysicalAttack.GoldBefore));
+        var counter=Battle01EnemyPursuitTests.Receipts(after).Single(r=>r.EnemyPhysicalAttack?.Counterattack is not null);
+        Assert.Same(Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp,counter.Policy);
+        Assert.Equal((25,30),((int)counter.EnemyPhysicalAttack!.Counterattack!.Actor.Stats.CurrentExp!,
+            (int)counter.EnemyPhysicalAttack.Counterattack.ActorAfterStats.CurrentExp!));
+        Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(()=>
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,0,0,1)).ParamName);
+    }
+
+    [Fact]
     public void ChesterFirstKillRewindsBothKillOwnersExpGoldAndCounterToSeparateEarlyInputs()
     {
         var after = Battle01PlayerPhysicalAttackTests.ChesterFirstKillCompleted();

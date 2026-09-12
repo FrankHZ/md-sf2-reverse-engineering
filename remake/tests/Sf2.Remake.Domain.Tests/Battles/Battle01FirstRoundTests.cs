@@ -8,6 +8,23 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstRoundTests
 {
     [Fact]
+    public void Enemy128DefeatRestoresTheSevenGenerationParticipantsFromFiveSurvivors()
+    {
+        var after=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
+        Assert.Equal(5,after.Roster.Count(u=>u.Stats.HpCurrent>0 && u.Position is not null));
+        var generated=Battle01FirstRound.GenerationRoster(after,12);
+        Assert.Equal(new[] {0,1,2,128,129,130,133},generated.Where(u=>u.Stats.HpCurrent>0 && u.Position is not null).Select(u=>u.Index));
+        Assert.Equal(new MapPosition(9,4),generated[2].Position);Assert.Equal(1,generated[2].Stats.HpCurrent);
+        Assert.Equal(new MapPosition(10,4),generated[4].Position);Assert.Equal(2,generated[4].Stats.HpCurrent);
+        Assert.Null(generated[6].Position);Assert.Null(generated[7].Position);
+        Battle01FirstRound.RequireCurrentPrefix(after);
+        Assert.Equal(new[] {new Battle01TurnEntry(2,6),new(128,6),new(0,5),new(129,5),new(130,5),new(1,4),new(133,4)}
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),57)),after.FirstRound!.Slots);
+        Assert.Equal((12,(byte)4),(after.FirstRound.RoundNumber,after.FirstRound.CurrentTurnOffset));
+        Assert.Equal("phase",Assert.Throws<ArgumentException>(()=>Battle01FirstRound.EnterNext(after)).ParamName);
+    }
+
+    [Fact]
     public void AllyDefeatRewindsTheOldRoundBeforeGeneratingOnlySixSurvivors()
     {
         var after=Battle01EnemyPhysicalAttackTests.FirstAllyDefeatCompleted();

@@ -1399,6 +1399,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         var copied = (PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
             BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[] {selected.Preparation,selected.Battle,selected.SourceLocomotion,selected.SourceBridge},null)!;
         Battle01InitializedState inspected; string boundary;
+        Battle01TurnCompletionReceipt? inspectedDeath = null;
         typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copied);
         try
         {
@@ -1423,9 +1424,40 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 !presenter.Projection.Units.Any(u => u.Index == 129),"Visible credited kill, HP, EXP and cleaned enemy");
             await CaptureControl("36-first-kill-receipt94-test-copy","exact physical selection; committed kill before actual128 dispatch; no production pause");
             string committed = JsonSerializer.Serialize(inspected,json);
-            boundary = PrivateBattle01Ui.DispatchNext(_session,after);
-            Require(boundary.Contains("attack.lethal") && ReferenceEquals(after,_session.PrivateOriginalBattle01) &&
-                committed == JsonSerializer.Serialize(_session.PrivateOriginalBattle01!.Battle,json),"Actual128 lethal refusal retains the full committed94 snapshot");
+            foreach(var policy in new[] {Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike,Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat})
+            {
+                try { Battle01EnemyPhysicalAttack.CompleteNext(after.Battle,128,policy); throw new InvalidOperationException("Older death policies must refuse this94 state"); }
+                catch(ArgumentException e) { Require(e.ParamName == (ReferenceEquals(policy,Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike)
+                    ? "attack.lethal" : "cleanup.before"),"Distinct existing policy refusal"); }
+            }
+            Require(ReferenceEquals(after,_session.PrivateOriginalBattle01) && committed == JsonSerializer.Serialize(after.Battle,json),"Old policies retain exact94");
+            Require(_session.CompletePrivateOriginalBattle01EnemyPursuit(after,128) is PrivateOriginalBattle01AttackSelectionRequired,"Actual128 requires physical selection");
+            var dead=((PrivateOriginalBattle01EnemyPhysicalAttackCompleted)_session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(after,128)).Snapshot;
+            inspectedDeath=dead.Battle.TurnCompletion!;var strike=inspectedDeath.EnemyPhysicalAttack!;
+            Require(ReferenceEquals(receipt,inspectedDeath.Previous) &&
+                ReferenceEquals(inspectedDeath.Policy,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill) &&
+                strike.ActorIndex==128 && strike.TargetIndex==2 && strike.Origin==new MapPosition(9,3) && strike.Destination==strike.Origin &&
+                strike.GridCost==0 && strike.MoveString.SequenceEqual(new byte[]{255}) && strike.Effect.Damage==2 &&
+                strike.Effect.TemporaryHp==0 && strike.Effect.RestoredHp==1 && strike.Effect.Reaction==new Battle01PhysicalReaction(2,-2,0,0,1) &&
+                strike.Effect.Rolls.Select(r=>r.Result).SequenceEqual(new ushort[]{17,5,0,0}) &&
+                strike.Priorities.Count==1 && strike.Priorities[0].Roll.GeneratorSteps==133 && strike.Priorities[0].Roll.Result==2 &&
+                dead.Battle.RandomSeedImage==0x98321234 && dead.Battle.RandomSeedCopy==0x0234 &&
+                dead.Battle.FirstRound!.RoundNumber==12 && dead.Battle.FirstRound.CurrentTurnOffset==4 && dead.Battle.FirstRound.CurrentCandidate?.CombatantIndex==0,
+                "Actual95 enemy128 death has source-exact effect and next actual Bowie slot");
+            Require(inspectedDeath.AllyDefeat!.FirstWorklist.SequenceEqual(new[]{2}) && inspectedDeath.AllyDefeat.AfterTurnWorklist.Count==0 &&
+                inspectedDeath.BeforeAfterTurn==new Battle01FactionCounts(2,3) && inspectedDeath.AfterAfterTurn==inspectedDeath.BeforeAfterTurn &&
+                dead.Battle.Roster[2].Position is null && dead.Battle.OccupantAt(new(9,4))==-1 &&
+                dead.Battle.Roster[2].Stats.HpCurrent==0 && dead.Battle.Roster[2].Stats.CurrentExp==54 &&
+                dead.Battle.Roster[2].Stats.CurrentKills==1 && dead.Battle.Roster[2].Stats.CurrentDefeats==1 &&
+                dead.Battle.CurrentGold==180 && dead.Battle.Roster[0].Stats.CurrentExp==63 && dead.Battle.Roster[0].Stats.CurrentKills==2 &&
+                new[]{129,131,132}.All(index=>ReferenceEquals(after.Battle.Roster.Single(u=>u.Index==index),dead.Battle.Roster.Single(u=>u.Index==index))) &&
+                committed==JsonSerializer.Serialize(after.Battle,json),"Only the new allied cleanup follows the independently credited enemy deaths");
+            presenter.Project(dead.Battle,"TEST COPY: enemy128 defeats Chester. Actual Bowie0 is next.");
+            await CaptureControl("37-enemy128-defeat95-test-copy","exact physical selection; Application death before actual Bowie dispatch; no production pause");
+            boundary=PrivateBattle01Ui.DispatchNext(_session,dead);
+            inspected=_session.PrivateOriginalBattle01!.Battle;
+            Require(inspected.FirstControl?.ActorIndex==0 && inspected.FirstControl.Movement.Range.Budget==12 &&
+                ReferenceEquals(inspectedDeath,inspected.TurnCompletion),"Dispatch actual next candidate to usable Bowie control");
         }
         finally
         {
@@ -1435,14 +1467,25 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         await PressBattleKey(Key.Space);
         var final = _session.PrivateOriginalBattle01!;
         Require(JsonSerializer.Serialize(inspected,json) == JsonSerializer.Serialize(final.Battle,json),"Physical Space and full API kill/relay endpoint match exactly");
-        Require(presenter.Projection!.Status == boundary && Field<Label>(presenter,"_status").Text.Contains("attack.lethal") &&
-            Field<Label>(presenter,"_accounting").Text.Contains("Chester kills 1"),"Actual refusal and both live kill owners remain visible");
-        await CaptureControl("37-first-kill-actual128-refusal");
+        Require(presenter.Projection!.Status == boundary && presenter.Projection.ActorIndex==0 &&
+            presenter.Projection.AllyStatus.Contains("A2 defeated HP 0 EXP 54 Defeats 1") &&
+            Field<Label>(presenter,"_accounting").Text=="Live units | Gold 180 | Bowie kills 2 | Chester kills 1" &&
+            !presenter.Projection.Units.Any(u=>u.Index is 2 or 129 or 131 or 132),"Actual control retains dead Chester and both independent kill owners");
+        await CaptureControl("38-enemy128-relay-bowie-ready");
+        string readyJson=JsonSerializer.Serialize(final.Battle,json);
+        await PressBattleKey(Key.I);await PressBattleKey(Key.Space);
+        Require(_session.PrivateOriginalBattle01!.Battle.Roster[0].Position==new MapPosition(11,14) &&
+            _session.PrivateOriginalBattle01.Battle.FirstControl!.Movement.GridCost==2,"Actual Bowie movement confirmation costs2");
+        await CaptureControl("39-enemy128-relay-bowie-provisional");
+        await PressBattleKey(Key.Backspace);
+        final=_session.PrivateOriginalBattle01!;
+        Require(readyJson==JsonSerializer.Serialize(final.Battle,json),"Actual Bowie cancel restores the complete usable95 battle");
+        await CaptureControl("40-enemy128-relay-bowie-cancel");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="Chester first kill and actual enemy128 lethal refusal; later continuation, natural presentation and H4 remain Unknown",
+            status="Pass",scope="Chester first kill, enemy128 Chester defeat and actual R12 Bowie movement/cancel; later continuation, natural presentation and H4 remain Unknown",
             preparation=final.Preparation.Party,returnInputs=final.Preparation.ReturnInputs,arrivalInputs=final.Preparation.ArrivalInputs,
-            earlyLaunchOptIn=true,boundary,battle=final.Battle,exactCopiedAndPhysicalSnapshotMatch=true,
-            actualTargetCancelReselect=true,actualEnemy128Attempted=true,frames=_frames
+            earlyLaunchOptIn=true,boundary,receipt95=inspectedDeath,battle=final.Battle,exactCopiedAndPhysicalSnapshotMatch=true,
+            actualTargetCancelReselect=true,actualEnemy128Attempted=true,actualBowieMoveCancel=true,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} chester-first-kill");
     }
