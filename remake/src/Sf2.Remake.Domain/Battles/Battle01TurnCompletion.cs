@@ -15,6 +15,13 @@ public sealed class Battle01StayCompletionPolicy : Battle01TurnCompletionPolicy
     public override string Id => "battle01-controlled-stay-unchanged-effective-stats-v1";
 }
 
+public sealed class Battle01DefeatedTurnCompletionPolicy : Battle01TurnCompletionPolicy
+{
+    private Battle01DefeatedTurnCompletionPolicy() { }
+    public static Battle01DefeatedTurnCompletionPolicy ControlledEnemy129AfterChesterDefeat { get; } = new();
+    public override string Id => "battle01-controlled-dead129-turn-after-chester-defeat-v1";
+}
+
 public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
     private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false, bool allowsChesterCounter = false)
@@ -68,7 +75,11 @@ public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Batt
     Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
     Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null,
     Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null, Battle01EnemyDefeatCleanup? EnemyDefeat = null,
-    Battle01AllyDefeatCleanup? AllyDefeat = null);
+    Battle01AllyDefeatCleanup? AllyDefeat = null)
+{
+    public bool DefeatedTurnCompleted => ReferenceEquals(Policy,
+        Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+}
 
 // Separate from an advanced continuing turn: the first outcome exits before after-turn work.
 public sealed record Battle01DefeatPendingReceipt(Battle01PhysicalCompletionPolicy Policy,
@@ -82,7 +93,7 @@ public sealed record Battle01DefeatPendingReceipt(Battle01PhysicalCompletionPoli
 public static class Battle01TurnCompletion
 {
     internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
-        receipt.PlayerPhysicalAttack is not null
+        receipt.DefeatedTurnCompleted ? HasValidDefeatedTurn(receipt) : receipt.PlayerPhysicalAttack is not null
             ? receipt.AllyDefeat is null && Battle01PlayerPhysicalCompletionPolicy.IsSupported(receipt.Policy as Battle01PlayerPhysicalCompletionPolicy) &&
                 (!receipt.PlayerPhysicalAttack.DefeatedTarget ||
                     ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).AllowsDefeat &&
@@ -112,6 +123,59 @@ public static class Battle01TurnCompletion
                     FollowsChesterFirstKill(receipt.EnemyPhysicalAttack, receipt.Previous))) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
             : receipt.AllyDefeat is null && ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+
+    private static bool HasValidDefeatedTurn(Battle01TurnCompletionReceipt receipt) =>
+        receipt.CompletedActorIndex == 129 && receipt.RoundNumber == 12 &&
+        receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 3) && receipt.AfterAfterTurn == receipt.BeforeAfterTurn &&
+        receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null &&
+        receipt.PlayerPhysicalAttack is null && receipt.EnemyDefeat is null && receipt.AllyDefeat is null &&
+        receipt.Previous is { CompletedActorIndex: 0, RoundNumber: 12, PlayerPhysicalAttack: null,
+            EnemyStandby: null, EnemyPursuit: null, EnemyPhysicalAttack: null, EnemyDefeat: null, AllyDefeat: null } stay &&
+        ReferenceEquals(stay.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats) &&
+        stay.BeforeAfterTurn == receipt.BeforeAfterTurn && stay.AfterAfterTurn == stay.BeforeAfterTurn &&
+        stay.Previous is { CompletedActorIndex: 128, RoundNumber: 12 } death &&
+        ReferenceEquals(death.Policy, Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill) &&
+        HasValidPolicy(death);
+
+    internal static void ValidateDefeatedTurnReceipt(Battle01TurnCompletionReceipt receipt)
+    {
+        if (!receipt.DefeatedTurnCompleted || !HasValidDefeatedTurn(receipt))
+            throw new ArgumentException("Retain the distinct dead129 turn after Bowie's completion and Chester's defeat.", "deadTurn.history");
+        ValidateAllyDefeatReceipt(receipt.Previous!.Previous!);
+        ValidateDefeatReceipt(receipt.Previous.Previous!.Previous!);
+    }
+
+    public static Battle01InitializedState CompleteDefeatedTurn(Battle01InitializedState current, int actorIndex,
+        Battle01DefeatedTurnCompletionPolicy? policy)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        if (!ReferenceEquals(policy, Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat))
+            throw new ArgumentException("An explicit dead129 completion policy is required.", "policy");
+        if (actorIndex != 129 || current.FirstRound?.CurrentCandidate?.CombatantIndex != actorIndex)
+            throw new ArgumentException("Only the actual dead129 slot is admitted.", "actor");
+        if (current.Phase != Battle01Phase.PlayerTurnCompleted || current.FirstControl is not null ||
+            current.FirstRound is not { RoundNumber: 12, CurrentTurnOffset: 6 })
+            throw new ArgumentException("Retain the R12 dead129 slot immediately after Bowie's completed turn.", "phase");
+        Battle01FirstRound.RequireCurrentPrefix(current);
+        Battle01EnemyStandby.RequireThinkingHistory(current);
+        RequireContinuingNoEffectState(current);
+        var actor = current.Roster.Single(unit => unit.Index == actorIndex);
+        if (actor.Stats.HpCurrent != 0 || actor.Position is not null)
+            throw new ArgumentException("The credited enemy must already be dead and unplaced.", "deadTurn.actor");
+        RequireEmptyKilledCleanup(current, "cleanup.before");
+        var before = RequireContinuingFactions(current, "outcome.before");
+        // ExecuteIndividualTurn and ProcessAfterTurnEffects return on HP0. Both empty cleanup/count
+        // checkpoints still run; there is no AI, status refresh, reward or RNG decision to replay.
+        RequireEmptyKilledCleanup(current, "cleanup.after");
+        var after = RequireContinuingFactions(current, "outcome.after");
+        var receipt = new Battle01TurnCompletionReceipt(actorIndex, policy!, before, after,
+            current.TurnCompletion, RoundNumber: current.FirstRound.RoundNumber);
+        ValidateDefeatedTurnReceipt(receipt);
+        var completed = new Battle01InitializedState(current, current.FirstRound.AdvanceCompletedPlayerTurn(), receipt);
+        Battle01FirstRound.RequireCurrentPrefix(completed);
+        Battle01EnemyStandby.RequireThinkingHistory(completed);
+        return completed;
+    }
 
     internal static Battle01InitializedState CompletePlayerPhysical(Battle01InitializedState current,
         Battle01PlayerPhysicalAttackDecision decision, Battle01PlayerPhysicalCompletionPolicy? policy)

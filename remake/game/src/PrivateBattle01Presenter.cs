@@ -15,7 +15,7 @@ internal sealed record PrivateBattle01Projection(
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
     string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null,
-    bool CanEnterExploration = false, ushort? ChesterKills = null);
+    bool CanEnterExploration = false, ushort? ChesterKills = null, bool DefeatedTurnCompleted = false);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -168,7 +168,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
                 (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration,
-            battle.Roster[2].Stats.CurrentKills);
+            battle.Roster[2].Stats.CurrentKills, completion?.DefeatedTurnCompleted == true);
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
@@ -195,6 +195,10 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
         string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
+        string completedActorText = view.DefeatedTurnCompleted
+            ? $"Dead turn completed: {UnitTag(view.CompletedActorIndex!.Value)} defeated and unplaced"
+            : view.CompletedActorIndex is { } completedActor
+                ? $"{completionKind} completed: {UnitTag(completedActor)} at ({completedPosition!.X},{completedPosition.Y})" : "";
         _details.Text = view.DefeatReturn is { } requested
             ? $"Round 16: DefeatRecoveryPending\nReturn request: {requested.DestinationMap.Value} ({requested.DestinationPosition.X},{requested.DestinationPosition.Y}), UP\nBowie remains unplaced. Input closed.\nExploration unavailable; live map57 retained."
             : view.Phase == Battle01Phase.DefeatRecoveryPending
@@ -203,7 +207,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             : view.Phase == Battle01Phase.DefeatPending
             ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nSpace applies defeat recovery once."
             : view.CompletedActorIndex is { } completed ?
-            $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completionKind} completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
+            $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completedActorText}\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
             $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +

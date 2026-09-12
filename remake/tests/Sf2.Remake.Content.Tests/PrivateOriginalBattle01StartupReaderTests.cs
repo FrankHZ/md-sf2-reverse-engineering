@@ -132,6 +132,60 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         var cancelledBowie = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(moved,0)).Snapshot;
         Assert.Equal(JsonSerializer.Serialize(ready.Battle,json),JsonSerializer.Serialize(cancelledBowie.Battle,json));
         Assert.Same(death,cancelledBowie.Battle.TurnCompletion); Assert.Equal(95,ReceiptCount(cancelledBowie.Battle));
+        var approach = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(cancelledBowie,0,new(9,11))).Snapshot;
+        Assert.Equal(12,approach.Battle.FirstControl!.Movement.GridCost);
+        approach = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(approach,0)).Snapshot;
+        var beforeDeadTurn = Assert.IsType<PrivateOriginalBattle01StayCommitted>(
+            session.CommitPrivateOriginalBattle01Stay(approach,0)).Snapshot;
+        Assert.Equal((96,6,129),(ReceiptCount(beforeDeadTurn.Battle),beforeDeadTurn.Battle.FirstRound!.CurrentTurnOffset,
+            beforeDeadTurn.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        string frozen96=JsonSerializer.Serialize(beforeDeadTurn.Battle,json);
+        Assert.Equal("position",Assert.IsType<PrivateOriginalBattle01EnemyPursuitRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(beforeDeadTurn,129)).Diagnostic.Field);
+        Assert.Equal("actor",Assert.IsType<PrivateOriginalBattle01EnemyPursuitRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(beforeDeadTurn,130)).Diagnostic.Field);
+        Assert.Same(beforeDeadTurn,session.PrivateOriginalBattle01);
+        var deadTurn = Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(
+            session.CompletePrivateOriginalBattle01DefeatedTurn(beforeDeadTurn,129)).Snapshot;
+        Assert.True(deadTurn.Battle.TurnCompletion!.DefeatedTurnCompleted);
+        Assert.Equal((97,8,130),(ReceiptCount(deadTurn.Battle),deadTurn.Battle.FirstRound!.CurrentTurnOffset,
+            deadTurn.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Same(beforeDeadTurn.Battle.TurnCompletion,deadTurn.Battle.TurnCompletion.Previous);
+        Assert.Same(beforeDeadTurn.Battle.FirstRound.Slots,deadTurn.Battle.FirstRound.Slots);
+        Assert.Equal(beforeDeadTurn.Battle.FirstRound.RegionCutsceneRows,deadTurn.Battle.FirstRound.RegionCutsceneRows);
+        Assert.Equal(beforeDeadTurn.Battle.FirstRound.SpawnedCombatants,deadTurn.Battle.FirstRound.SpawnedCombatants);
+        Assert.Equal(12,deadTurn.Battle.FirstRound.RoundNumber);
+        var priorJson=JsonNode.Parse(frozen96,documentOptions:new(){MaxDepth=256})!;
+        var afterJson=JsonNode.Parse(JsonSerializer.Serialize(deadTurn.Battle,json),documentOptions:new(){MaxDepth=256})!;
+        afterJson["TurnCompletion"]=afterJson["TurnCompletion"]!["Previous"]!.DeepClone();
+        afterJson["FirstRound"]=priorJson["FirstRound"]!.DeepClone();
+        afterJson["Phase"]=priorJson["Phase"]!.DeepClone();
+        Assert.True(JsonNode.DeepEquals(priorJson,afterJson),"The dead turn only adds its receipt and advances the existing slot.");
+        Assert.Equal(frozen96,JsonSerializer.Serialize(beforeDeadTurn.Battle,json));
+        Assert.Same(beforeDeadTurn.Preparation,deadTurn.Preparation); Assert.Same(beforeDeadTurn.SourceSnapshot,deadTurn.SourceSnapshot);
+        var chased=Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPursuit(deadTurn,130)).Snapshot;
+        var pursuit=chased.Battle.TurnCompletion!.EnemyPursuit!;
+        Assert.Equal((98,130,0,2),(ReceiptCount(chased.Battle),pursuit.ActorIndex,pursuit.TargetIndex,pursuit.GridCost));
+        Assert.Equal(new MapPosition(9,4),pursuit.Destination); Assert.Equal(new MapPosition(9,5),pursuit.PreliminaryDestination);
+        Assert.Equal(new byte[]{0,3,255},pursuit.PreliminaryMoveString); Assert.Equal(new byte[]{0,255},pursuit.MoveString);
+        Assert.Equal(new[]{new Battle01PursuitTargetCost(0,16),new Battle01PursuitTargetCost(1,28)},pursuit.TargetCosts);
+        Assert.Equal((0x98321234u,(ushort?)0x0234),(chased.Battle.RandomSeedImage,chased.Battle.RandomSeedCopy));
+        var sarah=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(
+            session.EnterPrivateOriginalBattle01NextPlayerControl(chased,chased.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex)).Snapshot;
+        Assert.Equal((1,10,10),(sarah.Battle.FirstControl!.ActorIndex,sarah.Battle.FirstControl.Movement.Range.Budget,sarah.Battle.FirstRound!.CurrentTurnOffset));
+        var sarahMoved=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.SelectPrivateOriginalBattle01PlayerDestination(sarah,1,new(10,17))).Snapshot;
+        Assert.Equal(2,sarahMoved.Battle.FirstControl!.Movement.GridCost);
+        sarahMoved=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.ConfirmPrivateOriginalBattle01PlayerMovement(sarahMoved,1)).Snapshot;
+        var sarahCancelled=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+            session.CancelPrivateOriginalBattle01PlayerMovement(sarahMoved,1)).Snapshot;
+        Assert.Equal(JsonSerializer.Serialize(sarah.Battle,json),JsonSerializer.Serialize(sarahCancelled.Battle,json));
+        Assert.Equal(98,ReceiptCount(sarahCancelled.Battle));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(sarahCancelled.Battle,0,0,0,0,0,0);
     }
 
     private static int ReceiptCount(Battle01InitializedState battle)

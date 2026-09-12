@@ -190,6 +190,18 @@ public static class Battle01EnemyStandby
                 }
                 continue;
             }
+            if (receipt.DefeatedTurnCompleted)
+            {
+                Battle01TurnCompletion.ValidateDefeatedTurnReceipt(receipt);
+                var death = receipt.Previous!.Previous!.EnemyPhysicalAttack!;
+                var kill = receipt.Previous.Previous.Previous!.PlayerPhysicalAttack!;
+                if (positions[129] is not null || stats[129].HpCurrent != 0 ||
+                    !Battle01EnemyPhysicalAttack.SameStats(stats[129], kill.Effect.AfterStats) ||
+                    seed != death.SeedCopyAfter || gold != kill.GoldAfter)
+                    throw new ArgumentException("The dead129 slot cannot change its earlier cleanup or accounting.", "deadTurn.history");
+                RewindMain(death.MainSeedAfter, death.MainSeedAfter);
+                continue;
+            }
             if ((receipt.EnemyStandby is null ? 0 : 1) + (receipt.EnemyPursuit is null ? 0 : 1) +
                 (receipt.EnemyPhysicalAttack is null ? 0 : 1) != 1)
                 throw new ArgumentException("Each enemy receipt requires exactly one decision kind.", "completion");
