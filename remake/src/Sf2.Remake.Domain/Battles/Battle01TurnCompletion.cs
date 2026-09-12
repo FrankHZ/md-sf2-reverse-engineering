@@ -45,17 +45,19 @@ public sealed class Battle01PlayerPhysicalCompletionPolicy : Battle01TurnComplet
     public static Battle01PlayerPhysicalCompletionPolicy ControlledNonlethalStrikeAndExp { get; } = new(0);
     public static Battle01PlayerPhysicalCompletionPolicy ControlledStrikeAndFirstDefeat { get; } = new(1);
     public static Battle01PlayerPhysicalCompletionPolicy ControlledStrikeAndSecondDefeat { get; } = new(2);
+    public static Battle01PlayerPhysicalCompletionPolicy ControlledChesterFirstKill { get; } = new(3);
     internal int MaximumDefeats { get; }
     public bool AllowsDefeat => MaximumDefeats > 0;
     public override string Id => MaximumDefeats switch
     {
         0 => "battle01-controlled-player-nonlethal-physical-exp-v1",
         1 => "battle01-controlled-player-first-defeat-exp-gold-kills-v1",
-        _ => "battle01-controlled-player-second-defeat-exp-gold-kills-v1"
+        2 => "battle01-controlled-player-second-defeat-exp-gold-kills-v1",
+        _ => "battle01-controlled-chester-first-kill-third-enemy-exp-gold-v1"
     };
     internal static bool IsSupported(Battle01PlayerPhysicalCompletionPolicy? policy) =>
         ReferenceEquals(policy, ControlledNonlethalStrikeAndExp) || ReferenceEquals(policy, ControlledStrikeAndFirstDefeat) ||
-        ReferenceEquals(policy, ControlledStrikeAndSecondDefeat);
+        ReferenceEquals(policy, ControlledStrikeAndSecondDefeat) || ReferenceEquals(policy, ControlledChesterFirstKill);
 }
 
 public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Battle01TurnCompletionPolicy Policy,
@@ -85,6 +87,9 @@ public static class Battle01TurnCompletion
                 (!ReferenceEquals(receipt.Policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) ||
                     receipt.CompletedActorIndex == 0 && receipt.BeforeAfterTurn.Enemies >= 4 &&
                     receipt.BeforeAfterTurn.Enemies <= (receipt.PlayerPhysicalAttack.DefeatedTarget ? 4 : 5)) &&
+                (!ReferenceEquals(receipt.Policy, Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill) ||
+                    receipt.PlayerPhysicalAttack is { ActorIndex: 2, TargetIndex: 129, DefeatedTarget: true, Actor.Stats.CurrentKills: 0 } &&
+                    receipt.BeforeAfterTurn == new Battle01FactionCounts(3, 3) && HasTwoBowieDefeats(receipt.Previous)) &&
                 receipt.PlayerPhysicalAttack.DefeatedTarget == (receipt.EnemyDefeat is not null) &&
                 receipt.CompletedActorIndex < 128 && receipt.PlayerPhysicalAttack.ActorIndex == receipt.CompletedActorIndex &&
                 receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null
@@ -107,6 +112,13 @@ public static class Battle01TurnCompletion
             throw new ArgumentException("An explicit player physical/EXP completion policy is required.", "policy");
         if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledStrikeAndSecondDefeat) && decision.ActorIndex != 0)
             throw new ArgumentException("The second-defeat policy belongs to Bowie only.", "policy");
+        if (ReferenceEquals(policy, Battle01PlayerPhysicalCompletionPolicy.ControlledChesterFirstKill))
+        {
+            if (decision.ActorIndex != 2)
+                throw new ArgumentException("The third-defeat policy belongs to Chester only.", "policy");
+            // Selecting the new capability must not relabel an earlier nonlethal receipt.
+            if (!decision.DefeatedTarget) policy = Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp;
+        }
         if (current.Phase != Battle01Phase.PlayerAttackTargetSelection || current.FirstControl?.ActorIndex != decision.ActorIndex ||
             current.FirstRound?.CurrentCandidate?.CombatantIndex != decision.ActorIndex)
             throw new ArgumentException("Retain the actual selected player turn during local finalization.", "phase");
@@ -203,6 +215,18 @@ public static class Battle01TurnCompletion
             current.TurnCompletion, current.FirstRound!.RoundNumber));
         _ = RequireDefeatPending(result);
         return result;
+    }
+
+    private static bool HasTwoBowieDefeats(Battle01TurnCompletionReceipt? previous)
+    {
+        int count = 0;
+        for (var receipt = previous; receipt is not null; receipt = receipt.Previous)
+            if (receipt.PlayerPhysicalAttack is { DefeatedTarget: true } attack)
+            {
+                if (attack.ActorIndex != 0 || receipt.EnemyDefeat?.CreditedAlly != 0) return false;
+                count++;
+            }
+        return count == 2;
     }
 
     // Validate the terminal effect, then reuse the complete continuing-history validator on its before-image.

@@ -15,15 +15,18 @@ internal static class PrivateBattle01Ui
         stage == GameFlowStage.Battle || (pending && inputsSelected);
 
     internal static string? Apply(GameSession session, IOriginalBattle01StartupSource? source,
-        PrivateBattle01Input input, OriginalBattle01ControlledArrivalInputs? arrivalInputs = null)
+        PrivateBattle01Input input, OriginalBattle01ControlledArrivalInputs? arrivalInputs = null,
+        bool chesterFirstKillRequested = false)
     {
         if (session.PrivateOriginalBattle01 is not { } current)
         {
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
-                OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
-                OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison, arrivalInputs);
+                chesterFirstKillRequested ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison :
+                    OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
+                chesterFirstKillRequested ? null : OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison,
+                chesterFirstKillRequested ? null : arrivalInputs);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -37,7 +40,9 @@ internal static class PrivateBattle01Ui
             if (candidate is null) return "First control unavailable: current slot is sentinel.";
             return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.Value.CombatantIndex) switch
             {
-                PrivateOriginalBattle01FirstControlEntered => arrivalInputs is null
+                PrivateOriginalBattle01FirstControlEntered => chesterFirstKillRequested
+                    ? "Chester first-kill comparison selected. First player ready."
+                    : arrivalInputs is null
                     ? "Granseal return comparison selected. First player ready."
                     : "Leader/Granseal return/arrival comparisons selected. First player ready.",
                 PrivateOriginalBattle01FirstControlUnavailable unavailable =>
@@ -231,6 +236,7 @@ internal static class PrivateBattle01Ui
 public sealed partial class Map3Root
 {
     private IOriginalBattle01StartupSource? _privateBattle01Source;
+    private bool _chesterFirstKillRequested;
     private PrivateBattle01Presenter? _privateBattle01Presenter;
     private PrivateLocalPresentationRasterMount? _privateBattle01Atlas;
 
@@ -248,7 +254,8 @@ public sealed partial class Map3Root
         var input = _inputAdapter?.PollPrivateBattle01() ?? PrivateBattle01Input.None;
         if (input == PrivateBattle01Input.None) return true;
         string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input,
-            _privatePresenter?.CanDisplayArrival == true ? OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison : null);
+            _privatePresenter?.CanDisplayArrival == true ? OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison : null,
+            _chesterFirstKillRequested);
         if (outcome is null) return true;
         if (_session.PrivateOriginalMapArrival is { } arrival)
         {

@@ -42,6 +42,7 @@ public sealed partial class Map3Root : Node2D
             "profile-selection",
             selectionStarted);
         _runtimeProfile = selection.RequestedProfile;
+        _chesterFirstKillRequested = selection.IsAvailable && selection.ChesterFirstKillRequested;
         if (selection.IsAvailable && selection.Battle01Inputs is { } battleInputs)
             _privateBattle01Source = new PrivateOriginalBattle01StartupReader(
                 battleInputs.Data, battleInputs.Scene, battleInputs.Terrain);
