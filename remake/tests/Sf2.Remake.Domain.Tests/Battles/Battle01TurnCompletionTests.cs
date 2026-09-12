@@ -7,6 +7,24 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CounterLateReplayAndFinalizationFailurePreserveThePrePrimaryState(bool omitExp)
+    {
+        var before=Battle01EnemyPhysicalAttackTests.CounterattackBoundary();
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(before,json);
+        var d=Battle01EnemyPhysicalAttack.Decide(before,before.Roster[5],allowChesterCounter:true);
+        var roster=before.Roster.ToArray();var occupancy=before.Occupancy.ToArray();
+        roster[5]=roster[5].WithPosition(d.Destination).WithStats(omitExp ? d.Counterattack!.Effect.AfterStats : d.Actor.Stats);
+        roster[2]=roster[2].WithStats(omitExp ? d.Effect.AfterStats : d.Counterattack!.ActorAfterStats);
+        occupancy[Battle01PlayerMovement.Offset(d.Origin)]=-1;occupancy[Battle01PlayerMovement.Offset(d.Destination)]=130;
+        var targets=before.AiLastTargets.ToArray();targets[2]=2;
+        var local=new Battle01InitializedState(before,roster,occupancy,before.AiMemory.ToArray(),d.SeedCopyAfter,d.MainSeedAfter,targets);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01TurnCompletion.CompletePhysical(local,d,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp));
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));Assert.Equal(88,Battle01EnemyPursuitTests.Receipts(before).Count());
+    }
+
     [Fact]
     public void TerminalBattleRejectsEveryContinuingGameplayEntryWithoutMutation()
     {

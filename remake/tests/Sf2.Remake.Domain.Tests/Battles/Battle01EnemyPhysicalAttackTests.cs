@@ -7,6 +7,104 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
+    internal static Battle01InitializedState CounterattackBoundary()
+    {
+        // Authored terrain fixture; the Content test separately owns the real 79-receipt prefix.
+        var current = Battle01PlayerPhysicalAttackTests.SecondDefeatCompleted();
+        var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
+        for (int step = 0; step < 32; step++)
+        {
+            var order = current.FirstRound!;
+            if (order.RoundNumber == 11 && order.CurrentCandidate?.CombatantIndex == 130) return current;
+            if (order.CurrentCandidate is not { } candidate) { current = Battle01FirstRound.EnterNext(current); continue; }
+            int actor = candidate.CombatantIndex;
+            if (actor >= 128)
+            {
+                if ((current.Roster.Single(unit => unit.Index == actor).AiBitfield & 1) == 0)
+                    current = Battle01EnemyStandby.CompleteNext(current,actor,stay);
+                else
+                {
+                    try { current = Battle01EnemyPursuit.CompleteNext(current,actor,stay); }
+                    catch (Battle01AttackSelectionRequiredException) { current = Battle01EnemyPhysicalAttack.CompleteNext(current,actor,Policy); }
+                }
+                continue;
+            }
+            current = Battle01NextPlayerControl.Enter(current,actor).State!;
+            if (actor == 2) current = Battle01PlayerMovement.SelectDestination(current,actor,order.RoundNumber == 10 ? new(9,9) : new(9,4));
+            current = Battle01PlayerMovement.Confirm(current,actor);
+            if (actor == 2 && order.RoundNumber == 11)
+                current = Battle01PlayerPhysicalAttack.Confirm(Battle01PlayerPhysicalAttack.Begin(current,actor),actor,
+                    Battle01PlayerPhysicalCompletionPolicy.ControlledNonlethalStrikeAndExp);
+            else current = Battle01TurnCompletion.CommitStay(current,actor,stay);
+        }
+        throw new InvalidOperationException("Authored counter prefix did not reach its actual enemy candidate.");
+    }
+
+    internal static Battle01InitializedState CounterattackCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
+        CounterattackBoundary(),130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
+
+    [Fact]
+    public void CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt()
+    {
+        var before = CounterattackBoundary(); var json = new JsonSerializerOptions {MaxDepth=256};
+        string frozen = JsonSerializer.Serialize(before,json);
+        Assert.Equal("attack.counter",Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() => Battle01EnemyPhysicalAttack.CompleteNext(before,130,Policy)).ParamName);
+        var after = Battle01EnemyPhysicalAttack.CompleteNext(before,130,Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp);
+        var d = after.TurnCompletion!.EnemyPhysicalAttack!; var c = d.Counterattack!;
+        Assert.Equal((130,2,2,130),(d.ActorIndex,d.TargetIndex,c.Actor.Index,c.Target.Index));
+        Assert.Same(before.TurnCompletion,after.TurnCompletion.Previous);
+        Assert.Same(d.Effect.AfterStats,c.Actor.Stats); Assert.Same(d.Actor.Stats,c.Effect.BeforeStats);
+        Assert.Equal(new[] {2,130},new[] {d.Effect.Reaction!.TargetIndex,c.Effect.Reaction!.TargetIndex});
+        Assert.Equal(new ushort[] {10,12,0,0,2,0,3,4,0,0,6,25,4,10},d.Effect.Rolls.Concat(c.Effect.Rolls).Select(r=>r.Result));
+        Assert.Equal((2,1,5),(d.Effect.Damage,c.Effect.Damage,c.AwardedExp));
+        Assert.Equal(c.Actor.Stats.CurrentExp+5,c.ActorAfterStats.CurrentExp);
+        Assert.Equal((0xA1051234u,(ushort?)0x0234,133),(after.RandomSeedImage,after.RandomSeedCopy,after.FirstRound!.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+        Assert.Equal(before.CurrentGold,after.CurrentGold); Assert.Equal(before.AiMemory,after.AiMemory);
+        Assert.Equal((byte)2,after.AiLastTargets[2]); Assert.Null(after.Roster[2].Stats.CurrentKills);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0);
+    }
+
+    [Fact]
+    public void CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack()
+    {
+        var target = CounterattackBoundary().Roster[5].Stats;
+        // Arithmetic seam: a large authored ATT distinguishes halve-before-spread from halve-after.
+        var largeHp = new Battle01Stats(0,100,100,0,0,8,5,5,5,0,[127,127,127,127],[63,63,63,63]);
+        var effect = Battle01EnemyPhysicalAttack.ResolveSingleStrike(25,largeHp,256,0x07FD1234,130,new(9,4),new(8,4),8,16,2,isCounter:true);
+        Assert.Equal(new ushort[] {8,16,2,2,32,32},effect.Rolls.Select(r=>r.Range));
+        Assert.Equal(10-effect.Rolls[2].Result-effect.Rolls[3].Result,effect.Damage);
+        for(uint seed=0;seed<65536;seed++)
+        {
+            var candidate = Battle01EnemyPhysicalAttack.ResolveSingleStrike(8,target,230,seed<<16|0x1234,130,new(9,4),new(8,4),8,16,2,isCounter:true);
+            if(!candidate.Rolls.Any(r=>r.Purpose=="double" && r.Result==0))continue;
+            Assert.Equal("counter",candidate.Rolls[^1].Purpose); Assert.InRange(candidate.Rolls.Count,3,6); return;
+        }
+        throw new InvalidOperationException("No counter-body double flag found.");
+    }
+
+    [Theory]
+    [InlineData("exp", "attack.actorExpProfile")]
+    [InlineData("level", "attack.levelUp")]
+    [InlineData("terrain", "attack.targetTerrain")]
+    [InlineData("lethal", "attack.lethal")]
+    [InlineData("class", "attack.targetProfile")]
+    [InlineData("status", "attack.targetProfile")]
+    [InlineData("item", "attack.targetProfile")]
+    public void CounterValidationAndLateAwardFailuresReturnNoEffect(string mutation,string field)
+    {
+        var before=CounterattackBoundary(); var actor=before.Roster[2]; var target=before.Roster[5].WithPosition(new(8,4));
+        var s=actor.Stats;
+        var changed=new Battle01Stats(s.Level,s.HpMax,s.HpCurrent,s.MpMax,s.MpCurrent,s.Attack,s.Defense,s.Agility,s.Move,
+            mutation=="status" ? (ushort)1 : s.Status,mutation=="item" ? new ushort[]{185,0,127,127}:s.Items,s.Spells,
+            mutation=="exp" ? null : mutation=="level" ? (byte)99 : s.CurrentExp);
+        actor=new(actor.Deployment,changed,mutation=="class" ? (byte)4 : actor.ClassId,actor.EnemySource,actor.AiBitfield,actor.Position);
+        if(mutation=="lethal")target=target.WithStats(target.Stats.WithCurrentHp(1));
+        Assert.Equal(field,Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.ResolveCounter(actor,target,mutation=="terrain" ? (byte)2 : (byte)1,0x07FD1234)).ParamName);
+        Assert.Equal(0x691F1234u,before.RandomSeedImage); Assert.Null(before.TurnCompletion!.EnemyPhysicalAttack!.Counterattack);
+    }
+
     internal static Battle01InitializedState LeaderDefeatBoundary(ushort? defeats = 0)
     {
         var current = FirstAllyDefeatBoundary(bowieDefeats: defeats);
