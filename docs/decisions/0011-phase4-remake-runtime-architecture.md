@@ -385,9 +385,11 @@ shared harness change, release/merge-readiness boundary, or explicit full-parity
 accepted profile. MCP, editor state, screenshots taken by hand, and a zero-exit Godot launch are never
 substitutes for these gates.
 
-Before Phase 4, the readiness gate requires complete accepted H4 definitions, not successful H4
-execution against a remake that does not exist. H4 implementation and passing remake results occur
-only after the separate start action.
+The original pre-entry policy required complete accepted H4 definitions before Phase 4 began.
+[ADR 0016](./0016-remake-start-evidence-deferral.md) supersedes that start prerequisite: a separately
+user-authorized bounded implementation requires only its concrete accepted dependencies. Complete H4
+definitions and passing results remain eventual milestone acceptance work; this amendment does not
+declare those requirements satisfied.
 
 ## Dependency and Flow Summary
 
@@ -451,8 +453,8 @@ missing values are known.
 - Exact 8C output may require a specialized software presentation/audio backend in addition to normal
   Godot scene composition; the architecture isolates but does not solve that research and engineering
   cost.
-- The application state machine and H4 observation model require up-front discipline before visible
-  game work begins.
+- The application state machine requires discipline from the first implementation slice; H4 observation
+  work follows the concrete dependencies and later acceptance boundaries in ADR 0016.
 
 ## Non-Goals and Revisit Triggers
 
@@ -470,9 +472,11 @@ changing these ownership rules.
 
 The explicit user selection of Option A marks this ADR **Accepted** and authorizes only this
 architectural constraint for a later Phase 4 implementation. It does not make the readiness ledger
-READY and does not start Phase 4. Research closures, the continuous-scenario contract, complete H4
-definitions, main-gate readiness, and the separate user start action required by ADR 0009 all remain
-open.
+READY and did not itself start Phase 4. The original coupling of the separate start action to Research
+closures, the continuous-scenario contract, complete H4 definitions, and main-gate milestone readiness
+is superseded by [ADR 0016](./0016-remake-start-evidence-deferral.md). Those requirements remain with
+the eventual milestone; a bounded implementation may start under separate user authorization while
+that milestone remains NOT READY.
 
 Changing to another option requires a follow-up ADR that explains how it still satisfies ADR 0008,
 the ADR 0010 product profile, the private/public boundary, and the layered H4 acceptance surface.

@@ -4,13 +4,20 @@
 - Decision date: 2026-07-20
 - Workflow review: 2026-08-01
 - Scope: ordinary Phase 2 reverse-engineering slices
+- Role routing: amended by [ADR 0018](./0018-astra-role-routing-trial.md#current-routing)
 - Integration scope: supplemented by [ADR 0006](./0006-parallel-worktrees-and-topic-branch-integration.md)
 
 ## Decision
 
-Use one project-scoped `terra_reverse_engineer` custom agent for each ordinary Phase 2 slice within its
-research topic worktree. The root
-agent scopes the slice and its acceptance criteria, launches the worker, then reviews the handoff and
+The original decision required one project-scoped `terra_reverse_engineer` custom agent for each
+ordinary Phase 2 slice. That model and mandatory-worker choice is superseded by
+[ADR 0018](./0018-astra-role-routing-trial.md#current-routing): a dedicated lane owner may execute a
+slice directly, and Terra is reserved for explicitly bounded single-file, single-assembly, or
+single-function reverse-engineering subtasks. This ADR's evidence, handoff, Worker Acceptance Checklist,
+and independent acceptance requirements remain in force.
+
+For a delegated subtask in its research topic worktree, the root scopes the work and its acceptance
+criteria, launches the worker, then reviews the handoff and
 diff, reruns verification, scans the tracked/private boundary, stages exact accepted files, and commits
 to the current topic branch rather than directly to `main`.
 The root does not independently perform the reverse engineering or implementation assigned to the
@@ -24,18 +31,18 @@ question queue. It reports its scope, files, evidence labels and provenance, cou
 remaining runtime questions, contract impacts, and clean unstaged/uncommitted status.
 
 The role is defined in `.codex/agents/terra-reverse-engineer.toml`; `.codex/config.toml` limits the
-project to two agent threads and one nesting level. When role selection is unavailable to the current
-surface, the root explicitly selects `gpt-5.6-terra` when spawning the worker.
+project to two agent threads and one nesting level. For an explicitly assigned bounded Terra subtask,
+the root selects `gpt-5.6-terra` when role selection is unavailable to the current surface. This fallback
+does not override ADR 0018's routing or make delegation mandatory.
 
-The role remains at `xhigh` reasoning effort. Tested bounded checkpoints improved execution without
-requiring a broader model change: the Shop slice needed many partial/rejection rounds, while Church and
-Caravan each needed one narrow semantic-root rejection. The 2026-08-01 review also separated contract
-omissions from the entity-presentation-FX false PASS: the latter was a runner/observer failure-propagation
-defect and not evidence that static reasoning needed a larger model. Keep `xhigh`; do not raise the
-ordinary worker to `max` or `ultra` on this history alone.
+The bounded Terra role remains at `xhigh` reasoning effort. The 2026-08-01 review found that tested
+checkpoints and focused semantic corrections improved execution without requiring a higher reasoning
+effort. It also separated contract omissions from a runner/observer false PASS caused by missing failure
+propagation; that harness defect was not evidence that static reasoning needed a larger model. These
+findings explain the Terra configuration, not the current default model for a complete research lane.
 
 The same review found that copying every historical acceptance lesson into the injected custom-agent
-prompt had grown it to 1,301 words and made the native harness test preserve dozens of prompt substrings.
+prompt had enlarged it and made the native harness test preserve historical wording.
 That pattern diluted the execution sequence and turned each rejection into another permanent prompt
 clause. The custom-agent prompt is now a compact protocol that points to this ADR's complete checklist as
 the single detailed acceptance owner. Tests protect the role boundary, required protocol stages, and a
@@ -50,11 +57,14 @@ and keeps the durable repository record coherent.
 
 ## Workflow
 
+The worker/root steps below apply when a bounded subtask is delegated. Direct lane execution follows
+ADR 0018 and retains the same evidence checklist and independent acceptance boundary.
+
 1. The root supplies a slice contract with the owning topic/document, bounded source surface, owned
    tracked files, shared-file needs, expected outputs, one narrow H2/H3 acceptance command, and explicit
    exclusions. Static and runtime work are separate slices unless the contract gives a concrete reason
    they must share one implementation change.
-2. The Terra worker performs the complete static slice and returns a structured handoff without staging
+2. The worker performs the assigned bounded subtask and returns a structured handoff without staging
    or committing. Before handoff it performs an adversarial self-review against the acceptance checklist
    below and reports the weaknesses it corrected.
 3. The root compares the handoff with the diff, checks labels, provenance, and counters, and sends any
@@ -72,7 +82,7 @@ and keeps the durable repository record coherent.
   project direction, and must not read or update external memory.
 - Neither role runs `uv run sf2 verify --full` by default. The full gate remains limited to milestones,
   release/merge readiness, shared harness changes, or an explicit full-parity request.
-- Within the research slice, the root is the sole stager and committer and must inspect the staged file
+- For a delegated research subtask, the root is the sole stager and committer and must inspect the staged file
   list and cached diff before committing. It does not commit ordinary slice work directly to `main`.
 - Codex custom-agent configuration is not a security boundary. It supplies role instructions and model
   defaults; it cannot by itself prevent a worker from invoking Git or writing an ignored path. The
@@ -81,7 +91,8 @@ and keeps the durable repository record coherent.
 ## Worker Acceptance Checklist
 
 The first delegated slices showed that passing narrow commands alone does not guarantee an acceptance-
-quality contract. Before handoff, the worker therefore checks all of the following:
+quality contract. Before handoff, every Phase 2 author checks all of the following, including during
+direct lane execution under ADR 0018:
 
 1. Extractor output, golden fixture, output schema, fixture schema, focused tests, research prose, and any
    design contract agree on one complete data shape.
@@ -149,14 +160,16 @@ quality contract. Before handoff, the worker therefore checks all of the followi
     multiple roles at one PC use one deterministic dispatcher; and the accepted run leaves no Lua Console
     error or registered callback behind.
 
-The root repeats these checks independently. A rejection returns to the same worker and becomes input to
-its next self-review; the root does not silently patch the research implementation.
+The acceptor repeats these checks independently. For a delegated subtask, a rejection returns to the
+same worker and becomes input to its next self-review; the root does not silently patch the worker's
+research implementation.
 
 ## Consequences
 
 - Normal Phase 2 work has one accountable author and one independent acceptor.
 - Worker handoffs become durable input to review rather than a substitute for evidence in tracked docs.
-- The root may reject or return a slice, but it should not silently complete the worker's research.
-- The tested checkpoint/review history supports retaining `xhigh` reasoning effort; it is not evidence for
-  raising the ordinary worker to `max` or `ultra`.
+- For delegated work, the root may reject or return a subtask, but it should not silently complete the
+  worker's research.
+- The tested checkpoint/review history supports retaining `xhigh` for the bounded Terra role; current
+  lane model selection belongs to ADR 0018.
 - The existing evidence, copyright, and verification rules remain unchanged.

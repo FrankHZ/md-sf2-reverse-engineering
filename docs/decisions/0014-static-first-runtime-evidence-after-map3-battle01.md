@@ -86,7 +86,9 @@ it does not weaken already accepted evidence or normal verification.
 This decision supplements ADR 0003. ADR 0003 remains authoritative for static-first inventory,
 static-versus-runtime evidence labels, and batching once runtime observation is justified. ADR 0014
 clarifies that the question queue is deferred by default and adds the three-part admission gate for
-new H3 after the ADR 0009 scenario closure.
+new H3. Its original restriction to after ADR 0009 scenario closure is superseded by
+[ADR 0016](./0016-remake-start-evidence-deferral.md#use-static-first-conditional-evidence-routing-now):
+the gate applies immediately, before and after that closure.
 
 ADR 0005's remake-value test and ADR 0013's evidence-preserving efficiency rules remain in force.
 Neither token cost nor emulator runtime alone is evidence for skipping a contract-relevant runtime
