@@ -8,9 +8,11 @@ The user's [ADR 0019 policy](../../docs/decisions/0019-state-and-content-driven-
 controls current work: add only meaningful engine behavior unit tests, use verification/probes/
 drivers/planners/gates/reports/helpers directly without tests of them, and migrate or retire old
 tests by behavior. No count parity, per-deletion replacement or green legacy aggregate is required.
-M0/M1 and CI/local selection are still pending, as described by the
-[verification owner](./development-and-verification.md#github-public). Preserve the historical
-evidence and completed failures below without replaying its repair queue.
+[Current M0](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
+implements consumed mechanics, engine unit tests and scoped CI/local selection under the
+[verification owner](./development-and-verification.md#github-public). M1's common session/authored
+admission and accepted 8C/H4 remain incomplete. Preserve the historical evidence and completed
+failures below without replaying its repair queue.
 
 The counts and investigation below remain a snapshot of the named `f9dbfd5` base. Its statements
 about unimplemented recommendations describe that audit stage. The current tests resolve the bounded
@@ -178,7 +180,7 @@ those observations have a different, durable justification.
 and mount/projection behavior, but replace private signature/name constraints with tests of the actual
 boundary. Apply the same distinction to source-string assertions such as
 `_battlePresenter?.Project(...)` and private method declarations in
-[test_remake_architecture.py](../../tests/python/test_remake_architecture.py); assembly direction and
+[test_remake_architecture.py at the audited base](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/f9dbfd5e5366a46fd855e36ee55dd5a1c1e3dd90/tests/python/test_remake_architecture.py); assembly direction and
 forbidden dependency checks remain valuable. That Python file is outside the 758 count.
 
 **Confirmed:** [Map3PresenterTests](../tests/Sf2.Remake.Godot.Tests/Map3PresenterTests.cs) pins complete

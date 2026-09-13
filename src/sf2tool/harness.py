@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.dotnet_environment import shared_dotnet_environment
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h3.award_exp import verify_award_exp_randomization
@@ -151,6 +153,39 @@ FULL_PYTEST_ARGUMENTS = (
 
 def _heading(title: str) -> None:
     print(f"=== {title} ===", flush=True)
+
+
+def verify_engine() -> None:
+    """Build and run the product engine unit project without legacy/private gates."""
+    _verify_dotnet("tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj", run_tests=True)
+
+
+def build_adapter() -> None:
+    """Compile the product adapter without launching Godot or legacy tests."""
+    _verify_dotnet("game/Sf2.Remake.Godot.csproj", run_tests=False)
+
+
+def _verify_dotnet(project: str, *, run_tests: bool) -> None:
+    root = repo_path(".")
+    environment = shared_dotnet_environment(os.environ, root)
+    environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0"
+    environment["MSBUILDDISABLENODEREUSE"] = "1"
+    commands = [
+        ("restore", project, "--locked-mode"),
+        ("build", project, "--configuration", "Release", "--no-restore"),
+    ]
+    if run_tests:
+        commands.append(
+            ("test", project, "--configuration", "Release", "--no-build", "--no-restore")
+        )
+    for arguments in commands:
+        _heading(f"{'Engine' if run_tests else 'Adapter'}: {arguments[0]}")
+        subprocess.run(
+            [environment["DOTNET_BIN"], *arguments],
+            cwd=root / "remake",
+            env=environment,
+            check=True,
+        )
 
 
 def _run_stage(stage: LegacyStage, rom_path: Path, upstream_path: Path) -> None:

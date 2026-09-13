@@ -13,12 +13,15 @@ new-engine work: add engine behavior unit tests, run needed verification directl
 of verification infrastructure. Old engine tests may migrate or retire without count parity,
 replacement-per-deletion or an old green aggregate. Documentation-only work uses direct checks.
 
-The planner still emits legacy public-core/.NET/Godot/test selections. That current behavior is not
-the revised engine policy. The M0/M1 workflow, harness, planner and required-check cutover remains
-separately owned and unimplemented. Use the
-[verification owner](../../remake/docs/development-and-verification.md#repository-planner) to keep
-current commands, binding policy and future cutover distinct. Research evidence and genuinely shared
-dependencies retain their affected requirements; this does not delete or weaken original evidence.
+M0 implements `engine-unit`, `adapter-build` and `research-public` partitions and scoped workflow/local
+entries. Remake and non-research document changes automatically select that engine scope; legacy
+remake test retirement adds no old solution or deleted-test fanout. Main-gate owns remote required
+checks. M1's common session is still planned. The
+[verification owner](../../remake/docs/development-and-verification.md#repository-planner) owns commands
+and the explicit `--scope engine` boundary for reviewed engine-only CLI/harness/planner wiring.
+Shared modules retain conservative research selection by default. The explicit scope rejects research
+artifacts and other shared inputs; semantic evidence changes inside an allowed module still require
+the research route. Original evidence and its dependency requirements remain intact.
 
 ## Context
 
@@ -43,8 +46,7 @@ future orchestration stable scheduling boundaries.
 Verification has two layers:
 
 1. **Existing research/public core:** the research lane uses `uv run sf2 verify` and its public
-   tracked-input boundary. The current planner always selects this layer; the scope amendment above
-   prevents that implementation fact from imposing it on documentation or the new engine.
+   tracked-input boundary. The planner selects this layer for research scope, not engine scope.
 2. **Affected evidence:** a deterministic planner maps a committed Git range to stable Python, H1,
    H2, and H3 partitions. Only selected partitions need run for an ordinary slice. Running every
    partition remains the full milestone meaning even while the current legacy-compatible `--full`
@@ -54,6 +56,9 @@ The accepted partitions are:
 
 | Partition | Owner | Scheduling boundary |
 | --- | --- | --- |
+| `engine-unit` | actual engine unit tests and their production build | parallel-safe |
+| `adapter-build` | actual Godot C# project compilation, without native launch or tests | parallel-safe |
+| `research-public` | direct lint, contract traceability and research-index checks | parallel-safe |
 | `tooling-python` | Python tooling and focused regression tests | parallel-safe |
 | `h1-original` | bit-perfect rebuild and source/toolchain identity | serialized on `original-rebuild` |
 | `h2-battle-logic` | battle control, AI, action, scene-engine, and routing evidence | parallel-safe |
@@ -68,7 +73,7 @@ The accepted partitions are:
 | `h3-witch` | `witch-menu` runtime profile | serialized on `bizhawk-original-runtime` |
 | `h3-sound` | `sound-driver` runtime profile | serialized on `bizhawk-original-runtime` |
 
-`public-core` is also represented in every plan as the always-run first layer. H3 boundaries consume
+`public-core` is represented in research plans as their first layer. H3 boundaries consume
 the existing closed bootstrap registry rather than duplicating runtime ownership. H2 command
 ownership is a closed registry checked against the CLI parser. A new CLI command cannot be added
 without assigning a partition. Closed artifact indexes are derived from those command modules,
@@ -110,10 +115,9 @@ paths cannot be combined with the `plan` subcommand. Ordinary `verify`, `verify 
 unmodified `verify plan` retain their separate dispatch behavior.
 
 `unclassifiedPaths` is a visible maintenance queue, not permission to omit verification. An unknown
-path under an evidence-owning root selects all plausible partitions. Documentation-only paths select
-only the always-run public core unless their change is accompanied by, or explicitly declares, an
-evidence dependency. This describes the current selection output; the scope amendment determines
-whether that output is an applicable obligation or pending engine-cutover work.
+path under an evidence-owning root selects all plausible partitions. Non-research documentation-only
+paths select no execution, leaving direct document checks with the author. Research/contracts paths
+retain research scope. Explicit evidence dependencies use the existing include-partition mechanism.
 
 ### Test Changes and Production Invalidation
 
@@ -125,10 +129,11 @@ select their own pytest command without that propagation, whether they import a 
 owner or a shared helper.
 
 Actual production, fixture, schema, manifest, and observer changes still select their owners and
-reverse dependencies. Explicit remake, asset, and runner test mappings retain their additional gates;
-a deleted ordinary test currently falls back to the complete Python suite. Deliberate engine-test
-retirement must remove that obsolete fanout during the coordinated cutover; it does not require
-running the old aggregate or adding tests of its replacement selection. If a test change introduces an
+reverse dependencies. Remake product/test paths use the new engine/adapter mapping in mixed research
+plans too. The five retired Python verification-test paths are explicitly excluded, and old remake
+test edits do not select the legacy solution. Other research asset/runner mappings and ordinary
+deleted Python test fallback remain owned by the research/tooling route. No test of replacement
+selection is required. If a test change introduces an
 original-runtime acceptance requirement that the changed source paths do not express, the lane must
 declare that semantic dependency through the existing `--include-partition` option. Test selection is
 not permission to omit such a requirement.
@@ -164,7 +169,7 @@ It does **not**:
   still requires the existing serialized rebuild/full-profile route.
 
 A later executor remains separately owned. Interpret selection under the current scope amendment;
-declare genuine research dependencies and any pending engine cutover rather than silently relabeling
+declare genuine research dependencies and any pending required-check change rather than relabeling
 an unrun command as passed. Planner output does not authorize creating agents or environments.
 H2 partitions can run in isolated worktrees in parallel. H3 sessions
 remain serialized when they share the host runtime/private scratch boundary, and private inputs stay

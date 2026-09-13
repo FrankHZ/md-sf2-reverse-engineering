@@ -142,7 +142,7 @@ public static class Battle01PlayerHealing
         var origin = current.Roster.Single(unit => unit.Index == actorIndex).RequirePosition();
         return current.Roster.Where(unit => unit.Index < 128 && unit.Stats.HpCurrent > 0 &&
             unit.Position is { } p && Battle01Initialization.WithinArea(p) && current.OccupantAt(p) == unit.Index &&
-            unit.AiBitfield is { } ai && (ai & 8) == 0 && Math.Abs(p.X - origin.X) + Math.Abs(p.Y - origin.Y) <= 1)
+            unit.AiBitfield is { } ai && (ai & 8) == 0 && BattleRange.Contains(origin, p, 0, 1))
             .Select(unit => unit.Index).Order().ToArray();
     }
 
@@ -172,16 +172,24 @@ public static class Battle01PlayerHealing
         if (actor.CurrentExp is not { } exp) throw Rejected("expInput", "Sarah EXP must be an explicit early input.");
         if (actor.MpCurrent < MpCost) throw Rejected("mp", "HEAL 1 requires three MP.");
         if (target.HpCurrent == 0 || target.HpCurrent >= target.HpMax) throw Rejected("hp", "This action heals a living injured Bowie.");
-        int recovery = Math.Min(Power, target.HpMax - target.HpCurrent);
-        int accumulated = Math.Min(25, Math.Max(10, 25 * recovery / target.HpMax));
-        int award = accumulated; var rolls = new List<Battle01MainRandomRoll>();
-        if (Battle01EnemyPhysicalAttack.MainRoll(ref main, rolls, "heal-exp-plus", 16) == 0) award++;
-        if (Battle01EnemyPhysicalAttack.MainRoll(ref main, rolls, "heal-exp-minus", 16) == 0) award--;
-        award = Math.Max(1, award);
-        if (exp + award >= 100) throw Rejected("levelUp", "The healing slice does not implement level-up.");
-        return new(recovery, accumulated, award, actor.WithCurrentMp((byte)(actor.MpCurrent - MpCost)).WithCurrentExp((byte)(exp + award)),
-            target.WithCurrentHp((ushort)(target.HpCurrent + recovery)), rolls.AsReadOnly(),
-            Array.AsReadOnly(new[] { new Battle01HealingReaction(1, 0, -MpCost, 0), new(0, recovery, 0, 0), new(1, 0, 0, award) }));
+        HealingResolution result;
+        try
+        {
+            result = HealingRules.ResolvePriest(new(target.HpCurrent, target.HpMax, actor.MpCurrent,
+                exp, Power, MpCost, main));
+        }
+        catch (NotSupportedException)
+        {
+            throw Rejected("levelUp", "The healing slice does not implement level-up.");
+        }
+        var plus = result.PlusRoll; var minus = result.MinusRoll;
+        return new(result.Recovery, result.AccumulatedExp, result.AwardedExp,
+            actor.WithCurrentMp(result.MpAfter).WithCurrentExp(result.ExpAfter), target.WithCurrentHp(result.HpAfter),
+            Array.AsReadOnly(new[] {
+                new Battle01MainRandomRoll("heal-exp-plus", plus.Range, plus.Before, plus.After, plus.Value),
+                new Battle01MainRandomRoll("heal-exp-minus", minus.Range, minus.Before, minus.After, minus.Value) }),
+            Array.AsReadOnly(new[] { new Battle01HealingReaction(1, 0, -MpCost, 0),
+                new(0, result.Recovery, 0, 0), new(1, 0, 0, result.AwardedExp) }));
     }
 
     internal static void ValidateDecision(Battle01PlayerHealingDecision decision)
@@ -190,7 +198,7 @@ public static class Battle01PlayerHealing
         if (decision.TargetIndex != 0 || decision.SpellEntry != HealOne ||
             !decision.LegalTargets.SequenceEqual(new[] { 0, 1 }) || decision.Actor.Position is not { } origin ||
             decision.Target.Position is not { } target || !Battle01Initialization.WithinArea(origin) ||
-            !Battle01Initialization.WithinArea(target) || Math.Abs(origin.X - target.X) + Math.Abs(origin.Y - target.Y) != 1 ||
+            !Battle01Initialization.WithinArea(target) || !BattleRange.Contains(origin, target, 1, 1) ||
             decision.MoveString.Count == 0 || decision.MoveString[^1] != 255)
             throw Rejected("history", "Retain the distinct Sarah/Bowie HEAL 1 selection and placement.");
         var position = decision.MovementOrigin;

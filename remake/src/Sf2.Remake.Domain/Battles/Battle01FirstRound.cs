@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Sf2.Remake.Domain.Maps;
 
 [assembly: InternalsVisibleTo("Sf2.Remake.Domain.Tests")]
+[assembly: InternalsVisibleTo("Sf2.Remake.Engine.Tests")]
 
 namespace Sf2.Remake.Domain.Battles;
 
@@ -284,49 +285,16 @@ public static class Battle01FirstRound
     internal readonly record struct TurnCandidate(byte Index, byte X, ushort CurrentHp, byte Agility);
     internal static Battle01TurnEntry[] GenerateTurnOrder(IEnumerable<TurnCandidate> candidates, ref ushort generatorWord)
     {
-        var ordered = candidates.OrderBy(candidate => candidate.Index).ToArray();
-        if (ordered.Select(candidate => candidate.Index).Distinct().Count() != ordered.Length ||
-            ordered.Any(candidate => candidate.Index is > 29 and < 128 or > 159))
-            throw new ArgumentException("Turn candidates require unique original ally/enemy indices.", nameof(candidates));
-        var slots = Enumerable.Repeat(new Battle01TurnEntry(255, 255), 64).ToArray();
-        int length = 0;
-        foreach (var candidate in ordered)
-        {
-            if (candidate.X >= 128 || candidate.CurrentHp == 0) continue;
-            int basis = candidate.Agility & 0x7F;
-            int score = basis;
-            ushort range = (ushort)(basis >> 3);
-            score += NextRandom(ref generatorWord, range);
-            score -= NextRandom(ref generatorWord, range);
-            score += NextRandom(ref generatorWord, 3) - 1;
-            Add(candidate.Index, score);
-            if (candidate.Agility >= 128)
-            {
-                basis = basis * 5 / 6; range = (ushort)(basis >> 3); score = basis;
-                score += NextRandom(ref generatorWord, range);
-                score -= NextRandom(ref generatorWord, range);
-                Add(candidate.Index, score);
-            }
-        }
-        // Source uses 62 passes across all 64 slots, comparing only the signed agility byte.
-        // Sentinels participate; never compact a negative-score entry around them.
-        for (int pass = 0; pass < 62; pass++)
-            for (int index = 0; index < 63; index++)
-                if (unchecked((sbyte)slots[index + 1].AlteredAgility) > unchecked((sbyte)slots[index].AlteredAgility))
-                    (slots[index], slots[index + 1]) = (slots[index + 1], slots[index]);
-        return slots;
-
-        void Add(byte index, int score)
-        {
-            if (length == slots.Length) throw new ArgumentException("The bounded turn buffer is full.", nameof(candidates));
-            slots[length++] = new(index, unchecked((byte)score));
-        }
+        var result = TurnOrderRules.Generate(candidates.Select(candidate => new TurnOrderCandidate(
+            candidate.Index, candidate.X < 128, candidate.CurrentHp, candidate.Agility)), generatorWord);
+        generatorWord = result.NextSeed;
+        return result.Slots.Select(slot => new Battle01TurnEntry(slot.ActorSlot, slot.AlteredAgility)).ToArray();
     }
 
     internal static ushort NextRandom(ref ushort word, ushort range)
     {
-        word = unchecked((ushort)(word * 13 + 7));
-        ushort doubledRange = unchecked((ushort)(range * 2));
-        return (ushort)((((uint)word * doubledRange) >> 16) >> 1);
+        var draw = BattleRandom.NextWord(word, range);
+        word = draw.After;
+        return draw.Value;
     }
 }

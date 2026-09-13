@@ -12,10 +12,11 @@ endpoint handlers, and Godot battle scheduling identified in the
 [architecture audit](./docs/architecture-audit.md). Successful controlled runs do not establish a
 general state/content-driven engine.
 
-[ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the proposed migration
+[ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
 to common commands, live state and configurable typed content, resumable programs, and separate
-reference runners. It records the binding user test policy. Its M0/M1 engine, new unit-test project,
-and CI/local-command cutover have not been implemented by the design or documentation merges.
+reference runners. M0 provides consumed RNG/healing/turn-order/range rules, a dedicated engine unit
+project, local commands and scoped CI jobs. M1's common session and connected authored battle remain
+planned; the ADR's current M0 boundary records exactly what has moved and what remains unsupported.
 
 The [capability matrix](./docs/capability-status.md) owns runnable support and Unknowns. The
 [Map 3 implementation/reference record](./docs/map03-playability-plan.md) owns existing controlled
@@ -66,10 +67,11 @@ planners, gates, reports and helpers are verification; do not add tests of those
 migrate or retire by behavior, without count parity, one replacement per deletion, or a green old
 aggregate. Needed adapter checks observe the actual running Godot state/input; screenshots are prohibited.
 
-The existing solution and Public CI still run legacy test selections. Their presence is current
-execution behavior, not an instruction to retain them for the new engine. The
-[verification guide](./docs/development-and-verification.md#github-public) distinguishes those current
-commands from the separately owned M0/M1 cutover. Documentation-only work uses direct document checks.
+From the repository root, `uv run sf2 verify engine` runs locked restore/build/unit tests of the
+dedicated engine project. `uv run sf2 verify adapter` compiles the actual adapter. The
+[verification guide](./docs/development-and-verification.md#github-public) owns current CI scopes and
+main-gate's required-check configuration boundary. The legacy solution is no longer the engine gate.
+Documentation-only work uses direct document checks.
 
 ## Repository Layout
 
@@ -80,7 +82,8 @@ remake/
   src/Sf2.Remake.Application/    GameSession, control flow, content ports and observations
   src/Sf2.Remake.Content/        validated input readers and definition construction
   game/                         Godot project, composition, input and presentation
-  tests/                        existing unit and legacy verification consumers
+  tests/Sf2.Remake.Engine.Tests/ actual new-engine behavior unit tests
+  tests/                        other legacy/reference consumers
   docs/                         current implementation, direction, capability and usage owners
   global.json                   pinned SDK
   toolchain.json                pinned official Godot artifacts and process bounds
@@ -102,5 +105,5 @@ remake/
 ## Architecture Decisions
 
 The [architecture guide](./docs/architecture.md) routes ADR 0008's engine choice, ADR 0011's state and
-assembly boundaries, ADR 0017's lightweight internals, and ADR 0019's proposed behavioral migration.
+assembly boundaries, ADR 0017's lightweight internals, and ADR 0019's adopted migration direction.
 Historical slices and review chronology remain in Git and their evidence owners.

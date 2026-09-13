@@ -133,10 +133,11 @@ keeps its deliberate compatibility/migration boundary; the old test's existence 
 Migrate behavior assertions or retire obsolete tests with the capability; no replacement per deletion,
 test-count parity or old full-suite green result is required. Do not add tests of verification tools.
 
-ADR 0019 proposes behavioral decoupling instead of a file-split-first sequence, including replacing
+ADR 0019 adopts behavioral decoupling instead of a file-split-first sequence, including replacing
 trace predicates and endpoint handlers.
-That is separately scoped work, not a characterization-preserving rename. Its implementation/CI
-cutover has not occurred. Choose a coherent dependency chain, declare changed behavior and preserve
+That is separately scoped work, not a characterization-preserving rename. M0 supplies consumed pure
+mechanics and scoped CI/local verification; the common session and trace-guard migration remain in
+later slices. Choose a coherent dependency chain, declare changed behavior and preserve
 actual source/trust rules; do not let the smallest textual diff perpetuate a known architectural defect.
 
 ### Review architecture by responsibility and amplification

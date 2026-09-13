@@ -15,21 +15,23 @@ the findings are not a claim that remediation has been implemented.
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
 a service mesh, a general ECS, or an emulator-backed gameplay core.
 
-## Proposed State and Content Direction
+## State and Content Direction
 
-[Proposed ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the
-recommended command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
+[ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the adopted
+direction for the command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
 new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
 It proposes live state, validated content,
 and implemented capability as gameplay admission inputs, with fixed walkthrough constraints retained
 in reference verification. Application would advance to actual input, presentation/tick waits, or an
 attributed unsupported boundary; Godot would consume semantic commands and observations.
 
-This is a proposed behavioral migration, not the current implementation or an accepted replacement for
-ADRs 0011/0017. The profile-specific snapshots, fixed import checks, endpoint handlers, and Godot battle
-dispatch described below still exist; the audit findings remain open. The proposal preserves distinct
-public/private trust and leaves the accepted 8C/H4 target incomplete. It authorizes no implementation
-or new observation transport by itself.
+M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
+and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
+The [current M0 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
+names exact owners and limits. Full movement/cancellation, common session/content admission and M1's
+connected authored battle remain planned. The profile-specific snapshots, fixed import checks,
+endpoint handlers and Godot battle dispatch below still exist; A1–A8 remain open. Public/private trust
+and the incomplete accepted 8C/H4 target remain distinct from this migration.
 
 ## Production Assemblies
 
@@ -166,8 +168,9 @@ extends an existing bounded inspector or observation unless it has an independen
 ## Refactor Sequence
 
 Choose the scope explicitly: an internal behavior-preserving refactor retains meaningful observable
-behavior, while ADR 0019 proposes behavioral migration away from fixed histories and incompatible
-runtime paths. Its M0/M1 implementation and executable CI/local cutover remain separately owned.
+behavior, while ADR 0019 directs behavioral migration away from fixed histories and incompatible
+runtime paths. M0 supplies reusable mechanics and the new CI/local route; M1's common session is next
+only after independent M0 acceptance.
 
 Use small engine unit assertions for the actual behavior being moved. Retire obsolete structural,
 helper and trace-refusal tests as their owners migrate; there is no requirement to preserve every

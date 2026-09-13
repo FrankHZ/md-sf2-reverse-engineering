@@ -15,10 +15,10 @@ over older blanket gate and test-preservation recipes:
 - Documentation-only changes use direct link/anchor/fence/table/example, scope and private-boundary
   checks. They do not require a new normal/full, .NET, Godot or H3 run.
 
-The current code and executable gates still precede the proposed M0/M1 cutover. The new engine unit
-project and scoped CI jobs do not exist yet. This document changes guidance, not executable selection.
-An implementation slice must coordinate the real code/CI/planner/required-check change; it cannot
-claim a future command ran or retain a superseded obligation merely because an old tool selects it.
+M0 provides the engine unit project, consumed RNG/healing/turn-order/range rules, local engine and
+adapter entries, and scoped public jobs. M1's common session and authored connected battle remain
+planned. Main-gate owns required-check configuration during integration; a candidate must report its
+actual CI outcome and that configuration boundary explicitly.
 [ADR 0012](../../docs/decisions/0012-dependency-aware-partitioned-verification.md) continues to own
 affected research evidence selection. Shared research changes keep their separate owning requirements.
 
@@ -58,9 +58,19 @@ $project = 'src/Sf2.Remake.Domain/Sf2.Remake.Domain.csproj'
 & $env:DOTNET_BIN build $project --configuration Release --no-restore
 ```
 
-An actual engine unit-test project uses ordinary `dotnet test` with the same executable and locked
-build. ADR 0019 names a proposed future `Sf2.Remake.Engine.Tests` project; do not invoke that path
-before it exists. The current `Sf2.Remake.sln` includes four production and four legacy test projects.
+From the repository root after loading that environment, the maintained entries are:
+
+```powershell
+uv run sf2 verify engine
+uv run sf2 verify adapter
+```
+
+`verify engine` restores in locked mode, builds and tests
+`remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj`; it currently references Domain.
+`verify adapter` restores in locked mode and builds `remake/game/Sf2.Remake.Godot.csproj` without tests
+or native Godot. Both launch the selected executable from `remake/`, honoring `global.json` and the
+protected environment. Neither needs private inputs. The engine project is selected directly;
+the current `Sf2.Remake.sln` still includes four production and four legacy test projects.
 Whole-solution commands remain available for an explicitly applicable legacy/release check, not every
 engine or documentation change. Use formatting only for affected product projects when needed.
 
@@ -116,11 +126,22 @@ On a clean committed head, inspect current selection without executing gates:
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
-The current [planner](../../src/sf2tool/verification_plan.py) emits `public-core` for every plan,
-maps runtime-shaped remake changes to legacy .NET/Godot selections, and can broadly fan out deleted
-tests. Record that output as current behavior. It does not override the user policy in Scope.
-Unclassified research changes still need their evidence dependency resolved. Deliberately retired
-engine tests require the coordinated M0/M1 mapping change, not a full-suite rerun as a substitute.
+The [planner](../../src/sf2tool/verification_plan.py) automatically selects `engine-unit` and/or
+`adapter-build` for remake product/test paths, without the old solution or always-run `public-core`.
+Non-research documentation and retired engine-test paths add no execution. Engine test changes select
+unit tests; adapter changes select compilation; shared product/build inputs select both.
+
+Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
+engine-only wiring change in those three shared modules, inspect the actual diff and use:
+
+```powershell
+uv run sf2 verify plan --scope engine --base origin/main --head HEAD
+```
+
+That explicit scope adds `research-public` direct lint/traceability/index checks for the wiring and
+rejects research artifacts or other shared inputs. Path admission cannot detect a semantic research
+change inside an allowed module: such a change must retain its research plan/dependency. Unknown
+research paths keep conservative fanout. Retired verification tests do not fall back to the old suite.
 
 The existing normal `uv run sf2 verify` command still performs its public stages followed by selected
 private identity/provenance stages. It remains the research lane's normal route under its owner.
@@ -166,19 +187,28 @@ Never delete a retained wrapper or failure artifact merely because its run ended
 
 ## GitHub Public
 
-Current [public-checks.yml](../../.github/workflows/public-checks.yml) has one `tracked-inputs` job on
-pull requests and pushes to main. It runs locked Python sync/lint, the native harness, environment/
-probe/gate and architecture/planner/asset tests, design traceability, and whole-solution .NET
-restore/build/test. Its current triggers include documentation-only changes. This is an observed
-implementation fact, not the desired new-engine test policy. Do not manually repeat that old suite
-locally or dispatch extra workflow runs for a documentation correction.
+Current [public-checks.yml](../../.github/workflows/public-checks.yml) remains triggered on every pull
+request and main push. Its Windows jobs are:
 
-ADR 0019's separate engine-unit, adapter-build and research scopes are proposed. M0/M1 must implement
-the workflow, harness/planner mappings and required-check settings together with real engine behavior.
-Review the actual diff, needed commands and first applicable CI outcome directly; do not add tests
-of job selection, workflow text or the migration itself. No new-engine-only change should inherit the
-legacy infra tests or entire solution after that cutover. Shared research/private protections remain
-owned and visible; neither an absent applicable result nor a failed scope decision is a pass.
+| Job | Current execution |
+| --- | --- |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit the three affected-path booleans. |
+| `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
+| `adapter-build` | Locked restore/build of the actual Godot C# project; no old Godot tests or native editor launch. |
+| `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
+
+Product/build inputs select engine and adapter; engine tests select engine; `remake/game/` selects
+adapter. Research/contracts/source/fixtures/manifests/schema inputs select research. Workflow and
+shared CLI/harness/planner changes select all three. Non-research documentation and legacy remake
+test edits select no product jobs. Other non-remake inputs conservatively select research. The full
+predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
+is introduced. M0 has no external fixture-file dependency.
+
+Main-gate must replace the old `tracked-inputs` required check with `scope`, `engine-unit`,
+`adapter-build`, and `research-public` under the `Public checks` workflow, inspecting the actual
+GitHub check names during integration. Path-irrelevant jobs report skipped; applicable jobs need a
+real successful result. Review the diff and first applicable CI outcome directly, without tests of
+job selection, workflow text or the migration. Research/private protections remain independently owned.
 
 ## Process, Path, and Artifact Safety
 
@@ -222,7 +252,7 @@ exports and receipts out of Git; inspect staged paths and any actually produced 
 | Documentation/instructions | Direct document and scope checks, committed planner inspection, honest existing CI outcome |
 | Original research or genuinely shared evidence input | Owning research requirements and affected dependencies; keep original evidence/provenance intact |
 
-These are scope rules. They neither claim the future engine project/CI is implemented nor waive
-accepted 8C/H4 evidence. A migration handoff names any pending executable cutover. Use
+These scope rules do not waive accepted 8C/H4 evidence. A migration handoff names any pending remote
+required-check change and unsupported product capability. Use
 [Bounded Inspection and Review](../../docs/operations/bounded-inspection-and-review.md) for exact
 identity, semantic review and completed-result handoff.
