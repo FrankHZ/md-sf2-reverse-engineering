@@ -1,12 +1,24 @@
 # Map 3 Playability Plan
 
-Status: Active
+Status: Legacy implementation and controlled-reference record; not an active feature queue.
+
+Read [current architecture](./architecture.md) and
+[ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) for new-engine work.
+This document retains the existing route's source joins, selected inputs, observations, failures and
+reproduction recipes. Its exact rounds, receipts, presets and named endpoints describe that legacy
+implementation/reference, not legal-state predicates for the modern engine.
+
+Historical instructions below to add tests, retain every old case, run full managed/native suites,
+copy a project/editor or inspect image/frame totals are superseded by the
+[current verification scope](./development-and-verification.md#scope). Use only a needed reference
+seam directly; do not replay the old acceptance checklists. Screenshots remain prohibited. Existing
+code, original evidence and the incomplete 8C/H4 target are unchanged by this documentation audit.
 
 ## Goal
 
-Advance the private-local Map 3 profile toward direct play with a modern high-DPI presentation while
-keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
-separate.
+Record the bounded private-local Map 3 implementation and controlled comparisons, keeping original
+evidence, implemented behavior and incomplete fidelity separate. Future engine slices follow the
+state/content migration owner rather than advancing this record to the next receipt.
 
 Current stopping point: [post-heal Bowie counter107 and actual R14 player control](#implemented-post-heal-bowie-counter-and-actual-player-control).
 The early Sarah EXP0 route reaches HEAL103, Bowie approach/STAY105 and the second five-survivor
@@ -536,8 +548,11 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 ## Ordered Queue
 
-Resume combat from the [accepted counter/Sarah control](#implemented-first-reached-chester-counterattack),
-using its real input/receipt prefix. The first-kill section below continues to the actual next refusal.
+This legacy heading is retained for existing links. The entries are an implementation/reference
+catalog, not dispatch instructions; a completed boundary does not automatically authorize its sequel.
+
+The legacy sequence links the [accepted counter/Sarah control](#implemented-first-reached-chester-counterattack)
+and its real input/receipt prefix to the first-kill comparison and its next refusal.
 Natural castle continuity, original presentation and complete Battle01 play remain **Unknown**;
 the controlled route is not the ADR0010 milestone.
 

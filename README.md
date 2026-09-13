@@ -24,7 +24,7 @@ project decisions belong in their owning tracked documents.
   on 2026-08-28 under
   [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md). The tracked [`remake/`](./remake/)
   project now contains plain-C# Domain and Application assemblies, validated public/private Content
-  adapters, and a thin Godot host. Its current public-synthetic and private-local Map 3 capabilities
+  adapters, and a Godot host. Its current public-synthetic and private-local Map 3 capabilities
   and retained Unknowns are summarized by the [remake capability owner](./remake/docs/capability-status.md).
   The accepted first playable milestone is still one continuous scenario from Map 3 through
   completion of Battle 01 under
@@ -32,6 +32,12 @@ project decisions belong in their owning tracked documents.
   main-gate readiness, and H4 result remain incomplete eventual acceptance work, not default
   prerequisites for the authorized bounded implementation. No distributable asset strategy or MCP
   implementation has been selected.
+
+The [state/content-driven engine proposal](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
+records the migration direction and the user's binding test policy. Current controlled-route code,
+M0/M1 implementation, and CI/local-command cutover are distinct: the latter two have not been completed
+by the document merge. New-engine tests cover actual engine behavior; reference/probe/gate programs
+are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -184,80 +190,49 @@ uv run sf2 init --rom-path <path-to-a-legally-owned-USA-ROM>
 uv run sf2 verify
 ```
 
-The normal commit gate, `uv run sf2 verify`, runs the shared critical Python suite, design-contract
-traceability, research-index validation, ROM identity, and toolchain provenance. Pair it with the one
-focused H2 or H3 command that owns the changed slice.
+The existing normal `uv run sf2 verify` command runs research/public checks and private input/toolchain
+provenance stages. Research slices pair it with their owning narrow H2/H3 command. For remake or
+documentation work, use the [current verification scope](./remake/docs/development-and-verification.md#scope):
+engine unit tests and affected direct observations, or direct document checks. The current CI/planner
+still has legacy selections; record them without reintroducing superseded engine obligations.
 
-Useful explicit commands include:
+Useful research/navigation commands, selected only for the relevant work, include:
 
 ```powershell
-uv run ruff check src tests/python
-uv run pytest tests/python/test_native_harness.py
-uv run pytest
 uv run sf2 design-contracts test
-uv run sf2 research-index test
+uv run sf2 research-index list --summary
 uv run sf2 verify plan --base origin/main --head HEAD
-uv run sf2 texture extract
-uv run sf2 texture map --maps 3
-uv run sf2 verify --full
+uv run sf2 texture --help
 ```
 
-`uv run sf2 texture extract` decodes the accepted map-texture corpus (115 Stack-compressed
-`MapTilesetNNN` streams of 128 Mega Drive 4bpp 8x8 tiles each, plus the 16 `MapPaletteNN`
-9-bit color records) into private PNG sheets under ignored `local/derived/graphics/`:
-16x8 tile grids rendered with map palette 0 for direct viewing, plus all 16 palettes as
-color strips. `uv run sf2 texture map --maps 3` renders real map main-layer regions
-(64x64 block layout, 3x3-tile blocks, five tileset slots, flip/mirror flags) with the
-map palette. Palette index 0 is transparent; equal RGB black at any nonzero index remains
-opaque. The channel assignment is a tooling interpretation pending a reproducible original-game
-observation, not a screenshot-verified claim. Every area of every requested map is emitted under
-`local/derived/graphics/maps/mapNN/` (all 135 areas across the 79 maps are enumerable
-from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer region at the
-`scndLayerFgndStart`/`scndLayerBgndStart` offset, with the roof/layer-2 `slbc` copy records
-applied so source-stored facades such as the map-3 cell bars appear at their display
-position) and `...-composed.png` (overlay over the main layer). `uv run sf2 texture ui`
-renders a private source-shaped battle action-menu diagnostic under
-`local/derived/graphics/windows/`: the source/H1/ROM-bound 18x6
-`layout_DiamondMenu` grid with four source-shaped icon-slot builds and the selected option name
-at (11,4). This is not an original-screen, palette-appearance, animation-timing, or screenshot
-parity result, and it does not reconstruct the item-menu window. `uv run sf2 texture assets` extracts the font sheet,
-portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
-map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
-the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and
-frame assembly still unconfirmed), diagnostic battle-background compositions (source layout table,
-32 columns; final screen parity unconfirmed), and all four accepted unused-cloud streams under both
-unused base palettes. The generated PNGs are private/generated graphics payloads and are never
-tracked; manifests hold metadata and hashes only. Every ignored upstream binary payload is checked
-against its exact H1-resolved range in the hash-verified ROM before rendering. Commands reject their
-own existing output directories/manifests instead of silently overwriting or retaining stale files.
+The texture commands and [technical graphics owner](./docs/research/technical-graphics.md) describe
+private extraction, map/UI rendering and their original-fidelity limits. Extracted images are private
+outputs, not evidence of a running Godot scene. Do not repeat extraction because a topic changes.
 
-`verify plan` compares a base revision with a clean checked-out committed head without running a gate
-or changing Git state. An explicit `--head` is accepted only when it resolves to the checked-out
-`HEAD`; tracked changes and non-ignored untracked files are rejected because artifact and import
-ownership are derived from the checked-out filesystem. The plan always includes the normal public
-core, then reports the affected Python/H1/H2/H3 partitions, exact reasons, suggested narrow commands,
-resource locks, and any conservatively fanned-out unclassified paths. Use `--include-partition <id>`
-when a semantic dependency is not visible from the path diff. Planner mode rejects execution
-modifiers such as `--full`, `--skip-runtime`, or non-default ROM/upstream paths instead of silently
-ignoring them.
+`verify plan` inspects a clean checked-out committed head and reports changed paths, current selected
+partitions, reasons and unresolved ownership. It does not run gates or change Git. The current
+always-selected public core, remake fanout and deleted-test fallback are executable behavior pending
+the separately owned engine cutover, not new-engine acceptance policy.
 
-`verify --full` runs the complete Python suite plus the maintained H1/H2/H3 milestone profile wired
-into the current harness. It is reserved for milestones, release/merge readiness, shared harness
-changes, or explicit full-parity requests; it is not an enumeration of every registered narrow CLI
-command. It is not the default gate for an ordinary research slice, and a design-only documentation
-change does not trigger it.
+`verify --full` remains exceptional for applicable research milestones, shared evidence-harness
+semantics, release boundaries or explicit full-parity work. Neither ordinary engine changes nor
+documentation updates automatically require it. Preserve completed runs and failures, then rerun only
+actually invalidated checks required by the owning scope.
 
 Generated outputs belong under ignored `local/` paths. Tools must support read-only input or an
 explicit output directory; they must never patch the canonical ROM in place.
 
 ## Branch, Worktree, and Review Workflow
 
-`main` is the serialized integration branch. New work uses a short-lived topic branch in an isolated
-worktree:
+`main` is the serialized integration branch. Start a short-lived topic from accepted `origin/main` in
+the task's existing dedicated isolated worktree after its old topic is merged, tracked state is clean,
+and owned processes are settled. Create another worktree only for concurrent writers or a concrete
+reproduction/isolation need:
 
 - `codex/research-*` for Phase 2 evidence, parsers, fixtures, and owning research docs;
 - `codex/design-*` for cross-subsystem design synthesis from accepted `main` evidence;
 - `codex/tooling-*` for maintained tooling changes;
+- `codex/remake-*` for engine and Godot work;
 - `codex/repo-*` for repository governance and documentation structure.
 
 Research and design lanes may run concurrently only when their path ownership is explicit. Each lane

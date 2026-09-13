@@ -64,9 +64,13 @@ specifically prevents an observer template from reaching EmuHawk with the NLua
 
 ## Verification Profiles and Observed Cost
 
-The profile split is an operational contract, not merely a convenience:
+The profiles below describe the existing research/tooling harness. The explicit new-engine test
+policy in [ADR 0019](./0019-state-and-content-driven-remake-engine.md) and
+[current verification scope](../../remake/docs/development-and-verification.md#scope) controls engine
+and documentation work. Existing harness behavior does not require adding tests of verification
+infrastructure or keeping legacy engine tests during migration; executable cutover is separately owned.
 
-- ordinary commits run `uv run sf2 verify` plus the one narrow H2/H3 command that owns the change;
+- ordinary research evidence commits use `uv run sf2 verify` plus the narrow H2/H3 command that owns the change;
   `verify` always runs Ruff across `src` and `tests/python`, then the shared critical target
   `tests/python/test_native_harness.py`; it is not a broad Python regression suite;
 - `uv run pytest` runs the complete Python suite in one process when that broader check is required;

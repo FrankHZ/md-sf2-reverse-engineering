@@ -25,9 +25,11 @@ git diff --check "$reviewBase...$reviewHead"
 uv run sf2 verify plan --base $reviewBase --head $reviewHead
 ```
 
-The committed-range planner is authoritative for affected verification partitions, not for semantic
-correctness. Its broad fanout is a conservative result, not a reason to edit the planner during an
-unrelated slice.
+The committed-range planner reports current executable selection, not semantic correctness or
+permission to override [current verification scope](../../remake/docs/development-and-verification.md#scope).
+Research fanout requires resolving the affected evidence boundary. New-engine legacy-test retirement
+requires the coordinated code/CI/planner cutover; a documentation slice records that pending work
+without implementing it or rerunning every old selection.
 
 After classifying the paths, inspect only the owning file or bounded hunk needed for the current
 judgment:
@@ -117,6 +119,20 @@ successful output is summarized.
 
 ## Consolidated Independent Review
 
+For an engine change, check the behavior and responsibility boundary before counting passing gates:
+
+- Does legality follow live state, content and a supported rule, or a fixed reference history?
+- Can another valid actor/configuration/history use the same capability without a new production case?
+- Does Application execute the reached program/turn flow, with one state authority and meaningful
+  failure/atomicity, rather than publish a known endpoint or depend on Godot scheduling?
+- Does a small feature force unrelated allowlist/snapshot/protocol edits, and can the owning scope
+  remove that coupling instead of adding another patch?
+- Do engine unit assertions have independent expected results, and is reference/probe code outside
+  production and used directly without another test layer?
+
+Use the counterexample relevant to the changed capability; this is a semantic review, not a demand
+for a repository-wide test matrix. Passing a controlled trajectory does not close these questions.
+
 The reviewer first verifies candidate identity, exact scope, dependencies, and private boundary. It
 then performs one bounded semantic pass across every owned path and its direct contracts. Findings
 that are independently discoverable in the original candidate return as one consolidated batch with
@@ -127,8 +143,8 @@ containment. A later correction round is appropriate when the correction introdu
 base advances, a required check was unavailable, or new evidence changes the review boundary. Do not
 intentionally drip-feed issues that were visible in the same original candidate.
 
-After correction, independently inspect the correction diff and rerun only the invalidated affected
-partitions plus the always-run public core. Preserve an earlier full result according to the
-path/dependency invalidation rules in `AGENTS.md` and ADR 0012; do not rerun full solely to make a
-handoff look more complete. Main-gate integration remains serialized and separate from investigator
-or worker acceptance.
+After correction, independently inspect the correction diff and perform only invalidated checks
+required by its scope. Documentation uses direct checks; new-engine behavior uses useful unit tests
+and any affected direct verification; research keeps its owning requirements. Preserve completed full
+results and failures under the dependency rules in `AGENTS.md` and ADR 0012. Main-gate integration
+remains serialized and separate from investigator or worker acceptance.

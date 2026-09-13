@@ -8,11 +8,15 @@
 
 Keep `main` as the serialized integration branch. Ordinary agent changes use a short-lived topic branch
 created from an up-to-date `origin/main` and an isolated Git worktree. A worktree may persist across
-slices, but its topic branch does not become a second durable source of truth.
+slices, but its topic branch does not become a second durable source of truth. Prefer that reuse:
+after the old topic is merged, tracked state is clean and owned processes are settled, start the next
+topic at accepted `origin/main` in the same dedicated worktree. Another worktree needs concurrent
+ownership or a concrete reproduction/isolation requirement; a new slice alone is insufficient.
 
 Run at most one active Phase 2 research write lane and one active design-synthesis write lane by default.
-The research lane retains ADR 0004's single Terra worker plus independent root acceptance inside its
-worktree. The design lane may concurrently explain accepted evidence from `main`, but it cannot alter or
+The research lane follows [ADR 0018](./0018-astra-role-routing-trial.md): its dedicated owner may execute
+directly; only explicitly bounded reverse-engineering subtasks use Terra. Independent acceptance
+remains. The design lane may concurrently explain accepted evidence from `main`, but it cannot alter or
 promote research findings, schemas, fixtures, manifests, extractors, or evidence-bound subsystem design
 contracts without a separately assigned research slice and declared merge dependency.
 
@@ -22,7 +26,7 @@ Multiple research write lanes are allowed only after their complete parser, fixt
 index, CLI, and documentation surfaces are demonstrably disjoint.
 
 Integrate one branch at a time. Before acceptance, update the topic branch onto current `main`, resolve
-semantic conflicts with the owning lane, rerun the lane-specific checks and `uv run sf2 verify`, scan for
+semantic conflicts with the owning lane, perform the checks required by that change's scope, scan for
 private/generated inputs, stage exact paths, and review the cached diff. The accepted branch is pushed and
 reviewed before it enters `main`. Unmerged branch content is collaboration state, not accepted evidence.
 
@@ -47,7 +51,7 @@ hotspot.
 
 ## Branch and Dependency Rules
 
-- Use `codex/research-*`, `codex/design-*`, `codex/tooling-*`, or `codex/repo-*` topic names.
+- Use `codex/research-*`, `codex/design-*`, `codex/tooling-*`, `codex/remake-*`, or `codex/repo-*` topic names.
 - Base new work on current `origin/main`; update again immediately before final acceptance.
 - Prefer consuming only merged evidence. A stacked branch records its upstream topic branch and required
   merge order in the pull request.
@@ -57,10 +61,17 @@ hotspot.
 
 ## Verification and Remote Checks
 
-Research branches run `uv run sf2 verify` plus the owning narrow H2/H3 command. Design-synthesis branches
-run `uv run sf2 design-contracts test` and the tracked-input public test profile, followed by the normal
-`uv run sf2 verify` at final integration. `uv run sf2 verify --full` remains limited to milestone,
-release/merge-readiness, shared-harness, or explicitly requested parity gates.
+The research/design evidence rules below do not impose engine or documentation-only gates. Those
+follow [current scope](../../remake/docs/development-and-verification.md#scope), including the user
+policy for engine unit tests, direct verification, and legacy-test retirement. Current CI/planner
+implementation and the proposed M0/M1 cutover remain distinct.
+
+Research evidence branches use `uv run sf2 verify` plus the owning narrow H2/H3 command. A design-
+synthesis-only change uses direct document/link checks and, when its changed traceability needs it,
+the existing `uv run sf2 design-contracts test`; it does not automatically run normal/full or
+legacy engine suites. Report the existing Public CI outcome honestly. `uv run sf2 verify --full`
+remains limited to applicable evidence milestones, release boundaries, materially shared harness
+semantics or explicitly requested parity work.
 
 Full-gate reuse is decided by changed paths and dependencies rather than by commit identity alone. Record
 the research topic head/tree that passed the full profile and inspect the path delta from its tested base

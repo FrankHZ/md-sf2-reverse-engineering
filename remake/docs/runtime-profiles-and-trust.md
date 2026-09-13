@@ -4,7 +4,11 @@
 
 Runtime profiles declare where content comes from, which trust checks are required, and which product
 claims are permitted. Profile selection changes outer composition; it does not fork Domain rules or
-make Godot an evidence owner.
+make Godot an evidence owner. This is the intended trust boundary; the current implementation still
+has divergent private/public session APIs and fixed reference admission identified by the
+[architecture audit](./architecture-audit.md). [ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md)
+proposes common gameplay with separate validated content readers. Its authored format and M0/M1 are
+not implemented, and fixed current-package checks are not universal gameplay predicates.
 
 ## Profile Summary
 

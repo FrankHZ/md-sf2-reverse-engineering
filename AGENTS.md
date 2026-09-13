@@ -37,6 +37,7 @@ Use these durable routes rather than duplicating their details here:
 | Verification selection | [ADR 0012](./docs/decisions/0012-dependency-aware-partitioned-verification.md) |
 | Local private inputs | [Local Private Inputs](./docs/operations/local-private-inputs.md) |
 | Remake implementation | [Remake README](./remake/README.md) and its linked architecture, profile, capability, and verification owners |
+| New-engine direction and test policy | [ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) and the [current verification scope](./remake/docs/development-and-verification.md#scope) |
 | Bounded implementation start | [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md) |
 
 An ordinary Phase 2 handoff uses the complete slice contract defined by ADR 0004; its Worker
@@ -150,6 +151,30 @@ vendoring. A public repository is not itself permission to copy or relicense its
 
 ## Verification Rules
 
+Choose verification by the kind of change. The user's new-engine test policy controls over older
+blanket gate or test-preservation wording in this guide, ADRs, runbooks, and historical slice recipes:
+
+- Add small unit tests of actual engine behavior. Validation, reference replay, probes, fixture
+  drivers, planners, gates, reports, and test helpers are already verification; do not add tests of
+  those programs or rename them as engine behavior.
+- Migrate useful old behavior assertions or retire obsolete tests with their owning capability.
+  There is no test-count target, replacement-per-deletion rule, or requirement for the old aggregate
+  suite to remain green. Preserve original evidence and completed failures.
+- Run an affected reference comparison or adapter observation directly when its claim needs it.
+  Godot acceptance reads the running instance's state/input/projection and errors; screenshots are
+  prohibited. Reuse the owned Godot installation, project, and running debug instance. Name the
+  concrete failure or necessary startup/import/export/cleanup check before restarting or isolating it.
+- Documentation-only work uses direct document/scope checks. Do not launch normal/full Python,
+  .NET, Godot, or H3 suites solely because guidance changed or an earlier run was incomplete in inputs.
+
+[ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) still describes a proposed
+engine migration. M0/M1, the engine unit project, CI jobs, and executable planner/harness cutover are
+not implemented by a documentation merge. The current planner and CI still contain legacy selections;
+report those facts without turning them back into new-engine obligations. The separately owned
+implementation cutover must align code, CI required checks, local commands, and guidance. Research
+and genuinely shared changes retain their affected evidence requirements; an engine-only slice does
+not inherit the entire Phase 2 acceptance profile.
+
 `uv` owns the Python environment and lock. Use `uv sync --locked`; do not create a parallel
 requirements workflow or install project dependencies into the system interpreter.
 
@@ -159,16 +184,18 @@ An absent worktree-default ROM does not establish that the registered shared ROM
 Check input selection and run the narrow ROM verifier before reporting a ROM blocker. Keep missing
 configuration, missing input, identity mismatch, and later toolchain failures distinct in handoffs.
 
-The normal public commit gate is:
+For research/evidence work, the existing normal local verification command is:
 
 ```powershell
 uv run sf2 verify
 ```
 
-Pair it with the narrow test or H2/H3/remake command that owns the changed slice. On a clean committed
+Pair it with the narrow test or H2/H3 command that owns that research slice. On a clean committed
 head, use `uv run sf2 verify plan --base origin/main --head HEAD` to obtain the dependency-aware gate
-selection. The planner is authoritative for selected partitions; an unclassified path causes visible,
-conservative fanout rather than permission to skip a gate.
+selection. Interpret the plan under the scope rules above and the
+[verification owner](./remake/docs/development-and-verification.md#repository-planner). An unclassified
+research path requires resolving its evidence dependency; deliberate engine-test retirement requires
+the coordinated cutover, not a blanket legacy full-suite rerun.
 
 `uv run sf2 verify --full` is exceptional. Run it only for a phase milestone, release/merge readiness,
 shared harness or legacy-rail semantics, an upstream change that invalidates the full profile, or an
@@ -203,6 +230,12 @@ verification. Keep private/generated artifacts out of Git and public CI.
 ## Change Discipline
 
 - Make one narrow, reviewable change with one clear owner and acceptance boundary.
+- Size engine slices around a coherent rule or user behavior. A reference case, exact round, receipt
+  count, character sequence, or named scenario endpoint does not define gameplay legality. Review
+  changed valid states/content as well as the fixed comparison; preserve true source-specific rules.
+- The smallest maintainable solution may replace a coupled mechanism. Do not preserve a known design
+  defect merely to minimize changed lines or satisfy tests of its internal structure. Declare any
+  required scope expansion and resolve competing ownership before editing it.
 - Search for an existing owner, parser, schema, fixture, port, or reducer before creating another.
 - Do not add empty scaffolding, speculative abstractions, or duplicate state authorities.
 - Keep original-fidelity facts separate from remake design and intentional deviations.
@@ -217,9 +250,10 @@ separate values; keep paths literal, validated, and UTF-8-safe.
 
 ## Definition of Done
 
-A slice is done only when its exact diff matches declared ownership, relevant docs and executable
-contracts agree, provenance and Unknowns are explicit, outputs are reproducible, private/generated
-artifacts remain untracked, the committed planner and proportional owning gates pass, normal public
-verification is honestly reported, the worktree is clean, and a Draft PR is frozen for independent
-review. If a required gate cannot run, report the exact dependency or boundary; do not substitute
-confidence, broaden authority, or claim success.
+A slice is done when its exact diff matches declared ownership, relevant docs and executable contracts
+agree about current versus planned behavior, provenance and Unknowns are explicit, outputs are
+reproducible, private/generated artifacts remain untracked, and the applicable checks required for
+its scope pass. Record the committed plan and actual CI behavior, preserve completed failures,
+leave a clean worktree and freeze a Draft PR for independent review. A pending executable-policy
+cutover or unavailable required observation stays explicit in the handoff and is not a passed gate;
+do not claim acceptance or restore a superseded blanket gate to hide that boundary.

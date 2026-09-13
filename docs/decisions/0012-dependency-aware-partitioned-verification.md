@@ -6,6 +6,20 @@
 - Scope: repository verification planning and later affected-gate orchestration
 - Accepted option: **two verification layers with conservative path/dependency partitions**
 
+## Current scope amendment
+
+The explicit user test policy in [ADR 0019](./0019-state-and-content-driven-remake-engine.md) controls
+new-engine work: add engine behavior unit tests, run needed verification directly, and add no tests
+of verification infrastructure. Old engine tests may migrate or retire without count parity,
+replacement-per-deletion or an old green aggregate. Documentation-only work uses direct checks.
+
+The planner still emits legacy public-core/.NET/Godot/test selections. That current behavior is not
+the revised engine policy. The M0/M1 workflow, harness, planner and required-check cutover remains
+separately owned and unimplemented. Use the
+[verification owner](../../remake/docs/development-and-verification.md#repository-planner) to keep
+current commands, binding policy and future cutover distinct. Research evidence and genuinely shared
+dependencies retain their affected requirements; this does not delete or weaken original evidence.
+
 ## Context
 
 The normal `uv run sf2 verify` gate is intentionally small and currently completes in seconds. The
@@ -14,8 +28,8 @@ suite and the maintained H1/H2/H3 milestone rails. It is useful for phase transi
 readiness, shared-harness changes, and explicit full-parity checks, but it is not a suitable default
 for ordinary static-first reverse-engineering slices.
 
-The repository now has 68 registered narrow H2 commands and 71 registered H3 commands. Most owning
-source modules, schemas, fixtures, manifests, and runtime observers have disjoint dependency surfaces.
+Most research modules, schemas, fixtures, manifests, and runtime observers have disjoint dependency
+surfaces. Current command ownership is derived from the executable registries, not copied totals.
 Treating every evidence change as if it invalidated every surface wastes time and makes it harder to
 see which subsystem actually failed. Conversely, letting a worker choose tests informally makes a
 missed dependency silent and gives no durable explanation for a skip.
@@ -28,8 +42,9 @@ future orchestration stable scheduling boundaries.
 
 Verification has two layers:
 
-1. **Public core:** every accepted change still runs `uv run sf2 verify` and the Public
-   tracked-input boundary. This layer is never skipped by the affected planner.
+1. **Existing research/public core:** the research lane uses `uv run sf2 verify` and its public
+   tracked-input boundary. The current planner always selects this layer; the scope amendment above
+   prevents that implementation fact from imposing it on documentation or the new engine.
 2. **Affected evidence:** a deterministic planner maps a committed Git range to stable Python, H1,
    H2, and H3 partitions. Only selected partitions need run for an ordinary slice. Running every
    partition remains the full milestone meaning even while the current legacy-compatible `--full`
@@ -97,7 +112,8 @@ unmodified `verify plan` retain their separate dispatch behavior.
 `unclassifiedPaths` is a visible maintenance queue, not permission to omit verification. An unknown
 path under an evidence-owning root selects all plausible partitions. Documentation-only paths select
 only the always-run public core unless their change is accompanied by, or explicitly declares, an
-evidence dependency.
+evidence dependency. This describes the current selection output; the scope amendment determines
+whether that output is an applicable obligation or pending engine-cutover work.
 
 ### Test Changes and Production Invalidation
 
@@ -110,7 +126,9 @@ owner or a shared helper.
 
 Actual production, fixture, schema, manifest, and observer changes still select their owners and
 reverse dependencies. Explicit remake, asset, and runner test mappings retain their additional gates;
-a deleted ordinary test still falls back to the complete Python suite. If a test change introduces an
+a deleted ordinary test currently falls back to the complete Python suite. Deliberate engine-test
+retirement must remove that obsolete fanout during the coordinated cutover; it does not require
+running the old aggregate or adding tests of its replacement selection. If a test change introduces an
 original-runtime acceptance requirement that the changed source paths do not express, the lane must
 declare that semantic dependency through the existing `--include-partition` option. Test selection is
 not permission to omit such a requirement.
@@ -133,8 +151,9 @@ checks.
 
 ## Current Implementation Boundary
 
-This decision's first implementation slice adds the registry, planner, CLI surface, and coverage
-tests only. It does **not**:
+The current planner is read-only selection infrastructure. Its earlier implementation added the
+registry, CLI surface and coverage tests; those historical tests do not establish a new-test obligation.
+It does **not**:
 
 - execute partitions or replace either existing verification profile;
 - cache success by tree or dependency digest;
@@ -144,9 +163,10 @@ tests only. It does **not**:
 - extract a standalone H1 command. Until that later slice exists, an affected `h1-original` result
   still requires the existing serialized rebuild/full-profile route.
 
-A later executor may hand independent selected partitions to subagents, but the CLI-generated plan is
-the authority for what must run. Agents may diagnose and report one partition; they may not silently
-remove a selected partition. H2 partitions can run in isolated worktrees in parallel. H3 sessions
+A later executor remains separately owned. Interpret selection under the current scope amendment;
+declare genuine research dependencies and any pending engine cutover rather than silently relabeling
+an unrun command as passed. Planner output does not authorize creating agents or environments.
+H2 partitions can run in isolated worktrees in parallel. H3 sessions
 remain serialized when they share the host runtime/private scratch boundary, and private inputs stay
 isolated as required by the root worktree contract.
 

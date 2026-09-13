@@ -123,19 +123,21 @@ formats into one weaker abstraction.
 
 ### Use bounded, characterization-preserving refactors
 
-The preferred sequence is:
+For an internal refactor, preserve the meaningful behavior and trust boundary actually being moved.
+Useful engine unit assertions and selected external observations can establish that boundary; tests
+of private structure, smoke drivers or helpers do not have to survive the refactor.
 
-1. extract Godot input, presentation, profile composition, and smoke responsibilities from the current
-   root while preserving commands, observations, marker bytes, and behavior;
-2. extract Application command dispatch, pending gates, and snapshot projection behind the existing
-   `GameSession` facade; and
-3. split a large Content reader internally when an owning change next reaches it, preserving its public
-   port and validation order.
+The explicit user policy in [ADR 0019](./0019-state-and-content-driven-remake-engine.md) supersedes
+blanket old-test retention and tests of verification tools. A still-consumed API or reference marker
+keeps its deliberate compatibility/migration boundary; the old test's existence alone does not own it.
+Migrate behavior assertions or retire obsolete tests with the capability; no replacement per deletion,
+test-count parity or old full-suite green result is required. Do not add tests of verification tools.
 
-Do not perform a repository-wide public-type rewrite or combine these steps with a new gameplay feature.
-Existing public types may remain temporarily when changing them would create unrelated compatibility
-risk. New work follows this policy immediately; old ceremony is removed only through bounded refactors
-with characterization coverage.
+ADR 0019 proposes behavioral decoupling instead of a file-split-first sequence, including replacing
+trace predicates and endpoint handlers.
+That is separately scoped work, not a characterization-preserving rename. Its implementation/CI
+cutover has not occurred. Choose a coherent dependency chain, declare changed behavior and preserve
+actual source/trust rules; do not let the smallest textual diff perpetuate a known architectural defect.
 
 ### Review architecture by responsibility and amplification
 
@@ -188,8 +190,8 @@ hide domain-specific invariants and create a second architectural commitment bef
   deliberately strict.
 - Godot presentation and internal orchestration can evolve quickly without inventing public contracts.
 - New features must state why each added public type or capability is durable.
-- Existing large roots and facades receive bounded, behavior-preserving decomposition before further
-  broadening.
+- Large roots and facades receive bounded changes driven by the owning behavior; correcting coupling
+  is not postponed until every behavior-preserving file split is complete.
 - Tests should characterize stable behavior and boundary observations rather than require every helper
   to remain public.
 - Some existing public ceremony remains until an owning refactor can remove it safely.
@@ -201,9 +203,9 @@ smoke markers, fixtures, or gameplay behavior. It does not report any refactor c
 authorize a public API break, private-input weakening, H4 relaxation, second mutation facade, renderer,
 asset publication, or new feature slice.
 
-It authorizes only this granularity policy and future separately owned, characterization-preserving
-refactors. Reversing ADR 0011's assembly direction, state ownership, Content trust, or H4 separation still
-requires a separate decision.
+This decision owns granularity. Separately scoped engine migration follows ADR 0019 and the user's
+test policy; it is not authorized merely by this document. Reversing ADR 0011's assembly direction,
+state ownership, Content trust or H4 separation still requires a separate decision.
 
 ## References
 

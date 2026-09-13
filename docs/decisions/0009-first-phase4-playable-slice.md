@@ -29,6 +29,14 @@ boundary ahead of the required evidence and contract audits.
 
 ## Eventual Milestone Acceptance Gate
 
+The reference scenario defines an eventual acceptance comparison, not a script for production
+legality. The engine should apply supported rules to valid state and content; expected input counts,
+rounds, receipt prefixes and named character sequences belong to external reference verification.
+Keep genuine original rule conditions. The current controlled implementation's restrictions remain
+visible in the [architecture audit](../../remake/docs/architecture-audit.md); this clarification does
+not claim they are removed. [ADR 0019](./0019-state-and-content-driven-remake-engine.md) proposes that
+migration. The accepted continuous endpoint and 8C/H4 target are unchanged and incomplete.
+
 The continuous playable milestone may be reported ready for its Phase 4 acceptance target only after all
 of the following are complete:
 
