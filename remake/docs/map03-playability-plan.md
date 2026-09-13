@@ -11,7 +11,9 @@ separate.
 Current stopping point: [five-survivor R13 and actual Sarah control](#implemented-five-survivor-round-and-r13-sarah-control).
 The selected route returns to actual 95/Bowie, preserves his HP 3 through receipt 100, then generates
 R13 and dispatches actual 128/130 to Sarah. Movement/confirm/cancel preserves the complete
-102-receipt battle. Further survival, healing and a winning reference trace remain Unknown.
+102-receipt battle. The [next HEAL1 plan](#planned-sarah-heal-1-from-actual102) separates the
+missing spell consumer and early Sarah EXP proposal from scalar calculations. Further survival,
+actual healing and a winning reference trace remain Unknown.
 
 ## Current Baseline
 
@@ -1138,6 +1140,342 @@ new input, fourth kill, level, death, victory/return, natural runtime observatio
 healing boundary, later combat/outcomes, natural input/seed/presentation/VInt and H4. The stopping
 point is the first usable R13 Sarah movement/confirm/cancel, followed by an independently reviewed
 frozen Draft; do not automatically start another action or slice.
+
+### Planned Sarah HEAL 1 from actual102
+
+This is a **plan**, not an implemented spell capability. Its accepted production base is
+`0350c25906248ce049c8b95cf3b0af26dde6e122`, tree
+`ffcf53c6002ef8c2ad70e149c0f1fad900429b3b`. It proposes one useful player action toward
+[ADR 0010 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md): Sarah confirms
+her origin, chooses HEAL 1, selects adjacent Bowie, exercises target cancel/reselect, and commits
+one heal. It stops at the next actually reached usable player movement/confirm/cancel or the first
+actual Unsupported. It does not authorize another generation, attack, death, level, spell family,
+winning trace, victory/return, new research, or H4. The current plan owns only this document.
+
+#### Production boundary and one existing-action control
+
+**Confirmed by accepted code and a fresh required-input diagnostic:** the unchanged early
+`ChesterFirstKillComparison`, actual prefix, first five-survivor generation and production
+`PrivateBattle01Ui.DispatchNext` reach the complete accepted102. Sarah1 is R13/raw4 at (11,14),
+HP11/MP10, budget10, class4, status0, spell bytes `[0,63,63,63]`. Bowie0 is (11,13), HP3/max12,
+MP8/EXP63/kills2/defeats0. Chester remains HP0/unplaced/EXP54/kills1/defeats1; dead129/131/132 remain
+cleaned. Main is `74A71234`, copy `0234`, tested mask0, gold180, factions2/3. Sarah's EXP, kills
+and defeats are **Unknown**, represented by null. Origin confirm and relocation cancel restore the
+whole102. The fresh102 JSON also equals the accepted native survival endpoint, not just its counters.
+
+A single existing-action control starts there: origin confirm/STAY publishes actual103; the actual
+dispatcher runs133 pursuit from (10,6) to (11,7), cost4/`[0,3,255]`, targeting Bowie at cost16 versus
+Sarah18. Actual104 then gives Bowie0 R13/raw8, budget12, HP3. Main/copy/mask/gold and other stats
+remain unchanged. No further STAY, seed search, move search, attack or generation was attempted.
+This control shows that healing is not necessary to survive this one pursuit. **Inferred tactical
+value:** restoring Bowie's nine missing HP could improve later survivability; it does not prove a
+winning line or the healer branch's eventual relay result.
+
+**Confirmed implementation gap:** `GameSession` has no Battle01 spell/heal/magic command;
+`Battle01Phase`, movement selection, `PrivateBattle01Input` and the presenter only consume movement,
+STAY and the admitted physical action. There is no C# HEAL resolver, spell selection, spell target
+selection, MP mutation helper, healing completion policy/receipt, Sarah EXP accounting or healing
+history rewind. `Battle01Stats` carries MP/EXP, but storage is not an action consumer. There is no
+command to run a real heal at this head. No constructed healing battle or positive history patch was
+submitted to the facade or dispatcher in this plan.
+
+#### Accepted contracts, pinned source, and scalar construction
+
+All source references below mean `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The selected USA ROM was checked read-only against
+`sf2-heal1-self-recovery-v1` SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+No floating source, emulator launch, new observation or new research-index association is needed.
+
+| Accepted owner | Exact source seam and usable boundary |
+| --- | --- |
+| [Spell definition](../../docs/design/contracts/spell-definition-data.md), [spellbook](../../docs/design/contracts/spellbook-state.md) | `data/stats/spells/spelldefs.asm:HEAL 1`: entry0, MP3, power15, min0/max1, radius0, teammates and affected-by-silence. `code/common/stats/spellstats.asm:GetSpellAndNumberOfSpells/GetSpellCost` supply stored entry/count/cost; they do not prove Sarah's natural acquisition. |
+| [Navigation range/targets](../../docs/design/contracts/battlefield-navigation.md#range-and-target-construction) | `battlefield/getactionrange.asm:GetSpellRange`, `buildactionrangegrids.asm:BuildSpellRangeGrid`, `buildtargetsarray.asm`, `populatetargetslist.asm`: side selection, ordinary living/placed/non-neutral target admission and Manhattan rings. All four paths are under `code/gameflow/battle/`. |
+| [Player control](../../docs/design/contracts/battle-functions-control-flow.md) | `battlefunctions/battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput`, magic branch: spell selection, MP requirement before target choice, target cancel back to spell choice, successful target writes CAST_SPELL=1 and selected spell/target operands. Menu timing/rendering and full cancellation nesting are not inferred. |
+| [HEAL subset](../../docs/design/contracts/spell-resolution.md#confirmed-heal-1-subset) | `battleactions/castspell.asm:spellEffect_Heal` (`0xB114`); `earnexp.asm:battlesceneScript_CalculateHealingExp`; `giveexpandgold.asm:battlesceneScript_GiveExpAndGold` (`0xA7F8`). Fixtures `spell-healing-v1.json` and `spell-healing-exp-boundaries-v1.json` own cap, class eligibility, same-side award and ordered MP/HP/EXP replay. Their controlled original seams are not a natural Sarah cast. |
+| [Action construction](../../docs/design/contracts/battle-action-construction.md), [action/effect](../../docs/research/map3-battle01-action-effect.md), [completion](../../docs/research/map3-battle01-action-completion.md) | `battleactionsengine_1.asm:WriteBattlesceneScript` and `battleactionsengine_2.asm:battlesceneScript_ApplyActionEffect`, plus their existing completion owners, separate cast dispatch, target processing, completion and persistent effects. Static call topology does not supply a new gameplay receipt. |
+| [Turn lifecycle](../../docs/design/contracts/battle-control-lifecycle.md#post-action-and-after-turn-order) | Keep defeated-wrapper, empty cleanup/count, status0/no-passive after-turn normalization, second empty cleanup/count and one cursor advance. The intended heal kills nobody and should preserve factions2/3; validate both checkpoints before publication. |
+
+**Confirmed scalar calculation only:** the existing Python healing boundary model accepts a PRST
+ally actor1, target max12/current3, HEAL1 power15 and initial accumulator0. Missing HP is9;
+unpromoted power15 caps to9; healing EXP is `floor(25*9/12)=18`, above minimum10 and below cap25.
+Same-side healing skips the Battle01 halving table. The existing C# `MainRoll` primitive, independently
+compared with the existing Python `_rng_step`, gives:
+
+| Purpose under the controlled presentation-omitted policy | Range/result | Main before → after |
+| --- | --- | --- |
+| EXP upward adjustment | 16 / 14; no increment | `74A71234 → EC821234` |
+| EXP downward adjustment | 16 / 0; decrement18→17 | `EC821234 → 02A11234` |
+
+These are two semantic main-channel calls; no physical accuracy/critical/damage/double/counter rolls
+belong in this HEAL1 scalar calculation. Copy `0234` is retained, and menu preview/cancel must consume
+neither channel. Status0/no curse/no passive and presentation omission are explicit admission limits,
+not proof that the original engine has no intervening VInt/presentation calls. Construction predicts
+ordered MP `10→7`, Bowie HP `3→12`, then 17 EXP awarded to Sarah. It does not predict Sarah's current
+EXP from null. With a separately accepted **early** authored EXP0 comparison, the proposed result is
+EXP17 and no level transition. Sarah kills/defeats stay null; gold, Bowie EXP/kills, Chester accounting,
+all corpses, occupancy and source identities stay retained. Healing changes no target resistance,
+attack/defense, status, inventory, learned spell or maximum HP.
+
+#### Minimal controlled input prerequisite and wrapper audit
+
+Propose a separate `SarahHealComparison` / `SarahHealComparisonId`, authored as
+`private-local-battle01-sarah-heal-exp0-inputs-v1`, derived from `ChesterFirstKillComparison` with only
+Sarah's **initial** `CurrentExp=0`. This is a controlled comparison proposal, not original-save
+knowledge. Retain her null kills/defeats and every other existing input. Reject missing/wrong/late
+EXP, changed seed/copy, MP, class/status, spells/equipment, HP maxima or any of the six earlier
+accounting supplements. Do not alter an older preset or treat an older102 as the new comparison.
+
+The prerequisite is a real preparation-to102 replay. It must begin with the new named preset at
+`PreparePrivateOriginalBattle01Startup`, then execute the unchanged exploration/admission and battle
+prefix applicable to each wrapper, including all actual deaths, dead129 and R13 generation. Compare
+old/new snapshots at initialization,94/95/97/100/102. The only allowed differences are the named party
+identity and Sarah EXP null→0 at every early input, initialized stat and historical before-image
+that carries that field. Compare all other fields recursively; do not erase every EXP field to make
+the comparison pass. Receipt identities/policies/counts, HP, positions, MP, main/copy, AI/flags,
+64-slot orders, kills/defeats, gold, source/preparation and UI movement semantics remain equal.
+
+The current explicit ID/policy gates that must recognize the new comparison with the **same old
+policies** along its prefix are `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (including Chester's
+third enemy kill), `PrivateOriginalBattle01EnemyPhysicalAttack.cs` (Chester death after that kill),
+`PrivateOriginalBattle01TurnCompletion.cs` (dead129), and `PrivateOriginalBattle01FirstRound.cs`
+(first five-survivor generation). `OriginalBattle01ControlledPartyPreset.GetAdmissionDiagnostic`
+and `PrivateBattle01Composition` preparation selection also need the new identity. Generic startup/initialization, first/next control, movement, standby and pursuit wrappers have no
+first-kill-specific ID branch. Test their real replay and retention, then attempt the new cast/effect
+from a late-swapped preparation: it must reject before consuming the new input. Do not claim these
+existing generic wrappers already bind seven accounting inputs; movement and first control currently
+do not even call preset admission. The decisive new cast and existing effect/accounting wrappers must
+verify the retained early input before publication. A need to reject the forged preparation at every
+preview-only call would be additional wrapper scope, not an unreported guarantee of this plan.
+
+`Battle01EnemyStandby.RequireThinkingHistory` currently returns only the six earlier accounting
+inputs. Its origin check sends any known-EXP ally through the physical `RequireTargetProfile`, which
+admits Bowie/Chester only. Add a narrow Sarah support-origin validation and bind Sarah's early EXP in
+the existing history/accounting mechanism; do **not** add Sarah to the physical attacker/target
+profile just to pass it. The new heal receipt must rewind Sarah MP/EXP and Bowie HP before walking
+older physical before-images and before validating R13's generation main. Check every applicable
+post-reducer accounting boundary: player physical, enemy physical, dead129, five-survivor generation,
+and the new heal facade. Their locally successful transition must still fail atomically if the
+retained preparation has the wrong Sarah input. The separate leader-only defeat-recovery/return
+wrappers stay excluded: preserve their explicit ID guards and null default Sarah input; test that
+the heal comparison cannot enter them rather than broadening their authority.
+
+#### Proposed player transaction and actual stopping condition
+
+The smallest main route uses origin (11,14), cost0. Confirmed relocation first exposes action choice;
+then Magic exposes the one learned HEAL1 entry; confirming that spell exposes legal target selection.
+Bowie at Manhattan distance1 and Sarah at distance0 are legal range targets; corpses and enemies are
+not. Radius0 resolves only the chosen actor, not both allies. Use ascending combatant-index target
+ordering as an explicit remake UI policy, defaulting to Bowie0. A full-HP self target is range-legal,
+but self-heal execution is outside this one-target slice and must return a typed Unsupported without
+MP/EXP/RNG/turn mutation; do not mislabel it an illegal range target.
+
+Target cancel returns to spell choice, spell cancel to action choice, and relocation cancel to the
+exact ready102. Reselect HEAL1/Bowie and confirm once. Keep movement preview/confirmed relocation
+separate from persistent cast effects. For a moved-origin cancel check consider (10,13)
+only if the real movement preview admits it and supplies its cost/path; it is adjacent to Bowie, but this plan
+has not executed that move or claimed its path. The accepted (11,15) move/cancel remains a regression:
+its distance2 to Bowie is out of HEAL1 range. Do not invent a move string or admit long-range Bowie
+selection because the original movement origin was adjacent.
+
+A bounded `Battle01PlayerHealing` owner should carry distinct spell and target selection/decision
+state in the existing movement/session model. Add only the necessary MP-copy helper, selection
+stages, typed result, ordered effects and healing completion policy/receipt. Reuse the existing
+main RNG primitive, movement/occupancy, immutable snapshot constructors, turn-tail checks and
+history validation. Do not fake an attack or STAY receipt, create a second generic battle engine,
+add a separate source/asset port, or implement a second RNG algorithm. Source definitions remain
+pinned constants within this one admitted profile until a separate content consumer is justified.
+
+Before publication validate the entire prefix and selected input, retained move/spell/target,
+MP sufficiency, HP cap, Sarah EXP/level boundary, RNG/effect chronology, zero deaths, both faction
+checkpoints and post-action state. Publish MP/HP/EXP/main plus **one** healing completion together.
+A late failure retains the exact pre-confirm target-selection snapshot, including committed
+relocation, all previous102 receipts, complete roster/occupancy, order/control, memory/targets/flags,
+main/copy, accounting and source/preparation references. A repeated/stale/null/foreign/copied request
+cannot charge MP or award EXP again. Cancellation from before the cast must restore the recorded
+selection origin; there is no undo after a successfully published cast.
+
+After the real cast, use the unchanged actual-candidate dispatcher. The retained slot array names133
+as the next slot, but neither that slot nor the STAY control proves the healed facade can reach its
+completion or that Bowie is next usable. Require the actual decision, movement path/cost, RNG/copy,
+ordered receipt count and current candidate. If it reaches a player, perform a legal move supplied by
+that player's real range, confirm and cancel, then stop. If any admitted history/accounting/AI/control
+boundary rejects, preserve the last complete snapshot and record the exact diagnostic; do not patch
+in a future133 pursuit or treat STAY's104 as the healed endpoint. **Unknown:** actual healed completion
+number, following133 outcome and next usable player until this implementation is independently run.
+
+#### Proposed implementation ownership and acceptance
+
+The following is a concrete next-implementation proposal, not write permission from this plan.
+Keep one writer and obtain main-gate's acceptance of its exact scope before implementation. No
+registries, schemas, shared fixtures, research owners, root guides or private/generated files change.
+All paths below are under `remake/`; `(new)` means the bounded owner does not exist at this base.
+
+| Exact paths | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01PlayerHealing.cs` (new) | Selection, HEAL1/Bowie scalar resolution, decision validation and narrow Sarah support profile. |
+| `src/Sf2.Remake.Domain/Battles/Battle01Initialization.cs`; `src/Sf2.Remake.Domain/Battles/Battle01PlayerMovement.cs` | MP copy and phase/selection storage; preserve existing movement/cancel constructors. |
+| `src/Sf2.Remake.Domain/Battles/Battle01TurnCompletion.cs`; `src/Sf2.Remake.Domain/Battles/Battle01EnemyStandby.cs`; `src/Sf2.Remake.Domain/Battles/Battle01PlayerPhysicalAttack.cs` | Typed healing receipt/tail, before-image rewind and seventh accounting input; no physical-profile relaxation. |
+| `src/Sf2.Remake.Application/Content/OriginalBattle01ControlledPartyPreset.cs` | Separate early Sarah EXP0 comparison and exact admission. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01PlayerHealing.cs` (new) | Snapshot-authenticated selection/cancel/confirm and one atomic publication with late accounting check. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01PlayerPhysicalAttack.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01TurnCompletion.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01FirstRound.cs` | Old-policy prefix admission and retained-input binding for the new comparison. |
+| `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs`; `game/src/Map3InputAdapter.cs`; `game/src/Map3RuntimeProfileSelection.cs`; `game/src/Map3Root.cs` | Explicit early `--private-battle01-sarah-heal` launch option, ordinary Magic/target/cancel inputs and readable MP/HP/Sarah EXP projection, preserving old launch routes. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerHealingTests.cs` (new); `tests/Sf2.Remake.Domain.Tests/Battles/Battle01FirstRoundTests.cs` | Scalar/selection/receipt negatives and narrow early-input support in existing synthetic prefix helpers, without future-state patches. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` | Migrate the existing direct `RequireThinkingHistory` tuple assertions to the seventh Sarah input, preserving all six old values and explicitly expecting null for Sarah on the old comparisons. |
+| `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerHealingTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01FirstRoundTests.cs` | All relevant wrappers, seven inputs, selection cancellation and late-failure atomicity; reuse earliest session setup. |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Required registered-input old/new preparation-to102 comparison, actual heal and actual dispatcher/player endpoint. |
+| `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3RuntimeProfileSelectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Logical/physical facade equivalence, early option admission, Magic/cancel projection and exact old-route image regressions. |
+| `docs/map03-playability-plan.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md` | Record only the reached capability, controlled-input distinction, reproduction and remaining Unknowns. |
+
+This proposes 31 exact paths, including four new files: the two bounded production owners and their
+Domain/Application test owners. Before writing, recount actual ownership and check competing
+worktrees/topics. If existing helper dependencies require another path, report that concrete need
+rather than copying an old helper chain or silently expanding ownership.
+
+The existing direct history-tuple consumers must migrate with the seventh input: preserve each
+of their six previous values and assert Sarah's additional field is null for the old comparisons.
+Do not add a compatibility layer or a second history mechanism to avoid updating this test owner.
+
+Required focused cases include: unknown/wrong/late Sarah EXP; all six older input changes; no spell,
+wrong slot/level/class/status/silence/curse, insufficient MP, wrong actor/phase/candidate; target from
+movement origin instead of confirmed position; enemy/dead/unplaced/out-of-range/duplicate targets;
+range-legal unsupported self-heal; HP over-cap, MP underflow, EXP level boundary; wrong main/copy or
+roll order; missing/duplicate/relabelled heal or older94/95/97 receipts; revived/placed corpses;
+modified before-images; stale/null/foreign/copied/repeated requests; every cancellation layer; and a
+locally successful heal followed by deliberately failing retained-input accounting with **whole**
+pre-confirm snapshot equality. Negative construction belongs only in negative tests. The positive
+private and native routes must start with early preparation and use actual commands throughout.
+
+Suggested future focused filter: `FullyQualifiedName~PlayerHealing|FullyQualifiedName~SarahHeal` plus
+the affected existing prefix/turn/history/profile/input tests selected by the committed planner.
+Run the required-private Content route with registered ROM and all selected startup sources, not a
+runner omitting ROM-dependent nodes. An implementation changes history and Godot consumers: obtain
+the authoritative `verify plan` selection, use owning managed and official/native gates, and keep
+normal public verification with main-gate. Do not repeat a completed full failure merely to obtain a
+green aggregate; correct only its failed nodes plus changed-path gates unless invalidation actually
+broadens. This document-only plan requires no full managed, official, native or H3 rerun.
+
+The native acceptance must retain all six old routes and their225 PNGs byte-for-byte, and the old
+47-frame five-survivor route under its original comparison. The new early comparison may visibly add
+Sarah EXP0 before the heal; declare exactly those UI differences instead of overwriting old goldens.
+Verify the remaining numeric state/geometry and existing HP/accounting labels. New physical frames
+must show actual102 ready/action choice, spell choice, Bowie target, target cancel and reselection,
+cast result with MP7/BowieHP12/SarahEXP17, actual next-candidate outcome, and the real next player's
+movement/confirm/cancel or a readable first Unsupported. Compare actual facade and physical snapshots
+at each committed boundary; copied seams must remain labeled TEST COPY. View every new frame at
+original resolution and check readable MP/HP/EXP, no clipping/overlap and no unsupported action prompt.
+Do not specify a final frame/receipt count before the actual route supplies it.
+
+#### Reproduction of this plan's bounded diagnostic
+
+From the owning worktree, load its retained `local/worktree-environment-reuse/environment.ps1` with a
+fresh `-RunName 'sarah-heal-plan/<run>'`, followed by the retained registered-input configuration
+`local/granseal-doorway-cycle/private-inputs.ps1`. Use the fixed installed `DOTNET_BIN`, shared
+`DOTNET_CLI_HOME`, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and local caches. Resolve the ROM using
+`sf2tool.private_inputs.private_input_path(ROM_INPUT_IDENTITY)`; do not assume an unregistered file or
+invoke the emulator contract just to inspect ROM identity.
+
+The minimal net8.0 console diagnostic references the already verified Content-test output DLLs and
+loads the matching Godot-test `Sf2.Remake.Godot.dll`. Before reuse, compare every archived member and
+extracted source against the accepted Git object; the retained `full-01/managed/source.zip` at
+`d4cc8f2280f9b1490dbc5bd71a1131da5ede5150` has448 files and differs from the accepted base only in this
+plan owner's earlier prose. All production/test/probe source is equal. Verify the18 copied dependency
+DLLs byte-for-byte, set `SF2_PLAN_GAME_DLL` to the matching accepted Godot-test DLL, and set
+`SF2_RUN_OUTPUT` to fresh ignored output. Save the program below as `Program.cs` and this project as `Probe.csproj` in the fresh
+`SF2_RUN_OUTPUT` directory:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup><Reference Include="$(AcceptedContentDllDirectory)/*.dll" /></ItemGroup>
+</Project>
+```
+
+Compile only that console diagnostic with the existing SDK. In this retained worktree the audited
+outputs are selected below; a fresh worktree must first obtain and verify equivalent outputs from
+the named accepted Git object, not substitute an arbitrary DLL directory.
+
+```powershell
+$acceptedManaged = Join-Path (Get-Location) 'local/five-survivor-round-continuation/full-01/managed/workspace/remake'
+$contentDllDirectory = Join-Path $acceptedManaged 'tests/Sf2.Remake.Content.Tests/bin/Release/net8.0'
+$env:SF2_PLAN_GAME_DLL = Join-Path $acceptedManaged 'tests/Sf2.Remake.Godot.Tests/bin/Release/net8.0/Sf2.Remake.Godot.dll'
+$probeProject = Join-Path $env:SF2_RUN_OUTPUT 'Probe.csproj'
+$probeDll = Join-Path $env:SF2_RUN_OUTPUT 'bin/Release/net8.0/Probe.dll'
+$referenceProperty = '-p:AcceptedContentDllDirectory=' + $contentDllDirectory
+& $env:DOTNET_BIN restore $probeProject --disable-build-servers $referenceProperty
+& $env:DOTNET_BIN build $probeProject --configuration Release --no-restore --disable-build-servers '-p:UseSharedCompilation=false' $referenceProperty
+& $env:DOTNET_BIN $probeDll
+```
+
+The following program uses reflection only to invoke the accepted test's actual earliest-prefix
+helper and the existing UI dispatcher; it neither edits a battle nor selects future outcomes:
+
+```csharp
+using System.Reflection;
+using System.Text.Json;
+using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Content.Tests;
+using Sf2.Remake.Domain.Battles;
+var options = new JsonSerializerOptions { MaxDepth = 256 };
+string Json(object value) => JsonSerializer.Serialize(value, options);
+void Require(bool ok) { if (!ok) throw new Exception("Boundary mismatch"); }
+int Count(Battle01InitializedState b) {
+    int n = 0; for (var r = b.TurnCompletion; r is not null; r = r.Previous) n++; return n;
+}
+var helper = typeof(PrivateOriginalBattle01StartupReaderTests).GetMethod(
+    "ReachRealFiveSurvivorBoundary", BindingFlags.Static | BindingFlags.NonPublic)!;
+var session = (GameSession)helper.Invoke(null, null)!;
+Require(session.EnterPrivateOriginalBattle01NextRound(session.PrivateOriginalBattle01)
+    is PrivateOriginalBattle01FirstRoundEntered);
+var ui = Assembly.LoadFrom(Environment.GetEnvironmentVariable("SF2_PLAN_GAME_DLL")!)
+    .GetType("Sf2.Remake.GodotAdapter.PrivateBattle01Ui")!;
+var dispatch = ui.GetMethod("DispatchNext", BindingFlags.Static | BindingFlags.NonPublic)!;
+void Relay() => Console.WriteLine(dispatch.Invoke(null, [session, session.PrivateOriginalBattle01]));
+Relay();
+var before = session.PrivateOriginalBattle01!;
+Require(Count(before.Battle) == 102 && before.Battle.FirstControl?.ActorIndex == 1);
+string frozen = Json(before.Battle);
+Require(session.ConfirmPrivateOriginalBattle01PlayerMovement(before, 1)
+    is PrivateOriginalBattle01PlayerMovementApplied);
+Require(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 1)
+    is PrivateOriginalBattle01PlayerMovementApplied);
+Require(frozen == Json(session.PrivateOriginalBattle01!.Battle));
+Require(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 1)
+    is PrivateOriginalBattle01PlayerMovementApplied);
+Require(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01, 1)
+    is PrivateOriginalBattle01StayCommitted);
+Relay();
+File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("SF2_RUN_OUTPUT")!, "control-end.json"),
+    Json(session.PrivateOriginalBattle01!.Battle));
+Require(frozen == Json(before.Battle));
+// Stop: inspect the actual output, never append another action for a preferred outcome.
+```
+
+For scalar-only reproduction use the existing `spell_healing._verify_source_contract`,
+`_verify_boundary_source_contract` and `_verify_boundary_models` with the pinned source and existing
+fixtures. The only additional constructed case has `expActor=1`, `class=4/classCode=PRST`,
+`actionSpell=0/basePower=15`, `targetMaxHp=12/targetCurrentHp=3`, `initialAccumulator=0`; expected
+`missingHp=9/preCapPower=15/recovery=9/eligible=true/rawHealingExp=18/computedHealingExp=18/
+finalAccumulator=18/capApplied=false`. This validates scalar arithmetic, not a positive future state.
+Two calls to `growth._rng_step`, starting word `0x74A7`, range16 each, reproduce words `EC82/02A1`
+and results14/0; the existing C# `Battle01EnemyPhysicalAttack.MainRoll` reproduces the full images.
+
+The ignored `local/sarah-heal-plan/` receipts retain complete logs and source/probe copies.
+`diagnostic-02` restore/build/diagnostic and `source-03` static/scalar checks completed exit0/clean;
+actual102 equals the accepted native endpoint and the sole control ends at actual104 as above. The literal tracked console/project recipe also compiled cleanly in `recipe-compile-01`; that compile did not repeat the STAY control.
+Earlier completed local preflight failures remain preserved: `diagnostic-01` compared CLI-home path
+strings instead of resolved paths; `source-01` unnecessarily requested the absent local emulator
+through `verify_runtime_contract` after ROM inspection; `source-02` failed JSON serialization of the
+registered relative ROM identity Path after its checks passed. Corrections normalize path equality,
+use the existing read-only ROM inspector directly, and serialize that identity as a relative string.
+No emulator was installed/launched, production gate resumed or full suite repeated. Ignored receipts
+are review aids; the accepted source, contracts, inputs, calculation and reproduction above own the
+claims. The implementation and any later healed outcome remain **Unknown** until separately accepted.
+
 
 ### Accepted inputs and incompatible existing assumptions
 
