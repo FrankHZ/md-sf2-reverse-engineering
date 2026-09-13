@@ -474,29 +474,36 @@ planner, run one full managed suite and official locked Godot, preserve any comp
 and rerun only their failed/newly invalidated owners. Main-gate owns normal public verification
 and independent integration. This boundary ends at Bowie104 cancellation.
 
-For the second post-heal five-survivor generation, use `FullyQualifiedName~SecondFiveSurvivor`
-with the existing first-round, thinking-history and healing owners. The presenter theory adds the
-generated R14 view without changing its old rows. The required-input Content test
-`SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach` starts at actual initial Sarah EXP0,
-checks the47-stop/cost12 route and entire104 cancellation, generates R14 from105, completes actual
-128/106 and requires the unchanged133 `attack.counterProfile` refusal. Authored Application terrain
-costs8; it must not be mistaken for the registered-input route.
+For the second post-heal five-survivor generation and Bowie counter, use the existing first-round,
+thinking-history and healing owners. Required-input Content test
+`PostHealBowieCounterUsesTheRealEarlyHealApproachAndSecondFiveSurvivorRound` starts at actual Sarah
+EXP0, checks47 stops/cost12 and entire104 cancellation, generates R14 from105 and completes128/106.
+It preserves the Chester-only Domain refusal, then verifies the current explicit Bowie permission:
+133 primary HP9→6, counter enemy HP5→3,10 EXP63→73, one107 receipt, fourteen draws ending33561234,
+copy0134 and actual R14/raw4 Bowie movement/confirm/cancel. Authored Application terrain costs8;
+it does not substitute for the registered route's terrain, target or award assertions.
 
-Authenticate both generation/main links, every prior death and HEAL HP/MP/EXP before-image,
-all seven early accounting inputs, complete64 slots/ties/sentinels, phase/raw/mask/flags and
-48-entry AI channels. Wrong or missing/duplicated history, revived/placed corpses, altered approach
-and arbitrary later rounds must fail without mutation. A locally successful generation with a
-late accounting mismatch must publish none of its order, seed or activation state.
+Use focused filter `FullyQualifiedName~Battle01EnemyPhysicalAttackTests|FullyQualifiedName~Battle01TurnCompletionTests|FullyQualifiedName~Battle01EnemyStandbyTests|FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests|FullyQualifiedName~PrivateBattle01PresenterTests`.
+The first substring includes the Application owner. Require `SF2_REQUIRE_PRIVATE_TESTS=1` and zero
+skipped owning positives. Tests authenticate both counter roles, policy identity, damage/EXP before
+images, terrain, RNG/copy and selected-target memory; both generation links, HEAL and old deaths;
+and all seven early accounting inputs. Prove local counter completion succeeds before a final
+accounting mismatch rejects whole106. Wrong/stale/foreign/repeated requests, missing/swapped effects,
+primary double, lethal counter and level100+ remain rejected.
 
-Use fresh `local/second-five-survivor-round/` outputs and the retained environment. The committed
-planner selects the locked full managed suite and official Godot gate for the shared generation
-change; run each once, retaining any completed failure and correcting only its failed/newly
-invalidated owners. Main-gate retains normal public verification. No new H3/full Python gate is
-implied. Native uses the existing Sarah mode plus probe-only
-`SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`, keeps the original63 PNG prefix by bytes and adds
-nine original-resolution-reviewed frames. Retain the other225+47 accepted PNGs and completed
-regression evidence without replay solely for a new branch. Actual dispatch stops at106/Unsupported,
-with no next-player move test invented to satisfy the planned alternative endpoint.
+Use fresh `local/post-heal-bowie-counter/<run>/` outputs, the retained fixed SDK/shared CLI home,
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and existing worktree caches. The clean committed planner
+selects the locked full managed suite and official Godot gate for the shared reducer/policy change;
+run each once, retaining completed failures and correcting only failed/newly invalidated owners.
+Main-gate retains normal public verification. No new H3/full Python gate is implied.
+
+Native uses Sarah mode plus `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1` and probe-only
+`SF2_BATTLE01_BOWIE_COUNTER_REVIEW=1`. The76-frame route preserves old1–70 where byte-identical,
+updates the labeled106 boundary, adds atomic107, then exercises actual physical Bowie movement,
+confirmation and cancellation. Inspect changed/new71–76 PNGs at original1920×1080; retain the old
+terminal refusal as historical evidence. Preserve older225+47 modes according to their unchanged
+dependencies. The new flag selects no production combat behavior. Production presenter/dispatcher
+are unchanged; any new layout failure requires a concrete scope review.
 
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
