@@ -160,7 +160,7 @@ public sealed class Battle01PlayerHealingTests
         if (mutation == "missingHeal") r = r with { PlayerHealing = null, Policy = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats };
         if (mutation == "duplicateHeal") r = r with { Previous = r };
         if (mutation == "stayLabel") r = r with { Policy = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats };
-        if (mutation == "deadLabel") r = r with { DefeatedTurnCompleted = true };
+        if (mutation == "deadLabel") r = r with { Policy = Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat };
         if (mutation.StartsWith("missing", StringComparison.Ordinal) && int.TryParse(mutation[7..], out int missing))
             r = Rewrite(r, 103, missing, old => old.Previous!);
         if (mutation == "duplicate95") r = Rewrite(r, 103, 95, old => old with { Previous = old });
