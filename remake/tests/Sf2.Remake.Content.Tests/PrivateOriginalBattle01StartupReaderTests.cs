@@ -15,7 +15,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
 {
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
         "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
-    public void AcceptedSelectedInputsContinueEnemy128DefeatThroughBowieMovementCancel()
+    public void AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel()
     {
         var old = ReachRealChesterFirstKillSelection(OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
         var session = ReachRealChesterFirstKillSelection(OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
@@ -132,6 +132,22 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         var cancelledBowie = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(moved,0)).Snapshot;
         Assert.Equal(JsonSerializer.Serialize(ready.Battle,json),JsonSerializer.Serialize(cancelledBowie.Battle,json));
         Assert.Same(death,cancelledBowie.Battle.TurnCompletion); Assert.Equal(95,ReceiptCount(cancelledBowie.Battle));
+        var range=cancelledBowie.Battle.FirstControl!.Movement.Range;
+        Assert.Equal(43,range.LegalDestinations.Count);
+        string frozen95=JsonSerializer.Serialize(cancelledBowie.Battle,json);
+        foreach(var destination in range.LegalDestinations)
+        {
+            if(destination!=range.Origin) Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+                session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01,0,destination));
+            var choice=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+                session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,0)).Snapshot;
+            Assert.Equal("attack.emptyTargets",Assert.IsType<PrivateOriginalBattle01PlayerAttackRejected>(
+                session.BeginPrivateOriginalBattle01PlayerAttack(choice,0)).Diagnostic.Field);
+            Assert.Same(choice,session.PrivateOriginalBattle01);
+            cancelledBowie=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
+                session.CancelPrivateOriginalBattle01PlayerMovement(choice,0)).Snapshot;
+            Assert.Equal(frozen95,JsonSerializer.Serialize(cancelledBowie.Battle,json));
+        }
         var approach = Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(
             session.SelectPrivateOriginalBattle01PlayerDestination(cancelledBowie,0,new(9,11))).Snapshot;
         Assert.Equal(12,approach.Battle.FirstControl!.Movement.GridCost);
