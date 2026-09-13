@@ -8,6 +8,31 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateBattle01PresenterTests
 {
+    private static void AssertSarahHealProjection(Battle01InitializedState ready)
+    {
+        var action = Battle01PlayerMovement.Confirm(ready, 1);
+        var actionView = PrivateBattle01Presenter.BuildProjection(action, "Action choice.");
+        Assert.Contains("M: Magic", actionView.Controls); Assert.DoesNotContain("A: Attack", actionView.Controls);
+        Assert.Contains("MP 10 EXP 0", actionView.AllyStatus);
+        var spell = Battle01PlayerHealing.Begin(action, 1);
+        var spellView = PrivateBattle01Presenter.BuildProjection(spell, "HEAL 1.");
+        Assert.Contains("HEAL 1 (3 MP)", spellView.Controls); Assert.Null(spellView.SelectedTargetIndex);
+        var target = Battle01PlayerHealing.SelectSpell(spell, 1, 0);
+        var targetView = PrivateBattle01Presenter.BuildProjection(target, "Bowie selected.");
+        Assert.Equal(0, targetView.SelectedTargetIndex); Assert.Contains("heal Bowie", targetView.Controls);
+        var self = PrivateBattle01Presenter.BuildProjection(Battle01PlayerHealing.CycleTarget(target, 1, 1), "Self unsupported.");
+        Assert.Equal(1, self.SelectedTargetIndex); Assert.Contains("unsupported", self.Controls); Assert.DoesNotContain("Space", self.Controls);
+        var cancelled = PrivateBattle01Presenter.BuildProjection(Battle01PlayerHealing.Cancel(target, 1), "Cancelled.");
+        Assert.Equal(spellView.Controls, cancelled.Controls); Assert.Equal(spellView.AllyStatus, cancelled.AllyStatus);
+        var after = Battle01PlayerHealing.Confirm(target, 1, Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie);
+        var cast = PrivateBattle01Presenter.BuildProjection(after, "Healing completed.");
+        Assert.True(cast.HealingCompleted); Assert.False(cast.PhysicalAttackCompleted); Assert.False(cast.PursuitCompleted);
+        Assert.Equal(1, cast.CompletedActorIndex); Assert.Null(cast.ActorIndex); Assert.Null(cast.SelectedTargetIndex);
+        Assert.Contains("HP 3 -> 12", cast.AttackResult); Assert.Contains("Sarah MP 10 -> 7; EXP 0 -> 17 (+17)", cast.AttackResult);
+        Assert.Contains("MP 7 EXP 17", cast.AllyStatus); Assert.Equal((ushort)12, cast.Units.Single(u => u.Index == 0).Hp);
+        Assert.False(cast.CanConfirm); Assert.DoesNotContain("Space", cast.Controls);
+    }
+
     [Theory]
     [InlineData(false, false, false, false, false, false, false)]
     [InlineData(true, false, false, false, false, false, false)]
@@ -17,10 +42,11 @@ public sealed class PrivateBattle01PresenterTests
     [InlineData(true, true, false, false, true, false, false)]
     [InlineData(true, true, false, false, true, true, false)]
     [InlineData(true, true, false, false, true, true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill, bool fiveSurvivor)
+    [InlineData(true, true, false, false, true, true, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill, bool fiveSurvivor, bool sarahHeal = false)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
-        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission,firstKill),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission,firstKill,sarahHeal),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         for(int i=0;i<5;i++) current=Battle01EnemyStandby.CompleteNext(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
         current=Stay(Battle01NextPlayerControl.Enter(current,0).State!,0,new(8,17));
@@ -291,6 +317,7 @@ public sealed class PrivateBattle01PresenterTests
                     var cancelledView=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
                     Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(current,full));Assert.Equal(available.Units,cancelledView.Units);
                     Assert.Equal(available.AllyStatus,cancelledView.AllyStatus);Assert.Equal(available.AttackResult,cancelledView.AttackResult);
+                    if (sarahHeal) AssertSarahHealProjection(current);
                     return;
                 }
                 current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
@@ -557,7 +584,8 @@ public sealed class PrivateBattle01PresenterTests
     }
 
     private static Battle01InitializedState AuthoredSecondCompleted(bool regionEntry=false, bool combatProfile=false,
-        bool chesterPlayer=false, bool firstAlly=false, bool leader=false, Battle01DefeatReturnAdmission? returnAdmission=null, bool firstKill=false)
+        bool chesterPlayer=false, bool firstAlly=false, bool leader=false, Battle01DefeatReturnAdmission? returnAdmission=null, bool firstKill=false,
+        bool sarahHeal=false)
     {
         MapPosition[] positions = [new(8, 18), new(9, 18), new(7, 18), new(7, 3), new(9, 4), new(6, 4), new(8, 3), new(9, 5), new(6, 5)];
         var rows = Enumerable.Range(0, 9).Select(i => new Battle01Deployment((byte)i, i < 3 ? i : 125 + i,
@@ -571,7 +599,7 @@ public sealed class PrivateBattle01PresenterTests
             new(2, 0, [new(0, 0), new(0, 12), new(15, 12), new(15, 0)], 0, 0)];
         byte[] agility = [4, 5, 7];
         var party = Enumerable.Range(0, 3).Select(i => new Battle01AllyInput((byte)i, (byte)(i == 0 ? 0 : i == 1 ? 4 : 1),
-            chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63]) :
+            chesterPlayer && i==1 ? new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0, [213,0,0,127], [0,63,63,63], sarahHeal ? (byte?)0 : null) :
             combatProfile && i==2 ? new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0, [184,0,127,127], [63,63,63,63], chesterPlayer ? (byte?)0 : null, firstKill ? (ushort?)0 : null, firstAlly || firstKill ? (ushort?)0 : null) :
             new(1, 12, 12, 8, 8, 9, 4, agility[i], (byte)(i == 0 ? 6 : i == 2 ? 7 : 5), 0,
                 combatProfile && i==0 ? [199,0,127,127] : [127,127,127,127],

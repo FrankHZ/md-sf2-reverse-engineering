@@ -46,7 +46,7 @@ public sealed partial class GameSession
             return new PrivateOriginalBattle01FirstRoundRejected(failure);
         Battle01InitializedState battle;
         bool fiveSurvivors = current.Battle.Roster.Count(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null) == 5;
-        if (fiveSurvivors && current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId)
+        if (fiveSurvivors && current.Preparation.Party.Id is not (OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId or OriginalBattle01ControlledPartyPreset.SarahHealComparisonId))
             return RoundRejected("party.fiveSurvivorInput", "Retain the early first-kill comparison for this continuation.");
         try
         {
@@ -55,7 +55,7 @@ public sealed partial class GameSession
                 Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                     current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
                     current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats,
-                    current.Preparation.Party.Allies[2].CurrentKills);
+                    current.Preparation.Party.Allies[2].CurrentKills, current.Preparation.Party.Allies[1].CurrentExp);
         }
         catch (ArgumentException error)
         {

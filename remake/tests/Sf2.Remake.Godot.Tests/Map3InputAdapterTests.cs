@@ -22,7 +22,7 @@ public sealed class Map3InputAdapterTests
     [InlineData(Key.W, PrivateBattle01Input.None)]
     [InlineData(Key.F, PrivateBattle01Input.None)]
     [InlineData(Key.B, PrivateBattle01Input.None)]
-    [InlineData(Key.M, PrivateBattle01Input.None)]
+    [InlineData(Key.M, PrivateBattle01Input.Magic)]
     public void Battle01PollingUsesExistingKeysWithoutDispatchingOldCallbacks(Key key, object expected)
     {
         ActionProbe probe = new();

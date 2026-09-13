@@ -44,6 +44,13 @@ public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPol
         ReferenceEquals(policy, ControlledChesterDefeatAfterFirstKill);
 }
 
+public sealed class Battle01HealingCompletionPolicy : Battle01TurnCompletionPolicy
+{
+    private Battle01HealingCompletionPolicy() { }
+    public static Battle01HealingCompletionPolicy ControlledSarahHealOneBowie { get; } = new();
+    public override string Id => "battle01-controlled-sarah-heal1-bowie-exp-v1";
+}
+
 public sealed record Battle01FactionCounts(int Allies, int Enemies);
 public sealed record Battle01EnemyDefeatCleanup(IReadOnlyList<int> FirstWorklist,
     IReadOnlyList<int> AfterTurnWorklist, int CreditedAlly, ushort KillsBefore, ushort KillsAfter);
@@ -75,7 +82,7 @@ public sealed record Battle01TurnCompletionReceipt(int CompletedActorIndex, Batt
     Battle01EnemyStandbyDecision? EnemyStandby = null, int RoundNumber = 1,
     Battle01EnemyPursuitDecision? EnemyPursuit = null, Battle01EnemyPhysicalAttackDecision? EnemyPhysicalAttack = null,
     Battle01PlayerPhysicalAttackDecision? PlayerPhysicalAttack = null, Battle01EnemyDefeatCleanup? EnemyDefeat = null,
-    Battle01AllyDefeatCleanup? AllyDefeat = null)
+    Battle01AllyDefeatCleanup? AllyDefeat = null, Battle01PlayerHealingDecision? PlayerHealing = null)
 {
     public bool DefeatedTurnCompleted => ReferenceEquals(Policy,
         Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
@@ -93,7 +100,7 @@ public sealed record Battle01DefeatPendingReceipt(Battle01PhysicalCompletionPoli
 public static class Battle01TurnCompletion
 {
     internal static bool HasValidPolicy(Battle01TurnCompletionReceipt receipt) =>
-        receipt.DefeatedTurnCompleted ? HasValidDefeatedTurn(receipt) : receipt.PlayerPhysicalAttack is not null
+        receipt.PlayerHealing is not null ? HasValidHealing(receipt) : receipt.DefeatedTurnCompleted ? HasValidDefeatedTurn(receipt) : receipt.PlayerPhysicalAttack is not null
             ? receipt.AllyDefeat is null && Battle01PlayerPhysicalCompletionPolicy.IsSupported(receipt.Policy as Battle01PlayerPhysicalCompletionPolicy) &&
                 (!receipt.PlayerPhysicalAttack.DefeatedTarget ||
                     ((Battle01PlayerPhysicalCompletionPolicy)receipt.Policy).AllowsDefeat &&
@@ -123,6 +130,53 @@ public static class Battle01TurnCompletion
                     FollowsChesterFirstKill(receipt.EnemyPhysicalAttack, receipt.Previous))) &&
                 receipt.CompletedActorIndex >= 128 && receipt.EnemyStandby is null && receipt.EnemyPursuit is null
             : receipt.AllyDefeat is null && ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+
+    private static bool HasValidHealing(Battle01TurnCompletionReceipt receipt) =>
+        ReferenceEquals(receipt.Policy, Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie) &&
+        receipt.CompletedActorIndex == 1 && receipt.RoundNumber == 13 &&
+        receipt.PlayerHealing is { ActorIndex: 1, TargetIndex: 0 } &&
+        receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null &&
+          receipt.PlayerPhysicalAttack is null && receipt.EnemyDefeat is null && receipt.AllyDefeat is null &&
+        receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 3) && receipt.AfterAfterTurn == receipt.BeforeAfterTurn &&
+        receipt.Previous is { CompletedActorIndex: 130, RoundNumber: 13, EnemyPursuit: not null,
+            Previous: { CompletedActorIndex: 128, RoundNumber: 13, EnemyPursuit: not null } };
+
+    internal static void ValidateHealingReceipt(Battle01TurnCompletionReceipt receipt)
+    {
+        if (!HasValidHealing(receipt)) throw new ArgumentException("Retain the distinct first Sarah healing receipt.", "heal.history");
+        int count = 0;
+        for (var previous = receipt.Previous; previous is not null; previous = previous.Previous) count++;
+        if (count != 102) throw new ArgumentException("The first heal follows the complete 102 history.", "heal.history");
+        Battle01PlayerHealing.ValidateDecision(receipt.PlayerHealing!);
+    }
+
+    internal static Battle01InitializedState CompletePlayerHealing(Battle01InitializedState current,
+        Battle01PlayerHealingDecision decision, Battle01HealingCompletionPolicy? policy)
+    {
+        if (!ReferenceEquals(policy, Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie) ||
+            current.Phase != Battle01Phase.PlayerHealingTargetSelection || current.FirstControl?.ActorIndex != decision.ActorIndex ||
+            current.FirstRound?.CurrentCandidate?.CombatantIndex != decision.ActorIndex)
+            throw new ArgumentException("Retain Sarah's selected healing turn and policy.", "heal.phase");
+        Battle01PlayerHealing.ValidateDecision(decision);
+        if (!Battle01EnemyPhysicalAttack.SameStats(current.Roster[1].Stats, decision.Effect.ActorAfterStats) ||
+            !Battle01EnemyPhysicalAttack.SameStats(current.Roster[0].Stats, decision.Effect.TargetAfterStats) ||
+            current.RandomSeedImage != decision.Effect.MainSeedAfter || current.RandomSeedCopy != decision.SeedCopy)
+            throw new ArgumentException("Retain the locally replayed healing effects.", "heal.history");
+        RequireDefeatedWrapperReturn(current);
+        RequireEmptyKilledCleanup(current, "cleanup.before");
+        var before = RequireContinuingFactions(current, "outcome.before");
+        NormalizeControlledNoEffectTurn(current, 1, current.Roster[1].Stats,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        RequireEmptyKilledCleanup(current, "cleanup.after");
+        var after = RequireContinuingFactions(current, "outcome.after");
+        var receipt = new Battle01TurnCompletionReceipt(1, policy!, before, after, current.TurnCompletion,
+            RoundNumber: current.FirstRound!.RoundNumber, PlayerHealing: decision);
+        ValidateHealingReceipt(receipt);
+        var result = new Battle01InitializedState(current, current.FirstRound.AdvanceCompletedPlayerTurn(), receipt);
+        Battle01FirstRound.RequireCurrentPrefix(result);
+        Battle01EnemyStandby.RequireThinkingHistory(result);
+        return result;
+    }
 
     private static bool HasValidDefeatedTurn(Battle01TurnCompletionReceipt receipt) =>
         receipt.CompletedActorIndex == 129 && receipt.RoundNumber == 12 &&

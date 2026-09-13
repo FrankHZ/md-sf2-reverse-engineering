@@ -54,9 +54,9 @@ public sealed class PrivateOriginalBattle01FirstRoundTests
     }
 
 
-    internal static GameSession FiveSurvivorSession()
+    internal static GameSession FiveSurvivorSession(OriginalBattle01ControlledPartyPreset? comparison = null)
     {
-        var session=PrivateOriginalBattle01EnemyPhysicalAttackTests.Enemy128DefeatSession();
+        var session=PrivateOriginalBattle01EnemyPhysicalAttackTests.FirstAllyDefeatSession(comparison: comparison, afterFirstKill: true);
         Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,128));
         MoveStay(0,new(11,13));
         Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(session.PrivateOriginalBattle01,129));

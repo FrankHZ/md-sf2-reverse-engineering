@@ -26,7 +26,7 @@ public sealed partial class GameSession
                 ? Battle01PhysicalCompletionPolicy.ControlledLeaderDefeatPending
                 : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterDefeatComparisonId
                 ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat
-                : current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId
+                : (current.Preparation.Party.Id is OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId or OriginalBattle01ControlledPartyPreset.SarahHealComparisonId)
                 ? Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill
                 : Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike;
             battle = Battle01EnemyPhysicalAttack.CompleteNext(current.Battle, actorIndex, policy,
@@ -34,7 +34,7 @@ public sealed partial class GameSession
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
                 current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats,
-                current.Preparation.Party.Allies[2].CurrentKills);
+                current.Preparation.Party.Allies[2].CurrentKills, current.Preparation.Party.Allies[1].CurrentExp);
         }
         catch (ArgumentException error) { return EnemyPhysicalAttackRejected(error.ParamName ?? "attack"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle,

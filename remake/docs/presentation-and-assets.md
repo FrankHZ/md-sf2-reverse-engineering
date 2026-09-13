@@ -860,7 +860,7 @@ steps = [
                 "--presentation-asset-commit=3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880",
                 "--presentation-manifest-sha256=4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"]),
 ]
-if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat", "leader-defeat-pending", "chester-counterattack", "chester-first-kill"}:
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "base-art", "diagnostic", "missing-atlas", "stay", "next-player", "enemy-standby", "first-round", "round-continuation", "enemy-pursuit", "enemy-physical-attack", "player-physical-attack", "first-enemy-defeat", "chester-enemy-hit", "chester-player-attack", "second-enemy-defeat", "first-ally-defeat", "leader-defeat-pending", "chester-counterattack", "chester-first-kill", "sarah-heal"}:
     steps[-1][1].extend([
         "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
         "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
@@ -868,6 +868,8 @@ if environment.get("SF2_BATTLE01_CONTROL_REVIEW") in {"1", "missing-input", "bas
     ])
 if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "chester-first-kill":
     steps[-1][1].append("--private-battle01-chester-first-kill")
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "sarah-heal":
+    steps[-1][1].append("--private-battle01-sarah-heal")
 if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic":
     steps[-1][1][:] = [arg for arg in steps[-1][1] if arg not in {"--private-map3-base-view", "--private-map3-base-atlas"}
                        and not arg.startswith("--presentation-")]
@@ -1191,6 +1193,31 @@ Keep complete process logs and ordinary119 return, older133 defeat, counter, ene
 pursuit regressions. This comparison ends at actual Sarah movement/cancel after dead129 completion and130 pursuit.
 The separate probe-only survival route below covers the first five-survivor generation. Further
 deaths, victory and H4 remain outside both routes.
+
+The separate `SF2_BATTLE01_CONTROL_REVIEW=sarah-heal` mode selects
+`--private-battle01-sarah-heal` before physical N. It reuses the accepted route and safe approach,
+while supplying Sarah EXP0 at initial preparation. Sarah's row explicitly shows MP/EXP; result text
+moves down within the same canvas to leave room for the additional ally line. Old comparisons keep
+their previous projection and layout. Preserve the six old routes'225 PNGs and old survival47 by bytes.
+
+The new mode contains63 frames. Frames1–47 retain the same battle geometry and remaining values
+as the old survival route, with the declared Sarah MP/EXP and text-spacing differences. Inspect each
+frame individually at original1920×1080; all text regions must fit without overlap or clipping.
+
+| Frames | Sarah HEAL acceptance |
+| --- | --- |
+|48–50|Physical origin confirm, M Magic, HEAL1 and Bowie target. MP10/EXP0 remain unchanged; legal targets are0 and1.|
+|51–52|Cycle to range-legal Sarah; self-heal is visibly Unsupported, Space rejects with the identical snapshot and no cast prompt.|
+|53–55|Target cancel→spell, spell cancel→action, relocation cancel→the exact ready102.|
+|56–58|Physical reselect action, Magic/HEAL1 and Bowie.|
+|59|Labeled TEST COPY: the actual facade cast publishes103, Sarah MP7/EXP17, Bowie HP12, main02A11234/copy0234; no production pause is implied.|
+|60|Physical cast and whole facade/dispatcher result agree: actual133 pursuit produces104 and usable Bowie0/R13/raw8; all HP/MP/EXP remain readable.|
+|61–63|Actual Bowie's I preview(11,12)/cost2, Space confirmation and Backspace cancellation restore the entire104 snapshot.|
+
+Each new physical selection/commit/cancel is compared with the logical facade result. The distinct
+healing completion never labels itself physical attack or STAY. The cast summary remains visible
+through pursuit and the next player's movement. This is controlled presentation, not original
+spell animation, natural Sarah progression, or a winning/H4 trace.
 
 The same early `chester-first-kill` mode can set `SF2_BATTLE01_SURVIVAL_REVIEW=1` for a probe-only
 survival branch. Production launch inputs and dispatcher/presenter stay unchanged. Preserve the

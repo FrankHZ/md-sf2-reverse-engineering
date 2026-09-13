@@ -46,9 +46,9 @@ public sealed class Battle01FirstRoundTests
     }
 
 
-    internal static Battle01InitializedState FiveSurvivorBoundary()
+    internal static Battle01InitializedState FiveSurvivorBoundary(byte? sarahExp = null)
     {
-        var current = Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted(), 0).State!;
+        var current = Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted(sarahExp), 0).State!;
         current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
             Battle01PlayerMovement.SelectDestination(current, 0, new(11,13)), 0), 0,
             Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
