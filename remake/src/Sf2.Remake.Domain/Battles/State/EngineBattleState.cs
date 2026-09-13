@@ -25,12 +25,12 @@ public sealed class BattleActorDefinition
 {
     internal BattleActorDefinition(ActorRef actor, BattleClassRule classRule,
         BattleController controller, byte level, ushort maxHp, byte maxMp,
-        byte attack, byte defense, byte agility, byte move, IEnumerable<SpellRef> spells,
+        byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null)
     {
         Actor = actor; ClassRule = classRule; Controller = controller;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
-        Agility = agility; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
+        Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
     }
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
@@ -46,6 +46,7 @@ public sealed class BattleActorDefinition
     public byte Attack { get; }
     public byte Defense { get; }
     public byte Agility { get; }
+    public bool ExtraRoundAction { get; }
     public byte Move { get; }
     public IReadOnlyList<SpellRef> Spells { get; }
     public PhysicalActorDefinition? Physical { get; }

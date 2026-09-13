@@ -1,6 +1,6 @@
 namespace Sf2.Remake.Domain.Battles;
 
-internal readonly record struct TurnOrderCandidate<TActor>(TActor Actor, int ProcessingOrder, bool Placed, ushort Hp, byte Agility) where TActor : struct;
+internal readonly record struct TurnOrderCandidate<TActor>(TActor Actor, int ProcessingOrder, bool Placed, ushort Hp, byte Agility, bool ExtraRoundAction) where TActor : struct;
 internal readonly record struct TurnOrderEntry<TActor>(TActor? Actor, byte AlteredAgility) where TActor : struct;
 internal sealed record TurnOrderResult<TActor>(IReadOnlyList<TurnOrderEntry<TActor>> Slots, ushort NextSeed) where TActor : struct;
 
@@ -14,19 +14,21 @@ internal static class TurnOrderRules
             ordered.Select(candidate => candidate.Actor).Distinct().Count() != ordered.Length ||
             ordered.Any(candidate => candidate.ProcessingOrder < 0))
             throw new ArgumentException("Turn candidates require unique identities and nonnegative unique processing orders.", nameof(candidates));
+        if (ordered.Any(candidate => candidate.Agility > 127))
+            throw new ArgumentException("Numerical agility must be between 0 and 127.", nameof(candidates));
         var living = ordered.Where(candidate => candidate.Placed && candidate.Hp > 0).ToArray();
-        if (living.Sum(candidate => candidate.Agility >= 128 ? 2 : 1) > 64)
+        if (living.Sum(candidate => candidate.ExtraRoundAction ? 2 : 1) > 64)
             throw new ArgumentException("The turn buffer cannot hold the living candidates.", nameof(candidates));
 
         var slots = Enumerable.Repeat(new TurnOrderEntry<TActor>(null, 255), 64).ToArray();
         int length = 0;
         foreach (var candidate in living)
         {
-            int basis = candidate.Agility & 0x7F;
+            int basis = candidate.Agility;
             ushort range = (ushort)(basis >> 3);
             int score = basis + Roll(range) - Roll(range) + Roll(3) - 1;
             slots[length++] = new(candidate.Actor, unchecked((byte)score));
-            if (candidate.Agility >= 128)
+            if (candidate.ExtraRoundAction)
             {
                 basis = basis * 5 / 6;
                 range = (ushort)(basis >> 3);

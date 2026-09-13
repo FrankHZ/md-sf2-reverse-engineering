@@ -60,6 +60,11 @@ once for stable round RNG, AI candidates and adapter selection. Runtime actors d
 from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Source
 slots remain in the actual reference projection into the same typed turn calculator. Faction drives
 healing/opposition/rewards independently of order; supported controller pairings remain bounded.
+Actor definitions separately own numerical `Agility` (0–127) and boolean `ExtraRoundAction`.
+Live-start capacity and shared generation consume explicit eligibility; only the actual reference
+projection decodes raw high-bit semantics. The ordinary three draws and optional two draws at the
+truncated five-sixths basis retain source arithmetic and signed sentinel ordering. The existing
+advancer consumes both entries without an additional scheduler or physical double/counter changes.
 
 ## Production Assemblies
 

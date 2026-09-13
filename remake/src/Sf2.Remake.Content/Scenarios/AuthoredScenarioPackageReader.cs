@@ -39,7 +39,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 3, 3) == 3, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 4, 4) == 4, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
@@ -101,7 +101,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         foreach (var actor in Array(root, "actors"))
         {
             ObjectOptional(actor, "actor", "physical", "id", "classRule", "controller", "level", "maxHp", "maxMp",
-                "attack", "defense", "agility", "move", "items", "spells");
+                "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells");
             var id = new ActorRef(Id(actor, "id"));
             string className = Text(actor, "classRule"), controlName = Text(actor, "controller");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
@@ -147,7 +147,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     _ => BattleController.Commandset06Script3 },
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
-                (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned, physical);
+                (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
+                (byte)Number(actor, "move", 1, 255), learned, physical);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);

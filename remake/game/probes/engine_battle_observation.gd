@@ -54,6 +54,11 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "extra-turn":
+            await _extra_turn(initial)
+            _check(samples.size() == 7, "Extra-turn observation completed all seven checkpoints")
+            _finish()
+            return
         if arguments[case_index + 1] == "commandset-continuation":
             var continuation_index := arguments.find("--continuation-shape")
             var continuation_shape: String = arguments[continuation_index + 1] if continuation_index >= 0 else "move-attack"
@@ -149,6 +154,57 @@ func _run() -> void:
     _check(unsupported.failure == "physical-definition" and unsupported.failureKind == "UnsupportedCapability",
         "Unsupported capability stays distinct in the live view")
     _finish()
+
+func _extra_turn(initial: Dictionary) -> void:
+    var player: String = initial.actors[0].id
+    var other: String = initial.actors[1].id
+    _check(initial.round == 1 and initial.queueCursor == 0 and initial.actor == player
+        and initial.mainSeed == 0xFF4D1234, "Initial extra-turn round consumes exactly eleven draws")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    var selected := _read("first-stay-selected")
+    _check(selected.stage == "CommitReady" and selected.queueCursor == 0
+        and selected.mainSeed == initial.mainSeed, "Selection does not consume the first entry")
+    await _press(KEY_ENTER)
+    var first := _read("first-entry-consumed")
+    _check(first.failure == null and first.actor == player and first.round == 1 and first.queueCursor == 1
+        and first.stage == "Movement" and first.stopReason == "PlayerInput"
+        and first.mainSeed == initial.mainSeed, "Same actor receives its second entry in the same round")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var second := _read("second-entry-consumed")
+    _check(second.failure == null and second.actor == other and second.round == 1 and second.queueCursor == 3
+        and second.mainSeed == initial.mainSeed, "Second entry consumes once before ordinary AI and next ally")
+    var saw_ai := false
+    for observation in second.observations:
+        saw_ai = saw_ai or observation.Kind == "ai-stay"
+    _check(saw_ai, "Configured enemy runs between the extra actor and ordinary ally")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var next_round := _read("next-round")
+    _check(next_round.failure == null and next_round.round == 2 and next_round.queueCursor == 0
+        and next_round.actor == player and next_round.mainSeed == 0x887A1234,
+        "Natural next round carries the seed after twenty-two draws")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var next_first := _read("next-round-first-consumed")
+    _check(next_first.actor == player and next_first.round == 2 and next_first.queueCursor == 1,
+        "Extra eligibility persists on natural round generation")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var next_second := _read("next-round-second-consumed")
+    _check(next_second.failure == null and next_second.actor == other and next_second.round == 2
+        and next_second.queueCursor == 3 and next_second.mainSeed == next_round.mainSeed,
+        "Both second-round entries are consumed through actual input")
+    for state in [first, second, next_round, next_first, next_second]:
+        _check(state.thinkingSeed == initial.thinkingSeed and state.gold == initial.gold
+            and state.actors[0].hp == initial.actors[0].hp and state.actors[0].mp == initial.actors[0].mp
+            and state.actors[0].visible and state.actors[0].x == initial.actors[0].x
+            and state.actors[0].y == initial.actors[0].y, "STAY preserves resources and actual actor node")
 
 func _same_battle(before: Dictionary, after: Dictionary) -> bool:
     for field in ["mainSeed", "thinkingSeed", "round", "actor"]:

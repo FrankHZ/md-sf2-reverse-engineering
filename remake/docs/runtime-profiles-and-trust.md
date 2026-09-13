@@ -29,7 +29,7 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 3` package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 4` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
@@ -53,6 +53,13 @@ Content admits at most30 allies and32 enemies per encounter and requires ally le
 level0–99. Only player-controlled allies and AI-controlled enemies are supported. Source slots are
 mapped solely by reference consumers;255 is a valid authored processing order, not a missing actor.
 Actor/deployment/start array reordering cannot change round draws, candidate ties or UI selection.
+
+Actors require numerical `agility` (0–127) and boolean `extraRoundAction`. False generates one entry;
+true permits one additional entry in each generated round. No number or omitted field implies the
+flag. Dead or unplaced actors contribute no entries or draws; living entries including extras must
+fit the64-entry turn buffer. Source-adjusted signed scores can still sort behind the real sentinel.
+The extra entry uses the existing truncated five-sixths basis and two draws, independently of physical
+double/counter rules. Broader speed formulas, arbitrary action counts and new statuses are not admitted.
 
 `ScenarioReadAccepted` returns the package's `ScenarioDefinition` and `BattleStartInput` separately.
 The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted

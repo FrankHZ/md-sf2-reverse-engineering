@@ -154,7 +154,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization precedes the remaining common private initialized-entry
 plan. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 3`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 4`. The reader accepts that current shape only, without parallel old/new models.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -195,7 +195,7 @@ controlled start; no screenshots, session setters or reference aggregate are req
 
 Each `BattleDeploymentDefinition` now owns `Faction` (`Ally` or `Enemy`) and a nonnegative unique
 `ProcessingOrder`. These are encounter roles, separate from intrinsic actor definitions and from
-per-session resources or position overrides. Format-v3 `placements` require `actor`, `faction`,
+per-session resources or position overrides. Format-v4 `placements` require `actor`, `faction`,
 `processingOrder`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
 previous order explicitly without changing other values. Content retains the admitted maximum of
 30 allies and 32 enemies and supported player-ally / AI-enemy combinations; ally AI and player-controlled
@@ -207,7 +207,7 @@ array order. Runtime actors derive faction/order from their immutable deployment
 movement and physical rewards use faction; queue lookup uses `ActorRef`, never an order value.
 The shared `TurnOrderRules` candidate separates typed identity from integer order, and nullable queue
 identity marks a sentinel. Order255, sparse values and values above the original byte range are ordinary
-orders. Original word/RNG arithmetic, agility flags, signed scoring, sentinel participation, 64 entries
+orders. Original word/RNG arithmetic, explicit extra-entry eligibility, signed scoring, sentinel participation, 64 entries
 and 62 sorting passes remain unchanged.
 
 Only the actual reference `Battle01FirstRound.GenerateTurnOrder` projection admits source byte slots,
@@ -221,8 +221,34 @@ turn/RNG and AI tie expectations remain; the affected original first-round compa
 actual reference mapping. The [native recipe](../../remake/docs/development-and-verification.md#authored-faction-and-order-observation)
 uses the existing adapter/probe with four packages and changed-order input, without screenshots.
 
-Remaining modernization is explicitly separate: agility versus extra
-action, meaningful rule/capability profiles, control versus AI strategy, terrain semantic references
+### Numerical agility and extra round action
+
+Format-v4 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
+`BattleActorDefinition` and shared `TurnOrderCandidate` carry those two values independently; no
+character identity, value threshold or missing field supplies eligibility. The four authored packages
+retain their configured numerical agility with `extraRoundAction: false`. The real Content reader
+rejects missing/nonboolean eligibility and out-of-range agility. Session starts reuse these immutable
+definitions without adding a second state authority.
+
+One ordinary entry consumes three draws, including zero-range draws. Explicit extra eligibility adds
+one entry with two draws using the integer-truncated five-sixths basis. The existing calculator retains
+word arithmetic, low-word carry, signed score/sentinel participation, stable processing order,64-entry
+capacity and62 passes. Both live-start capacity and generation count the explicit extra entry; dead or
+unplaced actors contribute neither entries nor draws. The existing advancer consumes each queue entry
+and naturally returns control or generates the next round. Physical double/counter decisions remain
+separate action rules; this flag does not grant arbitrary action counts or a new scheduling policy.
+
+The actual reference `Battle01FirstRound.GenerateTurnOrder` alone decodes the original agility byte's
+low7 bits and high-bit extra eligibility before calling that same calculator. Raw source definitions
+and private import stay lossless. **Confirmed (engine):**
+[`BattleAgilityTurnsTests`](../../remake/tests/Sf2.Remake.Engine.Tests/BattleAgilityTurnsTests.cs) exercise
+otherwise-identical definitions, real Content failures, live/dead start capacity and natural two-entry
+consumption across rounds. Existing signed0/127 boundary expectations and death/counter comparisons
+remain unchanged. The [native extra-turn observation](../../remake/docs/development-and-verification.md#authored-extra-round-action-observation)
+uses actual input and existing queue/state/node observations, without screenshots or state injection.
+
+Remaining modernization is explicitly separate: meaningful rule/capability profiles,
+control versus AI strategy, terrain semantic references
 and remaining raw source mappings. Existing source semantics remain unchanged until their dedicated
 migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
 registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
@@ -751,7 +777,7 @@ The current executable examples are
 [`practice-yard`](../../remake/content/authored/practice-yard.json),
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
-[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v3 documents
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v4 documents
 through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
 `placements` own faction, stable processing order and deployment coordinates, and `start.actors` bind explicit per-session values by
