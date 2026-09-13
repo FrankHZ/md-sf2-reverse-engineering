@@ -1481,6 +1481,11 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         final=_session.PrivateOriginalBattle01!;
         Require(readyJson==JsonSerializer.Serialize(final.Battle,json),"Actual Bowie cancel restores the complete usable95 battle");
         await CaptureControl("40-enemy128-relay-bowie-cancel");
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_SURVIVAL_REVIEW") == "1")
+        {
+            await ReviewFiveSurvivorRound(final);
+            return;
+        }
         foreach (var key in new[] {Key.I,Key.I,Key.J,Key.I,Key.J,Key.I}) await PressBattleKey(key);
         await PressBattleKey(Key.Space);
         var approach=_session.PrivateOriginalBattle01!;
@@ -1557,6 +1562,106 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             actualTargetCancelReselect=true,actualEnemy128Attempted=true,actualBowieMoveCancel=true,actualSarahMoveCancel=true,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} chester-first-kill");
+    }
+
+    private async Task ReviewFiveSurvivorRound(PrivateOriginalBattle01SessionSnapshot bowie)
+    {
+        var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
+        var json=new JsonSerializerOptions{WriteIndented=true,MaxDepth=256};
+        string before95=JsonSerializer.Serialize(bowie.Battle,json);
+        await PressBattleKey(Key.I);await PressBattleKey(Key.I);await PressBattleKey(Key.Space);
+        var approach=_session.PrivateOriginalBattle01!;
+        Require(approach.Battle.Roster[0].Position==new MapPosition(11,13) && approach.Battle.FirstControl!.Movement.GridCost==4,
+            "Actual Bowie approaches11,13 for cost4 from the retained95");
+        await CaptureControl("41-five-survivor-bowie-provisional");
+        var copy=(PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
+            BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[]{approach.Preparation,approach.Battle,approach.SourceLocomotion,approach.SourceBridge},null)!;
+        Battle01InitializedState expectedSarah;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copy);
+        try
+        {
+            var stay=((PrivateOriginalBattle01StayCommitted)_session.CommitPrivateOriginalBattle01Stay(copy,0)).Snapshot;
+            PrivateBattle01Ui.DispatchNext(_session,stay);expectedSarah=_session.PrivateOriginalBattle01!.Battle;
+            Require(expectedSarah.FirstControl?.ActorIndex==1 && expectedSarah.FirstRound!.RoundNumber==12 &&
+                expectedSarah.FirstRound.CurrentTurnOffset==10 && expectedSarah.TurnCompletion!.EnemyPursuit?.ActorIndex==130 &&
+                expectedSarah.TurnCompletion.Previous!.DefeatedTurnCompleted,"Actual96/97/130 returns Sarah98");
+        }
+        finally
+        {
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,approach);
+            presenter.Project(approach.Battle,"Restored exact Bowie approach. Space commits STAY.");
+        }
+        await PressBattleKey(Key.Space);var sarah=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(expectedSarah,json)==JsonSerializer.Serialize(sarah.Battle,json),"Whole physical Bowie STAY and API relay match");
+        await CaptureControl("42-five-survivor-sarah-ready");
+        foreach(var key in new[]{Key.L,Key.I,Key.L,Key.I,Key.I})await PressBattleKey(key);
+        await PressBattleKey(Key.Space);var support=_session.PrivateOriginalBattle01!;
+        Require(support.Battle.Roster[1].Position==new MapPosition(11,14) && support.Battle.FirstControl!.Movement.GridCost==10,
+            "Actual Sarah approaches the adjacent support tile for cost10");
+        await CaptureControl("43-five-survivor-sarah-provisional");
+        copy=(PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
+            BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[]{support.Preparation,support.Battle,support.SourceLocomotion,support.SourceBridge},null)!;
+        Battle01InitializedState boundary100,expectedReady;string boundary;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copy);
+        try
+        {
+            var stay=((PrivateOriginalBattle01StayCommitted)_session.CommitPrivateOriginalBattle01Stay(copy,1)).Snapshot;
+            var end=((PrivateOriginalBattle01EnemyPursuitCompleted)_session.CompletePrivateOriginalBattle01EnemyPursuit(stay,133)).Snapshot;
+            boundary100=end.Battle;
+            Require(Count(boundary100)==100 && boundary100.FirstRound!.RoundNumber==12 && boundary100.FirstRound.CurrentTurnOffset==14 &&
+                boundary100.FirstRound.CurrentCandidate is null && boundary100.RandomSeedImage==0x98321234 && boundary100.RandomSeedCopy==0x0234 &&
+                boundary100.TurnCompletion!.EnemyPursuit is {ActorIndex:133,GridCost:4} && boundary100.Roster[8].Position==new MapPosition(10,6),
+                "Actual100 before generation retains the completed R12 seven-participant buffer");
+            presenter.Project(boundary100,"TEST COPY: receipt100, before five-survivor generation.");
+            await CaptureControl("44-five-survivor-before-generation-test-copy","actual Application100 before generation; no production pause");
+            var generated=((PrivateOriginalBattle01FirstRoundEntered)_session.EnterPrivateOriginalBattle01NextRound(end)).Snapshot;
+            Require(generated.Battle.FirstRound!.Slots.SequenceEqual(new[]{new Battle01TurnEntry(128,6),new(130,6),new(1,5),new(133,5),new(0,3)}
+                .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),59))) && generated.Battle.FirstRound.RoundNumber==13 &&
+                generated.Battle.FirstRound.CurrentTurnOffset==0 && generated.Battle.RandomSeedImage==0x74A71234 && generated.Battle.NewlyTestedRegionMask==7 &&
+                ReferenceEquals(boundary100.TurnCompletion,generated.Battle.TurnCompletion),"Actual five-survivor generation uses15 draws without erasing history");
+            boundary=PrivateBattle01Ui.DispatchNext(_session,generated);expectedReady=_session.PrivateOriginalBattle01!.Battle;
+            Require(expectedReady.FirstControl?.ActorIndex==1 && Count(expectedReady)==102 &&
+                expectedReady.TurnCompletion!.EnemyPursuit?.ActorIndex==130 && expectedReady.TurnCompletion.Previous!.EnemyPursuit?.ActorIndex==128 &&
+                ReferenceEquals(expectedReady.TurnCompletion.Previous.Previous,boundary100.TurnCompletion),"Actual128 then130 returns Sarah; no fabricated completion count");
+        }
+        finally
+        {
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,support);
+            presenter.Project(support.Battle,"Restored exact Sarah approach. Space commits STAY.");
+        }
+        await PressBattleKey(Key.Space);var ready=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(expectedReady,json)==JsonSerializer.Serialize(ready.Battle,json) && presenter.Projection!.Status==boundary,
+            "Physical Sarah STAY through133, generation and both actual enemies equals the entire API endpoint");
+        Require(ready.Battle.Roster[0].Position==new MapPosition(11,13) && ready.Battle.Roster[0].Stats.HpCurrent==3 &&
+            ready.Battle.Roster[1].Position==new MapPosition(11,14) && ready.Battle.Roster[1].Stats.HpCurrent==11 && ready.Battle.Roster[1].Stats.MpCurrent==10 &&
+            ready.Battle.Roster[1].Stats.CurrentExp is null && ready.Battle.Roster[1].Stats.CurrentKills is null && ready.Battle.Roster[1].Stats.CurrentDefeats is null &&
+            Field<Label>(presenter,"_details").Text.StartsWith("Round 13: PlayerMovementSelection",StringComparison.Ordinal) &&
+            presenter.Projection!.ActorIndex==1 && presenter.Projection.CanConfirm &&
+            !presenter.Projection.Units.Any(u=>u.Index is 2 or 129 or 131 or 132) &&
+            presenter.Projection.AllyStatus.Contains("A2 defeated HP 0 EXP 54 Defeats 1") &&
+            Field<Label>(presenter,"_accounting").Text=="Live units | Gold 180 | Bowie kills 2 | Chester kills 1",
+            "Living adjacent allies, dead occupants absent, independent accounting and usable controls stay visible");
+        await CaptureControl("45-five-survivor-r13-sarah-ready");
+        string frozen=JsonSerializer.Serialize(ready.Battle,json);
+        await PressBattleKey(Key.K);await PressBattleKey(Key.Space);
+        Require(_session.PrivateOriginalBattle01!.Battle.Roster[1].Position==new MapPosition(11,15) &&
+            _session.PrivateOriginalBattle01.Battle.FirstControl!.Movement.GridCost==2,"Actual Sarah confirms cost2 movement in R13");
+        await CaptureControl("46-five-survivor-r13-sarah-provisional");
+        await PressBattleKey(Key.Backspace);var final=_session.PrivateOriginalBattle01!;
+        Require(frozen==JsonSerializer.Serialize(final.Battle,json) && before95==JsonSerializer.Serialize(bowie.Battle,json),
+            "Cancel restores whole102 while the source95 remains immutable");
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(final.Battle,0,0,0,0,0,0);
+        Require(ReferenceEquals(bowie.Preparation,final.Preparation) && ReferenceEquals(bowie.SourceBridge,final.SourceBridge) &&
+            ReferenceEquals(bowie.SourceLocomotion,final.SourceLocomotion),"All source/preparation identities survive the physical route");
+        await CaptureControl("47-five-survivor-r13-sarah-cancel");
+        File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new{
+            status="Pass",scope="actual safe100, five-survivor R13 and actual Sarah movement/cancel; later survival, healing, victory and H4 remain Unknown",
+            preparation=final.Preparation.Party,returnInputs=final.Preparation.ReturnInputs,arrivalInputs=final.Preparation.ArrivalInputs,
+            earlyLaunchOptIn=true,survivalProbeOnly=true,boundary,boundary100,battle=final.Battle,
+            exactCopiedAndPhysicalSnapshotMatch=true,actualBowieApproach=true,actualSarahApproach=true,actualSarahMoveCancel=true,frames=_frames
+        },json));
+        GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} five-survivor-round");
+        static int Count(Battle01InitializedState battle){int n=0;for(var r=battle.TurnCompletion;r is not null;r=r.Previous)n++;return n;}
     }
 
     private async Task ReviewFirstAllyDefeat(PrivateOriginalBattle01SessionSnapshot chester)

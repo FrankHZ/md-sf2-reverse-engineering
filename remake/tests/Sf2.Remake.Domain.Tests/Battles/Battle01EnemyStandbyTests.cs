@@ -7,6 +7,37 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyStandbyTests
 {
+    [Theory]
+    [InlineData("missing97")][InlineData("relabel97")][InlineData("duplicate97")]
+    [InlineData("missing95")][InlineData("duplicate95")][InlineData("credit94")]
+    [InlineData("hp")][InlineData("exp")][InlineData("gold")][InlineData("kills")][InlineData("defeats")]
+    [InlineData("revivedChester")][InlineData("placedCorpse")]
+    public void FiveSurvivorHistoryRejectsBrokenDeathLinksAndAccountingBeforeGeneration(string mutation)
+    {
+        var source=Battle01FirstRoundTests.FiveSurvivorBoundary();
+        var receipts=Battle01EnemyPursuitTests.Receipts(source).ToList();var roster=source.Roster.ToArray();
+        if(mutation=="missing97")receipts.RemoveAt(3);
+        if(mutation=="relabel97")receipts[3]=receipts[3] with {Policy=Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats};
+        if(mutation=="duplicate97")receipts.Insert(3,receipts[3]);
+        if(mutation=="missing95")receipts.RemoveAt(5);
+        if(mutation=="duplicate95")receipts.Insert(5,receipts[5]);
+        if(mutation=="credit94")receipts[6]=receipts[6] with {EnemyDefeat=receipts[6].EnemyDefeat! with {CreditedAlly=0}};
+        if(mutation=="hp")roster[0]=roster[0].WithStats(roster[0].Stats.WithCurrentHp(4));
+        if(mutation=="exp")roster[0]=roster[0].WithStats(roster[0].Stats.WithCurrentExp(64));
+        if(mutation=="kills")roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentKills(2));
+        if(mutation=="defeats")roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentDefeats(2));
+        if(mutation=="revivedChester")roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentHp(1)).WithPosition(new(9,9));
+        if(mutation=="placedCorpse")roster[4]=roster[4].WithPosition(new(10,4));
+        Battle01TurnCompletionReceipt? history=null;
+        for(int i=receipts.Count-1;i>=0;i--)history=receipts[i] with {Previous=history};
+        var input=Battle01FirstRoundTests.CopyCurrent(source,roster:roster,receipt:history,gold:mutation=="gold"?181u:null);
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(input,json);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01FirstRound.EnterNext(input));
+        Assert.Equal(frozen,JsonSerializer.Serialize(input,json));
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(source));
+    }
+
+
     [Fact]
     public void Dead129TurnRewindsAsNoChangeBeforeTheIndependentAllyDeathAndCreditedKill()
     {

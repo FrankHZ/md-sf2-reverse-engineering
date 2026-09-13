@@ -1189,8 +1189,33 @@ line and a measured font width within the label. Its receipt retains those measu
 replace inspection of the rendered Gold180, Bowie kills2 and Chester kills1 as separate readable values.
 Keep complete process logs and ordinary119 return, older133 defeat, counter, enemy-physical and
 pursuit regressions. This comparison ends at actual Sarah movement/cancel after dead129 completion and130 pursuit.
-Later five-survivor generation, further deaths, victory and H4 remain outside it; minimum-six is a
-remake generation guard, not an original-game rule.
+The separate probe-only survival route below covers the first five-survivor generation. Further
+deaths, victory and H4 remain outside both routes.
+
+The same early `chester-first-kill` mode can set `SF2_BATTLE01_SURVIVAL_REVIEW=1` for a probe-only
+survival branch. Production launch inputs and dispatcher/presenter stay unchanged. Preserve the
+exact first40 physical frames through95/Bowie cancel; do not rewind the old98 endpoint or compare
+the divergent paths as one shared46-frame route. Leave the selector absent for that old regression.
+
+| Frame | Survival-route acceptance |
+| --- | --- |
+|41|Physical I/I/Space confirms Bowie (11,13), cost4, before one moved STAY.|
+|42|Physical STAY and whole copied API96→97→130 match; actual Sarah1/R12 ready at (9,17).|
+|43|Physical L/I/L/I/I/Space confirms Sarah (11,14), cost10, adjacent to Bowie HP3.|
+|44|Labeled TEST COPY100 before generation: actual133 pursued to (10,6)/cost4, main98321234/copy0234, historical R12 seven-person buffer/raw14/sentinel.|
+|45|Physical Sarah STAY matches the entire API path through133, R13 generation and actual128/130 to Sarah1;102 receipts, (11,14), HP11/MP10/budget10, Bowie HP3, Gold180 and separate kill/death/EXP values.|
+|46–47|Physical K/Space confirms (11,15), cost2; Backspace restores the complete ready102 battle.|
+
+The copy publishes the real five-person R13 order128/130/1/133/0 plus59 sentinels, main74A71234,
+copy0234/mask7, then invokes the unchanged actual dispatcher. It never supplies predicted movement
+or a fabricated receipt. The physical run must produce byte-equivalent whole battle JSON, retain
+all early source/preparation identities and leave dead Chester/129/131/132 absent from occupancy
+and rendering. Compare all40 common PNGs by bytes, retain the independent old46-frame captures,
+and inspect41–47 separately at original resolution, including live Round13 text, controls, Bowie
+HP3, adjacent Sarah and all independent accounting values. Preserve complete stdout/stderr and
+exit/timeout/cleanup plus exact source/probe archives. The stopping point is usable Sarah
+movement/cancel; healing input/consumer, further survival, new combat outcomes, victory and H4
+remain Unknown or unsupported.
 
 All other modes use `LeaderDefeatComparison` at N, supplying Bowie defeats0 over the Chester EXP0/defeats0
 preparation before initialization while preserving unspecified kills and all five earlier comparison presets. Preserve older null-preset captures read-only. Every mode retains

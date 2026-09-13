@@ -45,7 +45,18 @@ public sealed partial class GameSession
         if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
             return new PrivateOriginalBattle01FirstRoundRejected(failure);
         Battle01InitializedState battle;
-        try { battle = Battle01FirstRound.EnterNext(current.Battle); }
+        bool fiveSurvivors = current.Battle.Roster.Count(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null) == 5;
+        if (fiveSurvivors && current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId)
+            return RoundRejected("party.fiveSurvivorInput", "Retain the early first-kill comparison for this continuation.");
+        try
+        {
+            battle = Battle01FirstRound.EnterNext(current.Battle);
+            if (fiveSurvivors)
+                Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
+                    current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
+                    current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats,
+                    current.Preparation.Party.Allies[2].CurrentKills);
+        }
         catch (ArgumentException error)
         {
             return RoundRejected("round." + (error.ParamName ?? "state"), "Next round rejected; last completed state retained.");

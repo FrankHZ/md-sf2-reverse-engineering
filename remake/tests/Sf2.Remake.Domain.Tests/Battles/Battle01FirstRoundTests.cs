@@ -7,6 +7,85 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01FirstRoundTests
 {
+    [Theory]
+    [InlineData("order")][InlineData("tie")][InlineData("sentinel")][InlineData("slots")]
+    [InlineData("raw")][InlineData("main")][InlineData("copy")][InlineData("mask")]
+    [InlineData("memory")][InlineData("targets")][InlineData("flags")][InlineData("four")]
+    public void FiveSurvivorGenerationRejectsCorruptedNewOrderAndRetainedChannels(string mutation)
+    {
+        var source=Battle01FirstRound.EnterNext(FiveSurvivorBoundary());var slots=source.FirstRound!.Slots.ToArray();
+        var roster=source.Roster.ToArray();var memory=source.AiMemory.ToArray();var targets=source.AiLastTargets.ToArray();
+        if(mutation=="order")slots[0]=new(133,6);
+        if(mutation=="tie")(slots[0],slots[1])=(slots[1],slots[0]);
+        if(mutation=="sentinel")slots[5]=new(255,254);
+        if(mutation=="slots")slots=slots.Take(63).ToArray();
+        if(mutation=="memory")memory[0]++;
+        if(mutation=="targets")targets[0]=1;
+        if(mutation=="four")roster[8]=roster[8].WithStats(roster[8].Stats.WithCurrentHp(0)).WithPosition(null);
+        var order=new Battle01FirstRoundOrder(slots,[],[],13);
+        if(mutation=="raw")typeof(Battle01FirstRoundOrder).GetField("<CurrentTurnOffset>k__BackingField",
+            System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(order,(byte)1);
+        var input=CopyCurrent(source,roster:roster,order:order,memory:memory,lastTargets:targets,
+            mainImage:mutation=="main"?0x74A81234u:null,copy:mutation=="copy"?(ushort)0x0134:null,tested:mutation=="mask"?(ushort)0:null);
+        if(mutation=="flags")
+        {
+            var flags=input.RegionFlags90Through105.ToArray();flags[0]=false;
+            input=new(input,input.Roster.ToArray(),flags,input.NewlyTestedRegionMask,input.RandomSeedImage,input.FirstRound!);
+        }
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(input,json);
+        Assert.ThrowsAny<ArgumentException>(()=>Battle01FirstRound.RequireCurrentPrefix(input));
+        Assert.Equal(frozen,JsonSerializer.Serialize(input,json));Battle01FirstRound.RequireCurrentPrefix(source);
+    }
+
+    [Fact]
+    public void FiveSurvivorGenerationRequiresTheUnconsumedR12ActivationBoundary()
+    {
+        var source=FiveSurvivorBoundary();var input=CopyCurrent(source,tested:7);
+        Assert.Equal("generation.history",Assert.Throws<ArgumentException>(()=>Battle01FirstRound.EnterNext(input)).ParamName);
+        Assert.Equal(0x98321234u,input.RandomSeedImage);Assert.Equal(12,input.FirstRound!.RoundNumber);
+    }
+
+
+    internal static Battle01InitializedState FiveSurvivorBoundary()
+    {
+        var current = Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted(), 0).State!;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 0, new(11,13)), 0), 0,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01TurnCompletion.CompleteDefeatedTurn(current, 129,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+        current = Battle01EnemyPursuit.CompleteNext(current, 130, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01NextPlayerControl.Enter(current, 1).State!;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 1, new(11,14)), 1), 1,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        return Battle01EnemyPursuit.CompleteNext(current, 133, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
+
+    [Fact]
+    public void FiveSurvivorGenerationRetainsSevenHistoricalParticipantsAndConsumesExactlyFifteenDraws()
+    {
+        var before = FiveSurvivorBoundary(); var json = new JsonSerializerOptions { MaxDepth=256 };
+        string frozen = JsonSerializer.Serialize(before,json);
+        Assert.Equal((100,12,14),(Battle01EnemyPursuitTests.Receipts(before).Count(),before.FirstRound!.RoundNumber,before.FirstRound.CurrentTurnOffset));
+        Assert.Equal(new[]{0,1,2,128,129,130,133},Battle01FirstRound.GenerationRoster(before,12)
+            .Where(u=>u.Stats.HpCurrent>0 && u.Position is not null).Select(u=>u.Index));
+        ushort word = before.GeneratorWord;
+        for (int i=0;i<5;i++) foreach (ushort range in new ushort[]{0,0,3}) Battle01FirstRound.NextRandom(ref word,range);
+        var after = Battle01FirstRound.EnterNext(before);
+        Assert.Equal((ushort)0x74A7,word); Assert.Equal(0x74A71234u,after.RandomSeedImage);
+        Assert.Equal((Battle01Phase.RoundGenerated,13,0,7),(after.Phase,after.FirstRound!.RoundNumber,after.FirstRound.CurrentTurnOffset,after.NewlyTestedRegionMask));
+        Assert.Equal(new[]{new Battle01TurnEntry(128,6),new(130,6),new(1,5),new(133,5),new(0,3)}
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),59)),after.FirstRound.Slots);
+        Assert.Same(before.TurnCompletion,after.TurnCompletion); Assert.Same(before.AiMemory,after.AiMemory);
+        Assert.Same(before.AiLastTargets,after.AiLastTargets); Assert.Same(before.Occupancy,after.Occupancy);
+        Assert.Equal((ushort?)0x0234,after.RandomSeedCopy); Assert.Equal(before.CurrentGold,after.CurrentGold);
+        for(int i=0;i<9;i++){Assert.Same(before.Roster[i].Stats,after.Roster[i].Stats);Assert.Equal(before.Roster[i].Position,after.Roster[i].Position);}
+        Battle01EnemyStandby.RequireThinkingHistory(after);
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+    }
+
+
     [Fact]
     public void Dead129TurnPreservesAllSevenHistoricalSlotsAndDoesNotGenerateFromFiveSurvivors()
     {
