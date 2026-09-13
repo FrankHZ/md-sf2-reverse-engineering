@@ -4,8 +4,7 @@ Status: **OPEN — findings recorded; engine remediation is not implemented.**
 
 This audit records the user's clarified product direction and the implementation findings that must
 inform the next architecture decision. It does not authorize another gameplay slice, adopt a new
-framework, or report the continuous milestone complete. Main-gate finishes the currently assigned
-slice's acceptance and then stops; this documentation task is separately authorized.
+framework, or report the continuous milestone complete.
 
 The inspected accepted baseline is commit `24a10b99a30603d35e8aec9ead3276710f957ed7`, tree
 `1865117841e26d4698961a581eac22db88f9c5c0`. Findings below refer to that exact object, independently of
