@@ -1,12 +1,12 @@
 # ADR 0019: State- and Content-Driven Remake Engine
 
-- Status: **Proposed**; design for independent review, not implementation authorization
+- Status: **Accepted direction**; M0 mechanics and verification implemented, M1–M5 planned
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
 - Problem owner: [architecture and verification audit](../../remake/docs/architecture-audit.md)
 
-## Recommendation and decision boundary
+## Direction and implementation boundary
 
 Keep the four-assembly deterministic modular monolith and one `GameSession` facade. Make gameplay
 admission a function of the live state, validated content, and explicitly implemented rule capability.
@@ -14,15 +14,16 @@ Move fixed walkthrough histories into reference runners. Use typed resumable pro
 effects and let Application advance exploration, programs, battles, and return flow until actual
 player input, a declared presentation/tick boundary, or an attributed failure is required.
 
-This is a behavioral decoupling proposal. Merely moving existing guards into smaller files would
+This is a behavioral decoupling direction. Merely moving existing guards into smaller files would
 leave the audited problem intact. Conversely, removing every guard would discard valid rules,
 atomicity, and unsupported boundaries. The migration below separates these cases before changing them.
 
-All interfaces, normalized records, authored examples, and candidate filenames below are **Proposed
+The user adopted this direction and authorized M0. Except for the current M0 boundary below,
+interfaces, normalized records, authored examples, and candidate filenames remain **Proposed
 design**, not findings about the original or claims of implemented support. **Confirmed** and
 **Unknown** in the evidence table retain the repository evidence meanings. Audit A1–A8 remain open.
-No engine, test, fixture, schema, research owner, or capability ledger changes in this design slice.
-Implementation slices require accepted scope and independent main-gate review.
+Each implementation slice requires declared scope and independent main-gate review; M1 follows
+M0 acceptance rather than continuing the old receipt queue.
 
 The user's testing requirement is part of this design: new automated tests cover meaningful new-engine
 behavior through small unit tests. Reference replay, probes, comparisons, fixture drivers, gates,
@@ -30,6 +31,35 @@ planners, reports, and test helpers are already verification; do not add tests o
 programs or a second validation framework. Audit and retire or migrate old tests and CI with the
 engine. Keeping every old test unchanged and green is not a migration objective. Original research
 evidence and completed results remain durable without requiring those old tests to run forever.
+
+## Current M0 implementation
+
+Domain now has small internal [BattleRandom](../../remake/src/Sf2.Remake.Domain/Battles/BattleRandom.cs),
+[HealingRules](../../remake/src/Sf2.Remake.Domain/Battles/HealingRules.cs),
+[TurnOrderRules](../../remake/src/Sf2.Remake.Domain/Battles/TurnOrderRules.cs), and
+[BattleRange](../../remake/src/Sf2.Remake.Domain/Battles/BattleRange.cs) rules. Existing Battle01
+healing and first-round consumers call them. Their inputs contain no character, round, receipt or
+route predicates. Main RNG preserves the low word; turn ordering retains the original slot domain,
+word arithmetic, signed comparison, sentinel participation and fixed buffer capacity.
+
+Healing is the scalar ordinary same-side, EXP-eligible priest rule after class and power selection.
+`AdjustedPower` is already normalized ordinary power, not a raw spell byte or full-recovery sentinel.
+The rule caps recovery, spends the supplied MP cost and computes the two-draw EXP award; it rejects
+level-up without publishing state. It does not select spells, classes, targets or sessions. Full-HP
+scalar arithmetic is covered, while the existing reference wrapper still admits only an injured
+target. Manhattan action range is shared; full movement and selection/cancellation remain unmigrated.
+
+The ordinary [Engine.Tests project](../../remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj)
+references Domain only until a real Application/Content behavior is added. Useful RNG, turn-order
+and healing arithmetic assertions moved from the legacy Domain tests. Five pure Python structure,
+planner, environment, Godot-gate and probe test files retired. Mixed native-harness and asset tests
+remain under their existing owners, outside new-engine CI. Original research fixtures, private-input
+protections and controlled-route observations remain intact; the legacy wrappers still retain their
+unmigrated trace guards. M0 does not implement the common session/content path or complete A1–A8.
+
+The local engine/adapter entries and scoped public workflow below are implemented. Required-check
+configuration is a main-gate integration action, verified against the actual candidate CI run.
+M0 stops at independent review; the next engine slice is M1's authored connected battle after acceptance.
 
 ## Evidence used and its limits
 
@@ -472,22 +502,9 @@ historical diagnostic, not a permanent retention rule or numerical acceptance ta
 
 ## Remote CI and local verification cutover
 
-The accepted [.github/workflows/public-checks.yml](../../.github/workflows/public-checks.yml) runs
-on every PR and main push in one Windows `tracked-inputs` job. It installs Python 3.12, uv, .NET
-10.0.204/8.0.424, runs Ruff, all seven named Python families above, design-contract traceability,
-then locked restore/build/test of the entire `remake/Sf2.Remake.sln`. It does not launch the native
-Godot executable, but the whole solution includes the Godot SDK and old test projects.
-
-Locally, [harness.py](../../src/sf2tool/harness.py) selects
-`tests/python/test_native_harness.py` through `COMMIT_PYTEST_TARGETS`; normal `verify` also runs
-design traceability, research index, ROM identity and upstream toolchain provenance.
-[verification_plan.py](../../src/sf2tool/verification_plan.py) always adds `public-core`, maps
-non-document remake paths to the old .NET solution and often Godot, and maps workflow/architecture/
-planner/tooling changes back to those old gates. Changing only the CI test command would therefore
-leave both local selection and accepted guidance able to restore the obsolete requirements.
-
-The recommended replacement keeps the existing workflow's PR/main-push trigger and splits its job
-responsibilities. A small inline PowerShell step reads the actual Git changed paths and emits only
+The current [.github/workflows/public-checks.yml](../../.github/workflows/public-checks.yml) keeps
+the existing PR/main-push trigger and splits its job responsibilities. A small inline PowerShell
+`scope` job reads the actual Git changed paths and emits only
 the three needed scope booleans; it performs no verification. Conditional jobs then use the explicit
 path scopes below. Keep this wiring in the existing YAML, coordinated with the existing local planner;
 do not add a generic dispatcher, workflow-validation framework, coverage job, meta-test job, matrix
@@ -495,7 +512,7 @@ generator, or test-discovery manifest.
 
 | Job/entry | Trigger scope after cutover | Required execution/environment and exclusions |
 | --- | --- | --- |
-| New `engine-unit` job | PR/main changes to Domain, Application, Content, the new engine unit-test project and its authored inputs, shared remake build/package/SDK files, or this workflow. Add a genuinely consumed reference input explicitly if it becomes a unit-test dependency. Documentation-only and unrelated research changes do not execute it. | Windows runner initially; existing pinned .NET SDK 10.0.204 and net8 runtime 8.0.424, central xUnit packages and locked restore. Build/test only `Sf2.Remake.Engine.Tests.csproj` and its three production dependencies. No Python, native Godot, ROM, upstream checkout, private assets, old solution tests, probe tests, or coverage target. Preserve explicit CLI selection, PATH opt-out and per-run writable state in the real job. |
+| New `engine-unit` job | PR/main changes to Domain, Application, Content, the new engine unit-test project and its authored inputs, shared remake build/package/SDK files, or this workflow. Add a genuinely consumed reference input explicitly if it becomes a unit-test dependency. Documentation-only and unrelated research changes do not execute it. | Windows runner initially; existing pinned .NET SDK 10.0.204 and net8 runtime 8.0.424, central xUnit packages and locked restore. Build/test only `Sf2.Remake.Engine.Tests.csproj` and its actual production dependencies (Domain in M0). No Python, native Godot, ROM, upstream checkout, private assets, old solution tests, probe tests, or coverage target. Preserve explicit CLI selection, PATH opt-out and per-run writable state in the real job. |
 | New `adapter-build` job | PR/main changes to `remake/game/**`, its shared build/lock configuration, Domain/Application/Content API dependencies, or this workflow. | Locked restore/build of the actual Godot C# project using the tracked Godot.NET.Sdk/4.7.2 and .NET pins. This is compilation, not an extra automated test layer or native visual acceptance. It does not run the old Godot test project or download/launch the native editor. |
 | Existing public workflow, narrowed to `research-public` scope | Changes to research/design contracts, owning research source/schema/fixture/manifest/toolchain paths, genuinely shared Python/private-input protections, or its workflow. Engine-only changes no longer trigger whole-solution restore/build/test or the seven old Python test families. | Keep uv locked dependencies and relevant lint/direct public traceability/index checks under repository/tooling ownership. Separate mixed native-harness responsibilities; remove engine/meta-test steps, not research evidence. Private H0/H1/H3 runs cannot become public CI inputs. Ordinary engine unit CI has no dependency on this job when its paths are unchanged. |
 | Reference replay and live adapter checks | Only an affected comparison/observation or explicit milestone/user request; use the existing local reference/probe route. | Execute the verification itself with admitted inputs and existing host/instance policy. No tests of runners, fixture drivers, gate/planner/report code or probes. Retain exact results and unsupported/private boundaries; no automatic screenshot or full-route claim. |
@@ -510,17 +527,27 @@ unit job must have an actual result; neither a missing workflow nor failed scope
 accepted as success. Review wiring, required-check settings and the actual first CI run directly;
 do not unit-test the scope step, build a GitHub-filter test harness or generate synthetic PR matrices.
 
-The new engine project can use the ordinary existing commands:
+After loading the existing protected host/worktree environment, use the repository entries:
 
 ```powershell
-dotnet restore remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --locked-mode
-dotnet build remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-restore
-dotnet test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-build --no-restore
+uv run sf2 verify engine
+uv run sf2 verify adapter
+uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
-These are proposed future paths, not commands run or a project created by this ADR. Native executable
-selection and environment reuse still follow the owning host policy. No new test framework, SDK
-installation, or run is required to review this design.
+The first command performs locked restore, build and unit tests of the engine project; the second
+performs locked restore/build of the actual adapter. Both run the selected .NET executable from
+`remake/` to honor its SDK pin and force the existing PATH protection. CI executes those .NET steps
+directly, so the engine job needs no Python. Add Application/Content project references only when
+their real engine behavior is consumed; M0's tests depend only on Domain.
+
+The planner automatically selects the engine scope for remake and non-research documentation paths.
+Legacy test retirement does not select the old solution. Changes to shared CLI/harness/planner source
+remain conservative research changes by default. For a declared engine-only wiring change in those
+three files, `verify plan --scope engine --base origin/main --head HEAD` explicitly selects engine,
+adapter and direct research-public checks. That scope rejects research artifacts and other shared
+inputs; it is not permission to omit a semantic evidence dependency in an allowed file. Review the
+actual diff before selecting it. Normal research `verify` and its evidence dependency handling remain.
 
 Cutover is part of M0/M1, not a backlog item after the engine is declared complete:
 
@@ -549,21 +576,22 @@ Cutover is part of M0/M1, not a backlog item after the engine is declared comple
    coverage quota, green old aggregate, extra test of the cutover, or per-deletion replacement test
    is a closure condition. Unrelated research/private-input protections remain in their own scope.
 
-This design slice changes none of those shared CI/test/planner/guidance owners. Their changes must be
-declared and coordinated in the implementation handoff, rather than inferred as permission to edit
-shared files now. The current completed verification results remain exactly as observed; this policy
-addition does not justify replaying normal/full/.NET/Godot suites.
+M0 implements the shared code/workflow/guidance changes under serialized ownership. Main-gate owns
+remote required-check configuration: replace `tracked-inputs` with `scope`, `engine-unit`,
+`adapter-build`, and `research-public` after reviewing the candidate. Keep the workflow name
+`Public checks` and inspect the actual emitted check contexts. Completed verification results remain
+exactly as observed; cutover does not justify replaying legacy normal/full/.NET/Godot suites.
 
 ## Incremental migration and stopping conditions
 
-Recommended order is below. Candidate paths name future responsibility, not writes authorized by
-this design slice. Each implementation slice starts from accepted main, declares exact paths/tests,
+Migration order is below; M0's implemented subset is recorded above. Other candidate paths name
+future responsibility. Each implementation slice starts from accepted main, declares exact paths/tests,
 checks competing writers, and obtains independent review. Do not create empty scaffolding for later
 rows or execute this entire table as one rewrite.
 
 | Stage | Concrete change and candidate owners | Dependencies, acceptance, stop and rollback |
 | --- | --- | --- |
-| M0: classify and cut over verification | Inspect the existing four remake test projects; move useful selected HEAL/movement/turn assertions into the proposed `Sf2.Remake.Engine.Tests` project. Extract only their needed pure mechanics from `Battle01PlayerHealing.cs`, `Battle01PlayerMovement.cs`, `Battle01FirstRound.cs`. Repository/tooling/guidance owners perform the CI/local-policy cutover above in coordinated, serialized changes. | No unintended product behavior change during extraction; direct engine unit assertions protect the moved mechanics and selected reference verification retains meaningful old observations. Retire obsolete/reflection/meta-tests rather than characterizing their structure. Stop when M1 has real behavioral tests and the new gate path; no repository-wide test inventory or extra tests of the cutover. Revert incorrect extraction, retain completed failures; do not require a green old aggregate. |
+| M0: classify and cut over verification | Implemented subset: internal main RNG, ordinary priest healing scalar resolution, turn-order generation and Manhattan action range, consumed by existing Battle01 wrappers. Dedicated Engine.Tests protects the moved mechanics. Scoped CI/local/planner/guidance replace new-engine legacy gates under serialized ownership. Full movement and cancellation remain for M1. | No unintended behavior change in existing callers; independent arithmetic/boundary expectations and meaningful varied inputs protect the rules. Original fixtures and selected reference observations remain owned. Retire obsolete/meta-tests. Freeze a Draft PR, record direct command/CI results and main-gate required-check action, then stop for independent acceptance before M1. No old aggregate or tests of the cutover. |
 | M1: first connected functional vertical slice | Content: internal authored package decoder/validator beside existing readers, e.g. `AuthoredScenarioPackageReader.cs`; Application content typed definitions in `Content/ScenarioDefinition.cs`. Application: evolve `Sessions/GameSession.cs`, internal `SessionCommandDispatcher.cs` and `BattleSessionCoordinator.cs`. Domain: focused `Battles/PlayerHealing.cs`, `PlayerMovement.cs`, `BattleTurnFlow.cs`, `BattleTurnOrder.cs` using M0 mechanics. Godot: `remake/game/src/PrivateBattle01Composition.cs` and the owning input/presenter composition receive the common result for the new path. | After M0, load an authored controlled encounter into player control; move/preview/cancel, HEAL or STAY, atomically commit, skip a dead queued entry when present, execute the explicitly configured Stay AI commandset, generate another round and return to player input automatically. Two authored packages and the first four examples above require engine unit assertions plus direct observation of the applicable adapter path. No tests of that observation. No physical attack, level-up, general AI, event program, or victory claim. Stop at unsupported branches precisely. Keep the accepted reference entry selectable at composition until M2; rollback selects that entry before session creation, never switches a live session between authorities. |
 | M2: migrate battle rules and private admission | Replace trace guards in `Battle01FirstRound.cs`, `Battle01EnemyStandby.cs`, `Battle01EnemyPursuit.cs`, `Battle01EnemyPhysicalAttack.cs`, `Battle01PlayerPhysicalAttack.cs`, `Battle01TurnCompletion.cs` with reusable internal rule modules in the same Domain battle directory. Evolve `PrivateOriginalBattle01StartupReader.cs`, `Application/Content/OriginalBattle01StartupDefinition.cs`, and controlled presets into trust/import mapping plus reference setup. Route private battle commands through the common Application dispatcher. | M1 is accepted. Extract one actual dependency chain at a time: AI movement/decision → physical effects/replay → rewards/death/after-turn → next control. Bring level-up or other reached branches only through their owning accepted rules; otherwise report Unsupported. Preserve private provenance and selected reference observations while adding actual alternate-actor/kill-order engine unit assertions. Retire the migrated legacy families. Remove Godot `DispatchNext` once Application runs those paths. Stop each chain at a coherent capability frontier, not the next receipt. Roll back affected start binding/commits if parity or atomicity fails. |
 | M3: programs and exploration on the common session | `Application/Sessions/OriginalMapGameSession.cs`, `GameSession.cs`, existing `Map*Lifecycle.cs` and `PrivateOriginalMap*cs` owning the reached event; internal `Programs/MapProgramRunner.cs` and Domain typed operation/state reducers. Content: `OriginalMapRuntimeAdmission.cs`, `PrivateCanonicalMap3ImportReader.cs`, and a typed `ProgramDefinition.cs` at the existing content boundary. Replace one endpoint-assignment handler, beginning with the palace owner's behavior only when its complete reached operations are admitted. | Common facade exists; actual program operation/wait/effect behavior has small engine unit tests before replacing a story handler. Connect authored explore → branch/dialogue/motion → transfer → battle admission, then migrate private original operations with source provenance. Reuse layout/entity/dialogue reducers. Retain selected endpoints as reference comparisons only after actual execution reaches them; retire obsolete constructor/receipt tests. Stop at unsupported native subroutine or timing/presentation frontiers; never inject terminal state. Roll back the selected route if the affected reference comparison disagrees. |
@@ -590,15 +618,8 @@ guidance so the selected paths agree; engine-only changes must not resurrect the
 `verify`, whole-solution, full/native, or infrastructure pytest obligations. Research/shared changes
 retain their independently owned requirements. Preserve completed failed nodes and process state;
 rerun only corrected engine behavior or newly affected direct verification, not an old aggregate
-merely to replace its result. This is an explicit proposed amendment to the old engine gate route.
-
-For this **documentation-only proposal**, acceptance is the exact three owned documents, working
-relative links/anchors, honest current/Proposed distinction, no private payload or absolute private
-input paths, the honestly retained normal public verification result, and a clean committed planner
-inspection. The added CI/test policy changes only documentation: retain completed checks and perform
-only necessary document-increment checks. Do not replay normal/full/.NET/Godot suites or run H3/native
-visual tests for this slice. Current planner output is reported as current behavior, not proof that
-the future CI cutover is implemented.
+merely to replace its result. This amends the old engine gate route. Documentation-only increments
+still require direct document/scope/private-boundary checks, without replaying engine or research suites.
 
 ## Existing decisions and user decision items
 
@@ -611,17 +632,15 @@ the future CI cutover is implemented.
 | [ADR 0016](0016-remake-start-evidence-deferral.md) | Preserve bounded start and static-first deferral. Authored connected slices and accepted static semantics can proceed with explicit Unknowns; no blanket new H3 requirement, natural-route claim, or waiver of eventual evidence. |
 | [ADR 0017](0017-heavy-boundaries-light-internals.md) | Preserve heavy trust/mutation/versioned-observation boundaries and lightweight internal calls. Add the explicit behavioral migration path: M0 protects moved product behavior with useful unit assertions; later stages expand valid state/content admission. Amend blanket characterization/old-test retention assumptions; tests of internal structure and verification infrastructure may retire without replacements. This expansion is not a behavior-preserving file split. |
 
-The proposal does not silently amend those accepted decisions. The recommended product tradeoff is
+This direction preserves the accepted product and evidence boundaries above. The product approach is
 to deliver and measure semantic playability first, while separately reporting original presentation
 parity as incomplete. This avoids coupling engine structure to one route without lowering an accepted
 fidelity bar by implication.
 
 The new-engine unit-test-only addition policy and consideration of old-test retirement are already
-explicit user requirements, not unresolved permission questions. The remaining design/product
-decisions for the user/main gate before implementation planning are:
+explicit user requirements, not unresolved permission questions. The user has adopted the direction
+and M0 starting boundary. Remaining later product decisions, without blocking bounded M0 work, are:
 
-- Adopt this state/content/capability direction and M0 → M1 starting boundary, with implementation
-  scoped separately; this Proposed ADR itself does not dispatch a new implementation task.
 - Confirm whether modern semantic playability is a separately named deliverable while original
   8C/H4 remains accepted but incomplete, or explicitly revise that product target in its owner.
   Recommendation: separate reporting and preserve 8C until an explicit revision.
@@ -630,5 +649,5 @@ decisions for the user/main gate before implementation planning are:
   with screenshot prohibition retained; do not claim those probes close visual or audio parity.
 
 No user save/load, engine replacement, universal scripting framework, new public asset rights, or
-hardware emulation backend is introduced. The design slice stops after a frozen Draft PR and
-independent review; unanswered product/fidelity choices and audit findings remain visible.
+hardware emulation backend is introduced. Each implementation slice stops after a frozen Draft PR
+and independent review; unanswered product/fidelity choices and audit findings remain visible.

@@ -14,29 +14,82 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tracked-inputs:
+  scope:
     runs-on: windows-latest
-    timeout-minutes: 15
-    env:
-      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
-      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
-      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
-      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
-
+    timeout-minutes: 5
+    outputs:
+      engine: ${{ steps.paths.outputs.engine }}
+      adapter: ${{ steps.paths.outputs.adapter }}
+      research: ${{ steps.paths.outputs.research }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.12"
+          fetch-depth: 0
+      - name: Select affected product and research jobs
+        id: paths
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($revision in @($env:BASE_SHA, $env:HEAD_SHA)) {
+            if ($revision -notmatch '^[0-9a-f]{40}$' -or $revision -match '^0+$') {
+              throw 'Cannot determine a valid event comparison range'
+            }
+          }
+          $changedPaths = @(& git -c core.quotepath=false diff --name-only --diff-filter=ACDMRTUXB $env:BASE_SHA $env:HEAD_SHA)
+          $diffExit = $LASTEXITCODE
+          if ($diffExit -ne 0) { throw "Git path comparison failed: $diffExit" }
+          $engine = $false
+          $adapter = $false
+          $research = $false
+          foreach ($changedPath in $changedPaths) {
+            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py')) {
+              $engine = $true
+              $adapter = $true
+              $research = $true
+            } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
+              $research = $true
+            } elseif ($changedPath -like '*.md') {
+              continue
+            } elseif ($changedPath -like 'remake/tests/Sf2.Remake.Engine.Tests/*') {
+              $engine = $true
+            } elseif ($changedPath -like 'remake/tests/*') {
+              continue
+            } elseif ($changedPath -like 'remake/game/*') {
+              $adapter = $true
+            } elseif ($changedPath -like 'remake/*') {
+              $engine = $true
+              $adapter = $true
+            } else {
+              $research = $true
+            }
+          }
+          "engine=$($engine.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "adapter=$($adapter.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "research=$($research.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
-        with:
-          enable-cache: true
-
+  engine-unit:
+    needs: scope
+    if: needs.scope.outputs.engine == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: remake
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      DOTNET_CLI_USE_MSBUILD_SERVER: "0"
+      MSBUILDDISABLENODEREUSE: "1"
+      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
+      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
@@ -45,39 +98,74 @@ jobs:
             8.0.424
           cache: true
           cache-dependency-path: remake/**/packages.lock.json
-
       - name: Select installed shared .NET CLI
-        shell: pwsh
         run: |
           $dotnetBinary = (Get-Command dotnet -CommandType Application).Source
           "DOTNET_BIN=$dotnetBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Restore engine dependencies
+        run: '& $env:DOTNET_BIN restore tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --locked-mode'
+      - name: Build engine tests and product dependencies
+        run: '& $env:DOTNET_BIN build tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-restore'
+      - name: Run engine unit tests
+        run: '& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-build --no-restore'
 
+  adapter-build:
+    needs: scope
+    if: needs.scope.outputs.adapter == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: remake
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      DOTNET_CLI_USE_MSBUILD_SERVER: "0"
+      MSBUILDDISABLENODEREUSE: "1"
+      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
+      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.204
+            8.0.424
+          cache: true
+          cache-dependency-path: remake/**/packages.lock.json
+      - name: Select installed shared .NET CLI
+        run: |
+          $dotnetBinary = (Get-Command dotnet -CommandType Application).Source
+          "DOTNET_BIN=$dotnetBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Restore adapter dependencies
+        run: '& $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode'
+      - name: Build actual adapter
+        run: '& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Release --no-restore'
+
+  research-public:
+    needs: scope
+    if: needs.scope.outputs.research == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
       - name: Sync locked dependencies
         run: uv sync --locked
-
       - name: Lint maintained Python
         run: uv run ruff check src tests/python
-
-      - name: Run tracked-input harness tests
-        run: uv run pytest tests/python/test_native_harness.py
-
-      - name: Verify protected CLI and process environments
-        run: uv run pytest tests/python/test_dotnet_environment.py tests/python/test_remake_godot.py tests/python/test_godot_ai_probe.py
-
-      - name: Verify remake architecture, planner, and asset preflight
-        run: uv run pytest tests/python/test_remake_architecture.py tests/python/test_verification_plan.py tests/python/test_remake_assets.py
-
       - name: Verify design-contract traceability
         run: uv run sf2 design-contracts test
-
-      - name: Restore remake dependencies
-        working-directory: remake
-        run: '& $env:DOTNET_BIN restore Sf2.Remake.sln --locked-mode'
-
-      - name: Build remake solution
-        working-directory: remake
-        run: '& $env:DOTNET_BIN build Sf2.Remake.sln --configuration Release --no-restore'
-
-      - name: Test remake solution
-        working-directory: remake
-        run: '& $env:DOTNET_BIN test Sf2.Remake.sln --configuration Release --no-build --no-restore'
+      - name: Verify research index
+        run: uv run sf2 research-index test

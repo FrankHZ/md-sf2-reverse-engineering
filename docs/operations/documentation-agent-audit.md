@@ -52,13 +52,12 @@ to judge the actual behavior/responsibility boundary.
 - **Binding now:** engine behavior unit tests only for new automated tests; verification programs are
   used directly without tests of those programs; old tests migrate or retire by behavior; direct
   documentation checks; no screenshot acceptance; reuse the owning worktree/environment/Godot.
-- **Current executable behavior:** the single Public job still runs legacy Python infrastructure
-  families and whole-solution .NET tests. The planner still emits public-core and legacy remake/deleted
-  test fanout. A naturally triggered existing CI run is recorded honestly; its current wiring does
-  not make those selections the desired new-engine policy.
-- **Pending, separately owned:** ADR 0019's proposed M0/M1 engine unit project, rule extraction/common
-  path, workflow jobs, harness/planner mapping and required-check cutover, plus any necessary probe
-  image-suppression/reuse work. This documentation audit performs none of them.
+- **Current executable behavior:** [ADR 0019's M0 boundary](../decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
+  now records consumed mechanics, the engine unit project, retired verification tests and scoped
+  workflow/planner/local commands. This implementation is separate from the audited-base findings
+  above; their evidence remains historical. Research selection retains its owning dependencies.
+- **Pending, separately owned:** M1's common session/content path, independent M0 acceptance and
+  main-gate required-check configuration, plus any necessary probe image-suppression/reuse work.
 - **Still incomplete:** architecture findings A1–A8, natural Map 3/Battle 01 continuity and the accepted
   8C/H4 target. Documentation approval or semantic unit success does not complete product/fidelity work.
 

@@ -212,12 +212,37 @@ def _h3_command(command: str) -> str:
 
 PARTITIONS = (
     VerificationPartition(
+        "engine-unit",
+        "remake",
+        "Actual engine behavior unit tests and their product build.",
+        ("uv run sf2 verify engine",),
+        external_gates=("Public checks / engine-unit",),
+    ),
+    VerificationPartition(
+        "adapter-build",
+        "remake",
+        "Product adapter compilation without native Godot or legacy tests.",
+        ("uv run sf2 verify adapter",),
+        external_gates=("Public checks / adapter-build",),
+    ),
+    VerificationPartition(
+        "research-public",
+        "public",
+        "Direct public source/document checks for shared gate wiring.",
+        (
+            "uv run ruff check src tests/python",
+            "uv run sf2 design-contracts test",
+            "uv run sf2 research-index test",
+        ),
+        external_gates=("Public checks / research-public",),
+    ),
+    VerificationPartition(
         "public-core",
         "public",
-        "Always-run commit-critical verification and tracked-input boundary.",
+        "Normal research commit verification and private input identity boundary.",
         ("uv run sf2 verify",),
         parallel_safe=False,
-        external_gates=("GitHub Public / tracked-inputs",),
+        external_gates=("Public checks / research-public",),
     ),
     VerificationPartition(
         "tooling-python",
@@ -625,11 +650,89 @@ def _select_dependents(
     return matched
 
 
+ENGINE_WIRING_PATHS = frozenset(
+    {
+        "src/sf2tool/cli.py",
+        "src/sf2tool/harness.py",
+        "src/sf2tool/verification_plan.py",
+    }
+)
+RETIRED_ENGINE_TEST_PATHS = frozenset(
+    {
+        "tests/python/test_dotnet_environment.py",
+        "tests/python/test_godot_ai_probe.py",
+        "tests/python/test_remake_architecture.py",
+        "tests/python/test_remake_godot.py",
+        "tests/python/test_verification_plan.py",
+    }
+)
+
+
+def _engine_or_document_path(path: str) -> bool:
+    if path.endswith(".md"):
+        return not path.startswith(("docs/research/", "docs/design/contracts/"))
+    return (
+        path.startswith("remake/")
+        or path in RETIRED_ENGINE_TEST_PATHS
+        or path == ".github/workflows/public-checks.yml"
+    )
+
+
+def _plan_engine_paths(
+    paths: tuple[str, ...], include_partitions: tuple[str, ...]
+) -> dict[str, object]:
+    selected: dict[str, dict[str, set[str]]] = {}
+    for partition_id in include_partitions:
+        _selection_entry(selected, partition_id, "explicit --include-partition")
+    for path in paths:
+        if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
+            continue
+        if path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml":
+            for partition in ("engine-unit", "adapter-build", "research-public"):
+                _selection_entry(selected, partition, path)
+        elif path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
+            _selection_entry(selected, "engine-unit", path)
+        elif path.startswith("remake/tests/"):
+            # Legacy/reference test edits or retirement do not run the old solution.
+            continue
+        elif path.startswith("remake/game/"):
+            _selection_entry(selected, "adapter-build", path)
+        else:
+            # Changed runtime/configuration roots conservatively build both consumers.
+            _selection_entry(selected, "engine-unit", path)
+            _selection_entry(selected, "adapter-build", path)
+    return {**_selection_rows(selected, set()), "scope": "engine"}
+
+
+def _selection_rows(
+    selected: dict[str, dict[str, set[str]]], unclassified: set[str]
+) -> dict[str, object]:
+    rows = []
+    for partition in PARTITIONS:
+        entry = selected.get(partition.partition_id)
+        if entry is None:
+            continue
+        rows.append(
+            {
+                "id": partition.partition_id,
+                "layer": partition.layer,
+                "description": partition.description,
+                "reasons": sorted(entry["reasons"]),
+                "commands": sorted(entry["commands"]),
+                "parallelSafe": partition.parallel_safe,
+                "resourceLock": partition.resource_lock,
+                "externalGates": list(partition.external_gates),
+            }
+        )
+    return {"partitions": rows, "unclassifiedPaths": sorted(unclassified)}
+
+
 def plan_paths(
     changed_paths: tuple[str, ...],
     *,
     root: Path | None = None,
     include_partitions: tuple[str, ...] = (),
+    scope: str = "auto",
 ) -> dict[str, object]:
     """Classify normalized repository paths without executing any gate."""
 
@@ -637,6 +740,22 @@ def plan_paths(
     unknown_ids = sorted(set(include_partitions) - PARTITIONS_BY_ID.keys())
     if unknown_ids:
         raise ValueError(f"unknown verification partition(s): {', '.join(unknown_ids)}")
+
+    if scope not in {"auto", "engine"}:
+        raise ValueError(f"unknown verification scope: {scope}")
+    normalized_paths = tuple(path.replace("\\", "/") for path in changed_paths)
+    if scope == "engine":
+        outside = [
+            path
+            for path in normalized_paths
+            if not _engine_or_document_path(path) and path not in ENGINE_WIRING_PATHS
+        ]
+        if outside:
+            raise ValueError(
+                "engine scope cannot omit research/shared inputs: " + ", ".join(outside)
+            )
+    if scope == "engine" or all(_engine_or_document_path(path) for path in normalized_paths):
+        return _plan_engine_paths(normalized_paths, include_partitions)
 
     selected: dict[str, dict[str, set[str]]] = {}
     unclassified: set[str] = set()
@@ -646,6 +765,8 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized in RETIRED_ENGINE_TEST_PATHS:
+            continue
         if normalized in {"src/sf2tool/bizhawk_debug_bridge.py", "tools/debug_bridge.lua"}:
             _selection_entry(
                 selected,
@@ -667,11 +788,8 @@ def plan_paths(
             continue
 
         if normalized.startswith("remake/"):
-            if normalized.endswith(".md"):
-                continue
-            _selection_entry(selected, "remake-dotnet", normalized)
-            if not normalized.startswith("remake/tests/"):
-                _selection_entry(selected, "remake-godot", normalized)
+            for row in _plan_engine_paths((normalized,), ())["partitions"]:
+                _selection_entry(selected, row["id"], normalized)
             continue
 
         if normalized == "src/sf2tool/remake_assets.py":
@@ -708,30 +826,9 @@ def plan_paths(
             _selection_entry(selected, "remake-godot", normalized)
             continue
 
-        if normalized == "tests/python/test_remake_godot.py":
-            _selection_entry(
-                selected,
-                "tooling-python",
-                normalized,
-                (f"uv run pytest {normalized}",),
-            )
-            _selection_entry(selected, "remake-godot", normalized)
-            continue
-
-        if normalized == "tests/python/test_remake_architecture.py":
-            _selection_entry(
-                selected,
-                "tooling-python",
-                normalized,
-                (f"uv run pytest {normalized}",),
-            )
-            _selection_entry(selected, "remake-dotnet", normalized)
-            _selection_entry(selected, "remake-godot", normalized)
-            continue
-
         if normalized == ".github/workflows/public-checks.yml":
-            _selection_entry(selected, "remake-dotnet", normalized)
-            _selection_entry(selected, "remake-godot", normalized)
+            for partition in ("engine-unit", "adapter-build", "research-public"):
+                _selection_entry(selected, partition, normalized)
             continue
 
         if normalized.startswith("src/sf2tool/h2/") and normalized.endswith(".py"):
@@ -844,17 +941,8 @@ def plan_paths(
             continue
 
         if normalized == "src/sf2tool/verification_plan.py":
-            _selection_entry(
-                selected,
-                "tooling-python",
-                normalized,
-                (
-                    "uv run pytest tests/python/test_verification_plan.py",
-                    "uv run pytest tests/python/test_native_harness.py",
-                ),
-            )
-            _selection_entry(selected, "remake-dotnet", normalized)
-            _selection_entry(selected, "remake-godot", normalized)
+            for partition in ("engine-unit", "adapter-build", "research-public"):
+                _selection_entry(selected, partition, normalized)
             _select_dependents(selected, root, normalized)
             continue
 
@@ -885,24 +973,7 @@ def plan_paths(
             )
             unclassified.add(normalized)
 
-    rows = []
-    for partition in PARTITIONS:
-        entry = selected.get(partition.partition_id)
-        if entry is None:
-            continue
-        rows.append(
-            {
-                "id": partition.partition_id,
-                "layer": partition.layer,
-                "description": partition.description,
-                "reasons": sorted(entry["reasons"]),
-                "commands": sorted(entry["commands"]),
-                "parallelSafe": partition.parallel_safe,
-                "resourceLock": partition.resource_lock,
-                "externalGates": list(partition.external_gates),
-            }
-        )
-    return {"partitions": rows, "unclassifiedPaths": sorted(unclassified)}
+    return {**_selection_rows(selected, unclassified), "scope": "research"}
 
 
 def build_verification_plan(
@@ -911,6 +982,7 @@ def build_verification_plan(
     *,
     root: Path | None = None,
     include_partitions: tuple[str, ...] = (),
+    scope: str = "auto",
 ) -> dict[str, object]:
     """Build a deterministic plan for a clean, checked-out committed head."""
 
@@ -945,6 +1017,7 @@ def build_verification_plan(
         changed_paths,
         root=root,
         include_partitions=include_partitions,
+        scope=scope,
     )
     return {
         "schemaVersion": 1,

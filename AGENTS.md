@@ -167,13 +167,12 @@ blanket gate or test-preservation wording in this guide, ADRs, runbooks, and his
 - Documentation-only work uses direct document/scope checks. Do not launch normal/full Python,
   .NET, Godot, or H3 suites solely because guidance changed or an earlier run was incomplete in inputs.
 
-[ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) still describes a proposed
-engine migration. M0/M1, the engine unit project, CI jobs, and executable planner/harness cutover are
-not implemented by a documentation merge. The current planner and CI still contain legacy selections;
-report those facts without turning them back into new-engine obligations. The separately owned
-implementation cutover must align code, CI required checks, local commands, and guidance. Research
-and genuinely shared changes retain their affected evidence requirements; an engine-only slice does
-not inherit the entire Phase 2 acceptance profile.
+[ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the adopted direction
+and current M0 boundary. `uv run sf2 verify engine` runs the dedicated engine unit project;
+`uv run sf2 verify adapter` compiles the actual adapter. M0's scoped jobs and planner/local entries
+exist; M1's common session and connected authored battle remain planned. Main-gate owns remote
+required-check configuration and independent integration. Research and genuinely shared changes
+retain their affected evidence requirements; an engine-only slice does not inherit Phase 2's profile.
 
 `uv` owns the Python environment and lock. Use `uv sync --locked`; do not create a parallel
 requirements workflow or install project dependencies into the system interpreter.
@@ -194,8 +193,10 @@ Pair it with the narrow test or H2/H3 command that owns that research slice. On 
 head, use `uv run sf2 verify plan --base origin/main --head HEAD` to obtain the dependency-aware gate
 selection. Interpret the plan under the scope rules above and the
 [verification owner](./remake/docs/development-and-verification.md#repository-planner). An unclassified
-research path requires resolving its evidence dependency; deliberate engine-test retirement requires
-the coordinated cutover, not a blanket legacy full-suite rerun.
+research path requires resolving its evidence dependency. The planner automatically scopes remake
+changes and excludes retired engine tests. For declared engine-only CLI/harness/planner wiring, use
+`verify plan --scope engine` only after reviewing its semantic boundary; research changes in those
+shared files still require their research selection. Do not reinstate the old aggregate for retirement.
 
 `uv run sf2 verify --full` is exceptional. Run it only for a phase milestone, release/merge readiness,
 shared harness or legacy-rail semantics, an upstream change that invalidates the full profile, or an

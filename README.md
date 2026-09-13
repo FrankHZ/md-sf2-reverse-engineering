@@ -33,11 +33,11 @@ project decisions belong in their owning tracked documents.
   prerequisites for the authorized bounded implementation. No distributable asset strategy or MCP
   implementation has been selected.
 
-The [state/content-driven engine proposal](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
-records the migration direction and the user's binding test policy. Current controlled-route code,
-M0/M1 implementation, and CI/local-command cutover are distinct: the latter two have not been completed
-by the document merge. New-engine tests cover actual engine behavior; reference/probe/gate programs
-are used directly without another test layer. Old tests may migrate or retire by behavior.
+The [state/content-driven engine direction](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
+is adopted. M0 provides consumed RNG/healing/turn-order/range rules, dedicated engine unit tests and
+scoped CI/local commands. M1's common session and connected authored battle remain planned. Existing
+controlled-route guards and A1–A8 remain open. Tests cover actual engine behavior; reference/probe/gate
+programs are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -193,8 +193,8 @@ uv run sf2 verify
 The existing normal `uv run sf2 verify` command runs research/public checks and private input/toolchain
 provenance stages. Research slices pair it with their owning narrow H2/H3 command. For remake or
 documentation work, use the [current verification scope](./remake/docs/development-and-verification.md#scope):
-engine unit tests and affected direct observations, or direct document checks. The current CI/planner
-still has legacy selections; record them without reintroducing superseded engine obligations.
+`uv run sf2 verify engine`, affected adapter compilation/direct observations, or direct document checks.
+The scoped CI/planner no longer selects the old whole-solution gate for engine-only changes.
 
 Useful research/navigation commands, selected only for the relevant work, include:
 
@@ -210,9 +210,10 @@ private extraction, map/UI rendering and their original-fidelity limits. Extract
 outputs, not evidence of a running Godot scene. Do not repeat extraction because a topic changes.
 
 `verify plan` inspects a clean checked-out committed head and reports changed paths, current selected
-partitions, reasons and unresolved ownership. It does not run gates or change Git. The current
-always-selected public core, remake fanout and deleted-test fallback are executable behavior pending
-the separately owned engine cutover, not new-engine acceptance policy.
+partitions, reasons and unresolved ownership. It does not run gates or change Git. Remake paths use
+the engine scope automatically; shared CLI/harness/planner changes retain conservative research
+selection unless their reviewed engine-only wiring scope is explicit. The verification owner documents
+`--scope engine` and its limits. Research dependencies retain their owning acceptance requirements.
 
 `verify --full` remains exceptional for applicable research milestones, shared evidence-harness
 semantics, release boundaries or explicit full-parity work. Neither ordinary engine changes nor

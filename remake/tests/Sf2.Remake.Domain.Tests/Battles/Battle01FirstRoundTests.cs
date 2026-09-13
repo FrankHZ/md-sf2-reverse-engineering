@@ -516,56 +516,6 @@ public sealed class Battle01FirstRoundTests
     public void QuadUsesBothTrianglesAndIncludesEdges(int x, int y, bool inside) =>
         Assert.Equal(inside, Battle01FirstRound.IsInside(Initial().Regions[2], new(x, y)));
 
-    [Fact]
-    public void WordRngMatchesExistingFixtureWhileZeroRangeStillAdvancesTheGenerator()
-    {
-        using var fixture = Fixture("rng-v1");
-        foreach (var row in fixture.RootElement.GetProperty("cases").EnumerateArray())
-        {
-            ushort word = row.GetProperty("seed").GetUInt16();
-            ushort result = Battle01FirstRound.NextRandom(ref word, row.GetProperty("range").GetUInt16());
-            Assert.Equal(row.GetProperty("expectedSeed").GetUInt16(), word);
-            Assert.Equal(row.GetProperty("expectedValue").GetUInt16(), result);
-        }
-        var initial = Initial();
-        Assert.Equal(0x00001234u, initial.RandomSeedImage); Assert.Equal(0, initial.GeneratorWord);
-        ushort first = initial.GeneratorWord;
-        Assert.Equal(0, Battle01FirstRound.NextRandom(ref first, 0)); Assert.Equal(7, first);
-        Assert.Equal(0, Battle01FirstRound.NextRandom(ref first, 0)); Assert.Equal(98, first);
-        ushort advanced = initial.GeneratorWord;
-        for (int index = 0; index < 27; index++) Battle01FirstRound.NextRandom(ref advanced, 0);
-        Assert.Equal(Battle01FirstRound.Enter(initial).GeneratorWord, advanced);
-    }
-
-    [Fact]
-    public void BoundaryFixturePreservesSecondEntriesSignedStableSortAndAllSentinelSlots()
-    {
-        using var fixture = Fixture("turn-order-boundaries-v1");
-        var candidates = Initial().Roster.Select(unit => new Battle01FirstRound.TurnCandidate(
-            (byte)unit.Index, (byte)unit.RequirePosition().X, unit.Stats.HpCurrent, unit.Stats.Agility)).ToArray();
-        foreach (var mutation in fixture.RootElement.GetProperty("mutations").EnumerateArray())
-        {
-            int index = Array.FindIndex(candidates, candidate => candidate.Index == mutation.GetProperty("combatant").GetByte());
-            var value = mutation.GetProperty("value");
-            candidates[index] = mutation.GetProperty("field").GetString() switch
-            {
-                "currentAgi" => candidates[index] with { Agility = value.GetByte() },
-                "currentHp" => candidates[index] with { CurrentHp = value.GetUInt16() },
-                "x" => candidates[index] with { X = value.GetByte() },
-                _ => throw new InvalidDataException("Unexpected accepted mutation field."),
-            };
-        }
-        ushort word = fixture.RootElement.GetProperty("seed").GetUInt16();
-        var slots = Battle01FirstRound.GenerateTurnOrder(candidates.Reverse(), ref word);
-        Assert.Equal(fixture.RootElement.GetProperty("expectedEntries").EnumerateArray()
-            .Select(row => new Battle01TurnEntry(row.GetProperty("combatant").GetByte(), row.GetProperty("score").GetByte())),
-            slots.Where(slot => !slot.IsSentinel));
-        Assert.Equal(64, slots.Length); Assert.Equal(56, slots.Count(slot => slot.IsSentinel));
-        Assert.Equal(new Battle01TurnEntry(0, 255), slots[6]); // Stable tie ahead of empty -1 slots.
-        Assert.All(slots.Skip(7).Take(56), slot => Assert.Equal(new Battle01TurnEntry(255, 255), slot));
-        Assert.Equal(new Battle01TurnEntry(1, 135), slots[63]); // Preserve the signed-negative entry beyond sentinels.
-        Assert.DoesNotContain(slots, slot => slot.CombatantIndex is 2 or 128);
-    }
 
     [Fact]
     public void UnsupportedSpawnRejectsAfterLocalActivationWithoutChangingTheInput()

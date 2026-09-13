@@ -226,7 +226,7 @@ from sf2tool.h3.story_state import verify_story_state
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
-from sf2tool.harness import verify
+from sf2tool.harness import build_adapter, verify, verify_engine
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
@@ -283,7 +283,7 @@ def full_verify_requested(args: argparse.Namespace) -> bool:
 
 
 def validate_verify_plan_args(args: argparse.Namespace) -> None:
-    """Reject execution-only modifiers that planner mode would otherwise ignore."""
+    """Reject research execution options in engine or planner mode."""
 
     incompatible = [
         option
@@ -300,7 +300,7 @@ def validate_verify_plan_args(args: argparse.Namespace) -> None:
     ]
     if incompatible:
         raise ValueError(
-            "verify plan cannot be combined with execution option(s): "
+            f"verify {args.verify_command} cannot be combined with execution option(s): "
             + ", ".join(incompatible)
         )
 
@@ -310,7 +310,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     verify_parser = commands.add_parser(
-        "verify", help="run the commit-critical verification profile"
+        "verify", help="run research verification, engine unit tests, or inspect an affected plan"
     )
     _add_local_paths(verify_parser)
     verify_parser.add_argument(
@@ -330,10 +330,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify_profile.add_argument("--quick", action="store_true", help=argparse.SUPPRESS)
     verify_commands = verify_parser.add_subparsers(dest="verify_command")
+    verify_commands.add_parser("engine", help="locked build and unit tests of engine behavior only")
+    verify_commands.add_parser(
+        "adapter", help="locked product adapter build without Godot execution"
+    )
     verify_plan = verify_commands.add_parser(
         "plan", help="plan affected verification partitions for a committed Git range"
     )
     verify_plan.add_argument("--base", required=True, help="base Git revision")
+    verify_plan.add_argument(
+        "--scope",
+        choices=("auto", "engine"),
+        default="auto",
+        help="engine: explicitly classify an engine-only migration including shared gate wiring",
+    )
     verify_plan.add_argument(
         "--head",
         default="HEAD",
@@ -1427,8 +1437,15 @@ def dispatch(args: argparse.Namespace) -> None:
                     args.base,
                     args.head,
                     include_partitions=tuple(args.include_partition),
+                    scope=args.scope,
                 )
             )
+        elif args.verify_command == "engine":
+            validate_verify_plan_args(args)
+            verify_engine()
+        elif args.verify_command == "adapter":
+            validate_verify_plan_args(args)
+            build_adapter()
         else:
             verify(
                 rom_path=args.rom_path,

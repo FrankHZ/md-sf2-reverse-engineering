@@ -21,29 +21,6 @@ public sealed class Battle01PlayerHealingTests
     internal static Battle01InitializedState Completed() => Battle01PlayerHealing.Confirm(Selected(), 1,
         Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie);
 
-    [Fact]
-    public void PlayerHealingReplaysTwoAwardRollsAndRetainsTheIndependentThinkingChannel()
-    {
-        var before = Selected(); string frozen = Json(before);
-        var after = Battle01PlayerHealing.Confirm(before, 1, Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie);
-        var receipt = after.TurnCompletion!; var decision = receipt.PlayerHealing!;
-        Assert.Equal(new[] { 0, 1 }, decision.LegalTargets); Assert.Equal(new byte[] { 255 }, decision.MoveString);
-        Assert.Equal((9, 18, 17), (decision.Effect.Recovery, decision.Effect.AccumulatedExp, decision.Effect.AwardedExp));
-        Assert.Equal(new[] {
-            new Battle01MainRandomRoll("heal-exp-plus", 16, 0x74A71234, 0xEC821234, 14),
-            new Battle01MainRandomRoll("heal-exp-minus", 16, 0xEC821234, 0x02A11234, 0) }, decision.Effect.Rolls);
-        Assert.Equal(new[] { new Battle01HealingReaction(1, 0, -3, 0), new(0, 9, 0, 0), new(1, 0, 0, 17) }, decision.Effect.Reactions);
-        Assert.Equal((1, 0, (byte)1, (ushort)0), (decision.ActorIndex, decision.TargetIndex, decision.Action, decision.ItemOrSpellWord));
-        Assert.Equal(103, Battle01EnemyPursuitTests.Receipts(after).Count());
-        Assert.Equal((13, 6), (after.FirstRound!.RoundNumber, after.FirstRound.CurrentTurnOffset));
-        Assert.Null(after.FirstControl); Assert.Same(before.TurnCompletion, receipt.Previous);
-        Assert.Equal((0x02A11234u, (ushort?)0x0234), (after.RandomSeedImage, after.RandomSeedCopy));
-        Assert.Equal((ushort)12, after.Roster[0].Stats.HpCurrent);
-        Assert.Equal(((byte)7, (byte?)17), (after.Roster[1].Stats.MpCurrent, after.Roster[1].Stats.CurrentExp));
-        Assert.Equal(((uint?)0, (ushort?)0, (byte?)0, (ushort?)0, (ushort?)0, (ushort?)0, (byte?)0),
-            Battle01EnemyStandby.RequireThinkingHistory(after));
-        Assert.Equal(frozen, Json(before));
-    }
 
     [Fact]
     public void PlayerHealingCancelsEveryLayerWithoutConsumingAnyChannel()
