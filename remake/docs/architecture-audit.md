@@ -27,6 +27,8 @@ The user clarified the intended product on 2026-09-13:
 - Stop screenshot-based Godot verification. Observe the actual running instance through an appropriate
   debug/state interface, such as a suitable Godot debugging connection or existing native probe.
   The concrete interface has not yet been selected; see [the validation boundary](#godot-validation-boundary).
+- Reuse the same verified Godot installation, owning project, and running debug instance by default.
+  A new verification point alone is not a reason to create another engine copy or instance.
 
 This direction preserves original-behavior research as evidence. It does not authorize guessed rules,
 silent fallbacks, unverified claims about the ROM, or redistribution of private inputs.
@@ -206,6 +208,15 @@ debug/state channel. Observe the real session and scene tree: current actor/phas
 outcome, node properties, visibility, geometry, focus, input handling, runtime errors, and process
 completion as required by the specific claim. If the existing interface cannot expose a required
 fact, record that gap before choosing the smallest additional observation seam.
+
+Reuse the owning task's verified Godot installation, project workspace, and running debug instance
+while they remain suitable. Do not routinely re-extract the engine, copy the project, or launch a new
+instance for each check. Restart or create a separate instance only for a concrete reason: an observed
+crash or lost connection, a code/import change that actually requires restart, demonstrated state
+contamination, or a check specifically about startup, export, or process cleanup. Record the reason
+and keep the additional lifetime bounded. When a supported session reset can establish the required
+scenario, reuse it. Reuse does not permit another writer to mutate the same
+project workspace or commandeer another task's running instance.
 
 Expected facts belong in the test driver. They must not be returned as if observed from the game or
 installed as production preconditions. A test that calls Application directly establishes a different
