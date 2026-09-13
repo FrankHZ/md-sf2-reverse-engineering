@@ -235,9 +235,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             (view.ChesterKills is > 0 ? $" | Chester kills {view.ChesterKills}" : "");
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
-        // Two defeated ally rows need five wrapped lines; keep the terminal result below them.
-        _status!.Position = new(456, view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending ? 400 : 382);
-        _status.Size = new(480, view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending ? 64 : 82);
+        // The explicit Sarah MP/EXP row and defeated ally rows can require five wrapped lines.
+        bool extraAllyLine = battle.Roster[1].Stats.CurrentExp is not null ||
+            view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending;
+        _status!.Position = new(456, extraAllyLine ? 400 : 382);
+        _status.Size = new(480, extraAllyLine ? 64 : 82);
         _status.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?
             "Controlled no-effect STAY; effective stats retained.\n" + view.Status : "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :
