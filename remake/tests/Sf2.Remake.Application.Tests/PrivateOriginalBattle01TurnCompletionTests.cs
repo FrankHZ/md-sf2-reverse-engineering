@@ -72,7 +72,7 @@ public sealed class PrivateOriginalBattle01TurnCompletionTests
         {
             if(r.PlayerPhysicalAttack is {ActorIndex:0} player){stats.Add(player.Actor.Stats);stats.Add(player.ActorAfterStats);}
             if(r.EnemyPhysicalAttack is {TargetIndex:0} enemy)
-            {stats.Add(enemy.Target.Stats);stats.Add(enemy.Effect.BeforeStats);stats.Add(enemy.Effect.AfterStats);}
+            {stats.Add(enemy.Priorities.Single(p=>p.Target.Index==0).Target.Stats);stats.Add(enemy.Effect.BeforeStats);stats.Add(enemy.Effect.AfterStats);}
         }
         var defeats=typeof(Battle01Stats).GetField("<CurrentDefeats>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
         foreach(var s in stats)defeats.SetValue(s,null);

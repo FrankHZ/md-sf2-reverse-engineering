@@ -266,13 +266,13 @@ public sealed class PrivateBattle01PresenterTests
                 Assert.Equal(chesterDefeated.AttackResult,deadTurn.AttackResult);
                 current=Battle01EnemyPursuit.CompleteNext(current,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
                 current=Battle01NextPlayerControl.Enter(current,1).State!;
-                var sarahReady=PrivateBattle01Presenter.BuildProjection(current,"Actual Sarah ready.");
-                Assert.False(sarahReady.DefeatedTurnCompleted);Assert.Equal((1,10),(sarahReady.ActorIndex,sarahReady.Budget));
-                Assert.True(sarahReady.CanConfirm);Assert.Equal(deadTurn.AttackResult,sarahReady.AttackResult);
+                var relayedSarah=PrivateBattle01Presenter.BuildProjection(current,"Actual Sarah ready.");
+                Assert.False(relayedSarah.DefeatedTurnCompleted);Assert.Equal((1,10),(relayedSarah.ActorIndex,relayedSarah.Budget));
+                Assert.True(relayedSarah.CanConfirm);Assert.Equal(deadTurn.AttackResult,relayedSarah.AttackResult);
                 current=Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,1,new(10,17)),1),1);
-                var sarahCancelled=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
-                Assert.Equal(sarahReady.Units,sarahCancelled.Units);Assert.Equal(deadTurn.AllyStatus,sarahCancelled.AllyStatus);
-                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(sarahCancelled.Gold,sarahCancelled.BowieKills,sarahCancelled.ChesterKills));
+                var relayedSarahCancelled=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
+                Assert.Equal(relayedSarah.Units,relayedSarahCancelled.Units);Assert.Equal(deadTurn.AllyStatus,relayedSarahCancelled.AllyStatus);
+                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(relayedSarahCancelled.Gold,relayedSarahCancelled.BowieKills,relayedSarahCancelled.ChesterKills));
             }
             return;
         }
