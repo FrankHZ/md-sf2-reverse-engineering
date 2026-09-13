@@ -39,7 +39,7 @@ jobs:
               throw 'Cannot determine a valid event comparison range'
             }
           }
-          $changedPaths = @(& git -c core.quotepath=false diff --name-only --diff-filter=ACDMRTUXB $env:BASE_SHA $env:HEAD_SHA)
+          $changedPaths = @(& git -c core.quotepath=false diff --no-renames --name-only --diff-filter=ACDMRTUXB $env:BASE_SHA $env:HEAD_SHA)
           $diffExit = $LASTEXITCODE
           if ($diffExit -ne 0) { throw "Git path comparison failed: $diffExit" }
           $engine = $false

@@ -69,9 +69,9 @@ Read the smallest owning surface that can answer or govern the task:
 Use `uv run sf2 research-index list --summary` when current indexed totals matter. Do not copy totals
 from an old handoff or maintain them here.
 
-For documentation-only work, perform direct document and scope checks. Existing CI/planner legacy
-fanout is current tool behavior, not permission to repeat old suites or reinstate superseded engine
-test obligations. Preserve completed results, failed nodes and process state across compaction.
+For documentation-only work, perform direct document and scope checks. M0's scoped CI/local selection
+does not impose the old engine suites; research changes retain their owning dependencies. Preserve
+completed results, failed nodes and process state across compaction.
 
 ## Bounded Worker Handoff
 

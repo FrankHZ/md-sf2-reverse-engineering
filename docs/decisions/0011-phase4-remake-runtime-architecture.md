@@ -383,9 +383,10 @@ Old tests can migrate or retire by useful behavior; keeping every old suite gree
 Screenshots are prohibited. Reuse the existing Godot installation/project/instance under the
 [verification scope](../../remake/docs/development-and-verification.md#scope).
 
-This is a guidance amendment, not an implemented CI/engine cutover. ADR 0019's M0/M1 must align real
-engine tests, CI required checks and local selection in separately owned work. Original H4 evidence
-and the accepted 8C target remain incomplete; these ordinary checks do not establish pixel/audio/
+[Current M0](./0019-state-and-content-driven-remake-engine.md#current-m0-implementation) implements
+consumed mechanics, engine unit tests and scoped CI/local selection. Main-gate owns remote required
+checks; M1's common session/authored admission remains planned. Original H4 evidence and the accepted
+8C target remain incomplete; these ordinary checks do not establish pixel/audio/
 hardware fidelity or completion of the continuous milestone.
 
 The original pre-entry policy required complete accepted H4 definitions before Phase 4 began.

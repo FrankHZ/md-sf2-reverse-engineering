@@ -383,7 +383,16 @@ def _resolve_commit(root: Path, revision: str) -> str:
 
 
 def _changed_paths(root: Path, merge_base: str, head: str) -> tuple[str, ...]:
-    output = _git(root, "diff", "--name-only", "--diff-filter=ACDMRTUXB", "-z", merge_base, head)
+    output = _git(
+        root,
+        "diff",
+        "--no-renames",
+        "--name-only",
+        "--diff-filter=ACDMRTUXB",
+        "-z",
+        merge_base,
+        head,
+    )
     return tuple(sorted(path.replace("\\", "/") for path in output.split("\0") if path))
 
 
