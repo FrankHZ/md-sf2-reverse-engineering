@@ -256,6 +256,23 @@ public sealed class PrivateBattle01PresenterTests
                 var bowieCancelled=PrivateBattle01Presenter.BuildProjection(current,"Bowie cancelled.");
                 Assert.Equal(bowieReady.Units,bowieCancelled.Units);Assert.Equal(chesterDefeated.AttackResult,bowieCancelled.AttackResult);
                 Assert.Equal((0x98321234u,(ushort?)0x0234),(current.RandomSeedImage,current.RandomSeedCopy));
+                current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+                    Battle01PlayerMovement.SelectDestination(current,0,new(9,11)),0),0,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+                current=Battle01TurnCompletion.CompleteDefeatedTurn(current,129,Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+                var deadTurn=PrivateBattle01Presenter.BuildProjection(current,"Dead129 completed.");
+                Assert.True(deadTurn.DefeatedTurnCompleted);Assert.Equal((129,130),(deadTurn.CompletedActorIndex,deadTurn.NextCandidateIndex));
+                Assert.False(deadTurn.PursuitCompleted);Assert.False(deadTurn.PhysicalAttackCompleted);Assert.False(deadTurn.CanConfirm);
+                Assert.DoesNotContain(deadTurn.Units,u=>u.Index is 2 or 129 or 131 or 132);
+                Assert.Equal(chesterDefeated.AttackResult,deadTurn.AttackResult);
+                current=Battle01EnemyPursuit.CompleteNext(current,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+                current=Battle01NextPlayerControl.Enter(current,1).State!;
+                var sarahReady=PrivateBattle01Presenter.BuildProjection(current,"Actual Sarah ready.");
+                Assert.False(sarahReady.DefeatedTurnCompleted);Assert.Equal((1,10),(sarahReady.ActorIndex,sarahReady.Budget));
+                Assert.True(sarahReady.CanConfirm);Assert.Equal(deadTurn.AttackResult,sarahReady.AttackResult);
+                current=Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,1,new(10,17)),1),1);
+                var sarahCancelled=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
+                Assert.Equal(sarahReady.Units,sarahCancelled.Units);Assert.Equal(deadTurn.AllyStatus,sarahCancelled.AllyStatus);
+                Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(sarahCancelled.Gold,sarahCancelled.BowieKills,sarahCancelled.ChesterKills));
             }
             return;
         }

@@ -8,6 +8,20 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01FirstRoundTests
 {
     [Fact]
+    public void Dead129TurnPreservesAllSevenHistoricalSlotsAndDoesNotGenerateFromFiveSurvivors()
+    {
+        var after=Battle01TurnCompletionTests.Dead129Completed();
+        Battle01FirstRound.RequireCurrentPrefix(after);
+        Assert.Equal(5,after.Roster.Count(u=>u.Stats.HpCurrent>0&&u.Position is not null));
+        Assert.Equal(new[]{0,1,2,128,129,130,133},Battle01FirstRound.GenerationRoster(after,12)
+            .Where(u=>u.Stats.HpCurrent>0&&u.Position is not null).Select(u=>u.Index));
+        Assert.Equal((12,8,130),(after.FirstRound!.RoundNumber,after.FirstRound.CurrentTurnOffset,
+            after.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Equal(64,after.FirstRound.Slots.Count); Assert.Equal(129,after.FirstRound.Slots[3].CombatantIndex);
+        Assert.Equal("phase",Assert.Throws<ArgumentException>(()=>Battle01FirstRound.EnterNext(after)).ParamName);
+    }
+
+    [Fact]
     public void Enemy128DefeatRestoresTheSevenGenerationParticipantsFromFiveSurvivors()
     {
         var after=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
