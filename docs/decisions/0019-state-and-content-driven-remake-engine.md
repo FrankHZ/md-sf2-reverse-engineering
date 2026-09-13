@@ -1060,6 +1060,18 @@ ADR 0009 requires the complete continuous Map 3 → Battle 01 completion scenari
 continuity, endpoint and evidence targets. Migration completion does not mean ADR 0009 has passed;
 this order does not weaken ADR 0009/0010 acceptance or start the later visual redesign.
 
+Implement complete, coherent behavior capabilities from accepted research and contracts. For ADR 0009,
+run related reference comparisons in groups, diagnose and correct their differences together, then
+advance to the next group and finally the complete continuous scenario acceptance. Research/contracts
+determine implementation; references compare it. Return to the corresponding research owner only
+when a concrete difference requires new original-game evidence.
+
+Do not create a production branch, separate admission patch or small PR for each reference step,
+character or receipt, or turn reference groups into a prerequisite approval chain. Hand off reviewable
+capability or correction groups to main-gate while retaining independent acceptance and one state
+authority; each reference does not require a separate dispatch round trip. This changes work grouping,
+not ADR 0009/0010's accepted endpoint, fidelity or evidence targets, and does not start art/UI/UX work.
+
 Migration order is below; M0's implemented subset is recorded above. Other candidate paths name
 future responsibility. Each implementation slice starts from accepted main, declares exact paths/tests,
 checks competing writers, and obtains independent review. Do not create empty scaffolding for later
