@@ -20,27 +20,47 @@ a service mesh, a general ECS, or an emulator-backed gameplay core.
 [ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the adopted
 direction for the command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
 new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
-It proposes live state, validated content,
-and implemented capability as gameplay admission inputs, with fixed walkthrough constraints retained
-in reference verification. Application would advance to actual input, presentation/tick waits, or an
-attributed unsupported boundary; Godot would consume semantic commands and observations.
+Live state, validated content and implemented capability admit commands on M1's authored battle
+path. Application advances until real player input or an automatic-work tick boundary; Godot consumes
+semantic commands and observations. General presentation/program waits remain future capabilities.
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
-The [current M0 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
-names exact owners and limits. Full movement/cancellation, common session/content admission and M1's
-connected authored battle remain planned. The profile-specific snapshots, fixed import checks,
-endpoint handlers and Godot battle dispatch below still exist; A1–A8 remain open. Public/private trust
+The [current M1 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+adds movement/cancellation, common session/content admission and connected authored battles.
+Profile-specific snapshots, fixed import checks, endpoint handlers and old Godot battle dispatch
+remain only in the named transitional reference consumers below; A1–A8 remain open. Public/private trust
 and the incomplete accepted 8C/H4 target remain distinct from this migration.
 
 ## Production Assemblies
 
+M1's new path is organized by cohesive responsibility: Domain `Battles/Rules` and `Battles/State`,
+Application `Content/Scenarios` and `Runtime/Battles`, Content `Scenarios`, and Godot `Battles`.
+`Application.Runtime.GameSession` is a plain thin entry/lifecycle/state publisher; independent
+collaborators own command dispatch and automatic battle advancement. New partial files are not a
+substitute for those responsibilities.
+
+Godot's [map viewport](../game/src/Battles/BattleMapViewport.cs) owns disposable board nodes, clipping
+and framing derived from the action's origin, preview path and target. It pans and, when necessary,
+zooms to keep that context visible; no map size or actor placement is restricted by HUD coordinates.
+The view arranges a separate scrollable HUD beside the map in wide windows and below it in narrow
+windows. Authored UI follows the actual viewport; the explicit legacy composition retains its own
+window policy. A target-cycle cursor stores only the last attempted UI candidate, so an engine range
+rejection cannot trap navigation. The accepted target remains exclusively in the session snapshot.
+
+The old scenario-bound implementation is isolated in the separate
+[transitional reference assembly](../reference/README.md), with no reverse project dependency from
+production Domain/Application/Content. Its inventory names current consumers and M2/M3 retirement
+points for controlled presets, import/trust mapping, actual story handlers and fixed comparisons.
+New authored sessions never require a Map3/Battle01 class or ADR0009 trace field. This isolation does
+not complete private import or program migration, or close A1–A8. M5 is remaining cleanup only.
+
 | Assembly | Current responsibility | Dependency direction |
 | --- | --- | --- |
-| `Sf2.Remake.Domain` | typed values, immutable state, deterministic reducers, map traversal, working-layout mutation, inventory rules, and bounded Battle01 initialization | .NET base libraries only |
-| `Sf2.Remake.Application` | `GameSession`, semantic commands, orchestration, content ports, admission compatibility, snapshots, cues, and diagnostics | Domain |
-| `Sf2.Remake.Content` | tracked public-synthetic and ignored private-local readers, fixed identity checks, closed parsing, semantic validation, and mapping | Application and Domain |
-| `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, and Godot |
+| `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
+| `Sf2.Remake.Application` | thin `Runtime.GameSession`, common contracts, independent command dispatcher and automatic battle advancer, typed scenario port | Domain |
+| `Sf2.Remake.Content` | configurable authored package parsing, reference resolution, numeric and capability validation | Application and Domain |
+| `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, Godot; explicit legacy startup also consumes Reference |
 
 Dependencies point inward. Tests and repository gate hosts are consumers, not production dependencies.
 
@@ -57,10 +77,10 @@ device input
   -> Godot presenter and disposable scene state
 ```
 
-`GameSession` is the only logical gameplay mutation facade. Godot may request a command or project a
+`Application.Runtime.GameSession` is the authored engine's only logical gameplay mutation facade. Godot may request a command or project a
 result; it does not change position, flags, inventory, request state, RNG, or flow state directly.
 Content constructs admitted immutable definitions but does not mutate a running session.
-For the private canonical Map 3 port, the import definition is the sole owner of the selected setup's
+The following private protocol belongs to the separate legacy reference consumer. For its canonical Map 3 port, the import definition is the sole owner of the selected setup's
 ordered entity population and the private snapshot exposes that exact immutable object. Content maps
 source-shaped records to stable resource/ordinal identities, raw and masked coordinates, opaque facing
 and map-sprite values, and a defensively owned opaque tail. Application does not receive source
@@ -70,9 +90,9 @@ rules.
 The public-synthetic and private-local profiles share the assembly direction and Godot host. They do
 not share a weaker content reader or silently convert one profile into the other.
 
-## Current Implementation Shape
+## Legacy Reference Implementation Shape
 
-The current implementation remains a legacy controlled-route engine. It has useful deterministic
+The isolated reference implementation remains a legacy controlled-route engine. It has useful deterministic
 Domain reducers, validated public/private readers, and one named `GameSession` facade, but the
 [audit](./architecture-audit.md) identifies incomplete architectural boundaries:
 
@@ -169,8 +189,8 @@ extends an existing bounded inspector or observation unless it has an independen
 
 Choose the scope explicitly: an internal behavior-preserving refactor retains meaningful observable
 behavior, while ADR 0019 directs behavioral migration away from fixed histories and incompatible
-runtime paths. M0 supplies reusable mechanics and the new CI/local route; M1's common session is next
-only after independent M0 acceptance.
+runtime paths. M1's common authored battle uses independent runtime collaborators. M2/M3 must
+migrate real rules/content/programs and remove each obsolete reference family with its last caller.
 
 Use small engine unit assertions for the actual behavior being moved. Retire obsolete structural,
 helper and trace-refusal tests as their owners migrate; there is no requirement to preserve every

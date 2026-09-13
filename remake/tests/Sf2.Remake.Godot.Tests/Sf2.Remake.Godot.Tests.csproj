@@ -17,4 +17,7 @@
     <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
     <ProjectReference Include="..\..\game\Sf2.Remake.Godot.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\reference\Sf2.Remake.Reference\Sf2.Remake.Reference.csproj" />
+  </ItemGroup>
 </Project>

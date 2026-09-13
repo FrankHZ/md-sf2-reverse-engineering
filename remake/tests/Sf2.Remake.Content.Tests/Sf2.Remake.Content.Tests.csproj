@@ -24,4 +24,7 @@
           Link="content\public-synthetic-map3-smoke-v1.json"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\reference\Sf2.Remake.Reference\Sf2.Remake.Reference.csproj" />
+  </ItemGroup>
 </Project>

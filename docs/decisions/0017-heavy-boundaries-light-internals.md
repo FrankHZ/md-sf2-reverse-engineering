@@ -136,8 +136,10 @@ test-count parity or old full-suite green result is required. Do not add tests o
 ADR 0019 adopts behavioral decoupling instead of a file-split-first sequence, including replacing
 trace predicates and endpoint handlers.
 That is separately scoped work, not a characterization-preserving rename. M0 supplies consumed pure
-mechanics and scoped CI/local verification; the common session and trace-guard migration remain in
-later slices. Choose a coherent dependency chain, declare changed behavior and preserve
+mechanics and scoped CI/local verification. M1 adds a thin common-session entry with independent
+command dispatch, battle advancement and snapshot projection in responsibility directories. Old fixed
+scenario classes are isolated in a reference assembly without reverse production dependencies;
+M2/M3 migrate their real content/behavior and delete each obsolete family with its last caller. Choose a coherent dependency chain, declare changed behavior and preserve
 actual source/trust rules; do not let the smallest textual diff perpetuate a known architectural defect.
 
 ### Review architecture by responsibility and amplification

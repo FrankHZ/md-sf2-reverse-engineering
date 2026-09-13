@@ -65,8 +65,9 @@ The research/design evidence rules below do not impose engine or documentation-o
 follow [current scope](../../remake/docs/development-and-verification.md#scope), including the user
 policy for engine unit tests, direct verification, and legacy-test retirement.
 [Current M0](./0019-state-and-content-driven-remake-engine.md#current-m0-implementation) implements
-consumed mechanics and scoped CI/local selection. M1's common session/authored admission and the
-accepted 8C/H4 target remain incomplete; main-gate owns remote required-check configuration.
+consumed mechanics and scoped CI/local selection. M1 adds common-session authored battles and
+isolates legacy reference consumers. Private battle/program migration and accepted 8C/H4 remain
+incomplete; main-gate owns remote required-check configuration and independent integration.
 
 Research evidence branches use `uv run sf2 verify` plus the owning narrow H2/H3 command. A design-
 synthesis-only change uses direct document/link checks and, when its changed traceability needs it,

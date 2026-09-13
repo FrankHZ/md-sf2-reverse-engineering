@@ -1,0 +1,135 @@
+{
+  "formatVersion": 1,
+  "package": "practice-yard",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "yard-watch",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210
+  },
+  "terrains": [
+    {
+      "id": "yard-ground",
+      "rows": [
+        "############",
+        "111111111111",
+        "111111111111",
+        "111133111111",
+        "111133111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "############"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "yard-map",
+      "terrain": "yard-ground"
+    }
+  ],
+  "spells": [
+    {
+      "id": "mend",
+      "level": 1,
+      "mpCost": 3,
+      "minimumRange": 0,
+      "maximumRange": 1,
+      "effect": {
+        "kind": "heal",
+        "adjustedPower": 15,
+        "fullRecovery": false
+      }
+    }
+  ],
+  "actors": [
+    {
+      "id": "medic-a",
+      "slot": 7,
+      "classRule": "unpromoted-priest",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 100,
+      "hp": 95,
+      "maxMp": 20,
+      "mp": 20,
+      "attack": 11,
+      "defense": 6,
+      "agility": 12,
+      "move": 5,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [
+        {
+          "id": "mend",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "id": "guard-a",
+      "slot": 9,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 12,
+      "hp": 9,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 3,
+      "move": 5,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "dummy-a",
+      "slot": 129,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 7,
+      "move": 5,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": []
+    }
+  ],
+  "encounters": [
+    {
+      "id": "yard-watch",
+      "map": "yard-map",
+      "placements": [
+        {
+          "actor": "medic-a",
+          "x": 3,
+          "y": 3
+        },
+        {
+          "actor": "guard-a",
+          "x": 3,
+          "y": 5
+        },
+        {
+          "actor": "dummy-a",
+          "x": 8,
+          "y": 5
+        }
+      ]
+    }
+  ]
+}

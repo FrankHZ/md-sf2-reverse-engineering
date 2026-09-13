@@ -34,9 +34,11 @@ project decisions belong in their owning tracked documents.
   implementation has been selected.
 
 The [state/content-driven engine direction](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
-is adopted. M0 provides consumed RNG/healing/turn-order/range rules, dedicated engine unit tests and
-scoped CI/local commands. M1's common session and connected authored battle remain planned. Existing
-controlled-route guards and A1–A8 remain open. Tests cover actual engine behavior; reference/probe/gate
+is adopted. The common session now runs two authored battle packages through movement, cancellation,
+HEAL/STAY, automatic AI waiting and natural rounds. Production rules and content do not depend on the
+[transitional reference implementation](./remake/reference/README.md). Private battle/program migration
+and A1–A8 remain open; the [current M1 boundary](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+names implemented support and limitations. Tests cover actual engine behavior; reference/probe/gate
 programs are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,

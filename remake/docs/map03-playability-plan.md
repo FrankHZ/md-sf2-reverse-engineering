@@ -393,7 +393,7 @@ The fourth admitted runtime contains `Map21s1_Layout` (address 680900; 4096 word
 Area 1 spans `(0,0)..(11,21)`, foreground offset `(0,22)`, background `(0,0)`, both parallax
 pairs `(256,256)`, zero autoscroll, main layer type 0 and music 38. Application checks the exact
 layout, collision, block, full area and population projection identities in
-[OriginalMapRuntimeAdmission](../src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs).
+[OriginalMapRuntimeAdmission](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapRuntimeAdmission.cs).
 Custom source ports and changed Map 21 visual selections must satisfy the same admission.
 
 Both movement entrypoints require the open castle gate, controlled palace completion and Astral
@@ -1801,7 +1801,7 @@ palette 8/slots `[94,98,99,255,255]`. Its `setupRoute` and `animationTable` are 
 Both layer origins are `(0,0)`, both parallax pairs are `(256,256)`, autoscroll is zero, type is 255,
 and music is 34; these are input data, not executed presentation. Preserve absent setup as absent;
 do not manufacture `ms_map57`, an init identity, or an empty source entity list. The current
-[exploration runtime](../src/Sf2.Remake.Application/Content/OriginalMapExplorationRuntimeDefinition.cs)
+[exploration runtime](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapExplorationRuntimeDefinition.cs)
 requires all three. Its five accepted runtime contracts should stay intact.
 
 Keep the Map 57 area separate from the [CheckBattle candidate contract](../../docs/design/contracts/map-entry-routing-state.md):
@@ -1814,8 +1814,8 @@ fixture through focused tests, as a bounded code-owned contract rather than a ne
 The [battle lifecycle](../../docs/design/contracts/battle-control-lifecycle.md),
 [cutscene routing](../../docs/research/battle-cutscenes.md), and admission fixture own the clear-F88
 new-battle order, before/start program identities, region clear, ally/enemy initialization, load, and
-first-round order. The existing [battle bridge](../src/Sf2.Remake.Application/Sessions/PrivateOriginalMapBattleBridge.cs)
-wraps `PublicSyntheticBattleDefinition`; its [tactical model](../src/Sf2.Remake.Domain/Battles/TacticalBattle.cs)
+first-round order. The existing [battle bridge](../reference/Sf2.Remake.Reference/Sessions/Maps/PrivateOriginalMapBattleBridge.cs)
+wraps `PublicSyntheticBattleDefinition`; its [tactical model](../reference/Sf2.Remake.Reference/Rules/Battles/TacticalBattle.cs)
 has one player/one enemy and a maximum grid dimension of 16. Neither can represent the admitted
 3-ally/6-enemy, 16-by-20 Battle 01 simply by changing IDs or enlarging the grid limit.
 

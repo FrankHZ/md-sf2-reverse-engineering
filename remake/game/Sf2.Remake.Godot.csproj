@@ -9,4 +9,7 @@
     <ProjectReference Include="..\src\Sf2.Remake.Content\Sf2.Remake.Content.csproj" />
     <ProjectReference Include="..\src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\reference\Sf2.Remake.Reference\Sf2.Remake.Reference.csproj" />
+  </ItemGroup>
 </Project>

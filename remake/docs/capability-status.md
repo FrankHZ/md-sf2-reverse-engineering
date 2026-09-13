@@ -4,10 +4,27 @@
 
 This matrix groups coherent runtime capabilities. It is not a pull-request chronology and does not
 create evidence for the original game. Rows describe the current legacy implementation, including
-controlled-route limitations. [Current M0](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
-provides consumed mechanics, engine unit tests and scoped CI/local entries; M1's common session and
-authored admission remain planned. Completed old checks remain evidence of their named
+controlled-route limitations, separately from the authored engine table below.
+[Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+provides common-session authored admission and connected HEAL/STAY battles. Completed old checks remain evidence of their named
 scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplete.
+
+## Common Authored Battle
+
+| Capability | Status and boundary |
+| --- | --- |
+| Configurable start | **Implemented:** both tracked authored packages use the same typed Content reader; starting HP deficits are explicit controlled inputs, not original battle initialization. |
+| Movement and selection | **Implemented:** weighted preview, cancel, occupancy and provisional destination; movement commits with the action. Logical maps do not wrap at row edges. |
+| Ordinary priest HEAL and STAY | **Implemented:** learned spell, MP/living ally/range checks, atomic MP/HP/EXP/RNG effects; level-up and unsupported branches reject before publication. |
+| Automatic battle continuation | **Implemented:** dead queued entries skip, configured Stay AI executes, sentinel starts the next generated round, and Application stops at player input or a bounded simulation tick. |
+| Godot input and projection | **Implemented:** actual keyboard input and semantic HUD/actor nodes; direct no-image observations pass for both packages. Authored export packaging and original presentation remain unclaimed. |
+| Private battle/content and map programs | **Unsupported on the common path:** M2/M3 own real rule/configuration/program migration. The temporary reference assembly retains explicit old consumers and removal points. |
+| Physical combat, general AI, rewards, level-up and battle outcome/return | **Unsupported on the common path:** no implied gameplay completion from HEAL/STAY. |
+
+## Legacy Reference Matrix
+
+The remaining rows describe the explicit [reference consumers](../reference/README.md), not ordinary
+authored engine admission. Their fixed presets and scenario classes cannot be production dependencies.
 
 Status terms:
 

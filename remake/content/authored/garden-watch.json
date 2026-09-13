@@ -1,0 +1,133 @@
+{
+  "formatVersion": 1,
+  "package": "garden-watch",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "garden-patrol",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3405648436
+  },
+  "terrains": [
+    {
+      "id": "garden-ground",
+      "rows": [
+        "##########",
+        "1111111111",
+        "1113111111",
+        "1113111111",
+        "1113111111",
+        "1111111111",
+        "##########"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "garden-map",
+      "terrain": "garden-ground"
+    }
+  ],
+  "spells": [
+    {
+      "id": "care",
+      "level": 1,
+      "mpCost": 3,
+      "minimumRange": 0,
+      "maximumRange": 1,
+      "effect": {
+        "kind": "heal",
+        "adjustedPower": 15,
+        "fullRecovery": false
+      }
+    }
+  ],
+  "actors": [
+    {
+      "id": "herbalist-b",
+      "slot": 12,
+      "classRule": "unpromoted-priest",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 20,
+      "hp": 8,
+      "maxMp": 12,
+      "mp": 12,
+      "attack": 11,
+      "defense": 6,
+      "agility": 10,
+      "move": 4,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [
+        {
+          "id": "care",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "id": "scout-b",
+      "slot": 18,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 10,
+      "hp": 7,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 4,
+      "move": 5,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": []
+    },
+    {
+      "id": "watcher-b",
+      "slot": 147,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 18,
+      "hp": 18,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 11,
+      "defense": 6,
+      "agility": 8,
+      "move": 3,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": []
+    }
+  ],
+  "encounters": [
+    {
+      "id": "garden-patrol",
+      "map": "garden-map",
+      "placements": [
+        {
+          "actor": "herbalist-b",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "actor": "scout-b",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "actor": "watcher-b",
+          "x": 7,
+          "y": 4
+        }
+      ]
+    }
+  ]
+}

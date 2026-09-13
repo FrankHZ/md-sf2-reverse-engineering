@@ -8,10 +8,11 @@ The user's [ADR 0019 policy](../../docs/decisions/0019-state-and-content-driven-
 controls current work: add only meaningful engine behavior unit tests, use verification/probes/
 drivers/planners/gates/reports/helpers directly without tests of them, and migrate or retire old
 tests by behavior. No count parity, per-deletion replacement or green legacy aggregate is required.
-[Current M0](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
-implements consumed mechanics, engine unit tests and scoped CI/local selection under the
-[verification owner](./development-and-verification.md#github-public). M1's common session/authored
-admission and accepted 8C/H4 remain incomplete. Preserve the historical evidence and completed
+[Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+implements common-session authored battle behavior under the
+[verification owner](./development-and-verification.md#github-public). Engine.Tests consumes only
+production Domain/Application/Content. Legacy test projects explicitly reference the temporary
+reference assembly; they remain outside mandatory engine CI. Accepted 8C/H4 remains incomplete. Preserve the historical evidence and completed
 failures below without replaying its repair queue.
 
 The counts and investigation below remain a snapshot of the named `f9dbfd5` base. Its statements
@@ -156,7 +157,7 @@ references below resolve in the audited Git object.
 **Confirmed:** [PublicSyntheticMap3PackageReaderTests](../tests/Sf2.Remake.Content.Tests/PublicSyntheticMap3PackageReaderTests.cs)
 contains **64 cases in 13 methods** that call `AssertDigestMismatch`. Its helper changes a tracked JSON
 string, checks that bytes changed, writes a temporary package, then expects only `ContentDigestMismatch`
-at `contentDigest`. In [the reader](../src/Sf2.Remake.Content/PublicSyntheticMap3PackageReader.cs),
+at `contentDigest`. In [the reader](../reference/Sf2.Remake.Reference/Readers/PublicSyntheticMap3PackageReader.cs),
 `Admit` returns that result before `AdmitDocument` parses or validates any field. For example,
 `TacticalBattleIdentityMutationFailsRawDigestAdmission` contributes 13 rows;
 `FieldSearchIdentityLocationOrCrossReferenceByteMutationFailsDigestAdmission` contributes 10.

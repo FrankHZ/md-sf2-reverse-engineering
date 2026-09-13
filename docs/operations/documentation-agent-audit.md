@@ -56,8 +56,11 @@ to judge the actual behavior/responsibility boundary.
   now records consumed mechanics, the engine unit project, retired verification tests and scoped
   workflow/planner/local commands. This implementation is separate from the audited-base findings
   above; their evidence remains historical. Research selection retains its owning dependencies.
-- **Pending, separately owned:** M1's common session/content path, independent M0 acceptance and
-  main-gate required-check configuration, plus any necessary probe image-suppression/reuse work.
+- **Current M1:** common-session authored battles, independent dispatch/advancement/projection owners,
+  and a separate transitional reference assembly. Production projects cannot consume reference code.
+  M0 is accepted and main-gate has configured the scoped required checks.
+- **Pending, separately owned:** M2 private battle/content migration and M3 actual program execution,
+  removing old classes/data with their last caller; M5 is remaining cleanup only.
 - **Still incomplete:** architecture findings A1–A8, natural Map 3/Battle 01 continuity and the accepted
   8C/H4 target. Documentation approval or semantic unit success does not complete product/fidelity work.
 
