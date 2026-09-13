@@ -147,7 +147,7 @@ public static class Battle01EnemyPhysicalAttack
             _ => throw new Battle01PhysicalAttackUnsupportedException("targetTerrain")
         };
     }
-    internal static int LandDamage(int attack, int defense, int multiplier) => (Math.Max(1, attack - defense) * multiplier) >> 8;
+    internal static int LandDamage(int attack, int defense, int multiplier) => PhysicalStrikeRules.LandDamage(attack, defense, multiplier);
 
     internal static string RequireTargetProfile(Battle01Combatant target)
     {
@@ -187,28 +187,13 @@ public static class Battle01EnemyPhysicalAttack
         ushort dodgeRange, ushort criticalRange, int criticalShift, bool allowDefeat = false,
         bool allowCounter = false, bool isCounter = false)
     {
-        var rolls = new List<Battle01MainRandomRoll>();
-        ushort Roll(string purpose, ushort range) => MainRoll(ref main, rolls, purpose, range);
-        bool dodge = Roll("dodge", dodgeRange) == 0, critical = false;
-        int damage = 0;
-        if (!dodge)
-        {
-            damage = LandDamage(attack, target.Defense, multiplier);
-            critical = Roll("critical", criticalRange) == 0;
-            if (critical) damage += damage >> criticalShift;
-            // inflictdamage: counter halves the constructed damage before either spread draw.
-            if (isCounter) damage >>= 1;
-            ushort spreadRange = (ushort)((damage >> 3) + 1);
-            damage -= Roll("spread-1", spreadRange);
-            damage -= Roll("spread-2", spreadRange);
-            damage = Math.Max(1, damage);
-        }
-        int temporary = Math.Max(0, target.HpCurrent - damage);
-        // Source death exits before double/counter rolls. No partial hit is committed.
+        var strike = PhysicalStrikeRules.Resolve(attack, target.Defense, target.HpCurrent, multiplier,
+            main, dodgeRange, criticalRange, criticalShift, isCounter);
+        var rolls = strike.Rolls.Select(r => new Battle01MainRandomRoll(r.Purpose, r.Range, r.Before, r.After, r.Result)).ToList();
+        bool dodge = strike.Dodged, critical = strike.Critical;
+        int damage = strike.Damage, temporary = strike.Hp;
         if (temporary == 0 && !allowDefeat) throw new Battle01PhysicalAttackUnsupportedException("lethal");
-        bool doubleRolled = temporary > 0 && Roll("double", 32) == 0;
-        bool counterRolled = temporary > 0 && Roll("counter", 32) == 0; // Death returns before both calls.
-        // Admitted enemy->ally, no muddle/death/status/debug, ordinary first physical action.
+        bool doubleRolled = strike.Double, counterRolled = strike.Counter;
         bool validDouble = doubleRolled && temporary > 0;
         bool validCounter = counterRolled && temporary > 0 && target.Status == 0 &&
             Math.Abs(attackerPosition.X - targetPosition.X) + Math.Abs(attackerPosition.Y - targetPosition.Y) == 1;

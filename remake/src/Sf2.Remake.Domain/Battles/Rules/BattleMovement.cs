@@ -19,13 +19,13 @@ internal static class BattleMovement
         if (!battle.Definition.Contains(destination)) throw new BattleRuleException("movement-range", "destination");
         var terrain = battle.Definition.Terrain.ToArray();
         foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly != actor.Definition.IsAlly))
-            terrain[Offset(opponent.Position)] |= 128;
+            terrain[Offset(opponent.Position!)] |= 128;
         // Accepted PRST/HEALER and regular profiles have the same costs; no centaur/flying capability here.
         var costs = WeightedMovement.OrdinaryCosts;
-        var grid = WeightedMovement.Build(terrain, costs, Offset(actor.Position), actor.Definition.Move * 2);
+        var grid = WeightedMovement.Build(terrain, costs, Offset(actor.Position!), actor.Definition.Move * 2);
         if (grid.CostAt(destination) is not { } destinationCost)
             throw new BattleRuleException("movement-range", "destination");
-        int current = Offset(destination), origin = Offset(actor.Position), previousDirection = -1;
+        int current = Offset(destination), origin = Offset(actor.Position!), previousDirection = -1;
         var backwards = new List<MapPosition> { destination };
         while (current != origin)
         {

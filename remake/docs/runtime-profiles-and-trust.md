@@ -42,6 +42,21 @@ and carries its seeds forward. The no-argument local default uses the tracked ya
 `--authored-package <path>` can load another supported package. This source-mode path does not claim
 authored export packaging or original fidelity.
 
+Physical capability is optional per actor: `physical` is a closed object with `movementType`
+(currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, `gold` (0–65535),
+`kills` (0–9999), and `special` (currently `none`). Other movetypes, prowess or special rules return
+Unsupported; an unpromoted priest cannot declare promoted EXP rules. Current ATT/DEF are explicit
+authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
+weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
+
+Encounter `rewards`, when present, is closed to boolean `halvedExperience` and `initialGold`
+(0–9,999,999). Missing actor physical data or encounter rewards leaves physical commands Unsupported,
+without inventing defaults for the HEAL packages. Target death retains identity/accounting and sets
+its battlefield position to null. A reached valid double/counter, level-up, leader defeat or terminal
+outcome returns Unsupported before action publication. The two physical configurations
+[`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
+are controlled authored inputs, not original private admission or original enemy reward tables.
+
 ## Public Synthetic
 
 The explicitly selected legacy public profile reads the tracked `public-synthetic-map3-smoke-v1` package. The package is

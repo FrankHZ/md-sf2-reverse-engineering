@@ -203,9 +203,9 @@ public static class Battle01PlayerPhysicalAttack
         return (effect with { Rolls = rolls.AsReadOnly() }, accumulated, halved, award, actor.WithCurrentExp((byte)after));
     }
 
-    internal static int DamageExperience(int damage, ushort targetMaxHp) => Math.Min(49, 50 * damage / targetMaxHp);
-    internal static uint GoldAfterKill(uint gold) => (uint)Math.Min(9999999UL, (ulong)gold + 60);
-    internal static ushort KillsAfterKill(ushort kills) => (ushort)Math.Min(9999, (int)kills + 1);
+    internal static int DamageExperience(int damage, ushort targetMaxHp) => BattleRewards.DamageExperience(damage, targetMaxHp, 50);
+    internal static uint GoldAfterKill(uint gold) => BattleRewards.Gold(gold, 60);
+    internal static ushort KillsAfterKill(ushort kills) => BattleRewards.Kills(kills);
 
     internal static void ValidateDecision(Battle01PlayerPhysicalAttackDecision decision)
     {

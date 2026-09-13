@@ -52,7 +52,7 @@ public sealed class SessionSnapshot
 
 public sealed record SessionObservation(long Sequence, long Revision, string Kind,
     ActorRef? Actor = null, long? Before = null, long? After = null,
-    MapPosition? From = null, MapPosition? To = null);
+    MapPosition? From = null, MapPosition? To = null, ushort? RandomRange = null, ushort? RandomValue = null);
 public sealed record SessionResult(SessionSnapshot Snapshot, IReadOnlyList<SessionObservation> Observations,
     SessionStopReason StopReason, SessionFailure? Failure = null);
 public abstract record SessionStartOutcome;

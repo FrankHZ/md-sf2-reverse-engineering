@@ -1,0 +1,213 @@
+{
+  "formatVersion": 1,
+  "package": "river-post",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "river-post-encounter",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210
+  },
+  "terrains": [
+    {
+      "id": "river-post-terrain",
+      "rows": [
+        "###########",
+        "#222222222#",
+        "#222222222#",
+        "#222222222#",
+        "#222222222#",
+        "#222222222#",
+        "#222222222#",
+        "###########"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "river-post-map",
+      "terrain": "river-post-terrain"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "lancer",
+      "slot": 4,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 35,
+      "hp": 35,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 37,
+      "defense": 7,
+      "agility": 30,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 0,
+        "promoted": false,
+        "leader": false,
+        "gold": 17,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "runner",
+      "slot": 19,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 35,
+      "hp": 35,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 7,
+      "agility": 2,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 0,
+        "promoted": false,
+        "leader": false,
+        "gold": 18,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "intruder",
+      "slot": 131,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 7,
+      "agility": 12,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 0,
+        "promoted": false,
+        "leader": false,
+        "gold": 19,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "outlaw",
+      "slot": 142,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 7,
+      "agility": 9,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 0,
+        "promoted": false,
+        "leader": false,
+        "gold": 20,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "watchman",
+      "slot": 154,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 7,
+      "agility": 5,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 0,
+        "promoted": false,
+        "leader": false,
+        "gold": 21,
+        "kills": 0,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "river-post-encounter",
+      "map": "river-post-map",
+      "placements": [
+        {
+          "actor": "lancer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "actor": "runner",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "actor": "intruder",
+          "x": 4,
+          "y": 4
+        },
+        {
+          "actor": "outlaw",
+          "x": 6,
+          "y": 4
+        },
+        {
+          "actor": "watchman",
+          "x": 9,
+          "y": 6
+        }
+      ],
+      "rewards": {
+        "halvedExperience": false,
+        "initialGold": 200
+      }
+    }
+  ]
+}

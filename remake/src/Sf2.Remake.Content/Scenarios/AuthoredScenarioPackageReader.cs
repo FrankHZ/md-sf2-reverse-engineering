@@ -97,7 +97,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var actors = new Dictionary<ActorRef, (BattleActorDefinition Definition, ushort Hp, byte Mp, byte Exp)>();
         foreach (var actor in Array(root, "actors"))
         {
-            Object(actor, "actor", "id", "slot", "classRule", "controller", "level", "maxHp", "hp", "maxMp", "mp",
+            ObjectOptional(actor, "actor", "physical", "id", "slot", "classRule", "controller", "level", "maxHp", "hp", "maxMp", "mp",
                 "attack", "defense", "agility", "move", "exp", "status", "items", "spells");
             var id = new ActorRef(Id(actor, "id"));
             int slot = Number(actor, "slot", 0, 159);
@@ -108,6 +108,19 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require((slot < 128) == (controlName == "player"), "controller-side", "actors.controller", true);
             Require(Text(actor, "status") == "none", "actor-status", "actors.status", true);
             Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
+            PhysicalActorDefinition? physical = null;
+            if (actor.TryGetProperty("physical", out var physicalInput))
+            {
+                Object(physicalInput, "actor.physical", "movementType", "prowess", "promoted", "leader", "gold", "kills", "special");
+                Require(Text(physicalInput, "movementType") == "regular", "physical-movement-type", "actors.physical.movementType", true);
+                Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
+                byte prowess = (byte)Number(physicalInput, "prowess", 0, 255);
+                Require(prowess is 0 or 3, "physical-prowess", "actors.physical.prowess", true);
+                bool promoted = Boolean(physicalInput, "promoted");
+                Require(className != "unpromoted-priest" || !promoted, "class-promotion", "actors.physical.promoted");
+                physical = new(prowess, promoted, Boolean(physicalInput, "leader"),
+                    (ushort)Number(physicalInput, "gold", 0, 65535), (ushort)Number(physicalInput, "kills", 0, 9999));
+            }
             ushort maximumHp = (ushort)Number(actor, "maxHp", 1, 65535);
             ushort hp = (ushort)Number(actor, "hp", 0, maximumHp);
             byte maximumMp = (byte)Number(actor, "maxMp", 0, 255), mp = (byte)Number(actor, "mp", 0, maximumMp);
@@ -125,15 +138,21 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var definition = new BattleActorDefinition(id, (byte)slot,
                 className == "unpromoted-priest" ? BattleClassRule.UnpromotedPriest : BattleClassRule.Ordinary,
                 controlName == "player" ? BattleController.Player : BattleController.Stay,
-                (byte)Number(actor, "level", 1, 99), maximumHp, maximumMp,
+                (byte)Number(actor, "level", slot < 128 ? 1 : 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
-                (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned);
+                (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned, physical);
             Require(actors.TryAdd(id, (definition, hp, mp, exp)), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
         foreach (var encounter in Array(root, "encounters"))
         {
-            Object(encounter, "encounter", "id", "map", "placements");
+            ObjectOptional(encounter, "encounter", "rewards", "id", "map", "placements");
+            BattleRewardDefinition? rewards = null;
+            if (encounter.TryGetProperty("rewards", out var rewardInput))
+            {
+                Object(rewardInput, "encounter.rewards", "halvedExperience", "initialGold");
+                rewards = new(Boolean(rewardInput, "halvedExperience"), (uint)Number(rewardInput, "initialGold", 0, 9999999));
+            }
             string id = Id(encounter, "id"), map = Id(encounter, "map");
             Require(maps.ContainsKey(map), "missing-map", "encounters.map");
             var terrain = terrains[maps[map]];
@@ -153,15 +172,28 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             }
             Require(placements.Any(a => a.Hp > 0 && a.Definition.IsAlly) && placements.Any(a => a.Hp > 0 && !a.Definition.IsAlly),
                 "battle-outcome", "encounters.placements", true);
+            Require(!placements.Any(a => a.Hp == 0 && a.Definition.Physical?.Leader == true),
+                "leader-defeat-program", "encounters.placements", true);
             Require(placements.Where(a => a.Hp > 0).Sum(a => a.Definition.Agility >= 128 ? 2 : 1) <= 64,
                 "turn-buffer-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values)),
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
         return new(package, encounters[selectedEncounter], mainSeed, thinkingSeed);
     }
 
+    private static bool Boolean(JsonElement element, string key)
+    {
+        var value = element.GetProperty(key);
+        Require(value.ValueKind is JsonValueKind.True or JsonValueKind.False, "boolean", key);
+        return value.GetBoolean();
+    }
+    private static void ObjectOptional(JsonElement element, string field, string optional, params string[] keys)
+    {
+        Require(element.ValueKind == JsonValueKind.Object, "object-required", field);
+        Object(element, field, element.TryGetProperty(optional, out _) ? [.. keys, optional] : keys);
+    }
     private static void Object(JsonElement element, string field, params string[] keys)
     {
         Require(element.ValueKind == JsonValueKind.Object, "object-required", field);

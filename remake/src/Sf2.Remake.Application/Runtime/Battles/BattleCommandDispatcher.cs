@@ -24,7 +24,7 @@ internal static class BattleCommandDispatcher
             switch (command)
             {
                 case Cancel:
-                    return Selected(current, new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position),
+                    return Selected(current, new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!),
                         BattleSelectionStage.Movement), "selection-cancelled");
                 case Move move when selection.Stage == BattleSelectionStage.Movement:
                     var delta = move.Direction switch
@@ -42,6 +42,12 @@ internal static class BattleCommandDispatcher
                     BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
                 case ChooseAction choice when selection.Stage == BattleSelectionStage.ActionChoice:
+                    if (choice.Action == SessionAction.PhysicalAttack)
+                    {
+                        _ = PlayerPhysicalAttack.RequireActor(battle, selection.Actor);
+                        return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.TargetChoice,
+                            SessionAction.PhysicalAttack), "physical-selected");
+                    }
                     if (choice.Action != SessionAction.Stay)
                         return Reject(current, choice.Action == SessionAction.Heal ? "select-spell" : "physical-attack",
                             "action", choice.Action != SessionAction.Heal);
@@ -51,6 +57,11 @@ internal static class BattleCommandDispatcher
                     _ = PlayerHealing.RequireSpell(battle, selection.Actor, spell.Spell);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.TargetChoice,
                         SessionAction.Heal, spell.Spell), "spell-selected");
+                case SelectTarget physicalTarget when selection.Action == SessionAction.PhysicalAttack &&
+                    selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
+                    _ = PlayerPhysicalAttack.RequireTarget(battle, selection.Actor, selection.Preview.Destination, physicalTarget.Target);
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
+                        SessionAction.PhysicalAttack, target: physicalTarget.Target), "target-selected");
                 case SelectTarget target when selection.Spell is { } selectedSpell &&
                     selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
                     var definition = PlayerHealing.RequireSpell(battle, selection.Actor, selectedSpell);
@@ -83,13 +94,16 @@ internal static class BattleCommandDispatcher
             (battle, effects) = PlayerHealing.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, spell, target);
         else if (selection.Action == SessionAction.Stay)
             battle = BattleMovement.Commit(current.Battle, selection.Actor, selection.Preview.Destination);
+        else if (selection.Action == SessionAction.PhysicalAttack && selection.Target is { } physicalTarget)
+            (battle, effects) = PlayerPhysicalAttack.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, physicalTarget);
         else return Reject(current, "incomplete-action", "selection");
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         var observations = new List<SessionObservation>();
         if (actor.Position != selection.Preview.Destination)
             observations.Add(new(++sequence, revision, "movement", selection.Actor, From: actor.Position, To: selection.Preview.Destination));
         foreach (var effect in effects)
-            observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));
+            observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
+                RandomRange: effect.RandomRange, RandomValue: effect.RandomValue));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", selection.Actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", selection.Actor));

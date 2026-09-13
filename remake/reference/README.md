@@ -21,6 +21,19 @@ known legacy monolith. Moving it does not claim to have refactored or completed 
 | `Content/Synthetic`, `Sessions/Synthetic`, `Rules/Battles/TacticalBattle.cs`, remaining readers | Existing synthetic map smoke, simplified tactical comparison, presentation asset trust | M3/M4 migrate actually adopted map/item/asset behavior; retire synthetic-only runtime routes when no comparison needs them. Synthetic combat is not original-game evidence. |
 | `Sessions/GameSession.cs` | Legacy Godot compositions and selected old tests | Shrinks as M2/M3 remove each caller family. Remove the legacy start binding with its last admitted capability. M5 handles remaining cleanup, not wholesale deferred migration. |
 
+The ordinary physical scalar body has one owner: `Domain/Battles/Rules/PhysicalStrikeRules.cs`.
+`Rules/Battles/Battle01EnemyPhysicalAttack.cs` retains legacy admission/replay projection but invokes
+that shared calculation; the duplicate strike body is deleted. `Battle01PlayerPhysicalAttack.cs`
+uses shared damage-EXP/gold/kill-cap functions. Their fixed profile and history guards are reachable
+only from `Sessions/Battle01/PrivateOriginalBattle01EnemyPhysicalAttack.cs` and
+`PrivateOriginalBattle01PlayerPhysicalAttack.cs`, the old `Application.Sessions.GameSession` and
+Godot `PrivateBattle01Composition`, plus selected reference behavior tests. These wrappers still own
+legacy enemy AI/ally counter and controlled completion histories; the first authored physical slice
+does not replace those startup consumers. The next corresponding M2 private battle admission/AI/
+reaction migration must move those calls to common commands and remove these wrappers with their
+last caller. M3 owns map-start/program consumers; M4 owns outcome/return. None is deferred wholesale
+to M5, and no production project acquires a reference dependency.
+
 Reusable map/layout/item reducers remain in Domain; their existence is not a claim that common-session
 exploration is implemented. Shared battle rules and the authored Content reader live in production
 responsibility directories. Fixed receipt counts, round positions, kill order, expected terminal

@@ -143,7 +143,7 @@ public sealed class EngineSessionTests
         var session = Start();
         Accept(session, new Confirm());
         AssertRejectedWithoutMutation(session, new ChooseAction(SessionAction.PhysicalAttack),
-            "physical-attack", SessionFailureKind.UnsupportedCapability);
+            "physical-definition", SessionFailureKind.UnsupportedCapability);
     }
 
     [Fact]

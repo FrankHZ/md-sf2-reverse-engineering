@@ -62,6 +62,10 @@ func _run() -> void:
             await _layout(initial, arguments.has("--long-path"))
             _finish()
             return
+        if arguments[case_index + 1] == "physical":
+            await _physical(initial, arguments.has("--reverse-kills"))
+            _finish()
+            return
         failures.append("Unknown observation case.")
         _finish()
         return
@@ -233,6 +237,59 @@ func _layout(initial: Dictionary, long_path: bool) -> void:
     _check(committed.failure == null and committed.actors[0].x == wide.previewX
         and committed.actors[0].y == wide.previewY, "Visible preview can be committed through actual input")
     _visible_layout(committed, "next-control")
+
+func _physical(initial: Dictionary, reverse: bool) -> void:
+    var player: String = initial.actor
+    var first_index := 3 if reverse else 2
+    var second_index := 2 if reverse else 3
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    await _press(KEY_TAB)
+    await _press(KEY_TAB)
+    await _press(KEY_TAB)
+    var rejected := _read("physical-range-rejected")
+    _check(rejected.failure == "target-range", "Distant opponent fails range validation")
+    _check(rejected.target == initial.actors[3].id and rejected.candidate == initial.actors[4].id,
+        "Rejected physical cursor retains authoritative target")
+    await _press(KEY_TAB)
+    if reverse:
+        await _press(KEY_TAB)
+    var selected := _read("first-physical-selected")
+    _check(selected.failure == null and selected.target == initial.actors[first_index].id,
+        "Physical candidate cycles past rejection")
+    _check(selected.mainSeed == initial.mainSeed and selected.actors[first_index].hp == 15,
+        "Target selection leaves resources and RNG unchanged")
+    await _press(KEY_ENTER)
+    var killed := _read("first-death-next-control")
+    var first_exp := 23 if initial.map == "stone-court-map" else 48
+    _check(killed.failure == null and killed.mainSeed == 176099892 and killed.actors[0].exp == first_exp,
+        "Physical attack carries exact RNG and EXP")
+    _check(killed.actors[first_index].hp == 0 and killed.actors[first_index].x == null
+        and not killed.actors[first_index].visible, "Dead enemy leaves occupancy and visible battlefield")
+    _check(killed.gold == initial.gold + 17 + first_index and killed.actors[0].kills == 1,
+        "First death credits configured gold and killer")
+    _check(killed.actor == initial.actors[1].id and killed.stopReason == "PlayerInput", "Automatic next living player")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var next_round := _read("physical-next-round")
+    _check(next_round.actor == player and next_round.round == 2 and next_round.mainSeed == 3184202292,
+        "Next round consumes only living turn entries")
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    await _press(KEY_TAB)
+    _check(_read("second-physical-selected").target == initial.actors[second_index].id,
+        "Second legal kill uses the opposite opponent")
+    await _press(KEY_ENTER)
+    var second := _read("second-death-next-control")
+    var final_exp := 48 if initial.map == "stone-court-map" else 98
+    _check(second.failure == null and second.actors[0].exp == final_exp and second.mainSeed == 3226014260,
+        "Second physical action preserves expected EXP and RNG")
+    _check(second.gold == initial.gold + 39 and second.actors[0].kills == 2,
+        "Both kill orders settle the same gold and kill count")
+    _check(second.actor == initial.actors[1].id and second.actors[second_index].x == null
+        and not second.actors[second_index].visible, "Second death cleans up and returns actual control")
+    _check(second.thinkingSeed == initial.thinkingSeed, "Stay AI does not consume thinking RNG")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

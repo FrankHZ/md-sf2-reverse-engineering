@@ -21,11 +21,14 @@ a service mesh, a general ECS, or an emulator-backed gameplay core.
 direction for the command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
 new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
 Live state, validated content and implemented capability admit commands on M1's authored battle
-path. Application advances until real player input or an automatic-work tick boundary; Godot consumes
+path. The first M2 physical rule chain uses that same dispatcher and state. Application advances until real player input or an automatic-work tick boundary; Godot consumes
 semantic commands and observations. General presentation/program waits remain future capabilities.
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
+`PhysicalStrikeRules`, `BattleRewards` and `PlayerPhysicalAttack` now own ordinary physical construction,
+settlement and atomic state transition. Dead combatants retain identity/HP/accounting but have no
+battlefield position; occupancy and presentation read that authoritative state.
 The [current M1 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 adds movement/cancellation, common session/content admission and connected authored battles.
 Profile-specific snapshots, fixed import checks, endpoint handlers and old Godot battle dispatch
@@ -57,7 +60,7 @@ not complete private import or program migration, or close A1–A8. M5 is remain
 
 | Assembly | Current responsibility | Dependency direction |
 | --- | --- | --- |
-| `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
+| `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/physical/reward/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
 | `Sf2.Remake.Application` | thin `Runtime.GameSession`, common contracts, independent command dispatcher and automatic battle advancer, typed scenario port | Domain |
 | `Sf2.Remake.Content` | configurable authored package parsing, reference resolution, numeric and capability validation | Application and Domain |
 | `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, Godot; explicit legacy startup also consumes Reference |
