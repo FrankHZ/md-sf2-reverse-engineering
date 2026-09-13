@@ -2,6 +2,16 @@
 
 ## Current repair status
 
+**Scope of this record:** the investigation and recommendations below describe the named historical
+test suite and its bounded repairs. They are not a new-engine test-retention or execution checklist.
+The user's [ADR 0019 policy](../../docs/decisions/0019-state-and-content-driven-remake-engine.md)
+controls current work: add only meaningful engine behavior unit tests, use verification/probes/
+drivers/planners/gates/reports/helpers directly without tests of them, and migrate or retire old
+tests by behavior. No count parity, per-deletion replacement or green legacy aggregate is required.
+M0/M1 and CI/local selection are still pending, as described by the
+[verification owner](./development-and-verification.md#github-public). Preserve the historical
+evidence and completed failures below without replaying its repair queue.
+
 The counts and investigation below remain a snapshot of the named `f9dbfd5` base. Its statements
 about unimplemented recommendations describe that audit stage. The current tests resolve the bounded
 repair items: the three optional private checks report skipped when unselected, fail on required or

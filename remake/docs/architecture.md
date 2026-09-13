@@ -70,345 +70,31 @@ not share a weaker content reader or silently convert one profile into the other
 
 ## Current Implementation Shape
 
-The implemented Domain boundaries are already independently testable and engine-free. Application
-owns public-synthetic session lifecycles plus a separate admitted private Map 3 traversal state behind
-the same logical `GameSession` facade. Content readers own tracked synthetic packages and fixed
-private-local admission for canonical maps, offline visual payloads, and selected Battle01 startup
-data. Playable PrivateLocal composition consumes the canonical import plus the separately reviewed
-local presentation pack; it does not reopen ROM or extraction metadata at startup.
-The canonical reader also admits the selected setup's entity population behind the same fixed private
-trust boundary. This is typed session context only; neither `GameSession` nor Godot currently creates
-mutable entity lifecycles or presentation from it.
+The current implementation remains a legacy controlled-route engine. It has useful deterministic
+Domain reducers, validated public/private readers, and one named `GameSession` facade, but the
+[audit](./architecture-audit.md) identifies incomplete architectural boundaries:
 
-Controlled Battle01 initialization is a distinct Domain transition, independent of the synthetic
-`TacticalBattle` duel. Application maps the admitted startup definition and named effective party
-preset into Domain values. `GameSession.InitializePrivateOriginalBattle01` validates the exact
-current Prepared/Pending, performs all potentially failing projections, then consumes Pending and
-installs one `PrivateOriginalBattle01SessionSnapshot`. Its `Battle` owns current Map57, roster,
-terrain/occupancy, phase-dependent AI/region state, RNG and round order.
+- public-synthetic and private-local APIs/snapshots diverge behind the facade;
+- fixed import/party presets and reference-history predicates constrain ordinary battle actions;
+- some story handlers assign accepted endpoints instead of running the reached program;
+- `PrivateBattle01Composition` schedules rounds and individual turns in Godot;
+- scenario-specific snapshot fields and allowlists amplify unrelated changes.
 
-`PrivateOriginalFlowStage` and `PrivateOriginalCurrentMap` identify the live private state.
-After initialization, `PrivateOriginalMapSnapshot` and locomotion access reject; all old movement,
-animation, interaction and bridge mutation entries consequently close. The old backing map remains
-only as the private-profile marker and the exact frozen `SourceSnapshot` under battle provenance,
-alongside source locomotion and bridge. Its historical Exploration flow and Map40 identity do not
-describe the current map. A new session starts at controlled Map3 without Pending or Battle01.
-No broad snapshot-reducer refactor or second mutable battle authority is introduced.
+The [capability matrix](./capability-status.md) owns current support. The
+[Map 3 implementation/reference record](./map03-playability-plan.md) owns each selected input,
+method, controlled state, reproduction and Unsupported boundary. Those details describe current
+code; copying them into a general engine would preserve the audited defects.
 
-The Godot consumer branches on private flow before reading an exploration snapshot. The initialization output is the
-next round-entry input, before activation, spawn admission, turn ordering or actor selection. Its
-fixed enemy difficulty and already-refreshed effective ally policies are recorded in the
-[owning plan](./map03-playability-plan.md#implemented-controlled-initialization).
+Private startup currently admits canonical maps and selected Battle01 exports before initializing
+one battle snapshot. Live battle state owns roster, terrain/occupancy, phase, RNG and turn order;
+older map snapshots remain frozen provenance. Current movement preview/confirmation/cancellation,
+combat and return methods have their named controlled domains. They do not yet implement ADR 0019's
+common command model or general configurable content loader.
 
-`EnterPrivateOriginalBattle01FirstRound` accepts only the exact current battle snapshot in
-`BeforeFirstRound`. Domain projects enemy activation, the fixed empty Battle01 cutscene/spawn
-routes, and turn generation in that order; Application then replaces the single current snapshot.
-The same phase-capable battle state now owns the updated `AiBitfield`, region flags, separate
-`NewlyTestedRegionMask`, `RandomSeedImage` and `FirstRound` buffer. `InitializationAiBitfield`
-retains only the source-derived initial value. `GeneratorWord` is derived from the image's high
-16 bits; it is not another RNG authority. The low word remains unchanged. Independent nullable
-`RandomSeedCopy` comes from the named controlled preset as1234 and is retained across the round
-and both player turns. Its retention policy does not establish the original natural seed lifetime.
-
-The completed phase is `FirstRoundGenerated`, with a full 64-slot signed/stable buffer and current
-turn offset0. `FirstCandidate` is data consumed by the distinct control entry, not an executed action. Old
-immutable snapshots and Prepared inputs remain provenance; none is exposed as another current map
-or live round state. Duplicate/foreign/stale/invalid requests commit nothing, and old exploration
-commands remain closed. The [round policy](./map03-playability-plan.md#implemented-controlled-first-round)
-records the RNG storage interpretation and the exact shared comparison seam.
-
-`EnterPrivateOriginalBattle01FirstControl` consumes the exact current generated snapshot and
-requested actor identity. It classifies the real first candidate without skipping or reordering the
-buffer, then constructs the supported class4/HEALER range. A named caller preset supplies only that
-candidate's missing ally activation word and fixes the two control toggles; existing activation words
-and current status fields retain authority. The supplement and complete movement projection commit
-together. AI, disabled action and unsupported-profile branches return unavailable without mutation.
-
-`Battle01InitializedState.FirstControl` owns the player movement selection. The battle roster's live
-`Position` is separate from immutable source `Deployment.Position`. The range keeps an explicitly
-historical `OriginOccupancy` projection, raw-cost/reachable grids and opponent-blocked terrain; current
-occupancy remains `Battle.Occupancy`. Preview only changes the cursor/path. Confirm atomically changes
-live position/occupancy and enters `PlayerActionChoice`; cancel restores the turn origin and returns
-to `PlayerMovementSelection`. No action or turn is submitted by either transition.
-
-The three movement session facades enforce exact snapshot, actor and phase before a single replacement.
-`Battle01MovementPath.PolicyId` identifies the controlled preview policy, whose selected path cost is
-checked against both the propagation cost and budget. This is not original cancellation-animation
-execution. The [owning policy](./map03-playability-plan.md#implemented-controlled-first-player-api)
-records the source-contract disagreement and bounded scene/preview rules.
-
-`PrivateBattle01Composition` is the thin Godot consumer. Its three all-or-none private path options
-construct the existing Content reader; only explicit N at the current Pending starts preparation,
-initialization, first round and first control. Each call uses the returned current snapshot and
-current turn-buffer candidate. Rejection displays its stage; after initialization the view remains
-on the actual battle even when later entry fails. No retry rerolls or reinitializes an existing battle.
-The process router prioritizes battle state over exploration and the synthetic bridge, and physics
-checks the battle flow stage before reading the closed exploration locomotion getter.
-
-`PrivateBattle01Presenter` projects immutable live positions, terrain/range and preview data into
-24-pixel grid geometry. It owns no cursor, roster, RNG or turn state. Root hides the complete old
-Map40/HUD/synthetic canvas subtrees before attaching it. Existing I/J/K/L, Space and Backspace keys
-route once through the private battle poller; action choice accepts STAY or cancellation.
-
-`CommitPrivateOriginalBattle01Stay` requires the exact current snapshot and the accepted comparison
-party, then applies the named controlled unchanged-effective-stats policy. Domain checks the defeated
-wrapper's early return, empty death cleanup, both factions, no-effect after-turn admission, another
-empty cleanup and both factions again before advancing. It retains the same immutable stats and
-live roster/occupancy, clears `FirstControl`, and installs a `TurnCompletion` receipt with both counts.
-The movement range retains its actor's immutable entry stats for drift rejection; it is not a second
-stat authority. A previously receipted HP0/unplaced enemy remains cleaned on later no-effect turns;
-it is not a fresh worklist entry and receives no repeated award. Generic stat refresh remains outside
-this bounded fixed-profile consumer.
-
-`FirstRound.CurrentTurnOffset` is a raw byte offset; `CurrentCandidate` uses offset divided by the
-two-byte entry size. Advancing from 0 to 2 shares the complete unchanged 64-slot order and preserves
-the historical `FirstCandidate`. Each completed player advances exactly one entry; offset2 becomes4.
-`PlayerTurnCompleted` is the committed STAY boundary. `EnterPrivateOriginalBattle01NextPlayerControl`
-requires that exact snapshot and actor, then reuses the first-control classifier, candidate-only
-missing-word preset and range/preview construction. The first-control API remains restricted to
-offset0. Fixed class1/CENTAUR2 and class0/REGULAR1 join class4/HEALER12; current effective MOV determines the budget.
-The new range captures live occupancy, so its cancel restores only this actor's turn origin.
-
-The previous immutable completion receipt survives next entry and movement; a later receipt links it
-through `Previous` as provenance. Active control determines the movement phase and presenter overlays
-even when that historical receipt exists. The UI invokes next entry once after each successful STAY,
-with no extra N. Unavailable or rejected entry leaves the exact committed STAY object in place and
-shows the actual candidate/reason; completed-phase key handling returns no replacement status.
-There is no frame retry or actor skip. A bounded dispatch follows actual slots, permits at most one
-new round per call and yields as soon as an actual player is ready. At first-round offset4, actual
-enemy128 / OpponentAi begins six enemy completions. `CompletePrivateOriginalBattle01EnemyStandby`
-keeps strict first128 admission; subsequent entries require the actual candidate, accepted completed
-prefix and chained seed-copy/own memory. Domain runs the inactive regular branch's thinking RNG,
-standby tables, raw Hovering6 grid plus separate live occupancy and bounded source move string.
-The separate seed-copy, own memory, live move and shared no-effect completion are local allocations
-until all checks pass and Application replaces one snapshot. A later rejection retains the last
-successful actor and every prior receipt; the relay stops with that actor's precise diagnostic.
-
-The first128 move to(6,3) produces seed-copy3934 and memory[0]=14h. The remaining actual order
-131,133,129,130,132 consumes evolving occupancy and ends with seed-copy0134, while mainA4991234,
-all effective stats and the full turn buffer remain unchanged. Only the complete eight-receipt
-prefix at offset16 admits Bowie0 through the shared next-player API. Its candidate-only missing-word
-policy and Regular1 range give independent move/cancel/STAY with budget12. Bowie's completion adds
-the ninth receipt and reaches the existing first sentinel at offset18. The same dispatch invokes
-`EnterPrivateOriginalBattle01NextRound`: local activation from current allies and retained flags/tested
-mask, empty region-cutscene/STARTING-spawn admission, then signed stable ordering from current main RNG.
-It admits coherent primary-region flags for the six starting GIZMOs and rejects unsupported flags,
-secondary orders and actor state before installing flags/order/RNG. The explicit roster-only policy
-excludes the original activation routine's deals-memory alias. Successful generation retains
-positions, effective stats, deployment anchors, memory, seed-copy and every previous receipt.
-`RoundNumber` belongs to the current order and each immutable receipt; `RoundGenerated` distinguishes
-new order from historical completion. Later control/standby admission validates the actual current
-generation prefix and retained thinking history. Standby uses the live origin/grid and original anchor,
-including nonzero own memory. Each generation or actor transition has one Application commit.
-Failed control after generation preserves that generated round; later enemy failure preserves the last
-successful actor. The presenter shows the current candidate or completed actor with the precise
-diagnostic and no stale movement overlays; input cannot retry a rejected dispatch.
-The same actual-candidate relay routes active commandsets6/7 to
-`CompletePrivateOriginalBattle01EnemyPursuit`. Domain first scans physical eligibility on the
-opponent-blocked budget10 grid. A nonempty cohort returns a typed attack-selection requirement before
-priority, RNG or any commit. Otherwise raw budget128 target costs, the source accumulated-mask walk,
-radius0/1 occupancy fallback and final reverse/invert move string feed shared no-effect STAY.
-Exactly one typed standby, pursuit or physical decision belongs to each enemy receipt; player
-receipts carry none. Pursuit retains memory and seed-copy, which backward history validation checks
-alongside standby thinking. A source-valid empty/fallback move completes origin STAY; malformed paths reject.
-
-The relay consumes the pursuit classifier's physical-cohort boundary once through
-`CompletePrivateOriginalBattle01EnemyPhysicalAttack`. That facade independently revalidates the
-current snapshot, cohort, priority, source path and supported combat profile. Its Domain reducer
-constructs the temporary HP effect, restores the source snapshot and replays one semantic reaction
-locally before physical cleanup/after-turn validation and one Application replacement. The explicit
-class0/Wooden Sword and exact Chester class1/Wooden Stick target profiles supply prowess3;
-the latter retains HPmax11/MP0/ATT8/DEF5/AGI7/MOV7, unspecified kills and either null or known
-EXP below100. Enemy decision metadata comes from the admitted selected target. Player attack
-admission separately requires Bowie0/class0 or exact Chester2/class1 with known EXP; player
-decision metadata comes from that actual actor. Regular GIZMO
-prowess0, difficulty0/type2 and the
-two independent RNG channels retain their source semantics. Miss/ordinary critical results are
-calculated. True validated follow-ups, other lethal/status/curse/reward and unsupported after-turn effects
-reject atomically. This is a bounded consumer, not a general battle-scene VM.
-
-The physical completion policy is distinct from strict STAY. History rewinds physical main-RNG
-changes before comparing earlier pursuit stamps, links thinking/last-target/memory and HP effects,
-and retains the generated64-slot order. HP copies preserve all non-HP fields; startup/prepared
-stats remain provenance. Subsequent movement/cancel/STAY, admitted AI and round generation retain
-the damaged current stats. Actual round6 attack132 produces HP12→9 and yields Bowie0 control;
-the presenter selects the newest physical receipt across rounds from the existing chain.
-The post-defeat continuation brings enemy131 to(11,13), hits Chester11→9 and creates receipt71;
-eight surviving candidates generate R9 and actual Chester movement/cancel with main71D31234,
-copy0134. Reverse history admits the recorded HP11→9 and preserves receipt59's dead132,
-Bowie EXP39/kills1 and gold60. The same history admits Chester's later player receipt72, EXP0→10
-and enemy131 HP5→3, then actual128/129/131/133 through receipt76 and Sarah movement/cancel.
-Damaged131 retains HP3 and selects Bowie6→3; main25991234/copy0634 and all64 R9 slots survive.
-Original scene animation/timing, broader profiles, multi-strike/counter, other deaths and victory remain open.
-
-Manual player attacks use `Battle01PlayerPhysicalAttack` and a distinct player physical/EXP policy.
-The existing movement selection gains a target stage, holding the ordered live down/right/up/left
-range1 cohort. Target cancellation returns to the provisional action choice; movement cancellation
-then restores the origin. `PrivateOriginalBattle01PlayerPhysicalAttack` requires the exact session
-snapshot and a separately named `PlayerAttackComparison`, `FirstDefeatComparison`,
-`ChesterPlayerAttackComparison`, `ChesterDefeatComparison` or `LeaderDefeatComparison` preparation.
-Nullable current EXP/gold/kills/defeats distinguish unspecified inputs from authored zeroes.
-Godot uses `LeaderDefeatComparison`, adding only Bowie defeats0 to `ChesterDefeatComparison`;
-all five older presets remain unchanged. Reverse history returns the rewound
-original Chester EXP/defeats and Bowie defeats with gold and Bowie kills. Both physical Application wrappers compare
-that tuple with preparation before publishing, rejecting null/zero mismatches even after a valid
-local effect. Immutable copies preserve live earned EXP while preparation retains its original input.
-The Chester preset uses the first-defeat policy for Bowie before any death and the separately named
-`ControlledStrikeAndSecondDefeat` policy for him after a cleaned death. Chester retains the existing
-nonlethal/EXP policy; older preparations and all earlier receipt policy IDs remain unchanged.
-
-Confirmation rechecks the actor, live target list, occupancy and admitted profiles before resolving
-the player's dodge8/critical16/+quarter damage, two spread calls, both follow-ups and EXP award.
-Local HP restore/reaction and EXP replay publish together only after completion validation; required
-level changes and actual extra attacks reject the entire action. The older policy still rejects
-lethal results. The first-defeat policy permits one regular enemy death with known accounting inputs.
-It keeps full overkill damage, returns before double/counter draws, adds kill EXP50 with cap49 and
-Battle01 halving, and applies source gold60 during local construction. HP snapshot restore/reaction,
-EXP replay, first worklist kill credit/removal, actor normalization, cleared second worklist and both
-3/5 faction counts finish before one Application snapshot replacement. A late failure retains every
-old channel. Gold caps at9,999,999 including source carry; Bowie kills cap at9999.
-The second-defeat policy is Bowie-only and admits at most two cleaned enemies. Target terrain0
-uses Hovering LE0/multiplier256; terrain1 retains230 and other target terrain remains rejected.
-Cleanup locates the newly reacted target separately from prior HP0/unplaced rows, then the existing
-reverse-history checks validate every older corpse against its own receipt. Receipt79 queues only131,
-retains132 unchanged, awards EXP24/gold60/kills1 once and finishes with both faction counts3/4.
-No extra ledger or second state authority is needed.
-
-The separate `ControlledFirstAllyDefeat` policy admits only enemy133's first Chester2 defeat
-with explicit defeats0 and the two authenticated earlier enemy corpses. Nonlethal receipts retain
-their old policy. Temporary HP0 returns before double/counter or award draws; local reaction and
-`Battle01AllyDefeatCleanup` record worklists[2]/[], defeats0->1 and both2/4 counts before publication.
-Chester retains HP0/EXP10/unspecified kills and loses live placement/occupancy. Cleanup rewinds
-his pre-death HP/position/counter from receipt106 to authenticate older history and R13 generation.
-Living AI cohorts and R14 generation omit him. Enemy128 death, Sarah death and
-a third enemy death remain outside this boundary. Markers come from living placed rows; ally
-status comes from all three identity rows, preserving Chester HP0/EXP10/defeats1 and the newest
-attack result while Sarah moves and cancels in R14. Natural defeats and death animation remain Unknown.
-
-`ControlledLeaderDefeatPending` admits only the planned R16/raw0 enemy129->Bowie action after119
-continuing receipts. Earlier nonlethal and Chester-death receipts keep their existing policies.
-`Battle01DefeatPendingReceipt` reuses the physical decision and ally-cleanup payload, links the
-exact previous119 receipts, and records first outcome0/4 with after-turn/advancement false. Cleanup
-increments supplied Bowie defeats0->1 and removes only his placement. The ordinary completion
-receipt cannot represent this branch: no second cleanup/count or advanced turn was executed.
-The state phase is `DefeatPending`; all immutable copies retain it. Terminal validation authenticates
-the strike/cleanup/occupancy/RNG and reconstructs an unpublished before-image for existing full
-history and generation checks, then reproduces the actual terrain-based target cohort/path.
-Both physical Application facades compare the rewound Bowie counter with preparation.
-Godot stops before dispatching historical candidate129 again and projects no actor, target or
-movement overlay. Bowie and Chester remain on the ally status list at HP0; five living markers
-remain. Ordinary gameplay and automatic dispatch preserve this snapshot. One explicit recovery
-confirmation calls the focused `Battle01DefeatRecovery` reducer and Application facade. It authenticates
-the HP0 terminal and preparation accounting, restores only leader currentHP to maxHP12 and halves
-gold120 to60, then publishes `DefeatRecoveryPending` once. `Battle01DefeatRecoveryReceipt.Before`
-retains the immutable terminal; its119 ordinary and separate lethal receipts remain history. All state
-copies preserve the recovery facet. The recovered-state validator checks the entire HP/gold delta
-against that authenticated before-image; a healed state cannot impersonate the HP0 terminal.
-Bowie remains unplaced, MP8/EXP63/kills2/defeats1 persist, F401/F501 and all other state remain.
-The single `GameSession` snapshot remains authoritative; its source exploration snapshot is frozen
-provenance. At N/start, `GransealFirstAttemptComparison` supplies explicit egress3/F64=false/F640=false
-before source admission. Each preparation owns a distinct immutable `Battle01DefeatReturnAdmission`
-reference; initialization binds it into the battle and all immutable copies retain it. Cloning or
-replacing a preparation creates a different binding, so a late valid tuple cannot upgrade an older
-battle. F399 is the modeled unconditional BattleLoop entry effect, not a caller-supplied flag.
-`RequestPrivateOriginalBattle01DefeatReturn` authenticates the complete recovery and its HP0
-before-image accounting, requires both states' exact early binding, then allocates the request and
-next snapshot before one publication. `DefeatReturn` contains map3/(32,13)/opaque UP1 for savepoint
-and post-switch destination, D4=-1 and no raft write. The entire recovered Battle and all preparation/
-source objects remain reference-identical. No new phase or 120th turn exists. Confirm after recovery
-issues this request once. Without the optional early arrival comparison the request freezes input.
-With it, `EnterPrivateOriginalBattle01Exploration` authenticates the same preparation/recovery,
-validates the catalog-owned return-load facts, projects all30 party slots and fresh Map3 state,
-then publishes one completed `Arrival` facet on the existing session snapshot. `Arrival.Party` is
-the sole current party; `Arrival.Before` retains the exact request and the whole battle/source chain.
-Map/flow derive from that facet. The old first-visit getters and commands remain closed.
-
-The entry uses explicit neutral dormant inputs and a restricted unchanged-effective-stat policy;
-it does not infer base stats or execute general UpdateCombatantStats. It clones pristine Map3,
-applies the F506/F220 false branches, area1 and record8's30-word roof clear, then default setup init.
-A separate immutable placement overlay declares player0 and authenticated F66 followers1/2 at the
-same(32,13)/UP current/target, skips their duplicate setup rows, and hides/moves142 out. Dead Chester
-retains BLUE_FLAME identity. No follower/NPC script runs; exact original positions before the first
-WaitForEvent remain Unknown. Typed arrival overloads share the existing camera/atlas/pixel math.
-Godot hides the battle and old prompts and shows the fresh map and explicit overlapping identities.
-`PrivateOriginalMapReturnMovement` admits player-only input in x31..33/y12..14 plus (32,15)/(32,16).
-The frozen follower cell and targets outside this union are Unsupported; (32,12) is a terrain block.
-The catalog-owned return load binds step row4 and all ten ordered roof rows. The first door Begin
-copies C48F to080E, re-reads the marker and checks traversal before publication; its receipt retains
-the exact entry and input. Current `Arrival.Party.CurrentBattle` supplies the exploration255 guard.
-Each supported attempt publishes one return-input ordinal, retained through the existing13 ticks.
-At the final moving Advance, `MapBlockCopyActionReducer` consumes the settled player cell using
-the controlled no-fade policy. Outside restores saved30; re-entry selects ordinal8 and clears30.
-`WorkingLayout` and `RoofLifecycle` own the current image. `EntryBeforeMovement` and `RoofClear`
-retain the strict original entry, saved words and declarations; only the door word and roof rectangle
-may differ in the live layout. `LastRoofAction` links settlement to the same input without replacing
-its traversal receipt. Party, flags, non-player records and preparation/battle history retain their
-references. All layout, lifecycle, locomotion and successor validation precedes one session publication;
-rejection, overflow or a failed final successor preserves the exact calling snapshot.
-Godot routes this Arrival before old handlers and shares existing typed camera/atlas projection.
-No fake legacy snapshot or second mutable map authority is introduced. F/G and other gameplay remain closed.
-Original presentation/VInt, general stat refresh and natural egress/flag continuity remain Unknown.
-
-Live battle placement is nullable: HP0/null represents cleaned FF/FF while immutable deployment,
-source stats and the pre-death attack row remain intact. Copies never infer a corpse's placement
-from deployment. Living consumers require a position, and occupancy/target/presentation omit the
-cleaned row. Mixed history
-rewinds player HP/EXP without enemy last-target writes, requires the full source HP5 GIZMO profile,
-and permits damaged or cleaned enemy HP only with linked reaction/cleanup provenance. It rewinds
-placement, EXP, gold, kills and count transitions through the same receipt chain. Same-round
-generation validation restores its pre-kill candidate set from receipt before-images; a later
-generation excludes every dead row and its draws. The candidate floor admits six survivors;
-R7 history reconstructs nine candidates, R9 eight and R13 seven even after Chester dies; R10
-uses21 generation calls and R14 uses18. Where a preceding
-main endpoint is recorded, the existing generator reproduces the following main image and current
-64-slot order. This adds no stored seed authority or history cache.
-
-Godot keeps ordinary action-choice Space as STAY; A opens targeting and target Space explicitly
-attacks. The existing finite relay reaches round7 player2, then actual131/132/133 and Bowie HP6.
-His explicit lethal attack creates receipt59 and immediately yields actual player1 movement/cancel.
-The presenter derives the defeated132/+24 EXP/+60 gold result from that receipt until a newer
-physical action replaces it; current gold60/kills1, Bowie EXP39 and five enemies remain live-state
-projections when the later Chester hit is displayed. Receipt72 shows Chester's player hit/EXP;
-the subsequent enemy hit replaces it when Sarah receives control, while live Chester EXP10 remains.
-Sarah origin STAY and actual130 yield Bowie at receipt78. His second defeat of131 publishes receipt79
-and the finite relay immediately generates R10/actual Chester control. The latest result shows
-hit4/HP3→0/+24 EXP/+60 gold; live EXP63/gold120/kills2 remain distinct, with four enemy markers.
-Chester movement/confirm/cancel preserves this result and both cleanup histories. The current
-acceptance boundary stops before his next action; third death, Chester kill and victory remain excluded.
-Eight calls and the E9F01234/CF491234 comparison are construction/award semantics under the
-presentation-omitted diagnostic policy: original reaction flags1 also cause24 range7 jitter draws,
-and VInt/menu/text timing can change both RNG channels. No original playback state is claimed.
-
-When base art and Battle01 inputs are both requested, the existing catalog requires the separately
-accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only
-`Preparation.Pending.Definition` from the current battle: its validated layout, block catalog,
-area and visual selection. It rejects definition drift and any referenced unloaded slot, then
-reuses `PrivateOriginalMapBaseViewProjection` block/tile sampling for the fixed 16-by-20 area.
-The 384-by-480 logical base maps the full 2x/4x raster with nearest sampling. No exploration runtime,
-camera, parallel layout or position authority is created. All nine units remain diagnostic markers.
-The existing diagnostic mode remains available without requesting art. Missing/wrong requested art
-fails visibly; a failed base projection closes input without displaying a substitute battlefield.
-Original scene/layers, animation, VRAM persistence, fidelity and other battle actions remain
-outside this consumer.
-
-Two areas currently concentrate more responsibility than the target shape:
-
-- `Map3Root` and its private partial own profile dispatch, composition, interactive command calls,
-  private smoke scheduling, and private stage tracing. Public-synthetic action registration and polling
-  plus private-local movement polling delegate to the internal `Map3InputAdapter`; public-synthetic
-  node ownership, formatting, and snapshot projection delegate to the internal `Map3Presenter`;
-  private-local and unavailable
-  diagnostic node ownership, formatting, and typed viewport projection delegate to the internal
-  `PrivateMap3Presenter`; deterministic public and private smoke commands, marker serialization, and
-  smoke-only quit delegate to their internal drivers. None of these collaborators owns session or
-  gameplay state.
-- `GameSession` and its partials own command routing, pending gates, lifecycle handlers, broad snapshot
-  construction, private admission, and projection-facing result types.
-
-The Content public seams are appropriately narrow, but each large reader currently combines raw
-identity verification, parsing, semantic validation, and mapping in one implementation file.
-
-These are accepted implementation facts, not a claim that their planned refactors are complete.
+The public tactical micro-battle uses project-authored simplified rules and is not an SF2 oracle.
+Keep private/source trust separate from authored configuration while migrating actual overlapping
+gameplay through the same state/rule path. Neither current fixed package identities nor source
+record ordinals define universal gameplay legality.
 
 ## Target Internal Delegation
 
@@ -479,23 +165,19 @@ extends an existing bounded inspector or observation unless it has an independen
 
 ## Refactor Sequence
 
-This accepted behavior-preserving sequence remains current. ADR 0019 separately proposes an explicit
-behavioral migration with useful engine unit assertions and coordinated CI/local-gate changes; its
-user-directed test policy does not require retaining every old test or testing verification tools.
-Adoption and implementation require independent review before expanding valid runtime states or
-moving trace-specific refusals into reference verification.
+Choose the scope explicitly: an internal behavior-preserving refactor retains meaningful observable
+behavior, while ADR 0019 proposes behavioral migration away from fixed histories and incompatible
+runtime paths. Its M0/M1 implementation and executable CI/local cutover remain separately owned.
 
-Future refactors remain serialized and behavior-preserving:
+Use small engine unit assertions for the actual behavior being moved. Retire obsolete structural,
+helper and trace-refusal tests as their owners migrate; there is no requirement to preserve every
+command name, private snapshot shape, smoke marker, test method or old green aggregate. A reference
+observation that is still consumed keeps a deliberate migration boundary outside production.
 
-1. treat the current Godot host cluster as complete: public-synthetic and private-local input,
-   presentation, and smoke are delegated, while composition remains intentionally direct and profile
-   selection, interactive commands, marker bytes, stage tracing, and observations stay preserved;
-2. extract Application dispatch, pending gates, and snapshot projection behind `GameSession`; and
-3. split a Content reader internally only when an owning change requires it.
-
-Do not combine those refactors with a new gameplay feature or a repository-wide public-type rewrite.
-Characterization tests must prove existing commands, snapshots, profile failures, and smoke output remain
-unchanged before a refactor is accepted.
+Extract internal command/control/projection responsibilities behind the single state authority and
+split readers only where a concrete change needs it. Preserve genuine Content trust, atomicity and
+Unsupported boundaries. The order is driven by the coherent behavioral dependency in ADR 0019,
+not an obligation to finish all file splits before correcting an engine design defect.
 
 ## Review Questions
 
@@ -503,6 +185,9 @@ unchanged before a refactor is accepted.
 - Does each new public protocol name a real boundary reason?
 - Can the Godot view be reconstructed from authoritative observations?
 - Does a small behavior change require unrelated cross-layer edits?
+- Would another valid history, actor or content package require production case-ID/round/receipt edits?
+- Is a fixed reference predicate being mistaken for a rule, or a story endpoint for executed control flow?
+- Do the selected checks observe actual engine behavior without testing the verification machinery?
 - Are trust validation, orchestration, and presentation concentrated unnecessarily?
 - Does failure remain attributed to the correct Content, Application, Domain, or Godot layer?
 

@@ -7,6 +7,12 @@ active research or design-synthesis lane. General repository safety, worktree, e
 private-input, and definition-of-done rules remain in `AGENTS.md`; ADR 0004 owns the complete Worker
 Acceptance Checklist.
 
+This is a research evidence profile, not the engine implementation checklist. New-engine testing and
+documentation-only verification follow [AGENTS](../../AGENTS.md#verification-rules) and the
+[remake verification scope](../../remake/docs/development-and-verification.md#scope). Do not transfer
+this runbook's normal/full gates or parser-test obligations to an engine slice. Original research
+evidence and genuinely shared dependencies retain their owning requirements.
+
 ## Root and Worker Setup
 
 Apply `AGENTS.md` and [ADR 0018](../decisions/0018-astra-role-routing-trial.md) for model and task
@@ -55,7 +61,8 @@ after it:
 
 1. reviews any worker handoff, changed-file list, complete diff, evidence, and counters against
    ADR 0004's Worker Acceptance Checklist;
-2. reruns the owning narrow command plus `uv run sf2 verify`;
+2. records the owning narrow command and normal research `uv run sf2 verify` result, reusing completed
+   results where their actual dependencies remain valid;
 3. scans for private or generated inputs and unintended changes;
 4. stages only accepted paths and reviews the cached diff;
 5. commits on the current research topic branch, never directly on `main`; and

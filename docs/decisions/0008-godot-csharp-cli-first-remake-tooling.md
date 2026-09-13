@@ -213,7 +213,8 @@ without the compatibility recheck and decision update required by this decision:
 2. inspect an existing scene and C# type without changing files;
 3. add one node and one C# script, save, then review the exact text diff;
 4. compile C# and return structured diagnostics for an intentional error and its correction;
-5. run a bounded scene, read stdout/stderr, inspect the remote tree, and capture one screenshot;
+5. run the needed bounded observation, read stdout/stderr and actual remote-tree/input/state results;
+   apply the current [instance reuse and screenshot prohibition](../../remake/docs/development-and-verification.md#scope);
 6. inject one declared input and verify one deterministic state change;
 7. stop the game/server and prove that no process, callback, token, generated file, or export payload
    remains outside the declared scratch boundary;
@@ -234,7 +235,8 @@ slice should:
   choices;
 - keep deterministic exploration and battle rules in a plain C# project referenced by a thin Godot
   adapter;
-- add ordinary C# unit tests, a Godot import smoke, a bounded scene-state smoke, and an export smoke;
+- add small engine behavior unit tests; use an affected Godot import, state/input or export observation
+  directly when needed, without tests of verification tools or a blanket native run for each feature;
 - consume canonical project-owned contracts and fixtures rather than private extracted assets;
 - keep any MCP entry project-local and reviewable, but store machine paths and credentials outside
   Git;

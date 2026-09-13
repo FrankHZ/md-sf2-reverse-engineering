@@ -364,26 +364,29 @@ or count as H4 success.
 
 ### 12. CLI and Test Layering
 
-The maintained acceptance path remains editor- and MCP-independent. Future Phase 4 gates run in this
-order, with failures attributed to the narrowest layer:
+The maintained acceptance path remains editor- and MCP-independent. The explicit user test policy
+recorded in [ADR 0019](./0019-state-and-content-driven-remake-engine.md) amends this section's earlier
+all-project/layered-test/shared-smoke checklist:
 
-1. restore/build all C# projects with the accepted SDK and locked dependencies;
-2. run pure `Domain` unit/fixture tests for arithmetic, reducers, state invariants, RNG, and admitted
-   deterministic transitions;
-3. run `Application` replay tests for commands, programs, orchestration, cue/ack order, and exact
-   endpoint composition without Godot;
-4. run `Content` validation and mutation tests for package identity, shape, joins, capabilities, and
-   public/private separation;
-5. run the official Godot CLI import plus bounded headless scene-state smoke;
-6. run layered H4 reference/interactive/public profiles as their accepted inputs become available;
-7. run a profile-declared local-private or public-synthetic export smoke plus tracked/private/generated
-   payload scans. A public-synthetic export uses only redistribution-safe inputs; a successful export
-   and the private 7C profile never authorize a public release.
+1. build the affected product dependencies with the selected existing SDK and locked packages;
+2. use small engine unit tests for actual Domain/Application/Content behavior, including deterministic
+   transitions, legal/illegal commands, content semantics and trust, atomicity and failures;
+3. run an affected reference comparison directly through the ordinary engine API, with independent
+   original expectations and explicit controlled/natural boundaries;
+4. compile the affected Godot adapter and observe its actual input/state/presentation only when that
+   surface needs verification; and
+5. exercise import, export, lifecycle and distribution checks only for an affected claim or explicit
+   acceptance boundary, with private content isolated and no implied publication right.
 
-Ordinary feature gates use only the affected layers plus the stable shared smoke. A Phase 4 milestone,
-shared harness change, release/merge-readiness boundary, or explicit full-parity request runs the full
-accepted profile. MCP, editor state, screenshots taken by hand, and a zero-exit Godot launch are never
-substitutes for these gates.
+Do not add tests of comparisons, probes, fixture drivers, planners, gates, reports or helpers.
+Old tests can migrate or retire by useful behavior; keeping every old suite green is not required.
+Screenshots are prohibited. Reuse the existing Godot installation/project/instance under the
+[verification scope](../../remake/docs/development-and-verification.md#scope).
+
+This is a guidance amendment, not an implemented CI/engine cutover. ADR 0019's M0/M1 must align real
+engine tests, CI required checks and local selection in separately owned work. Original H4 evidence
+and the accepted 8C target remain incomplete; these ordinary checks do not establish pixel/audio/
+hardware fidelity or completion of the continuous milestone.
 
 The original pre-entry policy required complete accepted H4 definitions before Phase 4 began.
 [ADR 0016](./0016-remake-start-evidence-deferral.md) supersedes that start prerequisite: a separately

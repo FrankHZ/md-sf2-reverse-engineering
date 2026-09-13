@@ -189,9 +189,11 @@ separate correction turns.
 
 ### Use the affected planner without changing milestone semantics
 
-[ADR 0012](./0012-dependency-aware-partitioned-verification.md) remains authoritative. Every accepted
-change runs the public core and its selected affected partitions. The old full profile remains a
-milestone, release/merge-readiness, shared-harness, or explicit full-parity gate. This decision does
+[ADR 0012](./0012-dependency-aware-partitioned-verification.md) owns research evidence selection. This
+Phase 2 decision does not override the user's new-engine test policy or direct documentation checks
+in the [verification scope](../../remake/docs/development-and-verification.md#scope). Existing planner
+public-core/legacy fanout is current behavior pending the separate engine cutover. The old full profile
+remains an applicable research milestone, release/merge-readiness, shared-harness, or explicit full-parity gate. This decision does
 not reinterpret a long-running command as a large token consumer: gate wall-clock time and model
 context are measured separately.
 

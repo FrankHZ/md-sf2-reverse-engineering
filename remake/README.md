@@ -1,468 +1,106 @@
 # SF2 Remake
 
-This directory contains the independently maintained Godot 4.7.2 .NET/C# remake. It consumes
-accepted repository contracts and uses project-authored or caller-supplied local content without
-making engine code an evidence owner.
+The remake uses reverse-engineered behavior and implementation-neutral contracts to build a modern
+tactical engine. Godot hosts presentation and input; ordinary gameplay belongs to the C# engine.
+Original research, runtime implementation, and reference verification have separate authority.
 
 ## Current Status
 
-Phase 4 implementation is active through bounded Map 3 slices. The current runtime supports a
-tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with a
-deterministic enemy response, typed victory/defeat, same-definition retry, an atomic once-only
-synthetic victory effect, and exploration return. A separate private-local traversal shell with an
-opt-in, reviewed-local-asset-backed Map 3 base view can explicitly enter the same tactical reducer at the
-controlled start; defeat/retry and victory preserve the exact private traversal snapshot and never
-apply the public synthetic world effect. Its optional local HUD panel can acknowledge entry or decline
-the one-shot project-authored request before movement resumes. The explicit base-view plus base-atlas
-selection uses the reviewed local 2x/4x nearest atlas directly while retaining the same Application
-snapshot, block/tile selection, crop, and player marker; playable startup does not reopen the ROM or
-tileset/palette extraction metadata.
-The controlled castle route selects the shared Map 19/20 atlas and then the independent Map 21
-atlas from the accepted local pack. Each view uses its current runtime layout and camera; the
-Map 21 guard remains an authored undirected diamond whose occupancy follows the controlled F result.
-The controlled Map 40 exit now retains a visible Battle 01 pending admission. A separate Content/
-Application preparation API validates selected Battle 01 placement/scene inputs and the full 48-by-48
-terrain, then returns them with an explicit party/RNG comparison preset. It preserves Pending and
-all current session state. A separate one-time initialization API consumes that Prepared request into
-battle-owned Map 57 with nine initialized combatants, raw terrain and separate occupancy. Old
-exploration commands close and Map 40 survives as frozen provenance. A separate first-round API
-computes activation, the empty region-cutscene/spawn seams and the complete ordered turn buffer,
-then atomically replaces the current battle. The first-control API now selects the actual current
-player candidate and exposes terrain-weighted movement preview, provisional confirmation and cancel
-through the same session authority. With all three explicit private Battle 01 input paths selected,
-N at Pending connects this chain to a diagnostic Map 57 grid. I/J/K/L select, Space provisionally
-confirms movement, and Backspace cancels. The view shows nine live unit positions, terrain, range,
-path and costs. With the explicit base-atlas option, the reviewed fixed Map57 base art appears
-beneath diagnostic unit markers on a 24-pixel grid; without it, terrain cells remain diagnostic.
-At action choice, a second independent Space press commits controlled no-effect STAY and immediately
-tries the actual next candidate once. In the accepted inputs, player2 receives its Centaur movement
-range using current occupancy and can move, cancel and STAY independently. Its STAY advances the raw
-byte offset to4 and invokes a finite relay for the six inactive enemy turns in actual order. Each
-standby move and no-effect STAY commits separately with current occupancy and its own AI memory.
-The seed-copy1234 becomes0134 while main RNG staysA4991234. Actual Bowie0 then receives his Regular
-movement range with budget12 and independent move/cancel/STAY. His STAY reaches the first sentinel
-at offset18, retaining all nine receipts and effective stats. The same dispatch then generates the
-next round from current positions, retained primary-region activation and main RNG. Each new order and completion
-has a round number; all previous receipts, own AI memory and the independent seed-copy survive.
-Actual players choose movement/cancel/STAY manually in each round. Known activated GIZMOs use bounded
-commandsets6/7 pursuit when no physical attack target is eligible, then commit no-effect STAY.
-Bowie entering region1 at (11,15) in round2 drives repeated pursuit through round5 and reaches
-round6 enemy132 with an eligible physical target. The separate physical consumer selects Bowie,
-moves132 to(11,14), resolves the ordinary attack and applies3 damage once. Bowie receives actual
-next-player control at9 HP, with the attack summary retained during movement/cancel/STAY.
-Main AF881234, thinking copy0134 and the last-target update remain linked through receipt51.
-At action choice, A opens manual targeting; I/J cycle backward, K/L forward, Space confirms the
-attack and Backspace returns to action choice at the provisional tile. A second Backspace restores
-the movement origin. N uses `LeaderDefeatComparison`: Chester EXP0/defeats0 and Bowie EXP0/gold0/kills0/defeats0;
-all four earlier presets retain their original unspecified inputs. The bounded class0/Wooden Sword attack against a
-regular GIZMO on terrain1 computes hit/miss/critical and EXP atomically. The explicit origin attack
-on132 produces HP5→2, EXP0→15 and receipt52; actual131/133 then run and round7 yields player2
-control with Bowie HP9/EXP15 and enemy132 HP2. After player2's explicit origin STAY, actual131/132/133
-leave Bowie at6 HP. His next manual origin attack defeats132: HP2→0, EXP15→39, gold0→60 and
-kills0→1. Receipt59 clears the enemy's live position/occupancy, retains its source row and the same
-round7 order, counts allies/enemies3/5 twice, then yields actual player1 at(9,17), HP11/budget10.
-Player1 can move and cancel while the defeated132/+24 EXP/+60 gold result remains visible.
-Continuing with player1 origin STAY, R8 Chester moving to(11,14)/STAY, then Bowie and player1
-origin STAY lets actual enemy131 hit Chester: HP11→9, receipt71 and R9 actual Chester control
-at(11,14)/budget14. His move/confirm(12,14)/cancel retains Bowie HP6/EXP39/kills1, gold60 and
-unplaced132. The exact KNTE1/Wooden Stick184 target profile uses the existing nonlethal resolver;
-Chester can then confirm his origin and manually attack131 for2 damage: HP5→3, EXP0→10 and
-receipt72. Actual128/129 standby, damaged131's hit on Bowie6→3 and133 standby return Sarah/player1
-at(9,17), HP11/budget10, receipt76/R9 raw10, main25991234/copy0634. Her move/confirm(10,17)/cancel
-preserves Chester HP9/EXP10, Bowie EXP39/kills1, gold60 and unplaced132. The latest physical result
-shows131→Bowie hit3 while current EXP and accounting remain separate. Sarah can confirm her origin
-and STAY; actual130 standby returns Bowie at receipt78. His origin attack on131 at terrain0(10,15)
-causes4 damage, HP3→0, EXP39→63, gold60→120 and kills1→2. Receipt79 clears only131;132 remains
-unplaced and unrewarded again. Seven survivors generate R10, returning Chester HP9/EXP10/budget14
-at(11,14). Move/confirm(12,14), cost2, and cancel preserve both deaths and all awards.
-Chester then moves to(9,9), cost14, and STAYs; twelve actual player choices across R10-R13
-reach enemy133 against Chester HP1. Its hit2 produces receipt106, defeats0->1 and cleared
-placement/occupancy, preserving EXP10 and unspecified kills. Actual130 pursues with only two
-living ally targets; six survivors generate R14 and return Sarah HP11/budget10 at(9,17).
-Her move/confirm(10,17), cost2, and cancel retain all107 receipts, gold120/Bowie EXP63/kills2,
-Chester HP0/defeats1, main02A11234/copy0234 and both earlier enemy corpses.
-Four origin STAY choices (R14 Sarah/Bowie, R15 Bowie/Sarah) reach R16 enemy129 after119
-continuing receipts. Enemy129 moves(11,10)->(11,14), hits Bowie for3 and clears only Bowie's
-placement with defeats0->1. The first count returns0/4 despite Sarah still living. A separate
-`DefeatPending` receipt freezes R16/raw0, main10491234/copy0034, five live occupants and prior
-accounting. The view shows Bowie HP0/EXP63/defeats1. One explicit Space restores HP to12 and
-halves current gold120 to60, entering `DefeatRecoveryPending`. The linked receipt preserves the
-immutable terminal before-image and119 ordinary receipts. N/start also explicitly selects the separate
-`GransealFirstAttemptComparison` return input (egress3/F64=false/F640=false) before source admission.
-A further Space requests Granseal map3/(32,13)/UP with D4=-1 and no raft write. The entire recovered
-battle stays reference-identical: HP12/gold60, unplaced Bowie, five markers and lethal history persist.
-With the reviewed Map3 atlas selected, N also names the early arrival comparison. A final Space
-publishes fresh Granseal Map3/(32,13)/UP, area1 with its church roof open. The new `Arrival.Party`
-owns all30 current slots: Bowie/Sarah heal, Peter7/Lemon28 process explicit neutral dormant rows,
-and dead Chester remains HP0. Gold60 and all battle accounting/history remain unchanged.
-Player0, Sarah1 and dead/BLUE_FLAME Chester2 initially share current/target(32,13)/UP.
-WASD moves only the player within x31..33/y12..14 plus (32,15)/(32,16), using the current Arrival.
-South from (32,14) opens the door once before traversal. Settling outside at (32,16) restores the
-saved church roof; re-entering (32,15) clears it, and returning to (32,14) permits another cycle.
-The roof action uses an explicit controlled settlement policy. North at (32,12) blocks and turns the
-player; the frozen follower cell, targets outside this union and F/G remain Unsupported. Sarah/Chester and all NPC declarations stay fixed; no script runs. Entity142
-is hidden/out, temp flags256..383 clear and F80 is retained. Party, flags and battle history are unchanged.
-Legacy preparations without arrival inputs retain the map57 return-request stop. Missing/late or
-replaced bindings reject. Original VInt/actscript positions, general stat refresh, natural continuity,
-fade/music and H4 remain Unknown; retry and save are unavailable.
-See the [fresh-entry boundary](./docs/map03-playability-plan.md#implemented-fresh-granseal-entry-after-battle01-defeat).
-See the [bounded doorway cycle](./docs/map03-playability-plan.md#implemented-granseal-church-doorway-and-roof-cycle).
-See the [leader-defeat boundary](./docs/map03-playability-plan.md#implemented-first-leader-defeat-pending).
-Chester kills, Sarah attack/death and third enemy defeat remain unsupported; authored EXP and
-defeats must trace back to the selected preparation.
-The eight first-strike calls, six lethal/award calls and F7751234/copy0234 endpoint describe construction/award semantics with
-presentation loops omitted. They do not establish original post-animation RAM or VInt timing.
-Misses and ordinary criticals are calculated; a validated double/counter, third defeat or other unsupported
-effect rejects the complete transition before any state commit.
-Activation deliberately covers the six-enemy roster and excludes the original deals-memory alias;
-this controlled comparison does not establish natural continuity or original economy effects.
-Backspace cancels only before action completion. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
-and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
-The fixed private canonical import also admits the controlled setup's ordered entity population as
-immutable, source-shaped Application data. The private session snapshot exposes that same population
-without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,
-map-sprite, and tail bytes remain opaque, and no entity visibility, walking, action, interaction, or
-presentation behavior is inferred.
-The repository tooling can derive the accepted entity-142/Astral UP source as one local-only 48-by-24
-two-half reference sheet with nearest 2x/4x review buckets. Both halves stay in source order: no half is
-named idle, selected for interaction time, or consumed by the playable runtime.
-The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
-Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
-selected sheet and mirrors only RIGHT. A project-authored modern camera follows that typed in-cell
-motion at two logical pixels per accepted transition, keeps the existing column-6/row-3 focus where
-map bounds permit, and samples the authoritative working layout through a bounded sub-tile crop.
-The selected bucket remains a full 576-by-336 or 1152-by-672 physical raster mapped into the fixed
-288-by-168 logical crop; Godot does not collapse it to a one-pixel-per-logical-unit intermediate.
-This manual bridge and diagnostic atlas are not natural
-battle admission, Battle 01, an original after-battle program, or the accepted continuous Map
-3-through-Battle 01 milestone, which remains **NOT READY**. The camera is likewise not an original
-camera, plane-scroll, parallax, autoscroll, VInt, or final-pixel claim.
+The current code has four assemblies and bounded public-synthetic and private-local capabilities.
+The private implementation still contains fixed-route admission, profile-specific session APIs,
+endpoint handlers, and Godot battle scheduling identified in the
+[architecture audit](./docs/architecture-audit.md). Successful controlled runs do not establish a
+general state/content-driven engine.
 
-The two persistent runtime disclosures are part of the product boundary:
+[ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the proposed migration
+to common commands, live state and configurable typed content, resumable programs, and separate
+reference runners. It records the binding user test policy. Its M0/M1 engine, new unit-test project,
+and CI/local-command cutover have not been implemented by the design or documentation merges.
 
-- `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY`
-- `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY`
+The [capability matrix](./docs/capability-status.md) owns runnable support and Unknowns. The
+[Map 3 implementation/reference record](./docs/map03-playability-plan.md) owns existing controlled
+routes, inputs and their limits; it is not the next-feature queue. ADR 0009's continuous Map 3 through
+completed Battle 01 remains the eventual reference milestone. The accepted 8C/H4 target remains
+incomplete, including natural continuity and original presentation. Engine migration does not waive it.
 
-Current capabilities and retained Unknowns are summarized in
-[Capability Status](./docs/capability-status.md).
-The forward player-visible sequence and its current traversal blocker are maintained in the
-[Map 3 Playability Plan](./docs/map03-playability-plan.md).
+## Start Here
+
+| Work | Read |
+| --- | --- |
+| Engine behavior or architecture | [Architecture](./docs/architecture.md), [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md), and the consumed behavior contract |
+| Current capability or controlled reference | [Capability status](./docs/capability-status.md), then the named Map 3/reference owner |
+| Content and profile admission | [Runtime profiles and trust](./docs/runtime-profiles-and-trust.md) |
+| Build, unit tests, reference or adapter observation | [Development and verification](./docs/development-and-verification.md) |
+| Godot presentation or local asset work | [Presentation and assets](./docs/presentation-and-assets.md) |
+| Old tests during migration | [Test audit scope](./docs/test-suite-audit.md#current-repair-status) and ADR 0019's migration table |
 
 ## Runtime Profiles
 
-| Profile | Input boundary | Current purpose |
+| Profile | Current input boundary | Claim |
 | --- | --- | --- |
-| `public-synthetic` | tracked, project-authored content only | default interactive shell, logic tests, local Godot gate, and redistribution-safe export smoke |
-| `private-local` | explicit caller-selected ignored inputs with fixed admission checks | bounded original Map 3 traversal, local diagnostics, an optional project-authored base view, and a manual project-authored battle bridge; not a full-original runtime |
+| `public-synthetic` | tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
+| `private-local` | explicit ignored canonical input; optional selected battle inputs and reviewed local art | bounded controlled original-data consumers and diagnostics; incomplete original fidelity |
 
-Private execution is never inferred from a file's presence and never silently falls back while
-reporting private success. See [Runtime Profiles and Trust](./docs/runtime-profiles-and-trust.md).
+Profile selection is explicit and content remains validated. Private startup cannot silently fall back
+while reporting private success. Future authored packages and common runtime definitions are proposed
+in ADR 0019; they are not an already available third profile.
 
 ## Local Presentation Asset Preflight
 
-The local-only `md-sf2-remake-assets` checkout remains a separate product-art repository. Before a
-checkout or exported pack can be offered to the accepted Content reader, the repository-owned
-preflight verifies an explicitly pinned commit, tree, and manifest digest, a clean local-only Git
-state, the closed manifest, and every referenced runtime payload:
-
-```powershell
-uv run python -m sf2tool.remake_assets checkout `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --expected-manifest-sha256 <64-uppercase-hex>
-
-uv run python -m sf2tool.remake_assets export `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --expected-manifest-sha256 <64-uppercase-hex> `
-  --destination <fully-qualified-new-export-directory>
-```
-
-The path-free descriptor carries the exact asset commit, tree, manifest digest, capability, and
-bounded pack totals required by outer composition. Export writes only the manifest and its referenced
-`runtime/` payloads to a fresh sibling staging directory, verifies the copy, writes the descriptor
-last, and atomically promotes it without modifying the source checkout or overwriting an earlier
-export. It never copies `.git`, `source/`, `masters/`, ignored caches, previews, or Godot import state.
-
-This is transport and checkout preflight, not asset generation or product admission by itself. A
-separate candidate builder closes the deterministic HUD SVG derivation boundary:
-
-```powershell
-uv run python -m sf2tool.remake_asset_build hud-svg-candidate `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --asset-id hud.<name> `
-  --expected-master-sha256 <64-uppercase-hex> `
-  --resvg-archive <fully-qualified-resvg-win64.zip> `
-  --candidate-name <fresh-cache-child>
-```
-
-The builder admits exactly one nonignored untracked `masters/ui/<name>.svg` over an otherwise exact
-local-only checkout, verifies the pinned resvg archive and executable version, renders deterministic
-2x/4x RGBA8 PNGs twice, validates the existing pack schema, and atomically publishes only a fresh
-direct child under ignored `cache/`. It never stages, promotes, commits, or prints a local path.
-
-The same tooling host also closes the first private Map 3 world-family candidate boundary without
-turning the candidate into an accepted asset transaction:
-
-```powershell
-uv run python -m sf2tool.remake_asset_build map3-base-atlas-candidate `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --rom <fully-qualified-accepted-rom> `
-  --expected-rom-sha256 <accepted-uppercase-sha256> `
-  --tileset-metadata <fully-qualified-accepted-tileset-metadata> `
-  --expected-tileset-metadata-sha256 <accepted-uppercase-sha256> `
-  --palette-metadata <fully-qualified-accepted-palette-metadata> `
-  --expected-palette-metadata-sha256 <accepted-uppercase-sha256> `
-  --candidate-name <fresh-cache-child>
-```
-
-Actual bytes and caller pins must both match the fixed accepted ROM and metadata roots before either
-metadata document is parsed. The builder derives the accepted Map 3 palette and ordered five-slot
-selection, decodes only those five 4,096-byte buffers, and emits one ignored private source bundle,
-one 128-by-320 master atlas, nearest-neighbor 2x/4x buckets, and a single-asset candidate manifest.
-Each of the five vertical 128-by-64 segments is exactly 128 8-by-8 tiles on a 16-by-8 grid. Palette
-index zero is transparent; the existing deterministic Mega Drive three-bit channel expansion maps
-the other colors to straight-alpha sRGB RGBA8. That mapping is a project-authored review/runtime
-candidate policy, not hardware, display, colorimetric, final-pixel, or original-fidelity parity.
-
-The builder result remains under ignored `cache/`; it does not stage, promote, commit, export, mount,
-enter a PCK, or authorize public redistribution. Promotion remains a separate reviewed local
-asset-repository transaction.
-
-The player reference-frame candidate uses the same fixed ROM boundary without claiming a live
-admission frame:
-
-```powershell
-uv run python -m sf2tool.remake_asset_build map3-player-reference-frame-candidate `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --rom <fully-qualified-accepted-rom> `
-  --expected-rom-sha256 <accepted-uppercase-sha256> `
-  --candidate-name <fresh-cache-child>
-```
-
-It derives the accepted controlled player selection, regular map-sprite zero, DOWN source slot two,
-no horizontal mirror, and the first of the two decoded 24-by-24 halves. That half is named only
-`initial-reference-frame`: admission animation counter, admission-visible frame, movement-facing
-timing, DMA/cache completion, and the live palette at admission remain Unknown. The output is one
-ignored source bundle, a 24-by-24 master, and nearest-neighbor 2x/4x buckets under the existing closed
-manifest schema. Palette index zero is transparent; the same project-inferred channel expansion is
-used without a hardware, final-pixel, standing, idle, or original-visible-frame claim. As with the
-atlas builder, review and promotion are a separate local-only asset-repository transaction.
-
-The entity-142 reference candidate uses the accepted fixed-ROM evidence fixture rather than a caller-
-selected sprite identity:
-
-```powershell
-uv run python -m sf2tool.remake_asset_build map3-entity142-two-half-reference-candidate `
-  --asset-root <fully-qualified-asset-checkout> `
-  --expected-commit <40-lowercase-hex> `
-  --expected-tree <40-lowercase-hex> `
-  --rom <fully-qualified-accepted-rom> `
-  --expected-rom-sha256 <accepted-uppercase-sha256> `
-  --candidate-name <fresh-cache-child>
-```
-
-It binds the exact Map 3 record/slot, logical entity 142, map-sprite 209, UP-facing source, compressed
-payload, two decoded 24-by-24 halves, and palette 3 before emitting one 48-by-24 sheet. The halves remain
-in source order and both enter the master and nearest 2x/4x buckets. The builder does not choose an
-interaction-time half or infer idle, counter, cadence, visibility, or interaction behavior. Its ignored
-candidate and separately reviewed local asset transaction do not by themselves select a product
-frame.
-
-The reviewed local asset history now owns `hud.yes-no-window-frame`,
-`hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
-`world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
-`world.map3.player.locomotion.*`, and
-`world.map3.entity142.astral.up.two-half-reference`, plus
-`world.map19-20.base-tileset-atlas`, `world.map21.base-tileset-atlas`, and
-`world.map40.base-tileset-atlas` and `world.map57.base-tileset-atlas`. The current twelve-asset pack is local commit
-`3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880`, tree
-`880d845e1368a87f185cb8bb18b7a3cc6d5882f2`, with manifest SHA-256
-`4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40`. The atlas and player runtime
-buckets are reviewed nearest 2x/4x outputs. Explicit base-atlas startup requires all four exploration
-map families; Map 40 uses palette 3/slots `[94,95,96,97,58]` and its own atlas at the controlled
-`(4,30)`/UP arrival, crop `(0,27)`, with init still unexecuted. Traversal-only mode retains diagnostics;
-missing or mismatched Map 40 assets reject without a retained-map fallback.
-Selecting Battle01 inputs with the same base-atlas option also requires the exact Map57 atlas.
-Its fixed 16-by-20 area uses 24-pixel blocks and preserves full 2x/4x texels in the physical raster.
-The accepted source/policy is bound by the full manifest, and the catalog separately fixes each PNG
-identity. Missing Map57 art rejects visibly before startup; it cannot retain Map40 or report a
-diagnostic fallback as base-art success. Unused catalog blocks 1/2 contain unloaded-slot references;
-only the unchanged admitted layout is drawable. Original layers, VRAM persistence, animation and
-final fidelity remain Unknown. Live units remain authored diagnostic markers, not Map3 player art.
-Source and master material remain review/provenance inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
-the lower-level viewport can still project it when no locomotion mount is supplied. The explicit
-base-atlas composition mounts the three player two-half sheets through Application-owned locomotion
-state and fails closed if that mount is unavailable rather than falling back to the retained frame.
-It also mounts the entity-142 two-half reference and applies the explicitly project-authored
-`project-authored-half0-diagnostic-idle-v1` policy as the fresh-bind frame for the exact accepted Map 3
-`ms_map3_Entities` record 17 / logical entity 142 / physical slot 17 binding. The viewport then applies
-`project-authored-two-half-diagnostic-cadence-v1`: presentation-only immutable state holds each
-source-order half for 30 fixed Godot physics callbacks and cycles `0 -> 1 -> 0`. Snapshot, movement,
-and camera reprojection preserve that phase; a fresh exact bind resets it to half zero. This bounded
-modern diagnostic choice ignores `delta`, wall time, `SimulationStep`, and gameplay state. It is not
-evidence that either half was visible or idle in the original, or that the original used this cadence.
-
-An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
-atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
-selection requires one fully qualified asset root, the exact lowercase mounted commit string, and the
-exact uppercase manifest SHA-256. The Content reader admits the complete pack before `GameSession`
-starts; HUD plus atlas share that one admission, while canonical Map 3 import remains the separate
-logical/session input. The thin Godot
-catalog resolves only requested semantic IDs and accepted 2x/4x buckets. It asks the same Content
-reader to reopen the fixed manifest, resolve and recheck each contained
-path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
-into Application or Godot. Partial
-values, an implicit mount, or a failed private mount never fall back while reporting private success.
-The base-atlas selection also requires the exact player reference, locomotion, and entity-142 reference
-assets from the same accepted local transaction. Godot replaces only the base view's project-authored
-player marker and adds the one exact entity diagnostic,
-keeps semantic position and animation state in the private session, and advances the accepted small
-state transition once per fixed Godot physics tick. The adapter selects the Application-named sheet,
-half, and RIGHT mirror and maps 384 source movement units across one 24-pixel logical cell. It does
-not derive phase from `SimulationStep` or `LastTraversal`, call either half standing/idle, or claim a
-universal admission frame or wall-clock fidelity. The fixed-ROM visual-payload reader and cross-port
-binding remain offline admission/tooling support; playable startup neither invokes them nor accepts
-`--original-rom`, `--map-tileset-metadata`, or `--map-palette-metadata`.
-The entity diagnostic reprojects only from the immutable admitted population and the current Godot
-camera crop; the static-overlay diagnostic omits it. It does not add entity movement, occupancy,
-collision, lifecycle, event effects, interaction behavior, or all-entity rendering.
-
-The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
-presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real
-desktop, an unmodified fallback window chooses the largest client tier from 1920 by 1080, 1600 by 900,
-1280 by 720, and 960 by 540 whose measured decorations also fit the current usable screen, then centers
-that window and sets the runtime minimum to 960 by 540. Fullscreen, maximized, command-line resolution,
-and other already established non-default physical targets remain unchanged. HiDPI is enabled, but the
-final Godot client size is used directly and is never multiplied by the Windows DPI scale again. The
-selected 2x or 4x asset bucket remains resident until restart; resizing during a session scales or
-letterboxes the unchanged logical canvas and does not reread private content or hot-swap a bucket.
-PublicSynthetic startup and both stable smoke receipts remain unchanged.
-
-The runtime reader does not inspect a Git checkout or infer its current `HEAD`; it matches the
-caller-supplied mounted commit string and the fixed manifest/payload identities. The repository-owned
-local preflight above separately proves the actual asset checkout's commit, tree, clean state, lack of
-remotes, and manifest before launch or export.
-
-The current consumer uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
-user-selectable UI scaling remains deferred rather than being guessed by this slice.
-
-Without the optional base-view battle bridge, the explicit mount remains the existing chrome-only
-diagnostic preview. With that bridge, Godot projects its typed Pending state as a bounded ENTER/STAY
-panel: `N` sends the exact existing entry acknowledgement and `Backspace` sends an exact one-shot
-decline through `GameSession`. Decline is terminal for that session's bridge, restores movement, and
-does not mutate the private map snapshot. The built-in-font labels are project-authored diagnostic
-copy, not an admitted product font, original Yes/No text, an icon, a Theme, or original UI behavior.
-While the bridge is Active, the verified transparent cursor raster is an additive overlay positioned
-only from the existing typed `HasCursor` cell; the gold cell highlight and `▣`/occupant fallback remain
-visible and authoritative state remains outside Godot. Missing or drifting frame/cursor payloads fail
-the requested private mount closed. Atlas-only selection does not imply either HUD consumer, and
-HUD-only behavior is unchanged. The atlas consumer uses only the selected runtime PNG, validates its
-Godot-decoded RGBA8 shape, and samples nearest pixels through the existing authoritative block/tile,
-slot, and flip projection. Every selected bucket texel survives into a physical ImageTexture, full
-physical tile axes are flipped together, and `DrawTextureRect` maps that raster back to the unchanged
-logical crop before the logical player marker is drawn. Current startup admission still requires
-every scale-squared atlas sample to exactly repeat the typed 1x payload; experimental edge-aware,
-xBRZ, and color-ramp variants therefore remain rejected pending separate asset and policy review.
-Its additive local-only marker is emitted last only when explicitly selected; the marker payload,
-the four earlier private markers, and the public marker remain byte-stable. The separate
-`md-sf2-gfx-remake` repository remains
-non-authoritative R&D: its measurements informed the product-authored frame, but its ignored
-experimental SVG contains forbidden text and an embedded raster and is not an admitted product master
-or runtime input.
-Because the product asset repository intentionally has no remote, an exact local commit proves
-identity but does not provide off-machine recovery; source/master backup remains a separate local
-operational responsibility. Rollback selects a prior reachable local commit or an immutable prior
-export and never rewrites or overwrites accepted history.
+The separate local product-art repository and its manifest/runtime payloads remain private inputs.
+Use the existing `sf2tool.remake_assets` checkout/export command only when the owning asset change or
+launch needs it. [Presentation and assets](./docs/presentation-and-assets.md#local-product-asset-pack)
+owns the admitted pack, current identities, candidate derivation, mounting and distribution boundary.
+Reuse accepted inputs and the selected Godot installation; a new topic or verification check does not
+require another checkout, extraction, SDK, project copy, or asset export.
 
 ## Build and Test
 
-Run the locked .NET workflow from this directory:
+Reuse the owning worktree and its configured Python/NuGet caches. Before any .NET command, select the
+existing absolute `DOTNET_BIN` and shared `DOTNET_CLI_HOME`, and force
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. The
+[locked workflow](./docs/development-and-verification.md#locked-net-workflow) owns exact launch setup.
 
-```powershell
-dotnet restore Sf2.Remake.sln --locked-mode
-dotnet build Sf2.Remake.sln --configuration Release --no-restore
-dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
-```
+Add small unit tests of actual engine behavior. Reference comparisons, probes, fixture drivers,
+planners, gates, reports and helpers are verification; do not add tests of those tools. Old tests may
+migrate or retire by behavior, without count parity, one replacement per deletion, or a green old
+aggregate. Needed adapter checks observe the actual running Godot state/input; screenshots are prohibited.
 
-The pinned SDK, package versions, and NuGet source are tracked beside the solution. Relevant runtime
-changes also use the repository-maintained local official Godot gate. GitHub Public intentionally
-remains lightweight and does not download or run Godot.
-
-See [Development and Verification](./docs/development-and-verification.md) for planner routing,
-local Godot validation, private-smoke boundaries, and process cleanup requirements.
+The existing solution and Public CI still run legacy test selections. Their presence is current
+execution behavior, not an instruction to retain them for the new engine. The
+[verification guide](./docs/development-and-verification.md#github-public) distinguishes those current
+commands from the separately owned M0/M1 cutover. Documentation-only work uses direct document checks.
 
 ## Repository Layout
 
 ```text
 remake/
-  Sf2.Remake.sln                 locked whole-remake solution
-  src/
-    Sf2.Remake.Domain/           deterministic state, values, and reducers
-    Sf2.Remake.Application/      GameSession, commands, ports, and observations
-    Sf2.Remake.Content/          validated public/private input adapters
-  game/                          Godot project and thin host adapters
-  tests/                         Domain, Application, Content, and Godot tests
-  docs/                          implementation architecture, profiles, status, and workflow
-  global.json                    pinned .NET SDK
-  toolchain.json                 official Godot artifact identity and bounded timeouts
+  Sf2.Remake.sln                 current solution, including legacy test projects
+  src/Sf2.Remake.Domain/         deterministic rules and state transitions
+  src/Sf2.Remake.Application/    GameSession, control flow, content ports and observations
+  src/Sf2.Remake.Content/        validated input readers and definition construction
+  game/                         Godot project, composition, input and presentation
+  tests/                        existing unit and legacy verification consumers
+  docs/                         current implementation, direction, capability and usage owners
+  global.json                   pinned SDK
+  toolchain.json                pinned official Godot artifacts and process bounds
 ```
-
-The dependency and delegation map is documented in [Architecture](./docs/architecture.md).
 
 ## Boundaries
 
-- `GameSession` is the sole logical gameplay mutation facade.
-- Domain and Application code do not depend on Godot, JSON, machine paths, or original payloads.
-- Content validates external identities and structure before constructing admitted definitions.
-- The private canonical adapter validates the selected setup's exact ordered entity projection and
-  constructs one immutable population authority shared by the import definition and private snapshot.
-  Raw source addresses and local paths do not cross into Application; opaque record bytes do not imply
-  runtime action, walking, visibility, interaction, or rendering semantics.
-- Godot maps input to semantic commands and projects authoritative observations; it does not own
-  gameplay rules.
-- The public-synthetic tactical micro-battle is deterministic project-authored content. Its actor,
-  enemy, grid, movement/attack ranges, hit points, damage, fixed north/east/south/west enemy movement
-  tie-break, victory/defeat, retry, completion flag/effect/setup, cues, and return state make no claim
-  about the original game. Only victory applies completion state once through `GameSession`; defeat
-  applies no world effect and exact acknowledgement restarts the same definition.
-- The private-local battle bridge reuses only that tactical definition, commands, cues, and Domain
-  reducer. It pauses private traversal while active, preserves the same private snapshot through
-  defeat/retry and victory, and does not import the public completion flag, effect, setup, facing, or
-  return-map state. Its project-authored pending choice either acknowledges entry or records a
-  one-shot terminal decline without changing that snapshot.
-- The controlled Map 40 exit creates a visible Battle 01 pending admission before relocation.
-  After 27 ordinary inputs, the final Up retains Map 40 `(14,13)`/UP and all session/animation/bridge
-  state, while naming destination Map 57 `(8,18)`/UP and candidate Battle 1. Its explicit new-battle
-  preset supplies F501/F88/F451 clear and requires the completed guard StoryFlag1/F401. The separate
-  Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
-  With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
-  generates the first round and enters supported first-player control. Without those options,
-  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
-  other combat profiles, multi-strike/counter/death resolution, other AI commands, victory and natural continuity remain open. See the
-  [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
-- Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
-  ignored and local. None is committed, uploaded, or embedded in the public package.
-- Public-synthetic import/export success grants no right to distribute original content.
-- Natural route, Battle 01 continuity, original rendering/audio/assets, persistence, complete H4,
-  and 8C fidelity remain incomplete, deferred, Unsupported, or Unknown at their existing owners.
+- `GameSession` owns logical gameplay mutation. Domain and Application remain independent of Godot,
+  machine paths and byte decoding; Content validates external inputs before constructing definitions.
+- Gameplay legality follows live state, data and supported rules. Reference case IDs, receipt counts
+  and one walkthrough's rounds or character sequence belong to comparison code, not engine predicates.
+- Preserve real source-specific rules and explicit unsupported capabilities. Generalization does not
+  mean removing provenance, numeric domains, atomicity or meaningful failure reasons.
+- Godot submits semantic input and projects state. Reference verification consumes the engine through
+  its ordinary API; it cannot become a production dependency or evidence for original-game claims.
+- Private payloads, derived content and runtime outputs remain ignored. Public success grants no
+  right to distribute original assets.
 
 ## Architecture Decisions
 
-- [ADR 0008](../docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md) fixes Godot 4.7.2
-  .NET/C# and the CLI-first, plain-C# core.
-- [ADR 0011](../docs/decisions/0011-phase4-remake-runtime-architecture.md) fixes the four assemblies,
-  state ownership, Content ports, Godot adapter, and H4 layering.
-- [ADR 0017](../docs/decisions/0017-heavy-boundaries-light-internals.md) retains heavy trust,
-  mutation, versioned-port, and observation boundaries while keeping same-process internals light.
-
-Historical implementation slices and review chronology remain in Git and merged pull requests rather
-than this entry document.
+The [architecture guide](./docs/architecture.md) routes ADR 0008's engine choice, ADR 0011's state and
+assembly boundaries, ADR 0017's lightweight internals, and ADR 0019's proposed behavioral migration.
+Historical slices and review chronology remain in Git and their evidence owners.

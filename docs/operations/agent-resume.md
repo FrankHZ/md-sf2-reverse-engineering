@@ -4,7 +4,7 @@ This is the compact entry point for a fresh project task. It routes readers to d
 duplicating their changing counters, findings, branch names, or commit identities.
 
 Apply the stable repository rules in [`AGENTS.md`](../../AGENTS.md) once before using this route. This
-file locates task owners; it does not replace the evidence, ownership, safety, verification, or
+file locates task owners; it does not replace the evidence, ownership, safety, scoped verification, or
 Definition-of-Done rules in that guide.
 
 ## Runtime Identity First
@@ -39,6 +39,13 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   authorized bounded slice.
 - Private ROMs, extracted assets, runtime captures, downloaded tools, and generated binaries remain
   local and untracked.
+- [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) records the proposed
+  state/content-driven engine migration and the binding user test policy. Add engine behavior unit
+  tests; use verification tools directly without tests of those tools. Old tests may migrate or retire.
+  M0/M1, the new unit project and CI/local cutover are not implemented by the document merge.
+- Reuse the task's existing isolated worktree, environments and Godot installation/project/instance.
+  New isolation needs concurrent ownership or a concrete reproduction/launch failure. Godot acceptance
+  uses actual state/input observations; screenshots are prohibited.
 - Repository documents and exact Git objects are durable state. Old chats and external memory are not.
 
 ## Route by Task Ownership
@@ -51,13 +58,18 @@ Read the smallest owning surface that can answer or govern the task:
 | Research coverage, aggregate frontier, or cadence | [`research/source-coverage.md`](../research/source-coverage.md), [ADR 0003](../decisions/0003-static-first-batched-runtime-research.md), and [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md) |
 | Evidence-bound subsystem contract | Closest [`design/contracts/`](../design/contracts/) owner and its accepted research dependencies |
 | Cross-subsystem or player-facing synthesis | [`design/documentation-roadmap.md`](../design/documentation-roadmap.md) and the closest [`design/synthesis/`](../design/synthesis/) owner |
-| Phase 4 implementation, readiness, or first playable milestone | [`remake/README.md`](../../remake/README.md) and its architecture/profile/capability/verification owners, plus [ADR 0008](../decisions/0008-godot-csharp-cli-first-remake-tooling.md), [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), [ADR 0011](../decisions/0011-phase4-remake-runtime-architecture.md), and [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md) |
-| Verification selection | [ADR 0012](../decisions/0012-dependency-aware-partitioned-verification.md) and `uv run sf2 verify plan --base origin/main --head HEAD` on a clean committed head |
+| Engine implementation or migration | [`remake/README.md`](../../remake/README.md), [architecture](../../remake/docs/architecture.md), [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md), and the directly consumed behavior contracts |
+| Eventual playable milestone or fidelity claim | [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md), and the named readiness/capability owner; 8C/H4 remains incomplete |
+| Verification selection | [Remake scope/current-command distinction](../../remake/docs/development-and-verification.md#scope) for engine/docs; [ADR 0012](../decisions/0012-dependency-aware-partitioned-verification.md) for research; inspect `uv run sf2 verify plan --base origin/main --head HEAD` on a clean committed head |
 | Large artifact or diff inspection; PR handoff or review | [`bounded-inspection-and-review.md`](./bounded-inspection-and-review.md) |
 | Global documentation routing or decision inventory | [`../README.md`](../../README.md), [`docs/README.md`](../README.md), and the affected index owners |
 
 Use `uv run sf2 research-index list --summary` when current indexed totals matter. Do not copy totals
 from an old handoff or maintain them here.
+
+For documentation-only work, perform direct document and scope checks. Existing CI/planner legacy
+fanout is current tool behavior, not permission to repeat old suites or reinstate superseded engine
+test obligations. Preserve completed results, failed nodes and process state across compaction.
 
 ## Bounded Worker Handoff
 

@@ -3,7 +3,11 @@
 ## Reading This Matrix
 
 This matrix groups coherent runtime capabilities. It is not a pull-request chronology and does not
-create evidence for the original game.
+create evidence for the original game. Rows describe the current legacy implementation, including
+controlled-route limitations; they are not the capability model of the proposed
+[ADR 0019 engine](../../docs/decisions/0019-state-and-content-driven-remake-engine.md). M0/M1 and
+CI/local cutover have not been implemented. Completed old checks remain evidence of their named
+scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplete.
 
 Status terms:
 
