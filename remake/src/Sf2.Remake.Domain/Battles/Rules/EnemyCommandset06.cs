@@ -13,7 +13,7 @@ internal static class EnemyCommandset06
         // In this admitted empty spellbook/item/status branch ATTACK1, HEAL1 and SUPPORT
         // return -1 without RNG. MOVE1 mode0 returns 0, including a Stay movement result.
         var actor = current.GetActor(actorRef);
-        var targets = current.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly).OrderBy(a => a.Definition.Slot).ToArray();
+        var targets = current.Actors.Where(a => a.Hp > 0 && a.IsAlly).OrderBy(a => a.ProcessingOrder).ToArray();
         var raw = Grid(actor.Position!);
         var costs = targets.Select(a => raw.CostAt(a.Position!)).ToArray();
         int selected = AiMovementRules.PursuitTarget(costs);

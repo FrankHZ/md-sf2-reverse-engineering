@@ -29,7 +29,7 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 2` package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 3` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
@@ -45,6 +45,14 @@ Null uses the encounter deployment; an explicit override must be in bounds and t
 actors cannot overlap. Dead actors remain explicit inputs and become unplaced runtime actors; missing
 records/counters and unknown/duplicate references are rejected. Array order does not override the
 encounter's stable deployment order.
+
+Each closed placement requires `actor`, `faction` (`ally` or `enemy`), `processingOrder` (unique within
+the encounter,0–2,147,483,647), `x` and `y`. The actor definition has no numeric slot. Faction and order
+belong to this deployment; runtime state derives them rather than inferring allegiance from order.
+Content admits at most30 allies and32 enemies per encounter and requires ally level1–99 / enemy
+level0–99. Only player-controlled allies and AI-controlled enemies are supported. Source slots are
+mapped solely by reference consumers;255 is a valid authored processing order, not a missing actor.
+Actor/deployment/start array reordering cannot change round draws, candidate ties or UI selection.
 
 `ScenarioReadAccepted` returns the package's `ScenarioDefinition` and `BattleStartInput` separately.
 The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted
@@ -80,11 +88,11 @@ The enemy-only `controller: commandset06-script3` selects the already-active sou
 physical TargetPriorityScript3. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
 status and items remain empty. Encounter rewards are required when the physical action executes.
 Living opposing targets must be reachable through legal radius-one attack positions. Candidate
-scoring follows reverse slot order; signed raw-priority cohorts are selected before the returned
+scoring follows reverse processing order; signed raw-priority cohorts are selected before the returned
 priority is capped at15. Critical multi-target cohorts use the Regular class table, then the source
 largest-movement/later-collected tie rule. Zero attack targets return ATTACK1 failure, followed by
 unavailable HEAL1/SUPPORT and MOVE1. Complete raw target costs0–127 select the first lowest-cost living
-opponent in slot order. Source preliminary movement uses fixed cost4, then the legal MOV grid and
+opponent in processing order. Source preliminary movement uses fixed cost4, then the legal MOV grid and
 radius0/1 stopping correction; no legal station yields origin Stay. MOVE1 succeeds and ends the action
 in either case, without reaching the later STAY command or attacking again that turn. Movement needs
 no rewards definition and draws no RNG. High/incomplete target costs, activation, other commandsets,

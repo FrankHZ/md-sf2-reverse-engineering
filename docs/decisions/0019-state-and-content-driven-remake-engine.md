@@ -62,7 +62,7 @@ Domain now has small internal [BattleRandom](../../remake/src/Sf2.Remake.Domain/
 [TurnOrderRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs), and
 [BattleRange](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRange.cs) rules. Existing Battle01
 healing and first-round consumers call them. Their inputs contain no character, round, receipt or
-route predicates. Main RNG preserves the low word; turn ordering retains the original slot domain,
+route predicates. Main RNG preserves the low word; turn ordering maps original slots only at the reference boundary and retains
 word arithmetic, signed comparison, sentinel participation and fixed buffer capacity.
 
 Healing is the scalar ordinary same-side, EXP-eligible priest rule after class and power selection.
@@ -89,7 +89,7 @@ Independent main-gate review remains required for each implemented slice.
 The [authored reader](../../remake/src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs)
 loads either [practice yard](../../remake/content/authored/practice-yard.json) or
 [garden watch](../../remake/content/authored/garden-watch.json) into defensively owned typed definitions.
-The packages supply different maps, encounters, actor/slot identities, placements, vitals, stats and
+The packages supply different maps, encounters, actor identities and processing order, placements, vitals, stats and
 spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
 `initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
 new-battle initialization policy. The separate private encounter reader imports source data; common
@@ -154,7 +154,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization precedes the remaining common private initialized-entry
 plan. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 2`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 3`. The reader accepts that current shape only, without parallel old/new models.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -191,9 +191,39 @@ The [native start observations](../../remake/docs/development-and-verification.m
 use real input, existing nodes and complete state checkpoints across all four packages and a differing
 controlled start; no screenshots, session setters or reference aggregate are required.
 
-Remaining modernization is explicitly separate: faction versus stable order, agility versus extra
+### Explicit encounter faction and processing order
+
+Each `BattleDeploymentDefinition` now owns `Faction` (`Ally` or `Enemy`) and a nonnegative unique
+`ProcessingOrder`. These are encounter roles, separate from intrinsic actor definitions and from
+per-session resources or position overrides. Format-v3 `placements` require `actor`, `faction`,
+`processingOrder`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
+previous order explicitly without changing other values. Content retains the admitted maximum of
+30 allies and 32 enemies and supported player-ally / AI-enemy combinations; ally AI and player-controlled
+enemies remain Unsupported. This is a bounded two-faction model, not a general faction framework.
+
+`BattleDefinition` canonicalizes deployments by processing order. Round RNG assignment, AI candidate
+ties and Godot selection/projection consume that order regardless of actor, deployment or keyed-start
+array order. Runtime actors derive faction/order from their immutable deployment. Healing, opposing
+movement and physical rewards use faction; queue lookup uses `ActorRef`, never an order value.
+The shared `TurnOrderRules` candidate separates typed identity from integer order, and nullable queue
+identity marks a sentinel. Order255, sparse values and values above the original byte range are ordinary
+orders. Original word/RNG arithmetic, agility flags, signed scoring, sentinel participation, 64 entries
+and 62 sorting passes remain unchanged.
+
+Only the actual reference `Battle01FirstRound.GenerateTurnOrder` projection admits source byte slots,
+maps each slot to identity and processing order, and maps the nullable sentinel back to255. It invokes
+the same calculator; no second turn algorithm or production source-ID alias is introduced.
+**Confirmed (engine):**
+[`BattleFactionOrderTests`](../../remake/tests/Sf2.Remake.Engine.Tests/BattleFactionOrderTests.cs) execute
+real Content/session targeting, opposing movement, HEAL rejection, physical death/rewards and next
+control with explicit allegiance, high/sparse orders and reordered JSON. Existing independent signed
+turn/RNG and AI tie expectations remain; the affected original first-round comparisons exercise the
+actual reference mapping. The [native recipe](../../remake/docs/development-and-verification.md#authored-faction-and-order-observation)
+uses the existing adapter/probe with four packages and changed-order input, without screenshots.
+
+Remaining modernization is explicitly separate: agility versus extra
 action, meaningful rule/capability profiles, control versus AI strategy, terrain semantic references
-and original slot/raw mappings. Existing source semantics remain unchanged until their dedicated
+and remaining raw source mappings. Existing source semantics remain unchanged until their dedicated
 migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
 registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
 these bounded content slices does the private initialized-entry dependency chain resume; raw private
@@ -278,7 +308,7 @@ spell/item categories remain Unsupported. Regular MOV 1–63 bounds candidate mo
 source signed-grid 128 boundary. Candidate construction uses the existing weighted grid, blocks
 opponents, permits traversal through friends and excludes occupied stopping cells. The radius-one
 ring visits north, west, east, south, takes the first strictly lowest movement cost, and immediately
-accepts the actor's cost-zero origin. Reachable living allies are stored by ascending slot, while
+accepts the actor's cost-zero origin. Reachable living allies are stored by ascending processing order, while
 thinking calls visit that array backwards and store each priority at its original index. No actor
 name, receipt, round, seed allowlist or expected target is a gameplay predicate. Zero reachable
 attack targets return command failure to the bounded commandset continuation below.
@@ -332,7 +362,7 @@ entire ACTION succeeds; failure preserves earlier commits and the current enemy'
 `GameSession`, Application publication and C# Godot projection need no new target-selection route.
 
 **Confirmed (engine):** [target selection tests](../../remake/tests/Sf2.Remake.Engine.Tests/TargetSelectionTests.cs)
-use two Content packages, changed classes/positions/slots/configuration order, competing targets,
+use two Content packages, changed classes/positions/processing orders/configuration array order, competing targets,
 critical and noncritical cohorts, raw/capped and signed-byte boundaries, automatic continued turns,
 natural RNG-driven target changes, common counter rewards and whole-action rejection. Existing
 [enemy action tests](../../remake/tests/Sf2.Remake.Engine.Tests/EnemyActionTests.cs) retain death/queue,
@@ -355,7 +385,7 @@ turn reevaluates ATTACK1. Rewards data is required when an attack is reached, no
 calculations with actual reference pursuit/standby/physical consumers: stable unsigned raw target-cost
 selection, the source decreasing-cost walk retaining accumulated direction bits, and radius station
 selection. MOVE1 builds an unblocked permanent-terrain grid with budget128 and scans living opponents
-by slot. Every target cost must be present and within0–127; the first equal minimum wins. A target-rooted
+by processing order. Every target cost must be present and within0–127; the first equal minimum wins. A target-rooted
 grid drives preliminary movement to `max(0, startCost - 4)`. This is fixed movement cost4, not four
 tiles or the whole actor MOV budget. The actor's MOV*2 grid blocks opponents and permits friend
 traversal; radius0 then1 searches for an unoccupied stopping cell with strict lower-cost precedence
@@ -721,14 +751,14 @@ The current executable examples are
 [`practice-yard`](../../remake/content/authored/practice-yard.json),
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
-[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v2 documents
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v3 documents
 through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
-`placements` retain deployment coordinates, and `start.actors` bind explicit per-session values by
+`placements` own faction, stable processing order and deployment coordinates, and `start.actors` bind explicit per-session values by
 actor reference. A start override changes one controlled deployment without altering the definition.
 
-A second supported package needs data changes only. Source slot order remains the explicit ordering
-key until its separate mapping migration; authored IDs are not cast to source combatant numbers.
+A second supported package needs data changes only. Encounter processing order is independent of faction and actor identity;
+original byte slots map explicitly at the reference boundary.
 Missing map/actor references are ContentError. An unimplemented effect is UnsupportedCapability;
 a runtime cast with insufficient MP is IllegalCommand. No loader fabricates missing start records,
 replaces an unknown effect with HEAL, or treats an authored package as original-game evidence. These
@@ -996,6 +1026,13 @@ remote required-check configuration: replace `tracked-inputs` with `scope`, `eng
 exactly as observed; cutover does not justify replaying legacy normal/full/.NET/Godot suites.
 
 ## Incremental migration and stopping conditions
+
+The current stage order is to finish the new-engine migration, then complete
+[ADR 0009](./0009-first-phase4-playable-slice.md) verification, and then undertake modern art, UI and
+UX redesign through the existing [presentation owner](../../remake/docs/presentation-and-assets.md).
+ADR 0009 requires the complete continuous Map 3 → Battle 01 completion scenario and its accepted
+continuity, endpoint and evidence targets. Migration completion does not mean ADR 0009 has passed;
+this order does not weaken ADR 0009/0010 acceptance or start the later visual redesign.
 
 Migration order is below; M0's implemented subset is recorded above. Other candidate paths name
 future responsibility. Each implementation slice starts from accepted main, declares exact paths/tests,

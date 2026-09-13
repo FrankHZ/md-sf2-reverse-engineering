@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "package": "garden-watch",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -79,7 +79,6 @@
   "actors": [
     {
       "id": "herbalist-b",
-      "slot": 12,
       "classRule": "unpromoted-priest",
       "controller": "player",
       "level": 1,
@@ -99,7 +98,6 @@
     },
     {
       "id": "scout-b",
-      "slot": 18,
       "classRule": "ordinary",
       "controller": "player",
       "level": 1,
@@ -114,7 +112,6 @@
     },
     {
       "id": "watcher-b",
-      "slot": 147,
       "classRule": "ordinary",
       "controller": "stay",
       "level": 1,
@@ -136,17 +133,23 @@
         {
           "actor": "herbalist-b",
           "x": 2,
-          "y": 2
+          "y": 2,
+          "faction": "ally",
+          "processingOrder": 12
         },
         {
           "actor": "scout-b",
           "x": 2,
-          "y": 4
+          "y": 4,
+          "faction": "ally",
+          "processingOrder": 18
         },
         {
           "actor": "watcher-b",
           "x": 7,
-          "y": 4
+          "y": 4,
+          "faction": "enemy",
+          "processingOrder": 147
         }
       ]
     }

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "package": "stone-court",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -86,7 +86,6 @@
   "actors": [
     {
       "id": "swordsman",
-      "slot": 4,
       "classRule": "ordinary",
       "controller": "player",
       "level": 1,
@@ -109,7 +108,6 @@
     },
     {
       "id": "lookout",
-      "slot": 19,
       "classRule": "ordinary",
       "controller": "player",
       "level": 1,
@@ -132,7 +130,6 @@
     },
     {
       "id": "raider",
-      "slot": 131,
       "classRule": "ordinary",
       "controller": "stay",
       "level": 1,
@@ -155,7 +152,6 @@
     },
     {
       "id": "scavenger",
-      "slot": 142,
       "classRule": "ordinary",
       "controller": "stay",
       "level": 1,
@@ -178,7 +174,6 @@
     },
     {
       "id": "sentry",
-      "slot": 154,
       "classRule": "ordinary",
       "controller": "stay",
       "level": 1,
@@ -208,27 +203,37 @@
         {
           "actor": "swordsman",
           "x": 3,
-          "y": 3
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 4
         },
         {
           "actor": "lookout",
           "x": 1,
-          "y": 1
+          "y": 1,
+          "faction": "ally",
+          "processingOrder": 19
         },
         {
           "actor": "raider",
           "x": 2,
-          "y": 3
+          "y": 3,
+          "faction": "enemy",
+          "processingOrder": 131
         },
         {
           "actor": "scavenger",
           "x": 4,
-          "y": 3
+          "y": 3,
+          "faction": "enemy",
+          "processingOrder": 142
         },
         {
           "actor": "sentry",
           "x": 7,
-          "y": 5
+          "y": 5,
+          "faction": "enemy",
+          "processingOrder": 154
         }
       ],
       "rewards": {

@@ -12,7 +12,7 @@ internal static class EnemyPhysicalDecision
         var actor = current.GetActor(actorRef);
         var grid = BattleMovement.Grid(current, actorRef);
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
-        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly).OrderBy(a => a.Definition.Slot))
+        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.IsAlly).OrderBy(a => a.ProcessingOrder))
         {
             if (AiMovementRules.AttackPosition(grid, target.Position!, 1,
                 position => current.Actors.Any(a => a.Hp > 0 && a.Position == position)) is { } position)

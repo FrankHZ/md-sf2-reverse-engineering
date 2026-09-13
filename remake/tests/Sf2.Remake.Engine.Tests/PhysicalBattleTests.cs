@@ -195,7 +195,7 @@ public sealed class PhysicalBattleTests
         Stay(session);
         Assert.Equal(2, session.Current.Battle.Round);
         Assert.Equal(new ActorRef("lookout"), session.Current.Selection!.Actor);
-        Assert.DoesNotContain(session.Current.Battle.Queue, entry => entry.ActorSlot == 4);
+        Assert.DoesNotContain(session.Current.Battle.Queue, entry => entry.Actor == new ActorRef("swordsman"));
     }
 
     [Fact]

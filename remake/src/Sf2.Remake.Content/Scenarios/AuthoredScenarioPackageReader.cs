@@ -39,7 +39,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 2, 2) == 2, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 3, 3) == 3, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
@@ -100,16 +100,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", "id", "slot", "classRule", "controller", "level", "maxHp", "maxMp",
+            ObjectOptional(actor, "actor", "physical", "id", "classRule", "controller", "level", "maxHp", "maxMp",
                 "attack", "defense", "agility", "move", "items", "spells");
             var id = new ActorRef(Id(actor, "id"));
-            int slot = Number(actor, "slot", 0, 159);
-            Require(slot <= 29 || slot >= 128, "actor-slot", "actors.slot");
             string className = Text(actor, "classRule"), controlName = Text(actor, "controller");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
                 "class-rule", "actors.classRule", true);
             Require(controlName is "player" or "stay" or "commandset06-script3", "ai-commandset", "actors.controller", true);
-            Require((slot < 128) == (controlName == "player"), "controller-side", "actors.controller", true);
             Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
@@ -142,13 +139,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(learned.Count == 0, "ai-action-categories", "actors.spells", true);
                 Require(Number(actor, "move", 1, 255) <= 63, "ai-movement-domain", "actors.move", true);
             }
-            var definition = new BattleActorDefinition(id, (byte)slot,
+            var definition = new BattleActorDefinition(id,
                 className switch { "unpromoted-priest" => BattleClassRule.UnpromotedPriest,
                     "unpromoted-swordsman" => BattleClassRule.UnpromotedSwordsman,
                     "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.Ordinary },
                 controlName switch { "player" => BattleController.Player, "stay" => BattleController.Stay,
                     _ => BattleController.Commandset06Script3 },
-                (byte)Number(actor, "level", slot < 128 ? 1 : 0, 99), maximumHp, maximumMp,
+                (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned, physical);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
@@ -169,16 +166,26 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                Object(placement, "placement", "actor", "x", "y");
+                Object(placement, "placement", "actor", "faction", "processingOrder", "x", "y");
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
+                string factionName = Text(placement, "faction");
+                Require(factionName is "ally" or "enemy", "battle-faction", "placements.faction", true);
+                var faction = factionName == "ally" ? BattleFaction.Ally : BattleFaction.Enemy;
+                int order = Number(placement, "processingOrder", 0, int.MaxValue);
+                Require((faction == BattleFaction.Ally) == (actor.Controller == BattleController.Player),
+                    "controller-side", "placements.faction/actors.controller", true);
+                Require(faction != BattleFaction.Ally || actor.Level >= 1, "numeric-range", "actors.level");
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));
                 byte tile = terrain.Cells[position.Y * 48 + position.X];
                 Require(tile < 16 && WeightedMovement.OrdinaryCosts[tile] > 0, "blocked-placement", "placements");
-                Require(!placements.Any(a => a.Actor == actorRef || a.Definition.Slot == actor.Slot), "duplicate-placement", "placements.actor/slot");
-                placements.Add(new(actor, position));
+                Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
+                Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
+                placements.Add(new(actor, faction, order, position));
             }
+            Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
+                placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
             Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards)),
                 "duplicate-encounter", "encounters.id");
         }

@@ -21,6 +21,12 @@ known legacy monolith. Moving it does not claim to have refactored or completed 
 | `Content/Synthetic`, `Sessions/Synthetic`, `Rules/Battles/TacticalBattle.cs`, remaining readers | Existing synthetic map smoke, simplified tactical comparison, presentation asset trust | M3/M4 migrate actually adopted map/item/asset behavior; retire synthetic-only runtime routes when no comparison needs them. Synthetic combat is not original-game evidence. |
 | `Sessions/GameSession.cs` | Legacy Godot compositions and selected old tests | Shrinks as M2/M3 remove each caller family. Remove the legacy start binding with its last admitted capability. M5 handles remaining cleanup, not wholesale deferred migration. |
 
+`Battle01FirstRound.GenerateTurnOrder` retains the original allowed byte-slot domain and maps each
+source index to a byte identity and integer processing order for shared `TurnOrderRules`. Its nullable
+queue identity maps back to the original255 sentinel. Authored engine queues use `ActorRef` and their
+explicit encounter order through that same calculator; no source slot restricts authored identity,
+order or allegiance. Word/RNG arithmetic, agility flags and signed sentinel sorting remain shared.
+
 The ordinary physical scalar body has one owner: `Domain/Battles/Rules/PhysicalStrikeRules.cs`.
 `Rules/Battles/Battle01EnemyPhysicalAttack.cs` retains legacy admission/replay projection but invokes
 that shared calculation; the duplicate strike body is deleted. `Battle01PlayerPhysicalAttack.cs`

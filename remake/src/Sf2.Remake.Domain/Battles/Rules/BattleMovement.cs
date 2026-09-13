@@ -56,7 +56,7 @@ internal static class BattleMovement
     {
         var actor = battle.GetActor(actorRef);
         var terrain = battle.Definition.Terrain.ToArray();
-        foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly != actor.Definition.IsAlly))
+        foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Faction != actor.Faction))
             terrain[Offset(opponent.Position!)] |= 128;
         return WeightedMovement.Build(terrain, WeightedMovement.OrdinaryCosts, Offset(actor.Position!), actor.Definition.Move * 2);
     }

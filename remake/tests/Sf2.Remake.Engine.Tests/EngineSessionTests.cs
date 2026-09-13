@@ -152,7 +152,7 @@ public sealed class EngineSessionTests
         var admitted = Admitted();
         var initial = BattleTurnFlow.Start(admitted.Definition.Encounters[admitted.Start.Encounter], admitted.Start);
         var battle = initial.With(actors: initial.Actors.Select(a => a.Actor.Value == "guard-a" ? a.With(hp: 0) : a),
-            round: 7, queue: [new(9, 9), new(129, 7), new(7, 5), new(255, 255)]);
+            round: 7, queue: [new(new ActorRef("guard-a"), 9), new(new ActorRef("dummy-a"), 7), new(new ActorRef("medic-a"), 5), new(null, 255)]);
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 20, 30, battle, null, SessionStopReason.SimulationWait);
         var result = BattleAdvancer.Advance(snapshot, []); // Unit seam only; no runtime queue/state injection.
         Assert.Equal(new[] { "dead-entry-skipped", "ai-stay", "player-control" }, result.Observations.Select(o => o.Kind));

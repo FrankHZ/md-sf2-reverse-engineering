@@ -88,11 +88,12 @@ public sealed class TargetSelectionTests
     }
 
     [Fact]
-    public void SlotOrderWinsEqualCostSameClassTieDespiteConfigurationArrayOrder()
+    public void ProcessingOrderWinsEqualCostSameClassTieDespiteConfigurationArrayOrder()
     {
         var doc = Configure("stone-court");
         doc["actors"]![0]!["classRule"] = "unpromoted-swordsman";
-        doc["actors"]![0]!["slot"] = 20; doc["actors"]![1]!["slot"] = 3;
+        doc["encounters"]![0]!["placements"]![0]!["processingOrder"] = 20;
+        doc["encounters"]![0]!["placements"]![1]!["processingOrder"] = 3;
         var placements = doc["encounters"]![0]!["placements"]!.AsArray();
         var reversed = new JsonArray(placements.Reverse().Select(p => p!.DeepClone()).ToArray());
         doc["encounters"]![0]!["placements"] = reversed;
