@@ -35,7 +35,13 @@ algorithm remains. `Battle01EnemyPhysicalAttack.Priority` and `SelectTarget` now
 supplies its admitted Flying table. Duplicate script3, cohort, class-rank and movement-tie calculations
 are removed; the old class check remains only a private profile/land-rule admission guard. Authored
 regular movement uses the Regular table through that same selector, with named class definitions.
-Private activation, commandsets, source move strings and startup/history admission retain their
+`Battle01EnemyPursuit` delegates stable raw-cost target selection and radius station search to
+`AiMovementRules`; `Battle01EnemyStandby.SourceWalk` delegates the source direction-mask walk to that
+same owner. `Battle01MovementGrid` projects the shared weighted grid. Duplicate calculation bodies
+are removed; reference path bounds16×20, hovering costs, source move-string formatting, commandset7
+and history/order guards retain their comparison-specific roles. Authored commandset06 uses its
+configured map and regular movement and admits complete raw target costs0–127 only.
+Private activation, commandset admission, source move-string projection and startup/history admission retain their
 existing consumers and removal points.
 Their fixed profile and history guards are reachable
 only from `Sessions/Battle01/PrivateOriginalBattle01EnemyPhysicalAttack.cs` and

@@ -90,7 +90,6 @@ public sealed class EnemyActionTests
     }
 
     [Theory]
-    [InlineData("none", "ai-commandset-continuation")]
     [InlineData("level", "level-up")]
     [InlineData("leader", "leader-defeat-program")]
     public void UnsupportedEnemyActionRetainsEarlierPlayerCommitAndAllEnemyState(string shape, string code)
@@ -98,7 +97,6 @@ public sealed class EnemyActionTests
         var session = Start("stone-court", d =>
         {
             Configure(d, 55);
-            if (shape == "none") { d["encounters"]![0]!["placements"]![2]!["x"] = 7; }
             if (shape == "level")
             {
                 d["actors"]![0]!["exp"] = 99; d["actors"]![2]!["hp"] = 1;
@@ -180,9 +178,9 @@ public sealed class EnemyActionTests
         {
             Accept(started.Session, new Confirm()); Accept(started.Session, new ChooseAction(SessionAction.Stay));
             var next = Send(started.Session, new Confirm());
-            // After both dead entries, the next round reaches an enemy with no reachable
-            // target. Preserve that unsupported continuation instead of demanding a Stay.
-            Assert.Equal("ai-commandset-continuation", next.Failure!.Code);
+            // The next round now continues through MOVE1 after the dead entries.
+            Assert.Null(next.Failure);
+            Assert.Contains(next.Observations, o => o.Kind == "ai-command-move1" && o.After == 0);
             observations.AddRange(next.Observations);
         }
         Assert.Equal(2, observations.Count(o => o.Kind == "dead-entry-skipped"));
@@ -212,7 +210,7 @@ public sealed class EnemyActionTests
         var session = Start("stone-court", d =>
         {
             Configure(d, 55);
-            d["actors"]![3]!["controller"] = "attack1-script3";
+            d["actors"]![3]!["controller"] = "commandset06-script3";
             d["actors"]![3]!["move"] = 6;
             d["actors"]![1]!.AsObject().Remove("physical");
         });
@@ -249,6 +247,6 @@ public sealed class EnemyActionTests
         }
         doc["actors"]![0]!["attack"] = 18; doc["actors"]![0]!["physical"]!["prowess"] = 0;
         doc["actors"]![2]!["attack"] = 30; doc["actors"]![2]!["physical"]!["prowess"] = 3;
-        doc["actors"]![2]!["controller"] = "attack1-script3"; doc["actors"]![2]!["move"] = 1;
+        doc["actors"]![2]!["controller"] = "commandset06-script3"; doc["actors"]![2]!["move"] = 1;
     }
 }

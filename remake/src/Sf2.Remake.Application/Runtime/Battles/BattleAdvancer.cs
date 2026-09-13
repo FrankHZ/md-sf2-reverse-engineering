@@ -41,12 +41,12 @@ internal static class BattleAdvancer
                 var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
                 return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
             }
-            if (actor.Definition.Controller == BattleController.Attack1Script3)
+            if (actor.Definition.Controller == BattleController.Commandset06Script3)
             {
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
                 try
                 {
-                    var action = EnemyPhysicalDecision.Resolve(battle, actor.Actor);
+                    var action = EnemyCommandset06.Resolve(battle, actor.Actor);
                     var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
                         action.Destination, action.Effects, observations);
                     battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;

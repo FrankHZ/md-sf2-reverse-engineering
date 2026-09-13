@@ -19,8 +19,8 @@ code, original evidence and the incomplete 8C/H4 target are unchanged by this do
 Record the bounded private-local Map 3 implementation and controlled comparisons, keeping original
 evidence, implemented behavior and incomplete fidelity separate. Future engine slices follow the
 state/content migration owner rather than advancing this record to the next receipt. The common
-authored enemy ATTACK1/script3 branch uses shared multi-target scoring/selection and the physical
-chain, but does not replace this
+authored commandset06/script3 branch uses shared multi-target scoring/selection, the physical chain,
+and zero-target MOVE1 continuation with shared target-cost/path/station calculations. These do not replace this
 route's private startup, wider AI or controlled history admission; the stopping point below remains
 owned by those legacy consumers.
 

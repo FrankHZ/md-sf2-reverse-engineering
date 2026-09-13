@@ -12,7 +12,7 @@ namespace Sf2.Remake.Domain.Battles;
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior }
-public enum BattleController { Player, Stay, Attack1Script3 }
+public enum BattleController { Player, Stay, Commandset06Script3 }
 
 public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold,
     ushort InitialKills, ushort InitialDefeats = 0);

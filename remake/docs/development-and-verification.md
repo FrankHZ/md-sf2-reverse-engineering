@@ -230,7 +230,7 @@ $data.actors[0].attack = 18
 $data.actors[0].physical.prowess = 0
 $data.actors[2].attack = 30
 $data.actors[2].physical.prowess = 3
-$data.actors[2].controller = 'attack1-script3'
+$data.actors[2].controller = 'commandset06-script3'
 $data.actors[2].move = 1
 if ($shape -eq 'movement') {
     $data.actors[2].move = 3
@@ -281,7 +281,7 @@ foreach ($index in @(0, 1, 2)) {
 }
 $data.actors[0].classRule = if ($shape -eq 'primary') { 'unpromoted-swordsman' } else { 'unpromoted-warrior' }
 $data.actors[1].classRule = if ($shape -eq 'primary') { 'unpromoted-warrior' } else { 'unpromoted-swordsman' }
-$data.actors[2].controller = 'attack1-script3'
+$data.actors[2].controller = 'commandset06-script3'
 $data.actors[2].move = 1
 $data.encounters[0].placements[1].x = $data.encounters[0].placements[2].x - 1
 $data.encounters[0].placements[1].y = $data.encounters[0].placements[2].y
@@ -320,6 +320,76 @@ atomic missing-data/late-settlement rejection. Direct affected reference selecti
 `CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt` and
 `PostHealBowieCounterUsesItsOwnPermissionAndOneEnemyReceipt`. These execute the retained real ranking
 consumers through the shared selector; no reference runner or native-probe tests are added.
+
+### Commandset06 continuation observation
+
+Use the existing installed editor/project and fresh ignored output. Both physical packages support
+`move-attack`; the other shapes below use `stone-court`. No live state or seed setter is used.
+
+```powershell
+$packageName = 'stone-court' # river-post also supports move-attack
+$shape = 'move-attack' # occupied, unreachable, startup, weighted, secondary
+$data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
+$data.start.mainSeed = [uint32](42 * 65536 + 4660)
+foreach ($index in @(0, 2)) {
+    $data.actors[$index].hp = 500
+    $data.actors[$index].maxHp = 500
+    $data.actors[$index].defense = 4
+    $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
+    $data.actors[$index].physical.prowess = if ($index -eq 2) { 3 } else { 0 }
+}
+$data.actors[2].controller = 'commandset06-script3'
+$data.actors[2].move = 3
+$placements = $data.encounters[0].placements
+$placements[0].x = 1
+$placements[0].y = if ($packageName -eq 'stone-court') { 3 } else { 4 }
+$placements[2].x = 7
+$placements[2].y = $placements[0].y
+if ($shape -eq 'occupied') {
+    $data.actors[2].move = 1
+    $placements[3].x = 6; $placements[3].y = 3
+}
+if ($shape -eq 'unreachable') {
+    foreach ($y in 1..5) { $data.terrains[0].rows[$y] = '#22#2222#' }
+}
+if ($shape -eq 'startup') { $data.actors[2].agility = 60 }
+if ($shape -eq 'secondary') { $placements[0].y = 1; $placements[1].y = 3 }
+if ($shape -eq 'weighted') {
+    $data.actors[2].move = 1
+    $placements[0].x = 4; $placements[0].y = 3
+    $placements[1].x = 7; $placements[1].y = 1
+    $placements[3].x = 2; $placements[3].y = 5
+    foreach ($y in 1..2) { $data.terrains[0].rows[$y] = '#2222224#' }
+}
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'commandset-package.json'
+$data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'commandset-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case commandset-continuation --continuation-shape $shape --observation-output $outputPath
+```
+
+Require exit0, `passed: true`, clean logs without script errors, and all checkpoints: six for
+`move-attack`, three for `startup`, four for each other shape. The ordinary move ends at x5 after
+fixed cost4 and keeps main0xDC7F1234/thinking0xBEEF0042. Next-round input produces main0xEE281234,
+then ATTACK1 at x2 with allyHP478/enemyHP493/allyEXP1 and final main0xDAA61234/thinking0x02EF0042.
+Occupied MOV1 ends at origin x7 but MOVE1 returns0. Weighted costs prefer the farther swordsman and
+correct the station to x6. Changed positions select the secondary actor without a thinking draw.
+Unreachable costs preserve the player commit and failed enemy queue entry as Unsupported.
+
+`CommandsetContinuationTests` owns Content/session behavior, source walk/unsigned-cost boundaries,
+missing rewards at the reached attack, and the independently specified continued RNG results.
+Affected actual reference methods are `ActualOrderIncludesTheInactivePrefixOccupiedFallbackAndBothCommandsets`,
+`RepeatedPursuitStopsAtTheActualRoundSixAttackCohortBeforeAnyMutation`,
+`SourceDestinationFailureCompletesOriginStayAndKeepsTheThinkingHistory`,
+`RadiusSearchUsesStrictLowerCostFirstTieAndOwnCellZeroBeforeOccupancy`,
+`PreliminaryWalkRetainsAccumulatedBitsAndSupportsAValidEmptyPath`,
+`IncompleteOrHighTargetCostsRejectBeforeTheDisputedClassBranch`,
+`LaterPursuitAcceptsTheRewoundPhysicalMainSeedAndRetainsDamagedAlly`,
+`FirstAllyDefeatRemovesChesterFromBlockingAndBothTargetCohorts`,
+`SourceDirectionMaskRetainsAnEarlierHigherCostBranchAndRejectsAnIncompletePath`,
+`RemainingEnemiesUseTheirOwnMemoryAndEvolvingOccupancyBeforeActualBowieEntry` and
+`ActualRoundSixAttackReplaysHpOnceAndAdvancesToBowieWithAllRandomChannels` in the existing Domain test
+project. Select those methods with `dotnet test --filter`; no new helper/probe tests, H3 replay or
+legacy aggregate is needed. The committed planner and engine/adapter entries remain the gate owners.
 
 ## Optional Private .NET Checks
 

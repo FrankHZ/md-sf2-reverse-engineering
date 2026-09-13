@@ -432,33 +432,7 @@ public static class Battle01EnemyStandby
     internal static (MapPosition Destination, IReadOnlyList<byte> MoveString) SourceWalk(
         Battle01MovementGrid grid, MapPosition origin, int targetCost)
     {
-        if (!Battle01Initialization.WithinArea(origin) || targetCost < 0 || grid.CostAt(origin) is not { } startCost || targetCost > startCost)
-            throw new ArgumentException("A bounded source AI walk requires a reachable scene origin and cost threshold.", "path");
-        int current = Battle01PlayerMovement.Offset(origin);
-        var directions = new List<byte>(); int previousMask = 0;
-        while (grid.CostAtOffset(current) > targetCost)
-        {
-            int cost = grid.CostAtOffset(current) ?? throw new ArgumentException("AI destination is unreachable.", "path");
-            int threshold = cost - 1, mask = 0;
-            foreach ((int delta, int bit) in new[] { (1, 1), (-1, 4), (-48, 2), (48, 8) })
-            {
-                int neighbor = current + delta;
-                if (neighbor is < 0 or >= 2304 || Math.Abs(neighbor % 48 - current % 48) +
-                    Math.Abs(neighbor / 48 - current / 48) != 1) continue;
-                if (grid.CostAtOffset(neighbor) is { } value && value <= threshold)
-                {
-                    mask |= bit; threshold = value; // Source retains earlier direction bits when threshold decreases.
-                }
-            }
-            int choice = (mask & previousMask) != 0 && (mask ^ previousMask) != 0 ? mask ^ previousMask : mask;
-            if (choice == 0) throw new ArgumentException("No complete bounded source AI path reaches the origin.", "path");
-            byte direction = (byte)((choice & 1) != 0 ? 0 : (choice & 2) != 0 ? 1 : (choice & 4) != 0 ? 2 : 3);
-            current += direction switch { 0 => 1, 1 => -48, 2 => -1, _ => 48 };
-            if (!Battle01Initialization.WithinArea(new(current % 48, current / 48)) ||
-                grid.CostAtOffset(current) is not { } nextCost || nextCost >= cost)
-                throw new ArgumentException("The source AI path must decrease cost within the fixed scene.", "path");
-            previousMask = 1 << direction; directions.Add(direction);
-        }
-        return (new(current % 48, current / 48), Array.AsReadOnly(directions.Append((byte)255).ToArray()));
+        try { return AiMovementRules.Walk(grid.Core, origin, targetCost, 16, 20); }
+        catch (BattleRuleException error) { throw new ArgumentException(error.Message, "path", error); }
     }
 }
