@@ -245,8 +245,8 @@ public sealed class EnemyActionTests
             doc["start"]!["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
             doc["actors"]![index]!["defense"] = 4;
         }
-        doc["actors"]![0]!["attack"] = 18; doc["actors"]![0]!["physical"]!["prowess"] = 0;
-        doc["actors"]![2]!["attack"] = 30; doc["actors"]![2]!["physical"]!["prowess"] = 3;
+        doc["actors"]![0]!["attack"] = 18; doc["actors"]![0]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-32", ["damageBonus"] = "half" };
+        doc["actors"]![2]!["attack"] = 30; doc["actors"]![2]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-16", ["damageBonus"] = "quarter" };
         doc["actors"]![2]!["controller"] = "commandset06-script3"; doc["actors"]![2]!["move"] = 1;
     }
 }

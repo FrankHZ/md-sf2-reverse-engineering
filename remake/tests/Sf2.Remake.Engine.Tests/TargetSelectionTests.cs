@@ -203,7 +203,9 @@ public sealed class TargetSelectionTests
             doc["start"]!["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
             doc["actors"]![index]!["defense"] = 4;
             doc["actors"]![index]!["attack"] = index == 2 ? 30 : 18;
-            doc["actors"]![index]!["physical"]!["prowess"] = index == 2 ? 3 : 0;
+            doc["actors"]![index]!["physical"]!["critical"] = new JsonObject {
+                ["chance"] = index == 2 ? "one-in-16" : "one-in-32",
+                ["damageBonus"] = index == 2 ? "quarter" : "half" };
         }
         doc["actors"]![0]!["classRule"] = swapClass ? "unpromoted-swordsman" : "unpromoted-warrior";
         doc["actors"]![1]!["classRule"] = swapClass ? "unpromoted-warrior" : "unpromoted-swordsman";

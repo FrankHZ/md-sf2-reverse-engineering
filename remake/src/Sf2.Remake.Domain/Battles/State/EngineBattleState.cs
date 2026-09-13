@@ -15,7 +15,18 @@ public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, U
 public enum BattleController { Player, Stay, Commandset06Script3 }
 public enum BattleFaction { Ally, Enemy }
 
-public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold);
+public sealed class PhysicalCriticalRule
+{
+    private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift)
+    { ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; }
+    public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
+    public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
+    public ushort ChanceDenominator { get; }
+    public int DamageBonusDenominator => 1 << DamageBonusShift;
+    internal int DamageBonusShift { get; }
+}
+
+public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
 
 public sealed record HealingSpellDefinition(

@@ -39,7 +39,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 4, 4) == 4, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 5, 5) == 5, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
@@ -111,14 +111,19 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
             {
-                Object(physicalInput, "actor.physical", "movementType", "prowess", "promoted", "leader", "gold", "special");
+                Object(physicalInput, "actor.physical", "movementType", "critical", "promoted", "leader", "gold", "special");
                 Require(Text(physicalInput, "movementType") == "regular", "physical-movement-type", "actors.physical.movementType", true);
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
-                byte prowess = (byte)Number(physicalInput, "prowess", 0, 255);
-                Require(prowess is 0 or 3, "physical-prowess", "actors.physical.prowess", true);
+                var criticalInput = physicalInput.GetProperty("critical");
+                Object(criticalInput, "actors.physical.critical", "chance", "damageBonus");
+                string chance = Text(criticalInput, "chance"), bonus = Text(criticalInput, "damageBonus");
+                Require((chance, bonus) is ("one-in-32", "half") or ("one-in-16", "quarter"),
+                    "physical-critical-rule", "actors.physical.critical", true);
+                var critical = chance == "one-in-32" ? PhysicalCriticalRule.OneIn32WithHalfBonus
+                    : PhysicalCriticalRule.OneIn16WithQuarterBonus;
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");
-                physical = new(prowess, promoted, Boolean(physicalInput, "leader"),
+                physical = new(critical, promoted, Boolean(physicalInput, "leader"),
                     (ushort)Number(physicalInput, "gold", 0, 65535));
             }
             ushort maximumHp = (ushort)Number(actor, "maxHp", 1, 65535);

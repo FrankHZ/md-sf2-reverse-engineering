@@ -154,7 +154,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization precedes the remaining common private initialized-entry
 plan. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 4`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 5`. The reader accepts that current shape only, without parallel old/new models.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -195,7 +195,7 @@ controlled start; no screenshots, session setters or reference aggregate are req
 
 Each `BattleDeploymentDefinition` now owns `Faction` (`Ally` or `Enemy`) and a nonnegative unique
 `ProcessingOrder`. These are encounter roles, separate from intrinsic actor definitions and from
-per-session resources or position overrides. Format-v4 `placements` require `actor`, `faction`,
+per-session resources or position overrides. Format-v5 `placements` require `actor`, `faction`,
 `processingOrder`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
 previous order explicitly without changing other values. Content retains the admitted maximum of
 30 allies and 32 enemies and supported player-ally / AI-enemy combinations; ally AI and player-controlled
@@ -223,7 +223,7 @@ uses the existing adapter/probe with four packages and changed-order input, with
 
 ### Numerical agility and extra round action
 
-Format-v4 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
+Format-v5 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
 `BattleActorDefinition` and shared `TurnOrderCandidate` carry those two values independently; no
 character identity, value threshold or missing field supplies eligibility. The four authored packages
 retain their configured numerical agility with `extraRoundAction: false`. The real Content reader
@@ -247,8 +247,32 @@ consumption across rounds. Existing signed0/127 boundary expectations and death/
 remain unchanged. The [native extra-turn observation](../../remake/docs/development-and-verification.md#authored-extra-round-action-observation)
 uses actual input and existing queue/state/node observations, without screenshots or state injection.
 
-Remaining modernization is explicitly separate: meaningful rule/capability profiles,
-control versus AI strategy, terrain semantic references
+### Supported physical critical rules
+
+Format-v5 `physical.critical` is a closed semantic pair: `chance` and `damageBonus`. The supported
+combinations are `one-in-32` with `half`, and `one-in-16` with `quarter`. These describe an added
+fraction of damage after land reduction, before counter halving and spread; they are not arbitrary
+probabilities or source prowess IDs. Missing/malformed fields reject as ContentError, unsupported
+pairs as UnsupportedCapability. Actors without physical capability still reject the reached action.
+
+The immutable `PhysicalCriticalRule` in the existing battle-state owner has only those two supported
+definitions. It owns each chance denominator and integer bonus parameter. `PhysicalActorDefinition`
+selects it, and the real action's first/second/reversed-counter hit reads its current attacking actor's
+rule. The existing `PhysicalStrikeRules` already accepts semantic scalar operands, so its signature,
+body and actual original/reference callers remain unchanged. Raw prowess and equipment-specific
+admission stay at those original boundaries; no duplicate arithmetic or profile registry is added.
+Fixed regular dodge, physical double/counter draws, sticky requests, temporary settlement, reward
+truncation, death/accounting and whole-action failure retain their accepted behavior.
+
+**Confirmed (engine):**
+[`PhysicalRuleConfigurationTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PhysicalRuleConfigurationTests.cs)
+varies both semantic pairs through real Content/player/enemy attacks and reversed counters, including
+actual critical damage, exact draw ranges/seeds and rewards, and rejects incomplete or unsupported
+configuration. Existing first/second/counter/death tests and grouped source comparisons remain.
+The [physical observation recipes](../../remake/docs/development-and-verification.md#physical-critical-configuration)
+use the existing Godot input/state probe; no adapter observation or gameplay authority changes.
+
+Remaining modernization is explicitly separate: control versus AI strategy, terrain semantic references
 and remaining raw source mappings. Existing source semantics remain unchanged until their dedicated
 migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
 registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
@@ -263,7 +287,7 @@ The M2 capability uses the common session for configured regular-ground physical
 living opposing adjacent targets at the provisional destination, constructs at most first, second
 and reversed counter hits on temporary HP, then publishes once. Shared
 [PhysicalStrikeRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalStrikeRules.cs) owns dodge,
-integer land reduction, prowess-0/3 critical, counter halving before spread and each strike's natural
+integer land reduction, the two supported semantic critical rules, counter halving before spread and each strike's natural
 double/counter draws. The already-set counter toggle survives a failed draw after the second hit;
 a new second-hit success can also request it. Target death cancels the follow-up. Counter-end draws
 are consumed when their target survives but cannot dispatch another attack. Actor/target reversal
@@ -280,9 +304,9 @@ counterattacker's queued ordinary turn.
 
 Content accepts optional typed actor `physical` and encounter `rewards` definitions. The exact
 [schema and capability boundary](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
-keeps effective stats explicit and admits no equipment or status branches. Optional authored
-`physical.defeats` supplies 0–9999 prior defeats, defaulting to zero. Unsupported movetypes, prowess
-and special rules reject at admission. The `stone-court` and `river-post` packages differ in actors,
+keeps effective stats explicit and admits no equipment or status branches. Explicit
+`start.actors.defeats` supplies 0–9999 prior defeats without a hidden default. Unsupported movetypes,
+critical rules and special rules reject at admission. The `stone-court` and `river-post` packages differ in actors,
 map/positions, stats, targets, reward data and halving policy. Supported configuration variants use
 the same reader/session; existing HEAL packages have no invented physical/reward defaults. These
 are controlled authored inputs, not original private admission or source-fidelity starts.
@@ -297,7 +321,7 @@ leader at admission), and terminal faction/outcome/return reject the whole actio
 action-start state and no effects from that action. A failed automatic enemy action retains earlier
 committed player/AI work and its own unconsumed queue entry; startup failure retains the generated
 round. They are not converted to STAY or bypassed by seed retries. General
-AI, other movement/prowess, equipment/status/special effects, private import, programs and M4 return
+AI, other movement/critical rules, equipment/status/special effects, private import, programs and M4 return
 remain outside this capability; M2 as a whole and A1–A8 remain incomplete.
 
 [Physical behavior tests](../../remake/tests/Sf2.Remake.Engine.Tests/PhysicalBattleTests.cs) assert both
@@ -777,7 +801,7 @@ The current executable examples are
 [`practice-yard`](../../remake/content/authored/practice-yard.json),
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
-[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v4 documents
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v5 documents
 through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
 `placements` own faction, stable processing order and deployment coordinates, and `start.actors` bind explicit per-session values by

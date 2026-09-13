@@ -1,5 +1,5 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",

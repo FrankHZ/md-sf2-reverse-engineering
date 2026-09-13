@@ -30,6 +30,12 @@ extra-entry eligibility into independent numerical agility and boolean `ExtraRou
 byte remains here; shared generation does not infer eligibility from agility. Three ordinary draws,
 two optional extra draws, integer five-sixths basis, word/RNG and signed sentinel sorting remain shared.
 
+Authored `PhysicalCriticalRule` now selects the supported chance and bonus explicitly. The existing
+original strike wrappers already map admitted source prowess into scalar critical range/shift and
+retain their source-specific dodge, equipment and profile guards. Their shared scalar signature is
+unchanged, so this content migration does not rewrite raw original data or those comparison inputs.
+Grouped existing arithmetic, critical, counter, reward and death comparisons exercise that boundary.
+
 The ordinary physical scalar body has one owner: `Domain/Battles/Rules/PhysicalStrikeRules.cs`.
 `Rules/Battles/Battle01EnemyPhysicalAttack.cs` retains legacy admission/replay projection but invokes
 that shared calculation; the duplicate strike body is deleted. `Battle01PlayerPhysicalAttack.cs`

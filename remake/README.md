@@ -7,11 +7,12 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 The production Domain/Application/Content path runs configurable project-authored battle packages through
-one common session. Format-v4 packages separate immutable definitions/deployments from explicit
+one common session. Format-v5 packages separate immutable definitions/deployments from explicit
 per-session resources, counters, seeds and optional controlled placement overrides. Deployments own
 explicit faction and stable processing order; queue identity and side checks no longer infer either
 from a source slot. Numerical agility and explicit extra-round-action eligibility are separate fields in actor
-definitions, consumed by the same turn calculator and queue. The same admitted
+definitions, consumed by the same turn calculator and queue. Physical definitions select explicit
+critical probability/bonus pairs consumed by player, enemy and counter hits through one rule owner. The same admitted
 definition can start independent sessions through the common validated entry. This
 [content-model modernization](../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
 precedes private initialized-entry work; further source-semantic mappings remain separate slices.
