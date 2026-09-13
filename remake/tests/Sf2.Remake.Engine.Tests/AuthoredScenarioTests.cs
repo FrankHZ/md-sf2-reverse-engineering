@@ -12,18 +12,20 @@ public sealed class AuthoredScenarioTests
     [Fact]
     public void DifferentRealPackagesResolveTheirOwnMapRosterSpellAndPlacement()
     {
-        var first = Definition();
-        var second = Definition("garden-watch");
+        var first = Admitted();
+        var second = Admitted("garden-watch");
+        var firstBattle = first.Definition.Encounters[first.Start.Encounter];
+        var secondBattle = second.Definition.Encounters[second.Start.Encounter];
         Assert.Equal("public-authored-controlled-start", first.Origin);
-        Assert.NotEqual(first.Battle.Map, second.Battle.Map);
-        Assert.NotEqual(first.Battle.Encounter, second.Battle.Encounter);
-        Assert.Equal((12, 9), (first.Battle.Width, first.Battle.Height));
-        Assert.Equal((10, 7), (second.Battle.Width, second.Battle.Height));
-        Assert.Equal((ushort)95, first.Battle.InitialActors[0].Hp);
-        Assert.Equal((ushort)8, second.Battle.InitialActors[0].Hp);
-        Assert.NotEqual(first.Battle.InitialActors[0].Actor, second.Battle.InitialActors[0].Actor);
-        Assert.NotEqual(first.Battle.InitialActors[0].Position, second.Battle.InitialActors[0].Position);
-        Assert.NotEqual(first.Battle.Spells.Keys.Single(), second.Battle.Spells.Keys.Single());
+        Assert.NotEqual(firstBattle.Map, secondBattle.Map);
+        Assert.NotEqual(firstBattle.Encounter, secondBattle.Encounter);
+        Assert.Equal((12, 9), (firstBattle.Width, firstBattle.Height));
+        Assert.Equal((10, 7), (secondBattle.Width, secondBattle.Height));
+        Assert.Equal((ushort)95, first.Start.Actors[0].Hp);
+        Assert.Equal((ushort)8, second.Start.Actors[0].Hp);
+        Assert.NotEqual(firstBattle.Deployments[0].Actor, secondBattle.Deployments[0].Actor);
+        Assert.NotEqual(firstBattle.Deployments[0].Position, secondBattle.Deployments[0].Position);
+        Assert.NotEqual(firstBattle.Spells.Keys.Single(), secondBattle.Spells.Keys.Single());
     }
 
     [Theory]
@@ -45,11 +47,11 @@ public sealed class AuthoredScenarioTests
             case "actor": document["actors"]!.AsArray().Add(document["actors"]![0]!.DeepClone()); break;
             case "map": document["encounters"]![0]!["map"] = "missing"; break;
             case "placement": document["encounters"]![0]!["placements"]![0]!["actor"] = "missing"; break;
-            case "hp": document["actors"]![0]!["hp"] = 101; break;
+            case "hp": document["start"]!["actors"]![0]!["hp"] = 101; break;
             case "profile": document["profile"] = "private-original"; break;
             case "effect": document["spells"]![0]!["effect"]!["kind"] = "resurrect"; break;
             case "ai": document["actors"]![2]!["controller"] = "pursuit"; break;
-            case "status": document["actors"]![0]!["status"] = "poison"; break;
+            case "status": document["start"]!["actors"]![0]!["status"] = "poison"; break;
         }
         var rejected = Assert.IsType<SessionStartFailed>(GameSession.Start(Reader(document)));
         Assert.Equal((kind, code), (rejected.Failure.Kind, rejected.Failure.Code));

@@ -27,8 +27,8 @@ public sealed class BattleMovementTests
     [Fact]
     public void WeightedPreviewAccountsForForestCostsAndActorBudget()
     {
-        var definition = Definition();
-        var battle = BattleTurnFlow.Start(definition.Battle, definition.MainSeed, definition.ThinkingSeed);
+        var admitted = Admitted();
+        var battle = BattleTurnFlow.Start(admitted.Definition.Encounters[admitted.Start.Encounter], admitted.Start);
         var preview = BattleMovement.Preview(battle, new("medic-a"), new(5, 3));
         Assert.Equal(6, preview.Cost);
         Assert.Equal(new MapPosition(3, 3), preview.Path[0]);

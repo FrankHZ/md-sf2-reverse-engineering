@@ -101,7 +101,13 @@ device input
 
 `Application.Runtime.GameSession` is the authored engine's only logical gameplay mutation facade. Godot may request a command or project a
 result; it does not change position, flags, inventory, request state, RNG, or flow state directly.
-Content constructs admitted immutable definitions but does not mutate a running session.
+Content returns reusable immutable `ScenarioDefinition` encounter/deployment/rule data and a separate
+explicit `BattleStartInput`. The source-based session entry delegates to the same definition-plus-start
+entry used for another controlled start. Shared binding validates references/resources before creating
+fresh runtime actors; definitions contain no instantiated actor state, seeds or counters. Genuine
+encounter deployments remain content, while controlled position overrides belong to start inputs.
+The [implemented split and remaining model work](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
+precede common private initialization. Content does not mutate a running session.
 The following private protocol belongs to the separate legacy reference consumer. For its canonical Map 3 port, the import definition is the sole owner of the selected setup's
 ordered entity population and the private snapshot exposes that exact immutable object. Content maps
 source-shaped records to stable resource/ordinal identities, raw and masked coordinates, opaque facing

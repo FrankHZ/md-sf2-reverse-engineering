@@ -75,6 +75,40 @@ the current `Sf2.Remake.sln` still includes four production and four legacy test
 Whole-solution commands remain available for an explicitly applicable legacy/release check, not every
 engine or documentation change. Use formatting only for affected product projects when needed.
 
+## Authored Start State Observation
+
+The format-v2 reader returns immutable definitions and explicit start input. After loading the existing
+worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
+Run the four tracked packages through the same public session: the two HEAL packages use the default
+observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
+(seven checkpoints each). Existing integer/RNG/action expectations remain unchanged.
+
+A differing controlled start reuses the yard's definitions and deployment; only its start object changes:
+
+```powershell
+$data = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
+$data.start.actors[0].positionOverride = [pscustomobject]@{x=4; y=3}
+$data.start.actors[0].mp = 9
+$data.start.actors[0].kills = 12
+$data.start.actors[0].defeats = 3
+$data.start.gold = 1234
+$data.start.thinkingSeed = [uint32]0x12344321
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'controlled-start.json'
+$data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'controlled-start-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-output $outputPath
+```
+
+Inspect all eight checkpoints and the process log, not just exit0: the actual actor starts at(4,3),
+MP9 becomes6 through HEAL, gold1234/kills12/defeats3 and thinking seed12344321h remain carried. The
+probe still drives movement/cancel, HEAL/STAY, next round and attributed rejection. It changes no live
+state and emits no images. `BattleStartStateTests` separately reuses the same admitted definition
+object with two explicit typed starts and independent histories; no tests of this observer are added.
+
+All mutation examples below keep actor/rule maxima in `actors`, current resources in `start.actors`,
+and actual encounter layout changes in `encounters[].placements`. Adding a deployed actor also
+requires its explicit start record; no default counter or runtime actor is synthesized from a definition.
+
 ## Authored Battle Observation
 
 After loading the existing worktree environment, build the actual Debug assembly once when needed
@@ -150,12 +184,12 @@ $packageName = if ($shape -eq 'counter') { 'river-post' } else { 'stone-court' }
 $initialSeed = if ($shape -in @('sticky', 'second-death')) { 73 } else { 55 }
 $data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
 $data.start.mainSeed = [uint32]($initialSeed * 65536 + 4660)
-foreach ($index in @(0, 2)) { $data.actors[$index].hp = 500; $data.actors[$index].maxHp = 500 }
+foreach ($index in @(0, 2)) { $data.start.actors[$index].hp = 500; $data.actors[$index].maxHp = 500 }
 $data.actors[2].attack = if ($shape -eq 'counter') { 26 } else { 18 }
 if ($shape -eq 'ally-death') {
-    $data.actors[0].hp = 1; $data.actors[0].exp = 99; $data.actors[0].physical.defeats = 6
+    $data.start.actors[0].hp = 1; $data.start.actors[0].exp = 99; $data.start.actors[0].defeats = 6
 }
-if ($shape -eq 'second-death') { $data.actors[2].hp = 35 }
+if ($shape -eq 'second-death') { $data.start.actors[2].hp = 35 }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'package.json'
 $data | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'followups.json'
@@ -186,6 +220,9 @@ $laterAlly.id = 'guard-c'
 $laterAlly.slot = 10
 $laterAlly.agility = 1
 $cycle.actors += $laterAlly
+$laterStart = $cycle.start.actors[1] | ConvertTo-Json -Depth 8 | ConvertFrom-Json
+$laterStart.actor = 'guard-c'
+$cycle.start.actors += $laterStart
 $cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; x=3; y=4}
 $cycle | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'three-allies.json') -Encoding utf8NoBOM
 $layout = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
@@ -222,7 +259,7 @@ $shape = 'counter' # movement, enemy-death, unsupported use stone-court
 $data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
 $data.start.mainSeed = [uint32](55 * 65536 + 4660)
 foreach ($index in @(0, 2)) {
-    $data.actors[$index].hp = 500
+    $data.start.actors[$index].hp = 500
     $data.actors[$index].maxHp = 500
     $data.actors[$index].defense = 4
 }
@@ -238,8 +275,8 @@ if ($shape -eq 'movement') {
     $data.encounters[0].placements[3].x = 6
     $data.encounters[0].placements[3].y = 5
 }
-if ($shape -in @('enemy-death', 'unsupported')) { $data.actors[2].hp = 1 }
-if ($shape -eq 'unsupported') { $data.actors[0].exp = 99 }
+if ($shape -in @('enemy-death', 'unsupported')) { $data.start.actors[2].hp = 1 }
+if ($shape -eq 'unsupported') { $data.start.actors[0].exp = 99 }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-input.json'
 $data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-observation.json'
@@ -273,7 +310,7 @@ $data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json
 $data.start.mainSeed = [uint32](55 * 65536 + 4660)
 $data.start.thinkingSeed = [uint32]0x00EF0042
 foreach ($index in @(0, 1, 2)) {
-    $data.actors[$index].hp = 500
+    $data.start.actors[$index].hp = 500
     $data.actors[$index].maxHp = 500
     $data.actors[$index].defense = 4
     $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
@@ -332,7 +369,7 @@ $shape = 'move-attack' # occupied, unreachable, startup, weighted, secondary
 $data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
 $data.start.mainSeed = [uint32](42 * 65536 + 4660)
 foreach ($index in @(0, 2)) {
-    $data.actors[$index].hp = 500
+    $data.start.actors[$index].hp = 500
     $data.actors[$index].maxHp = 500
     $data.actors[$index].defense = 4
     $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }

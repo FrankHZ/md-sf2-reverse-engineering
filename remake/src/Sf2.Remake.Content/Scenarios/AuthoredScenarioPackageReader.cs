@@ -25,23 +25,26 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             byte[] bytes = _read();
             Require(bytes.Length <= 4 * 1024 * 1024, "document-size", "document");
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
-            return new ScenarioReadAccepted(Decode(document.RootElement));
+            return Decode(document.RootElement);
         }
         catch (AdmissionIssue issue) { return new ScenarioReadRejected(issue.Failure); }
+        catch (BattleRuleException error)
+        { return new ScenarioReadRejected(new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.ContentError,
+            error.Code, error.Field, error.Code.Replace('-', ' '))); }
         catch (JsonException) { return Rejected("json-syntax", "document"); }
         catch (IOException) { return Rejected("content-read", "document"); }
         catch (UnauthorizedAccessException) { return Rejected("content-read", "document"); }
     }
 
-    private static ScenarioDefinition Decode(JsonElement root)
+    private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 1, 1) == 1, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 2, 2) == 2, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
         var start = root.GetProperty("start");
-        Object(start, "start", "encounter", "initialVitals", "mainSeed", "thinkingSeed");
+        Object(start, "start", "encounter", "initialVitals", "mainSeed", "thinkingSeed", "gold", "actors");
         Require(Text(start, "initialVitals") == "authored-controlled", "initial-vitals-policy", "start.initialVitals");
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
@@ -94,11 +97,11 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (ushort)Number(effect, "adjustedPower", 0, 65535), minimum, maximum);
             Require(spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
         }
-        var actors = new Dictionary<ActorRef, (BattleActorDefinition Definition, ushort Hp, byte Mp, byte Exp)>();
+        var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", "id", "slot", "classRule", "controller", "level", "maxHp", "hp", "maxMp", "mp",
-                "attack", "defense", "agility", "move", "exp", "status", "items", "spells");
+            ObjectOptional(actor, "actor", "physical", "id", "slot", "classRule", "controller", "level", "maxHp", "maxMp",
+                "attack", "defense", "agility", "move", "items", "spells");
             var id = new ActorRef(Id(actor, "id"));
             int slot = Number(actor, "slot", 0, 159);
             Require(slot <= 29 || slot >= 128, "actor-slot", "actors.slot");
@@ -107,12 +110,11 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 "class-rule", "actors.classRule", true);
             Require(controlName is "player" or "stay" or "commandset06-script3", "ai-commandset", "actors.controller", true);
             Require((slot < 128) == (controlName == "player"), "controller-side", "actors.controller", true);
-            Require(Text(actor, "status") == "none", "actor-status", "actors.status", true);
             Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
             {
-                ObjectOptional(physicalInput, "actor.physical", "defeats", "movementType", "prowess", "promoted", "leader", "gold", "kills", "special");
+                Object(physicalInput, "actor.physical", "movementType", "prowess", "promoted", "leader", "gold", "special");
                 Require(Text(physicalInput, "movementType") == "regular", "physical-movement-type", "actors.physical.movementType", true);
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
                 byte prowess = (byte)Number(physicalInput, "prowess", 0, 255);
@@ -120,13 +122,10 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");
                 physical = new(prowess, promoted, Boolean(physicalInput, "leader"),
-                    (ushort)Number(physicalInput, "gold", 0, 65535), (ushort)Number(physicalInput, "kills", 0, 9999),
-                    physicalInput.TryGetProperty("defeats", out _) ? (ushort)Number(physicalInput, "defeats", 0, 9999) : (ushort)0);
+                    (ushort)Number(physicalInput, "gold", 0, 65535));
             }
             ushort maximumHp = (ushort)Number(actor, "maxHp", 1, 65535);
-            ushort hp = (ushort)Number(actor, "hp", 0, maximumHp);
-            byte maximumMp = (byte)Number(actor, "maxMp", 0, 255), mp = (byte)Number(actor, "mp", 0, maximumMp);
-            byte exp = (byte)Number(actor, "exp", 0, 99);
+            byte maximumMp = (byte)Number(actor, "maxMp", 0, 255);
             var learned = new List<SpellRef>();
             foreach (var reference in Array(actor, "spells"))
             {
@@ -152,7 +151,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "level", slot < 128 ? 1 : 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned, physical);
-            Require(actors.TryAdd(id, (definition, hp, mp, exp)), "duplicate-actor", "actors.id");
+            Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
         foreach (var encounter in Array(root, "encounters"))
@@ -161,13 +160,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
-                Object(rewardInput, "encounter.rewards", "halvedExperience", "initialGold");
-                rewards = new(Boolean(rewardInput, "halvedExperience"), (uint)Number(rewardInput, "initialGold", 0, 9999999));
+                Object(rewardInput, "encounter.rewards", "halvedExperience");
+                rewards = new(Boolean(rewardInput, "halvedExperience"));
             }
             string id = Id(encounter, "id"), map = Id(encounter, "map");
             Require(maps.ContainsKey(map), "missing-map", "encounters.map");
             var terrain = terrains[maps[map]];
-            var placements = new List<BattleActorState>();
+            var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
                 Object(placement, "placement", "actor", "x", "y");
@@ -177,21 +176,32 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));
                 byte tile = terrain.Cells[position.Y * 48 + position.X];
                 Require(tile < 16 && WeightedMovement.OrdinaryCosts[tile] > 0, "blocked-placement", "placements");
-                Require(!placements.Any(a => a.Actor == actorRef || a.Definition.Slot == actor.Definition.Slot), "duplicate-placement", "placements.actor/slot");
-                Require(actor.Hp == 0 || !placements.Any(a => a.Hp > 0 && a.Position == position), "occupied-placement", "placements");
-                placements.Add(new(actor.Definition, actor.Hp, actor.Mp, actor.Exp, position));
+                Require(!placements.Any(a => a.Actor == actorRef || a.Definition.Slot == actor.Slot), "duplicate-placement", "placements.actor/slot");
+                placements.Add(new(actor, position));
             }
-            Require(placements.Any(a => a.Hp > 0 && a.Definition.IsAlly) && placements.Any(a => a.Hp > 0 && !a.Definition.IsAlly),
-                "battle-outcome", "encounters.placements", true);
-            Require(!placements.Any(a => a.Hp == 0 && a.Definition.Physical?.Leader == true),
-                "leader-defeat-program", "encounters.placements", true);
-            Require(placements.Where(a => a.Hp > 0).Sum(a => a.Definition.Agility >= 128 ? 2 : 1) <= 64,
-                "turn-buffer-capacity", "encounters.placements");
             Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
-        return new(package, encounters[selectedEncounter], mainSeed, thinkingSeed);
+        var startActors = new List<BattleActorStartInput>();
+        foreach (var input in Array(start, "actors"))
+        {
+            Object(input, "start.actor", "actor", "hp", "mp", "exp", "kills", "defeats", "status", "positionOverride");
+            MapPosition? position = null;
+            var overrideInput = input.GetProperty("positionOverride");
+            if (overrideInput.ValueKind != JsonValueKind.Null)
+            {
+                Object(overrideInput, "start.actor.positionOverride", "x", "y");
+                position = new(Number(overrideInput, "x", 0, 47), Number(overrideInput, "y", 0, 47));
+            }
+            startActors.Add(new(new ActorRef(Id(input, "actor")), (ushort)Number(input, "hp", 0, 65535),
+                (byte)Number(input, "mp", 0, 255), (byte)Number(input, "exp", 0, 99),
+                (ushort)Number(input, "kills", 0, 9999), (ushort)Number(input, "defeats", 0, 9999), Text(input, "status"), position));
+        }
+        var startInput = new BattleStartInput(selectedEncounter, startActors, mainSeed, thinkingSeed,
+            (uint)Number(start, "gold", 0, 9999999));
+        BattleTurnFlow.ValidateStart(encounters[selectedEncounter], startInput);
+        return new(new ScenarioDefinition(package, encounters.Values), startInput);
     }
 
     private static bool Boolean(JsonElement element, string key)

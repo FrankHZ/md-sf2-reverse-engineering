@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "package": "stone-court",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -7,7 +7,60 @@
     "encounter": "stone-court-encounter",
     "initialVitals": "authored-controlled",
     "mainSeed": 305402420,
-    "thinkingSeed": 3203334210
+    "thinkingSeed": 3203334210,
+    "gold": 100,
+    "actors": [
+      {
+        "actor": "swordsman",
+        "hp": 35,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "lookout",
+        "hp": 35,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "raider",
+        "hp": 15,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "scavenger",
+        "hp": 15,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "sentry",
+        "hp": 15,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      }
+    ]
   },
   "terrains": [
     {
@@ -38,15 +91,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 35,
-      "hp": 35,
       "maxMp": 0,
-      "mp": 0,
       "attack": 30,
       "defense": 4,
       "agility": 30,
       "move": 6,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [],
       "physical": {
@@ -55,7 +104,6 @@
         "promoted": false,
         "leader": false,
         "gold": 17,
-        "kills": 0,
         "special": "none"
       }
     },
@@ -66,15 +114,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 35,
-      "hp": 35,
       "maxMp": 0,
-      "mp": 0,
       "attack": 5,
       "defense": 4,
       "agility": 2,
       "move": 6,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [],
       "physical": {
@@ -83,7 +127,6 @@
         "promoted": false,
         "leader": false,
         "gold": 18,
-        "kills": 0,
         "special": "none"
       }
     },
@@ -94,15 +137,11 @@
       "controller": "stay",
       "level": 1,
       "maxHp": 15,
-      "hp": 15,
       "maxMp": 0,
-      "mp": 0,
       "attack": 5,
       "defense": 4,
       "agility": 12,
       "move": 6,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [],
       "physical": {
@@ -111,7 +150,6 @@
         "promoted": false,
         "leader": false,
         "gold": 19,
-        "kills": 0,
         "special": "none"
       }
     },
@@ -122,15 +160,11 @@
       "controller": "stay",
       "level": 1,
       "maxHp": 15,
-      "hp": 15,
       "maxMp": 0,
-      "mp": 0,
       "attack": 5,
       "defense": 4,
       "agility": 9,
       "move": 6,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [],
       "physical": {
@@ -139,7 +173,6 @@
         "promoted": false,
         "leader": false,
         "gold": 20,
-        "kills": 0,
         "special": "none"
       }
     },
@@ -150,15 +183,11 @@
       "controller": "stay",
       "level": 1,
       "maxHp": 15,
-      "hp": 15,
       "maxMp": 0,
-      "mp": 0,
       "attack": 5,
       "defense": 4,
       "agility": 5,
       "move": 6,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [],
       "physical": {
@@ -167,7 +196,6 @@
         "promoted": false,
         "leader": false,
         "gold": 21,
-        "kills": 0,
         "special": "none"
       }
     }
@@ -204,8 +232,7 @@
         }
       ],
       "rewards": {
-        "halvedExperience": true,
-        "initialGold": 100
+        "halvedExperience": true
       }
     }
   ]

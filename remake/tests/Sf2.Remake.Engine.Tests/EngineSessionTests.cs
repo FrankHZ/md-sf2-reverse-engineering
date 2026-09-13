@@ -114,7 +114,7 @@ public sealed class EngineSessionTests
     [Fact]
     public void InsufficientMpAndOutOfRangeArePreciseAtomicRejections()
     {
-        var poor = Start(change: document => document["actors"]![0]!["mp"] = 2);
+        var poor = Start(change: document => document["start"]!["actors"]![0]!["mp"] = 2);
         Accept(poor, new Confirm());
         AssertRejectedWithoutMutation(poor, new SelectSpell(new("mend", 1)), "insufficient-mp", SessionFailureKind.IllegalCommand);
         var distant = Start();
@@ -127,7 +127,7 @@ public sealed class EngineSessionTests
     [Fact]
     public void UnsupportedLevelUpRollsBackMovementCostHealingExperienceAndSeeds()
     {
-        var session = Start(change: document => document["actors"]![0]!["exp"] = 99);
+        var session = Start(change: document => document["start"]!["actors"]![0]!["exp"] = 99);
         Accept(session, new Move(ExplorationDirection.East));
         Accept(session, new Confirm());
         Accept(session, new SelectSpell(new("mend", 1)));
@@ -149,8 +149,8 @@ public sealed class EngineSessionTests
     [Fact]
     public void AutomaticAdvanceSkipsADeadQueuedEntryWithoutAHistoryPredicate()
     {
-        var definition = Definition();
-        var initial = BattleTurnFlow.Start(definition.Battle, definition.MainSeed, definition.ThinkingSeed);
+        var admitted = Admitted();
+        var initial = BattleTurnFlow.Start(admitted.Definition.Encounters[admitted.Start.Encounter], admitted.Start);
         var battle = initial.With(actors: initial.Actors.Select(a => a.Actor.Value == "guard-a" ? a.With(hp: 0) : a),
             round: 7, queue: [new(9, 9), new(129, 7), new(7, 5), new(255, 255)]);
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 20, 30, battle, null, SessionStopReason.SimulationWait);
@@ -159,7 +159,7 @@ public sealed class EngineSessionTests
         Assert.Equal(new ActorRef("medic-a"), result.Snapshot.Selection!.Actor);
         Assert.Equal(2, result.Snapshot.Battle.Cursor);
         Assert.Equal(7, result.Snapshot.Battle.Round);
-        Assert.Equal(definition.MainSeed, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(admitted.Start.MainSeed, result.Snapshot.Battle.MainSeed);
     }
 
     private static void AssertRejectedWithoutMutation(GameSession session, SessionCommand command,

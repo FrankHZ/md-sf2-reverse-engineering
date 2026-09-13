@@ -1,4 +1,3 @@
-using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -6,8 +5,8 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 
 internal static class BattleAdvancer
 {
-    internal static SessionResult Start(ScenarioDefinition definition) => Advance(new(
-        Guid.NewGuid(), 0, 0, BattleTurnFlow.Start(definition.Battle, definition.MainSeed, definition.ThinkingSeed),
+    internal static SessionResult Start(BattleDefinition definition, BattleStartInput start) => Advance(new(
+        Guid.NewGuid(), 0, 0, BattleTurnFlow.Start(definition, start),
         null, SessionStopReason.SimulationWait), []);
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations)

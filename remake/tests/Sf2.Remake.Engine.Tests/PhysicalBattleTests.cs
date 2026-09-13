@@ -154,7 +154,7 @@ public sealed class PhysicalBattleTests
     [Fact]
     public void LethalSecondHitClearsEvenAnAlreadyRequestedCounterAndAwardsOneKill()
     {
-        var session = FollowupStart("stone-court", 73, d => d["actors"]![2]!["hp"] = 35);
+        var session = FollowupStart("stone-court", 73, d => d["start"]!["actors"]![2]!["hp"] = 35);
         var result = Attack(session, "raider");
         Assert.Equal(new[] { "physical-first", "physical-second" },
             result.Observations.Where(o => o.Kind.StartsWith("physical-", StringComparison.Ordinal)).Select(o => o.Kind));
@@ -176,9 +176,9 @@ public sealed class PhysicalBattleTests
     {
         var session = FollowupStart("stone-court", 55, d =>
         {
-            d["actors"]![0]!["hp"] = 1;
-            d["actors"]![0]!["exp"] = 99;
-            d["actors"]![0]!["physical"]!["defeats"] = defeats;
+            d["start"]!["actors"]![0]!["hp"] = 1;
+            d["start"]!["actors"]![0]!["exp"] = 99;
+            d["start"]!["actors"]![0]!["defeats"] = defeats;
         });
         var result = Attack(session, "raider");
         var dead = session.Current.Battle.GetActor(new("swordsman"));
@@ -223,10 +223,10 @@ public sealed class PhysicalBattleTests
         var session = FollowupStart("stone-court", seed, d =>
         {
             d["encounters"]![0]!["placements"]![2]!["y"] = 2;
-            if (boundary == "level") d["actors"]![0]!["exp"] = 99;
-            else d["actors"]![0]!["hp"] = 1;
+            if (boundary == "level") d["start"]!["actors"]![0]!["exp"] = 99;
+            else d["start"]!["actors"]![0]!["hp"] = 1;
             if (boundary == "leader") d["actors"]![0]!["physical"]!["leader"] = true;
-            if (boundary == "last-ally") d["actors"]![1]!["hp"] = 0;
+            if (boundary == "last-ally") d["start"]!["actors"]![1]!["hp"] = 0;
         });
         Accept(session, new Move(ExplorationDirection.North));
         Select(session, "raider");
@@ -271,10 +271,10 @@ public sealed class PhysicalBattleTests
     {
         var session = Start("stone-court", d =>
         {
-            if (boundary == "level") d["actors"]![0]!["exp"] = 99;
+            if (boundary == "level") d["start"]!["actors"]![0]!["exp"] = 99;
             if (boundary == "leader") d["actors"]![2]!["physical"]!["leader"] = true;
             if (boundary == "last-enemy")
-                foreach (int index in new[] { 3, 4 }) d["actors"]![index]!["hp"] = 0;
+                foreach (int index in new[] { 3, 4 }) d["start"]!["actors"]![index]!["hp"] = 0;
             d["encounters"]![0]!["placements"]![2]!["x"] = 2;
             d["encounters"]![0]!["placements"]![2]!["y"] = 2;
         });
@@ -309,8 +309,8 @@ public sealed class PhysicalBattleTests
     {
         var session = Start("stone-court", d =>
         {
-            d["encounters"]![0]!["rewards"]!["initialGold"] = 9999990;
-            d["actors"]![0]!["physical"]!["kills"] = 9999;
+            d["start"]!["gold"] = 9999990;
+            d["start"]!["actors"]![0]!["kills"] = 9999;
         });
         Attack(session, "raider");
         Assert.Equal(9999999u, session.Current.Battle.Gold);
@@ -334,7 +334,7 @@ public sealed class PhysicalBattleTests
     public void ADeadLeaderCannotEnterAsAnOrdinaryContinuingEncounter()
     {
         var document = Document("stone-court");
-        document["actors"]![2]!["hp"] = 0;
+        document["start"]!["actors"]![2]!["hp"] = 0;
         document["actors"]![2]!["physical"]!["leader"] = true;
         var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(Reader(document)));
         Assert.Equal("leader-defeat-program", failed.Failure.Code);
@@ -347,7 +347,7 @@ public sealed class PhysicalBattleTests
             d["start"]!["mainSeed"] = ((uint)seed << 16) | 0x1234u;
             foreach (int index in new[] { 0, 2 })
             {
-                d["actors"]![index]!["hp"] = 500;
+                d["start"]!["actors"]![index]!["hp"] = 500;
                 d["actors"]![index]!["maxHp"] = 500;
             }
             d["actors"]![2]!["attack"] = package == "stone-court" ? 18 : 26;
@@ -358,7 +358,7 @@ public sealed class PhysicalBattleTests
     {
         d["start"]!["mainSeed"] = ((uint)seed << 16) | 0x1234u;
         d["actors"]![0]!["attack"] = 5;
-        d["actors"]![2]!["hp"] = 500;
+        d["start"]!["actors"]![2]!["hp"] = 500;
         d["actors"]![2]!["maxHp"] = 500;
     }
     private static void Select(GameSession session, string target)

@@ -17,7 +17,7 @@ checks are not universal gameplay predicates. The accepted
 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
-| `public-authored` | default local start or `--authored-package <path>` | validated authored battle, actors, terrain, spells and physical/reward definitions | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
 | `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
@@ -29,29 +29,43 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts a closed package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 2` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
 or AI are UnsupportedCapability. No raw-byte identity, comparison ID or prior receipt admits play.
 
-The only current start policy is `initialVitals: authored-controlled`. HP deficits are authored inputs;
-private original new-battle initialization is not claimed. Ordinary spell power is already adjusted,
-with full-recovery and level-up outside this slice. After admission the session reads no files or ROM
-and carries its seeds forward. The no-argument local default uses the tracked yard package, while
-`--authored-package <path>` can load another supported package. This source-mode path does not claim
-authored export packaging or original fidelity.
+The only current start policy is `initialVitals: authored-controlled`; private original new-battle
+initialization is not claimed. The immutable definitions contain maximum vitals, actor/rule/spell and
+reward data plus genuine encounter `placements`. The separate `start` selects an encounter, supplies
+uint `mainSeed`/`thinkingSeed`, `gold` (0–9,999,999) and one `start.actors` record per deployed actor.
+Each record requires `actor`, `hp`/`mp` bounded by its definition, `exp` (0–99), `kills`/`defeats`
+(0–9999), `status` (currently `none`) and `positionOverride` (null or a closed `{x,y}` object).
+Null uses the encounter deployment; an explicit override must be in bounds and traversable. Living
+actors cannot overlap. Dead actors remain explicit inputs and become unplaced runtime actors; missing
+records/counters and unknown/duplicate references are rejected. Array order does not override the
+encounter's stable deployment order.
+
+`ScenarioReadAccepted` returns the package's `ScenarioDefinition` and `BattleStartInput` separately.
+The ordinary source entry delegates to `GameSession.Start(definition, start)`, so a previously admitted
+definition can serve another explicit start with the same boundary checks and fresh runtime actors.
+Definitions never supply hidden session resources. Ordinary spell power remains already adjusted;
+full-recovery and level-up remain unsupported. The session reads no files/ROM after admission and
+carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
+another bounded package, without an authored-export or original-fidelity claim. Further model
+modernization and private initialization follow the
+[ordered boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
 
 Physical capability is optional per actor: `physical` is a closed object with `movementType`
-(currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, `gold` (0–65535),
-`kills` (0–9999), and `special` (currently `none`). Optional `defeats` (0–9999) supplies the
-initial defeat count; an absent value starts at zero. Other movetypes, prowess or special rules return
+(currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, enemy reward `gold`
+(0–65535), and `special` (currently `none`). Current kills/defeats are required start inputs, including
+for nonphysical actors. Other movetypes, prowess or special rules return
 Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current ATT/DEF are explicit
 authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
 weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
 
-Encounter `rewards`, when present, is closed to boolean `halvedExperience` and `initialGold`
-(0–9,999,999). Missing actor physical data or encounter rewards leaves physical commands Unsupported,
+Encounter `rewards`, when present, is closed to boolean `halvedExperience`. Current gold is supplied
+only by `start.gold`. Missing actor physical data or encounter rewards leaves physical commands Unsupported,
 without inventing defaults for the HEAL packages. Target death retains identity/accounting and sets
 its battlefield position to null. Ordinary first/second/reversed-counter hits resolve temporarily
 and publish as one action. Each hit truncates damage EXP before adding to the per-action accumulator;

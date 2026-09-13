@@ -15,7 +15,7 @@ scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplet
 
 | Capability | Status and boundary |
 | --- | --- |
-| Configurable start | **Implemented:** tracked authored packages use the same typed Content reader; starting HP deficits are explicit controlled inputs, not original battle initialization. |
+| Configurable start | **Implemented:** all four format-v2 authored packages use the same Content/session path; immutable definitions/deployments are separate from explicit start resources/accounting/seeds and optional placement overrides. One definition can support independent starts with validated references/bounds and fresh runtime actors. Original new-battle initialization remains unimplemented. |
 | Movement and selection | **Implemented:** weighted preview, cancel, occupancy and provisional destination; movement commits with the action. Logical maps do not wrap at row edges. |
 | Ordinary priest HEAL and STAY | **Implemented:** learned spell, MP/living ally/range checks, atomic MP/HP/EXP/RNG effects; level-up and unsupported branches reject before publication. |
 | Automatic battle continuation | **Implemented:** dead queued entries skip, configured Stay or bounded commandset06/script3 executes, sentinel starts the next generated round, and Application stops at player input or a bounded simulation tick. |

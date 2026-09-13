@@ -92,7 +92,8 @@ loads either [practice yard](../../remake/content/authored/practice-yard.json) o
 The packages supply different maps, encounters, actor/slot identities, placements, vitals, stats and
 spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
 `initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
-new-battle initialization policy. Production private original import remains unsupported until M2/M3.
+new-battle initialization policy. The separate private encounter reader imports source data; common
+private initialization and play remain unsupported until their M2/M3 dependencies are implemented.
 
 The plain [GameSession](../../remake/src/Sf2.Remake.Application/Runtime/GameSession.cs) reads its source
 once, owns the session/revision envelope and publishes one immutable snapshot. The independent
@@ -147,6 +148,57 @@ attributed range/unsupported failures passed without process errors. The
 [verification owner](../../remake/docs/development-and-verification.md#authored-battle-observation)
 contains exact commands. This establishes the bounded M1 path, not completion of A1–A8, original
 Map 3/Battle 01 continuity, 8C or H4.
+
+### Authored definitions and explicit session starts
+
+The user-approved JSON model modernization precedes the remaining common private initialized-entry
+plan. Its first implemented boundary separates reusable content definitions from one session's
+controlled start. JSON remains the bounded package format; the four executable authored packages now
+use `formatVersion: 2`. The reader accepts that current shape only, without parallel old/new models.
+
+[`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
+contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
+terrain, actor/rule/spell/reward definitions and ordered `BattleDeploymentDefinition` records. Those
+records keep genuine encounter deployment coordinates; no definition stores `BattleActorState`,
+current HP/MP/EXP, kills/defeats, initial gold or RNG seeds. Maximum vitals and enemy gold reward remain
+actor definitions; experience halving remains an encounter rule.
+
+[`BattleStartInput`](../../remake/src/Sf2.Remake.Domain/Battles/State/BattleStartInput.cs) selects one
+encounter and supplies both seeds, current gold and an explicit keyed input for every deployed actor:
+HP/MP/EXP, kills, defeats, supported status and nullable `positionOverride`. Null selects the encounter's
+deployment; an override is controlled start data. Dead actors still require explicit records, retain
+accounting and become unplaced runtime actors. Start-array order never replaces deployment/candidate
+order. Missing counters are rejected instead of being supplied by physical/reward definitions.
+
+The real Content reader returns definitions and start input separately in `ScenarioReadAccepted`.
+`GameSession.Start(IScenarioSource)` consumes that pair through the same public
+`GameSession.Start(ScenarioDefinition, BattleStartInput)` used to reuse admitted definitions with
+another explicit start. The shared Domain start boundary validates encounter/actor joins,
+duplicate/missing records, resource maxima/caps, supported status, live occupancy, terrain/bounds,
+leader/outcome and turn-capacity limits before creating fresh runtime actors. Content performs that
+same validation during read; typed reuse repeats it before publication, without a trusted-test bypass.
+The thin facade, dispatcher, automatic advancer and single immutable runtime state authority remain.
+
+**Confirmed (engine):**
+[`BattleStartStateTests`](../../remake/tests/Sf2.Remake.Engine.Tests/BattleStartStateTests.cs) reuse the
+same admitted definition for two different starts, including reordered keyed records, explicit
+resources/accounting/seeds and a position override. Natural round generation and HEAL/STAY keep
+independent existing RNG/resource expectations, separate session actors and unchanged definitions.
+Another selected encounter resolves its own deployment from the same package. Invalid JSON and typed
+starts fail at the actual binding boundary. Existing physical/AI/action tests retain their independent
+integer, reward/death, ordering and whole-action failure expectations with the migrated input paths.
+The [native start observations](../../remake/docs/development-and-verification.md#authored-start-state-observation)
+use real input, existing nodes and complete state checkpoints across all four packages and a differing
+controlled start; no screenshots, session setters or reference aggregate are required.
+
+Remaining modernization is explicitly separate: faction versus stable order, agility versus extra
+action, meaningful rule/capability profiles, control versus AI strategy, terrain semantic references
+and original slot/raw mappings. Existing source semantics remain unchanged until their dedicated
+migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
+registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
+these bounded content slices does the private initialized-entry dependency chain resume; raw private
+encounter expressions/provenance remain lossless, and unspecified private accounting remains Unknown.
+M2, A1–A8 and natural8C/H4 are incomplete.
 
 ## Current M2 ordinary physical implementation
 
@@ -342,7 +394,8 @@ then calls the reference session's Prepare → Initialize → FirstRound → Fir
 requires an exact pending Map3 admission and a controlled party preset. Later UI branches select
 standby, pursuit, physical and completion APIs from reference history. None calls
 `Application.Runtime.GameSession.Start(IScenarioSource)`. That common entry currently consumes an
-already populated `BattleDefinition`, starts turn generation immediately, and labels its origin
+a reusable `BattleDefinition` plus explicit controlled `BattleStartInput`, starts turn generation
+immediately without original new-battle initialization, and labels the authored read origin
 `public-authored-controlled-start`. Changing that label cannot supply the missing source startup rules.
 
 This dependency map describes the particular private Battle01 inputs; original facts remain owned
@@ -416,7 +469,8 @@ initialization. The three inputs still lack enemy/party/start-rule closure, so a
 bridge belongs with the subsequent initialized start. No Godot composition, GameSession, source
 schema/exporter, program runner or historical activated-state import changes at this boundary.
 
-After independent acceptance, the next blocking slices are ordered by these real dependencies:
+After the [content-model modernization](#authored-definitions-and-explicit-session-starts) slices are
+independently accepted, the private blocking slices follow these real dependencies:
 
 1. **Definition closure and initialized common entry.** Load the selected enemy/class/item/spell
    records from existing pinned exports and an external controlled party/start document; preserve
@@ -647,7 +701,7 @@ The minimal definition model is finite and typed:
 | Map | Typed map/resource IDs, dimensions, layout and passability/terrain references, area/roof/warp/event lists, ordered setup alternatives, entity placements, init-program ref. Layout word bits and render geometry remain distinct. |
 | Entity | Entity ID, actor/resource ref when applicable, initial position/facing, interaction program, action-program ref; mutable motion/cursor/wait belongs to session state. |
 | Battle | Battle ID, map/area/terrain refs, ally placements and enemy spawn records, regions/orders, before/start/region/defeated/after program refs, leader/outcome/reward rule operands, explicit return context. |
-| Actor/class | Actor and class-rule IDs, level/base stats, derived-stat inputs, HP/MP/EXP, inventory/equipment and known spell refs; authored starts and original growth-derived starts are explicitly different start policies. |
+| Actor/class | Actor and class-rule IDs, level/base stats, maximum vitals, derived-stat rules, inventory/equipment and known spell refs. Current HP/MP/EXP and accounting belong to explicit start/session inputs; authored starts and original growth-derived starts have different policies. |
 | Enemy | Enemy-definition ID, spawn baseline stats/status/items/spells, movement and AI definitions; spawn transformation and battle-local placement remain separate. |
 | Item/spell | Typed definition refs and supported effect variant/parameters, equip/use restrictions, cost, ranges/targeting and presentation refs. Preserve original packed fields in source projection, not as universal inferred semantics. |
 | Terrain | Fixed supported grid shape, typed cell values, movement-cost and land-effect tables. Original 48×48, byte arithmetic, neighbor order, and tie behavior constrain the initial fidelity profile. |
@@ -663,50 +717,22 @@ Do not create one capability per character, receipt, opcode helper, or test case
 
 ### Minimal authored example
 
-This is **Proposed, project-authored example data**, not extracted content, a current schema, or a
-claim that these records can already load. The containing package supplies the referenced class,
-terrain, text, and presentation records. The snippets illustrate closed variants and typed joins:
+The current executable examples are
+[`practice-yard`](../../remake/content/authored/practice-yard.json),
+[`garden-watch`](../../remake/content/authored/garden-watch.json),
+[`stone-court`](../../remake/content/authored/stone-court.json) and
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v2 documents
+through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
+describes their closed fields and supported domains. Their `actors` contain definitions, encounter
+`placements` retain deployment coordinates, and `start.actors` bind explicit per-session values by
+actor reference. A start override changes one controlled deployment without altering the definition.
 
-```json
-{
-  "formatVersion": 1,
-  "profile": "public-authored",
-  "ruleProfile": "sf2-semantic-subset-v1",
-  "spells": [{
-    "id": "mend", "level": 1, "mpCost": 3,
-    "targeting": {"kind": "living-ally", "minRange": 0, "maxRange": 1},
-    "effect": {"kind": "heal", "power": 15, "fullRecovery": false}
-  }],
-  "actors": [{
-    "id": "medic-a", "classRule": "unpromoted-priest",
-    "level": 1, "maxHp": 18, "hp": 18, "maxMp": 12, "mp": 12,
-    "attack": 8, "defense": 5, "agility": 7, "move": 5,
-    "exp": 0, "status": "none", "items": [],
-    "spells": [{"id": "mend", "level": 1}]
-  }],
-  "battles": [{
-    "id": "practice-a", "map": "yard-a", "terrain": "yard-ground",
-    "allies": [{"actor": "medic-a", "position": [8, 8]}],
-    "enemies": [{"id": "dummy-a", "definition": "dummy", "position": [20, 20]}],
-    "leader": "medic-a", "beforeProgram": "intro-a",
-    "startProgram": "empty", "afterProgram": "return-a",
-    "rewardRule": "ordinary", "return": {"map": "yard-a", "position": [4, 4]}
-  }]
-}
-```
-
-`dummy` uses an explicitly supported source-shaped Stay commandset for the first implementation
-slice; it is not an automatic fallback for arbitrary enemies. A second package can use `medic-b`,
-another map and placements, changed legal stats/MP, and the same heal effect without production case
-IDs. Source slot order remains an explicit ordering key where fidelity algorithms need it; authored
-IDs are not cast to source combatant numbers. A private import maps its ally/enemy/leader/class
-identities into those typed semantics and retains the original projection for comparisons.
-
-Missing `yard-ground` is ContentError. A declared effect such as `resurrect` outside the implemented
-catalog is UnsupportedCapability. A runtime cast with MP 2 is IllegalCommand. No loader fabricates a
-missing record, replaces an unknown effect with HEAL, or treats the authored package as private
-original evidence. Full packages retain the selected profile's capacity and grid constraints; the
-example is not permission to expand to arbitrary dimensions or unlimited rosters.
+A second supported package needs data changes only. Source slot order remains the explicit ordering
+key until its separate mapping migration; authored IDs are not cast to source combatant numbers.
+Missing map/actor references are ContentError. An unimplemented effect is UnsupportedCapability;
+a runtime cast with insufficient MP is IllegalCommand. No loader fabricates missing start records,
+replaces an unknown effect with HEAL, or treats an authored package as original-game evidence. These
+battle-only examples do not implement the proposed program/return records described below.
 
 ## Program execution and connected flow
 
@@ -980,7 +1006,7 @@ rows or execute this entire table as one rewrite.
 | --- | --- | --- |
 | M0: classify and cut over verification | Implemented subset: internal main RNG, ordinary priest healing scalar resolution, turn-order generation and Manhattan action range, consumed by existing Battle01 wrappers. Dedicated Engine.Tests protects the moved mechanics. Scoped CI/local/planner/guidance replace new-engine legacy gates under serialized ownership. Full movement and cancellation remain for M1. | No unintended behavior change in existing callers; independent arithmetic/boundary expectations and meaningful varied inputs protect the rules. Original fixtures and selected reference observations remain owned. Retire obsolete/meta-tests. Freeze a Draft PR, record direct command/CI results and main-gate required-check action, then stop for independent acceptance before M1. No old aggregate or tests of the cutover. |
 | M1: first connected functional vertical slice | **Implemented:** Content `Scenarios/AuthoredScenarioPackageReader.cs` and Application `Content/Scenarios/ScenarioDefinition.cs`; thin `Runtime/GameSession.cs`, independent `Runtime/Battles/BattleCommandDispatcher.cs` and `BattleAdvancer.cs`; Domain `Battles/Rules` and `Battles/State`; Godot `Battles` input/view and independent snapshot projection. Legacy scenario classes and controlled presets live in the separate reference assembly with no reverse production dependency. | Load either authored controlled encounter, reach player control, move/preview/cancel, atomically HEAL/STAY, skip a dead queued entry when present, execute configured Stay AI, generate another round and return to player input automatically. The first four examples have engine unit assertions and actual no-image adapter observation. Physical attack, level-up, general AI, programs and outcomes remain Unsupported. Stop for independent acceptance before M2. Old explicit reference startup remains selectable before creation; no live authority switch. |
-| M2: migrate battle rules and private admission | **Ordinary physical first/second/counter capability implemented; remaining M2 incomplete.** The [private-admission dependency boundary](#private-battle-admission-dependency-boundary) records the implemented encounter import and next initialized-start work. Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
+| M2: migrate battle rules and private admission | **Ordinary physical first/second/counter capability implemented; remaining M2 incomplete.** The [private-admission dependency boundary](#private-battle-admission-dependency-boundary) records the implemented encounter import; the user-approved content-model modernization precedes initialized-start work. Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
 | M3: programs and exploration on the common session | Replace the reference `Sessions/Maps/OriginalMapGameSession.cs`, reached `PrivateOriginalMap*` and synthetic lifecycle consumers with cohesive production program/exploration collaborators. Move real map/entity/event/program definitions from reference content/admission into JSON or suitable Content-loaded configuration and typed validation. Preserve source-special operations and provenance. | Common facade exists. Execute actual reached operations and waits/effects before replacing each story handler; never treat required story as disposable validation or assign its terminal state. Connect authored exploration/program/transfer/battle admission, then migrate original content. Reuse actual map/layout/entity rules, add behavior assertions and selected public-entry reference comparisons, and delete each old class/data with its last caller. Stop at unsupported native/timing frontiers and roll back any route whose comparison disagrees. |
 | M4: outcome and return | Extend the common battle advancer, program runner and transfer collaborators from the reference defeat/recovery/return owners and their after-program content. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
 | M5: remaining migration cleanup | Remove remaining superseded fields, dispatch, scheduling entry points and obsolete tests after capability-by-capability M2/M3/M4 removal. Preserve original evidence and useful external comparisons. | All affected callers use the common session and its behavior tests/affected comparisons pass. Remove the temporary legacy start binding and reference runtime with its last admitted capability; do not defer all scenario/data migration to this row. Confirm no production dependency on reference and no permanent parallel engine or mandatory legacy aggregate. |
