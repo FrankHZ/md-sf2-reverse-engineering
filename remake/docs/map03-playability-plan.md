@@ -9,8 +9,10 @@ keeping original-game evidence, modern remake policy, and unsupported fidelity c
 separate.
 
 Current stopping point: [dead129 slot completion, actual130 pursuit and R12 Sarah control](#implemented-defeated129-slot-completion-and-r12-sarah-control).
-Receipt98 persists through Sarah movement/confirm/cancel. Later five-survivor generation and combat
-choices remain outside this boundary.
+Receipt98 persists through Sarah movement/confirm/cancel. The
+[survival continuation plan](#proposed-survival-branch-and-five-survivor-round-continuation) returns
+to actual95/Bowie, selects a safer approach with adjacent Sarah support, and reaches actual100
+before the five-survivor generation guard.
 
 ## Current Baseline
 
@@ -1028,6 +1030,268 @@ clean pushed Draft for independent review and stop at Sarah movement/cancel.
 **Unknown:** later five-survivor generation and combat choices, further kills/levels/deaths/victory/
 return, natural input/seed continuity, original death-turn presentation and VInt consumption, and H4.
 Controlled97/98 publication and usable Sarah movement do not establish those original-runtime facts.
+
+### Proposed survival branch and five-survivor round continuation
+
+**Proposed, not implemented:** from actual 95/Bowie, use (11,13)/cost 4 and Sarah (11,14)/cost 10 to
+preserve Bowie's HP 3, bring the allies adjacent, and finish the current round through receipt 100.
+Then admit the first five-survivor generation and follow actual candidates to the first useful
+player movement/cancel or earlier Unsupported. This plan owns only this document; it does not
+authorize implementation. It follows [ADR 0010 selected 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md):
+the required action families serve a winning reference trace and stable control after victory.
+This survivable prefix is not a winning trace or a completed battle.
+
+#### Decision and bounded comparison
+
+Keep the same early `ChesterFirstKillComparison` and its actual 94 kill/95 Chester defeat. At 95,
+Bowie 0 is (11,15)/HP 3/EXP 63/kills 2/defeats 0, budget 12; Sarah 1 is (9,17)/HP 11/MP 10, with unspecified
+EXP/kills/defeats. Chester 2 is HP 0/unplaced/EXP 54/kills 1/defeats 1. Enemy 129/131/132 are cleaned;
+live 128(9,3)/HP 5,130(8,4)/HP 4,133(9,5)/HP 5. Gold 180/main 98321234/copy 0234/mask 0, counts 2/3,
+the existing seven-participant 64-slot buffer and all 95 receipts persist. No late preset, stat,
+position, HP/MP/EXP, seed or turn offset is supplied.
+
+**Confirmed:** the failed branch remains unselected; the accepted (9,11)/cost 12 Bowie approach followed by
+Sarah (11,14)/cost 10 reaches 99, where actual 133 has a lethal physical attack on Bowie and the
+dispatcher returns `attack.lethal` without changing 99. It has not reached generation. The original
+complete recipe and construction-only details remain in Git object
+`f1a357152837d35990c7d10e9969d9a2eb2a29c0` of this owner; its source-audited diagnostic and
+independent reproduction are completed evidence. Preserve those outputs without replay or changing
+the result. A second specialized leader-defeat terminal is not the next proposed capability.
+
+**Confirmed:** exactly two controlled alternatives were run from fresh actual 95
+sessions with identical early inputs/seed. Each uses one Bowie movement/STAY and one Sarah
+movement/STAY, then unchanged production candidate dispatch; no repeated origin STAY or seed search.
+
+| Branch | Actual choices and result | Selection reason |
+| --- | --- | --- |
+| Selected | Bowie (11,15)→(11,14)→(11,13), cost 4/bytes `[1,1,255]`; Sarah (9,17)→(10,17)→(10,16)→(11,16)→(11,15)→(11,14), cost 10/bytes `[0,1,0,1,1,255]`. Actual 100, Bowie HP 3, allies adjacent. | Greater northward progress through the passage; both scheduled enemies pursue without attacking, and Sarah is placed for potential one-range support. |
+| More conservative | Bowie (11,14), cost 2; Sarah (11,15), cost 8 along the same approach. Actual 100, Bowie HP 3, allies adjacent. | Also survives, but ends both allies one tile farther south with the same observed next capability gap. |
+
+Both Bowie action choices reject `attack.emptyTargets` and retain their selected snapshot.
+At each actual Sarah support choice the attack API instead rejects `attack.targetProfile`; separate
+pure `Targets` inspection is empty. Do not call that API result `attack.emptyTargets`, or claim
+Sarah's physical attack is supported. The more aggressive branch's previous 28-position survey is
+not replayed or substituted for these new real decisions.
+
+#### Actual selected route and first required gap
+
+| Step | Actual result |
+| --- | --- |
+| Bowie confirms (11,13), then moved STAY |96/R12/raw 6/current 129; no damage or accounting/RNG change. |
+| Current dispatcher completes dead129 and actual 130 |97 retains its distinct no-change meaning. Pursuit 98 targets Bowie at cost 24 versus Sarah 28, preliminary (9,5)/`[0,3,255]` trimmed to (9,4)/`[0,255]`/cost 2 by 133's occupancy. Actual Sarah 1/raw 10/budget 10 is returned. |
+| Sarah confirms (11,14), then moved STAY |99/raw 12/current 133, HP 11/MP 10; Bowie remains HP 3 at (11,13). |
+| Actual 133 command 7 pursuit |100/`EnemyTurnCompleted`/R12/raw 14/sentinel. Target Bowie cost 20 versus Sarah 22; moves (9,5)→(10,6)/cost 4/path `[0,3,255]`, with no physical effect. |
+| Dispatcher attempts next generation |`Next round rejected: round.turnOrder; round 12 retained.` A separate typed next-round request returns the same `round.turnOrder`; exact 100 reference and complete serialized before/after battle remain. No R13 state or RNG advance is published. |
+
+The alternative branch changes pursuit costs to 26/28 for 130 and 22/24 for 133; final enemy positions
+and guard are the same. It does not add implementation scope.
+
+At selected 100: Bowie (11,13)/HP 3, Sarah (11,14)/HP 11,128(9,3)/HP 5,130(9,4)/HP 4,
+133(10,6)/HP 5; Chester/129/131/132 remain HP 0/unplaced. Counts 2/3, Gold 180 and all kill/defeat/EXP
+values remain. Main 98321234/copy 0234/mask 0; flags 0–2 true, other 13 false; AI memory
+`04/34/14/24/34/04` plus 42 zeroes, last targets `02/02/02/00/00/02` plus 42 `FF`.
+The R12 slots remain `[2:6,128:6,0:5,129:5,130:5,1:4,133:4]` plus 57 sentinels. All 100 receipts
+retain the original 95 before-image and source/preparation identity.
+
+The concrete failure is `Battle01FirstRound.RequireCurrentPrefix`: `EnterNext` validates the old
+seven-participant R12 prefix and history, locally generates R13 from five living placed combatants,
+then rejects its new prefix at `actors.Length < 6`. The facade never publishes that local result.
+The minimum-six test is a **remake admission guard**, not an original-game minimum or a reason to
+restore corpses, filter historical slots, skip candidates or patch the current-turn byte.
+
+#### Source meaning, expected generation and later support needs
+
+Original provenance is the registered USA baseline and `ShiningForceCentral/SF2DISASM`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The accepted
+[turn-order contract](../../docs/design/contracts/battle-control-lifecycle.md#turn-order-construction)
+and `disasm/code/gameflow/battle/battleloop/turnorderfunctions.asm` (`0x25544..0x25610`),
+`GenerateBattleTurnOrder`/`AddCombatantAndRandomizedAgiToTurnOrder`, admit each placed living
+combatant independently. They retain 64 entries, skip negative-X or HP 0 candidates before RNG,
+preserve stable signed-byte sorting/ties and clear the new round's raw offset. No six-person
+threshold appears in that source. Existing zero-range RNG calls still advance the generator.
+
+**Confirmed:** source arithmetic, without a published round, uses five candidates 0/1/128/130/133,
+with agility 4/5/5/5/5. From main word 9832, the three draws per candidate consume 15 generator steps,
+including ten range 0 calls. Their range 3 results are 0/1/2/2/1, producing
+`[128:6,130:6,1:5,133:5,0:3]` plus 59 sentinels and main 74A71234. The copy remains 0234.
+This is reproducible with the existing `_rng_step` source helper and the named turn-order source;
+it does not authorize a fabricated R13 snapshot or represent a natural runtime observation.
+
+**Inferred:** after atomic R13/raw 0 generation with tested mask 7, dispatch actual 128,
+then 130, then Sarah 1 if no earlier unsupported action occurs. The expected first player is Sarah,
+with 102 receipts if both enemies complete one pursuit. Require actual execution after implementation;
+do not infer their final paths or force this count. At the first real player, verify a legal movement,
+confirmation and cancellation preserve the full ready battle; for expected Sarah (11,14), the
+candidate (11,15)/cost 2 is the bounded check. Stop before another player action. An earlier real
+refusal becomes the reported stopping point, not permission to extend combat/death/generation scope.
+
+Sarah support is tactically relevant but not currently implemented: the retained spell byte 0 is
+HEAL 1 and MP 10 is sufficient for its 3-MP cost. Pinned `data/stats/spells/spelldefs.asm`
+(`0x176A6..0x1796E`) supplies teammate range 0..1/radius 0/power 15; `spellranges.asm`
+(`0xC590..0xC5D6`) includes the adjacent Bowie tile. The accepted
+[HEAL subset](../../docs/design/contracts/spell-resolution.md#confirmed-heal-1-subset) owns
+missing-HP capping, PRST EXP and ordered MP/HP/EXP replay. A future cast could restore Bowie's
+missing 9 HP, but current Sarah EXP is **Unknown**, and no player spell selection/target/cast/
+accounting continuation is implemented here. A later healing slice needs an explicitly accepted
+early EXP input and those bounded consumer contracts; never fill EXP 0 or change MP/HP at 100.
+This plan performs no cast, predicts no winning outcome and starts no new research/H3 queue.
+
+#### Minimal future ownership and acceptance
+
+Admit five survivors justified by the existing validated death history. Keep exact historical
+generation reconstruction, full 64-slot/sentinel rules, per-visited-slot receipt matching and main/
+thinking/accounting validation. Reuse `GenerateTurnOrder`, activation, movement, AI and dispatcher;
+no new terminal policy, duplicate history, preset, schema or round-generation algorithm is needed.
+The Application next-round boundary should bind the five-survivor result to the retained early
+preparation and full six-field accounting before atomic publication,
+retaining the existing routes with nine through six participants.
+Do not broadly accept arbitrary smaller populations or weaken a corruption guard to fit a fixture.
+
+The proposed future implementation owns these exact 14 paths, relative to `remake/`; this plan
+authorizes none for editing. Report a concrete need outside them before expansion.
+
+| Directory / exact filenames | Responsibility |
+| --- | --- |
+| `src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs` | Bounded five-survivor admission while retaining complete original/historical generation invariants. |
+| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01FirstRound.cs` | Full early-input accounting and atomic next-round publication. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/`: `Battle01FirstRoundTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01NextPlayerControlTests.cs` | Five-versus-seven generation provenance, 15 draws, ordered history and actual next-player relay. |
+| `tests/Sf2.Remake.Application.Tests/`: `PrivateOriginalBattle01FirstRoundTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs` | Stale/foreign/repeated/late-input rejection, successful generation and whole-state move/cancel. |
+| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Real selected 95→100→R13 continuation and physical/API/visible control acceptance. |
+| `docs/`: `map03-playability-plan.md`, `capability-status.md`, `development-and-verification.md`, `presentation-and-assets.md` | Current capability, selected route, provenance/Unknowns and proportional verification. |
+
+Negative cases cover missing/relabelled/duplicated 97 or deaths, incorrect kill credit, HP/EXP/gold/
+kills/defeats drift, revived/placed corpses, arbitrary four-person population, altered five-member
+order/sentinel count/tie order/raw offset/main/copy/AI/flags, stale snapshot and late changed
+preparation. A failure after local generation/accounting must retain exact 100. Reconstruct R12
+from its seven original participants and R13 from five survivors while preserving earlier receipts.
+Keep the old aggressive 99 `attack.lethal` branch, dead129 policy, old 119 defeat/recovery/return,
+first-kill/counter and prior generation behavior with nine through six participants as regressions;
+do not add a second terminal.
+
+For future native acceptance, use a probe-only survival-branch selector under the existing early
+`chester-first-kill` launch. Reuse its physical prefix through Bowie 95/frame 40, then choose the
+new legal Bowie/Sarah moves. Retain the existing 46-frame route separately as a regression; do not
+rewind a live production battle from 98 or pretend the two alternative paths share the same frames.
+Compare all 40 common-prefix images by bytes. New frames should show Bowie provisional (11,13),
+actual Sarah ready, Sarah provisional (11,14), labeled copied 100 before generation, actual next
+player ready, provisional move and cancel. Require full physical/API equality, absent corpses,
+Bowie HP 3, adjacent allies, independent accounting and legible controls; inspect new images
+individually at original resolution. The selector and copied seam are test instrumentation only.
+
+Future implementation acceptance uses committed planner, owning required-private tests, one selected
+full managed suite, official locked Godot and affected native modes. Preserve completed failures and
+rerun only failed/newly invalidated nodes after correction. Fourth kill, levels, new deaths, spell
+implementation, victory/return, generic combat expansion and H4 are outside this generation slice.
+
+#### New focused reproduction and plan stopping rule
+
+Reuse the accepted source-audited Release Content and Godot assemblies; compare archive/extracted
+sources against accepted Git except this sole documentation owner, all copied Content DLLs, and the
+Godot assembly against its accepted test copy. Retain the fixed absolute `DOTNET_BIN`, shared CLI
+home, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, registered inputs and `SF2_REQUIRE_PRIVATE_TESTS=1`.
+Use fresh ignored worktree-local build/cache/temp/output directories and never rebuild old gates.
+
+A minimal net8.0 console project references all accepted Content test `bin/Release/net8.0` DLLs.
+Set `SF2_PLAN_GAME_DLL` to the accepted compiled Godot DLL and `SF2_RUN_OUTPUT` to fresh ignored
+output. This complete program compares only the two named tactical branches with actual actions:
+
+```csharp
+using System.Reflection;
+using System.Text.Json;
+using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Content.Tests;
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
+var json=new JsonSerializerOptions{MaxDepth=256};
+string Json(object value)=>JsonSerializer.Serialize(value,json);
+void Check(bool ok,string why){if(!ok)throw new Exception(why);}
+int Count(Battle01InitializedState b){int n=0;for(var r=b.TurnCompletion;r is not null;r=r.Previous)n++;return n;}
+var helper=typeof(PrivateOriginalBattle01StartupReaderTests).GetMethod("ReachRealChesterFirstKillSelection",BindingFlags.Static|BindingFlags.NonPublic)!;
+var ui=Assembly.LoadFrom(Environment.GetEnvironmentVariable("SF2_PLAN_GAME_DLL")!).GetType("Sf2.Remake.GodotAdapter.PrivateBattle01Ui")!;
+var dispatch=ui.GetMethod("DispatchNext",BindingFlags.Static|BindingFlags.NonPublic)!;
+string Relay(GameSession s)=>(string)dispatch.Invoke(null,[s,s.PrivateOriginalBattle01])!;
+void Show(string tag,Battle01InitializedState b)=>Console.WriteLine(tag+": "+Json(new{
+    receipts=Count(b),phase=b.Phase.ToString(),round=b.FirstRound!.RoundNumber,raw=b.FirstRound.CurrentTurnOffset,
+    candidate=b.FirstRound.CurrentCandidate,actor=b.FirstControl?.ActorIndex,budget=b.FirstControl?.Movement.Range.Budget,
+    main=b.RandomSeedImage.ToString("X8"),copy=b.RandomSeedCopy?.ToString("X4"),mask=b.NewlyTestedRegionMask,
+    b.CurrentGold,memory=b.AiMemory.Take(6),targets=b.AiLastTargets.Take(6),flags=b.RegionFlags90Through105,
+    units=b.Roster.Select(u=>new{u.Index,u.Position,u.Stats.HpCurrent,u.Stats.MpCurrent,u.Stats.Spells,u.Stats.CurrentExp,u.Stats.CurrentKills,u.Stats.CurrentDefeats}),
+    pursuit=b.TurnCompletion?.EnemyPursuit,counts=b.TurnCompletion?.AfterAfterTurn,
+    slots=b.FirstRound.Slots.Where(x=>!x.IsSentinel)}));
+foreach(var (bowie,sarah) in new[]{(new MapPosition(11,13),new MapPosition(11,14)),(new MapPosition(11,14),new MapPosition(11,15))}){
+    var s=(GameSession)helper.Invoke(null,[OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison])!;
+    Check(s.ConfirmPrivateOriginalBattle01PlayerAttack(s.PrivateOriginalBattle01,2) is PrivateOriginalBattle01PlayerAttackApplied,"94");
+    Check(s.CompletePrivateOriginalBattle01EnemyPhysicalAttack(s.PrivateOriginalBattle01,128) is PrivateOriginalBattle01EnemyPhysicalAttackCompleted,"95");
+    Check(s.EnterPrivateOriginalBattle01NextPlayerControl(s.PrivateOriginalBattle01,0) is PrivateOriginalBattle01NextPlayerControlEntered,"Bowie95");
+    var start=s.PrivateOriginalBattle01!;string prefix=Json(start.Battle);
+    Check(Count(start.Battle)==95 && start.Battle.RandomSeedImage==0x98321234,"unchanged starting95");
+    Console.WriteLine("BRANCH: "+Json(new{bowie,sarah}));
+    Check(s.SelectPrivateOriginalBattle01PlayerDestination(start,0,bowie) is PrivateOriginalBattle01PlayerMovementApplied,"Bowie approach");
+    Console.WriteLine("BOWIE PREVIEW: "+Json(s.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.Preview));
+    Check(s.ConfirmPrivateOriginalBattle01PlayerMovement(s.PrivateOriginalBattle01,0) is PrivateOriginalBattle01PlayerMovementApplied,"confirm Bowie");
+    var choice=s.PrivateOriginalBattle01!;string frozenChoice=Json(choice.Battle);
+    Check(s.BeginPrivateOriginalBattle01PlayerAttack(choice,0) is PrivateOriginalBattle01PlayerAttackRejected {Diagnostic.Field:"attack.emptyTargets"},"no immediate Bowie target");
+    Check(ReferenceEquals(choice,s.PrivateOriginalBattle01)&&frozenChoice==Json(choice.Battle),"empty target rejection atomic");
+    Check(s.CommitPrivateOriginalBattle01Stay(choice,0) is PrivateOriginalBattle01StayCommitted,"96");
+    Console.WriteLine("BOWIE RELAY: "+Relay(s));var ready=s.PrivateOriginalBattle01!;Show("SARAH READY",ready.Battle);
+    Check(Count(ready.Battle)==98 && ready.Battle.FirstControl?.ActorIndex==1 && ready.Battle.Roster[0].Stats.HpCurrent==3,"actual safe relay98");
+    Check(s.SelectPrivateOriginalBattle01PlayerDestination(ready,1,sarah) is PrivateOriginalBattle01PlayerMovementApplied,"Sarah support position");
+    Console.WriteLine("SARAH PREVIEW: "+Json(s.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.Preview));
+    Check(s.ConfirmPrivateOriginalBattle01PlayerMovement(s.PrivateOriginalBattle01,1) is PrivateOriginalBattle01PlayerMovementApplied,"confirm Sarah");
+    var support=s.PrivateOriginalBattle01!;string frozenSupport=Json(support.Battle);
+    Check(s.BeginPrivateOriginalBattle01PlayerAttack(support,1) is PrivateOriginalBattle01PlayerAttackRejected {Diagnostic.Field:"attack.targetProfile"},"Sarah attack remains unsupported");
+    Check(ReferenceEquals(support,s.PrivateOriginalBattle01)&&frozenSupport==Json(support.Battle),"unsupported Sarah attack atomic");
+    var targets=typeof(Battle01PlayerPhysicalAttack).GetMethod("Targets",BindingFlags.Static|BindingFlags.NonPublic)!;
+    var cohort=(int[])targets.Invoke(null,[support.Battle,1])!;
+    Console.WriteLine("PURE SARAH TARGETS: "+Json(cohort));Check(cohort.Length==0,"separate pure empty cohort");
+    Check(s.CommitPrivateOriginalBattle01Stay(support,1) is PrivateOriginalBattle01StayCommitted,"99");
+    string relay=Relay(s);Console.WriteLine("SARAH RELAY: "+relay);
+    Check(relay=="Next round rejected: round.turnOrder; round 12 retained.","actual dispatcher boundary");
+    var end=s.PrivateOriginalBattle01!;Show("ACTUAL BOUNDARY",end.Battle);
+    Check(prefix==Json(start.Battle),"original 95 immutable");
+    Check(end.Battle.Roster[0].Stats.HpCurrent==3 && end.Battle.DefeatPending is null,"Bowie survives");
+    Check(Count(end.Battle)==100 && end.Battle.Phase==Battle01Phase.EnemyTurnCompleted &&
+        end.Battle.FirstRound is {RoundNumber:12,CurrentTurnOffset:14,CurrentCandidate:null} &&
+        end.Battle.TurnCompletion!.EnemyPursuit is {ActorIndex:133,GridCost:4} &&
+        end.Battle.Roster.Single(u=>u.Index==133).Position==new MapPosition(10,6) &&
+        end.Battle.RandomSeedImage==0x98321234 && end.Battle.RandomSeedCopy==0x0234,"actual100 before generation");
+    string before=Json(end.Battle);var result=s.EnterPrivateOriginalBattle01NextRound(end);
+    Console.WriteLine("NEXT ROUND RESULT: "+Json(result));
+    Check(result is PrivateOriginalBattle01FirstRoundRejected {Diagnostic.Field:"round.turnOrder"} && ReferenceEquals(end,s.PrivateOriginalBattle01)&&before==Json(end.Battle),"first generation rejection retains entire boundary");
+    string name="bowie-"+bowie.X+"-"+bowie.Y;
+    File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("SF2_RUN_OUTPUT")!,name+"-before.json"),before);
+    File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("SF2_RUN_OUTPUT")!,name+"-after.json"),Json(end.Battle));
+}
+Console.WriteLine("PASS: two fixed tactical branches, unchanged early input and seed, no battle patch or unsupported bypass.");
+```
+
+With `SF2_PLAN_PROBE` naming that `.csproj` and `SF2_PLAN_PROBE_DLL` its output DLL, run each
+command through the existing bounded process runner and retain complete logs, exit/timeout/cleanup,
+both whole100 before/after comparisons and source/DLL audit:
+
+```powershell
+& $env:DOTNET_BIN @('restore', $env:SF2_PLAN_PROBE, '--disable-build-servers')
+& $env:DOTNET_BIN @('build', $env:SF2_PLAN_PROBE, '--configuration', 'Release', '--no-restore',
+  '--disable-build-servers', '-p:UseSharedCompilation=false')
+& $env:DOTNET_BIN @($env:SF2_PLAN_PROBE_DLL)
+```
+
+For the pure generation arithmetic, iterate the five actual 100 living/placed rows in index order,
+using `sf2tool.h3.rng._rng_step` with ranges 0,0,3 per row from 9832. Apply agility+first−second+third−1,
+then stable signed descending sort and 59 sentinels; assert the listed order and 74A7 endpoint.
+No battle state is constructed or dispatched past the guard by that arithmetic check.
+
+Plan acceptance is the new focused diagnostic, `git diff --check`, and committed
+`uv run sf2 verify plan --base origin/main --head HEAD`; root owns normal `uv run sf2 verify` on
+the revised frozen head. Existing 99/root reproduction and full/official/native/CI results remain
+completed evidence, not replay work. Update this same Draft's title/body around the final selected
+route, freeze the clean pushed head and stop before implementation.
+
+**Unknown:** actual R13 publication/relay, further survivability and a winning reference trace,
+Sarah's early EXP and complete healing input/consumer boundary, later kills/levels/deaths/victory/
+return, natural input/seed/presentation/VInt and H4. Preserving Bowie through 100 only proves this
+bounded controlled prefix; it does not promise that generation alone makes Battle01 winnable.
 
 ### Accepted inputs and incompatible existing assumptions
 
