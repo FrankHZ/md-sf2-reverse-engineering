@@ -77,7 +77,7 @@ engine or documentation change. Use formatting only for affected product project
 
 ## Authored Start State Observation
 
-The format-v3 reader returns immutable definitions and explicit start input. After loading the existing
+The format-v4 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
 observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
@@ -109,10 +109,39 @@ All mutation examples below keep actor/rule maxima in `actors`, current resource
 and actual encounter layout changes in `encounters[].placements`. Adding a deployed actor also
 requires its explicit start record; no default counter or runtime actor is synthesized from a definition.
 
+## Authored Extra Round Action Observation
+
+Use the same installed editor/project after the affected Debug build. This format-v4 input changes only
+one actor's explicit eligibility; its numerical agility remains12. Outputs stay in a fresh ignored run:
+
+```powershell
+$data = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
+$data.actors[0].extraRoundAction = $true
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'extra-turn-input.json'
+$data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'extra-turn-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case extra-turn --observation-output $outputPath
+```
+
+Require all seven checkpoints and clean logs: initial control, uncommitted STAY selection, consumption
+of the first and second entries, natural round2, and both entries again. Real Enter/Space input reaches
+the same actor at queue cursor1, then the other ally at3 after automatic Stay AI. From the configured
+high word1234, eleven draws end atFF4D and twenty-two at887A; low word1234 and thinking seed are carried.
+The ordinary package still consumes nine draws. STAY leaves HP/MP, gold and actor placement unchanged.
+The script reads the existing result/state/node interface; it adds no gameplay setter or new adapter
+observation fields. Use the four package observations below for the preserved ordinary configurations.
+
+`BattleAgilityTurnsTests` owns equal-agility definition variation, actual Content validation, capacity
+and cross-round behavior. `TurnOrderRulesTests` keeps the independent signed0/127 fixture and scalar
+seed expectations, including zero-range draws and the truncated secondary basis. `EnemyActionTests`
+retains death/counter results and skips already-generated extra entries for dead actors. The selected
+existing first-round reference methods named below exercise the actual source projection; no old
+aggregate, new H3 or test of the observer is required.
+
 ## Authored Faction and Order Observation
 
 Run the four package observations below, then prepare a changed-order physical input in a fresh ignored
-run directory. This format-v3 variant keeps independent accepted combat/RNG expectations while moving
+run directory. This format-v4 variant keeps independent accepted combat/RNG expectations while moving
 all orders beyond the original byte-side boundary and reversing all three JSON arrays:
 
 ```powershell

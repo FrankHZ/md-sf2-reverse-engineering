@@ -25,7 +25,10 @@ known legacy monolith. Moving it does not claim to have refactored or completed 
 source index to a byte identity and integer processing order for shared `TurnOrderRules`. Its nullable
 queue identity maps back to the original255 sentinel. Authored engine queues use `ActorRef` and their
 explicit encounter order through that same calculator; no source slot restricts authored identity,
-order or allegiance. Word/RNG arithmetic, agility flags and signed sentinel sorting remain shared.
+order or allegiance. This projection also decodes the original raw agility low7 bits and high-bit
+extra-entry eligibility into independent numerical agility and boolean `ExtraRoundAction`. The source
+byte remains here; shared generation does not infer eligibility from agility. Three ordinary draws,
+two optional extra draws, integer five-sixths basis, word/RNG and signed sentinel sorting remain shared.
 
 The ordinary physical scalar body has one owner: `Domain/Battles/Rules/PhysicalStrikeRules.cs`.
 `Rules/Battles/Battle01EnemyPhysicalAttack.cs` retains legacy admission/replay projection but invokes

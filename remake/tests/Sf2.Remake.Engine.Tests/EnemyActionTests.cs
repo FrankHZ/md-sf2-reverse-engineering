@@ -135,7 +135,7 @@ public sealed class EnemyActionTests
     {
         var doc = Document("stone-court"); Configure(doc, 7);
         doc["actors"]![0]!["agility"] = 20;
-        doc["actors"]![2]!["agility"] = 158;
+        doc["actors"]![2]!["agility"] = 30; doc["actors"]![2]!["extraRoundAction"] = true;
         doc["start"]!["actors"]![2]!["hp"] = 1;
         doc["start"]!["actors"]![0]!["kills"] = 9999;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
@@ -159,7 +159,7 @@ public sealed class EnemyActionTests
     public void EnemyKillDefeatsAllyOnceAndSkipsBothOfItsQueuedEntriesWithoutExperience()
     {
         var doc = Document("stone-court"); Configure(doc, 7);
-        doc["actors"]![0]!["agility"] = 128; doc["start"]!["actors"]![0]!["hp"] = 1;
+        doc["actors"]![0]!["agility"] = 0; doc["actors"]![0]!["extraRoundAction"] = true; doc["start"]!["actors"]![0]!["hp"] = 1;
         doc["start"]!["actors"]![0]!["defeats"] = 9999;
         doc["actors"]![2]!["agility"] = 30;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));

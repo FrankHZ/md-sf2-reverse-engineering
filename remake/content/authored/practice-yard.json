@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -89,6 +89,7 @@
       "attack": 11,
       "defense": 6,
       "agility": 12,
+      "extraRoundAction": false,
       "move": 5,
       "items": [],
       "spells": [
@@ -108,6 +109,7 @@
       "attack": 11,
       "defense": 6,
       "agility": 3,
+      "extraRoundAction": false,
       "move": 5,
       "items": [],
       "spells": []
@@ -122,6 +124,7 @@
       "attack": 11,
       "defense": 6,
       "agility": 7,
+      "extraRoundAction": false,
       "move": 5,
       "items": [],
       "spells": []

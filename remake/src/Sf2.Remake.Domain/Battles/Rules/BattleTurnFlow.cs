@@ -50,7 +50,7 @@ internal static class BattleTurnFlow
             }
             Require(occupied.Add(position), "occupied-placement", "start.actors");
             if (deployment.Faction == BattleFaction.Ally) allies++; else enemies++;
-            turns += actor.Agility >= 128 ? 2 : 1;
+            turns += actor.ExtraRoundAction ? 2 : 1;
         }
         Require(allies > 0 && enemies > 0, "battle-outcome", "start.actors", true);
         Require(turns <= 64, "turn-buffer-capacity", "start.actors");
@@ -62,7 +62,7 @@ internal static class BattleTurnFlow
     internal static EngineBattleState GenerateRound(EngineBattleState battle)
     {
         var generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
-            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Definition.Agility)),
+            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Definition.Agility, a.Definition.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));
         return battle.With(mainSeed: ((uint)generated.NextSeed << 16) | (battle.MainSeed & 0xFFFF),
             round: checked(battle.Round + 1), queue: generated.Slots, cursor: 0);

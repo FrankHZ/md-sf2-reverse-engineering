@@ -291,7 +291,8 @@ public static class Battle01FirstRound
             throw new ArgumentException("Turn candidates require original ally/enemy slots.", nameof(candidates));
         // Original bytes remain this projection's identity/order; common actors use ActorRef instead.
         var result = TurnOrderRules.Generate(source.Select(candidate => new TurnOrderCandidate<byte>(
-            candidate.Index, candidate.Index, candidate.X < 128, candidate.CurrentHp, candidate.Agility)), generatorWord);
+            candidate.Index, candidate.Index, candidate.X < 128, candidate.CurrentHp,
+            (byte)(candidate.Agility & 0x7F), (candidate.Agility & 0x80) != 0)), generatorWord);
         generatorWord = result.NextSeed;
         return result.Slots.Select(slot => new Battle01TurnEntry(slot.Actor ?? 255, slot.AlteredAgility)).ToArray();
     }
