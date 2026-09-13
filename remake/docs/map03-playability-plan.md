@@ -9,6 +9,7 @@ keeping original-game evidence, modern remake policy, and unsupported fidelity c
 separate.
 
 Current stopping point: [post-heal R14 and actual enemy133 counter-profile refusal](#post-heal-bowie-approach-and-second-five-survivor-generation).
+The next [Bowie counter admission proposal](#planned-post-heal-bowie-counter-admission) remains planning only.
 The early Sarah EXP0 comparison reaches HEAL103 and Bowie104, whose existing movement to (10,10)
 costs12 and whose STAY completes105. The bounded second five-survivor generation now succeeds.
 The unchanged dispatcher completes enemy128's attack106 (Bowie HP12→9), then rejects enemy133 at
@@ -1592,6 +1593,320 @@ bounded remake admission. Source structure does not establish natural reach, tim
 **Unknown:** committed133 primary/counter outcome, next player and later actions/generations,
 survival, victory/return, natural Sarah progression/presentation and H4. The observed counter-profile
 refusal is not authorization to add that next capability or prolong a losing line.
+
+### Planned post-heal Bowie counter admission
+
+**Planning only.** The accepted application still stops at [actual106 and enemy133's refusal](#post-heal-bowie-approach-and-second-five-survivor-generation).
+This proposal adds no positive107, counter effect, new input, receipt or production capability.
+The bounded diagnostic below reproduces that refusal from the original early
+`SarahHealComparison`, using the accepted initialization, HEAL, approach and dispatcher.
+
+#### Reproduced refusal and missing admission
+
+**Confirmed application boundary:** actual105/R13/raw10 advances through the admitted R14 order
+and128 attack to106/R14/raw2, current133, main`AE581234`, copy`0034`, mask0, Gold180 and no player
+control. Bowie is (10,10), HP9/MP8/EXP63/kills2/defeats0; Sarah remains (11,14), HP11/MP7/EXP17.
+Living128/130/133 retain (10,9)/(10,5)/(11,7), HP5/4/5. Chester and129/131/132 remain dead and
+unplaced. Preparation, SourceLocomotion and SourceBridge retain their original references.
+Two repeated facade and dispatcher attempts return `attack.counterProfile`, retaining the same106
+snapshot reference and its complete JSON. The complete battle equals the accepted native106.
+
+**Confirmed local construction diagnostic, not a committed hit:** the unchanged physical candidate
+builder finds only Bowie. Enemy133's candidate stop is (11,10), terrain0, cost6, movement
+`[3,3,3,255]` from (11,7). Bowie's cell is terrain1, primary multiplier230; potential damage3,
+remainingHP6, priority7. One range3 thinking draw yields1, copy`0034→0134`. The existing pure
+primary-strike helper consumes the following main draws from `AE581234`:
+
+| Purpose | Range | Result | Full after-image |
+| --- | --- | --- | --- |
+| dodge | 32 | 27 | `DA7F1234` |
+| critical | 32 | 3 | `187A1234` |
+| spread-1 | 1 | 0 | `3E391234` |
+| spread-2 | 1 | 0 | `28EC1234` |
+| double | 32 | 2 | `14031234` |
+| counter | 32 | 0 | `042E1234` |
+
+This local primary calculation has damage3, temporaryHP6, restored constructionHP9 and a proposed
+HP reaction of−3. Its surviving adjacent Bowie target selects the counter branch. These values
+explain the rejection; none is published. Actual106 still has Bowie HP9,133 at (11,7), main
+`AE581234` and copy`0034`. No counter damage, award draw, new final seed or positive107 is calculated.
+
+The precise current guard is `Battle01EnemyPhysicalAttack.ResolveCounter`: `actor.Index != 2`
+rejects Bowie before the common actor, target, terrain, counter-damage and EXP helpers execute.
+The current `Battle01ChesterCounterattack` result type, Chester completion policy selection and
+history validator also name only the previously admitted Chester role. Merely deleting the actor
+check would mislabel the receipt and broaden admission without an authenticated policy.
+
+**Confirmed reusable inputs:** Bowie's current class0, effectiveATT9, status0, equipment and EXP63
+already pass `Battle01PlayerPhysicalAttack.RequireActor`. The existing input/history route owns
+his early EXP0 and the subsequent rewards. The same `RequireTarget` accepts regular enemy133;
+`TargetLandMultiplier(0)` returns256 for its actual candidate stop. No new equipment, combatant,
+terrain, accounting field or controlled preset is required. The Application currently passes its
+Chester flag from the supplied Chester EXP, which permits this primary calculation to reach the
+Bowie guard; it does not establish a Bowie-specific permission.
+
+The existing presenter already formats counter actor/target names, two HP effects and recipient
+EXP dynamically. `Battle01FirstRound` validates current receipts through `HasValidPolicy` and
+reuses the complete105 history; `Battle01NextPlayerControl` consumes that validated prefix.
+Their production algorithms need no planned change. Existing history already rewinds both
+participants' stats and the main/copy chains, including the old Chester counter, deaths and Sarah103
+HP/MP/EXP; its explicit counter-policy admission needs extension.
+
+#### Accepted source contract and bounded implementation semantics
+
+The registered USA ROM and SF2DISASM commit `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+[action-construction contract](../../docs/design/contracts/battle-action-construction.md),
+[combat-resolution contract](../../docs/design/contracts/combat-resolution.md), and
+[action-completion owner](../../docs/research/map3-battle01-action-completion.md) remain the original
+behavior authorities. The [accepted Chester counter source table](#source-boundary-and-expected-effect)
+names the relevant assembly files and existing arithmetic/replay seams. In particular,
+`battleactions/{attack,determinedoubleandcounter,isabletocounterattack,battleactionsengine_1}.asm`
+own survival/range/status validation and swapped counter roles;
+`battleactions/{calculatedamage,inflictdamage}.asm` own effective attack, counter-target
+terrain/defense and halving before spread; `battleactions/{earnexp,giveexpandgold,battleactionsengine_2}.asm`
+and `battlescenes/battlesceneengine_0.asm:bsc0F_giveExp` own damage EXP, Battle01 halving, award draws
+and allied-recipient replay. These paths are relative to `disasm/code/gameflow/battle/`.
+
+**Confirmed accepted source semantics:** preserve primary construction/reaction before the
+counter, use the counter target's terrain at the enemy attack stop, halve counter damage before
+the two spread draws and minimum1 clamp, award the allied counterattacker's damage EXP, and consume
+the counter's own double/counter draws without recursively dispatching another action. Construction
+HP restoration and later ordered replay are separate. This role-neutral source behavior supports
+using the existing Bowie profile; the diagnostic's remake route is not original-game evidence.
+
+**Proposed smallest complete behavior:** admit living class0 Bowie alongside the existing bounded
+Chester role through the same reducer. Rename the result record to a neutral allied-counter name
+in its existing file, retaining its fields and serialized shape. Add a distinct nonlethal Bowie
+counter/EXP completion policy; preserve the existing Chester policy object, ID, named call sites
+and old receipt semantics. Keep the two role permissions explicit from decision construction through
+validation, completion and reverse history. The Application supplies the Bowie permission from the
+accepted early Sarah comparison and existing known Bowie profile; older presets retain their prior
+admission. No seed, round number, receipt count or enemy133 identity chooses a combat result.
+
+A successful transaction would publish the enemy movement, both HP effects, Bowie's actual EXP
+award, RNG/copy, enemy selected-target memory and exactly one enemy turn together. Reversed counter
+roles must not overwrite the enemy's selected target or consume a player slot. Validate all seven
+early accounting inputs after local completion and before publication. Bowie EXP must rewind through
+its actual awards to early0; changing the recipient, award before-image, policy or either generation
+link must reject the entire pre-primary transaction. No separate counter state authority is needed.
+
+This proposal admits no lethal counter, level transition, item/drop, extra attack, new death cleanup
+or next generation. Unsupported profile/status/range/terrain, primary double, a lethal result,
+EXP100+ or failed history/accounting must preserve all of106. Existing separate defeat profiles
+retain their accepted behavior. Do not manufacture a new state, edit positive-route fixtures, patch
+stats/seed/receipts or choose another action to obtain an anticipated continuation.
+
+#### Candidate ownership and acceptance stop
+
+The following15 existing paths are the complete candidate implementation scope, subject to a
+separate main-gate assignment. This planning slice owns only this Markdown file; no other writer or
+unmerged dependency is required. Shared receipt/history owners remain serialized in one worktree.
+
+| Existing path | Proposed responsibility |
+| --- | --- |
+| `remake/src/Sf2.Remake.Domain/Battles/Battle01EnemyPhysicalAttack.cs` | Neutral counter record, explicit Bowie role admission, existing damage/EXP reducer and exact replay. |
+| `remake/src/Sf2.Remake.Domain/Battles/Battle01TurnCompletion.cs` | Distinct Bowie counter policy, role-correct receipt validation, one atomic completion and unchanged Chester policies. |
+| `remake/src/Sf2.Remake.Domain/Battles/Battle01EnemyStandby.cs` | Admit that policy during reverse history and authenticate participant stats, EXP, terrain and seed links. |
+| `remake/src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs` | Early-preset permission, existing seven-input check and one final snapshot publication. |
+| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs` | Bowie effect/roll/EXP profile, old Chester regression, unsupported profiles, double/lethal/level boundaries and unchanged before-images. |
+| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01TurnCompletionTests.cs` | Policy/actor mismatch, missing or swapped counter, ordered effects, one cursor/receipt advance and late completion failure. |
+| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` | Forged counter roles, EXP/reactions/terrain/RNG, both generation links, healing and old-death history. |
+| `remake/tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01EnemyPhysicalAttackTests.cs` | Exact/stale/foreign/repeated requests, all early inputs and a late accounting failure after successful local construction. |
+| `remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Real early route, immutable106, actual first counter or Unsupported, source-derived result, full retained channels and actual subsequent dispatch. |
+| `remake/tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs` | Actual Bowie counter actor/target, ordered HP and EXP recipient, final actual control or Unsupported projection. |
+| `remake/tests/native/Map19Map20AtlasReviewProbe.cs` | Probe-only extension from the same Sarah route, complete API/physical equality, actual result and first usable control or Unsupported. |
+| `remake/docs/map03-playability-plan.md` | Replace this proposal with the observed implementation boundary and remaining Unknowns. |
+| `remake/docs/capability-status.md` | Admitted counter role and exact remaining boundary. |
+| `remake/docs/development-and-verification.md` | Owning filters, required private inputs and proportional gates. |
+| `remake/docs/presentation-and-assets.md` | Probe selector, new/changed frames and actual native acceptance. |
+
+Reuse `Battle01FirstRoundTests.PostHealBowieBoundary` and
+`PrivateOriginalBattle01FirstRoundTests.PostHealBowieSession` without changing their owners.
+These authored routes have cost8 terrain; they must not stand in for the required Content route's
+cost12 terrain or its counter stop. Reuse `ReachRealPostHealBowieBoundary` in the Content owner and
+then the existing generation,128 completion and dispatcher. Keep the old106 rejection as the
+planning baseline, not as a golden that must stay rejected after the separate capability is accepted.
+
+The implementation's stopping condition is one actual enemy133 primary/counter transaction followed
+by the unchanged dispatcher to the first usable player movement/cancel boundary or the first real
+Unsupported. Observe the outcome before asserting its exact HP/EXP/RNG; do not promise107 or Bowie
+control from the current order alone. If the proposed nonlethal/no-level profile itself refuses,
+report that blocker with the complete106 rollback and stop. Any additional production owner or
+capability requires reporting the newly found boundary before widening this slice.
+
+For implementation, use the clean committed planner and the existing
+[verification owner](./development-and-verification.md#repository-planner). The focused test filter
+should cover `Battle01EnemyPhysicalAttackTests`, `Battle01TurnCompletionTests`,
+`Battle01EnemyStandbyTests`, `PrivateOriginalBattle01EnemyPhysicalAttackTests`,
+`PrivateOriginalBattle01StartupReaderTests` and `PrivateBattle01PresenterTests`; pair it with the
+planner-selected managed and official Godot gates for the shared reducer/policy change. Required
+private positives must execute with `SF2_REQUIRE_PRIVATE_TESTS=1` and zero skips. The maintained
+local official command is `uv run python -m sf2tool.remake_godot` with the retained explicit toolchain
+and fresh scratch overrides. Main-gate owns normal `uv run sf2 verify` and independent integration.
+A completed full managed failure is retained and corrected with its failing/newly invalidated nodes,
+not a repeated full suite. No full Python gate or new H3 is selected by this proposal.
+
+Extend the existing Sarah native selector from
+`SF2_BATTLE01_CONTROL_REVIEW=sarah-heal` plus `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`, using
+one new probe-only option documented at implementation. Follow the
+[native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
+Preserve the accepted63-frame Sarah prefix and the approach/cancel/105/generation/106 checkpoints;
+retain the former final counter-profile refusal as historical evidence. Inspect each added or
+changed PNG at original1920×1080, including ordered HP effects, Bowie EXP and the actual endpoint.
+Compare unchanged frames and frame-state JSON directly by bytes; retain all prior accepted artifacts.
+Do not claim a changed final frame remains byte-identical. Production presenter changes are not in
+this scope; its existing generic text should be exercised before proposing a layout correction.
+
+#### Reproduce this planning diagnostic
+
+The diagnostic reuses verified assemblies built from commit
+`39fc9638fb1b4d534e62b9e8c495fa63bc962bcc`, whose tree
+`838de1b41ad292e029394e4d9ba8fb669e3767f9` is identical to accepted
+`8e4a3ae3336c72b15a8f582b8649920636dd57a9`. Before reuse, archive that accepted object with
+`git archive --format=zip --output local/post-heal-counter-plan/accepted-source.zip 8e4a3ae3336c72b15a8f582b8649920636dd57a9 remake tests/fixtures`.
+Compare the complete member-name set and every member's bytes with the retained
+`local/second-five-survivor-round/added-negatives-01/managed/source.zip` and its extracted
+`workspace/`: all452 non-directory members match. Verify the18 copied Content-output DLLs directly
+against their originals before executing the diagnostic. A fresh worktree must obtain equivalent
+verified outputs from the named accepted object, not select arbitrary DLLs.
+
+Load the retained environment with a fresh run name and private-input configuration. Set the fixed
+installed `DOTNET_BIN`, shared `DOTNET_CLI_HOME`, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and existing
+local caches through that environment script. No dependency installation or environment recreation
+is needed. Save the exact project and program below in the fresh `SF2_RUN_OUTPUT` directory:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+<ItemGroup><Reference Include="$(AcceptedContentDllDirectory)/*.dll" /></ItemGroup>
+</Project>
+```
+
+```csharp
+using System.Reflection;
+using System.Text.Json;
+using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Content.Tests;
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
+var options = new JsonSerializerOptions { MaxDepth = 256, WriteIndented = true };
+string Json(object value) => JsonSerializer.Serialize(value, options);
+void Require(bool yes, string why) { if (!yes) throw new Exception(why); }
+int Count(Battle01InitializedState b) { int n = 0; for (var r = b.TurnCompletion; r != null; r = r.Previous) n++; return n; }
+object? Call(Type type, string name, params object?[] args) => type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, args);
+var output = Environment.GetEnvironmentVariable("SF2_RUN_OUTPUT")!;
+PrivateOriginalBattle01SessionSnapshot? initialized = null;
+Action<PrivateOriginalBattle01SessionSnapshot> observer = s => initialized = s;
+var session = (GameSession)Call(typeof(PrivateOriginalBattle01StartupReaderTests), "ReachRealPostHealBowieBoundary", observer)!;
+var before = session.PrivateOriginalBattle01!;
+Require(initialized != null && initialized.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.SarahHealComparisonId && initialized.Battle.Roster[1].Stats.CurrentExp == 0, "early Sarah input");
+Require(Count(before.Battle) == 105, "real105");
+string beforeFrozen = Json(before);
+var ui = Assembly.LoadFrom(Environment.GetEnvironmentVariable("SF2_PLAN_GAME_DLL")!).GetType("Sf2.Remake.GodotAdapter.PrivateBattle01Ui")!;
+string Relay() => (string)Call(ui, "DispatchNext", session, session.PrivateOriginalBattle01)!;
+string dispatch = Relay();
+var current = session.PrivateOriginalBattle01!; var b = current.Battle;
+Require(Count(b) == 106 && b.FirstRound!.RoundNumber == 14 && b.FirstRound.CurrentTurnOffset == 2 && b.FirstRound.CurrentCandidate?.CombatantIndex == 133 && b.FirstControl == null, "actual106");
+Require(b.RandomSeedImage == 0xAE581234u && b.RandomSeedCopy == 0x0034 && b.NewlyTestedRegionMask == 0, "actual RNG");
+Require(ReferenceEquals(initialized!.Preparation, current.Preparation) && ReferenceEquals(initialized.SourceLocomotion, current.SourceLocomotion) && ReferenceEquals(initialized.SourceBridge, current.SourceBridge), "retained provenance");
+string frozen = Json(current);
+File.WriteAllText(Path.Combine(output, "before105.json"), beforeFrozen);
+File.WriteAllText(Path.Combine(output, "actual106.json"), frozen);
+for (int i = 0; i < 2; i++) {
+    Require(session.CompletePrivateOriginalBattle01EnemyPursuit(current, 133) is PrivateOriginalBattle01AttackSelectionRequired, "actual attack selection");
+    Require(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(current, 133) is PrivateOriginalBattle01EnemyPhysicalAttackRejected r && r.Diagnostic.Field == "attack.counterProfile", "facade refusal");
+    Require(Relay() == dispatch && dispatch == "Enemy 133 physical attack rejected: attack.counterProfile; current state retained.", "dispatcher refusal");
+    Require(ReferenceEquals(current, session.PrivateOriginalBattle01) && Json(current) == frozen, "whole106 rollback");
+}
+var actor = b.Roster.Single(u => u.Index == 133);
+string rejectionStack;
+try {
+    Battle01EnemyPhysicalAttack.CompleteNext(b, 133, Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill, allowChesterCounter: true);
+    throw new Exception("Missing domain refusal");
+} catch (Battle01PhysicalAttackUnsupportedException error) {
+    Require(error.ParamName == "attack.counterProfile" && error.StackTrace!.Contains("ResolveCounter"), "counter actor guard");
+    rejectionStack = error.ToString();
+}
+File.WriteAllText(Path.Combine(output, "rejection.txt"), rejectionStack);
+// Read-only decomposition of the accepted Decide prefix; no decision, counter or new state is made.
+var (grid, candidates) = ((Battle01MovementGrid, Battle01AttackCandidate[]))Call(typeof(Battle01EnemyPursuit), "PhysicalCandidates", b, actor)!;
+var priorities = new List<Battle01PhysicalTargetPriority>();
+ushort copy = b.RandomSeedCopy!.Value;
+foreach (var candidate in candidates.Reverse()) {
+    var target = b.Roster.Single(u => u.Index == candidate.ActorIndex);
+    int multiplier = (int)Call(typeof(Battle01EnemyPhysicalAttack), "LandMultiplier", target.ClassId, b.TerrainAt(target.Position!))!;
+    var roll = (Battle01ThinkingRoll)Call(typeof(Battle01EnemyStandby), "ThinkingRoll", copy, (byte)3)!;
+    copy = roll.AfterSeedCopy;
+    int potential = (int)Call(typeof(Battle01EnemyPhysicalAttack), "LandDamage", actor.Stats.Attack, target.Stats.Defense, multiplier)!;
+    int remaining = Math.Max(0, target.Stats.HpCurrent - potential);
+    int priority = (int)Call(typeof(Battle01EnemyPhysicalAttack), "Priority", candidate.GridCost, remaining, roll.Result)!;
+    priorities.Add(new(target, candidate, multiplier, potential, remaining, priority, roll));
+}
+var selected = (Battle01PhysicalTargetPriority)Call(typeof(Battle01EnemyPhysicalAttack), "SelectTarget", priorities)!;
+var moves = (IReadOnlyList<byte>)Call(typeof(Battle01EnemyStandby), "SourceMoveString", grid, actor.Position, selected.Candidate.AttackPosition)!;
+var primary = (Battle01PhysicalEffect)Call(typeof(Battle01EnemyPhysicalAttack), "ResolveSingleStrike", (int)actor.Stats.Attack,
+    selected.Target.Stats, selected.LandMultiplier, b.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition,
+    selected.Target.Position, (ushort)32, (ushort)32, 1, false, true, false)!;
+Require(selected.Target.Index == 0 && primary.AfterStats.HpCurrent > 0 && primary.Rolls.Any(r => r.Purpose == "counter" && r.Result == 0), "living Bowie selected for counter");
+// Validate existing scalar participant inputs only; never call a counter resolver with a substituted actor.
+Call(typeof(Battle01PlayerPhysicalAttack), "RequireActor", selected.Target);
+Call(typeof(Battle01PlayerPhysicalAttack), "RequireTarget", actor, 2);
+byte terrain = b.TerrainAt(selected.Candidate.AttackPosition);
+int counterMultiplier = (int)Call(typeof(Battle01PlayerPhysicalAttack), "TargetLandMultiplier", terrain)!;
+Require(ReferenceEquals(current, session.PrivateOriginalBattle01) && Json(current) == frozen && Json(before) == beforeFrozen, "all before images immutable");
+var result = new {
+    earlyInput = initialized.Preparation.Party.Id, initialSarahExp = initialized.Battle.Roster[1].Stats.CurrentExp,
+    dispatch, count = Count(b), round = b.FirstRound!.RoundNumber, raw = b.FirstRound.CurrentTurnOffset,
+    main = b.RandomSeedImage.ToString("X8"), copy = b.RandomSeedCopy?.ToString("X4"), mask = b.NewlyTestedRegionMask,
+    units = b.Roster.Select(u => new { u.Index, u.Position, u.Stats.HpCurrent, u.Stats.MpCurrent, u.Stats.CurrentExp, u.Stats.CurrentKills, u.Stats.CurrentDefeats }), gold = b.CurrentGold,
+    unpublished = new { priorities, selectedTarget = selected.Target.Index, origin = actor.Position, destination = selected.Candidate.AttackPosition,
+        cost = selected.Candidate.GridCost, moves, copyAfter = copy.ToString("X4"), primary, counterTargetTerrain = terrain, counterMultiplier },
+    existingBowieActorAndGizmoTargetProfilesPass = true, repeatedFacadeAndDispatcherPreserveReferenceAndWhole106 = true,
+    positive107Constructed = false, counterEffectCalculated = false
+};
+File.WriteAllText(Path.Combine(output, "result.json"), Json(result));
+Console.WriteLine(Json(result));
+```
+
+Use the following commands in the owning worktree; preserve each exit code and complete output.
+Reflection calls existing helpers and pure reduction seams only. The program neither writes private
+inputs nor constructs a new battle/counter result or modifies a field through reflection.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+. 'local/worktree-environment-reuse/environment.ps1' -RunName 'post-heal-counter-plan/reproduce-01'
+. 'local/granseal-doorway-cycle/private-inputs.ps1'
+$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
+# Save the project and program above under SF2_RUN_OUTPUT before these SDK commands.
+$acceptedManaged = Join-Path (Get-Location) 'local/second-five-survivor-round/added-negatives-01/managed/workspace/remake'
+$contentDllDirectory = Join-Path $acceptedManaged 'tests/Sf2.Remake.Content.Tests/bin/Release/net8.0'
+$env:SF2_PLAN_GAME_DLL = Join-Path $acceptedManaged 'tests/Sf2.Remake.Godot.Tests/bin/Release/net8.0/Sf2.Remake.Godot.dll'
+$probeProject = Join-Path $env:SF2_RUN_OUTPUT 'Probe.csproj'
+$probeDll = Join-Path $env:SF2_RUN_OUTPUT 'bin/Release/net8.0/Probe.dll'
+$referenceProperty = '-p:AcceptedContentDllDirectory=' + $contentDllDirectory
+& $env:DOTNET_BIN restore $probeProject --disable-build-servers $referenceProperty
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostic restore failed' }
+& $env:DOTNET_BIN build $probeProject --configuration Release --no-restore --disable-build-servers '-p:UseSharedCompilation=false' $referenceProperty
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostic build failed' }
+# Compare all18 dependency DLLs directly with contentDllDirectory before running.
+& $env:DOTNET_BIN $probeDll
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostic failed' }
+```
+
+**Confirmed planning verification:** source/DLL reuse, restore/build/diagnostic and complete106
+comparison pass. The tracked program is the exact executed source. The earlier `diagnostic-01`
+build completed with two CS1061 errors from calling internal `WithStats`/`WithPosition` methods;
+it executed no diagnostic. The correction validates the existing unmodified participants through
+accepted internal helpers; `diagnostic-02` completes all three steps exit0. Preserve both results
+under ignored `local/post-heal-counter-plan/`. No production suite, official Godot, native route,
+emulator or original-runtime observation is rerun for this one-file plan. Run the clean committed
+planner and document/link/private-boundary audit; normal public verification remains main-gate owned.
+
+**Unknown:** the committed133 primary/counter result, counter damage/EXP/final seeds, whether a107
+receipt is admitted, actual next usable player control, later actions/generations, survival,
+victory/return, natural caller reach/timing/presentation and H4. The unpublished primary diagnostic
+closes only the cause of the existing refusal. Implementation requires its own accepted slice.
 
 ### Accepted inputs and incompatible existing assumptions
 
