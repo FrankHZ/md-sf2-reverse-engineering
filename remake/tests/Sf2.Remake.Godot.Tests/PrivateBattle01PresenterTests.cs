@@ -264,8 +264,8 @@ public sealed class PrivateBattle01PresenterTests
                     current=Battle01EnemyPursuit.CompleteNext(current,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
                     current=Stay(Battle01NextPlayerControl.Enter(current,1).State!,1,new(11,14));
                     current=Battle01EnemyPursuit.CompleteNext(current,133,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
-                    var completed=PrivateBattle01Presenter.BuildProjection(current,"R12 complete.");
-                    Assert.Equal(12,current.FirstRound!.RoundNumber);Assert.Equal(133,completed.CompletedActorIndex);Assert.False(completed.CanConfirm);
+                    var roundCompleted=PrivateBattle01Presenter.BuildProjection(current,"R12 complete.");
+                    Assert.Equal(12,current.FirstRound!.RoundNumber);Assert.Equal(133,roundCompleted.CompletedActorIndex);Assert.False(roundCompleted.CanConfirm);
                     current=Battle01FirstRound.EnterNext(current);
                     var generated=PrivateBattle01Presenter.BuildProjection(current,"R13 generated.");
                     Assert.Equal((13,(int?)128),(current.FirstRound!.RoundNumber,generated.ActorIndex));

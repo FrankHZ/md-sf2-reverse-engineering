@@ -13,6 +13,32 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateOriginalBattle01StartupReaderTests
 {
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void AcceptedAggressiveApproachRetainsNinetyNineOnEnemy133LethalRefusal()
+    {
+        var session=ReachRealChesterFirstKillSelection(OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(session.PrivateOriginalBattle01,2));
+        Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,128));
+        foreach(var (actor,target) in new[]{(0,new MapPosition(9,11)),(1,new MapPosition(11,14))})
+        {
+            Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01,actor,target));
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01,actor));
+            if(actor==0)
+            {
+                Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(session.PrivateOriginalBattle01,129));
+                Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,130));
+            }
+        }
+        var before=session.PrivateOriginalBattle01!;var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(before.Battle,json);
+        Assert.Equal(99,ReceiptCount(before.Battle));
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(before,133));
+        Assert.Equal("attack.lethal",Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(before,133)).Diagnostic.Field);
+        Assert.Same(before,session.PrivateOriginalBattle01);Assert.Equal(frozen,JsonSerializer.Serialize(before.Battle,json));
+    }
+
     private static GameSession ReachRealFiveSurvivorBoundary()
     {
         var session=ReachRealChesterFirstKillSelection(OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
