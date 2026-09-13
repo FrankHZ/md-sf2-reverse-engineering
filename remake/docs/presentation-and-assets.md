@@ -1219,6 +1219,31 @@ healing completion never labels itself physical attack or STAY. The cast summary
 through pursuit and the next player's movement. This is controlled presentation, not original
 spell animation, natural Sarah progression, or a winning/H4 trace.
 
+To continue the existing Sarah mode through the second five-survivor generation, set
+`SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1` in addition to
+`SF2_BATTLE01_CONTROL_REVIEW=sarah-heal`. This is a probe-only selector; the same recipe still
+passes only the early `--private-battle01-sarah-heal` production flag. Leave the new selector absent
+for the original63-frame run. Use a fresh ignored `local/second-five-survivor-round/<run>/review`
+root, the retained fixed SDK/editor and required registered inputs.
+
+| Frames | Second five-survivor acceptance |
+| --- | --- |
+|1–63|Byte-identical accepted Sarah route through actual Bowie104 cancellation.|
+|64–66|Physical J/I/J/I/I/L chooses(10,10), cost12, exact path; Space confirms and Backspace restores the entire104 snapshot. Every physical input equals its logical API result.|
+|67–68|Repeat the physical approach and confirm Bowie action choice. No adjacent target is invented.|
+|69|Labeled TEST COPY: existing STAY105, R13/raw10, main02A11234/copy0234, healed HP/MP/EXP and105 retained receipts.|
+|70|Labeled TEST COPY: actual R14 generation, order128/133/0/1/130 plus59 sentinels, main94D21234/copy0234, no extra receipt or player prompt.|
+|71|Labeled TEST COPY: unchanged dispatcher completes enemy128 hit3/Bowie HP9 at106, then rejects133 counter profile; a repeated dispatch preserves the entire106 snapshot/reference.|
+|72|Physical Bowie STAY plus automatic generation/dispatch matches the whole copied result and exact `attack.counterProfile` status, with no actionable player prompt.|
+
+Inspect each added64–72 image at original1920×1080 for path/placement, complete readable HP/MP/EXP,
+Gold180, separate kill/defeat counts, four absent corpses, test-copy labels and the actual rejection.
+The newest result becomes enemy128's completed hit; the HEAL receipt remains in history and Sarah's
+MP7/EXP17 persists. There is no107 or next-player capture because actual133 is the first Unsupported.
+Keep all335 old PNGs unchanged; compare the regenerated first63 directly with the accepted Sarah
+run. Earlier225+47 evidence remains separately retained. Never weaken a golden or bypass a dispatcher
+refusal to reach a desired player or victory endpoint. All captures and complete snapshots stay local.
+
 The same early `chester-first-kill` mode can set `SF2_BATTLE01_SURVIVAL_REVIEW=1` for a probe-only
 survival branch. Production launch inputs and dispatcher/presenter stay unchanged. Preserve the
 exact first40 physical frames through95/Bowie cancel; do not rewind the old98 endpoint or compare

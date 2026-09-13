@@ -474,6 +474,30 @@ planner, run one full managed suite and official locked Godot, preserve any comp
 and rerun only their failed/newly invalidated owners. Main-gate owns normal public verification
 and independent integration. This boundary ends at Bowie104 cancellation.
 
+For the second post-heal five-survivor generation, use `FullyQualifiedName~SecondFiveSurvivor`
+with the existing first-round, thinking-history and healing owners. The presenter theory adds the
+generated R14 view without changing its old rows. The required-input Content test
+`SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach` starts at actual initial Sarah EXP0,
+checks the47-stop/cost12 route and entire104 cancellation, generates R14 from105, completes actual
+128/106 and requires the unchanged133 `attack.counterProfile` refusal. Authored Application terrain
+costs8; it must not be mistaken for the registered-input route.
+
+Authenticate both generation/main links, every prior death and HEAL HP/MP/EXP before-image,
+all seven early accounting inputs, complete64 slots/ties/sentinels, phase/raw/mask/flags and
+48-entry AI channels. Wrong or missing/duplicated history, revived/placed corpses, altered approach
+and arbitrary later rounds must fail without mutation. A locally successful generation with a
+late accounting mismatch must publish none of its order, seed or activation state.
+
+Use fresh `local/second-five-survivor-round/` outputs and the retained environment. The committed
+planner selects the locked full managed suite and official Godot gate for the shared generation
+change; run each once, retaining any completed failure and correcting only its failed/newly
+invalidated owners. Main-gate retains normal public verification. No new H3/full Python gate is
+implied. Native uses the existing Sarah mode plus probe-only
+`SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`, keeps the original63 PNG prefix by bytes and adds
+nine original-resolution-reviewed frames. Retain the other225+47 accepted PNGs and completed
+regression evidence without replay solely for a new branch. Actual dispatch stops at106/Unsupported,
+with no next-player move test invented to satisfy the planned alternative endpoint.
+
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also

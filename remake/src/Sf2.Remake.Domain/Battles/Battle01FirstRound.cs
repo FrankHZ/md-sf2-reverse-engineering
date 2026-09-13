@@ -66,9 +66,18 @@ public static class Battle01FirstRound
         RequireCurrentPrefix(current);
         Battle01EnemyStandby.RequireThinkingHistory(current);
         Battle01TurnCompletion.RequireContinuingNoEffectState(current);
-        if (current.Roster.Count(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null) == 5 &&
-            (order.RoundNumber != 12 || current.NewlyTestedRegionMask != 0))
-            throw new ArgumentException("The first five-survivor generation follows the completed R12 boundary.", "generation.history");
+        if (current.Roster.Count(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null) == 5)
+        {
+            if (order.RoundNumber is not (12 or 13) || current.NewlyTestedRegionMask != 0)
+                throw new ArgumentException("Five-survivor generation follows only the admitted R12 or post-heal R13 boundary.", "generation.history");
+            if (order.RoundNumber == 13)
+            {
+                _ = RequirePostHealRoundHistory(current.TurnCompletion);
+                if (!current.Roster.Where(unit => unit.Position is not null).Select(unit => unit.Position)
+                    .SequenceEqual(new MapPosition[] { new(10, 10), new(11, 14), new(10, 4), new(10, 5), new(11, 7) }))
+                    throw new ArgumentException("The second five-survivor generation follows the admitted Bowie approach.", "generation.history");
+            }
+        }
         if (order.RoundNumber == int.MaxValue) throw new ArgumentException("Round number is exhausted.", "roundNumber");
         return Generate(current, order.RoundNumber + 1, continuing: true);
     }
@@ -141,12 +150,13 @@ public static class Battle01FirstRound
             throw new ArgumentException("The previous round's completion history must be retained.", "completion");
         if (actors.Length == 5)
         {
-            // This is the accepted first five-survivor generation, not arbitrary small-party
-            // admission. The current prefix above leaves receipt at the previous round's end.
-            if (order.RoundNumber != 13 || !actors.SequenceEqual(new[] { 0, 1, 128, 130, 133 }) ||
+            // The current prefix above leaves receipt at the previous round's end. Both
+            // bounded five-survivor generations retain the complete seven-participant R12.
+            if (order.RoundNumber is not (13 or 14) || !actors.SequenceEqual(new[] { 0, 1, 128, 130, 133 }) ||
                 current.NewlyTestedRegionMask != (order.CurrentTurnOffset == 0 ? 7 : 0) ||
                 !current.RegionFlags90Through105.Take(3).All(flag => flag))
                 throw new ArgumentException("Retain the admitted five-survivor cohort and activation boundary.", "generation.history");
+            if (order.RoundNumber == 14) receipt = RequirePostHealRoundHistory(receipt);
             int count = 0;
             foreach (int actor in new[] { 133, 1, 130, 129, 0, 128, 2 })
             {
@@ -163,6 +173,23 @@ public static class Battle01FirstRound
             Battle01EnemyStandby.RequireThinkingHistory(current);
             Battle01TurnCompletion.RequireContinuingNoEffectState(current);
         }
+    }
+
+    private static Battle01TurnCompletionReceipt? RequirePostHealRoundHistory(Battle01TurnCompletionReceipt? receipt)
+    {
+        // Reverse the actual five visited slots, including Sarah's distinct HEAL receipt.
+        // Thinking-history replay owns both generation RNG links and all healing before-images.
+        foreach (int actor in new[] { 0, 133, 1, 130, 128 })
+        {
+            if (receipt is null || receipt.RoundNumber != 13 || receipt.CompletedActorIndex != actor ||
+                !Battle01TurnCompletion.HasValidPolicy(receipt) ||
+                (actor == 1 ? receipt.PlayerHealing is null :
+                    !ReferenceEquals(receipt.Policy, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats) ||
+                    (actor >= 128 ? receipt.EnemyPursuit is null : receipt.EnemyPursuit is not null)))
+                throw new ArgumentException("Retain the complete post-heal R13 pursuit, HEAL and Bowie STAY history.", "generation.history");
+            receipt = receipt.Previous;
+        }
+        return receipt;
     }
 
     internal static void RequireGenerationFromRecordedMain(Battle01InitializedState current, uint before, uint after,
