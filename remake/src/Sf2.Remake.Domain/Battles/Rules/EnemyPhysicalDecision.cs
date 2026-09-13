@@ -4,7 +4,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 internal static class EnemyPhysicalDecision
 {
-    // Already-active ATTACK1 / script3, physical-only, single reachable target. This is
+    // Already-active ATTACK1 / script3, physical-only. This is
     // a successful first command of source commandset06, not a replacement fallback policy.
     internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects, MapPosition Destination) Resolve(
         EngineBattleState current, ActorRef actorRef)
@@ -31,22 +31,37 @@ internal static class EnemyPhysicalDecision
             if (best is not null) candidates.Add((target, best, minimum));
         }
         if (candidates.Count == 0) throw new BattleRuleException("ai-commandset-continuation", "ai.targets", true);
-        if (candidates.Count != 1) throw new BattleRuleException("ai-target-ranking", "ai.targets", true);
-        var selected = candidates[0];
-        // Source word occupies the upper half of the authored 32-bit image, as with main RNG.
-        var draw = BattleRandom.NextThinkingWord((ushort)(current.ThinkingSeed >> 16), 3);
-        uint thinking = ((uint)draw.After << 16) | (current.ThinkingSeed & 65535);
-        int potential = PhysicalStrikeRules.LandDamage(actor.Definition.Attack, selected.Target.Definition.Defense,
-            PhysicalBattleAction.LandMultiplier(current.Definition.Terrain[selected.Target.Position!.Y * 48 + selected.Target.Position.X]));
-        int priority = draw.Value == 0 ? (potential >= selected.Target.Hp ? 16 : 1) : Math.Max(19 - 2 * selected.Cost, 1);
-        // Script3 priorities are positive. With one target, class/cohort tie breaking cannot
-        // choose another actor; wider cohorts are explicitly outside this capability.
+        var priorities = new PhysicalTargetPriority[candidates.Count];
+        var decisions = new List<BattleEffect>();
+        uint thinking = current.ThinkingSeed;
+        // Source visits the reachable array backwards, storing each result at its original
+        // index. Selection later collects the highest raw-priority cohort backwards too.
+        for (int index = candidates.Count - 1; index >= 0; index--)
+        {
+            var candidate = candidates[index];
+            if (candidate.Target.Definition.Physical is null)
+                throw new BattleRuleException("physical-definition", "target.physical", true);
+            int potential = PhysicalStrikeRules.LandDamage(actor.Definition.Attack, candidate.Target.Definition.Defense,
+                PhysicalBattleAction.LandMultiplier(current.Definition.Terrain[candidate.Target.Position!.Y * 48 + candidate.Target.Position.X]));
+            var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
+            uint after = ((uint)draw.After << 16) | (thinking & 65535);
+            byte priority = PhysicalTargetRules.ScriptThree((byte)candidate.Cost, Math.Max(0, candidate.Target.Hp - potential), draw.Value);
+            priorities[index] = new((byte)candidate.Cost, priority, candidate.Target.Definition.SourceClassId);
+            decisions.Add(new("thinking-rng", actorRef, thinking, after, 3, draw.Value, candidate.Target.Actor));
+            decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
+            thinking = after;
+        }
+        // Authored physical definitions currently admit regular movement only; the table is
+        // determined by that capability, never supplied independently by configuration.
+        var selection = PhysicalTargetRules.Select(priorities, PhysicalPriorityTable.Regular)
+            ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
+        var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,
             actors: current.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
         var (battle, effects) = PhysicalBattleAction.Resolve(prepared, actorRef, selected.Position, selected.Target.Actor);
         return (battle, Array.AsReadOnly<BattleEffect>([
-            new("ai-target", actorRef, After: priority, Target: selected.Target.Actor),
-            new("thinking-rng", actorRef, current.ThinkingSeed, thinking, 3, draw.Value, selected.Target.Actor),
+            .. decisions,
+            new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor),
             .. effects]), selected.Position);
     }
 }

@@ -30,9 +30,13 @@ are removed. Existing `Battle01MainRandomRoll` is only a reference DTO projectio
 not a second RNG or reward calculation authority. The legacy turn cleanup delegates its defeat cap
 to `BattleRewards`. `Battle01EnemyStandby.ThinkingRoll` now projects the shared
 `BattleRandom.NextThinkingWord` draw, including rejected bytes; no separate reference thinking
-algorithm remains. The authored `EnemyPhysicalDecision` implements only the already-active
-physical-only ATTACK1/script3 single-target branch. Private activation, commandsets, multi-target
-ranking, source move strings and startup/history admission retain their existing consumers.
+algorithm remains. `Battle01EnemyPhysicalAttack.Priority` and `SelectTarget` now project shared
+`PhysicalTargetRules`: the reference reverses its RNG-ordered DTOs back to reachable-array order and
+supplies its admitted Flying table. Duplicate script3, cohort, class-rank and movement-tie calculations
+are removed; the old class check remains only a private profile/land-rule admission guard. Authored
+regular movement uses the Regular table through that same selector, with named class definitions.
+Private activation, commandsets, source move strings and startup/history admission retain their
+existing consumers and removal points.
 Their fixed profile and history guards are reachable
 only from `Sessions/Battle01/PrivateOriginalBattle01EnemyPhysicalAttack.cs` and
 `PrivateOriginalBattle01PlayerPhysicalAttack.cs`, the old `Application.Sessions.GameSession` and

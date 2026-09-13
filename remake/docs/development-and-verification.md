@@ -262,6 +262,65 @@ shared thinking calculation, select existing reference methods
 `ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder` and the affected scalar/
 counter methods above retain the existing source comparison. No new H3 or legacy aggregate is required.
 
+### Multi-target selection observation
+
+Use the same installed editor, project and fresh ignored output with competing configured actors:
+
+```powershell
+$packageName = 'stone-court' # river-post also supports secondary
+$shape = 'secondary' # primary, movement, missing-class use stone-court
+$data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
+$data.start.mainSeed = [uint32](55 * 65536 + 4660)
+$data.start.thinkingSeed = [uint32]0x00EF0042
+foreach ($index in @(0, 1, 2)) {
+    $data.actors[$index].hp = 500
+    $data.actors[$index].maxHp = 500
+    $data.actors[$index].defense = 4
+    $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
+    $data.actors[$index].physical.prowess = if ($index -eq 2) { 3 } else { 0 }
+}
+$data.actors[0].classRule = if ($shape -eq 'primary') { 'unpromoted-swordsman' } else { 'unpromoted-warrior' }
+$data.actors[1].classRule = if ($shape -eq 'primary') { 'unpromoted-warrior' } else { 'unpromoted-swordsman' }
+$data.actors[2].controller = 'attack1-script3'
+$data.actors[2].move = 1
+$data.encounters[0].placements[1].x = $data.encounters[0].placements[2].x - 1
+$data.encounters[0].placements[1].y = $data.encounters[0].placements[2].y
+if ($shape -eq 'movement') {
+    $data.actors[0].classRule = 'ordinary'
+    $data.actors[1].classRule = 'ordinary'
+    $data.actors[2].move = 8
+    $data.encounters[0].placements[0].x = 1; $data.encounters[0].placements[0].y = 1
+    $data.encounters[0].placements[1].x = 1; $data.encounters[0].placements[1].y = 4
+    $data.encounters[0].placements[2].x = 7; $data.encounters[0].placements[2].y = 3
+}
+if ($shape -eq 'missing-class') { $data.actors[0].classRule = 'ordinary' }
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'targets-input.json'
+$data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'targets-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case target-selection --target-shape $shape --observation-output $outputPath
+```
+
+Both adjacent candidates consume thinking draws in reverse slot order: 1 then2 produce raw19 each,
+reported cap15, so changing only the class definitions changes the chosen actor. The movement shape
+has costs12/14 and priority1, selecting the farther target without requiring class metadata. Each
+successful shape has five checkpoints through actual player commands into round2: main RNG carries
+0x557E1234 → 0x97231234 → 0xE0E11234, thinking carries0x02EF0042 → 0x01EF0042, and the second enemy
+action selects the primary actor from the evolving candidates. Missing class in the critical cohort
+has four checkpoints and preserves the entire failed enemy action. Require the exact checkpoint
+count, clean logs and successful result. JSON numbers are floats in GDScript; nested expected numeric
+arrays must preserve that representation rather than failing an otherwise equal observed value.
+
+`TargetSelectionTests` owns actual rule/content/session expectations, including raw/capped and
+signed-byte edges, class tables, same-class/equal-movement ties, reordered configuration/slots and
+atomic missing-data/late-settlement rejection. Direct affected reference selections are
+`ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder`,
+`ActualRoundSixAttackReplaysHpOnceAndAdvancesToBowieWithAllRandomChannels`,
+`ActualRoundEightChesterHitReplaysTheSelectedProfileAndPreservesFirstDefeatAccounting`,
+`DamagedEnemyAfterChesterAttackSelectsBowieAndPreservesEarnedExp`,
+`CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt` and
+`PostHealBowieCounterUsesItsOwnPermissionAndOneEnemyReceipt`. These execute the retained real ranking
+consumers through the shared selector; no reference runner or native-probe tests are added.
+
 ## Optional Private .NET Checks
 
 Existing legacy checks use xUnit's explicit private-input selection. This is their current command
