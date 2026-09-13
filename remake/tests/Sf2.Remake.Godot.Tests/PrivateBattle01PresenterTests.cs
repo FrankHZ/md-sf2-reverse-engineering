@@ -8,7 +8,7 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateBattle01PresenterTests
 {
-    private static void AssertSarahHealProjection(Battle01InitializedState ready)
+    private static void AssertSarahHealProjection(Battle01InitializedState ready, bool secondFiveSurvivor)
     {
         var action = Battle01PlayerMovement.Confirm(ready, 1);
         var actionView = PrivateBattle01Presenter.BuildProjection(action, "Action choice.");
@@ -31,6 +31,20 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("HP 3 -> 12", cast.AttackResult); Assert.Contains("Sarah MP 10 -> 7; EXP 0 -> 17 (+17)", cast.AttackResult);
         Assert.Contains("MP 7 EXP 17", cast.AllyStatus); Assert.Equal((ushort)12, cast.Units.Single(u => u.Index == 0).Hp);
         Assert.False(cast.CanConfirm); Assert.DoesNotContain("Space", cast.Controls);
+        if (secondFiveSurvivor)
+        {
+            after = Battle01EnemyPursuit.CompleteNext(after, 133, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+            after = Stay(Battle01NextPlayerControl.Enter(after, 0).State!, 0, new(10, 10));
+            var generated = Battle01FirstRound.EnterNext(after);
+            var projection = PrivateBattle01Presenter.BuildProjection(generated, "Round 14 generated.");
+            Assert.Equal((14, (int?)128), (generated.FirstRound!.RoundNumber, projection.ActorIndex));
+            Assert.Null(projection.CompletedActorIndex); Assert.False(projection.CanConfirm); Assert.DoesNotContain("Space", projection.Controls);
+            Assert.Empty(projection.Path); Assert.Equal(5, projection.Units.Count); Assert.Contains("MP 7 EXP 17", projection.AllyStatus);
+            Assert.Equal((new MapPosition(10, 10), (ushort)12),
+                (projection.Units.Single(u => u.Index == 0).Position, projection.Units.Single(u => u.Index == 0).Hp));
+            Assert.Equal(((uint?)180, (ushort?)2, (ushort?)1), (projection.Gold, projection.BowieKills, projection.ChesterKills));
+            Assert.Same(after.TurnCompletion, generated.TurnCompletion);
+        }
     }
 
     [Theory]
@@ -43,7 +57,8 @@ public sealed class PrivateBattle01PresenterTests
     [InlineData(true, true, false, false, true, true, false)]
     [InlineData(true, true, false, false, true, true, true)]
     [InlineData(true, true, false, false, true, true, true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill, bool fiveSurvivor, bool sarahHeal = false)
+    [InlineData(true, true, false, false, true, true, true, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill, bool fiveSurvivor, bool sarahHeal = false, bool secondFiveSurvivor = false)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
         var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission,firstKill,sarahHeal),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
@@ -317,7 +332,7 @@ public sealed class PrivateBattle01PresenterTests
                     var cancelledView=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
                     Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(current,full));Assert.Equal(available.Units,cancelledView.Units);
                     Assert.Equal(available.AllyStatus,cancelledView.AllyStatus);Assert.Equal(available.AttackResult,cancelledView.AttackResult);
-                    if (sarahHeal) AssertSarahHealProjection(current);
+                    if (sarahHeal) AssertSarahHealProjection(current, secondFiveSurvivor);
                     return;
                 }
                 current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(

@@ -13,6 +13,89 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateOriginalBattle01StartupReaderTests
 {
+    private static GameSession ReachRealPostHealBowieBoundary(Action<PrivateOriginalBattle01SessionSnapshot>? initializedObserver = null)
+    {
+        var session = ReachRealFiveSurvivorBoundary(OriginalBattle01ControlledPartyPreset.SarahHealComparison, initializedObserver);
+        ReadySarah(session);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 1));
+        Assert.IsType<PrivateOriginalBattle01PlayerHealingApplied>(session.BeginPrivateOriginalBattle01PlayerHealing(session.PrivateOriginalBattle01, 1));
+        Assert.IsType<PrivateOriginalBattle01PlayerHealingApplied>(session.SelectPrivateOriginalBattle01HealingSpell(session.PrivateOriginalBattle01, 1, 0));
+        Assert.IsType<PrivateOriginalBattle01PlayerHealingApplied>(session.ConfirmPrivateOriginalBattle01PlayerHealing(session.PrivateOriginalBattle01, 1));
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01, 133));
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01, 0));
+        var ready = session.PrivateOriginalBattle01!; var json = new JsonSerializerOptions { MaxDepth = 256 };
+        string frozen = JsonSerializer.Serialize(ready, json);
+        Assert.Equal((104, 13, 8, 47), (ReceiptCount(ready.Battle), ready.Battle.FirstRound!.RoundNumber,
+            ready.Battle.FirstRound.CurrentTurnOffset, ready.Battle.FirstControl!.Movement.Range.LegalDestinations.Count));
+        for (int i = 0; i < 2; i++)
+        {
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01, 0, new(10, 10)));
+            Assert.Equal(12, session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+            Assert.Equal(new byte[] { 2, 1, 2, 1, 1, 0, 255 }, session.PrivateOriginalBattle01.Battle.FirstControl.Movement.Preview.Directions);
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
+            if (i == 0)
+            {
+                Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
+                Assert.Equal(frozen, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+            }
+        }
+        Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01, 0));
+        Assert.Equal(frozen, JsonSerializer.Serialize(ready, json));
+        Assert.Equal((105, 13, 10, 0x02A11234u, (ushort?)0x0234), (ReceiptCount(session.PrivateOriginalBattle01!.Battle),
+            session.PrivateOriginalBattle01.Battle.FirstRound!.RoundNumber, session.PrivateOriginalBattle01.Battle.FirstRound.CurrentTurnOffset,
+            session.PrivateOriginalBattle01.Battle.RandomSeedImage, session.PrivateOriginalBattle01.Battle.RandomSeedCopy));
+        return session;
+    }
+
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach()
+    {
+        PrivateOriginalBattle01SessionSnapshot? initialized = null;
+        var session = ReachRealPostHealBowieBoundary(s => initialized = s); var before = session.PrivateOriginalBattle01!;
+        Assert.Equal((byte?)0, initialized!.Battle.Roster[1].Stats.CurrentExp);
+        Assert.Equal(OriginalBattle01ControlledPartyPreset.SarahHealComparisonId, initialized.Preparation.Party.Id);
+        var json = new JsonSerializerOptions { MaxDepth = 256 }; string frozen = JsonSerializer.Serialize(before, json);
+        var round = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(before)).Snapshot;
+        Assert.Equal((14, 0, 7, 105), (round.Battle.FirstRound!.RoundNumber, round.Battle.FirstRound.CurrentTurnOffset,
+            round.Battle.NewlyTestedRegionMask, ReceiptCount(round.Battle)));
+        Assert.Same(before.Battle.TurnCompletion, round.Battle.TurnCompletion);
+        Assert.Same(initialized.Preparation, round.Preparation); Assert.Same(initialized.SourceLocomotion, round.SourceLocomotion);
+        Assert.Same(initialized.SourceBridge, round.SourceBridge); Assert.Equal(frozen, JsonSerializer.Serialize(before, json));
+        Assert.Equal((ushort)12, round.Battle.Roster[0].Stats.HpCurrent);
+        Assert.Equal(((byte)7, (byte?)17), (round.Battle.Roster[1].Stats.MpCurrent, round.Battle.Roster[1].Stats.CurrentExp));
+        Assert.All(round.Battle.Roster.Where(u => u.Index is 2 or 129 or 131 or 132), u => { Assert.Null(u.Position); Assert.Equal(0, u.Stats.HpCurrent); });
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(round.Battle, 0, 0, 0, 0, 0, 0, 0);
+        Assert.Equal(0x94D21234u, round.Battle.RandomSeedImage); Assert.Equal((ushort?)0x0234, round.Battle.RandomSeedCopy);
+        Assert.Equal(new[] { new Battle01TurnEntry(128, 5), new(133, 5), new(0, 4), new(1, 4), new(130, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 59)), round.Battle.FirstRound.Slots);
+        // The actual unchanged native dispatcher observed this first attack and next rejection.
+        int actor = round.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex;
+        Assert.Equal(128, actor);
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(round, actor));
+        Assert.Same(round, session.PrivateOriginalBattle01);
+        var completed = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(round, actor)).Snapshot;
+        var attack = completed.Battle.TurnCompletion!.EnemyPhysicalAttack!;
+        Assert.Equal((128, 0, 10, 3), (attack.ActorIndex, attack.TargetIndex, attack.GridCost, attack.Effect.Damage));
+        Assert.Equal((new MapPosition(10, 4), new MapPosition(10, 9)), (attack.Origin, attack.Destination));
+        Assert.Equal(new byte[] { 3, 3, 3, 3, 3, 255 }, attack.MoveString); Assert.Null(attack.Counterattack);
+        Assert.Same(before.Battle.TurnCompletion, completed.Battle.TurnCompletion.Previous);
+        Assert.Equal((106, 14, 2, 0xAE581234u, (ushort?)0x0034, (ushort)9),
+            (ReceiptCount(completed.Battle), completed.Battle.FirstRound!.RoundNumber, completed.Battle.FirstRound.CurrentTurnOffset,
+                completed.Battle.RandomSeedImage, completed.Battle.RandomSeedCopy, completed.Battle.Roster[0].Stats.HpCurrent));
+        Assert.Null(completed.Battle.FirstControl);
+        actor = completed.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex; Assert.Equal(133, actor);
+        string endpoint = JsonSerializer.Serialize(completed, json);
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(completed, actor));
+        Assert.Equal("attack.counterProfile", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed, actor)).Diagnostic.Field);
+        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Equal(endpoint, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+        Assert.Equal(frozen, JsonSerializer.Serialize(before, json));
+        Assert.Same(initialized.Preparation, completed.Preparation); Assert.Same(initialized.SourceLocomotion, completed.SourceLocomotion);
+        Assert.Same(initialized.SourceBridge, completed.SourceBridge);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(completed.Battle, 0, 0, 0, 0, 0, 0, 0);
+    }
+
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
         "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
     public void SarahHealUsesEarlyRegisteredInputsAndCommitsOneActualSupportAction()

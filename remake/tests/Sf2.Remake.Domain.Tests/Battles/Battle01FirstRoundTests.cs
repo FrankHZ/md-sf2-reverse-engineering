@@ -7,6 +7,104 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01FirstRoundTests
 {
+    internal static Battle01InitializedState PostHealBowieBoundary()
+    {
+        var current = Battle01EnemyPursuit.CompleteNext(Battle01PlayerHealingTests.Completed(), 133,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01NextPlayerControl.Enter(current, 0).State!;
+        return Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 0, new(10, 10)), 0), 0,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
+
+    [Fact]
+    public void SecondFiveSurvivorGenerationRetainsHealAndBothHistoricalCandidateSets()
+    {
+        var before = PostHealBowieBoundary(); string frozen = Battle01PlayerHealingTests.Json(before);
+        Assert.Equal((105, 13, 10, 0x02A11234u), (Battle01EnemyPursuitTests.Receipts(before).Count(),
+            before.FirstRound!.RoundNumber, before.FirstRound.CurrentTurnOffset, before.RandomSeedImage));
+        var after = Battle01FirstRound.EnterNext(before);
+        ushort word = before.GeneratorWord;
+        for (int i = 0; i < 5; i++) foreach (ushort range in new ushort[] { 0, 0, 3 }) Battle01FirstRound.NextRandom(ref word, range);
+        Assert.Equal(((uint)word << 16) | 0x1234u, after.RandomSeedImage);
+        Assert.Equal(0x94D21234u, after.RandomSeedImage);
+        Assert.Equal(new[] { new Battle01TurnEntry(128, 5), new(133, 5), new(0, 4), new(1, 4), new(130, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 59)), after.FirstRound!.Slots);
+        Assert.Equal((Battle01Phase.RoundGenerated, 14, 0, 7),
+            (after.Phase, after.FirstRound!.RoundNumber, after.FirstRound.CurrentTurnOffset, after.NewlyTestedRegionMask));
+        Assert.Equal(new[] { 0, 1, 128, 130, 133 }, after.FirstRound.Slots.Take(5).Select(s => (int)s.CombatantIndex).Order());
+        Assert.Equal(64, after.FirstRound.Slots.Count);
+        Assert.All(after.FirstRound.Slots.Skip(5), s => Assert.Equal(new Battle01TurnEntry(255, 255), s));
+        Assert.Same(before.TurnCompletion, after.TurnCompletion); Assert.Same(before.Occupancy, after.Occupancy);
+        Assert.Same(before.AiMemory, after.AiMemory); Assert.Same(before.AiLastTargets, after.AiLastTargets);
+        Assert.Same(before.Terrain, after.Terrain); Assert.Equal(before.CurrentGold, after.CurrentGold);
+        Assert.Equal((ushort?)0x0234, after.RandomSeedCopy); Assert.Equal(before.RegionFlags90Through105, after.RegionFlags90Through105);
+        Assert.Empty(after.FirstRound.RegionCutsceneRows); Assert.Empty(after.FirstRound.SpawnedCombatants);
+        for (int i = 0; i < 9; i++)
+        {
+            Assert.Same(before.Roster[i].Stats, after.Roster[i].Stats);
+            Assert.Equal(before.Roster[i].Position, after.Roster[i].Position);
+            Assert.Equal(before.Roster[i].AiBitfield, after.Roster[i].AiBitfield);
+        }
+        Assert.Equal(new[] { 0, 1, 2, 128, 129, 130, 133 }, Battle01FirstRound.GenerationRoster(after, 12)
+            .Where(u => u.Stats.HpCurrent > 0 && u.Position is not null).Select(u => u.Index));
+        Assert.Equal(5, Battle01FirstRound.GenerationRoster(after, 13).Count(u => u.Stats.HpCurrent > 0 && u.Position is not null));
+        Assert.Equal(((uint?)0, (ushort?)0, (byte?)0, (ushort?)0, (ushort?)0, (ushort?)0, (byte?)0),
+            Battle01EnemyStandby.RequireThinkingHistory(after));
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(before));
+        Assert.Equal("phase", Assert.Throws<ArgumentException>(() => Battle01FirstRound.EnterNext(after)).ParamName);
+    }
+
+    [Theory]
+    [InlineData("order")][InlineData("tie")][InlineData("sentinel")][InlineData("slots")]
+    [InlineData("raw")][InlineData("main")][InlineData("copy")][InlineData("mask")]
+    [InlineData("memory")][InlineData("targets")][InlineData("flags")][InlineData("four")][InlineData("round15")]
+    public void SecondFiveSurvivorPrefixRejectsCorruptedGenerationWithoutMutation(string mutation)
+    {
+        var source = Battle01FirstRound.EnterNext(PostHealBowieBoundary()); var slots = source.FirstRound!.Slots.ToArray();
+        var roster = source.Roster.ToArray(); var memory = source.AiMemory.ToArray(); var targets = source.AiLastTargets.ToArray();
+        if (mutation == "order") slots[0] = new(129, slots[0].AlteredAgility);
+        if (mutation == "tie")
+        {
+            int i = Enumerable.Range(0, 4).First(n => slots[n].AlteredAgility == slots[n + 1].AlteredAgility);
+            (slots[i], slots[i + 1]) = (slots[i + 1], slots[i]);
+        }
+        if (mutation == "sentinel") slots[5] = new(255, 254);
+        if (mutation == "slots") slots = slots.Take(63).ToArray();
+        if (mutation == "memory") memory[47]++;
+        if (mutation == "targets") targets[47] = 1;
+        if (mutation == "four") roster[8] = roster[8].WithStats(roster[8].Stats.WithCurrentHp(0)).WithPosition(null);
+        var order = new Battle01FirstRoundOrder(slots, [], [], mutation == "round15" ? 15 : 14);
+        if (mutation == "raw") typeof(Battle01FirstRoundOrder).GetField("<CurrentTurnOffset>k__BackingField",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(order, (byte)1);
+        var input = CopyCurrent(source, roster: roster, order: order, memory: memory, lastTargets: targets,
+            mainImage: mutation == "main" ? source.RandomSeedImage ^ 0x10000u : null,
+            copy: mutation == "copy" ? (ushort)0x0134 : null, tested: mutation == "mask" ? (ushort)0 : null);
+        if (mutation == "flags")
+        {
+            var flags = input.RegionFlags90Through105.ToArray(); flags[0] = false;
+            input = new(input, input.Roster.ToArray(), flags, input.NewlyTestedRegionMask, input.RandomSeedImage, input.FirstRound!);
+        }
+        string frozen = Battle01PlayerHealingTests.Json(input);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.RequireCurrentPrefix(input));
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(input)); Battle01FirstRound.RequireCurrentPrefix(source);
+    }
+
+    [Theory]
+    [InlineData("mask")][InlineData("approach")][InlineData("phase")][InlineData("raw")]
+    public void SecondFiveSurvivorGenerationRequiresTheCompletedPostHealApproach(string mutation)
+    {
+        var source = PostHealBowieBoundary(); var roster = source.Roster.ToArray(); var order = source.FirstRound!;
+        if (mutation == "approach") roster[0] = roster[0].WithPosition(new(11, 13));
+        if (mutation == "raw") order = new(order.Slots.ToArray(), [], [], 13);
+        var input = CopyCurrent(source, roster: roster, order: order, tested: mutation == "mask" ? (ushort)7 : null);
+        if (mutation == "phase") typeof(Battle01InitializedState).GetField("<TurnCompletion>k__BackingField",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(input, null);
+        string frozen = Battle01PlayerHealingTests.Json(input);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.EnterNext(input));
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(input));
+    }
+
     [Theory]
     [InlineData("order")][InlineData("tie")][InlineData("sentinel")][InlineData("slots")]
     [InlineData("raw")][InlineData("main")][InlineData("copy")][InlineData("mask")]
