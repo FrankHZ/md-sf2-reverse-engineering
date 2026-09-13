@@ -8,6 +8,54 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Theory]
+    [InlineData("missing103")][InlineData("duplicate103")][InlineData("missing104")][InlineData("missing105")]
+    [InlineData("stay103")][InlineData("heal105")][InlineData("beforeHp")][InlineData("beforeMp")][InlineData("beforeExp")]
+    [InlineData("afterHp")][InlineData("afterMp")][InlineData("afterExp")][InlineData("healMain")][InlineData("firstGenerationMain")]
+    [InlineData("secondGenerationMain")][InlineData("missing97")][InlineData("missing95")][InlineData("credit94")]
+    [InlineData("revivedChester")][InlineData("placedCorpse")]
+    public void SecondFiveSurvivorHistoryAuthenticatesBothGenerationsHealingAndOldDeaths(string mutation)
+    {
+        var before = Battle01FirstRoundTests.PostHealBowieBoundary(); var after = Battle01FirstRound.EnterNext(before);
+        var receipts = Battle01EnemyPursuitTests.Receipts(before).ToList(); var roster = before.Roster.ToArray();
+        int Index(int ordinal) => 105 - ordinal;
+        var heal = receipts[Index(103)].PlayerHealing!;
+        if (mutation.StartsWith("missing", StringComparison.Ordinal)) receipts.RemoveAt(Index(int.Parse(mutation[7..])));
+        if (mutation == "duplicate103") receipts.Insert(Index(103), receipts[Index(103)]);
+        if (mutation == "stay103") receipts[Index(103)] = receipts[Index(103)] with
+            { PlayerHealing = null, Policy = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats };
+        if (mutation == "heal105") receipts[0] = receipts[0] with { PlayerHealing = heal, Policy = Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie };
+        if (mutation == "beforeHp") heal = heal with { Target = heal.Target.WithStats(heal.Target.Stats.WithCurrentHp(4)) };
+        if (mutation == "beforeMp") heal = heal with { Actor = heal.Actor.WithStats(heal.Actor.Stats.WithCurrentMp(9)) };
+        if (mutation == "beforeExp") heal = heal with { Actor = heal.Actor.WithStats(heal.Actor.Stats.WithCurrentExp(1)) };
+        if (mutation == "healMain") heal = heal with { MainSeedBefore = heal.MainSeedBefore ^ 0x10000u };
+        if (mutation is "beforeHp" or "beforeMp" or "beforeExp" or "healMain") receipts[Index(103)] = receipts[Index(103)] with { PlayerHealing = heal };
+        if (mutation == "firstGenerationMain") receipts[Index(101)] = receipts[Index(101)] with
+            { EnemyPursuit = receipts[Index(101)].EnemyPursuit! with { MainSeedImage = 0x74A81234 } };
+        if (mutation == "secondGenerationMain") receipts[Index(104)] = receipts[Index(104)] with
+            { EnemyPursuit = receipts[Index(104)].EnemyPursuit! with { MainSeedImage = 0x02A21234 } };
+        if (mutation == "afterHp") roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentHp(11));
+        if (mutation == "afterMp") roster[1] = roster[1].WithStats(roster[1].Stats.WithCurrentMp(8));
+        if (mutation == "afterExp") roster[1] = roster[1].WithStats(roster[1].Stats.WithCurrentExp(18));
+        if (mutation == "credit94") receipts[Index(94)] = receipts[Index(94)] with { EnemyDefeat = receipts[Index(94)].EnemyDefeat! with { CreditedAlly = 0 } };
+        if (mutation == "revivedChester") roster[2] = roster[2].WithStats(roster[2].Stats.WithCurrentHp(1)).WithPosition(new(9, 4));
+        if (mutation == "placedCorpse") roster[4] = roster[4].WithPosition(new(10, 4));
+        Battle01TurnCompletionReceipt? history = null;
+        for (int i = receipts.Count - 1; i >= 0; i--) history = receipts[i] with { Previous = history };
+        foreach (var source in new[] { before, after })
+        {
+            var input = Battle01FirstRoundTests.CopyCurrent(source, roster: roster, receipt: history);
+            string frozen = Battle01PlayerHealingTests.Json(input);
+            Assert.ThrowsAny<ArgumentException>(() =>
+            {
+                if (source == before) _ = Battle01FirstRound.EnterNext(input);
+                else Battle01FirstRound.RequireCurrentPrefix(input);
+            });
+            Assert.Equal(frozen, Battle01PlayerHealingTests.Json(input));
+        }
+        Battle01FirstRound.RequireCurrentPrefix(after);
+    }
+
+    [Theory]
     [InlineData("missing97")][InlineData("relabel97")][InlineData("duplicate97")]
     [InlineData("missing95")][InlineData("duplicate95")][InlineData("credit94")]
     [InlineData("hp")][InlineData("exp")][InlineData("gold")][InlineData("kills")][InlineData("defeats")]

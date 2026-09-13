@@ -9,6 +9,88 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01FirstRoundTests
 {
+    internal static GameSession PostHealBowieSession()
+    {
+        var session = PrivateOriginalBattle01PlayerHealingTests.Selected();
+        Assert.IsType<PrivateOriginalBattle01PlayerHealingApplied>(session.ConfirmPrivateOriginalBattle01PlayerHealing(session.PrivateOriginalBattle01, 1));
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01, 133));
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01, 0));
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01, 0, new(10, 10)));
+        Assert.Equal(12, session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
+        Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01, 0));
+        return session;
+    }
+
+    [Fact]
+    public void SecondFiveSurvivorRoundPublishesOnceAndRejectsStaleForeignAndRepeatedRequests()
+    {
+        var session = PostHealBowieSession(); var before = session.PrivateOriginalBattle01!;
+        string frozen = PrivateOriginalBattle01PlayerHealingTests.Json(before);
+        foreach (var invalid in new PrivateOriginalBattle01SessionSnapshot?[] { null, PostHealBowieSession().PrivateOriginalBattle01,
+            new(before.Preparation, before.Battle, before.SourceLocomotion, before.SourceBridge) })
+        {
+            Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(invalid)).Diagnostic.Field);
+            Assert.Same(before, session.PrivateOriginalBattle01);
+        }
+        var expected = Battle01FirstRound.EnterNext(before.Battle);
+        var after = Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(before)).Snapshot;
+        Assert.Equal(PrivateOriginalBattle01PlayerHealingTests.Json(expected), PrivateOriginalBattle01PlayerHealingTests.Json(after.Battle));
+        Assert.Same(before.Preparation, after.Preparation); Assert.Same(before.SourceSnapshot, after.SourceSnapshot);
+        Assert.Same(before.SourceLocomotion, after.SourceLocomotion); Assert.Same(before.SourceBridge, after.SourceBridge);
+        Assert.Same(before.Battle.TurnCompletion, after.Battle.TurnCompletion); Assert.Equal(14, after.Battle.FirstRound!.RoundNumber);
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(before)).Diagnostic.Field);
+        Assert.Equal("round.phase", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(after)).Diagnostic.Field);
+        Assert.Same(after, session.PrivateOriginalBattle01); Assert.Equal(frozen, PrivateOriginalBattle01PlayerHealingTests.Json(before));
+    }
+
+    [Theory]
+    [InlineData("gold")][InlineData("bowieKills")][InlineData("chesterExp")][InlineData("chesterDefeats")]
+    [InlineData("bowieDefeats")][InlineData("chesterKills")][InlineData("sarahExp")][InlineData("unknownSarahExp")][InlineData("oldPreset")]
+    public void SecondFiveSurvivorRoundAuthenticatesAllSevenEarlyAccountingInputs(string mutation)
+    {
+        var session = PostHealBowieSession(); var source = session.PrivateOriginalBattle01!; var party = source.Preparation.Party;
+        var allies = party.Allies.Select(a => new OriginalBattle01ControlledAlly(a.Id, a.ClassId, a.Level, a.HpMax, a.HpCurrent,
+            a.MpMax, a.MpCurrent, a.EffectiveAttack, a.EffectiveDefense, a.EffectiveAgility, a.EffectiveMove, a.StatusEffects, a.Items, a.Spells,
+            currentExp: mutation == "unknownSarahExp" && a.Id == 1 ? null :
+                (mutation == "chesterExp" && a.Id == 2) || (mutation == "sarahExp" && a.Id == 1) ? (byte)1 : a.CurrentExp,
+            currentKills: (mutation == "bowieKills" && a.Id == 0) || (mutation == "chesterKills" && a.Id == 2) ? (ushort)1 : a.CurrentKills,
+            currentDefeats: (mutation == "bowieDefeats" && a.Id == 0) || (mutation == "chesterDefeats" && a.Id == 2) ? (ushort)1 : a.CurrentDefeats));
+        var changed = mutation == "oldPreset" ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison :
+            new OriginalBattle01ControlledPartyPreset(party.Id, party.RandomSeed, party.Difficulty, allies, party.RandomSeedCopy,
+                mutation == "gold" ? 1u : party.CurrentGold);
+        var input = new PrivateOriginalBattle01SessionSnapshot(new(source.Preparation.Pending, source.Preparation.Inputs, changed),
+            source.Battle, source.SourceLocomotion, source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session, input);
+        string frozen = PrivateOriginalBattle01PlayerHealingTests.Json(input);
+        Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(input));
+        Assert.Same(input, session.PrivateOriginalBattle01); Assert.Equal(frozen, PrivateOriginalBattle01PlayerHealingTests.Json(input));
+    }
+
+    [Fact]
+    public void SecondFiveSurvivorRoundLateAccountingFailurePublishesNoneOfTheLocalGeneration()
+    {
+        var session = PostHealBowieSession(); var before = session.PrivateOriginalBattle01!;
+        // Negative only: erase Bowie's optional defeat input consistently, including HEAL before/after images.
+        var stats = new HashSet<Battle01Stats> { before.Battle.Roster[0].Stats };
+        for (var r = before.Battle.TurnCompletion; r is not null; r = r.Previous)
+        {
+            if (r.PlayerPhysicalAttack is { ActorIndex: 0 } p) { stats.Add(p.Actor.Stats); stats.Add(p.ActorAfterStats); }
+            if (r.EnemyPhysicalAttack is { TargetIndex: 0 } e)
+            { stats.Add(e.Priorities.Single(p => p.Target.Index == 0).Target.Stats); stats.Add(e.Effect.BeforeStats); stats.Add(e.Effect.AfterStats); }
+            if (r.PlayerHealing is { } h) { stats.Add(h.Target.Stats); stats.Add(h.Effect.TargetAfterStats); }
+        }
+        var field = typeof(Battle01Stats).GetField("<CurrentDefeats>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        foreach (var value in stats) field.SetValue(value, null);
+        string frozen = PrivateOriginalBattle01PlayerHealingTests.Json(before);
+        var local = Battle01FirstRound.EnterNext(before.Battle);
+        Assert.Equal(14, local.FirstRound!.RoundNumber); Assert.NotEqual(before.Battle.RandomSeedImage, local.RandomSeedImage);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(local, 0, 0, 0, 0, null, 0, 0);
+        Assert.Equal("round.accounting.input", Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(before)).Diagnostic.Field);
+        Assert.Same(before, session.PrivateOriginalBattle01); Assert.Equal(frozen, PrivateOriginalBattle01PlayerHealingTests.Json(before));
+        Assert.Equal((13, 10, 0x02A11234u), (before.Battle.FirstRound!.RoundNumber, before.Battle.FirstRound.CurrentTurnOffset, before.Battle.RandomSeedImage));
+    }
+
     [Theory]
     [InlineData("oldPreset")][InlineData("gold")][InlineData("bowieKills")][InlineData("chesterExp")]
     [InlineData("chesterKills")][InlineData("chesterDefeats")][InlineData("bowieDefeats")]
