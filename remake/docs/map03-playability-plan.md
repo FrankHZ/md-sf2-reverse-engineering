@@ -1321,15 +1321,20 @@ All paths below are under `remake/`; `(new)` means the bounded owner does not ex
 | `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01PlayerPhysicalAttack.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01EnemyPhysicalAttack.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01TurnCompletion.cs`; `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01FirstRound.cs` | Old-policy prefix admission and retained-input binding for the new comparison. |
 | `game/src/PrivateBattle01Composition.cs`; `game/src/PrivateBattle01Presenter.cs`; `game/src/Map3InputAdapter.cs`; `game/src/Map3RuntimeProfileSelection.cs`; `game/src/Map3Root.cs` | Explicit early `--private-battle01-sarah-heal` launch option, ordinary Magic/target/cancel inputs and readable MP/HP/Sarah EXP projection, preserving old launch routes. |
 | `tests/Sf2.Remake.Domain.Tests/Battles/Battle01PlayerHealingTests.cs` (new); `tests/Sf2.Remake.Domain.Tests/Battles/Battle01FirstRoundTests.cs` | Scalar/selection/receipt negatives and narrow early-input support in existing synthetic prefix helpers, without future-state patches. |
+| `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` | Migrate the existing direct `RequireThinkingHistory` tuple assertions to the seventh Sarah input, preserving all six old values and explicitly expecting null for Sarah on the old comparisons. |
 | `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerHealingTests.cs` (new); `tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01FirstRoundTests.cs` | All relevant wrappers, seven inputs, selection cancellation and late-failure atomicity; reuse earliest session setup. |
 | `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Required registered-input old/new preparation-to102 comparison, actual heal and actual dispatcher/player endpoint. |
 | `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3RuntimeProfileSelectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Logical/physical facade equivalence, early option admission, Magic/cancel projection and exact old-route image regressions. |
 | `docs/map03-playability-plan.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md` | Record only the reached capability, controlled-input distinction, reproduction and remaining Unknowns. |
 
-This proposes 30 exact paths, including four new files: the two bounded production owners and their
+This proposes 31 exact paths, including four new files: the two bounded production owners and their
 Domain/Application test owners. Before writing, recount actual ownership and check competing
 worktrees/topics. If existing helper dependencies require another path, report that concrete need
 rather than copying an old helper chain or silently expanding ownership.
+
+The existing direct history-tuple consumers must migrate with the seventh input: preserve each
+of their six previous values and assert Sarah's additional field is null for the old comparisons.
+Do not add a compatibility layer or a second history mechanism to avoid updating this test owner.
 
 Required focused cases include: unknown/wrong/late Sarah EXP; all six older input changes; no spell,
 wrong slot/level/class/status/silence/curse, insufficient MP, wrong actor/phase/candidate; target from
