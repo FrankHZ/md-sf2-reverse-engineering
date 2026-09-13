@@ -202,6 +202,34 @@ public sealed class Battle01TurnCompletionTests
     }
 
     [Theory]
+    [InlineData("primaryHp")][InlineData("counterHp")][InlineData("exp")][InlineData("main")]
+    [InlineData("copy")][InlineData("memoryTarget")][InlineData("occupancy")][InlineData("oldCorpse")]
+    [InlineData("policy")][InlineData("missingCounter")][InlineData("swappedRole")]
+    public void PostHealBowieCounterLateFinalizationRejectsAllPartialResults(string mutation)
+    {
+        var before = Battle01EnemyPhysicalAttackTests.PostHealBowieCounterBoundary();
+        string frozen = Battle01PlayerHealingTests.Json(before);
+        var decision = Battle01EnemyPhysicalAttack.Decide(before, before.Roster.Single(u => u.Index == 133), allowBowieCounter: true);
+        var roster = before.Roster.ToArray(); var occupancy = before.Occupancy.ToArray();
+        roster[8] = roster[8].WithPosition(decision.Destination).WithStats(mutation == "counterHp" ? decision.Actor.Stats : decision.ActorAfterStats);
+        roster[0] = roster[0].WithStats(mutation == "primaryHp" ? decision.TargetAfterStats.WithCurrentHp(9) :
+            mutation == "exp" ? decision.Effect.AfterStats : decision.TargetAfterStats);
+        occupancy[Battle01PlayerMovement.Offset(decision.Origin)] = -1;
+        occupancy[Battle01PlayerMovement.Offset(decision.Destination)] = mutation == "occupancy" ? -1 : 133;
+        if (mutation == "oldCorpse") roster[2] = roster[2].WithPosition(new(9, 4));
+        var targets = before.AiLastTargets.ToArray(); targets[5] = mutation == "memoryTarget" ? (byte)2 : (byte)0;
+        var local = new Battle01InitializedState(before, roster, occupancy, before.AiMemory.ToArray(),
+            (ushort)(decision.SeedCopyAfter ^ (mutation == "copy" ? 0x0100 : 0)),
+            decision.MainSeedAfter ^ (mutation == "main" ? 0x10000u : 0u), targets);
+        if (mutation == "missingCounter") decision = decision with { Counterattack = null };
+        if (mutation == "swappedRole") decision = decision with { Counterattack = decision.Counterattack! with { Actor = decision.Counterattack.Target } };
+        Assert.ThrowsAny<ArgumentException>(() => Battle01TurnCompletion.CompletePhysical(local, decision,
+            mutation == "policy" ? Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp : Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp));
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(before));
+        Assert.Equal(106, Battle01EnemyPursuitTests.Receipts(before).Count());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void CounterLateReplayAndFinalizationFailurePreserveThePrePrimaryState(bool omitExp)

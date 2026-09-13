@@ -49,7 +49,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
 
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
         "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
-    public void SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach()
+    public void PostHealBowieCounterUsesTheRealEarlyHealApproachAndSecondFiveSurvivorRound()
     {
         PrivateOriginalBattle01SessionSnapshot? initialized = null;
         var session = ReachRealPostHealBowieBoundary(s => initialized = s); var before = session.PrivateOriginalBattle01!;
@@ -87,9 +87,49 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         actor = completed.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex; Assert.Equal(133, actor);
         string endpoint = JsonSerializer.Serialize(completed, json);
         Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(completed, actor));
-        Assert.Equal("attack.counterProfile", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
-            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed, actor)).Diagnostic.Field);
-        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Equal(endpoint, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+        // The accepted Chester-only permission still refuses Bowie at this exact pre-primary boundary.
+        Assert.Equal("attack.counterProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(completed.Battle, actor,
+                Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill, allowChesterCounter: true)).ParamName);
+        var counterCompleted = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed, actor)).Snapshot;
+        var receipt = counterCompleted.Battle.TurnCompletion!; var decision = receipt.EnemyPhysicalAttack!;
+        var counter = Assert.IsType<Battle01AllyCounterattack>(decision.Counterattack);
+        Assert.Same(completed.Battle.TurnCompletion, receipt.Previous); Assert.Equal(107, ReceiptCount(counterCompleted.Battle));
+        Assert.Same(Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp, receipt.Policy);
+        Assert.Equal((133, 0, 0, 133, 6), (decision.ActorIndex, decision.TargetIndex, counter.Actor.Index, counter.Target.Index, decision.GridCost));
+        Assert.Equal((new MapPosition(11, 7), new MapPosition(11, 10)), (decision.Origin, decision.Destination));
+        Assert.Equal(new byte[] { 3, 3, 3, 255 }, decision.MoveString);
+        Assert.Equal((3, 6, 9, 2, 3, 5), (decision.Effect.Damage, (int)decision.Effect.TemporaryHp, (int)decision.Effect.RestoredHp,
+            counter.Effect.Damage, (int)counter.Effect.TemporaryHp, (int)counter.Effect.RestoredHp));
+        Assert.Equal((0, 256, 20, 10, 10), ((int)counter.TargetTerrain, counter.LandMultiplier, counter.AccumulatedExp, counter.HalvedExp, counter.AwardedExp));
+        Assert.Same(decision.Effect.AfterStats, counter.Actor.Stats); Assert.Same(decision.Actor.Stats, counter.Effect.BeforeStats);
+        Assert.Equal(new[] { new Battle01PhysicalReaction(0, -3, 0, 0, 1), new Battle01PhysicalReaction(133, -2, 0, 0, 1) },
+            new[] { decision.Effect.Reaction, counter.Effect.Reaction });
+        Assert.Equal(new ushort[] { 27, 3, 0, 0, 2, 0, 1, 12, 0, 0, 11, 25, 8, 3 }, decision.Effect.Rolls.Concat(counter.Effect.Rolls).Select(r => r.Result));
+        Assert.Equal((14, (byte)4, 0x33561234u, (ushort?)0x0134), (counterCompleted.Battle.FirstRound!.RoundNumber,
+            counterCompleted.Battle.FirstRound.CurrentTurnOffset, counterCompleted.Battle.RandomSeedImage, counterCompleted.Battle.RandomSeedCopy));
+        Assert.Equal(((ushort)6, (byte?)73, (ushort?)2, (ushort?)0), (counterCompleted.Battle.Roster[0].Stats.HpCurrent,
+            counterCompleted.Battle.Roster[0].Stats.CurrentExp, counterCompleted.Battle.Roster[0].Stats.CurrentKills, counterCompleted.Battle.Roster[0].Stats.CurrentDefeats));
+        Assert.Equal((ushort)3, counterCompleted.Battle.Roster.Single(u => u.Index == 133).Stats.HpCurrent);
+        Assert.Null(counterCompleted.Battle.FirstControl); Assert.Equal(0, counterCompleted.Battle.NewlyTestedRegionMask);
+        Assert.Equal((uint?)180, counterCompleted.Battle.CurrentGold); Assert.Equal(completed.Battle.AiMemory, counterCompleted.Battle.AiMemory);
+        var targets = completed.Battle.AiLastTargets.ToArray(); targets[5] = 0;
+        Assert.Equal(targets, counterCompleted.Battle.AiLastTargets);
+        foreach (int index in new[] { 1, 2, 128, 129, 130, 131, 132 })
+            Assert.Same(completed.Battle.Roster.Single(u => u.Index == index), counterCompleted.Battle.Roster.Single(u => u.Index == index));
+        Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed, actor)).Diagnostic.Field);
+        Assert.Equal("actor", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(counterCompleted, actor)).Diagnostic.Field);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(counterCompleted.Battle, 0, 0, 0, 0, 0, 0, 0);
+        actor = counterCompleted.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex; Assert.Equal(0, actor);
+        var ready = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(counterCompleted, actor)).Snapshot;
+        string returned = JsonSerializer.Serialize(ready, json);
+        var destination = ready.Battle.FirstControl!.Movement.Range.LegalDestinations.First(p => p != ready.Battle.Roster[actor].Position);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready, actor, destination));
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, actor));
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, actor));
+        Assert.Equal(returned, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+        Assert.Equal(endpoint, JsonSerializer.Serialize(completed, json));
         Assert.Equal(frozen, JsonSerializer.Serialize(before, json));
         Assert.Same(initialized.Preparation, completed.Preparation); Assert.Same(initialized.SourceLocomotion, completed.SourceLocomotion);
         Assert.Same(initialized.SourceBridge, completed.SourceBridge);

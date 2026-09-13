@@ -8,6 +8,58 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Theory]
+    [InlineData("exp")][InlineData("primaryHp")][InlineData("counterHp")][InlineData("recipient")]
+    [InlineData("beforeExp")][InlineData("award")][InlineData("halved")][InlineData("reaction")]
+    [InlineData("terrain")][InlineData("seed")][InlineData("copy")][InlineData("missing")][InlineData("policy")]
+    [InlineData("healBeforeHp")][InlineData("healBeforeMp")][InlineData("healBeforeExp")]
+    [InlineData("firstGeneration")][InlineData("secondGeneration")][InlineData("missing97")][InlineData("credit94")]
+    public void PostHealBowieCounterHistoryRewindsBothRolesAndAllEarlierDependencies(string mutation)
+    {
+        var current = Battle01EnemyPhysicalAttackTests.PostHealBowieCounterCompleted();
+        var original = Battle01EnemyStandby.RequireThinkingHistory(current);
+        Assert.Equal(((uint?)0, (ushort?)0, (byte?)0, (ushort?)0, (ushort?)0, (ushort?)0, (byte?)0), original);
+        var receipts = Battle01EnemyPursuitTests.Receipts(current).ToList(); var roster = current.Roster.ToArray();
+        var receipt = receipts[0]; var decision = receipt.EnemyPhysicalAttack!; var counter = decision.Counterattack!;
+        if (mutation == "exp") roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentExp((byte)(roster[0].Stats.CurrentExp!.Value + 1)));
+        if (mutation == "primaryHp") roster[0] = roster[0].WithStats(roster[0].Stats.WithCurrentHp(9));
+        if (mutation == "counterHp") roster[8] = roster[8].WithStats(roster[8].Stats.WithCurrentHp(5));
+        if (mutation == "recipient") counter = counter with { Actor = current.Roster[1] };
+        if (mutation == "beforeExp") counter = counter with { Actor = counter.Actor.WithStats(counter.Actor.Stats.WithCurrentExp(62)) };
+        if (mutation == "award") counter = counter with { AwardedExp = counter.AwardedExp + 1 };
+        if (mutation == "halved") counter = counter with { HalvedExp = counter.HalvedExp + 1 };
+        if (mutation == "reaction") counter = counter with { Effect = counter.Effect with { Reaction = counter.Effect.Reaction! with { TargetIndex = 0 } } };
+        if (mutation == "terrain") counter = counter with { TargetTerrain = (byte)(counter.TargetTerrain == 0 ? 1 : 0) };
+        if (mutation == "seed") counter = counter with { Effect = counter.Effect with { Rolls = counter.Effect.Rolls.SkipLast(1).ToArray() } };
+        decision = decision with { Counterattack = mutation == "missing" ? null : counter,
+            SeedCopyAfter = (ushort)(decision.SeedCopyAfter ^ (mutation == "copy" ? 0x100 : 0)) };
+        receipts[0] = receipt with { EnemyPhysicalAttack = decision,
+            Policy = mutation == "policy" ? Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp : receipt.Policy };
+        int Index(int ordinal) => 107 - ordinal;
+        if (mutation.StartsWith("healBefore", StringComparison.Ordinal))
+        {
+            var heal = receipts[Index(103)].PlayerHealing!;
+            if (mutation == "healBeforeHp") heal = heal with { Target = heal.Target.WithStats(heal.Target.Stats.WithCurrentHp(4)) };
+            if (mutation == "healBeforeMp") heal = heal with { Actor = heal.Actor.WithStats(heal.Actor.Stats.WithCurrentMp(9)) };
+            if (mutation == "healBeforeExp") heal = heal with { Actor = heal.Actor.WithStats(heal.Actor.Stats.WithCurrentExp(1)) };
+            receipts[Index(103)] = receipts[Index(103)] with { PlayerHealing = heal };
+        }
+        if (mutation == "firstGeneration") receipts[Index(101)] = receipts[Index(101)] with
+            { EnemyPursuit = receipts[Index(101)].EnemyPursuit! with { MainSeedImage = 0x74A81234 } };
+        if (mutation == "secondGeneration") receipts[Index(106)] = receipts[Index(106)] with
+            { EnemyPhysicalAttack = receipts[Index(106)].EnemyPhysicalAttack! with { MainSeedBefore = 0x94D31234 } };
+        if (mutation == "credit94") receipts[Index(94)] = receipts[Index(94)] with { EnemyDefeat = receipts[Index(94)].EnemyDefeat! with { CreditedAlly = 0 } };
+        if (mutation == "missing97") receipts.RemoveAt(Index(97));
+        Battle01TurnCompletionReceipt? history = null;
+        for (int i = receipts.Count - 1; i >= 0; i--) history = receipts[i] with { Previous = history };
+        var forged = Battle01FirstRoundTests.CopyCurrent(current, roster: roster, receipt: history);
+        string frozen = Battle01PlayerHealingTests.Json(forged);
+        Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.RequireCurrentPrefix(forged));
+        Assert.ThrowsAny<ArgumentException>(() => Battle01EnemyStandby.RequireThinkingHistory(forged));
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(forged));
+        Assert.Equal(original, Battle01EnemyStandby.RequireThinkingHistory(current));
+    }
+
+    [Theory]
     [InlineData("missing103")][InlineData("duplicate103")][InlineData("missing104")][InlineData("missing105")]
     [InlineData("duplicate104")][InlineData("duplicate105")]
     [InlineData("stay103")][InlineData("heal105")][InlineData("beforeHp")][InlineData("beforeMp")][InlineData("beforeExp")]

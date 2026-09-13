@@ -44,6 +44,19 @@ public sealed class PrivateBattle01PresenterTests
                 (projection.Units.Single(u => u.Index == 0).Position, projection.Units.Single(u => u.Index == 0).Hp));
             Assert.Equal(((uint?)180, (ushort?)2, (ushort?)1), (projection.Gold, projection.BowieKills, projection.ChesterKills));
             Assert.Same(after.TurnCompletion, generated.TurnCompletion);
+            var beforeCounter = Battle01EnemyPhysicalAttack.CompleteNext(generated, 128, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike);
+            var completed = Battle01EnemyPhysicalAttack.CompleteNext(beforeCounter, 133, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp);
+            var counter = completed.TurnCompletion!.EnemyPhysicalAttack!.Counterattack!;
+            var counterView = PrivateBattle01Presenter.BuildProjection(completed, "Bowie counter complete.");
+            Assert.Equal($"E5 -> A0: hit 3. HP 9 -> 6.\nCounter: A0 -> E5: hit {counter.Effect.Damage}. HP 5 -> {counter.Effect.AfterStats.HpCurrent}. EXP +{counter.AwardedExp}: 63 -> {counter.ActorAfterStats.CurrentExp}.", counterView.AttackResult);
+            Assert.Equal((133, 0), (counterView.CompletedActorIndex, counterView.NextCandidateIndex)); Assert.Null(counterView.ActorIndex);
+            Assert.Equal((ushort)6, counterView.Units.Single(u => u.Index == 0).Hp);
+            Assert.Equal(counter.ActorAfterStats.CurrentExp, counterView.Units.Single(u => u.Index == 0).Exp);
+            Assert.Contains("MP 7 EXP 17", counterView.AllyStatus); Assert.DoesNotContain("Space", counterView.Controls);
+            var readyBowie = Battle01NextPlayerControl.Enter(completed, 0).State!;
+            var readyView = PrivateBattle01Presenter.BuildProjection(readyBowie, "Round 14. Player 0 ready.");
+            Assert.Equal(0, readyView.ActorIndex); Assert.True(readyView.CanConfirm); Assert.Contains("Space", readyView.Controls);
+            Assert.Equal(counterView.AttackResult, readyView.AttackResult); Assert.Equal((uint?)180, readyView.Gold);
         }
     }
 
