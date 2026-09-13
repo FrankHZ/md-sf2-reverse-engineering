@@ -16,7 +16,8 @@ public sealed class PrivateOriginalBattle01FirstRoundTests
         Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01, 133));
         Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01, 0));
         Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01, 0, new(10, 10)));
-        Assert.Equal(12, session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+        // This existing authored terrain costs 8; the registered-input Content/native route costs 12.
+        Assert.Equal(8, session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
         Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
         Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01, 0));
         return session;

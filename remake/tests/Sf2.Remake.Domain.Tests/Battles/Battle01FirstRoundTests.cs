@@ -27,6 +27,9 @@ public sealed class Battle01FirstRoundTests
         ushort word = before.GeneratorWord;
         for (int i = 0; i < 5; i++) foreach (ushort range in new ushort[] { 0, 0, 3 }) Battle01FirstRound.NextRandom(ref word, range);
         Assert.Equal(((uint)word << 16) | 0x1234u, after.RandomSeedImage);
+        Assert.Equal(0x94D21234u, after.RandomSeedImage);
+        Assert.Equal(new[] { new Battle01TurnEntry(128, 5), new(133, 5), new(0, 4), new(1, 4), new(130, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 59)), after.FirstRound!.Slots);
         Assert.Equal((Battle01Phase.RoundGenerated, 14, 0, 7),
             (after.Phase, after.FirstRound!.RoundNumber, after.FirstRound.CurrentTurnOffset, after.NewlyTestedRegionMask));
         Assert.Equal(new[] { 0, 1, 128, 130, 133 }, after.FirstRound.Slots.Take(5).Select(s => (int)s.CombatantIndex).Order());
@@ -95,8 +98,8 @@ public sealed class Battle01FirstRoundTests
         if (mutation == "approach") roster[0] = roster[0].WithPosition(new(11, 13));
         if (mutation == "raw") order = new(order.Slots.ToArray(), [], [], 13);
         var input = CopyCurrent(source, roster: roster, order: order, tested: mutation == "mask" ? (ushort)7 : null);
-        if (mutation == "phase") input = new(input, input.Roster.ToArray(), input.RegionFlags90Through105.ToArray(),
-            input.NewlyTestedRegionMask, input.RandomSeedImage, input.FirstRound!);
+        if (mutation == "phase") typeof(Battle01InitializedState).GetField("<TurnCompletion>k__BackingField",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(input, null);
         string frozen = Battle01PlayerHealingTests.Json(input);
         Assert.ThrowsAny<ArgumentException>(() => Battle01FirstRound.EnterNext(input));
         Assert.Equal(frozen, Battle01PlayerHealingTests.Json(input));

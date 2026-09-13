@@ -66,6 +66,34 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(((byte)7, (byte?)17), (round.Battle.Roster[1].Stats.MpCurrent, round.Battle.Roster[1].Stats.CurrentExp));
         Assert.All(round.Battle.Roster.Where(u => u.Index is 2 or 129 or 131 or 132), u => { Assert.Null(u.Position); Assert.Equal(0, u.Stats.HpCurrent); });
         Battle01PlayerPhysicalAttack.RequireAccountingInputs(round.Battle, 0, 0, 0, 0, 0, 0, 0);
+        Assert.Equal(0x94D21234u, round.Battle.RandomSeedImage); Assert.Equal((ushort?)0x0234, round.Battle.RandomSeedCopy);
+        Assert.Equal(new[] { new Battle01TurnEntry(128, 5), new(133, 5), new(0, 4), new(1, 4), new(130, 4) }
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255, 255), 59)), round.Battle.FirstRound.Slots);
+        // The actual unchanged native dispatcher observed this first attack and next rejection.
+        int actor = round.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex;
+        Assert.Equal(128, actor);
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(round, actor));
+        Assert.Same(round, session.PrivateOriginalBattle01);
+        var completed = Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(round, actor)).Snapshot;
+        var attack = completed.Battle.TurnCompletion!.EnemyPhysicalAttack!;
+        Assert.Equal((128, 0, 10, 3), (attack.ActorIndex, attack.TargetIndex, attack.GridCost, attack.Effect.Damage));
+        Assert.Equal((new MapPosition(10, 4), new MapPosition(10, 9)), (attack.Origin, attack.Destination));
+        Assert.Equal(new byte[] { 3, 3, 3, 3, 3, 255 }, attack.MoveString); Assert.Null(attack.Counterattack);
+        Assert.Same(before.Battle.TurnCompletion, completed.Battle.TurnCompletion.Previous);
+        Assert.Equal((106, 14, 2, 0xAE581234u, (ushort?)0x0034, (ushort)9),
+            (ReceiptCount(completed.Battle), completed.Battle.FirstRound!.RoundNumber, completed.Battle.FirstRound.CurrentTurnOffset,
+                completed.Battle.RandomSeedImage, completed.Battle.RandomSeedCopy, completed.Battle.Roster[0].Stats.HpCurrent));
+        Assert.Null(completed.Battle.FirstControl);
+        actor = completed.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex; Assert.Equal(133, actor);
+        string endpoint = JsonSerializer.Serialize(completed, json);
+        Assert.IsType<PrivateOriginalBattle01AttackSelectionRequired>(session.CompletePrivateOriginalBattle01EnemyPursuit(completed, actor));
+        Assert.Equal("attack.counterProfile", Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackRejected>(
+            session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed, actor)).Diagnostic.Field);
+        Assert.Same(completed, session.PrivateOriginalBattle01); Assert.Equal(endpoint, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+        Assert.Equal(frozen, JsonSerializer.Serialize(before, json));
+        Assert.Same(initialized.Preparation, completed.Preparation); Assert.Same(initialized.SourceLocomotion, completed.SourceLocomotion);
+        Assert.Same(initialized.SourceBridge, completed.SourceBridge);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(completed.Battle, 0, 0, 0, 0, 0, 0, 0);
     }
 
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
