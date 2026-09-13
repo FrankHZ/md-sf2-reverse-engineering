@@ -1,6 +1,6 @@
 # ADR 0019: State- and Content-Driven Remake Engine
 
-- Status: **Accepted direction**; M0 mechanics and M1 authored battle implemented; M2–M5 remain planned
+- Status: **Accepted direction**; M0/M1 and the first M2 ordinary physical capability implemented; remaining M2–M5 work is bounded below
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
@@ -136,8 +136,7 @@ The first four acceptance counterexamples below now have connected behavior cove
 [AuthoredScenarioTests](../../remake/tests/Sf2.Remake.Engine.Tests/AuthoredScenarioTests.cs).
 Round-2 and round-5 histories carry their natural seeds; isolated M0 scalar expectations remain separate.
 [Movement tests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleMovementTests.cs) cover weighted cost,
-budget, occupation and a full-width row boundary. A dead queued entry uses an internal unit seam only;
-the physical kill-order counterexample remains M2. The retained private reader's selected provenance
+budget, occupation and a full-width row boundary. The M1 dead-entry unit seam is complemented by the connected physical kill-order coverage below. The retained private reader's selected provenance
 rejection still passes in its reference project; moving it does not weaken the trust boundary.
 
 Reproduce with `uv run sf2 verify engine` and `uv run sf2 verify adapter` after the existing environment
@@ -148,6 +147,53 @@ attributed range/unsupported failures passed without process errors. The
 [verification owner](../../remake/docs/development-and-verification.md#authored-battle-observation)
 contains exact commands. This establishes the bounded M1 path, not completion of A1–A8, original
 Map 3/Battle 01 continuity, 8C or H4.
+
+## Current M2 ordinary physical implementation
+
+The first M2 capability uses the common session for configured, regular-ground physical attacks.
+[PlayerPhysicalAttack](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PlayerPhysicalAttack.cs) validates
+opposing living adjacent targets at the provisional destination; shared
+[PhysicalStrikeRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalStrikeRules.cs) constructs
+dodge, integer land reduction, prowess-0/3 critical, downward spread and natural follow-up rolls.
+[BattleRewards](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRewards.cs) owns effective-level
+damage/kill EXP, the per-action cap, configured halving, ordered two-roll award and gold/kill caps.
+The main RNG image carries through the action; each draw observation includes seed images, range and
+result. Thinking RNG is unchanged by the explicitly configured Stay AI.
+
+Content accepts optional typed actor `physical` and encounter `rewards` definitions. Their exact
+[schema and capability boundary](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
+keeps current stats explicit, admits no equipment or status branches, and rejects unsupported
+movetypes, prowess and special rules. The authored `stone-court` and `river-post` packages differ in
+actors, map, positions, stats, targets, reward data and halving policy. Neither is a private-original
+import or source-fidelity start. Existing HEAL packages have no invented physical/reward defaults.
+
+The dispatcher resolves the complete action before publishing movement, HP, EXP, gold and RNG.
+Successful ordinary enemy death clears its position, credits the acting ally's capped kill count,
+removes occupancy and excludes it from later generated rounds. The existing advancer skips its
+queued entry, runs configured Stay AI and returns the next actual living player. With admitted
+status-free, equipment-free actors, after-turn refresh has no additional effect or random draws.
+Both faction checks continue; a reached terminal branch is rejected before any persistent action.
+
+Valid double/counter, level-up, leader defeat programs and last-enemy outcome/return are explicitly
+Unsupported with the original snapshot and no emitted effects. They are neither converted to STAY
+nor bypassed by retrying/resetting seeds. General AI, weapons/items, status/special effects, private
+admission, programs and M4 outcome/return remain outside this capability. M2 as a whole is incomplete.
+
+[Physical behavior tests](../../remake/tests/Sf2.Remake.Engine.Tests/PhysicalBattleTests.cs) exercise
+both legal kill orders through real commands in both configurations, independent resource/RNG
+expectations, cleanup/occupancy, next live actor, critical/dodge/terrain, caps and atomic rejection.
+The same two orders have actual no-image Godot input/state observations. These establish the bounded
+engine behavior, not natural original continuity, presentation or H4. Original rule provenance is
+the accepted [combat](../design/contracts/combat-resolution.md) and
+[lifecycle](../design/contracts/battle-control-lifecycle.md) contracts and their research owners;
+the scalar extraction also reads the pinned `c834c652b6862bc5679fd7f69a38a7093206efc6` attack,
+critical, dodge, double/counter, damage, EXP and critical-definition sources. No new H3 run is implied.
+
+The reference enemy physical wrapper now consumes the shared strike calculation; its duplicated
+damage/RNG body is removed. The player wrapper consumes shared damage EXP/gold/kill caps. Remaining
+legacy startup, AI, counter, receipt, after-turn and program consumers are named in the
+[reference inventory](../../remake/reference/README.md); they do not admit authored actions and are
+not claimed migrated. Their removal remains attached to their actual M2/M3/M4 capability consumers.
 
 ## Evidence used and its limits
 
@@ -681,7 +727,7 @@ rows or execute this entire table as one rewrite.
 | --- | --- | --- |
 | M0: classify and cut over verification | Implemented subset: internal main RNG, ordinary priest healing scalar resolution, turn-order generation and Manhattan action range, consumed by existing Battle01 wrappers. Dedicated Engine.Tests protects the moved mechanics. Scoped CI/local/planner/guidance replace new-engine legacy gates under serialized ownership. Full movement and cancellation remain for M1. | No unintended behavior change in existing callers; independent arithmetic/boundary expectations and meaningful varied inputs protect the rules. Original fixtures and selected reference observations remain owned. Retire obsolete/meta-tests. Freeze a Draft PR, record direct command/CI results and main-gate required-check action, then stop for independent acceptance before M1. No old aggregate or tests of the cutover. |
 | M1: first connected functional vertical slice | **Implemented:** Content `Scenarios/AuthoredScenarioPackageReader.cs` and Application `Content/Scenarios/ScenarioDefinition.cs`; thin `Runtime/GameSession.cs`, independent `Runtime/Battles/BattleCommandDispatcher.cs` and `BattleAdvancer.cs`; Domain `Battles/Rules` and `Battles/State`; Godot `Battles` input/view and independent snapshot projection. Legacy scenario classes and controlled presets live in the separate reference assembly with no reverse production dependency. | Load either authored controlled encounter, reach player control, move/preview/cancel, atomically HEAL/STAY, skip a dead queued entry when present, execute configured Stay AI, generate another round and return to player input automatically. The first four examples have engine unit assertions and actual no-image adapter observation. Physical attack, level-up, general AI, programs and outcomes remain Unsupported. Stop for independent acceptance before M2. Old explicit reference startup remains selectable before creation; no live authority switch. |
-| M2: migrate battle rules and private admission | Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
+| M2: migrate battle rules and private admission | **First ordinary physical capability implemented; remaining M2 incomplete.** Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
 | M3: programs and exploration on the common session | Replace the reference `Sessions/Maps/OriginalMapGameSession.cs`, reached `PrivateOriginalMap*` and synthetic lifecycle consumers with cohesive production program/exploration collaborators. Move real map/entity/event/program definitions from reference content/admission into JSON or suitable Content-loaded configuration and typed validation. Preserve source-special operations and provenance. | Common facade exists. Execute actual reached operations and waits/effects before replacing each story handler; never treat required story as disposable validation or assign its terminal state. Connect authored exploration/program/transfer/battle admission, then migrate original content. Reuse actual map/layout/entity rules, add behavior assertions and selected public-entry reference comparisons, and delete each old class/data with its last caller. Stop at unsupported native/timing frontiers and roll back any route whose comparison disagrees. |
 | M4: outcome and return | Extend the common battle advancer, program runner and transfer collaborators from the reference defeat/recovery/return owners and their after-program content. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
 | M5: remaining migration cleanup | Remove remaining superseded fields, dispatch, scheduling entry points and obsolete tests after capability-by-capability M2/M3/M4 removal. Preserve original evidence and useful external comparisons. | All affected callers use the common session and its behavior tests/affected comparisons pass. Remove the temporary legacy start binding and reference runtime with its last admitted capability; do not defer all scenario/data migration to this row. Confirm no production dependency on reference and no permanent parallel engine or mandatory legacy aggregate. |

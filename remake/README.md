@@ -6,7 +6,7 @@ Original research, runtime implementation, and reference verification have separ
 
 ## Current Status
 
-The production Domain/Application/Content path runs two project-authored battle packages through
+The production Domain/Application/Content path runs configurable project-authored battle packages through
 one common session. Godot hosts real movement/action input and projects semantic results. The old
 public-synthetic/private-local Map 3 routes are retained in a separate
 [transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and
@@ -15,7 +15,10 @@ adapter scheduling remain explicit legacy limitations in the [audit](./docs/arch
 [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
 to common commands, live state and configurable typed content, resumable programs, and separate
 reference runners. M1 provides typed content admission, provisional movement/cancellation, atomic
-HEAL/STAY and automatic next-actor/round progression with carried RNG. The
+HEAL/STAY and automatic next-actor/round progression with carried RNG. The first
+[M2 physical capability](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
+adds ordinary single strikes, EXP/gold, death cleanup and continuation; unsupported follow-ups and
+settlement branches reject atomically. The
 [current boundary](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 records supported behavior, responsibility directories and remaining private/program migration.
 

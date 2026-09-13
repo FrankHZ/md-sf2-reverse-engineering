@@ -37,7 +37,7 @@ internal static class BattleAdvancer
             {
                 revision++;
                 observations.Add(new(++sequence, revision, "player-control", actor.Actor));
-                var selection = new BattleSelection(actor.Actor, BattleMovement.Preview(battle, actor.Actor, actor.Position), BattleSelectionStage.Movement);
+                var selection = new BattleSelection(actor.Actor, BattleMovement.Preview(battle, actor.Actor, actor.Position!), BattleSelectionStage.Movement);
                 var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
                 return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
             }

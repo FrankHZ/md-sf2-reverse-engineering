@@ -89,11 +89,11 @@ $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 No-argument local Godot startup opens the authored yard. To select either real package, use the
 existing verified Godot executable with `--path remake/game -- --authored-package <package-path>`.
 Input is WASD/arrows for preview, Enter for action choice/commit, H for the known HEAL with self
-initially selected, Tab for living allied targets, Space for STAY and Escape for cancel. Unsupported
-physical action is X. Application runs AI and rounds automatically.
+initially selected, Tab for living allied targets, Space for STAY and Escape for cancel. Physical attack selection is X; Tab then selects living opponents. Packages without physical
+definitions report Unsupported. Application runs AI and rounds automatically.
 
 Tab cycles from the last attempted UI candidate, including a rejected one. A range rejection preserves
-the session's accepted target and battle state; subsequent Tab input can reach later allies. The HUD
+the session's accepted target and battle state; subsequent Tab input can reach later living targets of the selected action. The HUD
 shows both attempted and accepted target after rejection. Cancel or the next action clears the UI cursor.
 The map viewport keeps the acting origin, preview and target visible with clipping/pan/zoom. Wide
 windows place a scrollable HUD beside the map; narrow windows place it below. Authored UI uses actual
@@ -115,6 +115,26 @@ real `InputEventKey` events, reads the common session result and actual HUD/node
 checks cancellation, HEAL/STAY, carried RNG and automatic progression, and exits nonzero on failure.
 Its JSON/log output is local generated evidence; it never emits images or modifies session state.
 No tests of this observation script are required.
+
+For the connected physical chain use the same installation/project and an ignored output directory:
+
+```powershell
+$packagePath = (Resolve-Path -LiteralPath 'remake/content/authored/stone-court.json').Path
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'physical.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case physical --observation-output $outputPath
+```
+
+Repeat with `river-post.json`; `--reverse-kills` selects the opposite legal kill order. The observation
+uses actual X/Tab/Enter/Space input, including a rejected distant target followed by a valid target,
+then checks exact carried RNG/resources, removed coordinates/nodes, next living control and the next
+round. All four package/order combinations use common product commands. Reached unsupported
+follow-up/level/outcome atomicity and independent arithmetic expectations belong to
+`PhysicalBattleTests`, not tests of this observer. Selected existing reference comparisons for the
+shared scalar extraction are `SourceArithmeticKeepsZeroIntermediateAndBothDownwardDrawsAtTheOriginalRange`,
+`MissAndCriticalUseRealSeedsAndPreserveSourceCallOrder`, `RealSeedsExerciseMissCriticalAndIndependentExpVariance`
+and `KillAccountingUsesSourceCapsAndKeepsUnknownInputsUnknown` in the legacy Domain test project; run
+those methods with a `dotnet test --filter` expression when their shared calculation changes. They
+are bounded existing comparisons, not a new full legacy/H3 obligation.
 
 The same direct script also accepts `--observation-case target-cycle` and `--observation-case layout`.
 It sets a representative 960×540 host window because a headless SceneTree script otherwise starts a

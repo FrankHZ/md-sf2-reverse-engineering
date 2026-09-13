@@ -42,7 +42,7 @@ public sealed partial class BattleSessionView : Control
         _status = AddLabel("Status");
         _roster = AddLabel("Roster");
         var help = AddLabel("Help");
-        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nTab: cycle living allied targets\nSpace: STAY\nEsc: cancel all provisional choices\nX: physical action capability\n\nAI and rounds advance automatically.\nProject-authored controlled start.";
+        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nProject-authored controlled start.";
         GetViewport().SizeChanged += Arrange;
         Arrange();
     }
@@ -122,9 +122,9 @@ public sealed partial class BattleSessionView : Control
             Send(new SelectSpell(spell));
             if (_result?.Failure is null) Send(new SelectTarget(selection.Actor));
         }
-        else if (key.Keycode == Key.Tab && _session.Current.Selection is { Spell: not null } targeting)
+        else if (key.Keycode == Key.Tab && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
         {
-            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly).ToArray();
+            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly == (targeting.Action == SessionAction.Heal)).ToArray();
             int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
             Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
         }
@@ -137,7 +137,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
-        if (_result.Snapshot.Selection?.Spell is null) _targetCandidate = null;
+        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.PhysicalAttack)) _targetCandidate = null;
         Present();
     }
 
@@ -168,7 +168,7 @@ public sealed partial class BattleSessionView : Control
             failure = (_result?.Failure ?? _startupFailure)?.Code,
             failureKind = (_result?.Failure ?? _startupFailure)?.Kind.ToString(),
             round = current?.Battle.Round, revision = current?.Revision,
-            mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
+            mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed, gold = current?.Battle.Gold,
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,

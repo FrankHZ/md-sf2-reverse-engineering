@@ -1,0 +1,212 @@
+{
+  "formatVersion": 1,
+  "package": "stone-court",
+  "profile": "public-authored",
+  "ruleProfile": "sf2-semantic-subset-v1",
+  "start": {
+    "encounter": "stone-court-encounter",
+    "initialVitals": "authored-controlled",
+    "mainSeed": 305402420,
+    "thinkingSeed": 3203334210
+  },
+  "terrains": [
+    {
+      "id": "stone-court-terrain",
+      "rows": [
+        "#########",
+        "#2222222#",
+        "#2222222#",
+        "#2222222#",
+        "#2222222#",
+        "#2222222#",
+        "#########"
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": "stone-court-map",
+      "terrain": "stone-court-terrain"
+    }
+  ],
+  "spells": [],
+  "actors": [
+    {
+      "id": "swordsman",
+      "slot": 4,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 35,
+      "hp": 35,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 30,
+      "defense": 4,
+      "agility": 30,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 3,
+        "promoted": false,
+        "leader": false,
+        "gold": 17,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "lookout",
+      "slot": 19,
+      "classRule": "ordinary",
+      "controller": "player",
+      "level": 1,
+      "maxHp": 35,
+      "hp": 35,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 4,
+      "agility": 2,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 3,
+        "promoted": false,
+        "leader": false,
+        "gold": 18,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "raider",
+      "slot": 131,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 4,
+      "agility": 12,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 3,
+        "promoted": false,
+        "leader": false,
+        "gold": 19,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "scavenger",
+      "slot": 142,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 4,
+      "agility": 9,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 3,
+        "promoted": false,
+        "leader": false,
+        "gold": 20,
+        "kills": 0,
+        "special": "none"
+      }
+    },
+    {
+      "id": "sentry",
+      "slot": 154,
+      "classRule": "ordinary",
+      "controller": "stay",
+      "level": 1,
+      "maxHp": 15,
+      "hp": 15,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 5,
+      "defense": 4,
+      "agility": 5,
+      "move": 6,
+      "exp": 0,
+      "status": "none",
+      "items": [],
+      "spells": [],
+      "physical": {
+        "movementType": "regular",
+        "prowess": 3,
+        "promoted": false,
+        "leader": false,
+        "gold": 21,
+        "kills": 0,
+        "special": "none"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "stone-court-encounter",
+      "map": "stone-court-map",
+      "placements": [
+        {
+          "actor": "swordsman",
+          "x": 3,
+          "y": 3
+        },
+        {
+          "actor": "lookout",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "actor": "raider",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "actor": "scavenger",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "actor": "sentry",
+          "x": 7,
+          "y": 5
+        }
+      ],
+      "rewards": {
+        "halvedExperience": true,
+        "initialGold": 100
+      }
+    }
+  ]
+}

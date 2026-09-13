@@ -22,7 +22,7 @@ internal static class PlayerHealing
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
         if (target is null || target.Hp == 0 || target.Definition.IsAlly != actor.Definition.IsAlly)
             throw new BattleRuleException("invalid-heal-target", "target");
-        var targetPosition = targetRef == actorRef ? destination : target.Position;
+        var targetPosition = targetRef == actorRef ? destination : target.Position!;
         if (!BattleRange.Contains(destination, targetPosition, spell.MinimumRange, spell.MaximumRange))
             throw new BattleRuleException("target-range", "target");
         return target;
