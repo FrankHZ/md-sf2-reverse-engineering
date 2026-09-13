@@ -13,9 +13,10 @@ namespace Sf2.Remake.GodotAdapter;
 
 public partial class Map19Map20AtlasReviewProbe : Node2D
 {
-    private static bool FirstKillReview => System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "chester-first-kill";
+    private static bool SarahHealReview => System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "sarah-heal";
+    private static bool FirstKillReview => SarahHealReview || System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "chester-first-kill";
     private static ushort? ExpectedChesterKills => FirstKillReview ? (ushort)0 : null;
-    private static string ExpectedPartyId => FirstKillReview ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId :
+    private static string ExpectedPartyId => SarahHealReview ? OriginalBattle01ControlledPartyPreset.SarahHealComparisonId : FirstKillReview ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId :
         OriginalBattle01ControlledPartyPreset.LeaderDefeatComparisonId;
     private GameSession _session = null!;
     private PrivateOriginalBattle01SessionSnapshot? _initialBattle01;
@@ -57,7 +58,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic" or "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -185,9 +186,13 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
         Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
         // Earlier STAY mode names now alias the bounded round-continuation chain.
-        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill";
+        bool stayReview = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "stay" or "next-player" or "enemy-standby" or "first-round" or "round-continuation" or "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal";
         if (!stayReview) await CaptureControl("01-pending");
-        if (FirstKillReview)
+        if (SarahHealReview)
+            Require(Map3RuntimeProfileSelection.Parse(OS.GetCmdlineUserArgs()).SarahHealRequested &&
+                Field<bool>(_root,"_sarahHealRequested") && _session.PrivateOriginalBattle01 is null,
+                "The early Sarah HEAL option is bound before physical N");
+        else if (FirstKillReview)
             Require(Map3RuntimeProfileSelection.Parse(OS.GetCmdlineUserArgs()).ChesterFirstKillRequested &&
                 Field<bool>(_root,"_chesterFirstKillRequested") && _session.PrivateOriginalBattle01 is null,
                 "The real launch opt-in is bound before physical N and initialization");
@@ -325,7 +330,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 second.Roster[0].Position == new MapPosition(8,17) && second.NewlyTestedRegionMask == 7,
                 "Actual sentinel generates round2 once and yields its real player without a player decision");
             CheckRoundBuffer(second, new byte[] {2,128,132,131,133,0,1,129,130}, new byte[] {7,6,6,5,5,4,4,4,4});
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "enemy-pursuit" or "enemy-physical-attack" or "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
             {
                 await ReviewEnemyPursuit(round2,battle);
                 return;
@@ -437,7 +442,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
     private async Task ReviewEnemyPursuit(PrivateOriginalBattle01SessionSnapshot round2, Battle01InitializedState initialBattle)
     {
         bool physical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "enemy-physical-attack";
-        bool playerPhysical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill";
+        bool playerPhysical = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "player-physical-attack" or "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal";
         var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
         var rounds=new List<Battle01InitializedState> {initialBattle,round2.Battle};
         async Task OriginStay(int player)
@@ -619,7 +624,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
 
     private async Task ReviewPlayerPhysicalAttack(PrivateOriginalBattle01SessionSnapshot ready)
     {
-        bool firstDefeat = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill";
+        bool firstDefeat = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "first-enemy-defeat" or "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal";
         var presenter=Field<PrivateBattle01Presenter>(_root,"_privateBattle01Presenter");
         Require(ReferenceEquals(ready,_session.PrivateOriginalBattle01) && ready.Battle.Roster[0].Stats.HpCurrent==9 &&
             ready.Battle.Roster[0].Stats.CurrentExp==0 && ready.Battle.FirstControl?.ActorIndex==0 &&
@@ -810,7 +815,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         foreach (Key key in new[] { Key.W, Key.F, Key.B, Key.M, Key.A }) await PressBattleKey(key);
         Require(ReferenceEquals(cancelled, _session.PrivateOriginalBattle01), "Unmapped input cannot repeat the defeat");
         await CaptureControl("06-player1-move-cancel");
-        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-enemy-hit" or "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
         {
             await ReviewChesterEnemyHit(cancelled);
             return;
@@ -942,7 +947,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             cancelled.Battle.Roster[2].Stats.HpCurrent == 9 && presenter.Projection!.AttackResult == "E3 -> A2: hit 2. HP 11 -> 9.",
             "Physical movement cancellation preserves the applied result and every earlier award");
         await CaptureControl("12-chester-move-cancel");
-        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-player-attack" or "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
         {
             await ReviewChesterPlayerAttack(cancelled);
             return;
@@ -1085,7 +1090,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             ReferenceEquals(ready.Preparation, final.Preparation) && ReferenceEquals(ready.SourceBridge, final.SourceBridge) &&
             ReferenceEquals(ready.SourceLocomotion, final.SourceLocomotion), "Sarah cancel retains the exact history and provenance");
         await CaptureControl("18-sarah-move-cancel");
-        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "second-enemy-defeat" or "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
         {
             await ReviewSecondEnemyDefeat(final);
             return;
@@ -1254,9 +1259,9 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             ReferenceEquals(sarah.SourceLocomotion, final.SourceLocomotion),
             "Physical cancel restores Chester while preserving both corpses, awards, order, seeds and provenance");
         await CaptureControl("25-round10-chester-move-cancel");
-        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill")
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "first-ally-defeat" or "leader-defeat-pending" or "chester-counterattack" or "chester-first-kill" or "sarah-heal")
         {
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-counterattack" or "chester-first-kill")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "chester-counterattack" or "chester-first-kill" or "sarah-heal")
                 await ReviewChesterCounterattack(final);
             else
             await ReviewFirstAllyDefeat(final);
@@ -1481,7 +1486,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         final=_session.PrivateOriginalBattle01!;
         Require(readyJson==JsonSerializer.Serialize(final.Battle,json),"Actual Bowie cancel restores the complete usable95 battle");
         await CaptureControl("40-enemy128-relay-bowie-cancel");
-        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_SURVIVAL_REVIEW") == "1")
+        if (SarahHealReview || System.Environment.GetEnvironmentVariable("SF2_BATTLE01_SURVIVAL_REVIEW") == "1")
         {
             await ReviewFiveSurvivorRound(final);
             return;
@@ -1634,7 +1639,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Physical Sarah STAY through133, generation and both actual enemies equals the entire API endpoint");
         Require(ready.Battle.Roster[0].Position==new MapPosition(11,13) && ready.Battle.Roster[0].Stats.HpCurrent==3 &&
             ready.Battle.Roster[1].Position==new MapPosition(11,14) && ready.Battle.Roster[1].Stats.HpCurrent==11 && ready.Battle.Roster[1].Stats.MpCurrent==10 &&
-            ready.Battle.Roster[1].Stats.CurrentExp is null && ready.Battle.Roster[1].Stats.CurrentKills is null && ready.Battle.Roster[1].Stats.CurrentDefeats is null &&
+            ready.Battle.Roster[1].Stats.CurrentExp == (SarahHealReview ? (byte?)0 : null) && ready.Battle.Roster[1].Stats.CurrentKills is null && ready.Battle.Roster[1].Stats.CurrentDefeats is null &&
             Field<Label>(presenter,"_details").Text.StartsWith("Round 13: PlayerMovementSelection",StringComparison.Ordinal) &&
             presenter.Projection!.ActorIndex==1 && presenter.Projection.CanConfirm &&
             !presenter.Projection.Units.Any(u=>u.Index is 2 or 129 or 131 or 132) &&
@@ -1650,10 +1655,11 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         await PressBattleKey(Key.Backspace);var final=_session.PrivateOriginalBattle01!;
         Require(frozen==JsonSerializer.Serialize(final.Battle,json) && before95==JsonSerializer.Serialize(bowie.Battle,json),
             "Cancel restores whole102 while the source95 remains immutable");
-        Battle01PlayerPhysicalAttack.RequireAccountingInputs(final.Battle,0,0,0,0,0,0);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(final.Battle,0,0,0,0,0,0,SarahHealReview ? (byte?)0 : null);
         Require(ReferenceEquals(bowie.Preparation,final.Preparation) && ReferenceEquals(bowie.SourceBridge,final.SourceBridge) &&
             ReferenceEquals(bowie.SourceLocomotion,final.SourceLocomotion),"All source/preparation identities survive the physical route");
         await CaptureControl("47-five-survivor-r13-sarah-cancel");
+        if (SarahHealReview) { await ReviewSarahHeal(final); return; }
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new{
             status="Pass",scope="actual safe100, five-survivor R13 and actual Sarah movement/cancel; later survival, healing, victory and H4 remain Unknown",
             preparation=final.Preparation.Party,returnInputs=final.Preparation.ReturnInputs,arrivalInputs=final.Preparation.ArrivalInputs,
@@ -1662,6 +1668,100 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} five-survivor-round");
         static int Count(Battle01InitializedState battle){int n=0;for(var r=battle.TurnCompletion;r is not null;r=r.Previous)n++;return n;}
+    }
+
+    private async Task ReviewSarahHeal(PrivateOriginalBattle01SessionSnapshot ready)
+    {
+        var presenter = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter");
+        var json = new JsonSerializerOptions { WriteIndented = true, MaxDepth = 256 };
+        string frozen = JsonSerializer.Serialize(ready, json);
+        Require(_initialBattle01!.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.SarahHealComparisonId &&
+            _initialBattle01.Battle.Roster[1].Stats.CurrentExp == 0 && ready.Battle.Roster[1].Stats.CurrentExp == 0 &&
+            ReferenceEquals(_initialBattle01.Preparation, ready.Preparation), "EXP0 comes from actual earliest preparation");
+        await Step(Key.Space, PrivateBattle01Input.Confirm, "48-sarah-heal-action-choice");
+        Require(presenter.Projection!.Controls.Contains("M: Magic") && !presenter.Projection.Controls.Contains("A: Attack"), "Only supported Sarah action is prompted");
+        await Step(Key.M, PrivateBattle01Input.Magic, "49-sarah-heal-spell-choice");
+        var spell = _session.PrivateOriginalBattle01!;
+        await Step(Key.Space, PrivateBattle01Input.Confirm, "50-sarah-heal-bowie-target");
+        Require(_session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.Healing!.Targets.SequenceEqual(new[]{0,1}) &&
+            presenter.Projection!.SelectedTargetIndex == 0, "Bowie and self are the actual legal targets");
+        await Step(Key.L, PrivateBattle01Input.East, "51-sarah-heal-self-unsupported");
+        var unsupported = _session.PrivateOriginalBattle01!;
+        await Step(Key.Space, PrivateBattle01Input.Confirm, "52-sarah-heal-self-rejected");
+        Require(ReferenceEquals(unsupported,_session.PrivateOriginalBattle01) && !presenter.Projection!.Controls.Contains("Space"),
+            "Range-legal self is typed Unsupported and cannot publish or suggest a cast");
+        await Step(Key.Backspace, PrivateBattle01Input.Cancel, "53-sarah-heal-target-cancel");
+        Require(JsonSerializer.Serialize(spell,json)==JsonSerializer.Serialize(_session.PrivateOriginalBattle01,json), "Target cancel restores whole spell choice");
+        await Step(Key.Backspace, PrivateBattle01Input.Cancel, "54-sarah-heal-spell-cancel");
+        await Step(Key.Backspace, PrivateBattle01Input.Cancel, "55-sarah-heal-movement-cancel");
+        Require(frozen==JsonSerializer.Serialize(_session.PrivateOriginalBattle01,json), "Every cancellation layer restores exact102");
+        await Step(Key.Space, PrivateBattle01Input.Confirm, "56-sarah-heal-action-reselected");
+        await Step(Key.M, PrivateBattle01Input.Magic, "57-sarah-heal-spell-reselected");
+        await Step(Key.Space, PrivateBattle01Input.Confirm, "58-sarah-heal-bowie-reselected");
+        var selected=_session.PrivateOriginalBattle01!;
+        var copy=Copy(selected); PrivateOriginalBattle01SessionSnapshot cast, expected;
+        string boundary;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copy);
+        try
+        {
+            cast=((PrivateOriginalBattle01PlayerHealingApplied)_session.ConfirmPrivateOriginalBattle01PlayerHealing(copy,1)).Snapshot;
+            var r=cast.Battle.TurnCompletion!;
+            Require(r.PlayerHealing is {ActorIndex:1,TargetIndex:0,Effect.Recovery:9,Effect.AwardedExp:17} &&
+                r.PlayerPhysicalAttack is null && r.EnemyPhysicalAttack is null && ReferenceEquals(r.Previous,selected.Battle.TurnCompletion),
+                "One distinct heal receipt preserves the actual102 history");
+            Require(cast.Battle.Roster[1].Stats.MpCurrent==7 && cast.Battle.Roster[1].Stats.CurrentExp==17 &&
+                cast.Battle.Roster[0].Stats.HpCurrent==12 && cast.Battle.RandomSeedImage==0x02A11234 && cast.Battle.RandomSeedCopy==0x0234,
+                "Actual HEAL1 scalar and independent RNG channels agree");
+            presenter.Project(cast,"TEST COPY: actual HEAL 1 commit before dispatcher.");
+            await CaptureControl("59-sarah-heal-cast-test-copy","actual facade cast; production immediately dispatches");
+            boundary=PrivateBattle01Ui.DispatchNext(_session,cast);expected=_session.PrivateOriginalBattle01!;
+        }
+        finally { typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,selected); presenter.Project(selected,"Bowie selected. Space casts HEAL 1."); }
+        await PressBattleKey(Key.Space);
+        var actual=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(expected,json)==JsonSerializer.Serialize(actual,json) && presenter.Projection!.Status==boundary,
+            "Physical cast and complete actual dispatch equal the whole facade snapshot");
+        await CaptureControl("60-sarah-heal-actual-dispatch");
+        if(actual.Battle.FirstControl is { } control)
+        {
+            // Derive a real reachable destination from this returned actor, without guessing it from the STAY probe.
+            var origin=control.Movement.Cursor;
+            var choices=new[]{(Key.I,PrivateBattle01Input.North,new MapPosition(origin.X,origin.Y-1)),
+                (Key.L,PrivateBattle01Input.East,new MapPosition(origin.X+1,origin.Y)),
+                (Key.K,PrivateBattle01Input.South,new MapPosition(origin.X,origin.Y+1)),
+                (Key.J,PrivateBattle01Input.West,new MapPosition(origin.X-1,origin.Y))};
+            var choice=choices.First(c=>control.Movement.Range.CanStopAt(c.Item3));
+            await Step(choice.Item1,choice.Item2,"61-sarah-heal-next-player-preview");
+            await Step(Key.Space,PrivateBattle01Input.Confirm,"62-sarah-heal-next-player-confirm");
+            await Step(Key.Backspace,PrivateBattle01Input.Cancel,"63-sarah-heal-next-player-cancel");
+            Require(JsonSerializer.Serialize(actual,json)==JsonSerializer.Serialize(_session.PrivateOriginalBattle01,json),"Actual next player cancel restores entire returned snapshot");
+        }
+        else Require(boundary.Contains("unavailable",StringComparison.OrdinalIgnoreCase) || boundary.Contains("rejected",StringComparison.OrdinalIgnoreCase),
+            "No player requires the actual first Unsupported reason");
+        Require(frozen==JsonSerializer.Serialize(ready,json),"Original102 remains immutable after physical cast and movement");
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(_session.PrivateOriginalBattle01!.Battle,0,0,0,0,0,0,0);
+        File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new{
+            status="Pass",scope="early Sarah EXP0; actual HEAL1 and first dispatcher/player endpoint; later actions, natural presentation and H4 remain Unknown",
+            preparation=ready.Preparation.Party,ready=ready.Battle,cast=cast.Battle,boundary,battle=_session.PrivateOriginalBattle01.Battle,
+            actualEarlyPreparation=true,exactCopiedAndPhysicalSnapshotMatch=true,allCancellationLayers=true,frames=_frames
+        },json));
+        GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} sarah-heal actualActor={actual.Battle.FirstControl?.ActorIndex} boundary={boundary}");
+
+        PrivateOriginalBattle01SessionSnapshot Copy(PrivateOriginalBattle01SessionSnapshot source) =>
+            (PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
+                BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[]{source.Preparation,source.Battle,source.SourceLocomotion,source.SourceBridge},null)!;
+        async Task Step(Key key,PrivateBattle01Input input,string frame)
+        {
+            var before=_session.PrivateOriginalBattle01!;var copy=Copy(before);
+            string expected;string? status;
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,copy);
+            try { status=PrivateBattle01Ui.Apply(_session,null,input);expected=JsonSerializer.Serialize(_session.PrivateOriginalBattle01,json); }
+            finally { typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,before); }
+            await PressBattleKey(key);
+            Require(expected==JsonSerializer.Serialize(_session.PrivateOriginalBattle01,json) && presenter.Projection!.Status==status,
+                "Physical and logical input match at "+frame);
+            await CaptureControl(frame);
+        }
     }
 
     private async Task ReviewFirstAllyDefeat(PrivateOriginalBattle01SessionSnapshot chester)

@@ -136,7 +136,8 @@ public static class Battle01TurnCompletion
         receipt.CompletedActorIndex == 1 && receipt.RoundNumber == 13 &&
         receipt.PlayerHealing is { ActorIndex: 1, TargetIndex: 0 } &&
         receipt.EnemyStandby is null && receipt.EnemyPursuit is null && receipt.EnemyPhysicalAttack is null &&
-        receipt.PlayerPhysicalAttack is null && receipt.EnemyDefeat is null && receipt.AllyDefeat is null &&
+          receipt.PlayerPhysicalAttack is null && receipt.EnemyDefeat is null && receipt.AllyDefeat is null &&
+          !receipt.DefeatedTurnCompleted &&
         receipt.BeforeAfterTurn == new Battle01FactionCounts(2, 3) && receipt.AfterAfterTurn == receipt.BeforeAfterTurn &&
         receipt.Previous is { CompletedActorIndex: 130, RoundNumber: 13, EnemyPursuit: not null,
             Previous: { CompletedActorIndex: 128, RoundNumber: 13, EnemyPursuit: not null } };

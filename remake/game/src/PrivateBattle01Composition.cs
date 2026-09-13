@@ -89,7 +89,8 @@ internal static class PrivateBattle01Ui
         if (input == PrivateBattle01Input.Enter)
             return "Battle already initialized; current actor and round retained.";
         if (control.Movement.Stage is Battle01PlayerMovementStage.HealingSpellSelection or Battle01PlayerMovementStage.HealingTargetSelection ||
-            (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice && input == PrivateBattle01Input.Magic))
+            (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice && input == PrivateBattle01Input.Magic &&
+                current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.SarahHealComparisonId))
         {
             bool targeting = control.Movement.Stage == Battle01PlayerMovementStage.HealingTargetSelection;
             PrivateOriginalBattle01PlayerHealingResult? healing = input switch
