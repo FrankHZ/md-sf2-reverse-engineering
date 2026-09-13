@@ -77,7 +77,7 @@ engine or documentation change. Use formatting only for affected product project
 
 ## Authored Start State Observation
 
-The format-v4 reader returns immutable definitions and explicit start input. After loading the existing
+The format-v5 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
 observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
@@ -111,7 +111,7 @@ requires its explicit start record; no default counter or runtime actor is synth
 
 ## Authored Extra Round Action Observation
 
-Use the same installed editor/project after the affected Debug build. This format-v4 input changes only
+Use the same installed editor/project after the affected Debug build. This format-v5 input changes only
 one actor's explicit eligibility; its numerical agility remains12. Outputs stay in a fresh ignored run:
 
 ```powershell
@@ -141,7 +141,7 @@ aggregate, new H3 or test of the observer is required.
 ## Authored Faction and Order Observation
 
 Run the four package observations below, then prepare a changed-order physical input in a fresh ignored
-run directory. This format-v4 variant keeps independent accepted combat/RNG expectations while moving
+run directory. This format-v5 variant keeps independent accepted combat/RNG expectations while moving
 all orders beyond the original byte-side boundary and reversing all three JSON arrays:
 
 ```powershell
@@ -306,6 +306,31 @@ The extracted weighted rule also retains the selected Domain.Tests
 its flat-row and bucket-wrap cases. It passes through the reference wrapper; the authored engine's
 logical row-edge behavior has its own actual movement unit assertion. No original fixture changed.
 
+### Physical Critical Configuration
+
+Format-v5 physical definitions explicitly pair `critical.chance` and `critical.damageBonus`.
+The stone package uses `one-in-16` / `quarter`; the river package uses `one-in-32` / `half`.
+The existing physical, follow-up and enemy-action recipes select these fields directly and use the
+same installed Godot project/probe. For this configuration boundary, observe both ordinary physical
+packages, all four follow-up shapes (`sticky`, `counter`, `ally-death`, `second-death`), and the enemy
+`counter` shape with both packages. Require all38 checkpoints across those eight cases and clean logs.
+No new native branch, screenshot or runtime seed setter is needed.
+
+`PhysicalRuleConfigurationTests` also varies both rules for the same player/enemy attack, preserving
+independent damage/RNG/reward values and checking the reversed counter's own critical range. Its
+controlled start gives critical seed1 after the ordinary round and dodge; the next spread words20/267
+both yield zero. Base78 therefore becomes117 for a half bonus or97 for a quarter bonus. Existing
+seed55 counter expectations remain; the test does not derive expectations from product output.
+
+Run the affected reference group together: `SourceArithmeticKeepsZeroIntermediateAndBothDownwardDrawsAtTheOriginalRange`,
+`MissAndCriticalUseRealSeedsAndPreserveSourceCallOrder`,
+`CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack`,
+`CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt`,
+`SecondDefeatPreservesTheFirstCorpseAndCreditsOnlyTheNewTarget`,
+`RealSeedsExerciseMissCriticalAndIndependentExpVariance` and
+`KillAccountingUsesSourceCapsAndKeepsUnknownInputsUnknown`. These existing tests compare real scalar,
+reaction, reward and death boundaries without a reference aggregate or private input regeneration.
+
 ### Enemy action observation
 
 The enemy branch uses the same reader, session and existing native observer. Start from either
@@ -322,9 +347,9 @@ foreach ($index in @(0, 2)) {
     $data.actors[$index].defense = 4
 }
 $data.actors[0].attack = 18
-$data.actors[0].physical.prowess = 0
+$data.actors[0].physical.critical = @{chance='one-in-32'; damageBonus='half'}
 $data.actors[2].attack = 30
-$data.actors[2].physical.prowess = 3
+$data.actors[2].physical.critical = @{chance='one-in-16'; damageBonus='quarter'}
 $data.actors[2].controller = 'commandset06-script3'
 $data.actors[2].move = 1
 if ($shape -eq 'movement') {
@@ -372,7 +397,7 @@ foreach ($index in @(0, 1, 2)) {
     $data.actors[$index].maxHp = 500
     $data.actors[$index].defense = 4
     $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
-    $data.actors[$index].physical.prowess = if ($index -eq 2) { 3 } else { 0 }
+    $data.actors[$index].physical.critical = if ($index -eq 2) { @{chance='one-in-16'; damageBonus='quarter'} } else { @{chance='one-in-32'; damageBonus='half'} }
 }
 $data.actors[0].classRule = if ($shape -eq 'primary') { 'unpromoted-swordsman' } else { 'unpromoted-warrior' }
 $data.actors[1].classRule = if ($shape -eq 'primary') { 'unpromoted-warrior' } else { 'unpromoted-swordsman' }
@@ -431,7 +456,7 @@ foreach ($index in @(0, 2)) {
     $data.actors[$index].maxHp = 500
     $data.actors[$index].defense = 4
     $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
-    $data.actors[$index].physical.prowess = if ($index -eq 2) { 3 } else { 0 }
+    $data.actors[$index].physical.critical = if ($index -eq 2) { @{chance='one-in-16'; damageBonus='quarter'} } else { @{chance='one-in-32'; damageBonus='half'} }
 }
 $data.actors[2].controller = 'commandset06-script3'
 $data.actors[2].move = 3

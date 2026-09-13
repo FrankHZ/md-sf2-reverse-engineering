@@ -109,8 +109,8 @@ internal static class PhysicalBattleAction
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = LandMultiplier(terrain);
             var strike = PhysicalStrikeRules.Resolve(attacker.Definition.Attack, defender.Definition.Defense,
-                hp, multiplier, seed, 32, profile.Prowess == 0 ? (ushort)32 : (ushort)16,
-                profile.Prowess == 0 ? 1 : 2, counter);
+                hp, multiplier, seed, 32, profile.Critical.ChanceDenominator,
+                profile.Critical.DamageBonusShift, counter);
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);

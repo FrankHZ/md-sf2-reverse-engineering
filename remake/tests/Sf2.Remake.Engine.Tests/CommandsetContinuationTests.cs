@@ -218,8 +218,8 @@ public sealed class CommandsetContinuationTests
             d["start"]!["actors"]![index]!["hp"] = 500; d["actors"]![index]!["maxHp"] = 500;
             d["actors"]![index]!["defense"] = 4;
         }
-        d["actors"]![0]!["attack"] = 18; d["actors"]![0]!["physical"]!["prowess"] = 0;
-        d["actors"]![2]!["attack"] = 30; d["actors"]![2]!["physical"]!["prowess"] = 3;
+        d["actors"]![0]!["attack"] = 18; d["actors"]![0]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-32", ["damageBonus"] = "half" };
+        d["actors"]![2]!["attack"] = 30; d["actors"]![2]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-16", ["damageBonus"] = "quarter" };
         d["actors"]![2]!["controller"] = "commandset06-script3"; d["actors"]![2]!["move"] = 3;
         var p = d["encounters"]![0]!["placements"]!;
         p[0]!["x"] = 1; p[0]!["y"] = y; p[2]!["x"] = 7; p[2]!["y"] = y;

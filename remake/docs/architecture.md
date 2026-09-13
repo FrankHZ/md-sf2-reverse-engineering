@@ -66,6 +66,12 @@ projection decodes raw high-bit semantics. The ordinary three draws and optional
 truncated five-sixths basis retain source arithmetic and signed sentinel ordering. The existing
 advancer consumes both entries without an additional scheduler or physical double/counter changes.
 
+`PhysicalCriticalRule` owns the two supported immutable chance/bonus definitions; Content selects
+one from explicit semantic fields rather than a packed prowess number. Every actual hit, including
+reversed counters, reads its attacker's selected rule. The scalar strike calculator already takes
+mathematical operands and remains unchanged, as do its original/reference source mappings. Other
+physical fields retain their existing semantic ownership; no generalized profile system is introduced.
+
 ## Production Assemblies
 
 M1's new path is organized by cohesive responsibility: Domain `Battles/Rules` and `Battles/State`,

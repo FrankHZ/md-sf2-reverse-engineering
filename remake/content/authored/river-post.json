@@ -1,5 +1,5 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "package": "river-post",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -101,7 +101,10 @@
       "spells": [],
       "physical": {
         "movementType": "regular",
-        "prowess": 0,
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
         "promoted": false,
         "leader": false,
         "gold": 17,
@@ -124,7 +127,10 @@
       "spells": [],
       "physical": {
         "movementType": "regular",
-        "prowess": 0,
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
         "promoted": false,
         "leader": false,
         "gold": 18,
@@ -147,7 +153,10 @@
       "spells": [],
       "physical": {
         "movementType": "regular",
-        "prowess": 0,
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
         "promoted": false,
         "leader": false,
         "gold": 19,
@@ -170,7 +179,10 @@
       "spells": [],
       "physical": {
         "movementType": "regular",
-        "prowess": 0,
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
         "promoted": false,
         "leader": false,
         "gold": 20,
@@ -193,7 +205,10 @@
       "spells": [],
       "physical": {
         "movementType": "regular",
-        "prowess": 0,
+        "critical": {
+          "chance": "one-in-32",
+          "damageBonus": "half"
+        },
         "promoted": false,
         "leader": false,
         "gold": 21,

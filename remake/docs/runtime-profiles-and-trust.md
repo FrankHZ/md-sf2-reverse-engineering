@@ -29,7 +29,7 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 4` package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 5` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
@@ -72,12 +72,26 @@ modernization and private initialization follow the
 [ordered boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
 
 Physical capability is optional per actor: `physical` is a closed object with `movementType`
-(currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, enemy reward `gold`
+(currently `regular`), `critical`, boolean `promoted` and `leader`, enemy reward `gold`
 (0–65535), and `special` (currently `none`). Current kills/defeats are required start inputs, including
-for nonphysical actors. Other movetypes, prowess or special rules return
+for nonphysical actors. Other movetypes, critical combinations or special rules return
 Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current ATT/DEF are explicit
 authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
 weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
+
+`physical.critical` is a closed `{chance, damageBonus}` object. Only these paired values are supported:
+
+| chance | damageBonus | Applied semantics |
+| --- | --- | --- |
+| `one-in-32` | `half` | Critical succeeds on zero from range32 and adds `floor(damage / 2)`. |
+| `one-in-16` | `quarter` | Critical succeeds on zero from range16 and adds `floor(damage / 4)`. |
+
+Land reduction precedes the bonus; counter halving and the two downward spread draws follow it.
+The immutable typed rule owns the scalar parameters and every first/second/counter hit consumes it.
+Missing/nonstring fields are ContentError; unimplemented values or cross-pairs are Unsupported.
+Packed `prowess` is no longer an authored field; original source/reference definitions retain it.
+Regular dodge and physical double/counter chances remain fixed at1/32 and distinct from extra-round
+eligibility. No arbitrary chance/fraction/equipment/status/critical-effect combinations are admitted.
 
 Encounter `rewards`, when present, is closed to boolean `halvedExperience`. Current gold is supplied
 only by `start.gold`. Missing actor physical data or encounter rewards leaves physical commands Unsupported,
