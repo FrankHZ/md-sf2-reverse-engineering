@@ -8,11 +8,9 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
-Current stopping point: [enemy128 defeats Chester and actual R12 Bowie receives control](#implemented-enemy128-defeat-and-r12-bowie-control).
-Receipt95 persists through Bowie movement/confirm/cancel. Next: review the
-[dead129-slot continuation plan](#proposed-defeated129-slot-completion-and-r12-sarah-control), whose
-actual approach reaches96 before an unplaced-actor refusal. Later five-survivor generation remains
-outside this proposed boundary.
+Current stopping point: [dead129 slot completion, actual130 pursuit and R12 Sarah control](#implemented-defeated129-slot-completion-and-r12-sarah-control).
+Receipt98 persists through Sarah movement/confirm/cancel. Later five-survivor generation and combat
+choices remain outside this boundary.
 
 ## Current Baseline
 
@@ -688,7 +686,7 @@ and selects no return/arrival inputs. Ordinary launch keeps the existing leader/
 comparison and119-receipt route. Changing the selection after battle startup has no effect.
 
 **Confirmed controlled execution:** required-private Content test
-`AcceptedSelectedInputsContinueEnemy128DefeatThroughBowieMovementCancel` starts both the new preset
+`AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel` starts both the new preset
 and `LeaderDefeatComparison` with return/arrival unselected, using `ReachRealRoundTenChester` and
 public Application operations. It compares the entire selected battle and93 receipts after
 normalizing only the explicitly identified Chester kills0 stats before-images. Defeat counters,
@@ -735,16 +733,16 @@ Unsupported or **Unknown**.
 Use the [verification owner](./development-and-verification.md) for required-private Content,
 owning Domain/Application/Godot tests, committed planner, normal public gate, one full managed run
 and official locked Godot gate. Native `chester-first-kill` supplies the opt-in before N and captures
-40 frames, retaining the first36 through copied receipt94 and extending actual physical input to
-Bowie movement/cancel. Keep ordinary119, older133 defeat, counter, enemy-physical and pursuit
+46 frames through the dead129 continuation, retaining the first40 through Bowie movement/cancel. Keep ordinary119, older133 defeat, counter, enemy-physical and pursuit
 regressions; preserve completed failures and correct only their owning nodes.
 
 ### Implemented enemy128 defeat and R12 Bowie control
 
 **Implemented:** the actual128 attack after Chester's first kill publishes one nonleader ally
 cleanup after three enemy cleanups. The existing dispatcher enters actual Bowie0 in the same R12
-buffer; movement to(11,14), confirm and cancel to(11,15) retain95 receipts. This is the stopping
-point, before Bowie STAY, another death or a later generation.
+buffer; movement to(11,14), confirm and cancel to(11,15) retain95 receipts. The
+[dead129 continuation](#implemented-defeated129-slot-completion-and-r12-sarah-control) consumes this
+boundary through one moved Bowie STAY and actual Sarah control.
 
 #### Selected inputs, admission and actual route
 
@@ -757,7 +755,7 @@ main323E1234/copy0134. Enemy129/131/132 are HP0/unplaced; living enemies are128 
 The complete order remains `[2:6,128:6,0:5,129:5,130:5,1:4,133:4]` plus57 sentinels.
 
 **Confirmed controlled execution:** required-private Content method
-`AcceptedSelectedInputsContinueEnemy128DefeatThroughBowieMovementCancel` starts the complete
+`AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel` starts the complete
 early-input route through `ReachRealChesterFirstKillSelection` / `ReachRealRoundTenChester`, with
 no patched battle state. Application pursuit reports `AttackSelectionRequired` for128. Explicit
 Domain `ControlledNonlethalStrike` and `ControlledFirstAllyDefeat` calls reject `attack.lethal` and
@@ -865,7 +863,7 @@ Reuse native `chester-first-kill` and its existing launch opt-in. Retain the fir
 including exact selected-copy94; the old37 refusal remains historical evidence. Add a labeled copied
 95 before next dispatch, the physical-Space/actual-Bowie ready result, Bowie provisional(11,14) and
 cancel(11,15). Require whole-battle equality between copied API relay and physical input, not just
-matching counts. Expected total40 frames; independently inspect every changed PNG at original
+matching counts. These40 prefix frames are retained by the46-frame dead129 continuation. Inspect every changed PNG at original
 resolution, including absent Chester marker, HP0/EXP54/defeats1, Gold180/Bowie kills2/Chester kills1,
 enemy128's result and usable controls. The copied seam is test instrumentation, not a production
 pause. Compare retained images by bytes and preserve complete bounded process logs.
@@ -873,8 +871,7 @@ pause. Compare retained images by bytes and preserve complete bounded process lo
 Acceptance uses the committed dependency planner, normal public gate, owning managed tests,
 required-private positive route, one selected full managed run, official locked Godot and affected
 native checks. Preserve completed failures and already valid regression results; rerun only failed
-or newly invalidated owning nodes after correction. No H3 or full Python suite is added. Stop at
-Bowie movement/cancel, followed by an independently reviewable frozen Draft.
+or newly invalidated owning nodes after correction. No H3 or full Python suite is added. The dead129 continuation below owns the current stopping point.
 
 #### Narrow reproduction and remaining Unknowns
 
@@ -885,7 +882,7 @@ In a source-matched existing Release workspace, use the registered private input
 ```powershell
 & $env:DOTNET_BIN @('test', 'tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj',
   '--configuration', 'Release', '--no-build', '--no-restore',
-  '--filter', 'FullyQualifiedName~AcceptedSelectedInputsContinueEnemy128DefeatThroughBowieMovementCancel',
+  '--filter', 'FullyQualifiedName~AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel',
   '--results-directory', $env:SF2_RUN_OUTPUT)
 ```
 
@@ -924,43 +921,42 @@ print('PASS: bounded arithmetic matches controlled receipt95 main98321234/copy02
 presentation and VInt consumption, further combat continuation and H4. Controlled95 publication
 and usable Bowie movement do not close those original-runtime boundaries.
 
-### Proposed defeated129 slot completion and R12 Sarah control
+### Implemented defeated129 slot completion and R12 Sarah control
 
-**Proposed, not implemented:** admit the already-cleaned enemy129's remaining slot in the current
-R12 buffer, then dispatch the actual next candidate until the first Unsupported or usable player
-movement/cancel. The expected endpoint is Sarah1 after130 pursuit, before another player action or
-generation. This planning slice owns only `remake/docs/map03-playability-plan.md`.
+**Implemented:** the existing R12 slot for cleaned enemy129 completes with a distinct receipt97.
+Actual130 then pursues Bowie and actual Sarah1 receives movement control with98 receipts. Sarah
+confirms(10,17), cost2, then cancels to(9,17) with the entire98 battle unchanged. This is the current
+stopping point, before Sarah STAY, another attack/death or a later generation.
 
-#### Actual choice and first Unsupported
+#### Selected inputs and actual approach
 
-**Confirmed controlled starting point:** the [enemy128 continuation](#implemented-enemy128-defeat-and-r12-bowie-control)
-replays the existing early `ChesterFirstKillComparison` through actual95 and enters Bowie0 at(11,15),
-budget12. R12/raw4, main98321234/copy0234/mask0; Bowie HP3/EXP63/kills2, Sarah(9,17) HP11,
-Chester HP0/EXP54/kills1/defeats1/unplaced, gold180. All nine identity rows remain;129/131/132
-are cleaned enemy corpses. Order is `[2:6,128:6,0:5,129:5,130:5,1:4,133:4]` plus57 sentinels.
+The [enemy128 continuation](#implemented-enemy128-defeat-and-r12-bowie-control) supplies actual95
+from early `ChesterFirstKillComparison`, including Chester kills0/defeats0/EXP0 before initialization.
+No return/arrival input is selected. R12/raw4 has Bowie0(11,15), budget12, HP3/EXP63/kills2;
+Sarah1(9,17), HP11; Chester2 HP0/EXP54/kills1/defeats1/unplaced; gold180;
+main98321234/copy0234/mask0. All nine identity rows and the cleaned129/131/132 remain.
+The existing buffer is `[2:6,128:6,0:5,129:5,130:5,1:4,133:4]` plus57 sentinels.
 
-The source-matched compiled real-input helper `ReachRealChesterFirstKillSelection` establishes this
-state through actual Application actions. Enumerate Bowie's43 `LegalDestinations`, confirm each,
-try `BeginPrivateOriginalBattle01PlayerAttack`, then cancel relocation. For the already-selected
-origin, confirm directly; selecting the same cursor again correctly rejects `destination`.
-All43 confirmed positions reject `attack.emptyTargets`; every cancel restores the complete95
-battle, including RNG/accounting/history. This is an empty target list, not an attack capability to
-widen. There is no reachable manual attack to substitute for this turn's movement.
+**Confirmed controlled choice:** the required-private Content test enumerates all43 Bowie legal
+destinations, confirms each, verifies `attack.emptyTargets`, and cancels back to the entire95
+battle. The current origin is confirmed directly; selecting its unchanged cursor is not a new move.
+This empty target list does not require broader attack support. The chosen approach(9,11), cost12,
+is uniquely closest to a living enemy by Manhattan distance6 from133(9,5);(9,12), cost10, is distance7.
+This is a bounded approach choice, not a claim of optimal tactics.
 
-| Actual option / input | Confirmed result |
+| Actual action | Result and retained boundary |
 | --- | --- |
-| Remain at(11,15) or use the accepted(11,14)/cancel | No target; no approach progress and no new receipt. |
-| Advance to(9,12), cost10 | Closest living-enemy Manhattan distance7; no target. |
-| Advance to(9,11), cost12 | Unique closest reachable position by that distance,6 from133(9,5). Path(11,15)→(11,14)→(11,13)→(10,13)→(10,12)→(9,12)→(9,11); no target. Chosen as a bounded approach, not a claim of globally optimal tactics. |
-| Confirm(9,11), then one STAY to commit that movement | Receipt96, Bowie remains HP3/EXP63/kills2. Same64 slots, raw4→6, next129; all accounting, masks and both seeds unchanged, counts2/3. This is one moved turn, not repeated origin STAY or RNG selection. |
-| Dispatch actual129 through Application pursuit, as the existing UI does | `PrivateOriginalBattle01EnemyPursuitRejected`, field `position`:129 is HP0/unplaced. The exact96 snapshot reference and complete serialized battle remain. Naming130 instead rejects `actor` with the same unchanged96. |
+| Bowie follows(11,15)→(11,14)→(11,13)→(10,13)→(10,12)→(9,12)→(9,11), confirms, then commits one moved STAY | Receipt96, same64 slots, raw4→6, actual129. Counts2/3, stats/accounting, flags and both seeds unchanged. |
+| Direct pursuit129 or naming130 before completing129 | `position` or `actor` rejection respectively; exact96 snapshot and whole battle remain. The dispatcher uses the separate completion API for dead129. |
+| `CompletePrivateOriginalBattle01DefeatedTurn(expected,129)` | Distinct97, both empty cleanup checkpoints/counts2/3, same R12 buffer raw6→8, actual130. No action, RNG, reward, new death or placement change. |
+| Actual130 pursuit | Receipt98, target Bowie0, costs Bowie16/Sarah28; origin(8,4), preliminary(9,5)/`[0,3,255]`, trimmed to(9,4)/`[0,255]`, cost2 because133 occupies(9,5). Main98321234/copy0234 and AI memory/last targets are unchanged. |
+| Actual Sarah1 at raw10 | Budget10 at(9,17); confirm(10,17) cost2, then cancel(9,17). All98 receipts, roster/occupancy, seeds, flags and accounting compare equal to the ready state. |
 
-The first continuation gap is therefore **dead129's existing slot**, before130, Sarah, the sentinel
-or a five-survivor generation. Do not filter the historical64-slot buffer, patch its raw offset,
-revive129, or fabricate a live action to get past it. The source-only five-survivor minimum-six
-restriction remains a later boundary and is not part of this proposed implementation.
+The buffer retains dead129's visited slot. Five live combatants do not invalidate its original
+seven-participant generation image. The minimum-six restriction is a **remake generation guard**,
+not an original-game rule; a later five-survivor generation remains outside this capability.
 
-#### Source meaning and bounded expected continuation
+#### Source meaning and receipt validation
 
 **Confirmed static provenance:** `ShiningForceCentral/SF2DISASM`
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, paths relative to `disasm/`. These named sources extend
@@ -973,151 +969,65 @@ they do not establish natural presentation, caller timing or VInt RNG.
 | [`battleloop_1.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop_1.asm), `BattleLoop` (`0x23A84..0x23BB4`), `@IndividualTurns_Loop` / `@IsBattleEnd` | The existing order still names129. Return from individual execution still runs the defeated wrapper, first cleanup/count, after-turn, second cleanup/count, then advances `CURRENT_BATTLE_TURN` by2. It does not remove the slot or jump directly to another actor. |
 | [`battleloop/processafterturneffects.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processafterturneffects.asm), `ProcessAfterTurnEffects` (`0x24242..0x2448A`) | Clear the worklist and return on HP0 before status/regen and their RNG draws. Existing empty-worklist cleanup and continuing counts remain applicable; there is no second kill/reward. |
 
-**Inferred controlled consequence, not yet published:** one distinct receipt97 should identify129's
-dead turn, retain both empty worklists/counts2/3, all96 predecessors and the complete roster/occupancy,
-main98321234/copy0234/mask0, flags/AI and gold/EXP/kills/defeats. Advance only raw6→8 in the same R12
-buffer, actual130 next. Retain129's death credit in94 and Chester's independent defeat in95.
-Model this as the source loop's completed dead turn, not an enemy STAY, attack or new defeat.
+The singleton `Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat` uses
+policy ID `battle01-controlled-dead129-turn-after-chester-defeat-v1`. Its receipt marks
+`DefeatedTurnCompleted`; all action and defeat-cleanup fields are null. Both empty cleanup/count
+checks still execute. The Domain admits only actual129/R12/raw6, HP0/unplaced, after validated
+Chester-credited94, Chester defeat95 and Bowie completion96. Existing prefix, occupancy, effective
+stats, continuing factions and full thinking/accounting history must agree before and after.
 
-The existing pure `Battle01EnemyPursuit.Decide` on the unchanged actual96 roster for130 yields
-target costs Bowie16/Sarah28, target0, preliminary(9,5) with bytes`[0,3,255]`, trimmed to the empty
-(9,4) with`[0,255]`/cost2 because133 occupies(9,5). Main98321234, copy0234 and memory20 stay unchanged;
-Chester is excluded from the target cohort. This confirms only pure construction. No hypothetical
-97/98 state was supplied and Application still refuses to bypass129. After implementation, require
-actual97→130 pursuit98→Sarah1/raw10, budget10 at(9,17), move/confirm(10,17) cost2/cancel(9,17),
-with complete98 battle equality. This expected dispatch/control remains **Inferred** until run.
-If an earlier real refusal occurs, freeze its exact last committed state and report that boundary.
+History validation rewinds97 as a checked no-change step before96, independently reverses95's
+Chester defeat, then94's Chester kill/EXP/gold. It preserves all previous policy identities and the
+one-receipt-per-visited-slot invariant. The Application binds the expected current snapshot and
+early preparation, constructs locally, validates complete preparation accounting, and only then
+publishes once. Repeated, stale, foreign, wrong-actor and late accounting failures retain96.
+The dispatcher invokes this command for the dead current candidate before alive AI/player routing;
+it does not remove slots, patch offsets or fabricate STAY/death/AI decisions.
 
-#### Minimal proposed policy, owners and acceptance
+Production owners are the existing Domain `Battle01TurnCompletion`/`Battle01EnemyStandby`,
+Application `PrivateOriginalBattle01TurnCompletion`, and Godot composition/presenter. Round
+generation, initialization, target/damage/pursuit and movement production are reused unchanged.
+No preset, CLI option, schema, fixture, importer or environment setup is added.
 
-Use the existing completion policy/receipt chain for a distinct controlled dead129-turn policy.
-Admit only this early comparison's actual129/R12/raw6, already HP0/unplaced with validated94 credit,
-95 Chester defeat and96 Bowie completion. Validate the current generation prefix, empty cleanup,
-both2/3 faction counts and complete rewound accounting before atomic publication. No decision,
-damage, movement, award, cleanup credit or RNG is attached to the new dead-turn receipt.
-Rewind97 as a checked no-change step; preserve96, then independently rewind95 and94. Existing
-one-receipt-per-visited-slot validation can therefore remain intact. Do not create a second history
-authority or silently allow arbitrary dead/unplaced candidates.
+#### Reproduction and acceptance
 
-Proposed future ownership is these exact19 paths, relative to `remake/`; none is authorized for
-implementation by this one-file plan:
-
-| Exact directory / filenames | Responsibility |
-| --- | --- |
-| `src/Sf2.Remake.Domain/Battles/`: `Battle01TurnCompletion.cs`, `Battle01EnemyStandby.cs` | Distinct dead-turn policy/admission and no-change history validation; reuse existing cleanup, count and one-slot advancement. |
-| `src/Sf2.Remake.Application/Sessions/PrivateOriginalBattle01TurnCompletion.cs` | Add the bounded dead-turn command beside existing turn completion, checking expected snapshot, selected preparation and full accounting before publication. |
-| `game/src/`: `PrivateBattle01Composition.cs`, `PrivateBattle01Presenter.cs` | Dispatch a validated dead candidate before alive AI/player routing. Display dead-turn completion without claiming STAY or dereferencing its null position; the current renderer assumes every completed actor is placed. |
-| `tests/Sf2.Remake.Domain.Tests/Battles/`: `Battle01TurnCompletionTests.cs`, `Battle01EnemyStandbyTests.cs`, `Battle01FirstRoundTests.cs`, `Battle01NextPlayerControlTests.cs` |97 policy/rollback/rewind, unchanged seven-participant generation and actual next player. |
-| `tests/Sf2.Remake.Application.Tests/`: `PrivateOriginalBattle01TurnCompletionTests.cs`, `PrivateOriginalBattle01EnemyPursuitTests.cs`, `PrivateOriginalBattle01NextPlayerControlTests.cs` | Atomic command, dead/current versus alive/next identity, actual relay and stale/preparation rejection. |
-| `tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`; `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Unpatched early-input95→96→97→actual130→Sarah movement/cancel, complete history/accounting equality and honest dead-slot presentation. |
-| `docs/`: `map03-playability-plan.md`, `capability-status.md`, `development-and-verification.md`, `presentation-and-assets.md` | Current capability, provenance/Unknowns, reproducible route and proportional visual/gate requirements. |
-
-Reuse `Battle01FirstRound`, initialization, target/damage/pursuit and movement production unchanged.
-No new preset, CLI option, schema, fixture, importer or environment setup is needed. Tests must reject
-a live129, zero-HP but still-placed129, absent/wrong death credit, wrong slot/round/actor, relabeled or
-duplicated dead-turn receipt, altered counts/worklists/HP/EXP/gold/kill/defeat/RNG/AI/occupancy/history,
-late preparation and stale/foreign/repeated snapshots. Directly naming130 must still reject before97;
-rollback after local completion construction must retain the exact96. Old133/119-return, Chester
-first-kill/death/counter and all previous policy identities stay covered. No fourth kill, level100+,
-additional ally death, victory/return, sentinel generation or H4 is admitted here.
-
-Reuse native `chester-first-kill`: preserve all40 accepted frames by byte comparison. Proposed new
-frames41–46 show Bowie provisional(9,11), copied96 before129, copied97 dead-turn before130,
-physical relay/actual Sarah ready, Sarah provisional(10,17), then cancel(9,17). The copied seams are
-test instrumentation; production does not pause. Compare entire physical/API states and inspect
-each new frame separately at original resolution. A dead completed actor must have no marker or
-made-up coordinates; EXP54/kills1/defeats1 and Gold180/Bowie kills2 remain independently readable.
-Implementation acceptance uses its committed planner, owning required-private tests, one selected
-full managed run, official locked Godot and affected native regressions. Preserve failures and valid
-earlier evidence; no full Python or H3 suite is selected merely by this plan.
-
-#### Reproduction and stopping rule
-
-Use a source-audited accepted Release workspace containing the existing Content test assembly and
-its dependencies, with registered private inputs, `SF2_REQUIRE_PRIVATE_TESTS=1`, fixed absolute
-`DOTNET_BIN`, shared CLI home and `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Compare its source archive
-and extracted sources against accepted Git before reusing DLLs; verify copied dependency bytes.
-Only compile this small console probe in a fresh ignored worktree-local directory. A minimal net8.0
-console project can reference all DLLs under that audited Content test `bin/Release/net8.0` directory.
-Place the following in its `Program.cs`; no production/test source edit or battle-state patch is used:
-
-```csharp
-using System.Reflection;
-using System.Text.Json;
-using Sf2.Remake.Application.Content;
-using Sf2.Remake.Application.Sessions;
-using Sf2.Remake.Content.Tests;
-using Sf2.Remake.Domain.Battles;
-using Sf2.Remake.Domain.Maps;
-var j = new JsonSerializerOptions { MaxDepth = 256 };
-string Json(object x) => JsonSerializer.Serialize(x, j);
-void Check(bool ok) { if (!ok) throw new Exception("Boundary mismatch"); }
-int Count(Battle01InitializedState b) {
-    int n=0; for(var r=b.TurnCompletion;r is not null;r=r.Previous)n++; return n;
-}
-var helper=typeof(PrivateOriginalBattle01StartupReaderTests).GetMethod(
-    "ReachRealChesterFirstKillSelection",BindingFlags.Static|BindingFlags.NonPublic)!;
-var s=(GameSession)helper.Invoke(null,[OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison])!;
-s.ConfirmPrivateOriginalBattle01PlayerAttack(s.PrivateOriginalBattle01,2);
-Check(s.CompletePrivateOriginalBattle01EnemyPursuit(s.PrivateOriginalBattle01,128)
-    is PrivateOriginalBattle01AttackSelectionRequired);
-Check(s.CompletePrivateOriginalBattle01EnemyPhysicalAttack(s.PrivateOriginalBattle01,128)
-    is PrivateOriginalBattle01EnemyPhysicalAttackCompleted);
-s.EnterPrivateOriginalBattle01NextPlayerControl(s.PrivateOriginalBattle01,0);
-var start=s.PrivateOriginalBattle01!; string frozen=Json(start.Battle);
-Check(Count(start.Battle)==95 && start.Battle.RandomSeedImage==0x98321234);
-var range=start.Battle.FirstControl!.Movement.Range;
-Check(range.LegalDestinations.Count==43);
-foreach(var p in range.LegalDestinations) {
-    if(p!=range.Origin) Check(s.SelectPrivateOriginalBattle01PlayerDestination(s.PrivateOriginalBattle01,0,p)
-        is PrivateOriginalBattle01PlayerMovementApplied);
-    s.ConfirmPrivateOriginalBattle01PlayerMovement(s.PrivateOriginalBattle01,0);
-    var before=s.PrivateOriginalBattle01!;
-    Check(s.BeginPrivateOriginalBattle01PlayerAttack(before,0)
-        is PrivateOriginalBattle01PlayerAttackRejected { Diagnostic.Field: "attack.emptyTargets" });
-    Check(ReferenceEquals(before,s.PrivateOriginalBattle01));
-    s.CancelPrivateOriginalBattle01PlayerMovement(s.PrivateOriginalBattle01,0);
-    Check(Json(s.PrivateOriginalBattle01!.Battle)==frozen);
-}
-s.SelectPrivateOriginalBattle01PlayerDestination(s.PrivateOriginalBattle01,0,new(9,11));
-s.ConfirmPrivateOriginalBattle01PlayerMovement(s.PrivateOriginalBattle01,0);
-Check(s.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost==12);
-Check(s.CommitPrivateOriginalBattle01Stay(s.PrivateOriginalBattle01,0) is PrivateOriginalBattle01StayCommitted);
-var blocked=s.PrivateOriginalBattle01!; string before96=Json(blocked.Battle);
-Check(Count(blocked.Battle)==96 && blocked.Battle.FirstRound!.CurrentTurnOffset==6);
-Check(s.CompletePrivateOriginalBattle01EnemyPursuit(blocked,129)
-    is PrivateOriginalBattle01EnemyPursuitRejected { Diagnostic.Field: "position" });
-Check(s.CompletePrivateOriginalBattle01EnemyPursuit(blocked,130)
-    is PrivateOriginalBattle01EnemyPursuitRejected { Diagnostic.Field: "actor" });
-Check(ReferenceEquals(blocked,s.PrivateOriginalBattle01) && Json(blocked.Battle)==before96);
-var decide=typeof(Battle01EnemyPursuit).GetMethod("Decide",BindingFlags.Static|BindingFlags.NonPublic)!;
-var pure=decide.Invoke(null,[blocked.Battle,blocked.Battle.Roster.Single(u=>u.Index==130)])!;
-Check(ReferenceEquals(blocked,s.PrivateOriginalBattle01) && Json(blocked.Battle)==before96);
-Console.WriteLine("PASS:43 empty-target choices; actual96/dead129 position refusal; complete state retained.");
-Console.WriteLine("Inferred130 only; no97/98 publication: "+Json(pure));
-```
-
-From the repository root, with `SF2_PLAN_PROBE` naming that ignored `.csproj` and
-`SF2_PLAN_PROBE_DLL` its built DLL, the owning diagnostic commands are:
+In a source-matched archived Release workspace with the registered inputs,
+`SF2_REQUIRE_PRIVATE_TESTS=1`, fixed absolute `DOTNET_BIN`, shared CLI home and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, run from its `remake/` directory:
 
 ```powershell
-& $env:DOTNET_BIN @('restore', $env:SF2_PLAN_PROBE, '--disable-build-servers')
-& $env:DOTNET_BIN @('build', $env:SF2_PLAN_PROBE, '--configuration', 'Release', '--no-restore',
-  '--disable-build-servers', '-p:UseSharedCompilation=false')
-& $env:DOTNET_BIN @($env:SF2_PLAN_PROBE_DLL)
+& $env:DOTNET_BIN @('test', 'tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj',
+  '--configuration', 'Release', '--no-build', '--no-restore',
+  '--filter', 'FullyQualifiedName~AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel',
+  '--results-directory', $env:SF2_RUN_OUTPUT)
 ```
 
-Run each through the existing bounded runner, retaining complete stdout/stderr, exit/timeout/cleanup
-and source/dependency audit in a fresh ignored destination. This one-file plan requires this focused
-diagnostic, `git diff --check` and committed `uv run sf2 verify plan --base origin/main --head HEAD`;
-normal `uv run sf2 verify` remains the independent main gate. No completed full/official/native gate
-is rerun for planning. Freeze a clean pushed Draft and stop before implementation.
+This required-private positive route uses real early inputs and actual Application actions through
+98, without patched battle state or a pure decision substitute. It retains the complete93 input
+comparison,94 credit,95 death,43-choice survey,96 rejection guards and full97/98/cancel comparisons.
+Owning `Dead129` Domain/Application tests independently reject live/placed129, absent/wrong death
+credit, wrong actor/slot/round, relabeled/duplicated receipts, extra actions/worklists, and altered
+HP/EXP/gold/kills/defeats/counts/RNG/AI/occupancy/history. The late-accounting negative fixture proves
+that a locally constructed valid97 is not published when the preparation's original accounting
+does not match. Godot projection tests cover the unplaced completed actor and actual Sarah control.
 
-**Unknown:** successful97 publication, actual130/98/Sarah control until implementation, later
-five-survivor generation and combat choices, further kills/levels/deaths/victory/return, natural
-input/seed continuity, death-turn presentation and VInt consumption, and H4. The present diagnostic
-and pure130 result do not close these boundaries.
+Native `chester-first-kill` preserves all40 prefix frames by exact byte comparison. Frames41–46
+show Bowie provisional(9,11), labeled copied96 before129, labeled copied97 before130, physical
+relay/actual Sarah ready, Sarah provisional(10,17), then cancel(9,17). The copied seams are test
+instrumentation; production does not pause. Require entire physical/API battle equality and inspect
+each new frame separately at original resolution. The completed actor is shown as
+`Dead turn completed: E1 defeated and unplaced`, without a marker or invented coordinates.
+Chester EXP54/kills1/defeats1 and Gold180/Bowie kills2 remain separately readable.
 
+Use the [verification owner](./development-and-verification.md) for the committed planner,
+required-private owning tests, one selected full managed run, official locked Godot, affected native
+regressions and independent normal public gate. Preserve completed failures; corrections rerun only
+their failed/newly invalidated nodes or owning files. No full Python or H3 run is selected. Freeze a
+clean pushed Draft for independent review and stop at Sarah movement/cancel.
+
+**Unknown:** later five-survivor generation and combat choices, further kills/levels/deaths/victory/
+return, natural input/seed continuity, original death-turn presentation and VInt consumption, and H4.
+Controlled97/98 publication and usable Sarah movement do not establish those original-runtime facts.
 
 ### Accepted inputs and incompatible existing assumptions
 
