@@ -78,7 +78,13 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         {
             var current=session.PrivateOriginalBattle01!;int actor=current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
             Assert.Equal(expected,actor);
-            Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(current,actor));
+            var pursued=Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(current,actor)).Snapshot;
+            var decision=pursued.Battle.TurnCompletion!.EnemyPursuit!;
+            Assert.Equal(new MapPosition(9,expected==128?3:4),decision.Origin);
+            Assert.Equal(new MapPosition(10,expected==128?4:5),decision.Destination);
+            Assert.Equal(4,decision.GridCost);Assert.Equal(new byte[]{0,3,255},decision.MoveString);
+            Assert.Equal(new[]{new Battle01PursuitTargetCost(0,expected==128?24:22),new Battle01PursuitTargetCost(1,expected==128?26:24)},decision.TargetCosts);
+            Assert.Equal((0x74A71234u,(ushort?)0x0234),(pursued.Battle.RandomSeedImage,pursued.Battle.RandomSeedCopy));
         }
         var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(
             session.PrivateOriginalBattle01,session.PrivateOriginalBattle01!.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex)).Snapshot;

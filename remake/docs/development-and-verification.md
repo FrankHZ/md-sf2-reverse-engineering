@@ -419,6 +419,33 @@ managed suite once after focused checks, plus the official locked Godot gate; pr
 failures and rerun only failed/newly invalidated nodes or owning files. Normal public verification
 remains separate. No new H3 or full Python suite is selected.
 
+For the first five-survivor generation, required-private
+`AcceptedSelectedInputsGenerateFiveSurvivorsAndRelayActualSarahMovementCancel` starts from the same
+early first-kill preparation, confirms Bowie (11,13)/cost4 and Sarah (11,14)/cost10, and reaches
+actual100 without a positive snapshot patch. It publishes R13 with the source-exact15 draws/order,
+dispatches actual128/130, and proves Sarah's (11,15)/cost2 movement/confirm/cancel retains all102
+receipts and the whole ready battle. `AcceptedAggressiveApproachRetainsNinetyNineOnEnemy133LethalRefusal`
+keeps the other route's typed `attack.lethal` refusal and complete99 before-image. Both require all
+four registered source inputs and zero skips.
+
+The owning round/history/control tests retain historical R12's seven participants, R13's five,
+stable ties and all64 slots, main/copy/AI/flags/mask, corpse occupancy, unique97/death/credit links,
+all accounting values, stale/repeated/foreign/late preparation and full-state cancellation.
+Application's late-accounting negative proves Domain generation succeeds locally while an input
+mismatch prevents any new seed/order publication. The existing presenter theory separately covers
+the generated round's closed controls and actual Sarah's usable controls with independent accounting.
+
+Native acceptance sets `SF2_BATTLE01_CONTROL_REVIEW=chester-first-kill` and the probe-only
+`SF2_BATTLE01_SURVIVAL_REVIEW=1` before the existing early launch. Preserve40 common-prefix PNGs by
+bytes and inspect the seven new47-frame-route captures individually at original size. Run the
+original46-frame mode with the selector absent, plus the owning119 return, older ally-defeat,
+counter, enemy-physical and pursuit regressions. All physical/API endpoint comparisons and process
+logs must pass. Use fresh ignored `local/five-survivor-round-continuation/` outputs with the retained
+environment/private inputs. Run the committed planner, one selected full managed suite and official
+locked Godot; keep completed failures and rerun only failed/newly invalidated owning tests. Root
+owns the separate normal public gate. Stop at actual Sarah cancellation; no spell, fourth kill,
+new death, victory, later generation or H3/H4 acceptance is implied.
+
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also
