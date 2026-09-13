@@ -1,6 +1,6 @@
 # ADR 0019: State- and Content-Driven Remake Engine
 
-- Status: **Accepted direction**; M0 mechanics and verification implemented, M1–M5 planned
+- Status: **Accepted direction**; M0 mechanics and M1 authored battle implemented; M2–M5 remain planned
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
@@ -18,7 +18,7 @@ This is a behavioral decoupling direction. Merely moving existing guards into sm
 leave the audited problem intact. Conversely, removing every guard would discard valid rules,
 atomicity, and unsupported boundaries. The migration below separates these cases before changing them.
 
-The user adopted this direction and authorized M0. Except for the current M0 boundary below,
+The user adopted this direction and authorized M0 and the bounded M1 slice. Except for the current M0/M1 boundaries below,
 interfaces, normalized records, authored examples, and candidate filenames remain **Proposed
 design**, not findings about the original or claims of implemented support. **Confirmed** and
 **Unknown** in the evidence table retain the repository evidence meanings. Audit A1–A8 remain open.
@@ -32,12 +32,35 @@ programs or a second validation framework. Audit and retire or migrate old tests
 engine. Keeping every old test unchanged and green is not a migration objective. Original research
 evidence and completed results remain durable without requiring those old tests to run forever.
 
+## Responsibility and reference migration boundary
+
+New paths must use actual responsibility directories, and `GameSession` must remain a thin public
+entry, lifecycle owner and sole state publisher. Command dispatch, battle advancement and projection
+use independent internal collaborators rather than additional giant partial files. Do not use empty
+folders, one-class-one-folder rules, line-count targets or architecture/reflection tests as acceptance.
+
+M1 isolates the old scenario-bound classes in an independent
+[reference area](../../remake/reference/README.md). Production Domain/Application cannot depend on
+reference data or code. Original map, actor, encounter and event definitions belong in Content-loaded
+JSON or suitable configuration with generic parsing/validation, including source provenance and real
+special rules. Controlled party/start presets, comparison IDs, receipt counts, expected rounds/kill
+orders, scripted verification inputs and expected terminals belong in reference verification.
+
+The reference inventory distinguishes these responsibilities and names current consumers. M2 migrates
+battle definitions and actual rules; M3 migrates map definitions and executed programs. Delete the old
+class/data with its last caller, and retain only useful external comparisons through the engine's public
+entry. Never delete required story behavior as validation data or replace program execution with a
+terminal assignment. No permanent parallel engine is accepted; M5 handles remaining cleanup only.
+M1 itself must admit two supported authored configurations without new production scenario classes,
+case branches or 0009 trace fields. Direct dependency inspection and behavior tests establish that
+boundary; relocating classes inside Application would not establish it.
+
 ## Current M0 implementation
 
-Domain now has small internal [BattleRandom](../../remake/src/Sf2.Remake.Domain/Battles/BattleRandom.cs),
-[HealingRules](../../remake/src/Sf2.Remake.Domain/Battles/HealingRules.cs),
-[TurnOrderRules](../../remake/src/Sf2.Remake.Domain/Battles/TurnOrderRules.cs), and
-[BattleRange](../../remake/src/Sf2.Remake.Domain/Battles/BattleRange.cs) rules. Existing Battle01
+Domain now has small internal [BattleRandom](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRandom.cs),
+[HealingRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/HealingRules.cs),
+[TurnOrderRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/TurnOrderRules.cs), and
+[BattleRange](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRange.cs) rules. Existing Battle01
 healing and first-round consumers call them. Their inputs contain no character, round, receipt or
 route predicates. Main RNG preserves the low word; turn ordering retains the original slot domain,
 word arithmetic, signed comparison, sentinel participation and fixed buffer capacity.
@@ -47,10 +70,10 @@ Healing is the scalar ordinary same-side, EXP-eligible priest rule after class a
 The rule caps recovery, spends the supplied MP cost and computes the two-draw EXP award; it rejects
 level-up without publishing state. It does not select spells, classes, targets or sessions. Full-HP
 scalar arithmetic is covered, while the existing reference wrapper still admits only an injured
-target. Manhattan action range is shared; full movement and selection/cancellation remain unmigrated.
+target. Manhattan action range is shared; M1 adds movement and selection/cancellation on the common path.
 
 The ordinary [Engine.Tests project](../../remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj)
-references Domain only until a real Application/Content behavior is added. Useful RNG, turn-order
+references production Domain, Application and Content for actual M1 behavior. Useful RNG, turn-order
 and healing arithmetic assertions moved from the legacy Domain tests. Five pure Python structure,
 planner, environment, Godot-gate and probe test files retired. Mixed native-harness and asset tests
 remain under their existing owners, outside new-engine CI. Original research fixtures, private-input
@@ -59,7 +82,65 @@ unmigrated trace guards. M0 does not implement the common session/content path o
 
 The local engine/adapter entries and scoped public workflow below are implemented. Required-check
 configuration is a main-gate integration action, verified against the actual candidate CI run.
-M0 stops at independent review; the next engine slice is M1's authored connected battle after acceptance.
+Independent main-gate review remains required for each implemented slice.
+
+## Current M1 implementation
+
+The [authored reader](../../remake/src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs)
+loads either [practice yard](../../remake/content/authored/practice-yard.json) or
+[garden watch](../../remake/content/authored/garden-watch.json) into defensively owned typed definitions.
+The packages supply different maps, encounters, actor/slot identities, placements, vitals, stats and
+spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
+`initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
+new-battle initialization policy. Production private original import remains unsupported until M2/M3.
+
+The plain [GameSession](../../remake/src/Sf2.Remake.Application/Runtime/GameSession.cs) reads its source
+once, owns the session/revision envelope and publishes one immutable snapshot. The independent
+[dispatcher](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) owns
+selection and atomic action admission. The [advancer](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs)
+owns dead-entry skipping, configured Stay AI, sentinel/new-round generation and next player control.
+Automatic work yields `SimulationWait` after a bounded host tick and resumes through the same facade;
+there is no player-facing AI/next-round control, RNG reset or arbitrary snapshot injection API.
+
+Movement previews retain committed position until HEAL/STAY succeeds; cancel resets all provisional
+choices without changing battle state or seeds. Weighted movement shares the extracted first-admission
+cost algorithm. Authored logical maps prevent row-edge wrapping; the legacy wrapper explicitly retains
+its flat storage probes for its source comparison. New path projection is an authored deterministic
+policy, not an original presentation or natural-reach claim. Occupancy blocks opposing traversal and
+all living occupied stopping cells; self-healing range uses the provisional destination.
+
+MP/range/actor/stale-input failures return `IllegalCommand` with no state/RNG publication. Unsupported
+spell effects, class/status/item/AI branches and reached level-up report `UnsupportedCapability`;
+duplicate/dangling/malformed content reports `ContentError`. Physical attacks, general AI, rewards,
+level-up, exploration/story programs, victory/defeat/return and original presentation remain outside M1.
+The full invariant/adapter-fault lifecycle from A8 is not claimed complete.
+
+The [Godot view](../../remake/game/src/Battles/BattleSessionView.cs) adapts actual keys to common
+commands; its independent [projection](../../remake/game/src/Battles/BattlePresentation.cs) derives HUD
+and actor markers from semantic results. No-argument local startup selects the yard package;
+`--authored-package <path>` selects another supported authored package. Explicit old profile arguments
+retain the temporary reference entry; a running session never switches authorities. Authored package
+export/packaging is not yet claimed. The [reference inventory](../../remake/reference/README.md)
+records actual legacy consumers, controlled-data ownership and M2/M3 removal points. Production project
+dependencies do not include that assembly; Engine.Tests builds only Domain/Application/Content.
+
+The first four acceptance counterexamples below now have connected behavior coverage in
+[EngineSessionTests](../../remake/tests/Sf2.Remake.Engine.Tests/EngineSessionTests.cs) and
+[AuthoredScenarioTests](../../remake/tests/Sf2.Remake.Engine.Tests/AuthoredScenarioTests.cs).
+Round-2 and round-5 histories carry their natural seeds; isolated M0 scalar expectations remain separate.
+[Movement tests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleMovementTests.cs) cover weighted cost,
+budget, occupation and a full-width row boundary. A dead queued entry uses an internal unit seam only;
+the physical kill-order counterexample remains M2. The retained private reader's selected provenance
+rejection still passes in its reference project; moving it does not weaken the trust boundary.
+
+Reproduce with `uv run sf2 verify engine` and `uv run sf2 verify adapter` after the existing environment
+setup. The [native no-image observation](../../remake/game/probes/engine_battle_observation.gd) was
+executed directly under Godot 4.7.2 .NET for both packages: real movement/cancel/HEAL/STAY input,
+ordered effects and carried seeds, automatic next control/round, projected HUD/node positions and
+attributed range/unsupported failures passed without process errors. The
+[verification owner](../../remake/docs/development-and-verification.md#authored-battle-observation)
+contains exact commands. This establishes the bounded M1 path, not completion of A1–A8, original
+Map 3/Battle 01 continuity, 8C or H4.
 
 ## Evidence used and its limits
 
@@ -539,7 +620,7 @@ The first command performs locked restore, build and unit tests of the engine pr
 performs locked restore/build of the actual adapter. Both run the selected .NET executable from
 `remake/` to honor its SDK pin and force the existing PATH protection. CI executes those .NET steps
 directly, so the engine job needs no Python. Add Application/Content project references only when
-their real engine behavior is consumed; M0's tests depend only on Domain.
+their real engine behavior is consumed; M1 now consumes all three production projects and its authored JSON inputs.
 
 The planner automatically selects the engine scope for remake and non-research documentation paths.
 Legacy test retirement does not select the old solution. Changes to shared CLI/harness/planner source
@@ -592,11 +673,11 @@ rows or execute this entire table as one rewrite.
 | Stage | Concrete change and candidate owners | Dependencies, acceptance, stop and rollback |
 | --- | --- | --- |
 | M0: classify and cut over verification | Implemented subset: internal main RNG, ordinary priest healing scalar resolution, turn-order generation and Manhattan action range, consumed by existing Battle01 wrappers. Dedicated Engine.Tests protects the moved mechanics. Scoped CI/local/planner/guidance replace new-engine legacy gates under serialized ownership. Full movement and cancellation remain for M1. | No unintended behavior change in existing callers; independent arithmetic/boundary expectations and meaningful varied inputs protect the rules. Original fixtures and selected reference observations remain owned. Retire obsolete/meta-tests. Freeze a Draft PR, record direct command/CI results and main-gate required-check action, then stop for independent acceptance before M1. No old aggregate or tests of the cutover. |
-| M1: first connected functional vertical slice | Content: internal authored package decoder/validator beside existing readers, e.g. `AuthoredScenarioPackageReader.cs`; Application content typed definitions in `Content/ScenarioDefinition.cs`. Application: evolve `Sessions/GameSession.cs`, internal `SessionCommandDispatcher.cs` and `BattleSessionCoordinator.cs`. Domain: focused `Battles/PlayerHealing.cs`, `PlayerMovement.cs`, `BattleTurnFlow.cs`, `BattleTurnOrder.cs` using M0 mechanics. Godot: `remake/game/src/PrivateBattle01Composition.cs` and the owning input/presenter composition receive the common result for the new path. | After M0, load an authored controlled encounter into player control; move/preview/cancel, HEAL or STAY, atomically commit, skip a dead queued entry when present, execute the explicitly configured Stay AI commandset, generate another round and return to player input automatically. Two authored packages and the first four examples above require engine unit assertions plus direct observation of the applicable adapter path. No tests of that observation. No physical attack, level-up, general AI, event program, or victory claim. Stop at unsupported branches precisely. Keep the accepted reference entry selectable at composition until M2; rollback selects that entry before session creation, never switches a live session between authorities. |
-| M2: migrate battle rules and private admission | Replace trace guards in `Battle01FirstRound.cs`, `Battle01EnemyStandby.cs`, `Battle01EnemyPursuit.cs`, `Battle01EnemyPhysicalAttack.cs`, `Battle01PlayerPhysicalAttack.cs`, `Battle01TurnCompletion.cs` with reusable internal rule modules in the same Domain battle directory. Evolve `PrivateOriginalBattle01StartupReader.cs`, `Application/Content/OriginalBattle01StartupDefinition.cs`, and controlled presets into trust/import mapping plus reference setup. Route private battle commands through the common Application dispatcher. | M1 is accepted. Extract one actual dependency chain at a time: AI movement/decision → physical effects/replay → rewards/death/after-turn → next control. Bring level-up or other reached branches only through their owning accepted rules; otherwise report Unsupported. Preserve private provenance and selected reference observations while adding actual alternate-actor/kill-order engine unit assertions. Retire the migrated legacy families. Remove Godot `DispatchNext` once Application runs those paths. Stop each chain at a coherent capability frontier, not the next receipt. Roll back affected start binding/commits if parity or atomicity fails. |
-| M3: programs and exploration on the common session | `Application/Sessions/OriginalMapGameSession.cs`, `GameSession.cs`, existing `Map*Lifecycle.cs` and `PrivateOriginalMap*cs` owning the reached event; internal `Programs/MapProgramRunner.cs` and Domain typed operation/state reducers. Content: `OriginalMapRuntimeAdmission.cs`, `PrivateCanonicalMap3ImportReader.cs`, and a typed `ProgramDefinition.cs` at the existing content boundary. Replace one endpoint-assignment handler, beginning with the palace owner's behavior only when its complete reached operations are admitted. | Common facade exists; actual program operation/wait/effect behavior has small engine unit tests before replacing a story handler. Connect authored explore → branch/dialogue/motion → transfer → battle admission, then migrate private original operations with source provenance. Reuse layout/entity/dialogue reducers. Retain selected endpoints as reference comparisons only after actual execution reaches them; retire obsolete constructor/receipt tests. Stop at unsupported native subroutine or timing/presentation frontiers; never inject terminal state. Roll back the selected route if the affected reference comparison disagrees. |
-| M4: outcome and return | `BattleSessionCoordinator.cs`, program runner, map transfer coordinator; existing `Battle01DefeatRecovery.cs`, `Battle01DefeatReturn.cs`, Application counterparts, and the owning after-program content mapping. | Accepted action/death/after-turn and required program operations first. Implement authored battle outcome → after-program → completion flags → return map → stable input, then directly compare only admitted original paths. Unit-test actual outcome/state behavior; retire old endpoint-only implementation tests. Preserve leader-loss and special outcome boundaries. Do not claim ADR 0009 complete until natural continuity, accepted endpoint and required fidelity evidence are satisfied. Roll back incomplete outcome publication; never mark victory-as-return. |
-| M5: remove migrated coupling | Delete superseded runtime trace predicates, scenario-specific live snapshot fields, duplicate profile dispatch, unused scheduling entry points and obsolete legacy tests in the migrated owners. Preserve original evidence and selected reference verification. | All affected callers use the common session; useful engine unit tests and affected direct reference checks pass; review confirms no production dependency on reference history predicates. Trust and observation boundaries remain explicit. Remove the temporary legacy start binding after its last admitted capability migrates. Confirm old CI/local/guidance obligations are retired under the closure rules above. No permanent parallel engine, compatibility layer, or mandatory old whole-solution suite. |
+| M1: first connected functional vertical slice | **Implemented:** Content `Scenarios/AuthoredScenarioPackageReader.cs` and Application `Content/Scenarios/ScenarioDefinition.cs`; thin `Runtime/GameSession.cs`, independent `Runtime/Battles/BattleCommandDispatcher.cs` and `BattleAdvancer.cs`; Domain `Battles/Rules` and `Battles/State`; Godot `Battles` input/view and independent snapshot projection. Legacy scenario classes and controlled presets live in the separate reference assembly with no reverse production dependency. | Load either authored controlled encounter, reach player control, move/preview/cancel, atomically HEAL/STAY, skip a dead queued entry when present, execute configured Stay AI, generate another round and return to player input automatically. The first four examples have engine unit assertions and actual no-image adapter observation. Physical attack, level-up, general AI, programs and outcomes remain Unsupported. Stop for independent acceptance before M2. Old explicit reference startup remains selectable before creation; no live authority switch. |
+| M2: migrate battle rules and private admission | Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
+| M3: programs and exploration on the common session | Replace the reference `Sessions/Maps/OriginalMapGameSession.cs`, reached `PrivateOriginalMap*` and synthetic lifecycle consumers with cohesive production program/exploration collaborators. Move real map/entity/event/program definitions from reference content/admission into JSON or suitable Content-loaded configuration and typed validation. Preserve source-special operations and provenance. | Common facade exists. Execute actual reached operations and waits/effects before replacing each story handler; never treat required story as disposable validation or assign its terminal state. Connect authored exploration/program/transfer/battle admission, then migrate original content. Reuse actual map/layout/entity rules, add behavior assertions and selected public-entry reference comparisons, and delete each old class/data with its last caller. Stop at unsupported native/timing frontiers and roll back any route whose comparison disagrees. |
+| M4: outcome and return | Extend the common battle advancer, program runner and transfer collaborators from the reference defeat/recovery/return owners and their after-program content. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
+| M5: remaining migration cleanup | Remove remaining superseded fields, dispatch, scheduling entry points and obsolete tests after capability-by-capability M2/M3/M4 removal. Preserve original evidence and useful external comparisons. | All affected callers use the common session and its behavior tests/affected comparisons pass. Remove the temporary legacy start binding and reference runtime with its last admitted capability; do not defer all scenario/data migration to this row. Confirm no production dependency on reference and no permanent parallel engine or mandatory legacy aggregate. |
 
 M1 is deliberately a useful connected battle capability with a small content domain, not a declaration
 that its authored direct battle start satisfies ADR 0009. Its configured Stay enemies exercise actual

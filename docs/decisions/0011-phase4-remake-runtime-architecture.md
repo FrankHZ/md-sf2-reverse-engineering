@@ -385,7 +385,8 @@ Screenshots are prohibited. Reuse the existing Godot installation/project/instan
 
 [Current M0](./0019-state-and-content-driven-remake-engine.md#current-m0-implementation) implements
 consumed mechanics, engine unit tests and scoped CI/local selection. Main-gate owns remote required
-checks; M1's common session/authored admission remains planned. Original H4 evidence and the accepted
+checks. M1 implements common-session authored battles with a thin facade and independent runtime
+collaborators; legacy scenario classes live in a separate reference assembly. Original H4 evidence and the accepted
 8C target remain incomplete; these ordinary checks do not establish pixel/audio/
 hardware fidelity or completion of the continuous milestone.
 

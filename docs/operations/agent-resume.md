@@ -42,9 +42,10 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) records the adopted
   state/content-driven engine migration and the binding user test policy. Add engine behavior unit
   tests; use verification tools directly without tests of those tools. Old tests may migrate or retire.
-  M0's consumed mechanics, engine unit project and scoped CI/local entries exist. After environment
-  setup use `uv run sf2 verify engine` and affected `uv run sf2 verify adapter`. M1's common session
-  remains planned; main-gate owns independent acceptance and remote required-check configuration.
+  M1's common session consumes two authored packages through movement/cancel, HEAL/STAY and automatic
+  rounds. Production engine projects do not depend on the transitional reference assembly; its owning
+  inventory identifies M2/M3 retirement points. After environment setup use `uv run sf2 verify engine`
+  and affected `uv run sf2 verify adapter`. Main-gate owns independent acceptance and remote checks.
 - Reuse the task's existing isolated worktree, environments and Godot installation/project/instance.
   New isolation needs concurrent ownership or a concrete reproduction/launch failure. Godot acceptance
   uses actual state/input observations; screenshots are prohibited.

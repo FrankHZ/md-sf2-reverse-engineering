@@ -235,46 +235,7 @@ public static class Battle01PlayerMovement
     internal static Battle01MovementGrid BuildWeightedGrid(IReadOnlyList<byte> terrain,
         IReadOnlyList<sbyte> moveCosts, int startOffset, int budget)
     {
-        if (terrain.Count != 2304 || moveCosts.Count != 16 || startOffset is < 0 or >= 2304 || budget is < 0 or > 510)
-            throw new ArgumentException("Movement requires a complete storage grid, sixteen costs and a bounded MOV*2 budget.", "movement");
-        var total = Enumerable.Repeat((byte)255, 2304).ToArray();
-        var movable = Enumerable.Repeat((byte)255, 2304).ToArray();
-        var heads = Enumerable.Repeat(-1, 32).ToArray();
-        var links = Enumerable.Repeat(-1, 2304).ToArray();
-        var admitted = new bool[2304]; var expansion = new List<int>();
-        int remaining = budget, spent = 0, current = startOffset;
-        while (true)
-        {
-            admitted[current] = true; StoreCost(current, spent); expansion.Add(current);
-            foreach (int neighbor in new[] { current + 1, current - 1, current - 48, current + 48 })
-            {
-                // Deliberately bounds-check before reading, unlike the original unsafe probe chronology.
-                if (neighbor is < 0 or >= 2304 || admitted[neighbor]) continue;
-                byte entry = terrain[neighbor];
-                if ((entry & 0x80) != 0) continue;
-                int type = entry & 0x1F;
-                if (type >= moveCosts.Count) throw new ArgumentException("Terrain has no admitted movement-cost entry.", "terrain");
-                int cost = moveCosts[type];
-                if (cost < 0 || cost > remaining) continue;
-                admitted[neighbor] = true; // First admission; never relax an already admitted cell.
-                if (cost == remaining) { StoreCost(neighbor, spent + cost); continue; }
-                int bucket = (remaining - cost) & 31;
-                links[neighbor] = heads[bucket]; heads[bucket] = neighbor;
-            }
-            while (true)
-            {
-                int bucket = remaining & 31, next = heads[bucket];
-                if (next >= 0) { heads[bucket] = links[next]; current = next; break; }
-                spent++; remaining--;
-                if (remaining <= 0) break;
-            }
-            if (remaining <= 0) break;
-        }
-        return new(total, movable, expansion.ToArray());
-
-        void StoreCost(int offset, int cost)
-        {
-            total[offset] = unchecked((byte)cost); movable[offset] = (byte)(cost >> 8);
-        }
+        var grid = WeightedMovement.Build(terrain, moveCosts, startOffset, budget, preserveFlatRowNeighbors: true);
+        return new(grid.TotalCosts.ToArray(), grid.MovableGrid.ToArray(), grid.ExpansionOrder.ToArray());
     }
 }

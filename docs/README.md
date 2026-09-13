@@ -13,8 +13,8 @@ are not current instructions. Preserve completed results instead of rerunning wo
 
 For engine work start at [remake](../remake/README.md) and
 [ADR 0019](./decisions/0019-state-and-content-driven-remake-engine.md). The direction is adopted;
-M0 implements consumed mechanics, engine unit tests and scoped CI/local entries. M1's common session
-and authored connected battle remain planned, and accepted 8C/H4 remains incomplete. Selection is owned by the
+M1 implements common-session authored battles with engine behavior tests and actual input/state
+observations. Private battle/program migration and accepted 8C/H4 remain incomplete. Selection is owned by the
 [verification owner](../remake/docs/development-and-verification.md), not inferred from old ADR recipes.
 
 ## Operations
@@ -189,7 +189,7 @@ Contracts are implementation-neutral; synthesis consumes accepted research. Neit
 
 ## Decisions
 
-Read scope and status before applying a decision. ADR 0018 supersedes old model/mandatory-worker wording. ADR 0019 records the adopted engine direction, current M0 boundary and explicit test policy; older blanket gate/retention requirements do not override it.
+Read scope and status before applying a decision. ADR 0018 supersedes old model/mandatory-worker wording. ADR 0019 records the adopted engine direction, current M0/M1 boundaries and explicit test policy; older blanket gate/retention requirements do not override it.
 
 - [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md)
 - [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md)

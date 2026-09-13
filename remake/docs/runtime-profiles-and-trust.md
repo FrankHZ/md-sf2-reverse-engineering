@@ -7,26 +7,44 @@ claims are permitted. Profile selection changes outer composition; it does not f
 make Godot an evidence owner. This is the intended trust boundary; the current implementation still
 has divergent private/public session APIs and fixed reference admission identified by the
 [architecture audit](./architecture-audit.md).
-[Current M0](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
-provides consumed mechanics and scoped CI/local entries. M1's common session/authored admission
-remains planned; fixed current-package checks are not universal gameplay predicates. The accepted
+[Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+implements common-session authored admission. The old private/public fixed readers and session paths
+are in the [transitional reference assembly](../reference/README.md); their retained source trust
+checks are not universal gameplay predicates. The accepted
 8C/H4 target remains incomplete.
 
 ## Profile Summary
 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
-| `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
+| `public-authored` | default local start or `--authored-package <path>` | validated authored battle, actors, terrain and spell definitions | implemented semantic HEAL/STAY subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
+- `AUTHORED BATTLE` with project-authored controlled-start help
 - `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY`
 - `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY`
 
+## Public Authored
+
+`AuthoredScenarioPackageReader` accepts a closed package with map/terrain, actor/spell and encounter
+references, resolves all references and validates numeric shape and implemented capability before
+creating immutable definitions. A second supported package needs configuration changes only. Duplicate
+or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
+or AI are UnsupportedCapability. No raw-byte identity, comparison ID or prior receipt admits play.
+
+The only current start policy is `initialVitals: authored-controlled`. HP deficits are authored inputs;
+private original new-battle initialization is not claimed. Ordinary spell power is already adjusted,
+with full-recovery and level-up outside this slice. After admission the session reads no files or ROM
+and carries its seeds forward. The no-argument local default uses the tracked yard package, while
+`--authored-package <path>` can load another supported package. This source-mode path does not claim
+authored export packaging or original fidelity.
+
 ## Public Synthetic
 
-The default profile reads the tracked `public-synthetic-map3-smoke-v1` package. The package is
+The explicitly selected legacy public profile reads the tracked `public-synthetic-map3-smoke-v1` package. The package is
 project-authored, raw-byte locked, closed in shape, and validated before `GameSession` starts. Its maps,
 entities, dialogue, discoveries, item, transitions, cues, and presentation are synthetic test/product
 content rather than reconstructed original facts.

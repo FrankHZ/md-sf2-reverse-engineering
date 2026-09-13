@@ -15,9 +15,9 @@ over older blanket gate and test-preservation recipes:
 - Documentation-only changes use direct link/anchor/fence/table/example, scope and private-boundary
   checks. They do not require a new normal/full, .NET, Godot or H3 run.
 
-M0 provides the engine unit project, consumed RNG/healing/turn-order/range rules, local engine and
-adapter entries, and scoped public jobs. M1's common session and authored connected battle remain
-planned. Main-gate owns required-check configuration during integration; a candidate must report its
+M1's engine unit project covers actual Domain/Application/Content behavior for two authored battle
+packages, with scoped engine/adapter entries and public jobs. The native observation directly drives
+the same session with Godot input and reads real state/HUD/nodes; it emits no images. Main-gate owns required-check configuration during integration; a candidate must report its
 actual CI outcome and that configuration boundary explicitly.
 [ADR 0012](../../docs/decisions/0012-dependency-aware-partitioned-verification.md) continues to own
 affected research evidence selection. Shared research changes keep their separate owning requirements.
@@ -66,13 +66,58 @@ uv run sf2 verify adapter
 ```
 
 `verify engine` restores in locked mode, builds and tests
-`remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj`; it currently references Domain.
+`remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj`; it references production
+Domain/Application/Content and copies the actual `remake/content/authored/*.json` inputs.
 `verify adapter` restores in locked mode and builds `remake/game/Sf2.Remake.Godot.csproj` without tests
 or native Godot. Both launch the selected executable from `remake/`, honoring `global.json` and the
 protected environment. Neither needs private inputs. The engine project is selected directly;
 the current `Sf2.Remake.sln` still includes four production and four legacy test projects.
 Whole-solution commands remain available for an explicitly applicable legacy/release check, not every
 engine or documentation change. Use formatting only for affected product projects when needed.
+
+## Authored Battle Observation
+
+After loading the existing worktree environment, build the actual Debug assembly once when needed
+by the existing Godot instance. Release adapter verification alone does not refresh Godot's Debug DLL.
+From `remake/`:
+
+```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+```
+
+No-argument local Godot startup opens the authored yard. To select either real package, use the
+existing verified Godot executable with `--path remake/game -- --authored-package <package-path>`.
+Input is WASD/arrows for preview, Enter for action choice/commit, H for the known HEAL with self
+initially selected, Tab for living allied targets, Space for STAY and Escape for cancel. Unsupported
+physical action is X. Application runs AI and rounds automatically.
+
+From the repository root, the direct observation command is:
+
+```powershell
+$packageName = 'practice-yard' # or garden-watch
+$packagePath = (Resolve-Path -LiteralPath "remake/content/authored/$packageName.json").Path
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-output $outputPath
+```
+
+`$godotBinary` is the already verified local installation, and `SF2_RUN_OUTPUT` is an explicit ignored
+worktree-local destination from the existing environment. Run packages serially in that same project;
+their startup selection is the concrete reason for separate observation processes. The script injects
+real `InputEventKey` events, reads the common session result and actual HUD/node geometry/visibility,
+checks cancellation, HEAL/STAY, carried RNG and automatic progression, and exits nonzero on failure.
+Its JSON/log output is local generated evidence; it never emits images or modifies session state.
+No tests of this observation script are required.
+
+Private trust remains in the transitional reference reader until its capability migrates. Its affected
+direct comparison is the existing `PrivateCanonicalMap3ImportReaderTests.UnknownShapeAndProvenanceDriftFailClosed`
+case, selected alone from the Content.Tests project; it passes after relocation without selecting the
+old aggregate or adding a dependency from Engine.Tests to Reference. Do not turn this selected reference
+check into an automatic legacy-suite obligation for every new engine change.
+The extracted weighted rule also retains the selected Domain.Tests
+`Battle01PlayerMovementTests.WeightedPropagationMatchesTheAcceptedRuntimeMatrix` comparison, including
+its flat-row and bucket-wrap cases. It passes through the reference wrapper; the authored engine's
+logical row-edge behavior has its own actual movement unit assertion. No original fixture changed.
 
 ## Optional Private .NET Checks
 
@@ -202,11 +247,11 @@ adapter. Research/contracts/source/fixtures/manifests/schema inputs select resea
 shared CLI/harness/planner changes select all three. Non-research documentation and legacy remake
 test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
-is introduced. M0 has no external fixture-file dependency.
+is introduced. M1's consumed authored JSON lives under `remake/content/`, which already selects both product jobs.
 
-Main-gate must replace the old `tracked-inputs` required check with `scope`, `engine-unit`,
-`adapter-build`, and `research-public` under the `Public checks` workflow, inspecting the actual
-GitHub check names during integration. Path-irrelevant jobs report skipped; applicable jobs need a
+Main-gate has configured required `scope`, `engine-unit`, `adapter-build`, and `research-public`
+checks with strict branch protection. Verify the actual candidate CI/check state at integration;
+changing configuration remains main-gate authority. Path-irrelevant jobs report skipped; applicable jobs need a
 real successful result. Review the diff and first applicable CI outcome directly, without tests of
 job selection, workflow text or the migration. Research/private protections remain independently owned.
 

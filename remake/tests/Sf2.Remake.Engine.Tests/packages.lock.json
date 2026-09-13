@@ -89,6 +89,19 @@
       },
       "sf2.remake.domain": {
         "type": "Project"
+      },
+      "sf2.remake.application": {
+        "type": "Project",
+        "dependencies": {
+          "Sf2.Remake.Domain": "[1.0.0, )"
+        }
+      },
+      "sf2.remake.content": {
+        "type": "Project",
+        "dependencies": {
+          "Sf2.Remake.Application": "[1.0.0, )",
+          "Sf2.Remake.Domain": "[1.0.0, )"
+        }
       }
     }
   }

@@ -18,8 +18,8 @@
 | 原始决策和后续修订 | [Decisions 索引](./README.md#decisions) |
 | 文档与 agent instruction 审计 | [审计记录](./operations/documentation-agent-audit.md) |
 
-[ADR 0019 的当前 M0 边界](./decisions/0019-state-and-content-driven-remake-engine.md#current-m0-implementation)
-已包含被现有调用点使用的规则、引擎单元测试及按范围选择的 CI/本地入口；M1 通用会话与 authored 内容接入仍未实现。
+[ADR 0019 的当前 M1 边界](./decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+已包含两份 authored 配置、通用会话、移动与取消、HEAL/STAY、自动 AI 等待和自然回合推进；旧场景实现已隔离到 reference 工程，原始战斗内容与剧情程序仍待对应能力迁移。
 用户已确定的测试政策现在生效：只增加实际引擎行为的 unit tests；验证、probe、fixture driver、planner、gate、报告和助手本身不再另加测试。
 旧测试按行为迁移或废弃，不要求数量保留、每删必补或旧全套全绿。原版证据保留，8C/H4 目标仍未完成。
 

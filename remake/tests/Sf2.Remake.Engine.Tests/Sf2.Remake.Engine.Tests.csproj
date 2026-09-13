@@ -16,4 +16,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sf2.Remake.Application\Sf2.Remake.Application.csproj" />
+    <ProjectReference Include="..\..\src\Sf2.Remake.Content\Sf2.Remake.Content.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\content\authored\*.json" Link="authored\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

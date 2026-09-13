@@ -16,7 +16,8 @@ replacement-per-deletion or an old green aggregate. Documentation-only work uses
 M0 implements `engine-unit`, `adapter-build` and `research-public` partitions and scoped workflow/local
 entries. Remake and non-research document changes automatically select that engine scope; legacy
 remake test retirement adds no old solution or deleted-test fanout. Main-gate owns remote required
-checks. M1's common session is still planned. The
+checks. M1's common-session behavior and authored inputs use the same engine/adapter selection;
+the separate transitional reference assembly remains outside Engine.Tests dependencies. The
 [verification owner](../../remake/docs/development-and-verification.md#repository-planner) owns commands
 and the explicit `--scope engine` boundary for reviewed engine-only CLI/harness/planner wiring.
 Shared modules retain conservative research selection by default. The explicit scope rejects research

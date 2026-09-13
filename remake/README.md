@@ -6,17 +6,18 @@ Original research, runtime implementation, and reference verification have separ
 
 ## Current Status
 
-The current code has four assemblies and bounded public-synthetic and private-local capabilities.
-The private implementation still contains fixed-route admission, profile-specific session APIs,
-endpoint handlers, and Godot battle scheduling identified in the
-[architecture audit](./docs/architecture-audit.md). Successful controlled runs do not establish a
-general state/content-driven engine.
+The production Domain/Application/Content path runs two project-authored battle packages through
+one common session. Godot hosts real movement/action input and projects semantic results. The old
+public-synthetic/private-local Map 3 routes are retained in a separate
+[transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and
+adapter scheduling remain explicit legacy limitations in the [audit](./docs/architecture-audit.md).
 
 [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
 to common commands, live state and configurable typed content, resumable programs, and separate
-reference runners. M0 provides consumed RNG/healing/turn-order/range rules, a dedicated engine unit
-project, local commands and scoped CI jobs. M1's common session and connected authored battle remain
-planned; the ADR's current M0 boundary records exactly what has moved and what remains unsupported.
+reference runners. M1 provides typed content admission, provisional movement/cancellation, atomic
+HEAL/STAY and automatic next-actor/round progression with carried RNG. The
+[current boundary](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
+records supported behavior, responsibility directories and remaining private/program migration.
 
 The [capability matrix](./docs/capability-status.md) owns runnable support and Unknowns. The
 [Map 3 implementation/reference record](./docs/map03-playability-plan.md) owns existing controlled
@@ -39,12 +40,13 @@ incomplete, including natural continuity and original presentation. Engine migra
 
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
-| `public-synthetic` | tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
+| `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
+| `public-synthetic` | explicit legacy selection; tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
 | `private-local` | explicit ignored canonical input; optional selected battle inputs and reviewed local art | bounded controlled original-data consumers and diagnostics; incomplete original fidelity |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
-while reporting private success. Future authored packages and common runtime definitions are proposed
-in ADR 0019; they are not an already available third profile.
+while reporting private success. Authored battles use the common runtime; original private import and
+program support remain in the explicit legacy route until their corresponding migration slices.
 
 ## Local Presentation Asset Preflight
 
