@@ -9,14 +9,15 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateBattle01PresenterTests
 {
     [Theory]
-    [InlineData(false, false, false, false, false, false)]
-    [InlineData(true, false, false, false, false, false)]
-    [InlineData(true, true, false, false, false, false)]
-    [InlineData(true, true, true, false, false, false)]
-    [InlineData(true, true, true, true, false, false)]
-    [InlineData(true, true, false, false, true, false)]
-    [InlineData(true, true, false, false, true, true)]
-    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill)
+    [InlineData(false, false, false, false, false, false, false)]
+    [InlineData(true, false, false, false, false, false, false)]
+    [InlineData(true, true, false, false, false, false, false)]
+    [InlineData(true, true, true, false, false, false, false)]
+    [InlineData(true, true, true, true, false, false, false)]
+    [InlineData(true, true, false, false, true, false, false)]
+    [InlineData(true, true, false, false, true, true, false)]
+    [InlineData(true, true, false, false, true, true, true)]
+    public void PursuitAndAttackBoundaryProjectionKeepCompletionAndCurrentCandidateDistinct(bool chesterPlayer, bool firstAlly, bool leader, bool returnSelected, bool counter, bool firstKill, bool fiveSurvivor)
     {
         var admission = returnSelected ? new Battle01DefeatReturnAdmission(3, false, false) : null;
         var current=Battle01EnemyStandby.CompleteFirst(AuthoredSecondCompleted(regionEntry:true,combatProfile:true,chesterPlayer,firstAlly,leader,admission,firstKill),128,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
@@ -256,6 +257,42 @@ public sealed class PrivateBattle01PresenterTests
                 var bowieCancelled=PrivateBattle01Presenter.BuildProjection(current,"Bowie cancelled.");
                 Assert.Equal(bowieReady.Units,bowieCancelled.Units);Assert.Equal(chesterDefeated.AttackResult,bowieCancelled.AttackResult);
                 Assert.Equal((0x98321234u,(ushort?)0x0234),(current.RandomSeedImage,current.RandomSeedCopy));
+                if(fiveSurvivor)
+                {
+                    current=Stay(current,0,new(11,13));
+                    current=Battle01TurnCompletion.CompleteDefeatedTurn(current,129,Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+                    current=Battle01EnemyPursuit.CompleteNext(current,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+                    current=Stay(Battle01NextPlayerControl.Enter(current,1).State!,1,new(11,14));
+                    current=Battle01EnemyPursuit.CompleteNext(current,133,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+                    var completed=PrivateBattle01Presenter.BuildProjection(current,"R12 complete.");
+                    Assert.Equal(12,current.FirstRound!.RoundNumber);Assert.Equal(133,completed.CompletedActorIndex);Assert.False(completed.CanConfirm);
+                    current=Battle01FirstRound.EnterNext(current);
+                    var generated=PrivateBattle01Presenter.BuildProjection(current,"R13 generated.");
+                    Assert.Equal((13,(int?)128),(current.FirstRound!.RoundNumber,generated.ActorIndex));
+                    Assert.Null(generated.CompletedActorIndex);Assert.False(generated.CanConfirm);Assert.Empty(generated.Path);
+                    Assert.Contains("Candidate not started",generated.Controls);
+                    foreach(int expected in new[]{128,130})
+                    {
+                        int actor=current.FirstRound!.CurrentCandidate!.Value.CombatantIndex;Assert.Equal(expected,actor);
+                        current=Battle01EnemyPursuit.CompleteNext(current,actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+                    }
+                    current=Battle01NextPlayerControl.Enter(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
+                    var available=PrivateBattle01Presenter.BuildProjection(current,"Round 13. Player 1 ready.");
+                    Assert.Equal((13,(int?)1,10),(current.FirstRound!.RoundNumber,available.ActorIndex,available.Budget));Assert.True(available.CanConfirm);
+                    Assert.Equal(5,available.Units.Count);Assert.DoesNotContain(available.Units,u=>u.Index is 2 or 129 or 131 or 132);
+                    Assert.Equal((new MapPosition(11,13),(ushort)3),(available.Units.Single(u=>u.Index==0).Position,available.Units.Single(u=>u.Index==0).Hp));
+                    Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(available.Gold,available.BowieKills,available.ChesterKills));
+                    Assert.Contains("A2 defeated HP 0 EXP 54 Defeats 1",available.AllyStatus);Assert.Contains("Space",available.Controls);
+                    var full=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(current,full);
+                    current=Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(current,1,new(11,15)),1);
+                    var moved=PrivateBattle01Presenter.BuildProjection(current,"Sarah provisional.");Assert.Contains("Backspace",moved.Controls);
+                    Assert.Equal(new MapPosition(11,15),moved.Units.Single(u=>u.Index==1).Position);
+                    current=Battle01PlayerMovement.Cancel(current,1);
+                    var cancelledView=PrivateBattle01Presenter.BuildProjection(current,"Sarah cancelled.");
+                    Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(current,full));Assert.Equal(available.Units,cancelledView.Units);
+                    Assert.Equal(available.AllyStatus,cancelledView.AllyStatus);Assert.Equal(available.AttackResult,cancelledView.AttackResult);
+                    return;
+                }
                 current=Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
                     Battle01PlayerMovement.SelectDestination(current,0,new(9,11)),0),0,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
                 current=Battle01TurnCompletion.CompleteDefeatedTurn(current,129,Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);

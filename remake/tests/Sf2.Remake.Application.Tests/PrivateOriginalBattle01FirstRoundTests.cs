@@ -9,6 +9,51 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01FirstRoundTests
 {
+    [Theory]
+    [InlineData("oldPreset")][InlineData("gold")][InlineData("bowieKills")][InlineData("chesterExp")]
+    [InlineData("chesterKills")][InlineData("chesterDefeats")][InlineData("bowieDefeats")]
+    public void FiveSurvivorRoundRejectsLatePreparationAndAllSixAccountingInputChanges(string mutation)
+    {
+        var session=FiveSurvivorSession();var source=session.PrivateOriginalBattle01!;var party=source.Preparation.Party;
+        var allies=party.Allies.Select(a=>new OriginalBattle01ControlledAlly(a.Id,a.ClassId,a.Level,a.HpMax,a.HpCurrent,a.MpMax,a.MpCurrent,
+            a.EffectiveAttack,a.EffectiveDefense,a.EffectiveAgility,a.EffectiveMove,a.StatusEffects,a.Items,a.Spells,
+            currentExp:mutation=="chesterExp"&&a.Id==2?(byte)1:a.CurrentExp,
+            currentKills:(mutation=="bowieKills"&&a.Id==0)||(mutation=="chesterKills"&&a.Id==2)?(ushort)1:a.CurrentKills,
+            currentDefeats:(mutation=="bowieDefeats"&&a.Id==0)||(mutation=="chesterDefeats"&&a.Id==2)?(ushort)1:a.CurrentDefeats)).ToArray();
+        var changed=mutation=="oldPreset"?OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison:
+            new OriginalBattle01ControlledPartyPreset(party.Id,party.RandomSeed,party.Difficulty,allies,party.RandomSeedCopy,mutation=="gold"?1u:party.CurrentGold);
+        var input=new PrivateOriginalBattle01SessionSnapshot(new(source.Preparation.Pending,source.Preparation.Inputs,changed),
+            source.Battle,source.SourceLocomotion,source.SourceBridge);
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(session,input);
+        var json=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(input.Battle,json);
+        Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(input));
+        Assert.Same(input,session.PrivateOriginalBattle01);Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(input.Battle,json));
+    }
+
+    [Fact]
+    public void FiveSurvivorRoundLateAccountingFailureDoesNotPublishTheLocallyGeneratedSeedOrOrder()
+    {
+        var session=FiveSurvivorSession();var current=session.PrivateOriginalBattle01!;
+        // Local negative only: consistently erase Bowie's supplied defeat counter from the battle
+        // before-images. Domain history remains coherent; the original early preparation still has 0.
+        var stats=new HashSet<Battle01Stats>{current.Battle.Roster[0].Stats};
+        for(var r=current.Battle.TurnCompletion;r is not null;r=r.Previous)
+        {
+            if(r.PlayerPhysicalAttack is {ActorIndex:0} player){stats.Add(player.Actor.Stats);stats.Add(player.ActorAfterStats);}
+            if(r.EnemyPhysicalAttack is {TargetIndex:0} enemy)
+            {stats.Add(enemy.Priorities.Single(p=>p.Target.Index==0).Target.Stats);stats.Add(enemy.Effect.BeforeStats);stats.Add(enemy.Effect.AfterStats);}
+        }
+        var field=typeof(Battle01Stats).GetField("<CurrentDefeats>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        foreach(var statsValue in stats)field.SetValue(statsValue,null);
+        var local=Battle01FirstRound.EnterNext(current.Battle);Assert.Equal(0x74A71234u,local.RandomSeedImage);
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(local,0,0,0,0,null,0);
+        var json=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(current.Battle,json);
+        Assert.Equal("round.accounting.input",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(current)).Diagnostic.Field);
+        Assert.Same(current,session.PrivateOriginalBattle01);Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(current.Battle,json));
+        Assert.Equal((12,14,0x98321234u),(current.Battle.FirstRound!.RoundNumber,current.Battle.FirstRound.CurrentTurnOffset,current.Battle.RandomSeedImage));
+    }
+
+
     internal static GameSession FiveSurvivorSession()
     {
         var session=PrivateOriginalBattle01EnemyPhysicalAttackTests.Enemy128DefeatSession();
