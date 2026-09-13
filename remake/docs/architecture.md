@@ -7,6 +7,11 @@ It is an implementation guide, not a replacement for the normative decisions in
 [ADR 0011](../../docs/decisions/0011-phase4-remake-runtime-architecture.md) and
 [ADR 0017](../../docs/decisions/0017-heavy-boundaries-light-internals.md).
 
+The open [architecture and verification audit](./architecture-audit.md) records the user's clarified
+modern-engine direction, separation of 0009 verification from gameplay, Application findings, and
+current prohibition on screenshot-based verification. Read it before proposing the next engine slice;
+the findings are not a claim that remediation has been implemented.
+
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
 a service mesh, a general ECS, or an emulator-backed gameplay core.
 
