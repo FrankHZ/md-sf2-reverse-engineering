@@ -32,7 +32,7 @@ hits on temporary HP, carries sticky reaction decisions and aggregates one ally 
 Both player commands and `EnemyPhysicalDecision` call that calculator; `BattleActionCommitter` is
 the single publication/queue-consumption mechanism. Automatic advancement catches failures at each
 enemy ACTION, preserving earlier commits and retaining the failed enemy's queue entry. The typed
-commandset06/script3 controller scores all reachable physical targets in reverse slot order and uses
+commandset06/script3 controller scores all reachable physical targets in reverse processing order and uses
 shared `PhysicalTargetRules` for signed raw-priority cohorts, class selection and movement ties.
 The existing class definition supplies source identity only for admitted named classes; missing
 identity rejects a reached critical comparison. Regular movement fixes the class table; content
@@ -53,6 +53,13 @@ adds movement/cancellation, common session/content admission and connected autho
 Profile-specific snapshots, fixed import checks, endpoint handlers and old Godot battle dispatch
 remain only in the named transitional reference consumers below; A1–A8 remain open. Public/private trust
 and the incomplete accepted 8C/H4 target remain distinct from this migration.
+
+Encounter deployments own explicit `BattleFaction` and unique integer `ProcessingOrder`; intrinsic
+actor definitions and session starts do not duplicate those roles. The definition sorts deployments
+once for stable round RNG, AI candidates and adapter selection. Runtime actors derive faction/order
+from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Source
+slots remain in the actual reference projection into the same typed turn calculator. Faction drives
+healing/opposition/rewards independently of order; supported controller pairings remain bounded.
 
 ## Production Assemblies
 

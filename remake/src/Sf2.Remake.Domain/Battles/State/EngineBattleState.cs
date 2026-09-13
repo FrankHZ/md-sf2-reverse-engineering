@@ -13,6 +13,7 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior }
 public enum BattleController { Player, Stay, Commandset06Script3 }
+public enum BattleFaction { Ally, Enemy }
 
 public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
@@ -22,17 +23,16 @@ public sealed record HealingSpellDefinition(
 
 public sealed class BattleActorDefinition
 {
-    internal BattleActorDefinition(ActorRef actor, byte slot, BattleClassRule classRule,
+    internal BattleActorDefinition(ActorRef actor, BattleClassRule classRule,
         BattleController controller, byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null)
     {
-        Actor = actor; Slot = slot; ClassRule = classRule; Controller = controller;
+        Actor = actor; ClassRule = classRule; Controller = controller;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
     }
     public ActorRef Actor { get; }
-    public byte Slot { get; }
     public BattleClassRule ClassRule { get; }
     internal byte? SourceClassId => ClassRule switch
     {
@@ -49,16 +49,19 @@ public sealed class BattleActorDefinition
     public byte Move { get; }
     public IReadOnlyList<SpellRef> Spells { get; }
     public PhysicalActorDefinition? Physical { get; }
-    public bool IsAlly => Slot < 128;
 }
 
 public sealed class BattleActorState
 {
-    internal BattleActorState(BattleActorDefinition definition, ushort hp, byte mp, byte exp,
+    internal BattleActorState(BattleDeploymentDefinition deployment, ushort hp, byte mp, byte exp,
         MapPosition? position, ushort kills, ushort defeats, ActorRef? lastTarget = null)
-    { Definition = definition; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
+    { Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget; }
-    public BattleActorDefinition Definition { get; }
+    public BattleDeploymentDefinition Deployment { get; }
+    public BattleActorDefinition Definition => Deployment.Definition;
+    public BattleFaction Faction => Deployment.Faction;
+    public int ProcessingOrder => Deployment.ProcessingOrder;
+    public bool IsAlly => Faction == BattleFaction.Ally;
     public ActorRef Actor => Definition.Actor;
     public ushort Hp { get; }
     public byte Mp { get; }
@@ -69,10 +72,11 @@ public sealed class BattleActorState
     public ActorRef? LastTarget { get; }
     internal BattleActorState With(ushort? hp = null, byte? mp = null, byte? exp = null,
         MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null) =>
-        new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats, lastTarget ?? LastTarget);
+        new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats, lastTarget ?? LastTarget);
 }
 
-public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, MapPosition Position)
+public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
+    int ProcessingOrder, MapPosition Position)
 {
     public ActorRef Actor => Definition.Actor;
 }
@@ -85,7 +89,7 @@ public sealed class BattleDefinition
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
-        Deployments = Array.AsReadOnly(deployments.ToArray());
+        Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
         Rewards = rewards;
     }
@@ -103,7 +107,7 @@ public sealed class BattleDefinition
 public sealed class EngineBattleState
 {
     internal EngineBattleState(BattleDefinition definition, IEnumerable<BattleActorState> actors,
-        uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry> queue, int cursor, uint gold)
+        uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry<ActorRef>> queue, int cursor, uint gold)
     {
         Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Round = round;
@@ -117,10 +121,10 @@ public sealed class EngineBattleState
     public int Round { get; }
     public int Cursor { get; }
     public uint Gold { get; }
-    internal IReadOnlyList<TurnOrderEntry> Queue { get; }
+    internal IReadOnlyList<TurnOrderEntry<ActorRef>> Queue { get; }
     public BattleActorState GetActor(ActorRef actor) => Actors.Single(a => a.Actor == actor);
     internal EngineBattleState With(IEnumerable<BattleActorState>? actors = null, uint? mainSeed = null,
-        int? round = null, IEnumerable<TurnOrderEntry>? queue = null, int? cursor = null, uint? gold = null,
+        int? round = null, IEnumerable<TurnOrderEntry<ActorRef>>? queue = null, int? cursor = null, uint? gold = null,
         uint? thinkingSeed = null) =>
         new(Definition, actors ?? Actors, mainSeed ?? MainSeed, thinkingSeed ?? ThinkingSeed,
             round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold);

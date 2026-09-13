@@ -20,7 +20,7 @@ internal static class PhysicalBattleAction
     {
         _ = RequireActor(battle, actorRef);
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.Definition.IsAlly == battle.GetActor(actorRef).Definition.IsAlly)
+        if (target is null || target.Hp == 0 || target.IsAlly == battle.GetActor(actorRef).IsAlly)
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
@@ -58,12 +58,12 @@ internal static class PhysicalBattleAction
         bool targetDead = targetHp == 0, actorDead = actorHp == 0;
         RequireContinuing(target, targetDead);
         RequireContinuing(actor, actorDead);
-        var ally = actor.Definition.IsAlly ? actor : target;
-        var enemy = actor.Definition.IsAlly ? target : actor;
-        bool allyDead = actor.Definition.IsAlly ? actorDead : targetDead;
-        bool enemyDead = actor.Definition.IsAlly ? targetDead : actorDead;
+        var ally = actor.IsAlly ? actor : target;
+        var enemy = actor.IsAlly ? target : actor;
+        bool allyDead = actor.IsAlly ? actorDead : targetDead;
+        bool enemyDead = actor.IsAlly ? targetDead : actorDead;
         int exp = ally.Exp;
-        if (!allyDead && (actor.Definition.IsAlly || counterPerformed))
+        if (!allyDead && (actor.IsAlly || counterPerformed))
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
             var awardRolls = new List<PhysicalRoll>();
@@ -122,7 +122,7 @@ internal static class PhysicalBattleAction
             }
             if (counter) actorHp = strike.Hp;
             else targetHp = strike.Hp;
-            if (attacker.Definition.IsAlly)
+            if (attacker.IsAlly)
             {
                 int killExp = BattleRewards.KillExperience(attacker.Definition.Level, profile.Promoted, defender.Definition.Level);
                 // Each hit truncates its damage EXP separately, then adds to one capped action
@@ -145,8 +145,8 @@ internal static class PhysicalBattleAction
             if (!dead) return;
             if (defeated.Definition.Physical!.Leader)
                 throw new BattleRuleException("leader-defeat-program",
-                    defeated.Definition.IsAlly ? "actor.physical.leader" : "target.physical.leader", true);
-            if (current.Actors.Count(a => a.Hp > 0 && a.Definition.IsAlly == defeated.Definition.IsAlly) == 1)
+                    defeated.IsAlly ? "actor.physical.leader" : "target.physical.leader", true);
+            if (current.Actors.Count(a => a.Hp > 0 && a.IsAlly == defeated.IsAlly) == 1)
                 throw new BattleRuleException("battle-outcome-program", "battle.outcome", true);
         }
     }

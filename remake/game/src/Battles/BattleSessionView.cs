@@ -124,7 +124,7 @@ public sealed partial class BattleSessionView : Control
         }
         else if (key.Keycode == Key.Tab && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
         {
-            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly == (targeting.Action == SessionAction.Heal)).ToArray();
+            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action == SessionAction.Heal)).ToArray();
             int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
             Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
         }

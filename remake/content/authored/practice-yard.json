@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -81,7 +81,6 @@
   "actors": [
     {
       "id": "medic-a",
-      "slot": 7,
       "classRule": "unpromoted-priest",
       "controller": "player",
       "level": 1,
@@ -101,7 +100,6 @@
     },
     {
       "id": "guard-a",
-      "slot": 9,
       "classRule": "ordinary",
       "controller": "player",
       "level": 1,
@@ -116,7 +114,6 @@
     },
     {
       "id": "dummy-a",
-      "slot": 129,
       "classRule": "ordinary",
       "controller": "stay",
       "level": 1,
@@ -138,17 +135,23 @@
         {
           "actor": "medic-a",
           "x": 3,
-          "y": 3
+          "y": 3,
+          "faction": "ally",
+          "processingOrder": 7
         },
         {
           "actor": "guard-a",
           "x": 3,
-          "y": 5
+          "y": 5,
+          "faction": "ally",
+          "processingOrder": 9
         },
         {
           "actor": "dummy-a",
           "x": 8,
-          "y": 5
+          "y": 5,
+          "faction": "enemy",
+          "processingOrder": 129
         }
       ]
     }

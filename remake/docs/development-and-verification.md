@@ -77,7 +77,7 @@ engine or documentation change. Use formatting only for affected product project
 
 ## Authored Start State Observation
 
-The format-v2 reader returns immutable definitions and explicit start input. After loading the existing
+The format-v3 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
 observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
@@ -108,6 +108,36 @@ object with two explicit typed starts and independent histories; no tests of thi
 All mutation examples below keep actor/rule maxima in `actors`, current resources in `start.actors`,
 and actual encounter layout changes in `encounters[].placements`. Adding a deployed actor also
 requires its explicit start record; no default counter or runtime actor is synthesized from a definition.
+
+## Authored Faction and Order Observation
+
+Run the four package observations below, then prepare a changed-order physical input in a fresh ignored
+run directory. This format-v3 variant keeps independent accepted combat/RNG expectations while moving
+all orders beyond the original byte-side boundary and reversing all three JSON arrays:
+
+```powershell
+$data = Get-Content -LiteralPath 'remake/content/authored/stone-court.json' -Raw | ConvertFrom-Json
+$orders = @(255, 1000, 70000, 80000, [int]::MaxValue)
+$ordered = @($data.encounters[0].placements | Sort-Object processingOrder)
+for ($i = 0; $i -lt $ordered.Count; $i++) { $ordered[$i].processingOrder = $orders[$i] }
+[array]::Reverse($data.actors)
+[array]::Reverse($data.encounters[0].placements)
+[array]::Reverse($data.start.actors)
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'sparse-order-input.json'
+$data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'sparse-order-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case physical --observation-output $outputPath
+```
+
+Require seven physical checkpoints, real target input/node removal/next control and clean process logs.
+Apply the same order/array transform after constructing the `secondary` multi-target input below to
+observe actual AI selection with sparse orders; its five independent checkpoints and RNG expectations
+are unchanged. `BattleFactionOrderTests` separately exercises a low-order enemy, renamed high-order
+ally, healing/opposing movement, atomic rejection and rewards. `TurnOrderRulesTests` retains the signed
+boundary fixture with `ActorRef` identities, a real order255 and separate null sentinels. The selected
+existing reference methods `BaselineTestsThreeRegionsWithoutActivatingThemAndComputesTheAcceptedRound`
+and `RoundGenerationRetainsTheIndependentSeedCopyWithoutUsingIt` exercise the actual source projection;
+no old aggregate or new H3 observation is required.
 
 ## Authored Battle Observation
 
@@ -217,13 +247,12 @@ New-Item -ItemType Directory -Path $caseDirectory | Out-Null
 $cycle = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
 $laterAlly = $cycle.actors[1] | ConvertTo-Json -Depth 8 | ConvertFrom-Json
 $laterAlly.id = 'guard-c'
-$laterAlly.slot = 10
 $laterAlly.agility = 1
 $cycle.actors += $laterAlly
 $laterStart = $cycle.start.actors[1] | ConvertTo-Json -Depth 8 | ConvertFrom-Json
 $laterStart.actor = 'guard-c'
 $cycle.start.actors += $laterStart
-$cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; x=3; y=4}
+$cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; faction='ally'; processingOrder=10; x=3; y=4}
 $cycle | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'three-allies.json') -Encoding utf8NoBOM
 $layout = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
 $layout.terrains[0].rows = @(1..48 | ForEach-Object { '1' * 48 })
@@ -337,7 +366,7 @@ $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'targets-observation.json'
 & $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case target-selection --target-shape $shape --observation-output $outputPath
 ```
 
-Both adjacent candidates consume thinking draws in reverse slot order: 1 then2 produce raw19 each,
+Both adjacent candidates consume thinking draws in reverse processing order: 1 then2 produce raw19 each,
 reported cap15, so changing only the class definitions changes the chosen actor. The movement shape
 has costs12/14 and priority1, selecting the farther target without requiring class metadata. Each
 successful shape has five checkpoints through actual player commands into round2: main RNG carries
@@ -348,7 +377,7 @@ count, clean logs and successful result. JSON numbers are floats in GDScript; ne
 arrays must preserve that representation rather than failing an otherwise equal observed value.
 
 `TargetSelectionTests` owns actual rule/content/session expectations, including raw/capped and
-signed-byte edges, class tables, same-class/equal-movement ties, reordered configuration/slots and
+signed-byte edges, class tables, same-class/equal-movement ties, reordered configuration/processing orders and
 atomic missing-data/late-settlement rejection. Direct affected reference selections are
 `ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder`,
 `ActualRoundSixAttackReplaysHpOnceAndAdvancesToBowieWithAllRandomChannels`,

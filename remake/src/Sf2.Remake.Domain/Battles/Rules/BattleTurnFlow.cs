@@ -12,7 +12,7 @@ internal static class BattleTurnFlow
         var actors = definition.Deployments.Select(deployment =>
         {
             var input = inputs[deployment.Actor];
-            return new BattleActorState(deployment.Definition, input.Hp, input.Mp, input.Exp,
+            return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats);
         });
         return new(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold);
@@ -49,7 +49,7 @@ internal static class BattleTurnFlow
                 continue;
             }
             Require(occupied.Add(position), "occupied-placement", "start.actors");
-            if (actor.IsAlly) allies++; else enemies++;
+            if (deployment.Faction == BattleFaction.Ally) allies++; else enemies++;
             turns += actor.Agility >= 128 ? 2 : 1;
         }
         Require(allies > 0 && enemies > 0, "battle-outcome", "start.actors", true);
@@ -62,18 +62,18 @@ internal static class BattleTurnFlow
     internal static EngineBattleState GenerateRound(EngineBattleState battle)
     {
         var generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
-            new TurnOrderCandidate(a.Definition.Slot, true, a.Hp, a.Definition.Agility)),
+            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Definition.Agility)),
             (ushort)(battle.MainSeed >> 16));
         return battle.With(mainSeed: ((uint)generated.NextSeed << 16) | (battle.MainSeed & 0xFFFF),
             round: checked(battle.Round + 1), queue: generated.Slots, cursor: 0);
     }
 
-    // The original combatant-byte sentinel starts a round; negative AGI entries behind it do not run.
+    // An absent actor marks the source sentinel; negative AGI entries behind it do not run.
     internal static bool AtRoundEnd(EngineBattleState battle) =>
-        battle.Cursor >= battle.Queue.Count || battle.Queue[battle.Cursor].ActorSlot == 255;
+        battle.Cursor >= battle.Queue.Count || battle.Queue[battle.Cursor].Actor is null;
 
     internal static BattleActorState QueuedActor(EngineBattleState battle) =>
-        battle.Actors.Single(a => a.Definition.Slot == battle.Queue[battle.Cursor].ActorSlot);
+        battle.GetActor(battle.Queue[battle.Cursor].Actor!.Value);
 
     internal static EngineBattleState ConsumeEntry(EngineBattleState battle) =>
         battle.With(cursor: checked(battle.Cursor + 1));

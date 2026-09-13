@@ -23,7 +23,7 @@ internal static class BattleSnapshotProjection
         if (result.Failure is not null && candidate is { } attempted)
             status += $" · tried {attempted.Value} · selected target {selection?.Target?.Value ?? "none"}";
         var markers = battle.Actors.Where(a => a.Hp > 0).Select(a => new BattleActorMarker(
-            a.Actor, a.Position!, a.Definition.IsAlly, a.Actor == selection?.Actor,
+            a.Actor, a.Position!, a.IsAlly, a.Actor == selection?.Actor,
             $"{a.Actor.Value}\n{a.Hp}/{a.Definition.MaxHp}")).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
             $"{a.Actor.Value}: HP {a.Hp}/{a.Definition.MaxHp}  MP {a.Mp}/{a.Definition.MaxMp}  EXP {a.Exp}  KILLS {a.Kills}  DEFEATS {a.Defeats}"));

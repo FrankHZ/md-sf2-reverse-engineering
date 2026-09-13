@@ -285,10 +285,15 @@ public static class Battle01FirstRound
     internal readonly record struct TurnCandidate(byte Index, byte X, ushort CurrentHp, byte Agility);
     internal static Battle01TurnEntry[] GenerateTurnOrder(IEnumerable<TurnCandidate> candidates, ref ushort generatorWord)
     {
-        var result = TurnOrderRules.Generate(candidates.Select(candidate => new TurnOrderCandidate(
-            candidate.Index, candidate.X < 128, candidate.CurrentHp, candidate.Agility)), generatorWord);
+        ArgumentNullException.ThrowIfNull(candidates);
+        var source = candidates.ToArray();
+        if (source.Any(candidate => candidate.Index is > 29 and < 128 or > 159))
+            throw new ArgumentException("Turn candidates require original ally/enemy slots.", nameof(candidates));
+        // Original bytes remain this projection's identity/order; common actors use ActorRef instead.
+        var result = TurnOrderRules.Generate(source.Select(candidate => new TurnOrderCandidate<byte>(
+            candidate.Index, candidate.Index, candidate.X < 128, candidate.CurrentHp, candidate.Agility)), generatorWord);
         generatorWord = result.NextSeed;
-        return result.Slots.Select(slot => new Battle01TurnEntry(slot.ActorSlot, slot.AlteredAgility)).ToArray();
+        return result.Slots.Select(slot => new Battle01TurnEntry(slot.Actor ?? 255, slot.AlteredAgility)).ToArray();
     }
 
     internal static ushort NextRandom(ref ushort word, ushort range)
