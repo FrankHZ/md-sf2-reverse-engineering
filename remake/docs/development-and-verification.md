@@ -446,6 +446,34 @@ locked Godot; keep completed failures and rerun only failed/newly invalidated ow
 owns the separate normal public gate. Stop at actual Sarah cancellation; no spell, fourth kill,
 new death, victory, later generation or H3/H4 acceptance is implied.
 
+For Sarah HEAL1, the required-private
+`SarahHealUsesEarlyRegisteredInputsAndCommitsOneActualSupportAction` uses the same four registered
+startup inputs. It compares old/new initialization and94/95/97/100/102 recursively, normalizing only
+Sarah's supplied EXP. The actual cast publishes103 and the actual133 pursuit returns Bowie104;
+move(11,12)/cost2, confirm/cancel retain the complete snapshot. Do not construct a late positive102.
+The Domain helper's optional support input belongs to the earlier authored pre-physical fixture;
+Content and native remain the original-input route owners.
+
+Use the focused filter `FullyQualifiedName~PlayerHealing|FullyQualifiedName~SarahHeal`, plus the
+affected history, prefix, presenter, profile and input owners. Cover all seven retained accounting
+inputs, scalar caps/level refusal, unsupported self, selection layers, malformed old/new receipts,
+whole-snapshot stale/foreign/late failures, and a successful local cast whose accounting rejection
+publishes nothing. Preserve each six-field legacy history expectation and append null Sarah EXP.
+
+Native mode `SF2_BATTLE01_CONTROL_REVIEW=sarah-heal` adds the early
+`--private-battle01-sarah-heal` option; do not combine it with the old first-kill flag. The tracked
+recipe in [presentation and assets](presentation-and-assets.md) produces63 frames. Compare the old
+six modes'225 PNGs and the separate old47-frame survival mode byte-for-byte, then inspect every
+new-comparison frame at original resolution. Only the new comparison adds Sarah MP/EXP and the
+corresponding text spacing before the cast. Frame59 is a labeled facade-only post-cast copy;
+physical60 reaches the actual dispatcher endpoint and61–63 exercise the real next player.
+
+Keep every run in a fresh ignored `local/sarah-heal/` subdirectory using the retained environment,
+registered ROM/startup sources and existing locked SDK/Godot tools. Obtain the clean committed
+planner, run one full managed suite and official locked Godot, preserve any completed failures,
+and rerun only their failed/newly invalidated owners. Main-gate owns normal public verification
+and independent integration. This boundary ends at Bowie104 cancellation.
+
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
 Godot.NET.Sdk overrides `--artifacts-path` for the game assembly: a source-worktree Godot test also

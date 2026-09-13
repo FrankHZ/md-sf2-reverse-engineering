@@ -18,9 +18,13 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     public void SarahHealUsesEarlyRegisteredInputsAndCommitsOneActualSupportAction()
     {
         PrivateOriginalBattle01SessionSnapshot? oldInitial = null, newInitial = null;
-        var old = ReachRealFiveSurvivorBoundary(initializedObserver: s => oldInitial = s);
+        var oldCheckpoints = new Dictionary<int, string>(); var newCheckpoints = new Dictionary<int, string>();
+        var old = ReachRealFiveSurvivorBoundary(initializedObserver: s => oldInitial = s,
+            checkpointObserver: s => oldCheckpoints.Add(ReceiptCount(s.Battle), WithoutSarahExp(s.Battle)));
         var session = ReachRealFiveSurvivorBoundary(OriginalBattle01ControlledPartyPreset.SarahHealComparison,
-            s => newInitial = s);
+            s => newInitial = s, s => newCheckpoints.Add(ReceiptCount(s.Battle), WithoutSarahExp(s.Battle)));
+        Assert.Equal(new[] { 94, 95, 97, 100 }, newCheckpoints.Keys);
+        Assert.Equal(oldCheckpoints, newCheckpoints);
         Assert.Null(oldInitial!.Battle.Roster[1].Stats.CurrentExp);
         Assert.Equal((byte?)0, newInitial!.Battle.Roster[1].Stats.CurrentExp);
         Assert.Equal(WithoutSarahExp(oldInitial.Battle), WithoutSarahExp(newInitial.Battle));
@@ -67,6 +71,26 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(frozen, JsonSerializer.Serialize(ready, json));
         Assert.Equal("snapshot", Assert.IsType<PrivateOriginalBattle01PlayerHealingRejected>(session.ConfirmPrivateOriginalBattle01PlayerHealing(selected, 1)).Diagnostic.Field);
         Assert.Same(after, session.PrivateOriginalBattle01);
+        // The independently executed native dispatcher reached this pursuit/player boundary.
+        int nextActor = after.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex;
+        var pursued = Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(after, nextActor)).Snapshot;
+        var pursuit = pursued.Battle.TurnCompletion!.EnemyPursuit!;
+        Assert.Equal((133, 0, 4), (pursuit.ActorIndex, pursuit.TargetIndex, pursuit.GridCost));
+        Assert.Equal(new MapPosition(10, 6), pursuit.Origin); Assert.Equal(new MapPosition(11, 7), pursuit.Destination);
+        Assert.Equal(new byte[] { 0, 3, 255 }, pursuit.MoveString);
+        Assert.Equal(new[] { new Battle01PursuitTargetCost(0, 16), new(1, 18) }, pursuit.TargetCosts);
+        var player = Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(pursued,
+            pursued.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex)).Snapshot;
+        Assert.Equal((104, 0, 13, 8, 12), (ReceiptCount(player.Battle), player.Battle.FirstControl!.ActorIndex,
+            player.Battle.FirstRound!.RoundNumber, player.Battle.FirstRound.CurrentTurnOffset, player.Battle.FirstControl.Movement.Range.Budget));
+        Assert.Equal((0x02A11234u, (ushort?)0x0234), (player.Battle.RandomSeedImage, player.Battle.RandomSeedCopy));
+        string playerFrozen = JsonSerializer.Serialize(player, json);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(player, 0, new(11, 12)));
+        Assert.Equal(2, session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01, 0));
+        Assert.Equal(playerFrozen, JsonSerializer.Serialize(session.PrivateOriginalBattle01, json));
+        Assert.Same(ready.Preparation, player.Preparation); Assert.Same(ready.SourceLocomotion, player.SourceLocomotion); Assert.Same(ready.SourceBridge, player.SourceBridge);
     }
 
     private static void ReadySarah(GameSession session)
@@ -124,18 +148,23 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     }
 
     private static GameSession ReachRealFiveSurvivorBoundary(OriginalBattle01ControlledPartyPreset? preset = null,
-        Action<PrivateOriginalBattle01SessionSnapshot>? initializedObserver = null)
+        Action<PrivateOriginalBattle01SessionSnapshot>? initializedObserver = null,
+        Action<PrivateOriginalBattle01SessionSnapshot>? checkpointObserver = null)
     {
         var session=ReachRealChesterFirstKillSelection(preset ?? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison, initializedObserver);
         Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(session.PrivateOriginalBattle01,2));
+        checkpointObserver?.Invoke(session.PrivateOriginalBattle01!);
         Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,128));
+        checkpointObserver?.Invoke(session.PrivateOriginalBattle01!);
         MoveStay(0,new(11,13),4);
         Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(session.PrivateOriginalBattle01,129));
+        checkpointObserver?.Invoke(session.PrivateOriginalBattle01!);
         Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,130));
         MoveStay(1,new(11,14),10);
         Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,133));
         Assert.Equal((100,12,14),(ReceiptCount(session.PrivateOriginalBattle01!.Battle),session.PrivateOriginalBattle01.Battle.FirstRound!.RoundNumber,
             session.PrivateOriginalBattle01.Battle.FirstRound.CurrentTurnOffset));
+        checkpointObserver?.Invoke(session.PrivateOriginalBattle01!);
         return session;
         void MoveStay(int actor,MapPosition target,int cost)
         {

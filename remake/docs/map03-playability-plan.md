@@ -8,12 +8,12 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
-Current stopping point: [five-survivor R13 and actual Sarah control](#implemented-five-survivor-round-and-r13-sarah-control).
-The selected route returns to actual 95/Bowie, preserves his HP 3 through receipt 100, then generates
-R13 and dispatches actual 128/130 to Sarah. Movement/confirm/cancel preserves the complete
-102-receipt battle. The [next HEAL1 plan](#planned-sarah-heal-1-from-actual102) separates the
-missing spell consumer and early Sarah EXP proposal from scalar calculations. Further survival,
-actual healing and a winning reference trace remain Unknown.
+Current stopping point: [Sarah HEAL 1 and actual R13 Bowie control](#sarah-heal-1-from-actual102).
+The separate early Sarah EXP0 comparison replays the accepted route through102, confirms Sarah's
+origin, selects Magic/HEAL1/Bowie and publishes one healing receipt103. The actual dispatcher runs133
+pursuit and returns Bowie0 at104; movement to (11,12), confirm and cancel retain that entire battle.
+Sarah has MP7/EXP17 and Bowie HP12. Later survival, further actions/generation, victory and H4 remain
+Unknown or Unsupported.
 
 ## Current Baseline
 
@@ -1141,16 +1141,15 @@ healing boundary, later combat/outcomes, natural input/seed/presentation/VInt an
 point is the first usable R13 Sarah movement/confirm/cancel, followed by an independently reviewed
 frozen Draft; do not automatically start another action or slice.
 
-### Planned Sarah HEAL 1 from actual102
+### Sarah HEAL 1 from actual102
 
-This is a **plan**, not an implemented spell capability. Its accepted production base is
-`0350c25906248ce049c8b95cf3b0af26dde6e122`, tree
-`ffcf53c6002ef8c2ad70e149c0f1fad900429b3b`. It proposes one useful player action toward
-[ADR 0010 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md): Sarah confirms
-her origin, chooses HEAL 1, selects adjacent Bowie, exercises target cancel/reselect, and commits
-one heal. It stops at the next actually reached usable player movement/confirm/cancel or the first
-actual Unsupported. It does not authorize another generation, attack, death, level, spell family,
-winning trace, victory/return, new research, or H4. The current plan owns only this document.
+**Implemented as one controlled support action.** This advances
+[ADR 0010 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md) through Sarah's
+origin confirmation, Magic, HEAL1, adjacent Bowie, all three cancellation layers, reselection and
+one atomic cast. The actual dispatcher completes133 pursuit and returns Bowie0/R13/raw8 at104.
+Bowie moves (11,13)→(11,12), cost2, confirms and cancels to the complete returned snapshot.
+This boundary admits no further generation, attack, death, level, spell family, winning trace,
+victory/return, new research or H4. The implementation owns the 32 paths below.
 
 #### Production boundary and one existing-action control
 
@@ -1171,13 +1170,12 @@ This control shows that healing is not necessary to survive this one pursuit. **
 value:** restoring Bowie's nine missing HP could improve later survivability; it does not prove a
 winning line or the healer branch's eventual relay result.
 
-**Confirmed implementation gap:** `GameSession` has no Battle01 spell/heal/magic command;
-`Battle01Phase`, movement selection, `PrivateBattle01Input` and the presenter only consume movement,
-STAY and the admitted physical action. There is no C# HEAL resolver, spell selection, spell target
-selection, MP mutation helper, healing completion policy/receipt, Sarah EXP accounting or healing
-history rewind. `Battle01Stats` carries MP/EXP, but storage is not an action consumer. There is no
-command to run a real heal at this head. No constructed healing battle or positive history patch was
-submitted to the facade or dispatcher in this plan.
+**Confirmed by the required-input Content route and native physical/API comparison:**
+`Battle01PlayerHealing` now owns the bounded selection and scalar resolver. Application authenticates
+the selected snapshot, named early comparison and all seven accounting inputs before one publication.
+The existing movement model carries spell/target choice; `PlayerHealing` is a distinct completion
+receipt. History rewinds Sarah MP/EXP and Bowie HP before replaying the older physical before-images.
+The input adapter uses M for Magic in this private comparison; old launch routes retain their behavior.
 
 #### Accepted contracts, pinned source, and scalar construction
 
@@ -1196,7 +1194,7 @@ No floating source, emulator launch, new observation or new research-index assoc
 | [Action construction](../../docs/design/contracts/battle-action-construction.md), [action/effect](../../docs/research/map3-battle01-action-effect.md), [completion](../../docs/research/map3-battle01-action-completion.md) | `battleactionsengine_1.asm:WriteBattlesceneScript` and `battleactionsengine_2.asm:battlesceneScript_ApplyActionEffect`, plus their existing completion owners, separate cast dispatch, target processing, completion and persistent effects. Static call topology does not supply a new gameplay receipt. |
 | [Turn lifecycle](../../docs/design/contracts/battle-control-lifecycle.md#post-action-and-after-turn-order) | Keep defeated-wrapper, empty cleanup/count, status0/no-passive after-turn normalization, second empty cleanup/count and one cursor advance. The intended heal kills nobody and should preserve factions2/3; validate both checkpoints before publication. |
 
-**Confirmed scalar calculation only:** the existing Python healing boundary model accepts a PRST
+**Confirmed scalar calculation, also reproduced by the actual C# cast:** the existing Python healing boundary model accepts a PRST
 ally actor1, target max12/current3, HEAL1 power15 and initial accumulator0. Missing HP is9;
 unpromoted power15 caps to9; healing EXP is `floor(25*9/12)=18`, above minimum10 and below cap25.
 Same-side healing skips the Battle01 halving table. The existing C# `MainRoll` primitive, independently
@@ -1210,23 +1208,23 @@ compared with the existing Python `_rng_step`, gives:
 These are two semantic main-channel calls; no physical accuracy/critical/damage/double/counter rolls
 belong in this HEAL1 scalar calculation. Copy `0234` is retained, and menu preview/cancel must consume
 neither channel. Status0/no curse/no passive and presentation omission are explicit admission limits,
-not proof that the original engine has no intervening VInt/presentation calls. Construction predicts
+not proof that the original engine has no intervening VInt/presentation calls. The actual cast applies
 ordered MP `10→7`, Bowie HP `3→12`, then 17 EXP awarded to Sarah. It does not predict Sarah's current
-EXP from null. With a separately accepted **early** authored EXP0 comparison, the proposed result is
+EXP from null. With the separately admitted **early** authored EXP0 comparison, the result is
 EXP17 and no level transition. Sarah kills/defeats stay null; gold, Bowie EXP/kills, Chester accounting,
 all corpses, occupancy and source identities stay retained. Healing changes no target resistance,
 attack/defense, status, inventory, learned spell or maximum HP.
 
 #### Minimal controlled input prerequisite and wrapper audit
 
-Propose a separate `SarahHealComparison` / `SarahHealComparisonId`, authored as
+The separate `SarahHealComparison` / `SarahHealComparisonId` is authored as
 `private-local-battle01-sarah-heal-exp0-inputs-v1`, derived from `ChesterFirstKillComparison` with only
-Sarah's **initial** `CurrentExp=0`. This is a controlled comparison proposal, not original-save
+Sarah's **initial** `CurrentExp=0`. This is a controlled comparison, not original-save
 knowledge. Retain her null kills/defeats and every other existing input. Reject missing/wrong/late
 EXP, changed seed/copy, MP, class/status, spells/equipment, HP maxima or any of the six earlier
 accounting supplements. Do not alter an older preset or treat an older102 as the new comparison.
 
-The prerequisite is a real preparation-to102 replay. It must begin with the new named preset at
+The required Content route performs the real preparation-to102 replay. It begins with the new named preset at
 `PreparePrivateOriginalBattle01Startup`, then execute the unchanged exploration/admission and battle
 prefix applicable to each wrapper, including all actual deaths, dead129 and R13 generation. Compare
 old/new snapshots at initialization,94/95/97/100/102. The only allowed differences are the named party
@@ -1235,12 +1233,12 @@ that carries that field. Compare all other fields recursively; do not erase ever
 the comparison pass. Receipt identities/policies/counts, HP, positions, MP, main/copy, AI/flags,
 64-slot orders, kills/defeats, gold, source/preparation and UI movement semantics remain equal.
 
-The current explicit ID/policy gates that must recognize the new comparison with the **same old
-policies** along its prefix are `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (including Chester's
+The explicit ID/policy gates recognize the new comparison with the **same old
+policies** along its prefix: `PrivateOriginalBattle01PlayerPhysicalAttack.cs` (including Chester's
 third enemy kill), `PrivateOriginalBattle01EnemyPhysicalAttack.cs` (Chester death after that kill),
 `PrivateOriginalBattle01TurnCompletion.cs` (dead129), and `PrivateOriginalBattle01FirstRound.cs`
 (first five-survivor generation). `OriginalBattle01ControlledPartyPreset.GetAdmissionDiagnostic`
-and `PrivateBattle01Composition` preparation selection also need the new identity. Generic startup/initialization, first/next control, movement, standby and pursuit wrappers have no
+and `PrivateBattle01Composition` preparation selection also recognize the new identity. Generic startup/initialization, first/next control, movement, standby and pursuit wrappers have no
 first-kill-specific ID branch. Test their real replay and retention, then attempt the new cast/effect
 from a late-swapped preparation: it must reject before consuming the new input. Do not claim these
 existing generic wrappers already bind seven accounting inputs; movement and first control currently
@@ -1248,11 +1246,9 @@ do not even call preset admission. The decisive new cast and existing effect/acc
 verify the retained early input before publication. A need to reject the forged preparation at every
 preview-only call would be additional wrapper scope, not an unreported guarantee of this plan.
 
-`Battle01EnemyStandby.RequireThinkingHistory` currently returns only the six earlier accounting
-inputs. Its origin check sends any known-EXP ally through the physical `RequireTargetProfile`, which
-admits Bowie/Chester only. Add a narrow Sarah support-origin validation and bind Sarah's early EXP in
-the existing history/accounting mechanism; do **not** add Sarah to the physical attacker/target
-profile just to pass it. The new heal receipt must rewind Sarah MP/EXP and Bowie HP before walking
+`Battle01EnemyStandby.RequireThinkingHistory` returns the six earlier accounting inputs plus Sarah's
+early EXP. A narrow support-origin validation admits the explicit PRST input; the physical
+`RequireTargetProfile` continues to admit Bowie/Chester only. The new heal receipt must rewind Sarah MP/EXP and Bowie HP before walking
 older physical before-images and before validating R13's generation main. Check every applicable
 post-reducer accounting boundary: player physical, enemy physical, dead129, five-survivor generation,
 and the new heal facade. Their locally successful transition must still fail atomically if the
@@ -1260,7 +1256,7 @@ retained preparation has the wrong Sarah input. The separate leader-only defeat-
 wrappers stay excluded: preserve their explicit ID guards and null default Sarah input; test that
 the heal comparison cannot enter them rather than broadening their authority.
 
-#### Proposed player transaction and actual stopping condition
+#### Implemented player transaction and actual stopping condition
 
 The smallest main route uses origin (11,14), cost0. Confirmed relocation first exposes action choice;
 then Magic exposes the one learned HEAL1 entry; confirming that spell exposes legal target selection.
@@ -1278,7 +1274,7 @@ has not executed that move or claimed its path. The accepted (11,15) move/cancel
 its distance2 to Bowie is out of HEAL1 range. Do not invent a move string or admit long-range Bowie
 selection because the original movement origin was adjacent.
 
-A bounded `Battle01PlayerHealing` owner should carry distinct spell and target selection/decision
+The bounded `Battle01PlayerHealing` owner carries distinct spell and target selection/decision
 state in the existing movement/session model. Add only the necessary MP-copy helper, selection
 stages, typed result, ordered effects and healing completion policy/receipt. Reuse the existing
 main RNG primitive, movement/occupancy, immutable snapshot constructors, turn-tail checks and
@@ -1295,21 +1291,19 @@ main/copy, accounting and source/preparation references. A repeated/stale/null/f
 cannot charge MP or award EXP again. Cancellation from before the cast must restore the recorded
 selection origin; there is no undo after a successfully published cast.
 
-After the real cast, use the unchanged actual-candidate dispatcher. The retained slot array names133
-as the next slot, but neither that slot nor the STAY control proves the healed facade can reach its
-completion or that Bowie is next usable. Require the actual decision, movement path/cost, RNG/copy,
-ordered receipt count and current candidate. If it reaches a player, perform a legal move supplied by
-that player's real range, confirm and cancel, then stop. If any admitted history/accounting/AI/control
-boundary rejects, preserve the last complete snapshot and record the exact diagnostic; do not patch
-in a future133 pursuit or treat STAY's104 as the healed endpoint. **Unknown:** actual healed completion
-number, following133 outcome and next usable player until this implementation is independently run.
+The unchanged actual-candidate dispatcher was run after the real cast. Receipt104 is133 pursuit
+from (10,6) to (11,7), cost4 / `[0,3,255]`, target Bowie at cost16 versus Sarah18. Main remains
+`02A11234`, copy `0234`, mask0, factions2/3 and gold180. Actual Bowie0/R13/raw8 has HP12/budget12;
+its real (11,12)/cost2 move, confirm and cancel restore the entire104 snapshot. The 64-slot order,
+all prior receipts, dead occupants, stats, AI channels and source/preparation identities remain linked.
+This result comes from the healed execution, independently of the earlier STAY control.
 
-#### Proposed implementation ownership and acceptance
+#### Implementation ownership and acceptance
 
-The following is a concrete next-implementation proposal, not write permission from this plan.
-Keep one writer and obtain main-gate's acceptance of its exact scope before implementation. No
+Main-gate authorized the following implementation scope and the explicit helper dependency below.
+Keep one writer; any further path requires a concrete ownership decision. No
 registries, schemas, shared fixtures, research owners, root guides or private/generated files change.
-All paths below are under `remake/`; `(new)` means the bounded owner does not exist at this base.
+All paths below are under `remake/`; `(new)` marks the four bounded owners introduced by this slice.
 
 | Exact paths | Responsibility |
 | --- | --- |
@@ -1349,14 +1343,14 @@ locally successful heal followed by deliberately failing retained-input accounti
 pre-confirm snapshot equality. Negative construction belongs only in negative tests. The positive
 private and native routes must start with early preparation and use actual commands throughout.
 
-Suggested future focused filter: `FullyQualifiedName~PlayerHealing|FullyQualifiedName~SarahHeal` plus
+Owning focused filter: `FullyQualifiedName~PlayerHealing|FullyQualifiedName~SarahHeal` plus
 the affected existing prefix/turn/history/profile/input tests selected by the committed planner.
 Run the required-private Content route with registered ROM and all selected startup sources, not a
 runner omitting ROM-dependent nodes. An implementation changes history and Godot consumers: obtain
 the authoritative `verify plan` selection, use owning managed and official/native gates, and keep
 normal public verification with main-gate. Do not repeat a completed full failure merely to obtain a
 green aggregate; correct only its failed nodes plus changed-path gates unless invalidation actually
-broadens. This document-only plan requires no full managed, official, native or H3 rerun.
+broadens. The implementation requires managed, official and native gates; it adds no H3 run.
 
 The native acceptance must retain all six old routes and their225 PNGs byte-for-byte, and the old
 47-frame five-survivor route under its original comparison. The new early comparison may visibly add
@@ -1367,7 +1361,7 @@ cast result with MP7/BowieHP12/SarahEXP17, actual next-candidate outcome, and th
 movement/confirm/cancel or a readable first Unsupported. Compare actual facade and physical snapshots
 at each committed boundary; copied seams must remain labeled TEST COPY. View every new frame at
 original resolution and check readable MP/HP/EXP, no clipping/overlap and no unsupported action prompt.
-Do not specify a final frame/receipt count before the actual route supplies it.
+The actual route supplies 63 frames and104 receipts; the last three frames exercise Bowie movement/confirm/cancel.
 
 #### Reproduction of this plan's bounded diagnostic
 
