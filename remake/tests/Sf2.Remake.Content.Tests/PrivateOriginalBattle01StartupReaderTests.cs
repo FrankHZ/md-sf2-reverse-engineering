@@ -617,7 +617,7 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal((88, 130, 0x691F1234u), (CountReceipts(before.Battle), before.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex, before.Battle.RandomSeedImage));
         CompleteEnemy();
         var after = session.PrivateOriginalBattle01!; var r = after.Battle.TurnCompletion!;
-        var d = r.EnemyPhysicalAttack!; var counter = Assert.IsType<Battle01ChesterCounterattack>(d.Counterattack);
+        var d = r.EnemyPhysicalAttack!; var counter = Assert.IsType<Battle01AllyCounterattack>(d.Counterattack);
         Assert.Equal(89, CountReceipts(after.Battle)); Assert.Same(before.Battle.TurnCompletion, r.Previous);
         Assert.Same(Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp, r.Policy);
         Assert.Equal((130, 2, 133), (r.CompletedActorIndex, d.TargetIndex, after.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex));

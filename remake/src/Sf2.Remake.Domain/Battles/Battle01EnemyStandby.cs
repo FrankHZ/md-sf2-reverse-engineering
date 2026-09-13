@@ -221,7 +221,8 @@ public static class Battle01EnemyStandby
                 if (receipt.RoundNumber <= 1)
                     throw new ArgumentException("Physical decisions cannot replace first-round standby.", "completion");
                 Battle01EnemyPhysicalAttack.ValidateDecision(attack, receipt.AllyDefeat is not null,
-                    allowChesterCounter: ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp));
+                    allowChesterCounter: ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp),
+                    allowBowieCounter: ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp));
                 if (attack.Counterattack is { } counter && current.TerrainAt(attack.Destination) != counter.TargetTerrain)
                     throw new ArgumentException("Retain the counter target's actual terrain at the enemy attack stop.", "attack.history");
                 actor = attack.ActorIndex; before = attack.SeedCopyBefore; after = attack.SeedCopyAfter;

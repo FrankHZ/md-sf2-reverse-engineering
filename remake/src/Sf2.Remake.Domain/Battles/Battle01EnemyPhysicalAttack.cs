@@ -12,13 +12,13 @@ public sealed record Battle01PhysicalEffect(bool Dodged, bool Critical, int Dama
 {
     public uint MainSeedAfter => Rolls[^1].AfterImage;
 }
-public sealed record Battle01ChesterCounterattack(Battle01Combatant Actor, Battle01Combatant Target,
+public sealed record Battle01AllyCounterattack(Battle01Combatant Actor, Battle01Combatant Target,
     byte TargetTerrain, int LandMultiplier, Battle01PhysicalEffect Effect,
     int AccumulatedExp, int HalvedExp, int AwardedExp, Battle01Stats ActorAfterStats);
 public sealed record Battle01EnemyPhysicalAttackDecision(Battle01Combatant Actor, MapPosition Destination,
     ushort SeedCopyBefore, ushort SeedCopyAfter, byte Memory, byte LastTargetBefore, uint MainSeedBefore,
     IReadOnlyList<Battle01PhysicalTargetPriority> Priorities, int TargetIndex, IReadOnlyList<byte> MoveString,
-    Battle01PhysicalEffect Effect, Battle01ChesterCounterattack? Counterattack = null)
+    Battle01PhysicalEffect Effect, Battle01AllyCounterattack? Counterattack = null)
 {
     public int ActorIndex => Actor.Index;
     public uint MainSeedAfter => Counterattack?.Effect.MainSeedAfter ?? Effect.MainSeedAfter;
@@ -44,7 +44,7 @@ public sealed class Battle01PhysicalAttackUnsupportedException : ArgumentExcepti
 public static class Battle01EnemyPhysicalAttack
 {
     public static Battle01InitializedState CompleteNext(Battle01InitializedState current, int actorIndex,
-        Battle01PhysicalCompletionPolicy? policy, bool allowChesterCounter = false)
+        Battle01PhysicalCompletionPolicy? policy, bool allowChesterCounter = false, bool allowBowieCounter = false)
     {
         ArgumentNullException.ThrowIfNull(current);
         Battle01EnemyStandby.RequireCurrentRound(current);
@@ -61,7 +61,7 @@ public static class Battle01EnemyPhysicalAttack
             throw new Battle01PhysicalAttackUnsupportedException("actorProfile");
 
         var decision = Decide(current, actor, policy!.AllowsAllyDefeat, policy.AllowsLeaderDefeat,
-            allowChesterCounter || policy.AllowsChesterCounter);
+            allowChesterCounter || policy.AllowsChesterCounter, allowBowieCounter || policy.AllowsBowieCounter);
         var roster = current.Roster.ToArray(); var occupancy = current.Occupancy.ToArray();
         int from = Battle01PlayerMovement.Offset(actor.RequirePosition()), to = Battle01PlayerMovement.Offset(decision.Destination);
         if (occupancy[from] != actorIndex || (from != to && occupancy[to] != -1))
@@ -77,12 +77,13 @@ public static class Battle01EnemyPhysicalAttack
             return Battle01TurnCompletion.CompleteLeaderDefeat(replayed, decision, policy);
         // The new startup preset does not relabel any earlier continuing receipt.
         return Battle01TurnCompletion.CompletePhysical(replayed, decision,
+            decision.Counterattack is { Actor.Index: 0 } ? Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp :
             decision.Counterattack is not null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp :
             policy.AllowsLeaderDefeat ? Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat : policy);
     }
 
     internal static Battle01EnemyPhysicalAttackDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
-        bool allowAllyDefeat = false, bool allowLeaderDefeat = false, bool allowChesterCounter = false)
+        bool allowAllyDefeat = false, bool allowLeaderDefeat = false, bool allowChesterCounter = false, bool allowBowieCounter = false)
     {
         var (grid, candidates) = Battle01EnemyPursuit.PhysicalCandidates(battle, actor);
         if (candidates.Length == 0) throw new Battle01PhysicalAttackUnsupportedException("emptyCohort");
@@ -105,10 +106,10 @@ public static class Battle01EnemyPhysicalAttack
         var effect = ResolveSingleStrike(actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
             battle.RandomSeedImage, selected.Target.Index, selected.Candidate.AttackPosition, selected.Target.RequirePosition(),
             32, 32, 1, (allowAllyDefeat && selected.Target.Index == 2) || (allowLeaderDefeat && selected.Target.Index == 0),
-            allowCounter: allowChesterCounter);
+            allowCounter: allowChesterCounter || allowBowieCounter);
         var counter = HasCounter(effect) ? ResolveCounter(selected.Target.WithStats(effect.AfterStats),
             actor.WithPosition(selected.Candidate.AttackPosition), battle.TerrainAt(selected.Candidate.AttackPosition),
-            effect.MainSeedAfter) : null;
+            effect.MainSeedAfter, allowChesterCounter, allowBowieCounter) : null;
         return new(actor, selected.Candidate.AttackPosition, battle.RandomSeedCopy.Value, copy,
             battle.AiMemory[actor.Index - 128], battle.AiLastTargets[actor.Index - 128], battle.RandomSeedImage,
             priorities.AsReadOnly(), selected.Target.Index, moves, effect, counter);
@@ -226,10 +227,11 @@ public static class Battle01EnemyPhysicalAttack
     private static bool HasCounter(Battle01PhysicalEffect effect) =>
         effect.Rolls.Any(roll => roll.Purpose == "counter" && roll.Result == 0);
 
-    internal static Battle01ChesterCounterattack ResolveCounter(Battle01Combatant actor, Battle01Combatant target,
-        byte terrain, uint main)
+    internal static Battle01AllyCounterattack ResolveCounter(Battle01Combatant actor, Battle01Combatant target,
+        byte terrain, uint main, bool allowChesterCounter = true, bool allowBowieCounter = false)
     {
-        if (actor.Index != 2 || actor.Stats.HpCurrent == 0)
+        if (actor.Stats.HpCurrent == 0 ||
+            !(actor.Index == 2 && allowChesterCounter || actor.Index == 0 && allowBowieCounter))
             throw new Battle01PhysicalAttackUnsupportedException("counterProfile");
         Battle01PlayerPhysicalAttack.RequireActor(actor);
         Battle01PlayerPhysicalAttack.RequireTarget(target, 2);
@@ -249,7 +251,7 @@ public static class Battle01EnemyPhysicalAttack
     }
 
     internal static void ValidateDecision(Battle01EnemyPhysicalAttackDecision decision, bool allowAllyDefeat = false,
-        bool allowLeaderDefeat = false, bool allowChesterCounter = false)
+        bool allowLeaderDefeat = false, bool allowChesterCounter = false, bool allowBowieCounter = false)
     {
         if (decision.ActorIndex is < 128 or > 133 || decision.Priorities.Count is < 1 or > 3 ||
             decision.Actor.Prowess != 0 || decision.Actor.Stats.Attack != 8 ||
@@ -287,20 +289,21 @@ public static class Battle01EnemyPhysicalAttack
         var expected = ResolveSingleStrike(decision.Actor.Stats.Attack, selected.Target.Stats, selected.LandMultiplier,
             decision.MainSeedBefore, selected.Target.Index, decision.Destination, selected.Target.RequirePosition(),
             32, 32, 1, (allowAllyDefeat && selected.Target.Index == 2) || (allowLeaderDefeat && selected.Target.Index == 0),
-            allowCounter: allowChesterCounter);
+            allowCounter: allowChesterCounter || allowBowieCounter);
         var actual = decision.Effect;
         RequireSameEffect(actual, expected, selected.Target.Stats);
         if (HasCounter(expected) != (decision.Counterattack is not null))
             throw new ArgumentException("Retain exactly the counter selected by the primary strike.", "attack.history");
         if (decision.Counterattack is { } counter)
         {
-            if (decision.DefeatedTarget || !allowChesterCounter || counter.Actor.Index != decision.TargetIndex ||
+            if (decision.DefeatedTarget || !(allowChesterCounter || allowBowieCounter) || counter.Actor.Index != decision.TargetIndex ||
                 !Battle01TurnCompletion.SameCombatant(counter.Target, decision.Actor.WithPosition(decision.Destination)) ||
                 !ReferenceEquals(counter.Target.Stats, decision.Actor.Stats) ||
                 !Battle01TurnCompletion.SameCombatant(counter.Actor, selected.Target.WithStats(actual.AfterStats)) ||
                 !ReferenceEquals(counter.Actor.Stats, actual.AfterStats))
                 throw new ArgumentException("Counter roles must reverse the surviving primary participants.", "attack.history");
-            var replay = ResolveCounter(counter.Actor, counter.Target, counter.TargetTerrain, actual.MainSeedAfter);
+            var replay = ResolveCounter(counter.Actor, counter.Target, counter.TargetTerrain, actual.MainSeedAfter,
+                allowChesterCounter, allowBowieCounter);
             RequireSameEffect(counter.Effect, replay.Effect, decision.Actor.Stats);
             if (counter.LandMultiplier != replay.LandMultiplier || counter.AccumulatedExp != replay.AccumulatedExp ||
                 counter.HalvedExp != replay.HalvedExp || counter.AwardedExp != replay.AwardedExp ||
