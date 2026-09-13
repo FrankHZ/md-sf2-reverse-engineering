@@ -8,6 +8,22 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01EnemyStandbyTests
 {
     [Fact]
+    public void Dead129TurnRewindsAsNoChangeBeforeTheIndependentAllyDeathAndCreditedKill()
+    {
+        var after=Battle01TurnCompletionTests.Dead129Completed();var r=after.TurnCompletion!;
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Assert.Equal(0,r.Previous!.CompletedActorIndex);
+        var death=r.Previous.Previous!;var kill=death.Previous!;
+        Assert.Equal((128,2),(death.CompletedActorIndex,kill.CompletedActorIndex));
+        Assert.Equal(((ushort)1,(byte?)54,(ushort?)1,(ushort?)0),(death.EnemyPhysicalAttack!.Target.Stats.HpCurrent,
+            death.EnemyPhysicalAttack.Target.Stats.CurrentExp,death.EnemyPhysicalAttack.Target.Stats.CurrentKills,death.EnemyPhysicalAttack.Target.Stats.CurrentDefeats));
+        Assert.Equal(((byte?)30,(ushort?)0,(uint?)120),(kill.PlayerPhysicalAttack!.Actor.Stats.CurrentExp,
+            kill.PlayerPhysicalAttack.Actor.Stats.CurrentKills,kill.PlayerPhysicalAttack.GoldBefore));
+        Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(()=>
+            Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,0,null,0)).ParamName);
+    }
+
+    [Fact]
     public void Enemy128DefeatRewindsDeathThenTheIndependentChesterKillAndCounter()
     {
         var after=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();

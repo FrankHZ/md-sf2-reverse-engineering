@@ -7,6 +7,25 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01NextPlayerControlTests
 {
+    [Fact]
+    public void Dead129TurnRelaysOnlyActualSarahAndCancelKeepsAllNinetyEightReceipts()
+    {
+        var session=PrivateOriginalBattle01TurnCompletionTests.Dead129Session(complete:true);var dead=session.PrivateOriginalBattle01!;
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlRejected>(session.EnterPrivateOriginalBattle01NextPlayerControl(dead,1));
+        var chased=Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(dead,130)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlRejected>(session.EnterPrivateOriginalBattle01NextPlayerControl(chased,2));
+        var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(chased,1)).Snapshot;
+        var json=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(ready.Battle,json);
+        Assert.Equal((1,10),(ready.Battle.FirstControl!.ActorIndex,ready.Battle.FirstControl.Movement.Range.Budget));
+        var selected=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready,1,new(10,17))).Snapshot;
+        Assert.Equal(2,selected.Battle.FirstControl!.Movement.GridCost);
+        var moved=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(selected,1)).Snapshot;
+        Assert.Equal(new MapPosition(10,17),moved.Battle.Roster[1].Position);
+        var cancelled=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(moved,1)).Snapshot;
+        Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(cancelled.Battle,json));Assert.Same(chased.Battle.TurnCompletion,cancelled.Battle.TurnCompletion);
+        int count=0;for(var r=cancelled.Battle.TurnCompletion;r is not null;r=r.Previous)count++;
+        Assert.Equal(98,count);Battle01PlayerPhysicalAttack.RequireAccountingInputs(cancelled.Battle,0,0,0,0,0,0);
+    }
 
     [Fact]
     public void NewRoundEntryRejectsWrongActorAndStaleRequestsAndCancelRetainsPriorRound()

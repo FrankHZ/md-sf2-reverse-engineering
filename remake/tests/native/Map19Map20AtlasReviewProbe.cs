@@ -1481,11 +1481,80 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         final=_session.PrivateOriginalBattle01!;
         Require(readyJson==JsonSerializer.Serialize(final.Battle,json),"Actual Bowie cancel restores the complete usable95 battle");
         await CaptureControl("40-enemy128-relay-bowie-cancel");
+        foreach (var key in new[] {Key.I,Key.I,Key.J,Key.I,Key.J,Key.I}) await PressBattleKey(key);
+        await PressBattleKey(Key.Space);
+        var approach=_session.PrivateOriginalBattle01!;
+        Require(approach.Battle.Roster[0].Position==new MapPosition(9,11) &&
+            approach.Battle.FirstControl!.Movement.GridCost==12 &&
+            ReferenceEquals(final.Battle.TurnCompletion,approach.Battle.TurnCompletion),"One actual Bowie approach retains95 before STAY");
+        await CaptureControl("41-dead129-bowie-provisional9-11");
+        var approachCopy=(PrivateOriginalBattle01SessionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalBattle01SessionSnapshot),
+            BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[] {approach.Preparation,approach.Battle,approach.SourceLocomotion,approach.SourceBridge},null)!;
+        Battle01TurnCompletionReceipt inspectedDeadTurn;
+        typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,approachCopy);
+        try
+        {
+            var before129=((PrivateOriginalBattle01StayCommitted)_session.CommitPrivateOriginalBattle01Stay(approachCopy,0)).Snapshot;
+            Require(before129.Battle.FirstRound!.CurrentTurnOffset==6 && before129.Battle.FirstRound.CurrentCandidate?.CombatantIndex==129 &&
+                ReferenceEquals(before129.Battle.TurnCompletion!.Previous,approach.Battle.TurnCompletion),"Receipt96 retains the dead129 slot after one moved Bowie STAY");
+            presenter.Project(before129.Battle,"TEST COPY: Bowie approach receipt96. Dead129 is next.");
+            await CaptureControl("42-dead129-before97-test-copy","exact physical approach; Application96 before dead129 completion; no production pause");
+            string frozen96=JsonSerializer.Serialize(before129.Battle,json);
+            Require(_session.CompletePrivateOriginalBattle01EnemyPursuit(before129,129) is PrivateOriginalBattle01EnemyPursuitRejected {Diagnostic.Field:"position"} &&
+                _session.CompletePrivateOriginalBattle01EnemyPursuit(before129,130) is PrivateOriginalBattle01EnemyPursuitRejected {Diagnostic.Field:"actor"},
+                "Dead actor cannot pursue and later130 cannot bypass its slot");
+            var after129=((PrivateOriginalBattle01DefeatedTurnCompleted)_session.CompletePrivateOriginalBattle01DefeatedTurn(before129,129)).Snapshot;
+            inspectedDeadTurn=after129.Battle.TurnCompletion!;
+            Require(inspectedDeadTurn.DefeatedTurnCompleted && inspectedDeadTurn.CompletedActorIndex==129 &&
+                ReferenceEquals(inspectedDeadTurn.Previous,before129.Battle.TurnCompletion) && inspectedDeadTurn.EnemyStandby is null &&
+                inspectedDeadTurn.EnemyPursuit is null && inspectedDeadTurn.EnemyPhysicalAttack is null && inspectedDeadTurn.PlayerPhysicalAttack is null &&
+                inspectedDeadTurn.EnemyDefeat is null && inspectedDeadTurn.AllyDefeat is null &&
+                inspectedDeadTurn.BeforeAfterTurn==new Battle01FactionCounts(2,3) && inspectedDeadTurn.AfterAfterTurn==inspectedDeadTurn.BeforeAfterTurn &&
+                after129.Battle.FirstRound!.CurrentTurnOffset==8 && after129.Battle.FirstRound.CurrentCandidate?.CombatantIndex==130 &&
+                ReferenceEquals(before129.Battle.Roster,after129.Battle.Roster) && ReferenceEquals(before129.Battle.Occupancy,after129.Battle.Occupancy) &&
+                ReferenceEquals(before129.Battle.FirstRound.Slots,after129.Battle.FirstRound.Slots) &&
+                frozen96==JsonSerializer.Serialize(before129.Battle,json),"One distinct97 retains the complete96 before-image and advances only its existing slot");
+            presenter.Project(after129.Battle,"TEST COPY: dead129 receipt97. Actual130 is next.");
+            Require(presenter.Projection!.DefeatedTurnCompleted && !presenter.Projection.Units.Any(u=>u.Index is 2 or 129 or 131 or 132) &&
+                Field<Label>(presenter,"_details").Text.Contains("Dead turn completed: E1 defeated and unplaced"),"Dead-turn renderer never requests coordinates or creates a marker");
+            await CaptureControl("43-dead129-receipt97-test-copy","Application97 before actual130 pursuit; dead/unplaced actor has no action; no production pause");
+            boundary=PrivateBattle01Ui.DispatchNext(_session,after129);
+            inspected=_session.PrivateOriginalBattle01!.Battle;
+            var pursuit=inspected.TurnCompletion!.EnemyPursuit!;
+            Require(ReferenceEquals(inspected.TurnCompletion.Previous,inspectedDeadTurn) && pursuit.ActorIndex==130 && pursuit.TargetIndex==0 &&
+                pursuit.Destination==new MapPosition(9,4) && pursuit.PreliminaryDestination==new MapPosition(9,5) && pursuit.GridCost==2 &&
+                pursuit.TargetCosts.SequenceEqual(new[]{new Battle01PursuitTargetCost(0,16),new Battle01PursuitTargetCost(1,28)}) &&
+                pursuit.MoveString.SequenceEqual(new byte[]{0,255}) && pursuit.PreliminaryMoveString.SequenceEqual(new byte[]{0,3,255}) &&
+                inspected.FirstControl?.ActorIndex==1 && inspected.FirstControl.Movement.Range.Budget==10 &&
+                inspected.FirstRound!.CurrentTurnOffset==10 && inspected.RandomSeedImage==0x98321234 && inspected.RandomSeedCopy==0x0234 &&
+                inspected.RegionFlags90Through105.SequenceEqual(after129.Battle.RegionFlags90Through105) &&
+                inspected.AiMemory.SequenceEqual(after129.Battle.AiMemory) && inspected.AiLastTargets.SequenceEqual(after129.Battle.AiLastTargets),
+                "Actual130 pursuit98 reaches actual Sarah in the same R12 buffer");
+        }
+        finally
+        {
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session,approach);
+            presenter.Project(approach.Battle,"Restored exact physical Bowie approach. Space commits STAY.");
+        }
+        await PressBattleKey(Key.Space);
+        var actualSarah=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(inspected,json)==JsonSerializer.Serialize(actualSarah.Battle,json),"Physical STAY and entire API96/97/130 relay are identical");
+        await CaptureControl("44-dead129-relay-sarah-ready");
+        await PressBattleKey(Key.L);await PressBattleKey(Key.Space);
+        Require(_session.PrivateOriginalBattle01!.Battle.Roster[1].Position==new MapPosition(10,17) &&
+            _session.PrivateOriginalBattle01.Battle.FirstControl!.Movement.GridCost==2,"Actual R12 Sarah confirms a legal cost2 movement");
+        await CaptureControl("45-dead129-relay-sarah-provisional");
+        await PressBattleKey(Key.Backspace);
+        final=_session.PrivateOriginalBattle01!;
+        Require(JsonSerializer.Serialize(actualSarah.Battle,json)==JsonSerializer.Serialize(final.Battle,json),"Sarah cancel restores the whole98 battle at9,17");
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(final.Battle,0,0,0,0,0,0);
+        await CaptureControl("46-dead129-relay-sarah-cancel");
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new {
-            status="Pass",scope="Chester first kill, enemy128 Chester defeat and actual R12 Bowie movement/cancel; later continuation, natural presentation and H4 remain Unknown",
+            status="Pass",scope="Chester first kill/death, dead129 slot completion, actual130 pursuit and R12 Sarah movement/cancel; later generation, natural presentation and H4 remain Unknown",
             preparation=final.Preparation.Party,returnInputs=final.Preparation.ReturnInputs,arrivalInputs=final.Preparation.ArrivalInputs,
-            earlyLaunchOptIn=true,boundary,receipt95=inspectedDeath,battle=final.Battle,exactCopiedAndPhysicalSnapshotMatch=true,
-            actualTargetCancelReselect=true,actualEnemy128Attempted=true,actualBowieMoveCancel=true,frames=_frames
+            earlyLaunchOptIn=true,boundary,receipt95=inspectedDeath,receipt97=inspectedDeadTurn,receipt98=final.Battle.TurnCompletion,
+            battle=final.Battle,exactCopiedAndPhysicalSnapshotMatch=true,
+            actualTargetCancelReselect=true,actualEnemy128Attempted=true,actualBowieMoveCancel=true,actualSarahMoveCancel=true,frames=_frames
         },json));
         GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} chester-first-kill");
     }

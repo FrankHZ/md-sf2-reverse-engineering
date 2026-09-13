@@ -8,6 +8,24 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void Dead129TurnActuallyRelays130AndSarahMoveCancelRetainsNinetyEight()
+    {
+        var dead=Battle01TurnCompletionTests.Dead129Completed();
+        Assert.Throws<ArgumentException>(()=>Battle01NextPlayerControl.Enter(dead,1));
+        var pursued=Battle01EnemyPursuit.CompleteNext(dead,130,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        Assert.Same(dead.TurnCompletion,pursued.TurnCompletion!.Previous);
+        var ready=Battle01NextPlayerControl.Enter(pursued,pursued.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
+        Assert.Equal((1,10),(ready.FirstControl!.ActorIndex,ready.FirstControl.Movement.Range.Budget));
+        var selected=Battle01PlayerMovement.SelectDestination(ready,1,new(10,17));Assert.Equal(2,selected.FirstControl!.Movement.GridCost);
+        var cancelled=Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(selected,1),1);
+        var json=new JsonSerializerOptions{MaxDepth=256};
+        Assert.Equal(JsonSerializer.Serialize(ready,json),JsonSerializer.Serialize(cancelled,json));
+        Assert.Equal(98,Battle01EnemyPursuitTests.Receipts(cancelled).Count());
+        Assert.Null(cancelled.Roster[2].Position);Assert.Equal(0,cancelled.Roster[2].Stats.HpCurrent);
+        Assert.Equal(new MapPosition(9,4),cancelled.Roster[5].Position);
+    }
+
+    [Fact]
     public void Enemy128DefeatDispatchesActualBowieAndMoveCancelKeepsAllNinetyFiveReceipts()
     {
         var defeated=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();

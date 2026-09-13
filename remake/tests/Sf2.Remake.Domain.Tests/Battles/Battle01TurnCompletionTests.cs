@@ -7,6 +7,105 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01TurnCompletionTests
 {
+    internal static Battle01InitializedState Dead129Boundary()
+    {
+        var ready=Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted(),0).State!;
+        var selected=Battle01PlayerMovement.SelectDestination(ready,0,new(9,11));
+        return Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(selected,0),0,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
+
+    internal static Battle01InitializedState Dead129Completed() => Battle01TurnCompletion.CompleteDefeatedTurn(
+        Dead129Boundary(),129,Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+
+    [Fact]
+    public void Dead129TurnRetainsTheWholeBattleAndAddsOnlyOneDistinctCompletion()
+    {
+        var before=Dead129Boundary(); var json=new JsonSerializerOptions{MaxDepth=256};
+        string frozen=JsonSerializer.Serialize(before,json);
+        var after=Battle01TurnCompletion.CompleteDefeatedTurn(before,129,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+        var r=after.TurnCompletion!;
+        Assert.True(r.DefeatedTurnCompleted); Assert.Equal("battle01-controlled-dead129-turn-after-chester-defeat-v1",r.Policy.Id);
+        Assert.Equal((129,12,97,8,130),(r.CompletedActorIndex,r.RoundNumber,Battle01EnemyPursuitTests.Receipts(after).Count(),
+            after.FirstRound!.CurrentTurnOffset,after.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Same(before.TurnCompletion,r.Previous); Assert.Same(before.FirstRound!.Slots,after.FirstRound.Slots);
+        Assert.Same(before.Roster,after.Roster); Assert.Same(before.Occupancy,after.Occupancy);
+        Assert.Same(before.AiMemory,after.AiMemory); Assert.Same(before.AiLastTargets,after.AiLastTargets);
+        Assert.Same(before.RegionFlags90Through105,after.RegionFlags90Through105);
+        Assert.Equal((before.RandomSeedImage,before.RandomSeedCopy,before.NewlyTestedRegionMask,before.CurrentGold),
+            (after.RandomSeedImage,after.RandomSeedCopy,after.NewlyTestedRegionMask,after.CurrentGold));
+        Assert.Equal(new Battle01FactionCounts(2,3),r.BeforeAfterTurn); Assert.Equal(r.BeforeAfterTurn,r.AfterAfterTurn);
+        Assert.Null(r.EnemyStandby); Assert.Null(r.EnemyPursuit); Assert.Null(r.EnemyPhysicalAttack);
+        Assert.Null(r.PlayerPhysicalAttack); Assert.Null(r.EnemyDefeat); Assert.Null(r.AllyDefeat);
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+        Assert.Equal("actor",Assert.Throws<ArgumentException>(()=>Battle01TurnCompletion.CompleteDefeatedTurn(after,129,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat)).ParamName);
+        Assert.Throws<ArgumentException>(()=>Battle01TurnCompletion.CompleteDefeatedTurn(before,130,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat));
+        Assert.Throws<ArgumentException>(()=>Battle01TurnCompletion.CompleteDefeatedTurn(before,129,null));
+    }
+
+    [Theory]
+    [InlineData("alive")][InlineData("placed")][InlineData("corpse")][InlineData("kills")][InlineData("exp")]
+    [InlineData("defeats")][InlineData("credit")][InlineData("deathPolicy")][InlineData("round")][InlineData("slot")]
+    [InlineData("main")][InlineData("copy")][InlineData("gold")][InlineData("memory")][InlineData("lastTarget")]
+    [InlineData("occupancy")][InlineData("counts")][InlineData("worklist")][InlineData("missing")]
+    public void Dead129TurnRejectsCorruptedBeforeImagesWithoutChangingNinetySix(string field)
+    {
+        var before=Dead129Boundary(); var roster=before.Roster.ToArray(); var occupancy=before.Occupancy.ToArray();
+        var memory=before.AiMemory.ToArray();var targets=before.AiLastTargets.ToArray();var r=before.TurnCompletion!;
+        var order=before.FirstRound!;uint main=before.RandomSeedImage;ushort copy=before.RandomSeedCopy!.Value;uint? gold=before.CurrentGold;
+        switch(field)
+        {
+            case "alive":roster[4]=roster[4].WithStats(roster[4].Stats.WithCurrentHp(1));break;
+            case "placed":roster[4]=roster[4].WithPosition(new(10,4));occupancy[4*48+10]=129;break;
+            case "corpse":roster[6]=roster[6].WithStats(roster[6].Stats.WithCurrentHp(1));break;
+            case "kills":roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentKills(2));break;
+            case "exp":roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentExp(55));break;
+            case "defeats":roster[2]=roster[2].WithStats(roster[2].Stats.WithCurrentDefeats(2));break;
+            case "credit":r=r with {Previous=r.Previous! with {Previous=r.Previous!.Previous! with {
+                EnemyDefeat=r.Previous.Previous.EnemyDefeat! with {CreditedAlly=0}}}};break;
+            case "deathPolicy":r=r with {Previous=r.Previous! with {Policy=Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat}};break;
+            case "round":r=r with {RoundNumber=13};break;
+            case "slot":order=order.AdvanceCompletedPlayerTurn();break;
+            case "main":main++;break;
+            case "copy":copy++;break;
+            case "gold":gold++;break;
+            case "memory":memory[1]++;break;
+            case "lastTarget":targets[0]=0;break;
+            case "occupancy":occupancy[11*48+9]=-1;break;
+            case "counts":r=r with {BeforeAfterTurn=new(2,4)};break;
+            case "worklist":r=r with {Previous=r.Previous! with {AllyDefeat=r.Previous!.AllyDefeat! with {FirstWorklist=new[]{2,129}}}};break;
+            case "missing":r=r with {Previous=r.Previous!.Previous};break;
+        }
+        var corrupt=Battle01FirstRoundTests.CopyCurrent(before,roster:roster,occupancy:occupancy,memory:memory,lastTargets:targets,
+            mainImage:main,copy:copy,gold:gold,order:order,receipt:r);
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(corrupt,json);
+        Assert.Throws<ArgumentException>(()=>Battle01TurnCompletion.CompleteDefeatedTurn(corrupt,129,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat));
+        Assert.Equal(frozen,JsonSerializer.Serialize(corrupt,json));
+    }
+
+    [Theory]
+    [InlineData("policy")][InlineData("actor")][InlineData("round")][InlineData("duplicate")]
+    [InlineData("counts")][InlineData("worklist")][InlineData("fakeAction")]
+    public void Dead129TurnHistoryCannotBeRelabeledDuplicatedOrMadeIntoAnAction(string field)
+    {
+        var accepted=Dead129Completed();var r=accepted.TurnCompletion!;
+        r=field switch {
+            "policy"=>r with {Policy=Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats},
+            "actor"=>r with {CompletedActorIndex=131},"round"=>r with {RoundNumber=13},
+            "duplicate"=>r with {Previous=r},"counts"=>r with {AfterAfterTurn=new(2,4)},
+            "worklist"=>r with {EnemyDefeat=r.Previous!.Previous!.Previous!.EnemyDefeat},
+            _=>r with {EnemyPhysicalAttack=r.Previous!.Previous!.EnemyPhysicalAttack}};
+        var corrupt=Battle01FirstRoundTests.CopyCurrent(accepted,receipt:r);
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(corrupt,json);
+        Assert.Throws<ArgumentException>(()=>Battle01EnemyPursuit.CompleteNext(corrupt,130,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats));
+        Assert.Equal(frozen,JsonSerializer.Serialize(corrupt,json));
+    }
+
     [Theory]
     [InlineData("kills")][InlineData("exp")][InlineData("defeats")][InlineData("creditOwner")]
     [InlineData("creditedStats")][InlineData("creditPolicy")][InlineData("deathPolicy")][InlineData("counts")]

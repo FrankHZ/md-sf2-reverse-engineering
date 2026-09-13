@@ -10,6 +10,27 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01EnemyPursuitTests
 {
     [Fact]
+    public void Dead129TurnMustCompleteBeforeActual130PursuitCanPublish()
+    {
+        var session=PrivateOriginalBattle01TurnCompletionTests.Dead129Session();var before=session.PrivateOriginalBattle01!;
+        Assert.Equal("position",Assert.IsType<PrivateOriginalBattle01EnemyPursuitRejected>(session.CompletePrivateOriginalBattle01EnemyPursuit(before,129)).Diagnostic.Field);
+        Assert.Equal("actor",Assert.IsType<PrivateOriginalBattle01EnemyPursuitRejected>(session.CompletePrivateOriginalBattle01EnemyPursuit(before,130)).Diagnostic.Field);
+        Assert.Same(before,session.PrivateOriginalBattle01);
+        var dead=Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(before,129)).Snapshot;
+        var after=Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(dead,130)).Snapshot;
+        var d=after.Battle.TurnCompletion!.EnemyPursuit!;
+        Assert.Equal(new[]{new Battle01PursuitTargetCost(0,16),new Battle01PursuitTargetCost(1,28)},d.TargetCosts);
+        Assert.Equal(new MapPosition(9,5),d.PreliminaryDestination);Assert.Equal(new MapPosition(9,4),d.Destination);
+        Assert.Equal(new byte[]{0,3,255},d.PreliminaryMoveString);Assert.Equal(new byte[]{0,255},d.MoveString);
+        Assert.Equal((130,0,2),(d.ActorIndex,d.TargetIndex,d.GridCost));
+        Assert.Equal((dead.Battle.RandomSeedImage,dead.Battle.RandomSeedCopy),(after.Battle.RandomSeedImage,after.Battle.RandomSeedCopy));
+        Assert.Equal(dead.Battle.AiMemory,after.Battle.AiMemory);Assert.Equal(dead.Battle.AiLastTargets,after.Battle.AiLastTargets);
+        Assert.Same(dead.Battle.TurnCompletion,after.Battle.TurnCompletion.Previous);
+        Assert.Equal((12,10,1),(after.Battle.FirstRound!.RoundNumber,after.Battle.FirstRound.CurrentTurnOffset,
+            after.Battle.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+    }
+
+    [Fact]
     public void ThePursuitClassifierStaysReadOnlyBeforeTheSeparatePhysicalFacade()
     {
         var session = PrivateOriginalBattle01EnemyPhysicalAttackTests.AttackSession();

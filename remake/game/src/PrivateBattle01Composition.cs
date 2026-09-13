@@ -185,6 +185,19 @@ internal static class PrivateBattle01Ui
                 continue;
             }
             int actor = candidate.CombatantIndex;
+            if (current.Battle.Roster.SingleOrDefault(unit => unit.Index == actor)?.Stats.HpCurrent == 0)
+            {
+                switch (session.CompletePrivateOriginalBattle01DefeatedTurn(current, actor))
+                {
+                    case PrivateOriginalBattle01DefeatedTurnCompleted completed:
+                        current = completed.Snapshot;
+                        continue;
+                    case PrivateOriginalBattle01TurnCompletionRejected rejected:
+                        return $"Dead actor {actor} turn rejected: {rejected.Diagnostic.Field}; current state retained.";
+                    default:
+                        return $"Dead actor {actor} turn unavailable; current state retained.";
+                }
+            }
             if (actor >= 128)
             {
                 var word = current.Battle.Roster.SingleOrDefault(unit => unit.Index == actor)?.AiBitfield;
