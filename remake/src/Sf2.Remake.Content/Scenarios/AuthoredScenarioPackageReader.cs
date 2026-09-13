@@ -111,7 +111,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
             {
-                Object(physicalInput, "actor.physical", "movementType", "prowess", "promoted", "leader", "gold", "kills", "special");
+                ObjectOptional(physicalInput, "actor.physical", "defeats", "movementType", "prowess", "promoted", "leader", "gold", "kills", "special");
                 Require(Text(physicalInput, "movementType") == "regular", "physical-movement-type", "actors.physical.movementType", true);
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);
                 byte prowess = (byte)Number(physicalInput, "prowess", 0, 255);
@@ -119,7 +119,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 bool promoted = Boolean(physicalInput, "promoted");
                 Require(className != "unpromoted-priest" || !promoted, "class-promotion", "actors.physical.promoted");
                 physical = new(prowess, promoted, Boolean(physicalInput, "leader"),
-                    (ushort)Number(physicalInput, "gold", 0, 65535), (ushort)Number(physicalInput, "kills", 0, 9999));
+                    (ushort)Number(physicalInput, "gold", 0, 65535), (ushort)Number(physicalInput, "kills", 0, 9999),
+                    physicalInput.TryGetProperty("defeats", out _) ? (ushort)Number(physicalInput, "defeats", 0, 9999) : (ushort)0);
             }
             ushort maximumHp = (ushort)Number(actor, "maxHp", 1, 65535);
             ushort hp = (ushort)Number(actor, "hp", 0, maximumHp);

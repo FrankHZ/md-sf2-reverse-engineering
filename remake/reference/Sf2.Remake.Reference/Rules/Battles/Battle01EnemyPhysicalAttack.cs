@@ -173,14 +173,6 @@ public static class Battle01EnemyPhysicalAttack
         int targetIndex, MapPosition attackerPosition, MapPosition targetPosition)
         => ResolveSingleStrike(attack, target, multiplier, main, targetIndex, attackerPosition, targetPosition, 32, 32, 1);
 
-    internal static ushort MainRoll(ref uint main, List<Battle01MainRandomRoll> rolls, string purpose, ushort range)
-    {
-        uint before = main; ushort word = (ushort)(main >> 16);
-        ushort result = Battle01FirstRound.NextRandom(ref word, range);
-        main = ((uint)word << 16) | (main & 0xFFFF);
-        rolls.Add(new(purpose, range, before, main, result)); return result;
-    }
-
     // Only the two separately admitted physical roles call this arithmetic seam.
     internal static Battle01PhysicalEffect ResolveSingleStrike(int attack, Battle01Stats target, int multiplier, uint main,
         int targetIndex, MapPosition attackerPosition, MapPosition targetPosition,
@@ -193,7 +185,7 @@ public static class Battle01EnemyPhysicalAttack
         bool dodge = strike.Dodged, critical = strike.Critical;
         int damage = strike.Damage, temporary = strike.Hp;
         if (temporary == 0 && !allowDefeat) throw new Battle01PhysicalAttackUnsupportedException("lethal");
-        bool doubleRolled = strike.Double, counterRolled = strike.Counter;
+        bool doubleRolled = strike.DoubleRolled, counterRolled = strike.CounterRolled;
         bool validDouble = doubleRolled && temporary > 0;
         bool validCounter = counterRolled && temporary > 0 && target.Status == 0 &&
             Math.Abs(attackerPosition.X - targetPosition.X) + Math.Abs(attackerPosition.Y - targetPosition.Y) == 1;
@@ -224,11 +216,11 @@ public static class Battle01EnemyPhysicalAttack
         var effect = ResolveSingleStrike(actor.Stats.Attack, target.Stats, multiplier, main, target.Index,
             actor.RequirePosition(), target.RequirePosition(), 8, 16, 2, isCounter: true);
         int accumulated = Battle01PlayerPhysicalAttack.DamageExperience(effect.Damage, target.Stats.HpMax);
-        int halved = accumulated >> 1, award = halved;
+        int halved = accumulated >> 1;
         var rolls = effect.Rolls.ToList(); main = effect.MainSeedAfter;
-        if (MainRoll(ref main, rolls, "exp-plus", 16) == 0) award++;
-        if (MainRoll(ref main, rolls, "exp-minus", 16) == 0) award--;
-        award = Math.Max(1, award);
+        var awardRolls = new List<PhysicalRoll>();
+        int award = BattleRewards.Award(accumulated, true, ref main, awardRolls);
+        rolls.AddRange(awardRolls.Select(r => new Battle01MainRandomRoll(r.Purpose, r.Range, r.Before, r.After, r.Result)));
         int after = actor.Stats.CurrentExp!.Value + award;
         if (after >= 100) throw new Battle01PhysicalAttackUnsupportedException("levelUp");
         return new(actor, target, terrain, multiplier, effect with { Rolls = rolls.AsReadOnly() },

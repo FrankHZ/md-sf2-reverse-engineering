@@ -66,6 +66,14 @@ func _run() -> void:
             await _physical(initial, arguments.has("--reverse-kills"))
             _finish()
             return
+        if arguments[case_index + 1] == "followups":
+            var shape_index := arguments.find("--followup-shape")
+            if shape_index < 0 or shape_index + 1 >= arguments.size():
+                failures.append("Missing follow-up observation shape.")
+            else:
+                await _followups(initial, arguments[shape_index + 1])
+            _finish()
+            return
         failures.append("Unknown observation case.")
         _finish()
         return
@@ -290,6 +298,58 @@ func _physical(initial: Dictionary, reverse: bool) -> void:
     _check(second.actor == initial.actors[1].id and second.actors[second_index].x == null
         and not second.actors[second_index].visible, "Second death cleans up and returns actual control")
     _check(second.thinkingSeed == initial.thinkingSeed, "Stay AI does not consume thinking RNG")
+
+func _followups(initial: Dictionary, shape: String) -> void:
+    var expected: Dictionary = {
+        "sticky": {"hits": ["first", "second", "counter"], "hp": 493, "target_hp": 453, "exp": 2, "seed": 0x3A1E1234, "draws": 20},
+        "counter": {"hits": ["first", "counter"], "hp": 491, "target_hp": 474, "exp": 3, "seed": 0x557E1234, "draws": 14},
+        "ally-death": {"hits": ["first", "counter"], "hp": 0, "target_hp": 478, "exp": 99, "seed": 0x4CCA1234, "draws": 10},
+        "second-death": {"hits": ["first", "second"], "hp": 500, "target_hp": 0, "exp": 24, "seed": 0xD1F61234, "draws": 12}
+    }.get(shape, {})
+    if expected.is_empty():
+        failures.append("Unknown follow-up shape.")
+        return
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    await _press(KEY_TAB)
+    var selected := _read("followup-selected")
+    _check(selected.failure == null and selected.target == initial.actors[2].id
+        and selected.mainSeed == initial.mainSeed, "Follow-up selection leaves the battle untouched")
+    await _press(KEY_ENTER)
+    var result := _read("followup-resolved-next-control")
+    _check(result.failure == null and result.actor == initial.actors[1].id, "One action returns the next living player")
+    _check(result.actors[0].hp == expected.hp and result.actors[2].hp == expected.target_hp
+        and result.actors[0].exp == expected.exp, "Actual follow-up HP and aggregate EXP")
+    _check(result.mainSeed == expected.seed and result.thinkingSeed == initial.thinkingSeed, "Exact naturally carried action seeds")
+    var hits: Array = []
+    var draws := 0
+    var commits := 0
+    for observation in result.observations:
+        if observation.Kind.begins_with("physical-"):
+            hits.append(observation.Kind.trim_prefix("physical-"))
+            var counter: bool = observation.Kind == "physical-counter"
+            _check(observation.Actor.Value == (initial.actors[2].id if counter else initial.actor)
+                and observation.Target.Value == (initial.actor if counter else initial.actors[2].id),
+                "Semantic attack observation preserves actor/target reversal")
+        if observation.RandomRange != null:
+            draws += 1
+        if observation.Kind == "action-committed":
+            commits += 1
+    _check(hits == expected.hits and draws == expected.draws and commits == 1, "Source-ordered bounded chain and one atomic action")
+    var enemy_dead: bool = expected.target_hp == 0
+    _check(result.gold == initial.gold + (19 if enemy_dead else 0), "One configured kill reward only")
+    if shape == "ally-death":
+        _check(result.actors[0].x == null and not result.actors[0].visible
+            and result.actors[0].defeats == 7 and result.roster.contains("DEFEATS 7"), "Counter death clears actor node and projects defeat accounting")
+    if enemy_dead:
+        _check(result.actors[2].x == null and not result.actors[2].visible and result.actors[0].kills == 1,
+            "Second-hit death cancels counter and clears the enemy exactly once")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var next_round := _read("followup-next-round")
+    _check(next_round.round == 2 and next_round.actor == (initial.actors[1].id if expected.hp == 0 else initial.actor),
+        "Next round excludes any dead actor and returns actual living control")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

@@ -7,7 +7,7 @@ create evidence for the original game. Rows describe the current legacy implemen
 controlled-route limitations, separately from the authored engine table below.
 [Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 provides common-session authored admission and connected HEAL/STAY battles;
-[first M2](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
+[M2 physical](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
 adds the ordinary physical/death/reward chain. Completed old checks remain evidence of their named
 scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplete.
 
@@ -21,8 +21,8 @@ scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplet
 | Automatic battle continuation | **Implemented:** dead queued entries skip, configured Stay AI executes, sentinel starts the next generated round, and Application stops at player input or a bounded simulation tick. |
 | Godot input and projection | **Implemented:** actual keyboard input and semantic HUD/actor nodes; direct no-image observations pass for both packages. Authored export packaging and original presentation remain unclaimed. |
 | Private battle/content and map programs | **Unsupported on the common path:** M2/M3 own real rule/configuration/program migration. The temporary reference assembly retains explicit old consumers and removal points. |
-| Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status-free, no equipment, prowess 0/3; dodge/critical/spread, EXP/gold, ordinary enemy cleanup, kill count and next living control. Both authored physical packages support either legal kill order. |
-| Physical follow-ups and remaining battle behavior | **Unsupported:** reached valid double/counter, level-up, leader-death programs and terminal outcome/return reject the whole action. General AI, other movetypes/prowess, equipment/status/special effects and private admission are not implemented by this subset. |
+| Ordinary physical attack and rewards | **Implemented subset:** regular-ground, status-free, no equipment, prowess 0/3; source-ordered first/second/reversed counter, dodge/critical/spread, per-action EXP/gold, ordinary enemy/ally cleanup, capped kills/defeats and next living control. Both authored physical packages support either legal kill order. |
+| Remaining battle behavior | **Unsupported:** reached level-up, leader-death programs and terminal outcome/return reject the whole action. General AI, other movetypes/prowess, equipment/status/special effects and private admission are not implemented by this subset. |
 
 ## Legacy Reference Matrix
 

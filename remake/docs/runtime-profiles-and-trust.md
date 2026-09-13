@@ -17,7 +17,7 @@ checks are not universal gameplay predicates. The accepted
 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
-| `public-authored` | default local start or `--authored-package <path>` | validated authored battle, actors, terrain and spell definitions | implemented semantic HEAL/STAY subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `public-authored` | default local start or `--authored-package <path>` | validated authored battle, actors, terrain, spells and physical/reward definitions | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
 | `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
@@ -44,7 +44,8 @@ authored export packaging or original fidelity.
 
 Physical capability is optional per actor: `physical` is a closed object with `movementType`
 (currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, `gold` (0–65535),
-`kills` (0–9999), and `special` (currently `none`). Other movetypes, prowess or special rules return
+`kills` (0–9999), and `special` (currently `none`). Optional `defeats` (0–9999) supplies the
+initial defeat count; an absent value starts at zero. Other movetypes, prowess or special rules return
 Unsupported; an unpromoted priest cannot declare promoted EXP rules. Current ATT/DEF are explicit
 authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
 weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
@@ -52,8 +53,11 @@ weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zer
 Encounter `rewards`, when present, is closed to boolean `halvedExperience` and `initialGold`
 (0–9,999,999). Missing actor physical data or encounter rewards leaves physical commands Unsupported,
 without inventing defaults for the HEAL packages. Target death retains identity/accounting and sets
-its battlefield position to null. A reached valid double/counter, level-up, leader defeat or terminal
-outcome returns Unsupported before action publication. The two physical configurations
+its battlefield position to null. Ordinary first/second/reversed-counter hits resolve temporarily
+and publish as one action. Each hit truncates damage EXP before adding to the per-action accumulator;
+an original actor killed by the counter receives no final EXP or award RNG draws. Ordinary ally death
+increments capped defeats; enemy death credits one kill/gold award. A reached level-up, leader defeat
+or terminal faction outcome returns Unsupported before any hit or movement is published. The two physical configurations
 [`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
 

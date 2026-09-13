@@ -1479,7 +1479,7 @@ fixtures. The only additional constructed case has `expActor=1`, `class=4/classC
 `missingHp=9/preCapPower=15/recovery=9/eligible=true/rawHealingExp=18/computedHealingExp=18/
 finalAccumulator=18/capApplied=false`. This validates scalar arithmetic, not a positive future state.
 Two calls to `growth._rng_step`, starting word `0x74A7`, range16 each, reproduce words `EC82/02A1`
-and results14/0; the existing C# `Battle01EnemyPhysicalAttack.MainRoll` reproduces the full images.
+and results14/0; the shared C# `BattleRandom.NextMain` reproduces the full images; the reference projection retains their original field shape.
 
 The ignored `local/sarah-heal-plan/` receipts retain complete logs and source/probe copies.
 `diagnostic-02` restore/build/diagnostic and `source-03` static/scalar checks completed exit0/clean;

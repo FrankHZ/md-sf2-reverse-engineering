@@ -19,4 +19,5 @@ internal static class BattleRewards
 
     internal static uint Gold(uint current, uint award) => (uint)Math.Min(9_999_999UL, (ulong)current + award);
     internal static ushort Kills(ushort current) => (ushort)Math.Min(9999, current + 1);
+    internal static ushort Defeats(ushort current) => (ushort)Math.Min(9999, current + 1);
 }

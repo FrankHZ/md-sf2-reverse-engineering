@@ -81,19 +81,164 @@ public sealed class PhysicalBattleTests
     }
 
     [Theory]
-    [InlineData(2, "physical-double")]
-    [InlineData(52, "physical-counter")]
-    public void ReachedFollowupsRejectTheWholeProvisionalAction(int seed, string code)
+    [InlineData("stone-court", 2, 500, 456, 2, 0x5BDD1234u, 14, "first,second")]
+    [InlineData("stone-court", 55, 493, 478, 2, 0x557E1234u, 14, "first,counter")]
+    [InlineData("stone-court", 52, 500, 478, 1, 0xD22E1234u, 11, "first,counter")]
+    [InlineData("stone-court", 73, 493, 453, 2, 0x3A1E1234u, 20, "first,second,counter")]
+    [InlineData("stone-court", 385, 500, 447, 2, 0xCDA11234u, 17, "first,second,counter")]
+    [InlineData("stone-court", 976, 493, 479, 1, 0xE1F31234u, 14, "first,counter")]
+    [InlineData("river-post", 55, 491, 474, 3, 0x557E1234u, 14, "first,counter")]
+    public void NaturalFollowupsResolveOrderedHitsAndOneActionAward(string package, int seed,
+        int hp, int targetHp, int exp, uint finalSeed, int drawCount, string order)
     {
-        var session = Start("stone-court", d => ConfigureNonlethal(d, seed));
+        var session = FollowupStart(package, seed);
+        var before = session.Current;
+        var actor = before.Battle.Actors[0].Actor;
+        var target = before.Battle.Actors[2].Actor;
+        var result = Attack(session, target.Value);
+        var hits = result.Observations.Where(o => o.Kind.StartsWith("physical-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(order.Split(',').Select(kind => "physical-" + kind), hits.Select(o => o.Kind));
+        foreach (var hit in hits)
+            Assert.Equal(hit.Kind == "physical-counter" ? (target, actor) : (actor, target), (hit.Actor!.Value, hit.Target!.Value));
+        var rolls = result.Observations.Where(o => o.RandomRange is not null).ToArray();
+        Assert.Equal(drawCount, rolls.Length);
+        Assert.Equal((long)before.Battle.MainSeed, rolls[0].Before);
+        for (int i = 1; i < rolls.Length; i++) Assert.Equal(rolls[i - 1].After, rolls[i].Before);
+        Assert.Equal((long)finalSeed, rolls[^1].After);
+        Assert.Equal(finalSeed, session.Current.Battle.MainSeed);
+        Assert.Equal(before.Battle.ThinkingSeed, session.Current.Battle.ThinkingSeed);
+        Assert.Equal(hp, session.Current.Battle.GetActor(actor).Hp);
+        Assert.Equal(targetHp, session.Current.Battle.GetActor(target).Hp);
+        Assert.Equal(exp, session.Current.Battle.GetActor(actor).Exp);
+        Assert.Equal(before.Battle.Gold, session.Current.Battle.Gold);
+        Assert.Single(result.Observations, o => o.Kind == "exp");
+        Assert.Single(result.Observations, o => o.Kind == "action-committed");
+        Assert.Equal(before.Battle.Actors[1].Actor, session.Current.Selection!.Actor);
+        // A counter is a reaction, not consumption of the counterattacker's queued turn.
+        Assert.Contains(result.Observations, o => o.Kind == "ai-stay" && o.Actor == target);
+        if (seed == 73) Assert.Equal(new ushort?[] { 0, 26, 6 },
+            rolls.Where(o => o.Kind == "rng-counter").Select(o => o.RandomValue));
+        if (seed == 385) Assert.Equal(new ushort?[] { 11, 0, 24 },
+            rolls.Where(o => o.Kind == "rng-counter").Select(o => o.RandomValue));
+        if (seed == 976) Assert.Equal((ushort)0, rolls.Last(o => o.Kind == "rng-double").RandomValue);
+    }
+
+    [Fact]
+    public void ACarriedSecondRoundCanNaturallyCounterWithoutResettingRng()
+    {
+        var session = FollowupStart("stone-court", 42);
+        Stay(session);
+        Stay(session);
+        Assert.Equal(2, session.Current.Battle.Round);
+        Assert.Equal(0xEE281234u, session.Current.Battle.MainSeed);
+        var result = Attack(session, "raider");
+        Assert.Contains(result.Observations, o => o.Kind == "physical-counter");
+        Assert.Equal(0xDAA61234u, session.Current.Battle.MainSeed);
+        Assert.Equal(493, session.Current.Battle.GetActor(new("swordsman")).Hp);
+        Assert.Equal(478, session.Current.Battle.GetActor(new("raider")).Hp);
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp);
+    }
+
+    [Fact]
+    public void EachHitTruncatesDamageExperienceBeforeAddingToTheActionAccumulator()
+    {
+        var session = FollowupStart("stone-court", 2, d => d["actors"]![2]!["maxHp"] = 550);
+        Attack(session, "raider");
+        // Hits20/24 earn floor(1000/550)+floor(1200/550)=1+2. Halving gives1,
+        // whereas incorrectly combining damage first would award2 on these same final rolls.
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(456, session.Current.Battle.GetActor(new("raider")).Hp);
+        Assert.Equal(0x5BDD1234u, session.Current.Battle.MainSeed);
+    }
+
+    [Fact]
+    public void LethalSecondHitClearsEvenAnAlreadyRequestedCounterAndAwardsOneKill()
+    {
+        var session = FollowupStart("stone-court", 73, d => d["actors"]![2]!["hp"] = 35);
+        var result = Attack(session, "raider");
+        Assert.Equal(new[] { "physical-first", "physical-second" },
+            result.Observations.Where(o => o.Kind.StartsWith("physical-", StringComparison.Ordinal)).Select(o => o.Kind));
+        Assert.Equal(new long?[] { 35, 11 }, result.Observations.Where(o => o.Kind == "hp").Select(o => o.Before));
+        Assert.Equal(new long?[] { 11, 0 }, result.Observations.Where(o => o.Kind == "hp").Select(o => o.After));
+        Assert.Equal(12, result.Observations.Count(o => o.RandomRange is not null));
+        Assert.Equal(0xD1F61234u, session.Current.Battle.MainSeed);
+        Assert.Equal(24, session.Current.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Kills);
+        Assert.Equal(119u, session.Current.Battle.Gold);
+        Assert.Null(session.Current.Battle.GetActor(new("raider")).Position);
+        Assert.Contains(result.Observations, o => o.Kind == "dead-entry-skipped" && o.Actor == new ActorRef("raider"));
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(9999, 9999)]
+    public void LethalCounterCleansAnOrdinaryAllyAndSkipsExperienceAndAwardRandomness(int defeats, int expected)
+    {
+        var session = FollowupStart("stone-court", 55, d =>
+        {
+            d["actors"]![0]!["hp"] = 1;
+            d["actors"]![0]!["exp"] = 99;
+            d["actors"]![0]!["physical"]!["defeats"] = defeats;
+        });
+        var result = Attack(session, "raider");
+        var dead = session.Current.Battle.GetActor(new("swordsman"));
+        Assert.Equal(0, dead.Hp);
+        Assert.Null(dead.Position);
+        Assert.Equal(expected, dead.Defeats);
+        Assert.Equal(99, dead.Exp);
+        Assert.Equal(478, session.Current.Battle.GetActor(new("raider")).Hp);
+        Assert.Equal(0x4CCA1234u, session.Current.Battle.MainSeed);
+        Assert.Equal(10, result.Observations.Count(o => o.RandomRange is not null));
+        Assert.DoesNotContain(result.Observations, o => o.Kind is "exp" or "rng-exp-plus" or "rng-exp-minus" or "gold");
+        Assert.Equal(100u, session.Current.Battle.Gold);
+        Assert.Equal(new ActorRef("lookout"), session.Current.Selection!.Actor);
+        Stay(session);
+        Assert.Equal(2, session.Current.Battle.Round);
+        Assert.Equal(new ActorRef("lookout"), session.Current.Selection!.Actor);
+        Assert.DoesNotContain(session.Current.Battle.Queue, entry => entry.ActorSlot == 4);
+    }
+
+    [Fact]
+    public void CounterUsesTheMovedOriginalActorsLandEffect()
+    {
+        var session = FollowupStart("stone-court", 55, d =>
+        {
+            d["encounters"]![0]!["placements"]![2]!["y"] = 2;
+            d["terrains"]![0]!["rows"]![2] = "#2232222#";
+        });
+        Accept(session, new Move(ExplorationDirection.North));
+        Attack(session, "raider");
+        var actor = session.Current.Battle.GetActor(new("swordsman"));
+        Assert.Equal(new MapPosition(3, 2), actor.Position);
+        Assert.Equal(495, actor.Hp); // floor(14*205/256)=11, counter halves to5, spread range1.
+        Assert.Equal(0x557E1234u, session.Current.Battle.MainSeed);
+    }
+
+    [Theory]
+    [InlineData("level", 73, "level-up")]
+    [InlineData("leader", 55, "leader-defeat-program")]
+    [InlineData("last-ally", 331, "battle-outcome-program")]
+    public void UnsupportedFollowupSettlementRollsBackEveryHitAndProvisionalMovement(string boundary, int seed, string code)
+    {
+        var session = FollowupStart("stone-court", seed, d =>
+        {
+            d["encounters"]![0]!["placements"]![2]!["y"] = 2;
+            if (boundary == "level") d["actors"]![0]!["exp"] = 99;
+            else d["actors"]![0]!["hp"] = 1;
+            if (boundary == "leader") d["actors"]![0]!["physical"]!["leader"] = true;
+            if (boundary == "last-ally") d["actors"]![1]!["hp"] = 0;
+        });
+        Accept(session, new Move(ExplorationDirection.North));
         Select(session, "raider");
         var before = session.Current;
         var result = Send(session, new Confirm());
         Assert.Equal(code, result.Failure!.Code);
         Assert.Equal(SessionFailureKind.UnsupportedCapability, result.Failure.Kind);
+        Assert.Same(before, result.Snapshot);
         Assert.Same(before, session.Current);
         Assert.Empty(result.Observations);
-        // Retry is deterministic; neither failed temporary hit nor RNG becomes persistent.
+        Assert.Equal(new MapPosition(3, 3), before.Battle.GetActor(new("swordsman")).Position);
+        Assert.Equal(new MapPosition(3, 2), before.Selection!.Preview.Destination);
         Assert.Equal(code, Send(session, new Confirm()).Failure!.Code);
         Assert.Same(before, session.Current);
     }
@@ -195,6 +340,19 @@ public sealed class PhysicalBattleTests
         Assert.Equal("leader-defeat-program", failed.Failure.Code);
         Assert.Equal(SessionFailureKind.UnsupportedCapability, failed.Failure.Kind);
     }
+
+    private static GameSession FollowupStart(string package, int seed, Action<JsonNode>? change = null) =>
+        Start(package, d =>
+        {
+            d["start"]!["mainSeed"] = ((uint)seed << 16) | 0x1234u;
+            foreach (int index in new[] { 0, 2 })
+            {
+                d["actors"]![index]!["hp"] = 500;
+                d["actors"]![index]!["maxHp"] = 500;
+            }
+            d["actors"]![2]!["attack"] = package == "stone-court" ? 18 : 26;
+            change?.Invoke(d);
+        });
 
     private static void ConfigureNonlethal(JsonNode d, int seed)
     {

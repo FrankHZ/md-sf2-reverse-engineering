@@ -98,7 +98,7 @@ internal sealed partial class BattleMapViewport : Control
     internal IEnumerable<object> ObserveActors(IEnumerable<BattleActorState> actors) => actors.Select(a =>
     {
         var node = _markers[a.Actor];
-        return new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, x = a.Position?.X, y = a.Position?.Y,
+        return new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
             nodeX = node.Position.X, nodeY = node.Position.Y, visible = node.Visible, text = node.Text,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
     });

@@ -21,13 +21,17 @@ a service mesh, a general ECS, or an emulator-backed gameplay core.
 direction for the command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
 new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
 Live state, validated content and implemented capability admit commands on M1's authored battle
-path. The first M2 physical rule chain uses that same dispatcher and state. Application advances until real player input or an automatic-work tick boundary; Godot consumes
+path. The M2 physical rule chain uses that same dispatcher and state. Application advances until real player input or an automatic-work tick boundary; Godot consumes
 semantic commands and observations. General presentation/program waits remain future capabilities.
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
 `PhysicalStrikeRules`, `BattleRewards` and `PlayerPhysicalAttack` now own ordinary physical construction,
-settlement and atomic state transition. Dead combatants retain identity/HP/accounting but have no
+settlement and atomic state transition. `PlayerPhysicalAttack` constructs at most three source-ordered
+hits on temporary HP, carries sticky reaction decisions and aggregates one award before publication.
+Shared strike/reward functions remain the calculation owners; reference DTOs only project their
+results. Semantic observations carry both actor and target for reversal. Dead combatants retain
+identity/HP/kill-and-defeat accounting but have no
 battlefield position; occupancy and presentation read that authoritative state.
 The [current M1 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 adds movement/cancellation, common session/content admission and connected authored battles.
