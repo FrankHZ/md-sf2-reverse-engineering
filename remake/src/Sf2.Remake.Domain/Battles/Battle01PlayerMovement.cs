@@ -73,7 +73,7 @@ public sealed class Battle01MovementRange
         (occupant == -1 || occupant == ActorIndex);
 }
 
-public enum Battle01PlayerMovementStage { Selection, ActionChoice, TargetSelection }
+public enum Battle01PlayerMovementStage { Selection, ActionChoice, TargetSelection, HealingSpellSelection, HealingTargetSelection }
 
 public sealed class Battle01MovementPath
 {
@@ -92,15 +92,16 @@ public sealed class Battle01MovementPath
 public sealed class Battle01PlayerMovementSelection
 {
     internal Battle01PlayerMovementSelection(Battle01MovementRange range, Battle01MovementPath preview,
-        Battle01PlayerMovementStage stage, Battle01PlayerAttackSelection? attack = null)
+        Battle01PlayerMovementStage stage, Battle01PlayerAttackSelection? attack = null, Battle01PlayerHealingSelection? healing = null)
     {
-        Range = range; Preview = preview; Stage = stage; Attack = attack;
+        Range = range; Preview = preview; Stage = stage; Attack = attack; Healing = healing;
     }
     public Battle01MovementRange Range { get; }
     public Battle01MovementPath Preview { get; }
     public MapPosition Cursor => Preview.Positions[^1];
     public Battle01PlayerMovementStage Stage { get; }
     public Battle01PlayerAttackSelection? Attack { get; }
+    public Battle01PlayerHealingSelection? Healing { get; }
     public int GridCost => Range.Grid.CostAt(Cursor)!.Value;
     public bool CanConfirm => Range.CanStopAt(Cursor);
 }

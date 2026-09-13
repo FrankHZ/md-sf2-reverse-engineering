@@ -6,6 +6,23 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class Map3RuntimeProfileSelectionTests
 {
     [Fact]
+    public void SarahHealRequiresOneIndependentEarlyPrivateOptIn()
+    {
+        const string flag = "--private-battle01-sarah-heal";
+        var selected = Map3RuntimeProfileSelection.Parse(Battle01Arguments().Append(flag));
+        Assert.True(selected.IsAvailable); Assert.True(selected.SarahHealRequested); Assert.False(selected.ChesterFirstKillRequested);
+        Assert.False(Map3RuntimeProfileSelection.Parse(Battle01Arguments()).SarahHealRequested);
+        foreach (var arguments in new[] { Battle01Arguments().Append(flag).Append(flag), Battle01Arguments().Append(flag + "=true"),
+            Battle01Arguments().Append(flag).Append("--private-battle01-chester-first-kill"), new[] { flag },
+            Battle01Arguments().Where((_, i) => i != 2).Append(flag),
+            Battle01Arguments().Select(a => a == "--runtime-profile=private-local" ? "--runtime-profile=public-synthetic" : a).Append(flag) })
+        {
+            var result = Map3RuntimeProfileSelection.Parse(arguments);
+            Assert.False(result.IsAvailable); Assert.False(result.SarahHealRequested);
+        }
+    }
+
+    [Fact]
     public void ChesterFirstKillRequiresOneValuelessPrivateOptInWithCompleteBattleInputs()
     {
         const string flag = "--private-battle01-chester-first-kill";

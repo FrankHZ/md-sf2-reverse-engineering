@@ -69,6 +69,8 @@ public sealed class Battle01Stats
     public IReadOnlyList<byte> Spells { get; }
     internal Battle01Stats WithCurrentHp(ushort hp) => hp == HpCurrent ? this :
         new(Level, HpMax, hp, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills, CurrentDefeats);
+    internal Battle01Stats WithCurrentMp(byte mp) => mp == MpCurrent ? this :
+        new(Level, HpMax, HpCurrent, MpMax, mp, Attack, Defense, Agility, Move, Status, Items, Spells, CurrentExp, CurrentKills, CurrentDefeats);
     internal Battle01Stats WithCurrentExp(byte exp) => exp == CurrentExp ? this :
         new(Level, HpMax, HpCurrent, MpMax, MpCurrent, Attack, Defense, Agility, Move, Status, Items, Spells, exp, CurrentKills, CurrentDefeats);
     internal Battle01Stats WithCurrentKills(ushort kills) => kills == CurrentKills ? this :
@@ -124,7 +126,7 @@ public sealed class Battle01Combatant
         ? this : new(this, stats, AiBitfield, Position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection, DefeatPending, DefeatRecoveryPending }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted, EnemyTurnCompleted, RoundGenerated, PlayerAttackTargetSelection, DefeatPending, DefeatRecoveryPending, PlayerHealingSpellSelection, PlayerHealingTargetSelection }
 
 public sealed class Battle01InitializedState
 {
@@ -267,6 +269,8 @@ public sealed class Battle01InitializedState
         {
             Battle01PlayerMovementStage.Selection => Battle01Phase.PlayerMovementSelection,
             Battle01PlayerMovementStage.TargetSelection => Battle01Phase.PlayerAttackTargetSelection,
+            Battle01PlayerMovementStage.HealingSpellSelection => Battle01Phase.PlayerHealingSpellSelection,
+            Battle01PlayerMovementStage.HealingTargetSelection => Battle01Phase.PlayerHealingTargetSelection,
             _ => Battle01Phase.PlayerActionChoice,
         }
         : FirstRound is { RoundNumber: > 1 } round && (TurnCompletion is null || TurnCompletion.RoundNumber < round.RoundNumber)

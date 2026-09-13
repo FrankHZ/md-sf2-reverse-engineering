@@ -21,6 +21,7 @@ internal sealed record Map3RuntimeProfileSelection
     internal const string Battle01DataOption = "--private-battle01-data";
     internal const string Battle01SceneOption = "--private-battle01-scene";
     internal const string Battle01TerrainOption = "--private-battle01-terrain";
+    internal const string SarahHealOption = "--private-battle01-sarah-heal";
     internal const string ChesterFirstKillOption = "--private-battle01-chester-first-kill";
     private const string ProfileOption = "--runtime-profile";
     private const string ImportOption = "--canonical-map-import";
@@ -57,7 +58,7 @@ internal sealed record Map3RuntimeProfileSelection
         PrivateMap3WorldTreatment worldTreatment,
         string? diagnostic,
         PrivateBattle01InputPaths? battle01Inputs = null,
-        bool chesterFirstKillRequested = false)
+        bool chesterFirstKillRequested = false, bool sarahHealRequested = false)
     {
         RequestedProfile = requestedProfile;
         IsAvailable = isAvailable;
@@ -75,6 +76,7 @@ internal sealed record Map3RuntimeProfileSelection
         Diagnostic = diagnostic;
         Battle01Inputs = battle01Inputs;
         ChesterFirstKillRequested = chesterFirstKillRequested;
+        SarahHealRequested = sarahHealRequested;
     }
 
     internal Map3RuntimeProfile? RequestedProfile { get; }
@@ -107,6 +109,7 @@ internal sealed record Map3RuntimeProfileSelection
 
     internal PrivateBattle01InputPaths? Battle01Inputs { get; }
     internal bool ChesterFirstKillRequested { get; }
+    internal bool SarahHealRequested { get; }
 
     internal static Map3RuntimeProfileSelection Parse(IEnumerable<string> arguments)
     {
@@ -119,10 +122,20 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateCurrentAreaOverlayRequested = false;
         bool privateHudPreviewRequested = false;
         bool chesterFirstKillRequested = false;
+        bool sarahHealRequested = false;
 
         foreach (string argument in arguments)
         {
             ArgumentNullException.ThrowIfNull(argument);
+            if (argument == SarahHealOption || argument.StartsWith(SarahHealOption + "=", StringComparison.Ordinal))
+            {
+                if (sarahHealRequested || argument != SarahHealOption)
+                    return Unavailable(ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                        privateSmokeRequested, privateHudPreviewRequested,
+                        "The Sarah HEAL opt-in takes no value and may appear at most once.");
+                sarahHealRequested = true;
+                continue;
+            }
             if (argument == ChesterFirstKillOption || argument.StartsWith(ChesterFirstKillOption + "=", StringComparison.Ordinal))
             {
                 if (chesterFirstKillRequested || argument != ChesterFirstKillOption)
@@ -259,7 +272,7 @@ internal sealed record Map3RuntimeProfileSelection
 
         values.TryGetValue(ProfileOption, out string? profileValue);
         Map3RuntimeProfile? profile = ParseKnownProfile(profileValue);
-        bool hasPrivateInputs = chesterFirstKillRequested || values.ContainsKey(ImportOption) ||
+        bool hasPrivateInputs = sarahHealRequested || chesterFirstKillRequested || values.ContainsKey(ImportOption) ||
             values.ContainsKey(Battle01DataOption) ||
             values.ContainsKey(Battle01SceneOption) ||
             values.ContainsKey(Battle01TerrainOption) ||
@@ -433,6 +446,9 @@ internal sealed record Map3RuntimeProfileSelection
                     "Battle 01 requires all three explicit fully qualified data, scene and terrain paths.");
             battle01Inputs = new(data!, scene!, terrain!);
         }
+        if (sarahHealRequested && (chesterFirstKillRequested || battle01Inputs is null))
+            return Unavailable(profile, privateSmokeRequested, privateHudPreviewRequested,
+                "Select only the Sarah HEAL comparison, with complete explicit Battle 01 inputs.");
         if (chesterFirstKillRequested && battle01Inputs is null)
             return Unavailable(profile, privateSmokeRequested, privateHudPreviewRequested,
                 "The Chester first-kill comparison requires explicit Battle 01 inputs.");
@@ -448,7 +464,7 @@ internal sealed record Map3RuntimeProfileSelection
                 presentationAssetRoot,
                 presentationAssetCommit,
                 presentationManifestDigest,
-                battle01Inputs, chesterFirstKillRequested);
+                battle01Inputs, chesterFirstKillRequested, sarahHealRequested);
         }
 
         if (!privateBaseAtlasRequested)
@@ -475,7 +491,7 @@ internal sealed record Map3RuntimeProfileSelection
             presentationManifestDigest,
             worldTreatment,
             diagnostic: null,
-            battle01Inputs, chesterFirstKillRequested);
+            battle01Inputs, chesterFirstKillRequested, sarahHealRequested);
     }
 
     private static string? ValueOption(string argument)
@@ -558,7 +574,7 @@ internal sealed record Map3RuntimeProfileSelection
         string? presentationAssetCommit = null,
         string? presentationManifestDigest = null,
         PrivateBattle01InputPaths? battle01Inputs = null,
-        bool chesterFirstKillRequested = false) =>
+        bool chesterFirstKillRequested = false, bool sarahHealRequested = false) =>
         new(
             profile,
             true,
@@ -574,7 +590,7 @@ internal sealed record Map3RuntimeProfileSelection
             presentationManifestDigest,
             PrivateMap3WorldTreatment.ExactNearest,
             diagnostic: null,
-            battle01Inputs, chesterFirstKillRequested);
+            battle01Inputs, chesterFirstKillRequested, sarahHealRequested);
 
     private static Map3RuntimeProfileSelection Unavailable(
         Map3RuntimeProfile? profile,

@@ -7,11 +7,11 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
-    internal static Battle01InitializedState Enemy128DefeatBoundary() =>
-        FirstAllyDefeatBoundary(bowieDefeats:0,afterFirstKill:true);
+    internal static Battle01InitializedState Enemy128DefeatBoundary(byte? sarahExp = null) =>
+        FirstAllyDefeatBoundary(bowieDefeats:0,afterFirstKill:true,sarahExp:sarahExp);
 
-    internal static Battle01InitializedState Enemy128DefeatCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
-        Enemy128DefeatBoundary(),128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
+    internal static Battle01InitializedState Enemy128DefeatCompleted(byte? sarahExp = null) => Battle01EnemyPhysicalAttack.CompleteNext(
+        Enemy128DefeatBoundary(sarahExp),128,Battle01PhysicalCompletionPolicy.ControlledChesterDefeatAfterFirstKill);
 
     [Fact]
     public void Enemy128DefeatPreservesChestersCreditedKillAndEveryPriorReceipt()
@@ -236,12 +236,12 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     internal static Battle01InitializedState FirstAllyDefeatBoundary(ushort? defeats = 0, ushort? bowieDefeats = null,
-        bool afterFirstKill = false)
+        bool afterFirstKill = false, byte? sarahExp = null)
     {
         // Existing authored combat fixture supplies the comparison before any physical receipt.
         // The separate required Content test owns real transport, initialization and terrain.
         var current = AttackBoundary(0, firstDefeatAccounting: true, chesterExp: 0, chesterDefeats: defeats,
-            bowieDefeats: bowieDefeats, chesterKills: afterFirstKill ? (ushort)0 : null);
+            bowieDefeats: bowieDefeats, chesterKills: afterFirstKill ? (ushort)0 : null, sarahExp: sarahExp);
         var stay = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats;
         for (int step=0;step<80;step++)
         {
@@ -667,7 +667,8 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     internal static Battle01InitializedState AttackBoundary(byte? currentExp = null, bool firstDefeatAccounting = false,
-        byte? chesterExp = null, ushort? chesterDefeats = null, ushort? bowieDefeats = null, ushort? chesterKills = null)
+        byte? chesterExp = null, ushort? chesterDefeats = null, ushort? bowieDefeats = null, ushort? chesterKills = null,
+        byte? sarahExp = null)
     {
         var current = Battle01EnemyPursuitTests.RoundThree();
         // The earlier movement-only authored helper has no equipment. Supply the accepted combat
@@ -679,7 +680,9 @@ public sealed class Battle01EnemyPhysicalAttackTests
         {
             // Explicit authored comparison fixture matching the selected-input allied stat roles.
             roster[1] = roster[1].WithStats(new(1, 11, 11, 10, 10, 9, 5, 5, 5, 0,
-                [213, 0, 0, 127], [0, 63, 63, 63]));
+                [213, 0, 0, 127], [0, 63, 63, 63], sarahExp));
+            if (sarahExp is not null)
+                roster[1] = new(roster[1].Deployment, roster[1].Stats, 4, null, roster[1].AiBitfield, roster[1].Position);
             roster[2] = roster[2].WithStats(new(1, 11, 11, 0, 0, 8, 5, 7, 7, 0,
                 [184, 0, 127, 127], [63, 63, 63, 63], chesterExp, chesterKills, chesterDefeats));
         }

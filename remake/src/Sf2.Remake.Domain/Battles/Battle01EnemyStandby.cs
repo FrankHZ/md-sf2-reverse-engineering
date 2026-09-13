@@ -117,7 +117,7 @@ public static class Battle01EnemyStandby
             throw new ArgumentException("Retain the first-round main RNG, cleared tested mask and inactive flags.", "round");
     }
 
-    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp, ushort? ChesterDefeats, ushort? BowieDefeats, ushort? ChesterKills) RequireThinkingHistory(Battle01InitializedState current)
+    internal static (uint? Gold, ushort? BowieKills, byte? ChesterExp, ushort? ChesterDefeats, ushort? BowieDefeats, ushort? ChesterKills, byte? SarahExp) RequireThinkingHistory(Battle01InitializedState current)
     {
         if (current.DefeatPending is not null)
             return RequireThinkingHistory(Battle01TurnCompletion.RequireDefeatPending(current));
@@ -164,6 +164,16 @@ public static class Battle01EnemyStandby
             {
                 if (receipt.EnemyStandby is not null || receipt.EnemyPursuit is not null || receipt.EnemyPhysicalAttack is not null)
                     throw new ArgumentException("Player receipts cannot carry an enemy decision.", "completion");
+                if (receipt.PlayerHealing is { } healing)
+                {
+                    Battle01TurnCompletion.ValidateHealingReceipt(receipt);
+                    if (seed != healing.SeedCopy || !Battle01EnemyPhysicalAttack.SameStats(stats[1], healing.Effect.ActorAfterStats) ||
+                        !Battle01EnemyPhysicalAttack.SameStats(stats[0], healing.Effect.TargetAfterStats))
+                        throw new ArgumentException("Healing MP, HP, EXP and seed copy must remain linked.", "heal.history");
+                    RewindMain(healing.MainSeedBefore, healing.Effect.MainSeedAfter);
+                    stats[1] = healing.Actor.Stats; stats[0] = healing.Target.Stats;
+                    damaged.Add(1); damaged.Add(0);
+                }
                 if (receipt.PlayerPhysicalAttack is { } player)
                 {
                     Battle01PlayerPhysicalAttack.ValidateDecision(player);
@@ -279,7 +289,8 @@ public static class Battle01EnemyStandby
                     Math.Max(2, current.FirstRound?.RoundNumber ?? 2), (unit.AiBitfield & 1) != 0);
             else if (damaged.Contains(unit.Index) || original.CurrentExp is not null)
             {
-                Battle01EnemyPhysicalAttack.RequireTargetProfile(unit.WithStats(original));
+                if (unit.Index == 1) Battle01PlayerHealing.RequireSupportOrigin(unit.WithStats(original));
+                else Battle01EnemyPhysicalAttack.RequireTargetProfile(unit.WithStats(original));
                 if (original.CurrentExp is not (null or 0))
                     throw new ArgumentException("Known player EXP must rewind to the declared zero input.", "attack.history");
             }
@@ -292,7 +303,7 @@ public static class Battle01EnemyStandby
         }
         if (current.Roster.Any(unit => unit.Stats.HpCurrent == 0))
             Battle01TurnCompletion.RequireContinuingNoEffectState(current);
-        return (gold, stats[0].CurrentKills, stats[2].CurrentExp, stats[2].CurrentDefeats, stats[0].CurrentDefeats, stats[2].CurrentKills);
+        return (gold, stats[0].CurrentKills, stats[2].CurrentExp, stats[2].CurrentDefeats, stats[0].CurrentDefeats, stats[2].CurrentKills, stats[1].CurrentExp);
     }
 
     private static Battle01InitializedState CompleteAdmittedEnemy(Battle01InitializedState current, int actorIndex,

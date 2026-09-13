@@ -6,7 +6,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
 
-internal enum PrivateBattle01Input { None, Enter, North, East, South, West, Confirm, Cancel, Attack }
+internal enum PrivateBattle01Input { None, Enter, North, East, South, West, Confirm, Cancel, Attack, Magic }
 
 // Thin consumer: the session remains the sole owner of admission and battle snapshots.
 internal static class PrivateBattle01Ui
@@ -16,17 +16,18 @@ internal static class PrivateBattle01Ui
 
     internal static string? Apply(GameSession session, IOriginalBattle01StartupSource? source,
         PrivateBattle01Input input, OriginalBattle01ControlledArrivalInputs? arrivalInputs = null,
-        bool chesterFirstKillRequested = false)
+        bool chesterFirstKillRequested = false, bool sarahHealRequested = false)
     {
         if (session.PrivateOriginalBattle01 is not { } current)
         {
             if (input != PrivateBattle01Input.Enter) return "Pending: N starts the controlled battle.";
             var preparation = session.PreparePrivateOriginalBattle01Startup(
                 session.PrivateOriginalBattle01Admission, source,
+                sarahHealRequested ? OriginalBattle01ControlledPartyPreset.SarahHealComparison :
                 chesterFirstKillRequested ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison :
                     OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
-                chesterFirstKillRequested ? null : OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison,
-                chesterFirstKillRequested ? null : arrivalInputs);
+                (chesterFirstKillRequested || sarahHealRequested) ? null : OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison,
+                (chesterFirstKillRequested || sarahHealRequested) ? null : arrivalInputs);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -40,7 +41,9 @@ internal static class PrivateBattle01Ui
             if (candidate is null) return "First control unavailable: current slot is sentinel.";
             return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.Value.CombatantIndex) switch
             {
-                PrivateOriginalBattle01FirstControlEntered => chesterFirstKillRequested
+                PrivateOriginalBattle01FirstControlEntered => sarahHealRequested
+                    ? "Sarah HEAL comparison selected. EXP 0 supplied before battle. First player ready."
+                    : chesterFirstKillRequested
                     ? "Chester first-kill comparison selected. First player ready."
                     : arrivalInputs is null
                     ? "Granseal return comparison selected. First player ready."
@@ -85,6 +88,36 @@ internal static class PrivateBattle01Ui
         if (current.Battle.FirstControl is not { } control) return null;
         if (input == PrivateBattle01Input.Enter)
             return "Battle already initialized; current actor and round retained.";
+        if (control.Movement.Stage is Battle01PlayerMovementStage.HealingSpellSelection or Battle01PlayerMovementStage.HealingTargetSelection ||
+            (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice && input == PrivateBattle01Input.Magic))
+        {
+            bool targeting = control.Movement.Stage == Battle01PlayerMovementStage.HealingTargetSelection;
+            PrivateOriginalBattle01PlayerHealingResult? healing = input switch
+            {
+                PrivateBattle01Input.Magic when control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice =>
+                    session.BeginPrivateOriginalBattle01PlayerHealing(current, control.ActorIndex),
+                PrivateBattle01Input.Confirm when !targeting => session.SelectPrivateOriginalBattle01HealingSpell(current, control.ActorIndex, 0),
+                PrivateBattle01Input.Confirm => session.ConfirmPrivateOriginalBattle01PlayerHealing(current, control.ActorIndex),
+                PrivateBattle01Input.Cancel => session.CancelPrivateOriginalBattle01PlayerHealing(current, control.ActorIndex),
+                PrivateBattle01Input.North or PrivateBattle01Input.West when targeting => session.CyclePrivateOriginalBattle01HealingTarget(current, control.ActorIndex, -1),
+                PrivateBattle01Input.South or PrivateBattle01Input.East when targeting => session.CyclePrivateOriginalBattle01HealingTarget(current, control.ActorIndex, 1),
+                _ => null,
+            };
+            return healing switch
+            {
+                PrivateOriginalBattle01PlayerHealingApplied { Operation: PrivateOriginalBattle01PlayerHealingOperation.Confirm } applied => DispatchNext(session, applied.Snapshot),
+                PrivateOriginalBattle01PlayerHealingApplied applied => applied.Snapshot.Battle.Phase switch
+                {
+                    Battle01Phase.PlayerHealingSpellSelection => "HEAL 1: costs 3 MP. Space selects; Backspace returns to action choice.",
+                    Battle01Phase.PlayerHealingTargetSelection => applied.Snapshot.Battle.FirstControl!.Movement.Healing!.TargetIndex == 0
+                        ? "Bowie selected. Space casts HEAL 1; Backspace returns to spell choice."
+                        : "Sarah is in range. Self-heal unsupported. I/J/K/L selects Bowie; Backspace cancels.",
+                    _ => "Magic cancelled. Provisional position retained; Backspace restores turn origin.",
+                },
+                PrivateOriginalBattle01PlayerHealingRejected rejected => rejected.Diagnostic.Message,
+                _ => null,
+            };
+        }
         if (control.Movement.Stage == Battle01PlayerMovementStage.TargetSelection ||
             (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice && input == PrivateBattle01Input.Attack))
         {
@@ -121,9 +154,11 @@ internal static class PrivateBattle01Ui
                     _ => "STAY unavailable.",
                 };
             if (input != PrivateBattle01Input.Cancel)
-                return "Action choice: A selects Attack; Space commits STAY; Backspace cancels.";
+                return current.Preparation.Party.Id == OriginalBattle01ControlledPartyPreset.SarahHealComparisonId && control.ActorIndex == 1 && current.Battle.FirstRound!.RoundNumber == 13
+                    ? "Action choice: M selects Magic; Space commits STAY; Backspace cancels."
+                    : "Action choice: A selects Attack; Space commits STAY; Backspace cancels.";
         }
-        if (input is PrivateBattle01Input.Attack or PrivateBattle01Input.None) return null;
+        if (input is PrivateBattle01Input.Attack or PrivateBattle01Input.Magic or PrivateBattle01Input.None) return null;
 
         PrivateOriginalBattle01PlayerMovementResult result;
         if (input == PrivateBattle01Input.Confirm)
@@ -250,6 +285,7 @@ public sealed partial class Map3Root
 {
     private IOriginalBattle01StartupSource? _privateBattle01Source;
     private bool _chesterFirstKillRequested;
+    private bool _sarahHealRequested;
     private PrivateBattle01Presenter? _privateBattle01Presenter;
     private PrivateLocalPresentationRasterMount? _privateBattle01Atlas;
 
@@ -268,7 +304,7 @@ public sealed partial class Map3Root
         if (input == PrivateBattle01Input.None) return true;
         string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input,
             _privatePresenter?.CanDisplayArrival == true ? OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison : null,
-            _chesterFirstKillRequested);
+            _chesterFirstKillRequested, _sarahHealRequested);
         if (outcome is null) return true;
         if (_session.PrivateOriginalMapArrival is { } arrival)
         {

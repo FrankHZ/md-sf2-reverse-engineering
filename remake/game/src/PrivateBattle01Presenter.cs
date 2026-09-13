@@ -15,7 +15,7 @@ internal sealed record PrivateBattle01Projection(
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
     string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null,
-    bool CanEnterExploration = false, ushort? ChesterKills = null, bool DefeatedTurnCompleted = false);
+    bool CanEnterExploration = false, ushort? ChesterKills = null, bool DefeatedTurnCompleted = false, bool HealingCompleted = false);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -100,6 +100,13 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string? attackResult = null;
         for (var receipt = battle.TurnCompletion; receipt is not null; receipt = receipt.Previous)
         {
+            if (receipt.PlayerHealing is { } healing)
+            {
+                attackResult = $"A1 HEAL 1 -> A0: HP {healing.Target.Stats.HpCurrent} -> {healing.Effect.TargetAfterStats.HpCurrent}." +
+                    $"\nSarah MP {healing.Actor.Stats.MpCurrent} -> {healing.Effect.ActorAfterStats.MpCurrent}; " +
+                    $"EXP {healing.Actor.Stats.CurrentExp} -> {healing.Effect.ActorAfterStats.CurrentExp} (+{healing.Effect.AwardedExp}).";
+                break;
+            }
             if (receipt.EnemyPhysicalAttack is { } enemy)
             {
                 attackResult = $"{UnitTag(enemy.ActorIndex)} -> {UnitTag(enemy.TargetIndex)}: " +
@@ -147,6 +154,12 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 : canRequestDefeatReturn ? "Space: request Granseal return. Exploration unavailable."
                 : "Recovery applied. Input closed. Return unavailable.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
+            Battle01Phase.PlayerActionChoice when actor == 1 && battle.FirstRound?.RoundNumber == 13 && battle.Roster[1].Stats.CurrentExp == 0 =>
+                "M: Magic   Space: STAY   Backspace: cancel relocation",
+            Battle01Phase.PlayerHealingSpellSelection => "HEAL 1 (3 MP)   Space: select   Backspace: action choice",
+            Battle01Phase.PlayerHealingTargetSelection when movement?.Healing?.TargetIndex == 0 =>
+                "I/J: previous   K/L: next   Space: heal Bowie   Backspace: spell choice",
+            Battle01Phase.PlayerHealingTargetSelection => "Self-heal unsupported. I/J/K/L: select Bowie   Backspace: spell choice",
             Battle01Phase.PlayerActionChoice => "A: Attack   Space: STAY   Backspace: cancel relocation",
             Battle01Phase.PlayerAttackTargetSelection => "I/J: previous   K/L: next   Space: attack   Backspace: action choice",
             Battle01Phase.PlayerTurnCompleted or Battle01Phase.EnemyTurnCompleted when battle.FirstRound is { CurrentCandidate: null } =>
@@ -162,13 +175,13 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
             movement?.Stage == Battle01PlayerMovementStage.Selection && movement.CanConfirm, controls, status,
             completion?.EnemyPursuit is not null, battle.DefeatPending is not null || completion?.EnemyPhysicalAttack is not null || completion?.PlayerPhysicalAttack is not null,
-            attackResult, movement?.Attack?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills,
+            attackResult, movement?.Attack?.TargetIndex ?? movement?.Healing?.TargetIndex, battle.CurrentGold, battle.Roster[0].Stats.CurrentKills,
             string.Join("\n", battle.Roster.Where(unit => unit.Index < 128).Select(unit =>
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
-                $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}" +
+                (unit.Index == 1 && unit.Stats.CurrentExp is not null ? $"\nMP {unit.Stats.MpCurrent} EXP {unit.Stats.CurrentExp}" : $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}") +
                 (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration,
-            battle.Roster[2].Stats.CurrentKills, completion?.DefeatedTurnCompleted == true);
+            battle.Roster[2].Stats.CurrentKills, completion?.DefeatedTurnCompleted == true, completion?.PlayerHealing is not null);
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
@@ -194,7 +207,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         string cursor = view.Cursor is null ? "unavailable" : $"({view.Cursor.X},{view.Cursor.Y})";
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
         var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
-        string completionKind = view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
+        string completionKind = view.HealingCompleted ? "HEAL 1" : view.PhysicalAttackCompleted ? "Physical attack" : view.PursuitCompleted ? "Pursuit + STAY" : "STAY";
         string completedActorText = view.DefeatedTurnCompleted
             ? $"Dead turn completed: {UnitTag(view.CompletedActorIndex!.Value)} defeated and unplaced"
             : view.CompletedActorIndex is { } completedActor
@@ -212,7 +225,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +
             $"Grid cost: {view.GridCost?.ToString() ?? "-"}   Path cost: {view.PathCost?.ToString() ?? "-"}   Budget: {view.Budget?.ToString() ?? "-"}\n" +
-            (view.SelectedTargetIndex is { } target ? $"Attack target: {UnitTag(target)} ({target})" :
+            (view.SelectedTargetIndex is { } target ? $"{(view.Phase == Battle01Phase.PlayerHealingTargetSelection ? "HEAL 1" : "Attack")} target: {UnitTag(target)} ({target})" :
                 $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}");
         static string UnitLine(PrivateBattle01Unit unit) =>
             $"{UnitTag(unit.Index)} ({unit.Position.X},{unit.Position.Y}) HP {unit.Hp}" +

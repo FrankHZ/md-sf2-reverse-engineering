@@ -21,7 +21,7 @@ public sealed partial class GameSession
         if (expected is null || !ReferenceEquals(expected, current)) return DefeatedTurnRejected("snapshot");
         if (current.Preparation.Party.GetAdmissionDiagnostic() is { } failure)
             return new PrivateOriginalBattle01TurnCompletionRejected(failure);
-        if (current.Preparation.Party.Id != OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId)
+        if (current.Preparation.Party.Id is not (OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparisonId or OriginalBattle01ControlledPartyPreset.SarahHealComparisonId))
             return DefeatedTurnRejected("party.deadTurnInput");
         Battle01InitializedState battle;
         try
@@ -31,7 +31,7 @@ public sealed partial class GameSession
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(battle, current.Preparation.Party.CurrentGold,
                 current.Preparation.Party.Allies[0].CurrentKills, current.Preparation.Party.Allies[2].CurrentExp,
                 current.Preparation.Party.Allies[2].CurrentDefeats, current.Preparation.Party.Allies[0].CurrentDefeats,
-                current.Preparation.Party.Allies[2].CurrentKills);
+                current.Preparation.Party.Allies[2].CurrentKills, current.Preparation.Party.Allies[1].CurrentExp);
         }
         catch (ArgumentException error) { return DefeatedTurnRejected(error.ParamName ?? "deadTurn"); }
         var next = new PrivateOriginalBattle01SessionSnapshot(current.Preparation, battle,

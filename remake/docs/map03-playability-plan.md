@@ -1327,8 +1327,11 @@ All paths below are under `remake/`; `(new)` means the bounded owner does not ex
 | `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3RuntimeProfileSelectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Logical/physical facade equivalence, early option admission, Magic/cancel projection and exact old-route image regressions. |
 | `docs/map03-playability-plan.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md` | Record only the reached capability, controlled-input distinction, reproduction and remaining Unknowns. |
 
-This proposes 31 exact paths, including four new files: the two bounded production owners and their
-Domain/Application test owners. Before writing, recount actual ownership and check competing
+The authorized implementation owns 32 exact paths, including four new files: the two bounded production owners and their
+Domain/Application test owners. The additional existing `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs`
+passes the optional Sarah support input through `Enemy128DefeatCompleted`, `Enemy128DefeatBoundary`,
+`FirstAllyDefeatBoundary` and the pre-physical `AttackBoundary` fixture. Its defaults retain every old
+fixture value; this authored fixture is not original-input evidence. Before writing, recount actual ownership and check competing
 worktrees/topics. If existing helper dependencies require another path, report that concrete need
 rather than copying an old helper chain or silently expanding ownership.
 

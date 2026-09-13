@@ -72,6 +72,8 @@ public sealed class OriginalBattle01ControlledPartyPreset
     public const string ChesterDefeatComparisonId = "private-local-battle01-chester-defeats0-inputs-v1";
     public const string ChesterFirstKillComparisonId = "private-local-battle01-chester-kills0-inputs-v1";
 
+    public const string SarahHealComparisonId = "private-local-battle01-sarah-heal-exp0-inputs-v1";
+
     public OriginalBattle01ControlledPartyPreset(string id, uint randomSeed, byte difficulty,
         IEnumerable<OriginalBattle01ControlledAlly> allies, ushort? randomSeedCopy = null, uint? currentGold = null)
     {
@@ -159,17 +161,28 @@ public sealed class OriginalBattle01ControlledPartyPreset
                 currentKills: 0, currentDefeats: ally.CurrentDefeats)
             : ally), ComparisonSeedCopy, LeaderDefeatComparison.CurrentGold);
 
+    // Authored early support EXP only; Sarah's kills/defeats and natural EXP remain unspecified.
+    public static OriginalBattle01ControlledPartyPreset SarahHealComparison { get; } = new(
+        SarahHealComparisonId, ComparisonSeed, 0,
+        ChesterFirstKillComparison.Allies.Select(ally => ally.Id == 1
+            ? new OriginalBattle01ControlledAlly(ally.Id, ally.ClassId, ally.Level, ally.HpMax, ally.HpCurrent,
+                ally.MpMax, ally.MpCurrent, ally.EffectiveAttack, ally.EffectiveDefense, ally.EffectiveAgility,
+                ally.EffectiveMove, ally.StatusEffects, ally.Items, ally.Spells, currentExp: 0,
+                currentKills: ally.CurrentKills, currentDefeats: ally.CurrentDefeats)
+            : ally), ComparisonSeedCopy, ChesterFirstKillComparison.CurrentGold);
+
     public OriginalBattle01StartupDiagnostic? GetAdmissionDiagnostic()
     {
         if (Id != ComparisonId && Id != PlayerAttackComparisonId && Id != FirstDefeatComparisonId &&
             Id != ChesterPlayerAttackComparisonId && Id != ChesterDefeatComparisonId && Id != LeaderDefeatComparisonId &&
-            Id != ChesterFirstKillComparisonId)
+            Id != ChesterFirstKillComparisonId && Id != SarahHealComparisonId)
             return new("party.id", "Only the named controlled comparison presets are admitted.");
         if (RandomSeed != ComparisonSeed) return new("party.randomSeed", "The comparison seed must be explicitly 0x1234.");
         if (RandomSeedCopy != ComparisonSeedCopy)
             return new("party.randomSeedCopy", "The independent comparison seed-copy must be explicitly 0x1234.");
         if (Difficulty != 0) return new("party.difficulty", "The comparison uses explicit difficulty zero.");
-        var expected = Id == ChesterFirstKillComparisonId ? ChesterFirstKillComparison :
+        var expected = Id == SarahHealComparisonId ? SarahHealComparison :
+            Id == ChesterFirstKillComparisonId ? ChesterFirstKillComparison :
             Id == LeaderDefeatComparisonId ? LeaderDefeatComparison :
             Id == ChesterDefeatComparisonId ? ChesterDefeatComparison :
             Id == ChesterPlayerAttackComparisonId ? ChesterPlayerAttackComparison :

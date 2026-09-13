@@ -34,7 +34,7 @@ public sealed class Battle01EnemyStandbyTests
         var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(input,json);
         Assert.ThrowsAny<ArgumentException>(()=>Battle01FirstRound.EnterNext(input));
         Assert.Equal(frozen,JsonSerializer.Serialize(input,json));
-        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(source));
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0, (byte?)null), Battle01EnemyStandby.RequireThinkingHistory(source));
     }
 
 
@@ -42,7 +42,7 @@ public sealed class Battle01EnemyStandbyTests
     public void Dead129TurnRewindsAsNoChangeBeforeTheIndependentAllyDeathAndCreditedKill()
     {
         var after=Battle01TurnCompletionTests.Dead129Completed();var r=after.TurnCompletion!;
-        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0, (byte?)null), Battle01EnemyStandby.RequireThinkingHistory(after));
         Assert.Equal(0,r.Previous!.CompletedActorIndex);
         var death=r.Previous.Previous!;var kill=death.Previous!;
         Assert.Equal((128,2),(death.CompletedActorIndex,kill.CompletedActorIndex));
@@ -58,7 +58,7 @@ public sealed class Battle01EnemyStandbyTests
     public void Enemy128DefeatRewindsDeathThenTheIndependentChesterKillAndCounter()
     {
         var after=Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted();
-        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)0,(ushort?)0,(ushort?)0, (byte?)null), Battle01EnemyStandby.RequireThinkingHistory(after));
         Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,0,0,0);
         var death=after.TurnCompletion!;var kill=death.Previous!;
         Assert.Equal(((ushort)1,(byte?)54,(ushort?)1,(ushort?)0),
@@ -78,7 +78,7 @@ public sealed class Battle01EnemyStandbyTests
     public void ChesterFirstKillRewindsBothKillOwnersExpGoldAndCounterToSeparateEarlyInputs()
     {
         var after = Battle01PlayerPhysicalAttackTests.ChesterFirstKillCompleted();
-        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)null,(ushort?)null,(ushort?)0),Battle01EnemyStandby.RequireThinkingHistory(after));
+        Assert.Equal(((uint?)0,(ushort?)0,(byte?)0,(ushort?)null,(ushort?)null,(ushort?)0, (byte?)null), Battle01EnemyStandby.RequireThinkingHistory(after));
         Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,chesterKills:0);
         Assert.Equal("accounting.input",Assert.Throws<ArgumentException>(() =>
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(after,0,0,0,chesterKills:1)).ParamName);
