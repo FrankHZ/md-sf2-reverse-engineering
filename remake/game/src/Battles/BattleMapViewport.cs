@@ -33,7 +33,7 @@ internal sealed partial class BattleMapViewport : Control
                     Color = tile == 255 ? new(0.12f, 0.14f, 0.18f) : tile == 3 ? new(0.19f, 0.34f, 0.24f) : new(0.25f, 0.29f, 0.35f),
                     MouseFilter = MouseFilterEnum.Ignore });
             }
-        foreach (var actor in definition.InitialActors)
+        foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 4, CellSize - 8),
                 ClipText = true, MouseFilter = MouseFilterEnum.Ignore };

@@ -14,9 +14,8 @@ public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior }
 public enum BattleController { Player, Stay, Commandset06Script3 }
 
-public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold,
-    ushort InitialKills, ushort InitialDefeats = 0);
-public sealed record BattleRewardDefinition(bool HalvedExperience, uint InitialGold);
+public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold);
+public sealed record BattleRewardDefinition(bool HalvedExperience);
 
 public sealed record HealingSpellDefinition(
     SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange);
@@ -56,10 +55,9 @@ public sealed class BattleActorDefinition
 public sealed class BattleActorState
 {
     internal BattleActorState(BattleActorDefinition definition, ushort hp, byte mp, byte exp,
-        MapPosition? position, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null)
+        MapPosition? position, ushort kills, ushort defeats, ActorRef? lastTarget = null)
     { Definition = definition; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
-        Kills = kills ?? definition.Physical?.InitialKills ?? 0;
-        Defeats = defeats ?? definition.Physical?.InitialDefeats ?? 0; LastTarget = lastTarget; }
+        Kills = kills; Defeats = defeats; LastTarget = lastTarget; }
     public BattleActorDefinition Definition { get; }
     public ActorRef Actor => Definition.Actor;
     public ushort Hp { get; }
@@ -74,15 +72,20 @@ public sealed class BattleActorState
         new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats, lastTarget ?? LastTarget);
 }
 
+public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, MapPosition Position)
+{
+    public ActorRef Actor => Definition.Actor;
+}
+
 public sealed class BattleDefinition
 {
     internal BattleDefinition(string encounter, MapId map, int width, int height,
-        IEnumerable<byte> terrain, IEnumerable<BattleActorState> actors,
+        IEnumerable<byte> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
-        InitialActors = Array.AsReadOnly(actors.ToArray());
+        Deployments = Array.AsReadOnly(deployments.ToArray());
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
         Rewards = rewards;
     }
@@ -91,7 +94,7 @@ public sealed class BattleDefinition
     public int Width { get; }
     public int Height { get; }
     public IReadOnlyList<byte> Terrain { get; }
-    public IReadOnlyList<BattleActorState> InitialActors { get; }
+    public IReadOnlyList<BattleDeploymentDefinition> Deployments { get; }
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public BattleRewardDefinition? Rewards { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
@@ -100,12 +103,12 @@ public sealed class BattleDefinition
 public sealed class EngineBattleState
 {
     internal EngineBattleState(BattleDefinition definition, IEnumerable<BattleActorState> actors,
-        uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry> queue, int cursor, uint? gold = null)
+        uint mainSeed, uint thinkingSeed, int round, IEnumerable<TurnOrderEntry> queue, int cursor, uint gold)
     {
         Definition = definition; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Round = round;
         Queue = Array.AsReadOnly(queue.ToArray()); Cursor = cursor;
-        Gold = gold ?? definition.Rewards?.InitialGold ?? 0;
+        Gold = gold;
     }
     public BattleDefinition Definition { get; }
     public IReadOnlyList<BattleActorState> Actors { get; }

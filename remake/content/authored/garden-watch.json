@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "package": "garden-watch",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -7,7 +7,40 @@
     "encounter": "garden-patrol",
     "initialVitals": "authored-controlled",
     "mainSeed": 305402420,
-    "thinkingSeed": 3405648436
+    "thinkingSeed": 3405648436,
+    "gold": 0,
+    "actors": [
+      {
+        "actor": "herbalist-b",
+        "hp": 8,
+        "mp": 12,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "scout-b",
+        "hp": 7,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "watcher-b",
+        "hp": 18,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      }
+    ]
   },
   "terrains": [
     {
@@ -51,15 +84,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 20,
-      "hp": 8,
       "maxMp": 12,
-      "mp": 12,
       "attack": 11,
       "defense": 6,
       "agility": 10,
       "move": 4,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [
         {
@@ -75,15 +104,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 10,
-      "hp": 7,
       "maxMp": 0,
-      "mp": 0,
       "attack": 11,
       "defense": 6,
       "agility": 4,
       "move": 5,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": []
     },
@@ -94,15 +119,11 @@
       "controller": "stay",
       "level": 1,
       "maxHp": 18,
-      "hp": 18,
       "maxMp": 0,
-      "mp": 0,
       "attack": 11,
       "defense": 6,
       "agility": 8,
       "move": 3,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": []
     }

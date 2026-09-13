@@ -163,7 +163,7 @@ public sealed class TargetSelectionTests
         var doc = Configure("stone-court");
         if (shape == "class") doc["actors"]![0]!["classRule"] = "ordinary";
         if (shape == "physical") doc["actors"]![0]!.AsObject().Remove("physical");
-        if (shape == "level") { doc["actors"]![1]!["exp"] = 99; doc["actors"]![2]!["hp"] = 1; }
+        if (shape == "level") { doc["start"]!["actors"]![1]!["exp"] = 99; doc["start"]!["actors"]![2]!["hp"] = 1; }
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc))).Session;
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var before = session.Current;
@@ -199,7 +199,7 @@ public sealed class TargetSelectionTests
         doc["start"]!["thinkingSeed"] = 0x00EF0042u;
         foreach (int index in new[] { 0, 1, 2 })
         {
-            doc["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
+            doc["start"]!["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
             doc["actors"]![index]!["defense"] = 4;
             doc["actors"]![index]!["attack"] = index == 2 ? 30 : 18;
             doc["actors"]![index]!["physical"]!["prowess"] = index == 2 ? 3 : 0;

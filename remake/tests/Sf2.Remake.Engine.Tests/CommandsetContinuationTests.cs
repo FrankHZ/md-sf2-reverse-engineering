@@ -215,7 +215,7 @@ public sealed class CommandsetContinuationTests
         d["start"]!["mainSeed"] = 0x002A1234u;
         foreach (int index in new[] { 0, 2 })
         {
-            d["actors"]![index]!["hp"] = 500; d["actors"]![index]!["maxHp"] = 500;
+            d["start"]!["actors"]![index]!["hp"] = 500; d["actors"]![index]!["maxHp"] = 500;
             d["actors"]![index]!["defense"] = 4;
         }
         d["actors"]![0]!["attack"] = 18; d["actors"]![0]!["physical"]!["prowess"] = 0;

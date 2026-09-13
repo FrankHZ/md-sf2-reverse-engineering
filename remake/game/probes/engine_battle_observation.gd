@@ -146,7 +146,7 @@ func _run() -> void:
     await _press(KEY_ENTER)
     await _press(KEY_X)
     var unsupported := _read("physical-unsupported")
-    _check(unsupported.failure == "physical-attack" and unsupported.failureKind == "UnsupportedCapability",
+    _check(unsupported.failure == "physical-definition" and unsupported.failureKind == "UnsupportedCapability",
         "Unsupported capability stays distinct in the live view")
     _finish()
 

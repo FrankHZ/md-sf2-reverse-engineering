@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -7,7 +7,40 @@
     "encounter": "yard-watch",
     "initialVitals": "authored-controlled",
     "mainSeed": 305402420,
-    "thinkingSeed": 3203334210
+    "thinkingSeed": 3203334210,
+    "gold": 0,
+    "actors": [
+      {
+        "actor": "medic-a",
+        "hp": 95,
+        "mp": 20,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "guard-a",
+        "hp": 9,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      },
+      {
+        "actor": "dummy-a",
+        "hp": 15,
+        "mp": 0,
+        "exp": 0,
+        "kills": 0,
+        "defeats": 0,
+        "status": "none",
+        "positionOverride": null
+      }
+    ]
   },
   "terrains": [
     {
@@ -53,15 +86,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 100,
-      "hp": 95,
       "maxMp": 20,
-      "mp": 20,
       "attack": 11,
       "defense": 6,
       "agility": 12,
       "move": 5,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": [
         {
@@ -77,15 +106,11 @@
       "controller": "player",
       "level": 1,
       "maxHp": 12,
-      "hp": 9,
       "maxMp": 0,
-      "mp": 0,
       "attack": 11,
       "defense": 6,
       "agility": 3,
       "move": 5,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": []
     },
@@ -96,15 +121,11 @@
       "controller": "stay",
       "level": 1,
       "maxHp": 15,
-      "hp": 15,
       "maxMp": 0,
-      "mp": 0,
       "attack": 11,
       "defense": 6,
       "agility": 7,
       "move": 5,
-      "exp": 0,
-      "status": "none",
       "items": [],
       "spells": []
     }

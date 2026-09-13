@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime;
 
@@ -16,15 +17,27 @@ public sealed class GameSession
         return source.Read() switch
         {
             ScenarioReadRejected rejected => new SessionStartFailed(rejected.Failure),
-            ScenarioReadAccepted accepted => StartCommon(accepted.Definition),
+            ScenarioReadAccepted accepted => Start(accepted.Definition, accepted.Start),
             _ => throw new InvalidOperationException("Unknown content admission result."),
         };
     }
 
-    private static SessionStarted StartCommon(ScenarioDefinition definition)
+    public static SessionStartOutcome Start(ScenarioDefinition definition, BattleStartInput start)
     {
-        var result = BattleAdvancer.Start(definition);
-        return new(new GameSession(result.Snapshot), result);
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(start);
+        if (start.Encounter is null || !definition.Encounters.TryGetValue(start.Encounter, out var encounter))
+            return new SessionStartFailed(new(SessionFailureKind.ContentError, "missing-encounter", "start.encounter", "missing encounter"));
+        try
+        {
+            var result = BattleAdvancer.Start(encounter, start);
+            return new SessionStarted(new GameSession(result.Snapshot), result);
+        }
+        catch (BattleRuleException error)
+        {
+            return new SessionStartFailed(new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.ContentError,
+                error.Code, error.Field, error.Code.Replace('-', ' ')));
+        }
     }
 
     public SessionResult Submit(CommandEnvelope envelope)

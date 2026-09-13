@@ -7,7 +7,12 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 The production Domain/Application/Content path runs configurable project-authored battle packages through
-one common session. Godot hosts real movement/action input and projects semantic results. The old
+one common session. Format-v2 packages separate immutable definitions/deployments from explicit
+per-session resources, counters, seeds and optional controlled placement overrides. The same admitted
+definition can start independent sessions through the common validated entry. This
+[content-model modernization](../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
+precedes private initialized-entry work; further source-semantic mappings remain separate slices.
+Godot hosts real movement/action input and projects semantic results. The old
 public-synthetic/private-local Map 3 routes are retained in a separate
 [transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and
 adapter scheduling remain explicit legacy limitations in the [audit](./docs/architecture-audit.md).

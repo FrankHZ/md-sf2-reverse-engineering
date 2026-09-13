@@ -77,7 +77,7 @@ public sealed class EnemyActionTests
             {
                 placements[0]!["x"] = 1; placements[0]!["y"] = 1;
                 placements[1]!["x"] = 3; placements[1]!["y"] = 3;
-                d["actors"]![1]!["hp"] = 500; d["actors"]![1]!["maxHp"] = 500;
+                d["start"]!["actors"]![1]!["hp"] = 500; d["actors"]![1]!["maxHp"] = 500;
             }
         });
         var result = Stay(session);
@@ -99,11 +99,11 @@ public sealed class EnemyActionTests
             Configure(d, 55);
             if (shape == "level")
             {
-                d["actors"]![0]!["exp"] = 99; d["actors"]![2]!["hp"] = 1;
+                d["start"]!["actors"]![0]!["exp"] = 99; d["start"]!["actors"]![2]!["hp"] = 1;
             }
             if (shape == "leader")
             {
-                d["actors"]![0]!["hp"] = 1; d["actors"]![0]!["physical"]!["leader"] = true;
+                d["start"]!["actors"]![0]!["hp"] = 1; d["actors"]![0]!["physical"]!["leader"] = true;
             }
         });
         Accept(session, new Move(ExplorationDirection.South));
@@ -136,8 +136,8 @@ public sealed class EnemyActionTests
         var doc = Document("stone-court"); Configure(doc, 7);
         doc["actors"]![0]!["agility"] = 20;
         doc["actors"]![2]!["agility"] = 158;
-        doc["actors"]![2]!["hp"] = 1;
-        doc["actors"]![0]!["physical"]!["kills"] = 9999;
+        doc["start"]!["actors"]![2]!["hp"] = 1;
+        doc["start"]!["actors"]![0]!["kills"] = 9999;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Null(started.Result.Failure);
         var state = started.Session.Current.Battle;
@@ -159,8 +159,8 @@ public sealed class EnemyActionTests
     public void EnemyKillDefeatsAllyOnceAndSkipsBothOfItsQueuedEntriesWithoutExperience()
     {
         var doc = Document("stone-court"); Configure(doc, 7);
-        doc["actors"]![0]!["agility"] = 128; doc["actors"]![0]!["hp"] = 1;
-        doc["actors"]![0]!["physical"]!["defeats"] = 9999;
+        doc["actors"]![0]!["agility"] = 128; doc["start"]!["actors"]![0]!["hp"] = 1;
+        doc["start"]!["actors"]![0]!["defeats"] = 9999;
         doc["actors"]![2]!["agility"] = 30;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Null(started.Result.Failure);
@@ -191,7 +191,7 @@ public sealed class EnemyActionTests
     {
         var doc = Document("stone-court"); Configure(doc, 55);
         doc["actors"]![2]!["agility"] = 30; doc["actors"]![0]!["agility"] = 1;
-        doc["actors"]![0]!["hp"] = 1; doc["actors"]![1]!["hp"] = 0;
+        doc["start"]!["actors"]![0]!["hp"] = 1; doc["start"]!["actors"]![1]!["hp"] = 0;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Equal("battle-outcome-program", started.Result.Failure!.Code);
         Assert.Equal(SessionStopReason.Unsupported, started.Session.Current.StopReason);
@@ -242,7 +242,7 @@ public sealed class EnemyActionTests
         doc["start"]!["mainSeed"] = ((uint)seed << 16) | 0x1234u;
         foreach (int index in new[] { 0, 2 })
         {
-            doc["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
+            doc["start"]!["actors"]![index]!["hp"] = 500; doc["actors"]![index]!["maxHp"] = 500;
             doc["actors"]![index]!["defense"] = 4;
         }
         doc["actors"]![0]!["attack"] = 18; doc["actors"]![0]!["physical"]!["prowess"] = 0;

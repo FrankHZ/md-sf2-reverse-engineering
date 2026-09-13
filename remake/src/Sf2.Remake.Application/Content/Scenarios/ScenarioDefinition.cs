@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
@@ -9,16 +10,20 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 
 public sealed class ScenarioDefinition
 {
-    internal ScenarioDefinition(string package, BattleDefinition battle, uint mainSeed, uint thinkingSeed)
-    { Package = package; Battle = battle; MainSeed = mainSeed; ThinkingSeed = thinkingSeed; }
+    internal ScenarioDefinition(string package, IEnumerable<BattleDefinition> encounters)
+    {
+        Package = package;
+        Encounters = new ReadOnlyDictionary<string, BattleDefinition>(
+            encounters.ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal));
+    }
     public string Package { get; }
-    public BattleDefinition Battle { get; }
-    public uint MainSeed { get; }
-    public uint ThinkingSeed { get; }
-    public string Origin => "public-authored-controlled-start";
+    public IReadOnlyDictionary<string, BattleDefinition> Encounters { get; }
 }
 
 public interface IScenarioSource { ScenarioReadResult Read(); }
 public abstract record ScenarioReadResult;
-public sealed record ScenarioReadAccepted(ScenarioDefinition Definition) : ScenarioReadResult;
+public sealed record ScenarioReadAccepted(ScenarioDefinition Definition, BattleStartInput Start) : ScenarioReadResult
+{
+    public string Origin => "public-authored-controlled-start";
+}
 public sealed record ScenarioReadRejected(SessionFailure Failure) : ScenarioReadResult;

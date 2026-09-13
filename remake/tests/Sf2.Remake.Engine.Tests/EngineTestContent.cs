@@ -19,8 +19,8 @@ internal static class EngineTestContent
         change?.Invoke(document);
         return Assert.IsType<SessionStarted>(GameSession.Start(Reader(document))).Session;
     }
-    internal static ScenarioDefinition Definition(string package = "practice-yard") =>
-        Assert.IsType<ScenarioReadAccepted>(new AuthoredScenarioPackageReader(PathFor(package)).Read()).Definition;
+    internal static ScenarioReadAccepted Admitted(string package = "practice-yard") =>
+        Assert.IsType<ScenarioReadAccepted>(new AuthoredScenarioPackageReader(PathFor(package)).Read());
     internal static SessionResult Send(GameSession session, SessionCommand command)
     {
         var current = session.Current;
