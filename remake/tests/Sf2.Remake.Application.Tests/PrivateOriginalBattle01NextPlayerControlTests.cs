@@ -8,6 +8,31 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalBattle01NextPlayerControlTests
 {
     [Fact]
+    public void FiveSurvivorRoundReturnsOnlyTheActualPlayerAndRetainsTheWholeReadyStateOnCancel()
+    {
+        var session=PrivateOriginalBattle01FirstRoundTests.FiveSurvivorSession();var boundary=session.PrivateOriginalBattle01!;
+        var generated=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(boundary)).Snapshot;
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlRejected>(session.EnterPrivateOriginalBattle01NextPlayerControl(generated,1));
+        foreach(int expected in new[]{128,130})
+        {
+            var current=session.PrivateOriginalBattle01!;int actor=current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+            Assert.Equal(expected,actor);Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(current,actor));
+        }
+        var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(
+            session.PrivateOriginalBattle01,session.PrivateOriginalBattle01!.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex)).Snapshot;
+        Assert.Equal((1,13,4),(ready.Battle.FirstControl!.ActorIndex,ready.Battle.FirstRound!.RoundNumber,ready.Battle.FirstRound.CurrentTurnOffset));
+        var json=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(ready.Battle,json);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready,1,new(11,15)));
+        Assert.Equal(2,session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,1));
+        var cancelled=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,1)).Snapshot;
+        Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(cancelled.Battle,json));Assert.Same(ready.Preparation,cancelled.Preparation);
+        Assert.IsType<PrivateOriginalBattle01NextPlayerControlRejected>(session.EnterPrivateOriginalBattle01NextPlayerControl(generated,1));
+        Assert.Same(cancelled,session.PrivateOriginalBattle01);
+    }
+
+
+    [Fact]
     public void Dead129TurnRelaysOnlyActualSarahAndCancelKeepsAllNinetyEightReceipts()
     {
         var session=PrivateOriginalBattle01TurnCompletionTests.Dead129Session(complete:true);var dead=session.PrivateOriginalBattle01!;

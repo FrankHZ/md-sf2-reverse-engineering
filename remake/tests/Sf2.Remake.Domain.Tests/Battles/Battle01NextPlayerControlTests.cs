@@ -8,6 +8,28 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 public sealed class Battle01NextPlayerControlTests
 {
     [Fact]
+    public void FiveSurvivorRoundDispatchesActualEnemiesBeforeSarahCanMoveAndCancel()
+    {
+        var boundary = Battle01FirstRoundTests.FiveSurvivorBoundary();
+        var current = Battle01FirstRound.EnterNext(boundary);
+        Assert.Throws<ArgumentException>(()=>Battle01NextPlayerControl.Enter(current,1));
+        foreach(int expected in new[]{128,130})
+        {
+            int actor=current.FirstRound!.CurrentCandidate!.Value.CombatantIndex; Assert.Equal(expected,actor);
+            current=Battle01EnemyPursuit.CompleteNext(current,actor,Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        }
+        var ready=Battle01NextPlayerControl.Enter(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
+        Assert.Equal((1,10,13,4,102),(ready.FirstControl!.ActorIndex,ready.FirstControl.Movement.Range.Budget,
+            ready.FirstRound!.RoundNumber,ready.FirstRound.CurrentTurnOffset,Battle01EnemyPursuitTests.Receipts(ready).Count()));
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(ready,json);
+        var moved=Battle01PlayerMovement.SelectDestination(ready,1,new(11,15));Assert.Equal(2,moved.FirstControl!.Movement.GridCost);
+        var cancelled=Battle01PlayerMovement.Cancel(Battle01PlayerMovement.Confirm(moved,1),1);
+        Assert.Equal(frozen,JsonSerializer.Serialize(cancelled,json));Assert.Equal(3,cancelled.Roster[0].Stats.HpCurrent);
+        Assert.Null(cancelled.Roster[1].Stats.CurrentExp); Assert.Equal((uint?)180,cancelled.CurrentGold);
+    }
+
+
+    [Fact]
     public void Dead129TurnActuallyRelays130AndSarahMoveCancelRetainsNinetyEight()
     {
         var dead=Battle01TurnCompletionTests.Dead129Completed();

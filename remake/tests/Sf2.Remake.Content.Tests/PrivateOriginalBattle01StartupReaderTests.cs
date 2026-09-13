@@ -13,6 +13,70 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateOriginalBattle01StartupReaderTests
 {
+    private static GameSession ReachRealFiveSurvivorBoundary()
+    {
+        var session=ReachRealChesterFirstKillSelection(OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison);
+        Assert.IsType<PrivateOriginalBattle01PlayerAttackApplied>(session.ConfirmPrivateOriginalBattle01PlayerAttack(session.PrivateOriginalBattle01,2));
+        Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,128));
+        MoveStay(0,new(11,13),4);
+        Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(session.PrivateOriginalBattle01,129));
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,130));
+        MoveStay(1,new(11,14),10);
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,133));
+        Assert.Equal((100,12,14),(ReceiptCount(session.PrivateOriginalBattle01!.Battle),session.PrivateOriginalBattle01.Battle.FirstRound!.RoundNumber,
+            session.PrivateOriginalBattle01.Battle.FirstRound.CurrentTurnOffset));
+        return session;
+        void MoveStay(int actor,MapPosition target,int cost)
+        {
+            Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01,actor,target));
+            Assert.Equal(cost,session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01,actor));
+        }
+    }
+
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void AcceptedSelectedInputsGenerateFiveSurvivorsAndRelayActualSarahMovementCancel()
+    {
+        var session=ReachRealFiveSurvivorBoundary();var before=session.PrivateOriginalBattle01!;
+        var json=new JsonSerializerOptions{MaxDepth=256};string frozen=JsonSerializer.Serialize(before.Battle,json);
+        Assert.Equal((0x98321234u,(ushort?)0x0234,(ushort)0),(before.Battle.RandomSeedImage,before.Battle.RandomSeedCopy,before.Battle.NewlyTestedRegionMask));
+        var round=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(before)).Snapshot;
+        Assert.Equal(new[]{new Battle01TurnEntry(128,6),new(130,6),new(1,5),new(133,5),new(0,3)}
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),59)),round.Battle.FirstRound!.Slots);
+        Assert.Equal((13,0,0x74A71234u),(round.Battle.FirstRound.RoundNumber,round.Battle.FirstRound.CurrentTurnOffset,round.Battle.RandomSeedImage));
+        Assert.Equal(7,round.Battle.NewlyTestedRegionMask);Assert.Same(before.Battle.TurnCompletion,round.Battle.TurnCompletion);
+        foreach(int expected in new[]{128,130})
+        {
+            var current=session.PrivateOriginalBattle01!;int actor=current.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex;
+            Assert.Equal(expected,actor);
+            Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(current,actor));
+        }
+        var ready=Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(
+            session.PrivateOriginalBattle01,session.PrivateOriginalBattle01!.Battle.FirstRound!.CurrentCandidate!.Value.CombatantIndex)).Snapshot;
+        Assert.Equal((102,1,10,4),(ReceiptCount(ready.Battle),ready.Battle.FirstControl!.ActorIndex,
+            ready.Battle.FirstControl.Movement.Range.Budget,ready.Battle.FirstRound!.CurrentTurnOffset));
+        string readyJson=JsonSerializer.Serialize(ready.Battle,json);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(ready,1,new(11,15)));
+        Assert.Equal(2,session.PrivateOriginalBattle01!.Battle.FirstControl!.Movement.GridCost);
+        Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,1));
+        var cancelled=Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.CancelPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,1)).Snapshot;
+        Assert.Equal(readyJson,JsonSerializer.Serialize(cancelled.Battle,json));Assert.Equal(frozen,JsonSerializer.Serialize(before.Battle,json));
+        Assert.Equal((new MapPosition(11,13),(ushort)3,(byte?)63,(ushort?)2,(ushort?)0),
+            (cancelled.Battle.Roster[0].Position,cancelled.Battle.Roster[0].Stats.HpCurrent,cancelled.Battle.Roster[0].Stats.CurrentExp,
+            cancelled.Battle.Roster[0].Stats.CurrentKills,cancelled.Battle.Roster[0].Stats.CurrentDefeats));
+        Assert.Equal(new MapPosition(11,14),cancelled.Battle.Roster[1].Position);Assert.Equal(11,cancelled.Battle.Roster[1].Stats.HpCurrent);
+        Assert.Equal(10,cancelled.Battle.Roster[1].Stats.MpCurrent);Assert.Null(cancelled.Battle.Roster[1].Stats.CurrentExp);
+        Assert.Null(cancelled.Battle.Roster[1].Stats.CurrentKills);Assert.Null(cancelled.Battle.Roster[1].Stats.CurrentDefeats);
+        Assert.Equal((uint?)180,cancelled.Battle.CurrentGold);Battle01PlayerPhysicalAttack.RequireAccountingInputs(cancelled.Battle,0,0,0,0,0,0);
+        Assert.All(cancelled.Battle.Roster.Where(u=>u.Index is 2 or 129 or 131 or 132),u=>{Assert.Null(u.Position);Assert.Equal(0,u.Stats.HpCurrent);});
+        Assert.Same(before.Preparation,cancelled.Preparation);Assert.Same(before.SourceLocomotion,cancelled.SourceLocomotion);Assert.Same(before.SourceBridge,cancelled.SourceBridge);
+        Assert.Null(cancelled.Preparation.ReturnInputs);Assert.Null(cancelled.Preparation.ArrivalInputs);
+    }
+
+
     [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
         "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
     public void AcceptedSelectedInputsCompleteDead129AndRelayActualSarahMovementCancel()

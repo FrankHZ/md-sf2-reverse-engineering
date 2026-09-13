@@ -66,6 +66,9 @@ public static class Battle01FirstRound
         RequireCurrentPrefix(current);
         Battle01EnemyStandby.RequireThinkingHistory(current);
         Battle01TurnCompletion.RequireContinuingNoEffectState(current);
+        if (current.Roster.Count(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null) == 5 &&
+            (order.RoundNumber != 12 || current.NewlyTestedRegionMask != 0))
+            throw new ArgumentException("The first five-survivor generation follows the completed R12 boundary.", "generation.history");
         if (order.RoundNumber == int.MaxValue) throw new ArgumentException("Round number is exhausted.", "roundNumber");
         return Generate(current, order.RoundNumber + 1, continuing: true);
     }
@@ -117,7 +120,7 @@ public static class Battle01FirstRound
         if (order is null) throw new ArgumentException("The current round is required.", "turnOrder");
         int[] actors = GenerationRoster(current, order.RoundNumber).Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
             .Select(unit => unit.Index).Order().ToArray();
-        if (actors.Length is < 6 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
+        if (actors.Length is < 5 or > 9 || order.Slots.Count != 64 || order.CurrentTurnOffset > actors.Length * 2 || order.CurrentTurnOffset % 2 != 0 ||
             !order.Slots.Take(actors.Length).Select(slot => (int)slot.CombatantIndex).Order().SequenceEqual(actors) ||
             order.Slots.Skip(actors.Length).Any(slot => !slot.IsSentinel))
             throw new ArgumentException("The complete current-round order must be retained.", "turnOrder");
@@ -136,6 +139,30 @@ public static class Battle01FirstRound
         }
         if (order.RoundNumber == 1 ? receipt is not null : receipt?.RoundNumber != order.RoundNumber - 1)
             throw new ArgumentException("The previous round's completion history must be retained.", "completion");
+        if (actors.Length == 5)
+        {
+            // This is the accepted first five-survivor generation, not arbitrary small-party
+            // admission. The current prefix above leaves receipt at the previous round's end.
+            if (order.RoundNumber != 13 || !actors.SequenceEqual(new[] { 0, 1, 128, 130, 133 }) ||
+                current.NewlyTestedRegionMask != (order.CurrentTurnOffset == 0 ? 7 : 0) ||
+                !current.RegionFlags90Through105.Take(3).All(flag => flag))
+                throw new ArgumentException("Retain the admitted five-survivor cohort and activation boundary.", "generation.history");
+            int count = 0;
+            foreach (int actor in new[] { 133, 1, 130, 129, 0, 128, 2 })
+            {
+                if (receipt is null || receipt.RoundNumber != 12 || receipt.CompletedActorIndex != actor ||
+                    !Battle01TurnCompletion.HasValidPolicy(receipt))
+                    throw new ArgumentException("Retain every visited slot of the seven-participant R12 generation.", "generation.history");
+                if (actor == 129) Battle01TurnCompletion.ValidateDefeatedTurnReceipt(receipt);
+                receipt = receipt.Previous; count++;
+            }
+            for (; receipt is not null; receipt = receipt.Previous) count++;
+            if (count != 100)
+                throw new ArgumentException("Retain the complete prior kill, ally-death and dead-turn history.", "generation.history");
+            RequireActivationState(current.Roster, current.RegionFlags90Through105, order.RoundNumber);
+            Battle01EnemyStandby.RequireThinkingHistory(current);
+            Battle01TurnCompletion.RequireContinuingNoEffectState(current);
+        }
     }
 
     internal static void RequireGenerationFromRecordedMain(Battle01InitializedState current, uint before, uint after,

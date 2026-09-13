@@ -7,6 +7,46 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01FirstRoundTests
 {
+    internal static Battle01InitializedState FiveSurvivorBoundary()
+    {
+        var current = Battle01NextPlayerControl.Enter(Battle01EnemyPhysicalAttackTests.Enemy128DefeatCompleted(), 0).State!;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 0, new(11,13)), 0), 0,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01TurnCompletion.CompleteDefeatedTurn(current, 129,
+            Battle01DefeatedTurnCompletionPolicy.ControlledEnemy129AfterChesterDefeat);
+        current = Battle01EnemyPursuit.CompleteNext(current, 130, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        current = Battle01NextPlayerControl.Enter(current, 1).State!;
+        current = Battle01TurnCompletion.CommitStay(Battle01PlayerMovement.Confirm(
+            Battle01PlayerMovement.SelectDestination(current, 1, new(11,14)), 1), 1,
+            Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        return Battle01EnemyPursuit.CompleteNext(current, 133, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+    }
+
+    [Fact]
+    public void FiveSurvivorGenerationRetainsSevenHistoricalParticipantsAndConsumesExactlyFifteenDraws()
+    {
+        var before = FiveSurvivorBoundary(); var json = new JsonSerializerOptions { MaxDepth=256 };
+        string frozen = JsonSerializer.Serialize(before,json);
+        Assert.Equal((100,12,14),(Battle01EnemyPursuitTests.Receipts(before).Count(),before.FirstRound!.RoundNumber,before.FirstRound.CurrentTurnOffset));
+        Assert.Equal(new[]{0,1,2,128,129,130,133},Battle01FirstRound.GenerationRoster(before,12)
+            .Where(u=>u.Stats.HpCurrent>0 && u.Position is not null).Select(u=>u.Index));
+        ushort word = before.GeneratorWord;
+        for (int i=0;i<5;i++) foreach (ushort range in new ushort[]{0,0,3}) Battle01FirstRound.NextRandom(ref word,range);
+        var after = Battle01FirstRound.EnterNext(before);
+        Assert.Equal((ushort)0x74A7,word); Assert.Equal(0x74A71234u,after.RandomSeedImage);
+        Assert.Equal((Battle01Phase.RoundGenerated,13,0,7),(after.Phase,after.FirstRound!.RoundNumber,after.FirstRound.CurrentTurnOffset,after.NewlyTestedRegionMask));
+        Assert.Equal(new[]{new Battle01TurnEntry(128,6),new(130,6),new(1,5),new(133,5),new(0,3)}
+            .Concat(Enumerable.Repeat(new Battle01TurnEntry(255,255),59)),after.FirstRound.Slots);
+        Assert.Same(before.TurnCompletion,after.TurnCompletion); Assert.Same(before.AiMemory,after.AiMemory);
+        Assert.Same(before.AiLastTargets,after.AiLastTargets); Assert.Same(before.Occupancy,after.Occupancy);
+        Assert.Equal((ushort?)0x0234,after.RandomSeedCopy); Assert.Equal(before.CurrentGold,after.CurrentGold);
+        for(int i=0;i<9;i++){Assert.Same(before.Roster[i].Stats,after.Roster[i].Stats);Assert.Equal(before.Roster[i].Position,after.Roster[i].Position);}
+        Battle01EnemyStandby.RequireThinkingHistory(after);
+        Assert.Equal(frozen,JsonSerializer.Serialize(before,json));
+    }
+
+
     [Fact]
     public void Dead129TurnPreservesAllSevenHistoricalSlotsAndDoesNotGenerateFromFiveSurvivors()
     {

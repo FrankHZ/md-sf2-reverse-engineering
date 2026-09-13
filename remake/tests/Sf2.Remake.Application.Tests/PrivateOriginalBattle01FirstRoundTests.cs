@@ -9,6 +9,44 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class PrivateOriginalBattle01FirstRoundTests
 {
+    internal static GameSession FiveSurvivorSession()
+    {
+        var session=PrivateOriginalBattle01EnemyPhysicalAttackTests.Enemy128DefeatSession();
+        Assert.IsType<PrivateOriginalBattle01EnemyPhysicalAttackCompleted>(session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(session.PrivateOriginalBattle01,128));
+        MoveStay(0,new(11,13));
+        Assert.IsType<PrivateOriginalBattle01DefeatedTurnCompleted>(session.CompletePrivateOriginalBattle01DefeatedTurn(session.PrivateOriginalBattle01,129));
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,130));
+        MoveStay(1,new(11,14));
+        Assert.IsType<PrivateOriginalBattle01EnemyPursuitCompleted>(session.CompletePrivateOriginalBattle01EnemyPursuit(session.PrivateOriginalBattle01,133));
+        return session;
+        void MoveStay(int actor,MapPosition destination)
+        {
+            Assert.IsType<PrivateOriginalBattle01NextPlayerControlEntered>(session.EnterPrivateOriginalBattle01NextPlayerControl(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01,actor,destination));
+            Assert.IsType<PrivateOriginalBattle01PlayerMovementApplied>(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,actor));
+            Assert.IsType<PrivateOriginalBattle01StayCommitted>(session.CommitPrivateOriginalBattle01Stay(session.PrivateOriginalBattle01,actor));
+        }
+    }
+
+    [Fact]
+    public void FiveSurvivorRoundPublishesOnceWithTheFullEarlyInputAndSourceProvenance()
+    {
+        var session=FiveSurvivorSession();var before=session.PrivateOriginalBattle01!;
+        var json=new System.Text.Json.JsonSerializerOptions{MaxDepth=256};string frozen=System.Text.Json.JsonSerializer.Serialize(before.Battle,json);
+        foreach(var invalid in new PrivateOriginalBattle01SessionSnapshot?[]{null,FiveSurvivorSession().PrivateOriginalBattle01,
+            new(before.Preparation,before.Battle,before.SourceLocomotion,before.SourceBridge)})
+            Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(invalid)).Diagnostic.Field);
+        var expected=Battle01FirstRound.EnterNext(before.Battle);
+        var after=Assert.IsType<PrivateOriginalBattle01FirstRoundEntered>(session.EnterPrivateOriginalBattle01NextRound(before)).Snapshot;
+        Assert.Equal(System.Text.Json.JsonSerializer.Serialize(expected,json),System.Text.Json.JsonSerializer.Serialize(after.Battle,json));
+        Assert.Same(before.Preparation,after.Preparation);Assert.Same(before.SourceSnapshot,after.SourceSnapshot);
+        Assert.Same(before.SourceLocomotion,after.SourceLocomotion);Assert.Same(before.SourceBridge,after.SourceBridge);
+        Assert.Equal("snapshot",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(before)).Diagnostic.Field);
+        Assert.Equal("round.phase",Assert.IsType<PrivateOriginalBattle01FirstRoundRejected>(session.EnterPrivateOriginalBattle01NextRound(after)).Diagnostic.Field);
+        Assert.Equal(frozen,System.Text.Json.JsonSerializer.Serialize(before.Battle,json));Assert.Same(after,session.PrivateOriginalBattle01);
+    }
+
+
     [Fact]
     public void ExactSentinelCommitsOneNewGenerationWithTheEntirePreviousSnapshotProvenance()
     {
