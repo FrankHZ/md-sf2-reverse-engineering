@@ -1763,8 +1763,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 }
             }
             var selectedBowie = _session.PrivateOriginalBattle01!;
-            PrivateOriginalBattle01SessionSnapshot completed105, generated14, endpoint;
-            string rejected;
+            bool reviewBowieCounter = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_BOWIE_COUNTER_REVIEW") == "1";
+            PrivateOriginalBattle01SessionSnapshot completed105, generated14, completed106, endpoint;
+            PrivateOriginalBattle01SessionSnapshot? counter107 = null;
+            string continuation;
             typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session, Copy(selectedBowie));
             try
             {
@@ -1782,35 +1784,78 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "Actual second generation retains105 and the complete stable order");
                 presenter.Project(generated14, "TEST COPY: R14 generated; no player control.");
                 await CaptureControl("70-second-five-survivor-generated-test-copy", "actual facade generation; production immediately dispatches");
-                rejected = PrivateBattle01Ui.DispatchNext(_session, generated14); endpoint = _session.PrivateOriginalBattle01!;
-                Require(rejected == "Enemy 133 physical attack rejected: attack.counterProfile; current state retained." &&
-                    endpoint.Battle.FirstRound is { RoundNumber: 14, CurrentTurnOffset: 2 } && endpoint.Battle.FirstControl is null &&
-                    endpoint.Battle.TurnCompletion is { CompletedActorIndex: 128, EnemyPhysicalAttack.TargetIndex: 0, EnemyPhysicalAttack.Effect.Damage: 3 } &&
-                    ReferenceEquals(endpoint.Battle.TurnCompletion.Previous, completed105.Battle.TurnCompletion) &&
-                    endpoint.Battle.RandomSeedImage == 0xAE581234 && endpoint.Battle.RandomSeedCopy == 0x0034 && endpoint.Battle.Roster[0].Stats.HpCurrent == 9,
-                    "Actual dispatcher completes128/106 then stops at133 counterProfile with no player");
-                string endpointFrozen = JsonSerializer.Serialize(endpoint, json);
-                Require(PrivateBattle01Ui.DispatchNext(_session, endpoint) == rejected && ReferenceEquals(endpoint, _session.PrivateOriginalBattle01) &&
-                    endpointFrozen == JsonSerializer.Serialize(_session.PrivateOriginalBattle01, json), "Rejected attack retains the whole106 snapshot and reference");
-                presenter.Project(endpoint, "TEST COPY: 128 completed; 133 counter unsupported.");
-                await CaptureControl("71-second-five-survivor-106-test-copy", "actual unchanged dispatcher; no later action is synthesized");
+                Require(_session.CompletePrivateOriginalBattle01EnemyPursuit(generated14, 128) is PrivateOriginalBattle01AttackSelectionRequired,
+                    "Actual128 reaches attack selection without publishing movement");
+                completed106 = ((PrivateOriginalBattle01EnemyPhysicalAttackCompleted)_session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(generated14, 128)).Snapshot;
+                Require(completed106.Battle.FirstRound is { RoundNumber: 14, CurrentTurnOffset: 2 } && completed106.Battle.FirstControl is null &&
+                    completed106.Battle.TurnCompletion is { CompletedActorIndex: 128, EnemyPhysicalAttack.TargetIndex: 0, EnemyPhysicalAttack.Effect.Damage: 3 } &&
+                    ReferenceEquals(completed106.Battle.TurnCompletion.Previous, completed105.Battle.TurnCompletion) &&
+                    completed106.Battle.RandomSeedImage == 0xAE581234 && completed106.Battle.RandomSeedCopy == 0x0034 && completed106.Battle.Roster[0].Stats.HpCurrent == 9,
+                    "Actual facade128 completion retains the accepted106 pre-primary boundary");
+                string beforeCounter = JsonSerializer.Serialize(completed106, json);
+                presenter.Project(completed106, "TEST COPY: 128 completed; 133 counter pending.");
+                await CaptureControl("71-second-five-survivor-106-test-copy", "actual facade boundary; production continues immediately");
+                if (reviewBowieCounter)
+                {
+                    Require(_session.CompletePrivateOriginalBattle01EnemyPursuit(completed106, 133) is PrivateOriginalBattle01AttackSelectionRequired,
+                        "Actual133 selects its physical branch without partial publication");
+                    counter107 = ((PrivateOriginalBattle01EnemyPhysicalAttackCompleted)_session.CompletePrivateOriginalBattle01EnemyPhysicalAttack(completed106, 133)).Snapshot;
+                    var receipt = counter107.Battle.TurnCompletion!; var attack = receipt.EnemyPhysicalAttack!; var counter = attack.Counterattack!;
+                    Require(ReferenceEquals(receipt.Previous, completed106.Battle.TurnCompletion) && receipt.CompletedActorIndex == 133 &&
+                        ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp) &&
+                        attack.TargetIndex == 0 && counter.Actor.Index == 0 && counter.Target.Index == 133 &&
+                        attack.Effect.Damage == 3 && counter.Effect.Damage == 2 && counter.AwardedExp == 10 &&
+                        attack.Effect.Reaction == new Battle01PhysicalReaction(0, -3, 0, 0, 1) &&
+                        counter.Effect.Reaction == new Battle01PhysicalReaction(133, -2, 0, 0, 1) &&
+                        counter.Actor.Stats.CurrentExp == 63 && counter.ActorAfterStats.CurrentExp == 73 &&
+                        counter107.Battle.FirstControl is null && counter107.Battle.FirstRound is { RoundNumber: 14, CurrentTurnOffset: 4 } &&
+                        counter107.Battle.RandomSeedImage == 0x33561234 && counter107.Battle.RandomSeedCopy == 0x0134,
+                        "Actual single107 records ordered primary/counter HP, Bowie's10EXP and all14 main draws");
+                    presenter.Project(counter107, "TEST COPY: 133 primary and Bowie counter completed in receipt107.");
+                    Require(presenter.Projection!.AttackResult == "E5 -> A0: hit 3. HP 9 -> 6.\nCounter: A0 -> E5: hit 2. HP 5 -> 3. EXP +10: 63 -> 73.",
+                        "Generic presenter retains both ordered HP effects and the actual allied EXP recipient");
+                    await CaptureControl("72-bowie-counter-107-test-copy", "actual atomic facade result before player dispatch");
+                }
+                continuation = PrivateBattle01Ui.DispatchNext(_session, _session.PrivateOriginalBattle01!); endpoint = _session.PrivateOriginalBattle01!;
+                Require(continuation == "Round 14. Player 0 ready." && endpoint.Battle.FirstControl?.ActorIndex == 0 &&
+                    endpoint.Battle.FirstRound is { RoundNumber: 14, CurrentTurnOffset: 4 } &&
+                    endpoint.Battle.Roster[0].Stats.HpCurrent == 6 && endpoint.Battle.Roster[0].Stats.CurrentExp == 73 &&
+                    endpoint.Battle.Roster.Single(u => u.Index == 133).Stats.HpCurrent == 3 &&
+                    endpoint.Battle.RandomSeedImage == 0x33561234 && endpoint.Battle.RandomSeedCopy == 0x0134,
+                    "Unchanged dispatcher returns actual Bowie107 control after the observed counter");
+                Require(beforeCounter == JsonSerializer.Serialize(completed106, json), "The complete pre-primary106 remains immutable");
             }
             finally { typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01))!.SetValue(_session, selectedBowie); presenter.Project(selectedBowie, "Bowie action choice. Space commits STAY."); }
             await PressBattleKey(Key.Space);
             Require(JsonSerializer.Serialize(endpoint, json) == JsonSerializer.Serialize(_session.PrivateOriginalBattle01, json) &&
-                presenter.Projection!.Status == rejected && !presenter.Projection.CanConfirm && !presenter.Projection.Controls.Contains("Space"),
-                "Physical STAY and whole automatic generation/dispatch match the API copy at first Unsupported");
-            await CaptureControl("72-second-five-survivor-actual-unsupported");
+                presenter.Projection!.Status == continuation && presenter.Projection.CanConfirm && presenter.Projection.Controls.Contains("Space"),
+                "Physical STAY and whole automatic generation/dispatch match the API copy at actual Bowie control");
+            await CaptureControl(reviewBowieCounter ? "73-bowie-counter-actual-ready" : "72-second-five-survivor-actual-ready");
+            if (reviewBowieCounter)
+            {
+                var nextControl = endpoint.Battle.FirstControl!; var nextOrigin = nextControl.Movement.Cursor;
+                var nextChoices = new[] { (Key.I, PrivateBattle01Input.North, new MapPosition(nextOrigin.X, nextOrigin.Y - 1)),
+                    (Key.L, PrivateBattle01Input.East, new MapPosition(nextOrigin.X + 1, nextOrigin.Y)),
+                    (Key.K, PrivateBattle01Input.South, new MapPosition(nextOrigin.X, nextOrigin.Y + 1)),
+                    (Key.J, PrivateBattle01Input.West, new MapPosition(nextOrigin.X - 1, nextOrigin.Y)) };
+                var nextChoice = nextChoices.First(c => nextControl.Movement.Range.CanStopAt(c.Item3));
+                await Step(nextChoice.Item1, nextChoice.Item2, "74-bowie-counter-next-player-preview");
+                await Step(Key.Space, PrivateBattle01Input.Confirm, "75-bowie-counter-next-player-confirm");
+                await Step(Key.Backspace, PrivateBattle01Input.Cancel, "76-bowie-counter-next-player-cancel");
+                Require(JsonSerializer.Serialize(endpoint, json) == JsonSerializer.Serialize(_session.PrivateOriginalBattle01, json),
+                    "Physical movement/confirm/cancel restores the entire actual107 ready snapshot");
+            }
             Require(bowieFrozen == JsonSerializer.Serialize(actual, json) && ReferenceEquals(ready.Preparation, endpoint.Preparation) &&
                 ReferenceEquals(ready.SourceLocomotion, endpoint.SourceLocomotion) && ReferenceEquals(ready.SourceBridge, endpoint.SourceBridge), "Original104 and all provenance retained");
             Battle01PlayerPhysicalAttack.RequireAccountingInputs(endpoint.Battle, 0, 0, 0, 0, 0, 0, 0);
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
-                status = "Pass", scope = "actual early HEAL, cost12 Bowie approach, second five-survivor generation and first real counterProfile Unsupported",
+                status = "Pass", scope = "actual early HEAL, second five-survivor generation, Bowie counter107 and actual usable Bowie control",
                 preparation = ready.Preparation.Party, ready104 = actual.Battle, completed105 = completed105.Battle, generated14 = generated14.Battle,
-                boundary = rejected, battle = endpoint.Battle, actualEarlyPreparation = true, exactCopiedAndPhysicalSnapshotMatch = true,
-                complete104Cancellation = true, rejected106Unchanged = true, frames = _frames
+                completed106 = completed106.Battle, counter107 = counter107?.Battle,
+                boundary = continuation, battle = endpoint.Battle, actualEarlyPreparation = true, exactCopiedAndPhysicalSnapshotMatch = true,
+                complete104Cancellation = true, prePrimary106Immutable = true, whole107MovementCancellation = reviewBowieCounter, frames = _frames
             }, json));
-            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} second-five-survivor-round boundary={rejected}");
+            GD.Print($"SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames={_frames.Count} post-heal-bowie-counter boundary={continuation}");
             return;
         }
         File.WriteAllText(Path.Combine(_output,"receipt.json"),JsonSerializer.Serialize(new{
