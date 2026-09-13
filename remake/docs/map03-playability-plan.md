@@ -1558,7 +1558,7 @@ Generation itself still commits no part of133's primary/counter action.
 | `remake/docs/map03-playability-plan.md` | Actual implemented endpoint, source distinction and Unknowns. |
 | `remake/docs/capability-status.md` | Admitted capability and remaining counter-profile boundary. |
 | `remake/docs/development-and-verification.md` | Required inputs, selected gates and targeted correction policy. |
-| `remake/docs/presentation-and-assets.md` | Native selector and frame-by-frame acceptance. |
+| `remake/docs/presentation-and-assets.md` | Native selectors and running-instance state/input acceptance. |
 
 The focused filter is `FullyQualifiedName~SecondFiveSurvivor`, paired with the existing first-round,
 thinking-history, healing and presenter owners. Domain/Application reuse the existing authored
@@ -1568,11 +1568,15 @@ terrain cost12. See [development and verification](./development-and-verificatio
 managed gate and the [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
 for actual dispatcher execution. In the existing Sarah native mode, set only the probe selector
 `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`; production still uses the original early Sarah flag.
-The original72-frame evidence retains the former Unsupported endpoint. The current counter extension
-adds actual107 and player cancellation; its native recipe distinguishes unchanged and changed
-frames and requires every changed image to be inspected at original1920×1080.
-Retain all335 previously accepted PNGs; compare the regenerated63-frame prefix directly by bytes.
-The older225+47 routes retain their accepted evidence and are not invalidated merely by a new branch.
+The original72-observation run retains the former Unsupported endpoint. The completed current
+counter extension records76 observations, including actual107 and player cancellation. Its
+`captures/receipt.json` retains complete states and physical/API equality; presenter projections,
+node measurements and `process.json` retain the running-instance UI and exit checks. Existing
+state/input records suffice here, so no native rerun is needed. Completed screenshots remain
+historical artifacts; do not generate, compare or inspect images. The current probe still emits
+images, so any future required run must first disable that output in the owning test while
+preserving state/input checks. Older modes retain their completed evidence under unchanged
+dependencies. Follow the [instance reuse rule](./development-and-verification.md#scope).
 
 Run the clean committed planner and its affected managed and official Godot gates once for the
 shared generation change, with required private inputs and zero skipped owning positives. Keep
@@ -1748,11 +1752,18 @@ installed SDK/shared CLI home, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and exist
 [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review) uses
 `SF2_BATTLE01_CONTROL_REVIEW=sarah-heal`, `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1` and probe-only
 `SF2_BATTLE01_BOWIE_COUNTER_REVIEW=1`; production still receives only its original early Sarah flag.
-The76-frame route preserves the original63 prefix and approach/105/generation boundaries, labels
-106/107 as actual facade test copies, then exercises physical dispatch and Bowie cancellation.
-Changed71 and new72–76 are inspected individually at original1920×1080. Retain the former terminal
-Unsupported image as historical evidence; compare unchanged PNGs and frame JSON directly by bytes.
-Older modes retain their evidence according to unchanged dependencies.
+The completed76-observation route retains the original63 prefix and approach/105/generation
+boundaries. `captures/receipt.json` records actual facade106/107, the complete session equality
+between physical Godot inputs and the independent API path, and whole107 movement/confirm/cancel
+restoration. Live presenter records retain both HP effects, Bowie EXP, status and controls; node
+checks enforce visible lines, canvas bounds and non-overlapping labels, with accounting widths
+recorded. `process.json` and logs retain errors, exit and cleanup status. This existing evidence
+suffices without another native run. Completed screenshots, including the former terminal refusal,
+remain historical artifacts; do not generate, compare or inspect images. A future required probe
+run must first disable its current image output in the owning test and preserve state/input checks,
+following the [instance reuse rule](./development-and-verification.md#scope). Older modes retain
+their completed results under unchanged dependencies. Remote-debug connection and focus observation
+were not performed and remain unverified.
 
 **Unknown:** actions after actual107 movement/cancel, later generations, survival, victory/return,
 natural caller reach/timing/presentation, natural Sarah progression and H4. This slice stops at

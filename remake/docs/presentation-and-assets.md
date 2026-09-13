@@ -889,6 +889,12 @@ for name, command in steps:
 
 ## Diagnostic Battle01 launch and native review
 
+Apply the current [runtime-state acceptance and instance reuse rules](./development-and-verification.md#scope)
+before using any recipe below. Earlier image instructions describe retained historical workflows;
+do not generate, compare or inspect screenshots for current acceptance. Reuse completed state/input
+records when sufficient. A future necessary probe run must disable existing image output in the
+owning test, preserve state/input checks and reuse the owned Godot instance unless a named exception applies.
+
 An ordinary private launch can additionally select these three inputs together, alongside its
 existing canonical import and optional reviewed exploration atlas options:
 
@@ -1226,9 +1232,9 @@ only the original early `--private-battle01-sarah-heal` flag. With both selector
 original63-frame Sarah run ends at104. Use a fresh ignored
 `local/post-heal-bowie-counter/<run>/review` root, the retained fixed SDK/editor and registered inputs.
 
-| Frames | Post-heal counter acceptance |
+| Observations | Post-heal counter acceptance |
 | --- | --- |
-|1–63|Retained Sarah route through actual Bowie104 cancellation; compare PNG and frame JSON directly by bytes.|
+|1–63|Actual Sarah route through Bowie104 cancellation; running-instance state records retain the prefix.|
 |64–66|Physical J/I/J/I/I/L chooses(10,10), cost12, exact path; Space confirms and Backspace restores the entire104 snapshot.|
 |67–68|Repeat physical approach and confirm Bowie action choice. Every physical input equals its logical API result.|
 |69|Labeled TEST COPY: actual STAY105/R13/raw10/main02A11234/copy0234 with healed stats and all105 receipts.|
@@ -1238,15 +1244,22 @@ original63-frame Sarah run ends at104. Use a fresh ignored
 |73|Physical Bowie STAY plus unchanged automatic generation/dispatch equals the whole API copy and returns actual R14 Bowie control.|
 |74–76|Actual legal movement(9,10), cost2, Space confirm and Backspace cancel; physical/API states match and the entire107 ready snapshot is restored.|
 
-Inspect changed/new71–76 PNGs at original1920×1080 for both readable HP effects, correct Bowie EXP
-recipient, Sarah MP7/EXP17, Gold180, separate kill/defeat counts, absent corpses, copy labels and
-actual controls. Retain every previously accepted image, including the former final133 refusal;
-it is historical evidence, not the current endpoint. Compare unchanged1–70 against the previous
-72-frame run by bytes, including frame-state JSON. Earlier225+47 modes remain separately retained
-under unchanged dependencies. Without the Bowie probe selector, the second-generation mode still
-reaches actual Bowie control but omits the extra counter-copy/movement review frames. No probe flag
-changes production permission, RNG or selected combat outcome. No positive battle is manufactured
-between106 and107. All captures and complete snapshots stay local.
+The completed76-observation run's `captures/receipt.json` records actual facade106/107, complete
+session equality between physical Godot inputs and the independent API path, and whole107
+movement/confirm/cancel restoration. Live presenter records retain ordered HP effects, Bowie's
+EXP, Sarah MP/EXP, accounting, roster positions, status and controls. Node checks enforce visible
+line counts, canvas bounds and non-overlapping labels; accounting measurements record width396
+within480 and one visible line of one. `process.json` and logs retain runtime errors, exit and
+cleanup status. Existing state/input records suffice for this slice; no native rerun is needed.
+
+Completed screenshots, including the former final133 refusal and older modes, remain historical
+artifacts. Do not generate, compare or inspect images. The current probe still emits them, so any
+future required run must first disable image output in the owning test while preserving its
+state/input checks and applying the instance reuse rule above. Remote-debug connection and focus
+observation were not performed and remain unverified. Without the Bowie selector, second-generation
+mode still reaches actual Bowie control but omits the extra counter-copy/movement observations.
+No probe flag changes production permission, RNG or the selected combat outcome; no positive battle
+is manufactured between106 and107. All complete snapshots and process records stay local.
 
 The same early `chester-first-kill` mode can set `SF2_BATTLE01_SURVIVAL_REVIEW=1` for a probe-only
 survival branch. Production launch inputs and dispatcher/presenter stay unchanged. Preserve the

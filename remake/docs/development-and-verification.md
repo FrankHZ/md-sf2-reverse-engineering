@@ -18,6 +18,12 @@ are retained context, not instructions to repeat those checks. Preserve complete
 replaying them for this change. Identify a concrete missing observation before extending a probe;
 a remote debug server is not yet an established verification dependency.
 
+Reuse the same verified Godot installation, owned project and running instance. Restart or open
+another instance only for a concrete failure, a necessary code/import restart, observed state contamination,
+or a test of startup, export or cleanup itself; explain and bound that exception. Do not create a
+project copy or re-extract an engine per check. Keep other writers' writable state isolated, and
+do not introduce a debug framework to satisfy this default.
+
 ## Locked .NET Workflow
 
 Before any SDK command, including `--info` or `nuget locals`, load the host's explicit shared CLI
