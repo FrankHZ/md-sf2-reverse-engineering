@@ -1,3 +1,5 @@
+using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Content.Scenarios;
 using System.Security.Cryptography;
 using Sf2.Remake.Domain.Maps;
 
@@ -75,10 +77,10 @@ public sealed class OriginalBattle01GizmoBaseline
 public sealed class OriginalBattle01StartupDefinition
 {
     public const string Capability = "private-local-battle01-startup-inputs-v1";
-    public const string Repository = "https://github.com/ShiningForceCentral/SF2DISASM.git";
-    public const string UpstreamCommit = "c834c652b6862bc5679fd7f69a38a7093206efc6";
-    public const string PlacementExportDigest = "32EEAE9AFB01DC38A1BAA99EE2E0B4C0B48F8A676F69771A5F5C52A2FC7E4C60";
-    public const string SceneExportDigest = "DB9CCC8A40EBC1E0DB23C3EE5BDD67CAF026EF3EBD280B819FAB40E739BAD567";
+    public const string Repository = PrivateBattleEncounterReader.Repository;
+    public const string UpstreamCommit = PrivateBattleEncounterReader.UpstreamCommit;
+    public const string PlacementExportDigest = PrivateBattleEncounterReader.PlacementExportDigest;
+    public const string SceneExportDigest = PrivateBattleEncounterReader.SceneExportDigest;
     public const string AcceptedPlacementDigest = "2CDF8BC074C11451308121825DAE04DB530422FC945322934A23E6AB20EF10CE";
     public const string AcceptedTerrainDigest = "ECA7CDDAC612489FFD835A44D32D1C82E955A686F2D1C6DBFA5ED2959453C835";
     public const int TerrainStride = 48;
@@ -154,6 +156,46 @@ public sealed class OriginalBattle01StartupDefinition
         if (x < 0 || x >= TerrainStride || y < 0 || y >= TerrainStride)
             throw new ArgumentOutOfRangeException(nameof(x), "Terrain coordinates must address the 48-by-48 source array.");
         return Terrain[y * TerrainStride + x];
+    }
+
+    // Only the retained comparison resolves these source symbols to its bounded numeric DTO.
+    internal static OriginalBattle01StartupDefinition Project(BattleEncounterDefinition source)
+    {
+        Require(source.Battle.Id == 1, "battle.id"); Require(source.Battle.Code == "INSIDE_ANCIENT_TOWER", "battle.code");
+        Require(source.Area.MapId == 57, "map.id"); Require(source.Area.X == 0 && source.Area.Y == 0, "map");
+        Require(source.Area.Width == 16, "map.width"); Require(source.Area.Height == 20, "map.height");
+        Require(source.Area.TriggerX == 255 && source.Area.TriggerY == 255, "map.trigger");
+        Require(source.Scene.CustomBackgroundExpression == "TOWER_INTERIOR", "scene.customBackgroundExpression");
+        Require(!source.Scene.EnemyLeaderPresent && source.Scene.HalfExperience, "scene.selection");
+        Require(source.AllyCount == 3 && source.EnemyCount == 6, "entities");
+        Require(source.Regions.Count == 3, "regions"); Require(source.AiPoints.Count == 0, "aiPoints");
+        var entities = source.Placements.Select(entity =>
+        {
+            var kind = entity.Kind == EncounterEntityKind.Ally ? OriginalBattle01EntityKind.Ally : OriginalBattle01EntityKind.Enemy;
+            byte identity = (kind, entity.IdentityExpression) switch
+            {
+                (OriginalBattle01EntityKind.Ally, "0") => 0, (OriginalBattle01EntityKind.Ally, "1") => 1,
+                (OriginalBattle01EntityKind.Ally, "2") => 2, (OriginalBattle01EntityKind.Enemy, "GIZMO") => 39,
+                _ => throw Unsupported("entities.identityExpression"),
+            };
+            var commandset = entity.AiCommandsetExpression switch
+            {
+                "HEALER1" => OriginalBattle01AiCommandSet.Healer1, "ATTACKER1" => OriginalBattle01AiCommandSet.Attacker1,
+                "ATTACKER2" => OriginalBattle01AiCommandSet.Attacker2, _ => throw Unsupported("entities.aiCommandsetExpression"),
+            };
+            Require(entity.ItemExpression == "NOTHING", "entities.itemExpression");
+            Require(entity.Behavior.PrimaryOrderExpression == "NONE", "entities.primaryOrder");
+            Require(entity.Behavior.SecondaryOrderExpression == "NONE", "entities.secondaryOrder");
+            Require(entity.Behavior.SpawnExpression == "STARTING", "entities.spawn");
+            return new OriginalBattle01Placement(entity.Id, kind, identity, new MapPosition(entity.Position.X, entity.Position.Y), commandset, 127, 255,
+                entity.Behavior.PrimaryRegion, 255, entity.Behavior.SecondaryRegion, entity.Behavior.Filler, OriginalBattle01Spawn.Starting);
+        });
+        return new(new(source.PlacementSource.Repository, source.PlacementSource.Commit, PlacementExportDigest, SceneExportDigest),
+            entities, source.Regions.Select(region => new OriginalBattle01AiRegion(region.Id, region.Unknown, region.Vertices.Select(point => new MapPosition(point.X, point.Y)),
+                region.TrailingByte0, region.TrailingByte1)), source.Terrain);
+
+        static void Require(bool condition, string field) { if (!condition) throw Unsupported(field); }
+        static ArgumentException Unsupported(string field) => new("Unsupported selected Battle01 comparison projection.", field);
     }
 
     public OriginalBattle01StartupDiagnostic? GetAdmissionDiagnostic()

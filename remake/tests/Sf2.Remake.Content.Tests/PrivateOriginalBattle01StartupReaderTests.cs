@@ -1,3 +1,5 @@
+using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Content.Scenarios;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Text.Json;
@@ -718,77 +720,33 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
     }
 
     [Theory]
-    [InlineData("schema", "placement.schemaVersion")]
-    [InlineData("numeric-type", "scene.schemaVersion")]
-    [InlineData("extra-field", "placement")]
-    [InlineData("repository", "provenance.repository")]
-    [InlineData("commit", "provenance.commit")]
-    [InlineData("source", "provenance.sourcePath")]
-    [InlineData("source-digest", "provenance.sourceSha256")]
-    [InlineData("terrain-source", "provenance.terrainSourcePath")]
-    [InlineData("battle", "battle.id")]
     [InlineData("map", "map.id")]
     [InlineData("area", "map.width")]
     [InlineData("background", "scene.customBackgroundExpression")]
     [InlineData("leader", "scene.selection")]
-    [InlineData("count", "counts.enemies")]
-    [InlineData("duplicate-entity", "entities")]
-    [InlineData("overlap", "entities")]
-    [InlineData("position", "entities")]
     [InlineData("identity", "entities.identityExpression")]
     [InlineData("ai-command", "entities.aiCommandsetExpression")]
-    [InlineData("primary-region", "entities")]
     [InlineData("item", "entities.itemExpression")]
     [InlineData("order", "entities.primaryOrder")]
     [InlineData("spawn", "entities.spawn")]
-    [InlineData("byte-type", "filler")]
-    [InlineData("region-count", "aiRegions")]
-    [InlineData("region-id", "regions")]
-    [InlineData("vertices", "vertices")]
-    [InlineData("points", "aiPoints")]
-    [InlineData("terrain-width", "terrain.decompressedWidth")]
-    [InlineData("terrain-length", "terrain.decompressedLengthBytes")]
-    [InlineData("terrain-counts", "terrain.valueCounts")]
-    [InlineData("terrain-value", "terrain.decompressedSha256")]
-    public void SemanticDriftReachesItsOwningValidationBoundary(string drift, string expectedField)
+    public void LegacyProjectionRejectsUnresolvedOrDifferentSelectedSemantics(string drift, string expectedField)
     {
-        var (placement, scene, terrain) = Sample();
-        var entity = placement["entities"]![3]!;
+        var (placement, scene, terrain) = Sample(); var entity = placement["entities"]![3]!;
         switch (drift)
         {
-            case "schema": placement["schemaVersion"] = 2; break;
-            case "numeric-type": scene["schemaVersion"] = "1"; break;
-            case "extra-field": placement["ignored"] = true; break;
-            case "repository": placement["provenance"]!["repository"] = "https://example.invalid"; break;
-            case "commit": placement["provenance"]!["commit"] = new string('0', 40); break;
-            case "source": placement["provenance"]!["sourcePath"] = "spriteset02.asm"; break;
-            case "source-digest": placement["provenance"]!["sourceSha256"] = new string('0', 64); break;
-            case "terrain-source": scene["provenance"]!["terrainSourcePath"] = "terrain02.bin"; break;
-            case "battle": placement["battle"]!["id"] = 2; break;
             case "map": scene["map"]!["id"] = 40; break;
             case "area": scene["map"]!["width"] = 48; break;
             case "background": scene["scene"]!["customBackgroundExpression"] = "DEFAULT"; break;
             case "leader": scene["scene"]!["enemyLeaderPresent"] = true; break;
-            case "count": placement["counts"]!["enemies"] = 5; break;
-            case "duplicate-entity": entity["id"] = 2; break;
-            case "overlap": entity["x"] = 2; break;
-            case "position": entity["x"] = 16; break;
             case "identity": entity["identityExpression"] = "OTHER"; break;
             case "ai-command": entity["aiCommandsetExpression"] = "OTHER"; break;
-            case "primary-region": entity["behavior"]!["primaryRegion"] = 3; break;
             case "item": entity["itemExpression"] = "WOODEN_SWORD"; break;
             case "order": entity["behavior"]!["primaryOrderExpression"] = "MOVE"; break;
             case "spawn": entity["behavior"]!["spawnExpression"] = "HIDDEN"; break;
-            case "byte-type": entity["behavior"]!["filler"] = "96"; break;
-            case "region-count": placement["aiRegions"]!.AsArray().RemoveAt(2); break;
-            case "region-id": placement["aiRegions"]![2]!["id"] = 1; break;
-            case "vertices": placement["aiRegions"]![0]!["vertices"]!.AsArray().RemoveAt(3); break;
-            case "points": placement["aiPoints"]!.AsArray().Add(new JsonObject { ["x"] = 1, ["y"] = 1 }); break;
-            case "terrain-width": scene["terrain"]!["decompressedWidth"] = 16; break;
-            case "terrain-length": scene["terrain"]!["decompressedLengthBytes"] = 320; break;
-            case "terrain-counts": scene["terrain"]!["valueCounts"]!["0"] = 2304; break;
-            case "terrain-value": terrain[49] = 1; break;
         }
+        // Valid source data survives production decoding; only the old numeric comparison rejects it.
+        Assert.IsType<BattleEncounterReadAccepted>(PrivateBattleEncounterReader.Decode(
+            JsonSerializer.SerializeToUtf8Bytes(placement), JsonSerializer.SerializeToUtf8Bytes(scene), terrain));
         var rejected = Assert.IsType<OriginalBattle01StartupImportRejected>(Admit(placement, scene, terrain));
         Assert.Equal(expectedField, rejected.Diagnostic.Field);
     }
@@ -829,6 +787,10 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         string scene = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_SCENE");
         string terrain = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_TERRAIN");
         var definition = Assert.IsType<OriginalBattle01StartupImported>(new PrivateOriginalBattle01StartupReader(placement, scene, terrain).Admit()).Definition;
+        var encounter = Assert.IsType<BattleEncounterReadAccepted>(new PrivateBattleEncounterReader(placement, scene, terrain).Read()).Definition;
+        using var placementJson = JsonDocument.Parse(File.ReadAllBytes(placement));
+        using var sceneJson = JsonDocument.Parse(File.ReadAllBytes(scene));
+        AssertCompleteEncounterProjection(encounter, definition, placementJson.RootElement, sceneJson.RootElement);
         Assert.Null(definition.GetAdmissionDiagnostic());
         Assert.Equal(OriginalBattle01StartupDefinition.AcceptedPlacementDigest, definition.PlacementDigest);
         Assert.Equal(OriginalBattle01StartupDefinition.AcceptedTerrainDigest, definition.TerrainDigest);
@@ -2560,6 +2522,99 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
         Assert.Equal(1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
         Assert.NotNull(session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)).Battle01Admission);
         return session;
+    }
+
+    private static void AssertCompleteEncounterProjection(BattleEncounterDefinition actual,
+        OriginalBattle01StartupDefinition legacy, JsonElement placement, JsonElement scene)
+    {
+        Assert.Equal(placement.GetProperty("schemaVersion").GetInt32(), actual.SchemaVersion);
+        Assert.Equal(scene.GetProperty("schemaVersion").GetInt32(), actual.SchemaVersion);
+        AssertSource(actual.PlacementSource, placement.GetProperty("provenance"), "sourcePath", "sourceSha256");
+        AssertSource(actual.TerrainSource, scene.GetProperty("provenance"), "terrainSourcePath", "terrainSourceSha256");
+        foreach (var document in new[] { placement, scene })
+        {
+            Assert.Equal(document.GetProperty("battle").GetProperty("id").GetByte(), actual.Battle.Id);
+            Assert.Equal(document.GetProperty("battle").GetProperty("code").GetString(), actual.Battle.Code);
+        }
+        AssertRange(actual.PlacementRange, placement.GetProperty("romRange"));
+        var counts = placement.GetProperty("counts");
+        Assert.Equal(counts.GetProperty("allies").GetInt32(), actual.AllyCount);
+        Assert.Equal(counts.GetProperty("enemies").GetInt32(), actual.EnemyCount);
+        Assert.Equal(counts.GetProperty("aiRegions").GetInt32(), actual.Regions.Count);
+        Assert.Equal(counts.GetProperty("aiPoints").GetInt32(), actual.AiPoints.Count);
+        var entities = placement.GetProperty("entities"); Assert.Equal(entities.GetArrayLength(), actual.Placements.Count);
+        for (int i = 0; i < actual.Placements.Count; i++)
+        {
+            var row = entities[i]; var value = actual.Placements[i]; var old = legacy.Entities[i];
+            Assert.Equal(row.GetProperty("id").GetByte(), value.Id); Assert.Equal(value.Id, old.Ordinal);
+            Assert.Equal(row.GetProperty("kind").GetString(), value.Kind == EncounterEntityKind.Ally ? "ally" : "enemy");
+            Assert.Equal(value.Kind == EncounterEntityKind.Ally, old.Kind == OriginalBattle01EntityKind.Ally);
+            Assert.Equal(row.GetProperty("identityExpression").GetString(), value.IdentityExpression);
+            Assert.Equal(row.GetProperty("aiCommandsetExpression").GetString(), value.AiCommandsetExpression);
+            Assert.Equal(row.GetProperty("itemExpression").GetString(), value.ItemExpression);
+            AssertPoint(value.Position, row); Assert.Equal((old.Position.X, old.Position.Y), ((int)value.Position.X, (int)value.Position.Y));
+            var behavior = row.GetProperty("behavior"); var b = value.Behavior;
+            Assert.Equal(behavior.GetProperty("primaryOrderExpression").GetString(), b.PrimaryOrderExpression);
+            Assert.Equal(behavior.GetProperty("secondaryOrderExpression").GetString(), b.SecondaryOrderExpression);
+            Assert.Equal(behavior.GetProperty("spawnExpression").GetString(), b.SpawnExpression);
+            Assert.Equal(behavior.GetProperty("primaryRegion").GetByte(), b.PrimaryRegion); Assert.Equal(b.PrimaryRegion, old.PrimaryRegion);
+            Assert.Equal(behavior.GetProperty("secondaryRegion").GetByte(), b.SecondaryRegion); Assert.Equal(b.SecondaryRegion, old.SecondaryRegion);
+            Assert.Equal(behavior.GetProperty("filler").GetByte(), b.Filler); Assert.Equal(b.Filler, old.Filler);
+            Assert.Equal(i < 3 ? i : 39, old.Identity); Assert.Equal(i < 3 ? i : 128 + i - 3, old.CombatantIndex);
+            Assert.Equal(i < 3 ? 0 : i < 7 ? 6 : 7, (int)old.AiCommandSet);
+            Assert.Equal("NOTHING", value.ItemExpression); Assert.Equal(127, old.ItemWord);
+            Assert.Equal("NONE", b.PrimaryOrderExpression); Assert.Equal(255, old.PrimaryOrder);
+            Assert.Equal("NONE", b.SecondaryOrderExpression); Assert.Equal(255, old.SecondaryOrder);
+            Assert.Equal("STARTING", b.SpawnExpression); Assert.Equal(OriginalBattle01Spawn.Starting, old.Spawn);
+        }
+        var regions = placement.GetProperty("aiRegions"); Assert.Equal(regions.GetArrayLength(), actual.Regions.Count);
+        for (int i = 0; i < actual.Regions.Count; i++)
+        {
+            var row = regions[i]; var value = actual.Regions[i]; var old = legacy.Regions[i];
+            Assert.Equal(row.GetProperty("id").GetByte(), value.Id); Assert.Equal(value.Id, old.Id);
+            Assert.Equal(row.GetProperty("unknown").GetByte(), value.Unknown); Assert.Equal(value.Unknown, old.Unknown);
+            Assert.Equal(row.GetProperty("vertexCount").GetInt32(), value.Vertices.Count);
+            for (int j = 0; j < value.Vertices.Count; j++)
+            {
+                AssertPoint(value.Vertices[j], row.GetProperty("vertices")[j]);
+                Assert.Equal((old.Vertices[j].X, old.Vertices[j].Y), ((int)value.Vertices[j].X, (int)value.Vertices[j].Y));
+            }
+            Assert.Equal(row.GetProperty("trailingBytes")[0].GetByte(), value.TrailingByte0); Assert.Equal(value.TrailingByte0, old.TrailingByte0);
+            Assert.Equal(row.GetProperty("trailingBytes")[1].GetByte(), value.TrailingByte1); Assert.Equal(value.TrailingByte1, old.TrailingByte1);
+        }
+        var points = placement.GetProperty("aiPoints"); Assert.Equal(points.GetArrayLength(), actual.AiPoints.Count);
+        for (int i = 0; i < actual.AiPoints.Count; i++) AssertPoint(actual.AiPoints[i], points[i]);
+        Assert.Empty(legacy.AiPoints);
+        var map = scene.GetProperty("map"); var a = actual.Area;
+        Assert.Equal(new[] { "id", "x", "y", "width", "height", "triggerX", "triggerY" }.Select(key => map.GetProperty(key).GetByte()),
+            new[] { a.MapId, a.X, a.Y, a.Width, a.Height, a.TriggerX, a.TriggerY });
+        Assert.Equal(legacy.Map, new MapId("map" + a.MapId));
+        Assert.Equal((legacy.AreaX, legacy.AreaY, legacy.AreaWidth, legacy.AreaHeight, (int)legacy.TriggerX, (int)legacy.TriggerY),
+            ((int)a.X, (int)a.Y, (int)a.Width, (int)a.Height, (int)a.TriggerX, (int)a.TriggerY));
+        var selected = scene.GetProperty("scene");
+        Assert.Equal(selected.GetProperty("customBackgroundExpression").GetString(), actual.Scene.CustomBackgroundExpression);
+        Assert.Equal("TOWER_INTERIOR", actual.Scene.CustomBackgroundExpression); Assert.Equal(9, legacy.CustomBackground);
+        Assert.Equal(selected.GetProperty("enemyLeaderPresent").GetBoolean(), actual.Scene.EnemyLeaderPresent);
+        Assert.Equal(actual.Scene.EnemyLeaderPresent, legacy.EnemyLeaderPresent);
+        Assert.Equal(selected.GetProperty("halfExperience").GetBoolean(), actual.Scene.HalfExperience); Assert.Equal(actual.Scene.HalfExperience, legacy.HalfExperience);
+        var metadata = scene.GetProperty("terrain"); AssertRange(actual.CompressedRange, metadata.GetProperty("compressedRange"));
+        Assert.Equal(metadata.GetProperty("compressedSha256").GetString(), actual.CompressedSha256);
+        Assert.Equal(metadata.GetProperty("decompressedSha256").GetString(), actual.TerrainSha256);
+        Assert.Equal(metadata.GetProperty("decompressedWidth").GetInt32(), actual.TerrainWidth);
+        Assert.Equal(metadata.GetProperty("decompressedHeight").GetInt32(), actual.TerrainHeight);
+        Assert.Equal(metadata.GetProperty("decompressedLengthBytes").GetInt32(), actual.Terrain.Count);
+        Assert.Equal(legacy.Terrain, actual.Terrain); Assert.Equal(legacy.TerrainDigest, actual.TerrainSha256);
+        var expectedCounts = metadata.GetProperty("valueCounts"); Assert.Equal(expectedCounts.EnumerateObject().Count(), actual.TerrainValueCounts.Count);
+        foreach (var pair in actual.TerrainValueCounts)
+            Assert.Equal(expectedCounts.GetProperty(pair.Key.ToString(System.Globalization.CultureInfo.InvariantCulture)).GetInt32(), pair.Value);
+
+        static void AssertPoint(EncounterPoint actualPoint, JsonElement expected) =>
+            Assert.Equal((expected.GetProperty("x").GetByte(), expected.GetProperty("y").GetByte()), (actualPoint.X, actualPoint.Y));
+        static void AssertRange(EncounterRange actualRange, JsonElement expected) =>
+            Assert.Equal(new EncounterRange(expected.GetProperty("start").GetInt32(), expected.GetProperty("endExclusive").GetInt32(), expected.GetProperty("lengthBytes").GetInt32()), actualRange);
+        static void AssertSource(EncounterSource actualSource, JsonElement expected, string path, string hash) =>
+            Assert.Equal(new EncounterSource(expected.GetProperty("repository").GetString()!, expected.GetProperty("commit").GetString()!,
+                expected.GetProperty(path).GetString()!, expected.GetProperty(hash).GetString()!), actualSource);
     }
 
     private static OriginalBattle01StartupImportResult Admit(JsonObject placement, JsonObject scene, byte[] terrain) =>

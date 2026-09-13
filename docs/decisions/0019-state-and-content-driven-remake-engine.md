@@ -331,11 +331,11 @@ unreachable rejection. Actual next-round input reaches physical attack/counter w
 specified RNG and resource results. Existing reference pursuit/standby/physical methods consume the
 shared rules. [Direct native observations](../../remake/docs/development-and-verification.md#commandset06-continuation-observation)
 drive real input and check complete checkpoints, live state and clean logs. **Unknown:** wider AI,
-private admission migration, natural original continuity/presentation and8C/H4. M2 and A1–A8 remain incomplete.
+initialized common private entry, natural original continuity/presentation and8C/H4. M2 and A1–A8 remain incomplete.
 
 ### Private battle admission dependency boundary
 
-The next M2 work follows the [current user direction](../../remake/docs/architecture-audit.md#current-user-direction)
+The M2 private migration follows the [current user direction](../../remake/docs/architecture-audit.md#current-user-direction)
 and the [three content boundaries](#typed-content-and-capability-admission). **Confirmed (implementation
 inspection):** `Map3Root` selects `PrivateOriginalBattle01StartupReader`; `PrivateBattle01Ui.Apply`
 then calls the reference session's Prepare → Initialize → FirstRound → FirstControl chain. Preparation
@@ -353,8 +353,8 @@ owns caller retirement.
 
 | Dependency and current owner | Accepted behavior/data owner | Common-engine support, gap and intended owner |
 | --- | --- | --- |
-| Trust and parsing: [`PrivateOriginalBattle01StartupReader`](../../remake/reference/Sf2.Remake.Reference/Readers/PrivateOriginalBattle01StartupReader.cs), `Content/Battle01/OriginalBattle01StartupDefinition` | [Placement/scene provenance](../research/battle01-placement.md), [encounter definition](../design/contracts/battle-encounter-definition.md) | Preserve explicit local selection, bounded reads/Stack decode, registered export/input identities, pinned upstream commit, source/range joins, duplicate-property rejection and path-free failures in production Content. Separate those trust requirements from the legacy exact-nine/identity/scene projection checks. Existing digests select trusted private inputs; generic structural validity follows declared counts, references, bounds and raw-field domains. No new hash registry or runtime ROM extractor. |
-| Encounter data: `OriginalBattle01StartupDefinition` and `OriginalBattle01Placement/Region` | [Encounter definition](../design/contracts/battle-encounter-definition.md), [navigation](../design/contracts/battlefield-navigation.md) | Preserve the full48×48 terrain independently of the16×20 battle area, map/trigger/background/leader/halving metadata, ordered placements, identity/item/spawn words, both orders/regions, region vertices/unknown/trailing bytes and AI points. Common `BattleDefinition` has terrain/placements/rewards but no source deployment, region or program model. Content must load those definitions; raw fields without implemented consumers remain explicit rather than being discarded or guessed. |
+| Trust and parsing: [`PrivateBattleEncounterReader`](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs), consumed by the retained reference startup reader | [Placement/scene provenance](../research/battle01-placement.md), [encounter definition](../design/contracts/battle-encounter-definition.md) | **Implemented:** production Content owns explicit local selection, bounded reads/Stack decode, registered export/input identities, pinned upstream commit, source/range joins, duplicate-property rejection and path-free failures. The legacy exact-nine/identity/scene projection checks remain in Reference. Existing digests select trusted private inputs; generic structural validity follows declared counts, references, bounds and raw-field domains. No new hash registry or runtime ROM extractor. |
+| Encounter data: [`BattleEncounterDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs), projected to the retained `OriginalBattle01StartupDefinition` | [Encounter definition](../design/contracts/battle-encounter-definition.md), [navigation](../design/contracts/battlefield-navigation.md) | **Implemented:** the immutable source definition retains the full48×48 terrain independently of the16×20 battle area, map/trigger/background/leader/halving metadata, ordered placements, identity/item/spawn words, both orders/regions, region vertices/unknown/trailing bytes and AI points. Common `BattleDefinition` has terrain/placements/rewards but no source deployment, region or program model. Content loads these source definitions; raw fields without implemented consumers remain explicit rather than being discarded or guessed. |
 | Enemy baseline: `OriginalBattle01GizmoBaseline`; `Sessions/Battle01/PrivateOriginalBattle01Initialization.ProjectBattle01Initialization` | [Enemy definitions](../design/contracts/enemy-definition-data.md), [enemy data research](../research/enemy-promotions.md) | The three selected startup files do not contain this hardcoded baseline. Load the selected enemy record through the existing pinned enemy export owner before common new-battle initialization: source level/vitals/base stats/resistance/prowess/status/items/spells, movement6, AI word and unknown fields stay distinct from effective state. Common physical definitions do not represent that closure. Enemy gold is a separate data join, required when a reward is reached. |
 | Party and control input: [`OriginalBattle01ControlledPartyPreset`](../../remake/reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs), `Battle01FirstControlPreset` | [Player-control contract](../design/contracts/battle-functions-control-flow.md), [new-game boundary](../design/contracts/new-game-state-initialization.md), [item](../design/contracts/item-definition-data.md) and [spell data](../design/contracts/spell-definition-data.md) | These presets supply already refreshed effective ally stats, packed equipment/items/spells, optional accounting, independent main/thinking seeds and controlled policy. They are external comparison inputs, not original ally growth/new-game initialization. Common state currently requires EXP and defaults missing kills/defeats/gold to zero; private unspecified values must remain unspecified or be supplied explicitly as declared controlled inputs before use. Preserve class0/4/1, EGRESS/HEAL and equipped records; do not empty spellbooks/items to satisfy current admission. |
 | New-battle initialization: [`Battle01Initialization.Initialize`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01Initialization.cs) | [New battle lifecycle](../design/contracts/battle-control-lifecycle.md#new-battle), [derived-stat research](../research/runtime-rng-and-battle-math.md) | Common starts copy authored current values. Production Domain still needs the admitted new-battle healing/status/derived-stat boundary, enemy spawn transformation, cleared AI memory/last targets/region state and deployment. The reference retains effective equipped ally ATT while restoring HP/MP and uses source GIZMO ATT7→8 once at difficulty0. Do not apply weapon bonuses twice or accept all difficulties from this sample. General refresh, other statuses and spawn/upgrade paths need their named rule coverage. |
@@ -362,60 +362,59 @@ owns caller retirement.
 | Movement and AI: `Battle01MovementProfile`, `Battle01EnemyStandby`, `Battle01EnemyPursuit` | [Navigation](../design/contracts/battlefield-navigation.md), [AI](../design/contracts/battle-ai-decision.md) | Weighted propagation, direction-mask walk, station search, thinking RNG and script3 selection are shared. Common admission still fixes regular movement and active commandset06. Actual inputs need class1 Centaur2, class4 Healer12, enemy Hovering6, inactive standby memory/anchor behavior, then activation and set7's MOVE_ORDER1 failure path. Do not replace inactive enemies with authored Stay or set06. Production Domain rule/state collaborators consume Content-owned profiles; legacy fixed histories remain reference-only. |
 | Actions and continuation: `Battle01PlayerHealing`, both physical rules, `Battle01TurnCompletion` and their session wrappers | [Spell resolution](../design/contracts/spell-resolution.md), [combat](../design/contracts/combat-resolution.md), [lifecycle](../design/contracts/battle-control-lifecycle.md) | Common HEAL and physical/reward math are available, but weapon/range/prowess/land/AI-class operands must come from the actual class/item definitions. Retain reached equipment/status/unsupported-spell semantics and nullable accounting boundaries. Source-ordered after-turn, leader/outcome/return/program work remains required as reached. Application keeps one action publisher; no receipt count or named character profile enters it. |
 
-**Chosen first implementation: lossless private encounter admission with an immediate existing
-consumer.** Read the already registered `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`
-and `SF2_PRIVATE_BATTLE01_TERRAIN` selections, unchanged and read-only. Extract their real Content
-parser/trust checks into a production reader and immutable encounter definition. Make the retained
-`PrivateOriginalBattle01StartupReader.Admit` delegate to it and project only the old comparison DTO.
-This removes the duplicate parsing authority while the current private startup still has a working
-caller. Preserve the old narrow comparison guard in that projection. The selected trust descriptor
-may remain Battle01-specific; semantic parsing must not encode its exact positions/counts as the
-definition of valid gameplay.
+**Confirmed (implementation): lossless private encounter admission with an immediate existing
+consumer.** [`PrivateBattleEncounterReader`](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs)
+reads the registered `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
+`SF2_PRIVATE_BATTLE01_TERRAIN` selections unchanged and read-only. It owns file/trust/JSON admission
+and returns the immutable Application
+[`BattleEncounterDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs).
+The retained [`PrivateOriginalBattle01StartupReader.Admit`](../../remake/reference/Sf2.Remake.Reference/Readers/PrivateOriginalBattle01StartupReader.cs)
+delegates to that real reader and projects only the old comparison DTO. Its duplicate file, JSON and
+decode bodies are removed. The narrow comparison guard and supported numeric symbol resolution remain
+in [`OriginalBattle01StartupDefinition`](../../remake/reference/Sf2.Remake.Reference/Content/Battle01/OriginalBattle01StartupDefinition.cs).
 
-The observable stopping condition is a trusted, lossless encounter definition and the unchanged
-legacy startup projection, or an owning typed trust/structure rejection with no payload/path leak.
-This first slice does **not** create a playable common private session. The existing three inputs lack
-enemy/party/start-rule closure, so the `IScenarioSource` bridge belongs with the subsequent initialized
-start, not an always-rejecting facade or a historical activated-state import. No new program runner,
-snapshot authority, generic import framework or full-ROM package builder is required.
+The selected trust descriptor remains Battle01-specific. The same semantic parser checks declared
+counts, unique IDs, referenced regions, record lengths, closed properties and terrain/source joins;
+it does not make the selected exact positions/counts the definition of valid gameplay. Source fields
+retain identity/item/AI/order/spawn expressions, scene flags, unknown and trailing bytes, and all
+terrain bytes and metadata. `EncounterPoint` stores raw byte coordinates, including255 for unresolved
+spawn expressions. Only literal `STARTING` placements assert deployed in-area, nonoverlapping geometry;
+regions and AI points retain their format bounds. Importing an unresolved expression does not execute
+it. The retained comparison projection requires supported symbols before converting coordinates into
+runtime `MapPosition`; no expression evaluator or silent default supplies missing semantics.
 
-Candidate paths for that first implementation, to declare and recheck before editing:
+The single unchanged [`StackCompressedGraphicsDecoder`](../../remake/src/Sf2.Remake.Content/Decoding/StackCompressedGraphicsDecoder.cs)
+now belongs to Content. Both the new encounter reader and retained private-map visual reader consume
+it through the existing namespace. Narrow internal access and the Reference→Content project reference
+preserve that ownership; production projects do not depend on Reference. Existing Reference, game and
+four legacy test lockfiles record the resulting project graph without changing package identities.
+There is no second parser or decoder.
 
-- New `remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs` and
-  `remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs`; definitions/port cross the
-  heavy content boundary, and all file/trust/JSON work stays in Content.
-- Move `remake/reference/Sf2.Remake.Reference/Readers/StackCompressedGraphicsDecoder.cs` to
-  `remake/src/Sf2.Remake.Content/Decoding/StackCompressedGraphicsDecoder.cs`, retaining its namespace
-  and calculation. The existing private-map visual reader also consumes it. Update
-  `remake/src/Sf2.Remake.Content/Sf2.Remake.Content.csproj` and
-  `remake/reference/Sf2.Remake.Reference/Sf2.Remake.Reference.csproj` for the narrow internal access
-  and Reference→Content dependency; update the latter's existing `packages.lock.json` only if the
-  changed project graph requires it. No production reference dependency or second decoder.
-- Adapt `remake/reference/Sf2.Remake.Reference/Readers/PrivateOriginalBattle01StartupReader.cs`
-  and `remake/reference/Sf2.Remake.Reference/Content/Battle01/OriginalBattle01StartupDefinition.cs`;
-  keep baseline/preset/history consumers explicit until their own migration.
-- New `remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleEncounterTests.cs`, the affected existing
-  `remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs`, and these two
-  owning documents. No Godot composition, GameSession, research schema or exporter change is needed.
+**Confirmed (loader checks):**
+[`PrivateBattleEncounterTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleEncounterTests.cs)
+exercise independent authored semantic records with changed counts/IDs/positions, unresolved
+expressions/raw coordinates, immutable collections and preserved unknown bytes. Duplicate/dangling
+references, malformed geometry and incomplete terrain reject at their owning field; wrong/missing
+private inputs reject without fallback or paths. The semantic seam is internal; the public file port
+always verifies the selected private identities. The selected
+[`AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader`](../../remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs)
+comparison reads all three actual inputs and asserts every source/deployment/region/point/terrain/scene
+field against the new definition, plus the unchanged legacy numeric projection and admission digests.
+The old semantic matrix now isolates the comparison projection's unsupported symbol/scene boundary.
+The affected `StackCompressedGraphicsDecoderTests` methods
+`LiteralMoveToFrontWordAndOverlappingCopyAreDecodedInOrder` and
+`EmptyTruncatedBadOffsetOverrunAndSizeDriftFailClosed`, plus
+`PrivateOriginalMap3VisualPayloadReaderTests.SelectedSourceDecodedAndStackConsumptionDriftFailSemantically`,
+exercise the moved calculator's real consumers. Engine behavior and adapter compilation use the
+committed planner. No Map3 replay, new H3, ROM rebuild or legacy aggregate is required by this import.
 
-The new mechanism prevents a concrete loss: `BattleDefinition` cannot retain orders/regions/source
-metadata, while the current reader embeds them in a fixed reference-only type. A cohesive encounter
-definition and shared parser serve both actual consumers; copying the reader or converting it to the
-current authored format would preserve the coupling or drop required fields. Reuse the decoder and
-registered provenance mechanisms rather than adding infrastructure.
-
-Acceptance for that implementation is actual loader behavior: independent authored semantic records
-with changed counts/IDs/positions and preserved unknown bytes; duplicate/dangling refs, malformed
-geometry and incomplete terrain reject at their owning field; wrong/missing private inputs reject
-without fallback or paths. Private file trust is never bypassed by a public test-only factory.
-Run the existing `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` method directly
-with the three registered inputs and compare all deployment/region/terrain/scene fields, not just a
-success flag. Select existing `LiteralMoveToFrontWordAndOverlappingCopyAreDecodedInOrder` and
-`EmptyTruncatedBadOffsetOverrunAndSizeDriftFailClosed` in `StackCompressedGraphicsDecoderTests`, plus
-`SelectedSourceDecodedAndStackConsumptionDriftFailSemantically` in `PrivateOriginalMap3VisualPayloadReaderTests`,
-because their real decoder changes assembly owner. No Map3 replay, new H3, ROM rebuild or aggregate is required for that import
-boundary. Engine behavior tests and adapter compilation follow the committed planner; checks of a
-new import verifier or report script are not substitutes for loader assertions.
+The stopping boundary is a trusted, lossless source encounter definition and the unchanged legacy
+startup projection, or an owning typed trust/structure rejection with no payload/path leak. This does
+not create a playable common private session. `BattleDefinition` cannot retain the source orders,
+regions or provenance; the cohesive encounter definition preserves them for existing import and later
+initialization. The three inputs still lack enemy/party/start-rule closure, so an `IScenarioSource`
+bridge belongs with the subsequent initialized start. No Godot composition, GameSession, source
+schema/exporter, program runner or historical activated-state import changes at this boundary.
 
 After independent acceptance, the next blocking slices are ordered by these real dependencies:
 
@@ -981,7 +980,7 @@ rows or execute this entire table as one rewrite.
 | --- | --- | --- |
 | M0: classify and cut over verification | Implemented subset: internal main RNG, ordinary priest healing scalar resolution, turn-order generation and Manhattan action range, consumed by existing Battle01 wrappers. Dedicated Engine.Tests protects the moved mechanics. Scoped CI/local/planner/guidance replace new-engine legacy gates under serialized ownership. Full movement and cancellation remain for M1. | No unintended behavior change in existing callers; independent arithmetic/boundary expectations and meaningful varied inputs protect the rules. Original fixtures and selected reference observations remain owned. Retire obsolete/meta-tests. Freeze a Draft PR, record direct command/CI results and main-gate required-check action, then stop for independent acceptance before M1. No old aggregate or tests of the cutover. |
 | M1: first connected functional vertical slice | **Implemented:** Content `Scenarios/AuthoredScenarioPackageReader.cs` and Application `Content/Scenarios/ScenarioDefinition.cs`; thin `Runtime/GameSession.cs`, independent `Runtime/Battles/BattleCommandDispatcher.cs` and `BattleAdvancer.cs`; Domain `Battles/Rules` and `Battles/State`; Godot `Battles` input/view and independent snapshot projection. Legacy scenario classes and controlled presets live in the separate reference assembly with no reverse production dependency. | Load either authored controlled encounter, reach player control, move/preview/cancel, atomically HEAL/STAY, skip a dead queued entry when present, execute configured Stay AI, generate another round and return to player input automatically. The first four examples have engine unit assertions and actual no-image adapter observation. Physical attack, level-up, general AI, programs and outcomes remain Unsupported. Stop for independent acceptance before M2. Old explicit reference startup remains selectable before creation; no live authority switch. |
-| M2: migrate battle rules and private admission | **Ordinary physical first/second/counter capability implemented; remaining M2 incomplete.** The [private-admission dependency boundary](#private-battle-admission-dependency-boundary) selects the next import/startup work. Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
+| M2: migrate battle rules and private admission | **Ordinary physical first/second/counter capability implemented; remaining M2 incomplete.** The [private-admission dependency boundary](#private-battle-admission-dependency-boundary) records the implemented encounter import and next initialized-start work. Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
 | M3: programs and exploration on the common session | Replace the reference `Sessions/Maps/OriginalMapGameSession.cs`, reached `PrivateOriginalMap*` and synthetic lifecycle consumers with cohesive production program/exploration collaborators. Move real map/entity/event/program definitions from reference content/admission into JSON or suitable Content-loaded configuration and typed validation. Preserve source-special operations and provenance. | Common facade exists. Execute actual reached operations and waits/effects before replacing each story handler; never treat required story as disposable validation or assign its terminal state. Connect authored exploration/program/transfer/battle admission, then migrate original content. Reuse actual map/layout/entity rules, add behavior assertions and selected public-entry reference comparisons, and delete each old class/data with its last caller. Stop at unsupported native/timing frontiers and roll back any route whose comparison disagrees. |
 | M4: outcome and return | Extend the common battle advancer, program runner and transfer collaborators from the reference defeat/recovery/return owners and their after-program content. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
 | M5: remaining migration cleanup | Remove remaining superseded fields, dispatch, scheduling entry points and obsolete tests after capability-by-capability M2/M3/M4 removal. Preserve original evidence and useful external comparisons. | All affected callers use the common session and its behavior tests/affected comparisons pass. Remove the temporary legacy start binding and reference runtime with its last admitted capability; do not defer all scenario/data migration to this row. Confirm no production dependency on reference and no permanent parallel engine or mandatory legacy aggregate. |

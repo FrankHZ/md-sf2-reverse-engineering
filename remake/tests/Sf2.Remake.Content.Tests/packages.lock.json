@@ -106,6 +106,7 @@
       "sf2.remake.reference": {
         "type": "Project",
         "dependencies": {
+          "Sf2.Remake.Content": "[1.0.0, )",
           "Sf2.Remake.Domain": "[1.0.0, )"
         }
       }
