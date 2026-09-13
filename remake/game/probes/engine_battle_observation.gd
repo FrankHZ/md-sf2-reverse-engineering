@@ -54,6 +54,12 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "enemy-actions":
+            var enemy_shape_index := arguments.find("--enemy-shape")
+            await _enemy_actions(initial, arguments[enemy_shape_index + 1] if enemy_shape_index >= 0 else "counter")
+            _check(samples.size() == 4, "Enemy observation completed all four native checkpoints")
+            _finish()
+            return
         if arguments[case_index + 1] == "target-cycle":
             await _target_cycle(initial)
             _finish()
@@ -350,6 +356,55 @@ func _followups(initial: Dictionary, shape: String) -> void:
     var next_round := _read("followup-next-round")
     _check(next_round.round == 2 and next_round.actor == (initial.actors[1].id if expected.hp == 0 else initial.actor),
         "Next round excludes any dead actor and returns actual living control")
+
+func _enemy_actions(initial: Dictionary, shape: String) -> void:
+    var enemy: String = initial.actors[2].id
+    var ally: String = initial.actors[0].id
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    var ready := _read("enemy-action-ready")
+    _check(_same_battle(initial, ready), "Player selection does not execute automatic enemy work")
+    await _press(KEY_ENTER)
+    var result := _read("enemy-action-result")
+    if shape == "unsupported":
+        _check(result.failure == "level-up" and result.stopReason == "Unsupported", "Late enemy counter award stops as Unsupported")
+        _check(result.mainSeed == initial.mainSeed and result.thinkingSeed == initial.thinkingSeed
+            and result.gold == initial.gold and result.actors[0].hp == initial.actors[0].hp
+            and result.actors[2].hp == initial.actors[2].hp and result.aiMemory[0].lastTarget == null,
+            "Failed whole enemy action preserves HP, rewards, memory and both seeds")
+        _check(result.queueCursor == initial.queueCursor + 1, "Only the preceding player action consumed its queue entry")
+    else:
+        var dead: bool = shape == "enemy-death"
+        _check(result.failure == null and result.stopReason == "PlayerInput" and result.actor == initial.actors[1].id,
+            "Real enemy action returns control to next living player")
+        _check(result.actors[0].hp == 478 and result.actors[2].hp == (0 if dead else 493), "Enemy hit and reversed ally counter update actual HP")
+        _check(result.actors[0].exp == (24 if dead else 1) and result.actors[2].exp == 0,
+            "Counter EXP belongs only to the ally")
+        _check(result.mainSeed == (0xB1BC1234 if dead else 0x557E1234) and result.thinkingSeed == 0x02EF0042,
+            "Main and thinking streams carry through source draws")
+        _check(result.aiMemory[0].lastTarget == ally, "Committed target memory follows actual selected ally")
+        _check(result.gold == initial.gold + (19 if dead else 0), "Counter kill grants configured enemy gold")
+        if dead:
+            _check(result.actors[2].x == null and not result.actors[2].visible and result.actors[0].kills == 1,
+                "Counter death removes enemy occupancy and visible node once")
+        if shape == "movement":
+            _check(result.actors[2].x == 4 and result.actors[2].y == 3, "Source ring chooses reachable attack destination")
+        var hits: Array = []
+        var commits := 0
+        for observation in result.observations:
+            if observation.Kind.begins_with("physical-"):
+                hits.append(observation.Kind)
+                var counter: bool = observation.Kind == "physical-counter"
+                _check(observation.Actor.Value == (ally if counter else enemy)
+                    and observation.Target.Value == (enemy if counter else ally), "Physical observations preserve enemy/counter roles")
+            if observation.Kind == "action-committed":
+                commits += 1
+        _check(hits == ["physical-first", "physical-counter"] and commits == 2,
+            "One player commit and one atomic enemy chain use the common publisher")
+    await process_frame
+    var stable := _read("enemy-action-stable")
+    _check(stable.revision == result.revision and stable.mainSeed == result.mainSeed and stable.thinkingSeed == result.thinkingSeed,
+        "Input or Unsupported boundary remains stable across actual frames")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

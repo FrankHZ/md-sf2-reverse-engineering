@@ -28,7 +28,12 @@ uses shared damage-EXP/award-randomization/gold/kill-cap functions. The enemy co
 uses the shared EXP award; its old `MainRoll` helper and both duplicated reward-randomization bodies
 are removed. Existing `Battle01MainRandomRoll` is only a reference DTO projection of the core draws,
 not a second RNG or reward calculation authority. The legacy turn cleanup delegates its defeat cap
-to `BattleRewards`. Their fixed profile and history guards are reachable
+to `BattleRewards`. `Battle01EnemyStandby.ThinkingRoll` now projects the shared
+`BattleRandom.NextThinkingWord` draw, including rejected bytes; no separate reference thinking
+algorithm remains. The authored `EnemyPhysicalDecision` implements only the already-active
+physical-only ATTACK1/script3 single-target branch. Private activation, commandsets, multi-target
+ranking, source move strings and startup/history admission retain their existing consumers.
+Their fixed profile and history guards are reachable
 only from `Sessions/Battle01/PrivateOriginalBattle01EnemyPhysicalAttack.cs` and
 `PrivateOriginalBattle01PlayerPhysicalAttack.cs`, the old `Application.Sessions.GameSession` and
 Godot `PrivateBattle01Composition`, plus selected reference behavior tests. These wrappers still own

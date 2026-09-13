@@ -211,6 +211,57 @@ The extracted weighted rule also retains the selected Domain.Tests
 its flat-row and bucket-wrap cases. It passes through the reference wrapper; the authored engine's
 logical row-edge behavior has its own actual movement unit assertion. No original fixture changed.
 
+### Enemy action observation
+
+The enemy branch uses the same reader, session and existing native observer. Start from either
+physical package and prepare this controlled input in an ignored worktree-local output directory:
+
+```powershell
+$packageName = 'stone-court' # river-post also supports the counter shape
+$shape = 'counter' # movement, enemy-death, unsupported use stone-court
+$data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
+$data.start.mainSeed = [uint32](55 * 65536 + 4660)
+foreach ($index in @(0, 2)) {
+    $data.actors[$index].hp = 500
+    $data.actors[$index].maxHp = 500
+    $data.actors[$index].defense = 4
+}
+$data.actors[0].attack = 18
+$data.actors[0].physical.prowess = 0
+$data.actors[2].attack = 30
+$data.actors[2].physical.prowess = 3
+$data.actors[2].controller = 'attack1-script3'
+$data.actors[2].move = 1
+if ($shape -eq 'movement') {
+    $data.actors[2].move = 3
+    $data.encounters[0].placements[2].x = 7
+    $data.encounters[0].placements[3].x = 6
+    $data.encounters[0].placements[3].y = 5
+}
+if ($shape -in @('enemy-death', 'unsupported')) { $data.actors[2].hp = 1 }
+if ($shape -eq 'unsupported') { $data.actors[0].exp = 99 }
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-input.json'
+$data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case enemy-actions --enemy-shape $shape --observation-output $outputPath
+```
+
+The four checkpoints cover initial state, real player STAY selection, automatic enemy action and
+stable next control/Unsupported. The counter hits the ally for22 and the enemy for7, awards the
+ally1 EXP, and carries main0x557E1234/thinking0x02EF0042. Counter kill instead awards24 EXP and19 gold,
+removes the enemy node and ends at main0xB1BC1234. The late level-up shape preserves all enemy-action
+state while retaining the preceding player's committed turn. Movement chooses (4,3) from (7,3).
+These are reference expectations for the supplied configurations, never production dispatch rules.
+Inspect native logs for script/process errors and require all four checkpoints, as well as the
+reported pass and exit status; a script that stops before its final checkpoint is incomplete.
+
+`EnemyActionTests` owns independent behavior checks for changed targets/configurations, continued
+history, dead secondary queue entries, automatic startup and per-enemy failure boundaries. For the
+shared thinking calculation, select existing reference methods
+`SignedRangeBoundariesStillAdvanceTheHighByteOnce` and `HighByteSignedEdgesMatchTheExistingThinkingHelper`.
+`ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder` and the affected scalar/
+counter methods above retain the existing source comparison. No new H3 or legacy aggregate is required.
+
 ## Optional Private .NET Checks
 
 Existing legacy checks use xUnit's explicit private-input selection. This is their current command

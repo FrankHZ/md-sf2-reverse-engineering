@@ -55,11 +55,27 @@ Encounter `rewards`, when present, is closed to boolean `halvedExperience` and `
 without inventing defaults for the HEAL packages. Target death retains identity/accounting and sets
 its battlefield position to null. Ordinary first/second/reversed-counter hits resolve temporarily
 and publish as one action. Each hit truncates damage EXP before adding to the per-action accumulator;
-an original actor killed by the counter receives no final EXP or award RNG draws. Ordinary ally death
+only a surviving ally who attacked receives EXP and award RNG, including an ally counter during an
+enemy action. Killing the original enemy actor by counter still awards that ally. Ordinary ally death
 increments capped defeats; enemy death credits one kill/gold award. A reached level-up, leader defeat
 or terminal faction outcome returns Unsupported before any hit or movement is published. The two physical configurations
 [`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
+
+The enemy-only `controller: attack1-script3` selects the already-active source ATTACK1/script3
+physical branch. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
+status and items remain empty. Encounter rewards are required when the physical action executes.
+Exactly one living opposing target must be reachable through a legal radius-one attack position.
+Zero targets, multiple targets, other AI definitions, mixed action categories and wider movement
+domains are explicit Unsupported boundaries. This is not an always-attack fallback or a claim to
+implement the rest of commandset06. `stay` remains a separate explicitly authored policy.
+
+The authored `thinkingSeed` uint maps its upper word to the source seed copy, updating only the
+high byte through the source rejection loop; the remaining 24 bits are carried unchanged. No command
+resets either RNG channel. Enemy last-target state starts unspecified and changes only on a
+successful action; the sole-target script3 branch never needs initial memory. On late failure the
+enemy's temporary movement, HP, rewards, last target and both seeds are discarded together. Prior
+player/AI commits remain valid and the failed enemy retains its queue entry.
 
 ## Public Synthetic
 

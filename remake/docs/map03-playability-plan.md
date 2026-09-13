@@ -18,7 +18,10 @@ code, original evidence and the incomplete 8C/H4 target are unchanged by this do
 
 Record the bounded private-local Map 3 implementation and controlled comparisons, keeping original
 evidence, implemented behavior and incomplete fidelity separate. Future engine slices follow the
-state/content migration owner rather than advancing this record to the next receipt.
+state/content migration owner rather than advancing this record to the next receipt. The common
+authored enemy ATTACK1/script3 branch now uses the shared physical chain, but does not replace this
+route's private startup, wider AI or controlled history admission; the stopping point below remains
+owned by those legacy consumers.
 
 Current stopping point: [post-heal Bowie counter107 and actual R14 player control](#implemented-post-heal-bowie-counter-and-actual-player-control).
 The early Sarah EXP0 route reaches HEAL103, Bowie approach/STAY105 and the second five-survivor
