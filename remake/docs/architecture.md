@@ -40,6 +40,14 @@ Application `Content/Scenarios` and `Runtime/Battles`, Content `Scenarios`, and 
 collaborators own command dispatch and automatic battle advancement. New partial files are not a
 substitute for those responsibilities.
 
+Godot's [map viewport](../game/src/Battles/BattleMapViewport.cs) owns disposable board nodes, clipping
+and framing derived from the action's origin, preview path and target. It pans and, when necessary,
+zooms to keep that context visible; no map size or actor placement is restricted by HUD coordinates.
+The view arranges a separate scrollable HUD beside the map in wide windows and below it in narrow
+windows. Authored UI follows the actual viewport; the explicit legacy composition retains its own
+window policy. A target-cycle cursor stores only the last attempted UI candidate, so an engine range
+rejection cannot trap navigation. The accepted target remains exclusively in the session snapshot.
+
 The old scenario-bound implementation is isolated in the separate
 [transitional reference assembly](../reference/README.md), with no reverse project dependency from
 production Domain/Application/Content. Its inventory names current consumers and M2/M3 retirement

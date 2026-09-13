@@ -124,6 +124,13 @@ export/packaging is not yet claimed. The [reference inventory](../../remake/refe
 records actual legacy consumers, controlled-data ownership and M2/M3 removal points. Production project
 dependencies do not include that assembly; Engine.Tests builds only Domain/Application/Content.
 
+The authored adapter separates a clipped, automatically framed map from a scrollable HUD and responds
+to actual viewport changes. Framing includes the acting origin, provisional path and selected/attempted
+target; valid 48-wide maps and long 48×48 previews remain operable without changing Content admission.
+Tab advances an ephemeral candidate cursor even after rejection. Only an accepted command changes the
+snapshot's selected target; the HUD identifies rejected candidates and the unchanged accepted target.
+These are adapter responsibilities, not another gameplay authority or new original-presentation claim.
+
 The first four acceptance counterexamples below now have connected behavior coverage in
 [EngineSessionTests](../../remake/tests/Sf2.Remake.Engine.Tests/EngineSessionTests.cs) and
 [AuthoredScenarioTests](../../remake/tests/Sf2.Remake.Engine.Tests/AuthoredScenarioTests.cs).

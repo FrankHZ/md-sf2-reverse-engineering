@@ -1,7 +1,7 @@
 extends SceneTree
 
 # Direct native observation. It drives real input events and reads the running view; no images,
-# setters, synthetic receipts, unit-test harness, or runtime RNG/state reset.
+# session setters, synthetic receipts, unit-test harness, or runtime RNG/state reset.
 var samples: Array = []
 var failures: Array = []
 var view: Node
@@ -38,14 +38,31 @@ func _run() -> void:
     root.add_child(host)
     await process_frame
     await process_frame
+    # Apply after the view has selected its actual-window scaling policy, not during host bootstrap.
+    await _resize(Vector2i(960, 540))
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
         failures.append("Authored view did not start.")
         _finish()
         return
     var initial := _read("initial")
+    _check(initial.viewport.width == 960 and initial.viewport.height == 540, "Representative initial viewport is 960x540")
     if initial.failure != null:
         failures.append("Startup: " + str(initial.failure))
+        _finish()
+        return
+    var arguments := OS.get_cmdline_user_args()
+    var case_index := arguments.find("--observation-case")
+    if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "target-cycle":
+            await _target_cycle(initial)
+            _finish()
+            return
+        if arguments[case_index + 1] == "layout":
+            await _layout(initial, arguments.has("--long-path"))
+            _finish()
+            return
+        failures.append("Unknown observation case.")
         _finish()
         return
     _check(initial.round == 1 and initial.stage == "Movement", "Natural initial player control")
@@ -99,6 +116,123 @@ func _run() -> void:
     _check(unsupported.failure == "physical-attack" and unsupported.failureKind == "UnsupportedCapability",
         "Unsupported capability stays distinct in the live view")
     _finish()
+
+func _same_battle(before: Dictionary, after: Dictionary) -> bool:
+    for field in ["mainSeed", "thinkingSeed", "round", "actor"]:
+        if before[field] != after[field]:
+            return false
+    for index in range(before.actors.size()):
+        for field in ["hp", "mp", "exp", "x", "y"]:
+            if before.actors[index][field] != after.actors[index][field]:
+                return false
+    return true
+
+func _target_cycle(initial: Dictionary) -> void:
+    await _press(KEY_ENTER)
+    await _press(KEY_H)
+    var selected := _read("self-selected")
+    await _press(KEY_TAB)
+    var rejected := _read("first-tab-range-rejected")
+    _check(rejected.failure == "target-range" and rejected.target == initial.actor
+        and rejected.candidate == "guard-a" and rejected.revision == selected.revision
+        and _same_battle(selected, rejected), "Rejected candidate preserves selected target, revision and battle/RNG")
+    await _press(KEY_TAB)
+    var later := _read("second-tab-later-legal-target")
+    _check(later.failure == null and later.target == "guard-c" and later.stage == "CommitReady"
+        and _same_battle(selected, later), "Tab reaches the legal ally after a rejected candidate")
+    await _press(KEY_TAB)
+    var wrapped := _read("third-tab-wraps-to-self")
+    _check(wrapped.failure == null and wrapped.target == initial.actor, "Target cycle wraps normally")
+    await _press(KEY_ESCAPE)
+    var cancelled := _read("cancel-clears-candidate")
+    _check(cancelled.candidate == null and cancelled.target == null and _same_battle(initial, cancelled),
+        "Cancel clears only provisional selection and UI cursor")
+    await _press(KEY_ENTER)
+    await _press(KEY_H)
+    await _press(KEY_TAB)
+    await _press(KEY_TAB)
+    await _press(KEY_ENTER)
+    var committed := _read("later-target-heal-committed")
+    _check(committed.failure == null and committed.actors[0].hp == initial.actors[0].hp
+        and committed.actors[0].mp == initial.actors[0].mp - 3, "Real input commits HEAL to the later ally, not self")
+    var healed_later := false
+    for observation in committed.observations:
+        if observation.Kind == "hp" and observation.Actor.Value == "guard-c":
+            healed_later = observation.After > observation.Before
+    _check(healed_later and committed.candidate == null, "Later ally receives healing and the next action has no stale UI cursor")
+
+func _rectangle(value: Dictionary) -> Rect2:
+    return Rect2(value.x, value.y, value.width, value.height)
+
+func _visible_layout(state: Dictionary, label: String) -> void:
+    var viewport := _rectangle(state.viewport)
+    var map_viewport := _rectangle(state.mapViewport)
+    var hud := _rectangle(state.hud)
+    _check(viewport.encloses(map_viewport) and viewport.encloses(hud) and not map_viewport.intersects(hud),
+        label + ": map/HUD regions fit without overlap")
+    _check(state.hudClipsContents and state.previewInsideMap, label + ": HUD clips scrolling content and preview is visible")
+    for text_node in state.hudLabels:
+        _check(text_node.rect.height > 0 and text_node.rect.width <= hud.size.x,
+            label + ": HUD text retains usable height and bounded width")
+    for actor in state.actors:
+        if actor.id == state.actor or actor.id == state.target:
+            _check(actor.visible and actor.insideMap and viewport.encloses(_rectangle(actor.globalRect)),
+                label + ": current actor/target is fully visible")
+
+func _resize(size: Vector2i) -> void:
+    root.size = size
+    for frame in range(6):
+        await process_frame
+
+func _wheel_hud(state: Dictionary) -> void:
+    for step in range(5):
+        var event := InputEventMouseButton.new()
+        event.position = _rectangle(state.hud).get_center()
+        event.global_position = event.position
+        event.button_index = MOUSE_BUTTON_WHEEL_DOWN
+        event.factor = 1.0
+        event.pressed = true
+        Input.parse_input_event(event)
+        await process_frame
+    for frame in range(6):
+        await process_frame
+
+func _layout(initial: Dictionary, long_path: bool) -> void:
+    _visible_layout(initial, "initial")
+    _check(initial.mapWidth == 48 and initial.actors[0].x == 47, "Admitted full-width map begins at the right edge")
+    await _press(KEY_A)
+    var moved := _read("edge-preview")
+    _check(moved.previewX == 46 and moved.actors[0].x == 47 and _same_battle(initial, moved),
+        "Edge input previews movement without committing battle state")
+    _visible_layout(moved, "edge-preview")
+    if long_path:
+        for step in range(44):
+            await _press(KEY_A)
+        for step in range(42):
+            await _press(KEY_S)
+        var distant := _read("long-path-frame")
+        _check(distant.failure == null and distant.previewX == 2 and distant.previewY == 45
+            and distant.zoom < 1 and _same_battle(initial, distant), "Long valid preview zooms to keep origin and destination visible")
+        _visible_layout(distant, "long-path-frame")
+    await _resize(Vector2i(640, 480))
+    var narrow := _read("narrow-window")
+    _check(narrow.viewport.width == 640 and narrow.viewport.height == 480, "UI follows the actual resized viewport")
+    _visible_layout(narrow, "narrow-window")
+    await _wheel_hud(narrow)
+    var scrolled := _read("hud-wheel-scroll")
+    _check(scrolled.hudScroll > narrow.hudScroll and _same_battle(narrow, scrolled),
+        "Actual wheel input exposes overflowing HUD without gameplay changes")
+    await _resize(Vector2i(1280, 720))
+    var wide := _read("wide-window")
+    _check(wide.viewport.width == 1280 and wide.viewport.height == 720, "Wide viewport reflows the two regions")
+    _visible_layout(wide, "wide-window")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var committed := _read("movement-committed-next-control")
+    _check(committed.failure == null and committed.actors[0].x == wide.previewX
+        and committed.actors[0].y == wide.previewY, "Visible preview can be committed through actual input")
+    _visible_layout(committed, "next-control")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

@@ -16,22 +16,61 @@ public sealed partial class BattleSessionView : Control
     private Label _title = null!;
     private Label _status = null!;
     private Label _roster = null!;
-    private Control _board = null!;
-    private readonly Dictionary<ActorRef, Label> _markers = [];
-    private readonly List<ColorRect> _preview = [];
-    private const int CellSize = 40;
+    private BattleMapViewport _map = null!;
+    private ScrollContainer _hud = null!;
+    private VBoxContainer _hudContent = null!;
+    private readonly List<Label> _hudLabels = [];
+    // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
+    private ActorRef? _targetCandidate;
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
-        _title = AddLabel("Title", new(20, 12));
-        _status = AddLabel("Status", new(20, 42));
-        _board = new Control { Name = "Board", Position = new(20, 80), MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(_board);
-        _roster = AddLabel("Roster", new(540, 100));
-        var help = AddLabel("Help", new(540, 240));
+        // This authored UI responds to the actual window; legacy reference composition keeps its policy.
+        GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
+        _map = new BattleMapViewport { Name = "MapViewport" };
+        AddChild(_map);
+        _hud = new ScrollContainer { Name = "Hud", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
+            FocusMode = FocusModeEnum.None };
+        AddChild(_hud);
+        _hud.GetVScrollBar().FocusMode = FocusModeEnum.None;
+        _hudContent = new VBoxContainer { Name = "Content", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _hudContent.AddThemeConstantOverride("separation", 12);
+        _hud.AddChild(_hudContent);
+        _title = AddLabel("Title");
+        _status = AddLabel("Status");
+        _roster = AddLabel("Roster");
+        var help = AddLabel("Help");
         help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nTab: cycle living allied targets\nSpace: STAY\nEsc: cancel all provisional choices\nX: physical action capability\n\nAI and rounds advance automatically.\nProject-authored controlled start.";
+        GetViewport().SizeChanged += Arrange;
+        Arrange();
+    }
+
+    public override void _ExitTree() => GetViewport().SizeChanged -= Arrange;
+
+    private void Arrange()
+    {
+        var size = GetViewportRect().Size;
+        const int margin = 16;
+        if (size.X >= 800)
+        {
+            float hudWidth = Mathf.Clamp(size.X * 0.32f, 260, 380);
+            _map.Position = new(margin, margin);
+            _map.Size = new(Mathf.Max(1, size.X - 3 * margin - hudWidth), Mathf.Max(1, size.Y - 2 * margin));
+            _hud.Position = new(_map.Position.X + _map.Size.X + margin, margin);
+            _hud.Size = new(hudWidth, _map.Size.Y);
+        }
+        else
+        {
+            float height = Mathf.Max(2, size.Y - 3 * margin);
+            _map.Position = new(margin, margin);
+            _map.Size = new(Mathf.Max(1, size.X - 2 * margin), height * 0.6f);
+            _hud.Position = new(margin, _map.Position.Y + _map.Size.Y + margin);
+            _hud.Size = new(_map.Size.X, height * 0.4f);
+        }
+        float textWidth = Mathf.Max(1, _hud.Size.X - _hud.GetVScrollBar().GetCombinedMinimumSize().X - 4);
+        foreach (var label in _hudLabels) label.CustomMaximumSize = new(textWidth, -1);
     }
 
     internal void Begin(IScenarioSource source)
@@ -43,7 +82,7 @@ public sealed partial class BattleSessionView : Control
         {
             _session = started.Session;
             _result = started.Result;
-            BuildBoard(started.Result.Snapshot.Battle);
+            _map.Build(started.Result.Snapshot.Battle.Definition);
             Present();
         }
         else if (outcome is SessionStartFailed failed) FailStartup(failed.Failure);
@@ -86,7 +125,7 @@ public sealed partial class BattleSessionView : Control
         else if (key.Keycode == Key.Tab && _session.Current.Selection is { Spell: not null } targeting)
         {
             var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.Definition.IsAlly).ToArray();
-            int selected = Array.FindIndex(targets, a => a.Actor == targeting.Target);
+            int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
             Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
         }
         else return;
@@ -96,59 +135,27 @@ public sealed partial class BattleSessionView : Control
     private void Send(SessionCommand command)
     {
         var current = _session!.Current;
+        if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
+        if (_result.Snapshot.Selection?.Spell is null) _targetCandidate = null;
         Present();
-    }
-
-    private void BuildBoard(EngineBattleState battle)
-    {
-        for (int y = 0; y < battle.Definition.Height; y++)
-            for (int x = 0; x < battle.Definition.Width; x++)
-            {
-                byte tile = battle.Definition.Terrain[y * 48 + x];
-                _board.AddChild(new ColorRect { Position = new(x * CellSize, y * CellSize), Size = new(CellSize - 2, CellSize - 2),
-                    Color = tile == 255 ? new(0.12f, 0.14f, 0.18f) : tile == 3 ? new(0.19f, 0.34f, 0.24f) : new(0.25f, 0.29f, 0.35f),
-                    MouseFilter = MouseFilterEnum.Ignore });
-            }
-        foreach (var actor in battle.Actors)
-        {
-            var marker = new Label { Name = "Actor_" + actor.Actor.Value, MouseFilter = MouseFilterEnum.Ignore };
-            marker.AddThemeFontSizeOverride("font_size", 10);
-            _board.AddChild(marker);
-            _markers.Add(actor.Actor, marker);
-        }
     }
 
     private void Present()
     {
-        var projection = BattleSnapshotProjection.Project(_result!);
+        var projection = BattleSnapshotProjection.Project(_result!, _targetCandidate);
         _title.Text = projection.Title;
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
-        foreach (var marker in _markers.Values) marker.Visible = false;
-        foreach (var actor in projection.Markers)
-        {
-            var node = _markers[actor.Actor];
-            node.Visible = true;
-            node.Position = new(actor.Position.X * CellSize + 2, actor.Position.Y * CellSize + 4);
-            node.Text = actor.Text;
-            node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
-        }
-        foreach (var node in _preview) { _board.RemoveChild(node); node.QueueFree(); }
-        _preview.Clear();
-        foreach (var position in projection.Preview)
-        {
-            var node = new ColorRect { Position = new(position.X * CellSize + 4, position.Y * CellSize + CellSize - 7),
-                Size = new(CellSize - 10, 3), Color = Colors.Gold, MouseFilter = MouseFilterEnum.Ignore };
-            _board.AddChild(node);
-            _preview.Add(node);
-        }
+        _map.Present(projection);
     }
 
-    private Label AddLabel(string name, Vector2 position)
+    private Label AddLabel(string name)
     {
-        var label = new Label { Name = name, Position = position, MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(label);
+        var label = new Label { Name = name, AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore };
+        _hudContent.AddChild(label);
+        _hudLabels.Add(label);
         return label;
     }
 
@@ -162,15 +169,21 @@ public sealed partial class BattleSessionView : Control
             failureKind = (_result?.Failure ?? _startupFailure)?.Kind.ToString(),
             round = current?.Battle.Round, revision = current?.Revision,
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
-            map = current?.Battle.Definition.Map.Value, actor = current?.Selection?.Actor.Value,
+            map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
+            mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
+            target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
-            actors = current?.Battle.Actors.Select(a => new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp,
-                x = a.Position.X, y = a.Position.Y, nodeX = _markers[a.Actor].Position.X,
-                nodeY = _markers[a.Actor].Position.Y, visible = _markers[a.Actor].Visible, text = _markers[a.Actor].Text }),
+            actors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             observations = _result?.Observations,
             title = _title.Text, status = _status.Text, roster = _roster.Text,
-            boardChildren = _board.GetChildCount(), previewNodes = _preview.Count,
+            boardChildren = _map.BoardChildren, previewNodes = _map.PreviewCount,
+            viewport = BattleMapViewport.Rectangle(GetViewportRect()), mapViewport = BattleMapViewport.Rectangle(_map.GetGlobalRect()),
+            hud = BattleMapViewport.Rectangle(_hud.GetGlobalRect()), hudClipsContents = _hud.ClipContents,
+            hudContentHeight = _hudContent.Size.Y,
+            hudLabels = _hudLabels.Select(label => new { name = label.Name.ToString(), rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }),
+            hudScroll = _hud.ScrollVertical, hudScrollMaximum = _hud.GetVScrollBar().MaxValue, hudScrollPage = _hud.GetVScrollBar().Page,
+            previewRect = _map.PreviewRectangle, previewInsideMap = _map.PreviewInsideMap, zoom = _map.Zoom,
         });
     }
 }

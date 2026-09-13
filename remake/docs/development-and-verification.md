@@ -92,6 +92,13 @@ Input is WASD/arrows for preview, Enter for action choice/commit, H for the know
 initially selected, Tab for living allied targets, Space for STAY and Escape for cancel. Unsupported
 physical action is X. Application runs AI and rounds automatically.
 
+Tab cycles from the last attempted UI candidate, including a rejected one. A range rejection preserves
+the session's accepted target and battle state; subsequent Tab input can reach later allies. The HUD
+shows both attempted and accepted target after rejection. Cancel or the next action clears the UI cursor.
+The map viewport keeps the acting origin, preview and target visible with clipping/pan/zoom. Wide
+windows place a scrollable HUD beside the map; narrow windows place it below. Authored UI uses actual
+window dimensions, while the legacy reference path retains its original window policy.
+
 From the repository root, the direct observation command is:
 
 ```powershell
@@ -108,6 +115,38 @@ real `InputEventKey` events, reads the common session result and actual HUD/node
 checks cancellation, HEAL/STAY, carried RNG and automatic progression, and exits nonzero on failure.
 Its JSON/log output is local generated evidence; it never emits images or modifies session state.
 No tests of this observation script are required.
+
+The same direct script also accepts `--observation-case target-cycle` and `--observation-case layout`.
+It sets a representative 960×540 host window because a headless SceneTree script otherwise starts a
+64×64 physical window. The layout case resizes the actual window to 640×480 and 1280×720, checks real
+map/HUD and actor/preview rectangles, scrolls the HUD with real mouse-wheel events and commits movement
+with real keys. `--long-path` additionally traverses a valid long preview before that observation.
+
+Prepare minimal public authored variants in a fresh ignored output directory, without editing packages:
+
+```powershell
+$caseDirectory = Join-Path $env:SF2_RUN_OUTPUT 'inputs'
+New-Item -ItemType Directory -Path $caseDirectory | Out-Null
+$cycle = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
+$laterAlly = $cycle.actors[1] | ConvertTo-Json -Depth 8 | ConvertFrom-Json
+$laterAlly.id = 'guard-c'
+$laterAlly.slot = 10
+$laterAlly.agility = 1
+$cycle.actors += $laterAlly
+$cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; x=3; y=4}
+$cycle | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'three-allies.json') -Encoding utf8NoBOM
+$layout = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
+$layout.terrains[0].rows = @(1..48 | ForEach-Object { '1' * 48 })
+$layout.actors[0].move = 255
+$layout.encounters[0].placements[0].x = 47
+$layout | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'full-square.json') -Encoding utf8NoBOM
+```
+
+Use those respective paths with `--authored-package`, the selected observation case and a fresh
+`--observation-output`. The targeting variant places the rejected ally before a legal adjacent ally;
+the layout variant spans both admitted dimensions. Both execute the same production session and view,
+with no runtime seed/state injection. Preserve original failed observations and run only the affected
+case after a correction; adapter-only fixes do not require replaying unchanged engine/reference suites.
 
 Private trust remains in the transitional reference reader until its capability migrates. Its affected
 direct comparison is the existing `PrivateCanonicalMap3ImportReaderTests.UnknownShapeAndProvenanceDriftFailClosed`
