@@ -270,7 +270,7 @@ public sealed class PrivateBattle01PresenterTests
                     var generated=PrivateBattle01Presenter.BuildProjection(current,"R13 generated.");
                     Assert.Equal((13,(int?)128),(current.FirstRound!.RoundNumber,generated.ActorIndex));
                     Assert.Null(generated.CompletedActorIndex);Assert.False(generated.CanConfirm);Assert.Empty(generated.Path);
-                    Assert.Contains("Candidate not started",generated.Controls);
+                    Assert.Contains("Current battle retained",generated.Controls);Assert.DoesNotContain("Space",generated.Controls);
                     foreach(int expected in new[]{128,130})
                     {
                         int actor=current.FirstRound!.CurrentCandidate!.Value.CombatantIndex;Assert.Equal(expected,actor);
