@@ -41,6 +41,27 @@ internal static class BattleAdvancer
                 var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
                 return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
             }
+            if (actor.Definition.Controller == BattleController.Attack1Script3)
+            {
+                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
+                try
+                {
+                    var action = EnemyPhysicalDecision.Resolve(battle, actor.Actor);
+                    var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
+                        action.Destination, action.Effects, observations);
+                    battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
+                }
+                catch (BattleRuleException error)
+                {
+                    // Earlier committed player/AI work remains published; this enemy ACTION
+                    // keeps its queue entry, position, HP, rewards, last target and both seeds.
+                    var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;
+                    return new(new(current.SessionId, revision, sequence, battle, null, reason), observations.AsReadOnly(), reason,
+                        new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.InvariantFailure,
+                            error.Code, error.Field, error.Code.Replace('-', ' ')));
+                }
+                continue;
+            }
             battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
             observations.Add(new(++sequence, revision, "ai-stay", actor.Actor));
         }

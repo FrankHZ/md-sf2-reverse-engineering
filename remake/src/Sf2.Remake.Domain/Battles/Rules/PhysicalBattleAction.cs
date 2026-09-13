@@ -2,12 +2,12 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal static class PlayerPhysicalAttack
+internal static class PhysicalBattleAction
 {
     internal static PhysicalActorDefinition RequireActor(EngineBattleState battle, ActorRef actorRef)
     {
         var actor = battle.GetActor(actorRef);
-        if (actor.Hp == 0 || !actor.Definition.IsAlly) throw new BattleRuleException("physical-actor", "actor");
+        if (actor.Hp == 0) throw new BattleRuleException("physical-actor", "actor");
         if (actor.Definition.Physical is not { } physical)
             throw new BattleRuleException("physical-definition", "actor.physical", true);
         if (battle.Definition.Rewards is null)
@@ -20,7 +20,7 @@ internal static class PlayerPhysicalAttack
     {
         _ = RequireActor(battle, actorRef);
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.Definition.IsAlly)
+        if (target is null || target.Hp == 0 || target.Definition.IsAlly == battle.GetActor(actorRef).Definition.IsAlly)
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
@@ -50,44 +50,51 @@ internal static class PlayerPhysicalAttack
             // counter draw does not clear the first success; second-hit death still invalidates it.
             counterRequested |= second.CounterRolled;
         }
-        if (targetHp > 0 && counterRequested) _ = Hit("physical-counter", counter: true);
+        bool counterPerformed = targetHp > 0 && counterRequested;
+        if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
         // double/counter draws, whose toggles cannot schedule another strike.
 
         bool targetDead = targetHp == 0, actorDead = actorHp == 0;
         RequireContinuing(target, targetDead);
         RequireContinuing(actor, actorDead);
-        int exp = actor.Exp;
-        if (!actorDead)
+        var ally = actor.Definition.IsAlly ? actor : target;
+        var enemy = actor.Definition.IsAlly ? target : actor;
+        bool allyDead = actor.Definition.IsAlly ? actorDead : targetDead;
+        bool enemyDead = actor.Definition.IsAlly ? targetDead : actorDead;
+        int exp = ally.Exp;
+        if (!allyDead && (actor.Definition.IsAlly || counterPerformed))
         {
-            // End skips EXP and its two random draws when the original ally actor died.
+            // Only a surviving ally who actually attacked earns an award (including a counter).
             var awardRolls = new List<PhysicalRoll>();
             int award = BattleRewards.Award(accumulated, current.Definition.Rewards!.HalvedExperience, ref seed, awardRolls);
-            AddRolls(awardRolls, actorRef);
-            exp = Math.Min(200, actor.Exp + award);
+            AddRolls(awardRolls, ally.Actor);
+            exp = Math.Min(200, ally.Exp + award);
             if (exp >= 100) throw new BattleRuleException("level-up", "actor.exp", true);
-            effects.Add(new("exp", actorRef, actor.Exp, exp));
+            effects.Add(new("exp", ally.Actor, ally.Exp, exp));
         }
-        uint gold = targetDead ? BattleRewards.Gold(current.Gold, target.Definition.Physical!.Gold) : current.Gold;
-        if (targetDead)
+        uint gold = enemyDead ? BattleRewards.Gold(current.Gold, enemy.Definition.Physical!.Gold) : current.Gold;
+        if (enemyDead)
         {
-            effects.Add(new("gold", actorRef, current.Gold, gold));
-            effects.Add(new("kills", actorRef, actor.Kills, BattleRewards.Kills(actor.Kills)));
-            effects.Add(new("death-cleanup", targetRef, 1, 0));
+            effects.Add(new("gold", ally.Actor, current.Gold, gold));
+            effects.Add(new("kills", ally.Actor, ally.Kills, BattleRewards.Kills(ally.Kills)));
+            effects.Add(new("death-cleanup", enemy.Actor, 1, 0));
         }
-        if (actorDead)
+        if (allyDead)
         {
-            effects.Add(new("defeats", actorRef, actor.Defeats, BattleRewards.Defeats(actor.Defeats)));
-            effects.Add(new("death-cleanup", actorRef, 1, 0));
+            effects.Add(new("defeats", ally.Actor, ally.Defeats, BattleRewards.Defeats(ally.Defeats)));
+            effects.Add(new("death-cleanup", ally.Actor, 1, 0));
         }
         // No status/equipment effects are admitted. After-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
         effects.Add(new("after-turn", actorRef));
-        var actors = current.Actors.Select(a => a.Actor == actorRef
-            ? a.With(hp: actorHp, exp: (byte)exp, position: destination,
-                kills: targetDead ? BattleRewards.Kills(a.Kills) : a.Kills,
-                defeats: actorDead ? BattleRewards.Defeats(a.Defeats) : a.Defeats)
-            : a.Actor == targetRef ? a.With(hp: targetHp) : a);
+        var actors = current.Actors.Select(a => a.Actor == actorRef || a.Actor == targetRef
+            ? a.With(hp: a.Actor == actorRef ? actorHp : targetHp,
+                position: a.Actor == actorRef ? destination : a.Position,
+                exp: a.Actor == ally.Actor ? (byte)exp : a.Exp,
+                kills: a.Actor == ally.Actor && enemyDead ? BattleRewards.Kills(a.Kills) : a.Kills,
+                defeats: a.Actor == ally.Actor && allyDead ? BattleRewards.Defeats(a.Defeats) : a.Defeats)
+            : a);
         return (current.With(actors: actors, mainSeed: seed, gold: gold), effects.AsReadOnly());
 
         PhysicalStrike Hit(string kind, bool counter)
@@ -100,8 +107,7 @@ internal static class PlayerPhysicalAttack
             byte terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
             // Regular movement's land nibble is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
-            int multiplier = terrain switch { 1 => 230, 2 => 256, >= 3 and <= 6 => 205,
-                _ => throw new BattleRuleException("physical-terrain", "target.terrain", true) };
+            int multiplier = LandMultiplier(terrain);
             var strike = PhysicalStrikeRules.Resolve(attacker.Definition.Attack, defender.Definition.Defense,
                 hp, multiplier, seed, 32, profile.Prowess == 0 ? (ushort)32 : (ushort)16,
                 profile.Prowess == 0 ? 1 : 2, counter);
@@ -115,14 +121,14 @@ internal static class PlayerPhysicalAttack
                 effects.Add(new("hp", defender.Actor, hp, strike.Hp));
             }
             if (counter) actorHp = strike.Hp;
-            else
+            else targetHp = strike.Hp;
+            if (attacker.Definition.IsAlly)
             {
-                targetHp = strike.Hp;
-                int killExp = BattleRewards.KillExperience(actor.Definition.Level, profile.Promoted, target.Definition.Level);
+                int killExp = BattleRewards.KillExperience(attacker.Definition.Level, profile.Promoted, defender.Definition.Level);
                 // Each hit truncates its damage EXP separately, then adds to one capped action
-                // accumulator. Enemy counter damage never earns EXP for the original player.
-                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(strike.Damage, target.Definition.MaxHp, killExp));
-                if (targetHp == 0) accumulated = Math.Min(49, accumulated + killExp);
+                // accumulator. Enemy strikes never earn ally EXP, regardless of action direction.
+                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(strike.Damage, defender.Definition.MaxHp, killExp));
+                if (strike.Hp == 0) accumulated = Math.Min(49, accumulated + killExp);
             }
             return strike;
         }
@@ -144,4 +150,10 @@ internal static class PlayerPhysicalAttack
                 throw new BattleRuleException("battle-outcome-program", "battle.outcome", true);
         }
     }
+
+    internal static int LandMultiplier(byte terrain) => terrain switch
+    {
+        1 => 230, 2 => 256, >= 3 and <= 6 => 205,
+        _ => throw new BattleRuleException("physical-terrain", "target.terrain", true),
+    };
 }

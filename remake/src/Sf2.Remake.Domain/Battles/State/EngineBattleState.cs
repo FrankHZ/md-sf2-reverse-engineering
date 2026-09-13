@@ -12,7 +12,7 @@ namespace Sf2.Remake.Domain.Battles;
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary }
-public enum BattleController { Player, Stay }
+public enum BattleController { Player, Stay, Attack1Script3 }
 
 public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold,
     ushort InitialKills, ushort InitialDefeats = 0);
@@ -51,10 +51,10 @@ public sealed class BattleActorDefinition
 public sealed class BattleActorState
 {
     internal BattleActorState(BattleActorDefinition definition, ushort hp, byte mp, byte exp,
-        MapPosition? position, ushort? kills = null, ushort? defeats = null)
+        MapPosition? position, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null)
     { Definition = definition; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
         Kills = kills ?? definition.Physical?.InitialKills ?? 0;
-        Defeats = defeats ?? definition.Physical?.InitialDefeats ?? 0; }
+        Defeats = defeats ?? definition.Physical?.InitialDefeats ?? 0; LastTarget = lastTarget; }
     public BattleActorDefinition Definition { get; }
     public ActorRef Actor => Definition.Actor;
     public ushort Hp { get; }
@@ -63,9 +63,10 @@ public sealed class BattleActorState
     public MapPosition? Position { get; }
     public ushort Kills { get; }
     public ushort Defeats { get; }
+    public ActorRef? LastTarget { get; }
     internal BattleActorState With(ushort? hp = null, byte? mp = null, byte? exp = null,
-        MapPosition? position = null, ushort? kills = null, ushort? defeats = null) =>
-        new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats);
+        MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null) =>
+        new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats, lastTarget ?? LastTarget);
 }
 
 public sealed class BattleDefinition
@@ -111,8 +112,9 @@ public sealed class EngineBattleState
     internal IReadOnlyList<TurnOrderEntry> Queue { get; }
     public BattleActorState GetActor(ActorRef actor) => Actors.Single(a => a.Actor == actor);
     internal EngineBattleState With(IEnumerable<BattleActorState>? actors = null, uint? mainSeed = null,
-        int? round = null, IEnumerable<TurnOrderEntry>? queue = null, int? cursor = null, uint? gold = null) =>
-        new(Definition, actors ?? Actors, mainSeed ?? MainSeed, ThinkingSeed,
+        int? round = null, IEnumerable<TurnOrderEntry>? queue = null, int? cursor = null, uint? gold = null,
+        uint? thinkingSeed = null) =>
+        new(Definition, actors ?? Actors, mainSeed ?? MainSeed, thinkingSeed ?? ThinkingSeed,
             round ?? Round, queue ?? Queue, cursor ?? Cursor, gold ?? Gold);
 }
 

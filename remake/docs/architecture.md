@@ -26,9 +26,14 @@ semantic commands and observations. General presentation/program waits remain fu
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
-`PhysicalStrikeRules`, `BattleRewards` and `PlayerPhysicalAttack` now own ordinary physical construction,
-settlement and atomic state transition. `PlayerPhysicalAttack` constructs at most three source-ordered
-hits on temporary HP, carries sticky reaction decisions and aggregates one award before publication.
+`PhysicalStrikeRules`, `BattleRewards` and `PhysicalBattleAction` now own ordinary physical construction,
+settlement and atomic state transition. `PhysicalBattleAction` constructs at most three source-ordered
+hits on temporary HP, carries sticky reaction decisions and aggregates one ally award before publication.
+Both player commands and `EnemyPhysicalDecision` call that calculator; `BattleActionCommitter` is
+the single publication/queue-consumption mechanism. Automatic advancement catches failures at each
+enemy ACTION, preserving earlier commits and retaining the failed enemy's queue entry. The typed
+ATTACK1/script3 controller currently admits a sole reachable physical target; wider AI stays
+explicitly Unsupported. The source thinking-word calculation is shared with reference consumers.
 Shared strike/reward functions remain the calculation owners; reference DTOs only project their
 results. Semantic observations carry both actor and target for reversal. Dead combatants retain
 identity/HP/kill-and-defeat accounting but have no

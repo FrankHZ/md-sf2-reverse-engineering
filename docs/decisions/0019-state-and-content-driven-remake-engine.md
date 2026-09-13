@@ -151,7 +151,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 ## Current M2 ordinary physical implementation
 
 The M2 capability uses the common session for configured regular-ground physical actions.
-[PlayerPhysicalAttack](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PlayerPhysicalAttack.cs) validates
+[PhysicalBattleAction](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalBattleAction.cs) validates
 living opposing adjacent targets at the provisional destination, constructs at most first, second
 and reversed counter hits on temporary HP, then publishes once. Shared
 [PhysicalStrikeRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalStrikeRules.cs) owns dodge,
@@ -164,8 +164,9 @@ and each draw's seed images/range/value are explicit semantic observations, not 
 [BattleRewards](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleRewards.cs) owns effective-level
 damage/kill EXP, the per-action cap, configured halving, ordered two-roll award and gold/kill/defeat
 caps. Damage EXP truncates per hit before accumulation. Enemy counter damage does not earn EXP for
-the original player. If that player dies, source End skips the final EXP command and its RNG draws;
-otherwise the entire chain receives one award. No action, reaction or test resets the running seed.
+the original player. A surviving ally who attacked receives one award, including an ally counter
+during an enemy action. An enemy that dies to that counter still grants ally EXP/kill/gold. Enemy
+strikes alone grant no ally EXP or award RNG; an ally killed before countering receives no award. No action, reaction or test resets the running seed.
 Thinking RNG is unchanged by explicitly configured Stay AI; a counter does not consume the
 counterattacker's queued ordinary turn.
 
@@ -179,13 +180,15 @@ the same reader/session; existing HEAL packages have no invented physical/reward
 are controlled authored inputs, not original private admission or source-fidelity starts.
 
 One commit applies movement, ordered HP reactions and survivor rewards. Ordinary enemy death credits
-one capped kill/gold award; ordinary counter-caused ally death increments capped defeats. Dead
+one capped kill/gold award; ordinary ally death increments capped defeats. Dead
 actors lose their battlefield position and occupancy, skip pending queue entries and are excluded
-from later generated rounds. Application runs configured Stay AI and returns the next living player.
+from later generated rounds. Application runs configured Stay or the bounded enemy branch below and returns the next living player.
 Admitted status-free/equipment-free after-turn has no further resource or random effect, so both
 faction checks have the same continuing result. Level-up, leader death/programs (including a dead
 leader at admission), and terminal faction/outcome/return reject the whole action with the original
-snapshot and no observations. They are not converted to STAY or bypassed by seed retries. General
+action-start state and no effects from that action. A failed automatic enemy action retains earlier
+committed player/AI work and its own unconsumed queue entry; startup failure retains the generated
+round. They are not converted to STAY or bypassed by seed retries. General
 AI, other movement/prowess, equipment/status/special effects, private import, programs and M4 return
 remain outside this capability; M2 as a whole and A1–A8 remain incomplete.
 
@@ -213,6 +216,52 @@ deleted, while reference draw DTOs only project computed results. Remaining lega
 wrappers do not admit authored actions and cannot be claimed migrated before their private consumers
 move to common commands. M2/M3/M4 remove their corresponding callers; cleanup is not postponed
 wholesale to M5. Production projects remain independent of the reference assembly.
+
+### Enemy physical decision and common action publication
+
+[EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
+implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3 and
+exactly one reachable living opponent. The typed `attack1-script3` controller names this capability;
+it does not admit activation, arbitrary commandsets, spell/item categories or multi-target ranking.
+Regular MOV 1–63 bounds candidate movement below the source signed-grid 128 boundary. Candidate
+construction uses the existing weighted grid, blocks opponents, permits traversal through friends
+and excludes occupied stopping cells. The radius-one ring visits north, west, east, south, takes
+the first strictly lowest movement cost, and immediately accepts the actor's cost-zero origin.
+No actor name, receipt, round or expected target is a gameplay predicate. Zero reachable targets
+returns `ai-commandset-continuation`; multiple targets returns `ai-target-ranking`.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/battles/global/aicommandsets.asm` commandset06 starts ATTACK1 and stops on success;
+`disasm/code/gameflow/battle/ai/command/attack.asm` selects ordinary weaponless physical range,
+determines an attack position and records AI_LAST_TARGET_TABLE. Its
+`attack/prioritizetargets.asm` TargetPriorityScript3 draws thinking range3, then chooses either
+lethality priority 16/1 or movement priority max(19 − 2×cost, 1). A sole positive-priority candidate
+needs no class/cohort tie breaking. The consumed [AI contract](../design/contracts/battle-ai-decision.md)
+retains wider category, ranking, commandset and activation semantics. The authored path is a modern
+movement projection; this slice does not claim the original move-string animation or natural reach.
+
+`BattleRandom.NextThinkingWord` owns the source byte-rejection calculation. In the authored uint
+image the source seed-copy word occupies bits31–16, with its high byte updated and other 24 bits
+preserved. Main RNG remains separate. Script3 consumes the natural range3 draw even for one target;
+physical-only selection consumes no category range6 draw. Last-target memory starts unspecified
+(`null`) and records only a committed decision; this branch does not read earlier last-target state.
+The old reference thinking helper now projects this same calculation rather than duplicating it.
+
+[BattleActionCommitter](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs)
+publishes player and enemy actions through one movement/effects/RNG/revision/queue mechanism.
+The shared physical calculator settles ally rewards and deaths by actual side, including an ally's
+counter kill of the original enemy actor. Thinking, target memory, physical reactions, main RNG,
+rewards and cleanup are temporary until that entire ACTION succeeds. Automatic advancement catches
+failure at the current enemy boundary and preserves all preceding commits. It never converts an
+unsupported decision to Stay. `GameSession` remains the thin entry and state owner.
+
+**Confirmed (engine):** [EnemyActionTests](../../remake/tests/Sf2.Remake.Engine.Tests/EnemyActionTests.cs)
+uses two Content packages, changed actors/positions/target identities, startup and continued history,
+natural first/second/counter draws, ally EXP and capped kill/gold/defeats, both kinds of dead queued
+actor, startup failure, and a failed second AI after a successful first AI. Actual Godot inputs observe
+counter resources, movement, enemy node removal, next control and late Unsupported without images.
+**Unknown:** wider AI, private input migration, natural original continuity, presentation and 8C/H4.
+These engine checks add no original-game evidence and do not complete M2 or A1–A8.
 
 ## Evidence used and its limits
 

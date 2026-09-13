@@ -418,16 +418,8 @@ public static class Battle01EnemyStandby
 
     internal static Battle01ThinkingRoll ThinkingRoll(ushort seedCopy, byte range)
     {
-        ushort before = seedCopy; var bytes = new List<byte>();
-        while (true)
-        {
-            // Source EXT.W then MULU.W; retain its masked byte and the separate low word byte.
-            ushort extended = unchecked((ushort)(short)(sbyte)(seedCopy >> 8));
-            byte next = (byte)((extended * 541 + 12345) & 255);
-            seedCopy = (ushort)((next << 8) | (seedCopy & 255)); bytes.Add(next);
-            if (unchecked((sbyte)range) <= 1 || next < range)
-                return new(range, before, seedCopy, unchecked((sbyte)range) <= 1 ? (byte)0 : next, bytes.AsReadOnly());
-        }
+        var draw = Sf2.Remake.Domain.Battles.BattleRandom.NextThinkingWord(seedCopy, range);
+        return new(range, draw.Before, draw.After, draw.Value, draw.Bytes);
     }
 
     internal static IReadOnlyList<byte> SourceMoveString(Battle01MovementGrid grid, MapPosition origin, MapPosition destination)

@@ -44,7 +44,7 @@ internal static class BattleCommandDispatcher
                 case ChooseAction choice when selection.Stage == BattleSelectionStage.ActionChoice:
                     if (choice.Action == SessionAction.PhysicalAttack)
                     {
-                        _ = PlayerPhysicalAttack.RequireActor(battle, selection.Actor);
+                        _ = PhysicalBattleAction.RequireActor(battle, selection.Actor);
                         return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.TargetChoice,
                             SessionAction.PhysicalAttack), "physical-selected");
                     }
@@ -59,7 +59,7 @@ internal static class BattleCommandDispatcher
                         SessionAction.Heal, spell.Spell), "spell-selected");
                 case SelectTarget physicalTarget when selection.Action == SessionAction.PhysicalAttack &&
                     selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
-                    _ = PlayerPhysicalAttack.RequireTarget(battle, selection.Actor, selection.Preview.Destination, physicalTarget.Target);
+                    _ = PhysicalBattleAction.RequireTarget(battle, selection.Actor, selection.Preview.Destination, physicalTarget.Target);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
                         SessionAction.PhysicalAttack, target: physicalTarget.Target), "target-selected");
                 case SelectTarget target when selection.Spell is { } selectedSpell &&
@@ -87,7 +87,6 @@ internal static class BattleCommandDispatcher
 
     private static SessionResult Commit(SessionSnapshot current, BattleSelection selection)
     {
-        var actor = current.Battle.GetActor(selection.Actor);
         EngineBattleState battle;
         IReadOnlyList<BattleEffect> effects = [];
         if (selection.Action == SessionAction.Heal && selection.Spell is { } spell && selection.Target is { } target)
@@ -95,20 +94,11 @@ internal static class BattleCommandDispatcher
         else if (selection.Action == SessionAction.Stay)
             battle = BattleMovement.Commit(current.Battle, selection.Actor, selection.Preview.Destination);
         else if (selection.Action == SessionAction.PhysicalAttack && selection.Target is { } physicalTarget)
-            (battle, effects) = PlayerPhysicalAttack.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, physicalTarget);
+            (battle, effects) = PhysicalBattleAction.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, physicalTarget);
         else return Reject(current, "incomplete-action", "selection");
-        long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         var observations = new List<SessionObservation>();
-        if (actor.Position != selection.Preview.Destination)
-            observations.Add(new(++sequence, revision, "movement", selection.Actor, From: actor.Position, To: selection.Preview.Destination));
-        foreach (var effect in effects)
-            observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
-                RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
-        if (battle.MainSeed != current.Battle.MainSeed)
-            observations.Add(new(++sequence, revision, "action-rng", selection.Actor, current.Battle.MainSeed, battle.MainSeed));
-        observations.Add(new(++sequence, revision, "action-committed", selection.Actor));
-        return BattleAdvancer.Advance(new(current.SessionId, revision, sequence, BattleTurnFlow.ConsumeEntry(battle), null,
-            SessionStopReason.SimulationWait), observations);
+        return BattleAdvancer.Advance(BattleActionCommitter.Publish(current, battle, selection.Actor,
+            selection.Preview.Destination, effects, observations), observations);
     }
 
 
