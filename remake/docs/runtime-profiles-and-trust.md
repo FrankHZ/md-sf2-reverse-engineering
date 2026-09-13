@@ -62,20 +62,25 @@ or terminal faction outcome returns Unsupported before any hit or movement is pu
 [`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
 
-The enemy-only `controller: attack1-script3` selects the already-active source ATTACK1/script3
-physical branch. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
+The enemy-only `controller: commandset06-script3` selects the already-active source commandset06 with
+physical TargetPriorityScript3. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
 status and items remain empty. Encounter rewards are required when the physical action executes.
 Living opposing targets must be reachable through legal radius-one attack positions. Candidate
 scoring follows reverse slot order; signed raw-priority cohorts are selected before the returned
 priority is capped at15. Critical multi-target cohorts use the Regular class table, then the source
-largest-movement/later-collected tie rule. Zero targets, other AI definitions, mixed action categories
-and wider movement domains remain explicit Unsupported boundaries. This is not an always-attack fallback or a claim to
-implement the rest of commandset06. `stay` remains a separate explicitly authored policy.
+largest-movement/later-collected tie rule. Zero attack targets return ATTACK1 failure, followed by
+unavailable HEAL1/SUPPORT and MOVE1. Complete raw target costs0–127 select the first lowest-cost living
+opponent in slot order. Source preliminary movement uses fixed cost4, then the legal MOV grid and
+radius0/1 stopping correction; no legal station yields origin Stay. MOVE1 succeeds and ends the action
+in either case, without reaching the later STAY command or attacking again that turn. Movement needs
+no rewards definition and draws no RNG. High/incomplete target costs, activation, other commandsets,
+mixed action categories and wider movement domains remain explicit Unsupported boundaries.
+`stay` remains a separate explicitly authored policy.
 
 The authored `thinkingSeed` uint maps its upper word to the source seed copy, updating only the
 high byte through the source rejection loop; the remaining 24 bits are carried unchanged. No command
 resets either RNG channel. Enemy last-target state starts unspecified and changes only on a
-successful action; script3 does not read initial memory. On late failure the
+successful attack; MOVE1 preserves it and script3 does not read initial memory. On late failure the
 enemy's temporary movement, candidate draws, HP, rewards, last target and both seeds are discarded together. Prior
 player/AI commits remain valid and the failed enemy retains its queue entry.
 

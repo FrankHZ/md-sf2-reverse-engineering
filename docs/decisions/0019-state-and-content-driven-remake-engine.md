@@ -221,7 +221,7 @@ wholesale to M5. Production projects remain independent of the reference assembl
 
 [EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
 implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3.
-The typed `attack1-script3` controller names this capability; activation, other commandsets and
+The typed `commandset06-script3` controller names this capability; activation, other commandsets and
 spell/item categories remain Unsupported. Regular MOV 1–63 bounds candidate movement below the
 source signed-grid 128 boundary. Candidate construction uses the existing weighted grid, blocks
 opponents, permits traversal through friends and excludes occupied stopping cells. The radius-one
@@ -229,7 +229,7 @@ ring visits north, west, east, south, takes the first strictly lowest movement c
 accepts the actor's cost-zero origin. Reachable living allies are stored by ascending slot, while
 thinking calls visit that array backwards and store each priority at its original index. No actor
 name, receipt, round, seed allowlist or expected target is a gameplay predicate. Zero reachable
-targets still returns `ai-commandset-continuation`; it never falls back to Stay.
+attack targets return command failure to the bounded commandset continuation below.
 
 [PhysicalTargetRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalTargetRules.cs) owns
 script3 byte scoring and final selection. Signed-byte maximum starts at zero; the highest **raw**
@@ -269,7 +269,7 @@ Script3 consumes one range3 call per reachable candidate; physical-only selectio
 category range6 draw. Last-target memory starts unspecified (`null`) and records only a committed
 decision; script3 does not consult earlier last-target state. Reference thinking, script3 scoring
 and final ranking now project these shared calculations. Its retained Flying table is a scalar
-reference input, not authored flying/centaur admission. Private activation, commandsets, move strings,
+reference input, not authored flying/centaur admission. Private activation, commandset admission, move-string projection,
 class-profile guards and startup/history consumers retain named migration points.
 
 [BattleActionCommitter](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs)
@@ -288,6 +288,50 @@ startup and per-action failure boundaries. Direct native input observes class-dr
 farthest-movement ties, carried two-round history and missing-class Unsupported with complete
 checkpoints and clean logs. **Unknown:** wider AI, private input migration, natural original
 continuity, presentation and8C/H4. These engine checks do not complete M2 or A1–A8.
+
+### Zero-target commandset06 continuation
+
+[EnemyCommandset06](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyCommandset06.cs) owns the
+fixed sequence ATTACK1 → HEAL1 → SUPPORT → MOVE1 → STAY for the admitted already-active,
+physical-only, empty spellbook/item/status branch. ATTACK1 success stops the sequence. Without an
+attack candidate, ATTACK1 and the unavailable HEAL1/SUPPORT return failure without consuming RNG.
+MOVE1(mode0) returns success even when its movement result is origin Stay; the later table STAY is
+therefore not reached in this subset. Successful MOVE1 ends this ACTION, and only a subsequent actual
+turn reevaluates ATTACK1. Rewards data is required when an attack is reached, not for movement.
+
+[AiMovementRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AiMovementRules.cs) shares three
+calculations with actual reference pursuit/standby/physical consumers: stable unsigned raw target-cost
+selection, the source decreasing-cost walk retaining accumulated direction bits, and radius station
+selection. MOVE1 builds an unblocked permanent-terrain grid with budget128 and scans living opponents
+by slot. Every target cost must be present and within0–127; the first equal minimum wins. A target-rooted
+grid drives preliminary movement to `max(0, startCost - 4)`. This is fixed movement cost4, not four
+tiles or the whole actor MOV budget. The actor's MOV*2 grid blocks opponents and permits friend
+traversal; radius0 then1 searches for an unoccupied stopping cell with strict lower-cost precedence
+and immediate own-origin zero. No eligible station yields origin Stay, still a successful MOVE1.
+The common movement commit and action publisher update position and consume one queue entry once.
+HP/MP/EXP/gold/kill/defeat state, both RNG streams and last-target memory remain unchanged.
+
+**Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/battles/global/aicommandsets.asm` set06; `code/gameflow/battle/ai/startaicontrol.asm`
+stops its loop only on d1 byte0. Under that AI directory, `executeaicommand.asm` supplies MOVE1
+parameter0, while `command/attack.asm`, `heal.asm` and `support.asm` return -1 on these empty branches.
+`command/move.asm` selects the raw target, constructs the preliminary path and resolves its station,
+returning0 even on empty path or destination failure. `code/gameflow/battle/battlefield/battlefieldengine.asm`
+`GetMoveCostToEntity` returns cost in d0; MOVE later tests the enemy bit in that retained cost.
+Complete costs below128 skip that disputed class pass. High, incomplete or unreachable target costs
+remain `ai-move-target-domain` Unsupported; they are not replaced with nearest-target or Stay guesses.
+The consumed [AI contract](../design/contracts/battle-ai-decision.md) preserves wider caller/class-pass
+Unknowns. Reference source move-string projection and bounds16×20 remain comparison inputs; authored
+logical movement does not claim natural source animation or route continuity.
+
+**Confirmed (engine):** [continuation tests](../../remake/tests/Sf2.Remake.Engine.Tests/CommandsetContinuationTests.cs)
+use the real Content/session path across both physical packages, enemy-first startup, changed target
+positions, weighted costs, MOV/occupancy correction, origin Stay, missing reached rewards and atomic
+unreachable rejection. Actual next-round input reaches physical attack/counter with independently
+specified RNG and resource results. Existing reference pursuit/standby/physical methods consume the
+shared rules. [Direct native observations](../../remake/docs/development-and-verification.md#commandset06-continuation-observation)
+drive real input and check complete checkpoints, live state and clean logs. **Unknown:** wider AI,
+private admission migration, natural original continuity/presentation and8C/H4. M2 and A1–A8 remain incomplete.
 
 ## Evidence used and its limits
 

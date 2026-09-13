@@ -84,11 +84,13 @@ public static class Battle01EnemyPursuit
         // The admitted GIZMO has no usable item/spell/heal/support action; set7's orderFF also fails.
         // MOVE1 (mode0): raw target costs, stable ascending order, then a target-rooted budget4 walk.
         var raw = Grid(battle.Terrain, actor.RequirePosition(), 128);
-        var costs = allies.Select(ally => new Battle01PursuitTargetCost(ally.Index,
-            raw.CostAt(ally.RequirePosition()) is { } cost && cost < 128 ? cost :
-                throw new ArgumentException("Only complete target costs below128 admit the source d0 class-pass boundary.", "pursuit.targets"))).ToArray();
+        var rawCosts = allies.Select(ally => raw.CostAt(ally.RequirePosition())).ToArray();
+        int selected;
+        try { selected = AiMovementRules.PursuitTarget(rawCosts); }
+        catch (BattleRuleException error) { throw new ArgumentException(error.Message, "pursuit.targets", error); }
+        var costs = allies.Select((ally, index) => new Battle01PursuitTargetCost(ally.Index, rawCosts[index]!.Value)).ToArray();
         if (costs.Length is < 2 or > 3) throw new ArgumentException("Retain every living controlled target.", "pursuit.targets");
-        int target = costs.OrderBy(item => item.Cost).First().ActorIndex;
+        int target = allies[selected].Index;
         var reverse = Grid(battle.Terrain, allies.Single(ally => ally.Index == target).RequirePosition(), 128);
         int startCost = reverse.CostAt(actor.RequirePosition()) ?? throw new ArgumentException("The target-rooted path must reach the actor.", "path");
         var preliminary = Battle01EnemyStandby.SourceWalk(reverse, actor.RequirePosition(), Math.Max(0, startCost - 4));
@@ -107,23 +109,6 @@ public static class Battle01EnemyPursuit
             Battle01PlayerMovement.Offset(origin), budget);
 
     internal static MapPosition? DetermineAttackPosition(Battle01MovementGrid grid, MapPosition target, int radius,
-        IReadOnlyList<int> occupancy)
-    {
-        MapPosition? best = null; int minimum = 255;
-        // Source radius0/1 scans north, west, east, south. Strict unsigned comparison retains first ties.
-        for (int dy = -radius; dy <= radius; dy++)
-            for (int dx = -radius + Math.Abs(dy); dx <= radius - Math.Abs(dy); dx++)
-            {
-                if (Math.Abs(dx) + Math.Abs(dy) != radius) continue;
-                int x = target.X + dx, y = target.Y + dy;
-                if (x is < 0 or >= 48 || y is < 0 or >= 48) continue;
-                var candidate = new MapPosition(x, y); int? cost = grid.CostAt(candidate);
-                if (cost == 0) return candidate;
-                if (cost is { } value && value < minimum && occupancy[Battle01PlayerMovement.Offset(candidate)] == -1)
-                {
-                    best = candidate; minimum = value;
-                }
-            }
-        return best;
-    }
+        IReadOnlyList<int> occupancy) => AiMovementRules.AttackPosition(grid.Core, target, radius,
+            position => occupancy[Battle01PlayerMovement.Offset(position)] != -1);
 }

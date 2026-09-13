@@ -32,12 +32,18 @@ hits on temporary HP, carries sticky reaction decisions and aggregates one ally 
 Both player commands and `EnemyPhysicalDecision` call that calculator; `BattleActionCommitter` is
 the single publication/queue-consumption mechanism. Automatic advancement catches failures at each
 enemy ACTION, preserving earlier commits and retaining the failed enemy's queue entry. The typed
-ATTACK1/script3 controller scores all reachable physical targets in reverse slot order and uses
+commandset06/script3 controller scores all reachable physical targets in reverse slot order and uses
 shared `PhysicalTargetRules` for signed raw-priority cohorts, class selection and movement ties.
 The existing class definition supplies source identity only for admitted named classes; missing
 identity rejects a reached critical comparison. Regular movement fixes the class table; content
 cannot supply an independent rank. Source thinking, scoring and selection are shared with reference
-consumers. Wider AI stays explicitly Unsupported.
+consumers. `EnemyCommandset06` sequences that decision and its zero-target continuation: unavailable
+HEAL1/SUPPORT fail, then MOVE1 succeeds with movement or origin Stay. `AiMovementRules` owns the shared
+stable cost selector, source decreasing-cost walk and radius station search used by production and
+the actual reference pursuit/standby callers. The existing movement commit and action publisher apply
+the chosen destination once. MOVE1 draws no RNG and leaves last-target memory and resources unchanged;
+physical rewards are required only on the reached attack branch. High or incomplete target costs
+remain Unsupported, as do activation and wider AI.
 Shared strike/reward functions remain the calculation owners; reference DTOs only project their
 results. Semantic observations carry both actor and target for reversal. Dead combatants retain
 identity/HP/kill-and-defeat accounting but have no

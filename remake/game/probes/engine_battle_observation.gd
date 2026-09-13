@@ -54,6 +54,14 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "commandset-continuation":
+            var continuation_index := arguments.find("--continuation-shape")
+            var continuation_shape: String = arguments[continuation_index + 1] if continuation_index >= 0 else "move-attack"
+            await _commandset_continuation(initial, continuation_shape)
+            var checkpoint_count := 6 if continuation_shape == "move-attack" else 3 if continuation_shape == "startup" else 4
+            _check(samples.size() == checkpoint_count, "Commandset observation completed every native checkpoint")
+            _finish()
+            return
         if arguments[case_index + 1] == "target-selection":
             var target_shape_index := arguments.find("--target-shape")
             var target_shape: String = arguments[target_shape_index + 1] if target_shape_index >= 0 else "secondary"
@@ -467,6 +475,72 @@ func _target_selection(initial: Dictionary, shape: String) -> void:
     _check(second.mainSeed == 0xE0E11234 and second.thinkingSeed == 0x01EF0042
         and second.actors[0].hp == result.actors[0].hp - 26 and second.actors[1].hp == result.actors[1].hp,
         "Second action consumes natural draws and changes only the actual target")
+
+func _commandset_continuation(initial: Dictionary, shape: String) -> void:
+    var enemy: String = initial.actors[2].id
+    if shape == "startup":
+        _check(initial.actors[2].x == 5 and initial.actor == initial.actors[0].id
+            and initial.queueCursor == 1 and initial.mainSeed == 0xDC7F1234 and initial.thinkingSeed == 0xBEEF0042,
+            "Enemy-first startup completes MOVE1 and yields actual player control")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    if shape != "startup":
+        var ready := _read("continuation-ready")
+        _check(_same_battle(initial, ready), "Player selection leaves AI continuation provisional")
+    await _press(KEY_ENTER)
+    var result := _read("continuation-result")
+    if shape == "unreachable":
+        _check(result.failure == "ai-move-target-domain" and result.stopReason == "Unsupported"
+            and result.queueCursor == initial.queueCursor + 1 and result.actors[2].x == 7,
+            "Incomplete target costs stop the whole enemy action after the player commit")
+    else:
+        _check(result.failure == null and result.actor == initial.actors[1].id, "Continuation yields next living player control")
+        var expected_x := 7 if shape == "occupied" else 6 if shape == "weighted" else 5
+        _check(result.actors[2].x == expected_x and result.actors[2].y == initial.actors[2].y,
+            "Source preliminary movement and legal stopping correction reach the configured destination")
+        if shape != "startup":
+            var commands: Array = []
+            var commits := 0
+            for observation in result.observations:
+                if observation.Kind.begins_with("ai-command-"):
+                    commands.append([observation.Kind, observation.After])
+                if observation.Kind == "action-committed" and observation.Actor.Value == enemy:
+                    commits += 1
+                if observation.Kind == "ai-move-target":
+                    _check(observation.Target.Value == initial.actors[1 if shape == "secondary" else 0].id
+                        and observation.Before == (6 if shape == "weighted" else 12), "MOVE1 selects the current unsigned-cost target")
+                _check(not observation.Kind.begins_with("rng-") and observation.Kind != "thinking-rng"
+                    and observation.Kind != "physical-first", "MOVE1 and unavailable commands draw no RNG or same-turn attack")
+            _check(commands == [["ai-command-attack1", -1.0], ["ai-command-heal1", -1.0],
+                ["ai-command-support", -1.0], ["ai-command-move1", 0.0]] and commits == 1,
+                "Three failed commands followed by successful MOVE1 publish one enemy action, including origin Stay")
+    _check(result.mainSeed == initial.mainSeed and result.thinkingSeed == initial.thinkingSeed
+        and result.gold == initial.gold and result.aiMemory[0].lastTarget == null,
+        "Continuation preserves both random streams, rewards and last-target memory")
+    for index in range(initial.actors.size()):
+        for field in ["hp", "mp", "exp", "kills", "defeats"]:
+            _check(result.actors[index][field] == initial.actors[index][field], "Movement preserves actual actor resources")
+    if shape == "move-attack":
+        await _press(KEY_ENTER)
+        await _press(KEY_SPACE)
+        await _press(KEY_ENTER)
+        var next_round := _read("continuation-round-two")
+        _check(next_round.round == 2 and next_round.actor == initial.actor and next_round.mainSeed == 0xEE281234,
+            "Actual input naturally generates the next round from unchanged movement history")
+        await _press(KEY_ENTER)
+        await _press(KEY_SPACE)
+        await _press(KEY_ENTER)
+        result = _read("continuation-next-turn-attack")
+        _check(result.failure == null and result.actor == initial.actors[1].id and result.actors[2].x == 2
+            and result.actors[0].hp == 478 and result.actors[2].hp == 493 and result.actors[0].exp == 1,
+            "Next actual turn reaches ATTACK1, common physical action and ally counter")
+        _check(result.mainSeed == 0xDAA61234 and result.thinkingSeed == 0x02EF0042
+            and result.aiMemory[0].lastTarget == initial.actor and result.roster.contains("HP 478"),
+            "Exact continued RNG and target memory agree with live HUD")
+    await process_frame
+    var stable := _read("continuation-stable")
+    _check(stable.revision == result.revision and stable.mainSeed == result.mainSeed and stable.thinkingSeed == result.thinkingSeed,
+        "Player or Unsupported boundary remains stable across native frames")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

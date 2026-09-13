@@ -18,10 +18,13 @@ reference runners. M1 provides typed content admission, provisional movement/can
 HEAL/STAY and automatic next-actor/round progression with carried RNG. The
 [M2 physical capability](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
 adds ordinary first/second/counter attacks, EXP/gold, death accounting and continuation. A bounded
-configured ATTACK1/script3 enemy decision scores competing targets, applies source class/movement
+configured commandset06/script3 enemy decision scores competing targets, applies source class/movement
 ties, and uses the same physical action and publication mechanisms, including ally counter rewards
 and carried thinking/main RNG. Required class data is validated at the reached comparison; unsupported
-level-up, leader and terminal settlement branches reject atomically. The
+level-up, leader and terminal settlement branches reject atomically. With no attack target, the
+empty spell/item branch continues through failed HEAL1/SUPPORT to MOVE1, preserving RNG and resources
+and ending that turn even when movement resolves to origin Stay. Incomplete or high target costs
+remain Unsupported. The
 [current boundary](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 records supported behavior, responsibility directories and remaining private/program migration.
 

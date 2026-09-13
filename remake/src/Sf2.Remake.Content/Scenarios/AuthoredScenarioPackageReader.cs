@@ -105,7 +105,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             string className = Text(actor, "classRule"), controlName = Text(actor, "controller");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
                 "class-rule", "actors.classRule", true);
-            Require(controlName is "player" or "stay" or "attack1-script3", "ai-commandset", "actors.controller", true);
+            Require(controlName is "player" or "stay" or "commandset06-script3", "ai-commandset", "actors.controller", true);
             Require((slot < 128) == (controlName == "player"), "controller-side", "actors.controller", true);
             Require(Text(actor, "status") == "none", "actor-status", "actors.status", true);
             Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
@@ -137,7 +137,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 learned.Add(key);
             }
             Require(learned.Count <= 4, "spellbook-capacity", "actors.spells");
-            if (controlName == "attack1-script3")
+            if (controlName == "commandset06-script3")
             {
                 Require(physical is not null, "physical-definition", "actors.physical", true);
                 Require(learned.Count == 0, "ai-action-categories", "actors.spells", true);
@@ -148,7 +148,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     "unpromoted-swordsman" => BattleClassRule.UnpromotedSwordsman,
                     "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.Ordinary },
                 controlName switch { "player" => BattleController.Player, "stay" => BattleController.Stay,
-                    _ => BattleController.Attack1Script3 },
+                    _ => BattleController.Commandset06Script3 },
                 (byte)Number(actor, "level", slot < 128 ? 1 : 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 255), (byte)Number(actor, "move", 1, 255), learned, physical);

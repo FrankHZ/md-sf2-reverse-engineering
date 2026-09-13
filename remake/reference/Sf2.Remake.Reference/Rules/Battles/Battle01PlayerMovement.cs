@@ -31,21 +31,14 @@ public sealed class Battle01MovementProfile
 public sealed class Battle01MovementGrid
 {
     internal Battle01MovementGrid(byte[] totalCosts, byte[] movableGrid, int[] expansionOrder)
-    {
-        TotalCosts = Array.AsReadOnly(totalCosts); MovableGrid = Array.AsReadOnly(movableGrid);
-        ExpansionOrder = Array.AsReadOnly(expansionOrder);
-    }
-    public IReadOnlyList<byte> TotalCosts { get; }
-    public IReadOnlyList<byte> MovableGrid { get; }
-    public IReadOnlyList<int> ExpansionOrder { get; }
+    { Core = new(totalCosts, movableGrid, expansionOrder); }
+    internal WeightedMovementGrid Core { get; }
+    public IReadOnlyList<byte> TotalCosts => Core.TotalCosts;
+    public IReadOnlyList<byte> MovableGrid => Core.MovableGrid;
+    public IReadOnlyList<int> ExpansionOrder => Core.ExpansionOrder;
     public int ReachableCount => MovableGrid.Count(value => value < 128);
-    public int? CostAt(MapPosition position)
-    {
-        int offset = Battle01PlayerMovement.Offset(position);
-        return CostAtOffset(offset);
-    }
-    internal int? CostAtOffset(int offset) => MovableGrid[offset] >= 128 ? null :
-        (MovableGrid[offset] << 8) | TotalCosts[offset];
+    public int? CostAt(MapPosition position) => Core.CostAt(position);
+    internal int? CostAtOffset(int offset) => Core.CostAtOffset(offset);
 }
 
 public sealed class Battle01MovementRange
