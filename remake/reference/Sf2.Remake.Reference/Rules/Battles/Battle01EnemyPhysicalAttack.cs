@@ -115,31 +115,33 @@ public static class Battle01EnemyPhysicalAttack
             priorities.AsReadOnly(), selected.Target.Index, moves, effect, counter);
     }
 
-    // Pinned priority script3: difficulty0/type2 is fixed by the admitted regular GIZMO words.
+    // Pinned admitted GIZMO uses script3 and the Flying class-priority table.
     internal static int Priority(int movement, int remainingHp, byte thinkingResult) =>
-        thinkingResult == 0 ? (remainingHp == 0 ? 16 : 1) : Math.Max(19 - 2 * movement, 1);
+        Sf2.Remake.Domain.Battles.PhysicalTargetRules.ScriptThree(unchecked((byte)movement), remainingHp, thinkingResult);
 
     internal static Battle01PhysicalTargetPriority SelectTarget(IReadOnlyList<Battle01PhysicalTargetPriority> priorities)
     {
-        int maximum = priorities.Max(p => p.Priority);
-        var cohort = priorities.Where(p => p.Priority == maximum);
-        // c834c652 table_AttackPriority_Flying ranks the admitted SDMN/PRST/KNTE classes 0/5/15.
-        if (maximum >= 15)
+        // This reference DTO list records reverse RNG-call order. Restore reachable-array
+        // order before invoking the single shared selector; keep private admission outside it.
+        var ordered = priorities.Reverse().ToArray();
+        var values = ordered.Select(p => new Sf2.Remake.Domain.Battles.PhysicalTargetPriority(
+            unchecked((byte)p.Candidate.GridCost), unchecked((byte)p.Priority), p.Target.ClassId)).ToArray();
+        try
         {
-            int rank = cohort.Min(p => PriorityClassRank(p.Target.ClassId));
-            cohort = cohort.Where(p => PriorityClassRank(p.Target.ClassId) == rank);
+            var result = Sf2.Remake.Domain.Battles.PhysicalTargetRules.Select(values,
+                Sf2.Remake.Domain.Battles.PhysicalPriorityTable.Flying)
+                ?? throw new Battle01PhysicalAttackUnsupportedException("emptyCohort");
+            return ordered[result.Index];
         }
-        // Collection is reverse input order; signed cost max, later-collected target wins a tie.
-        return cohort.Aggregate((best, next) => next.Candidate.GridCost >= best.Candidate.GridCost ? next : best);
+        catch (Sf2.Remake.Domain.Battles.BattleRuleException)
+        {
+            throw new Battle01PhysicalAttackUnsupportedException("priorityProfile");
+        }
     }
 
-    private static int PriorityClassRank(byte? classId) => classId switch
-    {
-        0 => 0, 4 => 5, 1 => 15, _ => throw new Battle01PhysicalAttackUnsupportedException("priorityProfile")
-    };
     private static int LandMultiplier(byte? classId, byte terrain)
     {
-        _ = PriorityClassRank(classId);
+        if (classId is not (0 or 4 or 1)) throw new Battle01PhysicalAttackUnsupportedException("priorityProfile");
         // Regular1/Centaur2/Healer12 land nibbles, independent of their different movement costs.
         return terrain switch
         {

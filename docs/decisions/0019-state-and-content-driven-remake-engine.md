@@ -220,48 +220,74 @@ wholesale to M5. Production projects remain independent of the reference assembl
 ### Enemy physical decision and common action publication
 
 [EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
-implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3 and
-exactly one reachable living opponent. The typed `attack1-script3` controller names this capability;
-it does not admit activation, arbitrary commandsets, spell/item categories or multi-target ranking.
-Regular MOV 1–63 bounds candidate movement below the source signed-grid 128 boundary. Candidate
-construction uses the existing weighted grid, blocks opponents, permits traversal through friends
-and excludes occupied stopping cells. The radius-one ring visits north, west, east, south, takes
-the first strictly lowest movement cost, and immediately accepts the actor's cost-zero origin.
-No actor name, receipt, round or expected target is a gameplay predicate. Zero reachable targets
-returns `ai-commandset-continuation`; multiple targets returns `ai-target-ranking`.
+implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3.
+The typed `attack1-script3` controller names this capability; activation, other commandsets and
+spell/item categories remain Unsupported. Regular MOV 1–63 bounds candidate movement below the
+source signed-grid 128 boundary. Candidate construction uses the existing weighted grid, blocks
+opponents, permits traversal through friends and excludes occupied stopping cells. The radius-one
+ring visits north, west, east, south, takes the first strictly lowest movement cost, and immediately
+accepts the actor's cost-zero origin. Reachable living allies are stored by ascending slot, while
+thinking calls visit that array backwards and store each priority at its original index. No actor
+name, receipt, round, seed allowlist or expected target is a gameplay predicate. Zero reachable
+targets still returns `ai-commandset-continuation`; it never falls back to Stay.
+
+[PhysicalTargetRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/PhysicalTargetRules.cs) owns
+script3 byte scoring and final selection. Signed-byte maximum starts at zero; the highest **raw**
+priority determines the cohort before the returned priority is capped at15. The cohort is collected
+in reverse reachable-array order. A single highest target bypasses class/movement comparison.
+Multiple highest targets with raw priority at least15 use the attacker's movement-type class table;
+remaining ties select greatest signed movement, with later-collected targets winning equal movement.
+Negative priorities or movement values do not become unsigned winners. Authored movement stays
+within0–126; byte/signed edges in the shared scalar are tested without claiming their natural reach.
+`ai-candidate` observations carry movement cost/raw score and target; `ai-target` carries raw/capped
+priority and selected target. All candidate thinking draws retain their actor/target and seed links.
 
 **Confirmed (static):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `disasm/data/battles/global/aicommandsets.asm` commandset06 starts ATTACK1 and stops on success;
-`disasm/code/gameflow/battle/ai/command/attack.asm` selects ordinary weaponless physical range,
-determines an attack position and records AI_LAST_TARGET_TABLE. Its
-`attack/prioritizetargets.asm` TargetPriorityScript3 draws thinking range3, then chooses either
-lethality priority 16/1 or movement priority max(19 − 2×cost, 1). A sole positive-priority candidate
-needs no class/cohort tie breaking. The consumed [AI contract](../design/contracts/battle-ai-decision.md)
-retains wider category, ranking, commandset and activation semantics. The authored path is a modern
-movement projection; this slice does not claim the original move-string animation or natural reach.
+`disasm/code/gameflow/battle/ai/command/attack.asm` selects ordinary weaponless range and records
+AI_LAST_TARGET_TABLE. `attack/prioritizetargets.asm` fills priorities backwards; TargetPriorityScript3
+draws thinking range3, then chooses lethality16/1 or byte-doubled movement priority. The matching
+`attack/determinebattleaction.asm` owns signed maximum, raw cohort, cap, class and movement selection.
+`disasm/data/battles/global/aipriority.asm` maps regular movement to the Regular class table and
+hovering/flying to Flying. SDMN/PRST/WARR rank0/5/25 in Regular; the actual retained reference's
+SDMN/PRST/KNTE rank0/5/15 in Flying. `disasm/sf2enums.asm` supplies those class IDs. The consumed
+[AI contract](../design/contracts/battle-ai-decision.md) retains wider category, activation and
+runtime-evidence limits. Authored movement is a modern projection, not original move-string animation.
+
+The existing `classRule` is the sole class selector. It admits `unpromoted-swordsman` (SDMN0),
+`unpromoted-warrior` (WARR2), and existing `unpromoted-priest` (PRST4); `ordinary` leaves source class
+unspecified. Named unpromoted classes cannot declare promoted physical EXP. No independent raw class,
+priority rank or movement-table flag is supplied by content. Current regular physical admission
+determines the Regular table; no additional movement capability is introduced. Missing class data
+rejects only a reached critical multi-target cohort as `ai-target-class`; noncritical or single-highest
+selection needs no class lookup. Every scored candidate requires its physical land-rule definition.
+Unavailable required data or a late unsupported settlement rejects the entire enemy ACTION.
 
 `BattleRandom.NextThinkingWord` owns the source byte-rejection calculation. In the authored uint
-image the source seed-copy word occupies bits31–16, with its high byte updated and other 24 bits
-preserved. Main RNG remains separate. Script3 consumes the natural range3 draw even for one target;
-physical-only selection consumes no category range6 draw. Last-target memory starts unspecified
-(`null`) and records only a committed decision; this branch does not read earlier last-target state.
-The old reference thinking helper now projects this same calculation rather than duplicating it.
+image the source seed-copy word occupies bits31–16; its high byte changes and other24 bits survive.
+Script3 consumes one range3 call per reachable candidate; physical-only selection consumes no
+category range6 draw. Last-target memory starts unspecified (`null`) and records only a committed
+decision; script3 does not consult earlier last-target state. Reference thinking, script3 scoring
+and final ranking now project these shared calculations. Its retained Flying table is a scalar
+reference input, not authored flying/centaur admission. Private activation, commandsets, move strings,
+class-profile guards and startup/history consumers retain named migration points.
 
 [BattleActionCommitter](../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs)
 publishes player and enemy actions through one movement/effects/RNG/revision/queue mechanism.
-The shared physical calculator settles ally rewards and deaths by actual side, including an ally's
-counter kill of the original enemy actor. Thinking, target memory, physical reactions, main RNG,
-rewards and cleanup are temporary until that entire ACTION succeeds. Automatic advancement catches
-failure at the current enemy boundary and preserves all preceding commits. It never converts an
-unsupported decision to Stay. `GameSession` remains the thin entry and state owner.
+The shared physical calculator settles ally rewards and deaths by actual side, including a counter
+kill of the original enemy actor. All decision and physical effects remain temporary until the
+entire ACTION succeeds; failure preserves earlier commits and the current enemy's queue entry.
+`GameSession`, Application publication and C# Godot projection need no new target-selection route.
 
-**Confirmed (engine):** [EnemyActionTests](../../remake/tests/Sf2.Remake.Engine.Tests/EnemyActionTests.cs)
-uses two Content packages, changed actors/positions/target identities, startup and continued history,
-natural first/second/counter draws, ally EXP and capped kill/gold/defeats, both kinds of dead queued
-actor, startup failure, and a failed second AI after a successful first AI. Actual Godot inputs observe
-counter resources, movement, enemy node removal, next control and late Unsupported without images.
-**Unknown:** wider AI, private input migration, natural original continuity, presentation and 8C/H4.
-These engine checks add no original-game evidence and do not complete M2 or A1–A8.
+**Confirmed (engine):** [target selection tests](../../remake/tests/Sf2.Remake.Engine.Tests/TargetSelectionTests.cs)
+use two Content packages, changed classes/positions/slots/configuration order, competing targets,
+critical and noncritical cohorts, raw/capped and signed-byte boundaries, automatic continued turns,
+natural RNG-driven target changes, common counter rewards and whole-action rejection. Existing
+[enemy action tests](../../remake/tests/Sf2.Remake.Engine.Tests/EnemyActionTests.cs) retain death/queue,
+startup and per-action failure boundaries. Direct native input observes class-driven selection,
+farthest-movement ties, carried two-round history and missing-class Unsupported with complete
+checkpoints and clean logs. **Unknown:** wider AI, private input migration, natural original
+continuity, presentation and8C/H4. These engine checks do not complete M2 or A1–A8.
 
 ## Evidence used and its limits
 

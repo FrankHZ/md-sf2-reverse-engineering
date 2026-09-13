@@ -103,7 +103,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             int slot = Number(actor, "slot", 0, 159);
             Require(slot <= 29 || slot >= 128, "actor-slot", "actors.slot");
             string className = Text(actor, "classRule"), controlName = Text(actor, "controller");
-            Require(className is "unpromoted-priest" or "ordinary", "class-rule", "actors.classRule", true);
+            Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
+                "class-rule", "actors.classRule", true);
             Require(controlName is "player" or "stay" or "attack1-script3", "ai-commandset", "actors.controller", true);
             Require((slot < 128) == (controlName == "player"), "controller-side", "actors.controller", true);
             Require(Text(actor, "status") == "none", "actor-status", "actors.status", true);
@@ -117,7 +118,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 byte prowess = (byte)Number(physicalInput, "prowess", 0, 255);
                 Require(prowess is 0 or 3, "physical-prowess", "actors.physical.prowess", true);
                 bool promoted = Boolean(physicalInput, "promoted");
-                Require(className != "unpromoted-priest" || !promoted, "class-promotion", "actors.physical.promoted");
+                Require(className == "ordinary" || !promoted, "class-promotion", "actors.physical.promoted");
                 physical = new(prowess, promoted, Boolean(physicalInput, "leader"),
                     (ushort)Number(physicalInput, "gold", 0, 65535), (ushort)Number(physicalInput, "kills", 0, 9999),
                     physicalInput.TryGetProperty("defeats", out _) ? (ushort)Number(physicalInput, "defeats", 0, 9999) : (ushort)0);
@@ -143,7 +144,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(Number(actor, "move", 1, 255) <= 63, "ai-movement-domain", "actors.move", true);
             }
             var definition = new BattleActorDefinition(id, (byte)slot,
-                className == "unpromoted-priest" ? BattleClassRule.UnpromotedPriest : BattleClassRule.Ordinary,
+                className switch { "unpromoted-priest" => BattleClassRule.UnpromotedPriest,
+                    "unpromoted-swordsman" => BattleClassRule.UnpromotedSwordsman,
+                    "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.Ordinary },
                 controlName switch { "player" => BattleController.Player, "stay" => BattleController.Stay,
                     _ => BattleController.Attack1Script3 },
                 (byte)Number(actor, "level", slot < 128 ? 1 : 0, 99), maximumHp, maximumMp,

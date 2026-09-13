@@ -54,6 +54,13 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "target-selection":
+            var target_shape_index := arguments.find("--target-shape")
+            var target_shape: String = arguments[target_shape_index + 1] if target_shape_index >= 0 else "secondary"
+            await _target_selection(initial, target_shape)
+            _check(samples.size() == (4 if target_shape == "missing-class" else 5), "Target observation completed every native checkpoint")
+            _finish()
+            return
         if arguments[case_index + 1] == "enemy-actions":
             var enemy_shape_index := arguments.find("--enemy-shape")
             await _enemy_actions(initial, arguments[enemy_shape_index + 1] if enemy_shape_index >= 0 else "counter")
@@ -405,6 +412,61 @@ func _enemy_actions(initial: Dictionary, shape: String) -> void:
     var stable := _read("enemy-action-stable")
     _check(stable.revision == result.revision and stable.mainSeed == result.mainSeed and stable.thinkingSeed == result.thinkingSeed,
         "Input or Unsupported boundary remains stable across actual frames")
+
+func _target_selection(initial: Dictionary, shape: String) -> void:
+    var primary: String = initial.actors[0].id
+    var secondary: String = initial.actors[1].id
+    var selected: String = secondary if shape == "secondary" else primary
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    var ready := _read("targets-ready")
+    _check(_same_battle(initial, ready), "Selection does not run target scoring")
+    await _press(KEY_ENTER)
+    var result := _read("targets-first-action")
+    if shape == "missing-class":
+        _check(result.failure == "ai-target-class" and result.stopReason == "Unsupported", "Reached class cohort requires actual class definition")
+        _check(result.mainSeed == initial.mainSeed and result.thinkingSeed == initial.thinkingSeed
+            and result.actors[0].hp == 500 and result.actors[1].hp == 500 and result.actors[2].hp == 500
+            and result.aiMemory[0].lastTarget == null and result.queueCursor == initial.queueCursor + 1,
+            "Rejected target selection preserves the complete enemy action and prior player commit")
+        await process_frame
+        var stable := _read("targets-unsupported-stable")
+        _check(stable.revision == result.revision, "Unsupported remains stopped")
+        return
+    _check(result.failure == null and result.actor == secondary, "Competing targets resolve then return real player control")
+    var calls: Array = []
+    var scores: Array = []
+    for observation in result.observations:
+        if observation.Kind == "thinking-rng":
+            calls.append(observation.Target.Value)
+        if observation.Kind == "ai-candidate":
+            scores.append([observation.Before, observation.After])
+        if observation.Kind == "ai-target":
+            _check(observation.Target.Value == selected and observation.Before == (1 if shape == "movement" else 19)
+                and observation.After == (1 if shape == "movement" else 15), "Raw maximum and returned cap preserve chosen source cohort")
+    _check(calls == [secondary, primary], "Thinking calls follow reverse reachable slot order")
+    _check(scores == ([[12.0, 1.0], [14.0, 1.0]] if shape == "movement" else [[0.0, 19.0], [0.0, 19.0]]),
+        "Candidate costs and priorities follow actual configuration")
+    _check(result.aiMemory[0].lastTarget == selected and result.mainSeed == 0x557E1234
+        and result.thinkingSeed == 0x02EF0042, "Chosen target and both RNG channels publish with common action")
+    var index := 1 if shape == "secondary" else 0
+    _check(result.actors[index].hp == 478 and result.actors[index].exp == 1 and result.actors[2].hp == 493,
+        "Chosen ally receives damage, counters and earns the shared reward")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var round_two := _read("targets-round-two")
+    _check(round_two.round == 2 and round_two.actor == primary and round_two.mainSeed == 0x97231234,
+        "Actual commands carry the first action's RNG into the next generated round")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var second := _read("targets-second-action")
+    _check(second.failure == null and second.actor == secondary and second.aiMemory[0].lastTarget == primary,
+        "Continued thinking selects primary from live competing candidates")
+    _check(second.mainSeed == 0xE0E11234 and second.thinkingSeed == 0x01EF0042
+        and second.actors[0].hp == result.actors[0].hp - 26 and second.actors[1].hp == result.actors[1].hp,
+        "Second action consumes natural draws and changes only the actual target")
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}

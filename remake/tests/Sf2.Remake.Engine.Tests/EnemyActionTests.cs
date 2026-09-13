@@ -91,7 +91,6 @@ public sealed class EnemyActionTests
 
     [Theory]
     [InlineData("none", "ai-commandset-continuation")]
-    [InlineData("many", "ai-target-ranking")]
     [InlineData("level", "level-up")]
     [InlineData("leader", "leader-defeat-program")]
     public void UnsupportedEnemyActionRetainsEarlierPlayerCommitAndAllEnemyState(string shape, string code)
@@ -100,7 +99,6 @@ public sealed class EnemyActionTests
         {
             Configure(d, 55);
             if (shape == "none") { d["encounters"]![0]!["placements"]![2]!["x"] = 7; }
-            if (shape == "many") d["actors"]![2]!["move"] = 6;
             if (shape == "level")
             {
                 d["actors"]![0]!["exp"] = 99; d["actors"]![2]!["hp"] = 1;
@@ -216,10 +214,11 @@ public sealed class EnemyActionTests
             Configure(d, 55);
             d["actors"]![3]!["controller"] = "attack1-script3";
             d["actors"]![3]!["move"] = 6;
+            d["actors"]![1]!.AsObject().Remove("physical");
         });
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var result = Send(session, new Confirm());
-        Assert.Equal("ai-target-ranking", result.Failure!.Code);
+        Assert.Equal("physical-definition", result.Failure!.Code);
         Assert.Equal(478, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new("raider")).Hp);
         Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);

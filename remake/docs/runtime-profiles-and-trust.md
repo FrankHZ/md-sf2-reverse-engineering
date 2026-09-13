@@ -46,7 +46,7 @@ Physical capability is optional per actor: `physical` is a closed object with `m
 (currently `regular`), `prowess` (0 or 3), boolean `promoted` and `leader`, `gold` (0–65535),
 `kills` (0–9999), and `special` (currently `none`). Optional `defeats` (0–9999) supplies the
 initial defeat count; an absent value starts at zero. Other movetypes, prowess or special rules return
-Unsupported; an unpromoted priest cannot declare promoted EXP rules. Current ATT/DEF are explicit
+Unsupported; a named unpromoted class cannot declare promoted EXP rules. Current ATT/DEF are explicit
 authored effective stats; nonempty equipment and nonzero status remain Unsupported. Ordinary
 weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zero.
 
@@ -65,17 +65,28 @@ are controlled authored inputs, not original private admission or original enemy
 The enemy-only `controller: attack1-script3` selects the already-active source ATTACK1/script3
 physical branch. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
 status and items remain empty. Encounter rewards are required when the physical action executes.
-Exactly one living opposing target must be reachable through a legal radius-one attack position.
-Zero targets, multiple targets, other AI definitions, mixed action categories and wider movement
-domains are explicit Unsupported boundaries. This is not an always-attack fallback or a claim to
+Living opposing targets must be reachable through legal radius-one attack positions. Candidate
+scoring follows reverse slot order; signed raw-priority cohorts are selected before the returned
+priority is capped at15. Critical multi-target cohorts use the Regular class table, then the source
+largest-movement/later-collected tie rule. Zero targets, other AI definitions, mixed action categories
+and wider movement domains remain explicit Unsupported boundaries. This is not an always-attack fallback or a claim to
 implement the rest of commandset06. `stay` remains a separate explicitly authored policy.
 
 The authored `thinkingSeed` uint maps its upper word to the source seed copy, updating only the
 high byte through the source rejection loop; the remaining 24 bits are carried unchanged. No command
 resets either RNG channel. Enemy last-target state starts unspecified and changes only on a
-successful action; the sole-target script3 branch never needs initial memory. On late failure the
-enemy's temporary movement, HP, rewards, last target and both seeds are discarded together. Prior
+successful action; script3 does not read initial memory. On late failure the
+enemy's temporary movement, candidate draws, HP, rewards, last target and both seeds are discarded together. Prior
 player/AI commits remain valid and the failed enemy retains its queue entry.
+
+`classRule` now also accepts `unpromoted-swordsman` (source SDMN0) and `unpromoted-warrior` (WARR2),
+alongside `unpromoted-priest` (PRST4) and `ordinary`. This is one class definition, not a separate AI
+rank input. These known unpromoted classes require `physical.promoted: false`; `ordinary` supplies
+no source class identity. A reached critical multi-target cohort needs known class identities and
+otherwise returns `ai-target-class`. Single-highest/noncritical selection never queries unused class
+data. Every scored candidate needs a physical definition for potential land damage. No full class,
+growth or new movement framework is admitted; the existing regular physical capability owns table
+selection. The shared reference Flying-table scalar does not enable flying authored actors.
 
 ## Public Synthetic
 
