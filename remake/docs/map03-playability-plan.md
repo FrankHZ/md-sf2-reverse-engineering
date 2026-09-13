@@ -838,10 +838,10 @@ The implementation and its acceptance owners are the following exact17 paths, re
 The existing target selector, reaction, movement, player accounting, generation reconstruction,
 presenter and dispatcher are reused without production changes. No new schema, registry,
 fixture, importer, profile/CLI option, dependency or parallel state authority is required. A concrete
-failure requiring another path needs a separate ownership decision. In particular, the later
-five-survivor generation would encounter `RequireCurrentPrefix`'s current minimum-six generation
-guard. That is a separate continuation boundary: this slice stops at same-generation Bowie control,
-before Bowie STAY or a new generation, and must not silently widen that guard.
+failure requiring another path needs a separate ownership decision. This capability stops at
+same-generation Bowie control, before Bowie STAY or a new generation. The separately bounded
+[five-survivor continuation](#implemented-five-survivor-round-and-r13-sarah-control) owns the first
+R13 generation and its historical/input admission checks.
 
 Positive acceptance reproduces all94 committed before-images and the exact95 effect, then actually
 dispatches to Bowie movement/cancel. Existing first-kill assertions remain, followed by explicit
@@ -954,8 +954,9 @@ This is a bounded approach choice, not a claim of optimal tactics.
 | Actual Sarah1 at raw10 | Budget10 at(9,17); confirm(10,17) cost2, then cancel(9,17). All98 receipts, roster/occupancy, seeds, flags and accounting compare equal to the ready state. |
 
 The buffer retains dead129's visited slot. Five live combatants do not invalidate its original
-seven-participant generation image. The minimum-six restriction is a **remake generation guard**,
-not an original-game rule; a later five-survivor generation remains outside this capability.
+seven-participant generation image. The separately bounded
+[five-survivor continuation](#implemented-five-survivor-round-and-r13-sarah-control) owns R13;
+its admission restrictions are remake guards, not original-game population rules.
 
 #### Source meaning and receipt validation
 
@@ -1026,7 +1027,7 @@ regressions and independent normal public gate. Preserve completed failures; cor
 their failed/newly invalidated nodes or owning files. No full Python or H3 run is selected. Freeze a
 clean pushed Draft for independent review and stop at Sarah movement/cancel.
 
-**Unknown:** later five-survivor generation and combat choices, further kills/levels/deaths/victory/
+**Unknown:** subsequent combat choices, further kills/levels/deaths/victory/
 return, natural input/seed continuity, original death-turn presentation and VInt consumption, and H4.
 Controlled97/98 publication and usable Sarah movement do not establish those original-runtime facts.
 
