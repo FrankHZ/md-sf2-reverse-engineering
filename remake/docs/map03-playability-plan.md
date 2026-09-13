@@ -1149,7 +1149,7 @@ origin confirmation, Magic, HEAL1, adjacent Bowie, all three cancellation layers
 one atomic cast. The actual dispatcher completes133 pursuit and returns Bowie0/R13/raw8 at104.
 Bowie moves (11,13)→(11,12), cost2, confirms and cancels to the complete returned snapshot.
 This boundary admits no further generation, attack, death, level, spell family, winning trace,
-victory/return, new research or H4. The implementation owns the 32 paths below.
+victory/return, new research or H4. The implementation owns the 33 paths below.
 
 #### Production boundary and one existing-action control
 
@@ -1321,11 +1321,15 @@ All paths below are under `remake/`; `(new)` marks the four bounded owners intro
 | `tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3RuntimeProfileSelectionTests.cs`; `tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs`; `tests/native/Map19Map20AtlasReviewProbe.cs` | Logical/physical facade equivalence, early option admission, Magic/cancel projection and exact old-route image regressions. |
 | `docs/map03-playability-plan.md`; `docs/capability-status.md`; `docs/development-and-verification.md`; `docs/presentation-and-assets.md` | Record only the reached capability, controlled-input distinction, reproduction and remaining Unknowns. |
 
-The authorized implementation owns 32 exact paths, including four new files: the two bounded production owners and their
+The authorized implementation owns 33 exact paths, including four new files: the two bounded production owners and their
 Domain/Application test owners. The additional existing `tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyPhysicalAttackTests.cs`
 passes the optional Sarah support input through `Enemy128DefeatCompleted`, `Enemy128DefeatBoundary`,
 `FirstAllyDefeatBoundary` and the pre-physical `AttackBoundary` fixture. Its defaults retain every old
-fixture value; this authored fixture is not original-input evidence. Before writing, recount actual ownership and check competing
+fixture value; this authored fixture is not original-input evidence. The additional existing
+`tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01PlayerPhysicalAttackTests.cs` supplies the
+fifth null argument in its malformed-attack reflection fixture, matching the selection constructor's
+optional healing field. Its rejection assertion and production constructor stay unchanged.
+Before writing, recount actual ownership and check competing
 worktrees/topics. If existing helper dependencies require another path, report that concrete need
 rather than copying an old helper chain or silently expanding ownership.
 

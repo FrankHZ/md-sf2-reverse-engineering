@@ -270,7 +270,7 @@ public sealed class PrivateOriginalBattle01PlayerPhysicalAttackTests
             if (mutation == "selection")
             {
                 var movement = Internal<Battle01PlayerMovementSelection>(control.Movement.Range, control.Movement.Preview,
-                    Battle01PlayerMovementStage.TargetSelection, Internal<Battle01PlayerAttackSelection>(new[] { 131 }, 0));
+                    Battle01PlayerMovementStage.TargetSelection, Internal<Battle01PlayerAttackSelection>(new[] { 131 }, 0), null);
                 control = (Battle01FirstControlState)typeof(Battle01FirstControlState).GetMethod("WithMovement", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(control, [movement])!;
             }
             var battle = Internal<Battle01InitializedState>(history, b.Roster.ToArray(), Array.AsReadOnly(occupancy), control);
