@@ -9,6 +9,7 @@ public sealed class Battle01EnemyStandbyTests
 {
     [Theory]
     [InlineData("missing103")][InlineData("duplicate103")][InlineData("missing104")][InlineData("missing105")]
+    [InlineData("duplicate104")][InlineData("duplicate105")]
     [InlineData("stay103")][InlineData("heal105")][InlineData("beforeHp")][InlineData("beforeMp")][InlineData("beforeExp")]
     [InlineData("afterHp")][InlineData("afterMp")][InlineData("afterExp")][InlineData("healMain")][InlineData("firstGenerationMain")]
     [InlineData("secondGenerationMain")][InlineData("missing97")][InlineData("missing95")][InlineData("credit94")]
@@ -20,7 +21,10 @@ public sealed class Battle01EnemyStandbyTests
         int Index(int ordinal) => 105 - ordinal;
         var heal = receipts[Index(103)].PlayerHealing!;
         if (mutation.StartsWith("missing", StringComparison.Ordinal)) receipts.RemoveAt(Index(int.Parse(mutation[7..])));
-        if (mutation == "duplicate103") receipts.Insert(Index(103), receipts[Index(103)]);
+        if (mutation.StartsWith("duplicate", StringComparison.Ordinal))
+        {
+            int index = Index(int.Parse(mutation[9..])); receipts.Insert(index, receipts[index]);
+        }
         if (mutation == "stay103") receipts[Index(103)] = receipts[Index(103)] with
             { PlayerHealing = null, Policy = Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats };
         if (mutation == "heal105") receipts[0] = receipts[0] with { PlayerHealing = heal, Policy = Battle01HealingCompletionPolicy.ControlledSarahHealOneBowie };

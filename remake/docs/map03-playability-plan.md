@@ -8,14 +8,13 @@ Advance the private-local Map 3 profile toward direct play with a modern high-DP
 keeping original-game evidence, modern remake policy, and unsupported fidelity claims visibly
 separate.
 
-Current stopping point: [Sarah HEAL 1 and actual R13 Bowie control](#sarah-heal-1-from-actual102).
-The separate early Sarah EXP0 comparison replays the accepted route through102, confirms Sarah's
-origin, selects Magic/HEAL1/Bowie and publishes one healing receipt103. The actual dispatcher runs133
-pursuit and returns Bowie0 at104; movement to (11,12), confirm and cancel retain that entire battle.
-Sarah has MP7/EXP17 and Bowie HP12. The [next bounded plan](#post-heal-bowie-approach-and-next-five-survivor-generation-plan)
-uses existing movement/STAY to reach105, where actual next-round generation is rejected. That
-planning diagnostic adds no production capability; later survival, generation, victory and H4
-remain Unknown or Unsupported.
+Current stopping point: [post-heal R14 and actual enemy133 counter-profile refusal](#post-heal-bowie-approach-and-second-five-survivor-generation).
+The early Sarah EXP0 comparison reaches HEAL103 and Bowie104, whose existing movement to (10,10)
+costs12 and whose STAY completes105. The bounded second five-survivor generation now succeeds.
+The unchanged dispatcher completes enemy128's attack106 (Bowie HP12→9), then rejects enemy133 at
+`attack.counterProfile`, retaining the whole106 state. Sarah stays MP7/EXP17. No next player is
+reached; later combat, survival, victory/return, natural presentation and H4 remain unsupported or
+Unknown. This is a controlled route, not the completed continuous milestone.
 
 ## Current Baseline
 
@@ -1480,246 +1479,119 @@ are review aids; the accepted source, contracts, inputs, calculation and reprodu
 claims. The implementation and any later healed outcome remain **Unknown** until separately accepted.
 
 
-### Post-heal Bowie approach and next five-survivor generation plan
+### Post-heal Bowie approach and second five-survivor generation
 
-**Planning only; production unchanged.** The selected continuation advances
-[ADR 0010 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md) by using existing
-movement and STAY before proposing another capability. Its actual endpoint is105, not an assumed
-R14 actor, attack, death or victory. This planning slice owns only this document.
+**Implemented through actual receipt106 and the first enemy133 Unsupported.** This bounded
+continuation advances [ADR 0010 4A/5B](../../docs/decisions/0010-map3-battle01-product-acceptance.md)
+using the early `SarahHealComparison` and existing movement, generation, attack and dispatcher.
+Only `Battle01FirstRound.cs` changes production behavior. It admits one additional five-survivor
+generation; it does not add a counter, later death, level, victory or return mechanism.
 
-#### Actual choice and first rejected boundary
+#### Actual approach and generation
 
-**Confirmed by the registered-input facade and production dispatcher diagnostic:** start with
-`SarahHealComparison` at `PreparePrivateOriginalBattle01Startup`, retaining its initial Sarah EXP0.
-The accepted Content helper executes the actual initialization/admission and prior battle route.
-The existing dispatcher reaches Sarah102, the real facade casts HEAL1/Bowie103, and the actual
-133 pursuit returns Bowie104. No positive state is constructed at104 or later; preparation and both
-source references remain those of the observed initialization.
+**Confirmed by registered-input Content and the unchanged native dispatcher:** initial preparation
+supplies Sarah EXP0. The real initialization and prior route reach102; origin confirmation,
+Magic/HEAL1/Bowie yields103, then actual133 pursuit returns Bowie104/R13/raw8. Preparation,
+SourceLocomotion and SourceBridge retain their original references. No state, stats, RNG or receipt
+is supplied at a later point to make the positive continuation possible.
 
-At104 Bowie0 is R13/raw8, origin(11,13), HP12/MP8/EXP63/kills2/defeats0 and budget12. Sarah is
-(11,14), HP11/MP7/EXP17, with kills/defeats still null. Live enemies128/130/133 are at
-(10,4)/(10,5)/(11,7), HP5/4/5. Chester and enemies129/131/132 remain dead and unplaced. The actual
-movement grid contains47 legal stops. None is adjacent to a live enemy. The two stops minimizing
-Manhattan enemy distance are (9,9) and (10,10), both distance4/cost12; all other stops are distance5
-or greater. At confirmed (10,10), the existing `Battle01PlayerPhysicalAttack.Targets` also returns
-an empty list. No unavailable attack is attempted.
+At104 Bowie is (11,13), HP12/MP8/EXP63/kills2/defeats0, budget12. Sarah is (11,14), HP11/MP7/EXP17,
+with unspecified kills/defeats. Living128/130/133 are (10,4)/(10,5)/(11,7), HP5/4/5. Chester and
+enemies129/131/132 remain dead and unplaced. All47 legal stops have no adjacent live attack target.
+The nearest two stops are (9,9) and (10,10), both distance4 from an enemy and cost12.
 
-**Inferred tactical choice:** choose (10,10). It closes the nearest enemy distance from6 to4 and
-retains distance5 to Sarah, versus distance7 from the equally costly (9,9). This favors approaching
-the remaining enemies while keeping the healer closer. It does not prove enemy threat range,
-safety next round, healing availability next turn or a winning line. No seed search, alternative
-future combat search or new defeat/return endpoint was used to select it.
+**Inferred tactical choice:** (10,10) closes nearest-enemy distance6→4 and remains distance5 from
+Sarah, versus7 from (9,9). This motivates approaching while retaining a closer healer; it does not
+prove safety or a winning route. No seed or alternative future-combat search selects the move.
 
-The actual existing preview path is `(11,13)→(10,13)→(10,12)→(9,12)→(9,11)→(9,10)→(10,10)`,
-cost12, move string `[2,1,2,1,1,0,255]`, return string `[2,3,3,0,3,0,255]`. Confirm/cancel restores
-the whole104 snapshot; reselect/confirm/STAY publishes105 with the existing unchanged-stats policy,
-actor0/R13/raw10 and both faction counts2/3. Main stays `02A11234`, copy `0234`, tested mask0,
-gold180, all HP/MP/EXP/kills/defeats and prior104 receipts remain unchanged. The historic R13 order
-is `[128:6,130:6,1:5,133:5,0:3]` followed by59 sentinels; current candidate and control are null.
-The first three region flags remain true and the other13 false; all48 AI memory and last-target
-entries remain unchanged. The original104 before-image remains immutable after105.
+The actual path is `(11,13)→(10,13)→(10,12)→(9,12)→(9,11)→(9,10)→(10,10)`, cost12, movement
+`[2,1,2,1,1,0,255]`, return `[2,3,3,0,3,0,255]`. The existing physical-target builder returns an empty
+list at the confirmed destination. Confirm/cancel restores all of104; reselect/confirm/STAY
+publishes105/R13/raw10, actor0, counts2/3, main`02A11234`, copy`0234`, mask0 and Gold180. Its prior104
+receipts, all stats, AI channels and flags remain unchanged; only the selected Bowie position moves.
 
-**Confirmed first Unsupported:** actual `PrivateBattle01Ui.DispatchNext` returns
-`Next round rejected: round.generation.history; round 13 retained.` The new-round facade makes no
-publication: the same105 snapshot reference and complete serialized snapshot remain current.
-This diagnostic did not generate R14, calculate a proposed R14 order, dispatch a later actor or
-predict a new receipt. Existing movement/STAY needs no new production implementation.
+The generation gate authenticates completed R13 `[128 pursuit,130 pursuit,Sarah HEAL,133 pursuit,
+Bowie STAY]` and the admitted approach positions. The R14 prefix retains this entire105 history,
+including the distinct103 healing before-images and the earlier seven-slot R12 sequence containing
+Chester and dead129. The existing thinking-history replay links both five-person generations,
+rewinds Sarah MP/EXP and Bowie HP through103 and retains prior kills, deaths and awards. All seven
+initial accounting inputs are checked by the existing Application facade after local generation
+and before one snapshot publication. The original R13 admission and earlier nine-to-six participant
+routes remain intact. Other five-person generations, changed approach inputs and arbitrary later
+rounds remain rejected.
 
-#### Existing owners and minimum proposed change
+**Confirmed generation:** fifteen existing RNG draws from `02A11234` yield `94D21234`, with copy
+`0234` unchanged. R14/raw0 contains `[128:5,133:5,0:4,1:4,130:4]` followed by59 `[255,255]` sentinels.
+Both ties retain source order. Mask becomes7; the first three region flags stay true, the other13
+false. There are no region cutscene or spawn rows. Generation retains105 receipts, all positions,
+HP/MP/EXP, gold, counters, terrain/occupancy,48 AI-memory and48 last-target entries; it adds no
+completion, healing, initialization or player control.
 
-**Confirmed from accepted code:** `Battle01FirstRound.EnterNext` permits a five-survivor input only
-when the completed round is12 and the tested mask is0. At this real105, the mask is0 but the round
-is13. Its `RequireCurrentPrefix` also admits a five-member order only for R13, validates the exact
-R12 seven-slot/death history and100 earlier receipts. Both guards must gain the same narrow next
-boundary; removing only the first rejection would leave the next order unsupported.
+#### Actual dispatcher endpoint
 
-Reuse `Generate`, `ActivateEnemies`, `GenerateTurnOrder`, `GenerationRoster` and
-`RequireGenerationFromRecordedMain`. Keep R13 admission intact, including the prior seven-member
-cohort and dead129 slot. Add only the second five-survivor generation following this complete R13
-sequence:128 pursuit,130 pursuit,Sarah healing,133 pursuit,Bowie STAY. Authenticate all105 receipts,
-the distinct103 healing effect and its before-images, the exact living cohort0/1/128/130/133,
-corpses/death credits, completed raw10 sentinel, activation state and retained main/copy. Validate
-the new R14 prefix without converting it into arbitrary five-person or indefinite-round admission.
-The existing main-history replay must link the new generation to the healing RNG endpoint while
-rewinding Sarah MP/EXP and Bowie HP across103 and retaining the older physical before-images.
+The existing dispatcher selects128 from the generated order. Existing pursuit reports attack
+selection, then the unchanged physical facade completes128→Bowie: (10,4)→(10,9), cost10, movement
+`[3,3,3,3,3,255]`, ordinary hit3, Bowie HP12→9, no counter. Receipt106 retains105 as its exact prefix;
+R14/raw2 has current133, main`AE581234`, copy`0034`, mask0 and no player control. Sarah remains
+HP11/MP7/EXP17 at (11,14), Bowie EXP63/kills2/defeats0 and Gold180 persist, and all four corpses
+remain unplaced. The prior healing receipt remains available as history; the current result is
+the newly completed enemy attack.
 
-The current Application round facade already admits the named early Sarah comparison and checks
-all seven accounting inputs after local generation and before one snapshot publication. No new
-preset, late supplement, Application wrapper, Godot input, production dispatcher, RNG algorithm,
-combat profile or new source/asset port is proposed. Reuse the existing Domain/Application healing
-test helpers for authored tests; the positive Content/native route must still start from registered
-initialization. If evidence requires another production owner, stop and declare that scope rather
-than silently widening this plan.
+**Confirmed first Unsupported:** the next actual133 selection returns
+`Enemy 133 physical attack rejected: attack.counterProfile; current state retained.` The failed
+attempt commits no movement, primary hit, counter, RNG, receipt or control. Repeating dispatch at
+this boundary retains the same106 snapshot reference and complete serialized state. The physical
+Bowie STAY plus automatic generation/dispatch equals the entire facade-copy result. No107 receipt
+or future player state is constructed. The slice stops here.
 
-**Proposed implementation ownership:11 paths, no new tracked files.** This is a proposal for a later
-slice; this planning PR changes only `remake/docs/map03-playability-plan.md`.
+#### Owners, reproduction and acceptance
 
-| Proposed path | Purpose |
+| Existing owner | Boundary |
 | --- | --- |
-| `remake/src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs` | Admit this second five-survivor generation and authenticate its current/prior prefixes. |
-| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01FirstRoundTests.cs` | Exact cohort, order/RNG, old/new generation boundaries and forged history rejection. |
-| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` | Healing-to-generation main linkage and complete stat/thinking history replay. |
-| `remake/tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01FirstRoundTests.cs` | All seven early inputs, stale/foreign/late requests and failure after local generation with no publication. |
-| `remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Actual registered-input route through105, actual generation/dispatcher result and first usable control or Unsupported. |
-| `remake/tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs` | Readable actual returned state, healing result and supported controls. |
-| `remake/tests/native/Map19Map20AtlasReviewProbe.cs` | Probe-only extension of the existing early Sarah comparison; actual physical/API state comparison. |
-| `remake/docs/map03-playability-plan.md` | Replace this proposal with the reproduced implemented endpoint and remaining boundary. |
-| `remake/docs/capability-status.md` | Record the exact newly admitted generation/control boundary. |
-| `remake/docs/development-and-verification.md` | Owning required-input tests, selected gates and preserved failures. |
-| `remake/docs/presentation-and-assets.md` | Native reproduction and exact comparison frames. |
+| `remake/src/Sf2.Remake.Domain/Battles/Battle01FirstRound.cs` | Only production change: second five-survivor admission and retained current/prior prefixes. |
+| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01FirstRoundTests.cs` | Exact cohort/slots/ties/RNG, retained channels, rejected phase/raw/approach/mask and later generation. |
+| `remake/tests/Sf2.Remake.Domain.Tests/Battles/Battle01EnemyStandbyTests.cs` | Both generation links, healing HP/MP/EXP before-images and malformed new/old receipt/death history. |
+| `remake/tests/Sf2.Remake.Application.Tests/PrivateOriginalBattle01FirstRoundTests.cs` | Seven early inputs, exact/stale/foreign/late requests and successful local generation rejected before publication. |
+| `remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs` | Registered early initialization, actual105 approach, R14/106 and unchanged133 refusal. |
+| `remake/tests/Sf2.Remake.Godot.Tests/PrivateBattle01PresenterTests.cs` | Actual generation projection has no player prompt and retains all healing/accounting rows. |
+| `remake/tests/native/Map19Map20AtlasReviewProbe.cs` | Probe-only continuation, complete physical/API equality and visible first Unsupported. |
+| `remake/docs/map03-playability-plan.md` | Actual implemented endpoint, source distinction and Unknowns. |
+| `remake/docs/capability-status.md` | Admitted capability and remaining counter-profile boundary. |
+| `remake/docs/development-and-verification.md` | Required inputs, selected gates and targeted correction policy. |
+| `remake/docs/presentation-and-assets.md` | Native selector and frame-by-frame acceptance. |
 
-#### Source facts, acceptance and Unknowns
+The focused filter is `FullyQualifiedName~SecondFiveSurvivor`, paired with the existing first-round,
+thinking-history, healing and presenter owners. Domain/Application reuse the existing authored
+healing helpers; their authored approach costs8. The required-input Content test
+`SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach` independently requires the actual
+terrain cost12. See [development and verification](./development-and-verification.md) for the locked
+managed gate and the [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
+for actual dispatcher execution. In the existing Sarah native mode, set only the probe selector
+`SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`; production still uses the original early Sarah flag.
+The72-frame run preserves the old63 frames and adds64–72 for approach, cancellation, labeled
+105/generation/106 copies and physical Unsupported. Inspect every added frame at original1920×1080.
+Retain all335 previously accepted PNGs; compare the regenerated63-frame prefix directly by bytes.
+The older225+47 routes retain their accepted evidence and are not invalidated merely by a new branch.
 
-**Confirmed static provenance:** the registered USA baseline and pinned
-`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6` remain authoritative.
-The [round lifecycle and turn-order contract](../../docs/design/contracts/battle-control-lifecycle.md#turn-order-construction)
-and `disasm/code/gameflow/battle/battleloop/turnorderfunctions.asm:GenerateBattleTurnOrder` /
-`AddCombatantAndRandomizedAgiToTurnOrder` (`0x25544..0x25610`) supply placed/living admission,
-per-candidate RNG,64 slots, signed stable sorting and raw-cursor reset. The accepted round lifecycle
-places activation, region-cutscene routing and spawn admission before generation. Source has no
-R13-only five-person rule; that rule is bounded remake admission. Static source supports reuse of
-these mechanics, not a claim that this R14 already ran. No new research association or H3 is needed.
+Run the clean committed planner and its affected managed and official Godot gates once for the
+shared generation change, with required private inputs and zero skipped owning positives. Keep
+all outputs under fresh `local/second-five-survivor-round/` directories with the existing fixed
+SDK/shared CLI home and local caches. Retain completed failed runs and rerun only failed/newly
+invalidated owners after correction. Main-gate owns normal public verification and independent
+integration. No new H3 or original-runtime observation is part of this capability.
 
-Future acceptance must run the actual early route and selected move, compare the complete105
-before-image, publish exactly one generation, and compare its actual64 slots, main/copy, tested
-mask/flags, positions, HP/MP/EXP, gold, kills/defeats, memory, targets and retained history. Generation
-adds no completion receipt and must not reinitialize or heal anyone. Preserve first-generation
-R13 behavior, the earlier physical/death/healing receipts and all seven preparation/source inputs.
-Negative tests cover wrong cohort/phase/raw/seed/copy/flags/mask, missing or duplicated103/104/105,
-relabelled healing/STAY, changed effects/accounting, malformed old/new slots/sentinels/ties, placed
-corpses and attempts to admit a later arbitrary generation. A locally generated order rejected by
-Application accounting must leave the complete105 snapshot untouched.
+**Confirmed static provenance:** the registered USA baseline, SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, and the accepted
+[turn-order contract](../../docs/design/contracts/battle-control-lifecycle.md#turn-order-construction)
+own the original placed/living admission, per-candidate RNG,64 slots, signed stable sort and cursor
+reset. Named source is `turnorderfunctions.asm:GenerateBattleTurnOrder` /
+`AddCombatantAndRandomizedAgiToTurnOrder`, `0x25544..0x25610`; the lifecycle orders activation,
+region cutscenes and spawn admission before generation. The R13/R14-only five-person constraint is
+bounded remake admission. Source structure does not establish natural reach, timing or presentation.
 
-Then invoke the unchanged actual dispatcher. Record the real actor, effects, receipts and first
-boundary, without fixing them in advance. Stop at its first usable player's move/confirm/cancel
-or first real Unsupported; do not add a follow-on attack, death, level or generation just to reach
-an intended endpoint. Extend the existing native Sarah mode through a probe-only selector so the
-accepted63-frame route remains separately reproducible. Compare facade and physical whole snapshots;
-label any isolated pre-dispatch copy TEST COPY and inspect every new image at original resolution.
-Preserve those63 PNGs and the older225+47 PNGs by bytes, including readable healed HP/MP/EXP and the
-persisting cast result. Do not overwrite an old golden.
-
-For the future implementation, obtain the clean committed planner and run its selected owning
-managed and locked Godot gates, with required private inputs and zero skipped owning positives.
-The new shared generation guard/prefix change determines invalidation; do not repeat a prior full,
-official or native run merely to replace a completed result. Keep the accepted1853P/1F completed
-full run and its32P failed-file correction distinct, alongside completed root normal148/owning517,
-official7, native63/272 and successful CI. This planning slice uses only the small diagnostic,
-document verification and committed planner. No whole managed/official/native/environment replay.
-Main-gate retains independent normal public verification and integration.
-
-**Unknown:** actual R14 order and main endpoint, its first dispatched actor and enemy consequences,
-the first usable player or subsequent Unsupported, later survival, victory/return, natural Sarah
-progression/presentation and H4. The approach is a bounded candidate toward victory, not a completed
-winning route or a new termination mechanic.
-
-#### Reproduce the actual planning diagnostic
-
-The accepted `7d51ff6fa36519e45edcae931fc994f69108d9f8` tree
-`032fdcfa34fb6498d2e30890319201aefc98c5fa` equals the verified compiled `432d1186` tree. The owning
-worktree reused `local/sarah-heal/full-correction-01/managed`: all452 archived `remake` and
-`tests/fixtures` members and their extracted files directly equal that accepted Git archive.
-Before reuse, repeat that byte comparison and compare the18 dependency DLLs copied into the probe
-output with the selected Content-test directory. A fresh worker must obtain equivalent verified
-outputs, not select arbitrary assemblies. No production source or input is patched.
-
-Load the retained worktree environment with fresh `-RunName 'post-heal-bowie-plan/<run>'`, then the
-registered-input configuration as in the preceding diagnostic. Set `SF2_REQUIRE_PRIVATE_TESTS=1`.
-Use the same small net8.0 `Probe.csproj` shape shown above; save this exact program as `Program.cs`
-in the fresh output. It inspects existing target construction but never constructs a battle state.
-
-```csharp
-using System.Reflection;
-using System.Text.Json;
-using Sf2.Remake.Application.Content;
-using Sf2.Remake.Application.Sessions;
-using Sf2.Remake.Content.Tests;
-using Sf2.Remake.Domain.Battles;
-var options=new JsonSerializerOptions { MaxDepth=256,WriteIndented=true };
-string Json(object value)=>JsonSerializer.Serialize(value,options);
-void Require(bool yes,string why) { if(!yes) throw new Exception(why); }
-int Count(Battle01InitializedState b) { int n=0; for(var r=b.TurnCompletion;r!=null;r=r.Previous)n++;return n; }
-var helper=typeof(PrivateOriginalBattle01StartupReaderTests).GetMethod("ReachRealFiveSurvivorBoundary",BindingFlags.Static|BindingFlags.NonPublic)!;
-PrivateOriginalBattle01SessionSnapshot? initialized=null;
-Action<PrivateOriginalBattle01SessionSnapshot> observer=s=>initialized=s;
-var session=(GameSession)helper.Invoke(null,[OriginalBattle01ControlledPartyPreset.SarahHealComparison,observer,null])!;
-Require(initialized!=null&&initialized.Preparation.Party.Id==OriginalBattle01ControlledPartyPreset.SarahHealComparisonId&&initialized.Battle.Roster[1].Stats.CurrentExp==0,"early comparison");
-var ui=Assembly.LoadFrom(Environment.GetEnvironmentVariable("SF2_PLAN_GAME_DLL")!).GetType("Sf2.Remake.GodotAdapter.PrivateBattle01Ui")!;
-var dispatcher=ui.GetMethod("DispatchNext",BindingFlags.Static|BindingFlags.NonPublic)!;
-string Relay()=>(string)dispatcher.Invoke(null,[session,session.PrivateOriginalBattle01])!;
-Console.WriteLine(Relay());
-Require(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,1) is PrivateOriginalBattle01PlayerMovementApplied,"Sarah confirm");
-Require(session.BeginPrivateOriginalBattle01PlayerHealing(session.PrivateOriginalBattle01,1) is PrivateOriginalBattle01PlayerHealingApplied,"Magic");
-Require(session.SelectPrivateOriginalBattle01HealingSpell(session.PrivateOriginalBattle01,1,0) is PrivateOriginalBattle01PlayerHealingApplied,"HEAL1");
-Require(session.ConfirmPrivateOriginalBattle01PlayerHealing(session.PrivateOriginalBattle01,1) is PrivateOriginalBattle01PlayerHealingApplied,"cast");
-Console.WriteLine(Relay());
-var ready=session.PrivateOriginalBattle01!;var b=ready.Battle;
-Require(Count(b)==104&&b.FirstControl?.ActorIndex==0&&b.FirstRound!.RoundNumber==13&&b.FirstRound.CurrentTurnOffset==8,"accepted104");
-Require(ReferenceEquals(initialized!.Preparation,ready.Preparation)&&ReferenceEquals(initialized.SourceLocomotion,ready.SourceLocomotion)&&ReferenceEquals(initialized.SourceBridge,ready.SourceBridge),"retained sources");
-var enemies=b.Roster.Where(u=>u.Index>=128&&u.Position!=null&&u.Stats.HpCurrent>0).ToArray();
-var range=b.FirstControl!.Movement.Range;
-var stops=range.LegalDestinations.Select(p=>new { position=p,cost=range.Grid.CostAt(p),nearestEnemyDistance=enemies.Min(e=>Math.Abs(e.Position!.X-p.X)+Math.Abs(e.Position!.Y-p.Y)),adjacentEnemies=enemies.Where(e=>Math.Abs(e.Position!.X-p.X)+Math.Abs(e.Position!.Y-p.Y)==1).Select(e=>e.Index).ToArray() }).OrderBy(p=>p.nearestEnemyDistance).ThenBy(p=>p.cost).ToArray();
-var output=Environment.GetEnvironmentVariable("SF2_RUN_OUTPUT")!;
-File.WriteAllText(Path.Combine(output,"ready104.json"),Json(ready));
-File.WriteAllText(Path.Combine(output,"movement-range.json"),Json(stops));
-var startFrozen=Json(ready);
-var destination=new Sf2.Remake.Domain.Maps.MapPosition(10,10);
-Require(range.CanStopAt(destination)&&range.Grid.CostAt(destination)==12,"observed legal destination");
-var move=session.SelectPrivateOriginalBattle01PlayerDestination(ready,0,destination);
-Require(move is PrivateOriginalBattle01PlayerMovementApplied,"actual move preview");
-var preview=session.PrivateOriginalBattle01!;
-var path=preview.Battle.FirstControl!.Movement.Preview;
-Require(session.ConfirmPrivateOriginalBattle01PlayerMovement(preview,0) is PrivateOriginalBattle01PlayerMovementApplied,"actual move confirm");
-var confirmed=session.PrivateOriginalBattle01!;
-var actualTargets=(int[])typeof(Battle01PlayerPhysicalAttack).GetMethod("Targets",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[confirmed.Battle,0])!;
-Require(actualTargets.Length==0,"no attack admitted at selected destination");
-Require(session.CancelPrivateOriginalBattle01PlayerMovement(confirmed,0) is PrivateOriginalBattle01PlayerMovementApplied,"actual cancel");
-Require(Json(session.PrivateOriginalBattle01!)==startFrozen,"complete104 cancellation");
-Require(session.SelectPrivateOriginalBattle01PlayerDestination(session.PrivateOriginalBattle01,0,destination) is PrivateOriginalBattle01PlayerMovementApplied,"reselect");
-Require(session.ConfirmPrivateOriginalBattle01PlayerMovement(session.PrivateOriginalBattle01,0) is PrivateOriginalBattle01PlayerMovementApplied,"reconfirm");
-var beforeStay=session.PrivateOriginalBattle01!;
-var stay=session.CommitPrivateOriginalBattle01Stay(beforeStay,0);
-File.WriteAllText(Path.Combine(output,"stay-result.json"),Json(stay));
-if(stay is not PrivateOriginalBattle01StayCommitted) { Console.WriteLine(Json(stay));return; }
-var committed=session.PrivateOriginalBattle01!;
-string commitFrozen=Json(committed);
-var dispatchResult=Relay();
-var end=session.PrivateOriginalBattle01!;
-File.WriteAllText(Path.Combine(output,"committed.json"),Json(committed));
-File.WriteAllText(Path.Combine(output,"end.json"),Json(end));
-Require(Json(ready)==startFrozen,"accepted104 before image immutable");
-var outcome=new { earlyInput=initialized!.Preparation.Party.Id,initialSarahExp=initialized.Battle.Roster[1].Stats.CurrentExp,
- move=new { origin=range.Origin,destination,cost=path.Cost,path=path.Positions,moveString=path.Directions,returnDirections=path.ReturnDirections,legalTargets=actualTargets },
- completeCancelRestores104=true,stayType=stay.GetType().Name,stayCount=Count(committed.Battle),stayRound=committed.Battle.FirstRound!.RoundNumber,stayRaw=committed.Battle.FirstRound.CurrentTurnOffset,
- stayMain=committed.Battle.RandomSeedImage.ToString("X8"),stayCopy=committed.Battle.RandomSeedCopy?.ToString("X4"),
- dispatchResult,endCount=Count(end.Battle),endRound=end.Battle.FirstRound!.RoundNumber,endRaw=end.Battle.FirstRound.CurrentTurnOffset,endPhase=end.Battle.Phase.ToString(),
- actualCandidate=end.Battle.FirstRound.CurrentCandidate,control=end.Battle.FirstControl?.ActorIndex,dispatcherPreservedReference=ReferenceEquals(committed,end),dispatcherPreservedWholeSnapshot=Json(end)==commitFrozen,
- lastReceipt=end.Battle.TurnCompletion==null?null:new {end.Battle.TurnCompletion.CompletedActorIndex,policy=end.Battle.TurnCompletion.Policy.Id,end.Battle.TurnCompletion.BeforeAfterTurn,end.Battle.TurnCompletion.AfterAfterTurn},
- units=end.Battle.Roster.Select(u=>new{u.Index,u.Position,u.Stats.HpCurrent,u.Stats.MpCurrent,u.Stats.CurrentExp,u.Stats.CurrentKills,u.Stats.CurrentDefeats}),gold=end.Battle.CurrentGold,main=end.Battle.RandomSeedImage.ToString("X8"),copy=end.Battle.RandomSeedCopy?.ToString("X4"),mask=end.Battle.NewlyTestedRegionMask };
-File.WriteAllText(Path.Combine(output,"result.json"),Json(outcome));Console.WriteLine(Json(outcome));
-
-```
-
-Compile and run only the diagnostic with existing tools:
-
-```powershell
-$acceptedManaged = Join-Path (Get-Location) 'local/sarah-heal/full-correction-01/managed/workspace/remake'
-$contentDllDirectory = Join-Path $acceptedManaged 'tests/Sf2.Remake.Content.Tests/bin/Release/net8.0'
-$env:SF2_PLAN_GAME_DLL = Join-Path $acceptedManaged 'tests/Sf2.Remake.Godot.Tests/bin/Release/net8.0/Sf2.Remake.Godot.dll'
-$probeProject = Join-Path $env:SF2_RUN_OUTPUT 'Probe.csproj'
-$referenceProperty = '-p:AcceptedContentDllDirectory=' + $contentDllDirectory
-& $env:DOTNET_BIN restore $probeProject --disable-build-servers $referenceProperty
-& $env:DOTNET_BIN build $probeProject --configuration Release --no-restore --disable-build-servers '-p:UseSharedCompilation=false' $referenceProperty
-& $env:DOTNET_BIN (Join-Path $env:SF2_RUN_OUTPUT 'bin/Release/net8.0/Probe.dll')
-```
-
-The discovery and selected-route probes each completed restore/build/run successfully with zero
-build warnings/errors. `result.json` reports the actual105 and `round.generation.history`, with
-both `dispatcherPreservedReference` and `dispatcherPreservedWholeSnapshot` true. Local `ready104`,
-`committed` and `end` snapshots, complete range, logs and reuse audit remain ignored under
-`local/post-heal-bowie-plan/`. They are coordination/reproduction output, not substitutes for this
-tracked command, named Git objects and owning contracts. No original runtime or native UI was run.
-
+**Unknown:** committed133 primary/counter outcome, next player and later actions/generations,
+survival, victory/return, natural Sarah progression/presentation and H4. The observed counter-profile
+refusal is not authorization to add that next capability or prolong a losing line.
 
 ### Accepted inputs and incompatible existing assumptions
 
