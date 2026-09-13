@@ -924,6 +924,10 @@ is created only when a real disagreement appears and the choice constrains later
 - [`0018-astra-role-routing-trial.md`](./decisions/0018-astra-role-routing-trial.md):
   owns accepted Astra/Sol role routing after the completed trial, bounded Terra delegation,
   explicit task migration, and safeguards for context resumption and proportional verification.
+- [`0019-state-and-content-driven-remake-engine.md`](./decisions/0019-state-and-content-driven-remake-engine.md):
+  Proposed design for state/content/capability-based gameplay, a common session model, typed programs,
+  engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration;
+  audit findings remain open.
 
 ## Evidence Vocabulary
 

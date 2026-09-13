@@ -15,6 +15,22 @@ the findings are not a claim that remediation has been implemented.
 The architecture is a deterministic modular monolith hosted by Godot. It is not a scene-owned game,
 a service mesh, a general ECS, or an emulator-backed gameplay core.
 
+## Proposed State and Content Direction
+
+[Proposed ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the
+recommended command/state/result model, typed content and resumable programs, audit A1–A8 mapping,
+new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
+It proposes live state, validated content,
+and implemented capability as gameplay admission inputs, with fixed walkthrough constraints retained
+in reference verification. Application would advance to actual input, presentation/tick waits, or an
+attributed unsupported boundary; Godot would consume semantic commands and observations.
+
+This is a proposed behavioral migration, not the current implementation or an accepted replacement for
+ADRs 0011/0017. The profile-specific snapshots, fixed import checks, endpoint handlers, and Godot battle
+dispatch described below still exist; the audit findings remain open. The proposal preserves distinct
+public/private trust and leaves the accepted 8C/H4 target incomplete. It authorizes no implementation
+or new observation transport by itself.
+
 ## Production Assemblies
 
 | Assembly | Current responsibility | Dependency direction |
@@ -462,6 +478,12 @@ Otherwise the implementation defaults to internal types and direct calls. A new 
 extends an existing bounded inspector or observation unless it has an independent boundary reason.
 
 ## Refactor Sequence
+
+This accepted behavior-preserving sequence remains current. ADR 0019 separately proposes an explicit
+behavioral migration with useful engine unit assertions and coordinated CI/local-gate changes; its
+user-directed test policy does not require retaining every old test or testing verification tools.
+Adoption and implementation require independent review before expanding valid runtime states or
+moving trace-specific refusals into reference verification.
 
 Future refactors remain serialized and behavior-preserving:
 
