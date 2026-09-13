@@ -10,6 +10,14 @@ repository README, and the committed planner. Local private input layout remains
 Do not replace planner output with a remembered command list. Run only the affected partitions plus
 any explicitly justified semantic dependency.
 
+Godot behavior, UI state and input acceptance use observations from the running instance: reuse
+native probes or an established debug/state interface to read Application snapshots, presenter
+projections, relevant node properties/geometry/visibility/focus, input outcomes and process errors.
+Do not add screenshots or perform image-based acceptance; older image recipes and counts below
+are retained context, not instructions to repeat those checks. Preserve completed runs without
+replaying them for this change. Identify a concrete missing observation before extending a probe;
+a remote debug server is not yet an established verification dependency.
+
 ## Locked .NET Workflow
 
 Before any SDK command, including `--info` or `nuget locals`, load the host's explicit shared CLI
@@ -498,12 +506,23 @@ run each once, retaining completed failures and correcting only failed/newly inv
 Main-gate retains normal public verification. No new H3/full Python gate is implied.
 
 Native uses Sarah mode plus `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1` and probe-only
-`SF2_BATTLE01_BOWIE_COUNTER_REVIEW=1`. The76-frame route preserves old1–70 where byte-identical,
-updates the labeled106 boundary, adds atomic107, then exercises actual physical Bowie movement,
-confirmation and cancellation. Inspect changed/new71–76 PNGs at original1920×1080; retain the old
-terminal refusal as historical evidence. Preserve older225+47 modes according to their unchanged
-dependencies. The new flag selects no production combat behavior. Production presenter/dispatcher
-are unchanged; any new layout failure requires a concrete scope review.
+`SF2_BATTLE01_BOWIE_COUNTER_REVIEW=1`. Its completed76-observation run retains actual facade105,
+generation14,106 and atomic107 states in `captures/receipt.json`. The probe restores the exact
+pre-STAY selection, sends Godot physical key events and compares the entire resulting session with
+the independently invoked API path. Observations73–76 read actual Bowie control, a legal movement
+preview, confirmation and cancellation; the whole107 ready snapshot is restored. The presenter
+retains both ordered HP effects and Bowie's10 EXP, with live phase/unit positions, status, controls
+and accounting text measured from the running instance. Node checks enforce visible line counts,
+logical-canvas bounds and non-overlapping label rectangles; the receipt records accounting width
+and visible lines. `process.json` and its logs retain errors, exit and cleanup status.
+
+These existing state/input records answer this slice's acceptance questions without another native
+run. Retain completed image artifacts and the old terminal refusal only as historical evidence;
+do not create or inspect more screenshots. The current probe still emits images when run, so a
+future required run must first disable that output in the owning test while preserving its state
+and input checks. No remote-debug connection or focus observation was performed here; neither is
+claimed as verified. No debug framework or production interface is added. The probe flag selects
+no production combat behavior, and production presenter/dispatcher remain unchanged.
 
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.
