@@ -26,7 +26,7 @@ internal static class BattleSnapshotProjection
             a.Actor, a.Position!, a.Definition.IsAlly, a.Actor == selection?.Actor,
             $"{a.Actor.Value}\n{a.Hp}/{a.Definition.MaxHp}")).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
-            $"{a.Actor.Value}: HP {a.Hp}/{a.Definition.MaxHp}  MP {a.Mp}/{a.Definition.MaxMp}  EXP {a.Exp}  KILLS {a.Kills}"));
+            $"{a.Actor.Value}: HP {a.Hp}/{a.Definition.MaxHp}  MP {a.Mp}/{a.Definition.MaxMp}  EXP {a.Exp}  KILLS {a.Kills}  DEFEATS {a.Defeats}"));
         var focus = selection?.Preview.Path.ToList() ?? [];
         foreach (var actor in battle.Actors.Where(a => a.Hp > 0 && (a.Actor == selection?.Actor ||
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);

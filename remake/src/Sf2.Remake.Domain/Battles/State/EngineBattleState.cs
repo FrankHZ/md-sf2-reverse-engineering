@@ -14,7 +14,8 @@ public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary }
 public enum BattleController { Player, Stay }
 
-public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold, ushort InitialKills);
+public sealed record PhysicalActorDefinition(byte Prowess, bool Promoted, bool Leader, ushort Gold,
+    ushort InitialKills, ushort InitialDefeats = 0);
 public sealed record BattleRewardDefinition(bool HalvedExperience, uint InitialGold);
 
 public sealed record HealingSpellDefinition(
@@ -50,9 +51,10 @@ public sealed class BattleActorDefinition
 public sealed class BattleActorState
 {
     internal BattleActorState(BattleActorDefinition definition, ushort hp, byte mp, byte exp,
-        MapPosition? position, ushort? kills = null)
+        MapPosition? position, ushort? kills = null, ushort? defeats = null)
     { Definition = definition; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
-        Kills = kills ?? definition.Physical?.InitialKills ?? 0; }
+        Kills = kills ?? definition.Physical?.InitialKills ?? 0;
+        Defeats = defeats ?? definition.Physical?.InitialDefeats ?? 0; }
     public BattleActorDefinition Definition { get; }
     public ActorRef Actor => Definition.Actor;
     public ushort Hp { get; }
@@ -60,9 +62,10 @@ public sealed class BattleActorState
     public byte Exp { get; }
     public MapPosition? Position { get; }
     public ushort Kills { get; }
+    public ushort Defeats { get; }
     internal BattleActorState With(ushort? hp = null, byte? mp = null, byte? exp = null,
-        MapPosition? position = null, ushort? kills = null, bool remove = false) =>
-        new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, remove ? null : position ?? Position, kills ?? Kills);
+        MapPosition? position = null, ushort? kills = null, ushort? defeats = null) =>
+        new(Definition, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats);
 }
 
 public sealed class BattleDefinition
@@ -121,5 +124,5 @@ internal sealed class BattleRuleException(string code, string field, bool unsupp
     internal bool Unsupported { get; } = unsupported;
 }
 
-internal sealed record BattleEffect(string Kind, ActorRef Actor, long Before, long After,
-    ushort? RandomRange = null, ushort? RandomValue = null);
+internal sealed record BattleEffect(string Kind, ActorRef Actor, long? Before = null, long? After = null,
+    ushort? RandomRange = null, ushort? RandomValue = null, ActorRef? Target = null);

@@ -474,7 +474,7 @@ public static class Battle01TurnCompletion
         return result;
     }
 
-    internal static ushort DefeatsAfterDeath(ushort before) => (ushort)Math.Min(9999, before + 1);
+    internal static ushort DefeatsAfterDeath(ushort before) => BattleRewards.Defeats(before);
 
     private static (Battle01InitializedState State, Battle01AllyDefeatCleanup Cleanup) ApplyAllyDefeatCleanup(
         Battle01InitializedState current, Battle01EnemyPhysicalAttackDecision decision, Battle01PhysicalCompletionPolicy policy)

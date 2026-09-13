@@ -24,12 +24,16 @@ known legacy monolith. Moving it does not claim to have refactored or completed 
 The ordinary physical scalar body has one owner: `Domain/Battles/Rules/PhysicalStrikeRules.cs`.
 `Rules/Battles/Battle01EnemyPhysicalAttack.cs` retains legacy admission/replay projection but invokes
 that shared calculation; the duplicate strike body is deleted. `Battle01PlayerPhysicalAttack.cs`
-uses shared damage-EXP/gold/kill-cap functions. Their fixed profile and history guards are reachable
+uses shared damage-EXP/award-randomization/gold/kill-cap functions. The enemy counter wrapper also
+uses the shared EXP award; its old `MainRoll` helper and both duplicated reward-randomization bodies
+are removed. Existing `Battle01MainRandomRoll` is only a reference DTO projection of the core draws,
+not a second RNG or reward calculation authority. The legacy turn cleanup delegates its defeat cap
+to `BattleRewards`. Their fixed profile and history guards are reachable
 only from `Sessions/Battle01/PrivateOriginalBattle01EnemyPhysicalAttack.cs` and
 `PrivateOriginalBattle01PlayerPhysicalAttack.cs`, the old `Application.Sessions.GameSession` and
 Godot `PrivateBattle01Composition`, plus selected reference behavior tests. These wrappers still own
-legacy enemy AI/ally counter and controlled completion histories; the first authored physical slice
-does not replace those startup consumers. The next corresponding M2 private battle admission/AI/
+legacy enemy AI/ally counter and controlled completion histories; the authored first/second/counter implementation
+does not replace those private startup consumers. The next corresponding M2 private battle admission/AI/
 reaction migration must move those calls to common commands and remove these wrappers with their
 last caller. M3 owns map-start/program consumers; M4 owns outcome/return. None is deferred wholesale
 to M5, and no production project acquires a reference dependency.

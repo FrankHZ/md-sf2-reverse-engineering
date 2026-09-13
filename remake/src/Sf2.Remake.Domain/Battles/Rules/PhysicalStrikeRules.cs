@@ -2,10 +2,11 @@ namespace Sf2.Remake.Domain.Battles;
 
 internal sealed record PhysicalRoll(string Purpose, ushort Range, uint Before, uint After, ushort Result);
 internal sealed record PhysicalStrike(bool Dodged, bool Critical, int Damage, ushort Hp,
-    uint Seed, bool Double, bool Counter, IReadOnlyList<PhysicalRoll> Rolls);
+    uint Seed, bool DoubleRolled, bool CounterRolled, IReadOnlyList<PhysicalRoll> Rolls);
 
 // Scalar construction only. Callers validate follow-up eligibility and settle the entire action
-// before publishing. Source: attack/determinedodge/determinecriticalhit/inflictdamage.asm.
+// before publishing. Rolled flags describe this strike's draws, not the action's sticky toggles.
+// Source: attack/determinedodge/determinecriticalhit/inflictdamage.asm.
 internal static class PhysicalStrikeRules
 {
     internal static ushort Roll(ref uint seed, List<PhysicalRoll> rolls, string purpose, ushort range)

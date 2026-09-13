@@ -128,13 +128,46 @@ Repeat with `river-post.json`; `--reverse-kills` selects the opposite legal kill
 uses actual X/Tab/Enter/Space input, including a rejected distant target followed by a valid target,
 then checks exact carried RNG/resources, removed coordinates/nodes, next living control and the next
 round. All four package/order combinations use common product commands. Reached unsupported
-follow-up/level/outcome atomicity and independent arithmetic expectations belong to
+level/leader/outcome atomicity and independent arithmetic expectations belong to
 `PhysicalBattleTests`, not tests of this observer. Selected existing reference comparisons for the
 shared scalar extraction are `SourceArithmeticKeepsZeroIntermediateAndBothDownwardDrawsAtTheOriginalRange`,
 `MissAndCriticalUseRealSeedsAndPreserveSourceCallOrder`, `RealSeedsExerciseMissCriticalAndIndependentExpVariance`
-and `KillAccountingUsesSourceCapsAndKeepsUnknownInputsUnknown` in the legacy Domain test project; run
+and `KillAccountingUsesSourceCapsAndKeepsUnknownInputsUnknown` in the legacy Domain test project.
+For shared counter/reward changes also select `CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt`,
+`CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack` and
+`PostHealBowieCounterUsesItsOwnPermissionAndOneEnemyReceipt`; run
 those methods with a `dotnet test --filter` expression when their shared calculation changes. They
 are bounded existing comparisons, not a new full legacy/H3 obligation.
+
+For follow-up observation create one supported variant in the existing ignored output directory.
+The four shapes use `stone-court` with initial high seed73 for `sticky`/`second-death`, seed55 for
+`ally-death`, and `river-post` with seed55 for `counter`. All use low seed word0x1234, unchanged
+placements and Stay AI. This is controlled startup input; the running session is never reseeded.
+
+```powershell
+$shape = 'sticky' # counter, ally-death, second-death
+$packageName = if ($shape -eq 'counter') { 'river-post' } else { 'stone-court' }
+$initialSeed = if ($shape -in @('sticky', 'second-death')) { 73 } else { 55 }
+$data = Get-Content -Raw -LiteralPath "remake/content/authored/$packageName.json" | ConvertFrom-Json -AsHashtable
+$data.start.mainSeed = [uint32]($initialSeed * 65536 + 4660)
+foreach ($index in @(0, 2)) { $data.actors[$index].hp = 500; $data.actors[$index].maxHp = 500 }
+$data.actors[2].attack = if ($shape -eq 'counter') { 26 } else { 18 }
+if ($shape -eq 'ally-death') {
+    $data.actors[0].hp = 1; $data.actors[0].exp = 99; $data.actors[0].physical.defeats = 6
+}
+if ($shape -eq 'second-death') { $data.actors[2].hp = 35 }
+$packagePath = Join-Path $env:SF2_RUN_OUTPUT 'package.json'
+$data | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'followups.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case followups --followup-shape $shape --observation-output $outputPath
+```
+
+Use a fresh output directory per shape and run serially in the same installed project. The observer
+presses actual Enter/X/Tab/Space, checks Actor/Target reversal and ordered first/second/counter
+observations, exact draw count/seed/resources, death visibility/accounting and subsequent control.
+The ally-death shape checks that EXP99 stays99 and no award draws occur. The second-death shape
+checks cancellation of the first hit's already-set counter. The observer is executed directly,
+without tests of the observer or helper.
 
 The same direct script also accepts `--observation-case target-cycle` and `--observation-case layout`.
 It sets a representative 960×540 host window because a headless SceneTree script otherwise starts a

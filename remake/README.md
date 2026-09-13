@@ -15,10 +15,10 @@ adapter scheduling remain explicit legacy limitations in the [audit](./docs/arch
 [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
 to common commands, live state and configurable typed content, resumable programs, and separate
 reference runners. M1 provides typed content admission, provisional movement/cancellation, atomic
-HEAL/STAY and automatic next-actor/round progression with carried RNG. The first
+HEAL/STAY and automatic next-actor/round progression with carried RNG. The
 [M2 physical capability](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
-adds ordinary single strikes, EXP/gold, death cleanup and continuation; unsupported follow-ups and
-settlement branches reject atomically. The
+adds ordinary first/second/counter attacks, EXP/gold, death accounting and continuation; unsupported
+level-up, leader and terminal settlement branches reject atomically. The
 [current boundary](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 records supported behavior, responsibility directories and remaining private/program migration.
 

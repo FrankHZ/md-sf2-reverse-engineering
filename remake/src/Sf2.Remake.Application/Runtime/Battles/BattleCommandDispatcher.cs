@@ -103,7 +103,7 @@ internal static class BattleCommandDispatcher
             observations.Add(new(++sequence, revision, "movement", selection.Actor, From: actor.Position, To: selection.Preview.Destination));
         foreach (var effect in effects)
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
-                RandomRange: effect.RandomRange, RandomValue: effect.RandomValue));
+                RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", selection.Actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", selection.Actor));

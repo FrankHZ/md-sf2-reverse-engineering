@@ -193,11 +193,11 @@ public static class Battle01PlayerPhysicalAttack
         // The admitted unpromoted level1 versus original level0 GIZMO gives kill EXP50.
         int accumulated = DamageExperience(effect.Damage, target.HpMax);
         if (effect.TemporaryHp == 0) accumulated = Math.Min(49, accumulated + 50);
-        int halved = accumulated >> 1, award = halved;
+        int halved = accumulated >> 1;
         var rolls = effect.Rolls.ToList(); main = effect.MainSeedAfter;
-        if (Battle01EnemyPhysicalAttack.MainRoll(ref main, rolls, "exp-plus", 16) == 0) award++;
-        if (Battle01EnemyPhysicalAttack.MainRoll(ref main, rolls, "exp-minus", 16) == 0) award--;
-        award = Math.Max(1, award);
+        var awardRolls = new List<PhysicalRoll>();
+        int award = BattleRewards.Award(accumulated, true, ref main, awardRolls);
+        rolls.AddRange(awardRolls.Select(r => new Battle01MainRandomRoll(r.Purpose, r.Range, r.Before, r.After, r.Result)));
         int after = Math.Min(200, exp + award);
         if (after >= 100) throw new Battle01PhysicalAttackUnsupportedException("levelUp");
         return (effect with { Rolls = rolls.AsReadOnly() }, accumulated, halved, award, actor.WithCurrentExp((byte)after));
