@@ -24,24 +24,28 @@ public sealed class Battle01DefeatedTurnCompletionPolicy : Battle01TurnCompletio
 
 public sealed class Battle01PhysicalCompletionPolicy : Battle01TurnCompletionPolicy
 {
-    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false, bool allowsChesterCounter = false)
-    { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat; AllowsChesterCounter = allowsChesterCounter; }
+    private Battle01PhysicalCompletionPolicy(bool allowsAllyDefeat, bool allowsLeaderDefeat = false, bool allowsChesterCounter = false, bool allowsBowieCounter = false)
+    { AllowsAllyDefeat = allowsAllyDefeat; AllowsLeaderDefeat = allowsLeaderDefeat;
+        AllowsChesterCounter = allowsChesterCounter; AllowsBowieCounter = allowsBowieCounter; }
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalStrike { get; } = new(false);
     public static Battle01PhysicalCompletionPolicy ControlledFirstAllyDefeat { get; } = new(true);
     public static Battle01PhysicalCompletionPolicy ControlledChesterDefeatAfterFirstKill { get; } = new(true);
     public static Battle01PhysicalCompletionPolicy ControlledLeaderDefeatPending { get; } = new(true, true);
     public static Battle01PhysicalCompletionPolicy ControlledNonlethalChesterCounterAndExp { get; } = new(false, allowsChesterCounter: true);
+    public static Battle01PhysicalCompletionPolicy ControlledNonlethalBowieCounterAndExp { get; } = new(false, allowsBowieCounter: true);
+    internal bool AllowsBowieCounter { get; }
     internal bool AllowsAllyDefeat { get; }
     internal bool AllowsLeaderDefeat { get; }
     internal bool AllowsChesterCounter { get; }
-    public override string Id => ReferenceEquals(this, ControlledChesterDefeatAfterFirstKill)
+    public override string Id => AllowsBowieCounter ? "battle01-controlled-nonlethal-bowie-counter-exp-v1" :
+        ReferenceEquals(this, ControlledChesterDefeatAfterFirstKill)
         ? "battle01-controlled-chester-defeat-after-first-kill-v1" : AllowsChesterCounter ? "battle01-controlled-nonlethal-chester-counter-exp-v1" :
         AllowsLeaderDefeat ? "battle01-controlled-leader-defeat-pending-v1" : AllowsAllyDefeat
         ? "battle01-controlled-first-chester-defeat-v1" : "battle01-controlled-nonlethal-physical-strike-v1";
     internal static bool IsSupported(Battle01PhysicalCompletionPolicy? policy) =>
         ReferenceEquals(policy, ControlledNonlethalStrike) || ReferenceEquals(policy, ControlledFirstAllyDefeat) ||
         ReferenceEquals(policy, ControlledLeaderDefeatPending) || ReferenceEquals(policy, ControlledNonlethalChesterCounterAndExp) ||
-        ReferenceEquals(policy, ControlledChesterDefeatAfterFirstKill);
+        ReferenceEquals(policy, ControlledChesterDefeatAfterFirstKill) || ReferenceEquals(policy, ControlledNonlethalBowieCounterAndExp);
 }
 
 public sealed class Battle01HealingCompletionPolicy : Battle01TurnCompletionPolicy
@@ -118,7 +122,9 @@ public static class Battle01TurnCompletion
             ? ((ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike) &&
                     receipt.EnemyPhysicalAttack.Counterattack is null && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
                 (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp) &&
-                    receipt.EnemyPhysicalAttack.Counterattack is not null && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
+                    receipt.EnemyPhysicalAttack.Counterattack is { Actor.Index: 2 } && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
+                (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp) &&
+                    receipt.EnemyPhysicalAttack.Counterattack is { Actor.Index: 0 } && !receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is null) ||
                 (ReferenceEquals(receipt.Policy, Battle01PhysicalCompletionPolicy.ControlledFirstAllyDefeat) &&
                     receipt.EnemyPhysicalAttack.Counterattack is null &&
                     receipt.EnemyPhysicalAttack.DefeatedTarget && receipt.AllyDefeat is not null &&
@@ -445,7 +451,8 @@ public static class Battle01TurnCompletion
     {
         if (!Battle01PhysicalCompletionPolicy.IsSupported(policy))
             throw new ArgumentException("An explicit controlled physical completion policy is required.", "policy");
-        Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat, allowChesterCounter: policy.AllowsChesterCounter);
+        Battle01EnemyPhysicalAttack.ValidateDecision(decision, policy!.AllowsAllyDefeat,
+            allowChesterCounter: policy.AllowsChesterCounter, allowBowieCounter: policy.AllowsBowieCounter);
         RequireDefeatedWrapperReturn(current);
         Battle01AllyDefeatCleanup? cleanup = null;
         if (decision.DefeatedTarget) (current, cleanup) = ApplyAllyDefeatCleanup(current, decision, policy);
@@ -458,7 +465,7 @@ public static class Battle01TurnCompletion
         RequireEmptyKilledCleanup(current, "cleanup.after", cleanup?.DefeatedAlly);
         var after = RequireContinuingFactions(current, "outcome.after");
         var result = new Battle01InitializedState(current, current.FirstRound!.AdvanceCompletedPlayerTurn(),
-            new(decision.ActorIndex, decision.Counterattack is not null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp :
+            new(decision.ActorIndex, decision.Counterattack is not null ? policy! :
                 cleanup is null ? Battle01PhysicalCompletionPolicy.ControlledNonlethalStrike : policy!,
                 before, after, current.TurnCompletion, RoundNumber: current.FirstRound.RoundNumber,
                 EnemyPhysicalAttack: decision, AllyDefeat: cleanup));

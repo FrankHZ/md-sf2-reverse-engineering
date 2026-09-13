@@ -10,6 +10,20 @@ repository README, and the committed planner. Local private input layout remains
 Do not replace planner output with a remembered command list. Run only the affected partitions plus
 any explicitly justified semantic dependency.
 
+Godot behavior, UI state and input acceptance use observations from the running instance: reuse
+native probes or an established debug/state interface to read Application snapshots, presenter
+projections, relevant node properties/geometry/visibility/focus, input outcomes and process errors.
+Do not add screenshots or perform image-based acceptance; older image recipes and counts below
+are retained context, not instructions to repeat those checks. Preserve completed runs without
+replaying them for this change. Identify a concrete missing observation before extending a probe;
+a remote debug server is not yet an established verification dependency.
+
+Reuse the same verified Godot installation, owned project and running instance. Restart or open
+another instance only for a concrete failure, a necessary code/import restart, observed state contamination,
+or a test of startup, export or cleanup itself; explain and bound that exception. Do not create a
+project copy or re-extract an engine per check. Keep other writers' writable state isolated, and
+do not introduce a debug framework to satisfy this default.
+
 ## Locked .NET Workflow
 
 Before any SDK command, including `--info` or `nuget locals`, load the host's explicit shared CLI
@@ -474,29 +488,47 @@ planner, run one full managed suite and official locked Godot, preserve any comp
 and rerun only their failed/newly invalidated owners. Main-gate owns normal public verification
 and independent integration. This boundary ends at Bowie104 cancellation.
 
-For the second post-heal five-survivor generation, use `FullyQualifiedName~SecondFiveSurvivor`
-with the existing first-round, thinking-history and healing owners. The presenter theory adds the
-generated R14 view without changing its old rows. The required-input Content test
-`SecondFiveSurvivorRoundUsesTheRealEarlyHealAndBowieApproach` starts at actual initial Sarah EXP0,
-checks the47-stop/cost12 route and entire104 cancellation, generates R14 from105, completes actual
-128/106 and requires the unchanged133 `attack.counterProfile` refusal. Authored Application terrain
-costs8; it must not be mistaken for the registered-input route.
+For the second post-heal five-survivor generation and Bowie counter, use the existing first-round,
+thinking-history and healing owners. Required-input Content test
+`PostHealBowieCounterUsesTheRealEarlyHealApproachAndSecondFiveSurvivorRound` starts at actual Sarah
+EXP0, checks47 stops/cost12 and entire104 cancellation, generates R14 from105 and completes128/106.
+It preserves the Chester-only Domain refusal, then verifies the current explicit Bowie permission:
+133 primary HP9→6, counter enemy HP5→3,10 EXP63→73, one107 receipt, fourteen draws ending33561234,
+copy0134 and actual R14/raw4 Bowie movement/confirm/cancel. Authored Application terrain costs8;
+it does not substitute for the registered route's terrain, target or award assertions.
 
-Authenticate both generation/main links, every prior death and HEAL HP/MP/EXP before-image,
-all seven early accounting inputs, complete64 slots/ties/sentinels, phase/raw/mask/flags and
-48-entry AI channels. Wrong or missing/duplicated history, revived/placed corpses, altered approach
-and arbitrary later rounds must fail without mutation. A locally successful generation with a
-late accounting mismatch must publish none of its order, seed or activation state.
+Use focused filter `FullyQualifiedName~Battle01EnemyPhysicalAttackTests|FullyQualifiedName~Battle01TurnCompletionTests|FullyQualifiedName~Battle01EnemyStandbyTests|FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests|FullyQualifiedName~PrivateBattle01PresenterTests`.
+The first substring includes the Application owner. Require `SF2_REQUIRE_PRIVATE_TESTS=1` and zero
+skipped owning positives. Tests authenticate both counter roles, policy identity, damage/EXP before
+images, terrain, RNG/copy and selected-target memory; both generation links, HEAL and old deaths;
+and all seven early accounting inputs. Prove local counter completion succeeds before a final
+accounting mismatch rejects whole106. Wrong/stale/foreign/repeated requests, missing/swapped effects,
+primary double, lethal counter and level100+ remain rejected.
 
-Use fresh `local/second-five-survivor-round/` outputs and the retained environment. The committed
-planner selects the locked full managed suite and official Godot gate for the shared generation
-change; run each once, retaining any completed failure and correcting only its failed/newly
-invalidated owners. Main-gate retains normal public verification. No new H3/full Python gate is
-implied. Native uses the existing Sarah mode plus probe-only
-`SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1`, keeps the original63 PNG prefix by bytes and adds
-nine original-resolution-reviewed frames. Retain the other225+47 accepted PNGs and completed
-regression evidence without replay solely for a new branch. Actual dispatch stops at106/Unsupported,
-with no next-player move test invented to satisfy the planned alternative endpoint.
+Use fresh `local/post-heal-bowie-counter/<run>/` outputs, the retained fixed SDK/shared CLI home,
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and existing worktree caches. The clean committed planner
+selects the locked full managed suite and official Godot gate for the shared reducer/policy change;
+run each once, retaining completed failures and correcting only failed/newly invalidated owners.
+Main-gate retains normal public verification. No new H3/full Python gate is implied.
+
+Native uses Sarah mode plus `SF2_BATTLE01_SECOND_FIVE_SURVIVOR_REVIEW=1` and probe-only
+`SF2_BATTLE01_BOWIE_COUNTER_REVIEW=1`. Its completed76-observation run retains actual facade105,
+generation14,106 and atomic107 states in `captures/receipt.json`. The probe restores the exact
+pre-STAY selection, sends Godot physical key events and compares the entire resulting session with
+the independently invoked API path. Observations73–76 read actual Bowie control, a legal movement
+preview, confirmation and cancellation; the whole107 ready snapshot is restored. The presenter
+retains both ordered HP effects and Bowie's10 EXP, with live phase/unit positions, status, controls
+and accounting text measured from the running instance. Node checks enforce visible line counts,
+logical-canvas bounds and non-overlapping label rectangles; the receipt records accounting width
+and visible lines. `process.json` and its logs retain errors, exit and cleanup status.
+
+These existing state/input records answer this slice's acceptance questions without another native
+run. Retain completed image artifacts and the old terminal refusal only as historical evidence;
+do not create or inspect more screenshots. The current probe still emits images when run, so a
+future required run must first disable that output in the owning test while preserving its state
+and input checks. No remote-debug connection or focus observation was performed here; neither is
+claimed as verified. No debug framework or production interface is added. The probe flag selects
+no production combat behavior, and production presenter/dispatcher remain unchanged.
 
 For fresh Granseal entry keep all new outputs in `local/granseal-entry` (or a fresh explicitly selected
 replacement). Run the locked solution/full .NET gate in an archived tracked remake under that root.

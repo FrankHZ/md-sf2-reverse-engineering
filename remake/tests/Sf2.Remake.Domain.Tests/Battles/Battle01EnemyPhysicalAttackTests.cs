@@ -7,6 +7,70 @@ namespace Sf2.Remake.Domain.Tests.Battles;
 
 public sealed class Battle01EnemyPhysicalAttackTests
 {
+    internal static Battle01InitializedState PostHealBowieCounterBoundary()
+    {
+        var generated = Battle01FirstRound.EnterNext(Battle01FirstRoundTests.PostHealBowieBoundary());
+        return Battle01EnemyPhysicalAttack.CompleteNext(generated, 128, Policy);
+    }
+
+    internal static Battle01InitializedState PostHealBowieCounterCompleted() => Battle01EnemyPhysicalAttack.CompleteNext(
+        PostHealBowieCounterBoundary(), 133, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp);
+
+    [Fact]
+    public void PostHealBowieCounterUsesItsOwnPermissionAndOneEnemyReceipt()
+    {
+        var before = PostHealBowieCounterBoundary(); string frozen = Battle01PlayerHealingTests.Json(before);
+        Assert.Equal("attack.counterProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(before, 133, Battle01PhysicalCompletionPolicy.ControlledNonlethalChesterCounterAndExp)).ParamName);
+        Assert.Equal("attack.counter", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(before, 133, Policy)).ParamName);
+        var after = Battle01EnemyPhysicalAttack.CompleteNext(before, 133, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp);
+        var receipt = after.TurnCompletion!; Assert.Same(before.TurnCompletion, receipt.Previous);
+        var decision = receipt.EnemyPhysicalAttack!; var counter = decision.Counterattack!;
+        Assert.Equal((106, 107), (Battle01EnemyPursuitTests.Receipts(before).Count(), Battle01EnemyPursuitTests.Receipts(after).Count()));
+        Assert.Same(Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp, receipt.Policy);
+        Assert.Equal("battle01-controlled-nonlethal-bowie-counter-exp-v1", receipt.Policy.Id);
+        Assert.Equal((133, 0, 0, 133), (decision.ActorIndex, decision.TargetIndex, counter.Actor.Index, counter.Target.Index));
+        Assert.Same(decision.Effect.AfterStats, counter.Actor.Stats); Assert.Same(decision.Actor.Stats, counter.Effect.BeforeStats);
+        Assert.Equal(new[] { 0, 133 }, new[] { decision.Effect.Reaction!.TargetIndex, counter.Effect.Reaction!.TargetIndex });
+        Assert.Equal(decision.Actor.Stats.HpCurrent - counter.Effect.Damage, after.Roster.Single(u => u.Index == 133).Stats.HpCurrent);
+        Assert.Equal((byte?)(63 + counter.AwardedExp), after.Roster[0].Stats.CurrentExp);
+        Assert.Equal(new Battle01FactionCounts(2, 3), receipt.BeforeAfterTurn); Assert.Equal(receipt.BeforeAfterTurn, receipt.AfterAfterTurn);
+        Assert.Equal((14, (byte)4, 0), (after.FirstRound!.RoundNumber, after.FirstRound.CurrentTurnOffset, after.FirstRound.CurrentCandidate!.Value.CombatantIndex));
+        Assert.Null(after.FirstControl); Assert.Equal((byte)0, after.AiLastTargets[5]);
+        Assert.Equal(before.CurrentGold, after.CurrentGold); Assert.Equal(before.AiMemory, after.AiMemory);
+        Assert.Equal(before.Roster[1].Stats, after.Roster[1].Stats); Assert.Equal(before.Roster[2], after.Roster[2]);
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(before));
+        Battle01PlayerPhysicalAttack.RequireAccountingInputs(after, 0, 0, 0, 0, 0, 0, 0);
+        // The Bowie permission cannot silently enable the previously separate Chester role.
+        var chester = CounterattackBoundary();
+        Assert.Equal("attack.counterProfile", Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() =>
+            Battle01EnemyPhysicalAttack.CompleteNext(chester, 130, Battle01PhysicalCompletionPolicy.ControlledNonlethalBowieCounterAndExp)).ParamName);
+    }
+
+    [Theory]
+    [InlineData("exp", "attack.actorExpProfile")][InlineData("level", "attack.levelUp")]
+    [InlineData("class", "attack.targetProfile")][InlineData("status", "attack.targetProfile")]
+    [InlineData("item", "attack.targetProfile")][InlineData("terrain", "attack.targetTerrain")]
+    [InlineData("lethal", "attack.lethal")][InlineData("deadActor", "attack.counterProfile")]
+    [InlineData("permission", "attack.counterProfile")]
+    public void PostHealBowieCounterRejectsUnsupportedProfilesWithoutEffects(string mutation, string field)
+    {
+        var before = PostHealBowieCounterBoundary(); string frozen = Battle01PlayerHealingTests.Json(before);
+        var actor = before.Roster[0]; var target = before.Roster.Single(u => u.Index == 133).WithPosition(new(11, 10));
+        var stats = actor.Stats;
+        var changed = new Battle01Stats(stats.Level, stats.HpMax, mutation == "deadActor" ? (ushort)0 : stats.HpCurrent,
+            stats.MpMax, stats.MpCurrent, stats.Attack, stats.Defense, stats.Agility, stats.Move,
+            mutation == "status" ? (ushort)1 : stats.Status,
+            mutation == "item" ? new ushort[] { 127, 0, 127, 127 } : stats.Items, stats.Spells,
+            mutation == "exp" ? null : mutation == "level" ? (byte)99 : stats.CurrentExp, stats.CurrentKills, stats.CurrentDefeats);
+        actor = new(actor.Deployment, changed, mutation == "class" ? (byte)4 : actor.ClassId, actor.EnemySource, actor.AiBitfield, actor.Position);
+        if (mutation == "lethal") target = target.WithStats(target.Stats.WithCurrentHp(1));
+        Assert.Equal(field, Assert.Throws<Battle01PhysicalAttackUnsupportedException>(() => Battle01EnemyPhysicalAttack.ResolveCounter(
+            actor, target, mutation == "terrain" ? (byte)2 : (byte)0, 0x042E1234, allowChesterCounter: false, allowBowieCounter: mutation != "permission")).ParamName);
+        Assert.Equal(frozen, Battle01PlayerHealingTests.Json(before));
+    }
+
     internal static Battle01InitializedState Enemy128DefeatBoundary(byte? sarahExp = null) =>
         FirstAllyDefeatBoundary(bowieDefeats:0,afterFirstKill:true,sarahExp:sarahExp);
 
@@ -636,16 +700,19 @@ public sealed class Battle01EnemyPhysicalAttackTests
     }
 
     [Theory]
-    [InlineData("double")]
-    [InlineData("counter")]
-    [InlineData("lethal")]
-    public void UnsupportedResolutionRejectsBeforeAnyExternalStateChanges(string boundary)
+    [InlineData("double", false)]
+    [InlineData("counter", false)]
+    [InlineData("lethal", false)]
+    [InlineData("double", true)]
+    [InlineData("lethal", true)]
+    public void UnsupportedResolutionRejectsBeforeAnyExternalStateChanges(string boundary, bool allowCounter)
     {
         var state = AttackBoundary(); string frozen = JsonSerializer.Serialize(state); var target = state.Roster[0].Stats;
         bool found = false;
         for (uint seed = 0; seed <= ushort.MaxValue && !found; seed++)
         {
-            try { Battle01EnemyPhysicalAttack.Resolve(boundary == "lethal" ? 100 : 8, target, 230, seed << 16 | 0x1234, 0, new(11, 14), new(11, 15)); }
+            try { Battle01EnemyPhysicalAttack.ResolveSingleStrike(boundary == "lethal" ? 100 : 8, target, 230,
+                seed << 16 | 0x1234, 0, new(11, 14), new(11, 15), 32, 32, 1, allowCounter: allowCounter); }
             catch (Battle01PhysicalAttackUnsupportedException error) { found = error.ParamName == "attack." + boundary; }
         }
         Assert.True(found); Assert.Equal(frozen, JsonSerializer.Serialize(state));
