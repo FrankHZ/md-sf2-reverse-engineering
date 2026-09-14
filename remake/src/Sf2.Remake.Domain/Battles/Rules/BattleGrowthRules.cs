@@ -38,8 +38,10 @@ internal static class BattleGrowthRules
             if (loadout is null) throw new BattleRuleException("growth-spellbook", "actor.sourceLoadout", true);
             byte[] packed = loadout.Spells.ToArray();
             int slot = Array.FindIndex(packed, value => (value & 63) == (learned.PackedSpell & 63));
+            // Source LearnSpell leaves a same/higher known rank unchanged and reports no success.
+            bool alreadyKnown = slot >= 0 && (packed[slot] >> 6) >= (learned.PackedSpell >> 6);
             if (slot < 0) slot = Array.FindIndex(packed, value => (value & 63) == 63);
-            if (slot >= 0)
+            if (slot >= 0 && !alreadyKnown)
             {
                 packed[slot] = learned.PackedSpell;
                 loadout = new(loadout.Items, packed);

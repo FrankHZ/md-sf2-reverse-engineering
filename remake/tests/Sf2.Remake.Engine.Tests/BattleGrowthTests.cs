@@ -6,15 +6,16 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleGrowthTests
 {
-    private static BattleActorState Actor(byte exp = 99, byte level = 1, bool learn = false)
+    private static BattleActorState Actor(byte exp = 99, byte level = 1, bool learn = false,
+        byte[]? packedSpells = null, SpellRef[]? knownSpells = null)
     {
         var curve = Array.AsReadOnly(Enumerable.Repeat(new StatGrowthFraction(128, 128), 29).ToArray());
         var growth = new BattleGrowthDefinition(4, 3,
             new StatGrowth[] { new(10, 30, curve), new(4, 24, curve), new(5, 25, curve), new(3, 23, curve), new(6, 26, curve) },
             learn ? [new(2, 64)] : [], new Dictionary<byte, SpellRef> { [0] = new("heal", 1), [64] = new("heal", 2) });
         var definition = new BattleActorDefinition(new("priest"), BattleClassRule.UnpromotedPriest,
-            level, 10, 4, 8, 3, 6, false, 5, [new("heal", 1)],
-            sourceLoadout: new([128, 127, 127, 127], [0, 63, 63, 63]), growth: growth);
+            level, 10, 4, 8, 3, 6, false, 5, knownSpells ?? [new("heal", 1)],
+            sourceLoadout: new([128, 127, 127, 127], packedSpells ?? [0, 63, 63, 63]), growth: growth);
         var deployment = new BattleDeploymentDefinition(definition, BattleFaction.Ally, 1,
             BattleControl.Player, null, new MapPosition(1, 1));
         return new(deployment, 7, 2, exp, deployment.Position, 0, 0);
@@ -65,5 +66,50 @@ public sealed class BattleGrowthTests
         Assert.Equal(64, after.SourceLoadout!.Spells[0]);
         Assert.Equal(0, before.SourceLoadout!.Spells[0]);
         Assert.Equal(before.SourceLoadout.Items, after.SourceLoadout.Items);
+        Assert.Equal(64, Assert.Single(effects, effect => effect.Kind == "spell-learned").After);
+    }
+
+    [Theory]
+    [InlineData(64, 2)]
+    [InlineData(128, 3)]
+    public void SameOrHigherKnownRankRetainsBothSpellRepresentationsWithoutALearnedEvent(byte packed, byte rank)
+    {
+        var known = Enumerable.Range(1, rank).Select(level => new SpellRef("heal", (byte)level)).ToArray();
+        var before = Actor(learn: true, packedSpells: [packed, 63, 63, 63], knownSpells: known);
+        uint seed = 0x1234;
+        List<BattleEffect> effects = [];
+        var after = BattleGrowthRules.Award(before, 24, ref seed, effects);
+        Assert.Equal(before.SourceLoadout!.Spells, after.SourceLoadout!.Spells);
+        Assert.Equal(before.Spells, after.Spells);
+        Assert.DoesNotContain(effects, effect => effect.Kind == "spell-learned");
+        Assert.Equal(2, after.Level); Assert.Equal((byte)23, after.Exp);
+    }
+
+    [Fact]
+    public void NewSpellUsesTheFirstEmptySlotAndRetainsUnrelatedSpells()
+    {
+        SpellRef[] known = [new("existing-a", 1), new("existing-b", 1)];
+        var before = Actor(learn: true, packedSpells: [1, 63, 2, 63], knownSpells: known);
+        uint seed = 0x1234;
+        List<BattleEffect> effects = [];
+        var after = BattleGrowthRules.Award(before, 24, ref seed, effects);
+        Assert.Equal(new byte[] { 1, 64, 2, 63 }, after.SourceLoadout!.Spells);
+        Assert.Equal(new SpellRef[] { known[0], known[1], new("heal", 1), new("heal", 2) }, after.Spells);
+        Assert.Equal(64, Assert.Single(effects, effect => effect.Kind == "spell-learned").After);
+        Assert.Equal(new byte[] { 1, 63, 2, 63 }, before.SourceLoadout!.Spells);
+    }
+
+    [Fact]
+    public void FullSpellbookRetainsBothRepresentationsWithoutBlockingLevelGrowth()
+    {
+        SpellRef[] known = [new("existing-a", 1), new("existing-b", 1), new("existing-c", 1), new("existing-d", 1)];
+        var before = Actor(learn: true, packedSpells: [1, 2, 3, 4], knownSpells: known);
+        uint seed = 0x1234;
+        List<BattleEffect> effects = [];
+        var after = BattleGrowthRules.Award(before, 24, ref seed, effects);
+        Assert.Equal(before.SourceLoadout!.Spells, after.SourceLoadout!.Spells);
+        Assert.Equal(before.Spells, after.Spells);
+        Assert.DoesNotContain(effects, effect => effect.Kind == "spell-learned");
+        Assert.Equal(2, after.Level); Assert.Equal((byte)23, after.Exp);
     }
 }
