@@ -273,6 +273,28 @@ both signed destination delta polarities with bit-15 wait/bypass. An original-fi
 retain those measured RAM/cursor/callback facts without promoting them to a presentation or map-motion
 design. Normal-story reachability, full animation/visibility/presentation, and collision/pathfinding/
 persistence remain Unknown. A remake MAY define its own entity-state interface independently.
+
+The [Map21 lookup clarification](../../research/map3-castle-battle-unlock.md#map-21-entity-135-unchecked-lookup-and-conditional-continuation)
+adds a **Confirmed** conditional source boundary, not new natural-route runtime evidence.
+`GetEntityAddressFromCharacter` MUST NOT be described as a missing-entity search or a skip-on-absence
+service: it masks the selector word, translates its signed-byte encoding into an identity-table
+offset, reads one byte, and derives a record address with a five-bit word shift. A zero table byte
+selects physical slot0; `0xFF` is not rejected and produces an address outside the normal cleared
+entity records. These distinct states MUST NOT be collapsed into a generic absent-entity no-op.
+Under Map21's default population with no intervening table write, alias135's unassigned table byte
+remains zero; `setFacing 135,DOWN` writes slot0's facing and calls the sprite service. Its non-ally
+selector bypasses the dead-ally HP skip. F401 remains conditional on prior action-wait/facing
+completion, and the surrounding F256 write remains conditional on the F608-set/F256-clear handler
+branch and whole-script return. No importer or reference driver may skip the facing command or force
+those flags and report that shortcut as original evidence.
+
+Map3's post-hide alias142 is a different lifecycle state: `HideEntity` replaces matching mappings
+with `0xFF`, and the F603 `MoveEntityOutOfMap` chain has its own unchecked table/position consumers.
+A remake MAY define a safe representation or an explicit unsupported boundary for these original
+memory effects; it MUST distinguish that policy from original behavior and MUST NOT infer player-slot
+fallback for removed142. This clarification does not prescribe raw memory access in an engine,
+close natural call-state or presentation Unknowns, or admit another runtime scenario.
+
 Map-script imports MUST separately retain the six source-named bridge forms `setActscriptWait`,
 `setActscript`, `customActscriptWait`, `customActscript`, `entityActionsWait`, and `entityActions` in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
