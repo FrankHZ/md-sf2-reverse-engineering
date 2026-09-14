@@ -1,11 +1,35 @@
 extends "res://probes/engine_castle_tower_observation.gd"
+const OBSERVATION_SIZE := Vector2i(960, 640)
 var admission_records: Array = []
 var white_seen := false
 var mosaic_draws := 0
 var shiver_draws := 0
 var load_seen := false
 var before_seen := false
+var battle_loaded: Dictionary = {}
 var battle_ready: Dictionary = {}
+
+func run() -> void:
+    # Headless --resolution can leave the actual root viewport at 64x64.
+    root.size = OBSERVATION_SIZE
+    await process_frame
+    await super.run()
+
+func valid_projection(s: Dictionary, with_preview: bool) -> bool:
+    var viewport: Dictionary = s.viewport
+    var map: Dictionary = s.mapViewport
+    if viewport.width != OBSERVATION_SIZE.x or viewport.height != OBSERVATION_SIZE.y:
+        return false
+    var screen := Rect2(viewport.x, viewport.y, viewport.width, viewport.height)
+    var board := Rect2(map.x, map.y, map.width, map.height)
+    if not board.has_area() or not screen.encloses(board) or s.zoom < 1.0:
+        return false
+    if with_preview:
+        if s.previewRect == null or not s.previewInsideMap: return false
+        var preview: Dictionary = s.previewRect
+        var cursor := Rect2(preview.x, preview.y, preview.width, preview.height)
+        if not cursor.has_area() or not board.encloses(cursor): return false
+    return true
 
 func state() -> Dictionary:
     view = host.get_node_or_null("ExplorationSessionView")
@@ -36,7 +60,8 @@ func admission_settle(label: String) -> Dictionary:
             var mounted = host.get_node_or_null("ExplorationSessionView/BattleSessionView")
             if mounted != null:
                 var projected: Dictionary = JSON.parse_string(mounted.call("ReadObservationJson"))
-                if projected.stage != null or projected.boardChildren <= 0:
+                battle_loaded = projected
+                if projected.stage != null or projected.boardChildren <= 0 or not valid_projection(projected, false):
                     issue = "load-service-projection-or-early-input"
                     return s
         if s.wait == "DialogueWait" and not seen_texts.has(s.token):
@@ -68,7 +93,7 @@ func finish(s: Dictionary) -> void:
     if issue == "":
         if not before_seen or not white_seen or mosaic_draws <= 0 or shiver_draws <= 0 or not load_seen:
             issue = "before-battle-presentation-services"
-        elif s.stage != "Movement" or s.round != 1 or not s.storyFlags.has(451.0) or s.boardChildren <= 0 or not s.previewInsideMap:
+        elif battle_loaded.is_empty() or s.stage != "Movement" or s.round != 1 or not s.storyFlags.has(451.0) or s.boardChildren <= 0 or not valid_projection(s, true):
             issue = "first-player-projection"
         else:
             await key(KEY_ENTER)
@@ -78,9 +103,9 @@ func finish(s: Dictionary) -> void:
             await key(KEY_ESCAPE)
             await process_frame
             s = state()
-            if s.stage != "Movement" or s.mainSeed != battle_ready.mainSeed or s.sessionId != castle_identity:
+            if s.stage != "Movement" or s.mainSeed != battle_ready.mainSeed or s.sessionId != castle_identity or not valid_projection(s, true):
                 issue = "actual-first-cancel"
     var file = FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".admission.json", FileAccess.WRITE)
-    file.store_string(JSON.stringify({"issue":issue,"records":admission_records,"castle":castle_records,"whiteSeen":white_seen,"mosaicDraws":mosaic_draws,"shiverDraws":shiver_draws,"loadSeen":load_seen,"ready":battle_ready}, "  "))
+    file.store_string(JSON.stringify({"issue":issue,"expectedViewport":{"width":OBSERVATION_SIZE.x,"height":OBSERVATION_SIZE.y},"records":admission_records,"castle":castle_records,"whiteSeen":white_seen,"mosaicDraws":mosaic_draws,"shiverDraws":shiver_draws,"loadSeen":load_seen,"loaded":battle_loaded,"ready":battle_ready}, "  "))
     file.close()
     await super.finish(s)

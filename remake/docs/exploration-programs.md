@@ -331,7 +331,13 @@ No observer supplies an expected endpoint, completion flag, entity alias or sess
 
 For complete Battle01 admission, keep those same retained environment and R1 input selections and
 replace the script with `res://probes/engine_battle01_admission_observation.gd`. Run fixed60 and30
-FPS. The observer reuses the opening/castle route and reads the existing PlayerReady static input
+FPS. The observer explicitly sets the root window to 960×640 before starting the route; headless
+`--resolution` alone can leave the actual viewport at 64×64. Success requires the observed 960×640
+viewport at battle load, first control and after cancel, a positive map viewport inside it with zoom
+at least 1, and a positive preview inside the map when control is available. The adjacent
+`.admission.json` retains the expected size and actual loaded/ready geometry; the main output retains
+the final geometry. A completed 64×64 run is insufficient for this projection acceptance.
+The observer reuses the opening/castle route and reads the existing PlayerReady static input
 plan only for navigation. Its adjacent `.admission.json` records actual effects, load-before-input,
 first battle projection and real confirmation/cancel. Require exit0, `passed: true`, nonzero mosaic
 and shiver draws, white/load observations and no Godot script/process errors. Direct comparisons use:
