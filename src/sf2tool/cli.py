@@ -2235,7 +2235,11 @@ def dispatch(args: argparse.Namespace) -> None:
             )
         )
     elif args.command == "h3" and args.h3_command == "original-reference-replay-scenario-api":
-        print_record(run_original_reference_scenario(preflight_only=args.preflight_only))
+        receipt = run_original_reference_scenario(preflight_only=args.preflight_only)
+        print_record(receipt)
+        if receipt["status"] != "PASS":
+            failure = receipt["failure"]
+            raise ValueError(f"{failure['code']}: {failure['actual']}")
     elif args.command == "h3" and args.h3_command == "rng":
         print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
     elif args.command == "h3" and args.h3_command == "random-services":
