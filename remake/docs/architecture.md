@@ -154,9 +154,28 @@ not complete private battle continuation or program migration, or close A1–A8.
 | `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/physical/reward/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
 | `Sf2.Remake.Application` | thin `Runtime.GameSession`, common contracts, independent command dispatcher and automatic battle advancer, typed scenario port | Domain |
 | `Sf2.Remake.Content` | authored and selected private input admission, source definition resolution, numeric and capability validation | Application and Domain |
-| `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, Godot; explicit legacy startup also consumes Reference |
+| `Sf2.Remake.Godot` | ordinary GameRoot startup, common battle input/view projection and lifecycle; read-only state diagnostics | Application, Content, Domain and Godot only |
+| `Sf2.Remake.Reference.Godot` | explicit Map3/legacy composition and remaining private programs/observations, including old smoke drivers | Reference plus Application, Content, Domain and Godot; no ordinary-game dependency |
 
 Dependencies point inward. Tests and repository gate hosts are consumers, not production dependencies.
+
+## Ordinary and Reference Godot Hosts
+
+[`game/Main.tscn`](../game/Main.tscn) binds [`GameRoot`](../game/src/GameRoot.cs). Its actual compile
+items are the ordinary composition and common battle views, with only the three production project
+references. Default, `--authored-package` and `--private-battle-start` all use the common source/session
+path. Unknown, duplicate, conflicting and missing-path options fail before any session publication.
+The external GDScript observer owns `SF2_OBSERVATION_*` settings; the game never parses diagnostic
+case/output/shape options. The read-only view endpoint remains ordinary diagnostic support.
+
+[`reference/game/Main.tscn`](../reference/game/Main.tscn) binds the retained Map3Root in
+[`Sf2.Remake.Reference.Godot`](../reference/game/Sf2.Remake.Reference.Godot.csproj). Its legacy source,
+synthetic resource and smoke drivers are outside the ordinary project. Existing Godot reference tests,
+public-synthetic import/export verification and private native recipes target that explicit project.
+Normal adapter CI builds the ordinary project; a separate reference-host job builds these remaining
+callers. Export configuration excludes ordinary probes; a complete ordinary package/export is not
+claimed. G3/G4 remain with their actual program/content consumers; G6 and private step3 remain with
+the player action interface. No second gameplay scheduler or state authority was introduced.
 
 ## State and Command Flow
 
@@ -222,7 +241,9 @@ record ordinals define universal gameplay legality.
 
 ### Godot host
 
-`Map3Root` should converge on profile selection, dependency construction, lifecycle, and wiring.
+The ordinary `GameRoot` only selects a common source and attaches `BattleSessionView`.
+The separate reference host’s `Map3Root` still needs to converge on composition and lifecycle as
+its actual gameplay consumers migrate.
 Internal replaceable collaborators may own:
 
 - `Map3InputAdapter`: public-synthetic `InputMap` actions to semantic Application commands plus
@@ -237,7 +258,8 @@ Internal replaceable collaborators may own:
 - `PrivateMap3SmokeDriver`: the deterministic private command script, four stable observation markers,
   smoke-only failure projection, and quit over an already-started session (**implemented**).
 
-Profile selection and composition intentionally remain in `Map3Root`. Public startup consumes tracked
+Legacy profile selection and composition remain in the explicit reference host’s `Map3Root`;
+ordinary `GameRoot` does not compile or call it. Reference public startup consumes tracked
 Godot bytes and the public typed admission result, while private startup alone owns the local path,
 timed source wrapper, and private typed admission result. Unifying those seams would require a profile
 discriminant, optional receipt, callback, or new cross-profile result protocol without removing a real

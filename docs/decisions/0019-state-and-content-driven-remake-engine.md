@@ -120,8 +120,9 @@ The full invariant/adapter-fault lifecycle from A8 is not claimed complete.
 The [Godot view](../../remake/game/src/Battles/BattleSessionView.cs) adapts actual keys to common
 commands; its independent [projection](../../remake/game/src/Battles/BattlePresentation.cs) derives HUD
 and actor markers from semantic results. No-argument local startup selects the yard package;
-`--authored-package <path>` selects another supported authored package. Explicit old profile arguments
-retain the temporary reference entry; a running session never switches authorities. Authored package
+`--authored-package <path>` selects another supported authored package; `--private-battle-start <path>`
+selects the common private source. Both bind the ordinary GameRoot. Legacy profile arguments belong
+to the separate `remake/reference/game` project; a running session never switches authorities. Authored package
 export/packaging is not yet claimed. The [reference inventory](../../remake/reference/README.md)
 records actual legacy consumers, controlled-data ownership and M2/M3 removal points. Production project
 dependencies do not include that assembly; Engine.Tests builds only Domain/Application/Content.
@@ -725,6 +726,33 @@ values, and natural Map3→Battle01 program/presentation continuity. Resolve a n
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.
 M3's pending-admission/map programs and M4's recovery/return consumers still prevent deleting the
 legacy startup binding/session. M2, A1–A8 and8C/H4 remain incomplete.
+
+## Ordinary Godot Host Boundary
+
+G1/G2/G5 from the [Godot audit](../../remake/docs/godot-game-audit.md) are implemented at the actual
+project/scene/caller boundary. Ordinary `game/Main.tscn` instantiates `GameRoot`, whose compile graph
+contains the common view/composition and only Domain/Application/Content references. No Reference,
+legacy Map3 composition or smoke driver is required by this game build. Default and explicit authored
+or private-common options use the common session; duplicate, conflicting, unknown and incomplete
+options reject before source admission. The external observer owns its `SF2_OBSERVATION_*` diagnostic
+settings rather than passing them through game selection.
+
+The explicit `reference/game` project builds `Sf2.Remake.Reference.Godot` and retains the actual old
+Map3Root, private program/action/return/presentation callers and smoke drivers. Their source behavior
+remains bounded legacy work; the [caller inventory](../../remake/reference/README.md#private-startup-callers-and-removal-boundaries)
+continues to govern retirement. The old Godot tests and public-synthetic verification tool now bind
+that project. Ordinary adapter and reference-host builds are separate CI/planner partitions. No new
+state authority, generic command framework, engine behavior or verification-test suite was introduced.
+
+**Confirmed (build and direct native observation):** evaluated compile/project items and ordinary
+assembly references establish the dependency boundary. Actual process launches observe default,
+explicit authored/private-common, unknown, missing, duplicate and conflicting arguments; existing
+input/state observations exercise continuous common private play and the retained explicit reference
+smoke. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-and-reference-host-startup)
+provides reproduction commands. Ordinary export configuration excludes probes, while complete
+ordinary package/export contents remain unverified. G3/G4 follow actual program/content consumers;
+G6 and private step3 equipment/action/reward stay with the player action interface. Natural Map3
+programs, outcome/return and full ADR0009/0010 remain incomplete.
 
 ## Evidence used and its limits
 

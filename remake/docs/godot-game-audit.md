@@ -1,6 +1,8 @@
 # Godot Game Host Audit
 
-Status: findings recorded; remediation order below is proposed for independent main-gate review.
+Status: G1/G2/G5 are resolved at the [ordinary/reference host boundary](./architecture.md#ordinary-and-reference-godot-hosts).
+The findings below describe the inspected Git object. G3/G4 remain with their actual consumers; G6
+and private step3 remain with the player action interface.
 
 This is a static review of accepted commit `7a95585282a7bdbdccc929ad9874d10e6ca60f92`, tree
 `0abc464b6c8a325333428e3ebd857abc85cbdd34`. Its game and engine sources are identical to #413,
@@ -27,10 +29,10 @@ The two current common-entry defects below are separate from that known migratio
 ### G1 — Default entry changes when unrelated user arguments are present
 
 **Confirmed; current common startup, correction priority.**
-[Map3Root](../game/src/Map3Root.cs), lines 38–84, selects the default authored battle only when the
+[Map3Root](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7a95585282a7bdbdccc929ad9874d10e6ca60f92/remake/game/src/Map3Root.cs), lines 38–84, selects the default authored battle only when the
 user-argument array is empty, or the exact `--authored-package` option exists. Every other argument
 list without the exact private-start option reaches the legacy parser. That
-[parser](../game/src/Map3RuntimeProfileSelection.cs), lines 238–242 and 290–298, ignores unknown
+[parser](../reference/game/src/Map3RuntimeProfileSelection.cs), lines 238–242 and 290–298, ignores unknown
 options and defaults to PublicSynthetic when no recognized private/profile option exists.
 
 For example, user arguments `--authored-pakcage example.json` select the legacy synthetic route;
@@ -48,15 +50,15 @@ framework is required.
 ### G2 — The scene and game assembly still couple common play to the reference host
 
 **Confirmed; existing migration debt with a build and entry boundary still to close.**
-[Main.tscn](../game/Main.tscn), lines 3–6, always instantiates Map3Root.
-[The Godot project](../game/Sf2.Remake.Godot.csproj), lines 8–14, directly references both production
+[Main.tscn](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7a95585282a7bdbdccc929ad9874d10e6ca60f92/remake/game/Main.tscn), lines 3–6, always instantiates Map3Root.
+[The Godot project](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7a95585282a7bdbdccc929ad9874d10e6ca60f92/remake/game/Sf2.Remake.Godot.csproj), lines 8–14, directly references both production
 projects and `Sf2.Remake.Reference`. The current architecture explicitly acknowledges that reference
 consumer, so this is not a new dependency secretly introduced by #413. It does mean that the common
 game executable still requires the reference implementation to build.
 
-The root file is 1,014 lines and [PrivateMap3Composition](../game/src/PrivateMap3Composition.cs) is
+The root file is 1,014 lines and [PrivateMap3Composition](../reference/game/src/PrivateMap3Composition.cs) is
 another 1,149-line part of the same root class. The root also has a partial declaration in
-[PrivateBattle01Composition](../game/src/PrivateBattle01Composition.cs). The root source directory
+[PrivateBattle01Composition](../reference/game/src/PrivateBattle01Composition.cs). The root source directory
 contains 17 C# files; only the three common battle files have a responsibility directory. These are
 descriptive counts at the inspected object, not acceptance targets.
 
@@ -70,7 +72,7 @@ engine indefinitely.
 ### G3 — The legacy Godot adapter still owns gameplay dispatch and comparison policy
 
 **Confirmed; legacy private route, already identified broadly by the engine audit.**
-[PrivateBattle01Composition](../game/src/PrivateBattle01Composition.cs), lines 17–55, selects named
+[PrivateBattle01Composition](../reference/game/src/PrivateBattle01Composition.cs), lines 17–55, selects named
 Sarah/Chester/leader comparison presets and calls preparation, initialization, round creation, and
 first-control entry itself. Its `DispatchNext`, lines 199–280, loops over the turn buffer, creates a
 round, chooses enemy behavior and pursuit/attack/standby operations, and advances to player control.
@@ -86,13 +88,13 @@ or rewrite legacy behavior just to keep every old comparison running.
 ### G4 — Presentation code combines asset provenance, fixed case admission, and rendering
 
 **Confirmed; legacy presentation/content boundary.**
-[PrivateLocalPresentationAssetCatalog](../game/src/PrivateLocalPresentationAssetCatalog.cs), lines
+[PrivateLocalPresentationAssetCatalog](../reference/game/src/PrivateLocalPresentationAssetCatalog.cs), lines
 85–151, hardcodes map-specific asset identities, an asset repository commit, manifest digest, and
 individual payload digests. Mount methods at lines 219–435 bind those particular assets;
 `MountRaster`, lines 590–710, also checks package/receipt identity and delegates payload admission
 back to the Content reader. The file additionally contains a HUD Control implementation.
 
-[PrivateOriginalMapBaseViewport](../game/src/PrivateOriginalMapBaseViewport.cs) is 2,032 lines spanning
+[PrivateOriginalMapBaseViewport](../reference/game/src/PrivateOriginalMapBaseViewport.cs) is 2,032 lines spanning
 pixel decoding/raster generation, nearest replication and Scale2x processing, texture binding, live
 actor glyph projection, and a Node2D view. Lines 925–1028 embed the Entity142 diagnostic's exact entity
 identity, coordinates, sprite, opaque bytes, and accepted-population checks alongside presentation.
@@ -107,12 +109,12 @@ processing should be reused where it already supplies the needed raster; do not 
 ### G5 — Old smoke scenarios are callable from the normal root and compiled with the game
 
 **Confirmed; verification placement debt.**
-[PublicSyntheticMap3SmokeDriver](../game/src/PublicSyntheticMap3SmokeDriver.cs) and
-[PrivateMap3SmokeDriver](../game/src/PrivateMap3SmokeDriver.cs) contain 726 and 677 lines of scripted
+[PublicSyntheticMap3SmokeDriver](../reference/game/src/PublicSyntheticMap3SmokeDriver.cs) and
+[PrivateMap3SmokeDriver](../reference/game/src/PrivateMap3SmokeDriver.cs) contain 726 and 677 lines of scripted
 commands, expected case results, and process/pass/fail behavior inside `game/src`.
 Map3Root lines 512–522 and PrivateMap3Composition lines 1027–1045 invoke them. The Godot project has
 no separate build boundary for these classes. The existing
-[export preset](../game/export_presets.cfg), lines 9–11, also has no resource exclusion for probes;
+[export preset](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/7a95585282a7bdbdccc929ad9874d10e6ca60f92/remake/game/export_presets.cfg), lines 9–11, also has no resource exclusion for probes;
 actual exported contents were not inspected, so their packaging remains **Unknown** here.
 
 Move still-useful scripted comparisons out of the production compile path and remove obsolete smoke
@@ -157,11 +159,11 @@ not this common view; address that when making the common input surface a player
 - The common private entry selects Content inputs and uses the same session/view as authored play.
   This audit found no Map3/Sarah/Chester comparison history gate in those three common battle files.
 
-## Proposed follow-up and acceptance
+## Remaining follow-up and acceptance
 
-At the current source-AI slice boundary, main-gate should decide the next owned change. First correct
-G1 and make the ordinary host entry explicit. Then isolate the retained reference host and verification
-compile boundary (G2/G5), without expanding that change into a new framework or full map rewrite.
+The ordinary host entry and explicit reference compile boundary now implement G1/G2/G5; current
+startup/build commands and remaining caller ownership are linked above. The inspected source record
+below those links does not establish completion of the remaining game migration.
 Carry G3 with existing battle migration and G4 with actual content/map/presentation migration; remove
 each old caller at that boundary. Address G6 when accepting the common player action interface.
 

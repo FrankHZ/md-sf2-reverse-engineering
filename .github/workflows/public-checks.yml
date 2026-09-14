@@ -20,6 +20,7 @@ jobs:
     outputs:
       engine: ${{ steps.paths.outputs.engine }}
       adapter: ${{ steps.paths.outputs.adapter }}
+      reference: ${{ steps.paths.outputs.reference }}
       research: ${{ steps.paths.outputs.research }}
     steps:
       - name: Check out repository
@@ -44,11 +45,13 @@ jobs:
           if ($diffExit -ne 0) { throw "Git path comparison failed: $diffExit" }
           $engine = $false
           $adapter = $false
+          $reference = $false
           $research = $false
           foreach ($changedPath in $changedPaths) {
-            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py')) {
+            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_godot.py')) {
               $engine = $true
               $adapter = $true
+              $reference = $true
               $research = $true
             } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
               $research = $true
@@ -58,17 +61,23 @@ jobs:
               $engine = $true
             } elseif ($changedPath -like 'remake/tests/*') {
               continue
+            } elseif ($changedPath -eq 'remake/reference/inputs/battle01-player-ready.json') {
+              $engine = $true
+            } elseif ($changedPath -like 'remake/reference/*') {
+              $reference = $true
             } elseif ($changedPath -like 'remake/game/*') {
               $adapter = $true
             } elseif ($changedPath -like 'remake/*') {
               $engine = $true
               $adapter = $true
+              $reference = $true
             } else {
               $research = $true
             }
           }
           "engine=$($engine.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "adapter=$($adapter.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "reference=$($reference.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "research=$($research.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
   engine-unit:
@@ -144,6 +153,42 @@ jobs:
         run: '& $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode'
       - name: Build actual adapter
         run: '& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Release --no-restore'
+
+  reference-host-build:
+    needs: scope
+    if: needs.scope.outputs.reference == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: remake
+    env:
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: "false"
+      DOTNET_CLI_HOME: ${{ github.workspace }}/../sf2-dotnet-cli-home
+      DOTNET_CLI_USE_MSBUILD_SERVER: "0"
+      MSBUILDDISABLENODEREUSE: "1"
+      NUGET_PACKAGES: ${{ github.workspace }}/local/nuget-packages
+      NUGET_HTTP_CACHE_PATH: ${{ github.workspace }}/local/nuget-http-cache
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.204
+            8.0.424
+          cache: true
+          cache-dependency-path: remake/**/packages.lock.json
+      - name: Select installed shared .NET CLI
+        run: |
+          $dotnetBinary = (Get-Command dotnet -CommandType Application).Source
+          "DOTNET_BIN=$dotnetBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Restore explicit reference host dependencies
+        run: '& $env:DOTNET_BIN restore reference/game/Sf2.Remake.Reference.Godot.csproj --locked-mode'
+      - name: Build explicit reference host
+        run: '& $env:DOTNET_BIN build reference/game/Sf2.Remake.Reference.Godot.csproj --configuration Release --no-restore'
 
   research-public:
     needs: scope
