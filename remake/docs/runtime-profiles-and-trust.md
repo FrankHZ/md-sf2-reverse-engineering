@@ -29,7 +29,7 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 5` package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 6` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
@@ -47,12 +47,21 @@ records/counters and unknown/duplicate references are rejected. Array order does
 encounter's stable deployment order.
 
 Each closed placement requires `actor`, `faction` (`ally` or `enemy`), `processingOrder` (unique within
-the encounter,0–2,147,483,647), `x` and `y`. The actor definition has no numeric slot. Faction and order
-belong to this deployment; runtime state derives them rather than inferring allegiance from order.
+the encounter,0–2,147,483,647), `control`, `aiStrategy`, `x` and `y`. The actor definition has no numeric
+slot or controller. Faction, order, control and AI strategy belong to this deployment; runtime state derives them rather than inferring allegiance from order.
 Content admits at most30 allies and32 enemies per encounter and requires ally level1–99 / enemy
 level0–99. Only player-controlled allies and AI-controlled enemies are supported. Source slots are
 mapped solely by reference consumers;255 is a valid authored processing order, not a missing actor.
 Actor/deployment/start array reordering cannot change round draws, candidate ties or UI selection.
+
+`control` is `player` or `automatic`, independently of the intrinsic actor's capabilities. Player
+requires `aiStrategy: null`; automatic requires an explicit supported strategy. `stay` consumes the
+automatic entry without selecting an action. `attack-then-approach` attempts an attack and, if no
+attack can be selected, executes the accepted approach/movement continuation and ends the turn.
+Missing fields and nonstring strategy values reject as ContentError; null automatic policy, player
+with a policy, unknown modes/policies and unsupported faction/control pairs reject explicitly as
+UnsupportedCapability. There is no default Stay. Content and reusable session start share the same
+Domain deployment compatibility checks, including physical/spellbook/MOV requirements below.
 
 Actors require numerical `agility` (0–127) and boolean `extraRoundAction`. False generates one entry;
 true permits one additional entry in each generated round. No number or omitted field implies the
@@ -105,8 +114,9 @@ or terminal faction outcome returns Unsupported before any hit or movement is pu
 [`stone-court`](../content/authored/stone-court.json) and [`river-post`](../content/authored/river-post.json)
 are controlled authored inputs, not original private admission or original enemy reward tables.
 
-The enemy-only `controller: commandset06-script3` selects the already-active source commandset06 with
-physical TargetPriorityScript3. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
+The enemy-only `control: automatic`, `aiStrategy: attack-then-approach` selects the already-active
+physical attack and approach capability. Its source mapping remains commandset06 with physical
+TargetPriorityScript3; authored policy does not expose either source ID. It requires a regular `physical` definition, an empty spellbook and MOV 1–63;
 status and items remain empty. Encounter rewards are required when the physical action executes.
 Living opposing targets must be reachable through legal radius-one attack positions. Candidate
 scoring follows reverse processing order; signed raw-priority cohorts are selected before the returned

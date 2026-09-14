@@ -7,10 +7,11 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 The production Domain/Application/Content path runs configurable project-authored battle packages through
-one common session. Format-v5 packages separate immutable definitions/deployments from explicit
+one common session. Format-v6 packages separate immutable definitions/deployments from explicit
 per-session resources, counters, seeds and optional controlled placement overrides. Deployments own
-explicit faction and stable processing order; queue identity and side checks no longer infer either
-from a source slot. Numerical agility and explicit extra-round-action eligibility are separate fields in actor
+explicit faction, stable processing order, player/automatic control and a separate required AI policy
+for automatic actors; intrinsic actor definitions carry no controller. Queue identity and side checks
+no longer infer either from a source slot. Numerical agility and explicit extra-round-action eligibility are separate fields in actor
 definitions, consumed by the same turn calculator and queue. Physical definitions select explicit
 critical probability/bonus pairs consumed by player, enemy and counter hits through one rule owner. The same admitted
 definition can start independent sessions through the common validated entry. This
@@ -27,8 +28,8 @@ reference runners. M1 provides typed content admission, provisional movement/can
 HEAL/STAY and automatic next-actor/round progression with carried RNG. The
 [M2 physical capability](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
 adds ordinary first/second/counter attacks, EXP/gold, death accounting and continuation. A bounded
-configured commandset06/script3 enemy decision scores competing targets, applies source class/movement
-ties, and uses the same physical action and publication mechanisms, including ally counter rewards
+configured attack-then-approach strategy scores competing targets through the accepted commandset06/
+script3 rules, applies source class/movement ties, and uses the same physical action and publication mechanisms, including ally counter rewards
 and carried thinking/main RNG. Required class data is validated at the reached comparison; unsupported
 level-up, leader and terminal settlement branches reject atomically. With no attack target, the
 empty spell/item branch continues through failed HEAL1/SUPPORT to MOVE1, preserving RNG and resources

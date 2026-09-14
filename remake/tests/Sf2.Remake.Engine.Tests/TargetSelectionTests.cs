@@ -209,7 +209,7 @@ public sealed class TargetSelectionTests
         }
         doc["actors"]![0]!["classRule"] = swapClass ? "unpromoted-swordsman" : "unpromoted-warrior";
         doc["actors"]![1]!["classRule"] = swapClass ? "unpromoted-warrior" : "unpromoted-swordsman";
-        doc["actors"]![2]!["controller"] = "commandset06-script3"; doc["actors"]![2]!["move"] = 1;
+        doc["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "attack-then-approach"; doc["actors"]![2]!["move"] = 1;
         var placements = doc["encounters"]![0]!["placements"]!;
         placements[1]!["x"] = placements[2]!["x"]!.GetValue<int>() - 1;
         placements[1]!["y"] = placements[2]!["y"]!.GetValue<int>();

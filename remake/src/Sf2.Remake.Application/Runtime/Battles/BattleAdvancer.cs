@@ -32,7 +32,7 @@ internal static class BattleAdvancer
                 observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                 continue;
             }
-            if (actor.Definition.Controller == BattleController.Player)
+            if (actor.Control == BattleControl.Player && actor.AiStrategy is null)
             {
                 revision++;
                 observations.Add(new(++sequence, revision, "player-control", actor.Actor));
@@ -40,29 +40,31 @@ internal static class BattleAdvancer
                 var snapshot = new SessionSnapshot(current.SessionId, revision, sequence, battle, selection, SessionStopReason.PlayerInput);
                 return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
             }
-            if (actor.Definition.Controller == BattleController.Commandset06Script3)
+            if (actor.Control == BattleControl.Automatic && actor.AiStrategy == BattleAiStrategy.Stay)
             {
-                var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
-                try
-                {
-                    var action = EnemyCommandset06.Resolve(battle, actor.Actor);
-                    var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
-                        action.Destination, action.Effects, observations);
-                    battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
-                }
-                catch (BattleRuleException error)
-                {
-                    // Earlier committed player/AI work remains published; this enemy ACTION
-                    // keeps its queue entry, position, HP, rewards, last target and both seeds.
-                    var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;
-                    return new(new(current.SessionId, revision, sequence, battle, null, reason), observations.AsReadOnly(), reason,
-                        new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.InvariantFailure,
-                            error.Code, error.Field, error.Code.Replace('-', ' ')));
-                }
+                battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
+                observations.Add(new(++sequence, revision, "ai-stay", actor.Actor));
                 continue;
             }
-            battle = BattleTurnFlow.ConsumeEntry(battle); revision++;
-            observations.Add(new(++sequence, revision, "ai-stay", actor.Actor));
+            var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
+            try
+            {
+                if (actor.Control != BattleControl.Automatic || actor.AiStrategy != BattleAiStrategy.AttackThenApproach)
+                    throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
+                var action = AttackThenApproachAi.Resolve(battle, actor.Actor);
+                var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
+                    action.Destination, action.Effects, observations);
+                battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
+            }
+            catch (BattleRuleException error)
+            {
+                // Earlier committed player/AI work remains published; this enemy ACTION
+                // keeps its queue entry, position, HP, rewards, last target and both seeds.
+                var reason = error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Faulted;
+                return new(new(current.SessionId, revision, sequence, battle, null, reason), observations.AsReadOnly(), reason,
+                    new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.InvariantFailure,
+                        error.Code, error.Field, error.Code.Replace('-', ' ')));
+            }
         }
         return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
             observations.AsReadOnly(), SessionStopReason.SimulationWait);

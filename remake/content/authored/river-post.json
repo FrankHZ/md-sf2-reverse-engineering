@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "package": "river-post",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -88,7 +88,6 @@
     {
       "id": "lancer",
       "classRule": "ordinary",
-      "controller": "player",
       "level": 1,
       "maxHp": 35,
       "maxMp": 0,
@@ -114,7 +113,6 @@
     {
       "id": "runner",
       "classRule": "ordinary",
-      "controller": "player",
       "level": 1,
       "maxHp": 35,
       "maxMp": 0,
@@ -140,7 +138,6 @@
     {
       "id": "intruder",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -166,7 +163,6 @@
     {
       "id": "outlaw",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -192,7 +188,6 @@
     {
       "id": "watchman",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -226,35 +221,45 @@
           "x": 5,
           "y": 4,
           "faction": "ally",
-          "processingOrder": 4
+          "processingOrder": 4,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "runner",
           "x": 1,
           "y": 1,
           "faction": "ally",
-          "processingOrder": 19
+          "processingOrder": 19,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "intruder",
           "x": 4,
           "y": 4,
           "faction": "enemy",
-          "processingOrder": 131
+          "processingOrder": 131,
+          "control": "automatic",
+          "aiStrategy": "stay"
         },
         {
           "actor": "outlaw",
           "x": 6,
           "y": 4,
           "faction": "enemy",
-          "processingOrder": 142
+          "processingOrder": 142,
+          "control": "automatic",
+          "aiStrategy": "stay"
         },
         {
           "actor": "watchman",
           "x": 9,
           "y": 6,
           "faction": "enemy",
-          "processingOrder": 154
+          "processingOrder": 154,
+          "control": "automatic",
+          "aiStrategy": "stay"
         }
       ],
       "rewards": {

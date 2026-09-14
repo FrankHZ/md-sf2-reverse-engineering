@@ -68,6 +68,13 @@ reaction migration must move those calls to common commands and remove these wra
 last caller. M3 owns map-start/program consumers; M4 owns outcome/return. None is deferred wholesale
 to M5, and no production project acquires a reference dependency.
 
+Common encounter deployments now separate player/automatic control from explicit Stay or
+AttackThenApproach policy. The authored representation contains no commandset/script selector;
+`AttackThenApproachAi` retains the admitted ordered command behavior, and real source/reference
+boundaries keep original commandset06/script3 fields and guards. `PhysicalTargetRules`, `AiMovementRules`
+and the physical action calculator remain shared; the modeling change does not replace activation,
+standby, private control classification or their remaining legacy consumers.
+
 Reusable map/layout/item reducers remain in Domain; their existence is not a claim that common-session
 exploration is implemented. Shared battle rules and the authored Content reader live in production
 responsibility directories. Fixed receipt counts, round positions, kill order, expected terminal

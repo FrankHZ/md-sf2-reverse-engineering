@@ -36,7 +36,7 @@ public sealed class AuthoredScenarioTests
     [InlineData("hp", "numeric-range", SessionFailureKind.ContentError)]
     [InlineData("profile", "profile", SessionFailureKind.ContentError)]
     [InlineData("effect", "spell-effect", SessionFailureKind.UnsupportedCapability)]
-    [InlineData("ai", "ai-commandset", SessionFailureKind.UnsupportedCapability)]
+    [InlineData("ai", "ai-strategy", SessionFailureKind.UnsupportedCapability)]
     [InlineData("status", "actor-status", SessionFailureKind.UnsupportedCapability)]
     public void AdmissionAttributesContentAndCapabilityFailures(string variant, string code, SessionFailureKind kind)
     {
@@ -50,7 +50,7 @@ public sealed class AuthoredScenarioTests
             case "hp": document["start"]!["actors"]![0]!["hp"] = 101; break;
             case "profile": document["profile"] = "private-original"; break;
             case "effect": document["spells"]![0]!["effect"]!["kind"] = "resurrect"; break;
-            case "ai": document["actors"]![2]!["controller"] = "pursuit"; break;
+            case "ai": document["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "pursuit"; break;
             case "status": document["start"]!["actors"]![0]!["status"] = "poison"; break;
         }
         var rejected = Assert.IsType<SessionStartFailed>(GameSession.Start(Reader(document)));

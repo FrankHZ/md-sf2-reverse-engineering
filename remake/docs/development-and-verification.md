@@ -77,7 +77,7 @@ engine or documentation change. Use formatting only for affected product project
 
 ## Authored Start State Observation
 
-The format-v5 reader returns immutable definitions and explicit start input. After loading the existing
+The format-v6 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
 observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
@@ -111,7 +111,7 @@ requires its explicit start record; no default counter or runtime actor is synth
 
 ## Authored Extra Round Action Observation
 
-Use the same installed editor/project after the affected Debug build. This format-v5 input changes only
+Use the same installed editor/project after the affected Debug build. This format-v6 input changes only
 one actor's explicit eligibility; its numerical agility remains12. Outputs stay in a fresh ignored run:
 
 ```powershell
@@ -141,7 +141,7 @@ aggregate, new H3 or test of the observer is required.
 ## Authored Faction and Order Observation
 
 Run the four package observations below, then prepare a changed-order physical input in a fresh ignored
-run directory. This format-v5 variant keeps independent accepted combat/RNG expectations while moving
+run directory. This format-v6 variant keeps independent accepted combat/RNG expectations while moving
 all orders beyond the original byte-side boundary and reversing all three JSON arrays:
 
 ```powershell
@@ -281,7 +281,7 @@ $cycle.actors += $laterAlly
 $laterStart = $cycle.start.actors[1] | ConvertTo-Json -Depth 8 | ConvertFrom-Json
 $laterStart.actor = 'guard-c'
 $cycle.start.actors += $laterStart
-$cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; faction='ally'; processingOrder=10; x=3; y=4}
+$cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; faction='ally'; processingOrder=10; control='player'; aiStrategy=$null; x=3; y=4}
 $cycle | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'three-allies.json') -Encoding utf8NoBOM
 $layout = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
 $layout.terrains[0].rows = @(1..48 | ForEach-Object { '1' * 48 })
@@ -306,9 +306,40 @@ The extracted weighted rule also retains the selected Domain.Tests
 its flat-row and bucket-wrap cases. It passes through the reference wrapper; the authored engine's
 logical row-edge behavior has its own actual movement unit assertion. No original fixture changed.
 
+### Independent Control and AI Strategy
+
+Current format-v6 `encounters[].placements[]` owns both choices, separately from actor capabilities:
+
+| control | aiStrategy | Executed behavior |
+| --- | --- | --- |
+| `player` | `null` | Application yields actual player input; currently ally-only. |
+| `automatic` | `stay` | Explicitly consume the automatic entry without attack or movement; currently enemy-only. |
+| `automatic` | `attack-then-approach` | Attempt the supported physical attack; if none can be selected, run the accepted approach or origin-Stay continuation and end the action. |
+
+Missing or incompatible pairs reject; no unknown strategy defaults to Stay. The existing engine
+control/AI tests exercise shared actor definitions under distinct encounter assignments, actual
+player/automatic results, invalid Content and reusable starts. Existing enemy, target-selection and
+commandset-continuation cases retain independent damage, queue, memory and seed expectations.
+
+Use the player HEAL/STAY and physical recipes plus the enemy-actions, target-selection and
+commandset-continuation variants below with the retained editor/project. Their configuration selects
+`placements[2].aiStrategy`; source command observations remain ATTACK1/script3, HEAL1, SUPPORT and MOVE1.
+Observe complete startup, attack/counter, no-target pursuit, occupied origin Stay, next input and
+Unsupported atomicity checkpoints with clean logs. The existing native probe is unchanged.
+
+Run related control/target/continuation references as one selected group, including
+`ActualOrderIncludesTheInactivePrefixOccupiedFallbackAndBothCommandsets`,
+`SourceDestinationFailureCompletesOriginStayAndKeepsTheThinkingHistory`,
+`RadiusSearchUsesStrictLowerCostFirstTieAndOwnCellZeroBeforeOccupancy`,
+`ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder`,
+`CompletedEnemyPrefixHandsOnlyActualBowieHisOwnRegularRangeAndCancelOrigin`, and
+`CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt`.
+These comparisons preserve their source domains; they do not admit activation, wider AI or private
+initialized entry and do not constitute complete ADR0009 acceptance.
+
 ### Physical Critical Configuration
 
-Format-v5 physical definitions explicitly pair `critical.chance` and `critical.damageBonus`.
+Format-v6 physical definitions explicitly pair `critical.chance` and `critical.damageBonus`.
 The stone package uses `one-in-16` / `quarter`; the river package uses `one-in-32` / `half`.
 The existing physical, follow-up and enemy-action recipes select these fields directly and use the
 same installed Godot project/probe. For this configuration boundary, observe both ordinary physical
@@ -350,7 +381,7 @@ $data.actors[0].attack = 18
 $data.actors[0].physical.critical = @{chance='one-in-32'; damageBonus='half'}
 $data.actors[2].attack = 30
 $data.actors[2].physical.critical = @{chance='one-in-16'; damageBonus='quarter'}
-$data.actors[2].controller = 'commandset06-script3'
+$data.encounters[0].placements[2].aiStrategy = 'attack-then-approach'
 $data.actors[2].move = 1
 if ($shape -eq 'movement') {
     $data.actors[2].move = 3
@@ -401,7 +432,7 @@ foreach ($index in @(0, 1, 2)) {
 }
 $data.actors[0].classRule = if ($shape -eq 'primary') { 'unpromoted-swordsman' } else { 'unpromoted-warrior' }
 $data.actors[1].classRule = if ($shape -eq 'primary') { 'unpromoted-warrior' } else { 'unpromoted-swordsman' }
-$data.actors[2].controller = 'commandset06-script3'
+$data.encounters[0].placements[2].aiStrategy = 'attack-then-approach'
 $data.actors[2].move = 1
 $data.encounters[0].placements[1].x = $data.encounters[0].placements[2].x - 1
 $data.encounters[0].placements[1].y = $data.encounters[0].placements[2].y
@@ -458,7 +489,7 @@ foreach ($index in @(0, 2)) {
     $data.actors[$index].attack = if ($index -eq 2) { 30 } else { 18 }
     $data.actors[$index].physical.critical = if ($index -eq 2) { @{chance='one-in-16'; damageBonus='quarter'} } else { @{chance='one-in-32'; damageBonus='half'} }
 }
-$data.actors[2].controller = 'commandset06-script3'
+$data.encounters[0].placements[2].aiStrategy = 'attack-then-approach'
 $data.actors[2].move = 3
 $placements = $data.encounters[0].placements
 $placements[0].x = 1

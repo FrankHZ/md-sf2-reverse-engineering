@@ -2,7 +2,8 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal static class EnemyCommandset06
+// Already-active physical attack, then approach: the admitted source commandset 06 / script 3 branch.
+internal static class AttackThenApproachAi
 {
     internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects, MapPosition Destination) Resolve(
         EngineBattleState current, ActorRef actorRef)

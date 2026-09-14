@@ -39,7 +39,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 5, 5) == 5, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 6, 6) == 6, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
@@ -100,13 +100,12 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
-            ObjectOptional(actor, "actor", "physical", "id", "classRule", "controller", "level", "maxHp", "maxMp",
+            ObjectOptional(actor, "actor", "physical", "id", "classRule", "level", "maxHp", "maxMp",
                 "attack", "defense", "agility", "extraRoundAction", "move", "items", "spells");
             var id = new ActorRef(Id(actor, "id"));
-            string className = Text(actor, "classRule"), controlName = Text(actor, "controller");
+            string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
                 "class-rule", "actors.classRule", true);
-            Require(controlName is "player" or "stay" or "commandset06-script3", "ai-commandset", "actors.controller", true);
             Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
@@ -138,18 +137,10 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 learned.Add(key);
             }
             Require(learned.Count <= 4, "spellbook-capacity", "actors.spells");
-            if (controlName == "commandset06-script3")
-            {
-                Require(physical is not null, "physical-definition", "actors.physical", true);
-                Require(learned.Count == 0, "ai-action-categories", "actors.spells", true);
-                Require(Number(actor, "move", 1, 255) <= 63, "ai-movement-domain", "actors.move", true);
-            }
             var definition = new BattleActorDefinition(id,
                 className switch { "unpromoted-priest" => BattleClassRule.UnpromotedPriest,
                     "unpromoted-swordsman" => BattleClassRule.UnpromotedSwordsman,
                     "unpromoted-warrior" => BattleClassRule.UnpromotedWarrior, _ => BattleClassRule.Ordinary },
-                controlName switch { "player" => BattleController.Player, "stay" => BattleController.Stay,
-                    _ => BattleController.Commandset06Script3 },
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
@@ -172,7 +163,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             var placements = new List<BattleDeploymentDefinition>();
             foreach (var placement in Array(encounter, "placements"))
             {
-                Object(placement, "placement", "actor", "faction", "processingOrder", "x", "y");
+                Object(placement, "placement", "actor", "faction", "processingOrder", "control", "aiStrategy", "x", "y");
                 var actorRef = new ActorRef(Id(placement, "actor"));
                 Require(actors.ContainsKey(actorRef), "missing-actor", "placements.actor");
                 var actor = actors[actorRef];
@@ -180,15 +171,25 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Require(factionName is "ally" or "enemy", "battle-faction", "placements.faction", true);
                 var faction = factionName == "ally" ? BattleFaction.Ally : BattleFaction.Enemy;
                 int order = Number(placement, "processingOrder", 0, int.MaxValue);
-                Require((faction == BattleFaction.Ally) == (actor.Controller == BattleController.Player),
-                    "controller-side", "placements.faction/actors.controller", true);
+                string controlName = Text(placement, "control");
+                Require(controlName is "player" or "automatic", "control-mode", "placements.control", true);
+                var control = controlName == "player" ? BattleControl.Player : BattleControl.Automatic;
+                BattleAiStrategy? aiStrategy = null;
+                if (placement.GetProperty("aiStrategy").ValueKind != JsonValueKind.Null)
+                {
+                    string strategyName = Text(placement, "aiStrategy");
+                    Require(strategyName is "stay" or "attack-then-approach", "ai-strategy", "placements.aiStrategy", true);
+                    aiStrategy = strategyName == "stay" ? BattleAiStrategy.Stay : BattleAiStrategy.AttackThenApproach;
+                }
                 Require(faction != BattleFaction.Ally || actor.Level >= 1, "numeric-range", "actors.level");
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));
                 byte tile = terrain.Cells[position.Y * 48 + position.X];
                 Require(tile < 16 && WeightedMovement.OrdinaryCosts[tile] > 0, "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
-                placements.Add(new(actor, faction, order, position));
+                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position);
+                BattleTurnFlow.ValidateDeployment(deployment);
+                placements.Add(deployment);
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");

@@ -31,13 +31,13 @@ settlement and atomic state transition. `PhysicalBattleAction` constructs at mos
 hits on temporary HP, carries sticky reaction decisions and aggregates one ally award before publication.
 Both player commands and `EnemyPhysicalDecision` call that calculator; `BattleActionCommitter` is
 the single publication/queue-consumption mechanism. Automatic advancement catches failures at each
-enemy ACTION, preserving earlier commits and retaining the failed enemy's queue entry. The typed
-commandset06/script3 controller scores all reachable physical targets in reverse processing order and uses
+enemy ACTION, preserving earlier commits and retaining the failed enemy's queue entry. The semantic
+attack-then-approach strategy scores all reachable physical targets in reverse processing order and uses
 shared `PhysicalTargetRules` for signed raw-priority cohorts, class selection and movement ties.
 The existing class definition supplies source identity only for admitted named classes; missing
 identity rejects a reached critical comparison. Regular movement fixes the class table; content
 cannot supply an independent rank. Source thinking, scoring and selection are shared with reference
-consumers. `EnemyCommandset06` sequences that decision and its zero-target continuation: unavailable
+consumers. `AttackThenApproachAi` sequences that decision and its zero-target continuation: unavailable
 HEAL1/SUPPORT fail, then MOVE1 succeeds with movement or origin Stay. `AiMovementRules` owns the shared
 stable cost selector, source decreasing-cost walk and radius station search used by production and
 the actual reference pursuit/standby callers. The existing movement commit and action publisher apply
@@ -59,7 +59,12 @@ actor definitions and session starts do not duplicate those roles. The definitio
 once for stable round RNG, AI candidates and adapter selection. Runtime actors derive faction/order
 from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Source
 slots remain in the actual reference projection into the same typed turn calculator. Faction drives
-healing/opposition/rewards independently of order; supported controller pairings remain bounded.
+healing/opposition/rewards independently of order. Deployments also own `BattleControl` separately from
+`BattleAiStrategy`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
+automatic actors explicitly select Stay or AttackThenApproach. Shared deployment validation at Content
+admission and reusable start preserves ally/player and enemy/automatic bounds plus physical/spellbook/
+MOV requirements. The advancer consumes explicit combinations and never defaults an unknown policy to
+Stay. The native view projects AI memory from the same deployment; there is no second control copy.
 Actor definitions separately own numerical `Agility` (0–127) and boolean `ExtraRoundAction`.
 Live-start capacity and shared generation consume explicit eligibility; only the actual reference
 projection decodes raw high-bit semantics. The ordinary three draws and optional two draws at the
