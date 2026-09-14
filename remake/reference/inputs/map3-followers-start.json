@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Controlled alternate live flags at the R1 map/position, with source follower declarations 66 and 67 enabled. This exercises allocation and action behavior; it is not an observed natural R1 history.",
+  "start": {
+    "map": "map-3",
+    "player": "entity-0",
+    "position": {
+      "x": 56,
+      "y": 3
+    },
+    "facing": 3,
+    "speed": 32,
+    "flags": [
+      0,
+      32,
+      66,
+      67
+    ]
+  }
+}

@@ -22,6 +22,8 @@ public sealed record Cancel : SessionCommand;
 public sealed record AdvanceSimulation(WaitToken? Wait = null, int Ticks = 1) : SessionCommand;
 public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;
+public sealed record CompletePresentation(WaitToken Wait, PresentationCueKind Kind) : SessionCommand;
+public sealed record EntitySpriteReady(int Slot, long Request) : SessionCommand;
 public sealed record ChooseDialogue(WaitToken Wait, bool Yes) : SessionCommand;
 public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, ActorRef? Actor, SessionCommand Command);
 

@@ -5,12 +5,37 @@ using Sf2.Remake.Domain.Battles;
 namespace Sf2.Remake.Application.Content.Scenarios;
 
 public sealed record ExplorationEntityDefinition(EntityRef Entity, MapPosition Position, byte Facing, ushort Speed,
-    bool Visible = true, bool Obstruction = false);
+    bool Visible = true, bool Obstruction = false, int? Sprite = null, EntityActionProgram? Actions = null);
+public sealed record ExplorationFollowerDefinition(int Flag, int Character, int Sprite);
+public sealed record ExplorationAllySprite(int Character, int Sprite, int? JoinedFlag, int? UnjoinedSprite);
+public sealed record ExplorationPopulation(int AllyCount, int NonAllyStart, int PlayerSprite,
+    IReadOnlyList<ExplorationFollowerDefinition> Followers, IReadOnlyList<ExplorationAllySprite>? AllySprites = null);
+public sealed record ExplorationDoor(MapPosition Trigger, WorkingMapBlockCopy Copy);
+public sealed record ExplorationFlagCopy(int Flag, WorkingMapBlockCopy Copy);
+public sealed record ExplorationLayoutEvents(IReadOnlyList<ExplorationDoor> Doors,
+    IReadOnlyList<ExplorationFlagCopy> Flags, MapBlockCopyActionTable Roofs);
+public sealed class ExplorationRaster
+{
+    private readonly byte[] _bytes;
+    internal ExplorationRaster(int width, int height, string format, byte[] bytes)
+    { Width = width; Height = height; Format = format; _bytes = [.. bytes]; }
+    public int Width { get; }
+    public int Height { get; }
+    public string Format { get; }
+    public byte[] CopyBytes() => [.. _bytes];
+}
+public sealed record MapOverlayOffset(int X, int Y);
+public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
+    IReadOnlyList<IReadOnlyList<ushort>> Blocks);
+public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech);
+public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster);
+public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMapVisual> Maps,
+    IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits);
 public enum ExplorationEventKind { Step, Interact, Warp }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,
     MapPosition? Destination = null, byte Facing = 0, ushort? RequiredMarker = null,
-    int? RequiredFlag = null, bool RequiredFlagValue = true);
+    int? RequiredFlag = null, bool RequiredFlagValue = true, byte? EntityFlags = null, MapLoadMode LoadMode = MapLoadMode.Rebuild);
 public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag, int? CompletedFlag,
     int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram);
 
@@ -18,10 +43,12 @@ public sealed class ExplorationMapDefinition
 {
     internal ExplorationMapDefinition(MapId map, WorkingMapLayout layout, OriginalMapTraversal traversal,
         IEnumerable<ExplorationEntityDefinition> entities, IEnumerable<ExplorationEvent> events,
-        ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null)
+        ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
+        ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null)
     {
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
-        Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup;
+        Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup; Population = population; LayoutEvents = layoutEvents;
+        OverlayOffsets = Array.AsReadOnly((overlays ?? traversal.ActiveAreas.Select(_ => new MapOverlayOffset(0, 0))).ToArray());
     }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
@@ -31,6 +58,9 @@ public sealed class ExplorationMapDefinition
     public ProgramLocation? OnLoad { get; }
     public ProgramLocation? InputProgram { get; }
     public MapSetupRoute? Setup { get; }
+    public ExplorationPopulation? Population { get; }
+    public ExplorationLayoutEvents? LayoutEvents { get; }
+    public IReadOnlyList<MapOverlayOffset> OverlayOffsets { get; }
     public ExplorationBattleRoute? Battle { get; }
 }
 
@@ -49,15 +79,19 @@ public sealed class ExplorationProvenance
 
 public sealed class ExplorationDefinition
 {
-    internal ExplorationDefinition(IEnumerable<ExplorationMapDefinition> maps, IEnumerable<StoryProgram> programs, IEnumerable<KeyValuePair<int, string>>? texts = null, ExplorationProvenance? provenance = null)
+    internal ExplorationDefinition(IEnumerable<ExplorationMapDefinition> maps, IEnumerable<StoryProgram> programs, IEnumerable<KeyValuePair<int, string>>? texts = null, ExplorationProvenance? provenance = null, MapPartyFlagLayout? partyFlags = null, ExplorationVisuals? visuals = null, IEnumerable<string>? memberNames = null)
     {
-        Provenance = provenance;
+        Provenance = provenance; PartyFlags = partyFlags; Visuals = visuals;
+        MemberNames = Array.AsReadOnly((memberNames ?? []).ToArray());
         Texts = new ReadOnlyDictionary<int, string>((texts ?? []).ToDictionary(pair => pair.Key, pair => pair.Value));
         Maps = new ReadOnlyDictionary<MapId, ExplorationMapDefinition>(maps.ToDictionary(map => map.Map));
         Programs = new ReadOnlyDictionary<string, StoryProgram>(programs.ToDictionary(program => program.Id, StringComparer.Ordinal));
     }
     public IReadOnlyDictionary<int, string> Texts { get; }
+    public IReadOnlyList<string> MemberNames { get; }
     public ExplorationProvenance? Provenance { get; }
+    public MapPartyFlagLayout? PartyFlags { get; }
+    public ExplorationVisuals? Visuals { get; }
     public IReadOnlyDictionary<MapId, ExplorationMapDefinition> Maps { get; }
     public IReadOnlyDictionary<string, StoryProgram> Programs { get; }
 }

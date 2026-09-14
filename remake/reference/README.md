@@ -108,14 +108,24 @@ Content and the common session. External `inputs/map*-start.json` supply control
 Neither file supplies a completed program, endpoint snapshot or receipt history. The preparation
 command reads actual canonical/source operations and leaves native frontiers in the program.
 
-The selected source Sarah/position/gate bodies and the messenger, guard, sprite-init and before-battle
-prefixes have direct common-engine comparisons and ordinary native observations. This does not remove
-the existing `PrivateMap3Composition` calls for complete Sarah/zone/messenger/castle/palace/guard
-handlers. Their unported setup, follower/event and presentation services, plus the pending original-map
-admission and M4 return context, still require the named reference owners. No last caller has gone away
-for those families; they remain open G3/G4 boundaries and must retire with their complete migrated
-flows. The [execution owner](../docs/exploration-programs.md#reference-migration-boundary) names the
-actual limits. Do not interpret the new controlled program entry as replacing the earlier natural route.
+The full original Map3 opening/messenger group now executes in the ordinary common session from
+the named R1 input through R2/R2a, F603 and stable field control. Actual source allocation, init,
+events, layout changes, joins, followers and typed Godot presentation replace the matching runtime
+consumers. The old Sarah, zone601, entity142, Astral-zone and messenger endpoint-writing methods,
+F/G request/acknowledgement branches and obsolete atomic/prefix tests are removed.
+
+Later castle/tower, pending original-map Battle01 admission and M4 return remain here. Their tests
+load `inputs/map3-post-opening-reference-start.json` as controlled input instead of replaying the
+retired opening. The reference host accepts the same explicit path through
+`SF2_REFERENCE_POST_OPENING_START`. It publishes zero executed history and no messenger receipt;
+its simulation/request/roof padding is declared in the input. The default legacy private entry is
+only a geometry diagnostic, and migrated Map3 interactions report their common-host owner.
+
+State/receipt DTOs and source trust projections still referenced by frozen later snapshots remain
+until those callers migrate; shared geometry and legacy visual resources also still have consumers.
+The [execution owner](../docs/exploration-programs.md#reference-migration-boundary) names the remaining
+source/presentation boundaries. G3/G4 are not globally closed, and this controlled start proves no
+natural continuation into castle/tower or Battle01.
 
 ## Explicit Godot Reference Host
 

@@ -9,6 +9,7 @@ Unimplemented native operations remain executable stop instructions at their sou
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import re
@@ -16,10 +17,19 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.h2.map_import import MANIFEST, _canonical_bytes
+from sf2tool.h2.portraits import _read_animation_entries
 from sf2tool.jsonio import load_json
+from sf2tool.remake_asset_build import (
+    PLAYER_PALETTE_ADDRESS,
+    PLAYER_POINTER_TABLE_ADDRESS,
+    _combine_player_halves,
+    _render_player_frame,
+)
+from sf2tool.texture_extract import decode_md_4bpp_tile, md_palette_color, palette_index_rgba
 
 
 def _location(program: str, instruction: int = 0) -> dict[str, Any]:
@@ -41,6 +51,106 @@ class OriginalPrograms:
         }
         self.programs: dict[str, dict[str, Any]] = {}
         self.actions: dict[str, list[dict[str, Any]]] = {}
+        self.sources.update(
+            {
+                "disasm/code/common/scripting/map/mapscriptengine_1.asm",
+                "disasm/code/common/scripting/map/mapscriptengine_2.asm",
+                "disasm/code/common/scripting/entity/entityscriptengine_2.asm",
+                "disasm/code/common/scripting/entity/entityfunctions_1.asm",
+                "disasm/code/common/scripting/entity/entityfunctions_2.asm",
+                "disasm/code/common/scripting/map/mapfunctions.asm",
+                "disasm/code/common/scripting/map/followersfunctions_1.asm",
+                "disasm/code/common/scripting/map/mapsetupsfunctions_1.asm",
+                "disasm/code/common/maps/mapload.asm",
+                "disasm/code/common/stats/battleparty.asm",
+                "disasm/code/common/tech/randomnumbergenerator.asm",
+                "disasm/data/scripting/entity/eas_main.asm",
+                "disasm/code/gameflow/exploration/explorationfunctions_2.asm",
+                "disasm/code/gameflow/exploration/exploration.asm",
+            }
+        )
+
+    def register_file(self, relative: str) -> None:
+        self.sources.add(relative)
+        text = (self.upstream / relative).read_text(encoding="utf-8")
+        for match in re.finditer(r"^([A-Za-z_]\w*):", text, re.MULTILINE):
+            symbol = match.group(1)
+            if symbol not in self.raw:
+                self.raw[symbol] = {
+                    "id": symbol,
+                    "path": relative.removeprefix("disasm/"),
+                    "operations": self.source_operations(relative, symbol),
+                }
+
+    def walking(self, x: int, y: int, radius: int) -> list[dict[str, Any]]:
+        path = "disasm/data/scripting/entity/eas_main.asm"
+        self.sources.add(path)
+        text = (self.upstream / path).read_text(encoding="utf-8")
+        block = re.search(
+            r"^eas_Walking:(.*?ac_branch\s*\n\s*dc\.w[^\n]+)", text, re.MULTILINE | re.DOTALL
+        )
+        if block is None:
+            raise ValueError("source walking template")
+        result, labels = [], {}
+        branch = False
+        for index, line in enumerate(block.group(1).splitlines()):
+            if match := re.match(r"^(\w+):\s*(.*)", line):
+                labels[match[1]] = len(result)
+                line = match[2]
+            for statement in _statements(line):
+                op, _, operands = statement.partition(" ")
+                if op == "ac_randomWalk":
+                    result.append({"op": "random-walk", "x": x, "y": y, "radius": radius})
+                elif op == "ac_waitDest":
+                    continue  # RandomWalkEntity owns the movement wait.
+                elif op == "ac_branch":
+                    branch = True
+                elif op == "dc.w" and branch:
+                    target = re.match(r"\((\w+)-\w+\)", operands.strip())
+                    if target is None or target[1] not in labels:
+                        raise ValueError("source walking branch")
+                    result.append({"op": "jump", "instruction": labels[target[1]]})
+                else:
+                    result.extend(
+                        self.action(op, _tokens(operands), f"{path}:eas_Walking[{index}]")
+                    )
+        return result
+
+    def initial_ally_sprites(self) -> list[dict[str, Any]]:
+        classes_path = "disasm/data/stats/allies/allystartdefs.asm"
+        sprites_path = "disasm/data/stats/allies/allymapsprites.asm"
+        self.sources.update(
+            (classes_path, sprites_path, "disasm/code/common/scripting/entity/getallymapsprite.asm")
+        )
+        classes = _arguments(
+            (self.upstream / classes_path).read_text(encoding="utf-8"), "startClass"
+        )
+        sprites = _arguments(
+            (self.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
+        )
+        result = []
+        for character in range(self.equates["COMBATANT_ALLIES_NUMBER"]):
+            role = self.number("CLASS_" + classes[character])
+            sprite = self.number("MAPSPRITE_" + sprites[character])
+            if role == self.equates["CLASS_SDMN"]:
+                sprite -= 1
+            elif role != self.equates["CLASS_HERO"] and role < self.equates["CLASS_BDBT"]:
+                if self.equates["CLASS_BDMN"] <= role <= self.equates["CLASS_TORT"]:
+                    sprite -= 1
+                elif role <= self.equates["CLASS_ACHR"]:
+                    sprite -= 2
+                elif role & 1:
+                    sprite -= 1
+            rohde = character == self.equates["ALLY_ROHDE"]
+            result.append(
+                {
+                    "character": character,
+                    "sprite": sprite,
+                    "joinedFlag": 11 if rohde else None,
+                    "unjoinedSprite": self.equates["MAPSPRITE_NPC_ROHDE"] if rohde else None,
+                }
+            )
+        return result
 
     def number(self, value: str) -> int:
         return self.equates[value] if value in self.equates else _integer(value)
@@ -146,7 +256,10 @@ class OriginalPrograms:
                     "op": "flags",
                     "field": "a",
                     "mask": 3 << shift,
-                    "value": ((int(args[0] == "ON") | (int(args[1] == "ON") << 1)) << shift),
+                    "value": (
+                        (int(self.number(args[0]) != 0) | (int(self.number(args[1]) != 0) << 1))
+                        << shift
+                    ),
                 }
             ]
         if op in ("ac_orientUp", "ac_orientLeft", "ac_orientDown", "ac_orientRight"):
@@ -186,6 +299,11 @@ class OriginalPrograms:
             "instructions": result,
         }
         rows, index = raw["operations"], 0
+        registers: dict[str, int] = {}
+        speaker = None
+        self.programs[symbol]["entitiesRunning"] = not any(
+            row["opcode"] in ("chkFlg", "txt", "script", "rts") for row in rows
+        )
         while index < len(rows):
             row = rows[index]
             op, args = row["opcode"], _tokens(row["operandText"])
@@ -193,6 +311,82 @@ class OriginalPrograms:
             index += 1
             if op in ("csc_end", "rts") or (op == "dc.w" and args == ["$FFFF"]):
                 result.append({"op": "end"})
+            elif (
+                op == "chkFlg"
+                and index < len(rows)
+                and rows[index]["opcode"] in ("beq.s", "beq.w", "bne.s", "bne.w")
+            ):
+                branch = rows[index]
+                index += 1
+                result.append(
+                    {
+                        "op": "branch-flag",
+                        "flag": self.number(args[0]),
+                        "whenSet": branch["opcode"].startswith("bne"),
+                        "target": _location(self.compile(branch["operandText"])),
+                    }
+                )
+            elif op in ("bra.s", "bra.w"):
+                result.append({"op": "jump", "target": _location(self.compile(args[0]))})
+            elif op == "script":
+                result.append({"op": "call", "target": _location(self.compile(args[0]))})
+            elif (
+                op in ("moveq", "move.w")
+                and len(args) == 2
+                and args[0].startswith("#")
+                and re.fullmatch("d[0-7]", args[1])
+            ):
+                registers[args[1]] = self.number(args[0][1:])
+            elif op == "move.w" and args in (
+                ["((CURRENT_SPEECH_SFX-$1000000)).w", "((SPEECH_SFX_COPY-$1000000)).w"],
+                ["d1", "((CURRENT_PORTRAIT-$1000000)).w"],
+                ["d2", "((CURRENT_SPEECH_SFX-$1000000)).w"],
+            ):
+                # These stores are represented by the following typed dialogue speaker binding.
+                pass
+            elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
+                speaker = self.entity(str(registers["d0"]))
+            elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
+                result.append({"op": "speaker", "entity": speaker})
+            elif op == "jsr" and args == ["(WaitForViewScrollEnd).l"]:
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "CameraWait",
+                        "entity": None,
+                        "position": None,
+                        "resource": None,
+                    }
+                )
+            elif op == "jsr" and args == ["MakeEntityWalk"]:
+                result.append(
+                    {
+                        "op": "motion",
+                        "entity": self.entity(str(registers["d0"])),
+                        "wait": False,
+                        "actions": self.walking(registers["d1"], registers["d2"], registers["d3"]),
+                    }
+                )
+            elif op == "jsr" and args == ["MoveEntityOutOfMap"]:
+                result.append(
+                    {
+                        "op": "hide",
+                        "entity": self.entity(str(registers["d0"])),
+                        "removeAliases": False,
+                    }
+                )
+            elif op == "txt":
+                result.extend(
+                    [
+                        {"op": "text-cursor", "text": self.number(args[0])},
+                        {
+                            "op": "show-text",
+                            "mode": "single",
+                            "speaker": speaker,
+                            "useEventSpeaker": speaker is None,
+                        },
+                    ]
+                )
             elif op in ("jump", "jumpIfFlagSet", "jumpIfFlagClear"):
                 target = self.compile(args[-1])
                 result.append(
@@ -222,6 +416,95 @@ class OriginalPrograms:
                         "mode": "single" if op == "nextSingleText" else "continued",
                         "speaker": self.entity(args[1]),
                         "speakerFlags": self.number(args[0]),
+                    }
+                )
+            elif op == "hide":
+                result.append({"op": "hide", "entity": self.entity(args[0]), "removeAliases": True})
+            elif op == "followEntity":
+                position_path = "disasm/code/common/scripting/map/mapscriptengine_1.asm"
+                positions = [
+                    self.number(arg)
+                    for arg in _arguments(
+                        "\n".join(
+                            row["opcode"] + " " + row["operandText"]
+                            for row in self.source_operations(
+                                position_path, "table_FollowerPositions"
+                            )
+                        ),
+                        "dc.b",
+                    )
+                ]
+                offset = self.number(args[2]) * 2
+                result.append(
+                    {
+                        "op": "follow",
+                        "entity": self.entity(args[0]),
+                        "leader": self.entity(args[1]),
+                        "x": positions[offset],
+                        "y": positions[offset + 1],
+                    }
+                )
+            elif op == "join":
+                selector = self.number(args[0])
+                members = [1, 2] if selector & 32767 == 128 else [selector & 32767]
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "CameraWait",
+                        "entity": None,
+                        "position": None,
+                        "resource": None,
+                    }
+                )
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "Sound",
+                        "resource": "MUSIC_SAD_JOIN" if selector & 32768 else "MUSIC_JOIN",
+                        "entity": None,
+                        "position": None,
+                    }
+                )
+                result.extend({"op": "join-party", "member": member} for member in members)
+                result.extend(
+                    [
+                        {"op": "text-cursor", "text": 447 if selector & 32767 == 128 else 446},
+                        {"op": "show-text", "mode": "single", "speaker": None},
+                        {
+                            "op": "present",
+                            "kind": "SoundFade",
+                            "resource": None,
+                            "entity": None,
+                            "position": None,
+                        },
+                        {"op": "close-text"},
+                        {"op": "wait-ticks", "ticks": 10},
+                    ]
+                )
+            elif op in ("entityNodHead", "nod"):
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "Gesture",
+                        "resource": "nod",
+                        "entity": self.entity(args[0]),
+                        "position": None,
+                    }
+                )
+            elif op == "setCamDest":
+                result.append(
+                    {
+                        "op": "camera-target",
+                        "position": {"x": self.number(args[0]), "y": self.number(args[1])},
+                    }
+                )
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "CameraWait",
+                        "resource": None,
+                        "entity": None,
+                        "position": None,
                     }
                 )
             elif op == "closeTxt":
@@ -312,8 +595,161 @@ class OriginalPrograms:
         return symbol
 
 
+def prepare_visuals(
+    compiler: OriginalPrograms,
+    canonical: dict[str, Any],
+    maps: list[dict[str, Any]],
+    rom_path: Path,
+    asset_root: Path,
+    manifest_sha256: str,
+) -> dict[str, Any]:
+    rom = rom_path.read_bytes()
+    if hashlib.sha256(rom).hexdigest().upper() != canonical["romSha256"]:
+        raise ValueError("visual source ROM identity mismatch")
+    manifest_bytes = (asset_root / "manifests/presentation-assets-v1.json").read_bytes()
+    if hashlib.sha256(manifest_bytes).hexdigest().upper() != manifest_sha256:
+        raise ValueError("admitted presentation manifest identity mismatch")
+    manifest = json.loads(manifest_bytes)
+    assets = {asset["assetId"]: asset for asset in manifest["assets"]}
+
+    def raster(width, height, data, format="rgba8"):
+        data = bytes(data)
+        return {
+            "width": width,
+            "height": height,
+            "format": format,
+            "data": base64.b64encode(data).decode("ascii"),
+            "sha256": hashlib.sha256(data).hexdigest().upper(),
+        }
+
+    resources = {
+        key: {row["id"]: row for row in rows} for key, rows in canonical["resources"].items()
+    }
+    map_definitions = {"map-" + str(row["id"]): row for row in canonical["maps"]}
+    map_visuals = []
+    sprites = {0}
+    for map in maps:
+        refs = map_definitions[map["id"]]["references"]
+        asset = assets["world." + map["id"].replace("-", "") + ".base-tileset-atlas"]
+        bucket = next(bucket for bucket in asset["buckets"] if bucket["scale"] == 2)
+        path = (asset_root / bucket["runtimePath"]).resolve(strict=True)
+        if not path.is_relative_to(asset_root.resolve()):
+            raise ValueError("presentation asset path escapes selected root")
+        payload = path.read_bytes()
+        if (
+            len(payload) != bucket["byteLength"]
+            or hashlib.sha256(payload).hexdigest().upper() != bucket["sha256"]
+        ):
+            raise ValueError("admitted raster identity mismatch")
+        map_visuals.append(
+            {
+                "map": map["id"],
+                "atlas": raster(bucket["width"], bucket["height"], payload, "png"),
+                "scale": bucket["scale"],
+                "blocks": resources["blocksets"][refs["blockset"]]["blocks"],
+            }
+        )
+        if "population" in map:
+            sprites.update(
+                entity["sprite"]
+                for entity in map["entities"]
+                if entity["sprite"] >= map["population"]["allyCount"]
+            )
+            sprites.update(row["sprite"] for row in map["population"]["allySprites"])
+            sprites.update(
+                row["unjoinedSprite"]
+                for row in map["population"]["allySprites"]
+                if row["unjoinedSprite"] is not None
+            )
+            sprites.update(
+                row["sprite"]
+                for row in map["population"]["followers"]
+                if row["character"] >= map["population"]["allyCount"]
+            )
+    properties_path = "disasm/data/spritedialogproperties.asm"
+    compiler.sources.update(
+        (
+            properties_path,
+            "disasm/data/graphics/mapsprites/entries.asm",
+            "disasm/data/graphics/portraits/entries.asm",
+            "disasm/code/common/scripting/entity/getentityportaitandspeechsfx.asm",
+            "disasm/code/common/scripting/entity/entityfunctions_4.asm",
+            "disasm/code/common/menus/portraitfunctions.asm",
+        )
+    )
+    properties = (compiler.upstream / properties_path).read_text(encoding="utf-8")
+    columns = [
+        [compiler.number(prefix + value) for value in _arguments(properties, macro)]
+        for prefix, macro in (
+            ("MAPSPRITE_", "mapsprite"),
+            ("PORTRAIT_", "portrait"),
+            ("SFX_", "speechSfx"),
+        )
+    ]
+    dialogue = {
+        sprite: (portrait if portrait < 128 else None, speech)
+        for sprite, portrait, speech in zip(*columns, strict=True)
+    }
+    palette = [
+        md_palette_color(int.from_bytes(rom[offset : offset + 2], "big"))
+        for offset in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
+    ]
+    sprite_visuals = []
+    for sprite in sorted(sprites):
+        directions = []
+        for direction in range(3):
+            entry = PLAYER_POINTER_TABLE_ADDRESS + (sprite * 3 + direction) * 4
+            address = int.from_bytes(rom[entry : entry + 4], "big")
+            decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576).output
+            directions.append(
+                raster(
+                    48,
+                    24,
+                    _combine_player_halves(
+                        _render_player_frame(decoded[:288], palette),
+                        _render_player_frame(decoded[288:], palette),
+                    ),
+                )
+            )
+        portrait, speech = dialogue.get(sprite, (None, compiler.equates["SFX_DIALOG_BLEEP_6"]))
+        sprite_visuals.append(
+            {"sprite": sprite, "directions": directions, "portrait": portrait, "speech": speech}
+        )
+    portrait_visuals = []
+    for portrait in sorted(
+        {row["portrait"] for row in sprite_visuals if row["portrait"] is not None}
+    ):
+        # pt_Portraits: data/graphics/portraits/entries.asm, accepted pointer table at 0x1C8004.
+        entry = 0x1C8004 + portrait * 4
+        address = int.from_bytes(rom[entry : entry + 4], "big")
+        data = rom[address:]
+        _, offset = _read_animation_entries(data, 0, "eye")
+        _, offset = _read_animation_entries(data, offset, "mouth")
+        palette = [
+            md_palette_color(int.from_bytes(data[index : index + 2], "big"))
+            for index in range(offset, offset + 32, 2)
+        ]
+        decoded = decode_stack_compressed(data[offset + 32 :], expected_output_bytes=2048).output
+        pixels = bytearray(64 * 64 * 4)
+        for tile_id in range(64):
+            tile = decode_md_4bpp_tile(decoded[tile_id * 32 : (tile_id + 1) * 32])
+            for y in range(8):
+                for x in range(8):
+                    target = ((tile_id // 8 * 8 + y) * 64 + tile_id % 8 * 8 + x) * 4
+                    pixels[target : target + 4] = bytes(
+                        palette_index_rgba(palette, tile[y * 8 + x])
+                    )
+        portrait_visuals.append({"portrait": portrait, "raster": raster(64, 64, pixels)})
+    return {"maps": map_visuals, "sprites": sprite_visuals, "portraits": portrait_visuals}
+
+
 def prepare(
-    canonical_path: Path, upstream: Path, selection_path: Path, output: Path
+    canonical_path: Path,
+    upstream: Path,
+    selection_path: Path,
+    output: Path,
+    rom_path: Path | None = None,
+    presentation_root: Path | None = None,
 ) -> dict[str, int]:
     output = output.resolve()
     repository = Path(__file__).resolve().parents[2]
@@ -335,6 +771,17 @@ def prepare(
         raise ValueError("pinned source commit mismatch")
     selection = load_json(selection_path)
     compiler = OriginalPrograms(canonical, upstream)
+    for selected in selection.get("eventMaps", []):
+        for filename in (
+            "s2_entityevents.asm",
+            "s3_zoneevents.asm",
+            "s6_initfunction.asm",
+            "scripts_1.asm",
+            "scripts_2.asm",
+        ):
+            compiler.register_file(
+                f"disasm/data/maps/entries/map{selected:02d}/mapsetups/{filename}"
+            )
     for source in selection["additionalProgramSources"]:
         compiler.raw[source["symbol"]] = {
             "id": source["symbol"],
@@ -410,7 +857,7 @@ def prepare(
         for index, warp in enumerate(
             resources["warpEventTables"][references["warpEventTable"]]["records"]
         ):
-            destination = warp["targetMap"]
+            destination = selected if warp["targetMap"] == 255 else warp["targetMap"]
             common = {
                 "x": None if warp["trigger"]["x"] == 255 else warp["trigger"]["x"],
                 "y": None if warp["trigger"]["y"] == 255 else warp["trigger"]["y"],
@@ -430,6 +877,7 @@ def prepare(
                         "map": "map-" + str(destination),
                         "position": warp["destination"],
                         "facing": warp["facing"],
+                        "loadMode": "preserve" if warp["targetMap"] == 255 else "rebuild",
                     }
                 )
             else:
@@ -437,12 +885,138 @@ def prepare(
                     f"map-{selected}-warp-{index}", f"{references['warpEventTable']}[{index}]"
                 )
                 events.append({"kind": "warp-frontier", **common, "program": _location(symbol)})
+        population = None
+        layout_events = None
+        if selected in selection.get("eventMaps", []):
+            folder = f"disasm/data/maps/entries/map{selected:02d}/mapsetups/"
+            source_rows = compiler.source_operations(
+                folder + "s1_entities.asm", setup["references"]["entities"]
+            )
+            source_rows = [source for source in source_rows if source["opcode"] != "msEntitiesEnd"]
+            if len(source_rows) != len(records):
+                raise ValueError("entity source/canonical cardinality mismatch")
+            for entity, source_row, source_record in zip(
+                entities, source_rows, records, strict=True
+            ):
+                args = _tokens(source_row["operandText"])
+                entity["sprite"] = source_record["mapSprite"]
+                entity["actions"] = (
+                    compiler.walking(
+                        **{
+                            "x": source_record["walking"]["originX"],
+                            "y": source_record["walking"]["originY"],
+                            "radius": source_record["walking"]["range"],
+                        }
+                    )
+                    if source_record["kind"] == "walking"
+                    else compiler.action_stream(args[4])
+                )
+            followers_path = "disasm/data/scripting/entity/followers.asm"
+            compiler.sources.add(followers_path)
+            follower_rows = compiler.source_operations(followers_path, "table_Followers")
+            followers = []
+            for follower_row in follower_rows:
+                if follower_row["opcode"] != "follower":
+                    continue
+                flag, character, sprite, _ = map(
+                    compiler.number, _tokens(follower_row["operandText"])
+                )
+                followers.append(
+                    {
+                        "flag": flag,
+                        "character": character,
+                        "sprite": character if character < 30 else sprite,
+                    }
+                )
+            population = {
+                "allyCount": compiler.equates["COMBATANT_ALLIES_NUMBER"],
+                "nonAllyStart": 128,
+                "playerSprite": 0,
+                "followers": followers,
+                "allySprites": compiler.initial_ally_sprites(),
+            }
+            for key, filename, macro, default in (
+                ("entityEvents", "s2_entityevents.asm", "msEntityEvent", "msDefaultEntityEvent"),
+                ("zoneEvents", "s3_zoneevents.asm", "msZoneEvent", "msDefaultZoneEvent"),
+            ):
+                table = compiler.source_operations(folder + filename, setup["references"][key])
+                for source_row in table:
+                    args = _tokens(source_row["operandText"])
+                    if source_row["opcode"] not in (macro, default):
+                        raise ValueError("unsupported event table row")
+                    symbol = args[-1].split("-")[0]
+                    common = {
+                        "program": _location(compiler.compile(symbol)),
+                        "requiredFlag": None,
+                        "requiredValue": True,
+                    }
+                    if key == "entityEvents":
+                        events.append(
+                            {
+                                "kind": "interact",
+                                **common,
+                                "entity": compiler.entity(args[0])
+                                if source_row["opcode"] == macro
+                                else None,
+                                "entityFlags": compiler.number(args[1])
+                                if source_row["opcode"] == macro
+                                else 0,
+                            }
+                        )
+                    else:
+                        events.append(
+                            {
+                                "kind": "step",
+                                **common,
+                                "marker": 0x1400,
+                                "x": None
+                                if source_row["opcode"] == default
+                                or compiler.number(args[0]) == 255
+                                else compiler.number(args[0]),
+                                "y": None
+                                if source_row["opcode"] == default
+                                or compiler.number(args[1]) == 255
+                                else compiler.number(args[1]),
+                            }
+                        )
+
+            def block_copy(record):
+                return {
+                    "source": record["source"] if record["source"]["y"] < 128 else {"x": 0, "y": 0},
+                    "destination": record["destination"],
+                    **record["size"],
+                }
+
+            layout_events = {
+                "doors": [
+                    {"trigger": record["trigger"], "copy": block_copy(record)}
+                    for record in resources["stepEventTables"][references["stepEventTable"]][
+                        "records"
+                    ]
+                ],
+                "flags": [
+                    {"flag": record["flag"], "copy": block_copy(record)}
+                    for record in resources["flagEventTables"][references["flagEventTable"]][
+                        "records"
+                    ]
+                ],
+                "roofs": [
+                    {
+                        "trigger": record["trigger"],
+                        "copy": block_copy(record),
+                        "clear": record["source"]["y"] >= 128,
+                    }
+                    for record in resources["roofEventTables"][references["roofEventTable"]][
+                        "records"
+                    ]
+                ],
+            }
         on_load = compiler.frontier(
             f"map-{selected}-setup", f"{route_id}:ordered setup/init/population"
         )
         flag_table = references["flagEventTable"]
         flag_records = resources["flagEventTables"][flag_table]["records"]
-        if flag_records:
+        if flag_records and selected not in selection.get("eventMaps", []):
             guarded_load = compiler.frontier(f"map-{selected}-flag-layout", flag_table)
             instructions = []
             for index, record in enumerate(flag_records):
@@ -468,6 +1042,9 @@ def prepare(
                     f"map-{selected}-input", f"{route_id}:input/event/autonomous-entity services"
                 )
             )
+        if selected in selection.get("eventMaps", []):
+            input_program = None
+            on_load = compiler.compile(setup["references"]["initFunction"])
         maps.append(
             {
                 "id": "map-" + str(selected),
@@ -478,10 +1055,16 @@ def prepare(
                         "minY": a["mainLayerStart"]["y"],
                         "maxX": a["mainLayerEnd"]["x"],
                         "maxY": a["mainLayerEnd"]["y"],
+                        "overlay": {
+                            axis: a["secondLayerForegroundStart"][axis]
+                            - a["secondLayerBackgroundStart"][axis]
+                            for axis in ("x", "y")
+                        },
                     }
                     for a in areas
                 ],
                 "entities": entities,
+                **({"population": population, "layoutEvents": layout_events} if population else {}),
                 "events": events,
                 "onLoad": _location(on_load),
                 "battle": battle,
@@ -530,6 +1113,13 @@ def prepare(
             ]
             compiler.programs[program_id]["instructions"] = body
     texts_path = "disasm/data/scripting/text/gamescript.txt"
+    names_path = "disasm/data/stats/allies/allynames.asm"
+    compiler.sources.add(names_path)
+    member_names = re.findall(
+        r'allyName\s+"([^"]+)"', (upstream / names_path).read_text(encoding="utf-8")
+    )
+    if len(member_names) != compiler.equates["COMBATANT_ALLIES_NUMBER"]:
+        raise ValueError("source ally name count")
     compiler.sources.add(texts_path)
     # Private text retains source tags; the adapter does not claim original tag/audio timing.
     texts = [
@@ -537,6 +1127,18 @@ def prepare(
         for line in (upstream / texts_path).read_text(encoding="utf-8").splitlines()
         if re.match(r"^[0-9A-Fa-f]{4}=.+", line)
     ]
+    visuals = None
+    if (rom_path is None) != (presentation_root is None):
+        raise ValueError("visual preparation requires both registered ROM and presentation root")
+    if rom_path is not None:
+        visuals = prepare_visuals(
+            compiler,
+            canonical,
+            maps,
+            rom_path,
+            presentation_root,
+            selection["presentationManifestSha256"],
+        )
     sources = []
     for relative in sorted(compiler.sources):
         raw = (upstream / relative).read_bytes()
@@ -559,7 +1161,25 @@ def prepare(
             "sources": sources,
             "controlledBoundary": selection["controlledBoundary"],
         },
-        "world": {"maps": maps, "programs": list(compiler.programs.values()), "texts": texts},
+        "world": {
+            "maps": maps,
+            "programs": list(compiler.programs.values()),
+            "texts": texts,
+            "memberNames": member_names,
+            **({"presentation": visuals} if visuals else {}),
+            **(
+                {
+                    "partyFlags": {
+                        "memberCount": compiler.equates["COMBATANT_ALLIES_NUMBER"],
+                        "joinedStart": compiler.equates["FORCEMEMBER_JOINED_FLAGS_START"],
+                        "activeStart": compiler.equates["FORCEMEMBER_ACTIVE_FLAGS_START"],
+                        "capacity": compiler.equates["FORCE_MAX_SIZE"],
+                    }
+                }
+                if selection.get("eventMaps")
+                else {}
+            ),
+        },
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -572,6 +1192,8 @@ def main() -> None:
     parser.add_argument("--upstream", required=True, type=Path)
     parser.add_argument("--selection", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--rom-path", type=Path)
+    parser.add_argument("--presentation-root", type=Path)
     args = parser.parse_args()
     destination = args.output.resolve()
     repo = Path(__file__).resolve().parents[2]
@@ -580,7 +1202,18 @@ def main() -> None:
             "private content output must stay in this worktree's ignored local directory"
         )
     try:
-        print(json.dumps(prepare(args.canonical, args.upstream, args.selection, destination)))
+        print(
+            json.dumps(
+                prepare(
+                    args.canonical,
+                    args.upstream,
+                    args.selection,
+                    destination,
+                    args.rom_path,
+                    args.presentation_root,
+                )
+            )
+        )
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError) as error:
         # Do not expose local private input paths through an exception traceback.
         raise SystemExit(

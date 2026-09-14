@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "id": "private-local-map3-r1-party-v1",
+  "evidenceOwner": "docs/research/map3-admitted-start.md; tests/fixtures/h3/map3-admitted-start-v1.json",
+  "bridgeBoundary": "Named R1 controlled initialization seam. The first three source-initial allies supply unentered encounter definitions/vitals; live joined/active flags belong to the exploration start. Their resources, equipment, spells and the 32-bit main RNG image are from R1. EXP/kills/defeats and the independent thinking image remain explicitly controlled padding. This is not natural title/menu reach or a battle-entry claim.",
+  "profile": "private-local-controlled-start",
+  "battle": 1,
+  "policy": {
+    "beforeBattle": "controlled-skip",
+    "allyStats": "already-refreshed-and-equipped",
+    "actorStorage": "roster-only",
+    "difficulty": 0,
+    "allyAutoBattle": false,
+    "opponentControl": false,
+    "missingCandidateAllyWord": 0
+  },
+  "mainSeed": 2568421376,
+  "thinkingSeed": 305397760,
+  "gold": 0,
+  "allies": [
+    {
+      "id": 0,
+      "classId": 0,
+      "level": 1,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 8,
+      "mp": 8,
+      "attack": 9,
+      "defense": 4,
+      "agility": 4,
+      "move": 6,
+      "status": 0,
+      "items": [
+        0,
+        199,
+        0,
+        0
+      ],
+      "spells": [
+        10,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0
+    },
+    {
+      "id": 1,
+      "classId": 4,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 10,
+      "mp": 10,
+      "attack": 9,
+      "defense": 5,
+      "agility": 5,
+      "move": 5,
+      "status": 0,
+      "items": [
+        0,
+        213,
+        0,
+        0
+      ],
+      "spells": [
+        0,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0
+    },
+    {
+      "id": 2,
+      "classId": 1,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 8,
+      "defense": 5,
+      "agility": 7,
+      "move": 7,
+      "status": 0,
+      "items": [
+        0,
+        184,
+        0,
+        0
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": 0,
+      "kills": 0,
+      "defeats": 0
+    }
+  ]
+}

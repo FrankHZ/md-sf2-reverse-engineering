@@ -680,6 +680,9 @@ ENGINE_EVIDENCE_INPUTS = frozenset(
     {
         "tests/fixtures/h3/entity-movement-matrix-v1.json",
         "tests/fixtures/h3/map3-battle01-player-ready-v1.json",
+        "tests/fixtures/h3/map3-admitted-start-v1.json",
+        "tests/fixtures/h3/map3-battle01-natural-route-v1.json",
+        "tests/fixtures/h3/map3-messenger-acceptance-v1.json",
     }
 )
 RETIRED_ENGINE_TEST_PATHS = frozenset(
@@ -725,9 +728,12 @@ def _plan_engine_paths(
         elif path.startswith("remake/tests/"):
             # Legacy/reference test edits or retirement do not run the old solution.
             continue
+        elif path == "remake/reference/inputs/map3-post-opening-reference-start.json":
+            _selection_entry(selected, "reference-host-build", path)
         elif path in {
             "remake/reference/inputs/battle01-player-ready.json",
             "remake/reference/inputs/battle01-actions.json",
+            "remake/reference/inputs/map3-opening-party.json",
         } or (path.startswith("remake/reference/inputs/map") and path.endswith("-start.json")):
             # Copied by Engine.Tests and consumed by the actual private engine facts.
             _selection_entry(selected, "engine-unit", path)

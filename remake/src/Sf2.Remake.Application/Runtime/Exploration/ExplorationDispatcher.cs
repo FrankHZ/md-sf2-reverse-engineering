@@ -17,7 +17,8 @@ internal static class ExplorationDispatcher
         if (start.EntryProgram is { } entry && (entry.Instruction != 0 || !definition.Exploration.Programs.ContainsKey(entry.Program)))
             throw new BattleRuleException("program-entry", "start.program");
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
-            continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput);
+            continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
+            partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), []);
     }
@@ -32,9 +33,28 @@ internal static class ExplorationDispatcher
             switch (command)
             {
                 case Acknowledge ack:
-                    if (current.Story.Wait is not (DialogueWait or PresentationWait) || current.Story.Wait.Token != ack.Wait)
+                    if (current.Story.Wait is not DialogueWait || current.Story.Wait.Token != ack.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, "presentation-acknowledged");
+                    break;
+                case CompletePresentation completion:
+                    if (current.Story.Wait is not PresentationWait presenting || presenting.Token != completion.Wait || presenting.Cue.Kind != completion.Kind)
+                        return Reject(current, "stale-or-wrong-presentation", "presentation");
+                    var completedActive = current.Active;
+                    if (presenting.Cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodded })
+                    {
+                        var entity = ProgramRunner.Entity(current, nodded);
+                        completedActive = new ActiveExploration(current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } }));
+                    }
+                    current = ProgramRunner.Commit(current, completedActive, FinishWait(current.Story), observations, "presentation-completed", completion.Kind.ToString());
+                    break;
+                case EntitySpriteReady sprite:
+                    var spriteWorld = current.Exploration;
+                    var spriteEntity = spriteWorld?.AllEntities.FirstOrDefault(entity => entity.Slot == sprite.Slot);
+                    if (spriteEntity is null || !spriteEntity.WaitingForSprite || spriteEntity.SpriteRequest != sprite.Request || spriteEntity.SpriteReady == sprite.Request)
+                        return Reject(current, "stale-or-wrong-sprite", "sprite");
+                    current = ProgramRunner.Commit(current, new ActiveExploration(spriteWorld!.WithEntity(spriteEntity with { SpriteReady = sprite.Request })),
+                        current.Story, observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case ChooseDialogue choice:
                     if (current.Story.Wait is not ChoiceWait waiting || waiting.Token != choice.Wait)
@@ -51,8 +71,10 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
-                        EntityActionTickResult? tickResult = current.Exploration is { } world ? EntityActionRunner.Tick(world) : null;
-                        var active = tickResult is not null ? new ActiveExploration(tickResult.World) : current.Active;
+                        bool entityUpdates = current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
+                            definition.Exploration!.Programs[location.Program].EntitiesRunning;
+                        EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world ? EntityActionRunner.Tick(world) : null;
+                        var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = current.Story;
                         if (tickResult?.Failure is { } failure)
                         {
@@ -60,7 +82,9 @@ internal static class ExplorationDispatcher
                             current = ProgramRunner.Commit(current, active, story, observations, "entity-action-stopped", failure.Field);
                             return ProgramRunner.Failure(current, observations, failure);
                         }
-                        if (story.Wait is TickWait timer)
+                        if (story.Wait is EntityEventFacingWait)
+                        { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor); }
+                        else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
                             !explored.World.Entities[entityWait.Entity].Busy)
@@ -102,6 +126,12 @@ internal static class ExplorationDispatcher
         var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, move.Direction);
         if (candidate is not null && world.Definition.Traversal.IsWithinActiveArea(candidate))
         {
+            var opened = MapEventDispatcher.OpenDoor(world, candidate);
+            if (!ReferenceEquals(opened, world))
+            {
+                world = opened;
+                current = ProgramRunner.Commit(current, new ActiveExploration(world), current.Story, observations, "door-opened");
+            }
             var warp = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
                 Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], current.Story));
             if (warp is not null)
@@ -112,18 +142,20 @@ internal static class ExplorationDispatcher
                     return ProgramRunner.Run(definition, current, observations);
                 }
                 var transferred = MapTransfer.Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                    MapLoadMode.Rebuild, current.Story, observations);
+                    warp.LoadMode, current.Story, observations);
                 return ProgramRunner.Run(definition, transferred, observations);
             }
         }
         var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, move.Direction);
-        bool occupied = world.Entities.Values.Any(entity => entity.Entity != world.Player && entity.Visible &&
-            entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
+        var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible);
+        bool occupied = world.Definition.Population is not null
+            ? EntityMotion.FieldObstructed(traversal.Position.X * 384, traversal.Position.Y * 384, others.Select(entity => entity.Motion))
+            : others.Any(entity => entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
         if (traversal.Outcome != OriginalMapTraversalOutcome.Moved || occupied)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(faced)), current.Story, observations, "movement-blocked"),
                 SessionStopReason.PlayerInput), observations);
-        var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position), new StopEntityActions()]);
+        var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position, world.Definition.Population is not null), new StopEntityActions()]);
         var moved = world.WithEntity(faced with { Actions = actions, ActionCursor = 0 });
         var step = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
             Matches(entry, traversal.Position, world.Layout[traversal.Position.X, traversal.Position.Y], current.Story));
@@ -144,10 +176,10 @@ internal static class ExplorationDispatcher
             (dx > 0 ? 0 : dx < 0 ? 2 : dy < 0 ? 1 : 3))
             return Reject(current, "interaction-range-or-facing", "entity");
         var entry = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Interact &&
-            entry.Entity == command.Entity && (entry.RequiredFlag is null ||
+            (entry.Entity is null || entry.Entity == command.Entity) && (entry.RequiredFlag is null ||
                 current.Story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue));
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
-        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(program), observations, "interaction-started", command.Entity.Value);
+        current = MapEventDispatcher.Interact(current, entry, command.Entity, observations);
         return ProgramRunner.Run(definition, current, observations);
     }
 

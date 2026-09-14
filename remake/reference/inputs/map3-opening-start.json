@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Accepted R1 controlled Map3 initialization entry at (56,3), Down. Only Bowie is joined and active. This is the named controlled initialization seam, not title/menu reachability.",
+  "start": {
+    "map": "map-3",
+    "player": "entity-0",
+    "position": {
+      "x": 56,
+      "y": 3
+    },
+    "facing": 3,
+    "speed": 32,
+    "flags": [
+      0,
+      32
+    ]
+  }
+}

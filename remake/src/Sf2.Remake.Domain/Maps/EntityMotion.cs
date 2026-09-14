@@ -17,12 +17,40 @@ internal static class EntityMotion
 {
     private static readonly int[] FacingTable = [5, 2, 6, -1, 1, -1, 3, -1, 4, 0, 7, -1, -1, -1, -1, -1];
 
+    // esc03_follow measures current separation, then rotates offsets around the leader's destination.
+    internal static EntityMotionState Follow(EntityMotionState state, EntityMotionState leader, int offsetX, int offsetY,
+        Func<int, int, bool> passable)
+    {
+        if (Math.Max(Math.Abs(Signed(state.X - leader.X)), Math.Abs(Signed(state.Y - leader.Y))) <= 0x1E0) return state;
+        (short X, short Y) Target(int x, int y)
+        {
+            x *= 16; y *= 16;
+            var delta = leader.Facing switch
+            {
+                0 => (x, y), 1 => (y, -x), 2 => (-x, -y), 3 => (-y, x),
+                4 => (x + y, -x - y), 5 => (-x - y, -x - y),
+                6 => (-x - y, x + y), _ => (x - y, x - y),
+            };
+            return (Signed(leader.XDestination + delta.Item1), Signed(leader.YDestination + delta.Item2));
+        }
+        var target = Target(offsetX, offsetY);
+        if (!passable(target.X / 384, target.Y / 384))
+        {
+            target = Target(offsetX, 0);
+            if (!passable(target.X / 384, target.Y / 384)) target = (leader.XDestination, leader.YDestination);
+        }
+        return state with { XDestination = target.X, YDestination = target.Y,
+            XTravel = (ushort)Math.Abs(Signed(target.X - state.X)), YTravel = (ushort)Math.Abs(Signed(target.Y - state.Y)),
+            XVelocity = Signed(target.X == state.X ? 0 : target.X > state.X ? state.XSpeed : -state.XSpeed),
+            YVelocity = Signed(target.Y == state.Y ? 0 : target.Y > state.Y ? state.YSpeed : -state.YSpeed) };
+    }
+
     // The script installs motion after this tick's movement pass. Obstruction retains its cursor.
     internal static EntityMotionState? Start(EntityMotionState state, short x, short y,
-        IEnumerable<EntityMotionState> others)
+        IEnumerable<EntityMotionState> others, bool fieldInput = false)
     {
-        if ((state.FlagsA & 0x20) != 0 && others.Any(other =>
-            Math.Abs(other.XDestination - x) + Math.Abs(other.YDestination - y) < 384)) return null;
+        if ((state.FlagsA & 0x20) != 0 && (fieldInput ? FieldObstructed(x, y, others) : others.Any(other =>
+            Math.Abs(other.XDestination - x) + Math.Abs(other.YDestination - y) < 384))) return null;
         ushort travelX = (ushort)Math.Abs(Signed(x - state.X));
         ushort travelY = (ushort)Math.Abs(Signed(y - state.Y));
         return state with
@@ -32,6 +60,12 @@ internal static class EntityMotion
             YVelocity = Signed(travelY == 0 ? 0 : y >= state.Y ? state.YSpeed : -state.YSpeed), WaitTimer = 0,
         };
     }
+
+    // esc02_input checks obstructable entities at both their current and reserved positions.
+    internal static bool FieldObstructed(int x, int y, IEnumerable<EntityMotionState> others) =>
+        others.Any(other => (other.FlagsA & 0x80) != 0 &&
+            ((Math.Abs(other.X - x) < 256 && Math.Abs(other.Y - y) < 256) ||
+             (Math.Abs(other.XDestination - x) < 256 && Math.Abs(other.YDestination - y) < 256)));
 
     internal static EntityMotionState Tick(EntityMotionState state, ushort? destinationWord)
     {

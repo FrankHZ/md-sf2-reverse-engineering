@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -17,9 +18,10 @@ public sealed partial class ExplorationSessionView : Control
     private Label _help = null!;
     private double _tickTime;
     private ExplorationState? _lastWorld;
+    private ExplorationPresentation? _presentation;
     private SessionFailure? PresentationFailure => _result?.Failure ??
-        (_session?.Current.Story.Wait is PresentationWait ? new(SessionFailureKind.AdapterError,
-            "presentation-unavailable", "presentation", "The requested presentation is unavailable.") : null);
+        (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
+            "presentation-unavailable", "presentation", error) : null);
 
     public override void _Ready()
     {
@@ -32,14 +34,29 @@ public sealed partial class ExplorationSessionView : Control
         AddChild(_title); AddChild(_dialogue); AddChild(_help);
         GetViewport().SizeChanged += Present;
     }
-    public override void _ExitTree() => GetViewport().SizeChanged -= Present;
+    public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
 
     internal void Begin(GameSession session, SessionResult result, Action<SessionResult> enterBattle)
-    { _session = session; _result = result; _enterBattle = enterBattle; Present(); }
+    {
+        _session = session; _result = result; _enterBattle = enterBattle;
+        _presentation = new(this, session.Definition.Exploration!);
+        TextureFilter = TextureFilterEnum.Nearest;
+        Present();
+    }
 
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if (_presentation is { } presentation)
+        {
+            foreach (var completion in presentation.Update(delta, _session.Current))
+            {
+                Send(completion);
+                if (_handedOff || _result?.Failure is not null) return;
+            }
+            QueueRedraw();
+            if (presentation.Error is not null) { Present(); return; }
+        }
         if (NeedsTicks(_session.Current))
         {
             const double tickDuration = 1.0 / 60;
@@ -61,7 +78,7 @@ public sealed partial class ExplorationSessionView : Control
 
     private static bool NeedsTicks(SessionSnapshot current) =>
         current.StopReason == SessionStopReason.SimulationWait ||
-        current.Exploration?.Entities.Values.Any(entity => entity.Busy) == true;
+        current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
 
     public override void _UnhandledInput(InputEvent input)
     {
@@ -117,17 +134,26 @@ public sealed partial class ExplorationSessionView : Control
         _lastWorld = current.Exploration ?? _lastWorld;
         var size = GetViewportRect().Size;
         _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
-        _dialogue.Position = new(20, Mathf.Max(80, size.Y - 140));
-        _dialogue.Size = new(Mathf.Max(1, size.X - 40), 75);
+        bool portrait = _session.Definition.Exploration?.Visuals is not null && current.Story.TextWindow is OpenTextWindow { Speaker: not null };
+        bool rightPortrait = current.Story.TextWindow is OpenTextWindow { SpeakerFlags: var speakerFlags } && (speakerFlags & 0x80) != 0;
+        _dialogue.Position = new(portrait && !rightPortrait ? 110 : 20, Mathf.Max(80, size.Y - 140));
+        _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 110 : 20)), 75);
         _help.Position = new(20, Mathf.Max(130, size.Y - 55));
         _help.Size = new(Mathf.Max(1, size.X - 40), 45);
         _dialogue.Text = current.Story.Wait switch
         {
             DialogueWait text => _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
-            ChoiceWait => "Would you like to continue?",
-            PresentationWait cue => $"Presentation unavailable: {cue.Cue.Kind}.",
+            ChoiceWait => current.Story.TextWindow is OpenTextWindow question ? _session.Definition.Exploration!.Texts.GetValueOrDefault(question.Text) ?? "" : "Would you like to continue?",
+            PresentationWait => current.Story.TextWindow is OpenTextWindow text ? _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "" : "",
             _ => current.Story.TextWindow is OpenTextWindow open ? _session.Definition.Exploration!.Texts.GetValueOrDefault(open.Text) ?? "" : "",
         };
+        var names = _session.Definition.Exploration!.MemberNames;
+        _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n"), @"\{W[0-9]+\}", "");
+        _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME;([0-9]+))\}", match =>
+        {
+            int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
+            return member < names.Count ? names[member] : match.Value;
+        });
         _help.Text = current.Story.Wait switch
         {
             ChoiceWait => "Y / Enter: Yes     N / Esc: No",
@@ -143,6 +169,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
+        if (_presentation?.Draw(world, _session!.Current.Story) == true) return;
         var bounds = world.Definition.Traversal.ActiveAreas;
         int left = bounds.Min(area => area.MinimumX), top = bounds.Min(area => area.MinimumY);
         int right = bounds.Max(area => area.MaximumX), bottom = bounds.Max(area => area.MaximumY);
@@ -156,7 +183,7 @@ public sealed partial class ExplorationSessionView : Control
                 bool blocked = (world.Layout[x, y] & 0xC000) == 0xC000;
                 DrawRect(rectangle, blocked ? new Color(0.12f, 0.17f, 0.22f) : new Color(0.24f, 0.33f, 0.32f));
             }
-        foreach (var entity in world.Entities.Values.Where(entity => entity.Visible))
+        foreach (var entity in world.AllEntities.Where(entity => entity.Visible))
         {
             var center = origin + new Vector2((entity.Motion.X / 384f - left + 0.5f) * cell,
                 (entity.Motion.Y / 384f - top + 0.5f) * cell);
@@ -174,9 +201,20 @@ public sealed partial class ExplorationSessionView : Control
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
             dialogue = _dialogue.Text, help = _help.Text,
+            textId = (current?.Story.Wait as DialogueWait)?.Text,
+            speaker = (current?.Story.Wait as DialogueWait)?.Speaker?.Value,
+            speakerFlags = (current?.Story.Wait as DialogueWait)?.SpeakerFlags,
+            partyLists = current?.Story.PartyLists, mainSeed = current?.Exploration?.Party.MainSeed,
+            presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
+                nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
+                soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
+                cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
+                error = _presentation?.Error },
             entities = current?.Exploration?.Entities.Values.Select(entity => new
             {
-                id = entity.Entity.Value, x = entity.Motion.X, y = entity.Motion.Y,
+                id = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite, facing = entity.Motion.Facing,
+                follower = entity.Follower, spriteRequest = entity.SpriteRequest, spriteReady = entity.SpriteReady,
+                x = entity.Motion.X, y = entity.Motion.Y,
                 targetX = entity.Motion.XDestination, targetY = entity.Motion.YDestination,
                 moving = entity.Motion.IsMoving, busy = entity.Busy, entity.Visible, actionCursor = entity.ActionCursor, speedX = entity.Motion.XSpeed, flagsA = entity.Motion.FlagsA, flagsB = entity.Motion.FlagsB,
             }),

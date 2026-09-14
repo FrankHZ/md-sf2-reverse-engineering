@@ -10,7 +10,7 @@
     1
   ],
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Controlled whole-program entry with source default-setup entity placements, no active follower projection or autonomous NPC scripts. Explicit speed32 and unobstructed scripted destinations are controlled initial motion inputs. This package stops at unimplemented setup/event/native services. Source tags are retained; original name substitution, rendering/audio and natural chronology remain outside this projection.",
+  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Full source programs execute through the common session. Original hardware presentation timing and routes beyond the named opening/messenger group remain outside this admission.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -35,5 +35,9 @@
     "bbcs_01",
     "ms_Empty",
     "cs_51652"
-  ]
+  ],
+  "eventMaps": [
+    3
+  ],
+  "presentationManifestSha256": "4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"
 }

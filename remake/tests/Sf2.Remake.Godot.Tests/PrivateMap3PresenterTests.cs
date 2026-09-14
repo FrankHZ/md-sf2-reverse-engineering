@@ -400,9 +400,9 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(
             "Map map3  Tile (56, 3)  Area 2  Step 7  Moved  |  " +
                 "WASD semantic movement  |  Sarah Ready; actor 1 at " +
-                "(1, 1), facing 3; temporary route flag clear; F semantic interaction " +
-                "request  |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
-                "flags261/602 clear; no pending request; F request / G acknowledge",
+                "(1, 1), facing 3; temporary route flag clear; opening interaction belongs to the common host " +
+                " |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
+                "flags261/602 clear; no pending request; opening interaction belongs to the common host",
             status);
         Assert.Equal(new MapId(OriginalMapRuntimeAdmission.MapId), projection.Map);
         Assert.Equal(50, projection.OriginX);
@@ -441,9 +441,9 @@ public sealed class PrivateMap3PresenterTests
                 "WASD semantic movement  |  Zone601 complete; actor 128 at " +
                 "(5, 4), facing 2; ambient center (5, 6) range 1; " +
                 "random choices Unknown  |  Sarah Ready; actor 1 at " +
-                "(1, 1), facing 3; temporary route flag clear; F semantic interaction " +
-                "request  |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
-                "flags261/602 clear; no pending request; F request / G acknowledge",
+                "(1, 1), facing 3; temporary route flag clear; opening interaction belongs to the common host " +
+                " |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
+                "flags261/602 clear; no pending request; opening interaction belongs to the common host",
             status);
         Assert.DoesNotContain("510", status, StringComparison.Ordinal);
         Assert.DoesNotContain("dialogue", status, StringComparison.OrdinalIgnoreCase);
@@ -454,10 +454,10 @@ public sealed class PrivateMap3PresenterTests
     {
         PrivateOriginalMapSessionSnapshot ready = Snapshot();
         Assert.Equal(
-            "F semantic interaction request",
+            "opening interaction belongs to the common host",
             PrivateMap3PresentationPlan.SarahAction(ready.Sarah!));
         Assert.Equal(
-            "no pending request; F request / G acknowledge",
+            "no pending request; opening interaction belongs to the common host",
             PrivateMap3PresentationPlan.Entity142Action(
                 ready.Entity142!,
                 "no pending request"));

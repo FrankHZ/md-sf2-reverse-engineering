@@ -144,7 +144,7 @@ public sealed class ExplorationSessionTests
     }
 
     [Fact]
-    public void SameTickActionConfigurationSurvivesReachedNativeFailureAtItsOwnCursor()
+    public void SpriteRefreshRetainsItsCursorUntilTheMatchingPresentationCompletes()
     {
         var session = StartProgram("""
             [{"op":"set-flag","flag":7,"value":true},
@@ -158,8 +158,7 @@ public sealed class ExplorationSessionTests
              {"op":"set-flag","flag":8,"value":true},{"op":"end"}]
             """);
         var result = Send(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
-        Assert.Equal(SessionFailureKind.UnsupportedCapability, result.Failure!.Kind);
-        Assert.Equal("entity-sprite-refresh", result.Failure.Code);
+        Assert.Null(result.Failure);
         Assert.Equal(new ProgramLocation("invitation", 1), session.Current.Story.Cursor);
         Assert.Equal(new[] { 7 }, session.Current.Story.Flags);
         Assert.Equal(1, session.Current.Story.SimulationTick);
@@ -168,9 +167,19 @@ public sealed class ExplorationSessionTests
         Assert.Equal(4, entity.ActionCursor);
         Assert.Equal((32, 48, 2, 3, 160), ((int)entity.Motion.XSpeed, (int)entity.Motion.YSpeed,
             (int)entity.Motion.XAcceleration, (int)entity.Motion.YAcceleration, (int)entity.Motion.FlagsA));
-        var stopped = session.Current;
-        Assert.NotNull(Send(session, new AdvanceSimulation(stopped.Story.Wait!.Token)).Failure);
-        Assert.Same(stopped, session.Current);
+        Assert.True(entity.WaitingForSprite);
+        var pending = session.Current;
+        Assert.NotNull(Send(session, new EntitySpriteReady(entity.Slot, entity.SpriteRequest + 1)).Failure);
+        Assert.Same(pending, session.Current);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 3));
+        Assert.Equal(4, session.Current.Exploration!.Entities[new("ferryman")].ActionCursor);
+        Assert.DoesNotContain(8, session.Current.Story.Flags);
+        Accept(session, new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
+        Assert.NotNull(Send(session, new EntitySpriteReady(entity.Slot, entity.SpriteRequest)).Failure);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.Contains(8, session.Current.Story.Flags);
+        Assert.Equal(2, session.Current.Exploration.Entities[new("ferryman")].Motion.Facing);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
     }
 
     [Fact]

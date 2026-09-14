@@ -180,6 +180,7 @@ public sealed partial class Map3Root
             return;
         }
 
+        ApplyLaterReferenceInput(started.Session);
         _session = started.Session;
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateInputActions());
         _privatePresenter?.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
@@ -196,6 +197,12 @@ public sealed partial class Map3Root
         }
     }
 
+    private static void ApplyLaterReferenceInput(GameSession session)
+    {
+        string? path = System.Environment.GetEnvironmentVariable("SF2_REFERENCE_POST_OPENING_START");
+        if (!string.IsNullOrWhiteSpace(path))
+            session.ApplyPrivateOriginalMapReferenceStart(PrivateOriginalMapReferenceStart.Read(path));
+    }
     private void StartPrivateVisualScenario(
         Map3RuntimeProfileSelection selection,
         IOriginalMapImportSource importSource,
@@ -252,6 +259,7 @@ public sealed partial class Map3Root
             return;
         }
 
+        ApplyLaterReferenceInput(started.Session);
         _session = started.Session;
         _privateBattleBridgeEnabled = true;
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateInputActions());
@@ -699,7 +707,7 @@ public sealed partial class Map3Root
             static () => { },
             static _ => { },
             ApplyPrivateInteractionRequest,
-            ApplyPrivateEntity142Acknowledgement,
+            ApplyPrivateInteractionRequest,
             static () => { },
             static () => { },
             static () => { },
@@ -756,75 +764,12 @@ public sealed partial class Map3Root
                     $"First-visit result unavailable: {palace.Code}",
                     _session.PrivateOriginalMapPlayerLocomotion);
                 break;
-            case PrivateOriginalMapSarahInteractionSelected selected:
-                PrivateOriginalMapSarahInteractionApplied applied = selected.Applied;
-                _privatePresenter?.Project(
-                    applied.Snapshot,
-                    applied.Receipt.Repeated
-                        ? "Sarah interaction repeated"
-                        : "Sarah route cleared",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapEntity142InteractionRequested selected:
-                _privatePresenter?.Project(
-                    selected.Applied.Snapshot,
-                    selected.Applied.Request.Repeated
-                        ? "Entity 142 repeat request pending; G acknowledges"
-                        : "Entity 142 first request pending; G acknowledges",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapSarahInteractionSelectionRejected selected:
-                _privatePresenter?.Project(
-                    selected.Rejected.Snapshot,
-                    $"Sarah interaction {selected.Rejected.Diagnostic.Code}",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapEntity142InteractionSelectionRejected selected:
-                _privatePresenter?.Project(
-                    selected.Rejected.Snapshot,
-                    $"Entity 142 request {selected.Rejected.Diagnostic.Code}",
-                    _session.PrivateOriginalMapPlayerLocomotion);
+            case PrivateOriginalMapInteractionUnavailable unavailable:
+                _privatePresenter?.Project(unavailable.Snapshot, unavailable.Reason, _session.PrivateOriginalMapPlayerLocomotion);
                 break;
             default:
                 throw new InvalidOperationException(
                     "Private semantic interaction returned an unknown result.");
-        }
-    }
-
-    private void ApplyPrivateEntity142Acknowledgement()
-    {
-        if (_session?.PrivateOriginalMapArrival is not null) { RefuseGransealInteraction(); return; }
-        if (_session?.PrivateOriginalMapSnapshot.PendingEntity142 is not
-            PrivateOriginalMapEntity142Request pending)
-        {
-            return;
-        }
-
-        PrivateOriginalMapEntity142AcknowledgementResult result =
-            _session.AcknowledgePrivateOriginalMapEntity142(
-                new AcknowledgePrivateOriginalMapEntity142Command(
-                    _session.PrivateOriginalMapSnapshot.SimulationStep,
-                    pending.RequestSequence,
-                    pending.EventIdentity));
-        switch (result)
-        {
-            case PrivateOriginalMapEntity142AcknowledgementApplied applied:
-                _privatePresenter?.Project(
-                    applied.Snapshot,
-                    applied.Receipt.Request.Repeated
-                        ? "Entity 142 repeat interaction acknowledged"
-                        : "Entity 142 flags 261/602 acknowledged",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapEntity142AcknowledgementRejected rejected:
-                _privatePresenter?.Project(
-                    rejected.Snapshot,
-                    $"Entity 142 acknowledgement {rejected.Diagnostic.Code}",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            default:
-                throw new InvalidOperationException(
-                    "Private Entity 142 acknowledgement returned an unknown result.");
         }
     }
 

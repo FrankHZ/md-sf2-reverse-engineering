@@ -15,13 +15,17 @@ Neither package identity nor an expected route/receipt admits a command.
 simulation tick and observations survive the switch. The battle view attaches to the existing
 session. It cannot restart it at the transfer endpoint. Startup and transfer use the same derived
 `HasBattleControl` boundary: an active battle with a pending program or wait keeps the program view
-until its dialogue, choice or timer finishes, then exposes ordinary battle control.
+until its dialogue, choice, timer or presentation service finishes, then exposes ordinary battle
+control.
 
-Before entry, `ExplorationState.Party` owns the explicit candidate battle start's resources, seeds
-and accounting. Entry consumes that exploration payload to initialize battle actors. This bounded
-model does not implement a travelling roster, follower membership, inventory changes, joins or a
-second persistent battle state. Those operations need their own admitted rules before the private
-route can continue through them.
+Before battle entry, `ExplorationState.Party` owns the explicit candidate resources, seeds and
+accounting. Joined/active membership is separately owned by story flags and source-order counted
+lists; follower links refer to physical map slots. `JoinForce` refreshes counted lists before its
+active-flag write, so the immediately exposed list can lag that final write. This is intentional
+source chronology. The opening input supplies the first three R1 allies' class, resources,
+equipment and spells. Other initial ally appearances and names come from pinned source data;
+this group does not claim a full travelling roster, mutable names, promotion/death appearance,
+inventory operations or later battle admission.
 
 ## Definitions and execution
 
@@ -67,115 +71,148 @@ require the existing explicit controlled skip. Battle region state and its activ
 their existing Domain owner; general story access to battle-region flag aliases is outside the
 selected private programs described below.
 
-## Original content and admitted comparisons
+## Original Map 3 opening
 
-`python -m sf2tool.remake_exploration_content` consumes the registered canonical map export and the
-pinned source checkout. It verifies the existing canonical manifest identity, upstream commit and
-selected source bytes against that commit. It reuses the existing source statement/equate parsing;
-no comparison fixture supplies runtime program definitions. The reference selection
-[`map3-programs.json`](../reference/inputs/map3-programs.json) selects resources/programs and explicit
-controlled motion defaults. Actual operations, layouts, entity records, warp rows and battle hook
-references come from those private sources. Branch/fallthrough targets are retained. Unsupported
-source services remain at their real operation rather than being dropped.
+The named `map3-opening-start.json` begins at R1's controlled Map3 initialization seam, at (56,3)
+facing down with only Bowie joined/active. It is not natural title/menu reach. The ordinary host
+consumes canonical layouts, ordered setup/entity/event tables, pinned native wrappers and complete
+map-script bodies. No expected endpoint, route ID or reference receipt participates in execution.
+The separately read R2 controller trace exercises house exit, both doors, Sarah's classroom
+interaction, stairs, entity142, Astral's zone and the messenger trigger. The complete messenger
+acceptance runs through its motion, text, choice, two nods, camera waits, join music/fade, membership,
+follower installation and guard positions; the zone wrapper then sets F603 and returns field input.
 
-`PrivateExplorationReader` reads the prepared world and a separate controlled start once, joins its
-upstream/ROM provenance to the existing private battle source, validates the typed content, and
-retains both preparation and start boundaries. The prepared file is the output of the named offline
-trust boundary; this JSON reader does not independently re-extract or authenticate its transformed
-program bytes. Original-source claims therefore require that preparation command and its selected
-inputs, not an arbitrarily edited prepared file. All prepared content, original dialogue, assets and
-native observations remain ignored/private. Public start files contain only minimal controlled facts.
+**Confirmed:** common-session comparisons match the accepted R1 position/membership/start RNG,
+R2 program order and route positions, and R2a text IDs/packed speaker operands, flags, guards,
+follower links and (43,10)/down endpoint. Ordinary Godot input observations reach the same endpoint
+and move down then back up through a follower-occupied tile. A second input run declines, verifies
+that join/follower flags stay clear, then talks to Sarah and accepts. That alternate behavior is
+supported by pinned source and reproduced in the remake; it is not an additional original H3 claim.
+An independent live-flag start enables another follower and moves logical entity142 from physical
+slot17 to18. Logical identity and source record identity do not depend on that slot number.
 
-**Confirmed (bounded engine/reference/native observations):**
+Population allocation preserves physical processing order, enabled source followers, source allies
+that reuse those slots, and non-ally logical aliases. Source `eas_Init` configurations execute and
+wait for a matching sprite mount. Source walking templates are lowered from their actual operations;
+random movement uses the existing main RNG. Followers measure current separation, rotate source
+offsets around the leader's destination, and apply terrain fallbacks. Player input checks the source
+obstructable bit and both current/reserved positions; scripted motion keeps its distinct destination
+check. Hiding removes the logical aliases and follower behavior while retaining the physical slot.
 
-- `cs_513D6` executes Sarah's two movement segments. `cs_5148C` and `cs_513A0` apply their actual
-  explicit position instructions without claiming the earlier route executed.
-- `cs_51652` moves both guards, presents its dialogue requests, then moves both back and returns.
-- `cs_5149A` executes its initial waits, multi-entity motion, dialogue and speed change before the
-  first `nod` at source operation39. That gesture remains **Unsupported**; later F600/join effects
-  have not executed.
-- `cs_5145C` enters actual `eas_Init`, commits its configuration and global size24, then stops at
-  `ac_updateSprite`. Compressed sprite/VRAM queue completion is **Unsupported**, not an idle receipt.
-- `cs_53EF4` completes guard128's move, then stops at `setFacing 135`. The runtime alias/population
-  of135 is **Unknown** in the accepted controlled owner; F401 is not invented or published afterward.
-- The actual Map40 input plan reaches the marked wildcard warp into Map57. With intro flag clear,
-  the actual `bbcs_01` sets text cursor2292 and stops at `loadMapFadeIn`; its coordinates are camera
-  operands, not a player warp. With explicitly controlled F451 set, both hooks skip and the same
-  session initializes Battle01 and matches the existing first-player/RNG boundary.
-- The movement core/destination projection matches all13 cases in the existing H3 entity movement
-  matrix. This is a bounded component comparison, not a full EAS interpreter or natural timing claim.
+Ordered door copies run before traversal; flag copies run at rebuild; roof activation/restoration
+uses the shared layout reducers and signed area overlays. Source map255 same-map reload preserves
+entities and the working layout, updates player position/facing, performs roof-on-load and reruns
+selected initialization. The original setup selector still refuses an unimplemented alternative
+instead of publishing default entities. This group uses Map3's default setup; broader initialization,
+healing/temp reset, dynamically promoted/dead allies and other setups are outside its start boundary.
 
-Map3/Map21 starts are explicit whole-program entries with source default placements and controlled
-inactive autonomous scripts. Their unported input/setup/event services retain source frontiers.
-The existing `MapSetupSelector` selects the last set-flag alternative before entity construction;
-an unsupported selected setup cannot publish the default setup's population. All source warp rows are retained; unadmitted destination/scroll/reload branches stop before transfer.
-Map40's supported flag-guarded init preserves ordered setup alternatives; an unsupported selected
-alternative stops. A same-row cell without the warp marker does not transfer. Enabled source
-flag-layout records stop before init/battle selection until their copy operation is supported;
-clear flags continue to the selected init. This includes Map57's F506 record, so selecting that
-flag cannot silently reuse the unmodified layout. The supported Map40 route has empty flag, step
-and roof tables and a default zone event that returns immediately.
+## Presentation and private Content
 
-Original follower population, joins/items, general init/layout mutation, same-map reload, source
-text-tag/name substitution, camera/fade/gesture/FX/audio, the full before-battle body and natural
-Map3→Battle01 continuity remain **Unknown** or **Unsupported** at the named owners. Source tags remain
-private text data; displaying a request does not prove original text timing or presentation. The
-ordinary view reports `AdapterError` for a presentation cue it cannot perform and leaves the wait
-pending; Enter cannot fabricate its completion. Outcome/after-program/return remain M4.
+Content validates private provenance, embedded raster identities/shapes, required map/sprite links
+and portrait references before session creation. Preparation verifies the registered USA ROM and
+pinned source/asset manifest, reuses the existing map atlas, and decodes required sprite directions
+and portraits through maintained decoders. The generated world and all game text/raster bytes remain
+ignored private output. No ROM, extracted asset, dialogue prose or private absolute path is tracked.
+
+Godot draws the working block layout and source sprite frames, mounts requested entity sprites,
+shows source portraits and resolves `{LEADER}`/`{NAME;n}` from configured source names. It scrolls
+the camera to the requested destination and waits for arrival. Nod presentation freezes the entity
+animation counter and uses a 40/60-second timeline, with the altered head band from 10/60 to 30/60
+seconds and the restored sprite afterward. Completion follows elapsed time independently of viewport
+culling or missed render phases. Actual visible nod and restored-sprite draws are counted separately;
+an off-camera actor or a frame that skips a phase does not fabricate a draw or hold the story forever.
+`CompletePresentation` validates both wait token and kind; `EntitySpriteReady` validates slot and
+request generation. Enter acknowledges dialogue only and cannot complete an unperformed service.
+
+The audio contract permits an explicit project-authored presentation mapping: MUSIC_JOIN and
+MUSIC_SAD_JOIN play a generated C-major/C-minor chord loop through `AudioStreamPlayer`, with an actual
+fade and stop. This is a modern cue, **not original audio parity**. Sound and fade services continue
+while the common story owns control, including after
+the active state has become a battle with no exploration world. Camera and gesture cues require a
+current exploration world; without it they report `AdapterError` and retain their wait instead of
+using stale map state. Camera smoothing, portrait crop,
+text layout/full-line display, nod pixel transformation and cue duration are bounded presentation
+choices. Original VRAM/DMA timing, portrait blink/mouth/typewriter RNG, speech SFX, door/warp music
+and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknown or Unsupported**.
+They are not silently reported as performed original services. An unbound explicit presentation cue
+reports `AdapterError` and retains its wait.
+
+## Remaining source boundaries
+
+The Map21 guard still stops at logical entity135; its runtime alias/population is **Unknown**, so
+F401 is not invented. The marked Map40 warp reaches the actual before-battle program and stops at
+`loadMapFadeIn`; an explicitly supplied seen-intro flag retains the accepted controlled battle-entry
+comparison. The complete before-battle body, castle/tower route, natural Map3-to-Battle01 continuity,
+outcome and return remain outside this group. Other Map3 native branches such as ChurchMenu and
+moveNextToPlayer retain executable source frontiers.
+
+After F603, a later Map3 init can target entity142 after its alias has been removed. The source
+lookup returns the255 sentinel and its helpers perform raw entity-address writes. That later RAM
+boundary is not admitted here; the common session refuses the missing alias. Stable local field
+movement after acceptance is confirmed, but another post-acceptance map reload is not claimed.
 
 ## Reference migration boundary
 
-The new ordinary source path has no reference assembly dependency or fixed-route session classes.
-G3/G4 are not closed by a controlled program-entry comparison. The existing reference
-`PrivateMap3Composition` still calls full Sarah/dialogue/zone, messenger, castle/palace and guard
-handlers; the pending `PrivateOriginalBattle01Admission` and M4 return paths still require their
-original-map context. Those handlers include unported init/event/follower/presentation services
-outside the executed program bodies above. No last caller has disappeared for those families, so
-none is deleted on the strength of a partial comparison. The [caller inventory](../reference/README.md)
-is the removal boundary; retire each complete owner together with its final caller when that flow
-migrates. M3's common capability group is available; the full original-route migration and A1–A8 are
-not reported complete.
+The ordinary source path has no Reference dependency. Complete legacy Sarah, zone601, entity142,
+Astral-zone and messenger endpoint-writing methods, their F/G presentation branches and obsolete
+prefix/atomic-route tests are removed. Whole-flow comparisons now use common commands and actual
+native input. The old private probe retains only the separate Map21/Map40/frontier comparisons.
+
+Castle/tower, pending Battle01 admission and M4 return remain reference consumers. Their tests use
+`map3-post-opening-reference-start.json` as an explicit controlled starting context, with zero executed
+history and no messenger receipt. The optional reference-host variable
+`SF2_REFERENCE_POST_OPENING_START` selects this same input. This is not a bridge proving original
+continuity. The default old private start remains a geometry diagnostic; its migrated interactions
+report that the common host owns them. State/receipt DTOs and trust projections still used by frozen
+later snapshots remain until their last caller migrates. Shared legacy geometry/visual bindings also
+serve those later comparisons. G3/G4, A1–A8 and8C/H4 are not reported globally closed.
 
 ## Reproduction
 
-Use the current worktree's existing environment/input selectors, verified SDK/Godot installation and
-fresh ignored output directory. Do not replay an old research worktree's scripts. Set the variables
-below to explicitly selected local inputs/output; private absolute paths are not repository content.
+Use the current worktree's retained environment, SDK/Godot and registered private input selectors.
+Choose fresh ignored output paths. Preparation and actual opening launch are:
 
 ```powershell
 uv run --locked python -m sf2tool.remake_exploration_content `
   --canonical $env:SF2_PRIVATE_CANONICAL_MAP_IMPORT `
   --upstream $selectedUpstreamRoot `
   --selection remake/reference/inputs/map3-programs.json `
+  --rom-path $registeredRomPath --presentation-root $selectedPresentationRoot `
   --output $env:SF2_PRIVATE_EXPLORATION_CONTENT
 
+$env:SF2_PRIVATE_CONTROLLED_START = (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-party.json').Path
+& $godotBinary --path remake/game -- --private-exploration-start (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-start.json').Path
+```
+
+The existing private encounter/static/enemy/gold selections are also required. Program data never
+reads reference fixtures. For the native comparison, build the ordinary Debug project first and run:
+
+```powershell
+$env:SF2_PRIVATE_EXPLORATION_CASE = 'map3-opening' # or map3-decline
+$env:SF2_PRIVATE_EXPLORATION_PLAN = (Resolve-Path -LiteralPath 'tests/fixtures/h3/map3-battle01-natural-route-v1.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'opening.json'
+& $godotBinary --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_map3_opening_observation.gd -- `
+  --private-exploration-start (Resolve-Path -LiteralPath 'remake/reference/inputs/map3-opening-start.json').Path
+```
+
+Require exit0, `passed: true`, both real sound counters, actual gesture draws, stable input and no
+script/process errors. The observer waits briefly for the independent audio thread's stop/free queue
+before headless exit; that wait does not advance game state. No screenshots or state setters are used.
+
+```powershell
 uv run sf2 verify engine
 uv run sf2 verify adapter
 uv run sf2 verify reference-host
-
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
-# Also select the existing private encounter/static/enemy/gold inputs and battle01-actions.json.
 & $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
   --configuration Release --no-restore --filter 'FullyQualifiedName~PrivateExplorationTests'
 ```
 
-For an ordinary interactive source start, use
-`--path remake/game -- --private-exploration-start <absolute controlled-start JSON>`.
-`SF2_PRIVATE_CONTROLLED_START` selects the existing separate battle party/accounting input;
-`SF2_PRIVATE_EXPLORATION_CONTENT` selects the prepared world. The tracked `map*-start.json` files
-provide explicit starting alternatives. The authored exploration packages use `--authored-package`.
-
-For the native comparisons, build the ordinary Debug project, select a fresh output path in
-`SF2_EXPLORATION_OBSERVATION_OUTPUT`, and run the retained Godot executable with
-`--headless --path remake/game --fixed-fps 60 --script res://probes/engine_exploration_observation.gd`
-for each authored package. The private observer is
-`res://probes/engine_private_exploration_observation.gd`; its external
-`SF2_PRIVATE_EXPLORATION_CASE` selects `map3-sarah`, `map3-gate`, `map3-messenger`, `map3-sprite-init`,
-`map21-guard`, `map40-intro` or `map40-seen`. Supply the matching `*-start.json` through the ordinary
-startup option. `SF2_PRIVATE_EXPLORATION_PLAN` selects the existing
-`tests/fixtures/h3/map3-battle01-player-ready-v1.json` for the Map40 input plan. That fixture is read
-only by the observer/comparison, never by the game. Require a successful process exit, `passed: true`
-and no script/process errors. No screenshots or state setters are used. The existing planner/CI selectors register these consumed
-controlled starts and both H3 fixtures. The offline content frontend and selection use the existing
-engine/shared-wiring partitions; the committed `--scope engine` plan retains `research-public`
-checks and excludes unchanged original H2/H3 runtime evidence. No tests of the selectors are added.
+The owning engine project copies R1/R2/R2a comparison fixtures and explicit starts. Private input
+checks run only with their required input configuration; public runs report their skips. Use the
+committed `verify plan --scope engine` selection and proportionate direct checks. Completed failing
+legacy runs remain recorded; rerun their corrected nodes rather than replaying the aggregate. The
+remaining native observer is `engine_private_exploration_observation.gd`, with `map21-guard`,
+`map40-intro`, `map40-seen` or the authored missing-presentation case. The Map40 observer reads the
+existing PlayerReady fixture's static input plan; it does not supply runtime state.
