@@ -125,7 +125,7 @@ public sealed class EnemyActionTests
             Assert.Equal((actor.Hp, actor.Exp, actor.Kills, actor.Defeats, actor.LastTarget),
                 (after.Hp, after.Exp, after.Kills, after.Defeats, after.LastTarget));
         }
-        Assert.Equal(new[] { "movement", "action-committed" }, result.Observations.Select(o => o.Kind));
+        Assert.Equal(new[] { "movement", "after-turn", "action-committed" }, result.Observations.Select(o => o.Kind));
         Assert.Equal("not-waiting", Send(session, new AdvanceSimulation()).Failure!.Code);
         Assert.Same(result.Snapshot, session.Current);
     }

@@ -9,7 +9,7 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class PrivateSourceAiTests
 {
-    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_CONTROLLED_START")]
+    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_CONTROLLED_START")]
     public void ActualPrivateCommandsRunInactiveStandbyThenActivationAndSetSevenToNextPlayer()
     {
         var session = Assert.IsType<SessionStarted>(GameSession.Start(PrivateBattleScenarioTests.Selected())).Session;
@@ -45,24 +45,35 @@ public sealed class PrivateSourceAiTests
         Assert.Equal(4, session.Current.Battle.Round); Assert.Equal(new ActorRef("ally-1"), session.Current.Selection!.Actor);
         Assert.Equal(0x51DC1234u, session.Current.Battle.MainSeed); Assert.Equal(0x02340000u, session.Current.Battle.ThinkingSeed);
         Assert.Equal(new byte[] { 0x14, 0x24, 0x14, 0x24, 0x34, 0x34 }, session.Current.Battle.Actors.Skip(3).Select(actor => actor.AiMemory));
-        SessionResult? stopped = null;
-        for (int turns = 0; turns < 12 && session.Current.StopReason == SessionStopReason.PlayerInput; turns++)
+        SessionResult? action = null;
+        for (int turns = 0; turns < 12; turns++)
         {
-            Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay)); stopped = Send(session, new Confirm());
+            action = Stay(session);
+            if (action.Observations.Any(row => row.Kind == "physical-first")) break;
         }
-        Assert.Equal("source-attack-operands", stopped!.Failure!.Code); Assert.Equal(SessionStopReason.Unsupported, stopped.StopReason);
-        Assert.Equal(6, session.Current.Battle.Round); Assert.Equal(5, session.Current.Battle.Cursor);
-        Assert.Equal(new ActorRef("enemy-4"), session.Current.Battle.Queue[5].Actor);
-        Assert.Equal(0x07821234u, session.Current.Battle.MainSeed); Assert.Equal(0x00340000u, session.Current.Battle.ThinkingSeed);
-        Assert.Equal(new MapPosition(11, 10), session.Current.Battle.GetActor(new("enemy-4")).Position);
+        // Same actual command trajectory as the retained ActualRoundSixAttack reference comparison.
+        Assert.Null(action!.Failure); Assert.Equal(SessionStopReason.PlayerInput, action.StopReason);
+        Assert.Equal(6, session.Current.Battle.Round); Assert.Equal(6, session.Current.Battle.Cursor);
+        Assert.Equal(new ActorRef("ally-0"), session.Current.Selection!.Actor);
+        Assert.Equal(0xAF881234u, session.Current.Battle.MainSeed); Assert.Equal(0x01340000u, session.Current.Battle.ThinkingSeed);
+        Assert.Equal(new MapPosition(11, 14), session.Current.Battle.GetActor(new("enemy-4")).Position);
+        Assert.Equal((ushort)9, session.Current.Battle.GetActor(new("ally-0")).Hp);
+        Assert.Equal(new ActorRef("ally-0"), session.Current.Battle.GetActor(new("enemy-4")).LastTarget);
+        Assert.Equal(new ushort?[] { 12, 30, 0, 0, 11, 21 }, action.Observations.Where(row => row.Kind.StartsWith("rng-", StringComparison.Ordinal)).Select(row => row.RandomValue));
         Assert.Same(definition, session.Definition); Assert.Null(session.Current.Battle.Gold);
         foreach (var actor in session.Current.Battle.Actors)
         {
             var before = initial.GetActor(actor.Actor);
             Assert.Same(before.Deployment, actor.Deployment); Assert.Equal(before.Attack, actor.Attack);
-            Assert.Equal(before.Hp, actor.Hp); Assert.Equal(before.Mp, actor.Mp); Assert.Null(actor.Exp); Assert.Null(actor.Kills); Assert.Null(actor.Defeats); Assert.Null(actor.LastTarget);
+            Assert.Equal(before.Mp, actor.Mp); Assert.Null(actor.Exp); Assert.Null(actor.Kills); Assert.Null(actor.Defeats);
             Assert.Equal(before.Definition.SourceLoadout!.Items, actor.Definition.SourceLoadout!.Items);
             Assert.Equal(before.Definition.SourceLoadout.Spells, actor.Definition.SourceLoadout.Spells);
         }
+        // Unknown accounting becomes a reached failure on the actual next player attack, atomically.
+        Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.PhysicalAttack));
+        Accept(session, new SelectTarget(new("enemy-4")));
+        var beforeAttack = session.Current;
+        Assert.Equal("unspecified-exp", Send(session, new Confirm()).Failure!.Code);
+        Assert.Same(beforeAttack, session.Current);
     }
 }

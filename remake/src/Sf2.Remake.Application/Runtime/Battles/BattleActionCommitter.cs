@@ -16,6 +16,9 @@ internal static class BattleActionCommitter
         foreach (var effect in effects)
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
                 RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
+        // Every admitted action has status-free, ATT-only equipment semantics. Its after-turn
+        // pass changes no resources or RNG; publish it once for player and automatic actions.
+        observations.Add(new(++sequence, revision, "after-turn", actor));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", actor));

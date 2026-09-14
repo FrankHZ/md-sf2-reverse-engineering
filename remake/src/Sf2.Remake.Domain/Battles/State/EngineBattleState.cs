@@ -27,7 +27,8 @@ public sealed class PhysicalCriticalRule
     internal int DamageBonusShift { get; }
 }
 
-public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold);
+public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold,
+    byte MinimumRange = 1, byte MaximumRange = 1);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
 
 public sealed record HealingSpellDefinition(

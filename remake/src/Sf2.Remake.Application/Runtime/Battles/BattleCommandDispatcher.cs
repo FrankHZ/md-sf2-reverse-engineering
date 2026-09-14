@@ -53,7 +53,8 @@ internal static class BattleCommandDispatcher
                             "action", choice.Action != SessionAction.Heal);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
                         SessionAction.Stay), "stay-selected");
-                case SelectSpell spell when selection.Stage == BattleSelectionStage.ActionChoice:
+                case SelectSpell spell when selection.Stage == BattleSelectionStage.ActionChoice ||
+                    (selection.Action == SessionAction.Heal && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady):
                     _ = PlayerHealing.RequireSpell(battle, selection.Actor, spell.Spell);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.TargetChoice,
                         SessionAction.Heal, spell.Spell), "spell-selected");

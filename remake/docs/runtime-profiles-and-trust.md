@@ -328,9 +328,11 @@ separate accepted rights and content decision.
 ## Private Initialized Common Battle
 
 [`PrivateBattleScenarioReader`](../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
-reads six explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
+reads seven explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
 `SF2_PRIVATE_BATTLE01_TERRAIN` retain the existing encounter trust boundary. `SF2_PRIVATE_STATIC_DATA`
 and `SF2_PRIVATE_ENEMY_DATA` select the existing pinned static-data and enemy-promotion exports.
+`SF2_PRIVATE_ENEMY_GOLD` selects the existing enemy-gold export, whose used enemy IDs and ROM addresses
+remain distinct from its unused tail. The extraction manifest owns its digest; it is never a public fixture input.
 Their bytes must match the authoritative extraction manifests and their source provenance must match
 the pinned upstream revision. The controlled JSON path comes from `--private-battle-start`; tests select
 it through `SF2_PRIVATE_CONTROLLED_START`. Partial/missing selections, drift or conflicting profiles
@@ -353,13 +355,18 @@ word is explicit representation padding. Neither RNG is reseeded during play. H3
 bridge remains provenance, not a claim that natural Map3 entry skips its actual programs.
 
 Regular/healer costs retain the authored table. Centaur uses cost5 on rough/deep and3 on brush;
-hovering uses cost2 on every admitted non-barrier surface and land multiplier256. Private source
+hovering uses cost2 on every admitted non-barrier surface. Its land multiplier still follows terrain
+protection (source0/1 give256/230), independently of its airborne dodge and Flying AI priority. Private source
 terrain values are interpreted only at Content admission; the original full byte grid is retained.
 The common weighted kernel, movement and cancel commands own play. SourceOrders preserves each
 immutable deployment anchor, both decoded source orders, current memory/activation word, last target
 and both RNG channels. Inactive standby uses source terrain and evolving occupancy; active set7
 retains failed MOVE_ORDER1 before the no-action pursuit shared with set6. Content resolves source
 NONE as255 and leaves unresolved order expressions explicit. Nonempty move-order programs, wider
-status/neutral occupancy, nonempty enemy action categories and the reached physical cohort stop at
-their capability boundary before partial publication. Private equipment/action/reward binding, broader
+status/neutral occupancy and nonempty enemy action categories stop before partial publication.
+Selected class prowess, adjacent ATT-only weapons, unpromoted HEAL1–3 and enemy gold now bind to common
+actions, death/rewards and one no-effect after-turn pass. The external
+[action input](../reference/inputs/battle01-actions.json) supplies controlled initial accounting; the
+PlayerReady input retains Unknown values and rejects only operations that need them. No source bonus
+is applied twice, no live accounting is filled, and unsupported spell references stay visible. Broader
 spawn/region programs and outcome/return remain future work; the legacy route keeps those consumers.

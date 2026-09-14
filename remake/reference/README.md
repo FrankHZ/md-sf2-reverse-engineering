@@ -50,6 +50,12 @@ algorithm remains. `Battle01EnemyPhysicalAttack.Priority` and `SelectTarget` now
 supplies its admitted Flying table. Duplicate script3, cohort, class-rank and movement-tie calculations
 are removed; the old class check remains only a private profile/land-rule admission guard. Authored
 regular movement uses the Regular table through that same selector, with named class definitions.
+Private GIZMO now selects Flying through its admitted hovering mover. Its physical binding uses the
+same scalar/reward owners with source class/equipment and pinned enemy-gold data; hovering still
+receives source terrain protection. The ordinary host runs actual enemy/player/first-kill/HEAL actions
+through the common dispatcher. Controlled initial counters live only in `inputs/battle01-actions.json`;
+`inputs/battle01-player-ready.json` retains Unknown accounting. Concrete Map3/startup/return callers
+below remain, so these wrappers and explicit reference Godot branches still have live consumers.
 `Battle01EnemyPursuit.DecidePursuit` delegates the complete raw-target/preliminary-walk/radius-fallback
 calculation to `AiMovementRules.Pursue`. `Battle01EnemyStandby.Decide` projects the shared
 `AiStandbyRules` anchor/memory/occupancy/thinking decision; its `SourceWalk` and `SourceMoveString`

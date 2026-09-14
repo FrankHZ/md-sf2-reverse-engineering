@@ -71,6 +71,14 @@ func _run() -> void:
         return
     var observation_case := _diagnostic("CASE")
     if not observation_case.is_empty():
+        if observation_case == "spell-selection":
+            await _spell_selection(initial)
+            _finish()
+            return
+        if observation_case == "private-actions":
+            await _private_actions(initial)
+            _finish()
+            return
         if observation_case == "private-source-ai":
             await _private_source_ai(initial)
             _check(samples.size() == 13, "Private source AI completed all thirteen continuous-input checkpoints")
@@ -729,18 +737,104 @@ func _private_source_ai(initial: Dictionary) -> void:
     _check(saw_move_order, "Set7 retains its failed MOVE_ORDER1 before the common pursuit")
     current = set_seven
     for _turn in range(12):
-        if current.stopReason != "PlayerInput":
+        if current.stopReason != "PlayerInput" or current.actors[0].hp < 12:
             break
         await _private_stay()
         current = JSON.parse_string(view.call("ReadObservationJson"))
-    var stopped := _read("private-reached-action-boundary")
-    _check(stopped.failure == "source-attack-operands" and stopped.stopReason == "Unsupported" and stopped.round == 6 and stopped.queueCursor == 5, "Reached physical action stops at the explicit step3 capability boundary")
-    _check(stopped.mainSeed == 0x07821234 and stopped.thinkingSeed == 0x00340000 and stopped.actors[7].x == 11 and stopped.actors[7].y == 10, "Unsupported action retains the last successful state without a partial pursuit or reseed")
-    for index in range(initial.actors.size()):
-        var actor: Dictionary = stopped.actors[index]
-        var before: Dictionary = initial.actors[index]
-        _check(actor.hp == before.hp and actor.mp == before.mp and actor.attack == before.attack and actor.items == before.items and actor.spells == before.spells, "Continuous no-action flow preserves resources and the actual source loadout")
-        _check(actor.anchorX == before.anchorX and actor.anchorY == before.anchorY and actor.exp == null and actor.kills == null and actor.defeats == null and actor.lastTarget == null, "Source anchor, Unknown accounting and last target remain intact")
-    await process_frame
-    var stable := _read("private-action-boundary-stable")
-    _check(stable.revision == stopped.revision and stable.mainSeed == stopped.mainSeed and stable.thinkingSeed == stopped.thinkingSeed, "Native frames do not continue an Unsupported action")
+    var stopped := _read("private-first-physical-to-next-control")
+    _check(stopped.failure == null and stopped.stopReason == "PlayerInput" and stopped.round == 6 and stopped.actor == "ally-0", "Actual first enemy attack returns to Bowie control")
+    _check(stopped.mainSeed == 0xAF881234 and stopped.thinkingSeed == 0x01340000 and stopped.actors[7].x == 11 and stopped.actors[7].y == 14 and stopped.actors[0].hp == 9, "Actual physical state and both RNG channels match the retained reference")
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    await _press(KEY_TAB)
+    for _index in range(4):
+        await _press(KEY_TAB)
+    await _press(KEY_ENTER)
+    var stable := _read("private-unknown-accounting-atomic")
+    _check(stable.failure == "unspecified-exp" and stable.mainSeed == stopped.mainSeed and stable.thinkingSeed == stopped.thinkingSeed, "Unknown EXP rejects the reached player action without publishing movement, damage or RNG")
+    _check(stable.actors[7].hp == 5 and stable.actors[0].exp == null, "Unknown accounting remains Unknown")
+
+func _spell_selection(initial: Dictionary) -> void:
+    await _press(KEY_ENTER)
+    await _press(KEY_H)
+    var first := _read("first-spell")
+    _check(first.spell.Value == "mend" and first.spell.Level == 1, "First learned spell is selectable")
+    await _press(KEY_H)
+    var second := _read("second-spell")
+    _check(second.spell.Value == "restore" and second.spell.Level == 2 and second.target == initial.actor, "The same ordered spellbook exposes its second spell and level")
+    _check(second.spellChoices.contains("RESTORE 2 · selected"), "Visible spell list projects the accepted selection")
+    _check(second.mainSeed == initial.mainSeed and second.actors[0].mp == initial.actors[0].mp, "Choice alone spends no resources or RNG")
+    await _press(KEY_ENTER)
+    var committed := _read("second-spell-committed")
+    _check(committed.failure == null and committed.actors[0].hp == 90 and committed.actors[0].mp == 15, "Actual second-spell input applies its own power and cost")
+    _check(committed.actor != initial.actor and committed.stopReason == "PlayerInput", "Application returns the next actual control")
+
+func _private_actions(initial: Dictionary) -> void:
+    _check(initial.gold == 0 and initial.actors[0].exp == 0, "Accounting comes from the explicit controlled start")
+    await _private_stay()
+    await _private_stay()
+    await _press(KEY_W)
+    await _private_stay()
+    var current: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    for _turn in range(20):
+        if current.round >= 3:
+            break
+        if current.actor == "ally-0":
+            for _step in range(3):
+                await _press(KEY_D)
+            for _step in range(2):
+                await _press(KEY_W)
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    for _turn in range(16):
+        if current.actors[0].hp < 12 or current.failure != null:
+            break
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    var hit := _read("actual-enemy-hit")
+    _check(hit.mainSeed == 0xAF881234 and hit.thinkingSeed == 0x01340000 and hit.actors[0].hp == 9 and hit.actor == "ally-0", "Actual controlled action route matches the first enemy reference hit")
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    for _index in range(5):
+        await _press(KEY_TAB)
+    await _press(KEY_ENTER)
+    var player := _read("actual-player-hit-and-continuation")
+    _check(player.failure == null and player.actors[7].hp == 2 and player.actors[0].exp == 15 and player.mainSeed == 0xCF491234 and player.thinkingSeed == 0x02340000, "Bowie attacks the actual hovering enemy through normal input and earns EXP")
+    _check(player.stopReason == "PlayerInput", "Player attack continues to actual input")
+    current = player
+    for _turn in range(4):
+        if current.actor == "ally-0" or current.failure != null:
+            break
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    _check(current.actor == "ally-0" and current.mainSeed == 0x18571234 and current.actors[0].hp == 6, "Actual continuation matches the retained first-kill selection boundary")
+    await _press(KEY_ENTER)
+    await _press(KEY_X)
+    for _index in range(5):
+        await _press(KEY_TAB)
+    await _press(KEY_ENTER)
+    var killed := _read("actual-enemy-death-and-next-control")
+    _check(killed.failure == null and killed.actor == "ally-1" and killed.mainSeed == 0xF7751234 and killed.thinkingSeed == 0x02340000, "Actual first kill returns Sarah control with both reference RNG channels")
+    _check(killed.actors[7].hp == 0 and killed.actors[7].x == null and killed.gold == 60 and killed.actors[0].exp == 39 and killed.actors[0].kills == 1, "Ordered kill rewards and authoritative death cleanup match the actual reference")
+    # Continue real player input to Sarah, moving her toward the injured ally for an actual HEAL.
+    current = killed
+    for _turn in range(4):
+        if current.actor == "ally-1" or current.failure != null:
+            break
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    if current.actor == "ally-1":
+        for _step in range(2):
+            await _press(KEY_D)
+        for _step in range(2):
+            await _press(KEY_W)
+        await _press(KEY_ENTER)
+        await _press(KEY_H)
+        for _target in range(2):
+            await _press(KEY_TAB)
+        await _press(KEY_ENTER)
+        var healed := _read("actual-heal-and-continuation")
+        _check(healed.failure == null and healed.actors[1].mp == 7 and healed.actors[0].hp == 12, "Actual Sarah HEAL restores the injured ally and spends source MP")
+        _check(healed.stopReason == "PlayerInput", "HEAL returns actual control")
+    else:
+        _check(false, "Actual route reaches Sarah for HEAL")

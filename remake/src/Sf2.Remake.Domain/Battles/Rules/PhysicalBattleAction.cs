@@ -24,7 +24,8 @@ internal static class PhysicalBattleAction
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
-        if (Math.Abs(destination.X - target.Position!.X) + Math.Abs(destination.Y - target.Position.Y) != 1)
+        var range = battle.GetActor(actorRef).Definition.Physical!;
+        if (!BattleRange.Contains(destination, target.Position!, range.MinimumRange, range.MaximumRange))
             throw new BattleRuleException("target-range", "target");
         return target;
     }
@@ -50,7 +51,9 @@ internal static class PhysicalBattleAction
             // counter draw does not clear the first success; second-hit death still invalidates it.
             counterRequested |= second.CounterRolled;
         }
-        bool counterPerformed = targetHp > 0 && counterRequested;
+        var counterRange = target.Definition.Physical!;
+        bool counterPerformed = targetHp > 0 && counterRequested &&
+            BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
         // double/counter draws, whose toggles cannot schedule another strike.
@@ -87,9 +90,8 @@ internal static class PhysicalBattleAction
             effects.Add(new("defeats", ally.Actor, ally.Defeats, BattleRewards.Defeats(ally.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true))));
             effects.Add(new("death-cleanup", ally.Actor, 1, 0));
         }
-        // No status/equipment effects are admitted. After-turn does not change this snapshot;
+        // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
-        effects.Add(new("after-turn", actorRef));
         var actors = current.Actors.Select(a => a.Actor == actorRef || a.Actor == targetRef
             ? a.With(hp: a.Actor == actorRef ? actorHp : targetHp,
                 position: a.Actor == actorRef ? destination : a.Position,
@@ -111,7 +113,8 @@ internal static class PhysicalBattleAction
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = BattleTerrainRules.LandMultiplier(terrain, defender.Definition.Mover);
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Definition.Defense,
-                hp, multiplier, seed, 32, profile.Critical.ChanceDenominator,
+                hp, multiplier, seed, defender.Definition.Mover == BattleMover.Hovering ? (ushort)8 : (ushort)32,
+                profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter);
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));

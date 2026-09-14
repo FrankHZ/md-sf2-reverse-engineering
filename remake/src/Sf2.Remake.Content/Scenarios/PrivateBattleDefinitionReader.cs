@@ -11,17 +11,19 @@ internal static class PrivateBattleDefinitionReader
     internal const string StaticDigest = "BCEB7EE6EC4AEF592A27EC1053CFBE547D45D8171CE6510343C80CC94D04235A";
     internal const string EnemyDigest = "8E77363833F31861DB23765E5BEE7263EA2BD2D09F5F4DA869C302A83C25BE06";
 
-    internal static PrivateBattleDefinitions Read(string staticPath, string enemyPath,
+    internal static PrivateBattleDefinitions Read(string staticPath, string enemyPath, string goldPath,
         BattleEncounterDefinition encounter, ControlledBattleStart start)
     {
         var coreBytes = PrivateBattleEncounterReader.ReadInput(staticPath, StaticDigest, "static-data", maximumLength: 1048576);
         var enemyBytes = PrivateBattleEncounterReader.ReadInput(enemyPath, EnemyDigest, "enemy-data", maximumLength: 1048576);
         using var core = JsonDocument.Parse(coreBytes, new JsonDocumentOptions { MaxDepth = 32 });
         using var enemy = JsonDocument.Parse(enemyBytes, new JsonDocumentOptions { MaxDepth = 32 });
-        return Decode(core.RootElement, enemy.RootElement, encounter, start);
+        using var gold = JsonDocument.Parse(PrivateBattleEncounterReader.ReadInput(goldPath,
+            "16607CA1AE0477BC22FE81BEA044B7711D8C1EA3A31F4A0064C0288C026AD3DF", "enemy-gold", maximumLength: 16384));
+        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start);
     }
 
-    internal static PrivateBattleDefinitions Decode(JsonElement core, JsonElement enemy,
+    internal static PrivateBattleDefinitions Decode(JsonElement core, JsonElement enemy, JsonElement gold,
         BattleEncounterDefinition encounter, ControlledBattleStart start)
     {
         Object(core, "static-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "allies", "classes", "items", "spellNames", "spellDefinitions");
@@ -37,7 +39,8 @@ internal static class PrivateBattleDefinitionReader
         var items = itemIds.Order().Select(id => Item(FindId(core, "items", id))).ToArray();
         var spellKeys = new HashSet<(byte Id, byte Level)>();
         foreach (byte packed in start.Allies.SelectMany(row => row.Spells))
-            if ((packed & 63) != 63) spellKeys.Add(((byte)(packed & 63), (byte)((packed >> 6) + 1)));
+            if ((packed & 63) != 63)
+                for (byte level = 1; level <= (packed >> 6) + 1; level++) spellKeys.Add(((byte)(packed & 63), level));
         foreach (var row in enemies.SelectMany(row => row.Spells)) AddSpell(row.Spell, row.Level);
         foreach (var row in items) AddSpell(row.UseSpell, row.UseSpellLevel);
         var spells = spellKeys.OrderBy(key => key.Id).ThenBy(key => key.Level).Select(key =>
@@ -47,7 +50,14 @@ internal static class PrivateBattleDefinitionReader
             Require(rows.Length == 1, "missing-or-duplicate-spell-definition", "spellDefinitions");
             return Spell(rows[0], key.Id, code);
         }).ToArray();
-        return new(encounter, sources, classes, items, spells, enemies);
+        // The pinned export distinguishes used enemy IDs from its unused ROM tail.
+        Require(Text(gold, "upstreamCommit") == PrivateBattleEncounterReader.UpstreamCommit, "source-provenance", "enemy-gold");
+        var rewards = Array(gold, "usedGold").Select(value => value.GetUInt16()).ToArray();
+        Require(rewards.Length == 103, "enemy-gold-count", "enemy-gold");
+        var selectedGold = enemies.Select(row => new SourceEnemyGold(row.Id, rewards[row.Id],
+            Text(gold, "upstreamCommit"), Text(gold, "romSha256"), Text(gold, "sourcePath"),
+            Number(gold.GetProperty("romRange"), "start", 0, int.MaxValue) + row.Id * 2));
+        return new(encounter, sources, classes, items, spells, enemies, selectedGold);
 
         void AddSpell(string code, byte level)
         {

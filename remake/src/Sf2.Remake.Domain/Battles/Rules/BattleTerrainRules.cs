@@ -22,7 +22,7 @@ internal static class BattleTerrainRules
     internal static int LandMultiplier(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
-        if (mover == BattleMover.Hovering) return 256;
+        // Hovering changes movement/dodge, not the source terrain protection nibble.
         return terrain.Protection switch
         {
             TerrainProtection.None => 256, TerrainProtection.Light => 230, TerrainProtection.Heavy => 205,

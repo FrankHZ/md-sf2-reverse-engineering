@@ -10,20 +10,20 @@ using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 namespace Sf2.Remake.Content.Scenarios;
 
 public sealed class PrivateBattleScenarioReader(string placementPath, string scenePath, string terrainPath,
-    string staticPath, string enemyPath, string controlledStartPath) : IScenarioSource
+    string staticPath, string enemyPath, string goldPath, string controlledStartPath) : IScenarioSource
 {
     public ScenarioReadResult Read()
     {
         try
         {
-            foreach (string path in new[] { placementPath, scenePath, terrainPath, staticPath, enemyPath, controlledStartPath })
+            foreach (string path in new[] { placementPath, scenePath, terrainPath, staticPath, enemyPath, goldPath, controlledStartPath })
                 Require(!string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path), "private-input-selection", "private-inputs");
             var result = new PrivateBattleEncounterReader(placementPath, scenePath, terrainPath).Read();
             if (result is BattleEncounterReadRejected failed)
                 return new ScenarioReadRejected(new(SessionFailureKind.ContentError, "private-encounter", failed.Diagnostic.Field, failed.Diagnostic.Message));
             var encounter = ((BattleEncounterReadAccepted)result).Definition;
             var start = ControlledBattleStartReader.Read(controlledStartPath);
-            var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, encounter, start);
+            var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, goldPath, encounter, start);
             return Assemble(definitions, start);
         }
         catch (AdmissionIssue issue) { return new ScenarioReadRejected(issue.Failure); }
@@ -79,10 +79,13 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     var item = definitions.Items[(byte)(word & 127)];
                     if ((word & 128) != 0) Require(item.EquipFlags.Contains(classDefinition.Code), "incompatible-equipment", "allies.items", true);
                 }
-                var spells = input.Spells.Where(value => (value & 63) != 63).Select(packed =>
-                    definitions.Spells.Values.Single(spell => spell.BaseId == (packed & 63) && spell.Level == (packed >> 6) + 1).Spell).ToArray();
+                var spells = input.Spells.Where(value => (value & 63) != 63).SelectMany(packed =>
+                    definitions.Spells.Values.Where(spell => spell.BaseId == (packed & 63) && spell.Level <= (packed >> 6) + 1)
+                        .OrderBy(spell => spell.Level).Select(spell => spell.Spell)).ToArray();
                 definition = new(actor, classRule, input.Level, input.MaxHp, input.MaxMp, input.Attack, input.Defense,
                     (byte)(input.Agility & 127), (input.Agility & 128) != 0, input.Move, spells,
+                    physical: PrivateBattleActionBindings.Physical(definitions, classDefinition.ProwessExpression, input.Items,
+                        leader: id == 0, gold: 0),
                     mover: Mover(classDefinition.MovementType), sourceLoadout: new(input.Items, input.Spells));
                 actorInput = new(actor, input.Hp, input.Mp, input.Exp, input.Kills, input.Defeats, input.Status, null);
             }
@@ -102,6 +105,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 definition = new(actor, BattleClassRule.Ordinary, enemy.Level, enemy.MaxHp, enemy.MaxMp, enemy.BaseAttack,
                     enemy.BaseDefense, (byte)(enemy.BaseAgility & 127), (enemy.BaseAgility & 128) != 0, enemy.BaseMovement,
                     enemy.Spells.Where(spell => spell.Spell != "NOTHING").Select(spell => new SpellRef(spell.Spell.ToLowerInvariant(), spell.Level)),
+                    physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
+                        leader: false, gold: definitions.EnemyGold[enemy.Id].Gold),
                     mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells));
                 actorInput = new(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
             }
@@ -124,12 +129,12 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         }).ToArray();
         var regions = encounter.Regions.Select(region => new BattleActivationRegion(region.Id,
             region.Vertices.Select(point => new MapPosition(point.X, point.Y))));
-        var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && spell.Level == 1 && spell.Radius == 0 &&
+        var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && spell.Power != 255 && spell.Radius == 0 &&
             spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE")
             .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
-            encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing,
+            encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(HalvedExperience: true),
             initialization: new(regions, BattleRegionProgram.None));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);

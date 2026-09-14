@@ -84,7 +84,7 @@ public sealed class SourceEnemyAiTests
     }
 
     [Theory]
-    [InlineData("attack", "source-attack-operands")]
+    [InlineData("attack", "physical-definition")]
     [InlineData("memory", "standby-memory")]
     [InlineData("order", "source-move-order")]
     [InlineData("unknown", "source-occupancy-word")]
