@@ -43,7 +43,7 @@ stable cost selector, source decreasing-cost walk and radius station search used
 the actual reference pursuit/standby callers. The existing movement commit and action publisher apply
 the chosen destination once. MOVE1 draws no RNG and leaves last-target memory and resources unchanged;
 physical rewards are required only on the reached attack branch. High or incomplete target costs
-remain Unsupported, as do activation and wider AI.
+remain Unsupported, as does wider AI. Private region activation has its separate bounded owner below.
 Shared strike/reward functions remain the calculation owners; reference DTOs only project their
 results. Semantic observations carry both actor and target for reversal. Dead combatants retain
 identity/HP/kill-and-defeat accounting but have no
@@ -61,7 +61,8 @@ from their deployment; queue entries identify actors by `ActorRef` with a nullab
 slots remain in the actual reference projection into the same typed turn calculator. Faction drives
 healing/opposition/rewards independently of order. Deployments also own `BattleControl` separately from
 `BattleAiStrategy`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
-automatic actors explicitly select Stay or AttackThenApproach. Shared deployment validation at Content
+automatic authored actors explicitly select Stay or AttackThenApproach. Private source orders remain
+SourceOrders and stop explicitly at their unported continuation. Shared deployment validation at Content
 admission and reusable start preserves ally/player and enemy/automatic bounds plus physical/spellbook/
 MOV requirements. The advancer consumes explicit combinations and never defaults an unknown policy to
 Stay. The native view projects AI memory from the same deployment; there is no second control copy.
@@ -78,8 +79,8 @@ mathematical operands and remains unchanged, as do its original/reference source
 physical fields retain their existing semantic ownership; no generalized profile system is introduced.
 
 `BattleTerrain` holds immutable surface and independent protection; layout glyphs resolve through
-explicit local definitions. `OrdinaryGroundRules` interprets them for the currently admitted
-regular/priest movers and target land reduction. Content/start, preview/commit, AI pursuit/scoring
+explicit local definitions. `BattleTerrainRules` interprets them for the currently admitted
+regular/healer/Centaur/hovering movers and target land reduction. Content/start, preview/commit, AI pursuit/scoring
 and physical hits use that owner. Temporary opponent blocking changes only a fresh per-cell cost
 array; friendly traversal and occupied stopping remain movement policy. Godot projects surface into
 existing placeholder colors without supplying gameplay properties.
@@ -87,8 +88,39 @@ existing placeholder colors without supplying gameplay properties.
 `WeightedMovement` consumes decoded signed cell costs, preserving its one first-admission/LIFO bucket
 algorithm and explicit logical/reference row-boundary choice. The real reference movement entry
 alone converts original terrain flags/indices and its selected source mover table; player/pursuit/
-standby callers retain their source data. Wider mover capability and private initialization remain
-concrete later dependencies; neither raw/source identity nor presentation becomes a second authority.
+standby callers retain their source data. Private Content maps the selected raw terrain to these
+semantic surfaces while retaining the complete source encounter for later consumers.
+
+## Initialized Private Entry
+
+`PrivateBattleScenarioReader` composes the existing trusted encounter reader, pinned selected
+`PrivateBattleDefinitionReader`, and external `ControlledBattleStartReader`. Selected classes, items,
+spells and enemies retain their source fields/provenance in immutable `PrivateBattleDefinitions`;
+there is no global catalog or production preset. The admitted `ScenarioDefinition` and explicit
+`BattleStartInput` enter the same `Runtime.GameSession` and `BattleAdvancer` as authored content.
+The session retains its admitted definition and never rereads files while running.
+
+`BattleInitializationRules` handles the bounded new-battle policy: living status-free, already
+refreshed/equipped allies, difficulty0, STARTING placements, controlled intro skip and roster-only
+storage. It restores HP/MP, retains ally effective ATT, computes source enemy ATT plus its truncated
+quarter once (source0–204), and clears AI memory/last targets/region state. Runtime `Attack` is distinct
+from immutable source `Definition.Attack`. Missing EXP/kills/defeats/gold remain nullable; the actual
+accounting operation rejects Unsupported before publication if its required value is unknown.
+
+`BattleActivationRules` tests inclusive region geometry, preserves assigned activation word bits,
+admits the no-region-program/no-hidden-spawn boundary, then `BattleTurnFlow` calls the shared queue
+calculator with carried RNG. `BattleControlRules` classifies the actual generated candidate and applies
+only the explicitly declared missing-candidate ally word. Other unknown ally words remain unknown.
+Initialization/first supported control is one entry transaction: failure publishes no session or partial
+RNG state. Later failures preserve earlier completed commands and the failing queue entry.
+
+Godot selects this source with `--private-battle-start`; the existing battle view sends the same
+movement/cancel commands and projects private origin and Unknown accounting. SourceOrders remains
+explicitly Unsupported when reached. Inactive-enemy standby/activation/set7 continuation, reached
+equipment/action/after-turn operands, natural map programs and outcome/return remain separate
+migration dependencies. The old initialization/round/control wrappers still serve those concrete
+legacy callers, but their enemy ATT arithmetic, polygon/assigned-region operations and control
+classifier now delegate to these shared rules.
 
 ## Production Assemblies
 
@@ -111,13 +143,13 @@ The old scenario-bound implementation is isolated in the separate
 production Domain/Application/Content. Its inventory names current consumers and M2/M3 retirement
 points for controlled presets, import/trust mapping, actual story handlers and fixed comparisons.
 New authored sessions never require a Map3/Battle01 class or ADR0009 trace field. This isolation does
-not complete private import or program migration, or close A1–A8. M5 is remaining cleanup only.
+not complete private battle continuation or program migration, or close A1–A8. M5 is remaining cleanup only.
 
 | Assembly | Current responsibility | Dependency direction |
 | --- | --- | --- |
 | `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/physical/reward/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
 | `Sf2.Remake.Application` | thin `Runtime.GameSession`, common contracts, independent command dispatcher and automatic battle advancer, typed scenario port | Domain |
-| `Sf2.Remake.Content` | configurable authored package parsing, reference resolution, numeric and capability validation | Application and Domain |
+| `Sf2.Remake.Content` | authored and selected private input admission, source definition resolution, numeric and capability validation | Application and Domain |
 | `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, Godot; explicit legacy startup also consumes Reference |
 
 Dependencies point inward. Tests and repository gate hosts are consumers, not production dependencies.
@@ -143,7 +175,7 @@ entry used for another controlled start. Shared binding validates references/res
 fresh runtime actors; definitions contain no instantiated actor state, seeds or counters. Genuine
 encounter deployments remain content, while controlled position overrides belong to start inputs.
 The [implemented split and remaining model work](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
-precede common private initialization. Content does not mutate a running session.
+supports the initialized private entry above. Content does not mutate a running session.
 The following private protocol belongs to the separate legacy reference consumer. For its canonical Map 3 port, the import definition is the sole owner of the selected setup's
 ordered entity population and the private snapshot exposes that exact immutable object. Content maps
 source-shaped records to stable resource/ordinal identities, raw and masked coordinates, opaque facing

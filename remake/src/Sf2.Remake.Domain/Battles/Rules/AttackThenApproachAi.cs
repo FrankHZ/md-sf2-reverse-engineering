@@ -39,6 +39,6 @@ internal static class AttackThenApproachAi
             new("after-turn", actorRef)]), destination);
 
         WeightedMovementGrid Grid(MapPosition origin) => WeightedMovement.Build(
-            current.Definition.Terrain.Select(OrdinaryGroundRules.MovementCost).ToArray(), origin.Y * 48 + origin.X, 128);
+            current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray(), origin.Y * 48 + origin.X, 128);
     }
 }

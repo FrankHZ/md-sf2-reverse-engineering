@@ -37,7 +37,7 @@ public sealed class EngineSessionTests
         Assert.Same(before.Battle, session.Current.Battle);
         var result = Accept(session, new Confirm());
         var healed = result.Snapshot.Battle.GetActor(actor);
-        Assert.Equal((hp, mp, exp), ((int)healed.Hp, (int)healed.Mp, (int)healed.Exp));
+        Assert.Equal((hp, mp, exp), ((int)healed.Hp, (int)healed.Mp, (int)healed.Exp!.Value));
         Assert.Equal(afterSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(new[] { "mp", "hp", "exp", "action-rng", "action-committed" },

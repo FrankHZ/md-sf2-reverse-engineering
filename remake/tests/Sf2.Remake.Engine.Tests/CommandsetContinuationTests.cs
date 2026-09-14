@@ -49,7 +49,7 @@ public sealed class CommandsetContinuationTests
         Assert.Equal(new MapPosition(2, y), attacked.Snapshot.Battle.GetActor(enemy).Position);
         Assert.Equal(478, attacked.Snapshot.Battle.GetActor(ally).Hp);
         Assert.Equal(493, attacked.Snapshot.Battle.GetActor(enemy).Hp);
-        Assert.Equal(1, attacked.Snapshot.Battle.GetActor(ally).Exp);
+        Assert.Equal(1, attacked.Snapshot.Battle.GetActor(ally).Exp!.Value);
         Assert.Equal(0xDAA61234u, attacked.Snapshot.Battle.MainSeed);
         Assert.Equal(0x02EF0042u, attacked.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(ally, attacked.Snapshot.Battle.GetActor(enemy).LastTarget);

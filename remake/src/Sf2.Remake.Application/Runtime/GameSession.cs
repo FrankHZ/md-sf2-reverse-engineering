@@ -7,7 +7,8 @@ namespace Sf2.Remake.Application.Runtime;
 public sealed class GameSession
 {
     private SessionSnapshot _current;
-    private GameSession(SessionSnapshot current) { _current = current; }
+    private GameSession(ScenarioDefinition definition, SessionSnapshot current) { Definition = definition; _current = current; }
+    public ScenarioDefinition Definition { get; }
     public SessionSnapshot Current => _current;
 
     public static SessionStartOutcome Start(IScenarioSource source)
@@ -31,7 +32,7 @@ public sealed class GameSession
         try
         {
             var result = BattleAdvancer.Start(encounter, start);
-            return new SessionStarted(new GameSession(result.Snapshot), result);
+            return new SessionStarted(new GameSession(definition, result.Snapshot), result);
         }
         catch (BattleRuleException error)
         {

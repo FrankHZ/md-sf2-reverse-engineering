@@ -62,27 +62,29 @@ internal static class PhysicalBattleAction
         var enemy = actor.IsAlly ? target : actor;
         bool allyDead = actor.IsAlly ? actorDead : targetDead;
         bool enemyDead = actor.IsAlly ? targetDead : actorDead;
-        int exp = ally.Exp;
+        int? exp = ally.Exp;
         if (!allyDead && (actor.IsAlly || counterPerformed))
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
+            if (ally.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
             var awardRolls = new List<PhysicalRoll>();
             int award = BattleRewards.Award(accumulated, current.Definition.Rewards!.HalvedExperience, ref seed, awardRolls);
             AddRolls(awardRolls, ally.Actor);
-            exp = Math.Min(200, ally.Exp + award);
+            exp = Math.Min(200, ally.Exp.Value + award);
             if (exp >= 100) throw new BattleRuleException("level-up", "actor.exp", true);
             effects.Add(new("exp", ally.Actor, ally.Exp, exp));
         }
-        uint gold = enemyDead ? BattleRewards.Gold(current.Gold, enemy.Definition.Physical!.Gold) : current.Gold;
+        uint? gold = enemyDead ? BattleRewards.Gold(current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true),
+            enemy.Definition.Physical!.Gold) : current.Gold;
         if (enemyDead)
         {
             effects.Add(new("gold", ally.Actor, current.Gold, gold));
-            effects.Add(new("kills", ally.Actor, ally.Kills, BattleRewards.Kills(ally.Kills)));
+            effects.Add(new("kills", ally.Actor, ally.Kills, BattleRewards.Kills(ally.Kills ?? throw new BattleRuleException("unspecified-kills", "actor.kills", true))));
             effects.Add(new("death-cleanup", enemy.Actor, 1, 0));
         }
         if (allyDead)
         {
-            effects.Add(new("defeats", ally.Actor, ally.Defeats, BattleRewards.Defeats(ally.Defeats)));
+            effects.Add(new("defeats", ally.Actor, ally.Defeats, BattleRewards.Defeats(ally.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true))));
             effects.Add(new("death-cleanup", ally.Actor, 1, 0));
         }
         // No status/equipment effects are admitted. After-turn does not change this snapshot;
@@ -91,9 +93,9 @@ internal static class PhysicalBattleAction
         var actors = current.Actors.Select(a => a.Actor == actorRef || a.Actor == targetRef
             ? a.With(hp: a.Actor == actorRef ? actorHp : targetHp,
                 position: a.Actor == actorRef ? destination : a.Position,
-                exp: a.Actor == ally.Actor ? (byte)exp : a.Exp,
-                kills: a.Actor == ally.Actor && enemyDead ? BattleRewards.Kills(a.Kills) : a.Kills,
-                defeats: a.Actor == ally.Actor && allyDead ? BattleRewards.Defeats(a.Defeats) : a.Defeats)
+                exp: a.Actor == ally.Actor ? (byte?)exp : a.Exp,
+                kills: a.Actor == ally.Actor && enemyDead ? BattleRewards.Kills(a.Kills ?? throw new BattleRuleException("unspecified-kills", "actor.kills", true)) : a.Kills,
+                defeats: a.Actor == ally.Actor && allyDead ? BattleRewards.Defeats(a.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true)) : a.Defeats)
             : a);
         return (current.With(actors: actors, mainSeed: seed, gold: gold), effects.AsReadOnly());
 
@@ -107,8 +109,8 @@ internal static class PhysicalBattleAction
             var terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
             // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
-            int multiplier = OrdinaryGroundRules.LandMultiplier(terrain);
-            var strike = PhysicalStrikeRules.Resolve(attacker.Definition.Attack, defender.Definition.Defense,
+            int multiplier = BattleTerrainRules.LandMultiplier(terrain, defender.Definition.Mover);
+            var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Definition.Defense,
                 hp, multiplier, seed, 32, profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter);
             seed = strike.Seed;

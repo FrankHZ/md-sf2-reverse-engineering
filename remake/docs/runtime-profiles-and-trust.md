@@ -8,7 +8,7 @@ make Godot an evidence owner. This is the intended trust boundary; the current i
 has divergent private/public session APIs and fixed reference admission identified by the
 [architecture audit](./architecture-audit.md).
 [Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
-implements common-session authored admission. The old private/public fixed readers and session paths
+implements common-session authored admission; the initialized private entry now uses that same runtime. The old private/public fixed readers and session paths
 are in the [transitional reference assembly](../reference/README.md); their retained source trust
 checks are not universal gameplay predicates. The accepted
 8C/H4 target remains incomplete.
@@ -18,12 +18,14 @@ checks are not universal gameplay predicates. The accepted
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
+| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and five explicit input environment selections | selected encounter, pinned enemy/static definitions, external controlled party/start | initialized common session through generated player control and movement/cancel; source enemy continuation remains Unsupported |
 | `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
-- `AUTHORED BATTLE` with project-authored controlled-start help
+- `AUTHORED BATTLE` with controlled-start help
+- `PRIVATE CONTROLLED BATTLE` with Unknown accounting shown explicitly
 - `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY`
 - `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY`
 
@@ -56,8 +58,8 @@ and missing definitions/invalid symbols are ContentError. The existing placehold
 only; color does not grant passability or damage protection. Original reference movers keep their own
 source cost/land tables and use the same propagation kernel, without admitting new authored profiles.
 
-The only current start policy is `initialVitals: authored-controlled`; private original new-battle
-initialization is not claimed. The immutable definitions contain maximum vitals, actor/rule/spell and
+The authored start policy is `initialVitals: authored-controlled`; the separately selected private
+initializer below has its own explicit policy. The immutable definitions contain maximum vitals, actor/rule/spell and
 reward data plus genuine encounter `placements`. The separate `start` selects an encounter, supplies
 uint `mainSeed`/`thinkingSeed`, `gold` (0–9,999,999) and one `start.actors` record per deployed actor.
 Each record requires `actor`, `hp`/`mp` bounded by its definition, `exp` (0–99), `kills`/`defeats`
@@ -97,8 +99,7 @@ definition can serve another explicit start with the same boundary checks and fr
 Definitions never supply hidden session resources. Ordinary spell power remains already adjusted;
 full-recovery and level-up remain unsupported. The session reads no files/ROM after admission and
 carries its seeds forward. The default loads the tracked yard; `--authored-package <path>` selects
-another bounded package, without an authored-export or original-fidelity claim. Further model
-modernization and private initialization follow the
+another bounded package, without an authored-export or original-fidelity claim. Further private AI/action migration follows the
 [ordered boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts).
 
 Physical capability is optional per actor: `physical` is a closed object with `movementType`
@@ -314,3 +315,37 @@ Tracked code, metadata, tests, and project-authored synthetic content may pass t
 Original or caller-provided private payloads must not enter Git, a public PCK, CI artifacts, logs, pull
 request attachments, or release downloads. A distributable replacement-asset strategy requires a
 separate accepted rights and content decision.
+
+## Private Initialized Common Battle
+
+[`PrivateBattleScenarioReader`](../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
+reads six explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
+`SF2_PRIVATE_BATTLE01_TERRAIN` retain the existing encounter trust boundary. `SF2_PRIVATE_STATIC_DATA`
+and `SF2_PRIVATE_ENEMY_DATA` select the existing pinned static-data and enemy-promotion exports.
+Their bytes must match the authoritative extraction manifests and their source provenance must match
+the pinned upstream revision. The controlled JSON path comes from `--private-battle-start`; tests select
+it through `SF2_PRIVATE_CONTROLLED_START`. Partial/missing selections, drift or conflicting profiles
+reject visibly without fallback or private path leakage. Files are read-only; no active snapshot is imported.
+
+The external [PlayerReady comparison input](../reference/inputs/battle01-player-ready.json) is a closed
+format1 object. It declares party class/level, effective equipped stats, current/max HP/MP, four packed
+item words and spell slots, status, independent seeds, nullable accounting and the controlled policy.
+All keys are required; null EXP/kills/defeats/gold means Unknown, never zero. Supported living/status0
+allies have already refreshed/equipped stats, so the initializer restores HP/MP without adding equipment
+bonuses again. Source GIZMO ATT7 becomes effective8 once at difficulty0. Source class0/4/1, items,
+HEAL/EGRESS definitions, orders, source words and unknown bytes remain available to their consumers.
+Missing or incompatible definitions reject; unimplemented actions are not erased from the spellbook.
+
+The policy explicitly skips the intro, uses roster-only storage, disables ally auto-battle/opponent
+control, and supplies word0 only for the reached player candidate whose ally activation word is absent.
+This is a controlled input, not an original global default. `mainSeed`4660 and `thinkingSeed`305397760
+encode independent source words: the thinking high word carries source seed-copy0x1234 and its low
+word is explicit representation padding. Neither RNG is reseeded during play. H3's non-natural R2a→R2b
+bridge remains provenance, not a claim that natural Map3 entry skips its actual programs.
+
+Regular/healer costs retain the authored table. Centaur uses cost5 on rough/deep and3 on brush;
+hovering uses cost2 on every admitted non-barrier surface and land multiplier256. Private source
+terrain values are interpreted only at Content admission; the original full byte grid is retained.
+The common weighted kernel, movement and cancel commands own play. Reached SourceOrders, broader
+spawn/status/region programs, equipment actions and outcome/return remain Unsupported or future
+bindings; the explicit legacy route keeps its actual unported consumers.

@@ -45,7 +45,7 @@ internal static class BattleMovement
             backwards.Add(new(current % 48, current / 48));
         }
         var path = backwards.AsEnumerable().Reverse().ToArray();
-        int actualCost = path.Skip(1).Sum(p => (int)OrdinaryGroundRules.MovementCost(terrain[Offset(p)]));
+        int actualCost = path.Skip(1).Sum(p => (int)BattleTerrainRules.MovementCost(terrain[Offset(p)], actor.Definition.Mover));
         if (actualCost > destinationCost || actualCost > actor.Definition.Move * 2)
             throw new BattleRuleException("movement-path", "destination");
         return new(path, actualCost);
@@ -54,7 +54,7 @@ internal static class BattleMovement
     internal static WeightedMovementGrid Grid(EngineBattleState battle, ActorRef actorRef)
     {
         var actor = battle.GetActor(actorRef);
-        var costs = battle.Definition.Terrain.Select(OrdinaryGroundRules.MovementCost).ToArray();
+        var costs = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Faction != actor.Faction))
             costs[Offset(opponent.Position!)] = -1;
         return WeightedMovement.Build(costs, Offset(actor.Position!), actor.Definition.Move * 2);

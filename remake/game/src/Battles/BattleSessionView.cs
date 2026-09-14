@@ -27,7 +27,7 @@ public sealed partial class BattleSessionView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
-        // This authored UI responds to the actual window; legacy reference composition keeps its policy.
+        // This common battle UI responds to the actual window; legacy reference composition keeps its policy.
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         _map = new BattleMapViewport { Name = "MapViewport" };
         AddChild(_map);
@@ -42,7 +42,7 @@ public sealed partial class BattleSessionView : Control
         _status = AddLabel("Status");
         _roster = AddLabel("Roster");
         var help = AddLabel("Help");
-        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nProject-authored controlled start.";
+        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nControlled battle start.";
         GetViewport().SizeChanged += Arrange;
         Arrange();
     }
@@ -91,7 +91,7 @@ public sealed partial class BattleSessionView : Control
     internal void FailStartup(SessionFailure failure)
     {
         _startupFailure = failure;
-        _title.Text = "AUTHORED BATTLE UNAVAILABLE";
+        _title.Text = "BATTLE UNAVAILABLE";
         _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})";
     }
 
@@ -143,7 +143,7 @@ public sealed partial class BattleSessionView : Control
 
     private void Present()
     {
-        var projection = BattleSnapshotProjection.Project(_result!, _targetCandidate);
+        var projection = BattleSnapshotProjection.Project(_result!, _targetCandidate, _session!.Definition.Origin);
         _title.Text = projection.Title;
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
@@ -165,6 +165,10 @@ public sealed partial class BattleSessionView : Control
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
+            origin = _session?.Definition.Origin,
+            initializationPolicy = current?.Battle.StartPolicy,
+            regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,
+            turnOrder = current?.Battle.TurnOrder.Select(entry => new { actor = entry.Actor?.Value, score = entry.AlteredAgility }),
             failure = (_result?.Failure ?? _startupFailure)?.Code,
             failureKind = (_result?.Failure ?? _startupFailure)?.Kind.ToString(),
             round = current?.Battle.Round, revision = current?.Revision,

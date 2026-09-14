@@ -37,6 +37,28 @@ public sealed partial class Map3Root : Node2D
     {
         var arguments = OS.GetCmdlineUserArgs();
         int packageOption = Array.IndexOf(arguments, "--authored-package");
+        if (Array.IndexOf(arguments, "--private-battle-start") is int privateOption && privateOption >= 0)
+        {
+            var view = new BattleSessionView { Name = "BattleSessionView" };
+            AddChild(view);
+            if (packageOption >= 0 || arguments.Any(argument => argument.StartsWith("--runtime-profile", StringComparison.Ordinal) ||
+                argument.StartsWith("--canonical-map-import", StringComparison.Ordinal) ||
+                argument.StartsWith("--private-", StringComparison.Ordinal) && argument != "--private-battle-start"))
+                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
+                    "conflicting-profiles", "startup", "Select one battle entry."));
+            else if (arguments.Count(argument => argument == "--private-battle-start") != 1 ||
+                privateOption + 1 >= arguments.Length || arguments[privateOption + 1].StartsWith("--", StringComparison.Ordinal))
+                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
+                    "missing-controlled-start-path", "private-battle-start", "One controlled start path is required."));
+            else
+                view.Begin(new PrivateBattleScenarioReader(
+                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_DATA") ?? "",
+                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_SCENE") ?? "",
+                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_TERRAIN") ?? "",
+                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_STATIC_DATA") ?? "",
+                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_DATA") ?? "", arguments[privateOption + 1]));
+            return;
+        }
         if (arguments.Length == 0 || packageOption >= 0)
         {
             var view = new BattleSessionView { Name = "BattleSessionView" };

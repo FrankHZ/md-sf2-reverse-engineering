@@ -251,27 +251,11 @@ public static class Battle01FirstRound
         return (roster, flags, tested);
     }
 
-    internal static ushort ActivateAssignedRegions(ushort bits, byte primary, byte secondary, IReadOnlyList<bool> flags)
-    {
-        // An active primary region takes precedence; secondary activation sets both low bits.
-        if (primary != 15 && flags[primary]) return (ushort)(bits | 1);
-        if (secondary != 15 && flags[secondary]) return (ushort)(bits | 3);
-        return bits;
-    }
+    internal static ushort ActivateAssignedRegions(ushort bits, byte primary, byte secondary, IReadOnlyList<bool> flags) =>
+        BattleActivationRules.ActivateAssignedRegions(bits, primary, secondary, flags);
 
-    internal static bool IsInside(Battle01Region region, MapPosition point)
-    {
-        var v = region.Vertices;
-        return InsideTriangle(v[0], v[1], v[3], point) || InsideTriangle(v[2], v[1], v[3], point);
-    }
-    private static bool InsideTriangle(MapPosition a, MapPosition b, MapPosition c, MapPosition point)
-    {
-        if (Cross(a, b, c) == 0) throw new ArgumentException("A trigger triangle must have nonzero area.", "regions");
-        int ab = Cross(a, b, point), bc = Cross(b, c, point), ca = Cross(c, a, point);
-        return (ab >= 0 && bc >= 0 && ca >= 0) || (ab <= 0 && bc <= 0 && ca <= 0);
-    }
-    private static int Cross(MapPosition a, MapPosition b, MapPosition point) =>
-        (b.X - a.X) * (point.Y - a.Y) - (b.Y - a.Y) * (point.X - a.X);
+    internal static bool IsInside(Battle01Region region, MapPosition point) =>
+        BattleActivationRules.Includes(region.Vertices, point);
 
     private static int[] RouteBattle01RegionCutscenes() => []; // Accepted table has no Battle01 row.
     private static int[] AdmitStartingSpawns(IReadOnlyList<Battle01Combatant> roster)

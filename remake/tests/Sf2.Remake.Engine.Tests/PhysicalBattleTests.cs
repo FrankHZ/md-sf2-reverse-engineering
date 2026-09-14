@@ -31,7 +31,7 @@ public sealed class PhysicalBattleTests
         Assert.Equal(0x3EB11234L, rolls[0].Before);
         for (int i = 1; i < rolls.Length; i++) Assert.Equal(rolls[i - 1].After, rolls[i].Before);
         Assert.Equal(0x0A7F1234u, session.Current.Battle.MainSeed);
-        Assert.Equal(firstExp, session.Current.Battle.GetActor(attacker).Exp);
+        Assert.Equal(firstExp, session.Current.Battle.GetActor(attacker).Exp!.Value);
         Assert.Equal((uint)(gold + (reverse ? 20 : 19)), session.Current.Battle.Gold);
         Assert.Equal(new ActorRef(nextPlayer), session.Current.Selection!.Actor);
         Assert.Contains(firstResult.Observations, o => o.Kind == "dead-entry-skipped" && o.Actor == new ActorRef(first));
@@ -43,9 +43,9 @@ public sealed class PhysicalBattleTests
         Assert.Equal(0xBDCB1234u, session.Current.Battle.MainSeed);
         Attack(session, second);
         Assert.Equal(0xC0491234u, session.Current.Battle.MainSeed);
-        Assert.Equal(finalExp, session.Current.Battle.GetActor(attacker).Exp);
+        Assert.Equal(finalExp, session.Current.Battle.GetActor(attacker).Exp!.Value);
         Assert.Equal((uint)(gold + 39), session.Current.Battle.Gold);
-        Assert.Equal(2, session.Current.Battle.GetActor(attacker).Kills);
+        Assert.Equal(2, session.Current.Battle.GetActor(attacker).Kills!.Value);
         Assert.Equal(new ActorRef(nextPlayer), session.Current.Selection!.Actor);
         Assert.Equal(0xBEEF0042u, session.Current.Battle.ThinkingSeed);
         // Both defeated cells are now legal destinations; occupancy reads persistent cleanup.
@@ -73,7 +73,7 @@ public sealed class PhysicalBattleTests
         var result = Attack(session, "raider");
         Assert.Equal(hp, session.Current.Battle.GetActor(new("raider")).Hp);
         Assert.Equal(afterSeed, session.Current.Battle.MainSeed);
-        Assert.Equal(exp, session.Current.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(exp, session.Current.Battle.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(draws, result.Observations.Count(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)));
         Assert.Equal(dodge, result.Observations.Any(o => o.Kind == "dodge"));
         Assert.Equal(critical, result.Observations.Any(o => o.Kind == "critical"));
@@ -109,7 +109,7 @@ public sealed class PhysicalBattleTests
         Assert.Equal(before.Battle.ThinkingSeed, session.Current.Battle.ThinkingSeed);
         Assert.Equal(hp, session.Current.Battle.GetActor(actor).Hp);
         Assert.Equal(targetHp, session.Current.Battle.GetActor(target).Hp);
-        Assert.Equal(exp, session.Current.Battle.GetActor(actor).Exp);
+        Assert.Equal(exp, session.Current.Battle.GetActor(actor).Exp!.Value);
         Assert.Equal(before.Battle.Gold, session.Current.Battle.Gold);
         Assert.Single(result.Observations, o => o.Kind == "exp");
         Assert.Single(result.Observations, o => o.Kind == "action-committed");
@@ -136,7 +136,7 @@ public sealed class PhysicalBattleTests
         Assert.Equal(0xDAA61234u, session.Current.Battle.MainSeed);
         Assert.Equal(493, session.Current.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(478, session.Current.Battle.GetActor(new("raider")).Hp);
-        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp!.Value);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public sealed class PhysicalBattleTests
         Attack(session, "raider");
         // Hits20/24 earn floor(1000/550)+floor(1200/550)=1+2. Halving gives1,
         // whereas incorrectly combining damage first would award2 on these same final rolls.
-        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(456, session.Current.Battle.GetActor(new("raider")).Hp);
         Assert.Equal(0x5BDD1234u, session.Current.Battle.MainSeed);
     }
@@ -162,8 +162,8 @@ public sealed class PhysicalBattleTests
         Assert.Equal(new long?[] { 11, 0 }, result.Observations.Where(o => o.Kind == "hp").Select(o => o.After));
         Assert.Equal(12, result.Observations.Count(o => o.RandomRange is not null));
         Assert.Equal(0xD1F61234u, session.Current.Battle.MainSeed);
-        Assert.Equal(24, session.Current.Battle.GetActor(new("swordsman")).Exp);
-        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Kills);
+        Assert.Equal(24, session.Current.Battle.GetActor(new("swordsman")).Exp!.Value);
+        Assert.Equal(1, session.Current.Battle.GetActor(new("swordsman")).Kills!.Value);
         Assert.Equal(119u, session.Current.Battle.Gold);
         Assert.Null(session.Current.Battle.GetActor(new("raider")).Position);
         Assert.Contains(result.Observations, o => o.Kind == "dead-entry-skipped" && o.Actor == new ActorRef("raider"));
@@ -184,8 +184,8 @@ public sealed class PhysicalBattleTests
         var dead = session.Current.Battle.GetActor(new("swordsman"));
         Assert.Equal(0, dead.Hp);
         Assert.Null(dead.Position);
-        Assert.Equal(expected, dead.Defeats);
-        Assert.Equal(99, dead.Exp);
+        Assert.Equal(expected, dead.Defeats!.Value);
+        Assert.Equal(99, dead.Exp!.Value);
         Assert.Equal(478, session.Current.Battle.GetActor(new("raider")).Hp);
         Assert.Equal(0x4CCA1234u, session.Current.Battle.MainSeed);
         Assert.Equal(10, result.Observations.Count(o => o.RandomRange is not null));
@@ -316,7 +316,7 @@ public sealed class PhysicalBattleTests
         });
         Attack(session, "raider");
         Assert.Equal(9999999u, session.Current.Battle.Gold);
-        Assert.Equal(9999, session.Current.Battle.GetActor(new("swordsman")).Kills);
+        Assert.Equal(9999, session.Current.Battle.GetActor(new("swordsman")).Kills!.Value);
         Assert.Equal(9999999u, BattleRewards.Gold(uint.MaxValue, 30));
     }
 

@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "id": "private-local-battle01-player-ready-comparison-inputs-v1",
+  "evidenceOwner": "sf2-map3-battle01-player-ready-runtime-v1",
+  "bridgeBoundary": "Controlled R2a to R2b bridge: skip the intro, supply already-refreshed and equipped PlayerReady allies and roster-only storage. This is not natural Map3 entry. The independent source seed-copy 0x1234 occupies the thinking image high word; its explicit low-word padding is not an observed original state.",
+  "profile": "private-local-controlled-start",
+  "battle": 1,
+  "policy": {
+    "beforeBattle": "controlled-skip",
+    "allyStats": "already-refreshed-and-equipped",
+    "actorStorage": "roster-only",
+    "difficulty": 0,
+    "allyAutoBattle": false,
+    "opponentControl": false,
+    "missingCandidateAllyWord": 0
+  },
+  "mainSeed": 4660,
+  "thinkingSeed": 305397760,
+  "gold": null,
+  "allies": [
+    {
+      "id": 0,
+      "classId": 0,
+      "level": 1,
+      "maxHp": 12,
+      "hp": 12,
+      "maxMp": 8,
+      "mp": 8,
+      "attack": 9,
+      "defense": 4,
+      "agility": 4,
+      "move": 6,
+      "status": 0,
+      "items": [
+        199,
+        0,
+        127,
+        127
+      ],
+      "spells": [
+        10,
+        63,
+        63,
+        63
+      ],
+      "exp": null,
+      "kills": null,
+      "defeats": null
+    },
+    {
+      "id": 1,
+      "classId": 4,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 10,
+      "mp": 10,
+      "attack": 9,
+      "defense": 5,
+      "agility": 5,
+      "move": 5,
+      "status": 0,
+      "items": [
+        213,
+        0,
+        0,
+        127
+      ],
+      "spells": [
+        0,
+        63,
+        63,
+        63
+      ],
+      "exp": null,
+      "kills": null,
+      "defeats": null
+    },
+    {
+      "id": 2,
+      "classId": 1,
+      "level": 1,
+      "maxHp": 11,
+      "hp": 11,
+      "maxMp": 0,
+      "mp": 0,
+      "attack": 8,
+      "defense": 5,
+      "agility": 7,
+      "move": 7,
+      "status": 0,
+      "items": [
+        184,
+        0,
+        127,
+        127
+      ],
+      "spells": [
+        63,
+        63,
+        63,
+        63
+      ],
+      "exp": null,
+      "kills": null,
+      "defeats": null
+    }
+  ]
+}

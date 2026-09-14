@@ -153,12 +153,12 @@ public sealed class PrivateBattleEncounterReader
         Require(definition.CompressedRange == new EncounterRange(1758020, 1758304, 284), "terrain.compressedRange", "The selected terrain range drifted.");
     }
 
-    private static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null)
+    internal static byte[] ReadInput(string path, string digest, string field, int? expectedLength = null, int maximumLength = 65536)
     {
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            Require(stream.Length is > 0 and <= 65536 && (expectedLength is null || stream.Length == expectedLength), field, "The selected input length is invalid.");
+            Require(stream.Length > 0 && stream.Length <= maximumLength && (expectedLength is null || stream.Length == expectedLength), field, "The selected input length is invalid.");
             byte[] bytes = new byte[(int)stream.Length]; stream.ReadExactly(bytes);
             Require(Convert.ToHexString(SHA256.HashData(bytes)) == digest, field, "The fixed selected input identity drifted.");
             return bytes;

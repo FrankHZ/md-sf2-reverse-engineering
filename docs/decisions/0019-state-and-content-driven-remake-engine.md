@@ -92,8 +92,9 @@ loads either [practice yard](../../remake/content/authored/practice-yard.json) o
 The packages supply different maps, encounters, actor identities and processing order, placements, vitals, stats and
 spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
 `initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
-new-battle initialization policy. The separate private encounter reader imports source data; common
-private initialization and play remain unsupported until their M2/M3 dependencies are implemented.
+new-battle initialization policy. The separate private source now admits the bounded initialized common entry described in the
+[private dependency boundary](#private-battle-admission-dependency-boundary); later original AI/action
+and natural map programs remain unported.
 
 The plain [GameSession](../../remake/src/Sf2.Remake.Application/Runtime/GameSession.cs) reads its source
 once, owns the session/revision envelope and publishes one immutable snapshot. The independent
@@ -151,8 +152,8 @@ Map 3/Battle 01 continuity, 8C or H4.
 
 ### Authored definitions and explicit session starts
 
-The user-approved JSON model modernization precedes the remaining common private initialized-entry
-plan. Its first implemented boundary separates reusable content definitions from one session's
+The user-approved JSON model modernization supplies the common private initialized-entry
+model. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
 use `formatVersion: 7`. The reader accepts that current shape only, without parallel old/new models.
 
@@ -316,7 +317,7 @@ Only padding outside logical map bounds is implicit blocked storage. The four pa
 movement, land-effect and placeholder-color values through explicit `g`, `p`, `b` and `#` definitions.
 These authored footing names do not reinterpret the original terrain labels or discard private bytes.
 
-[OrdinaryGroundRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/OrdinaryGroundRules.cs) owns the
+[BattleTerrainRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleTerrainRules.cs) owns the
 currently shared regular/priest interpretation. Open footing costs 2, brush/rough 3, deep 4; impassable
 and barrier surfaces block those movers. Protection independently selects the existing exact integer
 land multipliers: none 256, light 230, heavy 205. Terrain contains no per-mover cost table or display
@@ -564,12 +565,12 @@ owns caller retirement.
 | Dependency and current owner | Accepted behavior/data owner | Common-engine support, gap and intended owner |
 | --- | --- | --- |
 | Trust and parsing: [`PrivateBattleEncounterReader`](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs), consumed by the retained reference startup reader | [Placement/scene provenance](../research/battle01-placement.md), [encounter definition](../design/contracts/battle-encounter-definition.md) | **Implemented:** production Content owns explicit local selection, bounded reads/Stack decode, registered export/input identities, pinned upstream commit, source/range joins, duplicate-property rejection and path-free failures. The legacy exact-nine/identity/scene projection checks remain in Reference. Existing digests select trusted private inputs; generic structural validity follows declared counts, references, bounds and raw-field domains. No new hash registry or runtime ROM extractor. |
-| Encounter data: [`BattleEncounterDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs), projected to the retained `OriginalBattle01StartupDefinition` | [Encounter definition](../design/contracts/battle-encounter-definition.md), [navigation](../design/contracts/battlefield-navigation.md) | **Implemented:** the immutable source definition retains the full48×48 terrain independently of the16×20 battle area, map/trigger/background/leader/halving metadata, ordered placements, identity/item/spawn words, both orders/regions, region vertices/unknown/trailing bytes and AI points. Common `BattleDefinition` has terrain/placements/rewards but no source deployment, region or program model. Content loads these source definitions; raw fields without implemented consumers remain explicit rather than being discarded or guessed. |
-| Enemy baseline: `OriginalBattle01GizmoBaseline`; `Sessions/Battle01/PrivateOriginalBattle01Initialization.ProjectBattle01Initialization` | [Enemy definitions](../design/contracts/enemy-definition-data.md), [enemy data research](../research/enemy-promotions.md) | The three selected startup files do not contain this hardcoded baseline. Load the selected enemy record through the existing pinned enemy export owner before common new-battle initialization: source level/vitals/base stats/resistance/prowess/status/items/spells, movement6, AI word and unknown fields stay distinct from effective state. Common physical definitions do not represent that closure. Enemy gold is a separate data join, required when a reward is reached. |
-| Party and control input: [`OriginalBattle01ControlledPartyPreset`](../../remake/reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs), `Battle01FirstControlPreset` | [Player-control contract](../design/contracts/battle-functions-control-flow.md), [new-game boundary](../design/contracts/new-game-state-initialization.md), [item](../design/contracts/item-definition-data.md) and [spell data](../design/contracts/spell-definition-data.md) | These presets supply already refreshed effective ally stats, packed equipment/items/spells, optional accounting, independent main/thinking seeds and controlled policy. They are external comparison inputs, not original ally growth/new-game initialization. Common state currently requires EXP and defaults missing kills/defeats/gold to zero; private unspecified values must remain unspecified or be supplied explicitly as declared controlled inputs before use. Preserve class0/4/1, EGRESS/HEAL and equipped records; do not empty spellbooks/items to satisfy current admission. |
-| New-battle initialization: [`Battle01Initialization.Initialize`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01Initialization.cs) | [New battle lifecycle](../design/contracts/battle-control-lifecycle.md#new-battle), [derived-stat research](../research/runtime-rng-and-battle-math.md) | Common starts copy authored current values. Production Domain still needs the admitted new-battle healing/status/derived-stat boundary, enemy spawn transformation, cleared AI memory/last targets/region state and deployment. The reference retains effective equipped ally ATT while restoring HP/MP and uses source GIZMO ATT7→8 once at difficulty0. Do not apply weapon bonuses twice or accept all difficulties from this sample. General refresh, other statuses and spawn/upgrade paths need their named rule coverage. |
-| Round/control: [`Battle01FirstRound`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01FirstRound.cs), `Battle01FirstControl` | [Round/activation lifecycle](../design/contracts/battle-control-lifecycle.md), [turn-control join](../research/map3-battle01-turn-control.md) | Shared turn scoring/RNG already exists. Common `BattleTurnFlow` omits activation → region-program → spawn admission before generation; state lacks tested-region flags and per-actor activation words. Domain must own those transitions, with Application ordering them before input. Preserve the particular STARTING/no-region-cutscene branch and roster-only alias boundary. The external missing-ally-word0/control-mode policy is not a natural observation or a universal default. |
-| Movement and AI: `Battle01MovementProfile`, `Battle01EnemyStandby`, `Battle01EnemyPursuit` | [Navigation](../design/contracts/battlefield-navigation.md), [AI](../design/contracts/battle-ai-decision.md) | Weighted propagation, direction-mask walk, station search, thinking RNG and script3 selection are shared. Common admission still fixes regular movement and active commandset06. Actual inputs need class1 Centaur2, class4 Healer12, enemy Hovering6, inactive standby memory/anchor behavior, then activation and set7's MOVE_ORDER1 failure path. Do not replace inactive enemies with authored Stay or set06. Production Domain rule/state collaborators consume Content-owned profiles; legacy fixed histories remain reference-only. |
+| Encounter data: [`BattleEncounterDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/BattleEncounterDefinition.cs), projected to the retained `OriginalBattle01StartupDefinition` | [Encounter definition](../design/contracts/battle-encounter-definition.md), [navigation](../design/contracts/battlefield-navigation.md) | **Implemented:** the immutable source encounter retains the full48×48 terrain independently of the16×20 area, scene/trigger metadata, placements, both source orders/regions, unknown/trailing bytes and AI points. PrivateBattleDefinitions retains it alongside selected definitions; BattleDefinition now carries initialization regions and per-deployment source initialization. Unported source consumers remain explicit. |
+| Enemy baseline: `OriginalBattle01GizmoBaseline`; `Sessions/Battle01/PrivateOriginalBattle01Initialization.ProjectBattle01Initialization` | [Enemy definitions](../design/contracts/enemy-definition-data.md), [enemy data research](../research/enemy-promotions.md) | **Implemented for selected entry:** PrivateBattleDefinitionReader loads the pinned selected enemy record including source stats/resistance/prowess/status/items/spells, mover, AI expression and unknown fields. Runtime ATT remains separate from source baseline. The hardcoded GIZMO baseline remains only for legacy startup/return callers. Enemy reward gold is a separate join required by the later reached action. |
+| Party and control input: [`OriginalBattle01ControlledPartyPreset`](../../remake/reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs), `Battle01FirstControlPreset` | [Player-control contract](../design/contracts/battle-functions-control-flow.md), [new-game boundary](../design/contracts/new-game-state-initialization.md), [item](../design/contracts/item-definition-data.md) and [spell data](../design/contracts/spell-definition-data.md) | **Implemented:** external reference-owned controlled JSON supplies effective equipped stats, class0/4/1, items/spells, independent seeds and policy through the common source. Unknown EXP/kills/defeats/gold remain null; an actual reached accounting operation requires an explicit value. This is controlled comparison input, not original growth/new-game initialization. EGRESS/HEAL and equipped records are preserved. |
+| New-battle initialization: [`Battle01Initialization.Initialize`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01Initialization.cs) | [New battle lifecycle](../design/contracts/battle-control-lifecycle.md#new-battle), [derived-stat research](../research/runtime-rng-and-battle-math.md) | **Implemented bounded owner:** BattleInitializationRules restores living status0 allies and enemies, retains effective equipped ally ATT, adjusts GIZMO source7→8 once at difficulty0, creates STARTING deployment/AI words and clears AI memory/last targets/region state. Broader status/dead-ally/equipped-enemy/spawn/upgrade refresh remains Unsupported. The real reference ATT caller delegates to the shared arithmetic. |
+| Round/control: [`Battle01FirstRound`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01FirstRound.cs), `Battle01FirstControl` | [Round/activation lifecycle](../design/contracts/battle-control-lifecycle.md), [turn-control join](../research/map3-battle01-turn-control.md) | **Implemented bounded owner:** BattleActivationRules precedes shared generation with region tests/assigned words and admitted empty region-program/STARTING spawn seams. State carries flags/tested mask/activation words. BattleControlRules admits the computed candidate under explicit control policy; only its missing ally word may use declared0. The real reference polygon/assigned-region/classifier callers delegate to shared rules. No natural-global-word or natural-program claim. |
+| Movement and AI: `Battle01MovementProfile`, `Battle01EnemyStandby`, `Battle01EnemyPursuit` | [Navigation](../design/contracts/battlefield-navigation.md), [AI](../design/contracts/battle-ai-decision.md) | **Required entry movers implemented:** common BattleTerrainRules interprets regular/healer/Centaur/hovering costs from Content-loaded source definitions. Weighted propagation, walk/search and RNG/scoring primitives remain shared. SourceOrders stops explicitly at the first enemy; inactive standby memory/anchor behavior and set7 MOVE_ORDER1 continuation are step2. No authored Stay/set06 substitution or reference-history admission. |
 | Actions and continuation: `Battle01PlayerHealing`, both physical rules, `Battle01TurnCompletion` and their session wrappers | [Spell resolution](../design/contracts/spell-resolution.md), [combat](../design/contracts/combat-resolution.md), [lifecycle](../design/contracts/battle-control-lifecycle.md) | Common HEAL and physical/reward math are available, but weapon/range/prowess/land/AI-class operands must come from the actual class/item definitions. Retain reached equipment/status/unsupported-spell semantics and nullable accounting boundaries. Source-ordered after-turn, leader/outcome/return/program work remains required as reached. Application keeps one action publisher; no receipt count or named character profile enters it. |
 
 **Confirmed (implementation): lossless private encounter admission with an immediate existing
@@ -618,28 +619,64 @@ The affected `StackCompressedGraphicsDecoderTests` methods
 exercise the moved calculator's real consumers. Engine behavior and adapter compilation use the
 committed planner. No Map3 replay, new H3, ROM rebuild or legacy aggregate is required by this import.
 
-The stopping boundary is a trusted, lossless source encounter definition and the unchanged legacy
-startup projection, or an owning typed trust/structure rejection with no payload/path leak. This does
-not create a playable common private session. `BattleDefinition` cannot retain the source orders,
-regions or provenance; the cohesive encounter definition preserves them for existing import and later
-initialization. The three inputs still lack enemy/party/start-rule closure, so an `IScenarioSource`
-bridge belongs with the subsequent initialized start. No Godot composition, GameSession, source
-schema/exporter, program runner or historical activated-state import changes at this boundary.
+**Confirmed (implementation): initialized common private entry.**
+[`PrivateBattleScenarioReader`](../../remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
+now composes the existing trusted encounter reader, selected pinned static-data/enemy-promotion
+exports and an external [controlled PlayerReady input](../../remake/reference/inputs/battle01-player-ready.json).
+[`PrivateBattleDefinitions`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/PrivateBattleDefinitions.cs)
+retains the selected class/item/spell/enemy records, source expressions/words and provenance together
+with the complete raw encounter. Source identity selects trusted input; encounter counts, positions,
+comparison IDs and receipt histories do not define valid gameplay. There is no production preset or
+activated-state import. Content shares its closed-object/scalar helpers without duplicating the
+encounter parser, decoder or source exporters.
 
-After the [content-model modernization](#authored-definitions-and-explicit-session-starts) slices are
-independently accepted, the private blocking slices follow these real dependencies:
+[`BattleInitializationRules`](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleInitializationRules.cs)
+accepts living/status0, already-refreshed/equipped allies, difficulty0, STARTING placements, explicit
+intro skip and roster-only storage. It restores HP/MP, retains ally effective ATT (including equipped
+weapons), computes enemy source ATT plus the truncated quarter once within source0–204, and creates
+initial region/AI memory/last-target/activation state. GIZMO source7 remains in its definition while
+runtime ATT becomes8. Classes0/4/1, packed equipment/spells, EGRESS and HEAL definitions remain retained;
+unknown EXP/kills/defeats/gold stay null and only reached accounting rejects for a missing value.
+Broader status/dead-ally/equipped-enemy refresh is Unsupported, not silently approximated.
 
-1. **Definition closure and initialized common entry.** Load the selected enemy/class/item/spell
-   records from existing pinned exports and an external controlled party/start document; preserve
-   unknown accounting and source fields. Add the bounded new-battle initializer and the required
-   pre-round activation/control state, then bridge into the existing `IScenarioSource`/`ScenarioDefinition`
-   and `BattleAdvancer` path. The target is the original unactivated placements with the external
-   PlayerReady comparison inputs and explicit intro-skip/control policy, yielding the actual generated
-   first player and movement/cancel. Compare initialized data and the existing
-   [`map3-battle01-player-ready-v1` fixture](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json)
-   through that same public session; do not reset either RNG during play. This targets the separately
-   observed player-ready seam, not a claim that a natural Map3 start skipped its programs. First-round
-   unsupported branches must stop before any partial generation; unknown data is not silently zeroed.
+[`BattleActivationRules`](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs)
+then tests inclusive region geometry and assigned words, admits Battle01's empty region program and
+STARTING-only spawn boundary, and lets the shared turn calculator generate the real first queue.
+[`BattleControlRules`](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleControlRules.cs)
+classifies the generated candidate from status/activation/control state. Only its missing ally word
+may use the explicitly declared0 supplement; other absent ally words remain Unknown. The independent
+main and thinking images carry forward without in-session reseeding. Initial unsupported prerequisites
+publish no session or partial RNG state. Later automatic failure preserves already completed commands
+and retains the failed enemy's entry.
+
+The source enters the existing `IScenarioSource`/`ScenarioDefinition`/`BattleAdvancer` path and actual
+Godot `BattleSessionView` through `--private-battle-start`. Common movement/cancel and the shared
+weighted kernel now support required regular/healer/Centaur/hovering movers. SourceOrders is retained
+and stops with `source-enemy-continuation` when reached; it never becomes authored Stay. The view
+reports private controlled origin and Unknown accounting. No reference session is hidden behind this
+facade. The actual reference initialization/round/control callers now delegate ATT arithmetic,
+polygon/assigned-region operations and classification to these production rules; their concrete
+later map/AI/action/return callers still prevent deleting the old wrappers.
+
+**Confirmed (bounded comparison):**
+[`PrivateBattleScenarioTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleScenarioTests.cs)
+requires the actual six selected inputs when `SF2_REQUIRE_PRIVATE_TESTS=1`, initializes the common
+session and compares its roster/resources/equipment/spells, queue, region/activation state and RNG to
+[`map3-battle01-player-ready-v1`](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json), then drives
+actual movement/cancel and the reached Unsupported boundaries. Public-only skips are not private
+acceptance. [`PrivateBattleInitializationTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleInitializationTests.cs)
+varies definitions, party identity, stats, regions, movers and unsupported prerequisites. A single
+related original initialization/first-round/control/movement group and the existing no-image Godot
+input/state probe exercise the real consumers. The [verification owner](../../remake/docs/development-and-verification.md#private-initialized-entry-observation)
+provides the mandatory-private and native commands. The H3 non-natural R2a→R2b bridge and this entry's
+controlled intro skip remain explicit provenance; natural Map3 start/program/presentation continuity
+is not established by this comparison.
+
+The current dependency order is:
+
+1. **Definition closure and initialized common entry — implemented at the boundary above.**
+   Original unactivated placements plus external controlled input generate the actual first player
+   and common movement/cancel; the next source enemy remains an explicit Unsupported stop.
 2. **First inactive-enemy continuation through actual commands.** Migrate the actual class movement
    profiles and bounded standby/activation/set7 path, preserving each enemy's source anchor, memory,
    region words and both RNG channels. Use real player commands to reach the first enemy and next
@@ -651,8 +688,8 @@ independently accepted, the private blocking slices follow these real dependenci
    migrate. This does not wait for M5; unsupported EGRESS, broader status, terminal programs and return
    stay with their named future consumers.
 
-Those implementation scopes need fresh exact-path declarations after their predecessor is accepted;
-this is a dependency decision, not authorization to implement all three together. **Unknown:** general
+Remaining steps2/3 need fresh exact-path declarations after their predecessor is accepted;
+this dependency decision does not authorize implementing them together. **Unknown:** general
 spawn/derived-stat coverage beyond the named contracts, naturally carried party/accounting/seed-copy
 values, and natural Map3→Battle01 program/presentation continuity. Resolve a needed gap against the
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.

@@ -72,20 +72,21 @@ public static class Battle01FirstControl
     }
 
     internal static Battle01FirstControlAvailability Classify(int index, ushort hp, int x, int y,
-        ushort status, ushort? activationWord, bool allyAutoBattle, bool opponentControl)
-    {
-        if (hp == 0) return Battle01FirstControlAvailability.Dead;
-        if (x is < 0 or >= 48 || y is < 0 or >= 48) return Battle01FirstControlAvailability.Unplaced;
-        if ((status & 0x30) != 0) return Battle01FirstControlAvailability.MuddledAi;
-        if (activationWord is null) return Battle01FirstControlAvailability.MissingActivationWord;
-        if ((activationWord.Value & 4) != 0) return Battle01FirstControlAvailability.AiControlled;
-        if (index < 128 && allyAutoBattle) return Battle01FirstControlAvailability.AllyAutoBattle;
-        if (index >= 128 && !opponentControl) return Battle01FirstControlAvailability.OpponentAi;
-        // The original checks these before player input. This slice does not consume a skipped turn.
-        if ((status & 0xC0) != 0) return Battle01FirstControlAvailability.Sleeping;
-        if ((status & 1) != 0) return Battle01FirstControlAvailability.Stunned;
-        return Battle01FirstControlAvailability.Player;
-    }
+        ushort status, ushort? activationWord, bool allyAutoBattle, bool opponentControl) =>
+        BattleControlRules.Classify(index < 128, hp, x, y, status, activationWord, allyAutoBattle, opponentControl) switch
+        {
+            BattleControlAdmission.Player => Battle01FirstControlAvailability.Player,
+            BattleControlAdmission.Dead => Battle01FirstControlAvailability.Dead,
+            BattleControlAdmission.Unplaced => Battle01FirstControlAvailability.Unplaced,
+            BattleControlAdmission.MuddledAi => Battle01FirstControlAvailability.MuddledAi,
+            BattleControlAdmission.MissingActivationWord => Battle01FirstControlAvailability.MissingActivationWord,
+            BattleControlAdmission.AiControlled => Battle01FirstControlAvailability.AiControlled,
+            BattleControlAdmission.AllyAutoBattle => Battle01FirstControlAvailability.AllyAutoBattle,
+            BattleControlAdmission.OpponentAi => Battle01FirstControlAvailability.OpponentAi,
+            BattleControlAdmission.Sleeping => Battle01FirstControlAvailability.Sleeping,
+            BattleControlAdmission.Stunned => Battle01FirstControlAvailability.Stunned,
+            _ => throw new InvalidOperationException("Unknown control admission."),
+        };
 
     private static Battle01FirstControlTransition Unavailable(int? actor, Battle01FirstControlAvailability reason) =>
         new(new(actor, reason), null);
