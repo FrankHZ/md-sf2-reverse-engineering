@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "package": "garden-watch",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -45,13 +45,27 @@
   "terrains": [
     {
       "id": "garden-ground",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "g": {
+          "surface": "open",
+          "protection": "light"
+        },
+        "b": {
+          "surface": "brush",
+          "protection": "heavy"
+        }
+      },
       "rows": [
         "##########",
-        "1111111111",
-        "1113111111",
-        "1113111111",
-        "1113111111",
-        "1111111111",
+        "gggggggggg",
+        "gggbgggggg",
+        "gggbgggggg",
+        "gggbgggggg",
+        "gggggggggg",
         "##########"
       ]
     }

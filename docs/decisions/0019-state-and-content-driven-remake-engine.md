@@ -154,7 +154,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization precedes the remaining common private initialized-entry
 plan. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 6`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 7`. The reader accepts that current shape only, without parallel old/new models.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -195,7 +195,7 @@ controlled start; no screenshots, session setters or reference aggregate are req
 
 Each `BattleDeploymentDefinition` now owns `Faction` (`Ally` or `Enemy`) and a nonnegative unique
 `ProcessingOrder`. These are encounter roles, separate from intrinsic actor definitions and from
-per-session resources or position overrides. Format-v6 `placements` require `actor`, `faction`,
+per-session resources or position overrides. Format-v7 `placements` require `actor`, `faction`,
 `processingOrder`, `control`, `aiStrategy`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
 previous order explicitly without changing other values. Content retains the admitted maximum of
 30 allies and 32 enemies and supported player-ally / AI-enemy combinations; ally AI and player-controlled
@@ -223,7 +223,7 @@ uses the existing adapter/probe with four packages and changed-order input, with
 
 ### Numerical agility and extra round action
 
-Format-v6 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
+Format-v7 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
 `BattleActorDefinition` and shared `TurnOrderCandidate` carry those two values independently; no
 character identity, value threshold or missing field supplies eligibility. The four authored packages
 retain their configured numerical agility with `extraRoundAction: false`. The real Content reader
@@ -249,7 +249,7 @@ uses actual input and existing queue/state/node observations, without screenshot
 
 ### Supported physical critical rules
 
-Format-v6 `physical.critical` is a closed semantic pair: `chance` and `damageBonus`. The supported
+Format-v7 `physical.critical` is a closed semantic pair: `chance` and `damageBonus`. The supported
 combinations are `one-in-32` with `half`, and `one-in-16` with `quarter`. These describe an added
 fraction of damage after land reduction, before counter halving and spread; they are not arbitrary
 probabilities or source prowess IDs. Missing/malformed fields reject as ContentError, unsupported
@@ -280,7 +280,7 @@ control: the same immutable actor can be deployed under different control or pol
 encounters. Runtime actors derive both choices from their deployment, with no copied state authority.
 This is an encounter assignment, not a new status/possession system or mutable campaign controller.
 
-Format-v6 placements require `control` and `aiStrategy`. `player` requires a null strategy; `automatic`
+Format-v7 placements require `control` and `aiStrategy`. `player` requires a null strategy; `automatic`
 requires an explicit `stay` or `attack-then-approach`. Missing/malformed fields are ContentError;
 unsupported policies or incompatible pairs are UnsupportedCapability. Only ally/player and
 enemy/automatic are currently supported. The shared Domain deployment validator runs at Content
@@ -305,12 +305,56 @@ startup/next-control, array-order and atomic failure cases retain independent ex
 The [control/AI observation recipes](../../remake/docs/development-and-verification.md#independent-control-and-ai-strategy)
 use actual inputs and the existing probe; related source comparisons run as a group.
 
-Remaining modernization is explicitly separate: terrain semantic references and remaining raw source
-mappings. Existing source semantics remain unchanged until their dedicated migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
-registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
-these bounded content slices does the private initialized-entry dependency chain resume; raw private
-encounter expressions/provenance remain lossless, and unspecified private accounting remains Unknown.
-M2, A1–A8 and natural8C/H4 are incomplete.
+### Semantic terrain and supported ground rules
+
+Format-v7 terrain layouts own explicit `legend` definitions referenced by row glyphs. Each definition
+has a semantic `surface` and independent `protection`; glyphs are local references, not source terrain
+indexes or a hardcoded `#` convention. [BattleTerrain](../../remake/src/Sf2.Remake.Domain/Battles/State/BattleTerrain.cs)
+retains the immutable decoded properties in `BattleDefinition.Terrain`. Unknown glyphs, missing fields
+and malformed legends reject as ContentError; unsupported surface/protection values reject explicitly.
+Only padding outside logical map bounds is implicit blocked storage. The four packages retain their
+movement, land-effect and placeholder-color values through explicit `g`, `p`, `b` and `#` definitions.
+These authored footing names do not reinterpret the original terrain labels or discard private bytes.
+
+[OrdinaryGroundRules](../../remake/src/Sf2.Remake.Domain/Battles/Rules/OrdinaryGroundRules.cs) owns the
+currently shared regular/priest interpretation. Open footing costs 2, brush/rough 3, deep 4; impassable
+and barrier surfaces block those movers. Protection independently selects the existing exact integer
+land multipliers: none 256, light 230, heavy 205. Terrain contains no per-mover cost table or display
+percentage. Wider mover capabilities are not admitted by adding a surface. Content placement and
+reusable start validation, preview/path cost, actual movement, raw AI pursuit grids, AI lethality
+scoring and every physical hit consume these rules. Reversed counters use the moved original actor's
+actual destination tile. Protection precedes critical/counter/spread exactly as before.
+
+Dynamic opponent blocking changes a fresh cost grid, never immutable terrain. Friendly traversal,
+occupied-stop rejection, provisional preview/cancel and single action commit retain their owners.
+Godot selects the existing placeholder colors from semantic surface; rendering does not define costs
+or protection. No presentation state or duplicate runtime terrain authority is added.
+
+The shared `WeightedMovement` kernel accepts decoded per-cell signed costs. Its first admission,
+right/left/up/down neighbors, 32 LIFO buckets, wrap, exact-budget treatment and logical no-row-wrap
+policy remain. The actual source `Battle01PlayerMovement.BuildWeightedGrid` decodes original bit 7,
+low 5 terrain index and supplied sixteen-cost mover table before invoking that same kernel with the
+explicit flat-row comparison policy. Complete source-domain validation remains at that boundary;
+regular/priest/centaur/hovering profiles and real player/pursuit/standby callers retain original fields.
+The reference land-effect mappings and already-semantic physical scalar operands remain unchanged.
+
+**Confirmed (engine):** [BattleTerrainTests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleTerrainTests.cs)
+changes referenced surface through actual movement/commit and protection through actual AI target
+choice/physical settlement; existing weighted, occupied, row-boundary, critical and moved-counter
+cases keep independent expected arithmetic/seeds. Invalid/unresolved terrain fails real admission.
+The [terrain observations](../../remake/docs/development-and-verification.md#semantic-terrain-observation)
+use the existing no-image input/state probe and grouped movement/pursuit/physical reference comparisons.
+
+Remaining raw mappings have concrete consumers: `BattleActorDefinition.SourceClassId` projects the
+admitted named classes for the existing critical-target class table; source/reference movement and
+land tables preserve original class/movetype/terrain operands. Private `BattleEncounterDefinition`
+retains lossless source words, coordinates, orders/regions and terrain until the owning initialized
+entry/activation/program consumers can interpret them. These are not an open-ended prerequisite to
+rewrite every source field. The [private initialized-entry chain](#private-battle-admission-dependency-boundary)
+now resumes with selected enemy/class/item/spell definitions, required mover capability, new-battle
+initialization and pre-round activation/control; unspecified accounting stays Unknown. No global
+catalog, loader/cache/registry framework or on-demand resource mechanism is introduced. M2, A1–A8
+and full ADR0009/0010/8C/H4 remain incomplete.
 
 ## Current M2 ordinary physical implementation
 
@@ -834,7 +878,7 @@ The current executable examples are
 [`practice-yard`](../../remake/content/authored/practice-yard.json),
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
-[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v6 documents
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v7 documents
 through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
 `placements` own faction, stable processing order, control/AI strategy and deployment coordinates, and `start.actors` bind explicit per-session values by

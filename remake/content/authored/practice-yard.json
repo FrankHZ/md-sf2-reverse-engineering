@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -45,15 +45,29 @@
   "terrains": [
     {
       "id": "yard-ground",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "g": {
+          "surface": "open",
+          "protection": "light"
+        },
+        "b": {
+          "surface": "brush",
+          "protection": "heavy"
+        }
+      },
       "rows": [
         "############",
-        "111111111111",
-        "111111111111",
-        "111133111111",
-        "111133111111",
-        "111111111111",
-        "111111111111",
-        "111111111111",
+        "gggggggggggg",
+        "gggggggggggg",
+        "ggggbbgggggg",
+        "ggggbbgggggg",
+        "gggggggggggg",
+        "gggggggggggg",
+        "gggggggggggg",
         "############"
       ]
     }

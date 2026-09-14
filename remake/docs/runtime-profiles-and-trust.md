@@ -29,11 +29,32 @@ The runtime always displays the appropriate disclosure:
 
 ## Public Authored
 
-`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 6` package with map/terrain, actor/spell and encounter
+`AuthoredScenarioPackageReader` accepts the closed `formatVersion: 7` package with map/terrain, actor/spell and encounter
 references, resolves all references and validates numeric shape and implemented capability before
 creating immutable definitions. A second supported package needs configuration changes only. Duplicate
 or missing references and profile forgery are ContentError; unimplemented effects, status/items/classes
 or AI are UnsupportedCapability. No raw-byte identity, comparison ID or prior receipt admits play.
+
+Each terrain layout is a closed `{id, legend, rows}` object. `legend` maps a single non-space printable ASCII
+symbol to a closed `{surface, protection}` definition; every row symbol must resolve there, including
+`#` if used. Rows retain consistent dimensions 1–48; outside the logical rectangle, storage padding is
+blocked. No numeric character implies a terrain type. The resolved immutable terrain references are
+separate from dynamic actors/occupancy, accumulated move costs and presentation.
+
+| surface | Current regular/priest movement cost |
+| --- | --- |
+| `open` | 2 |
+| `brush`, `rough` | 3 |
+| `deep` | 4 |
+| `impassable`, `barrier` | Blocked |
+
+Independent `protection` is `none`, `light` or `heavy`, selecting integer land multipliers 256, 230 or 205
+respectively. These values feed the existing scalar before critical, counter and downward spread;
+they are not floating-point display percentages. The mover rule owns costs; custom cost/probability
+fields and unknown properties are not accepted. Unsupported surface/protection values fail explicitly,
+and missing definitions/invalid symbols are ContentError. The existing placeholder view reads surface
+only; color does not grant passability or damage protection. Original reference movers keep their own
+source cost/land tables and use the same propagation kernel, without admitting new authored profiles.
 
 The only current start policy is `initialVitals: authored-controlled`; private original new-battle
 initialization is not claimed. The immutable definitions contain maximum vitals, actor/rule/spell and

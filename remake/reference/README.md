@@ -75,6 +75,15 @@ boundaries keep original commandset06/script3 fields and guards. `PhysicalTarget
 and the physical action calculator remain shared; the modeling change does not replace activation,
 standby, private control classification or their remaining legacy consumers.
 
+Authored terrain now resolves semantic surface/protection through `OrdinaryGroundRules`. The actual
+`Battle01PlayerMovement.BuildWeightedGrid` source boundary converts bit7/low5 terrain fields and the
+selected sixteen-cost profile into signed per-cell costs for the shared `WeightedMovement` body.
+Its regular/priest/centaur/hovering player/pursuit/standby consumers retain original profiles and flat-row
+comparison. Original land-effect/source class mappings still supply the unchanged mathematical strike
+operands. No reference source record, private terrain payload or trust/import schema is normalized.
+Required private mover/initializer/activation capabilities remain in the initialized-entry dependency
+chain; retained raw data alone does not authorize a general rewrite.
+
 Reusable map/layout/item reducers remain in Domain; their existence is not a claim that common-session
 exploration is implemented. Shared battle rules and the authored Content reader live in production
 responsibility directories. Fixed receipt counts, round positions, kill order, expected terminal

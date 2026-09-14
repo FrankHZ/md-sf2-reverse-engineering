@@ -18,7 +18,6 @@ internal static class BattleMovement
         var actor = battle.GetActor(actorRef);
         if (!battle.Definition.Contains(destination)) throw new BattleRuleException("movement-range", "destination");
         var terrain = battle.Definition.Terrain;
-        var costs = WeightedMovement.OrdinaryCosts;
         var grid = Grid(battle, actorRef);
         if (grid.CostAt(destination) is not { } destinationCost)
             throw new BattleRuleException("movement-range", "destination");
@@ -46,7 +45,7 @@ internal static class BattleMovement
             backwards.Add(new(current % 48, current / 48));
         }
         var path = backwards.AsEnumerable().Reverse().ToArray();
-        int actualCost = path.Skip(1).Sum(p => costs[terrain[Offset(p)] & 31]);
+        int actualCost = path.Skip(1).Sum(p => (int)OrdinaryGroundRules.MovementCost(terrain[Offset(p)]));
         if (actualCost > destinationCost || actualCost > actor.Definition.Move * 2)
             throw new BattleRuleException("movement-path", "destination");
         return new(path, actualCost);
@@ -55,10 +54,10 @@ internal static class BattleMovement
     internal static WeightedMovementGrid Grid(EngineBattleState battle, ActorRef actorRef)
     {
         var actor = battle.GetActor(actorRef);
-        var terrain = battle.Definition.Terrain.ToArray();
+        var costs = battle.Definition.Terrain.Select(OrdinaryGroundRules.MovementCost).ToArray();
         foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Faction != actor.Faction))
-            terrain[Offset(opponent.Position!)] |= 128;
-        return WeightedMovement.Build(terrain, WeightedMovement.OrdinaryCosts, Offset(actor.Position!), actor.Definition.Move * 2);
+            costs[Offset(opponent.Position!)] = -1;
+        return WeightedMovement.Build(costs, Offset(actor.Position!), actor.Definition.Move * 2);
     }
 
     internal static void RequireStop(EngineBattleState battle, ActorRef actor, MapPosition destination)

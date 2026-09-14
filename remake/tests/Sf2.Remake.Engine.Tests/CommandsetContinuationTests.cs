@@ -130,8 +130,9 @@ public sealed class CommandsetContinuationTests
             var p = d["encounters"]![0]!["placements"]!;
             p[0]!["x"] = 4; p[0]!["y"] = 3;
             p[1]!["x"] = 7; p[1]!["y"] = 1;
-            d["terrains"]![0]!["rows"]![1] = "#2222224#";
-            d["terrains"]![0]!["rows"]![2] = "#2222224#";
+            d["terrains"]![0]!["legend"]!["d"] = new JsonObject { ["surface"] = "deep", ["protection"] = "heavy" };
+            d["terrains"]![0]!["rows"]![1] = "#ppppppd#";
+            d["terrains"]![0]!["rows"]![2] = "#ppppppd#";
             p[3]!["x"] = 2; p[3]!["y"] = 5;
         });
         var result = Stay(session);
@@ -146,7 +147,7 @@ public sealed class CommandsetContinuationTests
         var session = Start("stone-court", d =>
         {
             Configure(d, 3);
-            for (int y = 1; y <= 5; y++) d["terrains"]![0]!["rows"]![y] = "#22#2222#";
+            for (int y = 1; y <= 5; y++) d["terrains"]![0]!["rows"]![y] = "#pp#pppp#";
         });
         Accept(session, new Move(ExplorationDirection.South));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));

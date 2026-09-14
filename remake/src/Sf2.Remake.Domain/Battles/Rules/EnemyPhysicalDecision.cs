@@ -31,7 +31,7 @@ internal static class EnemyPhysicalDecision
             if (candidate.Target.Definition.Physical is null)
                 throw new BattleRuleException("physical-definition", "target.physical", true);
             int potential = PhysicalStrikeRules.LandDamage(actor.Definition.Attack, candidate.Target.Definition.Defense,
-                PhysicalBattleAction.LandMultiplier(current.Definition.Terrain[candidate.Target.Position!.Y * 48 + candidate.Target.Position.X]));
+                OrdinaryGroundRules.LandMultiplier(current.Definition.Terrain[candidate.Target.Position!.Y * 48 + candidate.Target.Position.X]));
             var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
             uint after = ((uint)draw.After << 16) | (thinking & 65535);
             byte priority = PhysicalTargetRules.ScriptThree((byte)candidate.Cost, Math.Max(0, candidate.Target.Hp - potential), draw.Value);

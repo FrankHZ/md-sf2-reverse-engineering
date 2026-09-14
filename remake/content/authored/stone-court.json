@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "package": "stone-court",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -65,13 +65,23 @@
   "terrains": [
     {
       "id": "stone-court-terrain",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "p": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
       "rows": [
         "#########",
-        "#2222222#",
-        "#2222222#",
-        "#2222222#",
-        "#2222222#",
-        "#2222222#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
+        "#ppppppp#",
         "#########"
       ]
     }

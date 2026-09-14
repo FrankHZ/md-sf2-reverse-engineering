@@ -104,10 +104,10 @@ internal static class PhysicalBattleAction
             var targetPosition = counter ? destination : target.Position!;
             ushort hp = counter ? actorHp : targetHp;
             var profile = attacker.Definition.Physical!;
-            byte terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
-            // Regular movement's land nibble is separate from movement cost, including the
+            var terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
+            // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
-            int multiplier = LandMultiplier(terrain);
+            int multiplier = OrdinaryGroundRules.LandMultiplier(terrain);
             var strike = PhysicalStrikeRules.Resolve(attacker.Definition.Attack, defender.Definition.Defense,
                 hp, multiplier, seed, 32, profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter);
@@ -151,9 +151,4 @@ internal static class PhysicalBattleAction
         }
     }
 
-    internal static int LandMultiplier(byte terrain) => terrain switch
-    {
-        1 => 230, 2 => 256, >= 3 and <= 6 => 205,
-        _ => throw new BattleRuleException("physical-terrain", "target.terrain", true),
-    };
 }

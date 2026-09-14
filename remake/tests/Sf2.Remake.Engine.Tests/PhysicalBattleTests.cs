@@ -204,7 +204,8 @@ public sealed class PhysicalBattleTests
         var session = FollowupStart("stone-court", 55, d =>
         {
             d["encounters"]![0]!["placements"]![2]!["y"] = 2;
-            d["terrains"]![0]!["rows"]![2] = "#2232222#";
+            d["terrains"]![0]!["legend"]!["b"] = new JsonObject { ["surface"] = "brush", ["protection"] = "heavy" };
+            d["terrains"]![0]!["rows"]![2] = "#ppbpppp#";
         });
         Accept(session, new Move(ExplorationDirection.North));
         Attack(session, "raider");
@@ -244,17 +245,18 @@ public sealed class PhysicalBattleTests
     }
 
     [Theory]
-    [InlineData('1', 474)]
-    [InlineData('2', 470)]
-    [InlineData('3', 477)]
-    public void LandReductionPrecedesCriticalBonusAndTheSharedDownwardSpread(char tile, int hp)
+    [InlineData("open", "light", 474)]
+    [InlineData("open", "none", 470)]
+    [InlineData("brush", "heavy", 477)]
+    public void LandReductionPrecedesCriticalBonusAndTheSharedDownwardSpread(string surface, string protection, int hp)
     {
         var session = Start("stone-court", d =>
         {
             ConfigureNonlethal(d, 14);
             d["actors"]![0]!["attack"] = 30;
             var row = d["terrains"]![0]!["rows"]![3]!.GetValue<string>().ToCharArray();
-            row[2] = tile;
+            row[2] = 't';
+            d["terrains"]![0]!["legend"]!["t"] = new JsonObject { ["surface"] = surface, ["protection"] = protection };
             d["terrains"]![0]!["rows"]![3] = new string(row);
         });
         var result = Attack(session, "raider");

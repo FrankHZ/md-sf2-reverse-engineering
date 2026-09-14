@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "package": "river-post",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -65,14 +65,24 @@
   "terrains": [
     {
       "id": "river-post-terrain",
+      "legend": {
+        "#": {
+          "surface": "barrier",
+          "protection": "none"
+        },
+        "p": {
+          "surface": "open",
+          "protection": "none"
+        }
+      },
       "rows": [
         "###########",
-        "#222222222#",
-        "#222222222#",
-        "#222222222#",
-        "#222222222#",
-        "#222222222#",
-        "#222222222#",
+        "#ppppppppp#",
+        "#ppppppppp#",
+        "#ppppppppp#",
+        "#ppppppppp#",
+        "#ppppppppp#",
+        "#ppppppppp#",
         "###########"
       ]
     }
