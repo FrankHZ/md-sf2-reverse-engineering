@@ -295,6 +295,17 @@ memory effects; it MUST distinguish that policy from original behavior and MUST 
 fallback for removed142. This clarification does not prescribe raw memory access in an engine,
 close natural call-state or presentation Unknowns, or admit another runtime scenario.
 
+For the [post-F603 reload boundary](../../research/map3-castle-battle-unlock.md#post-f603-reload-the-writes-target-inactive-window-composition-storage),
+the four `0x7000` stores target the combined Plane-A/window-layout buffer, not entity255 or the
+map-only layout. **Confirmed conditional static:** normal reload initializes an empty window list;
+its VInt consumer returns before reading that buffer, and first-window allocation copies the entire
+map-only layout over it before publishing an active window. With normal queue processing and no
+pending combined-buffer DMA, this can be abstracted as an inactive presentation-scratch mutation
+with no additional map/entity/camera/control transition on return to input. That abstraction MUST
+preserve these preconditions and the preceding real `hide142` effect; it MUST NOT become a generic
+missing-entity no-op, player-slot fallback, or assertion of naturally observed frames. Active-window,
+deferred-DMA, and other pointer/reuse cases remain outside this bounded conclusion.
+
 Map-script imports MUST separately retain the six source-named bridge forms `setActscriptWait`,
 `setActscript`, `customActscriptWait`, `customActscript`, `entityActionsWait`, and `entityActions` in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
