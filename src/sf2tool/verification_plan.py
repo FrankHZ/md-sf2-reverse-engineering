@@ -717,6 +717,9 @@ def _plan_engine_paths(
         elif path.startswith("remake/tests/"):
             # Legacy/reference test edits or retirement do not run the old solution.
             continue
+        elif path == "remake/reference/inputs/battle01-player-ready.json":
+            # Copied by Engine.Tests and consumed by the actual private engine facts.
+            _selection_entry(selected, "engine-unit", path)
         elif path.startswith("remake/reference/"):
             _selection_entry(selected, "reference-host-build", path)
         elif path.startswith("remake/game/"):

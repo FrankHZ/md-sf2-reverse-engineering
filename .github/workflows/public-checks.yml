@@ -61,6 +61,8 @@ jobs:
               $engine = $true
             } elseif ($changedPath -like 'remake/tests/*') {
               continue
+            } elseif ($changedPath -eq 'remake/reference/inputs/battle01-player-ready.json') {
+              $engine = $true
             } elseif ($changedPath -like 'remake/reference/*') {
               $reference = $true
             } elseif ($changedPath -like 'remake/game/*') {

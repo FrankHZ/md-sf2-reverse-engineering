@@ -364,8 +364,8 @@ $layout | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDi
 ```
 
 Use those respective paths with `--authored-package`, the selected observation case and a fresh
-`--observation-output`. The targeting variant places the rejected ally before a legal adjacent ally;
-the layout variant spans both admitted dimensions. Both execute the same production session and view,
+`SF2_OBSERVATION_OUTPUT` path. The targeting variant places the rejected ally before a legal adjacent
+ally; the layout variant spans both admitted dimensions. Both execute the same production session and view,
 with no runtime seed/state injection. Preserve original failed observations and run only the affected
 case after a correction; adapter-only fixes do not require replaying unchanged engine/reference suites.
 
@@ -719,7 +719,10 @@ The [planner](../../src/sf2tool/verification_plan.py) automatically selects `eng
 host/assembly, without the old solution or always-run `public-core`.
 Non-research documentation and retired engine-test paths add no execution. Engine test changes select
 unit tests; ordinary game changes select ordinary compilation; reference changes select the reference
-host. Shared product/build inputs select all actual downstream hosts.
+host. The exact `remake/reference/inputs/battle01-player-ready.json` input selects `engine-unit`: the
+existing Engine.Tests project copies it and actual-private engine facts consume it. Reference host
+and assembly code still select only `reference-host-build`. Shared product/build inputs select all
+actual downstream hosts.
 
 Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
 engine-only wiring change in those shared modules or the retained `remake_godot.py` host binding,
@@ -791,9 +794,11 @@ request and main push. Its Windows jobs are:
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
 
 Shared product/build inputs select engine and both hosts; engine tests select engine; `remake/game/`
-selects the ordinary adapter, while `remake/reference/` selects the explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select research. Workflow and
-shared CLI/harness/planner or retained Godot-tool host-binding changes select all four. Non-research documentation and legacy remake
-test edits select no product jobs. Other non-remake inputs conservatively select research. The full
+selects the ordinary adapter. The exact `remake/reference/inputs/battle01-player-ready.json` input
+selects engine for its direct Engine.Tests consumer; other `remake/reference/` paths select the
+explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select
+research. Workflow and shared CLI/harness/planner or retained Godot-tool host-binding changes select
+all four. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
 is introduced. M1's consumed authored JSON lives under `remake/content/`, which conservatively selects all product/host builds.
 
