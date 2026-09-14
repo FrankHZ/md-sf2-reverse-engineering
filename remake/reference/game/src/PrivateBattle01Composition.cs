@@ -15,7 +15,7 @@ internal static class PrivateBattle01Ui
         stage == GameFlowStage.Battle || (pending && inputsSelected);
 
     internal static string? Apply(GameSession session, IOriginalBattle01StartupSource? source,
-        PrivateBattle01Input input, OriginalBattle01ControlledArrivalInputs? arrivalInputs = null,
+        PrivateBattle01Input input,
         bool chesterFirstKillRequested = false, bool sarahHealRequested = false)
     {
         if (session.PrivateOriginalBattle01 is not { } current)
@@ -25,9 +25,7 @@ internal static class PrivateBattle01Ui
                 session.PrivateOriginalBattle01Admission, source,
                 sarahHealRequested ? OriginalBattle01ControlledPartyPreset.SarahHealComparison :
                 chesterFirstKillRequested ? OriginalBattle01ControlledPartyPreset.ChesterFirstKillComparison :
-                    OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison,
-                (chesterFirstKillRequested || sarahHealRequested) ? null : OriginalBattle01ControlledReturnInputs.GransealFirstAttemptComparison,
-                (chesterFirstKillRequested || sarahHealRequested) ? null : arrivalInputs);
+                    OriginalBattle01ControlledPartyPreset.LeaderDefeatComparison);
             if (preparation is not PrivateOriginalBattle01StartupPrepared prepared)
                 return "Prepare rejected: " + ((PrivateOriginalBattle01StartupRejected)preparation).Diagnostic.Message;
             var initialization = session.InitializePrivateOriginalBattle01(prepared);
@@ -45,9 +43,7 @@ internal static class PrivateBattle01Ui
                     ? "Sarah HEAL comparison selected. EXP 0 supplied before battle. First player ready."
                     : chesterFirstKillRequested
                     ? "Chester first-kill comparison selected. First player ready."
-                    : arrivalInputs is null
-                    ? "Granseal return comparison selected. First player ready."
-                    : "Leader/Granseal return/arrival comparisons selected. First player ready.",
+                    : "Leader-defeat comparison selected. First player ready. Outcome execution belongs to the common session.",
                 PrivateOriginalBattle01FirstControlUnavailable unavailable =>
                     "First control unavailable: " + unavailable.Decision.Availability,
                 PrivateOriginalBattle01FirstControlRejected rejected =>
@@ -55,33 +51,6 @@ internal static class PrivateBattle01Ui
                 _ => "First control unavailable.",
             };
         }
-
-        if (current.Arrival is not null) return input == PrivateBattle01Input.None ? null :
-            "Battle controls unavailable. Use the church-pocket movement controls.";
-        if (current.CanEnterExploration && input == PrivateBattle01Input.Confirm)
-            return session.EnterPrivateOriginalBattle01Exploration(current) switch
-            {
-                PrivateOriginalBattle01ExplorationEntered => PrivateMap3PresentationPlan.ArrivalStatus,
-                PrivateOriginalBattle01ExplorationEntryRejected rejected => rejected.Diagnostic.Message,
-                _ => null,
-            };
-        if (current.CanRequestDefeatReturn && input == PrivateBattle01Input.Confirm)
-            return session.RequestPrivateOriginalBattle01DefeatReturn(current) switch
-            {
-                PrivateOriginalBattle01DefeatReturnRequested => PrivateBattle01Presenter.ReturnRequestedStatus,
-                PrivateOriginalBattle01DefeatReturnRejected rejected => rejected.Diagnostic.Message,
-                _ => null,
-            };
-
-        if (current.Battle.Phase == Battle01Phase.DefeatPending && input == PrivateBattle01Input.Confirm)
-            return session.RecoverPrivateOriginalBattle01Defeat(current) switch
-            {
-                PrivateOriginalBattle01DefeatRecovered recovered => recovered.Snapshot.CanRequestDefeatReturn
-                    ? "Bowie HP restored. Gold halved. Space requests the Granseal return."
-                    : "Bowie HP restored. Gold halved. Return unavailable.",
-                PrivateOriginalBattle01DefeatRecoveryRejected rejected => rejected.Diagnostic.Message,
-                _ => null,
-            };
 
         // An unavailable next dispatch has already been reported. Unrelated keys cannot retry it
         // or overwrite its precise reason; the existing presenter retains that result.
@@ -204,11 +173,7 @@ internal static class PrivateBattle01Ui
         for (int attempt = 0; attempt < limit; attempt++)
         {
             if (current.Battle.Phase == Battle01Phase.DefeatPending)
-                return "Bowie defeated. Space applies HP/gold recovery.";
-            if (current.Battle.Phase == Battle01Phase.DefeatRecoveryPending)
-                return current.DefeatReturn is not null ? PrivateBattle01Presenter.ReturnRequestedStatus
-                    : current.CanRequestDefeatReturn ? "Recovery applied. Space requests the Granseal return."
-                    : "Recovery applied. Return unavailable.";
+                return "Bowie defeated. Comparison terminal; outcome execution belongs to the common session.";
             var order = current.Battle.FirstRound!;
             if (order.CurrentCandidate is not { } candidate)
             {
@@ -292,11 +257,6 @@ public sealed partial class Map3Root
 
     private bool PollPrivateBattle01()
     {
-        if (_session?.PrivateOriginalMapArrival is not null)
-        {
-            PollGransealMovement();
-            return true;
-        }
         if (_session is null || !PrivateBattle01Ui.OwnsInput(_session.PrivateOriginalFlowStage,
                 _session.PrivateOriginalBattle01Admission is not null, _privateBattle01Source is not null))
             return false;
@@ -304,14 +264,8 @@ public sealed partial class Map3Root
         var input = _inputAdapter?.PollPrivateBattle01() ?? PrivateBattle01Input.None;
         if (input == PrivateBattle01Input.None) return true;
         string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input,
-            _privatePresenter?.CanDisplayArrival == true ? OriginalBattle01ControlledArrivalInputs.GransealFirstAttemptComparison : null,
             _chesterFirstKillRequested, _sarahHealRequested);
         if (outcome is null) return true;
-        if (_session.PrivateOriginalMapArrival is { } arrival)
-        {
-            ProjectGransealArrival(arrival);
-            return true;
-        }
         if (_session.PrivateOriginalBattle01 is { } battle)
         {
             if (_privateBattle01Presenter is null)

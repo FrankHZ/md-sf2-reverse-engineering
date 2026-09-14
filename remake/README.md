@@ -24,7 +24,10 @@ ATT once, activates regions and generates the actual first queue before player m
 Required regular, healer, Centaur and hovering movers use the common terrain rules. Unknown accounting
 remains null. Actual player commands now continue through inactive source standby, region activation
 and set6/set7 pursuit to the next player, carrying each enemy’s source anchor/memory and both RNG
-channels. Reached private equipment/action/completion is the next bounded dependency in [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary).
+channels. Actual private physical/HEAL actions, death accounting, source growth and Battle01 outcomes
+now continue through the full after-program or ordinary defeat program back to usable exploration;
+the [execution owner](./docs/exploration-programs.md#battle01-outcome-after-program-and-return)
+records the selected source, controlled input and unsupported boundaries.
 Godot’s ordinary `game/Main.tscn` instantiates `GameRoot` and builds with only Domain/Application/Content.
 Default and explicit authored/private-common starts use this entry; invalid options produce a startup
 diagnostic without selecting another route. The explicit `reference/game` project retains the old
@@ -42,8 +45,9 @@ HEAL/STAY and automatic next-actor/round progression with carried RNG. The
 adds ordinary first/second/counter attacks, EXP/gold, death accounting and continuation. A bounded
 configured attack-then-approach strategy scores competing targets through the accepted commandset06/
 script3 rules, applies source class/movement ties, and uses the same physical action and publication mechanisms, including ally counter rewards
-and carried thinking/main RNG. Required class data is validated at the reached comparison; unsupported
-level-up, leader and terminal settlement branches reject atomically. With no attack target, the
+and carried thinking/main RNG. Required class data is validated at the reached comparison; missing
+growth or outcome metadata and unsupported effects reject atomically at their owning boundary.
+The connected private world supplies the required growth and Battle01 outcome definitions. With no attack target, the
 empty spell/item branch continues through failed HEAL1/SUPPORT to MOVE1, preserving RNG and resources
 and ending that turn even when movement resolves to origin Stay. Incomplete or high target costs
 remain Unsupported. The
@@ -72,13 +76,14 @@ incomplete, including natural continuity and original presentation. Engine migra
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` plus five selected private inputs | common initialized entry and player movement/cancel; controlled intro skip, no natural Map 3 or completed battle claim |
+| `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; the connected world executes opening, Battle01 and both supported outcomes/returns. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 | `public-synthetic` | explicit legacy selection; tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
 | `private-local` | explicit ignored canonical input; optional selected battle inputs and reviewed local art | bounded controlled original-data consumers and diagnostics; incomplete original fidelity |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
-while reporting private success. Authored battles and the standalone initialized private entry use the common runtime. Natural map
-programs and later original AI/action/return callers retain their explicit legacy route.
+while reporting private success. Authored battles, the standalone initialized private entry and the
+connected private world use the common runtime. The reference host retains independent source/input
+and fixed action comparisons; migrated outcome/recovery/return executors and their UI callers are removed.
 
 ## Local Presentation Asset Preflight
 

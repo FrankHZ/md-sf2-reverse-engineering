@@ -115,7 +115,8 @@ public sealed class PrivateBattleScenarioTests
                 (row => row["policy"]!["difficulty"] = 1, "difficulty"),
                 (row => row["policy"]!["allyAutoBattle"] = true, "control-mode"),
                 (row => row["allies"]![0]!["activationWord"] = 0, "unknown-or-duplicate-field"),
-                (row => row["allies"]![0]!["status"] = 1, "new-battle-status-refresh"),
+                // Source initialization retains low three bits; broader refresh remains unsupported.
+                (row => row["allies"]![0]!["status"] = 8, "new-battle-status-refresh"),
                 (row => row["allies"]![0]!["items"]![0] = 213, "incompatible-equipment"),
             })
             {

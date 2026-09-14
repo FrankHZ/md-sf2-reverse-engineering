@@ -14,7 +14,7 @@ internal static class BattleTurnFlow
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
-                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status);
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status, progress: input.Progress);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
         return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
@@ -66,7 +66,11 @@ internal static class BattleTurnFlow
         {
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
-            Require(input.Hp <= actor.MaxHp && input.Mp <= actor.MaxMp && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
+            if (input.Progress is { } progress)
+                Require(actor.Growth is not null && progress.Level >= actor.Level && progress.Level <= 99 &&
+                    progress.MaxHp is > 0 and <= 200 && progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100,
+                    "actor-progress", "start.actors.progress");
+            Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
             Require(input.Status == 0 || start.NewBattle is not null, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
@@ -97,7 +101,7 @@ internal static class BattleTurnFlow
     {
         if (battle.Definition.Initialization is not null) battle = BattleActivationRules.BeforeRound(battle);
         var generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
-            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Definition.Agility, a.Definition.ExtraRoundAction)),
+            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.Definition.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));
         return battle.With(mainSeed: ((uint)generated.NextSeed << 16) | (battle.MainSeed & 0xFFFF),
             round: checked(battle.Round + 1), queue: generated.Slots, cursor: 0);

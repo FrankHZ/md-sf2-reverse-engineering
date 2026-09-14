@@ -21,7 +21,7 @@ public abstract record TextWindow;
 public sealed record ClosedTextWindow : TextWindow;
 public sealed record OpenTextWindow(int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : TextWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
-public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished }
+public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished, VictoryProgramFinished, DefeatProgramFinished, OutcomeMapLoaded }
 
 public sealed class StoryState
 {
@@ -30,13 +30,13 @@ public sealed class StoryState
         ProgramContinuation continuation = ProgramContinuation.FieldInput,
         ExplorationBattleRoute? enteringBattle = null, FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long simulationTick = 0,
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
-        int? cameraEntitySlot = null)
+        int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
         TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EntityEvent = entityEvent;
-        Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot;
+        Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot; OutcomeReturn = outcomeReturn;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -46,6 +46,7 @@ public sealed class StoryState
     public ProgramContinuation Continuation { get; }
     public ExplorationBattleRoute? EnteringBattle { get; }
     public FieldReturnAnchor? ReturnAnchor { get; }
+    public FieldReturnAnchor? OutcomeReturn { get; }
     public TextWindow TextWindow { get; }
     public long SimulationTick { get; }
     public MapPartyLists? PartyLists { get; }
@@ -58,12 +59,13 @@ public sealed class StoryState
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
         FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long? simulationTick = null, MapPartyLists? partyLists = null,
         EntityEventContext? entityEvent = null, bool clearEntityEvent = false, EntityRef? speaker = null, MapPosition? cameraTarget = null,
-        bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false) =>
+        bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false,
+        FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
-            continuation ?? Continuation, enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
+            continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
             clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
-            clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot);
+            clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

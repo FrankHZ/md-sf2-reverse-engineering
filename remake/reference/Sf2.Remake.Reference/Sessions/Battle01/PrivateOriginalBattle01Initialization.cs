@@ -9,32 +9,11 @@ public sealed class PrivateOriginalBattle01SessionSnapshot
     internal PrivateOriginalBattle01SessionSnapshot(PrivateOriginalBattle01StartupPrepared preparation,
         Battle01InitializedState battle, PrivateOriginalMapPlayerLocomotionSnapshot sourceLocomotion,
         PrivateOriginalMapBattleBridgeSnapshot? sourceBridge)
-        : this(preparation, battle, sourceLocomotion, sourceBridge, null) { }
-    internal PrivateOriginalBattle01SessionSnapshot(PrivateOriginalBattle01StartupPrepared preparation,
-        Battle01InitializedState battle, PrivateOriginalMapPlayerLocomotionSnapshot sourceLocomotion,
-        PrivateOriginalMapBattleBridgeSnapshot? sourceBridge, Battle01DefeatReturnRequest? defeatReturn,
-        PrivateOriginalMapReturnArrivalSnapshot? arrival = null)
-    {
-        Preparation = preparation; Battle = battle; SourceLocomotion = sourceLocomotion; SourceBridge = sourceBridge;
-        DefeatReturn = defeatReturn;
-        Arrival = arrival;
-    }
-    public GameFlowStage FlowStage => Arrival is null ? GameFlowStage.Battle : GameFlowStage.Exploration;
-    public MapId Map => Arrival?.Map ?? Battle.Map;
+    { Preparation = preparation; Battle = battle; SourceLocomotion = sourceLocomotion; SourceBridge = sourceBridge; }
+    public GameFlowStage FlowStage => GameFlowStage.Battle;
+    public MapId Map => Battle.Map;
     public Battle01InitializedState Battle { get; }
-    public Battle01DefeatReturnRequest? DefeatReturn { get; }
-    public PrivateOriginalMapReturnArrivalSnapshot? Arrival { get; }
-    public bool CanEnterExploration => Arrival is null && DefeatReturn is not null &&
-        Battle.Phase == Battle01Phase.DefeatRecoveryPending && ReferenceEquals(DefeatReturn.Recovery, Battle.DefeatRecovery) &&
-        Preparation.ArrivalInputs?.GetAdmissionDiagnostic() is null && Preparation.ArrivalInputs is not null &&
-        Preparation.ArrivalLoad is not null && ReferenceEquals(DefeatReturn.Admission, Preparation.ReturnAdmission) &&
-        ReferenceEquals(Battle.ReturnAdmission, Preparation.ReturnAdmission) &&
-        ReferenceEquals(Battle.DefeatRecovery?.Before.ReturnAdmission, Preparation.ReturnAdmission);
-    public bool CanRequestDefeatReturn => DefeatReturn is null && Battle.Phase == Battle01Phase.DefeatRecoveryPending &&
-        Preparation.ReturnInputs is { } inputs && inputs.GetAdmissionDiagnostic() is null &&
-        Preparation.ReturnAdmission is { } admission &&
-        ReferenceEquals(Battle.ReturnAdmission, admission) && ReferenceEquals(Battle.DefeatRecovery!.Before.ReturnAdmission, admission);
-    // Frozen provenance only; none of these values is current exploration or a reusable admission.
+    // Frozen independent comparison context. The common session owns outcome execution.
     public PrivateOriginalBattle01StartupPrepared Preparation { get; }
     public PrivateOriginalMapSessionSnapshot SourceSnapshot => Preparation.Pending.SourceSnapshot;
     public PrivateOriginalMapPlayerLocomotionSnapshot SourceLocomotion { get; }

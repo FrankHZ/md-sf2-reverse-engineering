@@ -28,6 +28,9 @@ internal static class BattleAdvancer
         {
             try
             {
+                if (BattleOutcomeRules.Check(battle) is not null)
+                    return new(new(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait),
+                        observations.AsReadOnly(), SessionStopReason.SimulationWait);
                 if (BattleTurnFlow.AtRoundEnd(battle))
                 {
                     var previous = battle;

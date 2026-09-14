@@ -1,6 +1,6 @@
 # Remake Architecture and Verification Audit
 
-Status: **OPEN — findings recorded; engine remediation is not implemented.**
+Status: **OPEN — bounded common-engine remediation is implemented; A1–A8 are not globally closed.**
 
 This audit records the user's clarified product direction and the implementation findings that must
 inform the next architecture decision. It does not authorize another gameplay slice, adopt a new
@@ -32,26 +32,25 @@ The user clarified the intended product on 2026-09-13:
 This direction preserves original-behavior research as evidence. It does not authorize guessed rules,
 silent fallbacks, unverified claims about the ROM, or redistribution of private inputs.
 
-## Current M1 Remediation Boundary
+## Current Remediation Boundary
 
-The [M1 implementation](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
-is a bounded response to these findings. The findings below describe the retained legacy route;
-they do not become acceptance rules for the new authored path.
+[ADR0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the current
+implementation. The findings below describe the exact audited baseline, not acceptance rules for
+the common path.
 
-| Finding | Implemented M1 response | Still open |
+| Finding | Implemented response | Still open |
 | --- | --- | --- |
-| A1/A7 | HEAL/STAY legality follows live resources/range/selection across different authored actors and natural round histories; no receipt/character/package allowlist. | Physical/death/reward and private battle migration in M2. |
-| A2 | Two real packages resolve typed maps, terrain, actors, encounters and spells through one Content reader. Legacy fixed readers/presets are outside production projects. | Actual original definitions must become Content-loaded configuration while retaining provenance; private common-path admission is not implemented. |
-| A3 | Named old story handlers are explicitly retained only in the transitional reference consumer. | M3 must execute reached programs and waits/effects before deleting their endpoint-assignment handlers; relocation does not implement story behavior. |
-| A4/A5 | Plain thin `Application.Runtime.GameSession` publishes one authority; independent dispatcher/advancer own commands and automatic turns. Godot reads results. | Old explicit reference startup still uses its legacy GameSession and adapter scheduling until corresponding M2/M3 consumers retire. |
-| A6 | New immutable battle/selection state and separate snapshot projection are organized by responsibility; the facade is not another large partial. | Legacy snapshots, constructors and fixed route fields retire with their last consumer. |
-| A8 | Content, unsupported capability and illegal command failures retain typed reasons through actual Godot state/HUD observations. | Full invariant/adapter failure lifecycle, program/presentation waits and remaining original profiles. |
+| A1/A7 | Common HEAL/physical/AI/death/growth/outcome legality follows live state and loaded definitions. Connected Battle01 play uses actual commands without receipt or kill-order guards. | Broader actions, status/equipment and other outcomes; remaining independent legacy action comparisons. |
+| A2 | Validated authored and selected private definitions/programs enter production Content. Controlled initial values and provenance remain explicit. | Original natural input producers and broader content families. |
+| A3 | Common opening, castle/tower, full before/after-battle and ordinary-defeat programs execute instructions, waits and source return/init. Matching legacy endpoint/outcome/return writers are removed. | Other native/program branches and full original presentation. |
+| A4/A5 | Application owns one live session across exploration/battle/outcome/return; Godot projects actual waits and semantic input. | Remaining independent reference-host startup/action consumers and global G3/G4 closure. |
+| A6 | Immutable runtime state carries actor progress through return and re-entry. Migrated receipt chains and arrival projections are removed with last callers. | Remaining frozen reference contexts and their consumers. |
+| A8 | Typed Content/rule/program failures survive the actual host; negative scratch/wait cases retain exact reasons. | Broader invariant/adapter failure lifecycle and original profiles. |
 
-The [reference inventory](../reference/README.md) separates controlled comparison inputs from actual
-definitions and reusable behavior, names their consumers and requires removal with M2/M3 migration.
-Production Domain/Application/Content have no project dependency on reference. This is a temporary
-boundary, not a permanent parallel engine or permission to defer all migration to M5. Original 8C/H4
-and A1–A8 as a whole remain incomplete.
+The [reference inventory](../reference/README.md) names retained controlled inputs, independent
+startup/action/scalar/geometry comparisons and removal conditions. Production projects have no
+Reference dependency. The selected Battle01 outcome/program group and its actual native observations
+do not close original natural continuity, A1–A8 or8C/H4.
 
 ## Findings
 
@@ -246,7 +245,7 @@ Node and session state alone do not prove framebuffer, audio, or hardware-exact 
 fields remain unverified; this audit neither declares the 8C/H4 requirements passed nor silently
 waives them.
 
-## Decisions Still Needed Before Engine Changes
+## Original Audit Decision Boundary
 
 - Reconcile the user's modern-engine behavioral comparison goal with
   [ADR 0010's selected 8C profile](../../docs/decisions/0010-map3-battle01-product-acceptance.md#8-visual-and-audio-acceptance-tier)
@@ -259,6 +258,6 @@ waives them.
 - Select the first coherent rule/flow migration and its independent tests. Keep the 0009 reference
   scenario as an integration test while checking supported rules across more than one trajectory.
 
-These decisions are pending. Do not interpret this findings record as permission to resume feature
-work, remove every guard, rewrite the whole repository, change evidence labels, or report remediation
-complete.
+ADR0019 supplies the adopted engine direction and bounded implementation decisions. The original
+fidelity scope remains open. This findings record does not authorize unrelated features, removal of
+genuine source guards, changes to evidence labels, or a claim of complete remediation.

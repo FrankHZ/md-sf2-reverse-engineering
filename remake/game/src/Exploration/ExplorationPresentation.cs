@@ -24,6 +24,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private bool _nodding;
     private bool _shivering;
     private EntityRef? _mosaic;
+    private bool _mosaicOut;
     private MapId? _map;
     private Vector2 _camera;
     private Rect2 _screen;
@@ -51,10 +52,12 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int PaletteFades { get; private set; }
     internal int ShiverDraws { get; private set; }
     internal int MosaicDraws { get; private set; }
+    internal int MosaicOutDraws { get; private set; }
     internal int BattleLoads { get; private set; }
     internal float WhiteOpacity => _white.Color.A;
     internal float PaletteBrightness => _owner.Modulate.R;
     internal Vector2 Camera => _camera;
+    internal Rect2 Screen => _screen;
     internal string? ActiveCue { get; private set; }
 
     internal IReadOnlyList<SessionCommand> Update(double delta, SessionSnapshot current)
@@ -108,8 +111,9 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
                 {
-                    if (wait.Cue.Resource != "mosaic-in" || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
+                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
                     _mosaic = wait.Cue.Entity;
+                    _mosaicOut = wait.Cue.Resource == "mosaic-out";
                     _ = Sprite(current.Exploration!.Entities[_mosaic.Value], false);
                     _cueAge = -delta;
                 }
@@ -121,10 +125,10 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
-                    if (wait.Cue.Resource is not ("MUSIC_JOIN" or "MUSIC_SAD_JOIN")) throw new InvalidOperationException("sound-binding");
+                    if (wait.Cue.Resource is not ("MUSIC_JOIN" or "MUSIC_SAD_JOIN" or "MUSIC_SAD_THEME_2")) throw new InvalidOperationException("sound-binding");
                     _music.Stop();
                     var previous = _music.Stream; _music.Stream = null; previous?.Dispose();
-                    _music.Stream = JoinCue(wait.Cue.Resource == "MUSIC_SAD_JOIN");
+                    _music.Stream = JoinCue(wait.Cue.Resource);
                     _music.VolumeDb = -12; _music.Play(); SoundStarts++;
                 }
             }
@@ -190,13 +194,15 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (mirror) { destination.Position += new Vector2(destination.Size.X, 0); destination.Size = new(-destination.Size.X, destination.Size.Y); }
                 if (_mosaic == entity.Entity)
                 {
-                    int block = _cueAge < 0.1 ? 8 : _cueAge < 0.2 ? 6 : _cueAge < 0.3 ? 4 : _cueAge < 0.4 ? 2 : 1;
+                    double age = _mosaicOut ? 0.5 - _cueAge : _cueAge;
+                    int block = age < 0.1 ? 8 : age < 0.2 ? 6 : age < 0.3 ? 4 : age < 0.4 ? 2 : 1;
                     for (int y = 0; y < 24; y += block)
                         for (int x = 0; x < 24; x += block)
                             _owner.DrawTextureRectRegion(texture,
                                 new(destination.Position + destination.Size * new Vector2(x / 24f, y / 24f),
                                     destination.Size * (block / 24f)), new(x, y, 1, 1));
                     MosaicDraws++;
+                    if (_mosaicOut) MosaicOutDraws++;
                 }
                 else _owner.DrawTextureRect(texture, destination, false);
                 if (gesture)
@@ -304,11 +310,12 @@ internal sealed class ExplorationPresentation : IDisposable
     }
 
     // Explicit project-authored presentation mapping. It preserves command identity, not the original driver waveform.
-    private static AudioStreamWav JoinCue(bool sad)
+    private static AudioStreamWav JoinCue(string resource)
     {
         const int rate = 22050, count = rate * 2;
         byte[] samples = new byte[count * 2];
-        double[] notes = sad ? [261.63, 311.13, 392] : [261.63, 329.63, 392];
+        double[] notes = resource switch { "MUSIC_SAD_THEME_2" => [196, 233.08, 293.66],
+            "MUSIC_SAD_JOIN" => [261.63, 311.13, 392], _ => [261.63, 329.63, 392] };
         for (int index = 0; index < count; index++)
         {
             double time = index / (double)rate, envelope = Math.Min(1, time * 20) * Math.Min(1, (2 - time) * 20);

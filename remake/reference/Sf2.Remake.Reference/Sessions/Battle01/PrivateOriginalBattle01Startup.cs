@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Sessions;
 
@@ -40,6 +41,22 @@ public sealed record PrivateOriginalBattle01StartupRejected(OriginalBattle01Star
 
 public sealed partial class GameSession
 {
+    internal static OriginalBattle01StartupDiagnostic? GetArrivalSourceDiagnostic(PrivateOriginalMapSessionSnapshot source,
+        OriginalMapReturnEntryLoadDefinition? load)
+    {
+        if (load is null || !ReferenceEquals(load, source.Definition.ReturnEntryLoad) ||
+            !OriginalMapRuntimeAdmission.HasExactAcceptedReturnEntryLoad(load, source.Definition.RuntimeCatalog))
+            return new("arrival.load", "The exact catalog-owned Granseal return-load definition is required.");
+        if (source.Map != new MapId("map40") || source.MiddleTowerGuard?.ProgramStoryFlag1Set != true ||
+            source.Sarah?.IsMessengerFollowerReady != true || source.Entity142?.Flag602Set != true ||
+            source.MessengerAcceptance is not { Accepted: true, Flag66Set: true, Flag603Set: true } ||
+            source.Zone601?.Flag601Set != true || source.PalaceFirstVisit is null ||
+            source.AstralAcceptance?.ProgramFlag608Set != true || source.CastleGate?.Opened != true)
+            return new("arrival.story", "Retain the exact accepted palace/guard/messenger story chain.");
+        return null;
+    }
+
+
     public PrivateOriginalBattle01StartupResult PreparePrivateOriginalBattle01Startup(
         PrivateOriginalBattle01PendingAdmission? pending, IOriginalBattle01StartupSource? source,
         OriginalBattle01ControlledPartyPreset? party, OriginalBattle01ControlledReturnInputs? returnInputs = null,

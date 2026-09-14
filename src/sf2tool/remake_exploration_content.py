@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
+from sf2tool.h2.ally_data import _growth_facts
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.h2.map_import import MANIFEST, _canonical_bytes
@@ -34,6 +35,62 @@ from sf2tool.texture_extract import decode_md_4bpp_tile, md_palette_color, palet
 
 def _location(program: str, instruction: int = 0) -> dict[str, Any]:
     return {"program": program.lower().replace("_", "-"), "instruction": instruction}
+
+
+def _selected_growth(
+    compiler: OriginalPrograms, selections: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    if not selections:
+        return []
+    curves_path = "disasm/data/stats/allies/growthcurves.asm"
+    compiler.sources.update((curves_path, "disasm/code/common/stats/levelup.asm"))
+    curves = _growth_facts((compiler.upstream / curves_path).read_text(encoding="utf-8"))["curves"]
+    result = []
+    for selected in selections:
+        path = f"disasm/data/stats/allies/stats/allystats{selected['member']:02d}.asm"
+        compiler.sources.add(path)
+        text = (compiler.upstream / path).read_text(encoding="utf-8")
+        blocks = re.split(
+            r"^(?:[A-Za-z_]\w*:[ \t]*)?[ \t]*forClass[ \t]+(\w+)[ \t]*$", text, flags=re.MULTILINE
+        )
+        classes = dict(zip(blocks[1::2], blocks[2::2], strict=True))
+        block = classes[selected["class"]]
+        stats = []
+        for name in ("hpGrowth", "mpGrowth", "attGrowth", "defGrowth", "agiGrowth"):
+            initial, projected, curve = _tokens(_arguments(block, name)[0])
+            index = (
+                compiler.number("GROWTHCURVE_" + curve) & compiler.equates["GROWTHCURVE_MASK_INDEX"]
+            )
+            stats.append(
+                {
+                    "start": compiler.number(initial),
+                    "projected": compiler.number(projected),
+                    "curve": curves[index - 1] if index else [],
+                }
+            )
+        spell_block = (
+            blocks[2] if re.search(r"^\s*useFirstSpellList", block, re.MULTILINE) else block
+        )
+        expressions = _arguments(spell_block, "spellList")
+        tokens = _tokens(expressions[0]) if expressions else []
+        spells = []
+        for level, expression in zip(tokens[::2], tokens[1::2], strict=True):
+            name, *rank = expression.split("|")
+            packed = compiler.number("SPELL_" + name) | (
+                compiler.number("SPELL_" + rank[0]) if rank else 0
+            )
+            spells.append(
+                {"level": compiler.number(level), "packed": packed, "spell": name.lower()}
+            )
+        result.append(
+            {
+                "actor": "ally-" + str(selected["member"]),
+                "classId": compiler.number("CLASS_" + selected["class"]),
+                "stats": stats,
+                "spells": spells,
+            }
+        )
+    return result
 
 
 class OriginalPrograms:
@@ -467,7 +524,11 @@ class OriginalPrograms:
                 )
             elif op == "jsr" and args == ["MoveEntityOutOfMap"]:
                 result.append(
-                    {
+                    {"op": "retired-map3-entity-scratch"}
+                    if relative.endswith("maps/entries/map03/mapsetups/s6_initfunction.asm")
+                    and symbol == "byte_513A8"
+                    and registers["d0"] == 142
+                    else {
                         "op": "hide",
                         "entity": self.entity(str(registers["d0"])),
                         "removeAliases": False,
@@ -645,12 +706,15 @@ class OriginalPrograms:
                         "position": None,
                     }
                 )
-            elif op == "animEntityFX" and args[1] == "MOSAIC_IN":
+            elif op == "resetForceBattleStats":
+                self.sources.add("disasm/code/common/scripting/map/resetalliesstats.asm")
+                result.append({"op": "reset-party-battle-stats"})
+            elif op == "animEntityFX" and args[1] in ("MOSAIC_IN", "MOSAIC_OUT"):
                 result.append(
                     {
                         "op": "present",
                         "kind": "EntityEffect",
-                        "resource": "mosaic-in",
+                        "resource": "mosaic-in" if args[1] == "MOSAIC_IN" else "mosaic-out",
                         "entity": self.entity(args[0]),
                         "position": None,
                     }
@@ -671,6 +735,10 @@ class OriginalPrograms:
                 result.append({"op": "yes-no", "flag": 89})
             elif op == "csWait":
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
+            elif op == "setSprite" and self.number(args[1]) >= 30:
+                result.append(
+                    {"op": "sprite", "entity": self.entity(args[0]), "sprite": self.number(args[1])}
+                )
             elif op == "setFacing":
                 result.append(
                     {
@@ -850,6 +918,8 @@ def prepare_visuals(
             )
     for program in compiler.programs.values():
         for instruction in program["instructions"]:
+            if instruction["op"] == "sprite":
+                sprites.add(instruction["sprite"])
             if instruction["op"] == "scene-entities":
                 population = instruction["population"]
                 sprites.update(
@@ -1049,6 +1119,97 @@ def prepare(
             "start": hooks[1],
             "load": _location("source-battle-load"),
         }
+        if "outcomeEgressMap" in selection:
+            compiler.sources.update(
+                (
+                    "disasm/code/gameflow/battle/battleloop_2.asm",
+                    "disasm/code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+                    "disasm/code/gameflow/battle/cutscenes/afterbattlecutscenesstart.asm",
+                    "disasm/code/gameflow/battle/cutscenes/afterbattlecutscenesend.asm",
+                    "disasm/code/gameflow/battle/battleloop/getegresspositionforbattle.asm",
+                    "disasm/code/common/maps/egressinit.asm",
+                    "disasm/code/common/maps/mapinit_0.asm",
+                    "disasm/code/common/windows/windowengine.asm",
+                    "disasm/code/common/tech/interrupts/vintengine_2.asm",
+                )
+            )
+            outcome_hooks = []
+            for hook in ("battleend", "afterbattle"):
+                path = "disasm/data/battles/cutscenes/" + hook + "cutscenes.asm"
+                compiler.sources.add(path)
+                expressions = _arguments((upstream / path).read_text(encoding="utf-8"), "dc.w")
+                symbol = re.search(r"[A-Za-z_]\w*", expressions[battle_id]).group(0)
+                outcome_hooks.append(_location(compiler.compile(symbol)))
+            joins_path = "disasm/data/battles/cutscenes/afterbattlejoins.asm"
+            compiler.sources.add(joins_path)
+            joins = _arguments((upstream / joins_path).read_text(encoding="utf-8"), "dc.b")
+            savepoints_path = "disasm/data/maps/global/savepointmapcoords.asm"
+            compiler.sources.add(savepoints_path)
+            savepoints = [
+                list(map(compiler.number, _tokens(row)))
+                for row in _arguments(
+                    (upstream / savepoints_path).read_text(encoding="utf-8"),
+                    "savePointMapCoordinates",
+                )
+            ]
+            egress, ex, ey, facing = next(
+                row for row in savepoints if row[0] == selection["outcomeEgressMap"]
+            )
+            battle_routes[map_id]["outcome"] = {
+                "after": outcome_hooks[1],
+                "defeated": outcome_hooks[0],
+                "joinMember": compiler.number(joins[battle_id]),
+                "victoryFacing": compiler.equates["DOWN"],
+                "defeat": _location("source-ordinary-defeat"),
+                "return": _location("source-outcome-return"),
+                "egress": {
+                    "map": "map-" + str(egress),
+                    "position": {"x": ex, "y": ey},
+                    "facing": facing,
+                },
+            }
+    if "outcomeEgressMap" in selection:
+        compiler.programs["source-ordinary-defeat"] = {
+            "id": "source-ordinary-defeat",
+            "source": "disasm/code/gameflow/battle/battleloop_2.asm:BattleLoop_Defeat",
+            "entitiesRunning": False,
+            "instructions": [
+                {
+                    "op": "present",
+                    "kind": "Sound",
+                    "resource": "MUSIC_SAD_THEME_2",
+                    "entity": None,
+                    "position": None,
+                },
+                {"op": "text-cursor", "text": 363},
+                {"op": "show-text", "mode": "single", "speaker": None},
+                {"op": "close-text"},
+                {"op": "end"},
+            ],
+        }
+        compiler.programs["source-outcome-return"] = {
+            "id": "source-outcome-return",
+            "source": "disasm/code/gameflow/exploration/explorationfunctions_2.asm:ExplorationLoop",
+            "entitiesRunning": False,
+            "instructions": [
+                {
+                    "op": "present",
+                    "kind": "FadeOut",
+                    "resource": "black",
+                    "entity": None,
+                    "position": None,
+                },
+                {"op": "battle-return-map"},
+                {
+                    "op": "present",
+                    "kind": "FadeIn",
+                    "resource": "black",
+                    "entity": None,
+                    "position": None,
+                },
+                {"op": "end"},
+            ],
+        }
     resources = {
         key: {row["id"]: row for row in rows} for key, rows in canonical["resources"].items()
     }
@@ -1117,7 +1278,9 @@ def prepare(
                     f"map-{selected}-warp-{index}", f"{references['warpEventTable']}[{index}]"
                 )
                 events.append({"kind": "warp-frontier", **common, "program": _location(symbol)})
-        population = None
+        population = (
+            compiler.population() if route is None and "outcomeEgressMap" in selection else None
+        )
         layout_events = None
         if selected in selection.get("eventMaps", []):
             folder = f"disasm/data/maps/entries/map{selected:02d}/mapsetups/"
@@ -1282,7 +1445,7 @@ def prepare(
                 **(
                     {
                         "population": population,
-                        "layoutEvents": layout_events,
+                        **({"layoutEvents": layout_events} if layout_events is not None else {}),
                         "entryFlags": [
                             {"flag": flag, "value": False}
                             for flag in range(
@@ -1372,6 +1535,7 @@ def prepare(
             selection["presentationManifestSha256"],
             selection["presentationAtlases"],
         )
+    growth = _selected_growth(compiler, selection.get("growthClasses", []))
     sources = []
     for relative in sorted(compiler.sources):
         raw = (upstream / relative).read_bytes()
@@ -1399,6 +1563,7 @@ def prepare(
             "programs": list(compiler.programs.values()),
             "texts": texts,
             "memberNames": member_names,
+            **({"growth": growth} if growth else {}),
             **({"presentation": visuals} if visuals else {}),
             **(
                 {

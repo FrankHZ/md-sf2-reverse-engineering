@@ -11,8 +11,14 @@
   "battles": [
     1
   ],
+  "growthClasses": [
+    {"member": 0, "class": "SDMN"},
+    {"member": 1, "class": "PRST"},
+    {"member": 2, "class": "KNTE"}
+  ],
+  "outcomeEgressMap": 3,
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Complete opening, castle, palace, Astral, tower and Battle01 before/init/load/start programs execute through one common session and its live party/RNG to first battle input. Unimplemented branches retain their source cursor. Natural title/menu reach, original hardware/presentation timing parity and M4 remain outside this admission; the separate H3 seeded bridge is comparison input only.",
+  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Complete opening, castle, palace, Astral, tower and Battle01 before/init/load/start programs execute through one common session and its live party/RNG through actual actions, required growth, full Battle01 after-program or ordinary-defeat recovery and usable exploration return. Ordinary defeat explicitly selects egress Map3; it is not a natural producer. Unimplemented branches retain their source cursor. Natural title/menu reach and original hardware/presentation timing parity remain outside this admission; the separate H3 seeded bridge is comparison input only.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -21,6 +27,10 @@
     {
       "symbol": "bbcs_01",
       "path": "data/battles/entries/battle01/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle01",
+      "path": "data/battles/entries/battle01/cs_afterbattle.asm"
     },
     {
       "symbol": "ms_Empty",

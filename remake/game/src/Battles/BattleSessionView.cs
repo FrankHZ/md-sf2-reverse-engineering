@@ -24,6 +24,7 @@ public sealed partial class BattleSessionView : Control
     private readonly List<Label> _hudLabels = [];
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
+    internal Action<SessionResult>? LeaveBattle { get; set; }
 
     public override void _Ready()
     {
@@ -131,7 +132,7 @@ public sealed partial class BattleSessionView : Control
         if (command is not null) Send(command);
         else if (key.Keycode == Key.H && _session.Current.Selection is { } selection)
         {
-            var spells = _session.Current.Battle.GetActor(selection.Actor).Definition.Spells;
+            var spells = _session.Current.Battle.GetActor(selection.Actor).Spells;
             if (spells.Count == 0) return;
             int index = spells.ToList().FindIndex(spell => spell == (_spellCandidate ?? selection.Spell));
             _spellCandidate = spells[(index + 1) % spells.Count];
@@ -156,6 +157,11 @@ public sealed partial class BattleSessionView : Control
         if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
             _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay) _spellCandidate = null;
+        if (_result.Snapshot.Mode == SessionMode.Exploration)
+        {
+            LeaveBattle?.Invoke(_result);
+            return;
+        }
         Present();
     }
 
@@ -167,7 +173,7 @@ public sealed partial class BattleSessionView : Control
         _roster.Text = projection.Roster;
         var selection = _session.Current.Selection;
         _spells.Text = selection is null ? "" : "Spells (H to cycle):\n" + string.Join("\n",
-            _session.Current.Battle.GetActor(selection.Actor).Definition.Spells.Select(spell =>
+            _session.Current.Battle.GetActor(selection.Actor).Spells.Select(spell =>
                 $"{spell.Value.ToUpperInvariant()} {spell.Level}" + (spell == selection.Spell ? " · selected" : "") +
                 (spell == _spellCandidate && _result!.Failure is not null ? " · unavailable" : "")));
         _map.Present(projection);
@@ -201,6 +207,7 @@ public sealed partial class BattleSessionView : Control
                 .Select(a => new { actor = a.Actor.Value, memory = a.AiMemory, lastTarget = a.LastTarget?.Value }).ToArray(),
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
+            terrain = current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()),
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),

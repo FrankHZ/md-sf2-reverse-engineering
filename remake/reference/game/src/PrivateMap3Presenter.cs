@@ -17,35 +17,6 @@ internal sealed record PrivateMap3PresentationPlan(
     bool CurrentAreaOverlay,
     float StatusY)
 {
-    internal const string ArrivalStatus = "Granseal entry ready. Church doorway movement available.";
-    internal static string ReturnMovementOutcome(PrivateOriginalMapReturnMovementResult result) => result switch
-    {
-        PrivateOriginalMapReturnMovementApplied applied => applied.Snapshot.Arrival!.Locomotion.IsMoving ? "Moving" :
-            applied.Snapshot.Arrival.LastInput!.Traversal.Outcome == OriginalMapTraversalOutcome.Moved ? "Moved" : "Blocked by terrain",
-        PrivateOriginalMapReturnMovementUnsupported unsupported => unsupported.Diagnostic.Message,
-        PrivateOriginalMapReturnMovementRejected rejected => rejected.Diagnostic.Message,
-        _ => throw new ArgumentOutOfRangeException(nameof(result)),
-    };
-    internal static string FormatArrivalStatus(PrivateOriginalMapReturnArrivalSnapshot arrival, string? outcome = null)
-    {
-        var party = arrival.Party;
-        string Ally(int id, string name)
-        {
-            var slot = party.Slots[id];
-            var entity = arrival.Entities.Single(e => e.Id == id);
-            string facing = entity.Facing switch { 0 => "RIGHT", 1 => "UP", 2 => "LEFT", 3 => "DOWN", _ => "Unknown" };
-            return $"{(id == 0 ? "Player" : "Follower")} {id} {name}: ({entity.Position!.X},{entity.Position.Y})/{facing}, " +
-                $"HP {slot.HpCurrent}/{slot.HpMax} MP {slot.MpCurrent}/{slot.MpMax}" +
-                (id == 2 ? "  DEAD / BLUE_FLAME" : "");
-        }
-        return (outcome ?? ArrivalStatus) + "\n" + arrival.EntityPolicy + "\n" +
-            Ally(0, "Bowie") + "\n" + Ally(1, "Sarah") + "\n" + Ally(2, "Chester") + "\n" +
-            $"Gold {party.Gold}; input {arrival.InputOrdinal}. Entry (32,13)/UP and battle history retained.\n" +
-            "Move in x31-33/y12-14 and (32,15-16). Follower cell and F/G unavailable.\n" +
-            $"Door {(arrival.DoorCopy is null ? "closed" : "open")}; roof {(arrival.RoofLifecycle is MapBlockCopyLifecycleActiveState ? "open" : "restored")}. " +
-            "Entity142 hidden/out; original post-script positions Unknown.";
-    }
-
     private const string DiagnosticExplanation =
         "Project-authored traversal diagnostics from accepted Domain policy. " +
         "Original presentation remains unavailable.";
@@ -271,7 +242,6 @@ internal sealed class PrivateMap3Presenter
         _baseViewport?.Projection;
 
     internal bool ExpectsBaseProjection => _baseViewport is not null;
-    internal bool CanDisplayArrival => _baseViewport is not null && _map3Atlas is not null;
 
     internal bool UsesLocalBaseAtlas => _baseViewport?.UsesLocalAtlas == true;
 
@@ -559,22 +529,6 @@ internal sealed class PrivateMap3Presenter
         _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
 
-    internal void Project(PrivateOriginalMapReturnArrivalSnapshot arrival, string? outcome = null)
-    {
-        if (_baseViewport is null || _map3Atlas is null)
-            throw new InvalidOperationException("Select the reviewed Map3 base atlas before starting the arrival comparison.");
-        if (!_baseViewport.TryBindLocalAtlas(_map3Atlas, arrival, _requestedWorldTreatment, out var diagnostic))
-            throw new InvalidOperationException("The arrival atlas could not bind: " + diagnostic!.Message);
-        _baseViewport.ProjectMountedAtlas(arrival);
-        // Battle entry hides root canvas subtrees, including the map's clipping host.
-        _baseViewport.GetParent<Control>().Show();
-        _viewport?.Hide(); _baseViewport.Show(); _banner.Show(); _explanation.Show(); _status.Show();
-        _explanation.Text = "Fresh Granseal entry with diagnostic entities. Not full original fidelity.";
-        _status.Position = new Vector2(StatusX, 310); _status.Size = new Vector2(912, 210);
-        _status.AddThemeFontSizeOverride("font_size", 16);
-        _status.Text = PrivateMap3PresentationPlan.FormatArrivalStatus(arrival, outcome);
-    }
-
     internal static float ProjectionStatusY(bool traversalVisible, float initialStatusY) =>
         traversalVisible ? Math.Max(450, initialStatusY) : initialStatusY;
 
@@ -599,18 +553,17 @@ internal sealed class PrivateMap3Presenter
             BaseVisible: baseVisible);
     }
 
-    internal static string Battle01PendingStatus(string? failure = null, bool arrivalSelected = false) =>
+    internal static string Battle01PendingStatus(string? failure = null) =>
         "Battle 01 pending. Map 40 retained.\n" +
         (failure is null ? "N: start controlled diagnostic Battle 01.\n" : failure + "\n") +
-        (arrivalSelected ? "Leader defeat + Granseal return + entry comparisons selected." :
-            "Destination Map 57; restart returns to Map 3.");
+        "Destination Map 57; restart returns to Map 3. Outcomes run in the common session.";
 
     internal void ProjectBattle01Pending(string? failure = null)
     {
         // Pending cannot coexist with an active synthetic battle. Use the whole status
         // row so Content rejection details and recovery still fit below traversal.
         _status.Size = new Vector2(912, StatusSize.Y);
-        _status.Text = Battle01PendingStatus(failure, CanDisplayArrival);
+        _status.Text = Battle01PendingStatus(failure);
     }
 
     internal void ProjectStatus(string message)

@@ -15,12 +15,16 @@ public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) 
 public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record ReturnProgram : StoryInstruction;
+public sealed record ResetPartyBattleStats : StoryInstruction;
+public sealed record ReturnBattleMap : StoryInstruction;
+public sealed record RetiredMap3EntityScratch : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false) : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
+public sealed record SetEntitySprite(EntityRef Entity, int Sprite) : StoryInstruction;
 public sealed record SetEntityPriority(EntityRef Entity, bool Value) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;

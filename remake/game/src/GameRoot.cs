@@ -58,18 +58,29 @@ public sealed partial class GameRoot : Node
             var started = (SessionStarted)outcome;
             if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
-            var exploration = new ExplorationSessionView { Name = "ExplorationSessionView" };
-            AddChild(exploration);
-            exploration.Begin(started.Session, started.Result, result =>
+            ShowExploration(started.Result, returning: false);
+            view.LeaveBattle = result => ShowExploration(result, returning: true);
+
+            void ShowExploration(SessionResult initial, bool returning)
             {
-                if (view.GetParent() == exploration) view.Reparent(this, false);
-                exploration.QueueFree();
-                view.Attach(started.Session, result);
-            }, result =>
-            {
-                view.Reparent(exploration, false);
-                view.Attach(started.Session, result);
-            });
+                var exploration = new ExplorationSessionView { Name = "ExplorationSessionView" };
+                AddChild(exploration);
+                if (returning)
+                {
+                    view.Reparent(exploration, false);
+                    exploration.MoveChild(view, 0);
+                }
+                exploration.Begin(started.Session, initial, result =>
+                {
+                    if (view.GetParent() == exploration) view.Reparent(this, false);
+                    exploration.QueueFree();
+                    view.Attach(started.Session, result);
+                }, result =>
+                {
+                    view.Reparent(exploration, false);
+                    view.Attach(started.Session, result);
+                }, returning ? () => { view.Reparent(this, false); view.Hide(); } : null);
+            }
         }
 
         void Fail(string code, string message) =>

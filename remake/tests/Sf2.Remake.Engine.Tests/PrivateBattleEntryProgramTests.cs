@@ -32,8 +32,10 @@ public sealed class PrivateBattleEntryProgramTests
 
     [PrivateInputFact(World)]
     public void ContinuousOpeningCastleTowerAndBeforeBattleRetainTheLivePartyAndReachActualBattleInput()
+        => ContinuousBattle([]);
+
+    internal static GameSession ContinuousBattle(List<SessionObservation> observations)
     {
-        List<SessionObservation> observations = [];
         var session = RunOpening(true, observations, []);
         var identity = session.Current.SessionId;
         var party = session.Current.Exploration!.Party;
@@ -79,6 +81,7 @@ public sealed class PrivateBattleEntryProgramTests
         Assert.Contains(observations, row => row.Kind == "battle-loaded");
         Assert.Equal(1, session.Current.Battle.Round);
         FirstInput(session);
+        return session;
     }
 
     [PrivateInputFact(World)]

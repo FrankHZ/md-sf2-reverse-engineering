@@ -105,7 +105,11 @@ func finish(s: Dictionary) -> void:
             s = state()
             if s.stage != "Movement" or s.mainSeed != battle_ready.mainSeed or s.sessionId != castle_identity or not valid_projection(s, true):
                 issue = "actual-first-cancel"
+    if issue == "": s = await after_admission(s)
     var file = FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".admission.json", FileAccess.WRITE)
     file.store_string(JSON.stringify({"issue":issue,"expectedViewport":{"width":OBSERVATION_SIZE.x,"height":OBSERVATION_SIZE.y},"records":admission_records,"castle":castle_records,"whiteSeen":white_seen,"mosaicDraws":mosaic_draws,"shiverDraws":shiver_draws,"loadSeen":load_seen,"loaded":battle_loaded,"ready":battle_ready}, "  "))
     file.close()
     await super.finish(s)
+
+func after_admission(s: Dictionary) -> Dictionary:
+    return s

@@ -1,6 +1,6 @@
 # ADR 0019: State- and Content-Driven Remake Engine
 
-- Status: **Accepted direction**; M0/M1, bounded M2 and the common M3 program/exploration group implemented; remaining original-route M3 and M2–M5 work is bounded below
+- Status: **Accepted direction**; M0/M1, bounded M2, common M3 programs and the selected Battle01 M4 outcome/return group implemented; broader original-route M2–M5 work is bounded below
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
@@ -395,8 +395,8 @@ one capped kill/gold award; ordinary ally death increments capped defeats. Dead
 actors lose their battlefield position and occupancy, skip pending queue entries and are excluded
 from later generated rounds. Application runs configured Stay or the bounded enemy branch below and returns the next living player.
 Admitted status-free/equipment-free after-turn has no further resource or random effect, so both
-faction checks have the same continuing result. Level-up, leader death/programs (including a dead
-leader at admission), and terminal faction/outcome/return reject the whole action with the original
+faction checks have the same continuing result. In packages without growth/outcome metadata,
+level-up and terminal faction/outcome/return reject the whole action with the original
 action-start state and no effects from that action. A failed automatic enemy action retains earlier
 committed player/AI work and its own unconsumed queue entry; startup failure retains the generated
 round. They are not converted to STAY or bypassed by seed retries. General
@@ -702,10 +702,9 @@ H cycles the actor's learned spell references and levels, displaying the accepte
 reader exposes lower learned levels too. Selection/cancellation use existing session commands; the
 engine owns legality, range, cost and effects. An authored second spell/level is usable without JSON
 reordering. Unpromoted single-target HEAL1–3 use source power/cost/range; EGRESS, HEAL4 full recovery,
-wider spells/status/equipment, reached level-up, leader loss and terminal programs remain explicit
-Unsupported. Natural Map3 programs and outcome/return are still M3/M4 dependencies. Concrete reference
-Map3/startup/return callers still retain their wrappers and explicit reference Godot scheduling; this
-standalone battle entry is not their last-caller migration.
+wider spells/status/equipment remain explicit Unsupported. The connected private world supplies the
+source growth and Battle01 outcome programs described below. Independent reference startup/action
+comparisons retain their wrappers; migrated outcome/recovery/return callers are removed.
 
 ### Private source standby and active pursuit
 
@@ -732,8 +731,8 @@ pursuit. Nonempty/unresolved orders, other reached commandsets, broader status/n
 nonempty action categories remain explicit Unsupported. Physical cohorts consume the
 [private action binding](#private-actions-and-spell-selection), with failures retaining the last committed state. The reference
 [caller inventory](../../remake/reference/README.md#private-startup-callers-and-removal-boundaries)
-retains its actual later control/history/action/map/return consumers; shared calculations do not by
-themselves remove those callers. Natural Map3 programs, outcome/return and8C/H4 remain incomplete.
+retains independent control/history/action/map consumers; shared calculations do not by themselves
+remove those callers. Original natural continuity and8C/H4 remain incomplete.
 
 The current dependency order is:
 
@@ -749,16 +748,16 @@ The current dependency order is:
    Actual equipment/class/spell/reward data feed shared physical/HEAL/after-turn rules and the real
    actor/target chain is compared.
    Remove the corresponding reference wrappers and Godot scheduling branches as their last callers
-   migrate. This does not wait for M5; unsupported EGRESS, broader status, terminal programs and return
-   stay with their named future consumers.
+   migrate. This does not wait for M5. The connected outcome group below closes the selected return
+   chain; EGRESS casting, broader status and other outcome families remain unsupported.
 
 **Unknown:** general
 spawn/derived-stat coverage beyond the named contracts, naturally carried party/accounting/seed-copy
 values, and natural Map3→Battle01 program/presentation continuity. Resolve a needed gap against the
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.
 The common session now executes the Battle01 before/init/load/start programs and first input.
-M4's independent recovery/return comparisons still prevent deleting their legacy startup
-binding/session and immutable source context. M2, A1–A8 and8C/H4 remain incomplete.
+Independent startup/action comparisons still retain their legacy binding/session and immutable
+source context. Their fixed recovery/return executors and last callers are removed. M2, A1–A8 and8C/H4 remain incomplete.
 
 ## Current M3 Common Program and Exploration Group
 
@@ -774,7 +773,7 @@ and stable field input, including physical/logical allocation, layout lifecycle,
 services, joined/active flags and followers. An alternate decline/re-prompt run and changed follower
 flags exercise live decisions. Original hardware/typewriter/audio timing remains outside this group;
 join audio has an explicit project-authored mapping. Missing aliases and unimplemented source/native
-operations retain visible failures, including the later post-F603 removed-alias reload. The same
+operations retain visible failures. The bounded normal post-F603 reload abstraction is specified below. The same
 R1 session now continues through castle/palace/Astral/tower, Map21/40, complete `bbcs_01`, source
 initialization/load/start and actual first battle input. Source scene replacement allocates Astral135
 as a real record after Map21's default-zero alias. Live party membership, resources and RNG drive
@@ -782,10 +781,10 @@ initialization; the externally seeded H3 bridge remains a separate comparison. W
 shiver and battle mounting are performed modern services with explicit original hardware limits.
 
 Complete legacy opening, castle/palace/Astral/tower and Map40 pending-admission endpoint writers and
-their final movement/presentation callers are removed. Retained M4 startup/initialization/return
+their final movement/presentation callers are removed. Retained independent startup/initialization/action
 comparisons receive explicit fixture context without executing the retired field writer. Frozen context DTOs and
 other geometry/presentation consumers retain their documented removal boundaries. This does not
-close natural Map3-to-Battle01 continuity, M4 return, G3/G4 globally, A1–A8 or8C/H4. The
+close original natural Map3-to-Battle01 continuity, G3/G4 globally, A1–A8 or8C/H4. The
 [caller inventory](../../remake/reference/README.md#common-program-comparisons-and-g3g4) and
 [execution owner](../../remake/docs/exploration-programs.md) identify the current boundaries.
 
@@ -800,7 +799,7 @@ options reject before source admission. The external observer owns its `SF2_OBSE
 settings rather than passing them through game selection.
 
 The explicit `reference/game` project builds `Sf2.Remake.Reference.Godot` and retains the actual old
-Map3Root, private program/action/return/presentation callers and smoke drivers. Their source behavior
+Map3Root, independent private action/geometry/presentation comparisons and smoke drivers. Their source behavior
 remains bounded legacy work; the [caller inventory](../../remake/reference/README.md#private-startup-callers-and-removal-boundaries)
 continues to govern retirement. The old Godot tests and public-synthetic verification tool now bind
 that project. Ordinary adapter and reference-host builds are separate CI/planner partitions. No new
@@ -813,8 +812,39 @@ input/state observations exercise continuous common private play and the retaine
 smoke. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-and-reference-host-startup)
 provides reproduction commands. Ordinary export configuration excludes probes, while complete
 ordinary package/export contents remain unverified. G3/G4 follow actual program/content consumers;
-G6 and bounded private step3 are implemented by the common player action interface documented above. Natural Map3
-programs, outcome/return and full ADR0009/0010 remain incomplete.
+G6 and bounded private step3 are implemented by the common player action interface documented above. Original natural continuity and full ADR0009/0010 remain incomplete.
+
+## Current Battle01 Outcome and Return Group
+
+The connected private world now consumes source growth tables and outcome program references through
+Content. Actual physical/HEAL awards update one EXP threshold, base stats, admitted equipment and
+learned spells, preserving current HP/MP and both RNG channels. Death worklists and the reached empty
+defeated hook precede the terminal check; a terminal action does not run ordinary after-turn or
+consume another queue entry. Leader loss wins over enemy exhaustion.
+
+One common session executes full `abcs_battle01`, its all-party reset, the source join-table tail,
+F401 clear/F501 set and Map57 return. Completed-flag skipping bypasses the script but retains its join
+tail. Ordinary defeat instead performs its own sound/text, leader HP restoration and unsigned gold
+halving, preserving F401 and omitting F501/after-program/join. The selected controlled egress is
+Map3 (32,13)/UP under F399 set and F64/F640 clear; it is not a natural campaign producer.
+
+Normal post-messenger Map3 reload consumes the accepted inactive-window-scratch abstraction at the
+exact source instruction with closed windows and actual entity142 retirement. A live alias still
+executes move-out. Other missing aliases/contexts remain Unsupported; no player or entity255 fallback
+exists. The source join and renderer limits belong to the
+[execution owner](../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return).
+
+The ordinary Godot view stays on the same session, holds battle presentation through the actual
+fade/load, performs sprite waits/mosaic-out and the selected modern defeat cue, then returns to real
+field movement. Direct engine comparisons and actual input/state observations cover both outcomes
+at60/30 FPS with a960×640 viewport. A unit award also compares the pinned existing H3 growth fixture;
+these remake observations create no new original-ROM evidence.
+
+Fixed legacy recovery, return-request, arrival and return-movement executors, linked receipts and
+last GameSession/Godot callers are removed with their obsolete tests. Independent controlled inputs,
+entry scalar facts, startup/action comparisons and shared geometry remain at their explicit owners.
+The old leader terminal cannot resume a parallel return engine. Broader status/effects/outcome
+families, original natural continuity and8C/H4 remain incomplete; M2–M5 and A1–A8 are not globally closed.
 
 ## Evidence used and its limits
 
@@ -1341,7 +1371,7 @@ rows or execute this entire table as one rewrite.
 | M1: first connected functional vertical slice | **Implemented:** Content `Scenarios/AuthoredScenarioPackageReader.cs` and Application `Content/Scenarios/ScenarioDefinition.cs`; thin `Runtime/GameSession.cs`, independent `Runtime/Battles/BattleCommandDispatcher.cs` and `BattleAdvancer.cs`; Domain `Battles/Rules` and `Battles/State`; Godot `Battles` input/view and independent snapshot projection. Legacy scenario classes and controlled presets live in the separate reference assembly with no reverse production dependency. | Load either authored controlled encounter, reach player control, move/preview/cancel, atomically HEAL/STAY, skip a dead queued entry when present, execute configured Stay AI, generate another round and return to player input automatically. The first four examples have engine unit assertions and actual no-image adapter observation. Physical attack, level-up, general AI, programs and outcomes remain Unsupported. Stop for independent acceptance before M2. Old explicit reference startup remains selectable before creation; no live authority switch. |
 | M2: migrate battle rules and private admission | **Ordinary physical first/second/counter capability implemented; remaining M2 incomplete.** The [private-admission dependency boundary](#private-battle-admission-dependency-boundary) records the implemented encounter import; the user-approved content-model modernization precedes initialized-start work. Extract real rules from reference `Rules/Battles/Battle01*` and `Sessions/Battle01` into cohesive production `Battles/Rules` collaborators. Move actual encounters/actors/spells and source-special rules into Content-loaded configuration; evolve the reference private startup reader into real trust/import mapping. Keep controlled party/start presets and comparison histories only as external reference inputs. Route private battle through the common dispatcher. | M1 is accepted. Migrate one actual AI → physical effects → reward/death/after-turn chain at a time, with alternate-actor/kill-order behavior assertions and the affected original comparison. Preserve source provenance and real special rules. Delete each migrated wrapper/data class with its last caller, including its Godot scheduling entry; no production dependency on reference. Report reached unsupported branches precisely. Stop at a coherent capability frontier and roll back affected binding/publication if parity or atomicity fails. |
 | M3: programs and exploration on the common session | Replace the reference `Sessions/Maps/OriginalMapGameSession.cs`, reached `PrivateOriginalMap*` and synthetic lifecycle consumers with cohesive production program/exploration collaborators. Move real map/entity/event/program definitions from reference content/admission into JSON or suitable Content-loaded configuration and typed validation. Preserve source-special operations and provenance. | Common facade exists. Execute actual reached operations and waits/effects before replacing each story handler; never treat required story as disposable validation or assign its terminal state. Connect authored exploration/program/transfer/battle admission, then migrate original content. Reuse actual map/layout/entity rules, add behavior assertions and selected public-entry reference comparisons, and delete each old class/data with its last caller. Stop at unsupported native/timing frontiers and roll back any route whose comparison disagrees. |
-| M4: outcome and return | Extend the common battle advancer, program runner and transfer collaborators from the reference defeat/recovery/return owners and their after-program content. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
+| M4: outcome and return | **Selected Battle01 group implemented:** common battle advancer, full after-program/ordinary-defeat program, growth and usable return. Fixed legacy outcome/return executors and last callers are retired; broader outcome families remain incomplete. | Accepted action/death/after-turn and required program operations first. Implement battle outcome → after-program → completion flags → return map → stable input, then compare only admitted original paths. Preserve leader-loss/special-outcome boundaries and delete migrated endpoint implementations. Do not claim ADR 0009 complete without natural continuity, accepted endpoint and required fidelity. Roll back incomplete outcome publication; victory is not return. |
 | M5: remaining migration cleanup | Remove remaining superseded fields, dispatch, scheduling entry points and obsolete tests after capability-by-capability M2/M3/M4 removal. Preserve original evidence and useful external comparisons. | All affected callers use the common session and its behavior tests/affected comparisons pass. Remove the temporary legacy start binding and reference runtime with its last admitted capability; do not defer all scenario/data migration to this row. Confirm no production dependency on reference and no permanent parallel engine or mandatory legacy aggregate. |
 
 M1 is deliberately a useful connected battle capability with a small content domain, not a declaration

@@ -73,6 +73,7 @@ internal static class MapTransfer
         }
         var story = continuation.Copy(continuation.Cursor,
             flags: flags,
+            textWindow: new ClosedTextWindow(),
             continuation: continuation.EnteringBattle is null ? ProgramContinuation.MapLoaded : continuation.Continuation,
             returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null);
         if (target.OnLoad is { } onLoad)
