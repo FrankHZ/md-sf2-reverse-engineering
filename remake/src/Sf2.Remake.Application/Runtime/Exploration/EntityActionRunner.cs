@@ -10,20 +10,23 @@ internal static class EntityActionRunner
 {
     internal static EntityActionTickResult Tick(ExplorationState world)
     {
-        var entities = world.Entities.ToDictionary(pair => pair.Key, pair => pair.Value);
+        var entities = world.AllEntities.ToDictionary(entity => entity.Slot);
         ushort spriteSize = world.SpriteSize;
+        uint seed = world.Party.MainSeed;
+        ExplorationState Publish() => world.WithEntities(entities.Values, spriteSize).WithParty(
+            new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle));
         // Source order: movement for this entity, then its script, then the next entity.
-        foreach (var original in world.Entities.Values)
+        foreach (var original in world.AllEntities)
         {
-            var entity = entities[original.Entity];
+            var entity = entities[original.Slot];
             var initial = entity.Motion;
             int destinationX = initial.XDestination / 384, destinationY = initial.YDestination / 384;
             ushort? word = destinationX is >= 0 and < 64 && destinationY is >= 0 and < 64
                 ? world.Layout[destinationX, destinationY] : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
-            entities[entity.Entity] = entity;
+            entities[entity.Slot] = entity;
             if (entity.WaitingForMotion && entity.Motion.IsMoving) continue;
-            entity = entity with { WaitingForMotion = false };
+            entity = FollowerMotion.Tick(entity with { WaitingForMotion = false }, entities, world.Layout);
             for (int budget = 0; budget < 1024 && entity.Actions is { } program; budget++)
             {
                 if (entity.ActionCursor < 0 || entity.ActionCursor >= program.Actions.Count)
@@ -40,15 +43,37 @@ internal static class EntityActionRunner
                         if (x is < 0 or > 24192 || y is < 0 or > 24192)
                             throw new BattleRuleException("entity-motion-boundary", "entity.actions", true);
                         motion = EntityMotion.Start(motion, (short)x, (short)y,
-                            entities.Values.Where(other => other.Entity != entity.Entity).Select(other => other.Motion));
+                            entities.Values.Where(other => other.Slot != entity.Slot).Select(other => other.Motion));
                         if (motion is null) { next--; motion = entity.Motion; }
                         else waitingForMotion = true;
                         yield = true; break;
                     case MoveEntityAbsolute absolute:
                         motion = EntityMotion.Start(motion, (short)(absolute.Position.X * 384), (short)(absolute.Position.Y * 384),
-                            entities.Values.Where(other => other.Entity != entity.Entity).Select(other => other.Motion));
+                            entities.Values.Where(other => other.Slot != entity.Slot).Select(other => other.Motion), absolute.FieldInput);
                         if (motion is null) { next--; motion = entity.Motion; }
                         else waitingForMotion = true;
+                        yield = true; break;
+                    case RandomWalkEntity walk:
+                        for (int attempt = 0; attempt < 4; attempt++)
+                        {
+                            var draw = BattleRandom.NextMain(seed, 4); seed = draw.After;
+                            var direction = draw.Value switch { 0 => ExplorationDirection.East, 1 => ExplorationDirection.North,
+                                2 => ExplorationDirection.West, _ => ExplorationDirection.South };
+                            bool outside = draw.Value switch
+                            {
+                                0 => motion.X >= (walk.Origin.X + walk.Radius) * 384,
+                                1 => motion.Y <= (walk.Origin.Y - walk.Radius) * 384,
+                                2 => motion.X <= (walk.Origin.X - walk.Radius) * 384,
+                                _ => motion.Y >= (walk.Origin.Y + walk.Radius) * 384,
+                            };
+                            if (outside) continue;
+                            var target = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, entity.Position, direction);
+                            if (target is null || ((motion.FlagsA & 0x40) != 0 && OriginalMapTraversal.IsBlocked(world.Layout, target))) continue;
+                            var started = EntityMotion.Start(motion, (short)(target.X * 384), (short)(target.Y * 384),
+                                entities.Values.Where(other => other.Slot != entity.Slot && other.Visible).Select(other => other.Motion));
+                            if (started is null) continue;
+                            motion = started; waitingForMotion = true; break;
+                        }
                         yield = true; break;
                     case FaceEntity face: motion = motion with { Facing = face.Facing, WaitTimer = 0 }; break;
                     case WaitEntityTicks wait:
@@ -64,9 +89,11 @@ internal static class EntityActionRunner
                         break;
                     case SetGlobalSpriteSize size: spriteSize = size.Size; motion = motion with { WaitTimer = 0 }; break;
                     case RefreshEntitySprite refresh:
-                        // Full original compressed-sprite/VRAM queue semantics are a reached boundary.
-                        // No endpoint or silently successful refresh substitutes for that work.
-                        throw new BattleRuleException("entity-sprite-refresh", refresh.Source, true);
+                        if (!entity.WaitingForSprite)
+                            entity = entity with { SpriteRequest = checked(entity.SpriteRequest + 1), WaitingForSprite = true };
+                        if (entity.SpriteReady != entity.SpriteRequest) { next--; yield = true; }
+                        else entity = entity with { WaitingForSprite = false };
+                        break;
                     case JumpEntityAction jump: next = jump.Instruction; motion = motion with { WaitTimer = 0 }; break;
                     case UnsupportedEntityAction unsupported:
                         throw new BattleRuleException("entity-action", unsupported.Source + ":" + unsupported.Opcode, true);
@@ -78,16 +105,16 @@ internal static class EntityActionRunner
                 }
                 catch (BattleRuleException error)
                 {
-                    entities[entity.Entity] = entity;
-                    return new(world.WithEntities(entities.Values, spriteSize), error);
+                    entities[entity.Slot] = entity;
+                    return new(Publish(), error);
                 }
                 if (entity.Actions is not null)
                     entity = entity with { Motion = motion, ActionCursor = next, WaitingForMotion = waitingForMotion };
-                entities[entity.Entity] = entity;
+                entities[entity.Slot] = entity;
                 if (yield) break;
             }
-            entities[entity.Entity] = entity;
+            entities[entity.Slot] = entity;
         }
-        return new(world.WithEntities(entities.Values, spriteSize));
+        return new(Publish());
     }
 }

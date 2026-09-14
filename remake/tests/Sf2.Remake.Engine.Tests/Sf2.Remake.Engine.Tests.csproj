@@ -26,9 +26,13 @@
   <ItemGroup>
     <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
     <Content Include="..\..\reference\inputs\map*-start.json" Link="controlled\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\reference\inputs\map3-opening-party.json" Link="controlled\map3-opening-party.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\battle01-actions.json" Link="controlled\battle01-actions.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\battle01-player-ready.json" Link="controlled\battle01-player-ready.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\..\tests\fixtures\h3\entity-movement-matrix-v1.json" Link="fixtures\entity-motion.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\..\tests\fixtures\h3\map3-battle01-player-ready-v1.json" Link="fixtures\player-ready.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\tests\fixtures\h3\map3-admitted-start-v1.json" Link="fixtures\opening-r1.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\tests\fixtures\h3\map3-battle01-natural-route-v1.json" Link="fixtures\opening-r2.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\tests\fixtures\h3\map3-messenger-acceptance-v1.json" Link="fixtures\opening-r2a.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

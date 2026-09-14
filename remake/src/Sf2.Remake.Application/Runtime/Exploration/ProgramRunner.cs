@@ -29,6 +29,7 @@ internal static class ProgramRunner
                         return result with { Snapshot = result.Snapshot.WithStory(current.Story.Copy(null,
                             continuation: ProgramContinuation.FieldInput)) };
                     }
+                    current = MapEventDispatcher.Finish(current, observations);
                     return Result(Stop(current, SessionStopReason.PlayerInput), observations);
                 }
                 if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||
@@ -54,13 +55,22 @@ internal static class ProgramRunner
                         story = story.Copy(call.Target, callers: current.Story.Callers.Append(Next(cursor))); break;
                     case WriteFlag flag:
                         story = story.Copy(story.Cursor, flags: Flags(current.Story, flag.Flag, flag.Value)); break;
+                    case JoinPartyMember join:
+                        var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("party-flag-layout", "world.partyFlags", true);
+                        var joined = MapPartyMembership.Join(current.Story.Flags, layout, join.Member);
+                        story = story.Copy(story.Cursor, flags: joined.Flags, partyLists: joined.Lists); break;
+                    case FollowEntity follow:
+                        int leaderSlot = Entity(current, follow.Leader).Slot;
+                        active = EditEntity(current, follow.Entity, entity => FollowerMotion.Install(entity, leaderSlot, follow.OffsetX, follow.OffsetY)); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
+                    case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
+                    case SetCameraTarget target: story = story.Copy(story.Cursor, cameraTarget: target.Position); break;
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
-                        story = current.Story.Copy(cursor, new DialogueWait(token, current.Story.TextCursor, text.Mode, text.Speaker, text.SpeakerFlags),
+                        story = current.Story.Copy(cursor, new DialogueWait(token, current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags),
                             textCursor: checked(current.Story.TextCursor + 1),
-                            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, text.Speaker, text.SpeakerFlags)); break;
+                            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags)); break;
                     case CloseText: story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow()); break;
                     case ChooseYesNo choice:
                         story = current.Story.Copy(cursor, new ChoiceWait(token, choice.ResultFlag)); break;
@@ -68,11 +78,15 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
                     case PresentCue cue:
+                        if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
+                            active = EditEntity(current, nodding, entity => entity with { Motion = entity.Motion with { AnimationCounter = 255 } });
                         story = current.Story.Copy(cursor, new PresentationWait(token, cue)); break;
                     case SetEntityFacing facing:
                         active = EditEntity(current, facing.Entity, entity => entity with { Motion = entity.Motion with { Facing = facing.Facing } }); break;
                     case SetEntityVisibility visible:
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
+                    case HideMapEntity hide:
+                        active = new ActiveExploration(current.Exploration!.Hide(Entity(current, hide.Entity), hide.RemoveAliases)); break;
                     case SetEntityPosition position:
                         active = EditEntity(current, position.Entity, entity => entity with
                         {
@@ -86,7 +100,7 @@ internal static class ProgramRunner
                     case StartEntityMotion motion:
                         active = EditEntity(current, motion.Entity, entity =>
                         {
-                            return entity with { Actions = motion.Actions, ActionCursor = 0, WaitingForMotion = false };
+                            return entity with { Actions = motion.Actions, ActionCursor = 0, WaitingForMotion = false, Follower = null };
                         });
                         if (motion.Wait) story = current.Story.Copy(cursor, new EntityWait(token, motion.Entity));
                         break;

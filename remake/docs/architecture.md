@@ -180,7 +180,7 @@ synthetic resource and smoke drivers are outside the ordinary project. Existing 
 public-synthetic import/export verification and private native recipes target that explicit project.
 Normal adapter CI builds the ordinary project; a separate reference-host job builds these remaining
 callers. Export configuration excludes ordinary probes; a complete ordinary package/export is not
-claimed. G3/G4 remain with their actual program/content consumers; G6 and bounded private action binding use the common player interface. H cycles actual learned
+claimed. The opening/messenger G3/G4 consumers now use common programs, physical entity slots with logical aliases, joined/active flags, followers and typed presentation completions. Their legacy endpoint writers are removed; later castle/tower/return comparisons use an explicit controlled reference start. Remaining G3/G4 stay with their actual program/content consumers; G6 and bounded private action binding use the common player interface. H cycles actual learned
 spells/levels; selection and resources remain session authority. No second gameplay scheduler or state authority was introduced.
 
 ## State and Command Flow

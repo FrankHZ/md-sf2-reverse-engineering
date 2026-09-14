@@ -767,19 +767,22 @@ original-source boundaries. Two distinct authored packages execute the full expl
 → transfer → before/init/load/start → existing battle-control group through the same `GameSession`.
 The ordinary battle view attaches to that session; no endpoint snapshot or second publisher joins it.
 
-Prepared private Content now consumes actual canonical maps and pinned program operations. Direct
-common-entry comparisons and ordinary native observations cover Sarah/position/gate programs,
-selected messenger/sprite-init/guard prefixes, and Map40's marked transfer into the actual before
-program or controlled seen-intro battle entry. The extracted movement core/destination projection
-matches the existing H3 matrix. Unsupported operations preserve their source PC and completed effects;
-source camera operands are not converted into a player warp, and Unknown entity135 does not grant F401.
+Prepared private Content consumes canonical maps, ordered entities/events/init and pinned program
+operations. The ordinary host executes the complete R1/R2/R2a opening/messenger group through F603
+and stable field input, including physical/logical allocation, layout lifecycle, typed presentation
+services, joined/active flags and followers. An alternate decline/re-prompt run and changed follower
+flags exercise live decisions. Original hardware/typewriter/audio timing remains outside this group;
+join audio has an explicit project-authored mapping. Missing aliases and unimplemented source/native
+operations retain visible failures, including the later post-F603 reload boundary, Map21 entity135 and
+the complete before-battle body.
 
-This implements the common capability group, not natural Map3→Battle01 continuity, the full before
-program, original presentation/timing, follower/roster/inventory flow, M4 return, or G3/G4 closure.
-The [current reference callers](../../remake/reference/README.md#common-program-comparisons-and-g3g4)
-still require their unported complete handlers and pending-map/return context. No last-caller deletion
-is justified by a controlled prefix. Independent gate acceptance and the remaining M3–M5 migration
-boundaries below still apply; A1–A8 and8C/H4 are not closed.
+Complete legacy opening/Sarah/entity142/Astral-zone/messenger endpoint-writing methods and their
+Godot/old test callers are removed. Retained castle/tower/pending battle/return consumers receive an
+external controlled post-opening start with no invented execution receipts. Frozen context DTOs and
+other geometry/presentation consumers retain their documented removal boundaries. This does not
+close natural Map3-to-Battle01 continuity, M4 return, G3/G4 globally, A1–A8 or8C/H4. The
+[caller inventory](../../remake/reference/README.md#common-program-comparisons-and-g3g4) and
+[execution owner](../../remake/docs/exploration-programs.md) identify the current boundaries.
 
 ## Ordinary Godot Host Boundary
 

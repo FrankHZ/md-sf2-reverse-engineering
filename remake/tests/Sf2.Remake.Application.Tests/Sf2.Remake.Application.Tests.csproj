@@ -19,5 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\reference\Sf2.Remake.Reference\Sf2.Remake.Reference.csproj" />
+    <Content Include="..\..\reference\inputs\map3-post-opening-reference-start.json" Link="reference\map3-post-opening-reference-start.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

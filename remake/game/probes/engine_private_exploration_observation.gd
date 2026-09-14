@@ -89,22 +89,10 @@ func _run() -> void:
                 await _press(KEY_ENTER)
             else:
                 await process_frame
-        _check(dialogue_count == (6 if case_name == "map3-gate" else 4 if case_name == "map3-messenger" else 0), "Expected source dialogue requests were acknowledged by real input")
+        _check(dialogue_count == 0, "Expected source dialogue requests were acknowledged by real input")
     var terminal := _read("terminal")
     _check(terminal.sessionId == identity, "The same common session owns every transition")
     match case_name:
-        "map3-sarah":
-            var sarah := _entity(terminal, "entity-1")
-            _check(terminal.stop == "PlayerInput" and sarah.x == 41 * 384 and sarah.y == 7 * 384, "Source Sarah actions traverse to the declared endpoint")
-            _check(terminal.simulationTick == 25, "Native fixed ticks match the engine movement projection")
-        "map3-gate":
-            _check(terminal.stop == "PlayerInput", "The complete source gate program returns control")
-            _check(_entity(terminal, "entity-138").x == 27 * 384 and _entity(terminal, "entity-139").x == 31 * 384, "Both guards return through action traversal")
-        "map3-messenger":
-            _check(terminal.failure == "program-opcode" and terminal.failureField.ends_with("cs_5149A[39]:nod"), "Messenger stops at the actual unimplemented gesture")
-            _check(_entity(terminal, "entity-143").speedX == 48 and not 600.0 in terminal.flags, "Prior speed change survives; later acceptance flag is absent")
-        "map3-sprite-init":
-            _check(terminal.failure == "entity-sprite-refresh" and terminal.spriteSize == 24, "Global size is committed before the unsupported sprite refresh")
         "map21-guard":
             _check(terminal.failure == "program-entity" and not 401.0 in terminal.flags, "Unknown entity135 prevents the later unlock")
             _check(_entity(terminal, "entity-128").x == 6 * 384, "Completed guard motion survives the later failure")

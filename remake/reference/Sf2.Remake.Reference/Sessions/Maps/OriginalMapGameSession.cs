@@ -38,7 +38,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null,
         PrivateOriginalMapPalaceFirstVisitReceipt? palaceFirstVisit = null,
         PrivateOriginalMapAstralAcceptanceState? astralAcceptance = null,
-        PrivateOriginalMapMiddleTowerGuardReceipt? middleTowerGuard = null)
+        PrivateOriginalMapMiddleTowerGuardReceipt? middleTowerGuard = null,
+        PrivateOriginalMapReferenceStart? referenceStart = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -258,7 +259,13 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (palaceFirstVisit?.SimulationStep == simulationStep ? 1 : 0) +
             (astralAcceptance?.SimulationStep == simulationStep ? 1 : 0) +
             (middleTowerGuard?.SimulationStep == simulationStep ? 1 : 0);
-        if (simulationStep == 0 &&
+        if (referenceStart is not null && (simulationStep != 0 || completedOperations != 0 ||
+            !referenceStart.AfterMessenger || playerPosition != new MapPosition(referenceStart.X, referenceStart.Y) ||
+            admittedMessenger?.Accepted != true || !bowieDoorStepCopyApplied || !schoolDoorStepCopyApplied ||
+            lastZone601 is not null || lastAstralZone is not null || lastMessengerAcceptance is not null ||
+            admittedCastleGate?.Opened == true || admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
+            throw new ArgumentException("The controlled reference start cannot contain executed history.", nameof(referenceStart));
+        if (simulationStep == 0 && referenceStart is null &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
                 bowieDoorStepCopyApplied ||
@@ -1034,27 +1041,6 @@ public sealed partial class GameSession
                 out var crossMapApplied))
         {
             return crossMapApplied!;
-        }
-
-        if (current.Map == current.Definition.Map &&
-            TryApplyPrivateOriginalMapZone601(current, command, out var zone601Applied))
-        {
-            return zone601Applied!;
-        }
-
-        if (current.Map == current.Definition.Map &&
-            TryApplyPrivateOriginalMapAstralZone(current, command, out var astralZoneApplied))
-        {
-            return astralZoneApplied!;
-        }
-
-        if (current.Map == current.Definition.Map &&
-            TryApplyPrivateOriginalMapMessengerAcceptance(
-                current,
-                command,
-                out var messengerApplied))
-        {
-            return messengerApplied!;
         }
 
         if (current.Map == current.Definition.Map &&

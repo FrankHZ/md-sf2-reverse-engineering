@@ -87,8 +87,7 @@ After loading the retained worktree SDK/Godot environment, ordinary play uses:
 & $godotBinary --path remake/game -- --authored-package (Resolve-Path -LiteralPath 'remake/content/authored/garden-watch.json').Path
 ```
 
-The same project accepts `--private-battle-start` with the selected private inputs described below.
-These are the only game options; each takes one path and may appear only once, and the two options
+The same project accepts `--private-battle-start` and `--private-exploration-start` with the selected private inputs described below. These and `--authored-package` are the only game options; each takes one path and may appear only once, and the options
 are mutually exclusive. Unknown/positional, duplicate, conflicting and missing-path arguments report
 startup ContentError in the common view before creating a session. They cannot select legacy play.
 
@@ -127,7 +126,7 @@ excludes `probes/*`; complete ordinary export/assets remain unverified.
 
 Use [the exploration/program owner](./exploration-programs.md#reproduction) for the current
 Content preparation, controlled starts, selected private comparisons and ordinary native recipes.
-The native observers exercise real input and read the same live session across mode changes. The
+The native observers exercise real input and read the same live session across mode changes. `engine_map3_opening_observation.gd` reads the R2 fixture only as an external input trace and covers complete acceptance or decline/re-prompt. `map3-opening-party.json` supplies the named opening party. Later reference comparisons may explicitly select `SF2_REFERENCE_POST_OPENING_START` with `map3-post-opening-reference-start.json`; that context has no executed opening history. The
 private source programs retain their exact unsupported native/population frontiers; a stopped prefix
 is not a completed original route. `EntityMotionTests` directly compares the extracted core and
 destination admission to the13 owned H3 cases; it does not test a verification program.

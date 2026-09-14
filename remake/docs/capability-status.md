@@ -42,12 +42,12 @@ source provenance, reproduction and remaining reference callers.
 | --- | --- |
 | Connected authored exploration | **Implemented:** two distinct format-v8 packages execute interaction/choice, real entity motion, call/return, flag/tick/text waits, map loading and both intro hooks into existing battle control through one session. |
 | Program transactions and state | **Implemented:** PC/call stack/wait token, continued text window, actual simulation ticks, source-order entity actions and global sprite size. A failing native instruction/action retains the completed prefix and its own cursor. |
-| Actual selected source consumers | **Confirmed, bounded:** Sarah/position/gate programs; messenger prefix to `nod`; `eas_Init` prefix to sprite refresh; guard motion to Unknown entity135; marked Map40 warp to actual before-program frontier or, with explicitly controlled seen-intro flag, the existing first-player battle boundary. |
-| Original route completeness | **Unknown/Unsupported:** natural earlier continuity, autonomous NPC/follower population, full setup/event/layout mutation, joins/items, source text-tag/name/timing and native camera/fade/gesture/FX/audio, complete before-battle body and M4 return. No natural route or G3/G4 closure is claimed. |
+| Original Map3 opening | **Confirmed, bounded:** the common session consumes the R1 start, R2 input route and complete R2a messenger acceptance through F603 and stable field input. Real source entity allocation/aliases, initialization, ordered events, doors/roofs/same-map preservation, joins and follower motion execute. Decline/re-prompt acceptance and an extra-follower slot shift exercise alternate state. |
+| Source presentation and limits | **Implemented bounded presentation:** private source map/sprite/portrait rasters, mounted sprite refresh, camera waits, actual nod draws and a documented project-authored join cue/fade. Original hardware/typewriter/audio timing, post-F603 reload with a removed alias, other setups, full travelling roster/items, castle/tower, complete before-battle and M4 remain **Unknown/Unsupported**. Map21 entity135 and Map40 before-program frontiers stay explicit; G3/G4 are not globally closed. |
 
 ## Legacy Reference Matrix
 
-The remaining rows describe the explicit [reference consumers](../reference/README.md), not ordinary
+The remaining surfaces retain reference context where later callers still need it. Opening/Sarah/entity142/Astral-zone/messenger execution has migrated and its endpoint-writing methods are removed; later reference tests use an explicit controlled post-opening input. The rows describe [reference consumers](../reference/README.md), not ordinary
 authored engine admission. Their fixed presets and scenario classes cannot be production dependencies.
 
 Status terms:

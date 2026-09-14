@@ -287,7 +287,7 @@ internal sealed record PrivateMap3PresentationPlan(
         ArgumentNullException.ThrowIfNull(sarah);
         return sarah.IsMessengerFollowerReady
             ? "follower ready; route occupancy released"
-            : "F semantic interaction request";
+            : "opening interaction belongs to the common host";
     }
 
     internal static string Entity142Action(
@@ -298,7 +298,7 @@ internal sealed record PrivateMap3PresentationPlan(
         ArgumentException.ThrowIfNullOrWhiteSpace(pending);
         return entity142.RouteOccupancyReleased
             ? "route occupancy released; immutable sprite diagnostic only"
-            : $"{pending}; F request / G acknowledge";
+            : $"{pending}; opening interaction belongs to the common host";
     }
 }
 

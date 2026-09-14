@@ -5,7 +5,7 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public readonly record struct EntityRef(string Value);
 public readonly record struct ProgramLocation(string Program, int Instruction);
 public enum TextDisplayMode { Continued, Single }
-public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect }
+public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade }
 public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
@@ -16,14 +16,19 @@ public sealed record CallProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record ReturnProgram : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
-public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : StoryInstruction;
+public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false) : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;
+public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
+public sealed record SetDialogueSpeaker(EntityRef? Entity) : StoryInstruction;
+public sealed record SetCameraTarget(MapPosition Position) : StoryInstruction;
 public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
+public sealed record JoinPartyMember(int Member) : StoryInstruction;
+public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
     EntityRef? Entity = null, MapPosition? Position = null) : StoryInstruction;
@@ -32,7 +37,8 @@ public sealed record UnsupportedInstruction(string Opcode, string Source) : Stor
 
 public abstract record EntityAction;
 public sealed record MoveEntityRelative(int X, int Y) : EntityAction;
-public sealed record MoveEntityAbsolute(MapPosition Position) : EntityAction;
+public sealed record MoveEntityAbsolute(MapPosition Position, bool FieldInput = false) : EntityAction;
+public sealed record RandomWalkEntity(MapPosition Origin, int Radius) : EntityAction;
 public sealed record FaceEntity(byte Facing) : EntityAction;
 public sealed record WaitEntityTicks(byte Ticks) : EntityAction;
 public sealed record StopEntityActions : EntityAction;
@@ -51,9 +57,10 @@ public sealed record EntityActionProgram
 
 public sealed class StoryProgram
 {
-    internal StoryProgram(string id, IEnumerable<StoryInstruction> instructions, string? source = null)
-    { Id = id; Instructions = Array.AsReadOnly(instructions.ToArray()); Source = source; }
+    internal StoryProgram(string id, IEnumerable<StoryInstruction> instructions, string? source = null, bool entitiesRunning = true)
+    { Id = id; Instructions = Array.AsReadOnly(instructions.ToArray()); Source = source; EntitiesRunning = entitiesRunning; }
     public string Id { get; }
     public IReadOnlyList<StoryInstruction> Instructions { get; }
     public string? Source { get; }
+    public bool EntitiesRunning { get; }
 }
