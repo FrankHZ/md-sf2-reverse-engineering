@@ -162,7 +162,7 @@ internal sealed class ExplorationPresentation : IDisposable
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
             if (overlay.X != 0 || overlay.Y != 0) DrawLayer(world, visual, overlay, true);
             EntityRef? speaker = story.TextWindow is OpenTextWindow text ? text.Speaker : null;
-            if (speaker is { } speaking && world.Entities.TryGetValue(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite &&
+            if (speaker is { } speaking && world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite &&
                 _visuals.Sprites[sprite].Portrait is { } portrait)
             {
                 byte flags = ((OpenTextWindow)story.TextWindow).SpeakerFlags;

@@ -39,8 +39,11 @@ internal static class MapTransfer
                     source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite));
                 return slot.FollowerOrder is { } order ? FollowerMotion.Install(entity, order, -24, 0) : entity;
             });
-            return MapEventDispatcher.RoofOnLoad(new(map, layout, player, slots, party,
-                aliases: allocation.Aliases.ToDictionary(pair => Reference(pair.Key), pair => pair.Value)));
+            // Populate a fresh source identity table from its cleared (slot-zero) state.
+            // Missing keys after Hide are tombstones; state copies must never refill them.
+            var aliases = Enumerable.Range(0, 64).ToDictionary(index => Reference(index < 32 ? index : index + 96), _ => 0);
+            foreach (var alias in allocation.Aliases) aliases[Reference(alias.Key)] = alias.Value;
+            return MapEventDispatcher.RoofOnLoad(new(map, layout, player, slots, party, aliases: aliases));
         }
         var entities = map.Entities.Where(entity => entity.Entity != player).Select(entity =>
             new ExplorationEntity(entity.Entity, EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with

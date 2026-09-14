@@ -94,8 +94,9 @@ func _run() -> void:
     _check(terminal.sessionId == identity, "The same common session owns every transition")
     match case_name:
         "map21-guard":
-            _check(terminal.failure == "program-entity" and not 401.0 in terminal.flags, "Unknown entity135 prevents the later unlock")
-            _check(_entity(terminal, "entity-128").x == 6 * 384, "Completed guard motion survives the later failure")
+            _check(terminal.failure == null and terminal.stop == "PlayerInput" and 401.0 in terminal.flags, "Source guard program resumes after the physical player sprite service")
+            _check(not 256.0 in terminal.flags, "Direct program start has no event caller to write F256")
+            _check(_entity(terminal, "entity-128").x == 6 * 384 and _entity(terminal, "entity-0").facing == 3, "Guard moves and unassigned135 faces the physical player")
         "map40-intro":
             _check(terminal.map == "map-57" and terminal.failureField.ends_with("bbcs_01[1]:loadMapFadeIn"), "Source warp reaches the actual before-battle native frontier")
             _check(not 451.0 in terminal.flags, "The unfinished before program does not publish the intro flag")

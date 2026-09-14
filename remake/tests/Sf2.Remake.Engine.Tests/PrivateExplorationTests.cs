@@ -33,9 +33,10 @@ public sealed class PrivateExplorationTests
         {
             foreach (var entity in session.Current.Exploration?.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest).ToArray() ?? [])
             {
-                var mounted = Accept(session, new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
-                observations?.AddRange(mounted.Observations);
+                result = Accept(session, new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
+                observations?.AddRange(result.Observations);
             }
+            if (session.Current.StopReason == SessionStopReason.PlayerInput) break;
             var waiting = session.Current.Story.Wait;
             if (waiting is DialogueWait text)
                 texts?.Add((text.Text, text.Speaker is { } speaker ? int.Parse(speaker.Value[7..], System.Globalization.CultureInfo.InvariantCulture) | text.SpeakerFlags << 8 : null));
@@ -108,6 +109,8 @@ public sealed class PrivateExplorationTests
             .Select(row => row.Program!.Value.Program).ToArray());
         Assert.Contains(observations, row => row.Kind == "door-opened");
         Assert.Contains(603, session.Current.Story.Flags);
+        Assert.False(session.Current.Exploration!.TryResolveEntity(new("entity-142"), out _));
+        Assert.False(session.Current.Exploration.TryResolveEntity(new("entity-46"), out _));
         Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
         return session;
     }
@@ -299,11 +302,23 @@ public sealed class PrivateExplorationTests
                     Input(ExplorationDirection.East); Input(ExplorationDirection.East);
                     Accept(session, new Interact(new("entity-128")));
                     var result = RunUntilStop(session, observations: observations);
-                    Assert.Equal("program-entity", result.Failure!.Code);
-                    Assert.Equal(new ProgramLocation("cs-53ef4", 1), session.Current.Story.Cursor);
+                    Assert.Null(result.Failure);
+                    Assert.Null(session.Current.Story.Cursor);
                     Assert.Equal(new MapPosition(6, 16), Entity(session, 128).Position);
-                    Assert.DoesNotContain(401, session.Current.Story.Flags);
-                    Assert.DoesNotContain(256, session.Current.Story.Flags);
+                    Assert.Equal(3, Entity(session, 0).Motion.Facing);
+                    Assert.Same(Entity(session, 0), Entity(session, 135));
+                    Assert.Contains(401, session.Current.Story.Flags);
+                    Assert.Contains(256, session.Current.Story.Flags);
+                    Input(ExplorationDirection.East); Input(ExplorationDirection.East);
+                    List<(int Id, int? Speaker)> repeated = [];
+                    Accept(session, new Interact(new("entity-128")));
+                    Assert.Null(RunUntilStop(session, texts: repeated).Failure);
+                    Assert.Equal(new[] { 579 }, repeated.Select(text => text.Id));
+                    Assert.Equal(new MapPosition(6, 16), Entity(session, 128).Position);
+                    Input(ExplorationDirection.North);
+                    Assert.Equal(new MapPosition(5, 15), Entity(session, 0).Position);
+                    Input(ExplorationDirection.South); Input(ExplorationDirection.North);
+                    Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
                 }
             }
             foreach (string program in fixture.RootElement.GetProperty("static").GetProperty("programs").EnumerateObject()
@@ -315,14 +330,65 @@ public sealed class PrivateExplorationTests
     }
 
     [PrivateInputFact(World)]
-    public void SourceGuardDoesNotInventUnknownEntity135OrPublishTheLaterUnlockFlag()
+    public void SourceGuardEventBranchesUseLiveFlagsAndFollowerSlotsWithoutInventingMembership()
+    {
+        var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
+            Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-start.json"),
+            PrivateBattleScenarioTests.Selected(Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-party.json")));
+        var admitted = Assert.IsType<ExplorationReadAccepted>(source.Read());
+        foreach (bool accepted in new[] { false, true })
+        foreach (bool talked in new[] { false, true })
+        foreach (int followers in new[] { 0, 2, 3 })
+        {
+            int[] flags = [0, 32, 601, 602, 605, .. accepted ? new[] { 608 } : Array.Empty<int>(),
+                .. talked ? new[] { 256 } : Array.Empty<int>(),
+                .. followers == 0 ? Array.Empty<int>() : followers == 2 ? new[] { 66 } : new[] { 66, 67 }];
+            var input = new ExplorationStartInput(new("map-21"), admitted.Start.Player, new(4, 16), 0, 32, flags, admitted.Start.Party);
+            var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, input)).Session;
+            if (session.Current.StopReason != SessionStopReason.PlayerInput) Assert.Null(RunUntilStop(session).Failure);
+            Assert.Equal(followers + 1, Entity(session, 128).Slot);
+            Assert.Same(Entity(session, 0), Entity(session, 135));
+            List<(int Id, int? Speaker)> texts = [];
+            List<SessionObservation> observations = [];
+            Accept(session, new Interact(new("entity-128")));
+            Assert.Null(RunUntilStop(session, observations: observations, texts: texts).Failure);
+            bool released = accepted && !talked;
+            Assert.Equal(accepted ? new[] { 579 } : talked ? new[] { 569 } : new[] { 568, 569 }, texts.Select(text => text.Id));
+            Assert.Equal(released, session.Current.Story.Flags.Contains(401));
+            Assert.Contains(256, session.Current.Story.Flags);
+            Assert.Equal(new MapPosition(released ? 6 : 5, 16), Entity(session, 128).Position);
+            Assert.Equal(released ? 3 : 0, Entity(session, 0).Motion.Facing);
+            Assert.Equal(new[] { 0 }, session.Current.Story.PartyLists!.Joined);
+            Assert.Equal(new[] { 0 }, session.Current.Story.PartyLists.Active);
+            Assert.DoesNotContain(session.Current.Exploration!.AllEntities, row => row.Entity.Value == "entity-135");
+            if (released)
+            {
+                int sprite = observations.FindIndex(row => row.Kind == "entity-sprite-ready" && row.Detail == "0");
+                int unlock = observations.FindIndex(row => row.Detail == "WriteFlag" && row.Program?.Program == "cs-53ef4");
+                int caller = observations.FindLastIndex(row => row.Detail == "WriteFlag" && row.Program?.Program != "cs-53ef4");
+                Assert.True(sprite >= 0 && unlock > sprite && caller > unlock);
+            }
+        }
+    }
+
+    [PrivateInputFact(World)]
+    public void SourceGuardMovesThenFacesThePlayerThroughZeroIdentityBeforePublishingItsUnlock()
     {
         var session = StartSource("map21-guard-start");
-        var result = RunUntilStop(session);
-        Assert.Equal("program-entity", result.Failure!.Code);
+        for (int tick = 0; tick < 100 && session.Current.Story.Wait is not EntitySpriteWait; tick++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var wait = Assert.IsType<EntitySpriteWait>(session.Current.Story.Wait);
         Assert.Equal(new ProgramLocation("cs-53ef4", 1), session.Current.Story.Cursor);
         Assert.Equal(new MapPosition(6, 16), Entity(session, 128).Position);
+        Assert.Same(Entity(session, 0), Entity(session, 135));
+        Assert.Equal(3, Entity(session, 0).Motion.Facing);
+        Assert.Equal(0, wait.Slot);
         Assert.DoesNotContain(401, session.Current.Story.Flags);
+        Assert.DoesNotContain(256, session.Current.Story.Flags);
+        Accept(session, new EntitySpriteReady(wait.Slot, wait.Request));
+        Assert.Contains(401, session.Current.Story.Flags);
+        Assert.DoesNotContain(256, session.Current.Story.Flags); // This explicit program start has no event caller.
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
     }
 
     [PrivateInputFact(World)]

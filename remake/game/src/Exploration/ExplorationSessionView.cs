@@ -104,7 +104,7 @@ public sealed partial class ExplorationSessionView : Control
             {
                 var player = world.PlayerEntity;
                 (int x, int y) = player.Motion.Facing switch { 0 => (1, 0), 1 => (0, -1), 2 => (-1, 0), _ => (0, 1) };
-                var target = world.Entities.Values.FirstOrDefault(entity => entity.Entity != world.Player && entity.Visible &&
+                var target = world.AllEntities.FirstOrDefault(entity => entity.Entity != world.Player && entity.Visible &&
                     entity.Position.X == player.Position.X + x && entity.Position.Y == player.Position.Y + y);
                 if (target is not null) command = new Interact(target.Entity);
             }
@@ -211,11 +211,11 @@ public sealed partial class ExplorationSessionView : Control
                 paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
                 cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
                 error = _presentation?.Error },
-            entities = current?.Exploration?.Entities.Values.Select(entity => new
+            entities = current?.Exploration?.AllEntities.Select(entity => new
             {
                 id = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite, facing = entity.Motion.Facing,
                 priority = entity.Priority,
-                follower = entity.Follower, spriteRequest = entity.SpriteRequest, spriteReady = entity.SpriteReady,
+                follower = entity.Follower, spriteRequest = entity.SpriteRequest, spriteReady = entity.SpriteReady, waitingForSprite = entity.WaitingForSprite,
                 x = entity.Motion.X, y = entity.Motion.Y,
                 targetX = entity.Motion.XDestination, targetY = entity.Motion.YDestination,
                 moving = entity.Motion.IsMoving, busy = entity.Busy, entity.Visible, actionCursor = entity.ActionCursor, speedX = entity.Motion.XSpeed, flagsA = entity.Motion.FlagsA, flagsB = entity.Motion.FlagsB,

@@ -265,7 +265,10 @@ internal static class ExplorationContentReader
                     row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"));
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
-            case "face": Object(row, opcode, "op", "entity", "facing"); return new SetEntityFacing(new(Id(row, "entity")), (byte)Number(row, "facing", 0, 7));
+            case "face":
+                ObjectOptional(row, opcode, "refreshSprite", "op", "entity", "facing");
+                return new SetEntityFacing(new(Id(row, "entity")), (byte)Number(row, "facing", 0, 7),
+                    row.TryGetProperty("refreshSprite", out _) && Boolean(row, "refreshSprite"));
             case "priority": Object(row, opcode, "op", "entity", "value"); return new SetEntityPriority(new(Id(row, "entity")), Boolean(row, "value"));
             case "position":
                 Object(row, opcode, "op", "entity", "position", "facing");

@@ -108,7 +108,7 @@ public-authored inputs must continue to retain their distinct provenance and dis
 removed with their final execution callers. The common session executes the complete source palace
 body and its native caller, including motion, text, presentation, map state and completion flag.
 The [execution owner](./exploration-programs.md#castle-palace-astral-and-tower) records grouped
-comparisons and the remaining Map21 entity135 boundary. Later Battle01/M4 comparison metadata
+comparisons, the accepted source identity lifecycle and the remaining original runtime/hardware boundaries. Later Battle01/M4 comparison metadata
 does not become executable story logic. A3 is not globally closed while original before/after
 programs and unsupported branches remain.
 

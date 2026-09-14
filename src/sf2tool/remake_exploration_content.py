@@ -543,7 +543,12 @@ class OriginalPrograms:
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
             elif op == "setFacing":
                 result.append(
-                    {"op": "face", "entity": self.entity(args[0]), "facing": self.number(args[1])}
+                    {
+                        "op": "face",
+                        "entity": self.entity(args[0]),
+                        "facing": self.number(args[1]),
+                        "refreshSprite": True,
+                    }
                 )
             elif op == "setPriority":
                 result.append(

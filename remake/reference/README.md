@@ -115,8 +115,8 @@ consumers. The old Sarah, zone601, entity142, Astral-zone and messenger endpoint
 F/G request/acknowledgement branches and obsolete atomic/prefix tests are removed.
 
 Castle/palace/Astral/tower endpoint handlers, cross-map shortcuts and their final execution callers
-are removed as a group. The common session owns those source programs and keeps the entity135
-frontier explicit. Pending original-map Battle01 admission and M4 return remain here. Their tests
+are removed as a group. The common session owns those source programs, source identity mapping
+and sprite completion before tower unlock. Pending original-map Battle01 admission and M4 return remain here. Their tests
 load `inputs/map3-post-opening-reference-start.json` as controlled input instead of replaying the
 retired opening. The reference host accepts the same explicit path through
 `SF2_REFERENCE_POST_OPENING_START`. It publishes zero executed history and no messenger receipt;

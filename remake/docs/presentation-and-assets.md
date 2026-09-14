@@ -681,16 +681,15 @@ renderer uses that current selection, the snapshot's working layout, and the cur
 and areas. Map 3 uses its own atlas; Maps 19/20 share palette 0 and slots `[6,23,44,53,62]`, but
 switching between them still changes the selection's map and the working layout. Missing or mismatched
 selections are rejected. The existing camera and player locomotion policies apply across this seam.
-For the instantaneous `Relocated` phase, both camera focus and player drawing use the destination.
-Application retains the old source position as relocation provenance; it is not an interpolated
-destination-map position. Walking, stair movement, blocked attempts and the existing crop policy retain
-their accepted behavior.
+These retained reference consumers display immutable snapshots for geometry and asset comparisons.
+The common host executes castle/tower transitions and renders its live working layout, player and
+source sprites through the [program owner](./exploration-programs.md#castle-palace-astral-and-tower).
 
 Map 3 static/current-area overlays, entity-142 diagnostic, Sarah and Zone601 glyphs are scoped to Map 3.
-Castle views retain the existing authored purple Astral diamond while Application reports its route
-tile occupied; accepting via F clears it. No original castle NPC sprite is admitted. Traversal-only
-launches still use their existing diagnostic display. General init, original rendering and timing,
-natural caller state and H4 remain outside this consumer.
+Retained reference castle views use authored glyphs from their explicit snapshot context; their
+former F-key story handlers are removed. The ordinary host uses admitted private source NPC sprites
+and actual program state. Traversal-only reference launches retain their geometry diagnostic.
+Original hardware rendering/timing, natural caller state and H4 remain outside these comparisons.
 
 Map 21 arrival has palette 0 and slots `[6,23,44,53,8]`, which differ from the shared castle family.
 The explicit base-atlas launch binds `world.map21.base-tileset-atlas` from the accepted full pack,
@@ -698,15 +697,12 @@ using the exact 2x/4x digests and current runtime's working layout, blocks and a
 crop and player drawing keep the existing destination/locomotion policy. Missing or changed assets
 fail closed; the shared castle atlas cannot substitute for the Map 21 selection. Traversal-only
 launches retain their diagnostic grid, with status placed below whichever viewport is active.
-The first status line names Map 21, the controlled arrival and unexecuted init until the bounded guard action
-is available. At `(4,16)` facing RIGHT, it offers the explicit controlled F result; after F it identifies
-the guard's completed move. The existing authored diamond follows guard occupancy from `(5,16)` to
-`(6,16)` without a direction line or original-art claim. Its immutable source-facing byte is not drawn.
-F preserves player position/facing by remake policy;
-ordinary Right/Up supplies the later `(5,15)`/UP endpoint. The real composition adapter handles both
-guard success and rejection. Neither source entity135's facing effect nor natural script timing is applied.
-Unknown or mismatched runtime/visual selections still reject. Only the fixed Map 21 atlas is newly
-consumed; Map 3 overlays and NPC diagnostics remain scoped to Map 3, and no NPC asset is added.
+Reference status directs the migrated guard interaction to the common host. In that host, ordinary
+interaction moves guard128 from `(5,16)` to `(6,16)` and source135 resolves through the fresh identity
+table to player slot0. Facing down mounts the corresponding player sprite before F401 and caller
+F256 publish. Repeat dialogue and ordinary movement through `(5,15)` use the same live session.
+Unknown or mismatched visual selections still reject. Original natural timing and hardware sprite
+effects remain unclaimed; Map3 reference diagnostics remain scoped to Map3.
 
 Map 40 has its own accepted atlas in the twelve-asset/24-bucket full pack. Its exact binding is
 `world.map40.base-tileset-atlas`, palette 3 and slots `[94,95,96,97,58]`; palette 3 is independent of

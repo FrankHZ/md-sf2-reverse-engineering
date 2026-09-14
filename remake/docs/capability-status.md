@@ -43,8 +43,8 @@ source provenance, reproduction and remaining reference callers.
 | Connected authored exploration | **Implemented:** two distinct format-v8 packages execute interaction/choice, real entity motion, call/return, flag/tick/text waits, map loading and both intro hooks into existing battle control through one session. |
 | Program transactions and state | **Implemented:** PC/call stack/wait token, continued text window, actual simulation ticks, source-order entity actions and global sprite size. A failing native instruction/action retains the completed prefix and its own cursor. |
 | Original Map3 opening | **Confirmed, bounded:** the common session consumes the R1 start, R2 input route and complete R2a messenger acceptance through F603 and stable field input. Real source entity allocation/aliases, initialization, ordered events, doors/roofs/same-map preservation, joins and follower motion execute. Decline/re-prompt acceptance and an extra-follower slot shift exercise alternate state. |
-| Original castle/palace/Astral/tower | **Confirmed subset:** same live opening session runs castle gate, Map19/20 init, full palace, royal repeat/return, Astral refusal/re-prompt/acceptance and tower warps. Map21 guard retains its entity135 failure before F401/F256; [execution owner](./exploration-programs.md#castle-palace-astral-and-tower). |
-| Source presentation and limits | **Implemented bounded presentation:** private source map/sprite/portrait rasters, mounted sprite refresh, camera waits, actual nod draws and a documented project-authored join cue/fade. Original hardware/typewriter/audio timing, post-F603 reload with a removed alias, other setups, full travelling roster/items, complete before-battle and M4 remain **Unknown/Unsupported**. Map21 entity135 and Map40 before-program frontiers stay explicit; G3/G4 are not globally closed. |
+| Original castle/palace/Astral/tower | **Confirmed bounded group:** same live opening session runs castle gate, Map19/20 init, full palace, royal repeat/return, Astral refusal/re-prompt/acceptance, tower warps and actual guard release. Fresh source135 resolves to player slot0; sprite completion precedes F401 and caller F256. Repeat interaction and stable field input pass at60/30 FPS; [execution owner](./exploration-programs.md#castle-palace-astral-and-tower). |
+| Source presentation and limits | **Implemented bounded presentation:** private source map/sprite/portrait rasters, mounted sprite refresh, camera waits, actual nod draws and a documented project-authored join cue/fade. Original hardware/typewriter/audio timing, post-F603 reload with a removed alias, other setups, full travelling roster/items, complete before-battle and M4 remain **Unknown/Unsupported**. Removed source identities remain tombstones; Map40 before-program frontiers stay explicit; G3/G4 are not globally closed. |
 
 ## Legacy Reference Matrix
 
@@ -154,8 +154,9 @@ alone is not a reason to reopen those boundaries.
 
 The current product boundary is the common state-driven session described by
 [Exploration and programs](./exploration-programs.md). Live opening-to-castle/palace/Astral/tower
-execution replaces the old endpoint transitions as a group. The named Map21 entity135 boundary,
-post-F603 missing-alias reload, complete before-battle body and M4 remain explicit. First/repeat
+execution replaces the old endpoint transitions as a group. Source identity mapping follows the
+accepted default-zero/removed-FF lifecycle. Post-F603 removed-alias reload, complete before-battle
+body, natural original runtime/hardware continuity and M4 remain explicit boundaries. First/repeat
 visits, choice alternatives and follower/flag variants are compared through real common commands;
 native observations use actual ordinary-host input and the retained private asset families.
 See [Architecture](./architecture.md).
