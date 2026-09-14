@@ -309,6 +309,64 @@ public sealed class ExplorationSessionTests
         Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BackgroundMotionConsumesTheBatchWithoutReleasingExistingInputOrDialogue(bool dialogue)
+    {
+        var session = StartProgram("""
+            [{"op":"set-flag","flag":7,"value":true},
+             {"op":"motion","entity":"ferryman","wait":false,"actions":[
+               {"op":"speed","x":1,"y":1},{"op":"move","x":1,"y":0}]},
+            """ + (dialogue ? """
+             {"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":null},
+            """ : "") + """{"op":"end"}]""");
+        var wait = session.Current.Story.Wait;
+        var expectedStop = dialogue ? SessionStopReason.PresentationWait : SessionStopReason.PlayerInput;
+        Assert.Equal(expectedStop, session.Current.StopReason);
+        Accept(session, new AdvanceSimulation(wait?.Token));
+        var before = session.Current;
+        var npc = before.Exploration!.Entities[new("ferryman")];
+        var result = Accept(session, new AdvanceSimulation(wait?.Token, 60));
+        Assert.Equal(before.Story.SimulationTick + 60, session.Current.Story.SimulationTick);
+        Assert.Equal(npc.Motion.X + 60, session.Current.Exploration!.Entities[new("ferryman")].Motion.X);
+        Assert.Equal(expectedStop, result.StopReason);
+        Assert.Same(wait, session.Current.Story.Wait);
+        Assert.Equal(before.SessionId, session.Current.SessionId);
+        Assert.Equal(before.Story.Flags, session.Current.Story.Flags);
+        Assert.Equal(before.Exploration.Party.MainSeed, session.Current.Exploration.Party.MainSeed);
+        Assert.Equal(60, result.Observations.Count(observation => observation.Kind == "simulation-tick"));
+        Accept(session, new AdvanceSimulation(wait?.Token, 30));
+        Assert.Equal(before.Story.SimulationTick + 90, session.Current.Story.SimulationTick);
+        Assert.Equal(npc.Motion.X + 90, session.Current.Exploration.Entities[new("ferryman")].Motion.X);
+        Assert.Equal(expectedStop, session.Current.StopReason);
+    }
+
+    [Fact]
+    public void CompletingForegroundMotionYieldsAtNewFieldInputBeforeContinuingBackgroundTicks()
+    {
+        var session = StartProgram("""
+            [{"op":"motion","entity":"ferryman","wait":false,"actions":[
+               {"op":"speed","x":1,"y":1},{"op":"move","x":1,"y":0}]},
+             {"op":"motion","entity":"traveler","wait":true,"actions":[
+               {"op":"move","x":1,"y":0}]},{"op":"end"}]
+            """);
+        var startX = session.Current.Exploration!.Entities[new("ferryman")].Motion.X;
+        var wait = Assert.IsType<EntityWait>(session.Current.Story.Wait).Token;
+        Accept(session, new AdvanceSimulation(wait, 60));
+        Assert.Equal(5, session.Current.Story.SimulationTick);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+        Assert.Null(session.Current.Story.Wait);
+        Assert.Equal(startX + 4, session.Current.Exploration!.Entities[new("ferryman")].Motion.X);
+        var boundary = session.Current;
+        Assert.Equal("stale-or-wrong-wait", Send(session, new AdvanceSimulation(wait, 55)).Failure!.Code);
+        Assert.Same(boundary, session.Current);
+        Accept(session, new AdvanceSimulation(null, 2));
+        Assert.Equal(7, session.Current.Story.SimulationTick);
+        Assert.Equal(startX + 6, session.Current.Exploration.Entities[new("ferryman")].Motion.X);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+    }
+
     private static GameSession StartProgram(string instructions) => Start("harbor-arrival", document =>
     {
         document["world"]!["programs"]![0]!["instructions"] = System.Text.Json.Nodes.JsonNode.Parse(instructions);

@@ -47,6 +47,8 @@ internal static class ExplorationDispatcher
                 case AdvanceSimulation advance:
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
+                    bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
+                        current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
                         EntityActionTickResult? tickResult = current.Exploration is { } world ? EntityActionRunner.Tick(world) : null;
@@ -65,11 +67,13 @@ internal static class ExplorationDispatcher
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                         current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
-                        // A newly reached input/presentation boundary belongs to a fresh command.
-                        if (story.Wait is null)
+                        // Existing field input does not interrupt background ticks. Completing a
+                        // wait or resuming a program still yields at its next control boundary.
+                        if (story.Wait is null && !existingFieldInput)
                             return ProgramRunner.Run(definition, current, observations);
                     }
-                    return ProgramRunner.Result(current, observations);
+                    return existingFieldInput ? ProgramRunner.Run(definition, current, observations)
+                        : ProgramRunner.Result(current, observations);
                 default:
                     if (current.Story.Wait is not null || current.Story.Cursor is not null || current.Exploration is null)
                         return Reject(current, "program-owns-control", "command");

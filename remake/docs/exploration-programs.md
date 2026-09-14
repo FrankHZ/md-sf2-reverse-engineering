@@ -46,7 +46,9 @@ open, and increment `SimulationTick` only when executed. A tick batch stops at a
 wait boundary. The host batches elapsed 60 Hz ticks and subtracts only ticks the engine executed.
 Unused time remains available for automatic continuation on the next frame; reaching paused input
 clears the accumulator. Lower frame rates therefore retain elapsed ticks without draining a newly
-reached dialogue or choosing an answer automatically.
+reached dialogue or choosing an answer automatically. Existing field input does not truncate a
+background action batch; completing a foreground wait still yields at the newly reached input or
+program boundary before further ticks are submitted.
 
 Movement uses the existing `OriginalMapTraversal` area, collision and stair rules. The extracted
 entity core uses 384 fixed units per tile, source signed-word arithmetic, acceleration/deceleration,
