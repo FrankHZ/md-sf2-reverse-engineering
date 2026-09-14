@@ -58,9 +58,17 @@ Do not silently replace a long-lived lane owner with an in-thread subagent when 
 unreliable or a fresh session is needed. Stop, tell the user, and let the user create the replacement
 session. Keep in-thread subagents limited to small, independent subtasks.
 
-Before assigning work to any replacement session, send one compact current-state anchor: canonical
+For routine continuation with the same long-lived owner, send only the current objective, changes to
+base/branch/ownership, slice-specific constraints, acceptance and stopping conditions, and links to
+necessary owners and results. Reference stable rules rather than repeating them. Explicitly carry
+unresolved failures and Unknowns that affect this slice; retain completed counts, CI results, and
+correction history in the named handoff. Do not replace a long dispatch with another long required
+document.
+
+For a replacement session or actual context recovery, send one compact current-state anchor: canonical
 repository and forbidden paths, worktree and branch, accepted base, exact owned paths, current
 commit/dirt/process/gate state, preserved failures and Unknowns, and the next stopping condition.
+Limit recovery material to what the task needs.
 Require a read-only state check before mutation, and state that this anchor supersedes stale or
 replayed instructions from compacted history. The main gate retains independent review and merge
 authority.
