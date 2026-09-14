@@ -734,6 +734,15 @@ castle atlas source-copy/image probe is removed with its reference execution cal
 the live opening and records session, map, presentation and error state without screenshots.
 Its [execution owner](./exploration-programs.md) keeps the source and presentation limits explicit.
 
+The [Battle01 admission observer](../game/probes/engine_battle01_admission_observation.gd) extends that
+same live instance through the full before-battle scene and first battle input. Map40 uses its actual
+empty source setup plus enabled followers. Scene reload replaces physical records and mounts the
+private mist-demon/gizmo/Astral sprites. White fades, coarse-to-fine mosaic and three-cycle shiver
+are explicit modern presentation services; their pixels and duration do not claim original hardware
+parity. The existing battle board mounts under the fading view while input stays closed, then returns
+to the ordinary host after load/start. Use fixed60/30 FPS and inspect state/draw counters and logs;
+no screenshots or additional editor/environment installation are needed.
+
 ## Diagnostic Battle01 launch and native review
 
 Apply the current [runtime-state acceptance and instance reuse rules](./development-and-verification.md#scope)

@@ -81,26 +81,18 @@ internal static class ExplorationContentReader
                 return new OriginalMapTraversalArea(minX, minY, Number(area, "maxX", minX, width - 1), Number(area, "maxY", minY, rows.Length - 1));
             }).ToArray();
             Require(areas.Length > 0 && areas.Distinct().Count() == areas.Length, "map-areas", "map.areas");
-            var entities = Array(row, "entities").Select(entity =>
-            {
-                ObjectOptional(entity, "entity", "sprite", ["id", "position", "facing", "speed", "visible", "obstruction",
-                    .. entity.TryGetProperty("actions", out _) ? new[] { "actions" } : System.Array.Empty<string>()]);
-                return new ExplorationEntityDefinition(new(Id(entity, "id")), Position(entity.GetProperty("position")),
-                    (byte)Number(entity, "facing", 0, 7), (ushort)Number(entity, "speed", 1, 384),
-                    Boolean(entity, "visible"), Boolean(entity, "obstruction"), entity.TryGetProperty("sprite", out _) ? Number(entity, "sprite", 0, 255) : null,
-                    entity.TryGetProperty("actions", out _) ? Actions(entity) : null);
-            }).ToArray();
-            Require(entities.Select(entity => entity.Entity).Distinct().Count() == entities.Length, "duplicate-entity", "map.entities");
+            var entities = ReadEntities(row);
             var events = Array(row, "events").Select(ReadEvent).ToArray();
             var route = row.GetProperty("battle");
             ExplorationBattleRoute? encounter = null;
             if (route.ValueKind != JsonValueKind.Null)
             {
-                Object(route, "battle-route", "encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start");
+                ObjectOptional(route, "battle-route", "load", "encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start");
                 string encounterId = Id(route, "encounter");
                 Require(battle.Definition.Encounters.ContainsKey(encounterId), "missing-encounter", "map.battle");
                 encounter = new(encounterId, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
-                    NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")));
+                    NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")),
+                    route.TryGetProperty("load", out var load) ? Location(load) : null);
             }
             MapSetupRoute? setupRoute = null;
             var setup = row.GetProperty("setup");
@@ -117,22 +109,7 @@ internal static class ExplorationContentReader
             ExplorationPopulation? population = null;
             if (row.TryGetProperty("population", out var populationRow))
             {
-                ObjectOptional(populationRow, "population", "allySprites", "allyCount", "nonAllyStart", "playerSprite", "followers");
-                var followers = Array(populationRow, "followers").Select(follower =>
-                {
-                    Object(follower, "follower", "flag", "character", "sprite");
-                    return new ExplorationFollowerDefinition(Number(follower, "flag", 0, 65535),
-                        Number(follower, "character", 0, 255), Number(follower, "sprite", 0, 255));
-                }).ToArray();
-                population = new(Number(populationRow, "allyCount", 1, 128), Number(populationRow, "nonAllyStart", 128, 255),
-                    Number(populationRow, "playerSprite", 0, 255), System.Array.AsReadOnly(followers),
-                    populationRow.TryGetProperty("allySprites", out _) ? System.Array.AsReadOnly(Array(populationRow, "allySprites").Select(appearance =>
-                    {
-                        Object(appearance, "allySprite", "character", "sprite", "joinedFlag", "unjoinedSprite");
-                        int? joined = NullableNumber(appearance, "joinedFlag", 65535), unjoined = NullableNumber(appearance, "unjoinedSprite", 255);
-                        Require((joined is null) == (unjoined is null), "ally-sprite-override", "population.allySprites");
-                        return new ExplorationAllySprite(Number(appearance, "character", 0, 255), Number(appearance, "sprite", 0, 255), joined, unjoined);
-                    }).ToArray()) : null);
+                population = ReadPopulation(populationRow);
                 Require(entities.All(entity => entity.Sprite is not null), "population-sprites", "map.entities");
             }
             maps.Add(new(id, new(words), new(areas), entities, events, Location(row.GetProperty("onLoad")), encounter, row.TryGetProperty("input", out var input) ? Location(input) : null, setupRoute, population, row.TryGetProperty("layoutEvents", out var layoutEvents) ? ReadLayoutEvents(layoutEvents) : null, Array(row, "areas").Select(area =>
@@ -172,6 +149,41 @@ internal static class ExplorationContentReader
         return new(new(package, battle.Definition.Encounters.Values, battle.Definition.PrivateDefinitions, definition),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram));
+    }
+
+    private static ExplorationEntityDefinition[] ReadEntities(JsonElement row)
+    {
+        var entities = Array(row, "entities").Select(entity =>
+        {
+            ObjectOptional(entity, "entity", "sprite", ["id", "position", "facing", "speed", "visible", "obstruction",
+                .. entity.TryGetProperty("actions", out _) ? new[] { "actions" } : System.Array.Empty<string>()]);
+            return new ExplorationEntityDefinition(new(Id(entity, "id")), Position(entity.GetProperty("position")),
+                (byte)Number(entity, "facing", 0, 7), (ushort)Number(entity, "speed", 1, 384),
+                Boolean(entity, "visible"), Boolean(entity, "obstruction"), entity.TryGetProperty("sprite", out _) ? Number(entity, "sprite", 0, 255) : null,
+                entity.TryGetProperty("actions", out _) ? Actions(entity) : null);
+        }).ToArray();
+        Require(entities.Select(entity => entity.Entity).Distinct().Count() == entities.Length, "duplicate-entity", "map.entities");
+        return entities;
+    }
+
+    private static ExplorationPopulation ReadPopulation(JsonElement row)
+    {
+        ObjectOptional(row, "population", "allySprites", "allyCount", "nonAllyStart", "playerSprite", "followers");
+        var followers = Array(row, "followers").Select(follower =>
+        {
+            Object(follower, "follower", "flag", "character", "sprite");
+            return new ExplorationFollowerDefinition(Number(follower, "flag", 0, 65535),
+                Number(follower, "character", 0, 255), Number(follower, "sprite", 0, 255));
+        }).ToArray();
+        return new(Number(row, "allyCount", 1, 128), Number(row, "nonAllyStart", 128, 255),
+            Number(row, "playerSprite", 0, 255), System.Array.AsReadOnly(followers),
+            row.TryGetProperty("allySprites", out _) ? System.Array.AsReadOnly(Array(row, "allySprites").Select(appearance =>
+            {
+                Object(appearance, "allySprite", "character", "sprite", "joinedFlag", "unjoinedSprite");
+                int? joined = NullableNumber(appearance, "joinedFlag", 65535), unjoined = NullableNumber(appearance, "unjoinedSprite", 255);
+                Require((joined is null) == (unjoined is null), "ally-sprite-override", "population.allySprites");
+                return new ExplorationAllySprite(Number(appearance, "character", 0, 255), Number(appearance, "sprite", 0, 255), joined, unjoined);
+            }).ToArray()) : null);
     }
 
     private static ExplorationLayoutEvents ReadLayoutEvents(JsonElement row)
@@ -276,6 +288,14 @@ internal static class ExplorationContentReader
             case "hide": Object(row, opcode, "op", "entity", "removeAliases"); return new HideMapEntity(new(Id(row, "entity")), Boolean(row, "removeAliases"));
             case "speaker": Object(row, opcode, "op", "entity"); return new SetDialogueSpeaker(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")));
             case "camera-target": Object(row, opcode, "op", "position"); return new SetCameraTarget(Position(row.GetProperty("position")));
+            case "camera-entity": Object(row, opcode, "op", "entity"); return new SetCameraEntity(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")));
+            case "scene-map": Object(row, opcode, "op", "map", "camera"); return new LoadSceneMap(new(Id(row, "map")), Position(row.GetProperty("camera")));
+            case "scene-entities":
+                Object(row, opcode, "op", "population", "position", "facing", "entities");
+                var entities = ReadEntities(row);
+                Require(entities.Length <= 48 && entities.All(entity => entity.Sprite is not null), "scene-entities", "program.entities");
+                return new LoadSceneEntities(ReadPopulation(row.GetProperty("population")), Position(row.GetProperty("position")),
+                    (byte)Number(row, "facing", 0, 3), System.Array.AsReadOnly(entities));
             case "visibility": Object(row, opcode, "op", "entity", "visible"); return new SetEntityVisibility(new(Id(row, "entity")), Boolean(row, "visible"));
             case "motion":
                 Object(row, opcode, "op", "entity", "actions", "wait");
@@ -359,12 +379,15 @@ internal static class ExplorationContentReader
                     : map.Entities.Select(entity => entity.Sprite);
                 Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites");
             }
-            Target(map.OnLoad); Target(map.InputProgram); Target(map.Battle?.BeforeProgram); Target(map.Battle?.StartProgram);
+            Target(map.OnLoad); Target(map.InputProgram); Target(map.Battle?.BeforeProgram); Target(map.Battle?.StartProgram); Target(map.Battle?.LoadProgram);
             foreach (var entry in map.Events)
             {
                 Target(entry.Program);
                 if (entry.DestinationMap is { } destination) Require(definition.Maps.ContainsKey(destination), "missing-map", "event.map");
-                if (entry.Entity is { } entity) Require(map.Entities.Any(row => row.Entity == entity), "missing-entity", "event.entity");
+                if (entry.Entity is { } entity)
+                    Require(map.Entities.Any(row => row.Entity == entity) || (map.Population is not null &&
+                        entity.Value.StartsWith("entity-", StringComparison.Ordinal) && int.TryParse(entity.Value.AsSpan(7), out int identity) &&
+                        identity is >= 0 and < 32 or >= 128 and < 160), "missing-entity", "event.entity");
             }
         }
         foreach (var program in definition.Programs.Values)
@@ -376,6 +399,13 @@ internal static class ExplorationContentReader
                     case BranchEntityCoordinates branch: Target(branch.Target); break;
                     case CallProgram call: Target(call.Target); break;
                     case TransferToMap transfer: Require(definition.Maps.ContainsKey(transfer.Map), "missing-map", "program.map"); break;
+                    case LoadSceneMap load: Require(definition.Maps.ContainsKey(load.Map), "missing-map", "program.map"); break;
+                    case LoadSceneEntities load when definition.Visuals is { } visuals:
+                        var sprites = load.Entities.Where(entity => entity.Sprite >= load.Population.AllyCount).Select(entity => entity.Sprite)
+                            .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite }))
+                            .Concat(load.Population.Followers.Where(follower => follower.Character >= load.Population.AllyCount).Select(follower => (int?)follower.Sprite))
+                            .Append(load.Population.PlayerSprite);
+                        Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites"); break;
                 }
     }
     private static ProgramLocation RequiredLocation(JsonElement value) => Location(value) ?? throw new AdmissionIssue(

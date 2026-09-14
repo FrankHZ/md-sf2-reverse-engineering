@@ -9,9 +9,11 @@ public readonly record struct WaitToken(long Value);
 public abstract record ProgramWait(WaitToken Token);
 public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : ProgramWait(Token);
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
-public sealed record PresentationWait(WaitToken Token, PresentCue Cue) : ProgramWait(Token);
+public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
+public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
 public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null) : ProgramWait(Token);
 public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
+public sealed record EntitySetSpriteWait(WaitToken Token) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags);
@@ -19,7 +21,7 @@ public abstract record TextWindow;
 public sealed record ClosedTextWindow : TextWindow;
 public sealed record OpenTextWindow(int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : TextWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
-public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleStartFinished }
+public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished }
 
 public sealed class StoryState
 {
@@ -27,13 +29,14 @@ public sealed class StoryState
         IEnumerable<ProgramLocation>? callers = null, ProgramWait? wait = null, int textCursor = 0,
         ProgramContinuation continuation = ProgramContinuation.FieldInput,
         ExplorationBattleRoute? enteringBattle = null, FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long simulationTick = 0,
-        MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null)
+        MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
+        int? cameraEntitySlot = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
         TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EntityEvent = entityEvent;
-        Speaker = speaker; CameraTarget = cameraTarget;
+        Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -49,16 +52,18 @@ public sealed class StoryState
     public EntityEventContext? EntityEvent { get; }
     public EntityRef? Speaker { get; }
     public MapPosition? CameraTarget { get; }
+    public int? CameraEntitySlot { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
         FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long? simulationTick = null, MapPartyLists? partyLists = null,
         EntityEventContext? entityEvent = null, bool clearEntityEvent = false, EntityRef? speaker = null, MapPosition? cameraTarget = null,
-        bool clearSpeaker = false, bool clearCameraTarget = false) =>
+        bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
-            clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget);
+            clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
+            clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
@@ -75,9 +80,11 @@ public sealed class ExplorationState
 {
     internal ExplorationState(ExplorationMapDefinition definition, WorkingMapLayout layout, EntityRef player,
         IEnumerable<ExplorationEntity> entities, BattleStartInput party, ushort spriteSize = 16,
-        IReadOnlyDictionary<EntityRef, int>? aliases = null, MapBlockCopyLifecycleState? roofState = null)
+        IReadOnlyDictionary<EntityRef, int>? aliases = null, MapBlockCopyLifecycleState? roofState = null,
+        ExplorationPopulation? population = null)
     {
         Definition = definition; Layout = layout; Player = player; Party = party; SpriteSize = spriteSize; RoofState = roofState ?? MapBlockCopyLifecycleState.Inactive;
+        Population = population ?? definition.Population;
         AllEntities = Array.AsReadOnly(entities.Select((entity, index) => entity.Slot < 0 ? entity with { Slot = index } : entity)
             .OrderBy(entity => entity.Slot).ToArray());
         Aliases = new ReadOnlyDictionary<EntityRef, int>((aliases ?? AllEntities.ToDictionary(entity => entity.Entity, entity => entity.Slot))
@@ -86,6 +93,7 @@ public sealed class ExplorationState
         Entities = new ReadOnlyDictionary<EntityRef, ExplorationEntity>(Aliases.ToDictionary(pair => pair.Key, pair => slots[pair.Value]));
     }
     public ExplorationMapDefinition Definition { get; }
+    public ExplorationPopulation? Population { get; }
     public MapId Map => Definition.Map;
     public WorkingMapLayout Layout { get; }
     public MapBlockCopyLifecycleState RoofState { get; }
@@ -100,7 +108,7 @@ public sealed class ExplorationState
     public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
     {
         entity = null!;
-        if (Definition.Population is not null)
+        if (Population is not null)
         {
             if (!reference.Value.StartsWith("entity-", StringComparison.Ordinal) ||
                 !int.TryParse(reference.Value.AsSpan(7), System.Globalization.NumberStyles.Integer,
@@ -115,17 +123,17 @@ public sealed class ExplorationState
         }
         return Entities.TryGetValue(reference, out entity!);
     }
-    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState);
+    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population);
     internal ExplorationState WithLayout(WorkingMapLayout layout, MapBlockCopyLifecycleState? roofState = null) =>
-        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState);
-    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState);
+        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population);
+    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population);
     internal ExplorationState Hide(ExplorationEntity entity, bool removeAliases)
     {
         var hidden = entity with { Visible = false, Actions = null, Follower = null, WaitingForSprite = false,
             Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
         // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
         return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
-            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState);
+            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population);
     }
     internal ExplorationState WithEntity(ExplorationEntity entity) =>
         WithEntities(AllEntities.Select(current => current.Slot == entity.Slot ? entity : current));

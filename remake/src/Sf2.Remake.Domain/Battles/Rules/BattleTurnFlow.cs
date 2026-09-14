@@ -9,14 +9,15 @@ internal static class BattleTurnFlow
         ValidateStart(definition, start);
         var inputs = start.Actors.ToDictionary(actor => actor.Actor);
         // Deployment order owns turn/candidate order; the external input array is only keyed data.
-        var actors = definition.Deployments.Select(deployment =>
+        var actors = BattleInitializationRules.Deployments(definition, start).Select(deployment =>
         {
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
-                input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status);
+                deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
-        return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial);
+        return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
     }
 
     // Encounter policy is validated at Content admission and reusable session start, even for dead actors.
@@ -52,23 +53,31 @@ internal static class BattleTurnFlow
             Require(definition.Deployments.Any(d => d.Actor == input.Actor), "missing-actor", "start.actors.actor");
         }
         Require(definition.Deployments.All(d => inputs.ContainsKey(d.Actor)), "missing-start-actor", "start.actors");
+        if (start.ActiveAllies is { } activeAllies)
+        {
+            Require(start.NewBattle is not null, "active-party-initialization", "start.activeAllies");
+            Require(activeAllies.Distinct().Count() == activeAllies.Count && activeAllies.All(actor =>
+                definition.Deployments.Any(row => row.Actor == actor && row.Faction == BattleFaction.Ally)), "active-party", "start.activeAllies");
+        }
         BattleInitializationRules.Validate(definition, start);
         var occupied = new HashSet<MapPosition>();
         int allies = 0, enemies = 0, turns = 0;
-        foreach (var deployment in definition.Deployments)
+        foreach (var deployment in BattleInitializationRules.Deployments(definition, start))
         {
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
             Require(input.Hp <= actor.MaxHp && input.Mp <= actor.MaxMp && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(input.Status == 0, "actor-status", "start.actors.status", true);
+            Require(input.Status == 0 || start.NewBattle is not null, "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
+            if (deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;
             var position = input.PositionOverride ?? deployment.Position;
             Require(definition.Contains(position), "start-placement-bounds", "start.actors.positionOverride");
             var tile = definition.Terrain[position.Y * 48 + position.X];
             Require(BattleTerrainRules.MovementCost(tile, actor.Mover) > 0, "blocked-placement", "start.actors.positionOverride");
-            if (input.Hp == 0)
+            if (input.Hp == 0 && !(start.NewBattle is not null && (deployment.Faction == BattleFaction.Enemy ||
+                deployment.Initialization?.AllyPartyMember is 7 or 28)))
             {
                 Require(actor.Physical?.Leader != true, "leader-defeat-program", "start.actors", true);
                 continue;

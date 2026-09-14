@@ -9,11 +9,13 @@ public sealed record BattleActorStartInput(ActorRef Actor, ushort Hp, byte Mp, b
 public sealed class BattleStartInput
 {
     public BattleStartInput(string encounter, IEnumerable<BattleActorStartInput> actors,
-        uint mainSeed, uint thinkingSeed, uint? gold, NewBattleStartPolicy? newBattle = null)
+        uint mainSeed, uint thinkingSeed, uint? gold, NewBattleStartPolicy? newBattle = null,
+        IEnumerable<ActorRef>? activeAllies = null)
     {
         ArgumentNullException.ThrowIfNull(actors);
         Encounter = encounter; Actors = Array.AsReadOnly(actors.ToArray());
         MainSeed = mainSeed; ThinkingSeed = thinkingSeed; Gold = gold; NewBattle = newBattle;
+        ActiveAllies = activeAllies is null ? null : Array.AsReadOnly(activeAllies.ToArray());
     }
     public string Encounter { get; }
     public IReadOnlyList<BattleActorStartInput> Actors { get; }
@@ -21,4 +23,5 @@ public sealed class BattleStartInput
     public uint ThinkingSeed { get; }
     public uint? Gold { get; }
     public NewBattleStartPolicy? NewBattle { get; }
+    public IReadOnlyList<ActorRef>? ActiveAllies { get; }
 }

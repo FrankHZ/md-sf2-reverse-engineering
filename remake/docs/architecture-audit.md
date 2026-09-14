@@ -109,8 +109,10 @@ removed with their final execution callers. The common session executes the comp
 body and its native caller, including motion, text, presentation, map state and completion flag.
 The [execution owner](./exploration-programs.md#castle-palace-astral-and-tower) records grouped
 comparisons, the accepted source identity lifecycle and the remaining original runtime/hardware boundaries. Later Battle01/M4 comparison metadata
-does not become executable story logic. A3 is not globally closed while original before/after
-programs and unsupported branches remain.
+does not become executable story logic. The common session also executes complete Battle01 before,
+initialization/load/start and first input; its old Map40 pending writer and final movement/presentation
+callers are removed. Explicit M4 fixtures retain comparison-only startup/return context. A3 remains
+open for other original programs and unsupported branches.
 
 ### A4 — P1: Godot owns part of battle orchestration
 

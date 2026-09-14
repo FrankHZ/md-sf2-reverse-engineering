@@ -15,22 +15,30 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror), ImageTexture> _portraits = [];
     private readonly AudioStreamPlayer _music;
+    private readonly ColorRect _white;
+    private readonly Action _prepareBattle;
     private int _spriteMounts;
     private WaitToken? _cue;
     private double _cueAge;
     private EntityRef? _gesture;
     private bool _nodding;
+    private bool _shivering;
+    private EntityRef? _mosaic;
     private MapId? _map;
     private Vector2 _camera;
     private Rect2 _screen;
     private float _scale;
     private const int ViewWidth = 320, ViewHeight = 192;
 
-    internal ExplorationPresentation(Control owner, ExplorationDefinition definition)
+    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, Action prepareBattle)
     {
-        _owner = owner; _visuals = definition.Visuals;
+        _owner = owner; _visuals = definition.Visuals; _prepareBattle = prepareBattle;
         _music = new AudioStreamPlayer { Name = "ExplorationMusic" };
         owner.AddChild(_music);
+        _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),
+            MouseFilter = Control.MouseFilterEnum.Ignore, ZIndex = 100 };
+        owner.AddChild(_white);
+        _white.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
     }
 
     internal string? Error { get; private set; }
@@ -41,6 +49,10 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int SoundStarts { get; private set; }
     internal int SoundFades { get; private set; }
     internal int PaletteFades { get; private set; }
+    internal int ShiverDraws { get; private set; }
+    internal int MosaicDraws { get; private set; }
+    internal int BattleLoads { get; private set; }
+    internal float WhiteOpacity => _white.Color.A;
     internal float PaletteBrightness => _owner.Modulate.R;
     internal Vector2 Camera => _camera;
     internal string? ActiveCue { get; private set; }
@@ -55,10 +67,12 @@ internal sealed class ExplorationPresentation : IDisposable
             if (current.Exploration is { } world)
             {
                 var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
-                target = current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
+                var tracked = current.Story.CameraEntitySlot is { } slot
+                    ? world.AllEntities.Single(entity => entity.Slot == slot) : world.PlayerEntity;
+                target = current.Story.CameraEntitySlot is null && current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
                     ? new Vector2(destination.X * 24, destination.Y * 24)
-                    : new Vector2(world.PlayerEntity.Motion.X / 16f - ViewWidth / 2f + 12,
-                        world.PlayerEntity.Motion.Y / 16f - ViewHeight / 2f + 12);
+                    : new Vector2(tracked.Motion.X / 16f - ViewWidth / 2f + 12,
+                        tracked.Motion.Y / 16f - ViewHeight / 2f + 12);
                 target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
                 target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
                 if (_map != world.Map) { _map = world.Map; _camera = target; }
@@ -71,24 +85,39 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
             }
             if (current.Story.Wait is not PresentationWait wait)
-            { _cue = null; _gesture = null; _nodding = false; ActiveCue = null; return completions; }
-            if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.FadeIn)
+            { _cue = null; _gesture = null; _mosaic = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
+            if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.EntityEffect)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
             {
-                _cue = wait.Token; _cueAge = 0;
+                _cue = wait.Token; _cueAge = 0; _gesture = null; _mosaic = null; _shivering = _nodding = false;
                 ActiveCue = wait.Cue.Kind.ToString();
-                if (wait.Cue.Kind == PresentationCueKind.FadeIn)
+                if (wait.Cue.Kind is PresentationCueKind.FadeIn or PresentationCueKind.FadeOut)
                 {
-                    if (wait.Cue.Resource != "black") throw new InvalidOperationException("fade-binding");
-                    _owner.Modulate = Colors.Black;
-                    _cueAge = -delta; // The first presented frame is black; fade time starts here.
+                    if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
+                    if (wait.Cue.Resource == "black") _owner.Modulate = wait.Cue.Kind == PresentationCueKind.FadeIn ? Colors.Black : Colors.White;
+                    else _white.Color = new Color(1, 1, 1, wait.Cue.Kind == PresentationCueKind.FadeIn ? 1 : 0);
+                    _cueAge = -delta; // Present the initial palette before advancing the modern half-second service.
                 }
                 if (wait.Cue.Kind == PresentationCueKind.Gesture)
                 {
-                    if (wait.Cue.Resource != "nod" || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
+                    if (wait.Cue.Resource is not ("nod" or "shiver") || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
                     _gesture = wait.Cue.Entity;
-                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], true);
+                    _shivering = wait.Cue.Resource == "shiver";
+                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], !_shivering);
+                }
+                else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
+                {
+                    if (wait.Cue.Resource != "mosaic-in" || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
+                    _mosaic = wait.Cue.Entity;
+                    _ = Sprite(current.Exploration!.Entities[_mosaic.Value], false);
+                    _cueAge = -delta;
+                }
+                else if (wait.Cue.Kind == PresentationCueKind.BattleLoad)
+                {
+                    if (current.Active is not ActiveBattle) throw new InvalidOperationException("battle-load-state");
+                    _prepareBattle(); BattleLoads++;
+                    _cueAge = -delta;
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
@@ -104,16 +133,23 @@ internal sealed class ExplorationPresentation : IDisposable
             switch (wait.Cue.Kind)
             {
                 case PresentationCueKind.FadeIn:
-                    float brightness = (float)Math.Min(1, _cueAge / 0.5);
-                    _owner.Modulate = new Color(brightness, brightness, brightness);
+                case PresentationCueKind.FadeOut:
+                    float opacity = (float)Math.Clamp(_cueAge / 0.5, 0, 1);
+                    if (wait.Cue.Kind == PresentationCueKind.FadeIn) opacity = 1 - opacity;
+                    if (wait.Cue.Resource == "white") _white.Color = new Color(1, 1, 1, opacity);
+                    else _owner.Modulate = new Color(1 - opacity, 1 - opacity, 1 - opacity);
                     complete = _cueAge >= 0.5;
                     if (complete) PaletteFades++;
                     break;
                 case PresentationCueKind.CameraWait: complete = _camera.DistanceTo(target) < 0.01f; break;
                 case PresentationCueKind.Gesture:
-                    _nodding = _cueAge is >= (10.0 / 60) and < (30.0 / 60);
+                    _nodding = !_shivering && _cueAge is >= (10.0 / 60) and < (30.0 / 60);
                     // Rendering observes the timeline; culling or a missed phase cannot hold story control.
-                    complete = _cueAge >= 40.0 / 60; break;
+                    complete = _cueAge >= (_shivering ? 30.0 : 40.0) / 60; break;
+                case PresentationCueKind.EntityEffect: complete = _cueAge >= 0.5; break;
+                case PresentationCueKind.BattleLoad:
+                    // The existing battle board and roster have been mounted for a frame; input is still program-owned.
+                    complete = _cueAge > 0; break;
                 case PresentationCueKind.Sound: complete = _music.Playing; break;
                 case PresentationCueKind.SoundFade:
                     _music.VolumeDb = (float)(-12 - 60 * Math.Min(1, _cueAge / 0.5));
@@ -147,14 +183,26 @@ internal sealed class ExplorationPresentation : IDisposable
                 bool gesture = _gesture == entity.Entity;
                 var texture = Sprite(entity, gesture && _nodding);
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
+                if (gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
                 var destination = new Rect2(_screen.Position + (point - _camera) * _scale, new Vector2(24, 24) * _scale);
                 if (!_screen.Intersects(destination)) continue;
                 bool mirror = entity.Motion.Facing is 0 or 4 or 7;
                 if (mirror) { destination.Position += new Vector2(destination.Size.X, 0); destination.Size = new(-destination.Size.X, destination.Size.Y); }
-                _owner.DrawTextureRect(texture, destination, false);
+                if (_mosaic == entity.Entity)
+                {
+                    int block = _cueAge < 0.1 ? 8 : _cueAge < 0.2 ? 6 : _cueAge < 0.3 ? 4 : _cueAge < 0.4 ? 2 : 1;
+                    for (int y = 0; y < 24; y += block)
+                        for (int x = 0; x < 24; x += block)
+                            _owner.DrawTextureRectRegion(texture,
+                                new(destination.Position + destination.Size * new Vector2(x / 24f, y / 24f),
+                                    destination.Size * (block / 24f)), new(x, y, 1, 1));
+                    MosaicDraws++;
+                }
+                else _owner.DrawTextureRect(texture, destination, false);
                 if (gesture)
                 {
                     GestureDraws++;
+                    if (_shivering) ShiverDraws++;
                     if (_nodding) NodDraws++;
                     else if (_cueAge >= 30.0 / 60) RestoredGestureDraws++;
                 }

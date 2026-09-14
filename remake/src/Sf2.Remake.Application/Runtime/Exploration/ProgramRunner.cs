@@ -18,7 +18,7 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Result(current, observations);
                 if (current.Story.Cursor is not { } cursor)
                 {
-                    if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished)
+                    if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
                         current = MapTransfer.Continue(definition, current, observations);
                         continue;
@@ -69,7 +69,16 @@ internal static class ProgramRunner
                         active = EditEntity(current, follow.Entity, entity => FollowerMotion.Install(entity, leaderSlot, follow.OffsetX, follow.OffsetY)); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
-                    case SetCameraTarget target: story = story.Copy(story.Cursor, cameraTarget: target.Position); break;
+                    case SetCameraTarget target: story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true); break;
+                    case SetCameraEntity target:
+                        story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
+                            clearCameraEntity: target.Entity is null); break;
+                    case LoadSceneMap load:
+                        active = new ActiveExploration(MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load));
+                        story = story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true); break;
+                    case LoadSceneEntities load:
+                        active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
+                        story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
@@ -84,9 +93,18 @@ internal static class ProgramRunner
                     case WaitProgramTicks: break;
                     case PresentCue cue:
                         if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };
+                        GestureRestore? restore = null;
                         if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
                             active = EditEntity(current, nodding, entity => entity with { Motion = entity.Motion with { AnimationCounter = 255 } });
-                        story = current.Story.Copy(cursor, new PresentationWait(token, cue)); break;
+                        if (cue is { Kind: PresentationCueKind.Gesture, Resource: "shiver", Entity: { } shivering })
+                        {
+                            var entity = Entity(current, shivering);
+                            var world = current.Exploration!;
+                            restore = new(entity.Motion.AnimationCounter, world.SpriteSize);
+                            active = new ActiveExploration(world.WithEntities(world.AllEntities.Select(row => row.Slot == entity.Slot
+                                ? row with { Motion = row.Motion with { AnimationCounter = 255 } } : row), spriteSize: 21));
+                        }
+                        story = current.Story.Copy(cursor, new PresentationWait(token, cue, restore)); break;
                     case SetEntityFacing facing:
                         var faced = Entity(current, facing.Entity);
                         faced = faced with { Motion = faced.Motion with { Facing = facing.Facing } };
@@ -154,7 +172,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            DialogueWait or ChoiceWait or PresentationWait or EntitySpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

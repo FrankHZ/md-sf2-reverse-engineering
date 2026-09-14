@@ -46,14 +46,15 @@ public sealed partial class BattleSessionView : Control
         _roster = AddLabel("Roster");
         var help = AddLabel("Help");
         help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: select / cycle learned spells and levels; target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nControlled battle start.";
-        GetViewport().SizeChanged += Arrange;
         Arrange();
     }
 
+    public override void _EnterTree() => GetViewport().SizeChanged += Arrange;
     public override void _ExitTree() => GetViewport().SizeChanged -= Arrange;
 
     private void Arrange()
     {
+        if (_map is null || _hud is null) return;
         var size = GetViewportRect().Size;
         const int margin = 16;
         if (size.X >= 800)
@@ -90,11 +91,12 @@ public sealed partial class BattleSessionView : Control
 
     internal void Attach(GameSession session, SessionResult result)
     {
-        if (_session is not null) throw new InvalidOperationException("A view attaches one session only.");
+        if (_session is not null && _session != session) throw new InvalidOperationException("A view attaches one session only.");
+        bool first = _session is null;
         _started = true;
         _session = session;
         _result = result;
-        _map.Build(result.Snapshot.Battle.Definition);
+        if (first) _map.Build(result.Snapshot.Battle.Definition);
         Show();
         Present();
     }
@@ -108,12 +110,12 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
-        if (_session?.Current.StopReason == SessionStopReason.SimulationWait) Send(new AdvanceSimulation());
+        if (_session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
     }
 
     public override void _UnhandledInput(InputEvent input)
     {
-        if (_session is null || input is not InputEventKey { Pressed: true, Echo: false } key) return;
+        if (_session?.Current.HasBattleControl != true || input is not InputEventKey { Pressed: true, Echo: false } key) return;
         SessionCommand? command = key.Keycode switch
         {
             Key.W or Key.Up => new Move(ExplorationDirection.North),

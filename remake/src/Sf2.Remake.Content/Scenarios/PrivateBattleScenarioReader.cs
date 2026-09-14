@@ -112,7 +112,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             }
             var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
                 row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
-                Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression));
+                Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
+                AllyPartyMember: ally ? order : null);
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
                 ally ? BattleControl.Player : BattleControl.Automatic, ally ? null : BattleAiStrategy.SourceOrders,
                 new(row.Position.X, row.Position.Y), initialization));
@@ -135,7 +136,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
             encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),
-            initialization: new(regions, BattleRegionProgram.None));
+            initialization: new(regions, BattleRegionProgram.None,
+                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y))));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);

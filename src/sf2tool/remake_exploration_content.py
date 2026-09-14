@@ -39,8 +39,16 @@ def _location(program: str, instruction: int = 0) -> dict[str, Any]:
 class OriginalPrograms:
     """Lower source operations, preserving unsupported operations and all branch targets."""
 
-    def __init__(self, canonical: dict[str, Any], upstream: Path):
+    def __init__(
+        self,
+        canonical: dict[str, Any],
+        upstream: Path,
+        entity_speed: int = 32,
+        scene_maps: list[int] | None = None,
+    ):
         self.upstream = upstream
+        self.entity_speed = entity_speed
+        self.scene_maps = scene_maps
         self.equates = _equates(upstream / "disasm")
         self.sources: set[str] = {"disasm/sf2enums.asm"}
         resources = canonical["resources"]
@@ -69,6 +77,9 @@ class OriginalPrograms:
                 "disasm/data/scripting/entity/eas_main.asm",
                 "disasm/code/gameflow/exploration/explorationfunctions_2.asm",
                 "disasm/code/gameflow/exploration/exploration.asm",
+                "disasm/code/gameflow/mainloop.asm",
+                "disasm/code/gameflow/battle/battleloop/heallivingandimmortalallies.asm",
+                "disasm/code/gameflow/battle/battleloop/initializecombatants.asm",
             }
         )
 
@@ -178,6 +189,65 @@ class OriginalPrograms:
 
     def native(self, opcode: str, source: str) -> dict[str, Any]:
         return {"op": "native-call", "symbol": opcode, "source": source}
+
+    def population(self) -> dict[str, Any]:
+        followers = []
+        for row in self.source_operations(
+            "disasm/data/scripting/entity/followers.asm", "table_Followers"
+        ):
+            if row["opcode"] != "follower":
+                continue
+            flag, character, sprite, _ = map(self.number, _tokens(row["operandText"]))
+            followers.append(
+                {
+                    "flag": flag,
+                    "character": character,
+                    "sprite": character if character < 30 else sprite,
+                }
+            )
+        return {
+            "allyCount": self.equates["COMBATANT_ALLIES_NUMBER"],
+            "nonAllyStart": 128,
+            "playerSprite": 0,
+            "followers": followers,
+            "allySprites": self.initial_ally_sprites(),
+        }
+
+    def scene_entities(self, relative: str, symbol: str) -> dict[str, Any]:
+        rows = self.source_operations(relative, symbol)
+        if rows[0]["opcode"] != "mainEntity" or rows[-1]["opcode"] != "cscEntitiesEnd":
+            raise ValueError("source cutscene entity table boundary")
+        x, y, facing = map(self.number, _tokens(rows[0]["operandText"]))
+        entities = []
+        non_ally = 128
+        for row in rows[1:-1]:
+            if row["opcode"] != "entity":
+                raise ValueError("source cutscene entity record")
+            values = _tokens(row["operandText"])
+            ex, ey, ef, sprite = map(self.number, values[:4])
+            if sprite >= self.equates["MAPSPRITES_SPECIALS_START"]:
+                raise ValueError("special cutscene entity not admitted")
+            identity = sprite if sprite < 30 else non_ally
+            non_ally += int(sprite >= 30)
+            entities.append(
+                {
+                    "id": f"entity-{identity}",
+                    "position": {"x": ex & 63, "y": ey & 63},
+                    "facing": ef,
+                    "sprite": sprite,
+                    "speed": self.entity_speed,
+                    "visible": True,
+                    "obstruction": False,
+                    "actions": self.action_stream(values[4]),
+                }
+            )
+        return {
+            "op": "scene-entities",
+            "position": {"x": x, "y": y},
+            "facing": facing,
+            "population": self.population(),
+            "entities": entities,
+        }
 
     def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         if symbol in self.actions:
@@ -535,6 +605,66 @@ class OriginalPrograms:
                         "position": None,
                     }
                 )
+            elif op == "setCameraEntity":
+                result.append(
+                    {
+                        "op": "camera-entity",
+                        "entity": None if self.number(args[0]) == -1 else self.entity(args[0]),
+                    }
+                )
+            elif op == "loadMapFadeIn" and (
+                self.scene_maps is None or self.number(args[0]) in self.scene_maps
+            ):
+                # csc37 starts out-to-black and falls through csc48. The source's later fadeInB
+                # is a separate operation; loading a scene does not execute map init/population.
+                result.extend(
+                    [
+                        {
+                            "op": "present",
+                            "kind": "FadeOut",
+                            "resource": "black",
+                            "entity": None,
+                            "position": None,
+                        },
+                        {
+                            "op": "scene-map",
+                            "map": "map-" + str(self.number(args[0])),
+                            "camera": {"x": self.number(args[1]), "y": self.number(args[2])},
+                        },
+                    ]
+                )
+            elif op == "loadMapEntities":
+                result.append(self.scene_entities(relative, args[0]))
+            elif op in ("mapFadeOutToWhite", "mapFadeInFromWhite"):
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "FadeOut" if op == "mapFadeOutToWhite" else "FadeIn",
+                        "resource": "white",
+                        "entity": None,
+                        "position": None,
+                    }
+                )
+            elif op == "animEntityFX" and args[1] == "MOSAIC_IN":
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "EntityEffect",
+                        "resource": "mosaic-in",
+                        "entity": self.entity(args[0]),
+                        "position": None,
+                    }
+                )
+            elif op == "shiver":
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "Gesture",
+                        "resource": "shiver",
+                        "entity": self.entity(args[0]),
+                        "position": None,
+                    }
+                )
             elif op == "closeTxt":
                 result.append({"op": "close-text"})
             elif op == "yesNo":
@@ -718,6 +848,26 @@ def prepare_visuals(
                 for row in map["population"]["followers"]
                 if row["character"] >= map["population"]["allyCount"]
             )
+    for program in compiler.programs.values():
+        for instruction in program["instructions"]:
+            if instruction["op"] == "scene-entities":
+                population = instruction["population"]
+                sprites.update(
+                    row["sprite"]
+                    for row in instruction["entities"]
+                    if row["sprite"] >= population["allyCount"]
+                )
+                sprites.update(row["sprite"] for row in population["allySprites"])
+                sprites.update(
+                    row["unjoinedSprite"]
+                    for row in population["allySprites"]
+                    if row["unjoinedSprite"] is not None
+                )
+                sprites.update(
+                    row["sprite"]
+                    for row in population["followers"]
+                    if row["character"] >= population["allyCount"]
+                )
     properties_path = "disasm/data/spritedialogproperties.asm"
     compiler.sources.update(
         (
@@ -822,7 +972,9 @@ def prepare(
     if completed.stdout.strip() != expected_commit:
         raise ValueError("pinned source commit mismatch")
     selection = load_json(selection_path)
-    compiler = OriginalPrograms(canonical, upstream)
+    compiler = OriginalPrograms(
+        canonical, upstream, selection["controlledEntitySpeed"], selection["maps"]
+    )
     for selected in selection.get("eventMaps", []):
         folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
         for path in sorted(folder.glob("*.asm")):
@@ -839,6 +991,37 @@ def prepare(
     for symbol in selection["programs"]:
         compiler.compile(symbol)
     battle_routes = {}
+    load_source = "disasm/code/gameflow/battle/battlefunctions/loadBattle.asm"
+    compiler.sources.update((load_source, "disasm/code/gameflow/battle/battleloop_1.asm"))
+    compiler.programs["source-battle-load"] = {
+        "id": "source-battle-load",
+        "source": load_source + ":LoadBattle",
+        "entitiesRunning": False,
+        "instructions": [
+            {
+                "op": "present",
+                "kind": "FadeOut",
+                "resource": "black",
+                "entity": None,
+                "position": None,
+            },
+            {
+                "op": "present",
+                "kind": "BattleLoad",
+                "resource": None,
+                "entity": None,
+                "position": None,
+            },
+            {
+                "op": "present",
+                "kind": "FadeIn",
+                "resource": "black",
+                "entity": None,
+                "position": None,
+            },
+            {"op": "end"},
+        ],
+    }
     coordinates_path = "disasm/data/battles/global/battlemapcoords.asm"
     compiler.sources.add(coordinates_path)
     coordinates = _arguments(
@@ -864,6 +1047,7 @@ def prepare(
             "introFlag": 450 + battle_id,
             "before": hooks[0],
             "start": hooks[1],
+            "load": _location("source-battle-load"),
         }
     resources = {
         key: {row["id"]: row for row in rows} for key, rows in canonical["resources"].items()
@@ -959,30 +1143,7 @@ def prepare(
                     if source_record["kind"] == "walking"
                     else compiler.action_stream(args[4])
                 )
-            followers_path = "disasm/data/scripting/entity/followers.asm"
-            compiler.sources.add(followers_path)
-            follower_rows = compiler.source_operations(followers_path, "table_Followers")
-            followers = []
-            for follower_row in follower_rows:
-                if follower_row["opcode"] != "follower":
-                    continue
-                flag, character, sprite, _ = map(
-                    compiler.number, _tokens(follower_row["operandText"])
-                )
-                followers.append(
-                    {
-                        "flag": flag,
-                        "character": character,
-                        "sprite": character if character < 30 else sprite,
-                    }
-                )
-            population = {
-                "allyCount": compiler.equates["COMBATANT_ALLIES_NUMBER"],
-                "nonAllyStart": 128,
-                "playerSprite": 0,
-                "followers": followers,
-                "allySprites": compiler.initial_ally_sprites(),
-            }
+            population = compiler.population()
             for key, filename, macro, default in (
                 ("entityEvents", "s2_entityevents.asm", "msEntityEvent", "msDefaultEntityEvent"),
                 ("zoneEvents", "s3_zoneevents.asm", "msZoneEvent", "msDefaultZoneEvent"),

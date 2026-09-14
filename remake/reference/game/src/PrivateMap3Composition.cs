@@ -650,9 +650,7 @@ public sealed partial class Map3Root
         PrivateOriginalMapPlayerLocomotionStarted started =
             _session.BeginPrivateOriginalMapPlayerLocomotion(
                 new MoveExplorationCommand(direction));
-        string outcome = started.Move.Battle01Admission is not null
-            ? "Battle01AdmissionPending"
-            : started.Move.CrossMapTransition is not null
+        string outcome = started.Move.CrossMapTransition is not null
             ? "CrossMapTransition"
             : started.Move.SameMapWarp is not null
                 ? "SameMapWarp"
@@ -660,10 +658,7 @@ public sealed partial class Map3Root
         _privatePresenter?.Project(
             started.Move.Snapshot,
             outcome,
-            started.Animation,
-            started.Move.Battle01Admission);
-        if (started.Move.Battle01Admission is not null && _privateBattle01Source is not null)
-            _privatePresenter?.ProjectBattle01Pending();
+            started.Animation);
         if (_privateBattleBridgeEnabled)
         {
             _battlePresenter?.Project(

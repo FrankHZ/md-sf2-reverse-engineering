@@ -274,7 +274,7 @@ public sealed class PrivateOriginalBattle01StartupTests
 
     internal static GameSession PendingSession(bool createPending = true)
     {
-        // Reuse the accepted test-owned completed-route seed without widening production ownership.
+        // Explicit external M4 comparison input. This fixture does not execute or claim the common admission route.
         var method = typeof(OriginalMapGameSessionTests).GetMethod("Battle01AdmissionSession", BindingFlags.Static | BindingFlags.NonPublic)!;
         var session = (GameSession)method.Invoke(null, [new MapPosition(14, 13), null, true, null])!;
         var battle = (PublicSyntheticBattleDefinition)typeof(PrivateOriginalMapBattleBridgeTests)
@@ -282,7 +282,12 @@ public sealed class PrivateOriginalBattle01StartupTests
         var controlled = session.PrivateOriginalMapSnapshot.Definition.ControlledAdmission;
         var bridge = PrivateOriginalMapBattleBridgeSnapshot.Ready(new(controlled.Map, controlled.Position, battle));
         typeof(GameSession).GetField("_privateOriginalMapBattleBridge", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(session, bridge);
-        if (createPending) session.ApplyPrivateOriginalMap(new(ExplorationDirection.North));
+        if (createPending)
+        {
+            var snapshot = session.PrivateOriginalMapSnapshot;
+            var pending = new PrivateOriginalBattle01PendingAdmission(snapshot.Definition.Battle01Admission!, snapshot, new(14, 12));
+            typeof(GameSession).GetProperty(nameof(GameSession.PrivateOriginalBattle01Admission))!.SetValue(session, pending);
+        }
         return session;
     }
 }
