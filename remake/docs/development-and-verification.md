@@ -16,7 +16,7 @@ over older blanket gate and test-preservation recipes:
   checks. They do not require a new normal/full, .NET, Godot or H3 run.
 
 The engine unit project covers actual Domain/Application/Content behavior for four authored battle
-packages and the bounded initialized private entry, with scoped engine/adapter entries and public jobs. The native observation directly drives
+packages, two connected exploration packages and the bounded private entries, with scoped engine/adapter entries and public jobs. The native observation directly drives
 the same session with Godot input and reads real state/HUD/nodes; it emits no images. Main-gate owns required-check configuration during integration; a candidate must report its
 actual CI outcome and that configuration boundary explicitly.
 [ADR 0012](../../docs/decisions/0012-dependency-aware-partitioned-verification.md) continues to own
@@ -122,6 +122,15 @@ uv run sf2 verify reference-host
 This retained source smoke does not authorize replaying the full legacy suite. Its private inputs,
 programs and native recipes stay under their current reference owners. Ordinary export configuration
 excludes `probes/*`; complete ordinary export/assets remain unverified.
+
+## Exploration and Program Observations
+
+Use [the exploration/program owner](./exploration-programs.md#reproduction) for the current
+Content preparation, controlled starts, selected private comparisons and ordinary native recipes.
+The native observers exercise real input and read the same live session across mode changes. The
+private source programs retain their exact unsupported native/population frontiers; a stopped prefix
+is not a completed original route. `EntityMotionTests` directly compares the extracted core and
+destination admission to the13 owned H3 cases; it does not test a verification program.
 
 ## Authored Start State Observation
 

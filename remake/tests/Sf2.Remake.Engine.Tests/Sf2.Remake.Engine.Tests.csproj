@@ -25,8 +25,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
+    <Content Include="..\..\reference\inputs\map*-start.json" Link="controlled\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\battle01-actions.json" Link="controlled\battle01-actions.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\battle01-player-ready.json" Link="controlled\battle01-player-ready.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\tests\fixtures\h3\entity-movement-matrix-v1.json" Link="fixtures\entity-motion.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\..\tests\fixtures\h3\map3-battle01-player-ready-v1.json" Link="fixtures\player-ready.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

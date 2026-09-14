@@ -10,13 +10,14 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 
 public sealed class ScenarioDefinition
 {
-    internal ScenarioDefinition(string package, IEnumerable<BattleDefinition> encounters, PrivateBattleDefinitions? privateDefinitions = null)
+    internal ScenarioDefinition(string package, IEnumerable<BattleDefinition> encounters, PrivateBattleDefinitions? privateDefinitions = null, ExplorationDefinition? exploration = null)
     {
-        Package = package; PrivateDefinitions = privateDefinitions;
+        Package = package; PrivateDefinitions = privateDefinitions; Exploration = exploration;
         Encounters = new ReadOnlyDictionary<string, BattleDefinition>(
             encounters.ToDictionary(encounter => encounter.Encounter, StringComparer.Ordinal));
     }
     public string Package { get; }
+    public ExplorationDefinition? Exploration { get; }
     public PrivateBattleDefinitions? PrivateDefinitions { get; }
     public string Origin => PrivateDefinitions is null ? "public-authored-controlled-start" : "private-local-controlled-start";
     public IReadOnlyDictionary<string, BattleDefinition> Encounters { get; }

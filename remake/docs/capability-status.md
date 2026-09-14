@@ -33,6 +33,18 @@ scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplet
 | Zero-target commandset06 continuation | **Implemented subset:** ATTACK1, unavailable HEAL1 and SUPPORT return failure; MOVE1 selects a living target from complete raw costs0–127, walks fixed cost4 then corrects the station with the legal MOV grid. Movement or origin Stay returns success and ends the action; no same-turn attack, RNG/resource or last-target change. High/incomplete target costs remain atomic Unsupported. |
 | Remaining battle behavior | **Unsupported:** reached level-up, leader-death programs and terminal outcome/return reject the whole action. General AI, other movetypes/critical rules, broader equipment/status/special effects and broader private admission are not implemented by this subset. |
 
+## Common Exploration and Programs
+
+[The current owner](./exploration-programs.md) records exact semantics, Content/start formats,
+source provenance, reproduction and remaining reference callers.
+
+| Capability | Current boundary |
+| --- | --- |
+| Connected authored exploration | **Implemented:** two distinct format-v8 packages execute interaction/choice, real entity motion, call/return, flag/tick/text waits, map loading and both intro hooks into existing battle control through one session. |
+| Program transactions and state | **Implemented:** PC/call stack/wait token, continued text window, actual simulation ticks, source-order entity actions and global sprite size. A failing native instruction/action retains the completed prefix and its own cursor. |
+| Actual selected source consumers | **Confirmed, bounded:** Sarah/position/gate programs; messenger prefix to `nod`; `eas_Init` prefix to sprite refresh; guard motion to Unknown entity135; marked Map40 warp to actual before-program frontier or, with explicitly controlled seen-intro flag, the existing first-player battle boundary. |
+| Original route completeness | **Unknown/Unsupported:** natural earlier continuity, autonomous NPC/follower population, full setup/event/layout mutation, joins/items, source text-tag/name/timing and native camera/fade/gesture/FX/audio, complete before-battle body and M4 return. No natural route or G3/G4 closure is claimed. |
+
 ## Legacy Reference Matrix
 
 The remaining rows describe the explicit [reference consumers](../reference/README.md), not ordinary

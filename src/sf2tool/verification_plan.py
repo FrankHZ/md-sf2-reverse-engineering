@@ -672,6 +672,14 @@ ENGINE_WIRING_PATHS = frozenset(
         "src/sf2tool/harness.py",
         "src/sf2tool/verification_plan.py",
         "src/sf2tool/remake_godot.py",
+        "src/sf2tool/remake_exploration_content.py",
+        "remake/reference/inputs/map3-programs.json",
+    }
+)
+ENGINE_EVIDENCE_INPUTS = frozenset(
+    {
+        "tests/fixtures/h3/entity-movement-matrix-v1.json",
+        "tests/fixtures/h3/map3-battle01-player-ready-v1.json",
     }
 )
 RETIRED_ENGINE_TEST_PATHS = frozenset(
@@ -720,7 +728,7 @@ def _plan_engine_paths(
         elif path in {
             "remake/reference/inputs/battle01-player-ready.json",
             "remake/reference/inputs/battle01-actions.json",
-        }:
+        } or (path.startswith("remake/reference/inputs/map") and path.endswith("-start.json")):
             # Copied by Engine.Tests and consumed by the actual private engine facts.
             _selection_entry(selected, "engine-unit", path)
         elif path.startswith("remake/reference/"):
@@ -796,6 +804,18 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized in ENGINE_EVIDENCE_INPUTS:
+            # Preserve the owning research selection and the actual engine consumer.
+            _selection_entry(selected, "engine-unit", normalized)
+        if normalized == "src/sf2tool/remake_exploration_content.py":
+            for partition in (
+                "engine-unit",
+                "adapter-build",
+                "reference-host-build",
+                "research-public",
+            ):
+                _selection_entry(selected, partition, normalized)
+            continue
         if normalized in RETIRED_ENGINE_TEST_PATHS:
             continue
         if normalized in {"src/sf2tool/bizhawk_debug_bridge.py", "tools/debug_bridge.lua"}:

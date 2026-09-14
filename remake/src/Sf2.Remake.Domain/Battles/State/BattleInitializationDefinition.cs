@@ -8,7 +8,11 @@ public enum BattleRegionProgram { None, Required }
 // Declared external controlled inputs; these values are not inferred from original entry.
 public sealed record NewBattleStartPolicy(string Declaration, string EvidenceOwner, string BridgeBoundary,
     byte Difficulty, bool SkipIntro, bool AlreadyRefreshedAllies, bool RosterOnly,
-    bool AllyAutoBattle, bool OpponentControl, ushort? MissingCandidateAllyWord);
+    bool AllyAutoBattle, bool OpponentControl, ushort? MissingCandidateAllyWord)
+{
+    // Produced only by the common map/battle sequencer after the before-battle route returns.
+    public bool BeforeBattleRouted { get; internal init; }
+}
 
 public sealed class BattleSourceLoadout
 {

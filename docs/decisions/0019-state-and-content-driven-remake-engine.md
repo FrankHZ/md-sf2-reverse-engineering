@@ -1,6 +1,6 @@
 # ADR 0019: State- and Content-Driven Remake Engine
 
-- Status: **Accepted direction**; M0/M1 and bounded M2 ordinary physical follow-ups implemented; remaining M2–M5 work is bounded below
+- Status: **Accepted direction**; M0/M1, bounded M2 and the common M3 program/exploration group implemented; remaining original-route M3 and M2–M5 work is bounded below
 - Proposal date: 2026-09-13
 - Scope: runtime authority, content admission, program execution, verification, and incremental migration
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
@@ -18,7 +18,7 @@ This is a behavioral decoupling direction. Merely moving existing guards into sm
 leave the audited problem intact. Conversely, removing every guard would discard valid rules,
 atomicity, and unsupported boundaries. The migration below separates these cases before changing them.
 
-The user adopted this direction and authorized M0 and the bounded M1 slice. Except for the current M0/M1 boundaries below,
+The user adopted this direction and authorized M0 and the bounded M1 slice. Except for the implemented boundaries below,
 interfaces, normalized records, authored examples, and candidate filenames remain **Proposed
 design**, not findings about the original or claims of implemented support. **Confirmed** and
 **Unknown** in the evidence table retain the repository evidence meanings. Audit A1–A8 remain open.
@@ -156,7 +156,8 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization supplies the common private initialized-entry
 model. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 7`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 7`. The reader accepts that battle shape; format-v8 exploration packages
+embed it and add the world/program/start data described by the M3 owner. No legacy shape is read.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -758,6 +759,28 @@ specific data/initialization/control owner with a narrow source or existing-fixt
 M3's pending-admission/map programs and M4's recovery/return consumers still prevent deleting the
 legacy startup binding/session. M2, A1–A8 and8C/H4 remain incomplete.
 
+## Current M3 Common Program and Exploration Group
+
+The [exploration/program owner](../../remake/docs/exploration-programs.md) defines the implemented
+Content/start shapes, immutable state, instruction transactions, waits, motion, map transfer and
+original-source boundaries. Two distinct authored packages execute the full exploration → program
+→ transfer → before/init/load/start → existing battle-control group through the same `GameSession`.
+The ordinary battle view attaches to that session; no endpoint snapshot or second publisher joins it.
+
+Prepared private Content now consumes actual canonical maps and pinned program operations. Direct
+common-entry comparisons and ordinary native observations cover Sarah/position/gate programs,
+selected messenger/sprite-init/guard prefixes, and Map40's marked transfer into the actual before
+program or controlled seen-intro battle entry. The extracted movement core/destination projection
+matches the existing H3 matrix. Unsupported operations preserve their source PC and completed effects;
+source camera operands are not converted into a player warp, and Unknown entity135 does not grant F401.
+
+This implements the common capability group, not natural Map3→Battle01 continuity, the full before
+program, original presentation/timing, follower/roster/inventory flow, M4 return, or G3/G4 closure.
+The [current reference callers](../../remake/reference/README.md#common-program-comparisons-and-g3g4)
+still require their unported complete handlers and pending-map/return context. No last-caller deletion
+is justified by a controlled prefix. Independent gate acceptance and the remaining M3–M5 migration
+boundaries below still apply; A1–A8 and8C/H4 are not closed.
+
 ## Ordinary Godot Host Boundary
 
 G1/G2/G5 from the [Godot audit](../../remake/docs/godot-game-audit.md) are implemented at the actual
@@ -1239,8 +1262,8 @@ their real engine behavior is consumed; M1 now consumes all three production pro
 
 The planner automatically selects the engine scope for remake and non-research documentation paths.
 Legacy test retirement does not select the old solution. Changes to shared CLI/harness/planner source
-remain conservative research changes by default. For a declared engine-only wiring change in those
-three files, `verify plan --scope engine --base origin/main --head HEAD` explicitly selects engine,
+remain conservative research changes by default. For a declared engine-only wiring change in the planner
+listed engine-facing Python entry points (including original exploration preparation), `verify plan --scope engine --base origin/main --head HEAD` explicitly selects engine,
 adapter and direct research-public checks. That scope rejects research artifacts and other shared
 inputs; it is not permission to omit a semantic evidence dependency in an allowed file. Review the
 actual diff before selecting it. Normal research `verify` and its evidence dependency handling remain.

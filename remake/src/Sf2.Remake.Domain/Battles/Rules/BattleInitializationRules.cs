@@ -9,7 +9,7 @@ internal static class BattleInitializationRules
         if (policy is null) return;
         Require(!string.IsNullOrWhiteSpace(policy.Declaration) && !string.IsNullOrWhiteSpace(policy.EvidenceOwner) &&
             !string.IsNullOrWhiteSpace(policy.BridgeBoundary), "controlled-provenance", "start.newBattle");
-        Require(policy.SkipIntro && policy.AlreadyRefreshedAllies && policy.RosterOnly,
+        Require((policy.SkipIntro || policy.BeforeBattleRouted) && policy.AlreadyRefreshedAllies && policy.RosterOnly,
             "new-battle-policy", "start.newBattle", true);
         Require(policy.Difficulty == 0, "difficulty", "start.newBattle.difficulty", true);
         Require(!policy.AllyAutoBattle && !policy.OpponentControl,
