@@ -678,6 +678,7 @@ ENGINE_WIRING_PATHS = frozenset(
 )
 ENGINE_EVIDENCE_INPUTS = frozenset(
     {
+        "tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json",
         "tests/fixtures/h3/entity-movement-matrix-v1.json",
         "tests/fixtures/h3/map3-battle01-player-ready-v1.json",
         "tests/fixtures/h3/map3-admitted-start-v1.json",

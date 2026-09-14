@@ -40,6 +40,8 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int RestoredGestureDraws { get; private set; }
     internal int SoundStarts { get; private set; }
     internal int SoundFades { get; private set; }
+    internal int PaletteFades { get; private set; }
+    internal float PaletteBrightness => _owner.Modulate.R;
     internal Vector2 Camera => _camera;
     internal string? ActiveCue { get; private set; }
 
@@ -70,12 +72,18 @@ internal sealed class ExplorationPresentation : IDisposable
             }
             if (current.Story.Wait is not PresentationWait wait)
             { _cue = null; _gesture = null; _nodding = false; ActiveCue = null; return completions; }
-            if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture)
+            if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.FadeIn)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
             {
                 _cue = wait.Token; _cueAge = 0;
                 ActiveCue = wait.Cue.Kind.ToString();
+                if (wait.Cue.Kind == PresentationCueKind.FadeIn)
+                {
+                    if (wait.Cue.Resource != "black") throw new InvalidOperationException("fade-binding");
+                    _owner.Modulate = Colors.Black;
+                    _cueAge = -delta; // The first presented frame is black; fade time starts here.
+                }
                 if (wait.Cue.Kind == PresentationCueKind.Gesture)
                 {
                     if (wait.Cue.Resource != "nod" || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
@@ -95,6 +103,12 @@ internal sealed class ExplorationPresentation : IDisposable
             bool complete;
             switch (wait.Cue.Kind)
             {
+                case PresentationCueKind.FadeIn:
+                    float brightness = (float)Math.Min(1, _cueAge / 0.5);
+                    _owner.Modulate = new Color(brightness, brightness, brightness);
+                    complete = _cueAge >= 0.5;
+                    if (complete) PaletteFades++;
+                    break;
                 case PresentationCueKind.CameraWait: complete = _camera.DistanceTo(target) < 0.01f; break;
                 case PresentationCueKind.Gesture:
                     _nodding = _cueAge is >= (10.0 / 60) and < (30.0 / 60);
@@ -127,7 +141,8 @@ internal sealed class ExplorationPresentation : IDisposable
             _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
             DrawLayer(world, visual, new(0, 0), false);
-            foreach (var entity in world.AllEntities.Where(entity => entity.Visible).OrderBy(entity => entity.Motion.Y).ThenBy(entity => entity.Slot))
+            foreach (var entity in world.AllEntities.Where(entity => entity.Visible).OrderBy(entity => entity.Priority)
+                .ThenBy(entity => entity.Motion.Y).ThenBy(entity => entity.Slot))
             {
                 bool gesture = _gesture == entity.Entity;
                 var texture = Sprite(entity, gesture && _nodding);
@@ -147,7 +162,7 @@ internal sealed class ExplorationPresentation : IDisposable
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
             if (overlay.X != 0 || overlay.Y != 0) DrawLayer(world, visual, overlay, true);
             EntityRef? speaker = story.TextWindow is OpenTextWindow text ? text.Speaker : null;
-            if (speaker is { } speaking && world.Entities.TryGetValue(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite &&
+            if (speaker is { } speaking && world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite &&
                 _visuals.Sprites[sprite].Portrait is { } portrait)
             {
                 byte flags = ((OpenTextWindow)story.TextWindow).SpeakerFlags;

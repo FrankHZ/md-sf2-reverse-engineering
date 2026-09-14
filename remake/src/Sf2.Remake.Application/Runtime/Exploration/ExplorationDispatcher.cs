@@ -53,8 +53,10 @@ internal static class ExplorationDispatcher
                     var spriteEntity = spriteWorld?.AllEntities.FirstOrDefault(entity => entity.Slot == sprite.Slot);
                     if (spriteEntity is null || !spriteEntity.WaitingForSprite || spriteEntity.SpriteRequest != sprite.Request || spriteEntity.SpriteReady == sprite.Request)
                         return Reject(current, "stale-or-wrong-sprite", "sprite");
-                    current = ProgramRunner.Commit(current, new ActiveExploration(spriteWorld!.WithEntity(spriteEntity with { SpriteReady = sprite.Request })),
-                        current.Story, observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    bool facingReady = current.Story.Wait is EntitySpriteWait facingWait && facingWait.Slot == sprite.Slot && facingWait.Request == sprite.Request;
+                    current = ProgramRunner.Commit(current, new ActiveExploration(spriteWorld!.WithEntity(spriteEntity with
+                        { SpriteReady = sprite.Request, WaitingForSprite = !facingReady })),
+                        facingReady ? FinishWait(current.Story) : current.Story, observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case ChooseDialogue choice:
                     if (current.Story.Wait is not ChoiceWait waiting || waiting.Token != choice.Wait)
@@ -87,7 +89,7 @@ internal static class ExplorationDispatcher
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
-                            !explored.World.Entities[entityWait.Entity].Busy)
+                            explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) && !awaitedEntity.Busy)
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                         current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");

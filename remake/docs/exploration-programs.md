@@ -57,8 +57,10 @@ program boundary before further ticks are submitted.
 Movement uses the existing `OriginalMapTraversal` area, collision and stair rules. The extracted
 entity core uses 384 fixed units per tile, source signed-word arithmetic, acceleration/deceleration,
 destination obstruction, facing/animation and arrival layer/immersed changes. Each entity's movement
-runs before its action dispatch. Nonwaiting configuration actions execute in the same tick; movement
-and timer actions yield. Replacing an action stream retains current physical motion. Source `setPos`
+runs before its action dispatch. Nonwaiting configuration actions execute in the same tick. Source
+`ac_moveRel` installs a relative destination and redispatches immediately; shorthand `moveRight` and
+its siblings additionally wait for arrival. Timed reversal can therefore replace an unfinished
+destination, as in the palace's entity action streams. Replacing an action stream retains current physical motion. Source `setPos`
 changes position, destination and facing without resetting unrelated speed/flags/action state.
 `SPRITE_SIZE` is global. A later failing action preserves completed configuration and movement in
 that tick and retains the failing action cursor. No destination assignment replaces a motion path.
@@ -97,7 +99,15 @@ wait for a matching sprite mount. Source walking templates are lowered from thei
 random movement uses the existing main RNG. Followers measure current separation, rotate source
 offsets around the leader's destination, and apply terrain fallbacks. Player input checks the source
 obstructable bit and both current/reserved positions; scripted motion keeps its distinct destination
-check. Hiding removes the logical aliases and follower behavior while retaining the physical slot.
+check. Source populations start with all 64 identity entries mapped to physical slot0, then overlay
+allocated ally/non-ally references. Numeric selectors use the source low-byte/signed encoding;
+32–63 share entries with128–159. These are references to `AllEntities`, never duplicate entity state.
+Hiding removes every reference to the hidden slot and its follower behavior while retaining the
+physical record. Missing source-table keys represent FF tombstones and survive state copies and
+same-map preservation; only rebuilding population initializes fresh zero entries. Out-of-table
+selectors and references outside the 49 normal records stop as Unsupported. Authored maps without
+source population keep strict named-ID resolution. The accepted
+[lookup contract](../../docs/design/contracts/map-exploration.md) owns the source boundary.
 
 Ordered door copies run before traversal; flag copies run at rebuild; roof activation/restoration
 uses the shared layout reducers and signed area overlays. Source map255 same-map reload preserves
@@ -105,6 +115,46 @@ entities and the working layout, updates player position/facing, performs roof-o
 selected initialization. The original setup selector still refuses an unimplemented alternative
 instead of publishing default entities. This group uses Map3's default setup; broader initialization,
 healing/temp reset, dynamically promoted/dead allies and other setups are outside its start boundary.
+
+## Castle, palace, Astral and tower
+
+The same live opening session continues through Map3's castle gate, Map19, the first Map20 palace
+visit, royal return, Astral's invitation and the west/middle tower. Preparation imports the complete
+source bodies `cs_51652`, `cs_53104`, `cs_53996`, `cs_52F0C`, `cs_52F40` and `cs_53EF4`, including
+their native event/init callers and entity action streams. All six complete in the connected group.
+
+**Confirmed:** the common-session group comparison starts at R1 and uses the accepted
+[castle H2 graph](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) only as test navigation
+and expected facts. The engine reads actual source programs. Gate guards move out and back before
+the caller sets F604. Palace execution returns Bowie to (23,39), minister131 to (20,39), removes
+Astral130's aliases and then lets the caller set F605. A repeat visit runs the source repeat init
+without replaying the palace. Astral refusal sets caller F607; accepting a later prompt moves him
+to (63,63), sets F608 and releases the passage. With F608 set and F256 clear, Map21's actual guard
+interaction moves128 to (6,16), resolves unassigned135 to the existing player slot0, faces it down
+and waits for the mounted sprite service. Only then does the script set F401 and return to the caller
+which sets F256. Repeating the interaction displays579 without another move. Ordinary input reaches
+(5,15) and remains available. Original natural reach and cadence remain **Unknown**;
+the H2 graph is static evidence, not an H3 timeline.
+
+Actual map rebuilds select/populate using incoming flags, clear source temporary flags256–383,
+set F80, apply layout flags and run the selected initializer. Same-map preservation keeps temporary
+flags. Map20's native entry branch compares exact signed fixed-point X/Y against $2280/$3780;
+other entrances do not run the royal scene. Physical slot allocation uses the live follower flags,
+while membership remains a separate source flag range. The group tests cover first/repeat visits,
+initial/revealed/departed Astral, zero/two/three followers, initial acceptance and refusal followed
+by an actual Sarah re-prompt. All four F608/F256 guard branches are compared with each follower count,
+including dialogue-only branches that never set F401 or move the guard. A direct castle approach with F600 clear still reaches the explicitly
+unimplemented `cs_51454`/`moveNextToPlayer` branch; the tests do not manufacture F600.
+
+Map19/20 reuse their registered shared atlas; Map21 uses its own registered atlas. `setPriority`
+persists on the physical entity. The modern renderer draws priority entities after ordinary
+entities, retaining its existing Y/slot ordering within a group. Palace `fadeInB` performs a black
+to full-brightness transition over 0.5 seconds and completes only after the actual view updates.
+These are bounded presentation mappings, not original VDP ordering, palette cadence or pixel parity.
+Source `setFacing` requests a new sprite generation on its resolved physical slot and retains its
+program PC until `EntitySpriteReady` returns for that slot/generation. Authored `face` can omit this
+service. Actual ordinary-host observations at60 and30 FPS cover the connected group, repeat visits,
+the player-facing wait, guard repeat interaction and stable field input without state injection.
 
 ## Presentation and private Content
 
@@ -139,10 +189,11 @@ reports `AdapterError` and retains its wait.
 
 ## Remaining source boundaries
 
-The Map21 guard still stops at logical entity135; its runtime alias/population is **Unknown**, so
-F401 is not invented. The marked Map40 warp reaches the actual before-battle program and stops at
+The accepted Map21 default-population contract resolves135 to slot0 under its stated initialization
+conditions. Natural original call-time RAM, full sprite/hardware effects and timing remain **Unknown**;
+remake continuation is not a new original H3 observation. The marked Map40 warp reaches the actual before-battle program and stops at
 `loadMapFadeIn`; an explicitly supplied seen-intro flag retains the accepted controlled battle-entry
-comparison. The complete before-battle body, castle/tower route, natural Map3-to-Battle01 continuity,
+comparison. The complete before-battle body, natural Map3-to-Battle01 continuity,
 outcome and return remain outside this group. Other Map3 native branches such as ChurchMenu and
 moveNextToPlayer retain executable source frontiers.
 
@@ -154,13 +205,15 @@ movement after acceptance is confirmed, but another post-acceptance map reload i
 ## Reference migration boundary
 
 The ordinary source path has no Reference dependency. Complete legacy Sarah, zone601, entity142,
-Astral-zone and messenger endpoint-writing methods, their F/G presentation branches and obsolete
-prefix/atomic-route tests are removed. Whole-flow comparisons now use common commands and actual
-native input. The old private probe retains only the separate Map21/Map40/frontier comparisons.
+Astral-zone, messenger, castle gate, palace, Astral invitation, tower guard and castle/tower cross-map
+endpoint-writing methods, their presentation branches and obsolete atomic-route tests are removed.
+Whole-flow comparisons now use common commands and actual native input. The large old castle
+atlas probe and its execution callers are removed. The separate private probe retains the
+Map21/Map40/frontier comparisons.
 
-Castle/tower, pending Battle01 admission and M4 return remain reference consumers. Their tests use
+Pending Battle01 admission and M4 return remain reference consumers. Their tests use
 `map3-post-opening-reference-start.json` as an explicit controlled starting context, with zero executed
-history and no messenger receipt. The optional reference-host variable
+history and no messenger receipt, or explicit fixture state at the later admission seam. The optional reference-host variable
 `SF2_REFERENCE_POST_OPENING_START` selects this same input. This is not a bridge proving original
 continuity. The default old private start remains a geometry diagnostic; its migrated interactions
 report that the common host owns them. State/receipt DTOs and trust projections still used by frozen
@@ -216,3 +269,13 @@ legacy runs remain recorded; rerun their corrected nodes rather than replaying t
 remaining native observer is `engine_private_exploration_observation.gd`, with `map21-guard`,
 `map40-intro`, `map40-seen` or the authored missing-presentation case. The Map40 observer reads the
 existing PlayerReady fixture's static input plan; it does not supply runtime state.
+
+For the connected castle group, use the same R1 start and R2 input-plan environment with
+`--script res://probes/engine_castle_tower_observation.gd`. The observer continues the same live
+instance, reads the H2 castle graph for navigation, revisits the palace, declines/re-prompts Astral,
+and writes an adjacent `.castle.json` with checkpoints, actual palette brightness, priority and the
+guard's pending/completed sprite service state. `map3-decline` first refuses and later joins Sarah
+through actual input. Run the ordinary host at fixed60 and30 FPS, require `passed:true` and exit0,
+and retain any completed failures in the local report. The final input sequence repeats the guard
+interaction and walks the released passage, then checks stable PlayerInput.
+No observer supplies an expected endpoint, completion flag, entity alias or session replacement.

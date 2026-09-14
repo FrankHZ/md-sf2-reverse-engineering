@@ -2,6 +2,8 @@
   "package": "private-map3-programs",
   "maps": [
     3,
+    19,
+    20,
     21,
     40,
     57
@@ -10,7 +12,7 @@
     1
   ],
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Full source programs execute through the common session. Original hardware presentation timing and routes beyond the named opening/messenger group remain outside this admission.",
+  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Complete source opening, castle, palace, Astral and tower programs execute through the common session, retaining unsupported instructions and missing aliases at their actual cursor. Original natural reach, hardware/presentation parity, full before-battle and M4 remain outside this admission.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -34,10 +36,25 @@
     "cs_53EF4",
     "bbcs_01",
     "ms_Empty",
-    "cs_51652"
+    "cs_51652",
+    "cs_53104",
+    "cs_53996",
+    "cs_52F0C",
+    "cs_52F40"
   ],
   "eventMaps": [
-    3
+    3,
+    19,
+    20,
+    21
   ],
-  "presentationManifestSha256": "4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40"
+  "presentationManifestSha256": "4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40",
+  "presentationAtlases": {
+    "map-3": "world.map3.base-tileset-atlas",
+    "map-19": "world.map19-20.base-tileset-atlas",
+    "map-20": "world.map19-20.base-tileset-atlas",
+    "map-21": "world.map21.base-tileset-atlas",
+    "map-40": "world.map40.base-tileset-atlas",
+    "map-57": "world.map57.base-tileset-atlas"
+  }
 }

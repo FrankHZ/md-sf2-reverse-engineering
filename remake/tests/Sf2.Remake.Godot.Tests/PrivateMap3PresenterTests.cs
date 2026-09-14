@@ -111,10 +111,9 @@ public sealed class PrivateMap3PresenterTests
     {
         var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(middleTower: true);
         string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, new string('x', 500));
-        Assert.StartsWith("Middle tower Map 21 reached.", status);
-        Assert.Contains("Controlled arrival", status);
+        Assert.StartsWith("Castle and tower programs run in the common host.", status);
+        Assert.Contains("Reference comparison state only", status);
         Assert.DoesNotContain("no admitted atlas", status);
-        Assert.Contains("init not executed", status);
         Assert.DoesNotContain("F ", status);
         Assert.DoesNotContain("Zone601", status);
         Assert.DoesNotContain("StoryFlag", status);
@@ -151,74 +150,6 @@ public sealed class PrivateMap3PresenterTests
             hasCastleAtlas: true, hasMap21Atlas: hasMap21Atlas);
         Assert.False(unsupported.BaseVisible);
         Assert.True(unsupported.TraversalVisible);
-    }
-
-    [Fact]
-    public void WestTowerArrivalStatusDistinguishesTwoExitsToTheSameMap()
-    {
-        PrivateOriginalMapCrossMapTransitionReceipt Receipt(bool west)
-        {
-            OriginalMapCrossMapTransitionDefinition definition = new(
-                new(ContentProfile.PrivateLocal, new MapId("map19"), "Map19s6_WarpEvents", west ? 1 : 2),
-                (byte)(west ? 6 : 23), (byte)(west ? 2 : 3), new(west ? 5 : 22, west ? 3 : 4),
-                ExplorationDirection.East, new(west ? 6 : 23, west ? 2 : 3),
-                new MapId("map20"), new(west ? 6 : 23, 37), (byte)(west ? 0 : 3));
-            return (PrivateOriginalMapCrossMapTransitionReceipt)Activator.CreateInstance(
-                typeof(PrivateOriginalMapCrossMapTransitionReceipt),
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-                binder: null, args: [definition, 1L], culture: null)!;
-        }
-
-        string status = Assert.IsType<string>(PrivateMap3PresentationPlan.WestTowerArrivalStatus(Receipt(west: true)));
-        Assert.Contains("West tower reached", status);
-        Assert.Contains("Controlled arrival", status);
-        Assert.Contains("init not executed", status);
-        Assert.DoesNotContain("F apply", status);
-        Assert.Null(PrivateMap3PresentationPlan.WestTowerArrivalStatus(Receipt(west: false)));
-        Assert.Null(PrivateMap3PresentationPlan.WestTowerArrivalStatus(null));
-    }
-
-    [Fact]
-    public void AstralActionIsFirstAndOnlyAvailableWhenThePlayerFacesTheWaitingActor()
-    {
-        var ready = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed: false);
-        string action = PrivateMap3PresentationPlan.AstralStatus(ready, facing: 1, moving: false);
-        Assert.StartsWith("F accept", action);
-        Assert.Contains("controlled result", action);
-        Assert.Contains("skip scene", action);
-        Assert.DoesNotContain("F accept", PrivateMap3PresentationPlan.AstralStatus(ready, facing: 2, moving: false));
-        Assert.DoesNotContain("F accept", PrivateMap3PresentationPlan.AstralStatus(ready, facing: 1, moving: true));
-        var completed = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed: true);
-        string status = PrivateMap3PresentationPlan.FormatStatus(completed, new string('x', 500));
-        Assert.StartsWith("Astral has left; passage open.", status);
-        Assert.DoesNotContain("F accept", status);
-        // Even a long diagnostic outcome follows the current action, outside its first line.
-        Assert.True(status.IndexOf('\n') < status.IndexOf(new string('x', 500), StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void PalaceStatusDistinguishesExplicitSkippedSceneResultFromUnselectedArrival()
-    {
-        string unselected = PrivateMap3PresentationPlan.PalaceFirstVisitStatus(null);
-        Assert.Contains("F apply controlled first-visit result", unselected);
-        Assert.Contains("skip scene", unselected);
-        Assert.Contains("unselected", unselected);
-        var definition = new OriginalMapPalaceFirstVisitDefinition(
-            OriginalMapRuntimeAdmission.PalaceInitBodySha256,
-            OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256);
-        var receipt = (PrivateOriginalMapPalaceFirstVisitReceipt)Activator.CreateInstance(
-            typeof(PrivateOriginalMapPalaceFirstVisitReceipt),
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-            binder: null, args: [definition, 1L], culture: null)!;
-        string completed = PrivateMap3PresentationPlan.PalaceFirstVisitStatus(receipt);
-        Assert.Contains("Controlled first-visit result applied", completed);
-        Assert.Contains("scene skipped", completed);
-        Assert.DoesNotContain("F apply", completed);
-        string returned = PrivateMap3PresentationPlan.RoyalReturnStatus(receipt);
-        Assert.Contains("Royal return", returned);
-        Assert.Contains("controlled first-visit result retained", returned);
-        Assert.Contains("diagnostic traversal", returned);
-        Assert.DoesNotContain("F apply", returned);
     }
 
     [Fact]
@@ -472,25 +403,6 @@ public sealed class PrivateMap3PresenterTests
             PrivateMap3PresentationPlan.Entity142Action(released, "ignored pending label"));
     }
 
-    [Fact]
-    public void CastleGatePresentationUsesOnlyTypedPersistentState()
-    {
-        OriginalMapCastleGateDefinition definition = CastleGateDefinition();
-        PrivateOriginalMapCastleGateState ready = InvokeCastleGateState("Ready", definition);
-        PrivateOriginalMapCastleGateState opened = InvokeCastleGateState("Completed", definition);
-
-        Assert.Equal(
-            "Castle gate closed; bounded event ready only after messenger acceptance",
-            PrivateMap3PresentationPlan.CastleGateStatus(ready));
-        string status = PrivateMap3PresentationPlan.CastleGateStatus(opened);
-        Assert.Equal(
-            "Castle gate open; flag604 set; bounded opening admission complete; " +
-                "source dialogue/facing/restoration, timing, and presentation Unknown",
-            status);
-        Assert.DoesNotContain("text", status, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("asset", status, StringComparison.OrdinalIgnoreCase);
-    }
-
     private static PrivateOriginalMapSessionSnapshot Snapshot()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -562,40 +474,6 @@ public sealed class PrivateMap3PresenterTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
-
-    private static OriginalMapCastleGateDefinition CastleGateDefinition()
-    {
-        MapId map = new(OriginalMapRuntimeAdmission.MapId);
-        return new OriginalMapCastleGateDefinition(
-            new OriginalMapZoneEventIdentity(
-                ContentProfile.PrivateLocal,
-                map,
-                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
-                OriginalMapRuntimeAdmission.CastleGateZoneEventResourceId,
-                OriginalMapRuntimeAdmission.CastleGateZoneEventRecordOrdinal,
-                OriginalMapRuntimeAdmission.CastleGateZoneEventTargetIdentity),
-            new MapPosition(31, 6),
-            ExplorationDirection.North,
-            new MapPosition(31, 5),
-            OriginalMapRuntimeAdmission.CastleGateProgramIdentity,
-            OriginalMapRuntimeAdmission.CastleGateControlShapeSha256,
-            OriginalMapRuntimeAdmission.CastleGateTextCursorId,
-            OriginalMapRuntimeAdmission.CastleGateCompletionFlag604,
-            OriginalMapRuntimeAdmission.CastleGateSourceProgramOperationCount,
-            OriginalMapRuntimeAdmission.CastleGateProjectionSourceOperationIndices,
-            OriginalMapRuntimeAdmission.CastleGateGuardMoves,
-            OriginalMapRuntimeAdmission.CastleGateStages);
-    }
-
-    private static PrivateOriginalMapCastleGateState InvokeCastleGateState(
-        string method,
-        OriginalMapCastleGateDefinition definition) =>
-        (PrivateOriginalMapCastleGateState)typeof(PrivateOriginalMapCastleGateState)
-            .GetMethod(
-                method,
-                System.Reflection.BindingFlags.Static |
-                    System.Reflection.BindingFlags.NonPublic)!
-            .Invoke(null, [definition])!;
 
     private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
         new(

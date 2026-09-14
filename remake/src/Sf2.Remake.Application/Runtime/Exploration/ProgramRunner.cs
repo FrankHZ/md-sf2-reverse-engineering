@@ -51,6 +51,11 @@ internal static class ProgramRunner
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
                         story = story.Copy(branch.Target); break;
                     case BranchFlag: break;
+                    case BranchEntityCoordinates branch:
+                        var coordinates = Entity(current, branch.Entity).Motion;
+                        if ((coordinates.X == branch.X && coordinates.Y == branch.Y) == branch.WhenEqual)
+                            story = story.Copy(branch.Target);
+                        break;
                     case CallProgram call:
                         story = story.Copy(call.Target, callers: current.Story.Callers.Append(Next(cursor))); break;
                     case WriteFlag flag:
@@ -78,11 +83,21 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
                     case PresentCue cue:
+                        if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };
                         if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
                             active = EditEntity(current, nodding, entity => entity with { Motion = entity.Motion with { AnimationCounter = 255 } });
                         story = current.Story.Copy(cursor, new PresentationWait(token, cue)); break;
                     case SetEntityFacing facing:
-                        active = EditEntity(current, facing.Entity, entity => entity with { Motion = entity.Motion with { Facing = facing.Facing } }); break;
+                        var faced = Entity(current, facing.Entity);
+                        faced = faced with { Motion = faced.Motion with { Facing = facing.Facing } };
+                        if (facing.RefreshSprite)
+                        {
+                            faced = faced with { SpriteRequest = checked(faced.SpriteRequest + 1), WaitingForSprite = true };
+                            story = current.Story.Copy(cursor, new EntitySpriteWait(token, faced.Slot, faced.SpriteRequest));
+                        }
+                        active = new ActiveExploration(current.Exploration!.WithEntity(faced)); break;
+                    case SetEntityPriority priority:
+                        active = EditEntity(current, priority.Entity, entity => entity with { Priority = priority.Value }); break;
                     case SetEntityVisibility visible:
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:
@@ -125,7 +140,7 @@ internal static class ProgramRunner
 
     internal static ExplorationEntity Entity(SessionSnapshot current, EntityRef entity)
     {
-        if (current.Exploration is not { } world || !world.Entities.TryGetValue(entity, out var result))
+        if (current.Exploration is not { } world || !world.TryResolveEntity(entity, out var result))
             throw new BattleRuleException("program-entity", "program.entity", true);
         return result;
     }
@@ -139,7 +154,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            DialogueWait or ChoiceWait or PresentationWait => SessionStopReason.PresentationWait,
+            DialogueWait or ChoiceWait or PresentationWait or EntitySpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

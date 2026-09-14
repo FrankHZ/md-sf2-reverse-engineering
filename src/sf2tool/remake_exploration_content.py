@@ -53,8 +53,10 @@ class OriginalPrograms:
         self.actions: dict[str, list[dict[str, Any]]] = {}
         self.sources.update(
             {
+                "disasm/sf2cutscenemacros.asm",
                 "disasm/code/common/scripting/map/mapscriptengine_1.asm",
                 "disasm/code/common/scripting/map/mapscriptengine_2.asm",
+                "disasm/code/common/scripting/entity/entityscriptengine_1.asm",
                 "disasm/code/common/scripting/entity/entityscriptengine_2.asm",
                 "disasm/code/common/scripting/entity/entityfunctions_1.asm",
                 "disasm/code/common/scripting/entity/entityfunctions_2.asm",
@@ -224,6 +226,10 @@ class OriginalPrograms:
             return [{"op": "face", "facing": facing}, {"op": "wait", "ticks": self.number(args[0])}]
         if op == "eaWait" or op == "ac_wait":
             return [{"op": "wait", "ticks": self.number(args[0])}]
+        if op == "ac_moveRel":
+            return [
+                {"op": "move", "x": self.number(args[0]), "y": self.number(args[1]), "wait": False}
+            ]
         if op in ("ac_setSpeed", "ac_accelFactors"):
             return [
                 {
@@ -328,6 +334,28 @@ class OriginalPrograms:
                 )
             elif op in ("bra.s", "bra.w"):
                 result.append({"op": "jump", "target": _location(self.compile(args[0]))})
+            elif (
+                op == "cmpi.l"
+                and len(args) == 2
+                and args[0].startswith("#")
+                and args[1] == "((ENTITY_DATA-$1000000)).w"
+                and index < len(rows)
+                and rows[index]["opcode"] in ("beq.s", "beq.w", "bne.s", "bne.w")
+            ):
+                packed = self.number(args[0][1:])
+                x, y = (packed >> 16) & 65535, packed & 65535
+                branch = rows[index]
+                index += 1
+                result.append(
+                    {
+                        "op": "branch-coordinates",
+                        "entity": "entity-0",
+                        "x": x if x < 32768 else x - 65536,
+                        "y": y if y < 32768 else y - 65536,
+                        "whenEqual": branch["opcode"].startswith("beq"),
+                        "target": _location(self.compile(branch["operandText"])),
+                    }
+                )
             elif op == "script":
                 result.append({"op": "call", "target": _location(self.compile(args[0]))})
             elif (
@@ -515,7 +543,30 @@ class OriginalPrograms:
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
             elif op == "setFacing":
                 result.append(
-                    {"op": "face", "entity": self.entity(args[0]), "facing": self.number(args[1])}
+                    {
+                        "op": "face",
+                        "entity": self.entity(args[0]),
+                        "facing": self.number(args[1]),
+                        "refreshSprite": True,
+                    }
+                )
+            elif op == "setPriority":
+                result.append(
+                    {
+                        "op": "priority",
+                        "entity": self.entity(args[0]),
+                        "value": self.number(args[1]) != 0,
+                    }
+                )
+            elif op == "fadeInB":
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "FadeIn",
+                        "resource": "black",
+                        "entity": None,
+                        "position": None,
+                    }
                 )
             elif op == "setPos":
                 result.append(
@@ -602,6 +653,7 @@ def prepare_visuals(
     rom_path: Path,
     asset_root: Path,
     manifest_sha256: str,
+    atlas_bindings: dict[str, str],
 ) -> dict[str, Any]:
     rom = rom_path.read_bytes()
     if hashlib.sha256(rom).hexdigest().upper() != canonical["romSha256"]:
@@ -630,7 +682,7 @@ def prepare_visuals(
     sprites = {0}
     for map in maps:
         refs = map_definitions[map["id"]]["references"]
-        asset = assets["world." + map["id"].replace("-", "") + ".base-tileset-atlas"]
+        asset = assets[atlas_bindings[map["id"]]]
         bucket = next(bucket for bucket in asset["buckets"] if bucket["scale"] == 2)
         path = (asset_root / bucket["runtimePath"]).resolve(strict=True)
         if not path.is_relative_to(asset_root.resolve()):
@@ -772,16 +824,12 @@ def prepare(
     selection = load_json(selection_path)
     compiler = OriginalPrograms(canonical, upstream)
     for selected in selection.get("eventMaps", []):
-        for filename in (
-            "s2_entityevents.asm",
-            "s3_zoneevents.asm",
-            "s6_initfunction.asm",
-            "scripts_1.asm",
-            "scripts_2.asm",
-        ):
-            compiler.register_file(
-                f"disasm/data/maps/entries/map{selected:02d}/mapsetups/{filename}"
-            )
+        folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
+        for path in sorted(folder.glob("*.asm")):
+            if path.name.startswith(
+                ("s2_entityevents", "s3_zoneevents", "s6_initfunction", "scripts")
+            ):
+                compiler.register_file(path.relative_to(upstream).as_posix())
     for source in selection["additionalProgramSources"]:
         compiler.raw[source["symbol"]] = {
             "id": source["symbol"],
@@ -943,7 +991,10 @@ def prepare(
                 for source_row in table:
                     args = _tokens(source_row["operandText"])
                     if source_row["opcode"] not in (macro, default):
-                        raise ValueError("unsupported event table row")
+                        raise ValueError(
+                            "unsupported event table row: "
+                            f"{folder}{filename}[{source_row['index']}]"
+                        )
                     symbol = args[-1].split("-")[0]
                     common = {
                         "program": _location(compiler.compile(symbol)),
@@ -979,6 +1030,9 @@ def prepare(
                                 else compiler.number(args[1]),
                             }
                         )
+                    if source_row["opcode"] == default:
+                        # The default terminates the table; following instructions are not rows.
+                        break
 
             def block_copy(record):
                 return {
@@ -1064,7 +1118,24 @@ def prepare(
                     for a in areas
                 ],
                 "entities": entities,
-                **({"population": population, "layoutEvents": layout_events} if population else {}),
+                **(
+                    {
+                        "population": population,
+                        "layoutEvents": layout_events,
+                        "entryFlags": [
+                            {"flag": flag, "value": False}
+                            for flag in range(
+                                compiler.equates["MAPSETUP_TEMP_FLAGS_START"],
+                                compiler.equates["MAPSETUP_TEMP_FLAGS_START"]
+                                + compiler.equates["MAPSETUP_TEMP_FLAGS_COUNTER"]
+                                + 1,
+                            )
+                        ]
+                        + [{"flag": 80, "value": True}],
+                    }
+                    if population
+                    else {}
+                ),
                 "events": events,
                 "onLoad": _location(on_load),
                 "battle": battle,
@@ -1138,6 +1209,7 @@ def prepare(
             rom_path,
             presentation_root,
             selection["presentationManifestSha256"],
+            selection["presentationAtlases"],
         )
     sources = []
     for relative in sorted(compiler.sources):

@@ -830,19 +830,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         ? MiddleTowerGuard?.ActorPosition ?? guard.Actor.Position
         : null;
 
-    public bool CanAcceptMiddleTowerGuard(byte playerOpaqueFacing) =>
-        Definition.MiddleTowerGuard is { } guard && Map == guard.Map &&
-        MiddleTowerGuard is null && CastleGate?.Opened == true && PalaceFirstVisit is not null &&
-        AstralAcceptance?.ProgramFlag608Set == true && PlayerPosition == guard.InteractionPosition &&
-        playerOpaqueFacing == guard.InteractionOpaqueFacing && PendingEntity142 is null;
-
     public bool AstralOccupiesRouteTile => Definition.AstralAcceptance is { } astral &&
         Map == astral.Map && PalaceFirstVisit is not null && AstralAcceptance is null;
 
-    public bool CanAcceptAstral(byte playerOpaqueFacing) => AstralOccupiesRouteTile &&
-        PlayerPosition == Definition.AstralAcceptance!.InteractionPosition &&
-        playerOpaqueFacing == Definition.AstralAcceptance.InteractionOpaqueFacing &&
-        PendingEntity142 is null;
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -1033,20 +1023,6 @@ public sealed partial class GameSession
             TryApplyPrivateOriginalMapSameMapWarp(current, command, out var warpApplied))
         {
             return warpApplied!;
-        }
-
-        if (TryApplyPrivateOriginalMapCrossMapTransition(
-                current,
-                command,
-                out var crossMapApplied))
-        {
-            return crossMapApplied!;
-        }
-
-        if (current.Map == current.Definition.Map &&
-            TryApplyPrivateOriginalMapCastleGate(current, command, out var castleGateApplied))
-        {
-            return castleGateApplied!;
         }
 
         if (current.Map == current.Definition.Map &&

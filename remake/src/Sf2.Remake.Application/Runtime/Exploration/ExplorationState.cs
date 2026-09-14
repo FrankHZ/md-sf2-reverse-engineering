@@ -11,6 +11,7 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue) : ProgramWait(Token);
 public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null) : ProgramWait(Token);
+public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags);
@@ -63,7 +64,7 @@ public sealed class StoryState
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
     EntityActionProgram? Actions = null, int ActionCursor = 0, bool WaitingForMotion = false,
     int Slot = -1, int? Sprite = null, EntityFollower? Follower = null,
-    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false)
+    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false)
 {
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
     public bool Busy => Motion.IsMoving || Actions is not null;
@@ -96,6 +97,24 @@ public sealed class ExplorationState
     public BattleStartInput Party { get; }
     public ushort SpriteSize { get; }
     public ExplorationEntity PlayerEntity => Entities[Player];
+    public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
+    {
+        entity = null!;
+        if (Definition.Population is not null)
+        {
+            if (!reference.Value.StartsWith("entity-", StringComparison.Ordinal) ||
+                !int.TryParse(reference.Value.AsSpan(7), System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture, out int selector)) return false;
+            int encoded = selector & 255;
+            int index = encoded < 128 ? encoded : encoded - 96;
+            // The accepted source contract covers the 64 identity entries and 49 normal records.
+            // Out-of-table selectors and removed (FF) identities cannot become player fallbacks.
+            if (index >= 64) return false;
+            reference = new("entity-" + (index < 32 ? index : index + 96).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            if (!Aliases.TryGetValue(reference, out int slot) || slot >= 49) return false;
+        }
+        return Entities.TryGetValue(reference, out entity!);
+    }
     internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState);
     internal ExplorationState WithLayout(WorkingMapLayout layout, MapBlockCopyLifecycleState? roofState = null) =>
         new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState);
@@ -104,6 +123,7 @@ public sealed class ExplorationState
     {
         var hidden = entity with { Visible = false, Actions = null, Follower = null, WaitingForSprite = false,
             Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
+        // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
         return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
             Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState);
     }

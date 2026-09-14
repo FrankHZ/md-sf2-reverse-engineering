@@ -240,34 +240,6 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
-    internal static PrivateOriginalMapPlayerLocomotionSnapshot Relocate(
-        PrivateOriginalMapPlayerLocomotionSnapshot current,
-        PrivateOriginalMapCrossMapTransitionReceipt receipt)
-    {
-        ArgumentNullException.ThrowIfNull(current);
-        ArgumentNullException.ThrowIfNull(receipt);
-        ExplorationDirection direction = DirectionFromOpaqueFacing(
-            receipt.DestinationOpaqueFacing,
-            nameof(receipt));
-        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) =
-            Selection(direction);
-        return new PrivateOriginalMapPlayerLocomotionSnapshot(
-            PrivateOriginalMapPlayerLocomotionPhase.Relocated,
-            direction,
-            facing,
-            sheet,
-            slot,
-            mirror,
-            tick: 0,
-            counterAtSelection: current.StoredCounter,
-            storedCounter: current.StoredCounter,
-            selectedHalf: current.SelectedHalf,
-            receipt.Source,
-            receipt.Destination,
-            offsetXUnits: 0,
-            offsetYUnits: 0);
-    }
-
     internal static PrivateOriginalMapPlayerLocomotionSnapshot CompleteMessengerAcceptance(
         PrivateOriginalMapPlayerLocomotionSnapshot current,
         PrivateOriginalMapMessengerAcceptanceReceipt receipt)
@@ -301,20 +273,7 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
-    internal static PrivateOriginalMapPlayerLocomotionSnapshot CompletePalaceFirstVisit(
-        PrivateOriginalMapPlayerLocomotionSnapshot current,
-        PrivateOriginalMapPalaceFirstVisitReceipt receipt)
-    {
-        ArgumentNullException.ThrowIfNull(current);
-        ArgumentNullException.ThrowIfNull(receipt);
-        ExplorationDirection direction = DirectionFromOpaqueFacing(receipt.PlayerOpaqueFacing, nameof(receipt));
-        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) = Selection(direction);
-        return new PrivateOriginalMapPlayerLocomotionSnapshot(
-            PrivateOriginalMapPlayerLocomotionPhase.ScriptedEndpoint, direction, facing, sheet, slot, mirror,
-            tick: 0, counterAtSelection: current.StoredCounter, storedCounter: current.StoredCounter,
-            selectedHalf: current.SelectedHalf, receipt.PlayerSource, receipt.PlayerEndpoint,
-            offsetXUnits: 0, offsetYUnits: 0);
-    }
+
 
     internal PrivateOriginalMapPlayerLocomotionSnapshot Advance()
     {
@@ -434,8 +393,6 @@ public sealed partial class GameSession
         PrivateOriginalMapMoveApplied move = ApplyPrivateOriginalMap(command);
         PrivateOriginalMapPlayerLocomotionSnapshot next = move.Battle01Admission is not null
             ? current
-            : move.CrossMapTransition is not null
-            ? PrivateOriginalMapPlayerLocomotion
             : move.SameMapWarp is not null
             ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(
                 current,

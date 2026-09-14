@@ -20,16 +20,6 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                     session.PrivateOriginalMapSnapshot.SimulationStep)));
         var snapshot = session.PrivateOriginalMapSnapshot;
         var animation = session.PrivateOriginalMapPlayerLocomotion;
-        var rejected = Assert.IsType<PrivateOriginalMapPalaceFirstVisitRejected>(
-            session.CompletePrivateOriginalMapPalaceFirstVisit(new(snapshot.SimulationStep,
-                OriginalMapPalaceFirstVisitPreset.ControlledClear605And507)));
-        Assert.Equal(PrivateOriginalMapPalaceFirstVisitFailureCode.BattleBridgeBusy, rejected.Code);
-        var guardRejected = Assert.IsType<PrivateOriginalMapMiddleTowerGuardRejected>(
-            session.CompletePrivateOriginalMapMiddleTowerGuard(new(snapshot.SimulationStep,
-                OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear)));
-        Assert.Equal(PrivateOriginalMapMiddleTowerGuardFailureCode.BattleBridgeBusy, guardRejected.Code);
-        Assert.Same(snapshot, guardRejected.Snapshot);
-        Assert.Same(snapshot, rejected.Snapshot);
         Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
         Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
         Assert.Same(requested.Bridge, session.PrivateOriginalMapBattleBridge);

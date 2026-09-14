@@ -736,34 +736,6 @@ public sealed partial class Map3Root
                 _session.PrivateOriginalMapSnapshot.SimulationStep);
         switch (result)
         {
-            case PrivateOriginalMapMiddleTowerGuardApplied guard:
-                _privatePresenter?.Project(guard.Snapshot,
-                    "Guard moved; controlled result; dialogue skipped", _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapMiddleTowerGuardRejected guard:
-                _privatePresenter?.Project(guard.Snapshot,
-                    $"Guard interaction unavailable: {guard.Code}", _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapAstralAcceptanceApplied astral:
-                _privatePresenter?.Project(astral.Snapshot,
-                    "Astral accepted; passage open; scene skipped", _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapAstralAcceptanceRejected astral:
-                _privatePresenter?.Project(astral.Snapshot,
-                    $"Astral acceptance unavailable: {astral.Code}", _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapPalaceFirstVisitApplied palace:
-                _privatePresenter?.Project(
-                    palace.Snapshot,
-                    "Controlled first-visit result applied; scene skipped",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
-            case PrivateOriginalMapPalaceFirstVisitRejected palace:
-                _privatePresenter?.Project(
-                    palace.Snapshot,
-                    $"First-visit result unavailable: {palace.Code}",
-                    _session.PrivateOriginalMapPlayerLocomotion);
-                break;
             case PrivateOriginalMapInteractionUnavailable unavailable:
                 _privatePresenter?.Project(unavailable.Snapshot, unavailable.Reason, _session.PrivateOriginalMapPlayerLocomotion);
                 break;

@@ -7,12 +7,12 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class MapTransfer
 {
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
-        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags)
+        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null)
     {
         ValidateSetup(map, flags);
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
-            if (flags.Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
+            if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
         if (!map.Traversal.IsWithinActiveArea(position) || OriginalMapTraversal.IsBlocked(layout, position))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
@@ -39,8 +39,11 @@ internal static class MapTransfer
                     source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite));
                 return slot.FollowerOrder is { } order ? FollowerMotion.Install(entity, order, -24, 0) : entity;
             });
-            return MapEventDispatcher.RoofOnLoad(new(map, layout, player, slots, party,
-                aliases: allocation.Aliases.ToDictionary(pair => Reference(pair.Key), pair => pair.Value)));
+            // Populate a fresh source identity table from its cleared (slot-zero) state.
+            // Missing keys after Hide are tombstones; state copies must never refill them.
+            var aliases = Enumerable.Range(0, 64).ToDictionary(index => Reference(index < 32 ? index : index + 96), _ => 0);
+            foreach (var alias in allocation.Aliases) aliases[Reference(alias.Key)] = alias.Value;
+            return MapEventDispatcher.RoofOnLoad(new(map, layout, player, slots, party, aliases: aliases));
         }
         var entities = map.Entities.Where(entity => entity.Entity != player).Select(entity =>
             new ExplorationEntity(entity.Entity, EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with
@@ -56,6 +59,7 @@ internal static class MapTransfer
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
         ExplorationState next;
+        var flags = current.Story.Flags;
         if (mode == MapLoadMode.Preserve)
         {
             ValidateSetup(target, current.Story.Flags);
@@ -67,8 +71,17 @@ internal static class MapTransfer
                 XDestination = (short)(position.X * 384), YDestination = (short)(position.Y * 384), Facing = facing }, Actions = null, ActionCursor = 0 });
             next = MapEventDispatcher.RoofOnLoad(next);
         }
-        else next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags);
+        else
+        {
+            var enteredFlags = flags.ToHashSet();
+            foreach (var write in target.EntryFlags)
+                if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
+            flags = enteredFlags.Order().ToArray();
+            // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
+            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags);
+        }
         var story = continuation.Copy(continuation.Cursor,
+            flags: flags,
             continuation: continuation.EnteringBattle is null ? ProgramContinuation.MapLoaded : continuation.Continuation,
             returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null);
         if (target.OnLoad is { } onLoad)

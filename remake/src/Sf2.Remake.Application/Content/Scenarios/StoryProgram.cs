@@ -12,6 +12,7 @@ public abstract record StoryInstruction;
 public sealed record EndProgram : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
+public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record ReturnProgram : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
@@ -19,7 +20,8 @@ public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false) : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
-public sealed record SetEntityFacing(EntityRef Entity, byte Facing) : StoryInstruction;
+public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
+public sealed record SetEntityPriority(EntityRef Entity, bool Value) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;
 public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
@@ -36,7 +38,7 @@ public sealed record TransferToMap(MapId Map, MapPosition Position, byte Facing,
 public sealed record UnsupportedInstruction(string Opcode, string Source) : StoryInstruction;
 
 public abstract record EntityAction;
-public sealed record MoveEntityRelative(int X, int Y) : EntityAction;
+public sealed record MoveEntityRelative(int X, int Y, bool Wait = true) : EntityAction;
 public sealed record MoveEntityAbsolute(MapPosition Position, bool FieldInput = false) : EntityAction;
 public sealed record RandomWalkEntity(MapPosition Origin, int Radius) : EntityAction;
 public sealed record FaceEntity(byte Facing) : EntityAction;
