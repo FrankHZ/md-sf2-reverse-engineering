@@ -38,7 +38,6 @@ internal static class SourceEnemyAi
             var moved = BattleMovement.Commit(prepared, actorRef, decision.Destination, decision.Grid);
             moved = moved.With(thinkingSeed: Image(decision.SeedAfter), actors: moved.Actors.Select(
                 unit => unit.Actor == actorRef ? unit.With(aiMemory: decision.MemoryAfter) : unit));
-            effects.Add(new("after-turn", actorRef));
             return (moved, effects.AsReadOnly(), decision.Destination);
         }
 
@@ -54,8 +53,9 @@ internal static class SourceEnemyAi
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-        if (targets.Any(target => AiMovementRules.AttackPosition(legal, target.Position!, 1, Occupied) is not null))
-            throw new BattleRuleException("source-attack-operands", "actor.physical", true);
+        if (EnemyPhysicalDecision.TryResolve(prepared, actorRef) is { } attack)
+            return (attack.Battle, Array.AsReadOnly<BattleEffect>([
+                .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]), attack.Destination);
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1));
@@ -65,7 +65,6 @@ internal static class SourceEnemyAi
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost, Target: targetRef));
         effects.Add(new(pursuit.Destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: targetRef));
         effects.Add(new("ai-command-move1", actorRef, After: 0));
-        effects.Add(new("after-turn", actorRef));
         return (BattleMovement.Commit(prepared, actorRef, pursuit.Destination, legal), effects.AsReadOnly(), pursuit.Destination);
 
         sbyte[] Costs() => current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();

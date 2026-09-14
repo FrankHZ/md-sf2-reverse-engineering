@@ -34,7 +34,8 @@ public sealed partial class GameRoot : Node
                 System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_SCENE") ?? "",
                 System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_TERRAIN") ?? "",
                 System.Environment.GetEnvironmentVariable("SF2_PRIVATE_STATIC_DATA") ?? "",
-                System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_DATA") ?? "", controlledStart));
+                System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_DATA") ?? "",
+                System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_GOLD") ?? "", controlledStart));
         else
         {
             string package = options.GetValueOrDefault("--authored-package") ??

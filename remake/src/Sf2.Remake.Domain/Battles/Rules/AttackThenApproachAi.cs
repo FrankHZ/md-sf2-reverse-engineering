@@ -27,8 +27,7 @@ internal static class AttackThenApproachAi
             new("ai-command-support", actorRef, After: -1),
             new("ai-move-target", actorRef, decision.TargetCosts[decision.TargetIndex], decision.Cost, Target: target.Actor),
             new(destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: target.Actor),
-            new("ai-command-move1", actorRef, After: 0),
-            new("after-turn", actorRef)]), destination);
+            new("ai-command-move1", actorRef, After: 0)]), destination);
 
     }
 }

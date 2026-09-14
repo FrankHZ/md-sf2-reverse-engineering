@@ -120,9 +120,12 @@ movement/cancel commands and projects private origin and Unknown accounting. `So
 reference standby and pursuit callers consume these same calculations. The source legal grid feeds
 the common movement commit, and `BattleActionCommitter` publishes each completed action once.
 Per-enemy memory/activation, retained region flags, cleared tested mask and independent thinking RNG
-remain live state; no round or receipt admits a turn. An actual physical cohort stops atomically at
-`source-attack-operands` before target scoring or movement. Reached equipment/action/after-turn
-operands, natural map programs and outcome/return remain separate migration dependencies. The old initialization/round/control wrappers still serve those concrete
+remain live state; no round or receipt admits a turn. An actual physical cohort uses Content-bound prowess, weapon range/effects and enemy gold through
+`EnemyPhysicalDecision` and `PhysicalBattleAction`. Hovering selects Flying target priority and airborne
+dodge while retaining terrain protection. Explicit controlled start accounting enables ordinary
+rewards/deaths; unknown required counters reject atomically. `BattleActionCommitter` emits one
+after-turn pass for every successful action, whose admitted status/equipment require no further change.
+Natural map programs and outcome/return remain separate migration dependencies. The old initialization/round/control wrappers still serve those concrete
 legacy callers, but their enemy ATT arithmetic, polygon/assigned-region operations and control
 classifier now delegate to these shared rules.
 
@@ -174,8 +177,8 @@ synthetic resource and smoke drivers are outside the ordinary project. Existing 
 public-synthetic import/export verification and private native recipes target that explicit project.
 Normal adapter CI builds the ordinary project; a separate reference-host job builds these remaining
 callers. Export configuration excludes ordinary probes; a complete ordinary package/export is not
-claimed. G3/G4 remain with their actual program/content consumers; G6 and private step3 remain with
-the player action interface. No second gameplay scheduler or state authority was introduced.
+claimed. G3/G4 remain with their actual program/content consumers; G6 and bounded private action binding use the common player interface. H cycles actual learned
+spells/levels; selection and resources remain session authority. No second gameplay scheduler or state authority was introduced.
 
 ## State and Command Flow
 

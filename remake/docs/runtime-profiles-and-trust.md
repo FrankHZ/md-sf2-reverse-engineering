@@ -18,7 +18,7 @@ checks are not universal gameplay predicates. The accepted
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
-| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and five explicit input environment selections | selected encounter, pinned enemy/static definitions, external controlled party/start | initialized common session through actual inactive standby, region activation and set6/set7 pursuit to player control; reached private action operands remain Unsupported |
+| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and six explicit input environment selections | selected encounter, pinned enemy/static/gold definitions, external controlled party/start | initialized common session through inactive standby, activation, set6/set7 pursuit and ordinary enemy/player/kill/HEAL actions to actual control; required unknown accounting and wider effects remain explicit boundaries |
 | `public-synthetic` | explicit `remake/reference/game` project | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit `remake/reference/game` project and profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
@@ -328,9 +328,11 @@ separate accepted rights and content decision.
 ## Private Initialized Common Battle
 
 [`PrivateBattleScenarioReader`](../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs)
-reads six explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
+reads seven explicit absolute paths. `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and
 `SF2_PRIVATE_BATTLE01_TERRAIN` retain the existing encounter trust boundary. `SF2_PRIVATE_STATIC_DATA`
 and `SF2_PRIVATE_ENEMY_DATA` select the existing pinned static-data and enemy-promotion exports.
+`SF2_PRIVATE_ENEMY_GOLD` selects the existing enemy-gold export, whose used enemy IDs and ROM addresses
+remain distinct from its unused tail. The extraction manifest owns its digest; it is never a public fixture input.
 Their bytes must match the authoritative extraction manifests and their source provenance must match
 the pinned upstream revision. The controlled JSON path comes from `--private-battle-start`; tests select
 it through `SF2_PRIVATE_CONTROLLED_START`. Partial/missing selections, drift or conflicting profiles
@@ -353,13 +355,18 @@ word is explicit representation padding. Neither RNG is reseeded during play. H3
 bridge remains provenance, not a claim that natural Map3 entry skips its actual programs.
 
 Regular/healer costs retain the authored table. Centaur uses cost5 on rough/deep and3 on brush;
-hovering uses cost2 on every admitted non-barrier surface and land multiplier256. Private source
+hovering uses cost2 on every admitted non-barrier surface. Its land multiplier still follows terrain
+protection (source0/1 give256/230), independently of its airborne dodge and Flying AI priority. Private source
 terrain values are interpreted only at Content admission; the original full byte grid is retained.
 The common weighted kernel, movement and cancel commands own play. SourceOrders preserves each
 immutable deployment anchor, both decoded source orders, current memory/activation word, last target
 and both RNG channels. Inactive standby uses source terrain and evolving occupancy; active set7
 retains failed MOVE_ORDER1 before the no-action pursuit shared with set6. Content resolves source
 NONE as255 and leaves unresolved order expressions explicit. Nonempty move-order programs, wider
-status/neutral occupancy, nonempty enemy action categories and the reached physical cohort stop at
-their capability boundary before partial publication. Private equipment/action/reward binding, broader
+status/neutral occupancy and nonempty enemy action categories stop before partial publication.
+Selected class prowess, adjacent ATT-only weapons, unpromoted HEAL1–3 and enemy gold now bind to common
+actions, death/rewards and one no-effect after-turn pass. The external
+[action input](../reference/inputs/battle01-actions.json) supplies controlled initial accounting; the
+PlayerReady input retains Unknown values and rejects only operations that need them. No source bonus
+is applied twice, no live accounting is filled, and unsupported spell references stay visible. Broader
 spawn/region programs and outcome/return remain future work; the legacy route keeps those consumers.

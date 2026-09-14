@@ -16,6 +16,8 @@ public sealed partial class BattleSessionView : Control
     private Label _title = null!;
     private Label _status = null!;
     private Label _roster = null!;
+    private Label _spells = null!;
+    private SpellRef? _spellCandidate;
     private BattleMapViewport _map = null!;
     private ScrollContainer _hud = null!;
     private VBoxContainer _hudContent = null!;
@@ -40,9 +42,10 @@ public sealed partial class BattleSessionView : Control
         _hud.AddChild(_hudContent);
         _title = AddLabel("Title");
         _status = AddLabel("Status");
+        _spells = AddLabel("Spells");
         _roster = AddLabel("Roster");
         var help = AddLabel("Help");
-        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: HEAL, initially target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nControlled battle start.";
+        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: select / cycle learned spells and levels; target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nControlled battle start.";
         GetViewport().SizeChanged += Arrange;
         Arrange();
     }
@@ -118,8 +121,11 @@ public sealed partial class BattleSessionView : Control
         if (command is not null) Send(command);
         else if (key.Keycode == Key.H && _session.Current.Selection is { } selection)
         {
-            var spell = _session.Current.Battle.GetActor(selection.Actor).Definition.Spells.FirstOrDefault();
-            Send(new SelectSpell(spell));
+            var spells = _session.Current.Battle.GetActor(selection.Actor).Definition.Spells;
+            if (spells.Count == 0) return;
+            int index = spells.ToList().FindIndex(spell => spell == (_spellCandidate ?? selection.Spell));
+            _spellCandidate = spells[(index + 1) % spells.Count];
+            Send(new SelectSpell(_spellCandidate.Value));
             if (_result?.Failure is null) Send(new SelectTarget(selection.Actor));
         }
         else if (key.Keycode == Key.Tab && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
@@ -138,6 +144,8 @@ public sealed partial class BattleSessionView : Control
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
         if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.PhysicalAttack)) _targetCandidate = null;
+        if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
+            _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay) _spellCandidate = null;
         Present();
     }
 
@@ -147,6 +155,11 @@ public sealed partial class BattleSessionView : Control
         _title.Text = projection.Title;
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
+        var selection = _session.Current.Selection;
+        _spells.Text = selection is null ? "" : "Spells (H to cycle):\n" + string.Join("\n",
+            _session.Current.Battle.GetActor(selection.Actor).Definition.Spells.Select(spell =>
+                $"{spell.Value.ToUpperInvariant()} {spell.Level}" + (spell == selection.Spell ? " · selected" : "") +
+                (spell == _spellCandidate && _result!.Failure is not null ? " · unavailable" : "")));
         _map.Present(projection);
     }
 
@@ -179,6 +192,7 @@ public sealed partial class BattleSessionView : Control
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
+            spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
             actors = current is null ? null : _map.ObserveActors(current.Battle.Actors),

@@ -40,10 +40,10 @@ public sealed class EngineSessionTests
         Assert.Equal((hp, mp, exp), ((int)healed.Hp, (int)healed.Mp, (int)healed.Exp!.Value));
         Assert.Equal(afterSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
-        Assert.Equal(new[] { "mp", "hp", "exp", "action-rng", "action-committed" },
-            result.Observations.Take(5).Select(o => o.Kind));
+        Assert.Equal(new[] { "mp", "hp", "exp", "after-turn", "action-rng", "action-committed" },
+            result.Observations.Take(6).Select(o => o.Kind));
         Assert.Equal(((long)beforeSeed, (long)afterSeed),
-            (result.Observations[3].Before!.Value, result.Observations[3].After!.Value));
+            (result.Observations[4].Before!.Value, result.Observations[4].After!.Value));
         Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
         Assert.NotEqual(actor, result.Snapshot.Selection!.Actor);
         Assert.Equal(Enumerable.Range(1, result.Observations.Count).Select(i => result.Observations[0].Sequence - 1 + i),
@@ -84,7 +84,7 @@ public sealed class EngineSessionTests
         Accept(session, new ChooseAction(SessionAction.Stay));
         var committed = Accept(session, new Confirm());
         Assert.Equal(new MapPosition(4, 3), committed.Snapshot.Battle.GetActor(actor).Position);
-        Assert.Equal(new[] { "movement", "action-committed" }, committed.Observations.Take(2).Select(o => o.Kind));
+        Assert.Equal(new[] { "movement", "after-turn", "action-committed" }, committed.Observations.Take(3).Select(o => o.Kind));
         Assert.Equal(before.Battle.MainSeed, committed.Snapshot.Battle.MainSeed);
         var next = Stay(session);
         Assert.Equal(2, next.Snapshot.Battle.Round);

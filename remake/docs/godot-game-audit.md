@@ -1,8 +1,7 @@
 # Godot Game Host Audit
 
 Status: G1/G2/G5 are resolved at the [ordinary/reference host boundary](./architecture.md#ordinary-and-reference-godot-hosts).
-The findings below describe the inspected Git object. G3/G4 remain with their actual consumers; G6
-and private step3 remain with the player action interface.
+The findings below describe the inspected Git object. G3/G4 remain with their actual consumers. G6 is addressed by the common spell/level selection below.
 
 This is a static review of accepted commit `7a95585282a7bdbdccc929ad9874d10e6ca60f92`, tree
 `0abc464b6c8a325333428e3ebd857abc85cbdd34`. Its game and engine sources are identical to #413,
@@ -128,21 +127,14 @@ approach where useful and keep its scripts/expected cases out of the eventual or
 
 ### G6 — Authored spell choices exist in content but cannot all be selected in the UI
 
-**Confirmed; current common input limitation.**
-[The authored reader](../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs), lines
-148–157, admits up to four distinct learned spell references, including their levels. The common
-[dispatcher](../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs), lines 56–60,
-accepts an explicit `SelectSpell` reference. However,
-[BattleSessionView](../game/src/Battles/BattleSessionView.cs), lines 119–123, always submits
-`Definition.Spells.FirstOrDefault()` on H; no other input chooses a spell. Two admitted spells with
-different costs/ranges/powers therefore leave the second unavailable through this view. Reordering
-the JSON list changes the only accessible spell.
-
-Expose a small spell/level selection from the current actor's definitions, submitting the chosen
-reference through the existing session. Keep legality and resource checks in the engine. This finding
-does not claim that every original private spell is already supported. The view also uses raw keycodes
-at lines 103–133, so the architecture's semantic InputMap path currently applies to the old adapter,
-not this common view; address that when making the common input surface a player-facing interface.
+**Addressed for the common input surface.** H cycles the current actor's ordered learned spell
+references and levels; the HUD identifies the accepted selection and an unavailable attempt.
+`SelectSpell`, `SelectTarget` and `Confirm` retain engine authority for legality, range, MP and effects.
+Changing an accepted spell clears its previous target; rejected choices retain the previous snapshot.
+The direct `spell-selection` native observation selects and casts a second spell at level2 without
+reordering JSON. The private reader also exposes lower learned levels. EGRESS and wider unsupported
+effects remain visible, attributed failures. This minimal interface does not claim a complete modern
+battle UI or original presentation; semantic InputMap modernization remains later interface work.
 
 ## Boundaries already working
 
@@ -165,7 +157,8 @@ The ordinary host entry and explicit reference compile boundary now implement G1
 startup/build commands and remaining caller ownership are linked above. The inspected source record
 below those links does not establish completion of the remaining game migration.
 Carry G3 with existing battle migration and G4 with actual content/map/presentation migration; remove
-each old caller at that boundary. Address G6 when accepting the common player action interface.
+each old caller at that boundary. The bounded G6 spell/level selection is implemented; full modern
+battle UI and presentation remain later work.
 
 Each implementation needs an explicit caller/dependency boundary and the affected actual-input/state
 observation. Startup changes should observe default, explicit common/private, duplicate/conflicting,

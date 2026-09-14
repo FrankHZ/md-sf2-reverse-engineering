@@ -7,11 +7,11 @@ internal static class PlayerHealing
     internal static HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
     {
         var actor = battle.GetActor(actorRef);
-        if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
-            throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (!actor.Definition.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
+        if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
+            throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return spell;
     }

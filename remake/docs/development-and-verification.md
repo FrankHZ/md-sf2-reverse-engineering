@@ -719,7 +719,7 @@ The [planner](../../src/sf2tool/verification_plan.py) automatically selects `eng
 host/assembly, without the old solution or always-run `public-core`.
 Non-research documentation and retired engine-test paths add no execution. Engine test changes select
 unit tests; ordinary game changes select ordinary compilation; reference changes select the reference
-host. The exact `remake/reference/inputs/battle01-player-ready.json` input selects `engine-unit`: the
+host. The exact `remake/reference/inputs/battle01-player-ready.json` and `battle01-actions.json` inputs select `engine-unit`: the
 existing Engine.Tests project copies it and actual-private engine facts consume it. Reference host
 and assembly code still select only `reference-host-build`. Shared product/build inputs select all
 actual downstream hosts.
@@ -794,8 +794,8 @@ request and main push. Its Windows jobs are:
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
 
 Shared product/build inputs select engine and both hosts; engine tests select engine; `remake/game/`
-selects the ordinary adapter. The exact `remake/reference/inputs/battle01-player-ready.json` input
-selects engine for its direct Engine.Tests consumer; other `remake/reference/` paths select the
+selects the ordinary adapter. The exact `remake/reference/inputs/battle01-player-ready.json` and `battle01-actions.json` inputs
+select engine for its direct Engine.Tests consumer; other `remake/reference/` paths select the
 explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select
 research. Workflow and shared CLI/harness/planner or retained Godot-tool host-binding changes select
 all four. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
@@ -860,16 +860,16 @@ identity, semantic review and completed-result handoff.
 After loading the retained SDK/Godot/worktree environment, select the existing read-only encounter
 inputs in `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and `SF2_PRIVATE_BATTLE01_TERRAIN`.
 Select pinned existing static-data and enemy-promotion exports in `SF2_PRIVATE_STATIC_DATA` and
-`SF2_PRIVATE_ENEMY_DATA`; their identities remain owned by the extraction manifests. If missing,
+`SF2_PRIVATE_ENEMY_DATA`, plus the existing enemy-gold export in `SF2_PRIVATE_ENEMY_GOLD`; their identities remain owned by the extraction manifests. If missing,
 reproduce them with the existing export owners and explicit ignored destinations from the pinned
 read-only source. Never change the registered source or upload exports. The
-[trust owner](./runtime-profiles-and-trust.md#private-initialized-common-battle) describes the six-input
+[trust owner](./runtime-profiles-and-trust.md#private-initialized-common-battle) describes the seven-input
 contract and controlled policy.
 
 ```powershell
 $env:SF2_PRIVATE_CONTROLLED_START = (Resolve-Path -LiteralPath 'remake/reference/inputs/battle01-player-ready.json').Path
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
-foreach ($variable in @('SF2_PRIVATE_BATTLE01_DATA', 'SF2_PRIVATE_BATTLE01_SCENE', 'SF2_PRIVATE_BATTLE01_TERRAIN', 'SF2_PRIVATE_STATIC_DATA', 'SF2_PRIVATE_ENEMY_DATA')) {
+foreach ($variable in @('SF2_PRIVATE_BATTLE01_DATA', 'SF2_PRIVATE_BATTLE01_SCENE', 'SF2_PRIVATE_BATTLE01_TERRAIN', 'SF2_PRIVATE_STATIC_DATA', 'SF2_PRIVATE_ENEMY_DATA', 'SF2_PRIVATE_ENEMY_GOLD')) {
     if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($variable))) { throw "Required private input not selected: $variable" }
 }
 uv run sf2 verify engine
@@ -882,7 +882,8 @@ HP/MP/effective versus source ATT, class/movers/equipment/spells, unknown accoun
 region words, independent RNG and first-player control against the existing H3 PlayerReady fixture.
 It then uses common commands for movement/cancel, the next Centaur player and actual inactive enemy
 standby back to Bowie. `PrivateSourceAiTests` continues real player commands through region activation
-and set7 pursuit to the next live player, then to the reached physical-operand Unsupported boundary.
+and set7 pursuit through the first actual enemy attack to player control, then atomic rejection of
+a player attack with Unknown EXP.
 The comparison preserves source anchors/orders, evolving positions/memory, activation/tested words,
 resources/loadouts/unknown accounting, last target and both RNG channels. Meaningful authored variations
 cover other IDs, movers, occupancy, memory, commandsets and transaction rejection; no live setter or
@@ -909,7 +910,8 @@ $env:SF2_OBSERVATION_OUTPUT = $outputPath
 
 Require all seven initialized-entry checkpoints or all thirteen continuous source-AI checkpoints,
 `passed:true`, no failures and clean process logs. The source-AI case includes the entry checks, then
-real movement/STAY through activation, set7 pursuit and the stable reached action boundary. These observe actual
+real movement/STAY through activation, set7 pursuit and the first actual physical attack, followed by
+stable Unknown-EXP rejection on the selected player attack. These observe actual
 Godot input, shared session state, actor nodes, private-origin HUD and explicit Unknown accounting;
 no images are emitted. Private output stays ignored. This comparison preserves the fixture's
 non-natural R2a→R2b bridge, explicit intro skip and candidate-only missing-word policy. It does not
@@ -930,4 +932,44 @@ actual inactive/active/set6/set7 ordering, retained activation flags/tested-mask
 station/fallback/ties and the repeated pursuit’s first physical cohort. Keep the existing reference
 profile/history projections; do not run their whole receipt/history mutation aggregates. The actual
 common private fact and native continuous-input observation supply acceptance beyond these calculators.
-Reached private equipment/action/reward/after-turn binding is the next separately admitted slice.
+The private action binding and its actual enemy/player/kill/HEAL continuation are implemented at the
+bounded scope below. Wider effects, natural map programs and outcome/return retain their stated
+Unsupported or Unknown boundaries.
+
+
+### Private action and spell selection observations
+
+The seven-input private selection additionally binds the existing `enemy-gold-data` export. If absent,
+use `uv run sf2 h2 enemy-gold --upstream-path <selected-pinned-source> --output-path <ignored-output>`
+with the registered ROM selection; this existing narrow extractor checks source/ROM parity and the
+manifest digest. No ROM or generated export is committed or packaged.
+
+After the existing environment setup and Debug adapter build, run:
+
+```powershell
+$env:SF2_OBSERVATION_CASE = 'private-actions'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'private-actions.json'
+$start = (Resolve-Path -LiteralPath 'remake/reference/inputs/battle01-actions.json').Path
+& $env:SF2_CASTLE_REVIEW_EDITOR --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $start
+```
+
+Require passed:true, exit0 and five checkpoints: initial state, actual enemy hit, player hit/next
+control, first kill/rewards/death/next control, and HEAL/next control. Exact first player and kill
+HP/EXP/gold/main/thinking values match the retained `ManualAttackCommitsReceipt52AndActualDispatchReachesRoundSevenPlayerTwo`
+and `FirstEnemyDefeatCommitsOrderedAwardsCleanupAndActualPlayerOneControl` reference comparisons.
+The older `private-source-ai` case now observes the first hit and a subsequent Unknown-EXP rejection;
+its thirteen checkpoints still use the unchanged PlayerReady input.
+
+`PrivateActionBindingTests` covers actual source/effective stats and equipment, source gold, all three
+party attackers, exact hovering land reduction, nonleader death/unknown defeat count, HEAL and
+lower learned levels. Its explicitly constructed rule seams are unit inputs, not natural reach claims
+or running-session setters. Keep natural accounting/seed producers Unknown. The grouped retained
+reference comparison selects related physical/counter/kill/defeat/healing/after-turn cases in the
+existing Domain test project, without legacy aggregate replay or tests of verification programs.
+
+For G6, make an ignored copy of `practice-yard.json`, set medic-a start HP60, and append a second
+learned spell `restore` level2, cost5, range0–2, ordinary heal power30/fullRecovery:false after `mend`.
+Run the ordinary authored path with `SF2_OBSERVATION_CASE=spell-selection`. The four-checkpoint probe
+uses H twice, observes the selected second spell and HUD, then commits HP90/MP15 and next control.
+`SpellSelectionTests` exercises the same independent costs, target reset, cancellation and rejection
+semantics. The public package order remains unchanged; diagnostics stay in the external probe.

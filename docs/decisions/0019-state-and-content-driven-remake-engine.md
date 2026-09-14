@@ -93,8 +93,8 @@ The packages supply different maps, encounters, actor identities and processing 
 spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
 `initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
 new-battle initialization policy. The separate private source now admits the bounded initialized common entry described in the
-[private dependency boundary](#private-battle-admission-dependency-boundary); later original AI/action
-and natural map programs remain unported.
+[private dependency boundary](#private-battle-admission-dependency-boundary), including the bounded
+source AI and ordinary action continuation below; wider effects and natural map programs remain unported.
 
 The plain [GameSession](../../remake/src/Sf2.Remake.Application/Runtime/GameSession.cs) reads its source
 once, owns the session/revision envelope and publishes one immutable snapshot. The independent
@@ -571,7 +571,7 @@ owns caller retirement.
 | Party and control input: [`OriginalBattle01ControlledPartyPreset`](../../remake/reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs), `Battle01FirstControlPreset` | [Player-control contract](../design/contracts/battle-functions-control-flow.md), [new-game boundary](../design/contracts/new-game-state-initialization.md), [item](../design/contracts/item-definition-data.md) and [spell data](../design/contracts/spell-definition-data.md) | **Implemented:** external reference-owned controlled JSON supplies effective equipped stats, class0/4/1, items/spells, independent seeds and policy through the common source. Unknown EXP/kills/defeats/gold remain null; an actual reached accounting operation requires an explicit value. This is controlled comparison input, not original growth/new-game initialization. EGRESS/HEAL and equipped records are preserved. |
 | New-battle initialization: [`Battle01Initialization.Initialize`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01Initialization.cs) | [New battle lifecycle](../design/contracts/battle-control-lifecycle.md#new-battle), [derived-stat research](../research/runtime-rng-and-battle-math.md) | **Implemented bounded owner:** BattleInitializationRules restores living status0 allies and enemies, retains effective equipped ally ATT, adjusts GIZMO source7→8 once at difficulty0, creates STARTING deployment/AI words and clears AI memory/last targets/region state. Broader status/dead-ally/equipped-enemy/spawn/upgrade refresh remains Unsupported. The real reference ATT caller delegates to the shared arithmetic. |
 | Round/control: [`Battle01FirstRound`](../../remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01FirstRound.cs), `Battle01FirstControl` | [Round/activation lifecycle](../design/contracts/battle-control-lifecycle.md), [turn-control join](../research/map3-battle01-turn-control.md) | **Implemented bounded owner:** BattleActivationRules precedes shared generation with region tests/assigned words and admitted empty region-program/STARTING spawn seams. State carries flags/tested mask/activation words. BattleControlRules admits the computed candidate under explicit control policy; only its missing ally word may use declared0. The real reference polygon/assigned-region/classifier callers delegate to shared rules. No natural-global-word or natural-program claim. |
-| Movement and AI: `Battle01MovementProfile`, `Battle01EnemyStandby`, `Battle01EnemyPursuit` | [Navigation](../design/contracts/battlefield-navigation.md), [AI](../design/contracts/battle-ai-decision.md) | **Required entry movers implemented:** common BattleTerrainRules interprets regular/healer/Centaur/hovering costs from Content-loaded source definitions. Weighted propagation, walk/search and RNG/scoring primitives remain shared. SourceOrders now continues through inactive anchor/memory standby, activation and set6/set7 no-action pursuit. Actual standby and pursuit reference callers project AiStandbyRules and AiMovementRules.Pursue. Reached physical operands remain step3. No authored Stay/set06 substitution or reference-history admission. |
+| Movement and AI: `Battle01MovementProfile`, `Battle01EnemyStandby`, `Battle01EnemyPursuit` | [Navigation](../design/contracts/battlefield-navigation.md), [AI](../design/contracts/battle-ai-decision.md) | **Required entry movers implemented:** common BattleTerrainRules interprets regular/healer/Centaur/hovering costs from Content-loaded source definitions. Weighted propagation, walk/search and RNG/scoring primitives remain shared. SourceOrders now continues through inactive anchor/memory standby, activation and set6/set7 no-action pursuit. Actual standby and pursuit reference callers project AiStandbyRules and AiMovementRules.Pursue. Private adjacent physical operands now bind through the source class/item/gold definitions. No authored Stay/set06 substitution or reference-history admission. |
 | Actions and continuation: `Battle01PlayerHealing`, both physical rules, `Battle01TurnCompletion` and their session wrappers | [Spell resolution](../design/contracts/spell-resolution.md), [combat](../design/contracts/combat-resolution.md), [lifecycle](../design/contracts/battle-control-lifecycle.md) | Common HEAL and physical/reward math are available, but weapon/range/prowess/land/AI-class operands must come from the actual class/item definitions. Retain reached equipment/status/unsupported-spell semantics and nullable accounting boundaries. Source-ordered after-turn, leader/outcome/return/program work remains required as reached. Application keeps one action publisher; no receipt count or named character profile enters it. |
 
 **Confirmed (implementation): lossless private encounter admission with an immediate existing
@@ -654,8 +654,8 @@ The source enters the existing `IScenarioSource`/`ScenarioDefinition`/`BattleAdv
 Godot `BattleSessionView` through `--private-battle-start`. Common movement/cancel and the shared
 weighted kernel support required regular/healer/Centaur/hovering movers. SourceOrders continues
 through actual inactive standby, activation and set6/set7 no-action pursuit to the next live player;
-it never becomes authored Stay. Reached physical operands stop with `source-attack-operands` before
-partial scoring, movement or RNG publication. The view
+it never becomes authored Stay. The private action binding below continues reached physical attacks
+through the common calculator and publisher. Unknown required accounting still rejects atomically. The view
 reports private controlled origin and Unknown accounting. No reference session is hidden behind this
 facade. The actual reference initialization/round/control callers now delegate ATT arithmetic,
 polygon/assigned-region operations and classification to these production rules; their concrete
@@ -663,7 +663,7 @@ later map/AI/action/return callers still prevent deleting the old wrappers.
 
 **Confirmed (bounded comparison):**
 [`PrivateBattleScenarioTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateBattleScenarioTests.cs)
-requires the actual six selected inputs when `SF2_REQUIRE_PRIVATE_TESTS=1`, initializes the common
+requires the actual seven selected inputs when `SF2_REQUIRE_PRIVATE_TESTS=1`, initializes the common
 session and compares its roster/resources/equipment/spells, queue, region/activation state and RNG to
 [`map3-battle01-player-ready-v1`](../../tests/fixtures/h3/map3-battle01-player-ready-v1.json), then drives
 actual movement/cancel and the reached Unsupported boundaries. Public-only skips are not private
@@ -675,16 +675,47 @@ provides the mandatory-private and native commands. The H3 non-natural R2a→R2b
 controlled intro skip remain explicit provenance; natural Map3 start/program/presentation continuity
 is not established by this comparison.
 
+### Private actions and spell selection
+
+**Confirmed (bounded engine/reference/native comparison):** Content binds the selected source
+classes' prowess, compatible adjacent ATT-only weapons, HEAL definitions and pinned enemy-gold export
+to common rules. Equipped ally ATT remains the explicit already-refreshed start operand; raw base
+ally ATT is not reconstructed. Enemy source ATT and runtime ATT remain distinct. GIZMO uses the
+Flying priority table, airborne dodge range8 when targeted, and its actual terrain protection
+(including source terrain1 multiplier230). It does not gain blanket immunity to land reduction.
+All source hit ordering, double/counter draws, per-action award, death cleanup and capped counters
+use the existing shared owners. `BattleActionCommitter` publishes one status-free/ATT-only after-turn
+pass for every successful action; there is no extra scheduling or reward publisher.
+
+The existing [PlayerReady input](../../remake/reference/inputs/battle01-player-ready.json) retains null
+accounting. The separate [action comparison input](../../remake/reference/inputs/battle01-actions.json)
+supplies explicit initial ally EXP/kills/defeats and gold. Those values and both seed sources remain
+controlled supplements with **Unknown** natural producers; no declaration ID or value gates actions.
+The actual ordinary host runs standby/activation, enemy attack, player attack, first kill and HEAL to
+next actual controls. Its first player hit retains target HP2/EXP15; first kill retains gold60/EXP39,
+one kill, an unplaced corpse and main F7751234/thinking02340000. These are external comparison
+expectations, never production admission conditions. Engine unit seams additionally exercise each
+actual party actor's source operands, nonleader defeat and nullable-counter rollback.
+
+H cycles the actor's learned spell references and levels, displaying the accepted choice. The private
+reader exposes lower learned levels too. Selection/cancellation use existing session commands; the
+engine owns legality, range, cost and effects. An authored second spell/level is usable without JSON
+reordering. Unpromoted single-target HEAL1–3 use source power/cost/range; EGRESS, HEAL4 full recovery,
+wider spells/status/equipment, reached level-up, leader loss and terminal programs remain explicit
+Unsupported. Natural Map3 programs and outcome/return are still M3/M4 dependencies. Concrete reference
+Map3/startup/return callers still retain their wrappers and explicit reference Godot scheduling; this
+standalone battle entry is not their last-caller migration.
+
 ### Private source standby and active pursuit
 
 **Confirmed (engine and bounded comparison):**
 [`SourceEnemyAiTests`](../../remake/tests/Sf2.Remake.Engine.Tests/SourceEnemyAiTests.cs) varies actor identity,
 source anchor, mover costs, occupancy, packed memory, activation, commandset and independent RNG
 low words. [`PrivateSourceAiTests`](../../remake/tests/Sf2.Remake.Engine.Tests/PrivateSourceAiTests.cs)
-requires the actual six inputs and drives common commands from the unactivated initialized entry
+requires the actual seven inputs and drives common commands from the unactivated initialized entry
 through six enemy standby turns, player-triggered activation, set7 pursuit and the next player.
-It also continues to the reached physical cohort and checks that the failed entry retains the last
-successful state. The [native observation](../../remake/docs/development-and-verification.md#private-initialized-entry-observation)
+It continues through the actual first physical cohort to Bowie control, then checks that unknown EXP
+rejects his selected attack without publishing any part of it. The [native observation](../../remake/docs/development-and-verification.md#private-initialized-entry-observation)
 drives the same movement/cancel/STAY controls in Godot without state setters or images.
 
 `AiStandbyRules` owns the regular source eligibility, immutable-anchor candidate patterns, evolving
@@ -697,8 +728,8 @@ without RNG or last-target changes; successful standby carries only its actual t
 
 This boundary admits status-free source enemies with NONE orders and no enemy items/spells for active
 pursuit. Nonempty/unresolved orders, other reached commandsets, broader status/neutral occupancy and
-nonempty action categories remain explicit Unsupported. A physical cohort requires the next private
-class/equipment/action/reward binding and rejects before partial publication. The reference
+nonempty action categories remain explicit Unsupported. Physical cohorts consume the
+[private action binding](#private-actions-and-spell-selection), with failures retaining the last committed state. The reference
 [caller inventory](../../remake/reference/README.md#private-startup-callers-and-removal-boundaries)
 retains its actual later control/history/action/map/return consumers; shared calculations do not by
 themselves remove those callers. Natural Map3 programs, outcome/return and8C/H4 remain incomplete.
@@ -713,14 +744,14 @@ The current dependency order is:
    last target and both RNG channels preserved. The real standby and pursuit calculations are shared
    with reference callers; Content movers and source legal grids feed the common movement/action
    publisher. No round, actor, receipt or expected endpoint admits gameplay.
-3. **Reached private action operands and completion.** Bind actual equipment/class/spell/reward data
-   to the shared physical/HEAL/after-turn rules and compare the affected real actor/target chain.
+3. **Reached private action operands and completion — implemented at the bounded boundary below.**
+   Actual equipment/class/spell/reward data feed shared physical/HEAL/after-turn rules and the real
+   actor/target chain is compared.
    Remove the corresponding reference wrappers and Godot scheduling branches as their last callers
    migrate. This does not wait for M5; unsupported EGRESS, broader status, terminal programs and return
    stay with their named future consumers.
 
-Remaining step3 needs a fresh exact-path declaration after step2 is accepted;
-this dependency decision does not authorize starting that slice. **Unknown:** general
+**Unknown:** general
 spawn/derived-stat coverage beyond the named contracts, naturally carried party/accounting/seed-copy
 values, and natural Map3→Battle01 program/presentation continuity. Resolve a needed gap against the
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.
@@ -751,7 +782,7 @@ input/state observations exercise continuous common private play and the retaine
 smoke. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-and-reference-host-startup)
 provides reproduction commands. Ordinary export configuration excludes probes, while complete
 ordinary package/export contents remain unverified. G3/G4 follow actual program/content consumers;
-G6 and private step3 equipment/action/reward stay with the player action interface. Natural Map3
+G6 and bounded private step3 are implemented by the common player action interface documented above. Natural Map3
 programs, outcome/return and full ADR0009/0010 remain incomplete.
 
 ## Evidence used and its limits

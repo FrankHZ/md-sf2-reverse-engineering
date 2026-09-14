@@ -14,13 +14,13 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class PrivateBattleScenarioTests
 {
     private const string Data = "SF2_PRIVATE_BATTLE01_DATA", Scene = "SF2_PRIVATE_BATTLE01_SCENE", Terrain = "SF2_PRIVATE_BATTLE01_TERRAIN",
-        Static = "SF2_PRIVATE_STATIC_DATA", Enemy = "SF2_PRIVATE_ENEMY_DATA", StartInput = "SF2_PRIVATE_CONTROLLED_START";
+        Static = "SF2_PRIVATE_STATIC_DATA", Enemy = "SF2_PRIVATE_ENEMY_DATA", Gold = "SF2_PRIVATE_ENEMY_GOLD", StartInput = "SF2_PRIVATE_CONTROLLED_START";
     private static string Input(string name) => PrivateInputFactAttribute.RequireInput(name);
     internal static PrivateBattleScenarioReader Selected(string? controlled = null, string? definitions = null) =>
-        new(Input(Data), Input(Scene), Input(Terrain), definitions ?? Input(Static), Input(Enemy), controlled ?? Input(StartInput));
+        new(Input(Data), Input(Scene), Input(Terrain), definitions ?? Input(Static), Input(Enemy), Input(Gold), controlled ?? Input(StartInput));
     private static ActorRef Actor(int index) => new(index < 128 ? "ally-" + index : "enemy-" + (index - 128));
 
-    [PrivateInputFact(Data, Scene, Terrain, Static, Enemy, StartInput)]
+    [PrivateInputFact(Data, Scene, Terrain, Static, Enemy, Gold, StartInput)]
     public void ActualPinnedInputsInitializeTheCommonSessionAndMatchThePlayerReadyBoundary()
     {
         var admitted = Assert.IsType<ScenarioReadAccepted>(Selected().Read());
@@ -100,7 +100,7 @@ public sealed class PrivateBattleScenarioTests
 
     }
 
-    [PrivateInputFact(Data, Scene, Terrain, Static, Enemy, StartInput)]
+    [PrivateInputFact(Data, Scene, Terrain, Static, Enemy, Gold, StartInput)]
     public void SelectedPrivateFailuresAreTypedAndControlledValuesCannotImportActivatedState()
     {
         var folder = Path.Combine(Path.GetTempPath(), "sf2-private-entry-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
@@ -134,7 +134,7 @@ public sealed class PrivateBattleScenarioTests
     [Fact]
     public void PartialPrivateSelectionFailsWithoutPathsAndThePublicDefaultRemainsAuthored()
     {
-        var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new PrivateBattleScenarioReader("", "", "", "", "", "")));
+        var failed = Assert.IsType<SessionStartFailed>(GameSession.Start(new PrivateBattleScenarioReader("", "", "", "", "", "", "")));
         Assert.Equal("private-input-selection", failed.Failure.Code);
         Assert.Equal("public-authored-controlled-start", Start().Definition.Origin);
     }

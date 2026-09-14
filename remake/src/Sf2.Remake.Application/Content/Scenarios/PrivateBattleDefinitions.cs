@@ -16,6 +16,8 @@ public sealed record SourceSpellDefinition(byte RecordId, byte BaseId, string Co
 {
     public SpellRef Spell => new(Code.ToLowerInvariant(), Level);
 }
+public sealed record SourceEnemyGold(byte EnemyId, ushort Gold, string UpstreamCommit, string RomSha256,
+    string SourcePath, int RomAddress);
 public sealed record SourceEnemyItem(string Expression, string Item, bool Equipped);
 public sealed record SourceEnemySpell(string Expression, string Spell, byte Level);
 public sealed record SourceEnemyDefinition(byte Id, string Code, string DisplayName, string NameExpression,
@@ -29,14 +31,16 @@ public sealed class PrivateBattleDefinitions
 {
     internal PrivateBattleDefinitions(BattleEncounterDefinition encounter, IEnumerable<EncounterSource> sources,
         IEnumerable<SourceClassDefinition> classes, IEnumerable<SourceItemDefinition> items,
-        IEnumerable<SourceSpellDefinition> spells, IEnumerable<SourceEnemyDefinition> enemies)
+        IEnumerable<SourceSpellDefinition> spells, IEnumerable<SourceEnemyDefinition> enemies, IEnumerable<SourceEnemyGold> gold)
     {
+        EnemyGold = new ReadOnlyDictionary<byte, SourceEnemyGold>(gold.ToDictionary(row => row.EnemyId));
         Encounter = encounter; Sources = Array.AsReadOnly(sources.ToArray());
         Classes = new ReadOnlyDictionary<byte, SourceClassDefinition>(classes.ToDictionary(row => row.Id));
         Items = new ReadOnlyDictionary<byte, SourceItemDefinition>(items.ToDictionary(row => row.Id));
         Spells = new ReadOnlyDictionary<SpellRef, SourceSpellDefinition>(spells.ToDictionary(row => row.Spell));
         Enemies = new ReadOnlyDictionary<string, SourceEnemyDefinition>(enemies.ToDictionary(row => row.Code, StringComparer.Ordinal));
     }
+    public IReadOnlyDictionary<byte, SourceEnemyGold> EnemyGold { get; }
     public BattleEncounterDefinition Encounter { get; }
     public IReadOnlyList<EncounterSource> Sources { get; }
     public IReadOnlyDictionary<byte, SourceClassDefinition> Classes { get; }

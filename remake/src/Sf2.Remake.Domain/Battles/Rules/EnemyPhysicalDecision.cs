@@ -40,9 +40,9 @@ internal static class EnemyPhysicalDecision
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
             thinking = after;
         }
-        // Authored physical definitions currently admit regular movement only; the table is
-        // determined by that capability, never supplied independently by configuration.
-        var selection = PhysicalTargetRules.Select(priorities, PhysicalPriorityTable.Regular)
+        // Source airborne movement selects the Flying table; the other admitted movers use Regular.
+        var selection = PhysicalTargetRules.Select(priorities, actor.Definition.Mover == BattleMover.Hovering
+            ? PhysicalPriorityTable.Flying : PhysicalPriorityTable.Regular)
             ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
         var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,
