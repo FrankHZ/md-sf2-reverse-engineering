@@ -74,8 +74,8 @@ public sealed class BattleFactionOrderTests
 
     [Theory]
     [InlineData("faction", "battle-faction", SessionFailureKind.UnsupportedCapability)]
-    [InlineData("ally-ai", "controller-side", SessionFailureKind.UnsupportedCapability)]
-    [InlineData("enemy-player", "controller-side", SessionFailureKind.UnsupportedCapability)]
+    [InlineData("ally-ai", "control-side", SessionFailureKind.UnsupportedCapability)]
+    [InlineData("enemy-player", "control-side", SessionFailureKind.UnsupportedCapability)]
     [InlineData("duplicate-order", "duplicate-processing-order", SessionFailureKind.ContentError)]
     [InlineData("negative-order", "numeric-range", SessionFailureKind.ContentError)]
     [InlineData("missing-order", "missing-field", SessionFailureKind.ContentError)]
@@ -87,8 +87,8 @@ public sealed class BattleFactionOrderTests
         switch (shape)
         {
             case "faction": placements[0]!["faction"] = "neutral"; break;
-            case "ally-ai": document["actors"]![0]!["controller"] = "stay"; break;
-            case "enemy-player": document["actors"]![2]!["controller"] = "player"; break;
+            case "ally-ai": placements[0]!["control"] = "automatic"; placements[0]!["aiStrategy"] = "stay"; break;
+            case "enemy-player": placements[2]!["control"] = "player"; placements[2]!["aiStrategy"] = null; break;
             case "duplicate-order": placements[0]!["processingOrder"] = placements[1]!["processingOrder"]!.DeepClone(); break;
             case "negative-order": placements[0]!["processingOrder"] = -1; break;
             case "missing-order": placements[0]!.AsObject().Remove("processingOrder"); break;

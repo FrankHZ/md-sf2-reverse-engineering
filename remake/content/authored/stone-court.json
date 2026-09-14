@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "package": "stone-court",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -87,7 +87,6 @@
     {
       "id": "swordsman",
       "classRule": "ordinary",
-      "controller": "player",
       "level": 1,
       "maxHp": 35,
       "maxMp": 0,
@@ -113,7 +112,6 @@
     {
       "id": "lookout",
       "classRule": "ordinary",
-      "controller": "player",
       "level": 1,
       "maxHp": 35,
       "maxMp": 0,
@@ -139,7 +137,6 @@
     {
       "id": "raider",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -165,7 +162,6 @@
     {
       "id": "scavenger",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -191,7 +187,6 @@
     {
       "id": "sentry",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -225,35 +220,45 @@
           "x": 3,
           "y": 3,
           "faction": "ally",
-          "processingOrder": 4
+          "processingOrder": 4,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "lookout",
           "x": 1,
           "y": 1,
           "faction": "ally",
-          "processingOrder": 19
+          "processingOrder": 19,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "raider",
           "x": 2,
           "y": 3,
           "faction": "enemy",
-          "processingOrder": 131
+          "processingOrder": 131,
+          "control": "automatic",
+          "aiStrategy": "stay"
         },
         {
           "actor": "scavenger",
           "x": 4,
           "y": 3,
           "faction": "enemy",
-          "processingOrder": 142
+          "processingOrder": 142,
+          "control": "automatic",
+          "aiStrategy": "stay"
         },
         {
           "actor": "sentry",
           "x": 7,
           "y": 5,
           "faction": "enemy",
-          "processingOrder": 154
+          "processingOrder": 154,
+          "control": "automatic",
+          "aiStrategy": "stay"
         }
       ],
       "rewards": {

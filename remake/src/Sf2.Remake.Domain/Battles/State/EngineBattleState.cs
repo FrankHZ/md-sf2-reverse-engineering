@@ -12,7 +12,8 @@ namespace Sf2.Remake.Domain.Battles;
 public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior }
-public enum BattleController { Player, Stay, Commandset06Script3 }
+public enum BattleControl { Player, Automatic }
+public enum BattleAiStrategy { Stay, AttackThenApproach }
 public enum BattleFaction { Ally, Enemy }
 
 public sealed class PhysicalCriticalRule
@@ -35,11 +36,11 @@ public sealed record HealingSpellDefinition(
 public sealed class BattleActorDefinition
 {
     internal BattleActorDefinition(ActorRef actor, BattleClassRule classRule,
-        BattleController controller, byte level, ushort maxHp, byte maxMp,
+        byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null)
     {
-        Actor = actor; ClassRule = classRule; Controller = controller;
+        Actor = actor; ClassRule = classRule;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
     }
@@ -50,7 +51,6 @@ public sealed class BattleActorDefinition
         BattleClassRule.UnpromotedSwordsman => 0, BattleClassRule.UnpromotedWarrior => 2,
         BattleClassRule.UnpromotedPriest => 4, _ => null,
     };
-    public BattleController Controller { get; }
     public byte Level { get; }
     public ushort MaxHp { get; }
     public byte MaxMp { get; }
@@ -72,6 +72,8 @@ public sealed class BattleActorState
     public BattleDeploymentDefinition Deployment { get; }
     public BattleActorDefinition Definition => Deployment.Definition;
     public BattleFaction Faction => Deployment.Faction;
+    public BattleControl Control => Deployment.Control;
+    public BattleAiStrategy? AiStrategy => Deployment.AiStrategy;
     public int ProcessingOrder => Deployment.ProcessingOrder;
     public bool IsAlly => Faction == BattleFaction.Ally;
     public ActorRef Actor => Definition.Actor;
@@ -88,7 +90,7 @@ public sealed class BattleActorState
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
-    int ProcessingOrder, MapPosition Position)
+    int ProcessingOrder, BattleControl Control, BattleAiStrategy? AiStrategy, MapPosition Position)
 {
     public ActorRef Actor => Definition.Actor;
 }

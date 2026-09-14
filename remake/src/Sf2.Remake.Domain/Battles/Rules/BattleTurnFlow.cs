@@ -18,6 +18,23 @@ internal static class BattleTurnFlow
         return new(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold);
     }
 
+    // Encounter policy is validated at Content admission and reusable session start, even for dead actors.
+    internal static void ValidateDeployment(BattleDeploymentDefinition deployment)
+    {
+        var actor = deployment.Definition;
+        Require((deployment.Control, deployment.AiStrategy) is (BattleControl.Player, null) or
+            (BattleControl.Automatic, BattleAiStrategy.Stay or BattleAiStrategy.AttackThenApproach),
+            "control-ai", "placements.control/aiStrategy", true);
+        Require((deployment.Faction == BattleFaction.Ally) == (deployment.Control == BattleControl.Player),
+            "control-side", "placements.faction/control", true);
+        if (deployment.AiStrategy == BattleAiStrategy.AttackThenApproach)
+        {
+            Require(actor.Physical is not null, "physical-definition", "actors.physical", true);
+            Require(actor.Spells.Count == 0, "ai-action-categories", "actors.spells", true);
+            Require(actor.Move is >= 1 and <= 63, "ai-movement-domain", "actors.move", true);
+        }
+    }
+
     // Used by the real Content admission and again by the reusable public session start boundary.
     internal static void ValidateStart(BattleDefinition definition, BattleStartInput start)
     {
@@ -35,6 +52,7 @@ internal static class BattleTurnFlow
         int allies = 0, enemies = 0, turns = 0;
         foreach (var deployment in definition.Deployments)
         {
+            ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
             Require(input.Hp <= actor.MaxHp && input.Mp <= actor.MaxMp && input.Exp <= 99 &&
                 input.Kills <= 9999 && input.Defeats <= 9999, "numeric-range", "start.actors.resources");
@@ -54,10 +72,10 @@ internal static class BattleTurnFlow
         }
         Require(allies > 0 && enemies > 0, "battle-outcome", "start.actors", true);
         Require(turns <= 64, "turn-buffer-capacity", "start.actors");
-
-        static void Require(bool condition, string code, string field, bool unsupported = false)
-        { if (!condition) throw new BattleRuleException(code, field, unsupported); }
     }
+
+    private static void Require(bool condition, string code, string field, bool unsupported = false)
+    { if (!condition) throw new BattleRuleException(code, field, unsupported); }
 
     internal static EngineBattleState GenerateRound(EngineBattleState battle)
     {

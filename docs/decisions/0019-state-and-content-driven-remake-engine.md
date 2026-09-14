@@ -154,7 +154,7 @@ Map 3/Battle 01 continuity, 8C or H4.
 The user-approved JSON model modernization precedes the remaining common private initialized-entry
 plan. Its first implemented boundary separates reusable content definitions from one session's
 controlled start. JSON remains the bounded package format; the four executable authored packages now
-use `formatVersion: 5`. The reader accepts that current shape only, without parallel old/new models.
+use `formatVersion: 6`. The reader accepts that current shape only, without parallel old/new models.
 
 [`ScenarioDefinition`](../../remake/src/Sf2.Remake.Application/Content/Scenarios/ScenarioDefinition.cs)
 contains the admitted encounter definitions from one package. Each Domain `BattleDefinition` owns
@@ -195,8 +195,8 @@ controlled start; no screenshots, session setters or reference aggregate are req
 
 Each `BattleDeploymentDefinition` now owns `Faction` (`Ally` or `Enemy`) and a nonnegative unique
 `ProcessingOrder`. These are encounter roles, separate from intrinsic actor definitions and from
-per-session resources or position overrides. Format-v5 `placements` require `actor`, `faction`,
-`processingOrder`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
+per-session resources or position overrides. Format-v6 `placements` require `actor`, `faction`,
+`processingOrder`, `control`, `aiStrategy`, `x` and `y`; actors no longer contain a numeric slot. The four packages map their
 previous order explicitly without changing other values. Content retains the admitted maximum of
 30 allies and 32 enemies and supported player-ally / AI-enemy combinations; ally AI and player-controlled
 enemies remain Unsupported. This is a bounded two-faction model, not a general faction framework.
@@ -223,7 +223,7 @@ uses the existing adapter/probe with four packages and changed-order input, with
 
 ### Numerical agility and extra round action
 
-Format-v5 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
+Format-v6 actor definitions require numerical `agility` (0–127) and boolean `extraRoundAction`.
 `BattleActorDefinition` and shared `TurnOrderCandidate` carry those two values independently; no
 character identity, value threshold or missing field supplies eligibility. The four authored packages
 retain their configured numerical agility with `extraRoundAction: false`. The real Content reader
@@ -249,7 +249,7 @@ uses actual input and existing queue/state/node observations, without screenshot
 
 ### Supported physical critical rules
 
-Format-v5 `physical.critical` is a closed semantic pair: `chance` and `damageBonus`. The supported
+Format-v6 `physical.critical` is a closed semantic pair: `chance` and `damageBonus`. The supported
 combinations are `one-in-32` with `half`, and `one-in-16` with `quarter`. These describe an added
 fraction of damage after land reduction, before counter halving and spread; they are not arbitrary
 probabilities or source prowess IDs. Missing/malformed fields reject as ContentError, unsupported
@@ -272,9 +272,41 @@ configuration. Existing first/second/counter/death tests and grouped source comp
 The [physical observation recipes](../../remake/docs/development-and-verification.md#physical-critical-configuration)
 use the existing Godot input/state probe; no adapter observation or gameplay authority changes.
 
-Remaining modernization is explicitly separate: control versus AI strategy, terrain semantic references
-and remaining raw source mappings. Existing source semantics remain unchanged until their dedicated
-migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
+### Independent control and automatic strategy
+
+Encounter deployments own `BattleControl` (`Player` or `Automatic`) separately from nullable
+`BattleAiStrategy` (`Stay` or `AttackThenApproach`). Intrinsic `BattleActorDefinition` no longer owns
+control: the same immutable actor can be deployed under different control or policy in different
+encounters. Runtime actors derive both choices from their deployment, with no copied state authority.
+This is an encounter assignment, not a new status/possession system or mutable campaign controller.
+
+Format-v6 placements require `control` and `aiStrategy`. `player` requires a null strategy; `automatic`
+requires an explicit `stay` or `attack-then-approach`. Missing/malformed fields are ContentError;
+unsupported policies or incompatible pairs are UnsupportedCapability. Only ally/player and
+enemy/automatic are currently supported. The shared Domain deployment validator runs at Content
+admission and reusable session start, including dead deployments. Attack-then-approach still requires
+regular physical capability, an empty spellbook and MOV1–63; items/status remain unsupported.
+
+The semantic strategy means: attempt the admitted physical attack; if none can be selected, approach
+using the accepted movement continuation and end the turn, including origin Stay. The existing rule
+body is named [AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AttackThenApproachAi.cs).
+It retains source ATTACK1/script3, empty HEAL1/SUPPORT failures and MOVE1 mode0 order and observations.
+Shared target/movement/physical bodies and original reference commandset/script mappings are unchanged.
+No attack follows movement in the same action; both RNG streams, target memory, temporary settlement,
+rewards/death, failed queue entry and earlier committed work retain their existing contracts.
+`BattleAdvancer` explicitly handles player input, automatic Stay and attack-then-approach; an unknown
+combination cannot fall through to Stay. Godot's existing AI-memory projection reads the same deployment.
+
+**Confirmed (engine):** [BattleControlAiTests](../../remake/tests/Sf2.Remake.Engine.Tests/BattleControlAiTests.cs)
+starts the same actor definition in separate player, automatic Stay and automatic attack deployments,
+executes their different outcomes, preserves independent sessions and rejects missing/incompatible
+configuration at real Content and reusable start boundaries. Existing attack, pursuit/origin-Stay,
+startup/next-control, array-order and atomic failure cases retain independent expected states/seeds.
+The [control/AI observation recipes](../../remake/docs/development-and-verification.md#independent-control-and-ai-strategy)
+use actual inputs and the existing probe; related source comparisons run as a group.
+
+Remaining modernization is explicitly separate: terrain semantic references and remaining raw source
+mappings. Existing source semantics remain unchanged until their dedicated migration. No global catalog, lazy loader, generic content manager, per-actor framework or schema
 registry is introduced. Resource-on-demand loading needs an actual map/resource consumer. Only after
 these bounded content slices does the private initialized-entry dependency chain resume; raw private
 encounter expressions/provenance remain lossless, and unspecified private accounting remains Unknown.
@@ -353,8 +385,9 @@ wholesale to M5. Production projects remain independent of the reference assembl
 
 [EnemyPhysicalDecision](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyPhysicalDecision.cs)
 implements the already-active, physical-only ATTACK1 success branch with TargetPriorityScript3.
-The typed `commandset06-script3` controller names this capability; activation, other commandsets and
-spell/item categories remain Unsupported. Regular MOV 1–63 bounds candidate movement below the
+The semantic `attack-then-approach` deployment strategy consumes this capability; original commandset06/
+script3 mapping stays at the source/reference boundary. Activation, other commandsets and spell/item
+categories remain Unsupported. Regular MOV 1–63 bounds candidate movement below the
 source signed-grid 128 boundary. Candidate construction uses the existing weighted grid, blocks
 opponents, permits traversal through friends and excludes occupied stopping cells. The radius-one
 ring visits north, west, east, south, takes the first strictly lowest movement cost, and immediately
@@ -423,7 +456,7 @@ continuity, presentation and8C/H4. These engine checks do not complete M2 or A1�
 
 ### Zero-target commandset06 continuation
 
-[EnemyCommandset06](../../remake/src/Sf2.Remake.Domain/Battles/Rules/EnemyCommandset06.cs) owns the
+[AttackThenApproachAi](../../remake/src/Sf2.Remake.Domain/Battles/Rules/AttackThenApproachAi.cs) owns the
 fixed sequence ATTACK1 → HEAL1 → SUPPORT → MOVE1 → STAY for the admitted already-active,
 physical-only, empty spellbook/item/status branch. ATTACK1 success stops the sequence. Without an
 attack candidate, ATTACK1 and the unavailable HEAL1/SUPPORT return failure without consuming RNG.
@@ -801,10 +834,10 @@ The current executable examples are
 [`practice-yard`](../../remake/content/authored/practice-yard.json),
 [`garden-watch`](../../remake/content/authored/garden-watch.json),
 [`stone-court`](../../remake/content/authored/stone-court.json) and
-[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v5 documents
+[`river-post`](../../remake/content/authored/river-post.json). Use those complete format-v6 documents
 through the real reader; the [profile owner](../../remake/docs/runtime-profiles-and-trust.md#public-authored)
 describes their closed fields and supported domains. Their `actors` contain definitions, encounter
-`placements` own faction, stable processing order and deployment coordinates, and `start.actors` bind explicit per-session values by
+`placements` own faction, stable processing order, control/AI strategy and deployment coordinates, and `start.actors` bind explicit per-session values by
 actor reference. A start override changes one controlled deployment without altering the definition.
 
 A second supported package needs data changes only. Encounter processing order is independent of faction and actor identity;

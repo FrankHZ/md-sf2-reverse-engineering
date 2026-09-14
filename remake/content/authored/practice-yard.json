@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "package": "practice-yard",
   "profile": "public-authored",
   "ruleProfile": "sf2-semantic-subset-v1",
@@ -82,7 +82,6 @@
     {
       "id": "medic-a",
       "classRule": "unpromoted-priest",
-      "controller": "player",
       "level": 1,
       "maxHp": 100,
       "maxMp": 20,
@@ -102,7 +101,6 @@
     {
       "id": "guard-a",
       "classRule": "ordinary",
-      "controller": "player",
       "level": 1,
       "maxHp": 12,
       "maxMp": 0,
@@ -117,7 +115,6 @@
     {
       "id": "dummy-a",
       "classRule": "ordinary",
-      "controller": "stay",
       "level": 1,
       "maxHp": 15,
       "maxMp": 0,
@@ -140,21 +137,27 @@
           "x": 3,
           "y": 3,
           "faction": "ally",
-          "processingOrder": 7
+          "processingOrder": 7,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "guard-a",
           "x": 3,
           "y": 5,
           "faction": "ally",
-          "processingOrder": 9
+          "processingOrder": 9,
+          "control": "player",
+          "aiStrategy": null
         },
         {
           "actor": "dummy-a",
           "x": 8,
           "y": 5,
           "faction": "enemy",
-          "processingOrder": 129
+          "processingOrder": 129,
+          "control": "automatic",
+          "aiStrategy": "stay"
         }
       ]
     }

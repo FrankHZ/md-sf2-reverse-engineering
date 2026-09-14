@@ -28,7 +28,7 @@ public sealed class PhysicalRuleConfigurationTests
         document["actors"]![attackerIndex]!["physical"]!["critical"] = Critical(chance, bonus);
         if (enemyActs)
         {
-            document["actors"]![2]!["controller"] = "commandset06-script3";
+            document["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "attack-then-approach";
             document["actors"]![2]!["move"] = 1;
         }
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document))).Session;

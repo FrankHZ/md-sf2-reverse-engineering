@@ -210,7 +210,7 @@ public sealed class EnemyActionTests
         var session = Start("stone-court", d =>
         {
             Configure(d, 55);
-            d["actors"]![3]!["controller"] = "commandset06-script3";
+            d["encounters"]![0]!["placements"]![3]!["aiStrategy"] = "attack-then-approach";
             d["actors"]![3]!["move"] = 6;
             d["actors"]![1]!.AsObject().Remove("physical");
         });
@@ -228,12 +228,13 @@ public sealed class EnemyActionTests
     }
 
     [Theory]
-    [InlineData("controller", "attack-nearest", "ai-commandset")]
+    [InlineData("aiStrategy", "attack-nearest", "ai-strategy")]
     [InlineData("move", "64", "ai-movement-domain")]
     public void UnsupportedAiDefinitionsFailAdmission(string field, string value, string code)
     {
         var doc = Document("stone-court"); Configure(doc, 55);
-        doc["actors"]![2]![field] = field == "move" ? JsonValue.Create(int.Parse(value)) : JsonValue.Create(value);
+        if (field == "move") doc["actors"]![2]![field] = int.Parse(value);
+        else doc["encounters"]![0]!["placements"]![2]![field] = value;
         Assert.Equal(code, Assert.IsType<SessionStartFailed>(GameSession.Start(Reader(doc))).Failure.Code);
     }
 
@@ -247,6 +248,6 @@ public sealed class EnemyActionTests
         }
         doc["actors"]![0]!["attack"] = 18; doc["actors"]![0]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-32", ["damageBonus"] = "half" };
         doc["actors"]![2]!["attack"] = 30; doc["actors"]![2]!["physical"]!["critical"] = new JsonObject { ["chance"] = "one-in-16", ["damageBonus"] = "quarter" };
-        doc["actors"]![2]!["controller"] = "commandset06-script3"; doc["actors"]![2]!["move"] = 1;
+        doc["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "attack-then-approach"; doc["actors"]![2]!["move"] = 1;
     }
 }
