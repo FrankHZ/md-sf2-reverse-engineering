@@ -42,7 +42,7 @@ func _run() -> void:
     await _resize(Vector2i(960, 540))
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
-        failures.append("Authored view did not start.")
+        failures.append("Common battle view did not start.")
         _finish()
         return
     var initial := _read("initial")
@@ -54,6 +54,11 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "private-initialized":
+            await _private_initialized(initial)
+            _check(samples.size() == 7, "Private entry completed all seven real-input checkpoints")
+            _finish()
+            return
         if arguments[case_index + 1] == "extra-turn":
             await _extra_turn(initial)
             _check(samples.size() == 7, "Extra-turn observation completed all seven checkpoints")
@@ -611,3 +616,48 @@ func _finish() -> void:
             failures.append("Could not write observation output.")
     print("SF2_ENGINE_OBSERVATION " + JSON.stringify({"passed": failures.is_empty(), "samples": samples.size(), "failures": failures}))
     quit(0 if failures.is_empty() else 1)
+
+func _private_initialized(initial: Dictionary) -> void:
+    _check(initial.origin == "private-local-controlled-start" and initial.title.begins_with("PRIVATE CONTROLLED BATTLE"), "Common host discloses private controlled origin")
+    _check(initial.actor == "ally-1" and initial.round == 1 and initial.queueCursor == 0, "Computed first candidate enters player movement")
+    _check(initial.mainSeed == 0xA4991234 and initial.thinkingSeed == 0x12340000, "Initialized entry carries both independent RNG images")
+    _check(initial.regionsTested == 7 and not initial.regionFlags.has(true), "Original initial placements test three inactive regions")
+    _check(initial.turnOrder.size() == 64 and initial.turnOrder[0].actor == "ally-1" and initial.turnOrder[1].actor == "ally-2", "Actual generated queue is observed")
+    _check(initial.gold == null and initial.roster.contains("EXP Unknown"), "Unknown accounting remains explicit in state and HUD")
+    for actor in initial.actors:
+        _check(actor.exp == null and actor.kills == null and actor.defeats == null, "No unknown actor accounting is invented")
+        _check(actor.visible and actor.nodeX == actor.x * 40 + 2 and actor.nodeY == actor.y * 40 + 4, "Actual actor marker follows initialized position")
+        if actor.id.begins_with("enemy-"):
+            _check(actor.sourceAttack == 7 and actor.attack == 8 and actor.mover == "Hovering", "Source enemy baseline and one effective adjustment remain distinct")
+        else:
+            _check(actor.attack == actor.sourceAttack, "Equipped allies are not refreshed twice")
+    await _press(KEY_W)
+    var moved := _read("private-movement-preview")
+    _check(moved.previewX == 9 and moved.previewY == 17 and moved.actors[1].y == 18 and moved.mainSeed == initial.mainSeed, "Common input moves only the preview")
+    await _press(KEY_ENTER)
+    await _press(KEY_ESCAPE)
+    var cancelled := _read("private-cancelled")
+    _check(cancelled.previewY == 18 and cancelled.stage == "Movement" and cancelled.mainSeed == initial.mainSeed, "Cancel restores committed initialized position")
+    await _press(KEY_ENTER)
+    await _press(KEY_H)
+    await _press(KEY_ENTER)
+    var unknown := _read("private-accounting-unsupported")
+    _check(unknown.failure == "unspecified-exp" and unknown.mainSeed == initial.mainSeed and unknown.actors[1].mp == 10, "Reached HEAL cannot invent EXP or partially consume MP/RNG")
+    await _press(KEY_ESCAPE)
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var centaur := _read("private-next-centaur")
+    _check(centaur.actor == "ally-2" and centaur.queueCursor == 1 and centaur.actors[2].mover == "Centaur", "Next generated player uses the required Centaur mover")
+    await _press(KEY_W)
+    await _press(KEY_ESCAPE)
+    var centaur_cancelled := _read("private-centaur-cancelled")
+    _check(centaur_cancelled.previewX == 7 and centaur_cancelled.previewY == 18 and centaur_cancelled.mainSeed == initial.mainSeed, "Centaur uses the same movement/cancel commands")
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+    var enemy := _read("private-enemy-continuation-unsupported")
+    _check(enemy.failure == "source-enemy-continuation" and enemy.stopReason == "Unsupported" and enemy.queueCursor == 2, "Unported source enemy continuation is explicit and retains its entry")
+    _check(enemy.mainSeed == initial.mainSeed and enemy.thinkingSeed == initial.thinkingSeed, "Unsupported enemy continuation has no RNG side effect")
+    for observation in enemy.observations:
+        _check(observation.Kind != "ai-stay", "Source orders are never replaced by authored Stay")

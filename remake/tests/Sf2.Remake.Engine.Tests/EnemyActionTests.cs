@@ -25,8 +25,8 @@ public sealed class EnemyActionTests
         var result = Stay(session);
         Assert.Equal(allyHp, result.Snapshot.Battle.GetActor(ally).Hp);
         Assert.Equal(enemyHp, result.Snapshot.Battle.GetActor(enemy).Hp);
-        Assert.Equal(exp, result.Snapshot.Battle.GetActor(ally).Exp);
-        Assert.Equal(0, result.Snapshot.Battle.GetActor(enemy).Exp);
+        Assert.Equal(exp, result.Snapshot.Battle.GetActor(ally).Exp!.Value);
+        Assert.Equal(0, result.Snapshot.Battle.GetActor(enemy).Exp!.Value);
         Assert.Equal(finalSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(ally, result.Snapshot.Battle.GetActor(enemy).LastTarget);
@@ -143,8 +143,8 @@ public sealed class EnemyActionTests
         var state = started.Session.Current.Battle;
         Assert.Equal(0, state.GetActor(new("raider")).Hp);
         Assert.Null(state.GetActor(new("raider")).Position);
-        Assert.Equal(24, state.GetActor(new("swordsman")).Exp);
-        Assert.Equal(9999, state.GetActor(new("swordsman")).Kills);
+        Assert.Equal(24, state.GetActor(new("swordsman")).Exp!.Value);
+        Assert.Equal(9999, state.GetActor(new("swordsman")).Kills!.Value);
         Assert.Equal(119u, state.Gold);
         Assert.Equal(0x9A0E1234u, state.MainSeed);
         var history = started.Result.Observations.ToList();
@@ -166,7 +166,7 @@ public sealed class EnemyActionTests
         Assert.Null(started.Result.Failure);
         var state = started.Session.Current.Battle;
         Assert.Null(state.GetActor(new("swordsman")).Position);
-        Assert.Equal(9999, state.GetActor(new("swordsman")).Defeats);
+        Assert.Equal(9999, state.GetActor(new("swordsman")).Defeats!.Value);
         Assert.Equal(new ActorRef("lookout"), started.Session.Current.Selection!.Actor);
         Assert.Equal(100u, state.Gold);
         Assert.DoesNotContain(started.Result.Observations, o => o.Kind is "exp" or "rng-exp-plus" or "physical-counter");

@@ -342,7 +342,7 @@ public static class Battle01Initialization
                 ? party[index].EffectiveStats.Initialize(party[index].EffectiveStats.Attack,
                     (ushort)(party[index].EffectiveStats.Status & 0x0007))
                 // Accepted bounded policy: fixed difficulty0 source7 -> floor(7*5/4), once.
-                : baseline.Initialize((byte)(baseline.Attack * 5 / 4), baseline.Status);
+                : baseline.Initialize(BattleInitializationRules.EnemyAttack(baseline.Attack, difficulty), baseline.Status);
             roster[index] = new(rows[index], stats, index < 3 ? party[index].ClassId : null, index < 3 ? null : enemy);
             occupancy[rows[index].Position.Y * 48 + rows[index].Position.X] = rows[index].CombatantIndex;
         }

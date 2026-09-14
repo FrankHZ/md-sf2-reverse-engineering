@@ -35,7 +35,7 @@ public sealed class BattleStartStateTests
         Assert.Equal(new MapPosition(4, 3), second.Current.Battle.Actors[0].Position);
         Assert.Equal(new MapPosition(3, 3), encounter.Deployments[0].Position);
         Assert.Equal((70, 7, 40, 12, 3), ((int)second.Current.Battle.Actors[0].Hp, second.Current.Battle.Actors[0].Mp,
-            second.Current.Battle.Actors[0].Exp, second.Current.Battle.Actors[0].Kills, second.Current.Battle.Actors[0].Defeats));
+            second.Current.Battle.Actors[0].Exp!.Value, second.Current.Battle.Actors[0].Kills!.Value, second.Current.Battle.Actors[0].Defeats!.Value));
         Assert.Equal((uint)1234, second.Current.Battle.Gold);
         Assert.Equal(0x12344321u, second.Current.Battle.ThinkingSeed);
         foreach (var session in new[] { first, second })
@@ -49,14 +49,14 @@ public sealed class BattleStartStateTests
         Accept(first, new SelectSpell(new("mend", 1)));
         Accept(first, new SelectTarget(new("medic-a")));
         var healed = Accept(first, new Confirm());
-        Assert.Equal((100, 17, 10), ((int)healed.Snapshot.Battle.Actors[0].Hp, healed.Snapshot.Battle.Actors[0].Mp, healed.Snapshot.Battle.Actors[0].Exp));
+        Assert.Equal((100, 17, 10), ((int)healed.Snapshot.Battle.Actors[0].Hp, healed.Snapshot.Battle.Actors[0].Mp, healed.Snapshot.Battle.Actors[0].Exp!.Value));
         Assert.Equal(0x9E581234u, healed.Snapshot.Battle.MainSeed);
         Assert.Same(secondBefore, second.Current);
         var firstAfter = first.Current;
         Stay(second);
         Assert.Same(firstAfter, first.Current);
         Assert.Equal((70, 7, 40, 12, 3), ((int)second.Current.Battle.Actors[0].Hp, second.Current.Battle.Actors[0].Mp,
-            second.Current.Battle.Actors[0].Exp, second.Current.Battle.Actors[0].Kills, second.Current.Battle.Actors[0].Defeats));
+            second.Current.Battle.Actors[0].Exp!.Value, second.Current.Battle.Actors[0].Kills!.Value, second.Current.Battle.Actors[0].Defeats!.Value));
         Assert.Equal(frozenDeployments, JsonSerializer.Serialize(encounter.Deployments));
         Assert.Equal(frozenTerrain, encounter.Terrain);
         Assert.Equal(frozenSpells, encounter.Spells);

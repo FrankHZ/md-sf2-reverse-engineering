@@ -99,6 +99,9 @@ internal sealed partial class BattleMapViewport : Control
     {
         var node = _markers[a.Actor];
         return new { id = a.Actor.Value, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
+            attack = a.Attack, sourceAttack = a.Definition.Attack, mover = a.Definition.Mover.ToString(),
+            status = a.Status, activationWord = a.ActivationWord, aiMemory = a.AiMemory, lastTarget = a.LastTarget?.Value,
+            items = a.Definition.SourceLoadout?.Items, spells = a.Definition.SourceLoadout?.Spells,
             nodeX = node.Position.X, nodeY = node.Position.Y, visible = node.Visible, text = node.Text,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
     });

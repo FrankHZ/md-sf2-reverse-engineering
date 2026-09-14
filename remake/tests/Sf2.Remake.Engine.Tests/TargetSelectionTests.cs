@@ -80,7 +80,7 @@ public sealed class TargetSelectionTests
         Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
         Assert.Equal(478, result.Snapshot.Battle.GetActor(chosen).Hp);
-        Assert.Equal(1, result.Snapshot.Battle.GetActor(chosen).Exp);
+        Assert.Equal(1, result.Snapshot.Battle.GetActor(chosen).Exp!.Value);
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new(enemy)).Hp);
         Assert.Equal(chosen, result.Snapshot.Battle.GetActor(new(enemy)).LastTarget);
         Assert.Equal(new ActorRef(secondary), result.Snapshot.Selection!.Actor);
@@ -151,8 +151,8 @@ public sealed class TargetSelectionTests
         Assert.Equal(0xE0E11234u, second.Snapshot.Battle.MainSeed);
         Assert.Equal(474, second.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(478, second.Snapshot.Battle.GetActor(new("lookout")).Hp);
-        Assert.Equal(1, second.Snapshot.Battle.GetActor(new("lookout")).Exp);
-        Assert.Equal(0, second.Snapshot.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(1, second.Snapshot.Battle.GetActor(new("lookout")).Exp!.Value);
+        Assert.Equal(0, second.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
     }
 
     [Theory]

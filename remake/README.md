@@ -15,12 +15,15 @@ no longer infer either from a source slot. Numerical agility and explicit extra-
 definitions, consumed by the same turn calculator and queue. Physical definitions select explicit
 critical probability/bonus pairs consumed by player, enemy and counter hits through one rule owner. The same admitted
 definition can start independent sessions through the common validated entry. Terrain row glyphs
-reference explicit surface/protection definitions; shared ordinary ground rules drive movement,
+reference explicit surface/protection definitions; shared mover rules drive movement,
 placement, AI and actual target damage. Occupancy remains separate, and source reference adapters
-feed the same weighted movement kernel. This
-[content-model modernization](../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
-is ready for the concrete private initialized-entry dependencies; retained raw mappings stay with
-their actual source/class/mover/activation consumers, with no general field-rewrite prerequisite.
+feed the same weighted movement kernel. The common private entry now loads the selected original
+encounter and pinned enemy/class/item/spell definitions with an external controlled party/start input.
+It initializes STARTING placements, heals resources under the declared policy, adjusts source enemy
+ATT once, activates regions and generates the actual first queue before player movement/cancel.
+Required regular, healer, Centaur and hovering movers use the common terrain rules. Unknown accounting
+remains null. Reached source-enemy continuation and equipment/action/completion are the next bounded
+dependencies in [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary).
 Godot hosts real movement/action input and projects semantic results. The old
 public-synthetic/private-local Map 3 routes are retained in a separate
 [transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and
@@ -64,12 +67,13 @@ incomplete, including natural continuity and original presentation. Engine migra
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
+| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` plus five selected private inputs | common initialized entry and player movement/cancel; controlled intro skip, no natural Map 3 or completed battle claim |
 | `public-synthetic` | explicit legacy selection; tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
 | `private-local` | explicit ignored canonical input; optional selected battle inputs and reviewed local art | bounded controlled original-data consumers and diagnostics; incomplete original fidelity |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
-while reporting private success. Authored battles use the common runtime; original private import and
-program support remain in the explicit legacy route until their corresponding migration slices.
+while reporting private success. Authored battles and the standalone initialized private entry use the common runtime. Natural map
+programs and later original AI/action/return callers retain their explicit legacy route.
 
 ## Local Presentation Asset Preflight
 

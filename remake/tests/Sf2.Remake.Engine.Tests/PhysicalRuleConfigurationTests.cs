@@ -52,7 +52,7 @@ public sealed class PhysicalRuleConfigurationTests
         Assert.Equal(new ushort?[] { 4, 0, 0, 0, 1, 22 }, rolls.Take(6).Select(o => o.RandomValue));
         Assert.Equal(enemyActs ? 6 : 8, rolls.Length);
         Assert.Equal(enemyActs ? 0xB0A51234u : 0x9D4F1234u, result.Snapshot.Battle.MainSeed);
-        Assert.Equal(exp, result.Snapshot.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(exp, result.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(100u, result.Snapshot.Battle.Gold);
         Assert.Equal(new ActorRef("lookout"), result.Snapshot.Selection!.Actor);
         if (enemyActs) Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
@@ -79,7 +79,7 @@ public sealed class PhysicalRuleConfigurationTests
         // Existing seed55 first/counter observation: damage22/7, one2EXP award,14draws.
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(478, result.Snapshot.Battle.GetActor(new("raider")).Hp);
-        Assert.Equal(2, result.Snapshot.Battle.GetActor(new("swordsman")).Exp);
+        Assert.Equal(2, result.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(14, result.Observations.Count(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)));
         Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
     }

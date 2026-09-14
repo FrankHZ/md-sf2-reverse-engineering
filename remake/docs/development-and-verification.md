@@ -15,8 +15,8 @@ over older blanket gate and test-preservation recipes:
 - Documentation-only changes use direct link/anchor/fence/table/example, scope and private-boundary
   checks. They do not require a new normal/full, .NET, Godot or H3 run.
 
-M1's engine unit project covers actual Domain/Application/Content behavior for two authored battle
-packages, with scoped engine/adapter entries and public jobs. The native observation directly drives
+The engine unit project covers actual Domain/Application/Content behavior for four authored battle
+packages and the bounded initialized private entry, with scoped engine/adapter entries and public jobs. The native observation directly drives
 the same session with Godot input and reads real state/HUD/nodes; it emits no images. Main-gate owns required-check configuration during integration; a candidate must report its
 actual CI outcome and that configuration boundary explicitly.
 [ADR 0012](../../docs/decisions/0012-dependency-aware-partitioned-verification.md) continues to own
@@ -334,8 +334,8 @@ controlled source cases), `ClassZeroUsesSourceRegularCostsWithBowiesTwelvePointB
 `CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack`, and
 `ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder`.
 Source mover tables, occupancy bits and explicit flat-row behavior stay at the real reference
-projection into the same kernel. These bounded comparisons do not complete private initialized
-entry, wider mover admission or full ADR0009/0010 acceptance.
+projection into the same kernel. These bounded comparisons do not complete private battle
+continuation, broader mover admission or full ADR0009/0010 acceptance.
 
 ### Independent Control and AI Strategy
 
@@ -756,3 +756,57 @@ These scope rules do not waive accepted 8C/H4 evidence. A migration handoff name
 required-check change and unsupported product capability. Use
 [Bounded Inspection and Review](../../docs/operations/bounded-inspection-and-review.md) for exact
 identity, semantic review and completed-result handoff.
+
+## Private Initialized Entry Observation
+
+After loading the retained SDK/Godot/worktree environment, select the existing read-only encounter
+inputs in `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE` and `SF2_PRIVATE_BATTLE01_TERRAIN`.
+Select pinned existing static-data and enemy-promotion exports in `SF2_PRIVATE_STATIC_DATA` and
+`SF2_PRIVATE_ENEMY_DATA`; their identities remain owned by the extraction manifests. If missing,
+reproduce them with the existing export owners and explicit ignored destinations from the pinned
+read-only source. Never change the registered source or upload exports. The
+[trust owner](./runtime-profiles-and-trust.md#private-initialized-common-battle) describes the six-input
+contract and controlled policy.
+
+```powershell
+$env:SF2_PRIVATE_CONTROLLED_START = (Resolve-Path -LiteralPath 'remake/reference/inputs/battle01-player-ready.json').Path
+$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
+foreach ($variable in @('SF2_PRIVATE_BATTLE01_DATA', 'SF2_PRIVATE_BATTLE01_SCENE', 'SF2_PRIVATE_BATTLE01_TERRAIN', 'SF2_PRIVATE_STATIC_DATA', 'SF2_PRIVATE_ENEMY_DATA')) {
+    if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($variable))) { throw "Required private input not selected: $variable" }
+}
+uv run sf2 verify engine
+```
+
+This invokes the actual common-engine private facts. With no private inputs and no mandatory flag,
+public CI explicitly skips them; any partial selection or mandatory flag makes missing required inputs
+fail. A skipped public result never supplies private acceptance. The real comparison checks initialized
+HP/MP/effective versus source ATT, class/movers/equipment/spells, unknown accounting, full first queue,
+region words, independent RNG and first-player control against the existing H3 PlayerReady fixture.
+It then uses common commands for movement/cancel, the next Centaur player and the reached explicit
+source-enemy stop. Meaningful authored variations cover other party IDs, stats, regions, mover costs,
+unknown accounting and transaction rejection; none uses a live setter or legacy session.
+
+Refresh the affected Debug Godot assembly, then run the existing native observer. The restart is for
+the changed startup composition and assembly, using the retained editor/project:
+
+```powershell
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'private-initialized-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START --observation-case private-initialized --observation-output $outputPath
+```
+
+Require all seven checkpoints, `passed:true`, no failures and clean process logs. These observe actual
+Godot input, shared session state, actor nodes, private-origin HUD and explicit Unknown accounting;
+no images are emitted. Private output stays ignored. This comparison preserves the fixture's
+non-natural R2a→R2b bridge, explicit intro skip and candidate-only missing-word policy. It does not
+claim natural map programs, original presentation or a completed battle.
+
+For changes to these shared initialization seams, use one related existing reference group from
+`Battle01InitializationTests`, `Battle01FirstRoundTests`, `Battle01FirstControlTests` and
+`Battle01PlayerMovementTests`: new-battle data/healing/sourceATT/independent seed; initial, edge and
+secondary activation; quad geometry; unsupported spawn; actual candidate/status/word and failed
+movement admission; required regular/healer/Centaur and weighted-grid comparisons. Do not replay old
+round/receipt aggregates or run new H3 work for this bounded entry. Preserve any completed failure and
+rerun its owning group/nodes after correction. The clean committed planner selects engine/adapter;
+documentation uses direct links/anchors/fences/tables/examples and scope/private-boundary checks.
+Inactive-enemy continuation and reached equipment/action/completion are later separately admitted slices.

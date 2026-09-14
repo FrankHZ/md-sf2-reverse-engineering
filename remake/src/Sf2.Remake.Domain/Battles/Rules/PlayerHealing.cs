@@ -9,8 +9,9 @@ internal static class PlayerHealing
         var actor = battle.GetActor(actorRef);
         if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
             throw new BattleRuleException("healing-class", "actor.classRule", true);
-        if (!actor.Definition.Spells.Contains(spellRef) || !battle.Definition.Spells.TryGetValue(spellRef, out var spell))
-            throw new BattleRuleException("spell-not-known", "spell");
+        if (!actor.Definition.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
+        if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
+            throw new BattleRuleException("spell-effect", "spell", true);
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return spell;
     }
@@ -39,7 +40,7 @@ internal static class PlayerHealing
         try
         {
             resolution = HealingRules.ResolvePriest(new(target.Hp, target.Definition.MaxHp, actor.Mp,
-                actor.Exp, spell.Power, spell.MpCost, battle.MainSeed));
+                actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true), spell.Power, spell.MpCost, battle.MainSeed));
         }
         catch (NotSupportedException) { throw new BattleRuleException("level-up", "actor.exp", true); }
         var actors = battle.Actors.Select(a =>
