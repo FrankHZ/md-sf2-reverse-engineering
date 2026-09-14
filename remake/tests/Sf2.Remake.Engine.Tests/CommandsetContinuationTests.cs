@@ -162,7 +162,7 @@ public sealed class CommandsetContinuationTests
         Assert.Equal(new MapPosition(7, 3), result.Snapshot.Battle.GetActor(new("raider")).Position);
         Assert.Equal(before.Battle.MainSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
-        Assert.Equal(new[] { "movement", "action-committed" }, result.Observations.Select(o => o.Kind));
+        Assert.Equal(new[] { "movement", "after-turn", "action-committed" }, result.Observations.Select(o => o.Kind));
         Assert.Equal("not-waiting", Send(session, new AdvanceSimulation()).Failure!.Code);
     }
 

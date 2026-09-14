@@ -180,7 +180,7 @@ public sealed class TargetSelectionTests
             Assert.Equal((actor.Hp, actor.Exp, actor.Kills, actor.Defeats, actor.Position, actor.LastTarget),
                 (after.Hp, after.Exp, after.Kills, after.Defeats, after.Position, after.LastTarget));
         }
-        Assert.Equal("action-committed", Assert.Single(result.Observations).Kind);
+        Assert.Equal(new[] { "after-turn", "action-committed" }, result.Observations.Select(o => o.Kind));
     }
 
     [Theory]
