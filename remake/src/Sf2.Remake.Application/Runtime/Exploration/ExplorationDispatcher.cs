@@ -46,6 +46,12 @@ internal static class ExplorationDispatcher
                         var entity = ProgramRunner.Entity(current, nodded);
                         completedActive = new ActiveExploration(current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } }));
                     }
+                    if (presenting is { Cue: { Kind: PresentationCueKind.Gesture, Resource: "shiver", Entity: { } shivered }, Restore: { } restore })
+                    {
+                        var entity = ProgramRunner.Entity(current, shivered);
+                        completedActive = new ActiveExploration(current.Exploration!.WithEntities(current.Exploration.AllEntities.Select(row => row.Slot == entity.Slot
+                            ? row with { Motion = row.Motion with { AnimationCounter = restore.AnimationCounter, FlagsB = (byte)(row.Motion.FlagsB & ~8) } } : row), restore.SpriteSize));
+                    }
                     current = ProgramRunner.Commit(current, completedActive, FinishWait(current.Story), observations, "presentation-completed", completion.Kind.ToString());
                     break;
                 case EntitySpriteReady sprite:
@@ -54,9 +60,12 @@ internal static class ExplorationDispatcher
                     if (spriteEntity is null || !spriteEntity.WaitingForSprite || spriteEntity.SpriteRequest != sprite.Request || spriteEntity.SpriteReady == sprite.Request)
                         return Reject(current, "stale-or-wrong-sprite", "sprite");
                     bool facingReady = current.Story.Wait is EntitySpriteWait facingWait && facingWait.Slot == sprite.Slot && facingWait.Request == sprite.Request;
-                    current = ProgramRunner.Commit(current, new ActiveExploration(spriteWorld!.WithEntity(spriteEntity with
-                        { SpriteReady = sprite.Request, WaitingForSprite = !facingReady })),
-                        facingReady ? FinishWait(current.Story) : current.Story, observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    bool setReady = current.Story.Wait is EntitySetSpriteWait;
+                    var mountedWorld = spriteWorld!.WithEntity(spriteEntity with
+                        { SpriteReady = sprite.Request, WaitingForSprite = !(facingReady || setReady) });
+                    current = ProgramRunner.Commit(current, new ActiveExploration(mountedWorld),
+                        facingReady || (setReady && !mountedWorld.AllEntities.Any(entity => entity.WaitingForSprite)) ? FinishWait(current.Story) : current.Story,
+                        observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case ChooseDialogue choice:
                     if (current.Story.Wait is not ChoiceWait waiting || waiting.Token != choice.Wait)
@@ -150,14 +159,14 @@ internal static class ExplorationDispatcher
         }
         var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, move.Direction);
         var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible);
-        bool occupied = world.Definition.Population is not null
+        bool occupied = world.Population is not null
             ? EntityMotion.FieldObstructed(traversal.Position.X * 384, traversal.Position.Y * 384, others.Select(entity => entity.Motion))
             : others.Any(entity => entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
         if (traversal.Outcome != OriginalMapTraversalOutcome.Moved || occupied)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(faced)), current.Story, observations, "movement-blocked"),
                 SessionStopReason.PlayerInput), observations);
-        var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position, world.Definition.Population is not null), new StopEntityActions()]);
+        var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position, world.Population is not null), new StopEntityActions()]);
         var moved = world.WithEntity(faced with { Actions = actions, ActionCursor = 0 });
         var step = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
             Matches(entry, traversal.Position, world.Layout[traversal.Position.X, traversal.Position.Y], current.Story));

@@ -10,45 +10,6 @@ public sealed class OriginalMapGameSessionTests
 
 
     [Theory]
-    [InlineData(14, true)]
-    [InlineData(14, false)]
-    [InlineData(15, true)]
-    [InlineData(15, false)]
-    public void Battle01AdmissionBothMovementEntriesRetainTheSourceAtBothTerminals(int x, bool direct)
-    {
-        var session = Battle01AdmissionSession(new(x, 13));
-        var before = session.PrivateOriginalMapSnapshot;
-        var animation = session.PrivateOriginalMapPlayerLocomotion;
-        var bridge = session.PrivateOriginalMapBattleBridge;
-        var move = direct ? session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)) :
-            session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)).Move;
-        var pending = Assert.IsType<PrivateOriginalBattle01PendingAdmission>(move.Battle01Admission);
-        Assert.Same(pending, session.PrivateOriginalBattle01Admission);
-        Assert.Same(before, move.Snapshot);
-        Assert.Same(before, pending.SourceSnapshot);
-        Assert.Same(before, session.PrivateOriginalMapSnapshot);
-        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
-        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
-        Assert.Equal(new MapPosition(x, 12), pending.Trigger);
-        Assert.Equal(new MapPosition(8, 18), pending.Definition.Destination);
-        Assert.Equal(before.SimulationStep, pending.SourceSimulationStep);
-        Assert.Equal(OriginalBattle01ControlledPreset.NewBattle, pending.Definition.Preset);
-        Assert.Null(move.CrossMapTransition);
-        Assert.Throws<InvalidOperationException>(() => move.Traversal);
-        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
-        Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.East)));
-        session.RequestPrivateOriginalMapInteraction(before.SimulationStep);
-        session.RequestPrivateOriginalMapInteraction(before.SimulationStep - 1);
-        Assert.Same(before, session.PrivateOriginalMapSnapshot);
-        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
-        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
-        Assert.Same(pending, session.PrivateOriginalBattle01Admission);
-        var restarted = Start(before.Definition);
-        Assert.Null(restarted.PrivateOriginalBattle01Admission);
-        Assert.Equal(new MapId("map3"), restarted.PrivateOriginalMapSnapshot.Map);
-    }
-
-    [Theory]
     [InlineData("missing")]
     [InlineData("palette")]
     [InlineData("slots")]
@@ -89,72 +50,6 @@ public sealed class OriginalMapGameSessionTests
             new AcceptedSource(Accepted(Definition(EmptyWords(), battle01Admission: admission,
                 omitBattle01Admission: drift == "missing"))), Request()));
         Assert.Equal("definition.battle01Admission", result.Diagnostic.Field);
-    }
-
-    [Theory]
-    [InlineData(13, 13, ExplorationDirection.North)]
-    [InlineData(14, 30, ExplorationDirection.South)]
-    public void Battle01AdmissionDoesNotTurnNonEventRow12OrReturnRow31IntoBattle(int x, int y, ExplorationDirection direction)
-    {
-        var session = Battle01AdmissionSession(new(x, y));
-        var move = session.ApplyPrivateOriginalMap(new(direction));
-        Assert.Null(move.Battle01Admission);
-        Assert.Null(move.CrossMapTransition);
-        Assert.Null(session.PrivateOriginalBattle01Admission);
-        Assert.Equal(new MapId("map40"), move.Snapshot.Map);
-    }
-
-    [Fact]
-    public void Battle01AdmissionUsesResolvedStairCandidateAndOnlyTheEventField()
-    {
-        ushort[] words = Battle01AdmissionSession(new(14, 13)).PrivateOriginalMapSnapshot.CurrentRuntime.WorkingLayout.Words.ToArray();
-        words[13 * 64 + 13] = 0x8000;
-        words[12 * 64 + 14] = 0x9000;
-        var session = Battle01AdmissionSession(new(13, 13), new WorkingMapLayout(words));
-        var pending = session.ApplyPrivateOriginalMap(new(ExplorationDirection.East)).Battle01Admission!;
-        Assert.Equal(new MapPosition(14, 12), pending.Trigger);
-        Assert.Equal(new MapPosition(13, 13), session.PrivateOriginalMapSnapshot.PlayerPosition);
-    }
-
-    [Fact]
-    public void Battle01AdmissionRejectsAnIncompleteGuardAndBusyLocomotionWithoutMutation()
-    {
-        var incomplete = Battle01AdmissionSession(new(14, 13), guard: false);
-        var before = incomplete.PrivateOriginalMapSnapshot;
-        var animation = incomplete.PrivateOriginalMapPlayerLocomotion;
-        Assert.Throws<InvalidOperationException>(() => incomplete.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
-        Assert.Same(before, incomplete.PrivateOriginalMapSnapshot);
-        Assert.Same(animation, incomplete.PrivateOriginalMapPlayerLocomotion);
-        Assert.Null(incomplete.PrivateOriginalBattle01Admission);
-        var busy = Battle01AdmissionSession(new(14, 14));
-        busy.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North));
-        before = busy.PrivateOriginalMapSnapshot;
-        animation = busy.PrivateOriginalMapPlayerLocomotion;
-        Assert.True(animation.IsMoving);
-        Assert.Throws<InvalidOperationException>(() => busy.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
-        Assert.Throws<InvalidOperationException>(() => busy.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
-        Assert.Same(before, busy.PrivateOriginalMapSnapshot);
-        Assert.Same(animation, busy.PrivateOriginalMapPlayerLocomotion);
-        Assert.Null(busy.PrivateOriginalBattle01Admission);
-    }
-
-    [Theory]
-    [InlineData("castle")]
-    [InlineData("palace")]
-    [InlineData("astral")]
-    [InlineData("guard")]
-    public void Battle01AdmissionRejectsEachMissingRouteReceiptWithoutMutation(string missing)
-    {
-        var session = Battle01AdmissionSession(new(14, 13), missing: missing);
-        var before = session.PrivateOriginalMapSnapshot;
-        var animation = session.PrivateOriginalMapPlayerLocomotion;
-        var bridge = session.PrivateOriginalMapBattleBridge;
-        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
-        Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
-        Assert.Same(before, session.PrivateOriginalMapSnapshot);
-        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
-        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
-        Assert.Null(session.PrivateOriginalBattle01Admission);
     }
 
     private static GameSession Battle01AdmissionSession(MapPosition position, WorkingMapLayout? layout = null, bool guard = true, string? missing = null)

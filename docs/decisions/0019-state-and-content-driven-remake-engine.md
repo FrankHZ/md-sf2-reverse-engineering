@@ -756,8 +756,9 @@ The current dependency order is:
 spawn/derived-stat coverage beyond the named contracts, naturally carried party/accounting/seed-copy
 values, and natural Map3→Battle01 program/presentation continuity. Resolve a needed gap against the
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.
-M3's pending-admission/map programs and M4's recovery/return consumers still prevent deleting the
-legacy startup binding/session. M2, A1–A8 and8C/H4 remain incomplete.
+The common session now executes the Battle01 before/init/load/start programs and first input.
+M4's independent recovery/return comparisons still prevent deleting their legacy startup
+binding/session and immutable source context. M2, A1–A8 and8C/H4 remain incomplete.
 
 ## Current M3 Common Program and Exploration Group
 
@@ -773,12 +774,16 @@ and stable field input, including physical/logical allocation, layout lifecycle,
 services, joined/active flags and followers. An alternate decline/re-prompt run and changed follower
 flags exercise live decisions. Original hardware/typewriter/audio timing remains outside this group;
 join audio has an explicit project-authored mapping. Missing aliases and unimplemented source/native
-operations retain visible failures, including the later post-F603 reload boundary, Map21 entity135 and
-the complete before-battle body.
+operations retain visible failures, including the later post-F603 removed-alias reload. The same
+R1 session now continues through castle/palace/Astral/tower, Map21/40, complete `bbcs_01`, source
+initialization/load/start and actual first battle input. Source scene replacement allocates Astral135
+as a real record after Map21's default-zero alias. Live party membership, resources and RNG drive
+initialization; the externally seeded H3 bridge remains a separate comparison. White fades, mosaic,
+shiver and battle mounting are performed modern services with explicit original hardware limits.
 
-Complete legacy opening/Sarah/entity142/Astral-zone/messenger endpoint-writing methods and their
-Godot/old test callers are removed. Retained castle/tower/pending battle/return consumers receive an
-external controlled post-opening start with no invented execution receipts. Frozen context DTOs and
+Complete legacy opening, castle/palace/Astral/tower and Map40 pending-admission endpoint writers and
+their final movement/presentation callers are removed. Retained M4 startup/initialization/return
+comparisons receive explicit fixture context without executing the retired field writer. Frozen context DTOs and
 other geometry/presentation consumers retain their documented removal boundaries. This does not
 close natural Map3-to-Battle01 continuity, M4 return, G3/G4 globally, A1–A8 or8C/H4. The
 [caller inventory](../../remake/reference/README.md#common-program-comparisons-and-g3g4) and

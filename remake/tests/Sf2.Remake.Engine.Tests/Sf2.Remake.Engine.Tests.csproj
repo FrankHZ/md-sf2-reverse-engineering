@@ -26,6 +26,7 @@
   <ItemGroup>
     <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
     <Content Include="..\..\..\tests\fixtures\h2\map3-castle-battle-unlock-static-v1.json" Link="fixtures\castle-tower.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\tests\fixtures\h2\map3-battle01-admission-static-v1.json" Link="fixtures\battle01-admission.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\map*-start.json" Link="controlled\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\map3-opening-party.json" Link="controlled\map3-opening-party.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\reference\inputs\battle01-actions.json" Link="controlled\battle01-actions.json" CopyToOutputDirectory="PreserveNewest" />

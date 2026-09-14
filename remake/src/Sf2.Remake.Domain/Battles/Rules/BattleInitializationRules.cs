@@ -34,20 +34,42 @@ internal static class BattleInitializationRules
         }
         foreach (var input in start.Actors)
         {
-            Require(input.Status == 0, "new-battle-status-refresh", "start.actors.status", true);
-            Require(input.Hp > 0, "new-battle-dead-ally", "start.actors.hp", true);
+            Require((input.Status & ~7) == 0, "new-battle-status-refresh", "start.actors.status", true);
             Require(input.PositionOverride is null, "initialization-placement-override", "start.actors.positionOverride", true);
         }
     }
 
-    internal static EngineBattleState Initialize(EngineBattleState before)
+    internal static IEnumerable<BattleDeploymentDefinition> Deployments(BattleDefinition definition, BattleStartInput start)
+    {
+        var formation = definition.Initialization?.AllyFormation;
+        var active = start.ActiveAllies;
+        if (active is null)
+        {
+            if (start.NewBattle is null || formation is null) return definition.Deployments;
+            active = definition.Deployments.Where(row => row.Faction == BattleFaction.Ally).Select(row => row.Actor).ToArray();
+        }
+        Require(formation is not null && active.Count <= formation.Count, "ally-formation", "start.activeAllies", true);
+        var inputs = start.Actors.ToDictionary(actor => actor.Actor);
+        var positions = active.Where(actor => inputs[actor].Hp > 0 ||
+                definition.Deployments.Single(row => row.Actor == actor).Initialization?.AllyPartyMember is 7 or 28)
+            .Select((actor, index) => (actor, position: formation![index])).ToDictionary(row => row.actor, row => row.position);
+        return definition.Deployments.Select(deployment => positions.TryGetValue(deployment.Actor, out var position)
+            ? deployment with { Position = position } : deployment);
+    }
+
+    internal static EngineBattleState Initialize(EngineBattleState before, BattleStartInput start)
     {
         var policy = before.StartPolicy!;
-        var actors = before.Actors.Select(actor => new BattleActorState(actor.Deployment,
-            actor.Definition.MaxHp, actor.Definition.MaxMp, actor.Exp, actor.Deployment.Position,
-            actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : EnemyAttack(actor.Definition.Attack, policy.Difficulty),
-            status: actor.IsAlly ? (ushort)(actor.Status & 7) : actor.Status,
-            activationWord: actor.IsAlly ? null : InitialActivationWord(actor.Deployment.Initialization!)));
+        var actors = before.Actors.Select(actor =>
+        {
+            bool heal = !actor.IsAlly || actor.Hp > 0 || actor.Deployment.Initialization?.AllyPartyMember is 7 or 28;
+            bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
+            return new BattleActorState(actor.Deployment,
+                heal ? actor.Definition.MaxHp : actor.Hp, heal ? actor.Definition.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
+                actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : EnemyAttack(actor.Definition.Attack, policy.Difficulty),
+                status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
+                activationWord: actor.IsAlly ? null : InitialActivationWord(actor.Deployment.Initialization!));
+        });
         return before.With(actors: actors, regions: new(new bool[16], 0));
     }
 

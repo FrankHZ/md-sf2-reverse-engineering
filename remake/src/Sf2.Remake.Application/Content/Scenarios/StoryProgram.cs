@@ -5,7 +5,7 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public readonly record struct EntityRef(string Value);
 public readonly record struct ProgramLocation(string Program, int Instruction);
 public enum TextDisplayMode { Continued, Single }
-public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade }
+public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad }
 public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
@@ -27,6 +27,10 @@ public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : Story
 public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
 public sealed record SetDialogueSpeaker(EntityRef? Entity) : StoryInstruction;
 public sealed record SetCameraTarget(MapPosition Position) : StoryInstruction;
+public sealed record SetCameraEntity(EntityRef? Entity) : StoryInstruction;
+public sealed record LoadSceneMap(MapId Map, MapPosition Camera) : StoryInstruction;
+public sealed record LoadSceneEntities(ExplorationPopulation Population, MapPosition PlayerPosition, byte Facing,
+    IReadOnlyList<ExplorationEntityDefinition> Entities) : StoryInstruction;
 public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;

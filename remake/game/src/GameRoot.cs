@@ -62,7 +62,12 @@ public sealed partial class GameRoot : Node
             AddChild(exploration);
             exploration.Begin(started.Session, started.Result, result =>
             {
+                if (view.GetParent() == exploration) view.Reparent(this, false);
                 exploration.QueueFree();
+                view.Attach(started.Session, result);
+            }, result =>
+            {
+                view.Reparent(exploration, false);
                 view.Attach(started.Session, result);
             });
         }

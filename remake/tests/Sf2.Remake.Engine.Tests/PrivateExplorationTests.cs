@@ -25,7 +25,7 @@ public sealed class PrivateExplorationTests
         return ((SessionStarted)outcome).Session;
     }
     private static ExplorationEntity Entity(GameSession session, int id) => session.Current.Exploration!.Entities[new("entity-" + id)];
-    private static SessionResult RunUntilStop(GameSession session, int limit = 3000,
+    internal static SessionResult RunUntilStop(GameSession session, int limit = 3000,
         List<SessionObservation>? observations = null, List<(int Id, int? Speaker)>? texts = null, bool yes = true)
     {
         SessionResult? result = null;
@@ -66,7 +66,7 @@ public sealed class PrivateExplorationTests
         Path.Combine(AppContext.BaseDirectory, "fixtures", "opening-" + name + ".json")));
     private static JsonElement Record(JsonDocument fixture) => fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
 
-    private static GameSession RunOpening(bool yes, List<SessionObservation> observations, List<(int Id, int? Speaker)> texts)
+    internal static GameSession RunOpening(bool yes, List<SessionObservation> observations, List<(int Id, int? Speaker)> texts)
     {
         var session = StartSource("map3-opening-start", opening: true);
         using var r1 = Fixture("r1");
@@ -392,33 +392,7 @@ public sealed class PrivateExplorationTests
     }
 
     [PrivateInputFact(World)]
-    public void SourceMap40InputsTransferAtTheMarkerAndStopInsideTheActualBeforeProgram()
-    {
-        var session = TraverseMap40("map40-intro-start");
-        Assert.Equal(SessionMode.Exploration, session.Current.Mode);
-        Assert.Equal(new MapId("map-57"), session.Current.Exploration!.Map);
-        Assert.Equal(new ProgramLocation("bbcs-01", 1), session.Current.Story.Cursor);
-        Assert.Equal(2292, session.Current.Story.TextCursor);
-        Assert.Equal(SessionStopReason.Unsupported, session.Current.StopReason);
-        Assert.DoesNotContain(451, session.Current.Story.Flags);
-    }
-
-    [PrivateInputFact(World)]
-    public void SourceMap40WithExplicitSeenIntroInitializesTheExistingBattleInTheSameSession()
-    {
-        var session = TraverseMap40("map40-seen-start");
-        Assert.Equal(SessionMode.Battle, session.Current.Mode);
-        Assert.Equal(1, session.Current.Battle.Round);
-        Assert.Equal(new[] { 401, 451 }, session.Current.Story.Flags);
-        Assert.Equal("ally-1", session.Current.Selection!.Actor.Value);
-        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "player-ready.json")));
-        var ready = fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0]
-            .GetProperty("deterministicState").GetProperty("ready");
-        Assert.Equal(ready.GetProperty("randomSeed").GetUInt32(), session.Current.Battle.MainSeed);
-    }
-
-    [PrivateInputFact(World)]
-    public void SourceMap57StopsAtAnEnabledLayoutEventBeforeSelectingBattle()
+    public void ExplicitMap57ExplorationStartRetainsItsControlledLayoutEventBoundary()
     {
         var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
             Path.Combine(AppContext.BaseDirectory, "controlled", "map40-seen-start.json"), PrivateBattleScenarioTests.Selected());
@@ -426,7 +400,7 @@ public sealed class PrivateExplorationTests
         foreach (bool enabled in new[] { false, true })
         {
             var input = new ExplorationStartInput(new("map-57"), admitted.Start.Player, new(8, 18), 0, 32,
-                enabled ? [401, 451, 506] : [401, 451], admitted.Start.Party);
+                enabled ? [0, 1, 2, 32, 33, 34, 401, 451, 506] : [0, 1, 2, 32, 33, 34, 401, 451], admitted.Start.Party);
             var started = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, input));
             if (!enabled)
             {
@@ -439,39 +413,8 @@ public sealed class PrivateExplorationTests
             Assert.Equal(SessionMode.Exploration, started.Session.Current.Mode);
             Assert.Equal(SessionStopReason.Unsupported, started.Session.Current.StopReason);
             Assert.Equal(new ProgramLocation("map-57-flag-layout", 1), started.Session.Current.Story.Cursor);
-            Assert.Equal(new[] { 401, 451, 506 }, started.Session.Current.Story.Flags);
+            Assert.Equal(new[] { 0, 1, 2, 32, 33, 34, 401, 451, 506 }, started.Session.Current.Story.Flags);
         }
-    }
-
-    private static GameSession TraverseMap40(string start)
-    {
-        var session = StartSource(start);
-        var identity = session.Current.SessionId;
-        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "player-ready.json")));
-        var plan = fixture.RootElement.GetProperty("static").GetProperty("inputPlan").EnumerateArray()
-            .Where(row => row.GetProperty("from").GetProperty("map").GetInt32() == 40).ToArray();
-        Assert.NotEmpty(plan);
-        foreach (var row in plan)
-        {
-            var direction = row.GetProperty("input").GetString() switch
-            { "Up" => ExplorationDirection.North, "Down" => ExplorationDirection.South,
-                "Left" => ExplorationDirection.West, "Right" => ExplorationDirection.East, _ => throw new InvalidOperationException() };
-            var destination = row.GetProperty("to");
-            bool reachesWarp = (session.Current.Exploration!.Layout[destination.GetProperty("x").GetInt32(),
-                destination.GetProperty("y").GetInt32()] & 0x3C00) == 0x1000;
-            var result = Send(session, new Move(direction));
-            if (session.Current.Story.Wait is EntityWait) result = RunUntilStop(session);
-            var expected = row.GetProperty("to");
-            Assert.Equal(identity, session.Current.SessionId);
-            // The fixture's inputPlan is a static geometry plan. Its last target is the
-            // warp marker; original event dispatch intercepts that input before relocation.
-            if (!reachesWarp && expected.GetProperty("map").GetInt32() == 40)
-            {
-                Assert.Null(result.Failure);
-                Assert.Equal(new MapPosition(expected.GetProperty("x").GetInt32(), expected.GetProperty("y").GetInt32()), session.Current.Exploration!.PlayerEntity.Position);
-            }
-        }
-        return session;
     }
 
     [PrivateInputFact(World)]

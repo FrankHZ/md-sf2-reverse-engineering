@@ -13,6 +13,7 @@ public sealed partial class ExplorationSessionView : Control
     private SessionResult? _result;
     private Action<SessionResult>? _enterBattle;
     private bool _handedOff;
+    private bool _battleMounted;
     private Label _title = null!;
     private Label _dialogue = null!;
     private Label _help = null!;
@@ -36,10 +37,18 @@ public sealed partial class ExplorationSessionView : Control
     }
     public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
 
-    internal void Begin(GameSession session, SessionResult result, Action<SessionResult> enterBattle)
+    internal void Begin(GameSession session, SessionResult result, Action<SessionResult> enterBattle,
+        Action<SessionResult> prepareBattle)
     {
         _session = session; _result = result; _enterBattle = enterBattle;
-        _presentation = new(this, session.Definition.Exploration!);
+        _presentation = new(this, session.Definition.Exploration!, () =>
+        {
+            prepareBattle(_result!);
+            _battleMounted = true;
+            _lastWorld = null;
+            _title.Hide(); _dialogue.Hide(); _help.Hide();
+            QueueRedraw();
+        });
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
     }
@@ -131,7 +140,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         if (_session is null) return;
         var current = _session.Current;
-        _lastWorld = current.Exploration ?? _lastWorld;
+        if (!_battleMounted) _lastWorld = current.Exploration ?? _lastWorld;
         var size = GetViewportRect().Size;
         _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
         bool portrait = _session.Definition.Exploration?.Visuals is not null && current.Story.TextWindow is OpenTextWindow { Speaker: not null };
@@ -209,6 +218,8 @@ public sealed partial class ExplorationSessionView : Control
                 nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
                 paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
+                whiteOpacity = _presentation?.WhiteOpacity, mosaicDraws = _presentation?.MosaicDraws,
+                shiverDraws = _presentation?.ShiverDraws, battleLoads = _presentation?.BattleLoads,
                 cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
                 error = _presentation?.Error },
             entities = current?.Exploration?.AllEntities.Select(entity => new

@@ -17,33 +17,8 @@ internal static class MapTransfer
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
         {
-            int AllySprite(int character, int fallback)
-            {
-                var appearance = population.AllySprites?.FirstOrDefault(row => row.Character == character);
-                return appearance is null ? fallback : appearance.JoinedFlag is { } joined && !flags.Contains(joined)
-                    ? appearance.UnjoinedSprite!.Value : appearance.Sprite;
-            }
-            var followers = population.Followers.Where(follower => flags.Contains(follower.Flag))
-                .Select(follower => new MapFollowerSpawn(follower.Character, AllySprite(follower.Character, follower.Sprite))).ToArray();
-            var allocation = MapEntityAllocator.Allocate(map.Entities.Select(entity => entity.Sprite ??
-                throw new BattleRuleException("entity-sprite", "map.entities")).ToArray(), followers,
-                population.AllyCount, population.NonAllyStart, population.PlayerSprite);
-            EntityRef Reference(int character) => new("entity-" + character.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            if (player != Reference(0)) throw new BattleRuleException("population-player", "start.player");
-            var slots = allocation.Slots.Select(slot =>
-            {
-                var source = slot.SourceRecord is { } index ? map.Entities[index] : null;
-                var entity = new ExplorationEntity(Reference(slot.Character),
-                    EntityMotionState.At(source?.Position ?? position, source?.Facing ?? facing, source?.Speed ?? speed) with
-                        { FlagsA = 0xE0, AnimationCounter = (byte)(slot.Slot + 1), WaitTimer = (byte)slot.Slot },
-                    source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite));
-                return slot.FollowerOrder is { } order ? FollowerMotion.Install(entity, order, -24, 0) : entity;
-            });
-            // Populate a fresh source identity table from its cleared (slot-zero) state.
-            // Missing keys after Hide are tombstones; state copies must never refill them.
-            var aliases = Enumerable.Range(0, 64).ToDictionary(index => Reference(index < 32 ? index : index + 96), _ => 0);
-            foreach (var alias in allocation.Aliases) aliases[Reference(alias.Key)] = alias.Value;
-            return MapEventDispatcher.RoofOnLoad(new(map, layout, player, slots, party, aliases: aliases));
+            return MapEventDispatcher.RoofOnLoad(SceneEntities.Build(map, layout, player, position, facing,
+                speed, party, flags, population, map.Entities));
         }
         var entities = map.Entities.Where(entity => entity.Entity != player).Select(entity =>
             new ExplorationEntity(entity.Entity, EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with
@@ -52,12 +27,28 @@ internal static class MapTransfer
         return MapEventDispatcher.RoofOnLoad(new(map, layout, player, entities, party));
     }
 
+    internal static ExplorationState LoadScene(ExplorationDefinition definition, ExplorationState world, LoadSceneMap load)
+    {
+        if (!definition.Maps.TryGetValue(load.Map, out var map)) throw new BattleRuleException("missing-map", "scene.map");
+        // csc48 changes the displayed layout/view; entity allocation, map init and battle selection
+        // are separate calls. Keep the running program, party and physical entities intact here.
+        return new(map, map.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
+            world.Aliases, population: world.Population);
+    }
+
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
         MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
+        // MainLoop selects BattleLoop before ExplorationLoop. The before-battle script owns
+        // its map load and entity replacement; retain the actual field scene until those calls.
+        if (world.Party.NewBattle is not null && target.Battle is { } battle &&
+            (battle.UnlockedFlag is null || current.Story.Flags.Contains(battle.UnlockedFlag.Value)) &&
+            (battle.CompletedFlag is null || !current.Story.Flags.Contains(battle.CompletedFlag.Value)))
+            return BattleEntry.Select(current, continuation.Copy(continuation.Cursor,
+                returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing)), battle, observations);
         ExplorationState next;
         var flags = current.Story.Flags;
         if (mode == MapLoadMode.Preserve)
@@ -90,34 +81,7 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot Continue(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
-    {
-        var story = current.Story;
-        var world = current.Exploration ?? throw new BattleRuleException("entry-mode", "entry");
-        if (story.Continuation == ProgramContinuation.MapLoaded)
-        {
-            var route = world.Definition.Battle;
-            if (route is null || (route.UnlockedFlag is { } unlocked && !story.Flags.Contains(unlocked)) ||
-                (route.CompletedFlag is { } completed && story.Flags.Contains(completed)))
-                return current.WithStory(story.Copy(null, continuation: ProgramContinuation.FieldInput));
-            bool introSeen = route.IntroFlag is { } intro && story.Flags.Contains(intro);
-            return ProgramRunner.Commit(current, current.Active,
-                story.Copy(introSeen ? null : route.BeforeProgram, continuation: ProgramContinuation.BeforeBattleFinished,
-                    enteringBattle: route), observations, "battle-selected", route.Encounter);
-        }
-        var selected = story.EnteringBattle ?? throw new BattleRuleException("entry-route", "entry");
-        if (!definition.Encounters.TryGetValue(selected.Encounter, out var encounter))
-            throw new BattleRuleException("missing-encounter", "entry.encounter");
-        var input = new BattleStartInput(selected.Encounter, world.Party.Actors, world.Party.MainSeed,
-            world.Party.ThinkingSeed, world.Party.Gold,
-            world.Party.NewBattle is { } policy ? policy with { SkipIntro = false, BeforeBattleRouted = true } : null);
-        var battle = BattleTurnFlow.Start(encounter, input);
-        var initialized = ProgramRunner.Commit(current, new ActiveBattle(battle, null), story, observations, "battle-initialized");
-        bool skipStart = selected.IntroFlag is { } flag && story.Flags.Contains(flag);
-        var startStory = story.Copy(skipStart ? null : selected.StartProgram,
-            flags: selected.IntroFlag is { } introFlag ? ProgramRunner.Flags(story, introFlag, true) : story.Flags,
-            continuation: ProgramContinuation.BattleStartFinished);
-        return ProgramRunner.Commit(initialized, initialized.Active, startStory, observations, "battle-loaded");
-    }
+        => BattleEntry.Continue(definition, current, observations);
 
     private static void ValidateSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
     {

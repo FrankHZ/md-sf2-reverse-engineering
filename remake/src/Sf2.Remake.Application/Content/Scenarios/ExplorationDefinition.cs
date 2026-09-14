@@ -37,7 +37,7 @@ public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     MapPosition? Destination = null, byte Facing = 0, ushort? RequiredMarker = null,
     int? RequiredFlag = null, bool RequiredFlagValue = true, byte? EntityFlags = null, MapLoadMode LoadMode = MapLoadMode.Rebuild);
 public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag, int? CompletedFlag,
-    int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram);
+    int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram, ProgramLocation? LoadProgram = null);
 
 public sealed class ExplorationMapDefinition
 {

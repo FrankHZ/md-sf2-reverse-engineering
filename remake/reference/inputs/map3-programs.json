@@ -12,7 +12,7 @@
     1
   ],
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Complete source opening, castle, palace, Astral and tower programs execute through the common session, retaining unsupported instructions and missing aliases at their actual cursor. Original natural reach, hardware/presentation parity, full before-battle and M4 remain outside this admission.",
+  "controlledBoundary": "Accepted R1 controlled Map3 start with source default setup, event tables, physical entity allocation, autonomous actions and live flag-driven followers. Complete opening, castle, palace, Astral, tower and Battle01 before/init/load/start programs execute through one common session and its live party/RNG to first battle input. Unimplemented branches retain their source cursor. Natural title/menu reach, original hardware/presentation timing parity and M4 remain outside this admission; the separate H3 seeded bridge is comparison input only.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -46,7 +46,8 @@
     3,
     19,
     20,
-    21
+    21,
+    40
   ],
   "presentationManifestSha256": "4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40",
   "presentationAtlases": {

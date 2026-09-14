@@ -133,8 +133,7 @@ internal sealed record PrivateMap3PresentationPlan(
         PrivateOriginalMapSessionSnapshot snapshot,
         string outcome,
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null,
-        bool baseAtlasVisible = false,
-        PrivateOriginalBattle01PendingAdmission? battle01Admission = null)
+        bool baseAtlasVisible = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
@@ -146,14 +145,6 @@ internal sealed record PrivateMap3PresentationPlan(
         if (snapshot.Map.Value is "map19" or "map20" or "map21")
             return "Castle and tower programs run in the common host. Reference comparison state only.\n" + status;
 
-        if (battle01Admission is not null)
-        {
-            if (!ReferenceEquals(snapshot, battle01Admission.SourceSnapshot))
-                throw new ArgumentException("Pending admission status requires its retained source snapshot.", nameof(battle01Admission));
-            return "Battle 01 admission pending. Battle not started.\n" +
-                "Map 40 retained; destination Map 57 (8,18)/UP.\n" +
-                "Restart to return to Map 3.";
-        }
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id)
         {
             return $"Map 40 controlled arrival. {(baseAtlasVisible ? "Base atlas" : "Diagnostic view")}; init not executed.\n" + status;
@@ -502,8 +493,7 @@ internal sealed class PrivateMap3Presenter
     internal void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
         string outcome,
-        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null,
-        PrivateOriginalBattle01PendingAdmission? battle01Admission = null)
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
         bool exactMap40 = OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(snapshot.CurrentRuntime);
@@ -565,7 +555,7 @@ internal sealed class PrivateMap3Presenter
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion,
-            baseVisible && _baseViewport is { UsesLocalAtlas: true }, battle01Admission);
+            baseVisible && _baseViewport is { UsesLocalAtlas: true });
         _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
 

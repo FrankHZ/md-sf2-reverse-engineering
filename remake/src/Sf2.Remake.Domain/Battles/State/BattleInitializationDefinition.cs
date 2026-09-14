@@ -24,7 +24,7 @@ public sealed class BattleSourceLoadout
 
 public sealed record BattleDeploymentInitialization(ushort? EnemyBaseAiWord, byte SpawnMode,
     byte PrimaryRegion, byte SecondaryRegion, byte Filler, byte AiCommandset = 0,
-    byte? PrimaryOrder = null, byte? SecondaryOrder = null);
+    byte? PrimaryOrder = null, byte? SecondaryOrder = null, int? AllyPartyMember = null);
 
 public sealed class BattleActivationRegion
 {
@@ -36,10 +36,13 @@ public sealed class BattleActivationRegion
 
 public sealed class BattleInitializationDefinition
 {
-    internal BattleInitializationDefinition(IEnumerable<BattleActivationRegion> regions, BattleRegionProgram regionProgram)
-    { Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram; }
+    internal BattleInitializationDefinition(IEnumerable<BattleActivationRegion> regions, BattleRegionProgram regionProgram,
+        IEnumerable<MapPosition>? allyFormation = null)
+    { Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
+        AllyFormation = allyFormation is null ? null : Array.AsReadOnly(allyFormation.ToArray()); }
     public IReadOnlyList<BattleActivationRegion> Regions { get; }
     public BattleRegionProgram RegionProgram { get; }
+    public IReadOnlyList<MapPosition>? AllyFormation { get; }
 }
 
 public sealed class BattleRegionState

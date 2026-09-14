@@ -10,7 +10,7 @@ hooks, initializes the encounter and reaches first player control. Declining ret
 Neither package identity nor an expected route/receipt admits a command.
 
 `GameSession` remains the sole snapshot publisher. `ExplorationDispatcher`, `ProgramRunner`,
-`EntityActionRunner` and `MapTransfer` compute immutable results. The active payload is either
+`EntityActionRunner`, `SceneEntities`, `MapTransfer` and `BattleEntry` compute immutable results. The active payload is either
 `ActiveExploration` or `ActiveBattle`; story flags, program PC/call stack, typed wait, text window,
 simulation tick and observations survive the switch. The battle view attaches to the existing
 session. It cannot restart it at the transfer endpoint. Startup and transfer use the same derived
@@ -25,7 +25,8 @@ active-flag write, so the immediately exposed list can lag that final write. Thi
 source chronology. The opening input supplies the first three R1 allies' class, resources,
 equipment and spells. Other initial ally appearances and names come from pinned source data;
 this group does not claim a full travelling roster, mutable names, promotion/death appearance,
-inventory operations or later battle admission.
+inventory operations or later battles. At Battle01 admission the sequencer rebuilds active membership
+from live flags, so the earlier `JoinForce` list timing never forces a missing ally into battle.
 
 ## Definitions and execution
 
@@ -65,7 +66,9 @@ changes position, destination and facing without resetting unrelated speed/flags
 `SPRITE_SIZE` is global. A later failing action preserves completed configuration and movement in
 that tick and retains the failing action cursor. No destination assignment replaces a motion path.
 
-The logical map/battle selector checks the unlock/completion flags after map loading. Entry runs
+Source `MainLoop` selects an unlocked, uncompleted battle before `ExplorationLoop` initializes its map.
+The before-battle program retains the previous field scene until its own load/entity calls.
+Authored map-init routing remains explicit in its definitions. Entry runs
 **before program → region/party/enemy initialization → battle load → start program → first round**.
 Both hooks check the same intro flag; the start wrapper sets it. The internal `BeforeBattleRouted`
 policy is produced only after Application completes that routing. External standalone starts still
@@ -187,14 +190,57 @@ and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknow
 They are not silently reported as performed original services. An unbound explicit presentation cue
 reports `AdapterError` and retains its wait.
 
+## Battle01 admission and first input
+
+**Confirmed, bounded:** the same R1 session continues from Map21 `(5,15)` through the accepted
+46-input Map21/40 extension, the marked Map40 exit, complete `bbcs_01`, source new-battle
+initialization, `LoadBattle` presentation, empty start hook and the first actual battle input.
+The [admission evidence owner](../../docs/research/map3-battle01-admission.md) and its H2/H3 fixtures
+own the original facts. The pinned `mainloop.asm`, `battleloop_1.asm`, `loadBattle.asm`,
+`cs_beforebattle.asm`, map script engine and map entity allocator supply executable content.
+The ordinary program never reads those comparison fixtures.
+
+`loadMapFadeIn` starts out-to-black and loads the scene layout/camera; the later `fadeInB` remains
+separate. Scene loading does not run exploration init or replace entities. `loadMapEntities` then
+rebuilds the physical records and identity table with live followers and custom main-entity coordinates.
+Every new sprite must mount before the next instruction. Astral135 is now a real allocated record,
+distinct from Map21's earlier unassigned135 alias to player slot0. Camera tracking resolves a physical
+slot; explicit camera destinations clear tracking. Shiver saves/restores the animation counter and
+global sprite size around its typed presentation wait.
+
+Selection writes source F399 before the before-battle program. Initialization validates before
+publishing battle state or clearing F90–F105. Living active allies consume source formation slots
+in live membership order; dead ordinary allies remain unpositioned. An absent Sarah leaves no deployed Sarah and
+Chester takes the next available slot. Living eligible allies heal, dead ordinary allies remain dead,
+and Peter/Lemon follow the source immortal exception. Accounting, source equipment/spells and
+main/thinking RNG survive; enemy initialization and region/AI reset use existing Domain rules.
+This bounded baseline already has refreshed/equipped ally stats. Status requiring broader stat
+refresh, F88 resume, other difficulty/control modes and a larger unadmitted roster remain Unsupported.
+
+The load program holds control while Godot fades out, mounts the existing battle board and roster
+in the same view/session, then fades in. Input and automatic turns stay closed during that service.
+Only completion permits the start wrapper to set F451 and generate the first round. Seen-intro entry
+skips both hooks but still initializes/loads. Completed selection clears its unlock and returns field control.
+
+The independent H3 comparison deliberately supplies its external `0x1234` seed and three-member
+roster, runs the whole before body and checks first actor1, RNG and turn order. These values are
+never injected into the continuous R1 run. The native observer continues the same opening/castle
+instance, observes white fades, mosaic and shiver draws, then presses Enter/Escape at battle control.
+Original timing/pixels/hardware effects and natural title/menu reach remain Unknown.
+
+White fades use an actual white overlay; black fades modulate the current scene. Both are blocking
+modern half-second services, not original asynchronous palette cadence. Mosaic-in draws coarse
+source-sprite samples through progressively finer blocks over half a second. Shiver draws three
+alternating five-tick offsets, then restores the engine fields; original sprite DMA/bitfield waveform
+is unclaimed. The renderer reports an adapter failure if an admitted service cannot be bound.
+
 ## Remaining source boundaries
 
 The accepted Map21 default-population contract resolves135 to slot0 under its stated initialization
 conditions. Natural original call-time RAM, full sprite/hardware effects and timing remain **Unknown**;
-remake continuation is not a new original H3 observation. The marked Map40 warp reaches the actual before-battle program and stops at
-`loadMapFadeIn`; an explicitly supplied seen-intro flag retains the accepted controlled battle-entry
-comparison. The complete before-battle body, natural Map3-to-Battle01 continuity,
-outcome and return remain outside this group. Other Map3 native branches such as ChurchMenu and
+remake continuation is not a new original H3 observation. The continuous remake route reaches
+Battle01 control; original natural continuity across the H3 bridge, outcome and return remain outside
+this group. Other Map3 native branches such as ChurchMenu and
 moveNextToPlayer retain executable source frontiers.
 
 After F603, a later Map3 init can target entity142 after its alias has been removed. The source
@@ -209,9 +255,13 @@ Astral-zone, messenger, castle gate, palace, Astral invitation, tower guard and 
 endpoint-writing methods, their presentation branches and obsolete atomic-route tests are removed.
 Whole-flow comparisons now use common commands and actual native input. The large old castle
 atlas probe and its execution callers are removed. The separate private probe retains the
-Map21/Map40/frontier comparisons.
+Map21 guard and missing-presentation comparisons; the complete admission observer replaces the old
+Map40 `loadMapFadeIn` stop/forced-seen-intro cases.
 
-Pending Battle01 admission and M4 return remain reference consumers. Their tests use
+The legacy Map40 pending-admission writer, movement-result variant and presentation callers are
+removed. M4 startup/initialization/return comparisons still require immutable pending/source context;
+their test fixture constructs it explicitly without executing the retired field writer.
+Those independent comparison consumers remain. Their tests use
 `map3-post-opening-reference-start.json` as an explicit controlled starting context, with zero executed
 history and no messenger receipt, or explicit fixture state at the later admission seam. The optional reference-host variable
 `SF2_REFERENCE_POST_OPENING_START` selects this same input. This is not a bridge proving original
@@ -266,9 +316,8 @@ The owning engine project copies R1/R2/R2a comparison fixtures and explicit star
 checks run only with their required input configuration; public runs report their skips. Use the
 committed `verify plan --scope engine` selection and proportionate direct checks. Completed failing
 legacy runs remain recorded; rerun their corrected nodes rather than replaying the aggregate. The
-remaining native observer is `engine_private_exploration_observation.gd`, with `map21-guard`,
-`map40-intro`, `map40-seen` or the authored missing-presentation case. The Map40 observer reads the
-existing PlayerReady fixture's static input plan; it does not supply runtime state.
+remaining narrow observer is `engine_private_exploration_observation.gd`, with `map21-guard`
+or the authored missing-presentation case.
 
 For the connected castle group, use the same R1 start and R2 input-plan environment with
 `--script res://probes/engine_castle_tower_observation.gd`. The observer continues the same live
@@ -279,3 +328,21 @@ through actual input. Run the ordinary host at fixed60 and30 FPS, require `passe
 and retain any completed failures in the local report. The final input sequence repeats the guard
 interaction and walks the released passage, then checks stable PlayerInput.
 No observer supplies an expected endpoint, completion flag, entity alias or session replacement.
+
+For complete Battle01 admission, keep those same retained environment and R1 input selections and
+replace the script with `res://probes/engine_battle01_admission_observation.gd`. Run fixed60 and30
+FPS. The observer reuses the opening/castle route and reads the existing PlayerReady static input
+plan only for navigation. Its adjacent `.admission.json` records actual effects, load-before-input,
+first battle projection and real confirmation/cancel. Require exit0, `passed: true`, nonzero mosaic
+and shiver draws, white/load observations and no Godot script/process errors. Direct comparisons use:
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --no-restore --filter 'FullyQualifiedName~BattleEntryProgramTests'
+```
+
+`BattleEntryProgramTests` covers scene replacement and sprite waits, camera/shiver ownership,
+first/seen/completed selection, input gating and initialization failure. With the registered private
+bindings, `PrivateBattleEntryProgramTests` covers continuous R1 admission, the independently seeded
+H3 comparison, live membership/formation/resources and the F88 boundary. These are engine behavior
+checks; they do not test the observers or replay the legacy aggregate.

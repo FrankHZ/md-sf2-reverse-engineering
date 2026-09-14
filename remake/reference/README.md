@@ -180,9 +180,9 @@ actual control through the common action publisher. Source equipment/class/spell
 and the scene's experience modifier supply the operands; the separate action input supplies only
 controlled starting accounting. `Battle01EnemyStandby.Decide` and `Battle01EnemyPursuit.DecidePursuit`
 use the same production calculations as this path. Their legacy control/history/physical wrappers
-still have the concrete callers listed above. The table's map-start and
-recovery/return consumers still require the old startup binding and session; a standalone initialized
-entry does not authorize deleting them or claim natural Map3 continuity.
+still have the concrete callers listed above. Recovery/return comparisons require the old startup
+binding and session with explicit fixture context. The common continuous R1 route now executes the
+entire before/init/load/start group; original natural reach across the H3 bridge remains unclaimed.
 
 Use existing selected reference commands only when their comparison is affected. Do not impose the
 legacy whole-solution suites on new-engine work or write tests of reference runners. New engine
