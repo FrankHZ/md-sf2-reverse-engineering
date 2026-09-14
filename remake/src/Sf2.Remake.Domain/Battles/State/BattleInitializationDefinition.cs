@@ -19,7 +19,8 @@ public sealed class BattleSourceLoadout
 }
 
 public sealed record BattleDeploymentInitialization(ushort? EnemyBaseAiWord, byte SpawnMode,
-    byte PrimaryRegion, byte SecondaryRegion, byte Filler, byte AiCommandset = 0);
+    byte PrimaryRegion, byte SecondaryRegion, byte Filler, byte AiCommandset = 0,
+    byte? PrimaryOrder = null, byte? SecondaryOrder = null);
 
 public sealed class BattleActivationRegion
 {

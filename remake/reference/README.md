@@ -50,11 +50,13 @@ algorithm remains. `Battle01EnemyPhysicalAttack.Priority` and `SelectTarget` now
 supplies its admitted Flying table. Duplicate script3, cohort, class-rank and movement-tie calculations
 are removed; the old class check remains only a private profile/land-rule admission guard. Authored
 regular movement uses the Regular table through that same selector, with named class definitions.
-`Battle01EnemyPursuit` delegates stable raw-cost target selection and radius station search to
-`AiMovementRules`; `Battle01EnemyStandby.SourceWalk` delegates the source direction-mask walk to that
-same owner. `Battle01MovementGrid` projects the shared weighted grid. Duplicate calculation bodies
-are removed; reference path bounds16×20, hovering costs, source move-string formatting, commandset7
-and history/order guards retain their comparison-specific roles. Authored commandset06 uses its
+`Battle01EnemyPursuit.DecidePursuit` delegates the complete raw-target/preliminary-walk/radius-fallback
+calculation to `AiMovementRules.Pursue`. `Battle01EnemyStandby.Decide` projects the shared
+`AiStandbyRules` anchor/memory/occupancy/thinking decision; its `SourceWalk` and `SourceMoveString`
+call the same movement owner. Common SourceOrders and authored attack-then-approach consume these
+calculations with their actual Content mover and legal grid. `Battle01MovementGrid` projects the
+shared weighted grid. Duplicate calculation bodies are removed; reference path bounds16×20, hovering
+costs, commandset admission and history/order guards retain their comparison-specific roles. Authored commandset06 uses its
 configured map and regular movement and admits complete raw target costs0–127 only.
 Legacy activation wrappers, commandset admission, source move-string projection and startup/history admission retain their
 existing consumers and removal points.
@@ -117,8 +119,12 @@ existing H3 PlayerReady boundary. It does not supply an activated snapshot or re
 The observed non-natural R2a→R2b bridge, controlled intro skip, candidate-only word0 supplement and
 unknown accounting remain explicit. The reference input contains minimal comparison facts, not exports.
 
-The first reached source enemy still stops explicitly. Inactive-enemy standby/set7 continuation and
-reached equipment/action/after-turn rules are the next bounded chains. The table's map-start and
+Actual common commands now continue from those unactivated placements through standby, region
+activation and source set7 pursuit to the next player; the reached physical cohort stops before
+private equipment/action operands are bound. `Battle01EnemyStandby.Decide` and
+`Battle01EnemyPursuit.DecidePursuit` use the same production calculations as this path. Their legacy
+control/history/physical wrappers still have the concrete callers listed above; reached
+equipment/action/after-turn binding is the next bounded chain. The table's map-start and
 recovery/return consumers still require the old startup binding and session; a standalone initialized
 entry does not authorize deleting them or claim natural Map3 continuity.
 

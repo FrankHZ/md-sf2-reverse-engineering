@@ -364,56 +364,30 @@ public static class Battle01EnemyStandby
     internal static Battle01EnemyStandbyDecision Decide(Battle01InitializedState battle, Battle01Combatant actor,
         ushort seedCopy, byte memory)
     {
-        ushort before = seedCopy; byte memoryBefore = memory;
-        var rolls = new List<Battle01ThinkingRoll>(); var candidates = new List<Battle01StandbyCandidate>();
-        Battle01EnemyStandbyDecision Result(MapPosition destination, IReadOnlyList<byte> moveString) =>
-            new(actor.Index, actor.RequirePosition(), destination, before, seedCopy, memoryBefore, memory,
-                rolls.AsReadOnly(), candidates.AsReadOnly(), moveString);
-        byte Roll(byte range)
-        {
-            var roll = ThinkingRoll(seedCopy, range); rolls.Add(roll); seedCopy = roll.AfterSeedCopy;
-            return roll.Result;
-        }
-        if (Roll(8) is 2 or 4 or 6) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
         var d = actor.Deployment;
-        bool p = d.PrimaryOrder != 255, s = d.SecondaryOrder != 255;
-        bool pr = d.PrimaryRegion != 15, sr = d.SecondaryRegion != 15;
-        if ((p && pr) || (s && sr)) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
-        if (p && !pr && !s && sr)
-            throw new ArgumentException("Move-order standby is outside this bounded primitive.", "moveOrder");
-        if (!((!p && pr) || (!s && sr))) return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
-        if (actor.EnemySource?.MovementType != 6)
-            throw new ArgumentException("Standby requires the admitted Hovering6 profile.", "movementProfile");
-
-        var grid = Battle01PlayerMovement.BuildWeightedGrid(battle.Terrain, Battle01PlayerMovement.HoveringCosts,
-            Battle01PlayerMovement.Offset(actor.RequirePosition()), actor.Stats.Move * 2);
-        // Source builds occupancy separately. Do not invent the distant A0's missing neutral bit.
-        if (battle.Roster.Any(unit => unit.Stats.HpCurrent > 0 && unit.Position is { } unitPosition && unit.AiBitfield is null && grid.CostAt(unitPosition) is not null))
-            throw new ArgumentException("A relevant combatant's activation word is unknown.", "activation");
-        if ((memory & 15) == 0) memory = Roll(2) == 0 ? (byte)4 : (byte)3;
-        int count = memory & 15, previous = memory >> 4;
-        if (count is not (3 or 4) || previous >= 4)
-            throw new ArgumentException("Only bounded standby memory patterns are supported.", "memory");
-        (int X, int Y)[] offsets = count == 3 ? [(0, -1), (-1, 1), (1, 1)] : [(0, -1), (-1, 0), (0, 1), (1, 0)];
-        var valid = new List<byte>();
-        for (byte index = 0; index < count; index++)
+        try
         {
-            int x = d.Position.X + offsets[index].X, y = d.Position.Y + offsets[index].Y;
-            if (x is < 0 or >= 48 || y is < 0 or >= 48) continue; // downstream DetermineAttackPosition rejects coordinate48
-            var position = new MapPosition(x, y); int? cost = grid.CostAt(position);
-            var occupant = battle.Roster.FirstOrDefault(unit => unit.Position == position && unit.Stats.HpCurrent > 0 &&
-                unit.AiBitfield is { } word && (word & 8) == 0);
-            bool eligible = cost == 0 || (cost is not null && occupant is null);
-            candidates.Add(new(index, position, cost, occupant?.Index, eligible));
-            if (eligible && index != previous) valid.Add(index);
+            var decision = AiStandbyRules.Decide(actor.RequirePosition(), d.Position, d.PrimaryOrder, d.SecondaryOrder,
+                d.PrimaryRegion, d.SecondaryRegion, seedCopy, memory, BuildGrid,
+                battle.Roster.Where(unit => unit.Stats.HpCurrent > 0 && unit.Position is not null)
+                    .Select(unit => new StandbyOccupant<int>(unit.Index, unit.RequirePosition(), unit.AiBitfield)).ToArray(), 16, 20);
+            return new(actor.Index, actor.RequirePosition(), decision.Destination, seedCopy, decision.SeedAfter, memory, decision.MemoryAfter,
+                Array.AsReadOnly(decision.Rolls.Select(roll => new Battle01ThinkingRoll(roll.Range, roll.Before, roll.After, roll.Value, roll.Bytes)).ToArray()),
+                Array.AsReadOnly(decision.Candidates.Select(candidate => new Battle01StandbyCandidate(candidate.Index, candidate.Position,
+                    candidate.Cost, candidate.Occupant, candidate.Eligible)).ToArray()), decision.MoveString);
         }
-        if (valid.Count == 0)
+        catch (BattleRuleException error)
         {
-            memory = 0; return Result(actor.RequirePosition(), Array.AsReadOnly<byte>([255]));
+            string field = error.Code switch { "standby-move-order" => "moveOrder", "source-occupancy-word" => "activation", "standby-memory" => "memory", _ => "path" };
+            throw new ArgumentException(error.Message, field, error);
         }
-        byte chosen = valid[Roll((byte)valid.Count)]; memory = (byte)((chosen << 4) | count);
-        var destination = candidates.Single(candidate => candidate.Index == chosen).Position;
-        return Result(destination, SourceMoveString(grid, actor.RequirePosition(), destination));
+        WeightedMovementGrid BuildGrid()
+        {
+            if (actor.EnemySource?.MovementType != 6)
+                throw new ArgumentException("Standby requires the admitted Hovering6 profile.", "movementProfile");
+            return Battle01PlayerMovement.BuildWeightedGrid(battle.Terrain, Battle01PlayerMovement.HoveringCosts,
+                Battle01PlayerMovement.Offset(actor.RequirePosition()), actor.Stats.Move * 2).Core;
+        }
     }
 
     internal static Battle01ThinkingRoll ThinkingRoll(ushort seedCopy, byte range)
@@ -424,9 +398,8 @@ public static class Battle01EnemyStandby
 
     internal static IReadOnlyList<byte> SourceMoveString(Battle01MovementGrid grid, MapPosition origin, MapPosition destination)
     {
-        var (reached, backtrack) = SourceWalk(grid, destination, 0);
-        if (reached != origin) throw new ArgumentException("The complete source AI path must reach its grid origin.", "path");
-        return Array.AsReadOnly(backtrack.SkipLast(1).Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+        try { return AiMovementRules.MoveString(grid.Core, origin, destination, 16, 20); }
+        catch (BattleRuleException error) { throw new ArgumentException(error.Message, "path", error); }
     }
 
     internal static (MapPosition Destination, IReadOnlyList<byte> MoveString) SourceWalk(

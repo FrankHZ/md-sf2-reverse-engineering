@@ -62,10 +62,10 @@ slots remain in the actual reference projection into the same typed turn calcula
 healing/opposition/rewards independently of order. Deployments also own `BattleControl` separately from
 `BattleAiStrategy`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
 automatic authored actors explicitly select Stay or AttackThenApproach. Private source orders remain
-SourceOrders and stop explicitly at their unported continuation. Shared deployment validation at Content
+SourceOrders and use the bounded source standby/activation/set6/set7 continuation. Shared deployment validation at Content
 admission and reusable start preserves ally/player and enemy/automatic bounds plus physical/spellbook/
 MOV requirements. The advancer consumes explicit combinations and never defaults an unknown policy to
-Stay. The native view projects AI memory from the same deployment; there is no second control copy.
+Stay. The native view projects each actor’s current AI memory and immutable source anchor; there is no second control copy.
 Actor definitions separately own numerical `Agility` (0–127) and boolean `ExtraRoundAction`.
 Live-start capacity and shared generation consume explicit eligibility; only the actual reference
 projection decodes raw high-bit semantics. The ordinary three draws and optional two draws at the
@@ -115,10 +115,14 @@ Initialization/first supported control is one entry transaction: failure publish
 RNG state. Later failures preserve earlier completed commands and the failing queue entry.
 
 Godot selects this source with `--private-battle-start`; the existing battle view sends the same
-movement/cancel commands and projects private origin and Unknown accounting. SourceOrders remains
-explicitly Unsupported when reached. Inactive-enemy standby/activation/set7 continuation, reached
-equipment/action/after-turn operands, natural map programs and outcome/return remain separate
-migration dependencies. The old initialization/round/control wrappers still serve those concrete
+movement/cancel commands and projects private origin and Unknown accounting. `SourceEnemyAi` uses
+`AiStandbyRules` for anchor-relative standby and `AiMovementRules.Pursue` for active set6/set7. The real
+reference standby and pursuit callers consume these same calculations. The source legal grid feeds
+the common movement commit, and `BattleActionCommitter` publishes each completed action once.
+Per-enemy memory/activation, retained region flags, cleared tested mask and independent thinking RNG
+remain live state; no round or receipt admits a turn. An actual physical cohort stops atomically at
+`source-attack-operands` before target scoring or movement. Reached equipment/action/after-turn
+operands, natural map programs and outcome/return remain separate migration dependencies. The old initialization/round/control wrappers still serve those concrete
 legacy callers, but their enemy ATT arithmetic, polygon/assigned-region operations and control
 classifier now delegate to these shared rules.
 

@@ -83,25 +83,22 @@ public static class Battle01EnemyPursuit
     {
         // The admitted GIZMO has no usable item/spell/heal/support action; set7's orderFF also fails.
         // MOVE1 (mode0): raw target costs, stable ascending order, then a target-rooted budget4 walk.
-        var raw = Grid(battle.Terrain, actor.RequirePosition(), 128);
-        var rawCosts = allies.Select(ally => raw.CostAt(ally.RequirePosition())).ToArray();
-        int selected;
-        try { selected = AiMovementRules.PursuitTarget(rawCosts); }
-        catch (BattleRuleException error) { throw new ArgumentException(error.Message, "pursuit.targets", error); }
-        var costs = allies.Select((ally, index) => new Battle01PursuitTargetCost(ally.Index, rawCosts[index]!.Value)).ToArray();
-        if (costs.Length is < 2 or > 3) throw new ArgumentException("Retain every living controlled target.", "pursuit.targets");
-        int target = allies[selected].Index;
-        var reverse = Grid(battle.Terrain, allies.Single(ally => ally.Index == target).RequirePosition(), 128);
-        int startCost = reverse.CostAt(actor.RequirePosition()) ?? throw new ArgumentException("The target-rooted path must reach the actor.", "path");
-        var preliminary = Battle01EnemyStandby.SourceWalk(reverse, actor.RequirePosition(), Math.Max(0, startCost - 4));
-        var destination = preliminary.MoveString.Count == 1 ? actor.RequirePosition() :
-            DetermineAttackPosition(grid, preliminary.Destination, 0, battle.Occupancy) ??
-            DetermineAttackPosition(grid, preliminary.Destination, 1, battle.Occupancy) ?? actor.RequirePosition();
-        var path = Battle01EnemyStandby.SourceMoveString(grid, actor.RequirePosition(), destination);
+        if (allies.Length is < 2 or > 3) throw new ArgumentException("Retain every living controlled target.", "pursuit.targets");
+        AiPursuitDecision decision;
+        try
+        {
+            var costs = battle.Terrain.Select(value => value == 255 || (value & 128) != 0 ? (sbyte)-1 :
+                unchecked((sbyte)Battle01PlayerMovement.HoveringCosts[value & 31])).ToArray();
+            decision = AiMovementRules.Pursue(costs, grid.Core, actor.RequirePosition(), allies.Select(ally => ally.RequirePosition()).ToArray(),
+                position => battle.Occupancy[Battle01PlayerMovement.Offset(position)] != -1, 16, 20, preserveFlatRowNeighbors: true);
+        }
+        catch (BattleRuleException error)
+        { throw new ArgumentException(error.Message, error.Code == "ai-move-target-domain" ? "pursuit.targets" : "path", error); }
+        var targets = allies.Select((ally, index) => new Battle01PursuitTargetCost(ally.Index, decision.TargetCosts[index])).ToArray();
         ushort copy = battle.RandomSeedCopy!.Value; byte memory = battle.AiMemory[actor.Index - 128];
-        return new(actor.Index, actor.Deployment.AiCommandSet, actor.RequirePosition(), destination, copy, copy, memory, memory,
-            battle.RandomSeedImage, Array.AsReadOnly(costs), target, preliminary.Destination, preliminary.MoveString,
-            path, grid.CostAt(destination)!.Value);
+        return new(actor.Index, actor.Deployment.AiCommandSet, actor.RequirePosition(), decision.Destination, copy, copy, memory, memory,
+            battle.RandomSeedImage, Array.AsReadOnly(targets), allies[decision.TargetIndex].Index, decision.PreliminaryDestination,
+            decision.PreliminaryMoveString, decision.MoveString, decision.Cost);
     }
 
     private static Battle01MovementGrid Grid(IReadOnlyList<byte> terrain, MapPosition origin, int budget) =>

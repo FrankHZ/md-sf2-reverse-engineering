@@ -54,6 +54,11 @@ func _run() -> void:
     var arguments := OS.get_cmdline_user_args()
     var case_index := arguments.find("--observation-case")
     if case_index >= 0 and case_index + 1 < arguments.size():
+        if arguments[case_index + 1] == "private-source-ai":
+            await _private_source_ai(initial)
+            _check(samples.size() == 13, "Private source AI completed all thirteen continuous-input checkpoints")
+            _finish()
+            return
         if arguments[case_index + 1] == "private-initialized":
             await _private_initialized(initial)
             _check(samples.size() == 7, "Private entry completed all seven real-input checkpoints")
@@ -656,8 +661,73 @@ func _private_initialized(initial: Dictionary) -> void:
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
     await _press(KEY_ENTER)
-    var enemy := _read("private-enemy-continuation-unsupported")
-    _check(enemy.failure == "source-enemy-continuation" and enemy.stopReason == "Unsupported" and enemy.queueCursor == 2, "Unported source enemy continuation is explicit and retains its entry")
-    _check(enemy.mainSeed == initial.mainSeed and enemy.thinkingSeed == initial.thinkingSeed, "Unsupported enemy continuation has no RNG side effect")
+    var enemy := _read("private-standby-relay")
+    _check(enemy.failure == null and enemy.stopReason == "PlayerInput" and enemy.actor == "ally-0" and enemy.queueCursor == 8, "Six actual inactive enemies complete standby before Bowie control")
+    _check(enemy.mainSeed == initial.mainSeed and enemy.thinkingSeed == 0x01340000, "Standby advances only the independent thinking channel")
+    var positions := [[6, 3], [10, 4], [6, 5], [8, 4], [9, 6], [6, 6]]
+    var memories := [0x14, 0x34, 0x24, 0x24, 0x24, 0x24]
+    for index in range(6):
+        var actor: Dictionary = enemy.actors[index + 3]
+        _check(actor.x == positions[index][0] and actor.y == positions[index][1] and actor.aiMemory == memories[index], "Standby uses evolving occupancy and each enemy's own memory")
+        _check(actor.anchorX == initial.actors[index + 3].x and actor.anchorY == initial.actors[index + 3].y and actor.primaryOrder == 255 and actor.secondaryOrder == 255, "Immutable source anchor and decoded NONE orders survive relocation")
     for observation in enemy.observations:
         _check(observation.Kind != "ai-stay", "Source orders are never replaced by authored Stay")
+
+func _private_stay() -> void:
+    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
+    await _press(KEY_ENTER)
+
+func _private_source_ai(initial: Dictionary) -> void:
+    await _private_initialized(initial)
+    await _press(KEY_W)
+    await _private_stay()
+    var round_two := _read("private-first-round-complete")
+    _check(round_two.round == 2 and round_two.actors[0].x == 8 and round_two.actors[0].y == 17, "Bowie's committed move completes the real first round")
+    var current: Dictionary = round_two
+    for _turn in range(6):
+        if current.round >= 3 or current.stopReason != "PlayerInput":
+            break
+        if current.actor == "ally-0":
+            for _step in range(3):
+                await _press(KEY_D)
+            for _step in range(2):
+                await _press(KEY_W)
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    var activated := _read("private-region-activated")
+    _check(activated.round == 3 and activated.actor == "ally-2" and activated.mainSeed == 0x9BD71234, "Natural session commands generate the next round's actual order")
+    _check(activated.actors[0].x == 11 and activated.actors[0].y == 15 and activated.regionFlags[1], "Player movement activates the reached source region")
+    var words := [0x2060, 0x2060, 0x2060, 0x2061, 0x2071, 0x2070]
+    for index in range(6):
+        _check(activated.actors[index + 3].activationWord == words[index], "Only source-linked enemies gain the activation bit")
+    await _private_stay()
+    var first_active := _read("private-active-prefix-to-player")
+    _check(first_active.actor == "ally-0" and first_active.failure == null and first_active.regionsTested == 0 and first_active.regionFlags[1], "Inactive prefix and first active pursuit return to actual Bowie control")
+    await _private_stay()
+    await _private_stay()
+    var set_seven := _read("private-set-seven-to-next-player")
+    _check(set_seven.round == 4 and set_seven.actor == "ally-1" and set_seven.mainSeed == 0x51DC1234 and set_seven.thinkingSeed == 0x02340000, "Source set7 completes and generated order returns to the next player with both RNG channels")
+    _check(set_seven.actors[7].x == 11 and set_seven.actors[7].y == 6 and set_seven.actors[7].activationWord == 0x2071, "Actual set7 enemy pursues from its own evolving position")
+    var saw_move_order := false
+    for observation in set_seven.observations:
+        if observation.Kind == "ai-command-move-order1" and observation.Actor.Value == "enemy-4" and observation.After == -1:
+            saw_move_order = true
+    _check(saw_move_order, "Set7 retains its failed MOVE_ORDER1 before the common pursuit")
+    current = set_seven
+    for _turn in range(12):
+        if current.stopReason != "PlayerInput":
+            break
+        await _private_stay()
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    var stopped := _read("private-reached-action-boundary")
+    _check(stopped.failure == "source-attack-operands" and stopped.stopReason == "Unsupported" and stopped.round == 6 and stopped.queueCursor == 5, "Reached physical action stops at the explicit step3 capability boundary")
+    _check(stopped.mainSeed == 0x07821234 and stopped.thinkingSeed == 0x00340000 and stopped.actors[7].x == 11 and stopped.actors[7].y == 10, "Unsupported action retains the last successful state without a partial pursuit or reseed")
+    for index in range(initial.actors.size()):
+        var actor: Dictionary = stopped.actors[index]
+        var before: Dictionary = initial.actors[index]
+        _check(actor.hp == before.hp and actor.mp == before.mp and actor.attack == before.attack and actor.items == before.items and actor.spells == before.spells, "Continuous no-action flow preserves resources and the actual source loadout")
+        _check(actor.anchorX == before.anchorX and actor.anchorY == before.anchorY and actor.exp == null and actor.kills == null and actor.defeats == null and actor.lastTarget == null, "Source anchor, Unknown accounting and last target remain intact")
+    await process_frame
+    var stable := _read("private-action-boundary-stable")
+    _check(stable.revision == stopped.revision and stable.mainSeed == stopped.mainSeed and stable.thinkingSeed == stopped.thinkingSeed, "Native frames do not continue an Unsupported action")

@@ -782,9 +782,13 @@ public CI explicitly skips them; any partial selection or mandatory flag makes m
 fail. A skipped public result never supplies private acceptance. The real comparison checks initialized
 HP/MP/effective versus source ATT, class/movers/equipment/spells, unknown accounting, full first queue,
 region words, independent RNG and first-player control against the existing H3 PlayerReady fixture.
-It then uses common commands for movement/cancel, the next Centaur player and the reached explicit
-source-enemy stop. Meaningful authored variations cover other party IDs, stats, regions, mover costs,
-unknown accounting and transaction rejection; none uses a live setter or legacy session.
+It then uses common commands for movement/cancel, the next Centaur player and actual inactive enemy
+standby back to Bowie. `PrivateSourceAiTests` continues real player commands through region activation
+and set7 pursuit to the next live player, then to the reached physical-operand Unsupported boundary.
+The comparison preserves source anchors/orders, evolving positions/memory, activation/tested words,
+resources/loadouts/unknown accounting, last target and both RNG channels. Meaningful authored variations
+cover other IDs, movers, occupancy, memory, commandsets and transaction rejection; no live setter or
+legacy session drives this private comparison.
 
 Refresh the affected Debug Godot assembly, then run the existing native observer. The restart is for
 the changed startup composition and assembly, using the retained editor/project:
@@ -793,9 +797,13 @@ the changed startup composition and assembly, using the retained editor/project:
 & $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'private-initialized-observation.json'
 & $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START --observation-case private-initialized --observation-output $outputPath
+$outputPath = Join-Path $env:SF2_RUN_OUTPUT 'private-source-ai-observation.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START --observation-case private-source-ai --observation-output $outputPath
 ```
 
-Require all seven checkpoints, `passed:true`, no failures and clean process logs. These observe actual
+Require all seven initialized-entry checkpoints or all thirteen continuous source-AI checkpoints,
+`passed:true`, no failures and clean process logs. The source-AI case includes the entry checks, then
+real movement/STAY through activation, set7 pursuit and the stable reached action boundary. These observe actual
 Godot input, shared session state, actor nodes, private-origin HUD and explicit Unknown accounting;
 no images are emitted. Private output stays ignored. This comparison preserves the fixture's
 non-natural R2a→R2b bridge, explicit intro skip and candidate-only missing-word policy. It does not
@@ -809,4 +817,11 @@ movement admission; required regular/healer/Centaur and weighted-grid comparison
 round/receipt aggregates or run new H3 work for this bounded entry. Preserve any completed failure and
 rerun its owning group/nodes after correction. The clean committed planner selects engine/adapter;
 documentation uses direct links/anchors/fences/tables/examples and scope/private-boundary checks.
-Inactive-enemy continuation and reached equipment/action/completion are later separately admitted slices.
+For shared standby/pursuit changes, run one related reference group from
+`Battle01EnemyStandbyTests` and `Battle01EnemyPursuitTests`: actual first/remaining standby,
+immediate idle and packed-memory tables, eligibility/unknown occupancy/source direction masks,
+actual inactive/active/set6/set7 ordering, retained activation flags/tested-mask clearing, pursuit
+station/fallback/ties and the repeated pursuit’s first physical cohort. Keep the existing reference
+profile/history projections; do not run their whole receipt/history mutation aggregates. The actual
+common private fact and native continuous-input observation supply acceptance beyond these calculators.
+Reached private equipment/action/reward/after-turn binding is the next separately admitted slice.

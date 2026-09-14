@@ -18,7 +18,7 @@ checks are not universal gameplay predicates. The accepted
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
-| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and five explicit input environment selections | selected encounter, pinned enemy/static definitions, external controlled party/start | initialized common session through generated player control and movement/cancel; source enemy continuation remains Unsupported |
+| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and five explicit input environment selections | selected encounter, pinned enemy/static definitions, external controlled party/start | initialized common session through actual inactive standby, region activation and set6/set7 pursuit to player control; reached private action operands remain Unsupported |
 | `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
 | `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
@@ -346,6 +346,11 @@ bridge remains provenance, not a claim that natural Map3 entry skips its actual 
 Regular/healer costs retain the authored table. Centaur uses cost5 on rough/deep and3 on brush;
 hovering uses cost2 on every admitted non-barrier surface and land multiplier256. Private source
 terrain values are interpreted only at Content admission; the original full byte grid is retained.
-The common weighted kernel, movement and cancel commands own play. Reached SourceOrders, broader
-spawn/status/region programs, equipment actions and outcome/return remain Unsupported or future
-bindings; the explicit legacy route keeps its actual unported consumers.
+The common weighted kernel, movement and cancel commands own play. SourceOrders preserves each
+immutable deployment anchor, both decoded source orders, current memory/activation word, last target
+and both RNG channels. Inactive standby uses source terrain and evolving occupancy; active set7
+retains failed MOVE_ORDER1 before the no-action pursuit shared with set6. Content resolves source
+NONE as255 and leaves unresolved order expressions explicit. Nonempty move-order programs, wider
+status/neutral occupancy, nonempty enemy action categories and the reached physical cohort stop at
+their capability boundary before partial publication. Private equipment/action/reward binding, broader
+spawn/region programs and outcome/return remain future work; the legacy route keeps those consumers.

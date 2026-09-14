@@ -2,8 +2,35 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
+internal sealed record AiPursuitDecision(MapPosition Destination, int TargetIndex, IReadOnlyList<int> TargetCosts,
+    MapPosition PreliminaryDestination, IReadOnlyList<byte> PreliminaryMoveString, IReadOnlyList<byte> MoveString, int Cost);
+
 internal static class AiMovementRules
 {
+    internal static AiPursuitDecision Pursue(IReadOnlyList<sbyte> rawCosts, WeightedMovementGrid legal,
+        MapPosition origin, IReadOnlyList<MapPosition> targets, Func<MapPosition, bool> occupied,
+        int width, int height, bool preserveFlatRowNeighbors = false)
+    {
+        var raw = WeightedMovement.Build(rawCosts, origin.Y * 48 + origin.X, 128, preserveFlatRowNeighbors);
+        var costs = targets.Select(target => raw.CostAt(target)).ToArray();
+        int selected = PursuitTarget(costs); var target = targets[selected];
+        var reverse = WeightedMovement.Build(rawCosts, target.Y * 48 + target.X, 128, preserveFlatRowNeighbors);
+        int startCost = reverse.CostAt(origin) ?? throw new BattleRuleException("ai-move-path", "ai.move.path", true);
+        var preliminary = Walk(reverse, origin, Math.Max(0, startCost - 4), width, height);
+        var destination = preliminary.MoveString.Count == 1 ? origin :
+            AttackPosition(legal, preliminary.Destination, 0, occupied) ??
+            AttackPosition(legal, preliminary.Destination, 1, occupied) ?? origin;
+        return new(destination, selected, Array.AsReadOnly(costs.Select(cost => cost!.Value).ToArray()),
+            preliminary.Destination, preliminary.MoveString, MoveString(legal, origin, destination, width, height), legal.CostAt(destination)!.Value);
+    }
+
+    internal static IReadOnlyList<byte> MoveString(WeightedMovementGrid grid, MapPosition origin, MapPosition destination, int width, int height)
+    {
+        var (reached, backtrack) = Walk(grid, destination, 0, width, height);
+        if (reached != origin) throw new BattleRuleException("ai-move-path", "ai.move.path", true);
+        return Array.AsReadOnly(backtrack.SkipLast(1).Reverse().Select(direction => (byte)(direction ^ 2)).Append((byte)255).ToArray());
+    }
+
     internal static int PursuitTarget(IReadOnlyList<int?> costs)
     {
         // MOVE1 leaves the last GetMoveCostToEntity result in d0 before the enemy-bit

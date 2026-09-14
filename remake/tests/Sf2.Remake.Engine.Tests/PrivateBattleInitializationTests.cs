@@ -25,7 +25,7 @@ public sealed class PrivateBattleInitializationTests
         var region = new BattleActivationRegion(regionId, [new(2, 2), new(4, 2), new(4, 4), new(2, 4)]);
         var battle = new BattleDefinition("varied-entry", new("unrelated-map"), 12, 12, terrain,
             [new(player, BattleFaction.Ally, allyId, BattleControl.Player, null, new(2, 2), new(null, 0, 15, 15, 0)),
-             new(enemy, BattleFaction.Enemy, 130, BattleControl.Automatic, BattleAiStrategy.SourceOrders, new(8, 8), new(0x3000, spawn, primary, secondary, 0x60))],
+             new(enemy, BattleFaction.Enemy, 130, BattleControl.Automatic, BattleAiStrategy.SourceOrders, new(8, 8), new(0x3000, spawn, primary, secondary, 0x60, 6, 255, 255))],
             [new(new("heal", 1), 3, 15, 0, 1)], initialization: new([region], program));
         var start = new BattleStartInput("varied-entry", [new(player.Actor, 8, 2, null, null, null, 0, null), new(enemy.Actor, 3, 1, null, null, null, 0, null)],
             0x00005678, 0xBEEF4321, null, Policy);
@@ -75,12 +75,10 @@ public sealed class PrivateBattleInitializationTests
     [InlineData("region", "missing-activation-region")]
     [InlineData("difficulty", "difficulty")]
     [InlineData("word", "player-control-missingactivationword")]
-    [InlineData("source-ai", "source-enemy-continuation")]
     public void UnsupportedInitialPrerequisitesPublishNoSessionOrSeedChanges(string shape, string expected)
     {
         var input = Setup(program: shape == "program" ? BattleRegionProgram.Required : BattleRegionProgram.None,
-            spawn: shape == "spawn" ? (byte)1 : (byte)0, primary: shape == "region" ? (byte)3 : (byte)6,
-            enemyAgility: shape == "source-ai" ? (byte)127 : (byte)1);
+            spawn: shape == "spawn" ? (byte)1 : (byte)0, primary: shape == "region" ? (byte)3 : (byte)6);
         var start = input.Start;
         if (shape is "difficulty" or "word") start = new(start.Encounter, start.Actors, start.MainSeed, start.ThinkingSeed, start.Gold,
             shape == "difficulty" ? Policy with { Difficulty = 1 } : Policy with { MissingCandidateAllyWord = null });
