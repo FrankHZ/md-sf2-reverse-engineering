@@ -15,7 +15,8 @@ Neither package identity nor an expected route/receipt admits a command.
 simulation tick and observations survive the switch. The battle view attaches to the existing
 session. It cannot restart it at the transfer endpoint. Startup and transfer use the same derived
 `HasBattleControl` boundary: an active battle with a pending program or wait keeps the program view
-until its dialogue, choice or timer finishes, then exposes ordinary battle control.
+until its dialogue, choice, timer or presentation service finishes, then exposes ordinary battle
+control.
 
 Before battle entry, `ExplorationState.Party` owns the explicit candidate resources, seeds and
 accounting. Joined/active membership is separately owned by story flags and source-order counted
@@ -116,13 +117,20 @@ ignored private output. No ROM, extracted asset, dialogue prose or private absol
 Godot draws the working block layout and source sprite frames, mounts requested entity sprites,
 shows source portraits and resolves `{LEADER}`/`{NAME;n}` from configured source names. It scrolls
 the camera to the requested destination and waits for arrival. Nod presentation freezes the entity
-animation counter, displays the altered head band and restored sprite, then completes the typed wait.
+animation counter and uses a 40/60-second timeline, with the altered head band from 10/60 to 30/60
+seconds and the restored sprite afterward. Completion follows elapsed time independently of viewport
+culling or missed render phases. Actual visible nod and restored-sprite draws are counted separately;
+an off-camera actor or a frame that skips a phase does not fabricate a draw or hold the story forever.
 `CompletePresentation` validates both wait token and kind; `EntitySpriteReady` validates slot and
 request generation. Enter acknowledges dialogue only and cannot complete an unperformed service.
 
 The audio contract permits an explicit project-authored presentation mapping: MUSIC_JOIN and
 MUSIC_SAD_JOIN play a generated C-major/C-minor chord loop through `AudioStreamPlayer`, with an actual
-fade and stop. This is a modern cue, **not original audio parity**. Camera smoothing, portrait crop,
+fade and stop. This is a modern cue, **not original audio parity**. Sound and fade services continue
+while the common story owns control, including after
+the active state has become a battle with no exploration world. Camera and gesture cues require a
+current exploration world; without it they report `AdapterError` and retain their wait instead of
+using stale map state. Camera smoothing, portrait crop,
 text layout/full-line display, nod pixel transformation and cue duration are bounded presentation
 choices. Original VRAM/DMA timing, portrait blink/mouth/typewriter RNG, speech SFX, door/warp music
 and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknown or Unsupported**.

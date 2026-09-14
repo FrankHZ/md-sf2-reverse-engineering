@@ -206,6 +206,7 @@ public sealed partial class ExplorationSessionView : Control
             speakerFlags = (current?.Story.Wait as DialogueWait)?.SpeakerFlags,
             partyLists = current?.Story.PartyLists, mainSeed = current?.Exploration?.Party.MainSeed,
             presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
+                nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
                 cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
                 error = _presentation?.Error },

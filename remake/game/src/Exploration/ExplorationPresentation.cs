@@ -18,8 +18,6 @@ internal sealed class ExplorationPresentation : IDisposable
     private int _spriteMounts;
     private WaitToken? _cue;
     private double _cueAge;
-    private bool _nodDrawn;
-    private bool _restoredDrawn;
     private EntityRef? _gesture;
     private bool _nodding;
     private MapId? _map;
@@ -38,6 +36,8 @@ internal sealed class ExplorationPresentation : IDisposable
     internal string? Error { get; private set; }
     internal int SpriteMounts => _spriteMounts;
     internal int GestureDraws { get; private set; }
+    internal int NodDraws { get; private set; }
+    internal int RestoredGestureDraws { get; private set; }
     internal int SoundStarts { get; private set; }
     internal int SoundFades { get; private set; }
     internal Vector2 Camera => _camera;
@@ -46,35 +46,41 @@ internal sealed class ExplorationPresentation : IDisposable
     internal IReadOnlyList<SessionCommand> Update(double delta, SessionSnapshot current)
     {
         List<SessionCommand> completions = [];
-        if (Error is not null || current.Exploration is not { } world) return completions;
+        if (Error is not null) return completions;
         try
         {
-            var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
-            var target = current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
-                ? new Vector2(destination.X * 24, destination.Y * 24)
-                : new Vector2(world.PlayerEntity.Motion.X / 16f - ViewWidth / 2f + 12,
-                    world.PlayerEntity.Motion.Y / 16f - ViewHeight / 2f + 12);
-            target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
-            target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
-            if (_map != world.Map) { _map = world.Map; _camera = target; }
-            else _camera = _camera.MoveToward(target, (float)(delta * 180));
-            foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest))
+            var target = _camera;
+            if (current.Exploration is { } world)
             {
-                _ = Sprite(entity, false);
-                _spriteMounts++;
-                completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
+                var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
+                target = current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
+                    ? new Vector2(destination.X * 24, destination.Y * 24)
+                    : new Vector2(world.PlayerEntity.Motion.X / 16f - ViewWidth / 2f + 12,
+                        world.PlayerEntity.Motion.Y / 16f - ViewHeight / 2f + 12);
+                target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
+                target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
+                if (_map != world.Map) { _map = world.Map; _camera = target; }
+                else _camera = _camera.MoveToward(target, (float)(delta * 180));
+                foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest))
+                {
+                    _ = Sprite(entity, false);
+                    _spriteMounts++;
+                    completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
+                }
             }
             if (current.Story.Wait is not PresentationWait wait)
             { _cue = null; _gesture = null; _nodding = false; ActiveCue = null; return completions; }
+            if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture)
+                throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
             {
-                _cue = wait.Token; _cueAge = 0; _nodDrawn = false; _restoredDrawn = false;
+                _cue = wait.Token; _cueAge = 0;
                 ActiveCue = wait.Cue.Kind.ToString();
                 if (wait.Cue.Kind == PresentationCueKind.Gesture)
                 {
                     if (wait.Cue.Resource != "nod" || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
                     _gesture = wait.Cue.Entity;
-                    _ = Sprite(world.Entities[_gesture.Value], true);
+                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], true);
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
@@ -92,7 +98,8 @@ internal sealed class ExplorationPresentation : IDisposable
                 case PresentationCueKind.CameraWait: complete = _camera.DistanceTo(target) < 0.01f; break;
                 case PresentationCueKind.Gesture:
                     _nodding = _cueAge is >= (10.0 / 60) and < (30.0 / 60);
-                    complete = _cueAge >= 40.0 / 60 && _nodDrawn && _restoredDrawn; break;
+                    // Rendering observes the timeline; culling or a missed phase cannot hold story control.
+                    complete = _cueAge >= 40.0 / 60; break;
                 case PresentationCueKind.Sound: complete = _music.Playing; break;
                 case PresentationCueKind.SoundFade:
                     _music.VolumeDb = (float)(-12 - 60 * Math.Min(1, _cueAge / 0.5));
@@ -133,8 +140,8 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (gesture)
                 {
                     GestureDraws++;
-                    if (_nodding) _nodDrawn = true;
-                    else if (_cueAge >= 30.0 / 60) _restoredDrawn = true;
+                    if (_nodding) NodDraws++;
+                    else if (_cueAge >= 30.0 / 60) RestoredGestureDraws++;
                 }
             }
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
