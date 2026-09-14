@@ -103,7 +103,11 @@ inactive autonomous scripts. Their unported input/setup/event services retain so
 The existing `MapSetupSelector` selects the last set-flag alternative before entity construction;
 an unsupported selected setup cannot publish the default setup's population. All source warp rows are retained; unadmitted destination/scroll/reload branches stop before transfer.
 Map40's supported flag-guarded init preserves ordered setup alternatives; an unsupported selected
-alternative stops. A same-row cell without the warp marker does not transfer.
+alternative stops. A same-row cell without the warp marker does not transfer. Enabled source
+flag-layout records stop before init/battle selection until their copy operation is supported;
+clear flags continue to the selected init. This includes Map57's F506 record, so selecting that
+flag cannot silently reuse the unmodified layout. The supported Map40 route has empty flag, step
+and roof tables and a default zone event that returns immediately.
 
 Original follower population, joins/items, general init/layout mutation, same-map reload, source
 text-tag/name substitution, camera/fade/gesture/FX/audio, the full before-battle body and natural

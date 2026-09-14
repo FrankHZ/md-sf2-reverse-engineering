@@ -172,6 +172,32 @@ public sealed class PrivateExplorationTests
         Assert.Equal(ready.GetProperty("randomSeed").GetUInt32(), session.Current.Battle.MainSeed);
     }
 
+    [PrivateInputFact(World)]
+    public void SourceMap57StopsAtAnEnabledLayoutEventBeforeSelectingBattle()
+    {
+        var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
+            Path.Combine(AppContext.BaseDirectory, "controlled", "map40-seen-start.json"), PrivateBattleScenarioTests.Selected());
+        var admitted = Assert.IsType<ExplorationReadAccepted>(source.Read());
+        foreach (bool enabled in new[] { false, true })
+        {
+            var input = new ExplorationStartInput(new("map-57"), admitted.Start.Player, new(8, 18), 0, 32,
+                enabled ? [401, 451, 506] : [401, 451], admitted.Start.Party);
+            var started = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, input));
+            if (!enabled)
+            {
+                Assert.Null(started.Result.Failure);
+                Assert.Equal(SessionMode.Battle, started.Session.Current.Mode);
+                continue;
+            }
+            Assert.Equal(SessionFailureKind.UnsupportedCapability, started.Result.Failure!.Kind);
+            Assert.Equal("Map57s3_FlagEvents[0]:flag-layout-copy", started.Result.Failure.Field);
+            Assert.Equal(SessionMode.Exploration, started.Session.Current.Mode);
+            Assert.Equal(SessionStopReason.Unsupported, started.Session.Current.StopReason);
+            Assert.Equal(new ProgramLocation("map-57-flag-layout", 1), started.Session.Current.Story.Cursor);
+            Assert.Equal(new[] { 401, 451, 506 }, started.Session.Current.Story.Flags);
+        }
+    }
+
     private static GameSession TraverseMap40(string start)
     {
         var session = StartSource(start);

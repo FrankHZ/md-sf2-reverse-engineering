@@ -440,6 +440,26 @@ def prepare(
         on_load = compiler.frontier(
             f"map-{selected}-setup", f"{route_id}:ordered setup/init/population"
         )
+        flag_table = references["flagEventTable"]
+        flag_records = resources["flagEventTables"][flag_table]["records"]
+        if flag_records:
+            guarded_load = compiler.frontier(f"map-{selected}-flag-layout", flag_table)
+            instructions = []
+            for index, record in enumerate(flag_records):
+                instructions.extend(
+                    [
+                        {
+                            "op": "branch-flag",
+                            "flag": record["flag"],
+                            "whenSet": False,
+                            "target": _location(guarded_load, len(instructions) + 2),
+                        },
+                        compiler.native("flag-layout-copy", f"{flag_table}[{index}]"),
+                    ]
+                )
+            instructions.append({"op": "jump", "target": _location(on_load)})
+            compiler.programs[guarded_load]["instructions"] = instructions
+            on_load = guarded_load
         battle = battle_routes.get(selected)
         input_program = None
         if entities or resources["stepEventTables"][references["stepEventTable"]]["records"]:
