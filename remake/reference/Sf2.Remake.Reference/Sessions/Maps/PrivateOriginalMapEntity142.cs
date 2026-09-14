@@ -439,15 +439,7 @@ public sealed partial class GameSession
 {
     public PrivateOriginalMapInteractionResult RequestPrivateOriginalMapInteraction(long expectedSimulationStep)
     {
-        if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map21Id))
-            return CompletePrivateOriginalMapMiddleTowerGuard(new(expectedSimulationStep,
-                OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear));
-        if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id))
-            return AcceptPrivateOriginalMapAstral(expectedSimulationStep);
-        if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id))
-            return CompletePrivateOriginalMapPalaceFirstVisit(new(expectedSimulationStep,
-                OriginalMapPalaceFirstVisitPreset.ControlledClear605And507));
         return new PrivateOriginalMapInteractionUnavailable(PrivateOriginalMapSnapshot,
-            "Map 3 opening interactions run in the common host; this host retains later controlled comparisons.");
+            "Opening, castle, palace, Astral and tower programs run in the common host; this host retains later controlled comparisons.");
     }
 }

@@ -208,11 +208,13 @@ public sealed partial class ExplorationSessionView : Control
             presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
                 nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
+                paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
                 cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
                 error = _presentation?.Error },
             entities = current?.Exploration?.Entities.Values.Select(entity => new
             {
                 id = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite, facing = entity.Motion.Facing,
+                priority = entity.Priority,
                 follower = entity.Follower, spriteRequest = entity.SpriteRequest, spriteReady = entity.SpriteReady,
                 x = entity.Motion.X, y = entity.Motion.Y,
                 targetX = entity.Motion.XDestination, targetY = entity.Motion.YDestination,

@@ -143,12 +143,8 @@ internal sealed record PrivateMap3PresentationPlan(
             $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
             $"Step {snapshot.SimulationStep}  {outcome}  |  " +
             "WASD semantic movement";
-        if (snapshot.Map.Value == "map19" && snapshot.PalaceFirstVisit is not null)
-        {
-            // Put the current action before potentially long diagnostics in the clipped status label.
-            return AstralStatus(snapshot, playerLocomotion?.OpaqueFacing, playerLocomotion?.IsMoving == true) +
-                "\n" + status;
-        }
+        if (snapshot.Map.Value is "map19" or "map20" or "map21")
+            return "Castle and tower programs run in the common host. Reference comparison state only.\n" + status;
 
         if (battle01Admission is not null)
         {
@@ -161,27 +157,6 @@ internal sealed record PrivateMap3PresentationPlan(
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id)
         {
             return $"Map 40 controlled arrival. {(baseAtlasVisible ? "Base atlas" : "Diagnostic view")}; init not executed.\n" + status;
-        }
-
-        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
-        {
-            string action = snapshot.MiddleTowerGuard is not null
-                ? "Guard moved; passage open. Controlled result; dialogue skipped."
-                : snapshot.CanAcceptMiddleTowerGuard(playerLocomotion?.OpaqueFacing ?? byte.MaxValue) &&
-                    playerLocomotion?.IsMoving != true
-                    ? "F apply controlled guard result (skip dialogue; local preset)"
-                    : "Middle tower Map 21 reached. Controlled arrival; init not executed.";
-            return action + "\n" + status;
-        }
-
-        if (snapshot.Map.Value == "map20")
-        {
-            if (WestTowerArrivalStatus(snapshot.LastCrossMapTransition) is string arrival)
-            {
-                return arrival + "\n" + status;
-            }
-
-            return status + "  |  " + PalaceFirstVisitStatus(snapshot.PalaceFirstVisit);
         }
 
         PrivateOriginalMapZone601State? zone601 = snapshot.Zone601;
@@ -228,58 +203,7 @@ internal sealed record PrivateMap3PresentationPlan(
                 "Sarah/Chester follower-ready; prose/audio/timing Unknown";
         }
 
-        if (snapshot.CastleGate is { } castleGate)
-        {
-            status += "  |  " + CastleGateStatus(castleGate);
-        }
-
         return status;
-    }
-
-    internal static string AstralStatus(
-        PrivateOriginalMapSessionSnapshot snapshot, byte? facing, bool moving)
-    {
-        if (snapshot.AstralAcceptance is not null)
-        {
-            return "Astral has left; passage open. Controlled result; scene skipped.";
-        }
-
-        if (snapshot.AstralOccupiesRouteTile)
-        {
-            return !moving && facing is byte direction && snapshot.CanAcceptAstral(direction)
-                ? "F accept Astral's invitation (controlled result; skip scene)"
-                : "Find Astral and face him to continue toward the tower.";
-        }
-
-        return "Astral interaction unavailable.";
-    }
-
-    internal static string? WestTowerArrivalStatus(PrivateOriginalMapCrossMapTransitionReceipt? receipt) =>
-        receipt?.Capability == OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability
-            ? "West tower reached. Controlled arrival; init not executed."
-            : null;
-
-    internal static string RoyalReturnStatus(PrivateOriginalMapPalaceFirstVisitReceipt receipt)
-    {
-        ArgumentNullException.ThrowIfNull(receipt);
-        return "Royal return; controlled first-visit result retained; diagnostic traversal";
-    }
-
-    internal static string PalaceFirstVisitStatus(PrivateOriginalMapPalaceFirstVisitReceipt? receipt) =>
-        receipt is null
-            ? "F apply controlled first-visit result at palace entrance (skip scene); result unselected"
-            : "Controlled first-visit result applied; scene skipped";
-
-    internal static string CastleGateStatus(PrivateOriginalMapCastleGateState castleGate)
-    {
-        ArgumentNullException.ThrowIfNull(castleGate);
-        if (!castleGate.Opened)
-        {
-            return "Castle gate closed; bounded event ready only after messenger acceptance";
-        }
-
-        return "Castle gate open; flag604 set; bounded opening admission complete; " +
-            "source dialogue/facing/restoration, timing, and presentation Unknown";
     }
 
     internal static string SarahAction(PrivateOriginalMapSarahState sarah)

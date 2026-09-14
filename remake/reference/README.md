@@ -114,12 +114,16 @@ events, layout changes, joins, followers and typed Godot presentation replace th
 consumers. The old Sarah, zone601, entity142, Astral-zone and messenger endpoint-writing methods,
 F/G request/acknowledgement branches and obsolete atomic/prefix tests are removed.
 
-Later castle/tower, pending original-map Battle01 admission and M4 return remain here. Their tests
+Castle/palace/Astral/tower endpoint handlers, cross-map shortcuts and their final execution callers
+are removed as a group. The common session owns those source programs and keeps the entity135
+frontier explicit. Pending original-map Battle01 admission and M4 return remain here. Their tests
 load `inputs/map3-post-opening-reference-start.json` as controlled input instead of replaying the
 retired opening. The reference host accepts the same explicit path through
 `SF2_REFERENCE_POST_OPENING_START`. It publishes zero executed history and no messenger receipt;
 its simulation/request/roof padding is declared in the input. The default legacy private entry is
-only a geometry diagnostic, and migrated Map3 interactions report their common-host owner.
+only a geometry diagnostic, and migrated interactions report their common-host owner. Independent
+Battle01 admission comparisons use explicitly constructed fixture state at that later seam; they
+do not invoke a retired castle/tower completion method.
 
 State/receipt DTOs and source trust projections still referenced by frozen later snapshots remain
 until those callers migrate; shared geometry and legacy visual resources also still have consumers.

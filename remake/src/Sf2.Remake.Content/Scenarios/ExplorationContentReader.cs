@@ -57,6 +57,7 @@ internal static class ExplorationContentReader
         {
             ObjectOptional(row, "map", "input", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup",
                 .. row.TryGetProperty("population", out _) ? new[] { "population" } : System.Array.Empty<string>(),
+                .. row.TryGetProperty("entryFlags", out _) ? new[] { "entryFlags" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("layoutEvents", out _) ? new[] { "layoutEvents" } : System.Array.Empty<string>()]);
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
@@ -139,7 +140,11 @@ internal static class ExplorationContentReader
                     if (!area.TryGetProperty("overlay", out var offset)) return new MapOverlayOffset(0, 0);
                     Object(offset, "overlay", "x", "y");
                     return new MapOverlayOffset(Number(offset, "x", -63, 63), Number(offset, "y", -63, 63));
-                })));
+                }), row.TryGetProperty("entryFlags", out _) ? Array(row, "entryFlags").Select(flag =>
+                {
+                    Object(flag, "entryFlag", "flag", "value");
+                    return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
+                }) : null));
         }
         Require(maps.Count > 0, "empty-world", "world.maps");
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
@@ -245,6 +250,10 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "flag", "whenSet", "target");
                 return new BranchFlag(Number(row, "flag", 0, 65535), Boolean(row, "whenSet"), RequiredLocation(row.GetProperty("target")));
             case "set-flag": Object(row, opcode, "op", "flag", "value"); return new WriteFlag(Number(row, "flag", 0, 65535), Boolean(row, "value"));
+            case "branch-coordinates":
+                Object(row, opcode, "op", "entity", "x", "y", "whenEqual", "target");
+                return new BranchEntityCoordinates(new(Id(row, "entity")), (short)Number(row, "x", short.MinValue, short.MaxValue),
+                    (short)Number(row, "y", short.MinValue, short.MaxValue), Boolean(row, "whenEqual"), RequiredLocation(row.GetProperty("target")));
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
                 ObjectOptional(row, opcode, "speakerFlags", ["op", "mode", "speaker",
@@ -257,6 +266,7 @@ internal static class ExplorationContentReader
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
             case "face": Object(row, opcode, "op", "entity", "facing"); return new SetEntityFacing(new(Id(row, "entity")), (byte)Number(row, "facing", 0, 7));
+            case "priority": Object(row, opcode, "op", "entity", "value"); return new SetEntityPriority(new(Id(row, "entity")), Boolean(row, "value"));
             case "position":
                 Object(row, opcode, "op", "entity", "position", "facing");
                 return new SetEntityPosition(new(Id(row, "entity")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 7));
@@ -298,7 +308,10 @@ internal static class ExplorationContentReader
             string opcode = Text(action, "op");
             switch (opcode)
             {
-                case "move": Object(action, opcode, "op", "x", "y"); actions.Add(new MoveEntityRelative(Number(action, "x", -63, 63), Number(action, "y", -63, 63))); break;
+                case "move":
+                    ObjectOptional(action, opcode, "wait", "op", "x", "y");
+                    actions.Add(new MoveEntityRelative(Number(action, "x", -63, 63), Number(action, "y", -63, 63),
+                        !action.TryGetProperty("wait", out _) || Boolean(action, "wait"))); break;
                 case "random-walk": Object(action, opcode, "op", "x", "y", "radius"); actions.Add(new RandomWalkEntity(new(Number(action, "x", 0, 63), Number(action, "y", 0, 63)), Number(action, "radius", 0, 63))); break;
                 case "destination": Object(action, opcode, "op", "position"); actions.Add(new MoveEntityAbsolute(Position(action.GetProperty("position")))); break;
                 case "face": Object(action, opcode, "op", "facing"); actions.Add(new FaceEntity((byte)Number(action, "facing", 0, 7))); break;
@@ -357,6 +370,7 @@ internal static class ExplorationContentReader
                 {
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
+                    case BranchEntityCoordinates branch: Target(branch.Target); break;
                     case CallProgram call: Target(call.Target); break;
                     case TransferToMap transfer: Require(definition.Maps.ContainsKey(transfer.Map), "missing-map", "program.map"); break;
                 }

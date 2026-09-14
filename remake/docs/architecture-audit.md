@@ -104,20 +104,13 @@ public-authored inputs must continue to retain their distinct provenance and dis
 
 ### A3 — P1: Some story capabilities commit an endpoint instead of executing a program
 
-**Confirmed:** `CompletePrivateOriginalMapPalaceFirstVisit` in
-[`PrivateOriginalMapPalaceFirstVisit.cs`](../reference/Sf2.Remake.Reference/Sessions/Maps/PrivateOriginalMapPalaceFirstVisit.cs)
-publishes a preselected player endpoint and completion receipt in one transition. The associated
-[`definition`](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapPalaceFirstVisitDefinition.cs) names the
-source program and its operation count, but the transition does not execute that sequence of movement,
-dialogue, and event operations.
-
-**Impact:** this is a controlled result projection, not the typed program execution described by
-[ADR 0011](../../docs/decisions/0011-phase4-remake-runtime-architecture.md#5-programs-content-and-data-imports).
-The existing documentation correctly limits its claim; it still leaves an engine capability missing.
-
-**Correction boundary:** define and implement the needed event/program operations from accepted
-contracts. Reference endpoint checks remain tests. Do not implement a universal scripting framework or
-invent missing original semantics merely to replace one projection.
+**Confirmed:** the palace endpoint writer and complete castle/Astral/tower shortcut handlers are
+removed with their final execution callers. The common session executes the complete source palace
+body and its native caller, including motion, text, presentation, map state and completion flag.
+The [execution owner](./exploration-programs.md#castle-palace-astral-and-tower) records grouped
+comparisons and the remaining Map21 entity135 boundary. Later Battle01/M4 comparison metadata
+does not become executable story logic. A3 is not globally closed while original before/after
+programs and unsupported branches remain.
 
 ### A4 — P1: Godot owns part of battle orchestration
 

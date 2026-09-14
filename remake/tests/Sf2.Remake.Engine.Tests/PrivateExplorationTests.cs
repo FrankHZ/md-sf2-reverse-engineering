@@ -177,6 +177,144 @@ public sealed class PrivateExplorationTests
     }
 
     [PrivateInputFact(World)]
+    public void CastleMapInitSelectsAstralVisibilityAndAllocatesLiveFollowerFlagsWithoutChangingMembership()
+    {
+        var source = new PrivateExplorationReader(PrivateInputFactAttribute.RequireInput(World),
+            Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-start.json"),
+            PrivateBattleScenarioTests.Selected(Path.Combine(AppContext.BaseDirectory, "controlled", "map3-opening-party.json")));
+        var admitted = Assert.IsType<ExplorationReadAccepted>(source.Read());
+        foreach (int phase in new[] { 0, 605, 608 })
+        foreach (int count in new[] { 0, 2, 3 })
+        {
+            int[] flags = [0, 32, .. phase == 0 ? Array.Empty<int>() : phase == 605 ? new[] { 605 } : new[] { 605, 608 },
+                .. count == 0 ? Array.Empty<int>() : count == 2 ? new[] { 66 } : new[] { 66, 67 }];
+            var input = new ExplorationStartInput(new("map-19"), admitted.Start.Player, new(26, 30), 1, 32, flags, admitted.Start.Party);
+            var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, input)).Session;
+            if (session.Current.StopReason != SessionStopReason.PlayerInput) Assert.Null(RunUntilStop(session).Failure);
+            Assert.Equal(phase == 605 ? new MapPosition(16, 5) : new MapPosition(63, 63), Entity(session, 140).Position);
+            Assert.Equal(count + 13, Entity(session, 140).Slot);
+            Assert.Equal(count, session.Current.Exploration!.AllEntities.Count(entity => entity.Follower is not null));
+            Assert.Equal(new[] { 0 }, session.Current.Story.PartyLists!.Joined);
+            Assert.Equal(new[] { 0 }, session.Current.Story.PartyLists.Active);
+            Assert.DoesNotContain(401, session.Current.Story.Flags);
+            Assert.DoesNotContain(607, session.Current.Story.Flags);
+        }
+    }
+
+    [PrivateInputFact(World)]
+    public void CastlePalaceAndAstralRunFromTheLiveOpeningWithFirstRepeatAndChoiceVariants()
+    {
+        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "castle-tower.json")));
+        foreach (bool followers in new[] { true, false })
+        {
+            List<SessionObservation> observations = [];
+            var session = RunOpening(followers, observations, []);
+            if (!followers)
+            {
+                Accept(session, new Move(ExplorationDirection.West));
+                Assert.Null(RunUntilStop(session).Failure);
+                Accept(session, new Move(ExplorationDirection.West));
+                Accept(session, new Interact(new("entity-1")));
+                Assert.Null(RunUntilStop(session).Failure);
+                Accept(session, new Move(ExplorationDirection.East));
+                Assert.Null(RunUntilStop(session).Failure);
+            }
+            var identity = session.Current.SessionId;
+            var expectedParty = session.Current.Story.PartyLists;
+            var guard138 = Entity(session, 138).Position;
+            var guard139 = Entity(session, 139).Position;
+            void Input(ExplorationDirection direction)
+            {
+                observations.AddRange(Accept(session, new Move(direction)).Observations);
+                if (session.Current.StopReason != SessionStopReason.PlayerInput)
+                    Assert.Null(RunUntilStop(session, observations: observations).Failure);
+                Assert.Equal(identity, session.Current.SessionId);
+            }
+            foreach (var segment in fixture.RootElement.GetProperty("static").GetProperty("routeGraph").GetProperty("segments").EnumerateArray())
+            {
+                var kind = segment.GetProperty("kind").GetString();
+                string id = segment.GetProperty("id").GetString()!;
+                if (kind == "navigation")
+                {
+                    int step = 0;
+                    foreach (var input in segment.GetProperty("inputs").EnumerateArray())
+                    {
+                        var point = segment.GetProperty("points")[step++];
+                        Assert.Equal(new MapPosition(point[0].GetInt32(), point[1].GetInt32()), Entity(session, 0).Position);
+                        Assert.Equal("map-" + segment.GetProperty("map").GetInt32(), session.Current.Exploration!.Map.Value);
+                        Input(input.GetString() switch
+                        {
+                            "Left" => ExplorationDirection.West, "Right" => ExplorationDirection.East,
+                            "Up" => ExplorationDirection.North, _ => ExplorationDirection.South,
+                        });
+                    }
+                }
+                if (id == "map3-castle-gate-zone")
+                {
+                    Assert.Contains(604, session.Current.Story.Flags);
+                    Assert.Equal(guard138, Entity(session, 138).Position);
+                    Assert.Equal(guard139, Entity(session, 139).Position);
+                }
+                if (id == "map3-to-map19-north-warp")
+                {
+                    Assert.Equal(new MapPosition(63, 63), Entity(session, 140).Position);
+                    Assert.DoesNotContain(session.Current.Story.Flags, flag => flag is >= 256 and <= 383);
+                    Assert.Contains(80, session.Current.Story.Flags);
+                    Assert.Equal(2, session.Current.Exploration!.AllEntities.Count(entity => entity.Follower is not null));
+                }
+                if (id == "map20-palace-init-and-return")
+                {
+                    Assert.Contains(605, session.Current.Story.Flags);
+                    Assert.Equal(new MapPosition(23, 39), Entity(session, 0).Position);
+                    Assert.Equal(new MapPosition(20, 39), Entity(session, 131).Position);
+                    Assert.False(session.Current.Exploration!.Aliases.ContainsKey(new("entity-130")));
+                    Assert.False(Entity(session, 0).Priority);
+                    Assert.True(Entity(session, 131).Priority);
+                }
+                if (id == "map20-to-map19-royal-return")
+                {
+                    Assert.Equal(new MapPosition(16, 5), Entity(session, 140).Position);
+                    Input(ExplorationDirection.West); Input(ExplorationDirection.East);
+                    Assert.Equal(new MapPosition(23, 37), Entity(session, 0).Position);
+                    Assert.False(session.Current.Exploration!.Aliases.ContainsKey(new("entity-130")));
+                    Assert.False(Entity(session, 0).Priority);
+                    Input(ExplorationDirection.South); Input(ExplorationDirection.North);
+                    Assert.Equal("map-19", session.Current.Exploration.Map.Value);
+                }
+                if (kind == "entity-interaction")
+                {
+                    Input(ExplorationDirection.North);
+                    Accept(session, new Interact(new("entity-140")));
+                    Assert.Null(RunUntilStop(session, observations: observations, yes: false).Failure);
+                    Assert.Contains(607, session.Current.Story.Flags);
+                    Assert.DoesNotContain(608, session.Current.Story.Flags);
+                    Assert.Equal(new MapPosition(16, 5), Entity(session, 140).Position);
+                    Accept(session, new Interact(new("entity-140")));
+                    Assert.Null(RunUntilStop(session, observations: observations).Failure);
+                    Assert.Contains(608, session.Current.Story.Flags);
+                    Assert.Equal(new MapPosition(63, 63), Entity(session, 140).Position);
+                }
+                if (kind == "entity-terminal")
+                {
+                    Input(ExplorationDirection.East); Input(ExplorationDirection.East);
+                    Accept(session, new Interact(new("entity-128")));
+                    var result = RunUntilStop(session, observations: observations);
+                    Assert.Equal("program-entity", result.Failure!.Code);
+                    Assert.Equal(new ProgramLocation("cs-53ef4", 1), session.Current.Story.Cursor);
+                    Assert.Equal(new MapPosition(6, 16), Entity(session, 128).Position);
+                    Assert.DoesNotContain(401, session.Current.Story.Flags);
+                    Assert.DoesNotContain(256, session.Current.Story.Flags);
+                }
+            }
+            foreach (string program in fixture.RootElement.GetProperty("static").GetProperty("programs").EnumerateObject()
+                .Select(property => property.Name.ToLowerInvariant().Replace('_', '-')))
+                Assert.Contains(observations, row => row.Program is { Instruction: 0 } location && location.Program == program);
+            Assert.Equal(expectedParty!.Joined, session.Current.Story.PartyLists!.Joined);
+            Assert.Equal(expectedParty.Active, session.Current.Story.PartyLists.Active);
+        }
+    }
+
+    [PrivateInputFact(World)]
     public void SourceGuardDoesNotInventUnknownEntity135OrPublishTheLaterUnlockFlag()
     {
         var session = StartSource("map21-guard-start");

@@ -44,9 +44,9 @@ internal static class EntityActionRunner
                             throw new BattleRuleException("entity-motion-boundary", "entity.actions", true);
                         motion = EntityMotion.Start(motion, (short)x, (short)y,
                             entities.Values.Where(other => other.Slot != entity.Slot).Select(other => other.Motion));
-                        if (motion is null) { next--; motion = entity.Motion; }
-                        else waitingForMotion = true;
-                        yield = true; break;
+                        if (motion is null) { next--; motion = entity.Motion; yield = true; }
+                        else { waitingForMotion = relative.Wait; yield = relative.Wait; }
+                        break;
                     case MoveEntityAbsolute absolute:
                         motion = EntityMotion.Start(motion, (short)(absolute.Position.X * 384), (short)(absolute.Position.Y * 384),
                             entities.Values.Where(other => other.Slot != entity.Slot).Select(other => other.Motion), absolute.FieldInput);

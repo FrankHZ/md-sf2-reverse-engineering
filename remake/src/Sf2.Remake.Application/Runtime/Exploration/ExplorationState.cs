@@ -63,7 +63,7 @@ public sealed class StoryState
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
     EntityActionProgram? Actions = null, int ActionCursor = 0, bool WaitingForMotion = false,
     int Slot = -1, int? Sprite = null, EntityFollower? Follower = null,
-    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false)
+    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false)
 {
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
     public bool Busy => Motion.IsMoving || Actions is not null;

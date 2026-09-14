@@ -44,11 +44,13 @@ public sealed class ExplorationMapDefinition
     internal ExplorationMapDefinition(MapId map, WorkingMapLayout layout, OriginalMapTraversal traversal,
         IEnumerable<ExplorationEntityDefinition> entities, IEnumerable<ExplorationEvent> events,
         ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
-        ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null)
+        ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
+        IEnumerable<WriteFlag>? entryFlags = null)
     {
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup; Population = population; LayoutEvents = layoutEvents;
         OverlayOffsets = Array.AsReadOnly((overlays ?? traversal.ActiveAreas.Select(_ => new MapOverlayOffset(0, 0))).ToArray());
+        EntryFlags = Array.AsReadOnly((entryFlags ?? []).ToArray());
     }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
@@ -62,6 +64,7 @@ public sealed class ExplorationMapDefinition
     public ExplorationLayoutEvents? LayoutEvents { get; }
     public IReadOnlyList<MapOverlayOffset> OverlayOffsets { get; }
     public ExplorationBattleRoute? Battle { get; }
+    public IReadOnlyList<WriteFlag> EntryFlags { get; }
 }
 
 public sealed class ExplorationProvenance

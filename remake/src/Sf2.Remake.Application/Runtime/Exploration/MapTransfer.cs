@@ -7,12 +7,12 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class MapTransfer
 {
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
-        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags)
+        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null)
     {
         ValidateSetup(map, flags);
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
-            if (flags.Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
+            if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
         if (!map.Traversal.IsWithinActiveArea(position) || OriginalMapTraversal.IsBlocked(layout, position))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
@@ -56,6 +56,7 @@ internal static class MapTransfer
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
         ExplorationState next;
+        var flags = current.Story.Flags;
         if (mode == MapLoadMode.Preserve)
         {
             ValidateSetup(target, current.Story.Flags);
@@ -67,8 +68,17 @@ internal static class MapTransfer
                 XDestination = (short)(position.X * 384), YDestination = (short)(position.Y * 384), Facing = facing }, Actions = null, ActionCursor = 0 });
             next = MapEventDispatcher.RoofOnLoad(next);
         }
-        else next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags);
+        else
+        {
+            var enteredFlags = flags.ToHashSet();
+            foreach (var write in target.EntryFlags)
+                if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
+            flags = enteredFlags.Order().ToArray();
+            // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
+            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags);
+        }
         var story = continuation.Copy(continuation.Cursor,
+            flags: flags,
             continuation: continuation.EnteringBattle is null ? ProgramContinuation.MapLoaded : continuation.Continuation,
             returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null);
         if (target.OnLoad is { } onLoad)

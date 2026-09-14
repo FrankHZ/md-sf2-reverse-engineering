@@ -51,6 +51,11 @@ internal static class ProgramRunner
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
                         story = story.Copy(branch.Target); break;
                     case BranchFlag: break;
+                    case BranchEntityCoordinates branch:
+                        var coordinates = Entity(current, branch.Entity).Motion;
+                        if ((coordinates.X == branch.X && coordinates.Y == branch.Y) == branch.WhenEqual)
+                            story = story.Copy(branch.Target);
+                        break;
                     case CallProgram call:
                         story = story.Copy(call.Target, callers: current.Story.Callers.Append(Next(cursor))); break;
                     case WriteFlag flag:
@@ -83,6 +88,8 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new PresentationWait(token, cue)); break;
                     case SetEntityFacing facing:
                         active = EditEntity(current, facing.Entity, entity => entity with { Motion = entity.Motion with { Facing = facing.Facing } }); break;
+                    case SetEntityPriority priority:
+                        active = EditEntity(current, priority.Entity, entity => entity with { Priority = priority.Value }); break;
                     case SetEntityVisibility visible:
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:

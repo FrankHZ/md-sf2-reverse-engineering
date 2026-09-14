@@ -732,11 +732,11 @@ The former source-copy/editor-launch/image recipe is available through Git at ac
 `9fb9727e260416a54aeb3421454e610e00884ed5`; it is not a current command recipe. Completed local images,
 logs and process receipts remain evidence of those bounded historical runs.
 
-For a needed future observation, use the existing installed Godot, owned project and running instance
-to inspect actual session/node/input state and errors. The existing
-[native probe](../tests/native/Map19Map20AtlasReviewProbe.cs) still emits images; the historical launcher
-compiled it into a source copy. Suppress image output and justify any instrumentation restart in an owned
-change before running it. No debug server or reusable live-probe implementation is claimed here.
+Use the existing installed Godot and owned ordinary project for current observations. The old
+castle atlas source-copy/image probe is removed with its reference execution callers. The
+[common-session observer](../game/probes/engine_castle_tower_observation.gd) drives actual input from
+the live opening and records session, map, presentation and error state without screenshots.
+Its [execution owner](./exploration-programs.md) keeps the source and presentation limits explicit.
 
 ## Diagnostic Battle01 launch and native review
 
