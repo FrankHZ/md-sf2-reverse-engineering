@@ -718,8 +718,8 @@ The current dependency order is:
    migrate. This does not wait for M5; unsupported EGRESS, broader status, terminal programs and return
    stay with their named future consumers.
 
-Remaining steps2/3 need fresh exact-path declarations after their predecessor is accepted;
-this dependency decision does not authorize implementing them together. **Unknown:** general
+Remaining step3 needs a fresh exact-path declaration after step2 is accepted;
+this dependency decision does not authorize starting that slice. **Unknown:** general
 spawn/derived-stat coverage beyond the named contracts, naturally carried party/accounting/seed-copy
 values, and natural Map3→Battle01 program/presentation continuity. Resolve a needed gap against the
 specific data/initialization/control owner with a narrow source or existing-fixture follow-up first.
