@@ -22,8 +22,9 @@ encounter and pinned enemy/class/item/spell definitions with an external control
 It initializes STARTING placements, heals resources under the declared policy, adjusts source enemy
 ATT once, activates regions and generates the actual first queue before player movement/cancel.
 Required regular, healer, Centaur and hovering movers use the common terrain rules. Unknown accounting
-remains null. Reached source-enemy continuation and equipment/action/completion are the next bounded
-dependencies in [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary).
+remains null. Actual player commands now continue through inactive source standby, region activation
+and set6/set7 pursuit to the next player, carrying each enemy’s source anchor/memory and both RNG
+channels. Reached private equipment/action/completion is the next bounded dependency in [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary).
 Godot hosts real movement/action input and projects semantic results. The old
 public-synthetic/private-local Map 3 routes are retained in a separate
 [transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and

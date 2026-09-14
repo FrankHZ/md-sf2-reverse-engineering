@@ -16,7 +16,7 @@ public sealed class PrivateBattleScenarioTests
     private const string Data = "SF2_PRIVATE_BATTLE01_DATA", Scene = "SF2_PRIVATE_BATTLE01_SCENE", Terrain = "SF2_PRIVATE_BATTLE01_TERRAIN",
         Static = "SF2_PRIVATE_STATIC_DATA", Enemy = "SF2_PRIVATE_ENEMY_DATA", StartInput = "SF2_PRIVATE_CONTROLLED_START";
     private static string Input(string name) => PrivateInputFactAttribute.RequireInput(name);
-    private static PrivateBattleScenarioReader Selected(string? controlled = null, string? definitions = null) =>
+    internal static PrivateBattleScenarioReader Selected(string? controlled = null, string? definitions = null) =>
         new(Input(Data), Input(Scene), Input(Terrain), definitions ?? Input(Static), Input(Enemy), controlled ?? Input(StartInput));
     private static ActorRef Actor(int index) => new(index < 128 ? "ally-" + index : "enemy-" + (index - 128));
 
@@ -90,11 +90,14 @@ public sealed class PrivateBattleScenarioTests
         Accept(session, new Move(ExplorationDirection.North)); Accept(session, new Cancel());
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var beforeEnemy = session.Current.Battle; var reached = Send(session, new Confirm());
-        Assert.Equal("source-enemy-continuation", reached.Failure!.Code); Assert.Equal(SessionStopReason.Unsupported, reached.StopReason);
-        Assert.Equal(2, reached.Snapshot.Battle.Cursor); Assert.Null(reached.Snapshot.Selection);
-        Assert.Equal(beforeEnemy.MainSeed, reached.Snapshot.Battle.MainSeed); Assert.Equal(beforeEnemy.ThinkingSeed, reached.Snapshot.Battle.ThinkingSeed);
+        Assert.Null(reached.Failure); Assert.Equal(SessionStopReason.PlayerInput, reached.StopReason);
+        Assert.Equal(8, reached.Snapshot.Battle.Cursor); Assert.Equal(new ActorRef("ally-0"), reached.Snapshot.Selection!.Actor);
+        Assert.Equal(beforeEnemy.MainSeed, reached.Snapshot.Battle.MainSeed); Assert.Equal(0x01340000u, reached.Snapshot.Battle.ThinkingSeed);
+        Assert.Equal(new MapPosition(6, 3), reached.Snapshot.Battle.GetActor(new("enemy-0")).Position);
+        Assert.Equal((byte)0x14, reached.Snapshot.Battle.GetActor(new("enemy-0")).AiMemory);
         Assert.DoesNotContain(reached.Observations, row => row.Kind == "ai-stay");
-        Assert.All(reached.Snapshot.Battle.Actors.Where(a => !a.IsAlly), a => Assert.Equal(original.GetActor(a.Actor).Position, a.Position));
+        Assert.Equal(6, reached.Observations.Count(row => row.Kind == "source-standby"));
+
     }
 
     [PrivateInputFact(Data, Scene, Terrain, Static, Enemy, StartInput)]

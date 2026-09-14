@@ -106,7 +106,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 actorInput = new(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
             }
             var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
-                row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset);
+                row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
+                Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression));
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
                 ally ? BattleControl.Player : BattleControl.Automatic, ally ? null : BattleAiStrategy.SourceOrders,
                 new(row.Position.X, row.Position.Y), initialization));
@@ -134,6 +135,10 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);
     }
+
+    // Preserve unresolved source expressions in PrivateDefinitions; null never means NONE.
+    private static byte? Order(string expression) => expression == "NONE" ? (byte)255 :
+        byte.TryParse(expression, NumberStyles.None, CultureInfo.InvariantCulture, out byte value) ? value : null;
 
     private static BattleMover Mover(string source) => source switch
     {

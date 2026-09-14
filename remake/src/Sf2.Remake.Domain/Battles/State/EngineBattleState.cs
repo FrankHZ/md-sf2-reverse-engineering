@@ -96,9 +96,9 @@ public sealed class BattleActorState
     public byte AiMemory { get; }
     internal BattleActorState With(ushort? hp = null, byte? mp = null, byte? exp = null,
         MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null,
-        byte? attack = null, ushort? status = null, ushort? activationWord = null) =>
+        byte? attack = null, ushort? status = null, ushort? activationWord = null, byte? aiMemory = null) =>
         new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats,
-            lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, AiMemory);
+            lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory);
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,

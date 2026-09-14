@@ -68,11 +68,14 @@ internal static class BattleAdvancer
                     continue;
                 }
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, battle, null, SessionStopReason.SimulationWait);
-                if (actor.AiStrategy == BattleAiStrategy.SourceOrders)
-                    throw new BattleRuleException("source-enemy-continuation", "placements.aiCommandset", true);
-                if (actor.Control != BattleControl.Automatic || actor.AiStrategy != BattleAiStrategy.AttackThenApproach)
+                if (actor.Control != BattleControl.Automatic)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
-                var action = AttackThenApproachAi.Resolve(battle, actor.Actor);
+                var action = actor.AiStrategy switch
+                {
+                    BattleAiStrategy.SourceOrders => SourceEnemyAi.Resolve(battle, actor.Actor),
+                    BattleAiStrategy.AttackThenApproach => AttackThenApproachAi.Resolve(battle, actor.Actor),
+                    _ => throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true),
+                };
                 var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
                     action.Destination, action.Effects, observations);
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;

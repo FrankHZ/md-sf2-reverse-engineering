@@ -60,16 +60,22 @@ internal static class BattleMovement
         return WeightedMovement.Build(costs, Offset(actor.Position!), actor.Definition.Move * 2);
     }
 
-    internal static void RequireStop(EngineBattleState battle, ActorRef actor, MapPosition destination)
+    internal static void RequireStop(EngineBattleState battle, ActorRef actor, MapPosition destination, WeightedMovementGrid? aiGrid = null)
     {
-        _ = Preview(battle, actor, destination);
+        if (aiGrid is null) _ = Preview(battle, actor, destination);
+        else
+        {
+            if (!battle.Definition.Contains(destination) || aiGrid.CostAt(destination) is not { } cost || cost > battle.GetActor(actor).Definition.Move * 2)
+                throw new BattleRuleException("ai-move-path", "ai.move.path", true);
+            _ = AiMovementRules.MoveString(aiGrid, battle.GetActor(actor).Position!, destination, battle.Definition.Width, battle.Definition.Height);
+        }
         if (battle.Actors.Any(a => a.Actor != actor && a.Hp > 0 && a.Position == destination))
             throw new BattleRuleException("occupied-destination", "destination");
     }
 
-    internal static EngineBattleState Commit(EngineBattleState battle, ActorRef actor, MapPosition destination)
+    internal static EngineBattleState Commit(EngineBattleState battle, ActorRef actor, MapPosition destination, WeightedMovementGrid? aiGrid = null)
     {
-        RequireStop(battle, actor, destination);
+        RequireStop(battle, actor, destination, aiGrid);
         return battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(position: destination) : a));
     }
     private static int Offset(MapPosition position) => position.Y * 48 + position.X;
