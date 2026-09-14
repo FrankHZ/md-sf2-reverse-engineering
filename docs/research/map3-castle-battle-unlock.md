@@ -169,6 +169,133 @@ chain writes `0x7000` at physical addresses `0xFFC8E2`, `0xFFC8E4`, `0xFFC8EE`, 
 it does not resolve the player record or report missing142. This is a conditional memory effect,
 not an accepted visible outcome or permission to reproduce unchecked RAM access in a remake.
 
+#### Post-F603 reload: the writes target inactive window-composition storage
+
+**Confirmed conditional static:** for a normal `ExplorationLoop` Map3 reload selecting
+`ms_map3_InitFunction`, with F1/F603 set, the four accepted cleanup stores alter the **inactive
+combined Plane-A layout**, not the live
+map/entity/camera/control state. The named consumers below do not read those altered words before
+`WaitForEvent`; ordinary first-window creation overwrites them before enabling their window/DMA
+consumer. This is a bounded data-flow conclusion, not a new observation of a natural Battle01 defeat
+return, hardware frames, or the eligibility of a supplied egress map/position/flag combination.
+The four stores remain real original memory effects, not missing-entity no-ops.
+
+**Storage owner.** `sf2const.asm:535–546` names `PLANE_A_MAP_LAYOUT=0xFFC000`,
+`PLANE_A_MAP_AND_WINDOWS_LAYOUT=0xFFC800`, and the following palette at `0xFFD000`.
+`code/common/windows/windowengine.asm::CopyPlaneALayoutForWindows` (lines 168–180) independently
+defines the combined buffer's extent by copying `0x800` **bytes** from the map layout into it.
+`code/common/tech/bytecopy.asm::CopyBytes` implements that byte count. Thus ownership is established
+by an actual bounded writer, not just the nearest lower symbol or a search with no matches.
+
+| Accepted word store | Combined-buffer byte offset | Layout word index | Zero-based storage row/column |
+| --- | --- | --- | --- |
+| `0xFFC8E2 = 0x7000` | `0xE2` | 113 | 3 / 17 |
+| `0xFFC8E4 = 0x7000` | `0xE4` | 114 | 3 / 18 |
+| `0xFFC8EE = 0x7000` | `0xEE` | 119 | 3 / 23 |
+| `0xFFC8F0 = 0x7000` | `0xF0` | 120 | 3 / 24 |
+
+The row stride is the window owner's 32 words / 64 bytes. These are buffer cells, not viewport
+coordinates or a claim that `0x7000` renders a blank tile. All eight written bytes lie inside
+`[0xFFC800,0xFFD000)`; they do not touch the map-only buffer, palettes, window allocation pointer,
+or the entity records. The original map layout/block inputs remain the separate `FF0000_RAM_START`
+and `FF2000_LOADING_SPACE` areas.
+
+**Pre-write state and return chain.** `code/gameflow/mainloop.asm::MainLoop` enters
+`j_ExplorationLoop` after its map/battle dispatch; this slice starts at the stated reload and does
+not re-prove that dispatch's defeat predicates. In
+`code/gameflow/exploration/explorationfunctions_2.asm::ExplorationLoop` (lines 8–78), the new-map
+branch loads entities, then `LoadMap`, then `SetBaseVIntFunctions`, then
+`j_RunMapSetupInitFunction`. The following ordering matters:
+
+1. `code/common/maps/mapload.asm::LoadMap` (1200–1492) calls `InitializeDisplay`, and near its tail
+   calls `InitializeWindowProperties`, waits for VInt, and queues map-plane updates.
+   `code/gameflow/battle/battlevints.asm::SetBaseVIntFunctions` calls
+   `InitializeWindowProperties` again before registering the seven normal exploration callbacks.
+2. Window initialization clears its entries and sets `WINDOW_LAYOUTS_END_POINTER` at `0xFFA87A`
+   to `WINDOW_TILE_LAYOUTS=0xFFB800`. It also clears the dialogue/portrait/timer window indices.
+   The pointer equality, **not** `WINDOW_IS_PRESENT` or an assumed cleared update toggle, is the
+   decisive no-window guard. It does not clear the combined layout's contents.
+3. The F1-set Map3 init executes only `hide 142` and script end before the F603 cleanup. The
+   `script` macro / `Trap6_TriggerAndExecuteMapScript` / `j_ExecuteMapScript` chain does not create
+   a window for these commands. `mapscriptengine_2.asm::ExecuteMapScript`, including its
+   `loc_47234` end path, preserves the empty-window state; the zero dialogue index bypasses its
+   end-of-script scroll wait. This is not an assumption based solely on the script's spelling.
+4. After the four stores, `SetEntityPosition` and `MoveEntityOutOfMap` restore their saved registers
+   and return; Map3's `return_513B8` immediately returns. `RunMapSetupInitFunction` restores D0–A1
+   and returns. No source error, window allocation, or extra map event is inserted at this tail.
+5. `ExplorationLoop` next compares palette words, optionally calls `PlayMapMusic` and
+   `FadeInFromBlack`, then enters `SetMoveSfx` / `WaitForEvent`. The fade waits on VInt and palette
+   state, not the altered layout words. `WaitForEvent` selects controlled entity0 when no map event
+   is pending, and reads map-event and input state. No window is created on this return-to-input path.
+
+**Consumers and overwrites.** The existing [window contract](../design/contracts/window-system.md)
+and [remaining-core owner](./remaining-core.md#window-engine) already retain the relevant branches;
+their H2 fixtures are reused evidence, not rerun runtime observations.
+
+| Consumer on this seam | Proven source behavior |
+| --- | --- |
+| `windowengine.asm::VInt_UpdateWindows` (292–419) | Its first pointer comparison returns immediately while the layout end equals the base. It does not read the combined buffer or submit its DMA, even if an old update toggle is set. |
+| `code/gameflow/exploration/exploration.asm::UpdateVdpPlaneA` (1429–1463) | With no windows, queues source `0xFFC000`, length `0x400` words, to VRAM `0xC000`, not source `0xFFC800`. `UpdateVdpPlane` (1503–1643) builds that map-only layout from map/block data with row wrapping inside its `0x800` bytes. |
+| `code/common/maps/animations.asm::VInt_UpdateMapPlanes` | Its combined-buffer copy/fix branch is bypassed when the window end is at the base. An ordinary map-plane update therefore does not repair or consume the four dormant words. |
+| `windowengine.asm::CreateWindow` (42–89) | On the first successful allocation, calls `CopyPlaneALayoutForWindows` **before** publishing the entry and advancing the layout-end pointer. The full byte copy replaces all four words with map-only values before `VInt_UpdateWindows` can pass its no-window guard. |
+| `CopyBytes` during that first copy | Copies backward here because destination is above source; it reads `0xFFC000..0xFFC7FF` and writes `0xFFC800..0xFFCFFF`. It never reads the old destination. The pointer remains at the base throughout the copy, so an intervening window VInt still returns. |
+
+Ordinary entity iteration (`entityscriptengine_2.asm::VInt_UpdateEntities` / `UpdateNextEntity`)
+walks `ENTITIES_COUNTER+1=49` records of 32 bytes from `ENTITY_DATA`, and skips the already hidden
+record on its off-map X sentinel. It does not iterate a physical slot255. The camera's
+`camerafunctions.asm::VInt_UpdateViewData` follows the restored target0's coordinates; the cleanup
+does not write that target, its record, or camera state. These positive address/consumer joins,
+together with the window guard, establish the modeled-state boundary; absence of symbol references
+alone would not establish it. This result concerns the **additional four stores**, not the preceding
+`hide` or the other legitimate reload, camera, palette, and input changes.
+
+**Queued-transfer qualification.** A DMA descriptor retains a source address rather than a snapshot
+of its RAM payload (`code/common/tech/interrupts/vintengine_2.asm::ApplyVIntVramDma`). Therefore
+empty windows alone cannot rule out an arbitrary pre-existing queued read of `0xFFC800`.
+The normal reload calls `InitializeDisplay`, which deactivates contextual callbacks and waits for
+VInt before rebuilding the display. `VInt` (lines 10–58) processes VDP/DMA queues before contextual
+callbacks; `ProcessDmaQueue` (206–252), when DMA is not deactivated, consumes its descriptors and
+resets the queue pointer. `LoadMap` also waits for VInt after empty-window initialization, before
+queuing its map-only updates. Under that normal queue-processing path, no old window descriptor is
+carried across to the cleanup, and the new no-window path cannot enqueue another combined-buffer
+read. Queue draining is a source-control-flow fact conditional on the DMA branch and calls returning,
+not a newly measured hardware completion result.
+
+**Safe abstraction and limits.** At an implementation-neutral boundary that preserves normal reload
+initialization, the empty-window guard, ordinary DMA processing/no pending combined-buffer transfer,
+and first-allocation copy-before-publication, these stores can be represented as changes to inactive
+presentation scratch with no additional map/entity/camera/control transition before input resumes.
+They need not be represented as movement of a live entity, a player fallback, or a stop/error.
+This does not authorize a blanket absent-entity policy or prescribe the remake's implementation.
+It does not extend to an active window, a forced non-base allocation pointer, a deferred old DMA,
+an arbitrary pointer into this buffer, another map-init program, or later unrelated memory reuse.
+
+Reproduce the source joins at the pinned Git object, using `$sourceCheckout` and `$sourceCommit`
+from the source-inspection recipe below. The ranges are one-based source lines, not ROM addresses:
+
+```powershell
+git -C $sourceCheckout show "${sourceCommit}:disasm/sf2const.asm" | Select-Object -Skip 534 -First 12
+git -C $sourceCheckout show "${sourceCommit}:disasm/code/common/windows/windowengine.asm" | Select-Object -First 419
+git -C $sourceCheckout show "${sourceCommit}:disasm/code/gameflow/exploration/explorationfunctions_2.asm" | Select-Object -First 198
+git -C $sourceCheckout show "${sourceCommit}:disasm/code/common/maps/mapload.asm" | Select-Object -Skip 1467 -First 25
+git -C $sourceCheckout show "${sourceCommit}:disasm/code/common/tech/interrupts/vint.asm" | Select-Object -Skip 205 -First 47
+```
+
+The named additional consumers above close the source joins. Existing `remaining_core` window
+equate/ordered-section helpers and `remaining-core-static-v1.json` source-label addresses provide
+direct source checks without calling its full H2 builder or manufacturing an H1 listing.
+
+**Unknown:** natural call-time RAM/DMA state and any native rendered-frame outcome for the proposed
+Battle01 return remain unobserved. If acceptance requires those observations rather than this
+conditional static abstraction, the narrow proposal is to bracket the four stores and first
+`WaitForEvent` entry, recording the window-end pointer, DMA-deactivation/queue source spans, and any
+combined-buffer copy or DMA submission; extend through first window allocation only if testing its
+overwrite boundary. Apply ADR0014: the remaining caller/hardware state is not established statically;
+it matters only if required by an accepted presentation/return claim; existing
+`map-init-dispatch-v1.json` and `entity-population-reload-v1.json` rails must be assessed for reuse,
+so a new fixture is not justified by this finding. Main-gate authorization is required before any
+such runtime work. No playthrough, H3, or H4 was launched for this source clarification.
+
 ### Evidence and runtime admission limit
 
 The retained clone rail observes seeded identity-table mappings; the retained placement rail
