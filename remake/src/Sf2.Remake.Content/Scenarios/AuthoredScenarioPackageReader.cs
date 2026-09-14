@@ -25,7 +25,9 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             byte[] bytes = _read();
             Require(bytes.Length <= 4 * 1024 * 1024, "document-size", "document");
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
-            return Decode(document.RootElement);
+            var root = document.RootElement;
+            return root.ValueKind == JsonValueKind.Object && root.TryGetProperty("formatVersion", out var version) &&
+                version.ValueKind == JsonValueKind.Number && version.TryGetInt32(out int number) && number == 8 ? ExplorationContentReader.ReadAuthored(root) : DecodeBattle(root);
         }
         catch (AdmissionIssue issue) { return new ScenarioReadRejected(issue.Failure); }
         catch (BattleRuleException error)
@@ -36,7 +38,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         catch (UnauthorizedAccessException) { return Rejected("content-read", "document"); }
     }
 
-    private static ScenarioReadAccepted Decode(JsonElement root)
+    internal static ScenarioReadAccepted DecodeBattle(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");

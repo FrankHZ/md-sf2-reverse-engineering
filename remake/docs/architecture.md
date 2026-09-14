@@ -22,7 +22,10 @@ direction for the command/state/result model, typed content and resumable progra
 new-engine unit tests, direct reference verification, old-test/CI retirement, and incremental migration.
 Live state, validated content and implemented capability admit commands on M1's authored battle
 path. The M2 physical rule chain uses that same dispatcher and state. Application advances until real player input or an automatic-work tick boundary; Godot consumes
-semantic commands and observations. General presentation/program waits remain future capabilities.
+semantic commands and observations. The common exploration/program path now retains typed dialogue,
+entity, tick and presentation waits; unimplemented native presentation stays pending with an adapter
+failure. [Exploration and programs](./exploration-programs.md) owns its content, execution and source
+frontiers. Natural original-route and outcome/return migration remain incomplete.
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
@@ -193,10 +196,13 @@ device input
   -> Godot presenter and disposable scene state
 ```
 
-`Application.Runtime.GameSession` is the authored engine's only logical gameplay mutation facade. Godot may request a command or project a
+`Application.Runtime.GameSession` is the common engine's only logical gameplay mutation facade. Godot may request a command or project a
 result; it does not change position, flags, inventory, request state, RNG, or flow state directly.
 Content returns reusable immutable `ScenarioDefinition` encounter/deployment/rule data and a separate
-explicit `BattleStartInput`. The source-based session entry delegates to the same definition-plus-start
+explicit `BattleStartInput`, or map/program definitions with an `ExplorationStartInput`. The
+exploration/battle active-state union and outer story continuation have one snapshot owner.
+`ExplorationDispatcher`, `ProgramRunner`, `EntityActionRunner` and `MapTransfer` compute results;
+the facade alone publishes them. The source-based session entry delegates to the same definition-plus-start
 entry used for another controlled start. Shared binding validates references/resources before creating
 fresh runtime actors; definitions contain no instantiated actor state, seeds or counters. Genuine
 encounter deployments remain content, while controlled position overrides belong to start inputs.

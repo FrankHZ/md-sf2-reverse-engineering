@@ -48,10 +48,13 @@ jobs:
           $reference = $false
           $research = $false
           foreach ($changedPath in $changedPaths) {
-            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_godot.py')) {
+            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_godot.py', 'src/sf2tool/remake_exploration_content.py', 'remake/reference/inputs/map3-programs.json')) {
               $engine = $true
               $adapter = $true
               $reference = $true
+              $research = $true
+            } elseif ($changedPath -in @('tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json')) {
+              $engine = $true
               $research = $true
             } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
               $research = $true
@@ -61,7 +64,7 @@ jobs:
               $engine = $true
             } elseif ($changedPath -like 'remake/tests/*') {
               continue
-            } elseif ($changedPath -in @('remake/reference/inputs/battle01-player-ready.json', 'remake/reference/inputs/battle01-actions.json')) {
+            } elseif ($changedPath -in @('remake/reference/inputs/battle01-player-ready.json', 'remake/reference/inputs/battle01-actions.json') -or $changedPath -like 'remake/reference/inputs/map*-start.json') {
               $engine = $true
             } elseif ($changedPath -like 'remake/reference/*') {
               $reference = $true

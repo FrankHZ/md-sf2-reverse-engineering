@@ -1,0 +1,542 @@
+{
+  "formatVersion": 8,
+  "package": "harbor-arrival",
+  "battle": {
+    "formatVersion": 7,
+    "package": "practice-yard",
+    "profile": "public-authored",
+    "ruleProfile": "sf2-semantic-subset-v1",
+    "start": {
+      "encounter": "yard-watch",
+      "initialVitals": "authored-controlled",
+      "mainSeed": 305402420,
+      "thinkingSeed": 3203334210,
+      "gold": 0,
+      "actors": [
+        {
+          "actor": "medic-a",
+          "hp": 95,
+          "mp": 20,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        },
+        {
+          "actor": "guard-a",
+          "hp": 9,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        },
+        {
+          "actor": "dummy-a",
+          "hp": 15,
+          "mp": 0,
+          "exp": 0,
+          "kills": 0,
+          "defeats": 0,
+          "status": "none",
+          "positionOverride": null
+        }
+      ]
+    },
+    "terrains": [
+      {
+        "id": "yard-ground",
+        "legend": {
+          "#": {
+            "surface": "barrier",
+            "protection": "none"
+          },
+          "g": {
+            "surface": "open",
+            "protection": "light"
+          },
+          "b": {
+            "surface": "brush",
+            "protection": "heavy"
+          }
+        },
+        "rows": [
+          "############",
+          "gggggggggggg",
+          "gggggggggggg",
+          "ggggbbgggggg",
+          "ggggbbgggggg",
+          "gggggggggggg",
+          "gggggggggggg",
+          "gggggggggggg",
+          "############"
+        ]
+      }
+    ],
+    "maps": [
+      {
+        "id": "yard-map",
+        "terrain": "yard-ground"
+      }
+    ],
+    "spells": [
+      {
+        "id": "mend",
+        "level": 1,
+        "mpCost": 3,
+        "minimumRange": 0,
+        "maximumRange": 1,
+        "effect": {
+          "kind": "heal",
+          "adjustedPower": 15,
+          "fullRecovery": false
+        }
+      }
+    ],
+    "actors": [
+      {
+        "id": "medic-a",
+        "classRule": "unpromoted-priest",
+        "level": 1,
+        "maxHp": 100,
+        "maxMp": 20,
+        "attack": 11,
+        "defense": 6,
+        "agility": 12,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [],
+        "spells": [
+          {
+            "id": "mend",
+            "level": 1
+          }
+        ]
+      },
+      {
+        "id": "guard-a",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 12,
+        "maxMp": 0,
+        "attack": 11,
+        "defense": 6,
+        "agility": 3,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [],
+        "spells": []
+      },
+      {
+        "id": "dummy-a",
+        "classRule": "ordinary",
+        "level": 1,
+        "maxHp": 15,
+        "maxMp": 0,
+        "attack": 11,
+        "defense": 6,
+        "agility": 7,
+        "extraRoundAction": false,
+        "move": 5,
+        "items": [],
+        "spells": []
+      }
+    ],
+    "encounters": [
+      {
+        "id": "yard-watch",
+        "map": "yard-map",
+        "placements": [
+          {
+            "actor": "medic-a",
+            "x": 3,
+            "y": 3,
+            "faction": "ally",
+            "processingOrder": 7,
+            "control": "player",
+            "aiStrategy": null
+          },
+          {
+            "actor": "guard-a",
+            "x": 3,
+            "y": 5,
+            "faction": "ally",
+            "processingOrder": 9,
+            "control": "player",
+            "aiStrategy": null
+          },
+          {
+            "actor": "dummy-a",
+            "x": 8,
+            "y": 5,
+            "faction": "enemy",
+            "processingOrder": 129,
+            "control": "automatic",
+            "aiStrategy": "stay"
+          }
+        ]
+      }
+    ]
+  },
+  "world": {
+    "maps": [
+      {
+        "id": "quay",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [
+          {
+            "id": "ferryman",
+            "position": {
+              "x": 2,
+              "y": 1
+            },
+            "facing": 2,
+            "speed": 96,
+            "visible": true,
+            "obstruction": true
+          }
+        ],
+        "events": [
+          {
+            "kind": "interact",
+            "entity": "ferryman",
+            "program": {
+              "program": "invitation",
+              "instruction": 0
+            },
+            "requiredFlag": null,
+            "requiredValue": true
+          }
+        ],
+        "onLoad": null,
+        "battle": null,
+        "setup": null
+      },
+      {
+        "id": "yard-map",
+        "layout": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "areas": [
+          {
+            "minX": 0,
+            "minY": 0,
+            "maxX": 5,
+            "maxY": 5
+          }
+        ],
+        "entities": [],
+        "events": [],
+        "onLoad": {
+          "program": "arrival",
+          "instruction": 0
+        },
+        "battle": {
+          "encounter": "yard-watch",
+          "unlockedFlag": 13,
+          "completedFlag": 21,
+          "introFlag": 20,
+          "before": {
+            "program": "before-battle",
+            "instruction": 0
+          },
+          "start": {
+            "program": "battle-start",
+            "instruction": 0
+          }
+        },
+        "setup": null
+      }
+    ],
+    "programs": [
+      {
+        "id": "invitation",
+        "instructions": [
+          {
+            "op": "text-cursor",
+            "text": 100
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "yes-no",
+            "flag": 10
+          },
+          {
+            "op": "branch-flag",
+            "flag": 10,
+            "whenSet": true,
+            "target": {
+              "program": "acceptance",
+              "instruction": 0
+            }
+          },
+          {
+            "op": "set-flag",
+            "flag": 11,
+            "value": false
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "acceptance",
+        "instructions": [
+          {
+            "op": "motion",
+            "entity": "ferryman",
+            "actions": [
+              {
+                "op": "move",
+                "x": 1,
+                "y": 0
+              }
+            ],
+            "wait": true
+          },
+          {
+            "op": "call",
+            "target": {
+              "program": "ledger",
+              "instruction": 0
+            }
+          },
+          {
+            "op": "wait-ticks",
+            "ticks": 2
+          },
+          {
+            "op": "set-flag",
+            "flag": 13,
+            "value": true
+          },
+          {
+            "op": "transfer",
+            "map": "yard-map",
+            "position": {
+              "x": 1,
+              "y": 1
+            },
+            "facing": 1,
+            "loadMode": "rebuild"
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "ledger",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 12,
+            "value": true
+          },
+          {
+            "op": "return"
+          }
+        ]
+      },
+      {
+        "id": "arrival",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 14,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "before-battle",
+        "instructions": [
+          {
+            "op": "set-flag",
+            "flag": 15,
+            "value": true
+          },
+          {
+            "op": "text-cursor",
+            "text": 101
+          },
+          {
+            "op": "show-text",
+            "mode": "single",
+            "speaker": null
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "battle-start",
+        "instructions": [
+          {
+            "op": "branch-flag",
+            "flag": 20,
+            "whenSet": false,
+            "target": {
+              "program": "missing-intro-flag",
+              "instruction": 0
+            }
+          },
+          {
+            "op": "set-flag",
+            "flag": 16,
+            "value": true
+          },
+          {
+            "op": "end"
+          }
+        ]
+      },
+      {
+        "id": "missing-intro-flag",
+        "instructions": [
+          {
+            "op": "native-call",
+            "symbol": "unreachable-if-intro-wrapper-ran",
+            "source": "authored-start-contract"
+          }
+        ]
+      }
+    ],
+    "texts": [
+      {
+        "id": 100,
+        "text": "The ferry is ready. Shall I lead you to the watch post?"
+      },
+      {
+        "id": 101,
+        "text": "The watch has spotted movement. Prepare your party."
+      }
+    ]
+  },
+  "start": {
+    "map": "quay",
+    "player": "traveler",
+    "position": {
+      "x": 1,
+      "y": 1
+    },
+    "facing": 0,
+    "speed": 96,
+    "flags": []
+  }
+}

@@ -94,10 +94,28 @@ Required private movers now use `BattleTerrainRules` in the common initialized e
 polygon/assigned-region operations and control classification to shared production rules. Their
 legacy guards remain for concrete later callers; no duplicated calculation body remains at those seams.
 
-Reusable map/layout/item reducers remain in Domain; their existence is not a claim that common-session
-exploration is implemented. Shared battle rules and the authored Content reader live in production
+Reusable map/layout/item reducers remain in Domain. The common exploration/program path now
+consumes traversal and extracted entity movement; its [current owner](../docs/exploration-programs.md)
+records the complete authored group and bounded original program comparisons. Shared battle rules and the authored Content reader live in production
 responsibility directories. Fixed receipt counts, round positions, kill order, expected terminal
 snapshots and comparison IDs have no role in the authored engine's admission or command path.
+
+## Common program comparisons and G3/G4
+
+The ordinary host now consumes prepared original map/program definitions through production
+Content and the common session. External `inputs/map*-start.json` supply controlled fresh starts;
+`inputs/map3-programs.json` selects original resources and explicit controlled motion defaults.
+Neither file supplies a completed program, endpoint snapshot or receipt history. The preparation
+command reads actual canonical/source operations and leaves native frontiers in the program.
+
+The selected source Sarah/position/gate bodies and the messenger, guard, sprite-init and before-battle
+prefixes have direct common-engine comparisons and ordinary native observations. This does not remove
+the existing `PrivateMap3Composition` calls for complete Sarah/zone/messenger/castle/palace/guard
+handlers. Their unported setup, follower/event and presentation services, plus the pending original-map
+admission and M4 return context, still require the named reference owners. No last caller has gone away
+for those families; they remain open G3/G4 boundaries and must retire with their complete migrated
+flows. The [execution owner](../docs/exploration-programs.md#reference-migration-boundary) names the
+actual limits. Do not interpret the new controlled program entry as replacing the earlier natural route.
 
 ## Explicit Godot Reference Host
 

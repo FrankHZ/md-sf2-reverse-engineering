@@ -1,0 +1,39 @@
+{
+  "package": "private-map3-programs",
+  "maps": [
+    3,
+    21,
+    40,
+    57
+  ],
+  "battles": [
+    1
+  ],
+  "controlledEntitySpeed": 32,
+  "controlledBoundary": "Controlled whole-program entry with source default-setup entity placements, no active follower projection or autonomous NPC scripts. Explicit speed32 and unobstructed scripted destinations are controlled initial motion inputs. This package stops at unimplemented setup/event/native services. Source tags are retained; original name substitution, rendering/audio and natural chronology remain outside this projection.",
+  "additionalProgramSources": [
+    {
+      "symbol": "cs_53EF4",
+      "path": "data/maps/entries/map21/mapsetups/s2_entityevents_506.asm"
+    },
+    {
+      "symbol": "bbcs_01",
+      "path": "data/battles/entries/battle01/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "ms_Empty",
+      "path": "code/common/scripting/map/ms_empty.asm"
+    }
+  ],
+  "programs": [
+    "cs_513D6",
+    "cs_5145C",
+    "cs_5148C",
+    "cs_513A0",
+    "cs_5149A",
+    "cs_53EF4",
+    "bbcs_01",
+    "ms_Empty",
+    "cs_51652"
+  ]
+}

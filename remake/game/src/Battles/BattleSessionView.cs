@@ -83,12 +83,20 @@ public sealed partial class BattleSessionView : Control
         var outcome = GameSession.Start(source);
         if (outcome is SessionStarted started)
         {
-            _session = started.Session;
-            _result = started.Result;
-            _map.Build(started.Result.Snapshot.Battle.Definition);
-            Present();
+            Attach(started.Session, started.Result);
         }
         else if (outcome is SessionStartFailed failed) FailStartup(failed.Failure);
+    }
+
+    internal void Attach(GameSession session, SessionResult result)
+    {
+        if (_session is not null) throw new InvalidOperationException("A view attaches one session only.");
+        _started = true;
+        _session = session;
+        _result = result;
+        _map.Build(result.Snapshot.Battle.Definition);
+        Show();
+        Present();
     }
 
     internal void FailStartup(SessionFailure failure)
@@ -178,7 +186,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
-            origin = _session?.Definition.Origin,
+            origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             initializationPolicy = current?.Battle.StartPolicy,
             regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,
             turnOrder = current?.Battle.TurnOrder.Select(entry => new { actor = entry.Actor?.Value, score = entry.AlteredAgility }),

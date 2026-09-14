@@ -1,3 +1,4 @@
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
@@ -19,6 +20,7 @@ public sealed class GameSession
         {
             ScenarioReadRejected rejected => new SessionStartFailed(rejected.Failure),
             ScenarioReadAccepted accepted => Start(accepted.Definition, accepted.Start),
+            ExplorationReadAccepted accepted => Start(accepted.Definition, accepted.Start),
             _ => throw new InvalidOperationException("Unknown content admission result."),
         };
     }
@@ -41,6 +43,22 @@ public sealed class GameSession
         }
     }
 
+    public static SessionStartOutcome Start(ScenarioDefinition definition, ExplorationStartInput start)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(start);
+        try
+        {
+            var result = ExplorationDispatcher.Start(definition, start);
+            return new SessionStarted(new GameSession(definition, result.Snapshot), result);
+        }
+        catch (BattleRuleException error)
+        {
+            return new SessionStartFailed(new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.ContentError,
+                error.Code, error.Field, error.Code.Replace('-', ' ')));
+        }
+    }
+
     public SessionResult Submit(CommandEnvelope envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);
@@ -50,7 +68,13 @@ public sealed class GameSession
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
-        var result = BattleCommandDispatcher.Submit(current, envelope.Command);
+        bool programActive = current.Mode == SessionMode.Exploration || current.Story.Cursor is not null || current.Story.Wait is not null;
+        if (!programActive && envelope.Command is AdvanceSimulation { Wait: not null } or AdvanceSimulation { Ticks: not 1 })
+            return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
+        var result = programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command)
+            : BattleCommandDispatcher.Submit(current, envelope.Command);
+        if (!programActive && !ReferenceEquals(result.Snapshot, current))
+            result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
         _current = result.Snapshot;
         return result;
     }

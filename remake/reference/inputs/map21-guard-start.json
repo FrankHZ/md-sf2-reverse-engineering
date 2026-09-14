@@ -1,0 +1,22 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "Explicit fresh session at a whole source program entry; source default placements and controlled dormant entity motion. Flags and party input are controlled initial data, not evidence of earlier natural continuity. Map40 starts use an explicitly selected intro flag; no active battle or program snapshot is imported.",
+  "start": {
+    "map": "map-21",
+    "player": "entity-0",
+    "position": {
+      "x": 4,
+      "y": 16
+    },
+    "facing": 0,
+    "speed": 32,
+    "flags": [
+      601,
+      602
+    ],
+    "program": {
+      "program": "cs-53ef4",
+      "instruction": 0
+    }
+  }
+}
