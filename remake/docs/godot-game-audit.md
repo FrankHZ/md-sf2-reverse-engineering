@@ -157,7 +157,8 @@ The ordinary host entry and explicit reference compile boundary now implement G1
 startup/build commands and remaining caller ownership are linked above. The inspected source record
 below those links does not establish completion of the remaining game migration.
 Carry G3 with existing battle migration and G4 with actual content/map/presentation migration; remove
-each old caller at that boundary. Address G6 when accepting the common player action interface.
+each old caller at that boundary. The bounded G6 spell/level selection is implemented; full modern
+battle UI and presentation remain later work.
 
 Each implementation needs an explicit caller/dependency boundary and the affected actual-input/state
 observation. Startup changes should observe default, explicit common/private, duplicate/conflicting,

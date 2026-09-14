@@ -134,7 +134,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
-            encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(HalvedExperience: true),
+            encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),
             initialization: new(regions, BattleRegionProgram.None));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);

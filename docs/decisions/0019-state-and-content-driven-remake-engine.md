@@ -93,8 +93,8 @@ The packages supply different maps, encounters, actor identities and processing 
 spell references. No package identity, digest, character, receipt or round predicate admits gameplay.
 `initialVitals: authored-controlled` explicitly permits authored HP deficits; this is not the original
 new-battle initialization policy. The separate private source now admits the bounded initialized common entry described in the
-[private dependency boundary](#private-battle-admission-dependency-boundary); later original AI/action
-and natural map programs remain unported.
+[private dependency boundary](#private-battle-admission-dependency-boundary), including the bounded
+source AI and ordinary action continuation below; wider effects and natural map programs remain unported.
 
 The plain [GameSession](../../remake/src/Sf2.Remake.Application/Runtime/GameSession.cs) reads its source
 once, owns the session/revision envelope and publishes one immutable snapshot. The independent
@@ -728,8 +728,8 @@ without RNG or last-target changes; successful standby carries only its actual t
 
 This boundary admits status-free source enemies with NONE orders and no enemy items/spells for active
 pursuit. Nonempty/unresolved orders, other reached commandsets, broader status/neutral occupancy and
-nonempty action categories remain explicit Unsupported. Physical cohorts consume the private
-class/equipment/action/reward binding below, with failures retaining the last committed state. The reference
+nonempty action categories remain explicit Unsupported. Physical cohorts consume the
+[private action binding](#private-actions-and-spell-selection), with failures retaining the last committed state. The reference
 [caller inventory](../../remake/reference/README.md#private-startup-callers-and-removal-boundaries)
 retains its actual later control/history/action/map/return consumers; shared calculations do not by
 themselves remove those callers. Natural Map3 programs, outcome/return and8C/H4 remain incomplete.
@@ -782,7 +782,7 @@ input/state observations exercise continuous common private play and the retaine
 smoke. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-and-reference-host-startup)
 provides reproduction commands. Ordinary export configuration excludes probes, while complete
 ordinary package/export contents remain unverified. G3/G4 follow actual program/content consumers;
-G6 and bounded private step3 are implemented by the common player action interface below. Natural Map3
+G6 and bounded private step3 are implemented by the common player action interface documented above. Natural Map3
 programs, outcome/return and full ADR0009/0010 remain incomplete.
 
 ## Evidence used and its limits

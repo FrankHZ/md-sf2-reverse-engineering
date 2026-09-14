@@ -143,11 +143,12 @@ The observed non-natural R2a→R2b bridge, controlled intro skip, candidate-only
 unknown accounting remain explicit. The reference input contains minimal comparison facts, not exports.
 
 Actual common commands now continue from those unactivated placements through standby, region
-activation and source set7 pursuit to the next player; the reached physical cohort stops before
-private equipment/action operands are bound. `Battle01EnemyStandby.Decide` and
-`Battle01EnemyPursuit.DecidePursuit` use the same production calculations as this path. Their legacy
-control/history/physical wrappers still have the concrete callers listed above; reached
-equipment/action/after-turn binding is the next bounded chain. The table's map-start and
+activation and source set7 pursuit into actual enemy/player attacks, first kill and HEAL, returning
+actual control through the common action publisher. Source equipment/class/spell/gold definitions
+and the scene's experience modifier supply the operands; the separate action input supplies only
+controlled starting accounting. `Battle01EnemyStandby.Decide` and `Battle01EnemyPursuit.DecidePursuit`
+use the same production calculations as this path. Their legacy control/history/physical wrappers
+still have the concrete callers listed above. The table's map-start and
 recovery/return consumers still require the old startup binding and session; a standalone initialized
 entry does not authorize deleting them or claim natural Map3 continuity.
 

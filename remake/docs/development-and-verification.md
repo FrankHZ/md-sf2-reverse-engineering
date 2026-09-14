@@ -910,7 +910,8 @@ $env:SF2_OBSERVATION_OUTPUT = $outputPath
 
 Require all seven initialized-entry checkpoints or all thirteen continuous source-AI checkpoints,
 `passed:true`, no failures and clean process logs. The source-AI case includes the entry checks, then
-real movement/STAY through activation, set7 pursuit and the stable reached action boundary. These observe actual
+real movement/STAY through activation, set7 pursuit and the first actual physical attack, followed by
+stable Unknown-EXP rejection on the selected player attack. These observe actual
 Godot input, shared session state, actor nodes, private-origin HUD and explicit Unknown accounting;
 no images are emitted. Private output stays ignored. This comparison preserves the fixture's
 non-natural R2a→R2b bridge, explicit intro skip and candidate-only missing-word policy. It does not
@@ -931,7 +932,9 @@ actual inactive/active/set6/set7 ordering, retained activation flags/tested-mask
 station/fallback/ties and the repeated pursuit’s first physical cohort. Keep the existing reference
 profile/history projections; do not run their whole receipt/history mutation aggregates. The actual
 common private fact and native continuous-input observation supply acceptance beyond these calculators.
-Reached private equipment/action/reward/after-turn binding is the next separately admitted slice.
+The private action binding and its actual enemy/player/kill/HEAL continuation are implemented at the
+bounded scope below. Wider effects, natural map programs and outcome/return retain their stated
+Unsupported or Unknown boundaries.
 
 
 ### Private action and spell selection observations
