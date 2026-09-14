@@ -56,7 +56,7 @@ public sealed partial class GameRoot : Node
             var outcome = GameSession.Start(source);
             if (outcome is SessionStartFailed failed) { view.FailStartup(failed.Failure); return; }
             var started = (SessionStarted)outcome;
-            if (started.Result.Snapshot.Mode == SessionMode.Battle) { view.Attach(started.Session, started.Result); return; }
+            if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
             var exploration = new ExplorationSessionView { Name = "ExplorationSessionView" };
             AddChild(exploration);

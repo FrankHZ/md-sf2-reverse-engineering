@@ -40,18 +40,28 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        bool moving = _session.Current.Exploration?.Entities.Values.Any(entity => entity.Busy) == true;
-        if (_session.Current.StopReason == SessionStopReason.SimulationWait || moving)
+        if (NeedsTicks(_session.Current))
         {
+            const double tickDuration = 1.0 / 60;
             _tickTime += delta;
-            if (_tickTime >= 1.0 / 60)
+            int ticks = (int)Math.Min(600, Math.Floor(_tickTime / tickDuration));
+            if (ticks > 0)
             {
-                _tickTime %= 1.0 / 60;
-                Send(new AdvanceSimulation(_session.Current.Story.Wait?.Token));
+                long before = _session.Current.Story.SimulationTick;
+                Send(new AdvanceSimulation(_session.Current.Story.Wait?.Token, ticks));
+                long executed = _session.Current.Story.SimulationTick - before;
+                // The engine may yield before consuming the batch. Retain its unused time
+                // for automatic continuation, but never carry paused input time into a new wait.
+                _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
+                if (_handedOff || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
         else _tickTime = 0;
     }
+
+    private static bool NeedsTicks(SessionSnapshot current) =>
+        current.StopReason == SessionStopReason.SimulationWait ||
+        current.Exploration?.Entities.Values.Any(entity => entity.Busy) == true;
 
     public override void _UnhandledInput(InputEvent input)
     {
@@ -91,8 +101,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
-        if (_result.Failure is null && _session.Current.Mode == SessionMode.Battle &&
-            _session.Current.Story.Wait is null && _session.Current.Story.Cursor is null)
+        if (_result.Failure is null && _session.Current.HasBattleControl)
         {
             _handedOff = true;
             _enterBattle!(_result);

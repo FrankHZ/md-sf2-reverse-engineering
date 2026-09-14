@@ -235,6 +235,80 @@ public sealed class ExplorationSessionTests
         Assert.Contains(20, session.Current.Story.Flags);
     }
 
+    [Theory]
+    [InlineData("dialogue")]
+    [InlineData("choice")]
+    [InlineData("ticks")]
+    public void FreshBattleStartRetainsProgramControlUntilItsWaitCompletes(string waiting)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            document["start"]!["map"] = "yard-map";
+            document["start"]!["flags"] = System.Text.Json.Nodes.JsonNode.Parse("[13]");
+            document["world"]!["maps"]![1]!["battle"]!["before"] = null;
+            string instructions = waiting switch
+            {
+                "dialogue" => """{"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":null}""",
+                "choice" => """{"op":"yes-no","flag":10}""",
+                _ => """{"op":"wait-ticks","ticks":2}""",
+            };
+            document["world"]!["programs"]!.AsArray().Single(program => program!["id"]!.GetValue<string>() == "battle-start")!["instructions"] =
+                System.Text.Json.Nodes.JsonNode.Parse("[" + instructions + """,{"op":"set-flag","flag":16,"value":true},{"op":"end"}]""");
+        });
+        var pending = session.Current;
+        Assert.Equal(SessionMode.Battle, pending.Mode);
+        Assert.False(pending.HasBattleControl);
+        Assert.Equal(0, pending.Battle.Round);
+        Assert.Null(pending.Selection);
+        Assert.DoesNotContain(16, pending.Story.Flags);
+        Assert.Equal("program-owns-control", Send(session, new Confirm()).Failure!.Code);
+        Assert.Same(pending, session.Current);
+        var token = pending.Story.Wait!.Token;
+        SessionCommand command = waiting switch
+        {
+            "dialogue" => new Acknowledge(token),
+            "choice" => new ChooseDialogue(token, true),
+            _ => new AdvanceSimulation(token, 2),
+        };
+        Accept(session, command);
+        Assert.Equal(pending.SessionId, session.Current.SessionId);
+        Assert.True(session.Current.HasBattleControl);
+        Assert.Equal(1, session.Current.Battle.Round);
+        Assert.NotNull(session.Current.Selection);
+        Assert.Contains(16, session.Current.Story.Flags);
+        if (waiting == "choice") Assert.Contains(10, session.Current.Story.Flags);
+        Accept(session, new Confirm());
+        Assert.Equal(BattleSelectionStage.ActionChoice, session.Current.Selection!.Stage);
+    }
+
+    [Fact]
+    public void SimulationBatchesConsumeElapsedTicksAndStopBeforeAcknowledgingTheNextDialogue()
+    {
+        var session = StartProgram("""
+            [{"op":"wait-ticks","ticks":120},{"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null},
+             {"op":"set-flag","flag":7,"value":true},{"op":"end"}]
+            """);
+        var timer = session.Current.Story.Wait!.Token;
+        Accept(session, new AdvanceSimulation(timer, 30));
+        Assert.Equal(30, session.Current.Story.SimulationTick);
+        Assert.Equal(90, Assert.IsType<TickWait>(session.Current.Story.Wait).Remaining);
+        Accept(session, new AdvanceSimulation(timer, 60));
+        Assert.Equal(90, session.Current.Story.SimulationTick);
+        Assert.Equal(30, Assert.IsType<TickWait>(session.Current.Story.Wait).Remaining);
+        Accept(session, new AdvanceSimulation(timer, 60));
+        Assert.Equal(120, session.Current.Story.SimulationTick);
+        var dialogue = Assert.IsType<DialogueWait>(session.Current.Story.Wait);
+        Assert.DoesNotContain(7, session.Current.Story.Flags);
+        var pending = session.Current;
+        Assert.Equal("stale-or-wrong-wait", Send(session, new AdvanceSimulation(timer, 30)).Failure!.Code);
+        Assert.Same(pending, session.Current);
+        Accept(session, new Acknowledge(dialogue.Token));
+        Assert.Contains(7, session.Current.Story.Flags);
+        Assert.Equal(120, session.Current.Story.SimulationTick);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+    }
+
     private static GameSession StartProgram(string instructions) => Start("harbor-arrival", document =>
     {
         document["world"]!["programs"]![0]!["instructions"] = System.Text.Json.Nodes.JsonNode.Parse(instructions);

@@ -59,6 +59,7 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :
         throw new InvalidOperationException("The active mode is exploration.");
     public ExplorationState? Exploration => (Active as ActiveExploration)?.World;

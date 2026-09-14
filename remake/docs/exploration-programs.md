@@ -13,7 +13,9 @@ Neither package identity nor an expected route/receipt admits a command.
 `EntityActionRunner` and `MapTransfer` compute immutable results. The active payload is either
 `ActiveExploration` or `ActiveBattle`; story flags, program PC/call stack, typed wait, text window,
 simulation tick and observations survive the switch. The battle view attaches to the existing
-session. It cannot restart it at the transfer endpoint.
+session. It cannot restart it at the transfer endpoint. Startup and transfer use the same derived
+`HasBattleControl` boundary: an active battle with a pending program or wait keeps the program view
+until its dialogue, choice or timer finishes, then exposes ordinary battle control.
 
 Before entry, `ExplorationState.Party` owns the explicit candidate battle start's resources, seeds
 and accounting. Entry consumes that exploration payload to initialize battle actors. This bounded
@@ -41,7 +43,10 @@ release it. Continued text remains visible after acknowledgement until close or 
 single text closes on acknowledgement. Original dialogue speaker flag bytes remain in the typed
 request/window; they are not silently discarded or treated as proof of original portrait rendering. Real ticks advance background actions even while text is
 open, and increment `SimulationTick` only when executed. A tick batch stops at a newly reached
-wait boundary. The host does not drain later dialogue or choose an answer automatically.
+wait boundary. The host batches elapsed 60 Hz ticks and subtracts only ticks the engine executed.
+Unused time remains available for automatic continuation on the next frame; reaching paused input
+clears the accumulator. Lower frame rates therefore retain elapsed ticks without draining a newly
+reached dialogue or choosing an answer automatically.
 
 Movement uses the existing `OriginalMapTraversal` area, collision and stair rules. The extracted
 entity core uses 384 fixed units per tile, source signed-word arithmetic, acceleration/deceleration,

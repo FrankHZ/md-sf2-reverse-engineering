@@ -68,7 +68,7 @@ public sealed class GameSession
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
-        bool programActive = current.Mode == SessionMode.Exploration || current.Story.Cursor is not null || current.Story.Wait is not null;
+        bool programActive = !current.HasBattleControl;
         if (!programActive && envelope.Command is AdvanceSimulation { Wait: not null } or AdvanceSimulation { Ticks: not 1 })
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
         var result = programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command)
