@@ -24,9 +24,9 @@ internal static class BattleSnapshotProjection
             status += $" · tried {attempted.Value} · selected target {selection?.Target?.Value ?? "none"}";
         var markers = battle.Actors.Where(a => a.Hp > 0).Select(a => new BattleActorMarker(
             a.Actor, a.Position!, a.IsAlly, a.Actor == selection?.Actor,
-            $"{a.Actor.Value}\n{a.Hp}/{a.Definition.MaxHp}")).ToArray();
+            $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}")).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
-            $"{a.Actor.Value}: HP {a.Hp}/{a.Definition.MaxHp}  MP {a.Mp}/{a.Definition.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
+            $"{a.Actor.Value}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
         var focus = selection?.Preview.Path.ToList() ?? [];
         foreach (var actor in battle.Actors.Where(a => a.Hp > 0 && (a.Actor == selection?.Actor ||
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);

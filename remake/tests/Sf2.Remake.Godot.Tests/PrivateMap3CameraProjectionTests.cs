@@ -11,12 +11,12 @@ public sealed class PrivateMap3CameraProjectionTests
 {
     internal static PrivateOriginalMapPlayerLocomotionSnapshot EntryLocomotion()
     {
-        // Only the immutable destination request is needed by pure camera/frame math.
-        var request = Activator.CreateInstance(typeof(Sf2.Remake.Domain.Battles.Battle01DefeatReturnRequest),
-            BindingFlags.Instance|BindingFlags.NonPublic,null,
-            new object?[] { null, new Sf2.Remake.Domain.Battles.Battle01DefeatReturnAdmission(3,false,false) },null)!;
-        return (PrivateOriginalMapPlayerLocomotionSnapshot)typeof(PrivateOriginalMapPlayerLocomotionSnapshot)
-            .GetMethod("EnterGranseal",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[request])!;
+        // Independent camera input; no retired return executor or receipt chain.
+        return (PrivateOriginalMapPlayerLocomotionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalMapPlayerLocomotionSnapshot),
+            BindingFlags.Instance | BindingFlags.NonPublic, null,
+            new object[] { PrivateOriginalMapPlayerLocomotionPhase.Relocated, ExplorationDirection.North,
+                (byte)1, PrivateOriginalMapPlayerLocomotionSheet.Up, 0, false, 0, 0, 0, 0,
+                new MapPosition(32, 13), new MapPosition(32, 13), 0, 0 }, null)!;
     }
 
     [Fact]
@@ -55,19 +55,11 @@ public sealed class PrivateMap3CameraProjectionTests
 
     internal static PrivateOriginalMapPlayerLocomotionSnapshot Relocate(MapPosition source, MapPosition destination)
     {
-        var current = BeginLocomotion(source, source, ExplorationDirection.East,
-            OriginalMapTraversalOutcome.BlockedByCollision);
-        var transition = new OriginalMapCrossMapTransitionDefinition(
-            new(ContentProfile.PrivateLocal, new("map19"), "project-authored-relocation", 1),
-            (byte)source.X, (byte)source.Y, source, ExplorationDirection.East, source,
-            new("map20"), destination, 0);
-        var receipt = (PrivateOriginalMapCrossMapTransitionReceipt)Activator.CreateInstance(
-            typeof(PrivateOriginalMapCrossMapTransitionReceipt), BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null, args: [transition, 1L], culture: null)!;
-        return (PrivateOriginalMapPlayerLocomotionSnapshot)typeof(PrivateOriginalMapPlayerLocomotionSnapshot)
-            .GetMethod("Relocate", BindingFlags.Static | BindingFlags.NonPublic, binder: null,
-                types: [typeof(PrivateOriginalMapPlayerLocomotionSnapshot), typeof(PrivateOriginalMapCrossMapTransitionReceipt)],
-                modifiers: null)!.Invoke(null, [current, receipt])!;
+        return (PrivateOriginalMapPlayerLocomotionSnapshot)Activator.CreateInstance(typeof(PrivateOriginalMapPlayerLocomotionSnapshot),
+            BindingFlags.Instance | BindingFlags.NonPublic, null,
+            new object[] { PrivateOriginalMapPlayerLocomotionPhase.Relocated, ExplorationDirection.East,
+                (byte)0, PrivateOriginalMapPlayerLocomotionSheet.Horizontal, 1, true, 0, 0, 0, 0,
+                source, destination, 0, 0 }, null)!;
     }
 
     [Fact]

@@ -25,7 +25,8 @@ path. The M2 physical rule chain uses that same dispatcher and state. Applicatio
 semantic commands and observations. The common exploration/program path now retains typed dialogue,
 entity, tick and presentation waits; unimplemented native presentation stays pending with an adapter
 failure. [Exploration and programs](./exploration-programs.md) owns its content, execution and source
-frontiers. Natural original-route and outcome/return migration remain incomplete.
+frontiers. The connected Battle01 outcome/after-program/ordinary-defeat return now uses the same
+session. Natural original-route fidelity and broader outcome families remain incomplete.
 
 M0 implements consumed internal Domain RNG, ordinary priest healing arithmetic, turn-order generation
 and Manhattan action range, with a dedicated engine unit project and scoped verification entries.
@@ -127,8 +128,8 @@ remain live state; no round or receipt admits a turn. An actual physical cohort 
 `EnemyPhysicalDecision` and `PhysicalBattleAction`. Hovering selects Flying target priority and airborne
 dodge while retaining terrain protection. Explicit controlled start accounting enables ordinary
 rewards/deaths; unknown required counters reject atomically. `BattleActionCommitter` emits one
-after-turn pass for every successful action, whose admitted status/equipment require no further change.
-Natural map programs and outcome/return remain separate migration dependencies. The old initialization/round/control wrappers still serve those concrete
+after-turn pass for each continuing action, whose admitted status/equipment require no further change. Terminal actions enter the outcome program before any after-turn or queue advance.
+The connected map programs and Battle01 outcome/return use the common session. The old initialization/round/control wrappers still serve independent
 legacy callers, but their enemy ATT arithmetic, polygon/assigned-region operations and control
 classifier now delegate to these shared rules.
 

@@ -32,10 +32,7 @@ internal static class HealingRules
         var plus = BattleRandom.NextMain(input.MainSeed, 16);
         var minus = BattleRandom.NextMain(plus.After, 16);
         int award = Math.Max(1, accumulated + (plus.Value == 0 ? 1 : 0) - (minus.Value == 0 ? 1 : 0));
-        if (input.ActorExp + award >= 100)
-            throw new NotSupportedException("Healing that reaches level-up is not implemented.");
-
         return new(recovery, accumulated, award, (byte)(input.ActorMp - input.MpCost),
-            (byte)(input.ActorExp + award), (ushort)(input.TargetHp + recovery), plus, minus);
+            (byte)Math.Min(200, input.ActorExp + award), (ushort)(input.TargetHp + recovery), plus, minus);
     }
 }

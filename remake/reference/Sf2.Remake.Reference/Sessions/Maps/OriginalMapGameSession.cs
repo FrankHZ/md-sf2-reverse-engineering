@@ -968,7 +968,6 @@ public sealed partial class GameSession
             : _privateOriginalMapSnapshot ?? throw new InvalidOperationException(
             "This GameSession does not own a private original-map runtime.");
 
-    public PrivateOriginalMapReturnArrivalSnapshot? PrivateOriginalMapArrival => PrivateOriginalBattle01?.Arrival;
 
     public static PrivateOriginalMapGameSessionStartResult StartPrivateOriginalMap(
         IOriginalMapImportSource source,

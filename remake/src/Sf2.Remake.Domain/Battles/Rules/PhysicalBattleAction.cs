@@ -65,7 +65,7 @@ internal static class PhysicalBattleAction
         var enemy = actor.IsAlly ? target : actor;
         bool allyDead = actor.IsAlly ? actorDead : targetDead;
         bool enemyDead = actor.IsAlly ? targetDead : actorDead;
-        int? exp = ally.Exp;
+        var rewarded = ally;
         if (!allyDead && (actor.IsAlly || counterPerformed))
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
@@ -73,9 +73,7 @@ internal static class PhysicalBattleAction
             var awardRolls = new List<PhysicalRoll>();
             int award = BattleRewards.Award(accumulated, current.Definition.Rewards!.HalvedExperience, ref seed, awardRolls);
             AddRolls(awardRolls, ally.Actor);
-            exp = Math.Min(200, ally.Exp.Value + award);
-            if (exp >= 100) throw new BattleRuleException("level-up", "actor.exp", true);
-            effects.Add(new("exp", ally.Actor, ally.Exp, exp));
+            rewarded = BattleGrowthRules.Award(ally, award, ref seed, effects);
         }
         uint? gold = enemyDead ? BattleRewards.Gold(current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true),
             enemy.Definition.Physical!.Gold) : current.Gold;
@@ -95,7 +93,9 @@ internal static class PhysicalBattleAction
         var actors = current.Actors.Select(a => a.Actor == actorRef || a.Actor == targetRef
             ? a.With(hp: a.Actor == actorRef ? actorHp : targetHp,
                 position: a.Actor == actorRef ? destination : a.Position,
-                exp: a.Actor == ally.Actor ? (byte?)exp : a.Exp,
+                exp: a.Actor == ally.Actor ? rewarded.Exp : a.Exp,
+                progress: a.Actor == ally.Actor ? rewarded.Progress : a.Progress,
+                attack: a.Actor == ally.Actor ? rewarded.Attack : a.Attack,
                 kills: a.Actor == ally.Actor && enemyDead ? BattleRewards.Kills(a.Kills ?? throw new BattleRuleException("unspecified-kills", "actor.kills", true)) : a.Kills,
                 defeats: a.Actor == ally.Actor && allyDead ? BattleRewards.Defeats(a.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true)) : a.Defeats)
             : a);
@@ -112,7 +112,7 @@ internal static class PhysicalBattleAction
             // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = BattleTerrainRules.LandMultiplier(terrain, defender.Definition.Mover);
-            var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Definition.Defense,
+            var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
                 hp, multiplier, seed, defender.Definition.Mover == BattleMover.Hovering ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter);
@@ -129,10 +129,10 @@ internal static class PhysicalBattleAction
             else targetHp = strike.Hp;
             if (attacker.IsAlly)
             {
-                int killExp = BattleRewards.KillExperience(attacker.Definition.Level, profile.Promoted, defender.Definition.Level);
+                int killExp = BattleRewards.KillExperience(attacker.Level, profile.Promoted, defender.Level);
                 // Each hit truncates its damage EXP separately, then adds to one capped action
                 // accumulator. Enemy strikes never earn ally EXP, regardless of action direction.
-                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(strike.Damage, defender.Definition.MaxHp, killExp));
+                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(strike.Damage, defender.MaxHp, killExp));
                 if (strike.Hp == 0) accumulated = Math.Min(49, accumulated + killExp);
             }
             return strike;
@@ -148,6 +148,7 @@ internal static class PhysicalBattleAction
         void RequireContinuing(BattleActorState defeated, bool dead)
         {
             if (!dead) return;
+            if (current.Definition.Outcome is not null) return;
             if (defeated.Definition.Physical!.Leader)
                 throw new BattleRuleException("leader-defeat-program",
                     defeated.IsAlly ? "actor.physical.leader" : "target.physical.leader", true);

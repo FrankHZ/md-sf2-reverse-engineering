@@ -30,6 +30,8 @@ public sealed class PhysicalCriticalRule
 public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold,
     byte MinimumRange = 1, byte MaximumRange = 1);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
+public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy);
+public enum BattleOutcomeKind { Victory, Defeat }
 
 public sealed record HealingSpellDefinition(
     SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange);
@@ -40,12 +42,12 @@ public sealed class BattleActorDefinition
         byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null, BattleMover mover = BattleMover.Regular,
-        BattleSourceLoadout? sourceLoadout = null)
+        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null)
     {
         Actor = actor; ClassRule = classRule;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
-        Mover = mover; SourceLoadout = sourceLoadout;
+        Mover = mover; SourceLoadout = sourceLoadout; Growth = growth;
     }
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
@@ -66,16 +68,23 @@ public sealed class BattleActorDefinition
     public PhysicalActorDefinition? Physical { get; }
     public BattleMover Mover { get; }
     public BattleSourceLoadout? SourceLoadout { get; }
+    public BattleGrowthDefinition? Growth { get; }
+    internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth) => new(Actor, ClassRule,
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth);
 }
 
 public sealed class BattleActorState
 {
     internal BattleActorState(BattleDeploymentDefinition deployment, ushort hp, byte mp, byte? exp,
         MapPosition? position, ushort? kills, ushort? defeats, ActorRef? lastTarget = null,
-        byte? attack = null, ushort status = 0, ushort? activationWord = null, byte aiMemory = 0)
+        byte? attack = null, ushort status = 0, ushort? activationWord = null, byte aiMemory = 0,
+        BattleActorProgress? progress = null)
     { Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
-        Attack = attack ?? deployment.Definition.Attack; Status = status; ActivationWord = activationWord; AiMemory = aiMemory; }
+        Progress = progress;
+        Attack = attack ?? (progress is null ? deployment.Definition.Attack :
+            (byte)Math.Min(200, progress.BaseAttack + (deployment.Definition.Growth?.AttackBonus ?? 0)));
+        Status = status; ActivationWord = activationWord; AiMemory = aiMemory; }
     public BattleDeploymentDefinition Deployment { get; }
     public BattleActorDefinition Definition => Deployment.Definition;
     public BattleFaction Faction => Deployment.Faction;
@@ -84,6 +93,15 @@ public sealed class BattleActorState
     public int ProcessingOrder => Deployment.ProcessingOrder;
     public bool IsAlly => Faction == BattleFaction.Ally;
     public ActorRef Actor => Definition.Actor;
+    public BattleActorProgress? Progress { get; }
+    public byte Level => Progress?.Level ?? Definition.Level;
+    public ushort MaxHp => Progress?.MaxHp ?? Definition.MaxHp;
+    public byte MaxMp => Progress?.MaxMp ?? Definition.MaxMp;
+    public byte BaseAttack => Progress?.BaseAttack ?? (byte)(Definition.Attack - (Definition.Growth?.AttackBonus ?? 0));
+    public byte Defense => Progress?.Defense ?? Definition.Defense;
+    public byte Agility => Progress?.Agility ?? Definition.Agility;
+    public IReadOnlyList<SpellRef> Spells => Progress?.Spells ?? Definition.Spells;
+    public BattleSourceLoadout? SourceLoadout => Progress?.SourceLoadout ?? Definition.SourceLoadout;
     public ushort Hp { get; }
     public byte Mp { get; }
     public byte? Exp { get; }
@@ -97,9 +115,11 @@ public sealed class BattleActorState
     public byte AiMemory { get; }
     internal BattleActorState With(ushort? hp = null, byte? mp = null, byte? exp = null,
         MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null,
-        byte? attack = null, ushort? status = null, ushort? activationWord = null, byte? aiMemory = null) =>
+        byte? attack = null, ushort? status = null, ushort? activationWord = null, byte? aiMemory = null,
+        BattleActorProgress? progress = null) =>
         new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, position ?? Position, kills ?? Kills, defeats ?? Defeats,
-            lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory);
+            lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
+            progress ?? Progress);
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,
@@ -114,13 +134,13 @@ public sealed class BattleDefinition
     internal BattleDefinition(string encounter, MapId map, int width, int height,
         IEnumerable<BattleTerrain> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null,
-        BattleInitializationDefinition? initialization = null)
+        BattleInitializationDefinition? initialization = null, BattleOutcomeDefinition? outcome = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
         Spells = new ReadOnlyDictionary<SpellRef, HealingSpellDefinition>(spells.ToDictionary(s => s.Spell));
-        Rewards = rewards; Initialization = initialization;
+        Rewards = rewards; Initialization = initialization; Outcome = outcome;
     }
     public string Encounter { get; }
     public MapId Map { get; }
@@ -131,6 +151,7 @@ public sealed class BattleDefinition
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public BattleRewardDefinition? Rewards { get; }
     public BattleInitializationDefinition? Initialization { get; }
+    public BattleOutcomeDefinition? Outcome { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }
 

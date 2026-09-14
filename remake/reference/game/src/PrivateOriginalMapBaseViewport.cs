@@ -164,24 +164,6 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 subpixelColumn));
     }
 
-    internal static PrivateOriginalMapBaseViewProjection CreateFromAtlas(
-        PrivateOriginalMapReturnArrivalSnapshot arrival, OriginalMapVisualResourceSelection selection,
-        IReadOnlyList<byte> atlasRgbaBytes, int scale)
-    {
-        ArgumentNullException.ThrowIfNull(arrival);
-        ArgumentNullException.ThrowIfNull(atlasRgbaBytes);
-        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
-            throw new ArgumentOutOfRangeException(nameof(scale));
-        int width = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth * scale;
-        int height = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight * scale;
-        if (atlasRgbaBytes.Count != checked(width * height * 4))
-            throw new ArgumentException("The Map3 atlas RGBA shape drifted.", nameof(atlasRgbaBytes));
-        return CreateCore(arrival.CurrentRuntime, arrival.WorkingLayout, arrival.PlayerPosition,
-            arrival.CurrentAreaDefinition, PrivateMap3CameraProjection.Create(arrival), selection, scale,
-            false, true, (slot, tile, row, column, subRow, subColumn) =>
-                ResolveAtlasPixel(atlasRgbaBytes, scale, width, slot, tile, row, column, subRow, subColumn), nameof(arrival));
-    }
-
     internal static bool IsExactNearestReplication(
         PrivateOriginalMapBaseViewProjection logical,
         PrivateOriginalMapBaseViewProjection physical)
@@ -1060,16 +1042,6 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
 
     internal IReadOnlyList<PrivateMap3LiveRouteActorGlyph> Actors => _actors;
 
-    internal static IReadOnlyList<PrivateMap3LiveRouteActorGlyph> CreateArrival(
-        PrivateOriginalMapReturnArrivalSnapshot arrival, PrivateOriginalMapBaseViewProjection projection)
-    {
-        if (projection.Map != arrival.Map) throw new ArgumentException("Arrival glyphs require the current Map3 projection.");
-        return Array.AsReadOnly(arrival.Entities.Where(entity => entity.Id != 0 && !entity.Hidden && entity.Position is not null)
-            .Select(entity => Create(entity.Dead ? PrivateMap3LiveRouteActorGlyphKind.DeadFollowerDiamond :
-                entity.IsFollower ? PrivateMap3LiveRouteActorGlyphKind.SarahDiamond : PrivateMap3LiveRouteActorGlyphKind.Zone601Square,
-                entity.Id, entity.SourceRecord!.Identity, entity.Position!, entity.Facing, projection)).ToArray());
-    }
-
     internal static bool TryCreate(
         PrivateOriginalMapSessionSnapshot snapshot,
         PrivateOriginalMapBaseViewProjection baseProjection,
@@ -1330,8 +1302,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private ImageTexture[]? _entity142DiagnosticTextures;
     private PrivateMap3Entity142DiagnosticProjection? _entity142DiagnosticProjection;
     private PrivateMap3LiveRouteActorGlyphProjection? _liveRouteActorProjection;
-    private IReadOnlyList<PrivateMap3LiveRouteActorGlyph>? _arrivalActorGlyphs;
-    internal IReadOnlyList<PrivateMap3LiveRouteActorGlyph>? ArrivalActorGlyphs => _arrivalActorGlyphs;
     private PrivateMap3Entity142DiagnosticAnimationState _entity142DiagnosticAnimation =
         PrivateMap3Entity142DiagnosticAnimationState.Initial;
     private string? _entity142DiagnosticAssetId;
@@ -1433,13 +1403,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             (bytes, scale) => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
                 snapshot.CurrentRuntime.VisualResourceSelection, bytes, scale, staticOverlayDiagnostic,
                 currentAreaOverlay: currentAreaOverlay), out diagnostic);
-
-    internal bool TryBindLocalAtlas(PrivateLocalPresentationRasterMount mount,
-        PrivateOriginalMapReturnArrivalSnapshot arrival, PrivateMap3WorldTreatment treatment,
-        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic) =>
-        TryBindLocalAtlasCore(mount, arrival.CurrentRuntime.VisualResourceSelection, treatment,
-            (bytes, scale) => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(arrival,
-                arrival.CurrentRuntime.VisualResourceSelection, bytes, scale), out diagnostic);
 
     private bool TryBindLocalAtlasCore(PrivateLocalPresentationRasterMount mount,
         OriginalMapVisualResourceSelection selection, PrivateMap3WorldTreatment worldTreatment,
@@ -1795,23 +1758,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         QueueRedraw();
     }
 
-    internal void ProjectMountedAtlas(PrivateOriginalMapReturnArrivalSnapshot arrival)
-    {
-        if (_atlasRgbaBytes is null || _atlasSelection is null)
-            throw new InvalidOperationException("Granseal entry requires the explicitly selected Map3 atlas.");
-        var atlas = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(arrival, _atlasSelection, _atlasRgbaBytes, _atlasScale);
-        _projection = _worldTreatment == PrivateMap3WorldTreatment.ExactNearest ? atlas :
-            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
-                PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(atlas), _atlasScale);
-        using Image image = Image.CreateFromData(_projection.RasterPixelWidth, _projection.RasterPixelHeight,
-            false, Image.Format.Rgba8, _projection.RgbaBytes.ToArray());
-        _texture = ImageTexture.CreateFromImage(image);
-        _playerLocomotion = arrival.Locomotion;
-        _liveRouteActorProjection = null; _entity142DiagnosticProjection = null;
-        _arrivalActorGlyphs = PrivateMap3LiveRouteActorGlyphProjection.CreateArrival(arrival, _projection);
-        QueueRedraw();
-    }
-
     public override void _Draw()
     {
         if (_projection is null || _texture is null)
@@ -1820,9 +1766,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
-        if (_arrivalActorGlyphs is not null)
-            foreach (var actor in _arrivalActorGlyphs.Where(actor => actor.DestinationRect.Intersects(LogicalTextureRect)))
-                DrawLiveRouteActor(actor);
         if (_projection.ShowsPlayerMarker && _liveRouteActorProjection is not null)
         {
             foreach (PrivateMap3LiveRouteActorGlyph actor in
@@ -1921,7 +1864,6 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
     private void ProjectLiveRouteActors(PrivateOriginalMapSessionSnapshot snapshot)
     {
-        _arrivalActorGlyphs = null;
         if (_projection is null ||
             !PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
                 snapshot,

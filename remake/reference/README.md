@@ -54,8 +54,8 @@ Private GIZMO now selects Flying through its admitted hovering mover. Its physic
 same scalar/reward owners with source class/equipment and pinned enemy-gold data; hovering still
 receives source terrain protection. The ordinary host runs actual enemy/player/first-kill/HEAL actions
 through the common dispatcher. Controlled initial counters live only in `inputs/battle01-actions.json`;
-`inputs/battle01-player-ready.json` retains Unknown accounting. Concrete Map3/startup/return callers
-below remain, so these wrappers and explicit reference Godot branches still have live consumers.
+`inputs/battle01-player-ready.json` retains Unknown accounting. Independent startup/action comparisons below remain, so their wrappers and explicit reference
+Godot branches still have live consumers. The migrated outcome/recovery/return chain is removed.
 `Battle01EnemyPursuit.DecidePursuit` delegates the complete raw-target/preliminary-walk/radius-fallback
 calculation to `AiMovementRules.Pursue`. `Battle01EnemyStandby.Decide` projects the shared
 `AiStandbyRules` anchor/memory/occupancy/thinking decision; its `SourceWalk` and `SourceMoveString`
@@ -148,6 +148,12 @@ provides direct commands. Private native recipes must select this project while 
 installation and inputs; no legacy whole-suite replay follows from the move.
 
 
+The fixed defeat-recovery, return-request, fresh arrival and return-movement executors, their linked
+receipts and final GameSession/Godot callers are retired. The common session owns the
+[full outcome/program group](../docs/exploration-programs.md#battle01-outcome-after-program-and-return).
+Independent controlled inputs, entry scalar facts, frozen startup context and action comparisons remain.
+The legacy leader terminal cannot resume recovery or field return.
+
 ## Private startup callers and removal boundaries
 
 [ADR0019's private-admission dependency decision](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary)
@@ -160,10 +166,10 @@ the current calls that prevent deletion; all paths are relative to this assembly
 | `Readers/PrivateOriginalBattle01StartupReader` is constructed by [`Map3Root`](game/src/Map3Root.cs); its `Admit` is called by `Sessions/Battle01/PrivateOriginalBattle01Startup.PreparePrivateOriginalBattle01Startup` | Delegates file identity, decode and semantic parsing to production `Content/Scenarios/PrivateBattleEncounterReader`; duplicate bodies are removed. Keep the legacy projection/port until the startup binding consumes the common Content/session path; private trust checks survive that removal. |
 | Production [`Content/Decoding/StackCompressedGraphicsDecoder`](../src/Sf2.Remake.Content/Decoding/StackCompressedGraphicsDecoder.cs) serves the new encounter reader and retained `PrivateOriginalMap3VisualPayloadReader` | One unchanged calculator is shared through Reference→Content and narrow internal access. Its former reference path is removed; the map visual reader remains for M3. |
 | `Content/Battle01/OriginalBattle01StartupDefinition`, including hardcoded `OriginalBattle01GizmoBaseline`, feeds `PrivateOriginalBattle01Initialization.ProjectBattle01Initialization` | Projects the immutable Application `BattleEncounterDefinition` after Content admission. Exact selected identity/scene and supported numeric symbol checks stay in this comparison projection. The common entry now loads pinned enemy definitions with source baseline separate from effective stats; this old baseline still serves the legacy initializer. Remove the DTO/projection with its final initializer/comparison consumer; retain source identity verification in Content. |
-| `Fixtures/Battle01/OriginalBattle01ControlledPartyPreset` and controlled return/arrival inputs feed startup, physical/healing accounting and recovery/return histories | Move controlled setup values and expected trajectories to external reference data supplied through the common entry as the corresponding consumer migrates. IDs, missing-value supplements and receipt/terminal expectations never become Domain admission. The real party inventory, spells, class and stats are preserved. |
+| `Fixtures/Battle01/OriginalBattle01ControlledPartyPreset` and controlled return/arrival inputs feed startup and physical/healing accounting comparisons | Move controlled setup values and expected trajectories to external reference data supplied through the common entry as the corresponding consumer migrates. IDs, missing-value supplements and receipt/terminal expectations never become Domain admission. The real party inventory, spells, class and stats are preserved. |
 | `Rules/Battles/Battle01Initialization`, `Battle01FirstRound`, `Battle01FirstControl` and matching `Sessions/Battle01` wrappers are called by [`PrivateBattle01Ui.Apply`](game/src/PrivateBattle01Composition.cs) at startup | The common standalone entry now computes initialization/activation/first-player control. Enemy ATT, polygon/assigned-region and control-classifier bodies delegate to production rules; retain comparison projections only while existing callers use them. Shared turn generation alone does not replace the chain. |
 | `Battle01PlayerMovement`, `Battle01EnemyStandby`, `Battle01EnemyPursuit`, both physical rules, `Battle01PlayerHealing`, `Battle01TurnCompletion` and corresponding session methods serve later `PrivateBattle01Ui` branches | Migrate actual class/equipment/AI/action dependencies through common commands, then delete each matching Godot scheduling branch and session wrapper with its final consumer. Source movement/strike/reward/RNG calculations already shared stay single-owned; preset/history checks move to reference comparisons. |
-| `Sessions/Battle01/PrivateOriginalBattle01Admission` and startup preparation retain a pending original-map snapshot, idle bridge/locomotion and F401 state; recovery/return/arrival wrappers retain early context | M3 must replace the real map/start program and bridge handoff; M4 must replace the reached outcome/recovery/return path. A standalone controlled private battle cannot justify deleting these callers or claiming natural Map3 continuity. Retire the legacy `Sessions.GameSession` and startup selection only with their last actual consumer. |
+| `Sessions/Battle01/PrivateOriginalBattle01Admission` and startup preparation retain a pending original-map snapshot, idle bridge/locomotion and F401 state; independent initialization/action comparisons retain early context | The common world now executes the map/start and both supported outcome/return programs. Their legacy endpoint and return executors are removed; immutable pending/source context remains for independent startup/action comparisons. Those comparisons do not prove natural original continuity. Retire the legacy `Sessions.GameSession` and startup selection only with their last actual consumer. |
 
 The common standalone private entry retains the trusted raw encounter, selected source definitions
 and explicit [controlled PlayerReady inputs](./inputs/battle01-player-ready.json), and calls
@@ -180,7 +186,7 @@ actual control through the common action publisher. Source equipment/class/spell
 and the scene's experience modifier supply the operands; the separate action input supplies only
 controlled starting accounting. `Battle01EnemyStandby.Decide` and `Battle01EnemyPursuit.DecidePursuit`
 use the same production calculations as this path. Their legacy control/history/physical wrappers
-still have the concrete callers listed above. Recovery/return comparisons require the old startup
+still have the concrete callers listed above. Independent startup/action comparisons require the old startup
 binding and session with explicit fixture context. The common continuous R1 route now executes the
 entire before/init/load/start group; original natural reach across the H3 bridge remains unclaimed.
 

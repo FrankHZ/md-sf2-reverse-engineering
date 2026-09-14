@@ -10,7 +10,7 @@ hooks, initializes the encounter and reaches first player control. Declining ret
 Neither package identity nor an expected route/receipt admits a command.
 
 `GameSession` remains the sole snapshot publisher. `ExplorationDispatcher`, `ProgramRunner`,
-`EntityActionRunner`, `SceneEntities`, `MapTransfer` and `BattleEntry` compute immutable results. The active payload is either
+`EntityActionRunner`, `SceneEntities`, `MapTransfer`, `BattleEntry` and `BattleOutcome` compute immutable results. The active payload is either
 `ActiveExploration` or `ActiveBattle`; story flags, program PC/call stack, typed wait, text window,
 simulation tick and observations survive the switch. The battle view attaches to the existing
 session. It cannot restart it at the transfer endpoint. Startup and transfer use the same derived
@@ -40,7 +40,7 @@ The Content reader links all call/jump/branch targets, including untaken branche
 references, duplicate IDs, scalar domains and terminal fallthrough. Entity references that depend
 on runtime population are checked when reached. Typed operations support flags, calls/returns,
 conditional branches, text cursors, continued/single text, explicit close, yes/no, fixed-point
-entity motion, facing/position/visibility, tick waits, presentation requests and map transfers.
+entity motion, facing/sprite/position/visibility, tick waits, presentation requests and map transfers.
 Known unimplemented operations retain a source-attributed stop instruction.
 
 A blocking instruction keeps its PC until its own wait completes. A stale token/revision cannot
@@ -234,19 +234,60 @@ source-sprite samples through progressively finer blocks over half a second. Shi
 alternating five-tick offsets, then restores the engine fields; original sprite DMA/bitfield waveform
 is unclaimed. The renderer reports an adapter failure if an admitted service cannot be bound.
 
+## Battle01 outcome, after-program and return
+
+The connected private world binds the original outcome hooks and growth tables through Content.
+Actual HEAL/physical awards consume one EXP threshold, grow the five base stats with carried main
+RNG, refresh admitted ATT-only equipment and retain current HP/MP separately from their new maxima.
+Learned spell upgrades update both the live spell choices and packed source spellbook. Class caps
+consume the threshold without a growth draw. Missing growth or unsupported status/equipment/spell
+effects remain explicit boundaries; growth metadata never supplies an action history or kill order.
+
+Action publication orders the reached empty enemy-defeated hook, death accounting/cleanup and
+outcome check before an ordinary after-turn/queue advance. Leader loss takes precedence over enemy
+exhaustion. A terminal action does not consume another turn. The same session then owns the complete
+outcome program; `battle-returned` is emitted only after its callers and return-map init finish.
+
+Victory heals eligible living/immortal allies, executes all of `abcs_battle01`, applies the source
+join-table tail (including member zero), clears F401, sets F501 and executes the return load. The
+script's `resetForceBattleStats` separately restores all supplied allies, including ordinary dead
+allies. Its displayed map is **Map57**, not Map40. The controller captures the first active ally's
+battlefield position before the script; the script's mainEntity position does not replace that
+return tuple. Reached action tails recreate the ally facing DOWN. Map57's void setup still creates
+the player/followers; its F506 layout-copy branch remains a guarded frontier.
+
+Ordinary defeat plays its own sound/text, restores the leader's HP, halves unsigned current gold,
+then heals eligible living/immortal allies on exploration entry. It retains F401 and does not set
+F501 or execute the after-program/join tail. The selection explicitly supplies egress Map3; F399
+must be set and F64/F640 clear, selecting (32,13)/UP. This is a controlled egress choice, not evidence
+for the original campaign's natural producer.
+
+Normal Map3 reload retains the real `cs_513BA` hide and removed entity142 alias. At exactly
+`byte_513A8:1`, the [accepted source contract](../../docs/design/contracts/map-exploration.md) permits
+the four writes into inactive window scratch to have no further map/entity/camera effect: windows
+are empty, old presentation work has drained, and a new window is rebuilt before publication.
+The common renderer has no emulated DMA queue. The engine requires this normal reload continuation,
+closed window, source cursor/flags and real hidden entity record. A still-live alias receives the
+real move-out operation. Missing records, other call sites and active windows are rejected.
+
+Godot keeps the battle projection until the actual fade/load hands over to the scene, renders
+mosaic-out and sprite replacement, and plays a distinct project-authored defeat cue. Sprite changes
+wait for the exact slot/request completion. After source init and fade-in, ordinary movement uses
+the existing exploration view and session identity. These are modern presentation services;
+original waveforms, DMA/VInt behavior and natural original continuity remain Unknown.
+
 ## Remaining source boundaries
 
 The accepted Map21 default-population contract resolves135 to slot0 under its stated initialization
 conditions. Natural original call-time RAM, full sprite/hardware effects and timing remain **Unknown**;
 remake continuation is not a new original H3 observation. The continuous remake route reaches
-Battle01 control; original natural continuity across the H3 bridge, outcome and return remain outside
-this group. Other Map3 native branches such as ChurchMenu and
+Battle01 victory/ordinary-defeat return; original natural continuity across the H3 bridge and
+original presentation remain outside this claim. Other Map3 native branches such as ChurchMenu and
 moveNextToPlayer retain executable source frontiers.
 
-After F603, a later Map3 init can target entity142 after its alias has been removed. The source
-lookup returns the255 sentinel and its helpers perform raw entity-address writes. That later RAM
-boundary is not admitted here; the common session refuses the missing alias. Stable local field
-movement after acceptance is confirmed, but another post-acceptance map reload is not claimed.
+The post-F603 abstraction above is specific to inactive window scratch on normal reload. Active
+windows, deferred DMA, other missing-entity helpers and later storage reuse remain Unknown; no
+generic missing-entity no-op, player fallback or entity255 is introduced.
 
 ## Reference migration boundary
 
@@ -259,7 +300,7 @@ Map21 guard and missing-presentation comparisons; the complete admission observe
 Map40 `loadMapFadeIn` stop/forced-seen-intro cases.
 
 The legacy Map40 pending-admission writer, movement-result variant and presentation callers are
-removed. M4 startup/initialization/return comparisons still require immutable pending/source context;
+removed. Independent startup/action comparisons still require immutable pending/source context;
 their test fixture constructs it explicitly without executing the retired field writer.
 Those independent comparison consumers remain. Their tests use
 `map3-post-opening-reference-start.json` as an explicit controlled starting context, with zero executed
@@ -269,6 +310,11 @@ continuity. The default old private start remains a geometry diagnostic; its mig
 report that the common host owns them. State/receipt DTOs and trust projections still used by frozen
 later snapshots remain until their last caller migrates. Shared legacy geometry/visual bindings also
 serve those later comparisons. G3/G4, A1–A8 and8C/H4 are not reported globally closed.
+
+The fixed defeat-recovery, return-request, arrival and return-movement executors, their linked
+receipts, GameSession commands and Godot confirmation/projection branches are removed. Independent
+source/load inputs, scalar entry comparisons and reference action terminals remain. A legacy leader
+terminal directs users to the common session; it cannot resume a second outcome engine.
 
 ## Reproduction
 
@@ -352,3 +398,14 @@ first/seen/completed selection, input gating and initialization failure. With th
 bindings, `PrivateBattleEntryProgramTests` covers continuous R1 admission, the independently seeded
 H3 comparison, live membership/formation/resources and the F88 boundary. These are engine behavior
 checks; they do not test the observers or replay the legacy aggregate.
+
+For the complete outcome group, use `res://probes/engine_battle01_outcome_observation.gd` with the
+same retained project, R1 start and opening navigation selection. Set `SF2_BATTLE_OUTCOME_CASE` to
+`victory` or `defeat`. The external observer chooses normal movement/action/target keys from the
+live battle, then checks source programs, flags, actual presentation, 960×640 geometry and return
+movement. It does not restore an expected seed, HP, roster, endpoint or program cursor. Fixed60/30
+FPS may reach different battle seeds because real presentation allows background entity ticks.
+The adjacent `.outcome.json` and normal output retain actual observations. Require `passed:true`,
+exit0 and no Godot errors. Direct engine checks are `BattleOutcomeProgramTests`,
+`PrivateBattleOutcomeProgramTests` and `BattleGrowthTests`; the private continuous victory also
+crosses a real level threshold. Preserve completed failures and rerun their affected nodes only.

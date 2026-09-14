@@ -7,7 +7,7 @@ internal static class PlayerHealing
     internal static HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
     {
         var actor = battle.GetActor(actorRef);
-        if (!actor.Definition.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
+        if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
         if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
@@ -36,21 +36,17 @@ internal static class PlayerHealing
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
         var target = RequireTarget(battle, actorRef, destination, spell, targetRef);
-        HealingResolution resolution;
-        try
-        {
-            resolution = HealingRules.ResolvePriest(new(target.Hp, target.Definition.MaxHp, actor.Mp,
-                actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true), spell.Power, spell.MpCost, battle.MainSeed));
-        }
-        catch (NotSupportedException) { throw new BattleRuleException("level-up", "actor.exp", true); }
+        var resolution = HealingRules.ResolvePriest(new(target.Hp, target.MaxHp, actor.Mp,
+            actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true), spell.Power, spell.MpCost, battle.MainSeed));
+        uint seed = resolution.MainAfter;
+        List<BattleEffect> effects = [new("mp", actorRef, actor.Mp, resolution.MpAfter),
+            new("hp", targetRef, target.Hp, resolution.HpAfter)];
+        var rewarded = BattleGrowthRules.Award(actor, resolution.AwardedExp, ref seed, effects);
         var actors = battle.Actors.Select(a =>
         {
-            var changed = a.Actor == actorRef ? a.With(mp: resolution.MpAfter, exp: resolution.ExpAfter, position: destination) : a;
+            var changed = a.Actor == actorRef ? rewarded.With(mp: resolution.MpAfter, position: destination) : a;
             return a.Actor == targetRef ? changed.With(hp: resolution.HpAfter) : changed;
         });
-        return (battle.With(actors: actors, mainSeed: resolution.MainAfter), Array.AsReadOnly<BattleEffect>([
-            new("mp", actorRef, actor.Mp, resolution.MpAfter),
-            new("hp", targetRef, target.Hp, resolution.HpAfter),
-            new("exp", actorRef, actor.Exp, resolution.ExpAfter)]));
+        return (battle.With(actors: actors, mainSeed: seed), effects.AsReadOnly());
     }
 }

@@ -172,16 +172,10 @@ public static class Battle01PlayerHealing
         if (actor.CurrentExp is not { } exp) throw Rejected("expInput", "Sarah EXP must be an explicit early input.");
         if (actor.MpCurrent < MpCost) throw Rejected("mp", "HEAL 1 requires three MP.");
         if (target.HpCurrent == 0 || target.HpCurrent >= target.HpMax) throw Rejected("hp", "This action heals a living injured Bowie.");
-        HealingResolution result;
-        try
-        {
-            result = HealingRules.ResolvePriest(new(target.HpCurrent, target.HpMax, actor.MpCurrent,
-                exp, Power, MpCost, main));
-        }
-        catch (NotSupportedException)
-        {
-            throw Rejected("levelUp", "The healing slice does not implement level-up.");
-        }
+        var result = HealingRules.ResolvePriest(new(target.HpCurrent, target.HpMax, actor.MpCurrent,
+            exp, Power, MpCost, main));
+        if (result.ExpAfter >= 100)
+            throw Rejected("levelUp", "This fixed reference history has no growth consumer; the common session owns level-up.");
         var plus = result.PlusRoll; var minus = result.MinusRoll;
         return new(result.Recovery, result.AccumulatedExp, result.AwardedExp,
             actor.WithCurrentMp(result.MpAfter).WithCurrentExp(result.ExpAfter), target.WithCurrentHp(result.HpAfter),

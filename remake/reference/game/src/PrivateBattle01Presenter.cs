@@ -14,8 +14,7 @@ internal sealed record PrivateBattle01Projection(
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status, bool PursuitCompleted,
     bool PhysicalAttackCompleted, string? AttackResult, int? SelectedTargetIndex, uint? Gold, ushort? BowieKills,
-    string AllyStatus, bool CanRequestDefeatReturn = false, Battle01DefeatReturnRequest? DefeatReturn = null,
-    bool CanEnterExploration = false, ushort? ChesterKills = null, bool DefeatedTurnCompleted = false, bool HealingCompleted = false);
+    string AllyStatus, ushort? ChesterKills = null, bool DefeatedTurnCompleted = false, bool HealingCompleted = false);
 
 // Reviewed fixed Map57 base art is optional; live units always remain diagnostic markers.
 public sealed partial class PrivateBattle01Presenter : Node2D
@@ -23,7 +22,6 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     internal const string Heading = "DIAGNOSTIC | MAP 57 / BATTLE 01";
     internal const string Boundary = "Controlled inputs. Original Map 57 graphics unavailable.";
     internal const string BaseArtHeading = "MAP 57 BASE ART + DIAGNOSTIC UNITS";
-    internal const string ReturnRequestedStatus = "Return requested: Granseal (32,13), facing up. Exploration unavailable.";
     internal const string BaseArtBoundary = "Reviewed fixed base art. Controlled inputs.\nOriginal scene, layers and animation are not reproduced.";
     internal const int TileSize = PrivateOriginalMapBaseViewProjection.BlockPixelSize;
     internal static readonly Vector2 GridOrigin = new(40, 32);
@@ -79,10 +77,9 @@ public sealed partial class PrivateBattle01Presenter : Node2D
     }
 
     internal static PrivateBattle01Projection BuildProjection(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
-        BuildProjection(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn, snapshot.CanEnterExploration);
+        BuildProjection(snapshot.Battle, status);
 
-    internal static PrivateBattle01Projection BuildProjection(Battle01InitializedState battle, string status,
-        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null, bool canEnterExploration = false)
+    internal static PrivateBattle01Projection BuildProjection(Battle01InitializedState battle, string status)
     {
         var control = battle.FirstControl;
         var movement = control?.Movement;
@@ -147,12 +144,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
-            Battle01Phase.DefeatPending => "Space: restore Bowie HP and halve gold. Return unavailable.",
-            Battle01Phase.DefeatRecoveryPending => defeatReturn is not null ? canEnterExploration
-                ? "Space: enter Granseal. Exploration controls remain closed."
-                : "Return requested. Input closed. Exploration unavailable."
-                : canRequestDefeatReturn ? "Space: request Granseal return. Exploration unavailable."
-                : "Recovery applied. Input closed. Return unavailable.",
+            Battle01Phase.DefeatPending => "Comparison terminal. Use the common session for battle outcomes and return.",
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice when actor == 1 && battle.FirstRound?.RoundNumber == 13 && battle.Roster[1].Stats.CurrentExp == 0 =>
                 "M: Magic   Space: STAY   Backspace: cancel relocation",
@@ -180,17 +172,16 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 (unit.Position is { } position ? $"{UnitTag(unit.Index)} ({position.X},{position.Y}) HP {unit.Stats.HpCurrent}"
                     : $"{UnitTag(unit.Index)} {(unit.Stats.HpCurrent == 0 ? "defeated" : "unplaced")} HP {unit.Stats.HpCurrent}") +
                 (unit.Index == 1 && unit.Stats.CurrentExp is not null ? $"\nMP {unit.Stats.MpCurrent} EXP {unit.Stats.CurrentExp}" : $" EXP {unit.Stats.CurrentExp?.ToString() ?? "?"}") +
-                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))), canRequestDefeatReturn, defeatReturn, canEnterExploration,
+                (unit.Position is null ? $" Defeats {unit.Stats.CurrentDefeats?.ToString() ?? "?"}" : ""))),
             battle.Roster[2].Stats.CurrentKills, completion?.DefeatedTurnCompleted == true, completion?.PlayerHealing is not null);
     }
 
     internal void Project(PrivateOriginalBattle01SessionSnapshot snapshot, string status) =>
-        Project(snapshot.Battle, status, snapshot.CanRequestDefeatReturn, snapshot.DefeatReturn, snapshot.CanEnterExploration);
+        Project(snapshot.Battle, status);
 
-    internal void Project(Battle01InitializedState battle, string status,
-        bool canRequestDefeatReturn = false, Battle01DefeatReturnRequest? defeatReturn = null, bool canEnterExploration = false)
+    internal void Project(Battle01InitializedState battle, string status)
     {
-        _projection = BuildProjection(battle, status, canRequestDefeatReturn, defeatReturn, canEnterExploration);
+        _projection = BuildProjection(battle, status);
         if (_details is null)
         {
             AddLabel(_baseView is null ? Heading : BaseArtHeading, new(456, 18), new(480, 48), 22);
@@ -212,13 +203,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
             ? $"Dead turn completed: {UnitTag(view.CompletedActorIndex!.Value)} defeated and unplaced"
             : view.CompletedActorIndex is { } completedActor
                 ? $"{completionKind} completed: {UnitTag(completedActor)} at ({completedPosition!.X},{completedPosition.Y})" : "";
-        _details.Text = view.DefeatReturn is { } requested
-            ? $"Round 16: DefeatRecoveryPending\nReturn request: {requested.DestinationMap.Value} ({requested.DestinationPosition.X},{requested.DestinationPosition.Y}), UP\nBowie remains unplaced. Input closed.\nExploration unavailable; live map57 retained."
-            : view.Phase == Battle01Phase.DefeatRecoveryPending
-            ? "Round 16: DefeatRecoveryPending\nBowie HP 0 -> 12. Gold 120 -> 60.\nBowie remains unplaced.\n" +
-                (view.CanRequestDefeatReturn ? "Space requests the admitted Granseal return." : "Input closed. Return unavailable; egress not selected.")
-            : view.Phase == Battle01Phase.DefeatPending
-            ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nSpace applies defeat recovery once."
+        _details.Text = view.Phase == Battle01Phase.DefeatPending
+            ? "Round 16: DefeatPending\nBowie defeated. Battle stopped.\nNo current actor or next turn.\nOutcome execution belongs to the common session."
             : view.CompletedActorIndex is { } completed ?
             $"Round {battle.FirstRound?.RoundNumber ?? 0}: {view.Phase}\n{completedActorText}\n" +
             $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
@@ -237,7 +223,7 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
         // The explicit Sarah MP/EXP row and defeated ally rows can require five wrapped lines.
         bool extraAllyLine = battle.Roster[1].Stats.CurrentExp is not null ||
-            view.Phase is Battle01Phase.DefeatPending or Battle01Phase.DefeatRecoveryPending;
+            view.Phase is Battle01Phase.DefeatPending;
         _status!.Position = new(456, extraAllyLine ? 400 : 382);
         _status.Size = new(480, extraAllyLine ? 64 : 82);
         _status.Text = view.AttackResult is not null ? view.AttackResult + "\n" + view.Status : view.CompletedActorIndex is not null ?

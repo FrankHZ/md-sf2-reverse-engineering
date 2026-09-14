@@ -14,6 +14,7 @@ public sealed partial class ExplorationSessionView : Control
     private Action<SessionResult>? _enterBattle;
     private bool _handedOff;
     private bool _battleMounted;
+    private Action? _releaseBattle;
     private Label _title = null!;
     private Label _dialogue = null!;
     private Label _help = null!;
@@ -38,9 +39,11 @@ public sealed partial class ExplorationSessionView : Control
     public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
 
     internal void Begin(GameSession session, SessionResult result, Action<SessionResult> enterBattle,
-        Action<SessionResult> prepareBattle)
+        Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _enterBattle = enterBattle;
+        _releaseBattle = releaseBattle;
+        _battleMounted = releaseBattle is not null;
         _presentation = new(this, session.Definition.Exploration!, () =>
         {
             prepareBattle(_result!);
@@ -127,6 +130,11 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
+            row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
+        {
+            _releaseBattle(); _releaseBattle = null; _battleMounted = false;
+        }
         if (_result.Failure is null && _session.Current.HasBattleControl)
         {
             _handedOff = true;
@@ -206,6 +214,10 @@ public sealed partial class ExplorationSessionView : Control
         return JsonSerializer.Serialize(new
         {
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
+            viewport = Battles.BattleMapViewport.Rectangle(GetViewportRect()),
+            mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
+            battleMounted = _battleMounted,
+            party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
@@ -217,6 +229,7 @@ public sealed partial class ExplorationSessionView : Control
             presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
                 nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
+                mosaicOutDraws = _presentation?.MosaicOutDraws,
                 paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
                 whiteOpacity = _presentation?.WhiteOpacity, mosaicDraws = _presentation?.MosaicDraws,
                 shiverDraws = _presentation?.ShiverDraws, battleLoads = _presentation?.BattleLoads,

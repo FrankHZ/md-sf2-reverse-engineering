@@ -298,7 +298,7 @@ public sealed class PrivateBattle01PresenterTests
                 Assert.Contains("E0 -> A2: hit 2. HP 1 -> 0.",chesterDefeated.AttackResult);
                 Assert.Contains("A2 (2) defeated. Defeats 0 -> 1.",chesterDefeated.AttackResult);
                 Assert.Equal(((uint?)180,(ushort?)2,(ushort?)1),(chesterDefeated.Gold,chesterDefeated.BowieKills,chesterDefeated.ChesterKills));
-                Assert.False(chesterDefeated.CanRequestDefeatReturn);Assert.False(chesterDefeated.CanEnterExploration);
+
                 current=Battle01NextPlayerControl.Enter(current,current.FirstRound!.CurrentCandidate!.Value.CombatantIndex).State!;
                 var bowieReady=PrivateBattle01Presenter.BuildProjection(current,"Actual Bowie ready.");
                 Assert.Equal((0,12),(bowieReady.ActorIndex,bowieReady.Budget));Assert.True(bowieReady.CanConfirm);
@@ -426,37 +426,9 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("HP 3 -> 0. Bowie defeated. Defeats 0 -> 1", terminal.AttackResult);
         Assert.Contains("A0 defeated HP 0 EXP 63 Defeats 1", terminal.AllyStatus);
         Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", terminal.AllyStatus);
-        Assert.Contains("Space", terminal.Controls); Assert.Contains("Return unavailable", terminal.Controls);
-        var recovery = Battle01DefeatRecovery.Complete(current);
-        var recovered = PrivateBattle01Presenter.BuildProjection(recovery, "Recovery applied.");
-        Assert.Equal(Battle01Phase.DefeatRecoveryPending, recovered.Phase);
-        Assert.Equal(terminal.Units, recovered.Units); Assert.Null(recovered.ActorIndex);
-        Assert.Null(recovered.NextCandidateIndex); Assert.Null(recovered.Cursor); Assert.False(recovered.CanConfirm);
-        Assert.Contains("A0 unplaced HP 12 EXP 63 Defeats 1", recovered.AllyStatus);
-        Assert.Contains("A2 defeated HP 0 EXP 10 Defeats 1", recovered.AllyStatus);
-        Assert.Equal(terminal.AttackResult, recovered.AttackResult);
-        Assert.Equal((uint?)60, recovered.Gold); Assert.Equal((ushort?)2, recovered.BowieKills);
-        Assert.Contains("Input closed", recovered.Controls); Assert.DoesNotContain("Space", recovered.Controls);
+        Assert.Contains("common session", terminal.Controls);
+        Assert.DoesNotContain("Space", terminal.Controls);
         Assert.Equal(((uint?)120, (ushort?)2), (terminal.Gold, terminal.BowieKills));
-        if (returnSelected)
-        {
-            Assert.Same(admission, recovery.ReturnAdmission); Assert.Same(admission, current.ReturnAdmission);
-            var eligible = PrivateBattle01Presenter.BuildProjection(recovery, "Return unavailable", true);
-            Assert.True(eligible.CanRequestDefeatReturn); Assert.Contains("Space: request", eligible.Controls);
-            var request = Battle01DefeatReturn.Select(recovery, admission);
-            var requested = PrivateBattle01Presenter.BuildProjection(recovery, PrivateBattle01Presenter.ReturnRequestedStatus, false, request);
-            Assert.Same(request, requested.DefeatReturn); Assert.False(requested.CanRequestDefeatReturn);
-            Assert.Equal(recovered.Units, requested.Units); Assert.Equal(recovered.AttackResult, requested.AttackResult);
-            Assert.Equal(recovered.AllyStatus, requested.AllyStatus); Assert.Equal(recovered.Gold, requested.Gold);
-            Assert.Contains("Input closed", requested.Controls); Assert.DoesNotContain("Space", requested.Controls);
-            Assert.Equal("Return requested: Granseal (32,13), facing up. Exploration unavailable.", requested.Status);
-            var entry = PrivateBattle01Presenter.BuildProjection(recovery, requested.Status, false, request, true);
-            Assert.True(entry.CanEnterExploration); Assert.Contains("Space: enter Granseal", entry.Controls);
-            Assert.Equal(requested.Units, entry.Units); Assert.Equal(requested.AllyStatus, entry.AllyStatus);
-            Assert.False(requested.CanEnterExploration);
-            // Correct-looking status text alone cannot enable return on the legacy projection.
-            Assert.False(PrivateBattle01Presenter.BuildProjection(recovery, "Space requests return").CanRequestDefeatReturn);
-        }
     }
 
     private static Battle01InitializedState CompleteAuthoredTurn(Battle01InitializedState current)

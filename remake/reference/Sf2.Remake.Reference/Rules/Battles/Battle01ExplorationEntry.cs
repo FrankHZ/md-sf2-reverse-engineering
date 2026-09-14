@@ -81,70 +81,12 @@ public sealed class Battle01EntrySlot
     }
 }
 
-public sealed class Battle01EntryParty
-{
-    internal Battle01EntryParty(Battle01EntrySlot[] before, Battle01EntrySlot[] after, byte[] processed,
-        uint gold, ushort stepBefore)
-    {
-        BeforeSlots = Array.AsReadOnly(before); Slots = Array.AsReadOnly(after);
-        ProcessedIds = Array.AsReadOnly(processed); Gold = gold; StepCounterBefore = stepBefore;
-    }
-    public IReadOnlyList<Battle01EntrySlot> BeforeSlots { get; }
-    public IReadOnlyList<Battle01EntrySlot> Slots { get; }
-    public IReadOnlyList<byte> ProcessedIds { get; }
-    public uint Gold { get; }
-    public ushort StepCounterBefore { get; }
-    public ushort StepCounter => Battle01ExplorationEntry.TransformStepCounter(StepCounterBefore);
-    public ushort MapEventWord => 0;
-    public byte CurrentBattle => 255;
-    public int ClearedTempFlagStart => 256;
-    public int ClearedTempFlagCount => 128;
-    public bool Flag80 => true;
-    public string RefreshPolicy => Battle01ExplorationEntry.RefreshPolicyId;
-}
-
 public static class Battle01ExplorationEntry
 {
     public const string RefreshPolicyId = "battle01-entry-unchanged-effective-stats-comparison";
 
     public static ushort TransformStepCounter(ushort word) =>
         (ushort)Math.Max(unchecked((short)word) - 20000, 0);
-
-    public static Battle01EntryParty Complete(Battle01InitializedState recovered,
-        Battle01DefeatReturnRequest request, IEnumerable<Battle01EntrySlot> dormant,
-        IReadOnlyList<Battle01AllyInput> profiles, ushort stepCounter)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(dormant);
-        ArgumentNullException.ThrowIfNull(profiles);
-        var selected = Battle01DefeatReturn.Select(recovered, recovered.ReturnAdmission);
-        if (!ReferenceEquals(request.Recovery, selected.Recovery) ||
-            !ReferenceEquals(request.Admission, selected.Admission))
-            throw new ArgumentException("Entry requires the exact recovered return request.", "entry.request");
-        var dormantCopy = dormant.ToArray();
-        if (dormantCopy.Length != 27 || dormantCopy.Where((slot, index) =>
-                slot is null || slot.Id != index + 3 || !slot.IsNeutralDormant).Any())
-            throw new ArgumentException("All 27 explicit ordered neutral dormant slots are required.", "entry.dormant");
-        if (profiles.Count != 3 || profiles.Where((profile, i) => profile.Id != i).Any())
-            throw new ArgumentException("Retain the three admitted comparison profiles.", "entry.profiles");
-        var participating = new Battle01EntrySlot[3];
-        for (int i = 0; i < 3; i++)
-        {
-            var unit = recovered.Roster.Single(unit => unit.Index == i);
-            var actual = unit.Stats; var expected = profiles[i].EffectiveStats;
-            if (unit.ClassId != profiles[i].ClassId || actual.Level != expected.Level ||
-                actual.HpMax != expected.HpMax || actual.MpMax != expected.MpMax ||
-                actual.Attack != expected.Attack || actual.Defense != expected.Defense ||
-                actual.Agility != expected.Agility || actual.Move != expected.Move ||
-                actual.Status != 0 || expected.Status != 0 ||
-                !actual.Items.SequenceEqual(expected.Items) || !actual.Spells.SequenceEqual(expected.Spells))
-                throw new ArgumentException("The controlled effective-stat profile drifted.", "entry.refresh");
-            participating[i] = Battle01EntrySlot.FromBattle(unit);
-        }
-        Battle01EntrySlot[] before = [.. participating, .. dormantCopy];
-        var (after, processed) = HealSlots(before);
-        return new(before, after, processed, recovered.CurrentGold!.Value, stepCounter);
-    }
 
     // Also exercised with explicit synthetic damaged-MP/immortal vitals; production admission above stays closed.
     internal static (Battle01EntrySlot[] Slots, byte[] Processed) HealSlots(IReadOnlyList<Battle01EntrySlot> slots)

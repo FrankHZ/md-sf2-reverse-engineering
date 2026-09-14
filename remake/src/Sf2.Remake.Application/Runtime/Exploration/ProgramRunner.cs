@@ -18,6 +18,14 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Result(current, observations);
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.Story.Continuation is ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished)
+                    {
+                        current = BattleOutcome.Continue(definition, current, observations);
+                        continue;
+                    }
+                    if (current.Story.Continuation == ProgramContinuation.OutcomeMapLoaded)
+                        current = Commit(current, current.Active, current.Story.Copy(null,
+                            continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true), observations, "battle-returned");
                     if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
                         current = MapTransfer.Continue(definition, current, observations);
@@ -43,6 +51,31 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case ResetPartyBattleStats:
+                        active = new ActiveExploration(current.Exploration!.WithParty(BattleOutcome.Heal(definition, current.Exploration.Party, all: true)));
+                        break;
+                    case ReturnBattleMap:
+                        var returning = current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn");
+                        current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
+                            MapLoadMode.Rebuild, story, observations);
+                        continue;
+                    case RetiredMap3EntityScratch:
+                        var reloaded = current.Exploration!;
+                        if (cursor != new ProgramLocation("byte-513a8", 1) || reloaded.Map.Value != "map-3" || current.Story.Continuation is not (ProgramContinuation.MapLoaded or ProgramContinuation.OutcomeMapLoaded) ||
+                            current.Story.TextWindow is not ClosedTextWindow || !current.Story.Flags.Contains(603))
+                            throw new BattleRuleException("inactive-window-scratch-context", "program.retiredMap3Entity", true);
+                        if (reloaded.TryResolveEntity(new("entity-142"), out var existing))
+                        {
+                            active = new ActiveExploration(reloaded.Hide(existing, removeAliases: false));
+                            break;
+                        }
+                        if (!current.Story.Flags.Contains(1) || !reloaded.AllEntities.Any(entity =>
+                                entity.Entity.Value == "entity-142" && !entity.Visible && entity.Motion.X == 0x7000 && entity.Motion.Y == 0x7000))
+                            throw new BattleRuleException("inactive-window-scratch-context", "program.retiredMap3Entity", true);
+                        // Accepted #425: normal reload drains the old presentation work and clears
+                        // windows; the first later window is rebuilt before publication. The real
+                        // preceding hide/FF tombstone stays; these four stores affect inactive scratch.
+                        break;
                     case EndProgram or ReturnProgram:
                         story = current.Story.Callers.Count == 0 ? current.Story.Copy(null) :
                             current.Story.Copy(current.Story.Callers[^1], callers: current.Story.Callers.SkipLast(1));
@@ -105,6 +138,13 @@ internal static class ProgramRunner
                                 ? row with { Motion = row.Motion with { AnimationCounter = 255 } } : row), spriteSize: 21));
                         }
                         story = current.Story.Copy(cursor, new PresentationWait(token, cue, restore)); break;
+                    case SetEntitySprite sprite:
+                        var changedSprite = Entity(current, sprite.Entity);
+                        changedSprite = changedSprite with { Sprite = sprite.Sprite,
+                            SpriteRequest = checked(changedSprite.SpriteRequest + 1), WaitingForSprite = true };
+                        active = new ActiveExploration(current.Exploration!.WithEntity(changedSprite));
+                        story = current.Story.Copy(cursor, new EntitySpriteWait(token, changedSprite.Slot, changedSprite.SpriteRequest));
+                        break;
                     case SetEntityFacing facing:
                         var faced = Entity(current, facing.Entity);
                         faced = faced with { Motion = faced.Motion with { Facing = facing.Facing } };

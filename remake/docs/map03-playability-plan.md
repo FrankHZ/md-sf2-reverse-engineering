@@ -7,6 +7,12 @@ The retained Map3 implementation and native recipes in this record belong to the
 
 Status: Legacy implementation and controlled-reference record; not an active feature queue.
 
+The fixed defeat-recovery/return/arrival/movement executors and their confirmation UI described
+below are retired. Their source joins and old observations remain reference context. Current
+Battle01 outcomes and full after-program/return execution belong to the
+[common session owner](./exploration-programs.md#battle01-outcome-after-program-and-return); old
+file names and acceptance recipes below do not name current runnable entry points.
+
 Read [current architecture](./architecture.md) and
 [ADR 0019](../../docs/decisions/0019-state-and-content-driven-remake-engine.md) for new-engine work.
 This document retains the existing route's source joins, selected inputs, observations, failures and

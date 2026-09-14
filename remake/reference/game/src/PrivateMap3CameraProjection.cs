@@ -67,12 +67,6 @@ internal sealed record PrivateMap3CameraProjection
         return Create(snapshot.Map, snapshot.PlayerPosition, locomotion);
     }
 
-    internal static PrivateMap3CameraProjection Create(PrivateOriginalMapReturnArrivalSnapshot arrival)
-    {
-        ArgumentNullException.ThrowIfNull(arrival);
-        return Create(arrival.Map, arrival.PlayerPosition, arrival.Locomotion);
-    }
-
     private static PrivateMap3CameraProjection Create(
         MapId map, MapPosition playerPosition,
         PrivateOriginalMapPlayerLocomotionSnapshot? locomotion = null)

@@ -75,6 +75,7 @@ public sealed class GameSession
             : BattleCommandDispatcher.Submit(current, envelope.Command);
         if (!programActive && !ReferenceEquals(result.Snapshot, current))
             result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
+        if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result);
         _current = result.Snapshot;
         return result;
     }

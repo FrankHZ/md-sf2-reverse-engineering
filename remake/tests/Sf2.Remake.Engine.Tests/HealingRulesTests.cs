@@ -63,10 +63,15 @@ public sealed class HealingRulesTests
     }
 
     [Fact]
-    public void ReachingLevelUpStopsWithoutPublishingHpMpExperienceOrRng()
+    public void HealingAwardRetainsThresholdAndSaturatesBeforeTheGrowthConsumer()
     {
         var input = new PriestHealingInput(95, 100, 20, 91, 15, 3, 0x12341234);
-        Assert.Throws<NotSupportedException>(() => HealingRules.ResolvePriest(input));
+        var result = HealingRules.ResolvePriest(input);
+        Assert.Equal(100, result.ExpAfter);
+        Assert.Equal(100, result.HpAfter);
+        Assert.Equal(17, result.MpAfter);
+        var capped = HealingRules.ResolvePriest(input with { ActorExp = 199 });
+        Assert.Equal(200, capped.ExpAfter);
         Assert.Equal(new PriestHealingInput(95, 100, 20, 91, 15, 3, 0x12341234), input);
     }
 }

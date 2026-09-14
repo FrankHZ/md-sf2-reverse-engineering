@@ -43,7 +43,7 @@ internal static class SourceEnemyAi
 
         int commandset = (word >> 4) & 15;
         if (commandset is not (6 or 7)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
-        if (actor.Definition.SourceLoadout is not { } loadout || loadout.Items.Any(item => item != 127) || loadout.Spells.Any(spell => spell != 63))
+        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(item => item != 127) || loadout.Spells.Any(spell => spell != 63))
             throw new BattleRuleException("source-action-categories", "actor.loadout", true);
         if (commandset == 7) effects.Add(new("ai-command-move-order1", actorRef, After: -1));
         var targets = current.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != actor.Faction)

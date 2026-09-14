@@ -17,10 +17,7 @@ public sealed class PrivateMap3PresenterTests
         string failure = PrivateMap3Presenter.Battle01PendingStatus("Prepare rejected: selected input is missing.");
         Assert.Contains("Prepare rejected", failure);
         Assert.DoesNotContain("ready", failure, StringComparison.OrdinalIgnoreCase);
-        string arrival = PrivateMap3Presenter.Battle01PendingStatus(arrivalSelected: true);
-        Assert.Contains("Leader defeat + Granseal return + entry comparisons selected", arrival);
-        Assert.DoesNotContain("entry comparisons", pending);
-        Assert.Contains("Church doorway movement available", PrivateMap3PresentationPlan.ArrivalStatus);
+        Assert.Contains("common session", pending);
     }
 
     [Theory]
