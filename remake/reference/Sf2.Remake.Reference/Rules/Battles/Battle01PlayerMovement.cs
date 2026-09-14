@@ -228,7 +228,19 @@ public static class Battle01PlayerMovement
     internal static Battle01MovementGrid BuildWeightedGrid(IReadOnlyList<byte> terrain,
         IReadOnlyList<sbyte> moveCosts, int startOffset, int budget)
     {
-        var grid = WeightedMovement.Build(terrain, moveCosts, startOffset, budget, preserveFlatRowNeighbors: true);
+        if (terrain.Count != 2304 || moveCosts.Count != 16 || startOffset is < 0 or >= 2304 || budget is < 0 or > 510)
+            throw new ArgumentException("Movement requires a complete storage grid, sixteen costs and a bounded MOV*2 budget.", "movement");
+        // Original terrain flags and mover-table slots are decoded only at this source boundary.
+        var costs = new sbyte[2304];
+        for (int offset = 0; offset < costs.Length; offset++)
+        {
+            byte entry = terrain[offset];
+            if ((entry & 0x80) != 0) { costs[offset] = -1; continue; }
+            int type = entry & 0x1F;
+            if (type >= moveCosts.Count) throw new ArgumentException("Terrain has no admitted movement-cost entry.", "terrain");
+            costs[offset] = moveCosts[type];
+        }
+        var grid = WeightedMovement.Build(costs, startOffset, budget, preserveFlatRowNeighbors: true);
         return new(grid.TotalCosts.ToArray(), grid.MovableGrid.ToArray(), grid.ExpansionOrder.ToArray());
     }
 }

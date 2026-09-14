@@ -77,6 +77,19 @@ reversed counters, reads its attacker's selected rule. The scalar strike calcula
 mathematical operands and remains unchanged, as do its original/reference source mappings. Other
 physical fields retain their existing semantic ownership; no generalized profile system is introduced.
 
+`BattleTerrain` holds immutable surface and independent protection; layout glyphs resolve through
+explicit local definitions. `OrdinaryGroundRules` interprets them for the currently admitted
+regular/priest movers and target land reduction. Content/start, preview/commit, AI pursuit/scoring
+and physical hits use that owner. Temporary opponent blocking changes only a fresh per-cell cost
+array; friendly traversal and occupied stopping remain movement policy. Godot projects surface into
+existing placeholder colors without supplying gameplay properties.
+
+`WeightedMovement` consumes decoded signed cell costs, preserving its one first-admission/LIFO bucket
+algorithm and explicit logical/reference row-boundary choice. The real reference movement entry
+alone converts original terrain flags/indices and its selected source mover table; player/pursuit/
+standby callers retain their source data. Wider mover capability and private initialization remain
+concrete later dependencies; neither raw/source identity nor presentation becomes a second authority.
+
 ## Production Assemblies
 
 M1's new path is organized by cohesive responsibility: Domain `Battles/Rules` and `Battles/State`,

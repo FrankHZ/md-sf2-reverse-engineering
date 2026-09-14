@@ -59,8 +59,8 @@ internal static class BattleTurnFlow
             Require(input.Status == "none", "actor-status", "start.actors.status", true);
             var position = input.PositionOverride ?? deployment.Position;
             Require(definition.Contains(position), "start-placement-bounds", "start.actors.positionOverride");
-            byte tile = definition.Terrain[position.Y * 48 + position.X];
-            Require(tile < 16 && WeightedMovement.OrdinaryCosts[tile] > 0, "blocked-placement", "start.actors.positionOverride");
+            var tile = definition.Terrain[position.Y * 48 + position.X];
+            Require(OrdinaryGroundRules.MovementCost(tile) > 0, "blocked-placement", "start.actors.positionOverride");
             if (input.Hp == 0)
             {
                 Require(actor.Physical?.Leader != true, "leader-defeat-program", "start.actors", true);

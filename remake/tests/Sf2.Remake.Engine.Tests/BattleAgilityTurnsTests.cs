@@ -80,7 +80,7 @@ public sealed class BattleAgilityTurnsTests
     public void ExtraEntriesFillTheRealStartCapacityWhileDeadReserveDoesNotConsumeIt()
     {
         var document = Document();
-        document["terrains"]![0]!["rows"] = new JsonArray(Enumerable.Repeat("111111111111", 8).Select(row => JsonValue.Create(row)).ToArray());
+        document["terrains"]![0]!["rows"] = new JsonArray(Enumerable.Repeat("gggggggggggg", 8).Select(row => JsonValue.Create(row)).ToArray());
         var actors = document["actors"]!.AsArray(); var starts = document["start"]!["actors"]!.AsArray();
         var placements = document["encounters"]![0]!["placements"]!.AsArray();
         for (int i = 3; i < 33; i++)

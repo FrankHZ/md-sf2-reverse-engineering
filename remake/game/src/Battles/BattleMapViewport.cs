@@ -28,9 +28,9 @@ internal sealed partial class BattleMapViewport : Control
         for (int y = 0; y < definition.Height; y++)
             for (int x = 0; x < definition.Width; x++)
             {
-                byte tile = definition.Terrain[y * 48 + x];
+                var surface = definition.Terrain[y * 48 + x].Surface;
                 _board.AddChild(new ColorRect { Position = new(x * CellSize, y * CellSize), Size = new(CellSize - 2, CellSize - 2),
-                    Color = tile == 255 ? new(0.12f, 0.14f, 0.18f) : tile == 3 ? new(0.19f, 0.34f, 0.24f) : new(0.25f, 0.29f, 0.35f),
+                    Color = surface == TerrainSurface.Barrier ? new(0.12f, 0.14f, 0.18f) : surface == TerrainSurface.Brush ? new(0.19f, 0.34f, 0.24f) : new(0.25f, 0.29f, 0.35f),
                     MouseFilter = MouseFilterEnum.Ignore });
             }
         foreach (var actor in definition.Deployments)

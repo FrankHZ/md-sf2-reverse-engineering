@@ -14,7 +14,7 @@ public sealed class BattleMovementTests
         var session = Start(change: document =>
         {
             var rows = document["terrains"]![0]!["rows"]!.AsArray();
-            for (int row = 0; row < rows.Count; row++) rows[row] = new string('1', 48);
+            for (int row = 0; row < rows.Count; row++) rows[row] = new string('g', 48);
             document["encounters"]![0]!["placements"]![0]!["x"] = 47;
             document["encounters"]![0]!["placements"]![0]!["y"] = 2;
         });
@@ -66,6 +66,6 @@ public sealed class BattleMovementTests
         var result = Send(session, new Move(ExplorationDirection.East));
         Assert.Equal("movement-range", result.Failure!.Code);
         Assert.Same(before, session.Current);
-        Assert.Equal((byte)3, before.Battle.Definition.Terrain[3 * 48 + 4]);
+        Assert.Equal(new BattleTerrain(TerrainSurface.Brush, TerrainProtection.Heavy), before.Battle.Definition.Terrain[3 * 48 + 4]);
     }
 }

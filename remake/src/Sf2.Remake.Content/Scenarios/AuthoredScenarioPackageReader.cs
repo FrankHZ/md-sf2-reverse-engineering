@@ -39,7 +39,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
     private static ScenarioReadAccepted Decode(JsonElement root)
     {
         Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
-        Require(Number(root, "formatVersion", 6, 6) == 6, "format-version", "formatVersion");
+        Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
         string package = Id(root, "package");
@@ -49,11 +49,29 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         string selectedEncounter = Id(start, "encounter");
         uint mainSeed = WordImage(start, "mainSeed"), thinkingSeed = WordImage(start, "thinkingSeed");
 
-        var terrains = new Dictionary<string, (int Width, int Height, byte[] Cells)>(StringComparer.Ordinal);
+        var terrains = new Dictionary<string, (int Width, int Height, BattleTerrain[] Cells)>(StringComparer.Ordinal);
         foreach (var terrain in Array(root, "terrains"))
         {
-            Object(terrain, "terrain", "id", "rows");
+            Object(terrain, "terrain", "id", "legend", "rows");
             string id = Id(terrain, "id");
+            var legendInput = terrain.GetProperty("legend");
+            Require(legendInput.ValueKind == JsonValueKind.Object, "object-required", "terrain.legend");
+            var legend = new Dictionary<char, BattleTerrain>();
+            foreach (var entry in legendInput.EnumerateObject())
+            {
+                Require(entry.Name.Length == 1 && entry.Name[0] is >= '!' and <= '~', "terrain-symbol", "terrain.legend");
+                Object(entry.Value, "terrain.definition", "surface", "protection");
+                string surfaceName = Text(entry.Value, "surface"), protectionName = Text(entry.Value, "protection");
+                Require(surfaceName is "open" or "brush" or "rough" or "deep" or "impassable" or "barrier",
+                    "terrain-surface", "terrain.legend.surface", true);
+                Require(protectionName is "none" or "light" or "heavy", "terrain-protection", "terrain.legend.protection", true);
+                var surface = surfaceName switch {
+                    "open" => TerrainSurface.Open, "brush" => TerrainSurface.Brush, "rough" => TerrainSurface.Rough,
+                    "deep" => TerrainSurface.Deep, "impassable" => TerrainSurface.Impassable, _ => TerrainSurface.Barrier };
+                var protection = protectionName switch {
+                    "none" => TerrainProtection.None, "light" => TerrainProtection.Light, _ => TerrainProtection.Heavy };
+                Require(legend.TryAdd(entry.Name[0], new(surface, protection)), "duplicate-terrain-symbol", "terrain.legend");
+            }
             var rows = Array(terrain, "rows").Select(row =>
             {
                 Require(row.ValueKind == JsonValueKind.String, "terrain-row", "terrain.rows");
@@ -62,13 +80,13 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             Require(rows.Length is >= 1 and <= 48, "terrain-height", "terrain.rows");
             int width = rows[0].Length;
             Require(width is >= 1 and <= 48 && rows.All(row => row.Length == width), "terrain-width", "terrain.rows");
-            var cells = Enumerable.Repeat((byte)255, 2304).ToArray();
+            var cells = Enumerable.Repeat(new BattleTerrain(TerrainSurface.Barrier, TerrainProtection.None), 2304).ToArray();
             for (int y = 0; y < rows.Length; y++)
                 for (int x = 0; x < width; x++)
                 {
                     char entry = rows[y][x];
-                    Require(entry == '#' || entry is >= '0' and <= '8', "terrain-entry", "terrain.rows");
-                    cells[y * 48 + x] = entry == '#' ? (byte)255 : (byte)(entry - '0');
+                    Require(legend.ContainsKey(entry), "missing-terrain-definition", "terrain.rows");
+                    cells[y * 48 + x] = legend[entry];
                 }
             Require(terrains.TryAdd(id, (width, rows.Length, cells)), "duplicate-terrain", "terrains.id");
         }
@@ -183,8 +201,8 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 }
                 Require(faction != BattleFaction.Ally || actor.Level >= 1, "numeric-range", "actors.level");
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));
-                byte tile = terrain.Cells[position.Y * 48 + position.X];
-                Require(tile < 16 && WeightedMovement.OrdinaryCosts[tile] > 0, "blocked-placement", "placements");
+                var tile = terrain.Cells[position.Y * 48 + position.X];
+                Require(OrdinaryGroundRules.MovementCost(tile) > 0, "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
                 var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position);

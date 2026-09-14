@@ -98,7 +98,7 @@ public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition
 public sealed class BattleDefinition
 {
     internal BattleDefinition(string encounter, MapId map, int width, int height,
-        IEnumerable<byte> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
+        IEnumerable<BattleTerrain> terrain, IEnumerable<BattleDeploymentDefinition> deployments,
         IEnumerable<HealingSpellDefinition> spells, BattleRewardDefinition? rewards = null)
     {
         Encounter = encounter; Map = map; Width = width; Height = height;
@@ -111,7 +111,7 @@ public sealed class BattleDefinition
     public MapId Map { get; }
     public int Width { get; }
     public int Height { get; }
-    public IReadOnlyList<byte> Terrain { get; }
+    public IReadOnlyList<BattleTerrain> Terrain { get; }
     public IReadOnlyList<BattleDeploymentDefinition> Deployments { get; }
     public IReadOnlyDictionary<SpellRef, HealingSpellDefinition> Spells { get; }
     public BattleRewardDefinition? Rewards { get; }

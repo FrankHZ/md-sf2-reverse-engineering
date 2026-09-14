@@ -14,14 +14,12 @@ internal sealed class WeightedMovementGrid(byte[] totalCosts, byte[] movableGrid
 
 internal static class WeightedMovement
 {
-    // Accepted regular and priest profiles share this movement-cost row.
-    internal static IReadOnlyList<sbyte> OrdinaryCosts { get; } = Array.AsReadOnly<sbyte>(
-        [-1, 2, 2, 3, 4, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
-    internal static WeightedMovementGrid Build(IReadOnlyList<byte> terrain,
-        IReadOnlyList<sbyte> moveCosts, int startOffset, int budget, bool preserveFlatRowNeighbors = false)
+    // Mover/terrain/occupancy interpretation belongs to callers; this is one propagation algorithm.
+    internal static WeightedMovementGrid Build(IReadOnlyList<sbyte> cellCosts,
+        int startOffset, int budget, bool preserveFlatRowNeighbors = false)
     {
-        if (terrain.Count != 2304 || moveCosts.Count != 16 || startOffset is < 0 or >= 2304 || budget is < 0 or > 510)
-            throw new ArgumentException("Movement requires a complete storage grid, sixteen costs and a bounded MOV*2 budget.", "movement");
+        if (cellCosts.Count != 2304 || startOffset is < 0 or >= 2304 || budget is < 0 or > 510)
+            throw new ArgumentException("Movement requires a complete cell-cost grid and a bounded MOV*2 budget.", "movement");
         var total = Enumerable.Repeat((byte)255, 2304).ToArray();
         var movable = Enumerable.Repeat((byte)255, 2304).ToArray();
         var heads = Enumerable.Repeat(-1, 32).ToArray();
@@ -38,11 +36,7 @@ internal static class WeightedMovement
                 // Authored logical maps never join the right edge to the next row's left edge.
                 // The legacy source comparison explicitly retains its flat storage probes.
                 if (!preserveFlatRowNeighbors && Math.Abs(neighbor - current) == 1 && neighbor / 48 != current / 48) continue;
-                byte entry = terrain[neighbor];
-                if ((entry & 0x80) != 0) continue;
-                int type = entry & 0x1F;
-                if (type >= moveCosts.Count) throw new ArgumentException("Terrain has no admitted movement-cost entry.", "terrain");
-                int cost = moveCosts[type];
+                int cost = cellCosts[neighbor];
                 if (cost < 0 || cost > remaining) continue;
                 admitted[neighbor] = true; // First admission; never relax an already admitted cell.
                 if (cost == remaining) { StoreCost(neighbor, spent + cost); continue; }

@@ -77,7 +77,7 @@ engine or documentation change. Use formatting only for affected product project
 
 ## Authored Start State Observation
 
-The format-v6 reader returns immutable definitions and explicit start input. After loading the existing
+The format-v7 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
 observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
@@ -111,7 +111,7 @@ requires its explicit start record; no default counter or runtime actor is synth
 
 ## Authored Extra Round Action Observation
 
-Use the same installed editor/project after the affected Debug build. This format-v6 input changes only
+Use the same installed editor/project after the affected Debug build. This format-v7 input changes only
 one actor's explicit eligibility; its numerical agility remains12. Outputs stay in a fresh ignored run:
 
 ```powershell
@@ -141,7 +141,7 @@ aggregate, new H3 or test of the observer is required.
 ## Authored Faction and Order Observation
 
 Run the four package observations below, then prepare a changed-order physical input in a fresh ignored
-run directory. This format-v6 variant keeps independent accepted combat/RNG expectations while moving
+run directory. This format-v7 variant keeps independent accepted combat/RNG expectations while moving
 all orders beyond the original byte-side boundary and reversing all three JSON arrays:
 
 ```powershell
@@ -284,7 +284,7 @@ $cycle.start.actors += $laterStart
 $cycle.encounters[0].placements += [pscustomobject]@{actor='guard-c'; faction='ally'; processingOrder=10; control='player'; aiStrategy=$null; x=3; y=4}
 $cycle | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'three-allies.json') -Encoding utf8NoBOM
 $layout = Get-Content -LiteralPath 'remake/content/authored/practice-yard.json' -Raw | ConvertFrom-Json
-$layout.terrains[0].rows = @(1..48 | ForEach-Object { '1' * 48 })
+$layout.terrains[0].rows = @(1..48 | ForEach-Object { 'g' * 48 })
 $layout.actors[0].move = 255
 $layout.encounters[0].placements[0].x = 47
 $layout | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $caseDirectory 'full-square.json') -Encoding utf8NoBOM
@@ -306,9 +306,40 @@ The extracted weighted rule also retains the selected Domain.Tests
 its flat-row and bucket-wrap cases. It passes through the reference wrapper; the authored engine's
 logical row-edge behavior has its own actual movement unit assertion. No original fixture changed.
 
+### Semantic Terrain Observation
+
+Format-v7 terrain rows reference explicit local `legend` definitions. Current packages use
+`g = {surface: open, protection: light}`, `p = {surface: open, protection: none}`,
+`b = {surface: brush, protection: heavy}` and `# = {surface: barrier, protection: none}` where used.
+The weighted AI recipe explicitly adds `d = {surface: deep, protection: heavy}` before using that glyph.
+These are authored references, not original terrain indexes; missing glyph definitions reject.
+
+`BattleTerrainTests` varies surface through actual preview/cancel/commit, and target protection through
+AI lethality selection and physical settlement. Existing movement, critical and moved-original-actor
+counter cases preserve their independent cost/HP/RNG expectations. Run the four package recipes and
+the enemy/target/continuation variants below with the existing probe, including weighted, occupied,
+unreachable and startup shapes. Require complete checkpoints, actual input/state and clean logs.
+No new native branch, screenshot or state setter is needed for these consumers.
+
+Run affected references together: `WeightedPropagationMatchesTheAcceptedRuntimeMatrix` (all five
+controlled source cases), `ClassZeroUsesSourceRegularCostsWithBowiesTwelvePointBudgetAndObstructedSky`,
+`HealerTerrainWeightsChangeBudgetAdmissionAndLandEffectRemainsSeparate`,
+`CentaurForestHillsAndDesertCostsChangeReachabilityUnderTheSameBudget`,
+`AlliesAreTraversableButOnlyVacantDestinationsCanBeConfirmedAndEnemiesBlockPropagation`,
+`ActualOrderIncludesTheInactivePrefixOccupiedFallbackAndBothCommandsets`,
+`SourceDestinationFailureCompletesOriginStayAndKeepsTheThinkingHistory`,
+`RadiusSearchUsesStrictLowerCostFirstTieAndOwnCellZeroBeforeOccupancy`,
+`SourceArithmeticKeepsZeroIntermediateAndBothDownwardDrawsAtTheOriginalRange`,
+`HoveringTerrainZeroUsesUnreducedDamageAndTheSameLethalEarlyReturn`,
+`CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack`, and
+`ScriptThreeAndSelectionRetainLethalityBranchClassCohortAndMovementTieOrder`.
+Source mover tables, occupancy bits and explicit flat-row behavior stay at the real reference
+projection into the same kernel. These bounded comparisons do not complete private initialized
+entry, wider mover admission or full ADR0009/0010 acceptance.
+
 ### Independent Control and AI Strategy
 
-Current format-v6 `encounters[].placements[]` owns both choices, separately from actor capabilities:
+Current format-v7 `encounters[].placements[]` owns both choices, separately from actor capabilities:
 
 | control | aiStrategy | Executed behavior |
 | --- | --- | --- |
@@ -339,7 +370,7 @@ initialized entry and do not constitute complete ADR0009 acceptance.
 
 ### Physical Critical Configuration
 
-Format-v6 physical definitions explicitly pair `critical.chance` and `critical.damageBonus`.
+Format-v7 physical definitions explicitly pair `critical.chance` and `critical.damageBonus`.
 The stone package uses `one-in-16` / `quarter`; the river package uses `one-in-32` / `half`.
 The existing physical, follow-up and enemy-action recipes select these fields directly and use the
 same installed Godot project/probe. For this configuration boundary, observe both ordinary physical
@@ -501,7 +532,7 @@ if ($shape -eq 'occupied') {
     $placements[3].x = 6; $placements[3].y = 3
 }
 if ($shape -eq 'unreachable') {
-    foreach ($y in 1..5) { $data.terrains[0].rows[$y] = '#22#2222#' }
+    foreach ($y in 1..5) { $data.terrains[0].rows[$y] = '#pp#pppp#' }
 }
 if ($shape -eq 'startup') { $data.actors[2].agility = 60 }
 if ($shape -eq 'secondary') { $placements[0].y = 1; $placements[1].y = 3 }
@@ -510,7 +541,8 @@ if ($shape -eq 'weighted') {
     $placements[0].x = 4; $placements[0].y = 3
     $placements[1].x = 7; $placements[1].y = 1
     $placements[3].x = 2; $placements[3].y = 5
-    foreach ($y in 1..2) { $data.terrains[0].rows[$y] = '#2222224#' }
+    $data.terrains[0].legend.d = @{surface='deep'; protection='heavy'}
+    foreach ($y in 1..2) { $data.terrains[0].rows[$y] = '#ppppppd#' }
 }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'commandset-package.json'
 $data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
