@@ -29,7 +29,7 @@ from sf2tool.paths import REPO_ROOT, display_path, repo_path
 
 DEFAULT_MANIFEST = repo_path("remake/toolchain.json")
 DEFAULT_TOOLCHAIN_ROOT = repo_path("local/toolchains/godot-4.7.2")
-DEFAULT_PROJECT = repo_path("remake/game")
+DEFAULT_PROJECT = repo_path("remake/reference/game")
 DEFAULT_SCRATCH_PARENT = repo_path("local/gates/godot")
 SMOKE_MARKER = "SF2_MAP3_SMOKE "
 MAX_DIAGNOSTIC_CHARACTERS = 8192
@@ -844,7 +844,8 @@ def _scan_export(export_root: Path) -> dict[str, object]:
         "Sf2.Remake.Application.dll",
         "Sf2.Remake.Content.dll",
         "Sf2.Remake.Domain.dll",
-        "Sf2.Remake.Godot.dll",
+        "Sf2.Remake.Reference.Godot.dll",
+        "Sf2.Remake.Reference.dll",
     }
     required_rows: dict[str, dict[str, object]] = {}
     manifest_digest = hashlib.sha256()
@@ -939,8 +940,8 @@ def verify_remake_godot(
     if not resolved_project.is_relative_to(REPO_ROOT) or not resolved_project.is_dir():
         raise ValueError("Godot project must be an existing path inside this repository")
     project_relative = resolved_project.relative_to(REPO_ROOT)
-    if project_relative.as_posix() != "remake/game":
-        raise ValueError("the maintained Godot gate owns exactly remake/game")
+    if project_relative.as_posix() != "remake/reference/game":
+        raise ValueError("the maintained Godot gate owns exactly remake/reference/game")
 
     scratch = _new_scratch(scratch_parent)
     receipt_path = scratch / "receipt.json"
@@ -1006,13 +1007,15 @@ def verify_remake_godot(
                 "Godot version mismatch after extraction: "
                 f"expected {toolchain.version_output}, got {version.stdout_tail.strip()}"
             )
-        solution = workspace / "remake" / "Sf2.Remake.sln"
+        build_project = (
+            workspace / "remake" / "reference" / "game" / "Sf2.Remake.Reference.Godot.csproj"
+        )
         run(
             "restore",
             [
                 environment["DOTNET_BIN"],
                 "restore",
-                solution,
+                build_project,
                 "--locked-mode",
                 "--disable-build-servers",
             ],
@@ -1023,7 +1026,7 @@ def verify_remake_godot(
             [
                 environment["DOTNET_BIN"],
                 "build",
-                solution,
+                build_project,
                 "--configuration",
                 "Debug",
                 "--no-restore",
@@ -1105,7 +1108,7 @@ def main(argv: list[str] | None = None) -> int:
         "--project-path",
         type=Path,
         default=DEFAULT_PROJECT,
-        help="tracked Godot project (maintained value: remake/game)",
+        help="tracked Godot project (maintained value: remake/reference/game)",
     )
     parser.add_argument(
         "--scratch-parent",

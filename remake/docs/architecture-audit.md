@@ -122,7 +122,7 @@ invent missing original semantics merely to replace one projection.
 ### A4 — P1: Godot owns part of battle orchestration
 
 **Confirmed:** `PrivateBattle01Ui.DispatchNext` in
-[`PrivateBattle01Composition.cs`](../game/src/PrivateBattle01Composition.cs) chooses next-round entry,
+[`PrivateBattle01Composition.cs`](../reference/game/src/PrivateBattle01Composition.cs) chooses next-round entry,
 dead-slot completion, enemy pursuit/attack/standby, and return to player control. It calls the
 Application mutation methods, so this finding is not a claim that Godot directly writes HP or RNG.
 

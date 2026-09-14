@@ -226,6 +226,13 @@ PARTITIONS = (
         external_gates=("Public checks / adapter-build",),
     ),
     VerificationPartition(
+        "reference-host-build",
+        "remake",
+        "Explicit reference Godot host compilation without legacy scenario replay.",
+        ("uv run sf2 verify reference-host",),
+        external_gates=("Public checks / reference-host-build",),
+    ),
+    VerificationPartition(
         "research-public",
         "public",
         "Direct public source/document checks for shared gate wiring.",
@@ -664,6 +671,7 @@ ENGINE_WIRING_PATHS = frozenset(
         "src/sf2tool/cli.py",
         "src/sf2tool/harness.py",
         "src/sf2tool/verification_plan.py",
+        "src/sf2tool/remake_godot.py",
     }
 )
 RETIRED_ENGINE_TEST_PATHS = frozenset(
@@ -697,19 +705,27 @@ def _plan_engine_paths(
         if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
             continue
         if path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml":
-            for partition in ("engine-unit", "adapter-build", "research-public"):
+            for partition in (
+                "engine-unit",
+                "adapter-build",
+                "reference-host-build",
+                "research-public",
+            ):
                 _selection_entry(selected, partition, path)
         elif path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
             _selection_entry(selected, "engine-unit", path)
         elif path.startswith("remake/tests/"):
             # Legacy/reference test edits or retirement do not run the old solution.
             continue
+        elif path.startswith("remake/reference/"):
+            _selection_entry(selected, "reference-host-build", path)
         elif path.startswith("remake/game/"):
             _selection_entry(selected, "adapter-build", path)
         else:
-            # Changed runtime/configuration roots conservatively build both consumers.
+            # Shared runtime/configuration roots build every actual downstream host.
             _selection_entry(selected, "engine-unit", path)
             _selection_entry(selected, "adapter-build", path)
+            _selection_entry(selected, "reference-host-build", path)
     return {**_selection_rows(selected, set()), "scope": "engine"}
 
 
@@ -836,7 +852,12 @@ def plan_paths(
             continue
 
         if normalized == ".github/workflows/public-checks.yml":
-            for partition in ("engine-unit", "adapter-build", "research-public"):
+            for partition in (
+                "engine-unit",
+                "adapter-build",
+                "reference-host-build",
+                "research-public",
+            ):
                 _selection_entry(selected, partition, normalized)
             continue
 
@@ -950,7 +971,12 @@ def plan_paths(
             continue
 
         if normalized == "src/sf2tool/verification_plan.py":
-            for partition in ("engine-unit", "adapter-build", "research-public"):
+            for partition in (
+                "engine-unit",
+                "adapter-build",
+                "reference-host-build",
+                "research-public",
+            ):
                 _selection_entry(selected, partition, normalized)
             _select_dependents(selected, root, normalized)
             continue

@@ -6,6 +6,11 @@ var samples: Array = []
 var failures: Array = []
 var view: Node
 
+# This external observer owns diagnostics; game user arguments belong only to GameRoot.
+func _diagnostic(name: String, fallback: String = "") -> String:
+    var value := OS.get_environment("SF2_OBSERVATION_" + name)
+    return fallback if value.is_empty() else value
+
 func _initialize() -> void:
     call_deferred("_run")
 
@@ -47,67 +52,76 @@ func _run() -> void:
         return
     var initial := _read("initial")
     _check(initial.viewport.width == 960 and initial.viewport.height == 540, "Representative initial viewport is 960x540")
+    _check(host.name == "GameRoot", "The actual ordinary entry scene owns every common startup")
+    if _diagnostic("CASE") == "startup":
+        var expected := _diagnostic("EXPECT_FAILURE")
+        _check(initial.failure == null if expected.is_empty() else initial.failure == expected,
+            "Actual startup has the selected expected success or diagnostic")
+        if expected.is_empty():
+            _check(initial.stopReason == "PlayerInput" and initial.stage == "Movement", "Common session computes initial player control")
+            var origin := _diagnostic("EXPECT_ORIGIN", "public-authored-controlled-start")
+            _check(initial.origin == origin, "Explicit content selection reaches the expected common source")
+        else:
+            _check(initial.actors == null and initial.mainSeed == null, "Invalid options cannot publish a session or RNG state")
+        _finish()
+        return
     if initial.failure != null:
         failures.append("Startup: " + str(initial.failure))
         _finish()
         return
-    var arguments := OS.get_cmdline_user_args()
-    var case_index := arguments.find("--observation-case")
-    if case_index >= 0 and case_index + 1 < arguments.size():
-        if arguments[case_index + 1] == "private-source-ai":
+    var observation_case := _diagnostic("CASE")
+    if not observation_case.is_empty():
+        if observation_case == "private-source-ai":
             await _private_source_ai(initial)
             _check(samples.size() == 13, "Private source AI completed all thirteen continuous-input checkpoints")
             _finish()
             return
-        if arguments[case_index + 1] == "private-initialized":
+        if observation_case == "private-initialized":
             await _private_initialized(initial)
             _check(samples.size() == 7, "Private entry completed all seven real-input checkpoints")
             _finish()
             return
-        if arguments[case_index + 1] == "extra-turn":
+        if observation_case == "extra-turn":
             await _extra_turn(initial)
             _check(samples.size() == 7, "Extra-turn observation completed all seven checkpoints")
             _finish()
             return
-        if arguments[case_index + 1] == "commandset-continuation":
-            var continuation_index := arguments.find("--continuation-shape")
-            var continuation_shape: String = arguments[continuation_index + 1] if continuation_index >= 0 else "move-attack"
+        if observation_case == "commandset-continuation":
+            var continuation_shape := _diagnostic("CONTINUATION_SHAPE", "move-attack")
             await _commandset_continuation(initial, continuation_shape)
             var checkpoint_count := 6 if continuation_shape == "move-attack" else 3 if continuation_shape == "startup" else 4
             _check(samples.size() == checkpoint_count, "Commandset observation completed every native checkpoint")
             _finish()
             return
-        if arguments[case_index + 1] == "target-selection":
-            var target_shape_index := arguments.find("--target-shape")
-            var target_shape: String = arguments[target_shape_index + 1] if target_shape_index >= 0 else "secondary"
+        if observation_case == "target-selection":
+            var target_shape := _diagnostic("TARGET_SHAPE", "secondary")
             await _target_selection(initial, target_shape)
             _check(samples.size() == (4 if target_shape == "missing-class" else 5), "Target observation completed every native checkpoint")
             _finish()
             return
-        if arguments[case_index + 1] == "enemy-actions":
-            var enemy_shape_index := arguments.find("--enemy-shape")
-            await _enemy_actions(initial, arguments[enemy_shape_index + 1] if enemy_shape_index >= 0 else "counter")
+        if observation_case == "enemy-actions":
+            await _enemy_actions(initial, _diagnostic("ENEMY_SHAPE", "counter"))
             _check(samples.size() == 4, "Enemy observation completed all four native checkpoints")
             _finish()
             return
-        if arguments[case_index + 1] == "target-cycle":
+        if observation_case == "target-cycle":
             await _target_cycle(initial)
             _finish()
             return
-        if arguments[case_index + 1] == "layout":
-            await _layout(initial, arguments.has("--long-path"))
+        if observation_case == "layout":
+            await _layout(initial, _diagnostic("LONG_PATH") == "1")
             _finish()
             return
-        if arguments[case_index + 1] == "physical":
-            await _physical(initial, arguments.has("--reverse-kills"))
+        if observation_case == "physical":
+            await _physical(initial, _diagnostic("REVERSE_KILLS") == "1")
             _finish()
             return
-        if arguments[case_index + 1] == "followups":
-            var shape_index := arguments.find("--followup-shape")
-            if shape_index < 0 or shape_index + 1 >= arguments.size():
+        if observation_case == "followups":
+            var shape := _diagnostic("FOLLOWUP_SHAPE")
+            if shape.is_empty():
                 failures.append("Missing follow-up observation shape.")
             else:
-                await _followups(initial, arguments[shape_index + 1])
+                await _followups(initial, shape)
             _finish()
             return
         failures.append("Unknown observation case.")
@@ -610,10 +624,9 @@ func _commandset_continuation(initial: Dictionary, shape: String) -> void:
 
 func _finish() -> void:
     var report := {"samples": samples, "failures": failures, "passed": failures.is_empty()}
-    var args := OS.get_cmdline_user_args()
-    var output_index := args.find("--observation-output")
-    if output_index >= 0 and output_index + 1 < args.size():
-        var output := FileAccess.open(args[output_index + 1], FileAccess.WRITE)
+    var output_path := _diagnostic("OUTPUT")
+    if not output_path.is_empty():
+        var output := FileAccess.open(output_path, FileAccess.WRITE)
         if output != null:
             output.store_string(JSON.stringify(report, "\t"))
             output.close()

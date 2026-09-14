@@ -165,7 +165,14 @@ def build_adapter() -> None:
     _verify_dotnet("game/Sf2.Remake.Godot.csproj", run_tests=False)
 
 
-def _verify_dotnet(project: str, *, run_tests: bool) -> None:
+def build_reference_host() -> None:
+    """Compile the explicit reference host without replaying its verification scenarios."""
+    _verify_dotnet(
+        "reference/game/Sf2.Remake.Reference.Godot.csproj", run_tests=False, label="Reference host"
+    )
+
+
+def _verify_dotnet(project: str, *, run_tests: bool, label: str | None = None) -> None:
     root = repo_path(".")
     environment = shared_dotnet_environment(os.environ, root)
     environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0"
@@ -178,8 +185,9 @@ def _verify_dotnet(project: str, *, run_tests: bool) -> None:
         commands.append(
             ("test", project, "--configuration", "Release", "--no-build", "--no-restore")
         )
+    label = label or ("Engine" if run_tests else "Adapter")
     for arguments in commands:
-        _heading(f"{'Engine' if run_tests else 'Adapter'}: {arguments[0]}")
+        _heading(f"{label}: {arguments[0]}")
         subprocess.run(
             [environment["DOTNET_BIN"], *arguments],
             cwd=root / "remake",

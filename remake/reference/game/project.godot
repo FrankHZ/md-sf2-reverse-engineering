@@ -1,11 +1,11 @@
 ; Engine configuration file.
-; Ordinary common-engine game host; no Reference or smoke assembly dependency.
+; Public-synthetic Map 3 smoke only; no original assets are present.
 
 config_version=5
 
 [application]
 
-config/name="SF2 Remake"
+config/name="SF2 Explicit Reference Host"
 run/main_scene="res://Main.tscn"
 
 [display]
@@ -21,7 +21,7 @@ window/stretch/aspect="keep"
 
 [dotnet]
 
-project/assembly_name="Sf2.Remake.Godot"
+project/assembly_name="Sf2.Remake.Reference.Godot"
 
 [rendering]
 

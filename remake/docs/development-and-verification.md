@@ -63,24 +63,72 @@ From the repository root after loading that environment, the maintained entries 
 ```powershell
 uv run sf2 verify engine
 uv run sf2 verify adapter
+uv run sf2 verify reference-host
 ```
 
 `verify engine` restores in locked mode, builds and tests
 `remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj`; it references production
 Domain/Application/Content and copies the actual `remake/content/authored/*.json` inputs.
 `verify adapter` restores in locked mode and builds `remake/game/Sf2.Remake.Godot.csproj` without tests
-or native Godot. Both launch the selected executable from `remake/`, honoring `global.json` and the
+or native Godot. `verify reference-host` separately restores/builds
+`remake/reference/game/Sf2.Remake.Reference.Godot.csproj`, which owns the remaining legacy and smoke
+consumers. These commands launch the selected executable from `remake/`, honoring `global.json` and the
 protected environment. Neither needs private inputs. The engine project is selected directly;
 the current `Sf2.Remake.sln` still includes four production and four legacy test projects.
 Whole-solution commands remain available for an explicitly applicable legacy/release check, not every
 engine or documentation change. Use formatting only for affected product projects when needed.
+
+## Ordinary and Reference Host Startup
+
+After loading the retained worktree SDK/Godot environment, ordinary play uses:
+
+```powershell
+& $godotBinary --path remake/game
+& $godotBinary --path remake/game -- --authored-package (Resolve-Path -LiteralPath 'remake/content/authored/garden-watch.json').Path
+```
+
+The same project accepts `--private-battle-start` with the selected private inputs described below.
+These are the only game options; each takes one path and may appear only once, and the two options
+are mutually exclusive. Unknown/positional, duplicate, conflicting and missing-path arguments report
+startup ContentError in the common view before creating a session. They cannot select legacy play.
+
+The external observer owns `SF2_OBSERVATION_CASE`, `OUTPUT`, `FOLLOWUP_SHAPE`, `TARGET_SHAPE`,
+`ENEMY_SHAPE`, `CONTINUATION_SHAPE`, `LONG_PATH` and `REVERSE_KILLS` (all with the same prefix).
+Unset/empty CASE runs the default observation; flags use1. Former `--observation-*`/shape options are
+not game arguments. Each example assigns its case/output; optional shapes belong to that named case.
+Diagnostics do not affect ordinary launches without the script. Direct startup observation uses:
+
+```powershell
+$env:SF2_OBSERVATION_CASE = 'startup'
+$env:SF2_OBSERVATION_EXPECT_FAILURE = ''
+$env:SF2_OBSERVATION_EXPECT_ORIGIN = 'public-authored-controlled-start'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $env:SF2_RUN_OUTPUT 'startup.json'
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd
+```
+
+For a rejected real-argument launch, set EXPECT_FAILURE to `unknown-startup-option`,
+`duplicate-startup-option`, `conflicting-startup-options` or `missing-startup-path` and append the
+corresponding arguments after Godot’s `--`. Private success uses EXPECT_ORIGIN
+`private-local-controlled-start`. The script observes actual Main/GameRoot/BattleSessionView and
+published startup state; it does not set engine state. Preserve process output and require passed:true.
+
+Existing legacy arguments and observations instead select the explicit reference project:
+
+```powershell
+uv run sf2 verify reference-host
+& $godotBinary --headless --path remake/reference/game -- --map3-smoke
+```
+
+This retained source smoke does not authorize replaying the full legacy suite. Its private inputs,
+programs and native recipes stay under their current reference owners. Ordinary export configuration
+excludes `probes/*`; complete ordinary export/assets remain unverified.
 
 ## Authored Start State Observation
 
 The format-v7 reader returns immutable definitions and explicit start input. After loading the existing
 worktree environment, refresh the actual Debug adapter assembly before the existing no-image probe.
 Run the four tracked packages through the same public session: the two HEAL packages use the default
-observer (eight checkpoints each), and the two physical packages use `--observation-case physical`
+observer (eight checkpoints each), and the two physical packages use `SF2_OBSERVATION_CASE=physical`
 (seven checkpoints each). Existing integer/RNG/action expectations remain unchanged.
 
 A differing controlled start reuses the yard's definitions and deployment; only its start object changes:
@@ -96,7 +144,11 @@ $data.start.thinkingSeed = [uint32]0x12344321
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'controlled-start.json'
 $data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'controlled-start-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = ''
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Inspect all eight checkpoints and the process log, not just exit0: the actual actor starts at(4,3),
@@ -120,7 +172,11 @@ $data.actors[0].extraRoundAction = $true
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'extra-turn-input.json'
 $data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'extra-turn-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case extra-turn --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'extra-turn'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Require all seven checkpoints and clean logs: initial control, uncommitted STAY selection, consumption
@@ -155,7 +211,11 @@ for ($i = 0; $i -lt $ordered.Count; $i++) { $ordered[$i].processingOrder = $orde
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'sparse-order-input.json'
 $data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'sparse-order-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case physical --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'physical'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Require seven physical checkpoints, real target input/node removal/next control and clean process logs.
@@ -198,7 +258,11 @@ From the repository root, the direct observation command is:
 $packageName = 'practice-yard' # or garden-watch
 $packagePath = (Resolve-Path -LiteralPath "remake/content/authored/$packageName.json").Path
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = ''
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 `$godotBinary` is the already verified local installation, and `SF2_RUN_OUTPUT` is an explicit ignored
@@ -214,10 +278,14 @@ For the connected physical chain use the same installation/project and an ignore
 ```powershell
 $packagePath = (Resolve-Path -LiteralPath 'remake/content/authored/stone-court.json').Path
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'physical.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case physical --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'physical'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
-Repeat with `river-post.json`; `--reverse-kills` selects the opposite legal kill order. The observation
+Repeat with `river-post.json`; `SF2_OBSERVATION_REVERSE_KILLS=1` selects the opposite legal kill order. The observation
 uses actual X/Tab/Enter/Space input, including a rejected distant target followed by a valid target,
 then checks exact carried RNG/resources, removed coordinates/nodes, next living control and the next
 round. All four package/order combinations use common product commands. Reached unsupported
@@ -252,7 +320,12 @@ if ($shape -eq 'second-death') { $data.start.actors[2].hp = 35 }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'package.json'
 $data | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'followups.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case followups --followup-shape $shape --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'followups'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+$env:SF2_OBSERVATION_FOLLOWUP_SHAPE = $shape
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Use a fresh output directory per shape and run serially in the same installed project. The observer
@@ -262,11 +335,11 @@ The ally-death shape checks that EXP99 stays99 and no award draws occur. The sec
 checks cancellation of the first hit's already-set counter. The observer is executed directly,
 without tests of the observer or helper.
 
-The same direct script also accepts `--observation-case target-cycle` and `--observation-case layout`.
+The same direct script also accepts `SF2_OBSERVATION_CASE=target-cycle` and `SF2_OBSERVATION_CASE=layout`.
 It sets a representative 960×540 host window because a headless SceneTree script otherwise starts a
 64×64 physical window. The layout case resizes the actual window to 640×480 and 1280×720, checks real
 map/HUD and actor/preview rectangles, scrolls the HUD with real mouse-wheel events and commits movement
-with real keys. `--long-path` additionally traverses a valid long preview before that observation.
+with real keys. `SF2_OBSERVATION_LONG_PATH=1` additionally traverses a valid long preview before that observation.
 
 Prepare minimal public authored variants in a fresh ignored output directory, without editing packages:
 
@@ -425,7 +498,12 @@ if ($shape -eq 'unsupported') { $data.start.actors[0].exp = 99 }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-input.json'
 $data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'enemy-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case enemy-actions --enemy-shape $shape --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'enemy-actions'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+$env:SF2_OBSERVATION_ENEMY_SHAPE = $shape
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 The four checkpoints cover initial state, real player STAY selection, automatic enemy action and
@@ -479,7 +557,12 @@ if ($shape -eq 'missing-class') { $data.actors[0].classRule = 'ordinary' }
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'targets-input.json'
 $data | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'targets-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case target-selection --target-shape $shape --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'target-selection'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+$env:SF2_OBSERVATION_TARGET_SHAPE = $shape
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Both adjacent candidates consume thinking draws in reverse processing order: 1 then2 produce raw19 each,
@@ -547,7 +630,12 @@ if ($shape -eq 'weighted') {
 $packagePath = Join-Path $env:SF2_RUN_OUTPUT 'commandset-package.json'
 $data | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8NoBOM
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'commandset-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --observation-case commandset-continuation --continuation-shape $shape --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'commandset-continuation'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+$env:SF2_OBSERVATION_CONTINUATION_SHAPE = $shape
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath
 ```
 
 Require exit0, `passed: true`, clean logs without script errors, and all checkpoints: six for
@@ -627,12 +715,15 @@ uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
 The [planner](../../src/sf2tool/verification_plan.py) automatically selects `engine-unit` and/or
-`adapter-build` for remake product/test paths, without the old solution or always-run `public-core`.
+`adapter-build` for ordinary product/test paths and `reference-host-build` for the explicit reference
+host/assembly, without the old solution or always-run `public-core`.
 Non-research documentation and retired engine-test paths add no execution. Engine test changes select
-unit tests; adapter changes select compilation; shared product/build inputs select both.
+unit tests; ordinary game changes select ordinary compilation; reference changes select the reference
+host. Shared product/build inputs select all actual downstream hosts.
 
 Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
-engine-only wiring change in those three shared modules, inspect the actual diff and use:
+engine-only wiring change in those shared modules or the retained `remake_godot.py` host binding,
+inspect the actual diff and use:
 
 ```powershell
 uv run sf2 verify plan --scope engine --base origin/main --head HEAD
@@ -661,7 +752,8 @@ process-lifecycle boundary:
 uv run python -m sf2tool.remake_godot
 ```
 
-Current behavior: it verifies [toolchain.json](../toolchain.json), creates editor/template and project
+Its maintained project is now `remake/reference/game`; it verifies only the explicit public-synthetic
+reference host, not ordinary game packaging. It verifies [toolchain.json](../toolchain.json), creates editor/template and project
 scratch, performs locked restore/build, imports, runs source smoke, exports, runs exported smoke,
 checks the output boundary and reaps its owned processes. Explicit `--toolchain-root`,
 `--scratch-parent`, `--manifest-path` and `--project-path` remain available. This runner has not been
@@ -674,7 +766,7 @@ the needed actual launch, without new tests of the runner. Public CI does not la
 
 ## Private-Local Smoke Routing
 
-An applicable private observation explicitly selects `private-local`, canonical/content inputs and
+An applicable legacy private observation selects `--path remake/reference/game`, then `private-local`, canonical/content inputs and
 the needed mode. It uses the actual affected assembly, a bounded process owner, and checks relevant
 session/input/state, errors, exit and cleanup. Private user arguments retain the existing exact
 `--name=value` form after Godot's separator; diagnostics do not print private paths.
@@ -692,21 +784,22 @@ request and main push. Its Windows jobs are:
 
 | Job | Current execution |
 | --- | --- |
-| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit the three affected-path booleans. |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit the four affected-path booleans. |
 | `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
-| `adapter-build` | Locked restore/build of the actual Godot C# project; no old Godot tests or native editor launch. |
+| `adapter-build` | Locked restore/build of the ordinary game C# project, which has no Reference/smoke dependency. No Godot tests or native editor launch. |
+| `reference-host-build` | Locked restore/build of the explicit Reference.Godot project and its actual production/Reference dependencies; no legacy scenario replay. |
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
 
-Product/build inputs select engine and adapter; engine tests select engine; `remake/game/` selects
-adapter. Research/contracts/source/fixtures/manifests/schema inputs select research. Workflow and
-shared CLI/harness/planner changes select all three. Non-research documentation and legacy remake
+Shared product/build inputs select engine and both hosts; engine tests select engine; `remake/game/`
+selects the ordinary adapter, while `remake/reference/` selects the explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select research. Workflow and
+shared CLI/harness/planner or retained Godot-tool host-binding changes select all four. Non-research documentation and legacy remake
 test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
-is introduced. M1's consumed authored JSON lives under `remake/content/`, which already selects both product jobs.
+is introduced. M1's consumed authored JSON lives under `remake/content/`, which conservatively selects all product/host builds.
 
-Main-gate has configured required `scope`, `engine-unit`, `adapter-build`, and `research-public`
-checks with strict branch protection. Verify the actual candidate CI/check state at integration;
-changing configuration remains main-gate authority. Path-irrelevant jobs report skipped; applicable jobs need a
+Main-gate owns required-check configuration, including integration of `reference-host-build`.
+Verify the actual candidate CI/check state at integration; changing configuration remains main-gate
+authority. Path-irrelevant jobs report skipped; applicable jobs need a
 real successful result. Review the diff and first applicable CI outcome directly, without tests of
 job selection, workflow text or the migration. Research/private protections remain independently owned.
 
@@ -796,9 +889,17 @@ the changed startup composition and assembly, using the retained editor/project:
 ```powershell
 & $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'private-initialized-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START --observation-case private-initialized --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'private-initialized'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START
 $outputPath = Join-Path $env:SF2_RUN_OUTPUT 'private-source-ai-observation.json'
-& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START --observation-case private-source-ai --observation-output $outputPath
+$env:SF2_OBSERVATION_CASE = 'private-source-ai'
+$env:SF2_OBSERVATION_REVERSE_KILLS = '0'
+$env:SF2_OBSERVATION_LONG_PATH = '0'
+$env:SF2_OBSERVATION_OUTPUT = $outputPath
+& $godotBinary --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START
 ```
 
 Require all seven initialized-entry checkpoints or all thirteen continuous source-AI checkpoints,

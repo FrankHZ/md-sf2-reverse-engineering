@@ -185,7 +185,7 @@ public sealed class Map3RootDisplayPolicyTests
     [Fact]
     public void ProjectKeepsLogicalFallbackAndDeclaresHighDpiKeepAspectPolicy()
     {
-        string project = File.ReadAllText(FindRepositoryPath("remake", "game", "project.godot"));
+        string project = File.ReadAllText(FindRepositoryPath("remake", "reference", "game", "project.godot"));
 
         Assert.Contains("window/size/viewport_width=960", project, StringComparison.Ordinal);
         Assert.Contains("window/size/viewport_height=540", project, StringComparison.Ordinal);

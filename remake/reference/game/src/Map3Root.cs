@@ -5,8 +5,6 @@ using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
-using Sf2.Remake.Content.Scenarios;
-using Sf2.Remake.GodotAdapter.Battles;
 
 namespace Sf2.Remake.GodotAdapter;
 
@@ -35,49 +33,6 @@ public sealed partial class Map3Root : Node2D
 
     public override void _Ready()
     {
-        var arguments = OS.GetCmdlineUserArgs();
-        int packageOption = Array.IndexOf(arguments, "--authored-package");
-        if (Array.IndexOf(arguments, "--private-battle-start") is int privateOption && privateOption >= 0)
-        {
-            var view = new BattleSessionView { Name = "BattleSessionView" };
-            AddChild(view);
-            if (packageOption >= 0 || arguments.Any(argument => argument.StartsWith("--runtime-profile", StringComparison.Ordinal) ||
-                argument.StartsWith("--canonical-map-import", StringComparison.Ordinal) ||
-                argument.StartsWith("--private-", StringComparison.Ordinal) && argument != "--private-battle-start"))
-                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
-                    "conflicting-profiles", "startup", "Select one battle entry."));
-            else if (arguments.Count(argument => argument == "--private-battle-start") != 1 ||
-                privateOption + 1 >= arguments.Length || arguments[privateOption + 1].StartsWith("--", StringComparison.Ordinal))
-                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
-                    "missing-controlled-start-path", "private-battle-start", "One controlled start path is required."));
-            else
-                view.Begin(new PrivateBattleScenarioReader(
-                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_DATA") ?? "",
-                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_SCENE") ?? "",
-                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_TERRAIN") ?? "",
-                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_STATIC_DATA") ?? "",
-                    System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_DATA") ?? "", arguments[privateOption + 1]));
-            return;
-        }
-        if (arguments.Length == 0 || packageOption >= 0)
-        {
-            var view = new BattleSessionView { Name = "BattleSessionView" };
-            AddChild(view);
-            if (arguments.Any(argument => argument.StartsWith("--runtime-profile", StringComparison.Ordinal) ||
-                argument.StartsWith("--private-", StringComparison.Ordinal) || argument.StartsWith("--canonical-map-import", StringComparison.Ordinal)))
-                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
-                    "conflicting-profiles", "startup", "Authored and legacy profile selections cannot be combined."));
-            else if (packageOption >= 0 && (packageOption + 1 >= arguments.Length || arguments[packageOption + 1].StartsWith("--", StringComparison.Ordinal)))
-                view.FailStartup(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
-                    "missing-package-path", "authored-package", "A package path is required."));
-            else
-            {
-                string package = packageOption >= 0 ? arguments[packageOption + 1] :
-                    System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "content", "authored", "practice-yard.json");
-                view.Begin(new AuthoredScenarioPackageReader(package));
-            }
-            return;
-        }
         long readyStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         long selectionStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         Map3RuntimeProfileSelection selection =

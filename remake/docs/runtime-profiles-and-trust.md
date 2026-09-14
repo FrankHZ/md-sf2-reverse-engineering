@@ -19,8 +19,8 @@ checks are not universal gameplay predicates. The accepted
 | --- | --- | --- | --- |
 | `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
 | `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and five explicit input environment selections | selected encounter, pinned enemy/static definitions, external controlled party/start | initialized common session through actual inactive standby, region activation and set6/set7 pursuit to player control; reached private action operands remain Unsupported |
-| `public-synthetic` | explicit legacy public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
+| `public-synthetic` | explicit `remake/reference/game` project | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
+| `private-local` | explicit `remake/reference/game` project and profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -28,6 +28,15 @@ The runtime always displays the appropriate disclosure:
 - `PRIVATE CONTROLLED BATTLE` with Unknown accounting shown explicitly
 - `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY`
 - `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY`
+
+The ordinary project is `remake/game`, whose GameRoot accepts only `--authored-package <path>` or
+`--private-battle-start <path>`, once and mutually exclusively. No arguments selects the authored yard.
+Unknown or positional arguments, duplicate/conflicting options and missing paths return explicit
+startup ContentError without creating a session or switching routes. Legacy profile options belong to
+`remake/reference/game`. Diagnostic environment selections belong only to the external
+[observer](./development-and-verification.md#ordinary-and-reference-host-startup); they are not game
+options and do not change ordinary routing. Runtime state and both RNG channels still begin only
+through the same Content/Application entry.
 
 ## Public Authored
 

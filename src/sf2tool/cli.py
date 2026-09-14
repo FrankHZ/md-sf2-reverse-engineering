@@ -226,7 +226,7 @@ from sf2tool.h3.story_state import verify_story_state
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
-from sf2tool.harness import build_adapter, verify, verify_engine
+from sf2tool.harness import build_adapter, build_reference_host, verify, verify_engine
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
@@ -333,6 +333,9 @@ def build_parser() -> argparse.ArgumentParser:
     verify_commands.add_parser("engine", help="locked build and unit tests of engine behavior only")
     verify_commands.add_parser(
         "adapter", help="locked product adapter build without Godot execution"
+    )
+    verify_commands.add_parser(
+        "reference-host", help="locked build of the explicit legacy/reference Godot host"
     )
     verify_plan = verify_commands.add_parser(
         "plan", help="plan affected verification partitions for a committed Git range"
@@ -1446,6 +1449,9 @@ def dispatch(args: argparse.Namespace) -> None:
         elif args.verify_command == "adapter":
             validate_verify_plan_args(args)
             build_adapter()
+        elif args.verify_command == "reference-host":
+            validate_verify_plan_args(args)
+            build_reference_host()
         else:
             verify(
                 rom_path=args.rom_path,

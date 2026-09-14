@@ -93,6 +93,23 @@ exploration is implemented. Shared battle rules and the authored Content reader 
 responsibility directories. Fixed receipt counts, round positions, kill order, expected terminal
 snapshots and comparison IDs have no role in the authored engine's admission or command path.
 
+## Explicit Godot Reference Host
+
+[`game/Main.tscn`](./game/Main.tscn) and
+[`Sf2.Remake.Reference.Godot.csproj`](./game/Sf2.Remake.Reference.Godot.csproj) retain the actual
+Map3Root/private compositions, presenters, asset admission and smoke drivers formerly compiled by the
+ordinary game. Their implementation and history admission remain legacy consumers, not a second
+common engine. Only Map3Root’s common-game selection was removed; the ordinary
+[`GameRoot`](../game/src/GameRoot.cs) owns that source/session composition.
+
+Select `--path remake/reference/game` for existing legacy arguments or `--map3-smoke`. The existing
+Godot reference-test project and public-synthetic import/export tool target this host. Build it with
+`uv run sf2 verify reference-host`; normal `verify adapter` has no Reference dependency. The
+[startup/verification owner](../docs/development-and-verification.md#ordinary-and-reference-host-startup)
+provides direct commands. Private native recipes must select this project while reusing the retained
+installation and inputs; no legacy whole-suite replay follows from the move.
+
+
 ## Private startup callers and removal boundaries
 
 [ADR0019's private-admission dependency decision](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#private-battle-admission-dependency-boundary)
@@ -102,11 +119,11 @@ the current calls that prevent deletion; all paths are relative to this assembly
 
 | Current owner and caller | Keep until / removal condition |
 | --- | --- |
-| `Readers/PrivateOriginalBattle01StartupReader` is constructed by [`Map3Root`](../game/src/Map3Root.cs); its `Admit` is called by `Sessions/Battle01/PrivateOriginalBattle01Startup.PreparePrivateOriginalBattle01Startup` | Delegates file identity, decode and semantic parsing to production `Content/Scenarios/PrivateBattleEncounterReader`; duplicate bodies are removed. Keep the legacy projection/port until the startup binding consumes the common Content/session path; private trust checks survive that removal. |
+| `Readers/PrivateOriginalBattle01StartupReader` is constructed by [`Map3Root`](game/src/Map3Root.cs); its `Admit` is called by `Sessions/Battle01/PrivateOriginalBattle01Startup.PreparePrivateOriginalBattle01Startup` | Delegates file identity, decode and semantic parsing to production `Content/Scenarios/PrivateBattleEncounterReader`; duplicate bodies are removed. Keep the legacy projection/port until the startup binding consumes the common Content/session path; private trust checks survive that removal. |
 | Production [`Content/Decoding/StackCompressedGraphicsDecoder`](../src/Sf2.Remake.Content/Decoding/StackCompressedGraphicsDecoder.cs) serves the new encounter reader and retained `PrivateOriginalMap3VisualPayloadReader` | One unchanged calculator is shared through Reference→Content and narrow internal access. Its former reference path is removed; the map visual reader remains for M3. |
 | `Content/Battle01/OriginalBattle01StartupDefinition`, including hardcoded `OriginalBattle01GizmoBaseline`, feeds `PrivateOriginalBattle01Initialization.ProjectBattle01Initialization` | Projects the immutable Application `BattleEncounterDefinition` after Content admission. Exact selected identity/scene and supported numeric symbol checks stay in this comparison projection. The common entry now loads pinned enemy definitions with source baseline separate from effective stats; this old baseline still serves the legacy initializer. Remove the DTO/projection with its final initializer/comparison consumer; retain source identity verification in Content. |
 | `Fixtures/Battle01/OriginalBattle01ControlledPartyPreset` and controlled return/arrival inputs feed startup, physical/healing accounting and recovery/return histories | Move controlled setup values and expected trajectories to external reference data supplied through the common entry as the corresponding consumer migrates. IDs, missing-value supplements and receipt/terminal expectations never become Domain admission. The real party inventory, spells, class and stats are preserved. |
-| `Rules/Battles/Battle01Initialization`, `Battle01FirstRound`, `Battle01FirstControl` and matching `Sessions/Battle01` wrappers are called by [`PrivateBattle01Ui.Apply`](../game/src/PrivateBattle01Composition.cs) at startup | The common standalone entry now computes initialization/activation/first-player control. Enemy ATT, polygon/assigned-region and control-classifier bodies delegate to production rules; retain comparison projections only while existing callers use them. Shared turn generation alone does not replace the chain. |
+| `Rules/Battles/Battle01Initialization`, `Battle01FirstRound`, `Battle01FirstControl` and matching `Sessions/Battle01` wrappers are called by [`PrivateBattle01Ui.Apply`](game/src/PrivateBattle01Composition.cs) at startup | The common standalone entry now computes initialization/activation/first-player control. Enemy ATT, polygon/assigned-region and control-classifier bodies delegate to production rules; retain comparison projections only while existing callers use them. Shared turn generation alone does not replace the chain. |
 | `Battle01PlayerMovement`, `Battle01EnemyStandby`, `Battle01EnemyPursuit`, both physical rules, `Battle01PlayerHealing`, `Battle01TurnCompletion` and corresponding session methods serve later `PrivateBattle01Ui` branches | Migrate actual class/equipment/AI/action dependencies through common commands, then delete each matching Godot scheduling branch and session wrapper with its final consumer. Source movement/strike/reward/RNG calculations already shared stay single-owned; preset/history checks move to reference comparisons. |
 | `Sessions/Battle01/PrivateOriginalBattle01Admission` and startup preparation retain a pending original-map snapshot, idle bridge/locomotion and F401 state; recovery/return/arrival wrappers retain early context | M3 must replace the real map/start program and bridge handoff; M4 must replace the reached outcome/recovery/return path. A standalone controlled private battle cannot justify deleting these callers or claiming natural Map3 continuity. Retire the legacy `Sessions.GameSession` and startup selection only with their last actual consumer. |
 
