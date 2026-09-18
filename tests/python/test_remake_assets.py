@@ -17,8 +17,8 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from sf2tool import remake_asset_build, remake_assets
+from sf2tool.bounded_process import ProcessReceipt
 from sf2tool.compression import BasicDecodeResult, StackDecodeResult
-from sf2tool.remake_godot import ProcessReceipt
 
 HOOK_BYTES = (
     b"#!/bin/sh\n"

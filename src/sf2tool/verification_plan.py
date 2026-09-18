@@ -268,14 +268,6 @@ PARTITIONS = (
         ),
     ),
     VerificationPartition(
-        "remake-godot",
-        "remake",
-        "Hash-locked official Godot import, public-synthetic run, export, and cleanup gate.",
-        ("uv run python -m sf2tool.remake_godot",),
-        parallel_safe=False,
-        resource_lock="godot-remake-runtime",
-    ),
-    VerificationPartition(
         "h1-original",
         "affected",
         "Bit-perfect original rebuild and source/toolchain identity.",
@@ -321,7 +313,7 @@ PARTITIONS = (
 PARTITIONS_BY_ID = {partition.partition_id: partition for partition in PARTITIONS}
 H2_PARTITION_IDS = tuple(H2_COMMAND_GROUPS)
 H3_PARTITION_IDS = tuple(H3_PROFILE_PARTITIONS.values())
-REMAKE_PARTITION_IDS = ("remake-dotnet", "remake-godot")
+REMAKE_PARTITION_IDS = ("remake-dotnet",)
 EVIDENCE_PARTITION_IDS = ("h1-original", *H2_PARTITION_IDS, *H3_PARTITION_IDS)
 ARTIFACT_PREFIXES = (
     "manifests/extractions/",
@@ -643,13 +635,6 @@ def _select_dependents(
                 pending.append(dependent)
 
     matched = False
-    if "sf2tool.remake_godot" in seen:
-        _selection_entry(
-            selected,
-            "remake-godot",
-            f"{path} reaches sf2tool.remake_godot",
-        )
-        matched = True
     if "sf2tool.harness" in seen:
         _selection_entry(selected, "h1-original", f"{path} reaches sf2tool.harness")
         matched = True
@@ -671,7 +656,6 @@ ENGINE_WIRING_PATHS = frozenset(
         "src/sf2tool/cli.py",
         "src/sf2tool/harness.py",
         "src/sf2tool/verification_plan.py",
-        "src/sf2tool/remake_godot.py",
         "src/sf2tool/remake_exploration_content.py",
         "remake/reference/inputs/map3-programs.json",
     }
@@ -880,11 +864,6 @@ def plan_paths(
             _selection_entry(selected, "remake-dotnet", normalized)
             continue
 
-        if normalized == "src/sf2tool/remake_godot.py":
-            _selection_entry(selected, "tooling-python", normalized)
-            _selection_entry(selected, "remake-godot", normalized)
-            continue
-
         if normalized == ".github/workflows/public-checks.yml":
             for partition in (
                 "engine-unit",
@@ -977,7 +956,6 @@ def plan_paths(
 
         if normalized in {"pyproject.toml", "uv.lock", ".python-version"}:
             _selection_entry(selected, "tooling-python", normalized)
-            _selection_entry(selected, "remake-godot", normalized)
             _select_all(selected, EVIDENCE_PARTITION_IDS, f"shared toolchain input: {normalized}")
             continue
 

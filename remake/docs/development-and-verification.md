@@ -733,7 +733,7 @@ and assembly code still select only `reference-host-build`. Shared product/build
 actual downstream hosts.
 
 Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
-engine-only wiring change in those shared modules or the retained `remake_godot.py` host binding,
+engine-only wiring change in those shared modules,
 inspect the actual diff and use:
 
 ```powershell
@@ -754,26 +754,14 @@ do not rerun it just to replace a known upstream-availability failure with green
 evidence-harness change, release boundary, or explicit full-parity request. An ordinary engine slice
 does not inherit it. Test/gate wall time and earlier SHA changes do not by themselves invalidate results.
 
-## Local Official Godot Gate
+## Retired Official Godot Gate
 
-The existing runner is still available for an actually affected import, source/export execution or
-process-lifecycle boundary:
-
-```powershell
-uv run python -m sf2tool.remake_godot
-```
-
-Its maintained project is now `remake/reference/game`; it verifies only the explicit public-synthetic
-reference host, not ordinary game packaging. It verifies [toolchain.json](../toolchain.json), creates editor/template and project
-scratch, performs locked restore/build, imports, runs source smoke, exports, runs exported smoke,
-checks the output boundary and reaps its owned processes. Explicit `--toolchain-root`,
-`--scratch-parent`, `--manifest-path` and `--project-path` remain available. This runner has not been
-changed into a reusable live-debug session by the documentation audit.
-
-Select it only when that particular lifecycle contract is needed. Repeated behavior observations use
-the existing installation/project/instance instead; running this scratch-producing pipeline for each
-check would violate the reuse policy. Any future runner change is separately owned and verified by
-the needed actual launch, without new tests of the runner. Public CI does not launch native Godot.
+The former `sf2tool.remake_godot` import/export gate verified only the explicit public-synthetic
+reference host, not ordinary game packaging, and is retired together with that profile. Its bounded
+native process runner now lives in `sf2tool.bounded_process` for the asset candidate builder. No
+maintained gate verifies ordinary package/export contents; claim none without an actually executed,
+separately owned export check. Repeated behavior observations use the existing
+installation/project/instance.
 
 ## Private-Local Smoke Routing
 
@@ -805,7 +793,7 @@ Shared product/build inputs select engine and both hosts; engine tests select en
 selects the ordinary adapter. The exact `remake/reference/inputs/battle01-player-ready.json` and `battle01-actions.json` inputs
 select engine for its direct Engine.Tests consumer; other `remake/reference/` paths select the
 explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select
-research. Workflow and shared CLI/harness/planner or retained Godot-tool host-binding changes select
+research. Workflow and shared CLI/harness/planner changes select
 all four. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
 is introduced. M1's consumed authored JSON lives under `remake/content/`, which conservatively selects all product/host builds.
