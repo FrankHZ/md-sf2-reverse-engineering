@@ -134,12 +134,32 @@ public sealed class PrivateBattleOutcomeProgramTests
         Assert.Contains(observations, row => row.Kind == "level");
         Assert.True(observations.Any(observation => observation.Kind == "battle-outcome" && observation.Detail == "Victory"),
             "The actual battle must reach victory.");
-        Assert.DoesNotContain(401, session.Current.Story.Flags); Assert.Contains(501, session.Current.Story.Flags);
+        // Accepted R4a static spine: the comparison reads its flags, join row and ordered steps.
+        using var spine = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "victory-return.json")));
+        var victory = spine.RootElement.GetProperty("victoryReturnSpine");
+        var body = victory.GetProperty("victoryBody");
+        int unlocked = body.GetProperty("unlockedFlag").GetInt32(), completed = body.GetProperty("completedFlag").GetInt32();
+        var steps = body.GetProperty("orderedSteps").EnumerateArray().Select(step => step.GetString()).ToArray();
+        Assert.True(Array.IndexOf(steps, "ExecuteAfterBattleCutscene") < Array.IndexOf(steps, "ClearFlag") &&
+            Array.IndexOf(steps, "ClearFlag") < Array.IndexOf(steps, "SetFlag"));
+        Assert.Equal(["BattleLoop", "SwitchMap", "ExplorationLoop"],
+            victory.GetProperty("mainLoopReturn").GetProperty("orderedSteps").EnumerateArray().Select(step => step.GetString()));
+        Assert.DoesNotContain(unlocked, session.Current.Story.Flags); Assert.Contains(completed, session.Current.Story.Flags);
         var program = session.Definition.Exploration!.Programs["abcs-battle01"];
         Assert.Equal(Enumerable.Range(0, program.Instructions.Count), observations.Where(row => row.Program?.Program == program.Id)
             .Select(row => row.Program!.Value.Instruction).Distinct().Order());
-        Assert.True(observations.FindIndex(row => row.Kind == "after-battle-join") < observations.FindIndex(row => row.Kind == "battle-unlock-cleared"));
-        Assert.True(observations.FindIndex(row => row.Kind == "battle-unlock-cleared") < observations.FindIndex(row => row.Kind == "battle-completed-set"));
+        int lastAfterProgram = observations.FindLastIndex(row => row.Program?.Program == program.Id);
+        int join = observations.FindIndex(row => row.Kind == "after-battle-join");
+        int clear = observations.FindIndex(row => row.Kind == "battle-unlock-cleared");
+        int set = observations.FindIndex(row => row.Kind == "battle-completed-set");
+        int switchMap = observations.FindIndex(row => row.Kind == "exploration-return-started");
+        int exploration = observations.FindIndex(row => row.Kind == "battle-returned");
+        Assert.Equal(victory.GetProperty("afterBattleJoin").GetProperty("battle01RowValue").GetInt32().ToString(System.Globalization.CultureInfo.InvariantCulture),
+            observations[join].Detail);
+        Assert.Equal(unlocked.ToString(System.Globalization.CultureInfo.InvariantCulture), observations[clear].Detail);
+        Assert.Equal(completed.ToString(System.Globalization.CultureInfo.InvariantCulture), observations[set].Detail);
+        Assert.True(lastAfterProgram < join && join < clear && clear < set && set < switchMap && switchMap < exploration,
+            $"after-program {lastAfterProgram}, join {join}, clear {clear}, set {set}, switch {switchMap}, exploration {exploration}");
         Assert.Equal("map-57", session.Current.Exploration!.Map.Value);
         Assert.Equal(session.Current.Story.OutcomeReturn!.Position, session.Current.Exploration.PlayerEntity.Position);
         Assert.Equal(3, session.Current.Exploration.PlayerEntity.Motion.Facing);
