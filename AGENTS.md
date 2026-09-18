@@ -177,9 +177,9 @@ blanket gate or test-preservation wording in this guide, ADRs, runbooks, and his
 
 [ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) owns the adopted direction
 and current M0/M1 boundaries. `uv run sf2 verify engine` runs the dedicated Domain/Application/Content
-behavior unit project; `uv run sf2 verify adapter` compiles the actual adapter and its temporary
-reference consumer. Common-session authored battles are implemented; production projects must not
-depend on reference data/classes. Retire each legacy family with its M2/M3 capability migration. Main-gate owns remote
+behavior unit project; `uv run sf2 verify adapter` compiles the actual adapter. M5 retired the
+transitional reference runtime, host and legacy test projects; `remake/reference/inputs` holds only
+external controlled comparison inputs. Production projects must not depend on reference data. Main-gate owns remote
 required-check configuration and independent integration. Research and genuinely shared changes
 retain their affected evidence requirements; an engine-only slice does not inherit Phase 2's profile.
 

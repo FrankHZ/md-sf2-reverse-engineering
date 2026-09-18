@@ -5,7 +5,6 @@ using Sf2.Remake.Domain.Maps;
 [assembly: InternalsVisibleTo("Sf2.Remake.Application")]
 [assembly: InternalsVisibleTo("Sf2.Remake.Content")]
 [assembly: InternalsVisibleTo("Sf2.Remake.Engine.Tests")]
-[assembly: InternalsVisibleTo("Sf2.Remake.Reference")]
 
 namespace Sf2.Remake.Domain.Battles;
 

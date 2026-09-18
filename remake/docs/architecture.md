@@ -40,29 +40,29 @@ attack-then-approach strategy scores all reachable physical targets in reverse p
 shared `PhysicalTargetRules` for signed raw-priority cohorts, class selection and movement ties.
 The existing class definition supplies source identity only for admitted named classes; missing
 identity rejects a reached critical comparison. Regular movement fixes the class table; content
-cannot supply an independent rank. Source thinking, scoring and selection are shared with reference
-consumers. `AttackThenApproachAi` sequences that decision and its zero-target continuation: unavailable
+cannot supply an independent rank. Source thinking, scoring and selection have one production owner.
+`AttackThenApproachAi` sequences that decision and its zero-target continuation: unavailable
 HEAL1/SUPPORT fail, then MOVE1 succeeds with movement or origin Stay. `AiMovementRules` owns the shared
-stable cost selector, source decreasing-cost walk and radius station search used by production and
-the actual reference pursuit/standby callers. The existing movement commit and action publisher apply
+stable cost selector, source decreasing-cost walk and radius station search used by authored and
+private pursuit/standby. The existing movement commit and action publisher apply
 the chosen destination once. MOVE1 draws no RNG and leaves last-target memory and resources unchanged;
 physical rewards are required only on the reached attack branch. High or incomplete target costs
 remain Unsupported, as does wider AI. Private region activation has its separate bounded owner below.
-Shared strike/reward functions remain the calculation owners; reference DTOs only project their
-results. Semantic observations carry both actor and target for reversal. Dead combatants retain
+Shared strike/reward functions remain the calculation owners. Semantic observations carry both actor and target for reversal. Dead combatants retain
 identity/HP/kill-and-defeat accounting but have no
 battlefield position; occupancy and presentation read that authoritative state.
 The [current M1 boundary](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 adds movement/cancellation, common session/content admission and connected authored battles.
 Profile-specific snapshots, fixed import checks, endpoint handlers and old Godot battle dispatch
-remain only in the named transitional reference consumers below; A1–A8 remain open. Public/private trust
+were retired with the reference runtime at
+[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation);
+A1–A8 closure remains tracked by the audit. Public/private trust
 and the incomplete accepted 8C/H4 target remain distinct from this migration.
 
 Encounter deployments own explicit `BattleFaction` and unique integer `ProcessingOrder`; intrinsic
 actor definitions and session starts do not duplicate those roles. The definition sorts deployments
 once for stable round RNG, AI candidates and adapter selection. Runtime actors derive faction/order
-from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Source
-slots remain in the actual reference projection into the same typed turn calculator. Faction drives
+from their deployment; queue entries identify actors by `ActorRef` with a nullable sentinel. Faction drives
 healing/opposition/rewards independently of order. Deployments also own `BattleControl` separately from
 `BattleAiStrategy`; intrinsic actor definitions carry neither assignment. Player requires no strategy;
 automatic authored actors explicitly select Stay or AttackThenApproach. Private source orders remain
@@ -71,15 +71,15 @@ admission and reusable start preserves ally/player and enemy/automatic bounds pl
 MOV requirements. The advancer consumes explicit combinations and never defaults an unknown policy to
 Stay. The native view projects each actor’s current AI memory and immutable source anchor; there is no second control copy.
 Actor definitions separately own numerical `Agility` (0–127) and boolean `ExtraRoundAction`.
-Live-start capacity and shared generation consume explicit eligibility; only the actual reference
-projection decodes raw high-bit semantics. The ordinary three draws and optional two draws at the
+Live-start capacity and shared generation consume explicit eligibility; only private Content decodes
+the raw source byte's low seven bits and high-bit eligibility. The ordinary three draws and optional two draws at the
 truncated five-sixths basis retain source arithmetic and signed sentinel ordering. The existing
 advancer consumes both entries without an additional scheduler or physical double/counter changes.
 
 `PhysicalCriticalRule` owns the two supported immutable chance/bonus definitions; Content selects
 one from explicit semantic fields rather than a packed prowess number. Every actual hit, including
 reversed counters, reads its attacker's selected rule. The scalar strike calculator already takes
-mathematical operands and remains unchanged, as do its original/reference source mappings. Other
+mathematical operands and remains unchanged, as do its private source mappings. Other
 physical fields retain their existing semantic ownership; no generalized profile system is introduced.
 
 `BattleTerrain` holds immutable surface and independent protection; layout glyphs resolve through
@@ -90,10 +90,9 @@ array; friendly traversal and occupied stopping remain movement policy. Godot pr
 existing placeholder colors without supplying gameplay properties.
 
 `WeightedMovement` consumes decoded signed cell costs, preserving its one first-admission/LIFO bucket
-algorithm and explicit logical/reference row-boundary choice. The real reference movement entry
-alone converts original terrain flags/indices and its selected source mover table; player/pursuit/
-standby callers retain their source data. Private Content maps the selected raw terrain to these
-semantic surfaces while retaining the complete source encounter for later consumers.
+algorithm with logical row boundaries; the original flat-storage probe across a row seam is not
+reproduced. Private Content maps the selected raw terrain to these semantic surfaces while retaining
+the complete source encounter for later consumers.
 
 ## Initialized Private Entry
 
@@ -120,8 +119,7 @@ RNG state. Later failures preserve earlier completed commands and the failing qu
 
 Godot selects this source with `--private-battle-start`; the existing battle view sends the same
 movement/cancel commands and projects private origin and Unknown accounting. `SourceEnemyAi` uses
-`AiStandbyRules` for anchor-relative standby and `AiMovementRules.Pursue` for active set6/set7. The real
-reference standby and pursuit callers consume these same calculations. The source legal grid feeds
+`AiStandbyRules` for anchor-relative standby and `AiMovementRules.Pursue` for active set6/set7. The source legal grid feeds
 the common movement commit, and `BattleActionCommitter` publishes each completed action once.
 Per-enemy memory/activation, retained region flags, cleared tested mask and independent thinking RNG
 remain live state; no round or receipt admits a turn. An actual physical cohort uses Content-bound prowess, weapon range/effects and enemy gold through
@@ -129,9 +127,7 @@ remain live state; no round or receipt admits a turn. An actual physical cohort 
 dodge while retaining terrain protection. Explicit controlled start accounting enables ordinary
 rewards/deaths; unknown required counters reject atomically. `BattleActionCommitter` emits one
 after-turn pass for each continuing action, whose admitted status/equipment require no further change. Terminal actions enter the outcome program before any after-turn or queue advance.
-The connected map programs and Battle01 outcome/return use the common session. The old initialization/round/control wrappers still serve independent
-legacy callers, but their enemy ATT arithmetic, polygon/assigned-region operations and control
-classifier now delegate to these shared rules.
+The connected map programs and Battle01 outcome/return use the common session.
 
 ## Production Assemblies
 
@@ -145,28 +141,24 @@ Godot's [map viewport](../game/src/Battles/BattleMapViewport.cs) owns disposable
 and framing derived from the action's origin, preview path and target. It pans and, when necessary,
 zooms to keep that context visible; no map size or actor placement is restricted by HUD coordinates.
 The view arranges a separate scrollable HUD beside the map in wide windows and below it in narrow
-windows. Authored UI follows the actual viewport; the explicit legacy composition retains its own
-window policy. A target-cycle cursor stores only the last attempted UI candidate, so an engine range
+windows. Authored UI follows the actual viewport. A target-cycle cursor stores only the last attempted UI candidate, so an engine range
 rejection cannot trap navigation. The accepted target remains exclusively in the session snapshot.
 
-The old scenario-bound implementation is isolated in the separate
-[transitional reference assembly](../reference/README.md), with no reverse project dependency from
-production Domain/Application/Content. Its inventory names current consumers and M2/M3 retirement
-points for controlled presets, import/trust mapping, actual story handlers and fixed comparisons.
-New authored sessions never require a Map3/Battle01 class or ADR0009 trace field. This isolation does
-not complete private battle continuation or program migration, or close A1–A8. M5 is remaining cleanup only.
+The old scenario-bound implementation, its Godot host and the legacy test projects were retired at M5.
+Only external controlled comparison inputs remain under [`reference/`](../reference/README.md). New
+sessions never require a Map3/Battle01 class or ADR0009 trace field. Retirement does not close A1–A8,
+natural continuity or 8C/H4.
 
 | Assembly | Current responsibility | Dependency direction |
 | --- | --- | --- |
-| `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/physical/reward/range/turn/movement rules; retained reusable map/layout/item reducers | .NET base libraries only |
+| `Sf2.Remake.Domain` | typed immutable battle state, RNG/healing/physical/reward/range/turn/movement rules; working layout, block-copy, traversal, setup selection, entity allocation and motion reducers | .NET base libraries only |
 | `Sf2.Remake.Application` | thin `Runtime.GameSession`, common contracts, independent command dispatcher and automatic battle advancer, typed scenario port | Domain |
 | `Sf2.Remake.Content` | authored and selected private input admission, source definition resolution, numeric and capability validation | Application and Domain |
 | `Sf2.Remake.Godot` | ordinary GameRoot startup, common battle input/view projection and lifecycle; read-only state diagnostics | Application, Content, Domain and Godot only |
-| `Sf2.Remake.Reference.Godot` | explicit Map3/legacy composition and remaining private programs/observations, including old smoke drivers | Reference plus Application, Content, Domain and Godot; no ordinary-game dependency |
 
 Dependencies point inward. Tests and repository gate hosts are consumers, not production dependencies.
 
-## Ordinary and Reference Godot Hosts
+## Ordinary Godot Host
 
 [`game/Main.tscn`](../game/Main.tscn) binds [`GameRoot`](../game/src/GameRoot.cs). Its actual compile
 items are the ordinary composition and common battle views, with only the three production project
@@ -175,14 +167,13 @@ path. Unknown, duplicate, conflicting and missing-path options fail before any s
 The external GDScript observer owns `SF2_OBSERVATION_*` settings; the game never parses diagnostic
 case/output/shape options. The read-only view endpoint remains ordinary diagnostic support.
 
-[`reference/game/Main.tscn`](../reference/game/Main.tscn) binds the retained Map3Root in
-[`Sf2.Remake.Reference.Godot`](../reference/game/Sf2.Remake.Reference.Godot.csproj). Its legacy source,
-synthetic resource and smoke drivers are outside the ordinary project. Existing Godot reference tests,
-public-synthetic import/export verification and private native recipes target that explicit project.
-Normal adapter CI builds the ordinary project; a separate reference-host job builds these remaining
-callers. Export configuration excludes ordinary probes; a complete ordinary package/export is not
-claimed. The opening/messenger G3/G4 consumers now use common programs, physical entity slots with logical aliases, joined/active flags, followers and typed presentation completions. Their legacy endpoint writers are removed; later castle/tower/return comparisons use an explicit controlled reference start. Remaining G3/G4 stay with their actual program/content consumers; G6 and bounded private action binding use the common player interface. H cycles actual learned
-spells/levels; selection and resources remain session authority. No second gameplay scheduler or state authority was introduced.
+The reference host and its public-synthetic import/export smoke were retired at M5. Export configuration
+excludes ordinary probes; a complete ordinary package/export is not claimed. The opening/messenger,
+castle/tower, Battle01 entry and outcome consumers use common programs, physical entity slots with
+logical aliases, joined/active flags, followers and typed presentation completions. G6 and bounded
+private action binding use the common player interface. H cycles actual learned spells/levels;
+selection and resources remain session authority. No second gameplay scheduler or state authority
+was introduced.
 
 ## State and Command Flow
 
@@ -209,76 +200,27 @@ fresh runtime actors; definitions contain no instantiated actor state, seeds or 
 encounter deployments remain content, while controlled position overrides belong to start inputs.
 The [implemented split and remaining model work](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#authored-definitions-and-explicit-session-starts)
 supports the initialized private entry above. Content does not mutate a running session.
-The following private protocol belongs to the separate legacy reference consumer. For its canonical Map 3 port, the import definition is the sole owner of the selected setup's
-ordered entity population and the private snapshot exposes that exact immutable object. Content maps
-source-shaped records to stable resource/ordinal identities, raw and masked coordinates, opaque facing
-and map-sprite values, and a defensively owned opaque tail. Application does not receive source
-addresses and does not promote those bytes into visibility, walking, action, interaction, or rendering
-rules.
+## Retired Legacy Implementation
 
-The public-synthetic and private-local profiles share the assembly direction and Godot host. They do
-not share a weaker content reader or silently convert one profile into the other.
-
-## Legacy Reference Implementation Shape
-
-The isolated reference implementation remains a legacy controlled-route engine. It has useful deterministic
-Domain reducers, validated public/private readers, and one named `GameSession` facade, but the
-[audit](./architecture-audit.md) identifies incomplete architectural boundaries:
-
-- public-synthetic and private-local APIs/snapshots diverge behind the facade;
-- fixed import/party presets and reference-history predicates constrain ordinary battle actions;
-- some story handlers assign accepted endpoints instead of running the reached program;
-- `PrivateBattle01Composition` schedules rounds and individual turns in Godot;
-- scenario-specific snapshot fields and allowlists amplify unrelated changes.
-
-The [capability matrix](./capability-status.md) owns current support. The
-[Map 3 implementation/reference record](./map03-playability-plan.md) owns each selected input,
-method, controlled state, reproduction and Unsupported boundary. Those details describe current
-code; copying them into a general engine would preserve the audited defects.
-
-Private startup currently admits canonical maps and selected Battle01 exports before initializing
-one battle snapshot. Live battle state owns roster, terrain/occupancy, phase, RNG and turn order;
-older map snapshots remain frozen provenance. Current movement preview/confirmation/cancellation,
-combat and return methods have their named controlled domains. They do not yet implement ADR 0019's
-common command model or general configurable content loader.
-
-The public tactical micro-battle uses project-authored simplified rules and is not an SF2 oracle.
-Keep private/source trust separate from authored configuration while migrating actual overlapping
-gameplay through the same state/rule path. Neither current fixed package identities nor source
-record ordinals define universal gameplay legality.
+The controlled-route reference engine audited in the [architecture audit](./architecture-audit.md) —
+divergent public-synthetic/private-local facades, fixed presets and history predicates, endpoint
+assignments and Godot-owned turn scheduling — was retired at M5 after every reached private capability
+ran through the common session. Its last state is available at the accepted pre-M5 base
+[`8a581a82`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/README.md). The
+[Map 3 implementation/reference record](./map03-playability-plan.md) remains historical evidence of
+those controlled routes, not current code or an acceptance rule. The public tactical micro-battle used
+project-authored simplified rules and was never an SF2 oracle.
 
 ## Target Internal Delegation
 
 ### Godot host
 
-The ordinary `GameRoot` only selects a common source and attaches `BattleSessionView`.
-The separate reference host’s `Map3Root` still needs to converge on composition and lifecycle as
-its actual gameplay consumers migrate.
-Internal replaceable collaborators may own:
-
-- `Map3InputAdapter`: public-synthetic `InputMap` actions to semantic Application commands plus
-  private-local movement polling to one existing semantic Domain direction (**implemented**);
-- `Map3Presenter`: public-synthetic authoritative snapshot to a bounded internal view model, nodes, and
-  labels (**implemented**);
-- `PrivateMap3Presenter`: display-only private-local/unavailable plans plus authoritative private
-  snapshot to diagnostic nodes, status, and the existing typed traversal viewport (**implemented**;
-  smoke only reads its current projection);
-- `PublicSyntheticMap3SmokeDriver`: the deterministic public command script, stable observation
-  serialization, smoke-only failure projection, and quit (**implemented**); and
-- `PrivateMap3SmokeDriver`: the deterministic private command script, four stable observation markers,
-  smoke-only failure projection, and quit over an already-started session (**implemented**).
-
-Legacy profile selection and composition remain in the explicit reference host’s `Map3Root`;
-ordinary `GameRoot` does not compile or call it. Reference public startup consumes tracked
-Godot bytes and the public typed admission result, while private startup alone owns the local path,
-timed source wrapper, and private typed admission result. Unifying those seams would require a profile
-discriminant, optional receipt, callback, or new cross-profile result protocol without removing a real
-authority. Their direct typed branches are the bounded composition root, not incomplete delegation.
+The ordinary `GameRoot` only selects a common source and attaches the common battle or exploration
+view. Startup selection stays inline there because it joins distinct ports and results.
 
 Presentation helpers may directly construct nodes, choose project-authored diagnostic colors, and
 format labels. They remain disposable adapter state and never become another gameplay authority.
-The project-authored private battle bridge binds to the already-admitted private session and controlled
-start, not to a presentation payload. Presentation pack admission remains an outer composition concern.
+Presentation data enters through the prepared private world; admission remains a Content concern.
 
 ### Application facade
 
@@ -321,8 +263,8 @@ extends an existing bounded inspector or observation unless it has an independen
 
 Choose the scope explicitly: an internal behavior-preserving refactor retains meaningful observable
 behavior, while ADR 0019 directs behavioral migration away from fixed histories and incompatible
-runtime paths. M1's common authored battle uses independent runtime collaborators. M2/M3 must
-migrate real rules/content/programs and remove each obsolete reference family with its last caller.
+runtime paths. M1's common authored battle uses independent runtime collaborators. M2/M3/M4 migrated
+real rules/content/programs, and M5 removed the remaining reference families with their last callers.
 
 Use small engine unit assertions for the actual behavior being moved. Retire obsolete structural,
 helper and trace-refusal tests as their owners migrate; there is no requirement to preserve every

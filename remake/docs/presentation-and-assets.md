@@ -2,8 +2,15 @@
 
 - Status: **Proposed**
 - Scope: modern high-DPI presentation and local product-asset boundary for the Godot remake
-- Applies to: the existing `public-synthetic` verification profile and the future product-asset
-  expansion of the explicit `private-local` profile
+- Applies to: the local product-asset repository, its candidate builders, and presentation data embedded
+  in prepared private worlds
+- M5 status: the legacy Godot consumers described below (asset catalog, base viewports, HUD preview,
+  battle bridge, camera and locomotion projections in `remake/reference/game`) and the `public-synthetic`
+  profile were retired with the reference host at
+  [M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
+  Sections describing them are historical at base
+  [`8a581a82`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/docs/presentation-and-assets.md). The asset repository contract,
+  `sf2tool.remake_asset_build`, `sf2tool.remake_assets` and prepared-world rasters remain current.
 
 ## Purpose
 
@@ -19,12 +26,9 @@ model, and preserves the thin-Godot direction in
 [Architecture](./architecture.md). It does not claim original camera, composition, timing, final pixels,
 or complete fidelity.
 
-The currently implemented `private-local` profile remains the bounded traversal/base-view capability
-described by [Capability Status](./capability-status.md). It may mount the reviewed local HUD frame and
-tactical cursor only through an explicit request. The frame remains a chrome-only diagnostic without
-the project-authored battle bridge; with that bridge, it projects one typed pending ENTER/STAY choice
-and one additive Active-state cursor ring driven only by typed `HasCursor`. Those narrow consumers do
-not reclassify the profile as complete product presentation.
+The common host renders map atlases, source sprites and portraits embedded in a prepared private world
+(see [Exploration and programs](./exploration-programs.md#presentation-and-private-content)). That
+bounded rendering does not reclassify the profile as complete product presentation.
 
 ## Decision Summary
 
@@ -44,8 +48,8 @@ not reclassify the profile as complete product presentation.
    local-only asset Git repository. Keep reproducible cache, scratch, previews, Godot import state,
    and machine paths ignored. The main code Git repository owns consumption interfaces, closed
    schemas/tooling, and minimal project-authored test fixtures, not product resource payloads.
-6. Keep the tracked `public-synthetic` content as a test and smoke profile. It is not the product art,
-   music, or presentation source.
+6. Keep tracked project-authored packages as test content. They are not the product art, music, or
+   presentation source. (The former `public-synthetic` smoke profile was retired at M5.)
 
 ## Coordinate and Scale Model
 
@@ -606,13 +610,10 @@ implementation slice.
 
 ## Public Synthetic and Test Fixtures
 
-The tracked `public-synthetic` profile remains a redistribution-safe architecture, command, snapshot,
-smoke, and export verifier. Project-authored fixtures may exercise dimensions, animation counts,
-missing assets, bucket selection, cache drift, safe areas, and cue-to-resource mapping.
-
-Fixtures and synthetic presentation are never selected as product content. Tests must prove that an
-explicit local product request cannot fall back to them while reporting success. Existing stable smoke
-receipts remain unchanged until a separately accepted compatibility migration.
+The `public-synthetic` smoke/export profile was retired at M5. Project-authored fixtures may still
+exercise dimensions, animation counts, missing assets, bucket selection, cache drift, safe areas, and
+cue-to-resource mapping. Fixtures and synthetic presentation are never selected as product content,
+and an explicit local product request cannot fall back to them while reporting success.
 
 ## Godot Ownership and Migration
 
@@ -647,7 +648,7 @@ Godot owns resource loading, Theme application, viewport projection, and disposa
 Application owns semantic presentation/audio cues. Domain owns game rules. No asset migration may move
 gameplay authority into a scene, resource, filename, or animation callback.
 
-The shared public-synthetic/private-bridge tactical panel keeps its existing fixed 960-by-540 layout.
+Historical (retired at M5): the shared public-synthetic/private-bridge tactical panel kept its fixed 960-by-540 layout.
 Its project-authored title is an exact two-line label with automatic wrapping disabled, so the Godot
 fallback font cannot turn the title into a clipped third line. This is a bounded readability fix, not
 an admitted product font, Theme, original battle title, or presentation-fidelity claim.
@@ -674,6 +675,8 @@ interaction, admitted product font/input glyphs, or a general Theme. Those chang
 owned, reviewable implementation slices.
 
 ## Current runtime castle base view
+
+Historical: this section describes the legacy reference castle views retired at M5.
 
 The required visual selection belongs to each immutable runtime. Application's exact catalog
 admission checks Maps 3/19/20/21/40 independently, including custom import-source ports. The base
@@ -745,6 +748,9 @@ no screenshots or additional editor/environment installation are needed.
 
 ## Diagnostic Battle01 launch and native review
 
+Historical: the private-local arguments and Map40/Map57 diagnostic launch below belonged to the reference
+host retired at M5. Current Battle01 play uses `--private-exploration-start` or `--private-battle-start`.
+
 Apply the current [runtime-state acceptance and instance reuse rules](./development-and-verification.md#scope)
 before using any recipe below. Earlier image instructions describe retained historical workflows;
 do not generate, compare or inspect screenshots for current acceptance. Reuse completed state/input
@@ -812,7 +818,7 @@ Its effective-stat policy is explicit in the
 Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
 
 Current verification selection belongs to the
-[development guide](./development-and-verification.md#private-local-smoke-routing). The former native
+[development guide](./development-and-verification.md#scope). The former native
 mode-by-mode capture lists and source-copy recipes are retained in Git at
 `9fb9727e260416a54aeb3421454e610e00884ed5`, not as instructions to generate more images or replay all
 earlier routes. The [Map 3 record](./map03-playability-plan.md) retains the selected reference inputs,

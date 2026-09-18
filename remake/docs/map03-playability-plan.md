@@ -1,8 +1,9 @@
 # Map 3 Playability Plan
 
-The retained Map3 implementation and native recipes in this record belong to the explicit
-`remake/reference/game` host. Use that project for legacy profile/smoke arguments; the ordinary
-`remake/game` entry uses the common engine. See the [current host boundary](./architecture.md#ordinary-and-reference-godot-hosts).
+Historical record: the Map3 implementation, `remake/reference/game` host and native recipes described
+here were retired at [M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation). Their code remains in Git at base
+`8a581a82e297ea2947cc9837e661752163d2806d`; the ordinary `remake/game` entry uses the common engine.
+See the [current host boundary](./architecture.md#ordinary-godot-host).
 
 
 Status: Legacy implementation and controlled-reference record; not an active feature queue.
@@ -408,7 +409,7 @@ The fourth admitted runtime contains `Map21s1_Layout` (address 680900; 4096 word
 Area 1 spans `(0,0)..(11,21)`, foreground offset `(0,22)`, background `(0,0)`, both parallax
 pairs `(256,256)`, zero autoscroll, main layer type 0 and music 38. Application checks the exact
 layout, collision, block, full area and population projection identities in
-[OriginalMapRuntimeAdmission](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapRuntimeAdmission.cs).
+[OriginalMapRuntimeAdmission](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Content/Maps/OriginalMapRuntimeAdmission.cs).
 Custom source ports and changed Map 21 visual selections must satisfy the same admission.
 
 Both movement entrypoints require the open castle gate, controlled palace completion and Astral
@@ -584,7 +585,7 @@ presentation-driven RNG and natural counterattack reach remain **Unknown**.
 
 **Confirmed:** the existing
 `ReachRealRoundTenChester(ChesterPlayerAttackComparison, null, null)` helper in the
-[startup tests](../tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs)
+[startup tests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Content.Tests/PrivateOriginalBattle01StartupReaderTests.cs)
 replays startup and all79 actual receipts through public Application operations. Its named preset is
 `private-local-battle01-chester-player-attack-exp0-inputs-v1`, with early seed/copy1234, Bowie
 EXP0/kills0/gold0 and Chester EXP0. The endpoint is R10/raw0 Chester2 at(11,14), HP9/EXP10/kills
@@ -693,7 +694,7 @@ The owning Domain tests cover halving before spread, the14-draw chain, reversed 
 unsupported inputs, receipt forgery and late replay/finalization failure. Application tests reject
 late declared-accounting mismatch, stale and duplicate requests without publishing the primary hit.
 The required Content test owns the real prefix, target cancel/reselect and actual subsequent control.
-The [native probe](../tests/native/Map19Map20AtlasReviewProbe.cs) uses mode `chester-counterattack`
+The [native probe](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/native/Map19Map20AtlasReviewProbe.cs) uses mode `chester-counterattack`
 for physical/API equivalence and the two ordered HP effects, EXP30 and actual Sarah movement/cancel.
 Use the [verification owner](./development-and-verification.md) for committed gates and shared-view
 fanout; inspect actual PNGs and retain any completed failures for narrow correction.
@@ -1816,7 +1817,7 @@ palette 8/slots `[94,98,99,255,255]`. Its `setupRoute` and `animationTable` are 
 Both layer origins are `(0,0)`, both parallax pairs are `(256,256)`, autoscroll is zero, type is 255,
 and music is 34; these are input data, not executed presentation. Preserve absent setup as absent;
 do not manufacture `ms_map57`, an init identity, or an empty source entity list. The current
-[exploration runtime](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapExplorationRuntimeDefinition.cs)
+[exploration runtime](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Content/Maps/OriginalMapExplorationRuntimeDefinition.cs)
 requires all three. Its five accepted runtime contracts should stay intact.
 
 Keep the Map 57 area separate from the [CheckBattle candidate contract](../../docs/design/contracts/map-entry-routing-state.md):
@@ -1829,8 +1830,8 @@ fixture through focused tests, as a bounded code-owned contract rather than a ne
 The [battle lifecycle](../../docs/design/contracts/battle-control-lifecycle.md),
 [cutscene routing](../../docs/research/battle-cutscenes.md), and admission fixture own the clear-F88
 new-battle order, before/start program identities, region clear, ally/enemy initialization, load, and
-first-round order. The existing [battle bridge](../reference/Sf2.Remake.Reference/Sessions/Maps/PrivateOriginalMapBattleBridge.cs)
-wraps `PublicSyntheticBattleDefinition`; its [tactical model](../reference/Sf2.Remake.Reference/Rules/Battles/TacticalBattle.cs)
+first-round order. The existing [battle bridge](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/Maps/PrivateOriginalMapBattleBridge.cs)
+wraps `PublicSyntheticBattleDefinition`; its [tactical model](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Rules/Battles/TacticalBattle.cs)
 has one player/one enemy and a maximum grid dimension of 16. Neither can represent the admitted
 3-ally/6-enemy, 16-by-20 Battle 01 simply by changing IDs or enlarging the grid limit.
 

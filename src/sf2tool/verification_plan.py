@@ -226,13 +226,6 @@ PARTITIONS = (
         external_gates=("Public checks / adapter-build",),
     ),
     VerificationPartition(
-        "reference-host-build",
-        "remake",
-        "Explicit reference Godot host compilation without legacy scenario replay.",
-        ("uv run sf2 verify reference-host",),
-        external_gates=("Public checks / reference-host-build",),
-    ),
-    VerificationPartition(
         "research-public",
         "public",
         "Direct public source/document checks for shared gate wiring.",
@@ -705,7 +698,6 @@ def _plan_engine_paths(
             for partition in (
                 "engine-unit",
                 "adapter-build",
-                "reference-host-build",
                 "research-public",
             ):
                 _selection_entry(selected, partition, path)
@@ -714,24 +706,15 @@ def _plan_engine_paths(
         elif path.startswith("remake/tests/"):
             # Legacy/reference test edits or retirement do not run the old solution.
             continue
-        elif path == "remake/reference/inputs/map3-post-opening-reference-start.json":
-            _selection_entry(selected, "reference-host-build", path)
-        elif path in {
-            "remake/reference/inputs/battle01-player-ready.json",
-            "remake/reference/inputs/battle01-actions.json",
-            "remake/reference/inputs/map3-opening-party.json",
-        } or (path.startswith("remake/reference/inputs/map") and path.endswith("-start.json")):
-            # Copied by Engine.Tests and consumed by the actual private engine facts.
+        elif path.startswith("remake/reference/inputs/"):
+            # External controlled starts copied by Engine.Tests and read by the common host.
             _selection_entry(selected, "engine-unit", path)
-        elif path.startswith("remake/reference/"):
-            _selection_entry(selected, "reference-host-build", path)
         elif path.startswith("remake/game/"):
             _selection_entry(selected, "adapter-build", path)
         else:
             # Shared runtime/configuration roots build every actual downstream host.
             _selection_entry(selected, "engine-unit", path)
             _selection_entry(selected, "adapter-build", path)
-            _selection_entry(selected, "reference-host-build", path)
     return {**_selection_rows(selected, set()), "scope": "engine"}
 
 
@@ -803,7 +786,6 @@ def plan_paths(
             for partition in (
                 "engine-unit",
                 "adapter-build",
-                "reference-host-build",
                 "research-public",
             ):
                 _selection_entry(selected, partition, normalized)
@@ -868,7 +850,6 @@ def plan_paths(
             for partition in (
                 "engine-unit",
                 "adapter-build",
-                "reference-host-build",
                 "research-public",
             ):
                 _selection_entry(selected, partition, normalized)
@@ -986,7 +967,6 @@ def plan_paths(
             for partition in (
                 "engine-unit",
                 "adapter-build",
-                "reference-host-build",
                 "research-public",
             ):
                 _selection_entry(selected, partition, normalized)

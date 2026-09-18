@@ -24,7 +24,7 @@ project decisions belong in their owning tracked documents.
   on 2026-08-28 under
   [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md). The tracked [`remake/`](./remake/)
   project now contains plain-C# Domain and Application assemblies, validated public/private Content
-  adapters, and a Godot host. Its current public-synthetic and private-local Map 3 capabilities
+  adapters, and a Godot host. Its current authored and private-local Map 3 through Battle 01 capabilities
   and retained Unknowns are summarized by the [remake capability owner](./remake/docs/capability-status.md).
   The accepted first playable milestone is still one continuous scenario from Map 3 through
   completion of Battle 01 under
@@ -35,10 +35,11 @@ project decisions belong in their owning tracked documents.
 
 The [state/content-driven engine direction](./docs/decisions/0019-state-and-content-driven-remake-engine.md)
 is adopted. The common session now runs two authored battle packages through movement, cancellation,
-HEAL/STAY, automatic AI waiting and natural rounds. Production rules and content do not depend on the
-[transitional reference implementation](./remake/reference/README.md). Private battle/program migration
-and A1–A8 remain open; the [current M1 boundary](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
-names implemented support and limitations. Tests cover actual engine behavior; reference/probe/gate
+HEAL/STAY, automatic AI waiting and natural rounds, and the connected private world runs the Map 3
+opening through Battle 01 outcome and return. The transitional reference implementation was retired at
+[M5](./docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation); only
+[controlled comparison inputs](./remake/reference/README.md) remain. A1–A8 closure, natural continuity
+and 8C/H4 remain open. Tests cover actual engine behavior; reference/probe/gate
 programs are used directly without another test layer. Old tests may migrate or retire by behavior.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
@@ -274,8 +275,8 @@ contract. A future remake must use placeholders or properly licensed assets for 
   Map 3-through-Battle 01-completion milestone are accepted as the eventual acceptance target;
   Research/Design gap audits, main-gate readiness, and H4 remain open for that target. The user
   explicitly authorized a bounded implementation start on 2026-08-28 under ADR 0016. The current
-  `remake/` includes bounded public-synthetic and private-local Map 3 runtime capabilities across the
-  four accepted layers, without claiming the eventual milestone, original presentation, or H4. Those
+  `remake/` includes bounded authored and private-local Map 3 through Battle 01 runtime capabilities
+  across the four accepted layers, without claiming the eventual milestone, original presentation, or H4. Those
   eventual acceptance gaps are not default prerequisites for continuing an authorized bounded slice.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.

@@ -40,17 +40,17 @@ the common path.
 
 | Finding | Implemented response | Still open |
 | --- | --- | --- |
-| A1/A7 | Common HEAL/physical/AI/death/growth/outcome legality follows live state and loaded definitions. Connected Battle01 play uses actual commands without receipt or kill-order guards. | Broader actions, status/equipment and other outcomes; remaining independent legacy action comparisons. |
+| A1/A7 | Common HEAL/physical/AI/death/growth/outcome legality follows live state and loaded definitions. Connected Battle01 play uses actual commands without receipt or kill-order guards. | Broader actions, status/equipment and other outcomes. |
 | A2 | Validated authored and selected private definitions/programs enter production Content. Controlled initial values and provenance remain explicit. | Original natural input producers and broader content families. |
 | A3 | Common opening, castle/tower, full before/after-battle and ordinary-defeat programs execute instructions, waits and source return/init. Matching legacy endpoint/outcome/return writers are removed. | Other native/program branches and full original presentation. |
-| A4/A5 | Application owns one live session across exploration/battle/outcome/return; Godot projects actual waits and semantic input. | Remaining independent reference-host startup/action consumers and global G3/G4 closure. |
-| A6 | Immutable runtime state carries actor progress through return and re-entry. Migrated receipt chains and arrival projections are removed with last callers. | Remaining frozen reference contexts and their consumers. |
+| A4/A5 | Application owns one live session across exploration/battle/outcome/return; Godot projects actual waits and semantic input. | Remaining G3/G4 program/content consumers; the reference host was retired at M5. |
+| A6 | Immutable runtime state carries actor progress through return and re-entry. Migrated receipt chains and arrival projections are removed with last callers. | None from the reference runtime (retired at M5); broader state families as capabilities grow. |
 | A8 | Typed Content/rule/program failures survive the actual host; negative scratch/wait cases retain exact reasons. | Broader invariant/adapter failure lifecycle and original profiles. |
 
-The [reference inventory](../reference/README.md) names retained controlled inputs, independent
-startup/action/scalar/geometry comparisons and removal conditions. Production projects have no
-Reference dependency. The selected Battle01 outcome/program group and its actual native observations
-do not close original natural continuity, A1–A8 or8C/H4.
+[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation) retired the reference runtime, host and legacy tests; the
+[reference input inventory](../reference/README.md) names the remaining controlled comparison inputs.
+Production projects have no Reference dependency. The selected Battle01 outcome/program group and its actual native observations
+do not close original natural continuity, A1–A8 or 8C/H4.
 
 ## Findings
 
@@ -62,15 +62,15 @@ unsuitable long-term engine boundary.
 ### A1 — P1: Reference trajectories gate production rules
 
 **Confirmed:** `Battle01PlayerHealing.RequireControl` in
-[`Battle01PlayerHealing.cs`](../reference/Sf2.Remake.Reference/Rules/Battles/Battle01PlayerHealing.cs) requires round 13,
+[`Battle01PlayerHealing.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01PlayerHealing.cs) requires round 13,
 turn offset 4, actor 1, and exactly 102 prior receipts. `RequireSupportOrigin` also requires Sarah's
 specific initial HP, MP, EXP, equipment, and spell values. These conditions execute in production.
 
 `Battle01FirstRound.EnterNext` in
-[`Battle01FirstRound.cs`](../reference/Sf2.Remake.Reference/Rules/Battles/Battle01FirstRound.cs) admits a five-survivor
+[`Battle01FirstRound.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01FirstRound.cs) admits a five-survivor
 continuation only from the named rounds and, for the post-heal case, five exact unit positions.
 `Battle01TurnCompletion.CompleteDefeatedTurn` in
-[`Battle01TurnCompletion.cs`](../reference/Sf2.Remake.Reference/Rules/Battles/Battle01TurnCompletion.cs) only admits
+[`Battle01TurnCompletion.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Rules/Battles/Battle01TurnCompletion.cs) only admits
 the dead enemy 129 slot at round 12/offset 6 with the specified preceding history. Its player attack
 policies separately cap first, second, and Chester's third enemy defeat.
 
@@ -85,11 +85,11 @@ must not silently claim support for a still-unimplemented spell, status, account
 
 ### A2 — P1: Fixed evidence admission substitutes for configurable content
 
-**Confirmed:** [`PrivateOriginalBattle01StartupReader.cs`](../reference/Sf2.Remake.Reference/Readers/PrivateOriginalBattle01StartupReader.cs)
+**Confirmed:** [`PrivateOriginalBattle01StartupReader.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Readers/PrivateOriginalBattle01StartupReader.cs)
 does read JSON, but fixes input digests, three allies, six enemies, specific identities, and selected
-map values. [`OriginalMapRuntimeAdmission.cs`](../reference/Sf2.Remake.Reference/Content/Maps/OriginalMapRuntimeAdmission.cs)
+map values. [`OriginalMapRuntimeAdmission.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Content/Maps/OriginalMapRuntimeAdmission.cs)
 also contains source identities, digests, exact roof/chest/door rows, map IDs, and coordinates.
-[`OriginalBattle01ControlledPartyPreset.cs`](../reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs)
+[`OriginalBattle01ControlledPartyPreset.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Fixtures/Battle01/OriginalBattle01ControlledPartyPreset.cs)
 admits named comparison presets with fixed effective stats and seeds.
 
 **Impact:** changing valid content can require changing runtime C# admission logic. The current private
@@ -116,7 +116,7 @@ open for other original programs and unsupported branches.
 ### A4 — P1: Godot owns part of battle orchestration
 
 **Confirmed:** `PrivateBattle01Ui.DispatchNext` in
-[`PrivateBattle01Composition.cs`](../reference/game/src/PrivateBattle01Composition.cs) chooses next-round entry,
+[`PrivateBattle01Composition.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/game/src/PrivateBattle01Composition.cs) chooses next-round entry,
 dead-slot completion, enemy pursuit/attack/standby, and return to player control. It calls the
 Application mutation methods, so this finding is not a claim that Godot directly writes HP or RNG.
 
@@ -129,9 +129,9 @@ or unsupported-capability boundary. Godot should submit semantic input and prese
 
 ### A5 — P1: The session facade contains incompatible runtime paths
 
-**Confirmed:** [`GameSession.Apply`](../reference/Sf2.Remake.Reference/Sessions/GameSession.cs) throws when
+**Confirmed:** [`GameSession.Apply`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/GameSession.cs) throws when
 the session uses the private original-map path. That path has separate movement and battle methods.
-Its [constructor](../reference/Sf2.Remake.Reference/Sessions/Maps/OriginalMapGameSession.cs) sets `_snapshot` to
+Its [constructor](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/Maps/OriginalMapGameSession.cs) sets `_snapshot` to
 null and `_mapContext` to `null!`; the public `Snapshot` property is consequently unavailable.
 Exploration, battle, and return observations also require path-specific accessors.
 
@@ -149,7 +149,7 @@ unrelated inputs through a weaker reader to obtain superficial API uniformity.
 
 ### A6 — P2: Scenario-specific snapshot construction amplifies changes
 
-**Confirmed:** [`PrivateOriginalMapSessionSnapshot`](../reference/Sf2.Remake.Reference/Sessions/Maps/OriginalMapGameSession.cs)
+**Confirmed:** [`PrivateOriginalMapSessionSnapshot`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/Maps/OriginalMapGameSession.cs)
 has 32 constructor parameters, including Sarah, entity 142, messenger, castle-gate, palace-visit, and
 other scenario-specific state/receipts. Ordinary movement reconstructs the snapshot by individually
 preserving or clearing those arguments. The constructor also validates relationships among these
@@ -167,7 +167,7 @@ untyped property bag or a second writable state owner.
 
 **Confirmed:** the healing change in Git object `7d51ff6fa` updates existing enemy attack, player attack,
 next-round, and dead-turn Application handlers to also accept `SarahHealComparisonId`. The current
-[`player attack handler`](../reference/Sf2.Remake.Reference/Sessions/Battle01/PrivateOriginalBattle01PlayerPhysicalAttack.cs)
+[`player attack handler`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/Battle01/PrivateOriginalBattle01PlayerPhysicalAttack.cs)
 selects kill policies using preset names, actor identity, and the live number of deaths.
 
 **Impact:** adding healing requires edits to existing attack and round admission even where those
@@ -179,7 +179,7 @@ Test-case identity must not be the routing key for unrelated production actions.
 
 ### A8 — P2: Runtime diagnostics erase useful failure distinctions
 
-**Confirmed:** [`PrivateOriginalBattle01PlayerMovement.cs`](../reference/Sf2.Remake.Reference/Sessions/Battle01/PrivateOriginalBattle01PlayerMovement.cs),
+**Confirmed:** [`PrivateOriginalBattle01PlayerMovement.cs`](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Sessions/Battle01/PrivateOriginalBattle01PlayerMovement.cs),
 the player attack handler, and other handlers catch `ArgumentException`, keep its `ParamName`, and
 replace its message with a generic rejection. The called Domain code uses that exception family for
 both unsupported/invalid actions and history/state invariant checks. Runtime rejections also reuse

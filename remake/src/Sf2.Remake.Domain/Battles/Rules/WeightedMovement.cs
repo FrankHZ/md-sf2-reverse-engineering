@@ -16,7 +16,7 @@ internal static class WeightedMovement
 {
     // Mover/terrain/occupancy interpretation belongs to callers; this is one propagation algorithm.
     internal static WeightedMovementGrid Build(IReadOnlyList<sbyte> cellCosts,
-        int startOffset, int budget, bool preserveFlatRowNeighbors = false)
+        int startOffset, int budget)
     {
         if (cellCosts.Count != 2304 || startOffset is < 0 or >= 2304 || budget is < 0 or > 510)
             throw new ArgumentException("Movement requires a complete cell-cost grid and a bounded MOV*2 budget.", "movement");
@@ -33,9 +33,9 @@ internal static class WeightedMovement
             {
                 // Deliberately bounds-check before reading, unlike the original unsafe probe chronology.
                 if (neighbor is < 0 or >= 2304 || admitted[neighbor]) continue;
-                // Authored logical maps never join the right edge to the next row's left edge.
-                // The legacy source comparison explicitly retains its flat storage probes.
-                if (!preserveFlatRowNeighbors && Math.Abs(neighbor - current) == 1 && neighbor / 48 != current / 48) continue;
+                // Logical maps never join the right edge to the next row's left edge. The original flat
+                // storage probe across that seam is not reproduced; it is not a claim about reached terrain.
+                if (Math.Abs(neighbor - current) == 1 && neighbor / 48 != current / 48) continue;
                 int cost = cellCosts[neighbor];
                 if (cost < 0 || cost > remaining) continue;
                 admitted[neighbor] = true; // First admission; never relax an already admitted cell.
