@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for eventual continuous-milestone acceptance; not a default blocker for a separately authorized implementation start
-- Accepted evidence baseline: `3aef44e39a86be470ad17f52a2680e5938b487fc`; original findings
+- Accepted evidence baseline: `ffc3f64d7c1ace4accc41eaf0c31cbf4ccb9e04f`; original findings
   retain the exact provenance in their linked owners and fixtures.
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
@@ -246,7 +246,7 @@ without turning evidence-owned exact values into product choices.
 | natural battle/cutscene | **Accepted: 3A chronology, with placeholder subclause superseded by 7C/8C** | R2c owns static admission topology; R2d observes before/start returns and first ready state only after the declared bridge; natural admission, wholly natural state, and rendered timing remain open |
 | completion endpoint | **Accepted: 5B first stable controllable post-after-program state** | exact return map/location/state remains Research-owned; `D4=1` alone is insufficient |
 | save/load | **Accepted: 6A excluded** | restart returns to the admitted snapshot; later save support is a separate milestone |
-| player control and UI | **Accepted: 4A/9A manual agency and modern accessible logical controls** | exact reached actions/input trace and executable accessibility assertions remain open |
+| player control and UI | **Accepted: 4A/9A manual agency and modern accessible logical controls** | product 9A is implemented and directly observed; exact original reached actions/input trace and continuous H4 accessibility composition/execution remain open |
 | assets | **Accepted: 7C private-local originals only** | ignored private provenance/inventory must close; public distribution remains blocked without rights/replacements |
 | visual/audio parity | **Accepted: 8C frame/audio/hardware-exact** | full reached pixel/palette/frame/audio/chip/VInt/DMA/CRAM/VDP evidence and H4 definitions remain open |
 | RNG and action trace | **Accepted: one deterministic H4 reference trace** | R3a–R3d own static control/action/completion/finalization topology only; viable seed and reached logical trace remain open, and ordinary interactive play is not scripted |
@@ -294,14 +294,25 @@ or an accepted additional 10A waiver. Compare the selected domain, implement mis
 seek an explicit product decision before excluding a mismatch. The selected tier stays **8C**;
 a private-input difference or unavailable capture never silently selects 8A.
 
-**Confirmed implementation gap:** current
-[`GameRoot`](../../../remake/game/src/GameRoot.cs) accepts only the three session-start path options;
-[`ExplorationSessionView`](../../../remake/game/src/Exploration/ExplorationSessionView.cs) and
-[`BattleSessionView`](../../../remake/game/src/Battles/BattleSessionView.cs) handle fixed keyboard keys.
-The full 9A keyboard/gamepad remapping, confirm/cancel convention and flash/text configuration is
-not implemented. This is an independently actionable product requirement, not an original-evidence
-question. Remake can implement it on the current common session, with direct input/state/projection
-checks and explicit accessibility deviations; it need not wait for replay recovery or claim 8C.
+**Confirmed product implementation and direct observation:** accepted
+[9A implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/445) supplies shared
+configurable keyboard/gamepad actions across exploration, dialogue/choices, battle and return,
+Confirm/Cancel convention swapping, reduced white flashes and instant/adjustable text. The
+[capability owner](../../../remake/docs/capability-status.md) and
+[native 9A observation owner](../../../remake/docs/development-and-verification.md#native-9a-observation)
+define the accepted boundary and reproduction. Startup settings expose these choices; there is no
+in-game settings UI or automatic settings save. Reduced-flash suppresses the white overlay while
+retaining service duration and the same cue token/kind completion. Text reveal preserves the real
+acknowledgement and choice waits.
+
+Accepted direct observations cover default and remapped/swapped keyboard/gamepad, two authored
+worlds/actors, paired flash/text behavior, and a private continuous session from opening through
+Battle01 victory to usable return with remapped/swapped gamepad. The private case uses instant text and ordinary flashes;
+the authored cases own the paired accessibility comparison. These are injected actual Godot input
+events, not physical controller-driver or hot-plug acceptance. Complete export packaging remains
+unverified. These existing results are reused without rerunning them. Product 9A is implemented and
+directly observed; composition into continuous H4 definitions and their execution remain open.
+The intentional 9A/10A deviations do not establish natural original continuity or exact 8C parity.
 
 Accepted M5 at
 [`9301ddac`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/9301ddac0e07fd2c5a87caeb19c69179025d0698)
@@ -327,7 +338,7 @@ proceed using accepted static facts; missing runtime values stay unfilled.
 | Original natural route and reference evidence — Research | Accepted runtime capability and scenario transport; ADR 0014 question admission below; frozen trace and provenance | Accept only observed natural route, reached battle/actions, after-program, 5B endpoint and named 8C captures. Update existing RA rows with exact fixtures/commands; unobserved surfaces stay open. A failed/partial run stops at its typed result. |
 | Continuous-scenario contract — Design | Accepted Research values for every asserted continuous boundary | Proposed `docs/design/contracts/map3-battle01-continuous-scenario.md` composes admitted start, natural route/admission, winning logical trace, after-program and exact endpoint. Prepare structure now; final evidence-bound acceptance waits for the required observations. Derive associations from evidence, never all 26 aggregate Map3 rows. |
 | H4 definitions — Design | Continuous contract plus accepted Research comparison domains/provenance and ADR 0010 deviations | Specify each layer's input, observation, expected value/owner, exactness/tolerance, failure/unavailable and cleanup rules. Future `schemas/h4/` and `tests/fixtures/h4/` identities/registrations are selected by that slice, not invented here. Definitions can be prepared alongside the contract but cannot claim missing evidence. |
-| 9A input/accessibility implementation — Remake | Accepted 9A product behavior and current common session; independent of original replay recovery | Expose and apply keyboard/gamepad mappings, confirm/cancel convention, flash/text modes across exploration/battle/return. Verify logical decisions, acknowledgements and completion with real input/state/projection; leave exact 8C reference separately pending. |
+| 9A input/accessibility — accepted Remake capability; Design/H4 composition remains | Accepted implementation and direct observations above; independent of original replay recovery | Reuse the implemented settings and bounded input/state/projection results. Compose the accessibility assertions into the future continuous H4 definitions and execute them; keep deviations and exact 8C reference separate. Physical controller-driver/hot-plug and export limitations remain. |
 | H4 implementation and execution — Remake/harness | Definitions accepted on main; required supported engine behavior and private inputs available | Consume frozen accepted evidence without launching the original to generate a golden. Run actual state/input/projection and required private comparisons, report every applicable layer and deviation, including failures/unavailable. No screenshots for Godot acceptance. |
 | Final milestone review — main-gate | Research and Design closures plus successful applicable H4 execution | Independently accept the continuous playable 5B endpoint and current 8C profile. A contract, preflight, replay, engine test or child Issue closure alone is insufficient. |
 
@@ -468,7 +479,8 @@ uploads, public-CI requirements, or distributable build contents.
 | exact endpoint state evidenced | OPEN | conditional runtime evidence, then scenario contract |
 | save scope selected | PASS | ADR 0010 option 6A excludes save/load/checkpoint/suspend |
 | accessibility/input product interface selected | PASS | ADR 0010 option 9A |
-| 9A input/accessibility configuration implemented and observable checks composed | OPEN | Remake implementation plus Design H4 definitions; deviations separate from the 8C exact reference run |
+| 9A input/accessibility configuration implemented and directly observed | PASS (bounded) | Accepted Remake capability and native 9A observation owners above; physical controller-driver/hot-plug and complete export are unverified |
+| 9A accessibility assertions composed into continuous H4 and executed | OPEN | Design H4 definitions, then Remake/harness execution; deviations separate from the 8C exact reference run |
 | 7C private-local asset mode and no-public-distribution boundary selected | PASS | ADR 0010 |
 | exact private asset/capture inventory and provenance accepted | OPEN | Research/private-input acceptance; no payload enters Git/public CI |
 | public/distributable asset rights or replacements | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate licensing/replacement decision before any public build |
