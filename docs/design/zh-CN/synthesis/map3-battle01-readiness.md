@@ -212,8 +212,8 @@
 
 | 面与负责所有者 | 入口/依赖 | 完成与停止条件 |
 | --- | --- | --- |
-| Replay 谱系恢复 — Research/tooling | 既有 capability 所有者及保留的真实启动记录 | 只读恢复识别原始账本及匹配首次收据，或记录不可用/不匹配并停止。不初始化账本，不启动模拟器。 |
-| Capability 运行时验证 — Research/tooling | 真实谱系已恢复；精确修正候选；剩余预算已独立准入 | 验证确定性播放/回调/退出/清理行为，独立接受并合并有界结果。33 行 capability 不含场景语义，绝不构成场景证据。 |
+| Replay 谱系恢复 — Research/tooling | 既有 capability 所有者及保留的真实启动记录 | 只读恢复识别完整真实账本及两份实际收据，核对已报告的 ordinal-2 FAIL，或记录不可用/不匹配并停止。不初始化账本，不启动模拟器。 |
+| Capability 运行时验证 — Research/tooling | 完整真实谱系已恢复，ordinal-2 失败/禁令已独立解决；精确候选；预算已独立准入 | 验证确定性播放/回调/退出/清理行为，独立接受并合并有界结果。33 行 capability 不含场景语义，绝不构成场景证据。 |
 | 场景 transport — Research/tooling | 已接受 capability/protocol 所有者；精确选定场景传输需求 | 通过既有机制绑定真实冻结输入传输、声明起点/配置、被动检查点、类型化收据/捕获、超时与清理。离线实现可先于 runtime 恢复，但不准入执行。Capability runtime 接受及场景预算/所有权独立声明之前，停在场景观察之前。 |
 | 原版自然路线及参考证据 — Research | 已接受 runtime capability 与场景 transport；下方 ADR 0014 问题准入；冻结轨迹及溯源 | 只接受实际观察到的自然路线、到达战斗/动作、战后程序、5B 端点及具名 8C 捕获。以精确 fixture/命令更新既有 RA 行；未观察面保持开放。失败/部分运行停在其类型化结果。 |
 | 连续场景合同 — Design | 每个主张连续边界所需的已接受 Research 值 | 提议的 `docs/design/contracts/map3-battle01-continuous-scenario.md` 组合准入起点、自然路线/准入、胜利逻辑轨迹、战后程序与精确端点。现在可准备结构；最终证据绑定验收须等待必要观察。关联从证据派生，不能自动取全部 26 条 Map3 聚合行。 |
@@ -226,9 +226,11 @@
 
 ### 原版 replay 谱系与启动准入
 
-Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF` 与收据 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`。恢复必须找到真实账本行及实际收据字节，用所属校验器核对既有候选/收据身份及原有关系，并保留全部历史失败。合成测试 scratch、重建 JSON、空账本或新输出根均不能替代。当前协调记录尚未报告找回真实账本/首次收据；本计划没有新做私有搜索或验证，也不把该搜索提升为证据。若记录仍缺失或不一致，runtime 路径保持不可用并交回 main-gate 解决具体条件；不能自动重置。
+Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF` 与收据 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`。[当前谱系硬阻断](../../../research/original-reference-replay-capability.md#current-lineage-hard-stop)还记录了已恢复的 Research 与独立 main-gate 工具输出：报告 ordinal-2 进程启动、已完成的超时 FAIL 和清理失败，随后明确禁止 ordinal 3/retry/reset。这些保存的输出是协调记录，不是已恢复的收据/账本字节或原版游戏证据。有界复核没有发现后续真实 ordinal-3 启动；这既不能确立完整历史，也不能证明还有未使用的诊断次数。
 
-已记录候选 preflight `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` 返回 PASS、`ProcessStarts=0`。这是保留的 preflight 结果，不是启动收据或 runtime 兼容性证明，本 docs-only 计划也不复跑它。恢复与新的成功 preflight 是后续启动授权的必要但不充分条件。依据 capability 所有者，只可能剩下 diagnostic ordinal 2；ordinal 3 是冻结验收，要求单一同候选 ordinal-2 PASS、实际收据 hash 校验及匹配 replay digest。不允许第四次启动。新任务、wrapper、scenario ID 或 transport 实现都不能抹去已消耗启动。真正独立的场景切片仍须按 ADR 0015 明确裁定谱系及预算，不能假定重新得到额度。
+恢复必须找到完整真实账本及两份实际收据，用所属校验器核对既有身份与关系，并保留全部失败。合成 scratch、重建 JSON、空账本、保存的输出或新输出根都不能替代真实字节。旧实体工作区已不存在，实际字节仍不可用。本计划没有新做私有搜索或运行时验证。runtime 路径保持阻断，等待完整恢复及 main-gate 独立裁定谱系/预算；文件缺失或恢复本身都不会重置消耗，也不能覆盖先前禁令。
+
+已记录候选 preflight `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` 返回 PASS、`ProcessStarts=0`。这是保留的 preflight 结果，不是启动收据或 runtime 兼容性证明，本 docs-only 修正也不复跑它。不得假定任何 ordinal 可用。Ordinal 3 仍要求单一同候选 ordinal-2 PASS、实际收据 hash 校验及匹配 replay digest；恢复一份报告为 ordinal-2 FAIL 的收据不能满足该条件。没有授权额外诊断、第四次启动或通过任务/wrapper/scenario/transport 重置。真正独立的场景切片仍须按 ADR 0015 明确裁定谱系/预算，不能假定重新得到额度。
 
 ### 有条件运行时问题
 
@@ -236,7 +238,7 @@ Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1
 
 | 问题与验收影响 | 要复用的既有静态证据/轨道 | 独立准入与停止边界 |
 | --- | --- | --- |
-| 冻结传输能否执行声明行/检查点并干净退出？否则后续参考溯源无效。 | 既有 capability materializer、隔离、观察者及场景协议；preflight 只证明结构。 | 真实账本恢复之后的 capability-only runtime 授权；遵守上方剩余 ordinal 规则。停在收据及清理；不产生 R2b/R4b/H4 事实。 |
+| 冻结传输能否执行声明行/检查点并干净退出？否则后续参考溯源无效。 | 既有 capability materializer、隔离、观察者及场景协议；preflight 只证明结构。 | 仅在完整真实谱系恢复且 ordinal-2 失败/禁令已独立解决之后，才可能授权 capability-only runtime；不假定任何 ordinal 可用。停在收据及清理；不产生 R2b/R4b/H4 事实。 |
 | 准入原版状态能否自然经过遗漏 R2a 至 R2b 段，把真实 caller/accounting/RNG 状态带入 Battle01，并沿选定胜利路线完成至可控 5B 端点？这决定 2A/3A/4A/5B 与 RA-02–RA-07/RA-09/RA-12。 | R1/R2/R2a 与 R2d 观察接缝；R2b/R2c/R3a–R3d/R4a 静态 fixture。R2d 写状态 bridge 无法证明遗漏自然段；R4a 在探索执行前停止。既有 remake 观察者依据 live state 选动作，不是可准入的原版冻结 replay 轨迹。 | Research 先说明哪个已接受轨道可覆盖，以及静态拓扑为何不能建立实际到达的 caller state。优先一个批量准入场景；任何新 fixture 都须显式给出轨道复用结论。启动前冻结轨迹/起点/种子，不注入 live state、不自适应输入。首个类型化失败、预算上限或声明稳定端点即停止。 |
 | 8C 应比较哪些精确到达的像素/调色板、节奏/动画、波形/芯片时序及 VInt/DMA/CRAM/VDP 行为？这决定 RA-11 与 H4 第 9 层。 | 既有图形/音频/资源及局部硬件所有者；复用准入场景捕获与被动观察接缝。资源身份及现代服务无法建立运行时时序/输出。 | 任何进程启动前定义到达域、捕获方法/溯源与确定性条件。尽可能复用同一准入 replay；另开启动/fixture 须满足三项门禁及独立显式所有权，预算不能重置。若已接受工具链无法观察选定域则停止，报告不可用，绝不降为 8A。 |
 
@@ -318,7 +320,7 @@ Phase 4 的受追踪实现与 CI 应消费公开合同与项目自有 fixture。
 | 8C 视觉/音频/硬件一致性层已选择 | PASS | ADR 0010 |
 | 完整到达的 8C 证据、捕获域与容差已接受 | 开放 | 条件研究/私有参考验收，然后连续 H4 合同 |
 | 连续 H4 验收面与可执行检查定义已接受 | 开放 | 连续合同之后的 Design H4 定义 |
-| 原版 replay 谱系与运行时 capability 已接受 | 开放 | Research/tooling；需要真实已消耗账本及收据 |
+| 原版 replay 谱系与运行时 capability 已接受 | 开放 | Research/tooling；需要完整真实账本/收据及对 ordinal-2 失败/禁令的裁定 |
 | 场景 transport 与自然参考证据已接受 | 开放 | Research；纯数据 API/preflight 不充分 |
 | 连续场景合同已接受 | 开放 | Design，消费已接受 Research |
 | 所有适用重制 H4 层与偏差执行成功 | 开放 | Remake/harness 后由 main-gate 独立验收；与定义就绪分开 |

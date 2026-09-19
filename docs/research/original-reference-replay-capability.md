@@ -77,7 +77,9 @@ Ordinals 1 and 2 are diagnostics; ordinal 3 is frozen acceptance. Ordinal 1 is a
 consumed by candidate SHA-256 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF`
 with receipt SHA-256 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`.
 Before any corrected launch, the runner validates that immutable ledger row's candidate, path, and
-receipt bytes. The corrected candidate may use only diagnostic ordinal 2; ordinal 3 requires its
+receipt bytes. These are nominal sequence rules, not proof of remaining launch availability; the
+[lineage hard stop below](#current-lineage-hard-stop) also applies. A corrected candidate
+could use diagnostic ordinal 2 only if genuine full lineage establishes that it is unused; ordinal 3 requires its
 single same-candidate ordinal-2 `PASS`, whose ledger receipt hash matches actual receipt bytes, and
 a matching replay digest. There is no nominal reset or fourth launch. `uv run sf2 h3 original-reference-replay-capability
 --preflight-only` performs only static/materialization checks and starts no emulator; the
@@ -163,15 +165,40 @@ The source-backed A/V APIs and hardware gaps are specified in the
 The capability's disabled sound, receipt-only cleanup and fixed observer cannot simply be reused as
 complete capture support.
 
+### Current lineage hard stop
+
 The known corrected preflight candidate
 `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` was reported
-`PASS / ProcessStarts: 0`; it is not runtime evidence. The genuine consumed ordinal-1 ledger and
-receipt bytes remain unavailable. Do not synthesize them from these public identities or repeat a
-search without a new named location. Recovery and independent launch admission remain prerequisites:
-only ordinal 2 diagnostic and ordinal 3 same-candidate frozen acceptance can remain, never a fourth
-launch. A new scenario wrapper or runner does not reset that lineage; a genuinely separate scenario
-requires main-gate's explicit lineage/budget adjudication under the
-[readiness owner](../design/synthesis/map3-battle01-readiness.md#original-replay-lineage-and-launch-admission).
+`PASS / ProcessStarts: 0`; it is not runtime evidence. Genuine ordinal-1 and subsequent receipt/ledger
+bytes remain unavailable.
+
+On 2026-09-19, main-gate recovered two saved coordination tool outputs: Research at
+2026-08-24T18:24:22Z and the then main-gate's independent check at 18:27:01Z. The
+[coordination disposition](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/443#issuecomment-5745697495)
+reports diagnostic ordinal 2 with `processStarted=true`, PID 24800, a completed 120-second timeout
+FAIL and process-tree termination, for candidate
+`DF763993210BCC20C7D0CC6256AC02BD49FAEDD90E93CAA8CF74F4C40F82DCC5`.
+Its reported receipt SHA-256 is
+`5829F6DE7DC4962C0E88ACE3204EFACACFC29EEDFF6C303496FAA4058EDC49FB` (199,263 bytes);
+reported ledger SHA-256 is
+`0E8F4DFD66DF2E50AA0E7AF32AC5AB81F9BCEAD87EFE442851A53555FD770356`, containing ordinal-1 and
+ordinal-2 rows. Observer status was absent, leaving frame/callback facts **Unknown**. Cleanup reported
+WinError 5/access denied on `lua54.dll` and retained the contained toolchain. The contemporaneous
+main-gate rejected acceptance and explicitly prohibited ordinal 3, retry and reset.
+
+These are recovered coordination reports, not recovered receipt/ledger bytes or original-game
+evidence. The old physical checkout is absent. The bounded review found no subsequent actual
+ordinal-3 launch, which does not establish a complete history. **Unknown — complete lineage and
+remaining admission:** ordinal 2 must no longer be presumed unused; no new launch is admitted.
+Recover the full genuine ledger and both actual receipts, preserve all failures, and obtain an
+independent main-gate lineage/budget disposition before any runtime proposal. Recovery alone cannot
+turn the reported ordinal-2 FAIL into the same-candidate PASS required for ordinal 3. Under the current
+rules this runtime path is blocked, not eligible for another diagnostic or frozen acceptance.
+
+Do not synthesize records from public hashes or saved output, repeat searches without a new named
+location, reset consumption or grant a fourth launch. A new task, scenario wrapper or runner cannot
+erase the conflict; a genuinely separate scenario requires explicit lineage/budget adjudication under
+the [readiness owner](../design/synthesis/map3-battle01-readiness.md#original-replay-lineage-and-launch-admission).
 
 ## Reproduction
 

@@ -291,12 +291,17 @@ applies to each question below. These are conditional dossiers, not launch permi
 
 | Caller-dependent question | Static insufficiency and acceptance impact | Rail reuse and boundary |
 | --- | --- | --- |
-| Does the frozen state/prefix admit controllable Map 3 with correct input/frame origin, callbacks and console lifecycle? | Source order cannot prove state-byte compatibility, reached caller or console results; these determine 1A and all reference provenance. | Reuse capability containment and R1/R2 fields; another runner alone does not justify a new fixture. Genuine capability lineage recovery and accepted capability runtime come first. Scenario execution needs explicit main-gate lineage/budget adjudication and frozen material; stop at first typed failure. |
+| Does the frozen state/prefix admit controllable Map 3 with correct input/frame origin, callbacks and console lifecycle? | Source order cannot prove state-byte compatibility, reached caller or console results; these determine 1A and all reference provenance. | Reuse capability containment and R1/R2 fields; another runner alone does not justify a new fixture. Genuine full capability lineage recovery, independent disposition of the reported ordinal-2 FAIL and accepted capability runtime come first. Scenario execution needs explicit main-gate lineage/budget adjudication and frozen material; stop at first typed failure. |
 | Does the original route carry real caller/accounting/RNG state through Battle01 and the natural 5B return? | R2b/R2c/R3/R4a topology and R2d's explicit bridge do not prove natural reach, winning branches or readiness; these determine 2A/3A/4A/5B. | Extend the admitted scenario using R1/R2/R2a/R2d/R4a fields, omitting the state-writing bridge. No separate fixture passes gate part 3 until Research shows why the existing batched rail cannot cover it. Full start/trace/endpoint binding remains required before launch. |
 | Are reached pixels/palette/audio/frame clocks aligned and all required hardware events present? | Static APIs do not prove buffer/callback timing or deterministic capture; this determines RA-11/8C separately from gameplay. | Reuse that same scenario and graphics/sound/interrupt owners. Separate per-domain launches lack part-3 justification. Missing stock clocks/exports are a tooling blocker: a bounded independently accepted interface/pin decision must precede observation. Do not spend a diagnostic to rediscover an absent API. |
 
-Preserve consumed capability ordinal 1 and unavailable genuine ledger/receipt; only ordinal 2 and
-same-candidate ordinal 3 can remain, with no fourth launch or task/runner reset. Preserve failed
+Preserve consumed capability ordinal 1 and the recovered coordination reports of ordinal-2 timeout FAIL in
+the [capability owner](original-reference-replay-capability.md#current-lineage-hard-stop).
+Actual complete ledger/receipt bytes remain unavailable, and the contemporaneous prohibition of ordinal
+3/retry/reset remains unresolved. Saved output is coordination, not original evidence. No ordinal may
+be assumed available; recovery alone cannot convert ordinal-2 FAIL into the same-candidate PASS needed
+for ordinal 3. Main-gate must independently resolve the full lineage/budget; no extra diagnostic,
+fourth launch or task/runner reset is authorized. Preserve failed
 R2b/capability history. #431's completed failures/corrections and #434's independent Chinese-label
 failure are neither rerun nor relabeled here. The next boundary is independently reviewed offline
 materialization or an explicit missing-interface blocker, not a scenario/H4 launch. Main-gate owns
@@ -332,7 +337,7 @@ gh api repos/TASEmulators/BizHawk/contents/waterbox/gpgx/Genesis-Plus-GX?ref=bdd
 
 Read the linked files at those exact commits; save research copies only in explicit worktree-local
 ignored scratch. Do not vendor or republish source or binaries. For this documentation-only audit,
-check links/anchors/tables/fences, sample/H2 identities, source-symbol support, exact two-path ownership
+check links/anchors/tables/fences, sample/H2 identities, source-symbol support, declared path ownership
 and private boundary. Inspect clean committed `uv run sf2 verify plan --base origin/main --head HEAD`
 under the documentation-only policy; no normal/full, SDK, Godot or H3 run is required. This audit
 produces no runtime or H4 result.

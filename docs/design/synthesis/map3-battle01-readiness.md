@@ -332,8 +332,8 @@ proceed using accepted static facts; missing runtime values stay unfilled.
 
 | Surface and accountable owner | Entry/dependency | Completion and stopping condition |
 | --- | --- | --- |
-| Replay lineage recovery — Research/tooling | Existing capability owner and retained actual launch records | Read-only recovery identifies the original ledger plus matching first receipt, or records unavailable/mismatch and stops. It does not initialize a ledger or launch an emulator. |
-| Capability runtime validation — Research/tooling | Genuine lineage recovered; exact corrected candidate; separately admitted remaining budget | Validate deterministic playback/callback/exit/cleanup behavior; independently accept and merge the bounded result. The 33-row capability is non-semantic, never scenario evidence. |
+| Replay lineage recovery — Research/tooling | Existing capability owner and retained actual launch records | Read-only recovery identifies the full genuine ledger and both actual receipts, reconciles the reported ordinal-2 FAIL, or records unavailable/mismatch and stops. It does not initialize a ledger or launch an emulator. |
+| Capability runtime validation — Research/tooling | Full genuine lineage recovered and ordinal-2 failure/prohibition independently resolved; exact candidate; separately admitted budget | Validate deterministic playback/callback/exit/cleanup behavior; independently accept and merge the bounded result. The 33-row capability is non-semantic, never scenario evidence. |
 | Scenario transport — Research/tooling | Accepted capability/protocol owners; exact selected scenario transport requirements | Bind real frozen input transport, declared start/configuration, passive checkpoints, typed receipts/captures, timeout and cleanup through existing mechanisms. Offline implementation can precede runtime recovery; no execution is admitted by it. Stop before scenario observation until capability runtime is accepted and scenario budget/ownership is independently declared. |
 | Original natural route and reference evidence — Research | Accepted runtime capability and scenario transport; ADR 0014 question admission below; frozen trace and provenance | Accept only observed natural route, reached battle/actions, after-program, 5B endpoint and named 8C captures. Update existing RA rows with exact fixtures/commands; unobserved surfaces stay open. A failed/partial run stops at its typed result. |
 | Continuous-scenario contract — Design | Accepted Research values for every asserted continuous boundary | Proposed `docs/design/contracts/map3-battle01-continuous-scenario.md` composes admitted start, natural route/admission, winning logical trace, after-program and exact endpoint. Prepare structure now; final evidence-bound acceptance waits for the required observations. Derive associations from evidence, never all 26 aggregate Map3 rows. |
@@ -356,23 +356,29 @@ changing a CLI entry point does not complete the missing transport or grant a ne
 The capability owner fixes consumed diagnostic ordinal 1 to candidate
 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF` and receipt
 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`.
-Recovery must locate the genuine ledger row and actual receipt bytes, verify their existing
-candidate/receipt identities and original relationship using the owning validator, and preserve all
-prior failures. Synthetic test scratch, reconstructed JSON, an empty ledger or a new output root
-cannot replace them. The current coordination record reports no recovered real ledger/first receipt;
-this plan performs no new private search or validation and does not promote that search to evidence.
-If records remain missing or inconsistent, the runtime path remains unavailable and returns to
-main-gate for a concrete resolution; there is no automatic reset.
+The [current lineage hard stop](../../research/original-reference-replay-capability.md#current-lineage-hard-stop)
+also records recovered Research and independent main-gate tool outputs reporting an ordinal-2
+process start, completed timeout FAIL and cleanup failure, followed by explicit prohibition of
+ordinal 3/retry/reset. These saved outputs are coordination records, not recovered receipt/ledger
+bytes or original-game evidence. The bounded review found no subsequent actual ordinal-3 launch;
+it does not establish a complete history or an unused diagnostic.
+
+Recovery must locate the full genuine ledger and both actual receipts, verify existing identities
+and relationships with the owning validator, and preserve all failures. Synthetic scratch,
+reconstructed JSON, an empty ledger, saved output or a new output root cannot replace those bytes.
+The old physical checkout is absent and actual bytes remain unavailable. This plan performs no new
+private search or runtime validation. The runtime path is blocked pending full recovery and an
+independent main-gate lineage/budget disposition; neither missing files nor recovery itself resets
+consumption or overrides the prior prohibition.
 
 The recorded candidate preflight `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA`
 returned PASS with `ProcessStarts=0`. This is a retained preflight result, not a launch receipt or
-runtime-compatibility proof, and is not rerun by this docs-only plan. Recovery and a fresh successful
-preflight are necessary but not sufficient for any later launch authorization. Under the capability
-owner, only diagnostic ordinal 2 can remain; ordinal 3 is frozen acceptance and requires a single
-same-candidate ordinal-2 PASS, actual receipt-hash validation and matching replay digest. No fourth
-launch is allowed. A new task, wrapper, scenario ID or transport implementation cannot erase already
-consumed launches. A genuinely separate scenario slice needs explicit lineage and budget adjudication
-under ADR 0015, not an assumed fresh allowance.
+runtime-compatibility proof, and is not rerun by this docs-only correction. No ordinal may be assumed
+available. Ordinal 3 still requires a single same-candidate ordinal-2 PASS, actual receipt-hash
+validation and matching replay digest; recovering a reported ordinal-2 FAIL cannot meet that condition.
+No extra diagnostic, fourth launch or task/wrapper/scenario/transport reset is authorized. A genuinely
+separate scenario slice needs explicit lineage/budget adjudication under ADR 0015, not an assumed
+fresh allowance.
 
 ### Conditional runtime questions
 
@@ -384,7 +390,7 @@ typed callback/exit/cleanup failures and the unchanged stop-loss.
 
 | Question and acceptance impact | Existing static evidence / rails to reuse | Independent admission and stop boundary |
 | --- | --- | --- |
-| Does the frozen transport execute the declared rows/checkpoints and exit cleanly? Without that, later reference provenance is invalid. | Existing capability materializer, containment, observer and scenario protocol; preflight proves structure only. | Capability-only runtime authorization after genuine ledger recovery; remaining ordinal rules above. Stop at receipt and cleanup; no R2b/R4b/H4 fact. |
+| Does the frozen transport execute the declared rows/checkpoints and exit cleanly? Without that, later reference provenance is invalid. | Existing capability materializer, containment, observer and scenario protocol; preflight proves structure only. | Capability-only runtime authorization only after full genuine lineage recovery and independent resolution of the ordinal-2 failure/prohibition; no ordinal is presumed available. Stop at receipt and cleanup; no R2b/R4b/H4 fact. |
 | Does the admitted original state naturally traverse the omitted R2a-to-R2b segment, carry the real caller/accounting/RNG state into Battle01, and complete the selected winning route through a controllable 5B endpoint? This determines 2A/3A/4A/5B and RA-02–RA-07/RA-09/RA-12. | R1/R2/R2a and R2d observation seams; R2b/R2c/R3a–R3d/R4a static fixtures. R2d's state-writing bridge cannot prove the omitted natural segment; R4a stops before exploration executes. Existing remake observers choose actions from live state and are not admissible original frozen replay traces. | Research first states which accepted rail can cover the question and why static topology cannot establish reached caller state. Prefer one batched admitted scenario; any new fixture requires an explicit rail-reuse finding. Freeze trace/start/seed before launch, no live state injection or adaptive input. Stop at first typed failure, budget limit or declared stable endpoint. |
 | What exact reached pixels/palette, cadence/animation, waveform/chip timing and VInt/DMA/CRAM/VDP behavior must 8C compare? This determines RA-11 and H4 layer 9. | Existing graphics/audio/resource and local hardware owners; reuse the admitted scenario capture and passive observation seams. Asset identities and modern services cannot establish runtime timing/output. | Define reached domain, capture method/provenance and deterministic conditions before any process starts. Reuse the same admitted replay where possible; a separate launch/fixture needs the three-part gate and its own explicit ownership, without budget reset. Stop if the accepted toolchain cannot observe the selected domain; report unavailable, never reduce to 8A. |
 
@@ -487,7 +493,7 @@ uploads, public-CI requirements, or distributable build contents.
 | 8C visual/audio/hardware parity tier selected | PASS | ADR 0010 |
 | complete reached 8C evidence, capture domain, and tolerances accepted | OPEN | conditional Research/private-reference acceptance, then continuous H4 contract |
 | continuous H4 acceptance surface and executable check definitions accepted | OPEN | Design H4 definitions after the continuous contract |
-| original replay lineage and runtime capability accepted | OPEN | Research/tooling; genuine consumed ledger and receipt required |
+| original replay lineage and runtime capability accepted | OPEN | Research/tooling; full genuine ledger/receipts and ordinal-2 failure/prohibition disposition required |
 | scenario transport and natural reference evidence accepted | OPEN | Research; data-only API/preflight is insufficient |
 | continuous-scenario contract accepted | OPEN | Design, consuming accepted Research |
 | all applicable remake H4 layers and deviations executed successfully | OPEN | Remake/harness then independent main-gate; separate from definition readiness |
