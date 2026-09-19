@@ -4,6 +4,16 @@
 - Decision date: 2026-08-14
 - Scope: first Phase 4 playable milestone and its eventual acceptance evidence gate
 
+## Current acceptance scope
+
+[ADR 0010's current amendment](./0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+supersedes this document's former 8C hardware-exact requirements with 8D gameplay/presentation
+semantics. Natural continuity, the controllable 5B endpoint, private 7C content, 9A/10A and applicable
+H4 evidence/execution remain required. Earlier 8C-specific capture, clock/tolerance and exact-backend
+requirements below are historical, not implementation or completion prerequisites. The old original
+replay path is disabled and is not a mandatory evidence route. Existing failure records, evidence
+labels and ADR 0015 launch limits remain binding; no new observation is authorized by this change.
+
 ## Context
 
 [ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) accepts the Godot 4.7.2 .NET/C# CLI-first

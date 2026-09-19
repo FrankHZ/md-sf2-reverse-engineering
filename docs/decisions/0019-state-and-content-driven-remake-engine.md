@@ -6,6 +6,16 @@
 - Accepted evidence base: `41be8d415322769d4f81cef77998fe35707a3e5e`
 - Problem owner: [architecture and verification audit](../../remake/docs/architecture-audit.md)
 
+## Current acceptance scope
+
+[ADR 0010's current amendment](./0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+supersedes this document's former 8C hardware-exact requirements with 8D gameplay/presentation
+semantics. Natural continuity, the controllable 5B endpoint, private 7C content, 9A/10A and applicable
+H4 evidence/execution remain required. Earlier 8C-specific capture, clock/tolerance and exact-backend
+requirements below are historical, not implementation or completion prerequisites. The old original
+replay path is disabled and is not a mandatory evidence route. Existing failure records, evidence
+labels and ADR 0015 launch limits remain binding; no new observation is authorized by this change.
+
 ## Direction and implementation boundary
 
 Keep the four-assembly deterministic modular monolith and one `GameSession` facade. Make gameplay

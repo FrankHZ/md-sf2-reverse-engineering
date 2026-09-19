@@ -7,6 +7,16 @@
 - Accepted option: **A — deterministic modular monolith with ports and Godot adapters**
 - User acceptance: **Recorded for Option A; acceptance does not start Phase 4**
 
+## Current acceptance scope
+
+[ADR 0010's current amendment](./0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+supersedes this document's former 8C hardware-exact requirements with 8D gameplay/presentation
+semantics. Natural continuity, the controllable 5B endpoint, private 7C content, 9A/10A and applicable
+H4 evidence/execution remain required. Earlier 8C-specific capture, clock/tolerance and exact-backend
+requirements below are historical, not implementation or completion prerequisites. The old original
+replay path is disabled and is not a mandatory evidence route. Existing failure records, evidence
+labels and ADR 0015 launch limits remain binding; no new observation is authorized by this change.
+
 ## Context
 
 [ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) fixes Godot 4.7.2 .NET/C#, a CLI-first
@@ -263,26 +273,17 @@ The composition root owns the current view instances and dependency wiring, but 
 the current game-flow state. No collection of global autoload singletons is allowed to become a
 parallel gameplay model.
 
-The exact 8C profile requires a fidelity presentation backend behind these adapters. Godot remains the
-desktop host, scene compositor, input platform, and capture surface; the fidelity backend must expose
-deterministic pixel/palette/frame, animation/timing, and audio sample/chip/timing observations. It must
-also compare the exact reached VInt/DMA/CRAM/VDP observation values, ordering and chronology, and other
-hardware-observable fields defined by the future accepted H4 contract, using exact comparison or only
-the explicitly field-specific tolerances that contract accepts under ADR 0010. It may use a
-software-produced integer-scale framebuffer or other bounded implementation selected later. This
-observation boundary does not require an emulator or original executable as the gameplay core, and it
-must not move combat, route, or campaign rules into one. If Godot convenience nodes cannot reproduce
-an accepted observable, the adapter reports the capability as unsupported until a reviewed backend
-closes it; it does not relax the 8C golden.
+Under current 8D acceptance, Godot adapters consume presentation intents and expose actual
+scene/dialogue/animation/audio consumption, semantic ordering, completion and input-ready observations.
+Reuse the ordinary host and existing debug/state mechanisms; no hardware-emulation presentation backend
+or exact pixel/palette/frame/sample/chip/VInt/DMA/CRAM/VDP output is required for the milestone.
+The earlier exact-backend requirement is superseded, not an outstanding architecture work item.
+Domain rules stay in the common engine and verification stays outside production gameplay logic.
 
-The backend consumes the bounded state seams in
-[Graphics Service State](../design/contracts/graphics-service-state.md) and
-[Interrupt, DMA, and Trap State](../design/contracts/interrupt-dma-and-trap-state.md); those contracts
-do not themselves supply the still-missing reached pixels, frames, samples, timing, or tolerances.
-
-Interactive views may interpolate or provide accessible presentation only after deterministic state
-has been decided. The exact reference profile disables or records every presentation transformation
-that would change an 8C observable.
+Interactive interpolation and accessible presentation may vary within 8D's excluded clock/rendering
+domain. They must preserve gameplay state, semantic ordering, completion and acknowledgement, with
+9A/10A variants reported separately. A missing required presentation consumer remains Unsupported;
+an excluded hardware observable does not create an Unsupported milestone dependency.
 
 ### 8. H4 Observation Seams
 

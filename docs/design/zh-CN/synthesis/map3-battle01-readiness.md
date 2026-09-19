@@ -10,6 +10,12 @@
 
 > 本文件是 [`map3-battle01-readiness.md`](../../synthesis/map3-battle01-readiness.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
+## 当前验收范围
+
+[ADR 0010 当前修订](../../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)选择 **8D 玩法与呈现语义一致性**，取代旧 8C 硬件精确门槛。逐像素、原版帧节奏/动画时长、波形/芯片及 VInt/DMA/CRAM/VDP 时序不属于本里程碑验收域；改变玩法结果、事件顺序或输入就绪的时序差异仍须比较。7C 私有原版素材、9A 可访问性、10A 偏差、自然路线与 5B 端点继续有效。
+
+下方证据矩阵保留的旧 8C 捕获、原始时序及硬件未知项是研究边界，不再是完成门槛，也不表示已闭合。旧原版回放路径停用，其账本恢复、runtime capability、scenario transport 与完整硬件 API 都不是里程碑前置条件。main-gate 在里程碑 Issue 处置该路径；仅在具体移除/替代实现有必要时拆子 Issue。旧失败与启动禁令不变。新的必要原版观察须针对明确玩法问题，先复用证据，再独立准入用途、方法及谱系/预算；不得通过更名重置。
+
 ## 判断边界
 
 本文档是一份就绪台账。它不拥有原版游戏证据、不定义新场景合同、不选择产品体验、不授权 Phase 4，也不替换它所链接的测试夹具与合同。其目的是说明已接受的 `main` 已经能支持什么、什么仍然开放、谁必须拥有每个闭合，以及最终连续里程碑验收必须检查什么。
@@ -31,7 +37,7 @@
 
 证据审阅复用已接受 #303，不是新的模拟器观察。审阅检查了[准入研究所有者](../../../research/map3-battle01-admission.md)、[H3 fixture](../../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json)、[fixture schema](../../../../schemas/h3/map3-battle01-player-ready-fixture.schema.json)及[校验器](../../../../src/sf2tool/h3/map3_battle01_player_ready.py)。所属复现命令是 `uv run sf2 h2 map3-battle01-admission` 与 `uv run sf2 h3 map3-battle01-player-ready`；本 docs-only 核对不复跑它们。fixture 显式记录 `explicit-controlled-harness-bridge`、`naturalR2bContinuity: false`，并停在 `ControlBattleEntity.after-WaitForVInt-before-input-read`。因此接受有界就绪状态，但自然 R2a 至 R2b 连续性仍为**未知**。
 
-当前重制行为由 [ADR 0019](../../../decisions/0019-state-and-content-driven-remake-engine.md)与[能力台账](../../../../remake/docs/capability-status.md)单独跟踪。已实现公共会话准入、战斗结果及探索返回不建立原版自然连续性或完整 8C/H4 验收。本审阅复用既有 Research 审计，不复跑或关闭其缺口。
+当前重制行为由 [ADR 0019](../../../decisions/0019-state-and-content-driven-remake-engine.md)与[能力台账](../../../../remake/docs/capability-status.md)单独跟踪。已实现公共会话准入、战斗结果及探索返回不建立原版自然连续性或完整 8D/H4 验收。本审阅复用既有 Research 审计，不复跑或关闭其缺口。
 
 ## 就绪分类
 
@@ -53,11 +59,11 @@
 
 [ADR 0009](../../../decisions/0009-first-phase4-playable-slice.md) 接受恰好一个首里程碑：从 Map 3 到 Battle 01 **完成**的连续可玩场景。其最终验收要求研究与设计缺口闭合、主门禁就绪报告与独立用户启动动作。用户已于 2026-08-28 完成该历史实现启动门，见 [`remake/README.md`](../../../../remake/README.md)。战斗进入、初始化、有界实现切片或孤立机制都不能满足该里程碑。
 
-[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md) 接受精确画像 `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`。它选择仅限私有本地的原版资源画像、禁止公开再分发，并要求帧/音频/硬件精确一致性。这些选择闭合产品槽，但扩大了研究、私有溯源与 H4 工作；它们并未使场景就绪。
+[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md) 接受精确画像 `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`。它选择仅限私有本地的原版资源画像、禁止公开再分发，并要求玩法/呈现语义一致性。这些选择闭合产品槽，但不建立缺失研究事实，也未使场景就绪。
 
 因此，在以下所有剩余闭合行被 `main` 接受之前，本台账对于最终连续里程碑保持 **未就绪**。在 ADR 0016 下，其状态本身并不否决另行取得用户授权的有界实现启动。
 
-[ADR 0016](../../../decisions/0016-remake-start-evidence-deferral.md) 控制这项单独的启动政策。它保留本台账的最终验收目标，同时允许用户授权的实现切片只要求其具体所需的已接受所有者。自然连续性、原版参考回放、完整 8C 捕获、连续场景合同与 H4 完成仍是**开放**的验收工作，而不是默认的启动前阻碍。
+[ADR 0016](../../../decisions/0016-remake-start-evidence-deferral.md) 控制这项单独的启动政策。它保留本台账的最终验收目标，同时允许用户授权的实现切片只要求其具体所需的已接受所有者。自然连续性、原版参考回放、必要 8D 观察、连续场景合同与 H4 完成仍是**开放**的验收工作，而不是默认的启动前阻碍。
 
 ## 精确已接受索引审计
 
@@ -138,13 +144,13 @@
 | 探索循环与输入 | [探索控制流](../../contracts/exploration-control-flow.md)、[输入系统](../../contracts/input-system.md)、[地图入口路由状态](../../contracts/map-entry-routing-state.md)、上方 R2/R2a 所有者 | **合同就绪有界运行时前缀**与局部交接；现代逻辑控制/可访问性已有**已接受产品决定** | 跟随者就绪等待之后的自然延续及后续输入/结果时序仍为**未知/推迟** |
 | 对话与交互 | [对话系统](../../contracts/dialogue-system.md)、[精灵对话属性数据](../../contracts/sprite-dialogue-property-data.md)、[文本与字体系统](../../contracts/text-and-font-system.md)、[立绘窗口状态](../../contracts/portrait-window-state.md)、上方 R2a 所有者 | **合同就绪静态接缝与有界 messenger 运行时结果**；私有本地原版文本已有**已接受产品决定** | 后续对话/程序效果、可见正文、说话者/窗口呈现、时序及连续性仍为**未知/推迟** |
 | 野外菜单与 UI | [探索控制流](../../contracts/exploration-control-flow.md)、[窗口系统](../../contracts/window-system.md)、[UI 布局数据](../../contracts/ui-layout-data.md)、[UI 图形资源数据](../../contracts/ui-graphics-asset-data.md) | **合同就绪** 交接/布局/资源接缝；已接受 R2/R2a 前缀中 `FieldMenu` **已确认未到达**；所需页面/呈现是**显式产品决定** | 已到达前缀不需要 FieldMenu 合同；未来自然到达路线若需要，才触发受限条件所有者 |
-| 地图资源与摄像机 | [地图布局数据](../../contracts/map-layout-data.md)、[地图调色板数据](../../contracts/map-palette-data.md)、[地图瓦片集数据](../../contracts/map-tileset-data.md)、[地图精灵图形数据](../../contracts/map-sprite-graphics-data.md)、[地图实体数据](../../contracts/map-entity-data.md)、[地图摄像机更新](../../contracts/map-camera-update-control-flow.md) | **合同就绪静态导入/局部控制所有者**；私有原版资源与 8C 已有**已接受产品决定** | 到达的像素/调色板/帧/硬件行为、私有捕获溯源与精确容差保持**未知/推迟** |
+| 地图资源与摄像机 | [地图布局数据](../../contracts/map-layout-data.md)、[地图调色板数据](../../contracts/map-palette-data.md)、[地图瓦片集数据](../../contracts/map-tileset-data.md)、[地图精灵图形数据](../../contracts/map-sprite-graphics-data.md)、[地图实体数据](../../contracts/map-entity-data.md)、[地图摄像机更新](../../contracts/map-camera-update-control-flow.md) | **合同就绪静态导入/局部控制所有者**；私有原版资源与 8D 已有**已接受产品决定** | 到达的场景/资源/提示身份、顺序、完成/就绪与私有溯源保持**未知/推迟**；硬件精确性不在范围内 |
 | 地图到战斗准入 | [探索控制流](../../contracts/exploration-control-flow.md)、[地图入口路由状态](../../contracts/map-entry-routing-state.md)、[战斗遭遇定义](../../contracts/battle-encounter-definition.md)、[战斗过场路由](../../contracts/battle-cutscene-routing.md)、上方 R2b/R2c/R2d 所有者 | **合同就绪静态路线/准入主干及有界显式 bridge 运行时接缝**；连续场景组合仍**缺失设计合同** | 自然 R2a 至 R2b 连续性及完全自然准入/调用方状态仍为**未知/推迟**；R2d 程序返回及首个就绪状态是受控的，不是自然路线闭合 |
 | Battle 01 遭遇配置 | [战斗遭遇定义](../../contracts/battle-encounter-definition.md)、[战斗控制与战斗员生命周期](../../contracts/battle-control-lifecycle.md)、[战场导航](../../contracts/battlefield-navigation.md)、上方 R2c/R2d/R3a 所有者 | **合同就绪静态遭遇/控制主干及有界初始化/玩家就绪观察** | 完全自然初始化快照与首个行动者选择、接缝后输入及后续回合状态仍为**未知/推迟** |
 | 玩家回合与战斗菜单 | [战斗函数控制流](../../contracts/battle-functions-control-flow.md)、[输入系统](../../contracts/input-system.md)、上方 R2d/R3a 所有者 | **合同就绪静态分支/请求/局部输出所有者及有界行动者 1 玩家控制分发**；手动能动性与 UI 已有**已接受产品决定** | 就绪接缝后输入、AI 执行、命令、移动、目标、动作、取消与结果仍为**未知/推迟** |
 | AI 与导航 | [战斗 AI 决定](../../contracts/battle-ai-decision.md)、[战场导航](../../contracts/battlefield-navigation.md)、上方 R3a/R3b 所有者 | **合同就绪算法与静态调用方拓扑** | 实际 AI 分支、命令、移动、目标、结果与多回合决定保持**未知/推迟** |
 | 动作构建与解决 | [战斗动作构建](../../contracts/battle-action-construction.md)、[交战解决](../../contracts/combat-resolution.md)、[法术解决](../../contracts/spell-resolution.md)、[随机性](../../contracts/randomness.md)、上方 R3b/R3c 所有者 | **合同就绪受限算法及静态动作/效果/完成拓扑**；一个确定性 H4 轨迹已有**已接受产品决定** | 到达的种子、动作、解决/状态/死亡/EXP/金币/掉落/后续结果、回放与下一回合分发保持**未知/推迟** |
-| 战斗呈现 | [战斗演出呈现](../../contracts/battle-scene-presentation.md)、专用 graphics-data 合同及上方 R3c/R3d 所有者 | **合同就绪加载器/静态资源及回放/收尾拓扑**；私有原版资源与 8C 已有**已接受产品决定** | 到达的场景、帧、音频、硬件时间线、私有捕获与精确容差保持**未知/推迟** |
+| 战斗呈现 | [战斗演出呈现](../../contracts/battle-scene-presentation.md)、专用 graphics-data 合同及上方 R3c/R3d 所有者 | **合同就绪加载器/静态资源及回放/收尾拓扑**；私有原版资源与 8D 已有**已接受产品决定** | 到达的场景/动画/音频身份、语义顺序、完成/就绪与私有溯源保持**未知/推迟**；硬件精确性不在范围内 |
 | 胜利与战后 | [战斗控制与战斗员生命周期](../../contracts/battle-control-lifecycle.md)、[战斗过场路由](../../contracts/battle-cutscene-routing.md)、上方 R3d/R4a 所有者 | **合同就绪静态胜利/战后程序/返回主干**；可观察连续完成仍**缺失设计合同** | 自然胜利、程序到达/完成、标志/加入结果、SwitchMap/探索重入与稳定端点保持**未知/推迟** |
 | 存档/读取范围 | [存档系统](../../contracts/save-system.md)、[全局标志状态](../../contracts/global-flag-state.md)、名册/状态合同 | **合同就绪** 受限服务/存储接缝；里程碑排除存档/读取/检查点/挂起已有**已接受产品决定** | 强制重启回到准入快照，并让后续存档支持保持在本里程碑之外 |
 | 端到端 H4 | 所有具名子系统测试夹具与合同 | 台账**综合就绪**；已接受静态链与产品层存在；原版参考/连续运行时依 ADR 0014–0016 为**未知/推迟**；场景组合与可执行定义仍**缺失设计合同** | 添加一个消费而非削弱子系统 fixture 的证据绑定连续场景合同；失败的原版参考候选保持非证据 |
@@ -169,12 +175,12 @@
 | --- | --- | --- |
 | 准入起点 | **已接受：1A 受控准入快照** | R1 拥有至首个等待的精确受控值/溯源；它不是规范自然 New/读取主张 |
 | 路线 | **已接受：2A 最小研究证明自然路线** | R2/R2a 拥有自然运行时前缀，R2b/R2c 拥有静态延续，R2d 拥有至 PlayerReady 的显式 bridge 延续；完整自然连续性、效果与回溯仍开放 |
-| 自然战斗/过场 | **已接受：3A 时间顺序，占位子条款由 7C/8C 取代** | R2c 拥有静态准入拓扑；R2d 仅在声明 bridge 后观察开战前/开战程序返回及首个就绪状态；自然准入、完全自然状态及渲染时序仍开放 |
+| 自然战斗/过场 | **已接受：3A 时间顺序，占位子条款由 7C/8D 取代** | R2c 拥有静态准入拓扑；R2d 仅在声明 bridge 后观察开战前/开战程序返回及首个就绪状态；自然准入、完全自然状态及呈现完成/就绪仍开放 |
 | 完成端点 | **已接受：5B 战后程序之后首个稳定可控状态** | 精确返回地图/位置/状态仍由研究所有；仅 `D4=1` 不充分 |
 | 存档/读取 | **已接受：排除 6A** | 重启回到准入快照；后续存档支持是独立里程碑 |
 | 玩家控制与 UI | **已接受：4A/9A 手动能动性与现代可访问逻辑控制** | 产品 9A 已实现并直接观察；原版精确到达动作/输入轨迹及连续 H4 可访问性组合/执行仍开放 |
 | 资源 | **已接受：7C 仅限私有本地原版资源** | 必须闭合忽略的私有溯源/清单；没有权利/替代品时仍阻止公开分发 |
-| 视觉/音频一致性 | **已接受：8C 帧/音频/硬件精确** | 完整到达的像素/调色板/帧/音频/芯片/VInt/DMA/CRAM/VDP 证据与 H4 定义仍开放 |
+| 视觉/音频一致性 | **已接受：8D 呈现语义** | 到达的场景/资源/提示身份、顺序、完成及输入就绪证据与 H4 定义仍开放；排除硬件精确性 |
 | RNG 与动作轨迹 | **已接受：一个确定性 H4 参考轨迹** | R3a–R3d 只拥有静态控制/动作/完成/收尾拓扑；可行种子与到达逻辑轨迹仍开放，普通交互式游玩不被脚本化 |
 | 有意偏差 | **已接受：10A 显式台账** | 受控准入、可选范围、现代控制、无存档、固定参考轨迹与域外引擎行为需要具名检查 |
 | 可选工具 | **推迟且不阻塞；未采用 MCP** | CLI 门保持权威；任何工具选择都不启动 Phase 4 |
@@ -193,18 +199,18 @@
 | RA-07 / RA-12 / 返回与端点 | R4a 静态主干；下文的重制比较 | Research 必须建立原版战后程序效果及首个稳定可控的 5B 端点。Design 随后绑定精确字段、输入就绪以及无待处理程序/模态/传送/战斗。 |
 | RA-08 / RA-09 / 菜单与对话 | R2/R2a 的 `FieldMenu` NotReached；静态程序/文本身份 | 自然路线确定后，只闭合路线必需覆盖。不建立全面野外菜单或可选对话任务；正文/捕获保持私有。 |
 | RA-10 / 持久性 | 已接受的 6A 排除 | 本里程碑不需要存档实现或持久性观察。H4 必须检查重启回到准入状态，以及不存在用户存档/恢复界面。 |
-| RA-11 / 原版 8C | 静态呈现/资源所有者与有界观察 | 完整到达的原版像素/调色板/帧/音频/硬件域、溯源、确定性条件及比较定义仍开放。素材可用本身不关闭任何一项。 |
+| RA-11 / 原版呈现 | 静态呈现/资源所有者与有界观察 | 必要 8D 身份/顺序、完成、就绪及溯源仍开放。素材可用本身不证明呈现消费。旧硬件缺口不是里程碑要求。 |
 | Design 合同与产品选择 | battle-functions 合同与 ADR 0010 画像 | 保留这些闭合。缺失的连续合同及 H4 定义/执行仍是独立门禁，不因此重开已闭合子系统合同。 |
 
 **已确认重制范围：**已接受的结果实现 [`8a581a82`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/8a581a82e297ea2947cc9837e661752163d2806d) 与[探索执行所有者](../../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)提供连续公共会话，经过胜利或普通失败后返回可操作野外。已接受的 R4a 比较 [`26e91107`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/26e91107160b2c6f088b01ad31704ce9282fcba6)消费未改变的 R4a fixture，比较程序/加入/标志/返回顺序。它读取静态源码预期，不是自然原版观察。初始 accounting/seeds 与普通失败 Map3 egress 仍是受控输入。失败覆盖是可复用实现覆盖，不是 4A/5B 额外要求的原版参考胜利轨迹。
 
-**未知原版保真 / 显式实现限制：**[能力所有者](../../../../remake/docs/capability-status.md#milestone-and-deferred-surfaces)保留自然 caller/accounting/seed/egress、完整呈现及 H4 缺口。EGRESS 及更广动作、状态、物品/配置事件等未支持消费者，只有被接受路线/动作集需要时才成为工作项。现代 white fades、mosaic、shiver 及项目自有提示音是已实现的呈现服务；其存在不代表原版帧/音频/硬件精确一致，也不构成已接受的额外 10A 豁免。应比较选定域、实现缺失保真，或先取得明确产品决定再排除差异。选定档位保持 **8C**；私有输入差异或捕获不可用从不自动选择 8A。
+**未知原版保真 / 显式实现限制：**[能力所有者](../../../../remake/docs/capability-status.md#milestone-and-deferred-surfaces)保留自然 caller/accounting/seed/egress、完整呈现及 H4 缺口。EGRESS 及更广动作、状态、物品/配置事件等未支持消费者，只有被接受路线/动作集需要时才成为工作项。现代 white fades、mosaic、shiver 及项目自有提示音是已实现的呈现服务；其存在本身不建立原版提示身份、语义顺序、完成或 7C 合规。应比较这些 8D 边界。原版像素/帧/音频波形差异不在选定域内，不要求精确后端或硬件捕获；不能把影响玩法的差异或私有原版内容要求当成视觉润色排除。
 
 **已确认产品实现及直接观察：**已接受的 [9A 实现](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/445)提供跨探索、对话/选择、战斗及返回共用的可配置键盘/手柄动作、确认/取消约定交换、减少白色闪光与即时/可调文本。[能力所有者](../../../../remake/docs/capability-status.md)及[原生 9A 观察所有者](../../../../remake/docs/development-and-verification.md#native-9a-observation)定义已接受边界与复现方式。启动设置暴露这些选项；没有游戏内设置界面或自动保存设置。减少闪光模式抑制白色覆盖层，同时保留服务时长及相同提示 token/kind 的完成。文本显示保留真实确认与选择等待。
 
-已接受的直接观察覆盖默认及重映射/交换的键盘/手柄、两个自编世界/角色、成对闪光/文本行为，以及使用重映射/交换手柄的私有连续开场至 Battle01 胜利再至可操作返回会话。私有案例使用即时文本与普通闪光；成对可访问性比较由自编案例负责。这些是注入的真实 Godot 输入事件，不是物理手柄驱动或热插拔验收。完整导出打包仍未验证。本次复用既有结果，不重新运行。产品 9A 已实现并直接观察；组合到连续 H4 定义及其执行仍开放。9A/10A 的有意偏差不证明原版自然连续性或精确 8C 一致性。
+已接受的直接观察覆盖默认及重映射/交换的键盘/手柄、两个自编世界/角色、成对闪光/文本行为，以及使用重映射/交换手柄的私有连续开场至 Battle01 胜利再至可操作返回会话。私有案例使用即时文本与普通闪光；成对可访问性比较由自编案例负责。这些是注入的真实 Godot 输入事件，不是物理手柄驱动或热插拔验收。完整导出打包仍未验证。本次复用既有结果，不重新运行。产品 9A 已实现并直接观察；组合到连续 H4 定义及其执行仍开放。9A/10A 的有意偏差不证明原版自然连续性或完整 8D 验收。
 
-已接受 M5 [`9301ddac`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/9301ddac0e07fd2c5a87caeb19c69179025d0698)退役旧 reference 消费者并保留适用移动比较。保留 #431 已完成的呈现输入失败 `PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`，以及使用完整私有世界单独复验的结果（1 通过、0 跳过）。两者不互相覆盖，也都不证明 8C。本计划不恢复旧 runtime 或聚合套件。独立 #434 的 map-exploration 镜像标签失败（英文 13 / 中文 11）不在本台账修正范围内。
+已接受 M5 [`9301ddac`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/9301ddac0e07fd2c5a87caeb19c69179025d0698)退役旧 reference 消费者并保留适用移动比较。保留 #431 已完成的呈现输入失败 `PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`，以及使用完整私有世界单独复验的结果（1 通过、0 跳过）。两者不互相覆盖，也都不证明 8D。本计划不恢复旧 runtime 或聚合套件。独立 #434 的 map-exploration 镜像标签失败（英文 13 / 中文 11）不在本台账修正范围内。
 
 ### 依赖与完成边界
 
@@ -212,23 +218,21 @@
 
 | 面与负责所有者 | 入口/依赖 | 完成与停止条件 |
 | --- | --- | --- |
-| Replay 谱系恢复 — Research/tooling | 既有 capability 所有者及保留的真实启动记录 | 只读恢复识别完整真实账本及两份实际收据，核对已报告的 ordinal-2 FAIL，或记录不可用/不匹配并停止。不初始化账本，不启动模拟器。 |
-| Capability 运行时验证 — Research/tooling | 完整真实谱系已恢复，ordinal-2 失败/禁令已独立解决；精确候选；预算已独立准入 | 验证确定性播放/回调/退出/清理行为，独立接受并合并有界结果。33 行 capability 不含场景语义，绝不构成场景证据。 |
-| 场景 transport — Research/tooling | 已接受 capability/protocol 所有者；精确选定场景传输需求 | 通过既有机制绑定真实冻结输入传输、声明起点/配置、被动检查点、类型化收据/捕获、超时与清理。离线实现可先于 runtime 恢复，但不准入执行。Capability runtime 接受及场景预算/所有权独立声明之前，停在场景观察之前。 |
-| 原版自然路线及参考证据 — Research | 已接受 runtime capability 与场景 transport；下方 ADR 0014 问题准入；冻结轨迹及溯源 | 只接受实际观察到的自然路线、到达战斗/动作、战后程序、5B 端点及具名 8C 捕获。以精确 fixture/命令更新既有 RA 行；未观察面保持开放。失败/部分运行停在其类型化结果。 |
+| 旧回放路径停用 — main-gate | 保留 capability/谱系所有者；不启动 | 里程碑 Issue 负责处置。恢复、runtime 验证与 transport 实现不阻塞 8D/H4；仅在需要具体移除/替代实现时拆工作项，预算不重置。 |
+| 原版行为证据 — Research | 已接受静态事实与有界观察；具体未决玩法主张 | 通过独立准入的证据方法建立缺失自然路线/caller/accounting/RNG、战斗结果、战后程序与 5B 状态。新观察前明确字段/检查点及既有证据不足原因。保留未知项与类型化失败，不依赖停用 runner。 |
 | 连续场景合同 — Design | 每个主张连续边界所需的已接受 Research 值 | 提议的 `docs/design/contracts/map3-battle01-continuous-scenario.md` 组合准入起点、自然路线/准入、胜利逻辑轨迹、战后程序与精确端点。现在可准备结构；最终证据绑定验收须等待必要观察。关联从证据派生，不能自动取全部 26 条 Map3 聚合行。 |
 | H4 定义 — Design | 连续合同、已接受 Research 比较域/溯源及 ADR 0010 偏差 | 指定各层输入、观察、预期值/所有者、精确性/容差、失败/不可用及清理规则。未来 `schemas/h4/` 与 `tests/fixtures/h4/` 身份/注册由该切片选择，不在此虚构。可与合同并行准备定义，但不能声称缺失证据。 |
-| 9A 输入/可访问性 — 已接受 Remake 能力；Design/H4 组合仍开放 | 上述已接受实现与直接观察；独立于原版 replay 恢复 | 复用已实现设置及有界输入/状态/投影结果。将可访问性断言组合到未来连续 H4 定义并执行；偏差与精确 8C 参考分开。物理手柄驱动/热插拔及导出限制保留。 |
+| 9A 输入/可访问性 — 已接受 Remake 能力；Design/H4 组合仍开放 | 上述已接受实现与直接观察；独立于原版 replay 恢复 | 复用已实现设置及有界输入/状态/投影结果。将可访问性断言组合到未来连续 H4 定义并执行；单独报告可访问性变体及状态等价结果。物理手柄驱动/热插拔及导出限制保留。 |
 | H4 实现与执行 — Remake/harness | 定义已被 main 接受；必要引擎行为已支持且私有输入可用 | 消费冻结的已接受证据，不启动原版来生成黄金值。运行实际状态/输入/投影与必要私有比较，报告所有适用层及偏差，包括失败/不可用。Godot 验收不截图。 |
-| 最终里程碑审阅 — main-gate | Research 与 Design 闭合，且适用 H4 执行成功 | 独立验收连续可玩的 5B 端点及当前 8C 画像。单凭合同、preflight、replay、引擎测试或子 Issue 关闭都不充分。 |
+| 最终里程碑审阅 — main-gate | Research 与 Design 闭合，且适用 H4 执行成功 | 独立验收连续可玩的 5B 端点及当前 8D 画像。单凭合同、preflight、replay、引擎测试或子 Issue 关闭都不充分。 |
 
-[Capability 所有者](../../../research/original-reference-replay-capability.md)提供固定的 33 个物理行传输 recipe，不是任意场景运行器。[Scenario API](../../../research/original-reference-replay-scenario-api.md)提供纯数据 descriptor 及被动观察者协议；其通用样例与合成工件身份不是真实 movie 或场景执行。两者均在 [`f00c20f3`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f00c20f317b3e1c5c63a858df5e5b5abcb4a309d) 被接受。添加机制前先复用 transport kernel、隔离、收据与观察者政策；更换 CLI 入口不会完成缺失 transport，也不会授予新启动谱系。
+[Capability 所有者](../../../research/original-reference-replay-capability.md)提供固定的 33 个物理行传输 recipe，不是任意场景运行器。[Scenario API](../../../research/original-reference-replay-scenario-api.md)提供纯数据 descriptor 及被动观察者协议；其通用样例与合成工件身份不是真实 movie 或场景执行。两者均在 [`f00c20f3`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f00c20f317b3e1c5c63a858df5e5b5abcb4a309d) 被接受。新证据方法若需要 transport，先评估可复用的隔离、收据与观察者政策；更换 CLI 入口不会完成缺失 transport，也不会授予新启动谱系。
 
 ### 原版 replay 谱系与启动准入
 
 Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF` 与收据 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`。[当前谱系硬阻断](../../../research/original-reference-replay-capability.md#current-lineage-hard-stop)还记录了已恢复的 Research 与独立 main-gate 工具输出：报告 ordinal-2 进程启动、已完成的超时 FAIL 和清理失败，随后明确禁止 ordinal 3/retry/reset。这些保存的输出是协调记录，不是已恢复的收据/账本字节或原版游戏证据。有界复核没有发现后续真实 ordinal-3 启动；这既不能确立完整历史，也不能证明还有未使用的诊断次数。
 
-恢复必须找到完整真实账本及两份实际收据，用所属校验器核对既有身份与关系，并保留全部失败。合成 scratch、重建 JSON、空账本、保存的输出或新输出根都不能替代真实字节。旧实体工作区已不存在，实际字节仍不可用。本计划没有新做私有搜索或运行时验证。runtime 路径保持阻断，等待完整恢复及 main-gate 独立裁定谱系/预算；文件缺失或恢复本身都不会重置消耗，也不能覆盖先前禁令。
+任何独立授权的恢复必须找到完整真实账本及两份实际收据，用所属校验器核对既有身份与关系，并保留全部失败。合成 scratch、重建 JSON、空账本、保存的输出或新输出根都不能替代真实字节。旧实体工作区已不存在，实际字节仍不可用。本计划没有新做私有搜索或运行时验证。停用路径只有在完整恢复及 main-gate 独立裁定谱系/预算之后才可能恢复；文件缺失或恢复本身都不会重置消耗，也不能覆盖先前禁令。
 
 已记录候选 preflight `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` 返回 PASS、`ProcessStarts=0`。这是保留的 preflight 结果，不是启动收据或 runtime 兼容性证明，本 docs-only 修正也不复跑它。不得假定任何 ordinal 可用。Ordinal 3 仍要求单一同候选 ordinal-2 PASS、实际收据 hash 校验及匹配 replay digest；恢复一份报告为 ordinal-2 FAIL 的收据不能满足该条件。没有授权额外诊断、第四次启动或通过任务/wrapper/scenario/transport 重置。真正独立的场景切片仍须按 ADR 0015 明确裁定谱系/预算，不能假定重新得到额度。
 
@@ -238,9 +242,9 @@ Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1
 
 | 问题与验收影响 | 要复用的既有静态证据/轨道 | 独立准入与停止边界 |
 | --- | --- | --- |
-| 冻结传输能否执行声明行/检查点并干净退出？否则后续参考溯源无效。 | 既有 capability materializer、隔离、观察者及场景协议；preflight 只证明结构。 | 仅在完整真实谱系恢复且 ordinal-2 失败/禁令已独立解决之后，才可能授权 capability-only runtime；不假定任何 ordinal 可用。停在收据及清理；不产生 R2b/R4b/H4 事实。 |
+| 新行为观察是否必要且可准入？ | 先复用已接受事实/rails；声明缺失玩法断言及必要检查点。停用 transport 不是前置。 | 启动前独立作出 ADR 0014/0015/0016 方法及谱系/预算决定；保留旧禁令，并停在具名类型化失败或端点。 |
 | 准入原版状态能否自然经过遗漏 R2a 至 R2b 段，把真实 caller/accounting/RNG 状态带入 Battle01，并沿选定胜利路线完成至可控 5B 端点？这决定 2A/3A/4A/5B 与 RA-02–RA-07/RA-09/RA-12。 | R1/R2/R2a 与 R2d 观察接缝；R2b/R2c/R3a–R3d/R4a 静态 fixture。R2d 写状态 bridge 无法证明遗漏自然段；R4a 在探索执行前停止。既有 remake 观察者依据 live state 选动作，不是可准入的原版冻结 replay 轨迹。 | Research 先说明哪个已接受轨道可覆盖，以及静态拓扑为何不能建立实际到达的 caller state。优先一个批量准入场景；任何新 fixture 都须显式给出轨道复用结论。启动前冻结轨迹/起点/种子，不注入 live state、不自适应输入。首个类型化失败、预算上限或声明稳定端点即停止。 |
-| 8C 应比较哪些精确到达的像素/调色板、节奏/动画、波形/芯片时序及 VInt/DMA/CRAM/VDP 行为？这决定 RA-11 与 H4 第 9 层。 | 既有图形/音频/资源及局部硬件所有者；复用准入场景捕获与被动观察接缝。资源身份及现代服务无法建立运行时时序/输出。 | 任何进程启动前定义到达域、捕获方法/溯源与确定性条件。尽可能复用同一准入 replay；另开启动/fixture 须满足三项门禁及独立显式所有权，预算不能重置。若已接受工具链无法观察选定域则停止，报告不可用，绝不降为 8A。 |
+| 8D 需要哪些到达呈现提示、顺序、完成及输入就绪状态？这决定 RA-11 与 H4 第 9 层。 | 既有图形/音频/资源/程序所有者与有界被动观察；素材身份本身不证明 host 消费。 | 观察前定义语义字段与证据。复用已接受事实/rails，只为具体未决行为准入新观察。硬件 API/时钟不是前置。 |
 
 只有独立接受于 main 的完整 Research 投影能关闭证据行。私有捕获载荷与详细收据保持忽略。完整原版参考播放仍不是 H4 PASS；重制一致性须经过上方独立接受的定义与执行路径。
 
@@ -256,12 +260,12 @@ Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1
 6. 控制器胜利状态与战后程序/交接轨迹；
 7. 产品所选可观察端点处的精确最终场景状态；
 8. 所选存档排除与 7C 私有本地资源身份/溯源断言；
-9. 8C 像素/调色板/帧节奏、动画/时序、音频波形/芯片/时序、VInt/DMA/CRAM/VDP、其他到达的硬件可观察断言、确定性捕获条件、精确或字段特定容差与许可安全公开报告形状；
+9. 8D 到达的场景/对白/动画/音频身份与语义顺序、实际 host 消费、完成/确认和输入就绪，以及已接受参考溯源和许可安全公开报告；不含硬件精确断言；
 10. 单独命名的预期偏差。
 
 每层必须引用其所属已接受测试夹具。连续适配器不得替换子系统测试夹具、把其预期数字复制进引擎特定测试、在重制中要求原版 RAM/ROM 地址，或发布私有原版文本、图形、音频或捕获。
 
-定义就绪要求完整验收面及可执行检查定义被接受。里程碑验收还要求它们在重制上成功执行。定义就绪不等于比较通过；已实现连续路线也不能替代缺失原版参考或任何 8C 层。
+定义就绪要求完整验收面及可执行检查定义被接受。里程碑验收还要求它们在重制上成功执行。定义就绪不等于比较通过；已实现连续路线也不能替代缺失原版参考或任何必要 8D 层。
 
 ### 初始偏差清单到 H4 的映射
 
@@ -271,7 +275,7 @@ Capability 所有者把已消耗 diagnostic ordinal 1 固定为候选 `9F8417BC1
 | --- | --- | --- |
 | 受控快照替代可见 New/读取 — 1A | 1, 2, 10 | 精确准入快照/溯源匹配；报告省略可见流程。不描述为自然 New/读取。 |
 | 排除可选 Map3 交互/菜单 — 2A | 2, 3, 10 | 枚举必需到达路线步骤；显示被排除可选范围。不能借此删除必需交互。 |
-| 现代可重映射输入与可访问性 — 9A | 2, 3, 5, 7, 9, 10 | 键盘/手柄产生相同逻辑决定；交换确认/取消仍保留其语义角色。减少闪光模式在不显示被抑制提示的情况下达到相同完成；调整/即时文本保留确认及路线结果。暴露绑定/约定/闪光/文本设置。与声明的原版保真 8C 配置分开运行；不声称设备节奏或改变后的视觉时序相同。 |
+| 现代可重映射输入与可访问性 — 9A | 2, 3, 5, 7, 9, 10 | 键盘/手柄产生相同逻辑决定；交换确认/取消仍保留其语义角色。减少闪光模式在不显示被抑制提示的情况下达到相同完成；调整/即时文本保留确认及路线结果。暴露绑定/约定/闪光/文本设置。单独报告这些变体与状态等价检查；设备节奏与改变后的视觉时序不是精确匹配断言。 |
 | 无用户存档/读取/检查点/挂起 — 6A | 1, 8, 10 | 不存在用户持久性界面；重启返回准入状态。Harness reset 不是存档功能。 |
 | 固定种子/逻辑 H4 轨迹；交互式游玩可分歧 — 4A | 1, 2, 5, 7, 10 | 参考执行声明 Research 证明的种子与不可变逻辑轨迹；普通控制仍可用，有效变化状态/内容遵守引擎规则。绝不为强求一致而在 live play 重置种子。 |
 | 准入 fixture 域外的引擎原生安全行为 — 10A | 受影响状态/动作层、10 | 明确命名每个域外用例及安全/Unsupported 结果。不从拒绝推断原版行为，不用此偏差排除域内失败。 |
@@ -313,15 +317,15 @@ Phase 4 的受追踪实现与 CI 应消费公开合同与项目自有 fixture。
 | 存档范围已选择 | PASS | ADR 0010 选项 6A 排除存档/读取/检查点/挂起 |
 | 可访问性/输入产品接口已选择 | PASS | ADR 0010 选项 9A |
 | 9A 输入/可访问性配置已实现并直接观察 | PASS（有界） | 上述已接受 Remake 能力及原生 9A 观察所有者；物理手柄驱动/热插拔与完整导出未验证 |
-| 9A 可访问性断言已组合到连续 H4 并执行 | 开放 | Design H4 定义，然后 Remake/harness 执行；偏差与 8C 精确参考运行分开 |
+| 9A 可访问性断言已组合到连续 H4 并执行 | 开放 | Design H4 定义，然后 Remake/harness 执行；单独报告变体结果与状态等价检查 |
 | 7C 私有本地资源模式与禁止公开分发边界已选择 | PASS | ADR 0010 |
 | 精确私有资源/捕获清单与溯源已接受 | 开放 | 研究/私有输入验收；无载荷进入 Git/公开 CI |
 | 公开/可分发资源权利或替代品 | 私有里程碑之外受阻 | 任何公开构建前的独立许可/替代决定 |
-| 8C 视觉/音频/硬件一致性层已选择 | PASS | ADR 0010 |
-| 完整到达的 8C 证据、捕获域与容差已接受 | 开放 | 条件研究/私有参考验收，然后连续 H4 合同 |
+| 8D 玩法/呈现语义档位已选择 | PASS | ADR 0010；取代旧 8C 硬件门槛 |
+| 必要的到达 8D 证据及比较字段已接受 | 开放 | Research/溯源，然后连续 H4 合同；不要求像素/波形/周期捕获 |
 | 连续 H4 验收面与可执行检查定义已接受 | 开放 | 连续合同之后的 Design H4 定义 |
-| 原版 replay 谱系与运行时 capability 已接受 | 开放 | Research/tooling；需要完整真实账本/收据及对 ordinal-2 失败/禁令的裁定 |
-| 场景 transport 与自然参考证据已接受 | 开放 | Research；纯数据 API/preflight 不充分 |
+| 旧 replay 谱系/runtime 恢复 | 不要求 / 路径停用 | main-gate 处置；保留失败、缺失账本/收据与启动禁令 |
+| 必要自然行为参考证据已接受 | 开放 | Research；复用已接受事实，并独立准入必要新观察方法 |
 | 连续场景合同已接受 | 开放 | Design，消费已接受 Research |
 | 所有适用重制 H4 层与偏差执行成功 | 开放 | Remake/harness 后由 main-gate 独立验收；与定义就绪分开 |
 | 主门禁就绪报告已接受 | 开放 | 主门禁 |
@@ -343,4 +347,4 @@ Phase 4 的受追踪实现与 CI 应消费公开合同与项目自有 fixture。
 | R4a 胜利、战后程序、返回、SwitchMap 与探索调用主干存在 | **合同就绪静态链** | `sf2-map3-battle01-victory-return-static-v1`、[战斗过场路由](../../contracts/battle-cutscene-routing.md) | 胜利/程序到达与完成、标志/加入结果、探索重入、稳定端点、R4b 与 H4 保持开放 |
 | 局部战斗合同可在概念上组合 | **综合就绪** | [战术战斗循环](../../synthesis/tactical-battle-loop.md) 与链接合同 | 不是完整预测 Battle 01 模拟或场景黄金值 |
 | Godot/C#、里程碑、产品画像与推迟政策已选择 | **已接受决定** | ADR 0008 / ADR 0009 / ADR 0010 / ADR 0016 | 有界实现授权不意味着连续里程碑、MCP、再分发或证据闭合 |
-| 路线类别、端点形状、存档排除、UI、私有资源、RNG 策略、8C 一致性与偏差 | **已接受产品决定** | ADR 0010 | 精确场景值、自然时间顺序、私有捕获溯源与一致性事实仍是研究/H4 缺口 |
+| 路线类别、端点形状、存档排除、UI、私有资源、RNG 策略、8D 一致性与偏差 | **已接受产品决定** | ADR 0010 | 精确场景值、自然时间顺序、私有捕获溯源与一致性事实仍是研究/H4 缺口 |

@@ -2,9 +2,9 @@
 
 - Status: **Accepted**
 - Proposal date: 2026-08-14
-- Decision date: 2026-08-19
+- Decision date: 2026-08-19; acceptance amendment: 2026-09-19
 - Scope: product choices for the first Phase 4 playable milestone
-- Accepted profile: `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`
+- Accepted profile: `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`
 - User acceptance: **Recorded for the exact profile above**
 
 ## Context
@@ -62,7 +62,7 @@ admitted start, but it may not replace the route or battle with helper calls aft
 ## Choice Matrix
 
 The matrix is retained as decision history. Only rows marked `SELECTED`, together with the conflict
-resolution stated for 3A/7C/8C, are accepted project state.
+resolution stated for 3A/7C/8D, are accepted project state.
 
 ### 1. Admitted start
 
@@ -96,7 +96,7 @@ menu calls, transition points, and permitted backtracking remain
 
 | Option | Product definition | Evidence and scope consequence |
 | --- | --- | --- |
-| **3A — SELECTED** | Preserve the Research-proven natural battle admission and before/start-cutscene state/request chronology. Its originally proposed structural-placeholder presentation subclause is superseded by selected 7C/8C for the private local milestone. | Requires natural route, cutscene-effect, and the selected 8C rendered/hardware evidence. |
+| **3A — SELECTED** | Preserve the Research-proven natural battle admission and before/start-cutscene state/request chronology. Its originally proposed structural-placeholder presentation subclause is superseded by selected 7C/8D for the private local milestone. | Requires natural route, cutscene-effect, and the selected 8D presentation evidence. |
 | 3B | Preserve natural battle admission but replace cutscenes with a summary card or skip. | Must be a named intentional deviation with explicit state-equivalence checks; it is not the recommended profile. |
 | 3C | Require bounded original rendered cutscene fidelity. | Reopens targeted presentation evidence and private/licensing boundaries. |
 
@@ -106,14 +106,10 @@ effects, transition chronology, and the first battle-ready state remain
 `Research-owned exact value required`.
 
 The natural-admission and chronology portion of 3A remains selected. Its placeholder presentation
-portion is not selected: the later and more specific 7C/8C choices require private original assets
-and frame/audio/hardware-exact parity for this private local profile.
-[ADR 0005](./0005-remake-value-driven-driver-freeze.md) does not preselect that product choice.
-Selected 8C explicitly triggers ADR 0005 reopening condition 3, but only for the Map 3-to-Battle 01
-scenario's reached hardware-observable surfaces required by the accepted 8C H4 domain. Unrelated
-driver and hardware investigation remains frozen. Every reopened question must reuse the existing
-parser, fixture, or observation seam and must not become an open-ended hardware audit. This bounded
-reopening changes no profile option and starts neither Research nor Phase 4.
+portion is not selected: 7C/8D requires private original assets and the reached presentation semantics,
+without reproducing the original renderer or hardware clock. The former 8C-triggered reopening of
+[ADR 0005](./0005-remake-value-driven-driver-freeze.md) condition 3 is no longer a milestone
+requirement. Concrete gameplay ambiguities still use the existing evidence/admission rules.
 
 ### 4. Player agency, action coverage, input trace, and RNG
 
@@ -125,10 +121,11 @@ reopening changes no profile option and starts neither Research nor Phase 4.
 
 The accepted H4 reference-path policy uses one declared fixed seed and one recorded sequence of **logical**
 inputs and action choices. That policy makes acceptance reproducible; it does not require interactive
-players to follow the script or prevent other playthroughs from diverging. Physical device events,
-frame-exact repeat, original input cadence, natural RNG timing, the viable seed value, the reached
-player/AI/navigation/action/resolution/status branches, and the complete winning trace remain
-`Research-owned exact value required`.
+players to follow the script or prevent other playthroughs from diverging. The viable seed, RNG draws and gameplay effects, reached player/AI/navigation/action/resolution/status
+branches, and complete winning trace remain `Research-owned exact value required`. Physical device
+events, frame-exact repeat and original clock alignment are not comparison requirements. Timing that
+changes a gameplay result still requires an explicit behavioral contract; it cannot be waived as a
+rendering difference.
 
 ### 5. Observable completion endpoint
 
@@ -176,17 +173,57 @@ only licensing-safe metadata, checks, hashes, and results that do not reconstruc
 | --- | --- | --- |
 | 8A — HISTORICAL RECOMMENDATION, NOT SELECTED | Functional state/structure tier: accepted scene/resource/request identities and order, deterministic project-owned layout/screenshot regression, and replacement cue presence. | Does not require original pixel, palette, animation-frame, waveform, chip, DMA, VInt, or timing parity. |
 | 8B | Add bounded screenshot, palette, or animation comparison to the original. | Requires targeted Research, private comparison inputs, tolerances, and licensing-safe public results. |
-| **8C — SELECTED** | Require frame/audio/hardware-exact parity for the private local milestone/profile. | Materially expands eventual-milestone Research and H4 closure; no such complete parity is claimed on accepted `main`. |
+| 8C — SUPERSEDED | Former frame/audio/hardware-exact profile. | Historical evidence gaps remain recorded; this tier no longer gates the milestone. |
+| **8D — SELECTED** | Gameplay and presentation semantics: accepted state/results, scene/resource/cue identities, event order, completion and input readiness. | Requires evidence-bound behavioral comparisons and actual remake state/input/presentation observations; no hardware-exact capture or emulation backend. |
 
-Selected 8C requires accepted evidence and executable H4 definitions for pixel and palette output,
-frame cadence, animation order and timing, audio waveform/chip behavior/timing, VInt, DMA, CRAM, VDP,
-and every other hardware-observable behavior reached by the scenario. Research must establish private
-reference-capture provenance and the observable comparison domain. The H4 contract must specify
-field-appropriate tolerances, using exact comparison wherever 8C selects exactness, plus deterministic
-capture conditions and licensing-safe public reporting. These are blocking gaps, not closed facts.
-The exact 8C reference run uses a declared original-fidelity configuration. Reduced-flash and
-instant/adjusted-text modes remain selected accessibility features and separately declared 10A
-deviations with state-equivalence checks; they must not be reported as exact visual/timing matches.
+### Current acceptance amendment
+
+The user explicitly removed hardware-level precision from this milestone on 2026-09-19. 8D replaces
+8C; it does not silently redefine the old tier or select historical 8A's screenshot workflow. This
+section controls conflicting 8C/H4 completion requirements in earlier ADRs, research audits,
+bootstrap plans, architecture documents, README/status summaries and verification notes. Their bounded
+results, missing capabilities and original-game Unknowns retain their original evidence meaning.
+
+The comparison must preserve gameplay rules and results, scenario state, natural route/admission,
+turn/action/RNG effects, victory/after-program flow and the controllable 5B endpoint. Presentation must
+deliver the reached scene, dialogue, animation and audio cue identities in the accepted semantic order,
+with correct completion, acknowledgement, blocking and input-ready behavior. 7C remains the private
+original-content requirement; an authored replacement cue does not automatically satisfy it.
+
+Pixel/palette equality, original frame cadence or animation durations, waveform/chip equivalence,
+cycle timestamps, VInt/DMA/CRAM/VDP chronology and analog/hardware behavior are **outside this
+milestone's acceptance domain**. Do not demand exact capture APIs, a hardware emulation backend or
+per-difference waivers for those excluded domains. A timing difference that changes game state,
+event order, player choices or completion is still in scope. 9A accessibility modes retain separately
+reported state-equivalence and acknowledgement checks under 10A. Future hardware-fidelity work needs
+its own explicit product decision; an unresolved hardware research question does not create one.
+
+H4 uses accepted implementation-neutral contracts/fixtures and their original source/ROM provenance.
+It checks actual remake state transitions, logical inputs, presentation requests and host completion
+observations, including a continuous playable start-to-5B run. Request emission alone cannot prove
+that a required cue was consumed or that the player regained control. Use existing debug/state/input
+observation mechanisms; screenshots are not Godot acceptance. Verification remains outside production
+engine logic, and production behavior must not depend on the Map3 reference trace.
+
+Reuse accepted static facts and bounded original observations. Natural caller/route, winning battle
+and return-state gaps remain open where those facts do not establish the claim. Research must name
+the missing behavior, required fields/checkpoints and why existing evidence is insufficient; only
+then may a separately admitted bounded original observation be required under ADRs 0014/0016.
+Static topology alone must not be promoted to observed continuity, and remake output must not become
+the original reference. Design owns the exact comparison fields, expected evidence and failure rules.
+
+The old original-reference replay path is **disabled**. Recovering its ledger, validating its runtime
+capability, implementing its scenario transport, and adding full 8C capture interfaces are not
+prerequisites for this milestone or for H4. Preserve its timeout FAIL, cleanup failure, missing actual
+ledger/receipts and launch prohibition. This amendment does not launch, revive, rename or reset that
+path or its budget. Main-gate owns its disposition in the milestone Issue, with a separate Issue only
+if a concrete removal or replacement implementation needs one. Any genuinely necessary new original
+observation needs an independently accepted purpose, evidence method and lineage/budget decision under
+ADR 0015; a nominal new task or runner is not a reset.
+
+This scope change reports neither evidence closure nor H4 PASS. Natural continuity, required private
+content/provenance, continuous contract/definitions and actual applicable H4 execution still need
+independent acceptance.
 
 ### 9. Accessibility and platform input mapping
 
@@ -239,9 +276,9 @@ copyright boundaries, not deviations from original fidelity.
 
 ## Accepted Profile
 
-The user accepted `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`.
+The user accepted `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 The Design lane's original 7A/8A recommendation was not selected. The 7C private-local boundary and
-8C exactness requirements govern presentation wherever they conflict with 3A's originally proposed
+8D semantic requirements govern presentation wherever they conflict with 3A's originally proposed
 placeholder subclause.
 
 ## Selected Choices and Remaining Research
@@ -255,7 +292,7 @@ The accepted profile fixes these policy classes without claiming original facts:
 - stable post-after-program endpoint shape;
 - save exclusion or inclusion class;
 - private-local original-asset policy with no public redistribution;
-- frame/audio/hardware-exact parity tier;
+- gameplay and presentation-semantic parity tier, excluding hardware exactness;
 - modern logical input/accessibility requirements; and
 - explicit deviation-ledger policy.
 
@@ -263,7 +300,8 @@ Selecting a class does not fill its Research-owned fields or authorize Phase 4.
 
 ## Exact Research-Dependent Blanks for Eventual Milestone Acceptance
 
-All of the following block the later continuous-scenario contract and remain open on accepted `main`:
+The later continuous-scenario contract needs the following evidence. The readiness ledger owns which
+bounded fields are already closed; this list does not reopen them:
 
 1. the controlled admitted snapshot's exact values and provenance;
 2. the exact natural Map 3 route, ordered player inputs, mandatory interactions, dialogue/event/menu
@@ -276,10 +314,9 @@ All of the following block the later continuous-scenario contract and remain ope
    state;
 6. natural victory, the after-battle program and its effects, return routing, and exact endpoint
    map/location/state values; and
-7. full 8C pixel/palette/frame-cadence, animation/timing, audio waveform/chip/timing,
-   VInt/DMA/CRAM/VDP, and other reached hardware-observable evidence; private reference-capture
-   provenance and deterministic conditions; exact or field-specific tolerances; and
-   licensing-safe public reports.
+7. 8D reached presentation identities/order, completion and input-ready behavior; private content
+   and any required reference-observation provenance; deterministic logical comparison conditions
+   and licensing-safe public reports.
 
 Research may split these into coherent evidence owners. This ADR MUST NOT name speculative fixture
 IDs or treat an unmerged observation as accepted. After the required owners merge, Design may propose
@@ -291,7 +328,7 @@ derived from accepted evidence.
 Although accepted, this ADR does not make the scenario ready. The readiness ledger remains
 **NOT READY** until Research closures, the continuous-scenario contract, any route-required
 conditional contracts, the private-local asset inventory/provenance and no-public-distribution
-boundary, complete 8C H4 acceptance definitions, main-gate readiness review, and the separate user
+boundary, complete 8D H4 acceptance definitions, main-gate readiness review, and the separate user
 Phase 4 start action are complete for the eventual continuous milestone. Under
 [ADR 0016](./0016-remake-start-evidence-deferral.md), these open rows do not block a separately
 user-authorized bounded implementation start by default.
@@ -306,9 +343,8 @@ executable check definitions for:
 5. turn, movement, target, player/AI action, RNG, resolution, replay, and after-turn traces;
 6. natural victory and after-battle program/handoff;
 7. the product-selected stable endpoint;
-8. private-local asset identity/provenance, pixel/palette/frame/animation timing, audio waveform/chip
-   timing, VInt/DMA/CRAM/VDP and other reached hardware-observable assertions, plus save-exclusion and
-   accessibility assertions;
+8. private-local asset identity/provenance, reached scene/dialogue/animation/audio semantics and
+   completion/input-ready observations under 8D, plus save-exclusion and accessibility assertions;
 9. every expected deviation as a separately reported layer.
 
 Those definitions must be accepted before the continuous milestone is accepted. Implementing the
@@ -317,9 +353,9 @@ start action.
 
 ## Decision Integration
 
-This accepted update owns this ADR, the minimal readiness-ledger closure/reclassification, and the
-decision index entry in `docs/README.md`. It has no executable fixture, research-index association,
-translation-manifest entry, or registry dependency.
+This acceptance amendment changes product policy and current readiness routing, including the
+readiness ledger's Chinese mirror metadata. It changes no executable fixture, research-index
+association, runtime implementation or verification gate.
 
 No accepted choice in this ADR starts Godot work, adopts MCP, creates remake code, or authorizes
 Phase 4. A separate user authorization under ADR 0016 is required for a bounded implementation start.
