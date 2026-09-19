@@ -1,13 +1,35 @@
 # Phase 4 Bootstrap Plan
 
-- Status: **Proposed**
+- Status: **Historical proposal — superseded as implementation guidance**
 - Record date: 2026-08-20
 - Audit base: accepted `main` commit `c812ad61395e7b42ca91a9aee044dc04375522de`, tree
   `7da7aa9a13b148756fad5e8f31654e5f975ae782`
 - Layer: **Layer B design synthesis** over accepted architecture and readiness boundaries
-- Scope: future Phase 4 project topology, bootstrap admission, CLI gates, observation ports, profile
-  separation, and implementation-start checklist
+- Scope: historical pre-start proposal for Phase 4 project topology, bootstrap admission, CLI gates,
+  observation ports, profile separation, and implementation-start checklist
 - Readiness effect: **none**; the Map 3 to Battle 01 ledger remains **NOT READY** for eventual milestone acceptance
+
+## Current Reading Route
+
+Implementation has started. The proposal below is preserved at its original audit base, not a current
+bootstrap checklist or a statement that `remake/`, the SDK selection, and implementation gates are
+still absent. Its timing classes, prospective test topology, verification requirements, and
+registration counts describe that historical proposal only; they are not instructions for new work.
+
+Use these accepted owners instead:
+
+- [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md) for the adopted
+  state/content-driven engine direction, production/reference separation, and migration boundaries;
+- [Remake README](../../../remake/README.md) and
+  [capability status](../../../remake/docs/capability-status.md) for implemented versus unsupported
+  behavior;
+- [development and verification](../../../remake/docs/development-and-verification.md) for current
+  toolchain selection and scope-dependent checks, rather than the proposed gate/test inventory below.
+
+These implementation owners do not supply original-game evidence or close the
+[readiness ledger](map3-battle01-readiness.md). It remains **NOT READY** for complete continuous
+8C/H4 milestone acceptance. The remainder is a historical record, subordinate to current accepted
+ADRs and owning documents wherever they differ.
 
 ## Judgment Boundary
 

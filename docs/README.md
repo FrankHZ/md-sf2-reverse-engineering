@@ -23,6 +23,8 @@ Current task routing, private-input selection and independent review.
 
 - [`agent-resume.md`](./operations/agent-resume.md)
 - [`bounded-inspection-and-review.md`](./operations/bounded-inspection-and-review.md)
+- [`github-project-governance.md`](./operations/github-project-governance.md) — Issues/Project own
+  coordination state; tracked documents own evidence and accepted behavior
 - [`local-private-inputs.md`](./operations/local-private-inputs.md)
 - [`phase2-lane-runbook.md`](./operations/phase2-lane-runbook.md)
 - [documentation-agent-audit.md](./operations/documentation-agent-audit.md)
