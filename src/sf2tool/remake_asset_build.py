@@ -23,6 +23,7 @@ from pathlib import Path, PurePosixPath
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 
+from sf2tool.bounded_process import ProcessReceipt, run_bounded_process
 from sf2tool.compression import (
     BasicDecodeResult,
     StackDecodeResult,
@@ -40,7 +41,6 @@ from sf2tool.remake_assets import (
     AssetPreflightError,
     validate_asset_checkout_identity,
 )
-from sf2tool.remake_godot import ProcessReceipt, run_bounded_process
 from sf2tool.texture_extract import (
     TILE_BYTES_4BPP,
     decode_md_4bpp_tile,

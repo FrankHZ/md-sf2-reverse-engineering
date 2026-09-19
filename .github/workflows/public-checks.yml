@@ -48,7 +48,7 @@ jobs:
           $reference = $false
           $research = $false
           foreach ($changedPath in $changedPaths) {
-            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_godot.py', 'src/sf2tool/remake_exploration_content.py', 'remake/reference/inputs/map3-programs.json')) {
+            if ($changedPath -in @('.github/workflows/public-checks.yml', 'src/sf2tool/cli.py', 'src/sf2tool/harness.py', 'src/sf2tool/verification_plan.py', 'src/sf2tool/remake_exploration_content.py', 'remake/reference/inputs/map3-programs.json')) {
               $engine = $true
               $adapter = $true
               $reference = $true
