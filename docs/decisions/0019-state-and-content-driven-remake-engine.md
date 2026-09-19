@@ -852,14 +852,16 @@ onto the common session. It removes, without replacement:
   controlled presets, synthetic lifecycles, legacy private readers and asset catalog);
 - the `remake/reference/game` Godot host with its Map3Root compositions, presenters and smoke drivers;
 - the `Domain`, `Application`, `Content` and `Godot` legacy test projects;
-- five controlled starts whose last consumer was removed with the M3 opening migration; and
+- controlled starts whose last consumer was removed with the M3 opening migration; and
 - the reference-host `verify` command, planner partition and public CI job.
 
-Those tests exercised the legacy wrappers and remake-generated controlled trajectories. They consumed
-no tracked H2/H3 fixture; original evidence stays in `tests/fixtures` and the private common tests
-still compare the common session against it. Useful behavior with a live consumer migrated to
-Engine.Tests: working layout, block-copy action and lifecycle, original traversal, setup selection and
-the Stack decoder used by the private encounter reader.
+Those tests exercised legacy wrappers and controlled trajectories; some also consumed tracked H2/H3
+fixtures. Original evidence stays in `tests/fixtures`. Common-session entry, exploration and activation
+tests cover the migrated admission, castle and region behavior. Engine.Tests also retains the four
+applicable battlefield-movement matrix cases, including expansion order and bucket wrap. The original
+flat-storage row-wrap case remains an explicit logical-map difference, covered by the engine's
+no-row-wrap assertion. Useful behavior with a live consumer also migrated to Engine.Tests: working
+layout, block-copy action and lifecycle, original traversal, setup selection and the Stack decoder.
 
 Production code whose last caller was the reference assembly is deleted: item acquisition,
 area-description selection, map setup-event selection, the map-mutation reducer, the setup catalog and
@@ -873,9 +875,11 @@ owned tooling change retires it and keeps its bounded process runner for the ass
 Ordinary package/export contents remain **unverified**; no maintained export gate exists.
 
 **Confirmed (build and tests):** production projects and Engine.Tests have no Reference project,
-namespace or `InternalsVisibleTo` dependency. With all nine private inputs selected and private tests
-required, Engine.Tests runs 515 cases; 514 pass and the single failure is the presentation-byte case
-whose prepared world lacks the owner's asset pack (an unavailable input, not a behavior difference).
+namespace or `InternalsVisibleTo` dependency. The submitted M5 private run completed with 514 passing
+cases and one presentation-byte failure because its prepared world lacked presentation data. Root
+acceptance preserved that result and reran only
+`PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
+with the retained complete private world; it passes with private tests required and no skip.
 The adapter builds with zero warnings, and the private battle native observations still pass through
 the ordinary host. Broader M2–M4 capabilities, A1–A8 closure, natural continuity and 8C/H4 remain
 open.

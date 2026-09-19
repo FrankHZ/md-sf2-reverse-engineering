@@ -81,6 +81,15 @@ For an ordinary independent Phase 2 slice, follow the normative
 handoff, same-worker correction, recovery, acceptance, and escalation rules. This resume route does
 not duplicate them.
 
+## Work Items and Task State
+
+Open work, ownership, and next steps are tracked as GitHub Issues in the
+[SF2 Modernization project](https://github.com/users/FrankHZ/projects/1) under
+[GitHub Project Governance](./github-project-governance.md). For a dispatched task, read the Issue
+first, then this route and the owners it names. `gh issue view <n>` locates the work; it does not
+replace the read-only Git/worktree/ownership check. Repository documents remain the durable source
+of truth for evidence and accepted behavior; the Project holds coordination state only.
+
 ## When to Read the Global Documents
 
 Read the complete root README, documentation index, or source-coverage ledger when the task owns or
