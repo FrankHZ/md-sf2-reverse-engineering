@@ -16,6 +16,22 @@
   research-owned artifact, and identifies which gaps must be closed for implementation-neutral
   fidelity. Under ADR 0016, it is not a default remake-start prerequisite.
 
+## Current milestone applicability
+
+[ADR 0010's current amendment](../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+selects 8D gameplay/presentation semantics and supersedes the former mandatory 8C target in this
+owner. The hardware capture/API gaps below remain research facts, not milestone blockers or work
+authorization. RA-11 now requires reached presentation identities/order, completion and input-ready
+behavior, not exact pixels, frames, waveforms or hardware clocks. Other unresolved natural gameplay
+claims retain their evidence limits.
+
+The old replay path is disabled. Its recovery, capability validation and transport are not milestone
+prerequisites; the procedures below describe that path only, not every admissible evidence method.
+Preserve actual failures, missing ledger/receipt bytes and the launch prohibition. Main-gate owns
+disposition; necessary new original observations require a specific behavioral question, reuse of
+accepted evidence first, and independent ADR 0014/0015/0016 admission and lineage/budget review.
+No observation, recovery or budget reset is authorized here.
+
 ## Judgment Boundary
 
 This audit is the research-owned counterpart of the Layer B

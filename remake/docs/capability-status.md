@@ -11,7 +11,11 @@ last state is [preserved in Git](https://github.com/FrankHZ/md-sf2-reverse-engin
 provides common-session authored admission and connected HEAL/STAY battles;
 [M2 physical](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m2-ordinary-physical-implementation)
 adds the ordinary physical/death/reward chain. Completed old checks remain evidence of their named
-scope, not obligations to preserve their tests. Accepted 8C/H4 remains incomplete.
+scope, not obligations to preserve their tests. The accepted 8D/H4 milestone remains incomplete under
+[ADR 0010's current amendment](../../docs/decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment).
+Hardware-exact capture/backend gaps and the disabled old replay path no longer gate that milestone.
+Historical 8C limitations below remain limitations, not current acceptance requirements. Natural
+gameplay evidence, reached presentation semantics, private assets and actual H4 execution remain open.
 
 ## Common Authored Battle
 

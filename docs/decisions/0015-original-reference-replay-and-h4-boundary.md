@@ -4,6 +4,16 @@
 - Decision date: 2026-08-24
 - Scope: conditional original-console scenario replay, private reference capture, and remake H4 ownership
 
+## Current acceptance scope
+
+[ADR 0010's current amendment](./0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
+supersedes this document's former 8C hardware-exact requirements with 8D gameplay/presentation
+semantics. Natural continuity, the controllable 5B endpoint, private 7C content, 9A/10A and applicable
+H4 evidence/execution remain required. Earlier 8C-specific capture, clock/tolerance and exact-backend
+requirements below are historical, not implementation or completion prerequisites. The old original
+replay path is disabled and is not a mandatory evidence route. Existing failure records, evidence
+labels and ADR 0015 launch limits remain binding; no new observation is authorized by this change.
+
 ## Context
 
 [ADR 0009](./0009-first-phase4-playable-slice.md) selects one continuous Map 3-through-completion-of-
