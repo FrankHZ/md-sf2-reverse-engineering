@@ -158,19 +158,41 @@ evidence-label rules of `AGENTS.md` applying verbatim to issue bodies and commen
 inputs, absolute private paths, generated artifacts, or redistribution rights; state reproduction
 commands and fixture identity instead of pasted dumps.
 
-### Agent Workflow
+### Task Lifecycle
 
-Dispatch says *what* to work on; it does not replace repository rules. The instruction form is:
+Main-gate plans, dispatches, independently reviews, integrates and tracks work. Within the user's
+authorized scope, it may create a fresh execution task for each bounded, executable Issue without
+requiring the user to create that task manually. Ready is eligibility, not authorization or an
+automatic claim. An epic supplies a target; dispatch its scoped child Issues rather than assign an
+unbounded epic to a permanent role session. No task may select unrelated Backlog work for itself.
+
+Roles and lanes describe responsibilities, not permanent conversations. One execution task owns one
+coherent Issue outcome through implementation and review corrections. A new independent outcome gets
+a fresh task; a test rerun, correction, PR update or compaction does not. Main-gate can be longer-lived,
+but its planning and acceptance state must be recoverable from Issues, PRs and repository owners.
+Main-gate-authored changes still require another independent reviewer.
+
+#### Dispatch and Execution
+
+Before dispatch, main-gate checks the Issue's scope, dependencies, authorization and competing owners,
+then selects an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
+Create the task with the Issue number and outcome in its title. The initial message names the Issue,
+selected checkout, accepted base, local ownership constraints and stopping condition; link stable
+rules and relevant results instead of copying controller history. The core instruction is:
 
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
 > stopping condition.
 
-An executor:
+Record the returned task identity in the Issue's current handoff. Queued creation is pending, not a
+running executor; wait for the task's read-only ownership check before reporting execution started.
+If the creation result is uncertain, locate the existing task before retrying so one Issue does not
+gain two writers. Fresh tasks normally start without a fork of the old controller or role history.
+
+The executor:
 
 1. Reads the Issue, its parent/dependencies, and the linked necessary owners.
 2. Performs the read-only Git/worktree/ownership check required by `AGENTS.md`, checking other
-   active Issues and PRs as well. Ready is eligibility, not an automatic claim or role replacement;
-   obtain assignment and resolve competing ownership before writing.
+    active Issues and PRs as well. Confirm the assignment, selected checkout and ownership before writing.
 3. Sets `In Progress` (with executor identity) only after step 2 confirms it may proceed.
 4. Discovers adjacent work → new linked Issue; never silently expands a slice.
 5. Delivers a committed, pushed Draft PR; moves the item to `Review / Verify` only at its declared
@@ -179,12 +201,62 @@ An executor:
 6. After independent review, acceptance, and merge, the item may move to `Done`. Closing the Issue
    or the PR never substitutes for the task's own acceptance boundary.
 
-Session replacement hands off in the Issue with a compact current-state anchor: base, worktree,
-branch, commit, dirt/process/gate state, preserved failures and Unknowns, and the next stopping
-condition. Do not paste whole chat logs; superseded in-thread instructions do not override the
-Issue's declared stopping condition. Reconcile the anchor with live Git and the latest authorized
-instruction before mutation. Preserve completed failing node IDs/results and process completion;
-do not relabel a completed failing run as interrupted. Private workspace details stay local.
+Report slice completion or a concrete blocker to main-gate; do not add routine status polling.
+Review corrections return to the same execution task and scoped Issue, with In Progress restored when
+the executor resumes. An optional bounded subagent reports to that executor; it is not another
+top-level Issue owner. Completion stops execution rather than starting the lane's next Issue.
+
+#### Recovery
+
+If an execution task cannot continue, main-gate first confirms its writer and active commands have
+stopped and accounts for any retained idle instance, then creates one replacement for the same Issue
+within the original authorization. The Issue
+handoff names the old and new task identities and one compact current-state anchor: base, branch,
+candidate commit, dirt/process/gate state, preserved failures and Unknowns, and stopping condition.
+Keep private checkout and input locations in the local handoff. Preserve the candidate and local
+results; recovery is not a new slice or a reset of runtime budgets.
+
+Require a read-only state check before mutation. The current assignment and anchor supersede stale
+or replayed instructions from old history. Reconcile them with live Git and completed commands;
+preserve failing node IDs and process completion rather than rerunning a completed suite to discover
+its state. Do not replace the accountable executor with an unannounced in-thread subagent. A change
+of main-gate itself needs an explicit coordinator assignment and exclusive integration ownership.
+
+This unit-of-work policy follows the official
+[Codex best practices](https://learn.chatgpt.com/guides/best-practices#organize-long-running-chats):
+keep the same task for the same problem, without a fixed duration or compaction-count limit.
+
+### Worktree Selection and Retirement
+
+Task lifetime and environment lifetime are separate. Prefer an available existing isolated worktree
+for the next Issue after the previous topic is accepted/merged, tracked state is clean, its owned
+processes are settled and exclusive ownership is transferred. Start the new topic from accepted
+`origin/main`; preserve worktree-local inputs, dependencies and results under the existing rules.
+Record any retained idle Godot/debug instance and transfer its control to the new executor rather
+than restarting it solely because the task changed, including during recovery.
+A new task alone does not justify a new SDK, Godot installation, cache or worktree.
+
+Select the destination before calling the task-creation tool. For reuse through the app, use an
+existing isolated worktree registered as its own saved project and explicitly select local execution
+there; an app permanent worktree supports this arrangement. Do not select local execution in the
+canonical integration checkout. If the tool cannot target the reusable checkout, resolve that project
+selection first and report the missing capability; do not silently create another environment.
+New isolation still follows ADR 0006's concurrency or concrete reproduction requirement.
+
+After the Issue's own acceptance and merge, its execution task is eligible for archival. Main-gate
+may use the app's archive tool when the user has authorized that retirement or a policy covering it;
+eligibility alone is not permission to archive every old role task or delete its environment. Check
+that its handoff is recorded, no writer remains and required local material has a verified retention
+location before archiving. Declined or superseded work retains its close reason and unfinished state.
+
+The app distinguishes [managed and permanent worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees#codex-managed-and-permanent-worktrees).
+Archiving a managed task can trigger worktree cleanup; permanent worktrees are not automatically
+removed by task archival. A clean Git tree or app snapshot is not proof that ignored private inputs,
+failure records and gate results are safely retained. If retention is unresolved, leave the task idle
+and record that condition. Worktree/ref deletion remains separately authorized under `AGENTS.md`.
+
+When retiring old role sessions, first reconcile their active work and retained results with Issues.
+Do not revive completed slices, copy entire chat histories, or reset a runtime budget during migration.
 
 ### Migration and Backfill
 

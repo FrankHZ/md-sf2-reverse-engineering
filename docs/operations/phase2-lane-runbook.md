@@ -16,8 +16,10 @@ evidence and genuinely shared dependencies retain their owning requirements.
 ## Root and Worker Setup
 
 Apply `AGENTS.md` and [ADR 0018](../decisions/0018-astra-role-routing-trial.md) for model and task
-routing. The dedicated Research owner scopes and may execute a complete slice directly. Only a small,
-independent single-file, single-assembly, or single-function reverse-engineering subtask may go to
+routing, and [Project governance](./github-project-governance.md#task-lifecycle) for Issue/task lifetime.
+The assigned Research Issue executor may complete its scoped slice directly. It is the root for any
+delegated subtask and owns commit, push and Draft PR handoff; main-gate independently accepts the PR.
+Only a small, independent single-file, single-assembly, or single-function reverse-engineering subtask may go to
 `terra_reverse_engineer`, with no inherited controller turns (`fork_turns: "none"`). If that role is
 unavailable, explicitly select `gpt-5.6-terra` with the same bounded handoff. A worker is not mandatory;
 never assign Terra the whole lane or run parallel writers in one worktree.
@@ -41,7 +43,7 @@ checklist against its full diff, fixes the weaknesses it finds, reports those co
 the work back without staging or committing.
 
 Questions, incomplete evidence, and review findings in a delegated subtask return to the same worker
-through a follow-up. The dedicated owner retains the undelegated work and the complete slice handoff.
+through a follow-up. The Issue executor retains the undelegated work and the complete slice handoff.
 
 ## H3 Closure
 
@@ -56,7 +58,7 @@ question, preserves exact launch and failure accounting, and does not weaken a g
 
 ## Root Acceptance and Handoff
 
-Whether implemented directly or with a bounded worker, the dedicated owner hands off a slice only
+Whether implemented directly or with a bounded worker, the Issue executor hands off a slice only
 after it:
 
 1. reviews any worker handoff, changed-file list, complete diff, evidence, and counters against
@@ -105,8 +107,10 @@ If the sole worker is unresponsive, the lane verifies that no writer process or 
 remains active, interrupts or closes that worker, and starts exactly one replacement with the complete
 unchanged slice contract in the same topic worktree. The replacement is serial: do not start it until
 the prior worker is confirmed stopped. Then continue the normal worker-review-gate flow without user
-or main-gate approval. This recovery rule is for temporary bounded workers, not long-lived lane owners;
-replacement role tasks follow the explicit user-request and current-state-anchor rules in `AGENTS.md`.
+or main-gate approval. This recovery rule is for temporary bounded workers. Recovery of the Issue's
+execution task is coordinated by main-gate under
+[Project governance](./github-project-governance.md#task-lifecycle); never turn a subagent into an
+unannounced replacement executor. Preserve the existing candidate, completed results and failures.
 
 Use **stuck** or **blocked on the user** only for an operational inability to continue:
 
