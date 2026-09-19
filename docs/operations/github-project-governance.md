@@ -1,7 +1,7 @@
 # GitHub Project Governance
 
-- Status: **Proposed for independent acceptance**; effective after this governance PR merges.
-  Hosted configuration changes require separate application and readback.
+- Status: **Accepted governance; hosted configuration applied and read back.**
+  This document describes the current Project configuration and its use.
 - Scope: division of authority between repository knowledge and GitHub work coordination;
   conventions for Issues, Project fields, and milestones.
 - Applies to: agents and humans planning, dispatching, executing, or integrating work in this
@@ -26,7 +26,7 @@ original game.
 
 Issues and the Project are not evidence, and evidence documents do not schedule people. A repository
 document must not be edited just to sync a task status; a Project status never validates an
-original-game claim. On acceptance, this coordination-location rule supersedes older instructions
+original-game claim. This coordination-location rule supersedes older instructions
 that require scheduling or session handoffs to live in tracked documents. It does not supersede
 Git/worktree ownership, private-input protections, verification scope or independent acceptance.
 Accepted capability matrices and coverage denominators remain technical knowledge, not task queues.
@@ -37,11 +37,9 @@ Use [SF2 Modernization](https://github.com/users/FrankHZ/projects/1) as the sing
 Keep it private. Do not create per-lane projects; use multiple views of one item pool. Link this
 owner from the Project rather than duplicating its rules.
 
-This PR changes documents only. At inspection the Project still uses `Todo`, `In Progress`, and
-`Done`; the fields and views below are the target configuration, not a completed remote cutover.
-Until configured and verified, use `Todo` for Backlog and record any unavailable finer status in
-the Issue's current handoff. Do not treat `Todo` as permission to execute. Track configuration and
-lane migration in Issues, not a running checklist in this document.
+The statuses, fields, views and built-in workflows below are configured on that Project. Its
+README links here. Track work ownership, migration handoffs and outstanding acceptance in
+Issues, not a running checklist in this document. A queue entry is not permission to execute.
 
 ### Status Model
 
@@ -71,16 +69,18 @@ Fields (single project-wide set):
 
 - `Area` single-select: `Research`, `Battle Engine`, `Map & World`, `Presentation`, `Content`,
   `Tooling`, `Design`, `Governance`.
-- `Type` single-select: `Epic`, `Feature`, `Research`, `Task`, `Bug`.
+- `Work Type` single-select: `Epic`, `Feature`, `Research`, `Task`, `Bug`. GitHub reserves the name
+  `Type` and rejects it for this personal Project's custom field; use `Work Type` consistently.
 - `Priority` single-select: `P0`–`P3`. `P0` is reserved for a reproduced, actively harming defect
   that must be addressed immediately; it is not a popularity rank.
 
 - `Assignees`: existing GitHub field for the accountable account; agent sessions are not accounts.
-- `Lane`: stable lane responsibility; record the actual executor/session in the current Issue handoff.
+- `Lane` single-select: `Research`, `Design`, `Remake`, `Tooling`, `Governance`. These are stable
+  responsibilities; record the actual executor/session in the current Issue handoff.
 - `Milestone`: existing field for an accepted target, not a new phase numbering scheme.
 
 Optional `graphics` and `audio` labels can distinguish presentation work. Do not duplicate Area,
-Type or Status into separately maintained labels.
+Work Type or Status into separately maintained labels.
 
 Explicit non-goals:
 
@@ -94,10 +94,38 @@ Explicit non-goals:
 
 ### Views
 
-Maintain at least: **Active** (grouped by Status), **Agent Queue** (`Ready` only, ordered by
-Priority and Lane), **Backlog**, **Milestones**. Add a Roadmap timeline only when items carry real
-dates. Project views are presentation only; field values and statuses remain the coordination
+The configured views use table layout and the same item pool:
+
+| View | Filter | Grouping | Sorting |
+| --- | --- | --- | --- |
+| [All items](https://github.com/users/FrankHZ/projects/1/views/1) | None; includes retained completed items | None | Manual order |
+| [Active](https://github.com/users/FrankHZ/projects/1/views/2) | `-status:Backlog,Done` | Status | Priority, then Lane, ascending |
+| [Agent Queue](https://github.com/users/FrankHZ/projects/1/views/3) | `status:Ready` | None | Priority, then Lane, ascending |
+| [Backlog](https://github.com/users/FrankHZ/projects/1/views/4) | `status:Backlog` | None | Priority, then Lane, ascending |
+| [Milestones](https://github.com/users/FrankHZ/projects/1/views/5) | `has:milestone` | Milestone | Priority ascending |
+
+Visible columns are Title, Status, Area, Work Type, Priority, Lane, Assignees, Milestone and Linked
+pull requests. An empty Agent Queue means no item is Ready; an empty Milestones view means no item
+has a milestone. Neither is an execution failure. No Roadmap is configured; add one only when items
+carry real dates. Views are presentation only; field values and statuses remain the coordination
 authority.
+
+### Built-in Workflows
+
+| Workflow | Configuration | Boundary |
+| --- | --- | --- |
+| Item added to project | Enabled: new Issue/PR items enter Backlog | Adding an item does not assign it |
+| Auto-add sub-issues to project | Enabled | Explicit sub-issues of existing items join the same queue; this does not create or dispatch work |
+| Pull request merged | Enabled: the PR item enters Done | Its merge does not complete a parent epic or milestone |
+| Auto-close issue | Enabled: setting an Issue item to Done closes it | Only the acceptance owner sets Done after that Issue's own criteria are met |
+| Item closed | Disabled | Closing canceled, duplicate or unmerged work must not mark it delivered |
+| Pull request linked to issue | Disabled | A PR link must not assign In Progress before executor ownership is confirmed |
+
+Issue closure and Project status are distinct operations: after independent acceptance, the owner
+sets Done; the configured workflow can then close the Issue. If a closing keyword closes an Issue
+on merge, the acceptance owner still sets its Project status. Canceled or superseded Issues retain
+their close reason and are not promoted to Done. Do not enable automatic review or dispatch status
+changes that bypass the entry conditions above.
 
 ## Work Items
 
