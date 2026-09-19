@@ -77,7 +77,9 @@ Ordinals 1 and 2 are diagnostics; ordinal 3 is frozen acceptance. Ordinal 1 is a
 consumed by candidate SHA-256 `9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF`
 with receipt SHA-256 `BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`.
 Before any corrected launch, the runner validates that immutable ledger row's candidate, path, and
-receipt bytes. The corrected candidate may use only diagnostic ordinal 2; ordinal 3 requires its
+receipt bytes. These are nominal sequence rules, not proof of remaining launch availability; the
+[lineage hard stop below](#current-lineage-hard-stop) also applies. A corrected candidate
+could use diagnostic ordinal 2 only if genuine full lineage establishes that it is unused; ordinal 3 requires its
 single same-candidate ordinal-2 `PASS`, whose ledger receipt hash matches actual receipt bytes, and
 a matching replay digest. There is no nominal reset or fourth launch. `uv run sf2 h3 original-reference-replay-capability
 --preflight-only` performs only static/materialization checks and starts no emulator; the
@@ -105,6 +107,98 @@ preflight validates only tracked descriptor identities, source-backed static fix
 passive observer policy; it does not read this capability's candidate, receipt, or ledger and cannot
 create a scenario ledger. It adds no counter, research-index registration, R2b observation, natural
 continuity fact, or H4 result.
+
+## Source-backed start and capture boundary
+
+Evidence date: 2026-09-19. **Confirmed — static API/source only:** the official
+[2.11.1 tag](https://github.com/TASEmulators/BizHawk/releases/tag/2.11.1) resolves to BizHawk commit
+`bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`. Its
+[gitlink](https://github.com/TASEmulators/BizHawk/tree/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/waterbox/gpgx/Genesis-Plus-GX)
+and [submodule declaration](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/.gitmodules)
+select `TASEmulators/Genesis-Plus-GX` commit `051d430d3d1b54625f9900c8f152d7f232e06daf`.
+The release archive identity remains owned by [`manifests/toolchain.json`](../../manifests/toolchain.json).
+This inspection neither rebuilt that binary nor established source-to-binary equivalence or runtime
+compatibility. The complete observation-seam and reproduction inventory is in the
+[scenario owner](original-reference-replay-scenario-api.md#pinned-source-inventory).
+
+The selected implementation route for ADR 0010's controlled start is a **separately admitted BK2
+with an embedded binary core state**, loaded by the host before playback. This is a specification,
+not permission to change this capability:
+
+- [`Bk2Movie.IO.LoadFields`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/bk2/Bk2Movie.IO.cs)
+  reads the core-state lump when the header has `StartsFromSavestate True`.
+  [`BinaryStateLump`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/savestates/BinaryStateLump.cs)
+  names the binary member `Core`; `MovieSaveRam` is a different member. “CoreState” in this
+  capability's prohibition describes the state class, not a claim that `CoreState` is the native
+  binary member name. Exact-three-member validation also rejects `Core`, compressed state members,
+  framebuffer and all other extras.
+- [`MovieSession.RunQueuedMovie`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/MovieSession.cs)
+  invokes `ProcessSavestate` / `ProcessSram` before `StartNewPlayback`.
+  [`IMovie` extensions](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/interfaces/IMovie.cs)
+  load binary state, optionally populate a stored framebuffer, then reset emulator counters.
+  [`GPGX.LoadStateBinary`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Emulation.Cores/Consoles/Sega/gpgx64/GPGX.IStatable.cs)
+  restores Waterbox state and managed frame/lag state, reinstalls callbacks, invalidates the pattern
+  cache and updates video. It is an opaque emulator state, not a portable RAM snapshot or game save.
+- `StartsFromSaveRam` only calls `StoreSaveRam`; it does not establish CPU/program/VDP/audio/RNG
+  continuation. It is not the selected 1A mechanism. Do not import host persistence incidentally or
+  combine independent SRAM with the selected embedded state.
+
+The current capability stays **power-on-only**, fixed at 33 physical rows, with the exact existing
+recipe, observer, configuration and identity checks. Its CoreState/SaveRAM prohibition is unchanged.
+The scenario v1 schemas also fix `startState` to `power-on`; neither schema currently admits the
+selected snapshot route. A separately reviewed scenario transport must explicitly represent and
+validate that route. Widening this capability, feeding a longer movie to its runner, or using a Lua
+state load would bypass its accepted boundary.
+
+The [R1 admitted-start owner](map3-admitted-start.md) supplies controlled state facts and their widths,
+not a reusable BK2 core-state artifact: its timer values include explicit post-observation
+normalization and a later restoration check. A future private start artifact must name its actual
+producer, immutable bytes, configuration, initial source checkpoint and controlled interventions;
+it cannot be synthesized by treating the R1 JSON vector as complete emulator state. After the declared
+admission, input is frozen and the original game alone advances route/battle/return state. No R2d
+bridge, seed/time rewrite, PC redirection, state reload, or adaptive correction may occur there.
+
+**Unknown — runtime and capture:** startup after the movie's first row, state restoration, exact
+input polling, console cleanliness and capture alignment still require their own admitted observation.
+The source-backed A/V APIs and hardware gaps are specified in the
+[8C seam matrix](original-reference-replay-scenario-api.md#selected-8c-observation-seams).
+The capability's disabled sound, receipt-only cleanup and fixed observer cannot simply be reused as
+complete capture support.
+
+### Current lineage hard stop
+
+The known corrected preflight candidate
+`B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` was reported
+`PASS / ProcessStarts: 0`; it is not runtime evidence. Genuine ordinal-1 and subsequent receipt/ledger
+bytes remain unavailable.
+
+On 2026-09-19, main-gate recovered two saved coordination tool outputs: Research at
+2026-08-24T18:24:22Z and the then main-gate's independent check at 18:27:01Z. The
+[coordination disposition](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/443#issuecomment-5745697495)
+reports diagnostic ordinal 2 with `processStarted=true`, PID 24800, a completed 120-second timeout
+FAIL and process-tree termination, for candidate
+`DF763993210BCC20C7D0CC6256AC02BD49FAEDD90E93CAA8CF74F4C40F82DCC5`.
+Its reported receipt SHA-256 is
+`5829F6DE7DC4962C0E88ACE3204EFACACFC29EEDFF6C303496FAA4058EDC49FB` (199,263 bytes);
+reported ledger SHA-256 is
+`0E8F4DFD66DF2E50AA0E7AF32AC5AB81F9BCEAD87EFE442851A53555FD770356`, containing ordinal-1 and
+ordinal-2 rows. Observer status was absent, leaving frame/callback facts **Unknown**. Cleanup reported
+WinError 5/access denied on `lua54.dll` and retained the contained toolchain. The contemporaneous
+main-gate rejected acceptance and explicitly prohibited ordinal 3, retry and reset.
+
+These are recovered coordination reports, not recovered receipt/ledger bytes or original-game
+evidence. The old physical checkout is absent. The bounded review found no subsequent actual
+ordinal-3 launch, which does not establish a complete history. **Unknown — complete lineage and
+remaining admission:** ordinal 2 must no longer be presumed unused; no new launch is admitted.
+Recover the full genuine ledger and both actual receipts, preserve all failures, and obtain an
+independent main-gate lineage/budget disposition before any runtime proposal. Recovery alone cannot
+turn the reported ordinal-2 FAIL into the same-candidate PASS required for ordinal 3. Under the current
+rules this runtime path is blocked, not eligible for another diagnostic or frozen acceptance.
+
+Do not synthesize records from public hashes or saved output, repeat searches without a new named
+location, reset consumption or grant a fourth launch. A new task, scenario wrapper or runner cannot
+erase the conflict; a genuinely separate scenario requires explicit lineage/budget adjudication under
+the [readiness owner](../design/synthesis/map3-battle01-readiness.md#original-replay-lineage-and-launch-admission).
 
 ## Reproduction
 
