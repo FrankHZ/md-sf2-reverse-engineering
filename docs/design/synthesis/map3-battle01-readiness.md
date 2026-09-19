@@ -1,17 +1,8 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for eventual continuous-milestone acceptance; not a default blocker for a separately authorized implementation start
-- Initial gap-audit date: 2026-08-14
-- Initial gap-audit base: commit `21f98cfc9dee5b3589d0612e1058be5a9666fd3a`, tree
-  `6eb4208567f403685c303e9c5f1145aeadf67974`
-- Product-decision date: 2026-08-19
-- Accepted-state refresh: 2026-08-20, commit `9a7cbcb44322e309ef10d8afac76d9a98be76f98`,
-  tree `28c5f9c00a2b095d8b990eb8adc5249ede911704`
-- Static-owner refresh: 2026-08-30, commit `1647ea15c3fabd900d451d5e2bc9c52699137a62`,
-  tree `dddc48d1c0e1d87016b35d9d8f79bf40c1ceef3f`
-- Controlled PlayerReady refresh: accepted `main` commit
-  `8a581a82e297ea2947cc9837e661752163d2806d`, tree
-  `f1df3b15969181be58e751362f7988238333fe29`; consumes research merge #303 (`e51b37e8`)
+- Accepted evidence baseline: `3aef44e39a86be470ad17f52a2680e5938b487fc`; original findings
+  retain the exact provenance in their linked owners and fixtures.
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
 - Product profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md)
@@ -49,19 +40,14 @@ The following distinctions are normative:
 No unmerged Research result contributes to this ledger. A future update may consume new evidence only
 after it is accepted on `main`.
 
-The 2026-08-20 refresh records the integrated battle-functions contract and ADR 0010. The 2026-08-30
-refresh records only the later accepted R1/R2/R2a runtime owners and R2b-through-R4a static chain
-against the named accepted-main base. Neither refresh reruns the complete original gap audit or
-promotes an unmerged Research, ignored/private, failed-replay, or tooling conclusion.
-
-The controlled PlayerReady refresh reconciles accepted #303, not a new emulator observation. Review
+The evidence review reuses accepted #303, not a new emulator observation. Review
 checked the [admission research owner](../../research/map3-battle01-admission.md),
 [H3 fixture](../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json),
 [fixture schema](../../../schemas/h3/map3-battle01-player-ready-fixture.schema.json), and
 [verifier](../../../src/sf2tool/h3/map3_battle01_player_ready.py). The owning reproduction commands
 are `uv run sf2 h2 map3-battle01-admission` and `uv run sf2 h3 map3-battle01-player-ready`; neither is
 rerun for this documentation-only reconciliation. The fixture explicitly records a
-`controlled-harness-bridge` with `naturalR2bContinuity: false` and stops at
+`explicit-controlled-harness-bridge` with `naturalR2bContinuity: false` and stops at
 `ControlBattleEntity.after-WaitForVInt-before-input-read`. Thus the bounded ready state is accepted,
 but natural R2a-to-R2b continuity remains **Unknown**.
 
@@ -69,7 +55,7 @@ Current remake behavior is tracked separately by
 [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md) and the
 [capability ledger](../../../remake/docs/capability-status.md). Implemented common-session admission,
 battle outcomes, and exploration return do not establish original natural continuity or complete
-8C/H4 acceptance. This refresh does not rerun the full gap audit or close those gaps.
+8C/H4 acceptance. The review reuses the existing Research audit and does not rerun or close its gaps.
 
 ## Readiness Classification
 
@@ -267,91 +253,133 @@ without turning evidence-owned exact values into product choices.
 | intentional deviations | **Accepted: 10A explicit ledger** | controlled admission, optional scope, modern controls, no save, fixed reference trace, and out-of-domain engine behavior require named checks |
 | optional tooling | **Deferred and non-blocking; no MCP adopted** | CLI gates remain authoritative; no tooling choice starts Phase 4 |
 
-## Ordered Closure Plan
+## Remaining Acceptance Plan
 
-### Slice 0: durable readiness ledger
+### Reuse and disposition of the existing audits
 
-This document is the only owned artifact in its initial slice. It has no executable fixture
-registration and no research-index `designContracts` association. After preliminary semantic review,
-its only shared registrations should be the `docs/README.md` synthesis index and one pending entry in
-`manifests/zh-translation-index.json`.
+The [Research audit](../../research/map3-battle01-audit.md#research-gap-register) already owns
+RA-01–RA-12; this ledger already owns Design readiness. Neither audit is missing. Research alone
+updates its evidence register after accepted observations; Design updates the affected rows here
+and the eventual continuous contract. Closing this planning work closes neither audit.
 
-### Slice 1: battle-functions control contract
+| Existing owner or gap | Reusable accepted surface | Remaining acceptance disposition |
+| --- | --- | --- |
+| RA-01 / controlled start | R1 exact controlled start and the admitted-start contract | Keep the bounded PASS; do not demand a visible New/load flow excluded by 1A. Any route-relevant initial field still needs its declared provenance. |
+| RA-02–RA-05 / route, admission, state | R1/R2/R2a prefixes, R2b/R2c static chain and R2d controlled PlayerReady | Retain each closed local boundary. Research must resolve the omitted natural follower-ready-to-Map21 segment and route-carried caller/state facts before closing natural composition. |
+| RA-06 / complete battle | R3a–R3d static owners and existing local battle contracts | Keep complete original trace, viable fixed seed and reached action/results open. Remake victories do not close this row. |
+| RA-07 / RA-12 / return and endpoint | R4a static spine; remake comparison described below | Research must establish original after-program effects and the first stable controllable 5B endpoint. Design then binds exact fields, input readiness and no pending program/modal/transfer/battle. |
+| RA-08 / RA-09 / menu and dialogue | R2/R2a `FieldMenu` NotReached; static program/text identities | Close only route-required coverage after the natural route is known. No blanket field-menu or optional-dialogue task; prose/captures stay private. |
+| RA-10 / persistence | Accepted 6A exclusion | No save implementation or durability observation is needed for this milestone. H4 must check restart-to-admitted-state and absent user save/resume surfaces. |
+| RA-11 / original 8C | Static presentation/resource owners and bounded observations | Full reached original pixel/palette/frame/audio/hardware domain, provenance, deterministic conditions and comparison definitions remain open. Asset availability alone closes none of these. |
+| Design contracts and product choices | Battle-functions contract and ADR 0010 profile | Keep these closures. The missing continuous contract and H4 definitions/execution remain separate gates, not a reason to reopen closed subsystem contracts. |
 
-**CLOSED.** [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md) consumes
-only `sf2-battle-functions-static-v1` and associates exactly the 15 `battle.functions.*` records
-listed in this ledger. Runtime input, complete cancellation, presentation, caller effects, and
-natural Battle 01 reachability remain separate or **Unknown** as required.
+**Confirmed remake scope:** accepted outcome implementation
+[`8a581a82`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/8a581a82e297ea2947cc9837e661752163d2806d)
+and the [exploration execution owner](../../../remake/docs/exploration-programs.md#battle01-outcome-after-program-and-return)
+provide a continuous common session through victory or ordinary defeat and usable field return.
+Accepted R4a comparison
+[`26e91107`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/26e91107160b2c6f088b01ad31704ce9282fcba6)
+consumes the unchanged R4a fixture for program/join/flag/return order. Its comparison reads static
+source expectations, not a natural original observation. Initial accounting/seeds and ordinary-defeat
+Map3 egress remain controlled inputs. Defeat coverage is reusable implementation coverage, not an
+additional original-reference winning trace required by 4A/5B.
 
-### Slice 2: explicit product acceptance decision
+**Unknown original fidelity / explicit implementation limits:** the
+[capability owner](../../../remake/docs/capability-status.md#milestone-and-deferred-surfaces) retains
+natural caller/accounting/seed/egress, complete presentation and H4 gaps. EGRESS and wider action,
+status, item/setup-event and other unsupported consumers do not become work items unless the accepted
+route/action set requires them. Modern white fades, mosaic, shiver and project-authored cues are
+implemented presentation services; their presence is not exact original frame/audio/hardware parity
+or an accepted additional 10A waiver. Compare the selected domain, implement missing fidelity, or
+seek an explicit product decision before excluding a mismatch. The selected tier stays **8C**;
+a private-input difference or unavailable capture never silently selects 8A.
 
-**CLOSED.** [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) accepts the exact
-profile recorded above without rewriting product choices as original behavior. Closing these choices
-does not start Phase 4.
+**Confirmed implementation gap:** current
+[`GameRoot`](../../../remake/game/src/GameRoot.cs) accepts only the three session-start path options;
+[`ExplorationSessionView`](../../../remake/game/src/Exploration/ExplorationSessionView.cs) and
+[`BattleSessionView`](../../../remake/game/src/Battles/BattleSessionView.cs) handle fixed keyboard keys.
+The full 9A keyboard/gamepad remapping, confirm/cancel convention and flash/text configuration is
+not implemented. This is an independently actionable product requirement, not an original-evidence
+question. Remake can implement it on the current common session, with direct input/state/projection
+checks and explicit accessibility deviations; it need not wait for replay recovery or claim 8C.
 
-### Slice 3: accepted static chain and conditional runtime closures
+Accepted M5 at
+[`9301ddac`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/9301ddac0e07fd2c5a87caeb19c69179025d0698)
+retired legacy reference consumers while retaining applicable movement comparisons. Preserve the
+completed #431 presentation-input failure at
+`PrivateExplorationTests.PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`
+and its separate complete-private-world rerun (1 passed, 0 skipped). Neither overwrites the other;
+neither proves 8C. No old runtime or aggregate suite is reinstated by this plan. The separate #434
+map-exploration mirror label failure (13 English / 11 Chinese) is not this ledger's correction scope.
 
-The R1/R2/R2a runtime fixtures, R2b-through-R4a static fixtures, and R2d explicit-bridge PlayerReady
-fixture listed above are accepted. R2d closes only its controlled continuation and first input seam;
-it does not close the omitted natural castle segment or a complete battle.
-Eventual continuous-milestone acceptance still requires bounded closure for:
+### Dependency and completion boundaries
 
-1. natural R2a-to-R2b-to-R2c continuation and caller order into Battle 01;
-2. selected later setup/event/program/dialogue/menu/state effects not closed by the bounded runtime prefix;
-3. natural Battle 01 entry, including required before/start cutscene execution and initialized state;
-4. one complete playable multi-round path through victory, identifying every reached player, AI,
-   navigation, action, resolution, reward, and status branch;
-5. after-battle program effects, return routing, and exact observable end state;
-6. full reached 8C presentation and hardware behavior: pixel/palette output, frame cadence,
-   animation/timing, audio waveform/chip/timing, VInt/DMA/CRAM/VDP and other observable behavior;
-7. private reference-capture provenance, deterministic capture conditions, exact or field-specific
-   tolerances, and licensing-safe public reporting.
+This is an acceptance dependency map, not a dispatch queue. Each future Issue needs a named executor,
+exact paths and independent main-gate admission under the
+[Project lifecycle](../../operations/github-project-governance.md#task-lifecycle). Preparation may
+proceed using accepted static facts; missing runtime values stay unfilled.
 
-Research may group these observations into one or more fixtures only when ADR 0014's immediate
-three-part gate admits the caller-dependent question. Static owners already accepted on `main` must be
-reused rather than reopened. Failed R2b and original-reference candidates remain non-evidence under
-ADR 0015. Design must not name unaccepted fixture IDs or consume unmerged conclusions in advance.
-This list is not a default implementation-start queue.
+| Surface and accountable owner | Entry/dependency | Completion and stopping condition |
+| --- | --- | --- |
+| Replay lineage recovery — Research/tooling | Existing capability owner and retained actual launch records | Read-only recovery identifies the original ledger plus matching first receipt, or records unavailable/mismatch and stops. It does not initialize a ledger or launch an emulator. |
+| Capability runtime validation — Research/tooling | Genuine lineage recovered; exact corrected candidate; separately admitted remaining budget | Validate deterministic playback/callback/exit/cleanup behavior; independently accept and merge the bounded result. The 33-row capability is non-semantic, never scenario evidence. |
+| Scenario transport — Research/tooling | Accepted capability/protocol owners; exact selected scenario transport requirements | Bind real frozen input transport, declared start/configuration, passive checkpoints, typed receipts/captures, timeout and cleanup through existing mechanisms. Offline implementation can precede runtime recovery; no execution is admitted by it. Stop before scenario observation until capability runtime is accepted and scenario budget/ownership is independently declared. |
+| Original natural route and reference evidence — Research | Accepted runtime capability and scenario transport; ADR 0014 question admission below; frozen trace and provenance | Accept only observed natural route, reached battle/actions, after-program, 5B endpoint and named 8C captures. Update existing RA rows with exact fixtures/commands; unobserved surfaces stay open. A failed/partial run stops at its typed result. |
+| Continuous-scenario contract — Design | Accepted Research values for every asserted continuous boundary | Proposed `docs/design/contracts/map3-battle01-continuous-scenario.md` composes admitted start, natural route/admission, winning logical trace, after-program and exact endpoint. Prepare structure now; final evidence-bound acceptance waits for the required observations. Derive associations from evidence, never all 26 aggregate Map3 rows. |
+| H4 definitions — Design | Continuous contract plus accepted Research comparison domains/provenance and ADR 0010 deviations | Specify each layer's input, observation, expected value/owner, exactness/tolerance, failure/unavailable and cleanup rules. Future `schemas/h4/` and `tests/fixtures/h4/` identities/registrations are selected by that slice, not invented here. Definitions can be prepared alongside the contract but cannot claim missing evidence. |
+| 9A input/accessibility implementation — Remake | Accepted 9A product behavior and current common session; independent of original replay recovery | Expose and apply keyboard/gamepad mappings, confirm/cancel convention, flash/text modes across exploration/battle/return. Verify logical decisions, acknowledgements and completion with real input/state/projection; leave exact 8C reference separately pending. |
+| H4 implementation and execution — Remake/harness | Definitions accepted on main; required supported engine behavior and private inputs available | Consume frozen accepted evidence without launching the original to generate a golden. Run actual state/input/projection and required private comparisons, report every applicable layer and deviation, including failures/unavailable. No screenshots for Godot acceptance. |
+| Final milestone review — main-gate | Research and Design closures plus successful applicable H4 execution | Independently accept the continuous playable 5B endpoint and current 8C profile. A contract, preflight, replay, engine test or child Issue closure alone is insufficient. |
 
-### Slice 4: continuous-scenario contract
+The [capability owner](../../research/original-reference-replay-capability.md) supplies a fixed
+33-physical-row transport recipe, not an arbitrary scenario runner. The
+[scenario API](../../research/original-reference-replay-scenario-api.md) supplies a data-only descriptor
+and passive-observer protocol; its generic sample and synthetic artifact identities are not a real
+movie or scenario execution. Both owners are accepted at
+[`f00c20f3`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f00c20f317b3e1c5c63a858df5e5b5abcb4a309d).
+Reuse their transport kernel, containment, receipt and observer policy before adding machinery;
+changing a CLI entry point does not complete the missing transport or grant a new launch lineage.
 
-After the runtime/natural closures actually required by the eventual milestone are admitted and
-accepted, the smallest coherent scenario contract is proposed as
-`docs/design/contracts/map3-battle01-continuous-scenario.md`. Its exact fixture and association set
-must be derived from those accepted owners. It must not automatically claim the 26 Map 3 aggregate
-rows or duplicate existing battle owners.
+### Original replay lineage and launch admission
 
-The contract should define the admitted state, ordered route, transition, complete accepted battle
-trace, after-battle effects, observable endpoint, and H4 composition. It must preserve every local
-fixture as the authoritative subsystem golden rather than copying selected expectations into one
-weaker aggregate fixture.
+The capability owner fixes consumed diagnostic ordinal 1 to candidate
+`9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF` and receipt
+`BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6`.
+Recovery must locate the genuine ledger row and actual receipt bytes, verify their existing
+candidate/receipt identities and original relationship using the owning validator, and preserve all
+prior failures. Synthetic test scratch, reconstructed JSON, an empty ledger or a new output root
+cannot replace them. The current coordination record reports no recovered real ledger/first receipt;
+this plan performs no new private search or validation and does not promote that search to evidence.
+If records remain missing or inconsistent, the runtime path remains unavailable and returns to
+main-gate for a concrete resolution; there is no automatic reset.
 
-### Slice 5: conditional contract extensions
+The recorded candidate preflight `B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA`
+returned PASS with `ProcessStarts=0`. This is a retained preflight result, not a launch receipt or
+runtime-compatibility proof, and is not rerun by this docs-only plan. Recovery and a fresh successful
+preflight are necessary but not sufficient for any later launch authorization. Under the capability
+owner, only diagnostic ordinal 2 can remain; ordinal 3 is frozen acceptance and requires a single
+same-candidate ordinal-2 PASS, actual receipt-hash validation and matching replay digest. No fourth
+launch is allowed. A new task, wrapper, scenario ID or transport implementation cannot erase already
+consumed launches. A genuinely separate scenario slice needs explicit lineage and budget adjudication
+under ADR 0015, not an assumed fresh allowance.
 
-Only the accepted route and product profile may trigger these:
+### Conditional runtime questions
 
-- a field-menu control contract when the route requires it;
-- bounded AI, combat, spell, save, dialogue, or presentation extensions for actually reached gaps;
-- no blanket closure of unrelated optional content.
+These are admission dossiers for concrete acceptance gaps, not authorization to run. ADR 0014/0016
+require caller dependence, material contract impact and inability to use an existing batched rail
+before creating any new H3 fixture. Prefer extending an accepted rail; no per-NPC or per-Unknown work.
+ADR 0015 additionally requires passive observation, a frozen non-adaptive input trace, private outputs,
+typed callback/exit/cleanup failures and the unchanged stop-loss.
 
-### Slice 6: final readiness update
+| Question and acceptance impact | Existing static evidence / rails to reuse | Independent admission and stop boundary |
+| --- | --- | --- |
+| Does the frozen transport execute the declared rows/checkpoints and exit cleanly? Without that, later reference provenance is invalid. | Existing capability materializer, containment, observer and scenario protocol; preflight proves structure only. | Capability-only runtime authorization after genuine ledger recovery; remaining ordinal rules above. Stop at receipt and cleanup; no R2b/R4b/H4 fact. |
+| Does the admitted original state naturally traverse the omitted R2a-to-R2b segment, carry the real caller/accounting/RNG state into Battle01, and complete the selected winning route through a controllable 5B endpoint? This determines 2A/3A/4A/5B and RA-02–RA-07/RA-09/RA-12. | R1/R2/R2a and R2d observation seams; R2b/R2c/R3a–R3d/R4a static fixtures. R2d's state-writing bridge cannot prove the omitted natural segment; R4a stops before exploration executes. Existing remake observers choose actions from live state and are not admissible original frozen replay traces. | Research first states which accepted rail can cover the question and why static topology cannot establish reached caller state. Prefer one batched admitted scenario; any new fixture requires an explicit rail-reuse finding. Freeze trace/start/seed before launch, no live state injection or adaptive input. Stop at first typed failure, budget limit or declared stable endpoint. |
+| What exact reached pixels/palette, cadence/animation, waveform/chip timing and VInt/DMA/CRAM/VDP behavior must 8C compare? This determines RA-11 and H4 layer 9. | Existing graphics/audio/resource and local hardware owners; reuse the admitted scenario capture and passive observation seams. Asset identities and modern services cannot establish runtime timing/output. | Define reached domain, capture method/provenance and deterministic conditions before any process starts. Reuse the same admitted replay where possible; a separate launch/fixture needs the three-part gate and its own explicit ownership, without budget reset. Stop if the accepted toolchain cannot observe the selected domain; report unavailable, never reduce to 8A. |
 
-This ledger may change from **NOT READY** to **READY FOR PHASE-TRANSITION DECISION** only after:
-
-- every required runtime/natural closure is either accepted on `main` or explicitly excluded by an
-  accepted owner without weakening the continuous milestone;
-- the continuous-scenario contract is accepted (the battle-functions contract is already closed);
-- all route-required conditional owners are accepted;
-- the accepted ADR 0010 profile remains internally consistent with every scenario/H4 owner;
-- the private-local asset inventory, provenance, ignored-input handling, and no-public-distribution
-  boundary are closed; a distributable build remains separately blocked until rights/replacements exist;
-- the complete H4 acceptance contract and matrix, executable check definitions, observable layers,
-  tolerances, and declared expected deviations are fully specified and accepted on `main`;
-- main-gate independently reports readiness.
-
-The separate user start action required by ADR 0009 occurred on 2026-08-28 for bounded Phase 4
-implementation under ADR 0016. It satisfies the implementation-start gate but does not change this
-ledger's **NOT READY** status or waive any eventual continuous-milestone gate above.
+Only complete, independently accepted Research projections on main close evidence rows. Keep private
+capture payloads and detailed receipts ignored. Complete original-reference playback is still not
+H4 PASS; remake parity requires the separately accepted definition and execution path above.
 
 ## H4 Composition Rules
 
@@ -376,11 +404,30 @@ Each layer must reference its owning accepted fixture. The continuous adapter mu
 subsystem fixtures, copy their expected numbers into engine-specific tests, require original RAM/ROM
 addresses in the remake, or publish private original text, graphics, audio, or captures.
 
-Before the continuous milestone is accepted, readiness requires this acceptance surface and its
-executable check definitions to be complete and accepted, not executed successfully against a remake
-that does not yet close this scenario. Building the continuous remake adapter and obtaining H4 PASS
-results remain Phase 4 implementation and milestone gates after the already-recorded separate user
-start action.
+Definition readiness requires the complete accepted surface and executable check definitions.
+Milestone acceptance additionally requires their successful execution against the remake. A ready
+definition is not a passed comparison, and the implemented continuous route is not a substitute for
+the missing original reference or any 8C layer.
+
+### Initial deviation inventory mapped to H4
+
+This is the acceptance mapping of ADR 0010 section 10's existing inventory, not a new deviation
+ledger. Layer numbers refer to this document's ten-layer list above; the ADR groups them differently.
+Each result must remain visible in layer 10 even when it passes. The comparison owns fixture-domain
+rules; a fixed round, actor sequence or receipt count never becomes production gameplay legality.
+
+| Accepted deviation and owner | Affected H4 layers | Required expected result |
+| --- | --- | --- |
+| Controlled snapshot in place of visible New/load — 1A | 1, 2, 10 | Exact admitted snapshot/provenance matches; report omission of the visible flow. Do not describe it as natural New/load. |
+| Exclude optional Map3 interactions/menus — 2A | 2, 3, 10 | Enumerate required reached route steps; show excluded optional scope. A mandatory interaction cannot be removed under this deviation. |
+| Modern remappable input and accessibility — 9A | 2, 3, 5, 7, 9, 10 | Keyboard/gamepad produce the same logical decisions; swapped confirm/cancel retain their roles. Reduced-flash reaches the same completion without its suppressed cue; adjusted/instant text preserves acknowledgement and route results. Expose binding/convention/flash/text settings. Run these separately from the declared original-fidelity 8C configuration; do not assert identical device cadence or altered visual timing. |
+| No user save/load/checkpoint/suspend — 6A | 1, 8, 10 | User persistence surfaces are absent; restart returns to admitted state. Harness reset is not a save feature. |
+| Fixed seed/logical H4 trace; interactive play may diverge — 4A | 1, 2, 5, 7, 10 | Reference execution declares a Research-proven seed and immutable logical trace; ordinary controls remain available and valid changed state/content follows engine rules. Never reseed live play to force parity. |
+| Engine-native safe behavior outside admitted fixture domains — 10A | affected state/action layer, 10 | Explicitly name each out-of-domain case and safe/Unsupported result. Do not infer original behavior from rejection or use this deviation to exclude an in-domain failure. |
+
+7C private-only assets and no redistribution are layer-8 product/provenance boundaries, not extra
+fidelity deviations. Missing private inputs yield Unavailable. Other modernization needs a separate
+accepted decision; it cannot enter this table merely because the current adapter behaves that way.
 
 ## Public and Private Boundary
 
@@ -421,13 +468,17 @@ uploads, public-CI requirements, or distributable build contents.
 | exact endpoint state evidenced | OPEN | conditional runtime evidence, then scenario contract |
 | save scope selected | PASS | ADR 0010 option 6A excludes save/load/checkpoint/suspend |
 | accessibility/input product interface selected | PASS | ADR 0010 option 9A |
-| accessibility observable checks composed | OPEN | Continuous H4 contract; deviations separate from the 8C exact reference run |
+| 9A input/accessibility configuration implemented and observable checks composed | OPEN | Remake implementation plus Design H4 definitions; deviations separate from the 8C exact reference run |
 | 7C private-local asset mode and no-public-distribution boundary selected | PASS | ADR 0010 |
 | exact private asset/capture inventory and provenance accepted | OPEN | Research/private-input acceptance; no payload enters Git/public CI |
 | public/distributable asset rights or replacements | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate licensing/replacement decision before any public build |
 | 8C visual/audio/hardware parity tier selected | PASS | ADR 0010 |
 | complete reached 8C evidence, capture domain, and tolerances accepted | OPEN | conditional Research/private-reference acceptance, then continuous H4 contract |
-| continuous H4 acceptance surface and executable check definitions accepted | OPEN | Scenario contract |
+| continuous H4 acceptance surface and executable check definitions accepted | OPEN | Design H4 definitions after the continuous contract |
+| original replay lineage and runtime capability accepted | OPEN | Research/tooling; genuine consumed ledger and receipt required |
+| scenario transport and natural reference evidence accepted | OPEN | Research; data-only API/preflight is insufficient |
+| continuous-scenario contract accepted | OPEN | Design, consuming accepted Research |
+| all applicable remake H4 layers and deviations executed successfully | OPEN | Remake/harness then independent main-gate; separate from definition readiness |
 | main-gate readiness report accepted | OPEN | Main-gate |
 | separate user Phase 4 start action | PASS | User authorization recorded in [`remake/README.md`](../../../remake/README.md); implementation start only, not milestone readiness |
 
