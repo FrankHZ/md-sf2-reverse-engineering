@@ -30,12 +30,11 @@ the [execution owner](./docs/exploration-programs.md#battle01-outcome-after-prog
 records the selected source, controlled input and unsupported boundaries.
 Godot’s ordinary `game/Main.tscn` instantiates `GameRoot` and builds with only Domain/Application/Content.
 Default and explicit authored/private-common starts use this entry; invalid options produce a startup
-diagnostic without selecting another route. The explicit `reference/game` project retains the old
-Map3/reference host and smoke consumers. [Startup and diagnostics](./docs/development-and-verification.md#ordinary-and-reference-host-startup)
-are separate from gameplay. Godot hosts real movement/action input and projects semantic results. The old
-public-synthetic/private-local Map 3 routes are retained in a separate
-[transitional reference assembly](./reference/README.md); their fixed admission, endpoint handlers and
-adapter scheduling remain explicit legacy limitations in the [audit](./docs/architecture-audit.md).
+diagnostic without selecting another route. [Startup and diagnostics](./docs/development-and-verification.md#ordinary-host-startup)
+are separate from gameplay. Godot hosts real movement/action input and projects semantic results. The
+transitional reference assembly, its `reference/game` host and the legacy test projects were retired at
+[M5](../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation);
+[`reference/`](./reference/README.md) now holds only external controlled comparison inputs.
 
 [ADR 0019](../docs/decisions/0019-state-and-content-driven-remake-engine.md) is the adopted direction
 to common commands, live state and configurable typed content, resumable programs, and separate
@@ -77,13 +76,11 @@ incomplete, including natural continuity and original presentation. Engine migra
 | --- | --- | --- |
 | `public-authored` | default local start, or `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; the connected world executes opening, Battle01 and both supported outcomes/returns. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
-| `public-synthetic` | explicit legacy selection; tracked project-authored fixed package and placeholders | redistribution-safe bounded implementation and export smoke; no original fidelity |
-| `private-local` | explicit ignored canonical input; optional selected battle inputs and reviewed local art | bounded controlled original-data consumers and diagnostics; incomplete original fidelity |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back
 while reporting private success. Authored battles, the standalone initialized private entry and the
-connected private world use the common runtime. The reference host retains independent source/input
-and fixed action comparisons; migrated outcome/recovery/return executors and their UI callers are removed.
+connected private world use the common runtime. The legacy `public-synthetic` and `private-local`
+profiles were retired with the reference host at M5.
 
 ## Local Presentation Asset Preflight
 
@@ -109,23 +106,24 @@ aggregate. Needed adapter checks observe the actual running Godot state/input; s
 From the repository root, `uv run sf2 verify engine` runs locked restore/build/unit tests of the
 dedicated engine project. `uv run sf2 verify adapter` compiles the actual adapter. The
 [verification guide](./docs/development-and-verification.md#github-public) owns current CI scopes and
-main-gate's required-check configuration boundary. The legacy solution is no longer the engine gate.
+main-gate's required-check configuration boundary.
 Documentation-only work uses direct document checks.
 
 ## Repository Layout
 
 ```text
 remake/
-  Sf2.Remake.sln                 current solution, including legacy test projects
+  Sf2.Remake.sln                 production projects and Engine.Tests
   src/Sf2.Remake.Domain/         deterministic rules and state transitions
   src/Sf2.Remake.Application/    GameSession, control flow, content ports and observations
   src/Sf2.Remake.Content/        validated input readers and definition construction
   game/                         Godot project, composition, input and presentation
   tests/Sf2.Remake.Engine.Tests/ actual new-engine behavior unit tests
-  tests/                        other legacy/reference consumers
+  tests/Shared/                 private-input test selection attribute
+  reference/inputs/             external controlled comparison inputs
   docs/                         current implementation, direction, capability and usage owners
   global.json                   pinned SDK
-  toolchain.json                pinned official Godot artifacts and process bounds
+  toolchain.json                pinned official Godot artifacts
 ```
 
 ## Boundaries

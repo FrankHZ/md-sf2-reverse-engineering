@@ -9,12 +9,12 @@ internal static class AiMovementRules
 {
     internal static AiPursuitDecision Pursue(IReadOnlyList<sbyte> rawCosts, WeightedMovementGrid legal,
         MapPosition origin, IReadOnlyList<MapPosition> targets, Func<MapPosition, bool> occupied,
-        int width, int height, bool preserveFlatRowNeighbors = false)
+        int width, int height)
     {
-        var raw = WeightedMovement.Build(rawCosts, origin.Y * 48 + origin.X, 128, preserveFlatRowNeighbors);
+        var raw = WeightedMovement.Build(rawCosts, origin.Y * 48 + origin.X, 128);
         var costs = targets.Select(target => raw.CostAt(target)).ToArray();
         int selected = PursuitTarget(costs); var target = targets[selected];
-        var reverse = WeightedMovement.Build(rawCosts, target.Y * 48 + target.X, 128, preserveFlatRowNeighbors);
+        var reverse = WeightedMovement.Build(rawCosts, target.Y * 48 + target.X, 128);
         int startCost = reverse.CostAt(origin) ?? throw new BattleRuleException("ai-move-path", "ai.move.path", true);
         var preliminary = Walk(reverse, origin, Math.Max(0, startCost - 4), width, height);
         var destination = preliminary.MoveString.Count == 1 ? origin :

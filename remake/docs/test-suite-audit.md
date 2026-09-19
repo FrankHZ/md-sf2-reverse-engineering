@@ -11,8 +11,8 @@ tests by behavior. No count parity, per-deletion replacement or green legacy agg
 [Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
 implements common-session authored battle behavior under the
 [verification owner](./development-and-verification.md#github-public). Engine.Tests consumes only
-production Domain/Application/Content. Legacy test projects explicitly reference the temporary
-reference assembly; they remain outside mandatory engine CI. Accepted 8C/H4 remains incomplete. Preserve the historical evidence and completed
+production Domain/Application/Content. The legacy test projects audited below were retired with the
+reference assembly at [M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation); their useful live-rule families moved to Engine.Tests. Accepted 8C/H4 remains incomplete. Preserve the historical evidence and completed
 failures below without replaying its repair queue.
 
 The counts and investigation below remain a snapshot of the named `f9dbfd5` base. Its statements
@@ -146,18 +146,18 @@ references below resolve in the audited Git object.
 
 | Layer and example | Protected failure and assessment |
 | --- | --- |
-| Domain: [WorkingMapLayoutTests](../tests/Sf2.Remake.Domain.Tests/Maps/WorkingMapLayoutTests.cs), `ForwardHorizontalOverlapCascadesWhenDestinationFollowsSource`, its reverse and vertical companions | Fixed small expected arrays distinguish ordered cascading copy from buffered copy. Similar inputs cover materially different overlap semantics. Retain these and source immutability/span boundaries. |
-| Application: [OriginalMapGameSessionTests](../tests/Sf2.Remake.Application.Tests/OriginalMapGameSessionTests.cs), `RoyalReturnCommitsExactDestinationAndRetainsControlledState`, `RoyalReturnBusyAndInvalidMovementPreserveBothAuthorities` | Both movement entry points must select the exact destination runtime/facing, retain route and bridge state, clear transient receipts, and preserve snapshot/locomotion/bridge on rejection. Cross-layer reuse of coordinates is valuable here because transaction authority is different from parsing. |
-| Content: [LocalPresentationAssetPackReaderTests](../tests/Sf2.Remake.Content.Tests/LocalPresentationAssetPackReaderTests.cs), `SemanticRasterLookupRejectsMissingSelectionAndPostAdmissionDrift`, `FakeApplicationAdmissionCannotRedirectSemanticPayloadSelection`, reparse-point tests | Reopening admitted files, forged port data, path escape, and post-admission drift are distinct trust failures. Keep adversarial cases and defensive-copy checks; a happy-path smoke cannot replace them. |
-| Godot: [PrivateOriginalMapBaseViewportTests](../tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs), `CurrentAreaOverlayUsesLatestShiftedLayoutAndZeroBlockHoles`; [PrivateMap3CameraProjectionTests](../tests/Sf2.Remake.Godot.Tests/PrivateMap3CameraProjectionTests.cs), clamp and locomotion tests | Explicit green/red/blue pixels, mutable-layout reprojection, 2x/4x buckets, bounds, and movement offsets catch adapter regressions. Keep distinct scale/boundary cases. These pure projections do not prove native draw output, input polling, DPI behavior, or original rendering. |
-| Shared synthetic battle: [PrivateOriginalMapBattleBridgeTests](../tests/Sf2.Remake.Application.Tests/PrivateOriginalMapBattleBridgeTests.cs) and [TacticalBattleTests](../tests/Sf2.Remake.Domain.Tests/Battles/TacticalBattleTests.cs) | Deterministic battle behavior and private snapshot isolation protect the reducer currently reused by the manual bridge. Synthetic provenance limits fidelity claims, not regression value. |
+| Domain: [WorkingMapLayoutTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Domain.Tests/Maps/WorkingMapLayoutTests.cs), `ForwardHorizontalOverlapCascadesWhenDestinationFollowsSource`, its reverse and vertical companions | Fixed small expected arrays distinguish ordered cascading copy from buffered copy. Similar inputs cover materially different overlap semantics. Retain these and source immutability/span boundaries. |
+| Application: [OriginalMapGameSessionTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Application.Tests/OriginalMapGameSessionTests.cs), `RoyalReturnCommitsExactDestinationAndRetainsControlledState`, `RoyalReturnBusyAndInvalidMovementPreserveBothAuthorities` | Both movement entry points must select the exact destination runtime/facing, retain route and bridge state, clear transient receipts, and preserve snapshot/locomotion/bridge on rejection. Cross-layer reuse of coordinates is valuable here because transaction authority is different from parsing. |
+| Content: [LocalPresentationAssetPackReaderTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Content.Tests/LocalPresentationAssetPackReaderTests.cs), `SemanticRasterLookupRejectsMissingSelectionAndPostAdmissionDrift`, `FakeApplicationAdmissionCannotRedirectSemanticPayloadSelection`, reparse-point tests | Reopening admitted files, forged port data, path escape, and post-admission drift are distinct trust failures. Keep adversarial cases and defensive-copy checks; a happy-path smoke cannot replace them. |
+| Godot: [PrivateOriginalMapBaseViewportTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Godot.Tests/PrivateOriginalMapBaseViewportTests.cs), `CurrentAreaOverlayUsesLatestShiftedLayoutAndZeroBlockHoles`; [PrivateMap3CameraProjectionTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Godot.Tests/PrivateMap3CameraProjectionTests.cs), clamp and locomotion tests | Explicit green/red/blue pixels, mutable-layout reprojection, 2x/4x buckets, bounds, and movement offsets catch adapter regressions. Keep distinct scale/boundary cases. These pure projections do not prove native draw output, input polling, DPI behavior, or original rendering. |
+| Shared synthetic battle: [PrivateOriginalMapBattleBridgeTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Application.Tests/PrivateOriginalMapBattleBridgeTests.cs) and [TacticalBattleTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Domain.Tests/Battles/TacticalBattleTests.cs) | Deterministic battle behavior and private snapshot isolation protect the reducer currently reused by the manual bridge. Synthetic provenance limits fidelity claims, not regression value. |
 
 ### Concentrated lower-value or brittle coverage
 
-**Confirmed:** [PublicSyntheticMap3PackageReaderTests](../tests/Sf2.Remake.Content.Tests/PublicSyntheticMap3PackageReaderTests.cs)
+**Confirmed:** [PublicSyntheticMap3PackageReaderTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Content.Tests/PublicSyntheticMap3PackageReaderTests.cs)
 contains **64 cases in 13 methods** that call `AssertDigestMismatch`. Its helper changes a tracked JSON
 string, checks that bytes changed, writes a temporary package, then expects only `ContentDigestMismatch`
-at `contentDigest`. In [the reader](../reference/Sf2.Remake.Reference/Readers/PublicSyntheticMap3PackageReader.cs),
+at `contentDigest`. In [the reader](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/reference/Sf2.Remake.Reference/Readers/PublicSyntheticMap3PackageReader.cs),
 `Admit` returns that result before `AdmitDocument` parses or validates any field. For example,
 `TacticalBattleIdentityMutationFailsRawDigestAdmission` contributes 13 rows;
 `FieldSearchIdentityLocationOrCrossReferenceByteMutationFailsDigestAdmission` contributes 10.
@@ -170,7 +170,7 @@ Keep profile/package admission and actual semantic rejection tests. Where semant
 use the existing internal semantic seam with an independently chosen expected diagnostic. Do not
 weaken the production pin or golden package; do not rename a digest test as semantic proof.
 
-**Confirmed:** [PrivateMap3PresenterTests](../tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs),
+**Confirmed:** [PrivateMap3PresenterTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Godot.Tests/PrivateMap3PresenterTests.cs),
 `BaseAtlasConsumerIsAnExplicitBoundedPresenterSurface`, reflects three private bind methods and pins
 their signatures. It also forbids private property names containing `Path`, `Root`, or `Pixel` and
 particular root field names. These checks constrain spelling and decomposition without exercising a
@@ -184,8 +184,8 @@ boundary. Apply the same distinction to source-string assertions such as
 [test_remake_architecture.py at the audited base](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/f9dbfd5e5366a46fd855e36ee55dd5a1c1e3dd90/tests/python/test_remake_architecture.py); assembly direction and
 forbidden dependency checks remain valuable. That Python file is outside the 758 count.
 
-**Confirmed:** [Map3PresenterTests](../tests/Sf2.Remake.Godot.Tests/Map3PresenterTests.cs) pins complete
-project-authored status/guide strings. [Map3InputAdapterTests](../tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs),
+**Confirmed:** [Map3PresenterTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Godot.Tests/Map3PresenterTests.cs) pins complete
+project-authored status/guide strings. [Map3InputAdapterTests](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/8a581a82e297ea2947cc9837e661752163d2806d/remake/tests/Sf2.Remake.Godot.Tests/Map3InputAdapterTests.cs),
 `BindingsPreserveExactActionAndKeyOrder`, also checks uniqueness of its own constant `expected` array.
 Its companion `EveryBindingDispatchesItsExactSemanticAction` exercises real dispatch.
 **Inferred, P2:** protect readable state, disclosures, action mappings, and layout bounds; avoid treating

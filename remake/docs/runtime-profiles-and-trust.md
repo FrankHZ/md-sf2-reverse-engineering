@@ -4,37 +4,32 @@
 
 Runtime profiles declare where content comes from, which trust checks are required, and which product
 claims are permitted. Profile selection changes outer composition; it does not fork Domain rules or
-make Godot an evidence owner. This is the intended trust boundary; the current implementation still
-has divergent private/public session APIs and fixed reference admission identified by the
-[architecture audit](./architecture-audit.md).
-[Current M1](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m1-implementation)
-implements common-session authored admission; the initialized private entry now uses that same runtime. The old private/public fixed readers and session paths
-are in the [transitional reference assembly](../reference/README.md); their retained source trust
-checks are not universal gameplay predicates. The accepted
-8C/H4 target remains incomplete.
+make Godot an evidence owner. Authored packages, the initialized private battle entry and the connected
+private world all use the common session. The divergent public-synthetic/private-local readers and
+session paths identified by the [architecture audit](./architecture-audit.md) were retired at
+[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
+Private source trust checks are not universal gameplay predicates. The accepted 8C/H4 target remains
+incomplete.
 
 ## Profile Summary
 
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-authored` | default local start or `--authored-package <path>` | validated immutable battle/actor/rule definitions plus separate explicit controlled start input | implemented semantic movement, HEAL/STAY and ordinary physical first/second/counter subset; explicit authored starting vitals, no original-start/fidelity/export claim |
-| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and six explicit input environment selections | selected encounter, pinned enemy/static/gold definitions, external controlled party/start | initialized common session through inactive standby, activation, set6/set7 pursuit and ordinary enemy/player/kill/HEAL actions to actual control; required unknown accounting and wider effects remain explicit boundaries |
-| `public-synthetic` | explicit `remake/reference/game` project | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit `remake/reference/game` project and profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
+| `private-local-controlled-start` | `--private-battle-start <absolute controlled JSON>` and six explicit input environment selections, or `--private-exploration-start <absolute start JSON>` with the same six plus `SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PRIVATE_CONTROLLED_START` | selected encounter, pinned enemy/static/gold definitions, external controlled party/start; for exploration also the prepared private world | initialized common session through inactive standby, activation, set6/set7 pursuit and ordinary enemy/player/kill/HEAL actions; the connected world runs the Map 3 opening through Battle 01 outcome and return. Required unknown accounting and wider effects remain explicit boundaries |
 
 The runtime always displays the appropriate disclosure:
 
 - `AUTHORED BATTLE` with controlled-start help
 - `PRIVATE CONTROLLED BATTLE` with Unknown accounting shown explicitly
-- `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY`
-- `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY`
 
-The ordinary project is `remake/game`, whose GameRoot accepts only `--authored-package <path>` or
-`--private-battle-start <path>`, once and mutually exclusively. No arguments selects the authored yard.
+The ordinary project is `remake/game`, whose GameRoot accepts only `--authored-package <path>`,
+`--private-battle-start <path>` or `--private-exploration-start <path>`, once and mutually exclusively. No arguments selects the authored yard.
 Unknown or positional arguments, duplicate/conflicting options and missing paths return explicit
-startup ContentError without creating a session or switching routes. Legacy profile options belong to
-`remake/reference/game`. Diagnostic environment selections belong only to the external
-[observer](./development-and-verification.md#ordinary-and-reference-host-startup); they are not game
+startup ContentError without creating a session or switching routes. The legacy `public-synthetic` and
+`private-local` profile options were retired with the reference host at M5. Diagnostic environment
+selections belong only to the external
+[observer](./development-and-verification.md#ordinary-host-startup); they are not game
 options and do not change ordinary routing. Runtime state and both RNG channels still begin only
 through the same Content/Application entry.
 
@@ -64,7 +59,7 @@ respectively. These values feed the existing scalar before critical, counter and
 they are not floating-point display percentages. The mover rule owns costs; custom cost/probability
 fields and unknown properties are not accepted. Unsupported surface/protection values fail explicitly,
 and missing definitions/invalid symbols are ContentError. The existing placeholder view reads surface
-only; color does not grant passability or damage protection. Original reference movers keep their own
+only; color does not grant passability or damage protection. Private source movers keep their own
 source cost/land tables and use the same propagation kernel, without admitting new authored profiles.
 
 The authored start policy is `initialVitals: authored-controlled`; the separately selected private
@@ -83,7 +78,7 @@ the encounter,0–2,147,483,647), `control`, `aiStrategy`, `x` and `y`. The acto
 slot or controller. Faction, order, control and AI strategy belong to this deployment; runtime state derives them rather than inferring allegiance from order.
 Content admits at most30 allies and32 enemies per encounter and requires ally level1–99 / enemy
 level0–99. Only player-controlled allies and AI-controlled enemies are supported. Source slots are
-mapped solely by reference consumers;255 is a valid authored processing order, not a missing actor.
+decoded solely by private Content;255 is a valid authored processing order, not a missing actor.
 Actor/deployment/start array reordering cannot change round draws, candidate ties or UI selection.
 
 `control` is `player` or `automatic`, independently of the intrinsic actor's capabilities. Player
@@ -129,7 +124,7 @@ weaponless range is adjacent Manhattan distance 1. Enemy stored level may be zer
 Land reduction precedes the bonus; counter halving and the two downward spread draws follow it.
 The immutable typed rule owns the scalar parameters and every first/second/counter hit consumes it.
 Missing/nonstring fields are ContentError; unimplemented values or cross-pairs are Unsupported.
-Packed `prowess` is no longer an authored field; original source/reference definitions retain it.
+Packed `prowess` is no longer an authored field; private source definitions retain it.
 Regular dodge and physical double/counter chances remain fixed at1/32 and distinct from extra-round
 eligibility. No arbitrary chance/fraction/equipment/status/critical-effect combinations are admitted.
 
@@ -175,79 +170,30 @@ no source class identity. A reached critical multi-target cohort needs known cla
 otherwise returns `ai-target-class`. Single-highest/noncritical selection never queries unused class
 data. Every scored candidate needs a physical definition for potential land damage. No full class,
 growth or new movement framework is admitted; the existing regular physical capability owns table
-selection. The shared reference Flying-table scalar does not enable flying authored actors.
+selection. The Flying priority table serves private hovering movers only; it does not enable flying authored actors.
 
-## Public Synthetic
+## Retired Legacy Profiles
 
-The explicitly selected legacy public profile reads the tracked `public-synthetic-map3-smoke-v1` package. The package is
-project-authored, raw-byte locked, closed in shape, and validated before `GameSession` starts. Its maps,
-entities, dialogue, discoveries, item, transitions, cues, and presentation are synthetic test/product
-content rather than reconstructed original facts.
-
-PublicSynthetic supports the maintained local source and export smoke. A successful build or export
-proves toolchain, adapter, package, and redistribution-boundary behavior only. It grants no permission
-to include original assets and makes no 7C, 8C, natural-route, or H4 claim.
-
-PublicSynthetic rejects private profile options. It cannot consume a canonical import or report private
-success.
-
-## Private Local
-
-PrivateLocal is selected only when both user arguments are present with explicit values:
-
-```text
---runtime-profile=private-local
---canonical-map-import=<fully-qualified-ignored-path>
-```
-
-The profile is never inferred from a discovered file, environment default, or prior run. The caller's
-path remains at the outer Godot composition and Content-reader boundary. It does not cross into Domain,
-Application snapshots, receipts, status text, smoke output, or committed configuration.
-
-The optional base view is independently explicit and requires the reviewed local base atlas:
-
-```text
---private-map3-base-view
---private-map3-base-atlas
---presentation-asset-root=<fully-qualified-local-pack>
---presentation-asset-commit=<40-lowercase-hex>
---presentation-manifest-sha256=<64-uppercase-hex>
-```
-
-Omitting the atlas or any pack pin, using a relative path, or supplying the retired playable-runtime
-options `--original-rom`, `--map-tileset-metadata`, or `--map-palette-metadata` makes the requested
-profile unavailable with a path-free diagnostic. Those inputs remain valid only for offline builders,
-evidence, and verification. The traversal-only private profile remains valid without presentation.
-
-When the base view is admitted, a manual semantic input at the controlled start may request the
-project-authored tactical micro-battle from the tracked public-synthetic package. This does not infer
-an original battle from the private input. Application pauses private traversal while the bridge is
-pending or active, owns the tactical lifecycle, and returns to the exact same private traversal
-snapshot. Public-synthetic completion flags, effects, setup, facing, and return-map state do not cross
-the bridge. While entry is Pending, the exact acknowledgement admits the tactical loop; an exact
-one-shot decline instead enters a terminal non-busy bridge state and resumes movement without changing
-the authoritative private map snapshot.
-
-Missing, relative, unreadable, malformed, or incompatible input makes PrivateLocal **Unavailable**.
-The host does not silently start PublicSynthetic while describing the result as private. Unknown profile
-names, duplicate options, split options without explicit values, and private-only smoke flags under the
-public profile also fail closed.
+The `public-synthetic` profile (a tracked project-authored Map 3 package with export smoke) and the
+legacy `private-local` profile (canonical-import traversal, project-authored base view and battle
+bridge, local HUD preview) belonged to the reference host retired at
+[M5](../../docs/decisions/0019-state-and-content-driven-remake-engine.md#current-m5-implementation).
+Their readers, receipts and options no longer exist. The tracked authored packages remain the
+redistribution-safe public content.
 
 ## Private Admission Layers
 
-The private logical and offline visual boundaries remain separate:
+Private admission has an offline preparation layer and a runtime Content layer:
 
-1. canonical Map 3 import admits the accepted map projection, traversal inputs, bounded source records,
-   and visual-resource references;
-2. base visual payload admission validates caller-selected local ROM and metadata inputs for offline
-   tooling/protocol checks and maps decoded buffers and palette forms into immutable definitions; and
-3. playable presentation admits the reviewed local asset pack directly and rechecks its exact
-   commit, manifest, semantic asset identities, dimensions, bucket policy, and contained payloads.
-
-Each production reader checks the accepted fixed trust roots and the caller's additional pins before
-parsing the corresponding document where required. The playable session uses only the canonical import;
-the project-authored battle bridge binds to that admitted session/controlled start. The retained visual
-runtime binding checks the offline typed protocol but is not invoked by playable Godot startup.
+1. `sf2tool.remake_exploration_content` verifies the registered canonical import digest and the pinned
+   source checkout, rejects local changes to every selected source, and writes an ignored world with
+   repository/commit/ROM identity and per-source SHA-256. With `--rom-path` and `--presentation-root`
+   it also verifies the ROM identity and the pinned presentation manifest before embedding map atlases,
+   sprites and portraits as hashed rasters.
+2. At startup, Content checks the battle exports and terrain against fixed digests, requires the world's
+   repository and commit to match the encounter source and its ROM identity to match the enemy-gold
+   export, validates every raster digest and shape and every required sprite/portrait link, and then
+   admits the separate controlled start.
 
 Content authenticates actual bytes. Application validates the typed protocol and compatibility between
 accepted results; it does not claim cryptographic protection against a malicious in-process port that
@@ -261,10 +207,9 @@ The following remain ignored and local:
 - official engine archives, export templates, and other downloaded executables; and
 - generated Godot import state, builds, exports, logs, and smoke receipts.
 
-Private compressed source bytes and extraction metadata remain offline. The playable profile reads only
-the canonical logical import and selected runtime PNGs from the admitted local asset pack; neither is
-committed, printed, embedded in a public package, or exported by the current private runtime.
-Diagnostics are typed and path-free.
+Private compressed source bytes and extraction metadata remain offline. The runtime reads only the
+selected exports, the prepared world and the controlled start; none is committed, printed, embedded in
+a public package, or exported by the current private runtime. Diagnostics are typed and path-free.
 
 Use the repository's [Local Private Input Layout](../../docs/operations/local-private-inputs.md) for
 machine-private input routing. Worktree-local writable state remains isolated even when immutable shared
@@ -272,45 +217,13 @@ inputs are registered centrally.
 
 ## Fidelity Boundary
 
-PrivateLocal provides semantic traversal, project-authored diagnostics, and an optional Godot base
-view. The view consumes the reviewed local asset pack and reprojects after movement or admitted
-working-layout mutation. It may also present the explicitly requested project-authored tactical bridge
-without changing ownership of either traversal or battle rules. Its 12-by-7 player-centered crop,
-empty-pixel background, Mega Drive channel expansion, Godot image/marker presentation, and manual
-battle trigger are explicit project-authored choices. They are not an original screenshot or a
-fidelity backend.
+The private profile executes selected original programs and battle rules through the common session.
+Fades, mosaic, shiver, camera scrolling, join music and nod rendering are performed modern services
+over prepared rasters; they are not an original screenshot or a fidelity backend. The profile does not
+claim:
 
-The optional `--private-hud-preview` shape requires all three of
-`--presentation-asset-root=<fully-qualified>`,
-`--presentation-asset-commit=<40-lowercase-hex>`, and
-`--presentation-manifest-sha256=<64-uppercase-hex>`. Supplying any of those values without the flag,
-omitting one, using them under PublicSynthetic, or relying on a checkout's mere presence is
-Unavailable. Canonical Map 3 import and the complete local presentation pack both admit before the
-existing private session constructor is called. Godot then resolves only
-`hud.yes-no-window-frame` for the bounded preview and, when the base-view battle bridge is also
-requested, `hud.tactical-selection-cursor`, at the same accepted scale. The same Content reader
-reopens the fixed manifest, resolves and rechecks each selected contained PNG, and returns defensive
-byte copies for the thin Godot consumers. Either required asset failing identity, shape, bucket, or
-payload validation rejects the requested private mount. The absolute root and runtime paths stay in
-outer composition and Content; they do not enter Application, the Godot catalog, snapshots, receipts,
-status, smoke, or logs.
-
-Without the private base-view battle bridge this remains a chrome-only preview. With the bridge,
-Godot shows project-authored diagnostic `ENTER [N]` and `STAY [BACKSPACE]` labels only while the typed
-bridge is Pending. `N` sends the existing exact acknowledgement; `Backspace` sends the exact decline
-only while Pending and retains its tactical-cancel meaning only while Active. The labels use Godot's
-built-in diagnostic font and do not establish an admitted product font, input-glyph, Theme, original
-Yes/No text, focus model, window system, or original UI meaning. While the bridge is Active, one
-transparent project-authored cursor texture follows only the typed `HasCursor` cell. It is additive:
-the existing gold cell highlight and `▣`/occupant glyph remain visible, public-synthetic stays
-asset-free, and Godot gains no tactical rule ownership. Existing private and public smoke receipt bytes
-and ordering remain unchanged.
-
-The profile therefore does not claim:
-
-- natural Map 3 route, setup/init/event effects, Battle 01 continuity, or story state;
-- original camera, second-layer/overlay/priority composition, animation, text, entities, dialogue, UI,
-  audio, or final pixels;
+- natural Map 3 reach before the controlled start or natural continuity across the H3 bridge;
+- original camera, layer/priority composition, animation cadence, text layout, audio or final pixels;
 - VRAM, CRAM, VInt, DMA, timing, or other 8C hardware observations;
 - save/load, persistence, or complete private-content support; or
 - H4 or milestone acceptance.
@@ -368,5 +281,6 @@ Selected class prowess, adjacent ATT-only weapons, unpromoted HEAL1–3 and enem
 actions, death/rewards and one no-effect after-turn pass. The external
 [action input](../reference/inputs/battle01-actions.json) supplies controlled initial accounting; the
 PlayerReady input retains Unknown values and rejects only operations that need them. No source bonus
-is applied twice, no live accounting is filled, and unsupported spell references stay visible. Broader
-spawn/region programs and outcome/return remain future work; the legacy route keeps those consumers.
+is applied twice, no live accounting is filled, and unsupported spell references stay visible. The
+connected world adds Battle01 growth and outcome programs; broader spawn/region programs and other
+outcome families remain future work.

@@ -291,35 +291,24 @@ generic missing-entity no-op, player fallback or entity255 is introduced.
 
 ## Reference migration boundary
 
-The ordinary source path has no Reference dependency. Complete legacy Sarah, zone601, entity142,
-Astral-zone, messenger, castle gate, palace, Astral invitation, tower guard and castle/tower cross-map
-endpoint-writing methods, their presentation branches and obsolete atomic-route tests are removed.
-Whole-flow comparisons now use common commands and actual native input. The large old castle
-atlas probe and its execution callers are removed. The separate private probe retains the
-Map21 guard and missing-presentation comparisons; the complete admission observer replaces the old
-Map40 `loadMapFadeIn` stop/forced-seen-intro cases.
-
-The legacy Map40 pending-admission writer, movement-result variant and presentation callers are
-removed. Independent startup/action comparisons still require immutable pending/source context;
-their test fixture constructs it explicitly without executing the retired field writer.
-Those independent comparison consumers remain. Their tests use
-`map3-post-opening-reference-start.json` as an explicit controlled starting context, with zero executed
-history and no messenger receipt, or explicit fixture state at the later admission seam. The optional reference-host variable
-`SF2_REFERENCE_POST_OPENING_START` selects this same input. This is not a bridge proving original
-continuity. The default old private start remains a geometry diagnostic; its migrated interactions
-report that the common host owns them. State/receipt DTOs and trust projections still used by frozen
-later snapshots remain until their last caller migrates. Shared legacy geometry/visual bindings also
-serve those later comparisons. G3/G4, A1–A8 and8C/H4 are not reported globally closed.
-
-The fixed defeat-recovery, return-request, arrival and return-movement executors, their linked
-receipts, GameSession commands and Godot confirmation/projection branches are removed. Independent
-source/load inputs, scalar entry comparisons and reference action terminals remain. A legacy leader
-terminal directs users to the common session; it cannot resume a second outcome engine.
+The ordinary source path has no Reference dependency. The legacy Sarah, zone601, entity142,
+Astral-zone, messenger, castle gate, palace, Astral invitation, tower guard, castle/tower cross-map,
+Map40 pending-admission and defeat-recovery/return/arrival executors were removed with their callers
+during M3/M4. M5 then retired the remaining independent startup/action comparisons, frozen context
+DTOs, legacy geometry/visual bindings, the reference host and the `map3-post-opening-reference-start.json`
+input together with `SF2_REFERENCE_POST_OPENING_START`. Whole-flow comparisons use common commands and
+actual native input. The separate private probe retains the Map21 guard and missing-presentation
+comparisons. A1–A8 closure and 8C/H4 are not reported.
 
 ## Reproduction
 
 Use the current worktree's retained environment, SDK/Godot and registered private input selectors.
-Choose fresh ignored output paths. Preparation and actual opening launch are:
+Choose fresh ignored output paths. The canonical import (`uv run sf2 h2 map-import`) reads the H1
+listing `build/sf2build-h1.lst`, so run the H1 rebuild with `-KeepBuildArtifacts` and install its
+listing, symbols and binary under the conventional `sf2build-h1.*` names first; the frozen H1/H2
+PowerShell rails require PowerShell 7. The ordinary host needs a world prepared with `--rom-path` and
+`--presentation-root`: without presentation data its first sprite mount stops with the adapter error
+`entity-sprite-binding`. Preparation and actual opening launch are:
 
 ```powershell
 uv run --locked python -m sf2tool.remake_exploration_content `
@@ -352,7 +341,6 @@ before headless exit; that wait does not advance game state. No screenshots or s
 ```powershell
 uv run sf2 verify engine
 uv run sf2 verify adapter
-uv run sf2 verify reference-host
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
 & $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
   --configuration Release --no-restore --filter 'FullyQualifiedName~PrivateExplorationTests'
@@ -361,7 +349,7 @@ $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
 The owning engine project copies R1/R2/R2a comparison fixtures and explicit starts. Private input
 checks run only with their required input configuration; public runs report their skips. Use the
 committed `verify plan --scope engine` selection and proportionate direct checks. Completed failing
-legacy runs remain recorded; rerun their corrected nodes rather than replaying the aggregate. The
+runs remain recorded; rerun their corrected nodes rather than replaying the aggregate. The
 remaining narrow observer is `engine_private_exploration_observation.gd`, with `map21-guard`
 or the authored missing-presentation case.
 

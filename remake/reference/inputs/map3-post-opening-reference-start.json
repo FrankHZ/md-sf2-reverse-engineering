@@ -1,9 +1,0 @@
-{
-  "formatVersion": 1,
-  "boundary": "Controlled context for retained castle/tower/return reference comparisons. R2a endpoint facts select the starting position and completed membership/actor context; roof state, simulation step and request sequence use explicit reference padding. No opening is executed and no natural continuation is claimed. Ordinary opening acceptance runs through the common session with map3-opening-start.json.",
-  "x": 43,
-  "y": 10,
-  "bowieDoorOpen": true,
-  "schoolDoorOpen": true,
-  "afterMessenger": true
-}

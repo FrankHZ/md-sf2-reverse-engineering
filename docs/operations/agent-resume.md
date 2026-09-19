@@ -29,8 +29,8 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - Phase 2 research and evidence-bound contracts remain active.
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline. The user explicitly authorized a bounded
   Phase 4 implementation start on 2026-08-28 under ADR 0016. [`remake/`](../../remake/) now contains
-  bounded Domain, Application, validated Content, and thin Godot capabilities for public-synthetic and
-  private-local Map 3 profiles. Its [capability owner](../../remake/docs/capability-status.md) records
+  bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
+  connected private-local Map 3 through Battle 01 world. Its [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
 - Research scheduling and its live frontier belong to
   [`research/source-coverage.md`](../research/source-coverage.md), not this route. The continuous Map
@@ -43,8 +43,8 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   state/content-driven engine migration and the binding user test policy. Add engine behavior unit
   tests; use verification tools directly without tests of those tools. Old tests may migrate or retire.
   M1's common session consumes two authored packages through movement/cancel, HEAL/STAY and automatic
-  rounds. Production engine projects do not depend on the transitional reference assembly; its owning
-  inventory identifies M2/M3 retirement points. After environment setup use `uv run sf2 verify engine`
+  rounds. M5 retired the transitional reference assembly, host and legacy tests; only external
+  controlled inputs remain under `remake/reference/inputs`. After environment setup use `uv run sf2 verify engine`
   and affected `uv run sf2 verify adapter`. Main-gate owns independent acceptance and remote checks.
 - Reuse the task's existing isolated worktree, environments and Godot installation/project/instance.
   New isolation needs concurrent ownership or a concrete reproduction/launch failure. Godot acceptance

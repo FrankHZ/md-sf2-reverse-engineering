@@ -63,22 +63,17 @@ From the repository root after loading that environment, the maintained entries 
 ```powershell
 uv run sf2 verify engine
 uv run sf2 verify adapter
-uv run sf2 verify reference-host
 ```
 
 `verify engine` restores in locked mode, builds and tests
 `remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj`; it references production
 Domain/Application/Content and copies the actual `remake/content/authored/*.json` inputs.
 `verify adapter` restores in locked mode and builds `remake/game/Sf2.Remake.Godot.csproj` without tests
-or native Godot. `verify reference-host` separately restores/builds
-`remake/reference/game/Sf2.Remake.Reference.Godot.csproj`, which owns the remaining legacy and smoke
-consumers. These commands launch the selected executable from `remake/`, honoring `global.json` and the
-protected environment. Neither needs private inputs. The engine project is selected directly;
-the current `Sf2.Remake.sln` still includes four production and four legacy test projects.
-Whole-solution commands remain available for an explicitly applicable legacy/release check, not every
-engine or documentation change. Use formatting only for affected product projects when needed.
+or native Godot. These commands launch the selected executable from `remake/`, honoring `global.json`
+and the protected environment. Neither needs private inputs. `Sf2.Remake.sln` contains the four
+production projects and Engine.Tests; the legacy test projects and reference host were retired at M5. Use formatting only for affected product projects when needed.
 
-## Ordinary and Reference Host Startup
+## Ordinary Host Startup
 
 After loading the retained worktree SDK/Godot environment, ordinary play uses:
 
@@ -111,22 +106,15 @@ corresponding arguments after Godot’s `--`. Private success uses EXPECT_ORIGIN
 `private-local-controlled-start`. The script observes actual Main/GameRoot/BattleSessionView and
 published startup state; it does not set engine state. Preserve process output and require passed:true.
 
-Existing legacy arguments and observations instead select the explicit reference project:
-
-```powershell
-uv run sf2 verify reference-host
-& $godotBinary --headless --path remake/reference/game -- --map3-smoke
-```
-
-This retained source smoke does not authorize replaying the full legacy suite. Its private inputs,
-programs and native recipes stay under their current reference owners. Ordinary export configuration
-excludes `probes/*`; complete ordinary export/assets remain unverified.
+The legacy `remake/reference/game` host, its `--map3-smoke`/profile arguments and their observations
+were retired at M5. Ordinary export configuration excludes `probes/*`; complete ordinary export and
+package contents remain unverified.
 
 ## Exploration and Program Observations
 
 Use [the exploration/program owner](./exploration-programs.md#reproduction) for the current
 Content preparation, controlled starts, selected private comparisons and ordinary native recipes.
-The native observers exercise real input and read the same live session across mode changes. `engine_map3_opening_observation.gd` reads the R2 fixture only as an external input trace and covers complete acceptance or decline/re-prompt. `map3-opening-party.json` supplies the named opening party. Later reference comparisons may explicitly select `SF2_REFERENCE_POST_OPENING_START` with `map3-post-opening-reference-start.json`; that context has no executed opening history. The
+The native observers exercise real input and read the same live session across mode changes. `engine_map3_opening_observation.gd` reads the R2 fixture only as an external input trace and covers complete acceptance or decline/re-prompt. `map3-opening-party.json` supplies the named opening party. The
 private source programs retain their exact unsupported native/population frontiers; a stopped prefix
 is not a completed original route. `EntityMotionTests` directly compares the extracted core and
 destination admission to the13 owned H3 cases; it does not test a verification program.
@@ -258,7 +246,7 @@ the session's accepted target and battle state; subsequent Tab input can reach l
 shows both attempted and accepted target after rejection. Cancel or the next action clears the UI cursor.
 The map viewport keeps the acting origin, preview and target visible with clipping/pan/zoom. Wide
 windows place a scrollable HUD beside the map; narrow windows place it below. Authored UI uses actual
-window dimensions, while the legacy reference path retains its original window policy.
+window dimensions.
 
 From the repository root, the direct observation command is:
 
@@ -298,15 +286,9 @@ uses actual X/Tab/Enter/Space input, including a rejected distant target followe
 then checks exact carried RNG/resources, removed coordinates/nodes, next living control and the next
 round. All four package/order combinations use common product commands. Reached unsupported
 level/leader/outcome atomicity and independent arithmetic expectations belong to
-`PhysicalBattleTests`, not tests of this observer. Selected existing reference comparisons for the
-shared scalar extraction are `SourceArithmeticKeepsZeroIntermediateAndBothDownwardDrawsAtTheOriginalRange`,
-`MissAndCriticalUseRealSeedsAndPreserveSourceCallOrder`, `RealSeedsExerciseMissCriticalAndIndependentExpVariance`
-and `KillAccountingUsesSourceCapsAndKeepsUnknownInputsUnknown` in the legacy Domain test project.
-For shared counter/reward changes also select `CounterReversesRolesAndCommitsPrimaryThenCounterAndExpAsOneEnemyReceipt`,
-`CounterHalvesBeforeSpreadAndConsumesItsOwnFlagsWithoutAnotherAttack` and
-`PostHealBowieCounterUsesItsOwnPermissionAndOneEnemyReceipt`; run
-those methods with a `dotnet test --filter` expression when their shared calculation changes. They
-are bounded existing comparisons, not a new full legacy/H3 obligation.
+`PhysicalBattleTests`, not tests of this observer. The legacy Domain comparisons of the shared scalar
+extraction were retired at M5; shared strike, counter and reward changes use `PhysicalBattleTests`,
+`PhysicalRuleConfigurationTests` and, with private inputs required, `PrivateActionBindingTests`.
 
 For follow-up observation create one supported variant in the existing ignored output directory.
 The four shapes use `stone-court` with initial high seed73 for `sticky`/`second-death`, seed55 for
@@ -672,21 +654,26 @@ legacy aggregate is needed. The committed planner and engine/adapter entries rem
 
 ## Optional Private .NET Checks
 
-Existing legacy checks use xUnit's explicit private-input selection. This is their current command
-contract, not a retention obligation for every method during engine migration.
+Private engine checks use xUnit's explicit private-input selection through `PrivateInputFact`.
+`PrivateBattleEncounterTests` and `PrivateBattleInitializationTests` are ordinary facts over in-memory
+authored records and always run.
 
-| Existing check family | Required selections when that check is actually needed |
+| Engine.Tests family | Required selections |
 | --- | --- |
-| Canonical import | `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
-| Original map visual payload | `SF2_PRIVATE_ROM`, `SF2_PRIVATE_MAP_TILESET_METADATA`, `SF2_PRIVATE_MAP_PALETTE_METADATA` |
-| Local presentation catalog/atlas | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`; canonical import where the projection consumes it |
-| Battle01 startup | `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`, `SF2_PRIVATE_BATTLE01_TERRAIN`; canonical import for connected session checks |
+| `PrivateBattleScenarioTests`, `PrivateSourceAiTests`, `PrivateActionBindingTests` | `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`, `SF2_PRIVATE_BATTLE01_TERRAIN`, `SF2_PRIVATE_STATIC_DATA`, `SF2_PRIVATE_ENEMY_DATA`, `SF2_PRIVATE_ENEMY_GOLD`, plus `SF2_PRIVATE_CONTROLLED_START` for the scenario and source-AI checks |
+| `PrivateExplorationTests`, `PrivateBattleEntryProgramTests`, `PrivateBattleOutcomeProgramTests` | the six battle inputs above plus `SF2_PRIVATE_EXPLORATION_CONTENT` |
+
+`PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup` additionally requires a world
+prepared with `--rom-path` and `--presentation-root`; a world prepared without the local asset pack
+cannot exercise it. The Battle01 exports and enemy gold come from the pinned H2 rails below; the
+canonical import from `uv run sf2 h2 map-import`; the world from the
+[exploration preparation](./exploration-programs.md#reproduction).
 
 With no selected inputs, an optional check reports **skipped / no private assertions ran**. Partial
 selection fails. For a required check set `SF2_REQUIRE_PRIVATE_TESTS=1` before discovery; missing inputs
 then fail. `--filter` does not opt into private execution and other switch values do not require it.
-Select the actual owning method/project, scope variables to that run and keep logs/output local.
-Do not interpret public success with private skips as private acceptance.
+Scope variables to that run and keep logs/output local. Do not interpret public success with private
+skips as private acceptance.
 
 [Local Private Inputs](../../docs/operations/local-private-inputs.md) owns registered read-only input
 selection. Load it in the same process as any command that needs those inputs. Check the configured
@@ -696,11 +683,13 @@ solely to repair the appearance of an aggregate result.
 
 ## Selected Battle01 Startup Inputs
 
-The current legacy reader consumes the selected Battle01 data and scene JSON exports plus compressed
-terrain. Their exact identities remain in [battle01-data](../../manifests/extractions/battle01-data.json),
-[battle01-scene](../../manifests/extractions/battle01-scene.json), and the existing Content reader.
-These transport identities describe current fixed reference admission; they are not the proposed
-general authored-content schema or a gameplay legality condition.
+The production `PrivateBattleEncounterReader` consumes the selected Battle01 data and scene JSON
+exports plus compressed terrain. Their exact identities remain in
+[battle01-data](../../manifests/extractions/battle01-data.json),
+[battle01-scene](../../manifests/extractions/battle01-scene.json), and that Content reader. These
+transport identities describe fixed private admission; they are not the general authored-content
+schema or a gameplay legality condition. The compressed terrain input is the H1 split output
+`disasm/data/battles/entries/battle01/terrain.bin`, so it exists only after a passing H1 rebuild.
 
 Reuse accepted exports read-only after checking identity. If the owning task actually needs to
 reproduce them, the existing `scripts/Export-Battle01Data.ps1` and `Export-Battle01Scene.ps1` consume
@@ -723,14 +712,11 @@ uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
 The [planner](../../src/sf2tool/verification_plan.py) automatically selects `engine-unit` and/or
-`adapter-build` for ordinary product/test paths and `reference-host-build` for the explicit reference
-host/assembly, without the old solution or always-run `public-core`.
+`adapter-build` for ordinary product/test paths, without the old solution or always-run `public-core`.
 Non-research documentation and retired engine-test paths add no execution. Engine test changes select
-unit tests; ordinary game changes select ordinary compilation; reference changes select the reference
-host. The exact `remake/reference/inputs/battle01-player-ready.json` and `battle01-actions.json` inputs select `engine-unit`: the
-existing Engine.Tests project copies it and actual-private engine facts consume it. Reference host
-and assembly code still select only `reference-host-build`. Shared product/build inputs select all
-actual downstream hosts.
+unit tests; ordinary game changes select ordinary compilation. Controlled inputs under
+`remake/reference/inputs/` select `engine-unit`, because Engine.Tests copies them and actual private
+engine facts consume them. Shared product/build inputs select both actual downstream builds.
 
 Shared CLI/harness/planner changes retain conservative research selection by default. For a declared
 engine-only wiring change in those shared modules,
@@ -763,19 +749,6 @@ maintained gate verifies ordinary package/export contents; claim none without an
 separately owned export check. Repeated behavior observations use the existing
 installation/project/instance.
 
-## Private-Local Smoke Routing
-
-An applicable legacy private observation selects `--path remake/reference/game`, then `private-local`, canonical/content inputs and
-the needed mode. It uses the actual affected assembly, a bounded process owner, and checks relevant
-session/input/state, errors, exit and cleanup. Private user arguments retain the existing exact
-`--name=value` form after Godot's separator; diagnostics do not print private paths.
-
-Reuse sufficient completed observations. A future probe run must follow Scope, including suppressing
-image output; the older [native recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review)
-is retained for legacy argument/provenance lookup, not permission to replay its frame checklist.
-Do not weaken Content trust or bypass the real Application path to make an observation pass.
-Never delete a retained wrapper or failure artifact merely because its run ended.
-
 ## GitHub Public
 
 Current [public-checks.yml](../../.github/workflows/public-checks.yml) remains triggered on every pull
@@ -783,22 +756,20 @@ request and main push. Its Windows jobs are:
 
 | Job | Current execution |
 | --- | --- |
-| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit the four affected-path booleans. |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit the three affected-path booleans. |
 | `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
-| `adapter-build` | Locked restore/build of the ordinary game C# project, which has no Reference/smoke dependency. No Godot tests or native editor launch. |
-| `reference-host-build` | Locked restore/build of the explicit Reference.Godot project and its actual production/Reference dependencies; no legacy scenario replay. |
+| `adapter-build` | Locked restore/build of the ordinary game C# project. No Godot tests or native editor launch. |
 | `research-public` | Locked Python/uv dependencies, Ruff, direct design-contract traceability and research-index checks. No engine or verification-tool pytest families. |
 
-Shared product/build inputs select engine and both hosts; engine tests select engine; `remake/game/`
-selects the ordinary adapter. The exact `remake/reference/inputs/battle01-player-ready.json` and `battle01-actions.json` inputs
-select engine for its direct Engine.Tests consumer; other `remake/reference/` paths select the
-explicit reference-host build. Research/contracts/source/fixtures/manifests/schema inputs select
+Shared product/build inputs select engine and adapter; engine tests select engine; `remake/game/`
+selects the ordinary adapter. `remake/reference/inputs/` selects engine for its Engine.Tests consumers. Research/contracts/source/fixtures/manifests/schema inputs select
 research. Workflow and shared CLI/harness/planner changes select
-all four. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
+all three. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
 is introduced. M1's consumed authored JSON lives under `remake/content/`, which conservatively selects all product/host builds.
 
-Main-gate owns required-check configuration, including integration of `reference-host-build`.
+Main-gate owns required-check configuration. M5 removes the `reference-host-build` job, so its
+required-check context must be removed at integration.
 Verify the actual candidate CI/check state at integration; changing configuration remains main-gate
 authority. Path-irrelevant jobs report skipped; applicable jobs need a
 real successful result. Review the diff and first applicable CI outcome directly, without tests of
@@ -913,21 +884,14 @@ no images are emitted. Private output stays ignored. This comparison preserves t
 non-natural R2a→R2b bridge, explicit intro skip and candidate-only missing-word policy. It does not
 claim natural map programs, original presentation or a completed battle.
 
-For changes to these shared initialization seams, use one related existing reference group from
-`Battle01InitializationTests`, `Battle01FirstRoundTests`, `Battle01FirstControlTests` and
-`Battle01PlayerMovementTests`: new-battle data/healing/sourceATT/independent seed; initial, edge and
-secondary activation; quad geometry; unsupported spawn; actual candidate/status/word and failed
-movement admission; required regular/healer/Centaur and weighted-grid comparisons. Do not replay old
-round/receipt aggregates or run new H3 work for this bounded entry. Preserve any completed failure and
-rerun its owning group/nodes after correction. The clean committed planner selects engine/adapter;
-documentation uses direct links/anchors/fences/tables/examples and scope/private-boundary checks.
-For shared standby/pursuit changes, run one related reference group from
-`Battle01EnemyStandbyTests` and `Battle01EnemyPursuitTests`: actual first/remaining standby,
-immediate idle and packed-memory tables, eligibility/unknown occupancy/source direction masks,
-actual inactive/active/set6/set7 ordering, retained activation flags/tested-mask clearing, pursuit
-station/fallback/ties and the repeated pursuit’s first physical cohort. Keep the existing reference
-profile/history projections; do not run their whole receipt/history mutation aggregates. The actual
-common private fact and native continuous-input observation supply acceptance beyond these calculators.
+For changes to these shared initialization seams, run `PrivateBattleInitializationTests`,
+`PrivateBattleScenarioTests` and the affected movement/turn-order engine tests with private inputs
+required. For shared standby/pursuit changes, run `SourceEnemyAiTests` and `PrivateSourceAiTests`.
+The legacy reference groups that previously compared these calculators were retired at M5; the actual
+common private facts and the native continuous-input observation supply acceptance. Do not run new H3
+work for this bounded entry. Preserve any completed failure and rerun its owning nodes after
+correction. The clean committed planner selects engine/adapter; documentation uses direct
+links/anchors/fences/tables/examples and scope/private-boundary checks.
 The private action binding and its actual enemy/player/kill/HEAL continuation are implemented at the
 bounded scope below. Wider effects, natural map programs and outcome/return retain their stated
 Unsupported or Unknown boundaries.
@@ -959,9 +923,8 @@ its thirteen checkpoints still use the unchanged PlayerReady input.
 `PrivateActionBindingTests` covers actual source/effective stats and equipment, source gold, all three
 party attackers, exact hovering land reduction, nonleader death/unknown defeat count, HEAL and
 lower learned levels. Its explicitly constructed rule seams are unit inputs, not natural reach claims
-or running-session setters. Keep natural accounting/seed producers Unknown. The grouped retained
-reference comparison selects related physical/counter/kill/defeat/healing/after-turn cases in the
-existing Domain test project, without legacy aggregate replay or tests of verification programs.
+or running-session setters. Keep natural accounting/seed producers Unknown. The former grouped
+reference comparison in the legacy Domain test project was retired at M5.
 
 For G6, make an ignored copy of `practice-yard.json`, set medic-a start HP60, and append a second
 learned spell `restore` level2, cost5, range0–2, ordinary heal power30/fullRecovery:false after `mend`.
