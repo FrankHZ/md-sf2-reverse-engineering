@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -17,6 +18,8 @@ public sealed partial class BattleSessionView : Control
     private Label _status = null!;
     private Label _roster = null!;
     private Label _spells = null!;
+    private Label _help = null!;
+    private GameInput _input = null!;
     private SpellRef? _spellCandidate;
     private BattleMapViewport _map = null!;
     private ScrollContainer _hud = null!;
@@ -45,9 +48,17 @@ public sealed partial class BattleSessionView : Control
         _status = AddLabel("Status");
         _spells = AddLabel("Spells");
         _roster = AddLabel("Roster");
-        var help = AddLabel("Help");
-        help.Text = "WASD / arrows: movement preview\nEnter: choose action / commit\nH: select / cycle learned spells and levels; target self\nX: physical attack\nTab: cycle living targets for the selected action\nSpace: STAY\nEsc: cancel all provisional choices\n\nAI and rounds advance automatically.\nControlled battle start.";
+        _help = AddLabel("Help");
         Arrange();
+    }
+
+    internal void ConfigureInput(GameInput input)
+    {
+        _input = input;
+        _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
+            $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
+            $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
+            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n\nAI and rounds advance automatically.";
     }
 
     public override void _EnterTree() => GetViewport().SizeChanged += Arrange;
@@ -106,7 +117,7 @@ public sealed partial class BattleSessionView : Control
     {
         _startupFailure = failure;
         _title.Text = "BATTLE UNAVAILABLE";
-        _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})";
+        _status.Text = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
     }
 
     public override void _Process(double delta)
@@ -114,23 +125,23 @@ public sealed partial class BattleSessionView : Control
         if (_session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
     }
 
-    public override void _UnhandledInput(InputEvent input)
+    internal void HandleAction(GameAction action)
     {
-        if (_session?.Current.HasBattleControl != true || input is not InputEventKey { Pressed: true, Echo: false } key) return;
-        SessionCommand? command = key.Keycode switch
+        if (!IsVisibleInTree() || _session?.Current.HasBattleControl != true) return;
+        SessionCommand? command = action switch
         {
-            Key.W or Key.Up => new Move(ExplorationDirection.North),
-            Key.D or Key.Right => new Move(ExplorationDirection.East),
-            Key.S or Key.Down => new Move(ExplorationDirection.South),
-            Key.A or Key.Left => new Move(ExplorationDirection.West),
-            Key.Enter or Key.KpEnter => new Confirm(),
-            Key.Space => new ChooseAction(SessionAction.Stay),
-            Key.Escape => new Cancel(),
-            Key.X => new ChooseAction(SessionAction.PhysicalAttack),
+            GameAction.Up => new Move(ExplorationDirection.North),
+            GameAction.Right => new Move(ExplorationDirection.East),
+            GameAction.Down => new Move(ExplorationDirection.South),
+            GameAction.Left => new Move(ExplorationDirection.West),
+            GameAction.Confirm => new Confirm(),
+            GameAction.Stay => new ChooseAction(SessionAction.Stay),
+            GameAction.Cancel => new Cancel(),
+            GameAction.Attack => new ChooseAction(SessionAction.PhysicalAttack),
             _ => null,
         };
         if (command is not null) Send(command);
-        else if (key.Keycode == Key.H && _session.Current.Selection is { } selection)
+        else if (action == GameAction.Spell && _session.Current.Selection is { } selection)
         {
             var spells = _session.Current.Battle.GetActor(selection.Actor).Spells;
             if (spells.Count == 0) return;
@@ -139,14 +150,14 @@ public sealed partial class BattleSessionView : Control
             Send(new SelectSpell(_spellCandidate.Value));
             if (_result?.Failure is null) Send(new SelectTarget(selection.Actor));
         }
-        else if (key.Keycode == Key.Tab && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
+        else if (action == GameAction.Target && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
         {
             var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action == SessionAction.Heal)).ToArray();
+            if (targets.Length == 0) return;
             int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
             Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
         }
         else return;
-        GetViewport().SetInputAsHandled();
     }
 
     private void Send(SessionCommand command)
@@ -172,7 +183,7 @@ public sealed partial class BattleSessionView : Control
         _status.Text = projection.Status;
         _roster.Text = projection.Roster;
         var selection = _session.Current.Selection;
-        _spells.Text = selection is null ? "" : "Spells (H to cycle):\n" + string.Join("\n",
+        _spells.Text = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             _session.Current.Battle.GetActor(selection.Actor).Spells.Select(spell =>
                 $"{spell.Value.ToUpperInvariant()} {spell.Level}" + (spell == selection.Spell ? " · selected" : "") +
                 (spell == _spellCandidate && _result!.Failure is not null ? " · unavailable" : "")));
@@ -214,7 +225,7 @@ public sealed partial class BattleSessionView : Control
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
             actors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             observations = _result?.Observations,
-            title = _title.Text, status = _status.Text, roster = _roster.Text,
+            title = _title.Text, status = _status.Text, roster = _roster.Text, help = _help.Text,
             boardChildren = _map.BoardChildren, previewNodes = _map.PreviewCount,
             viewport = BattleMapViewport.Rectangle(GetViewportRect()), mapViewport = BattleMapViewport.Rectangle(_map.GetGlobalRect()),
             hud = BattleMapViewport.Rectangle(_hud.GetGlobalRect()), hudClipsContents = _hud.ClipContents,

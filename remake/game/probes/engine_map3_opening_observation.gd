@@ -70,7 +70,7 @@ func run() -> void:
                 seen_texts[s.token] = true
                 await key(KEY_ENTER)
         elif s.wait == "ChoiceWait":
-            await key(KEY_N if decline and choices == 0 else KEY_ENTER)
+            await key(KEY_X if decline and choices == 0 else KEY_ENTER)
             choices += 1
         elif s.stop == "PlayerInput":
             if s.flags.has(603.0):
@@ -80,7 +80,7 @@ func run() -> void:
                     for i in range(40): await process_frame
                     await key(KEY_LEFT)
                     for i in range(40): await process_frame
-                    await key(KEY_C)
+                    await key(KEY_Z)
                     continue
                 if s.presentation.gestureDraws < 2 or s.presentation.soundStarts != 1 or s.presentation.soundFades != 1:
                     issue = "presentation-services"
@@ -114,7 +114,7 @@ func run() -> void:
                 issue = "route-position-" + str(index)
                 await finish(s)
                 return
-            var code = {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_C}.get(edge.input)
+            var code = {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_Z}.get(edge.input)
             if code == null:
                 issue = "unknown-input-" + str(edge.input)
                 await finish(s)

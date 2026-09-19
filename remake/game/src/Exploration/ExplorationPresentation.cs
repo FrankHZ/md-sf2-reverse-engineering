@@ -17,6 +17,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly AudioStreamPlayer _music;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
+    private readonly bool _reducedFlash;
     private int _spriteMounts;
     private WaitToken? _cue;
     private double _cueAge;
@@ -31,9 +32,9 @@ internal sealed class ExplorationPresentation : IDisposable
     private float _scale;
     private const int ViewWidth = 320, ViewHeight = 192;
 
-    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, Action prepareBattle)
+    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle)
     {
-        _owner = owner; _visuals = definition.Visuals; _prepareBattle = prepareBattle;
+        _owner = owner; _visuals = definition.Visuals; _reducedFlash = reducedFlash; _prepareBattle = prepareBattle;
         _music = new AudioStreamPlayer { Name = "ExplorationMusic" };
         owner.AddChild(_music);
         _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),
@@ -55,6 +56,9 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int MosaicOutDraws { get; private set; }
     internal int BattleLoads { get; private set; }
     internal float WhiteOpacity => _white.Color.A;
+    internal int SuppressedWhiteCues { get; private set; }
+    internal long? CompletedCueToken { get; private set; }
+    internal string? CompletedCueKind { get; private set; }
     internal float PaletteBrightness => _owner.Modulate.R;
     internal Vector2 Camera => _camera;
     internal Rect2 Screen => _screen;
@@ -99,7 +103,11 @@ internal sealed class ExplorationPresentation : IDisposable
                 {
                     if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
                     if (wait.Cue.Resource == "black") _owner.Modulate = wait.Cue.Kind == PresentationCueKind.FadeIn ? Colors.Black : Colors.White;
-                    else _white.Color = new Color(1, 1, 1, wait.Cue.Kind == PresentationCueKind.FadeIn ? 1 : 0);
+                    else
+                    {
+                        _white.Color = new Color(1, 1, 1, !_reducedFlash && wait.Cue.Kind == PresentationCueKind.FadeIn ? 1 : 0);
+                        if (_reducedFlash) SuppressedWhiteCues++;
+                    }
                     _cueAge = -delta; // Present the initial palette before advancing the modern half-second service.
                 }
                 if (wait.Cue.Kind == PresentationCueKind.Gesture)
@@ -140,7 +148,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 case PresentationCueKind.FadeOut:
                     float opacity = (float)Math.Clamp(_cueAge / 0.5, 0, 1);
                     if (wait.Cue.Kind == PresentationCueKind.FadeIn) opacity = 1 - opacity;
-                    if (wait.Cue.Resource == "white") _white.Color = new Color(1, 1, 1, opacity);
+                    if (wait.Cue.Resource == "white") _white.Color = new Color(1, 1, 1, _reducedFlash ? 0 : opacity);
                     else _owner.Modulate = new Color(1 - opacity, 1 - opacity, 1 - opacity);
                     complete = _cueAge >= 0.5;
                     if (complete) PaletteFades++;
@@ -162,7 +170,12 @@ internal sealed class ExplorationPresentation : IDisposable
                     break;
                 default: throw new InvalidOperationException("presentation-binding-" + wait.Cue.Kind);
             }
-            if (complete) completions.Add(new CompletePresentation(wait.Token, wait.Cue.Kind));
+            if (complete)
+            {
+                completions.Add(new CompletePresentation(wait.Token, wait.Cue.Kind));
+                CompletedCueToken = wait.Token.Value;
+                CompletedCueKind = wait.Cue.Kind.ToString();
+            }
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
         { Error = error.Message; }

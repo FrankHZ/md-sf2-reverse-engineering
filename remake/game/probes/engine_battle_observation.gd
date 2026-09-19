@@ -181,7 +181,7 @@ func _run() -> void:
         and rejected.mainSeed == next_round.mainSeed, "Range rejection reaches the live view without RNG mutation")
     await _press(KEY_ESCAPE)
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     var unsupported := _read("physical-unsupported")
     _check(unsupported.failure == "physical-definition" and unsupported.failureKind == "UnsupportedCapability",
         "Unsupported capability stays distinct in the live view")
@@ -360,7 +360,7 @@ func _physical(initial: Dictionary, reverse: bool) -> void:
     var first_index := 3 if reverse else 2
     var second_index := 2 if reverse else 3
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     await _press(KEY_TAB)
     await _press(KEY_TAB)
     await _press(KEY_TAB)
@@ -393,7 +393,7 @@ func _physical(initial: Dictionary, reverse: bool) -> void:
     _check(next_round.actor == player and next_round.round == 2 and next_round.mainSeed == 3184202292,
         "Next round consumes only living turn entries")
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     await _press(KEY_TAB)
     _check(_read("second-physical-selected").target == initial.actors[second_index].id,
         "Second legal kill uses the opposite opponent")
@@ -419,7 +419,7 @@ func _followups(initial: Dictionary, shape: String) -> void:
         failures.append("Unknown follow-up shape.")
         return
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     await _press(KEY_TAB)
     var selected := _read("followup-selected")
     _check(selected.failure == null and selected.target == initial.actors[2].id
@@ -745,7 +745,7 @@ func _private_source_ai(initial: Dictionary) -> void:
     _check(stopped.failure == null and stopped.stopReason == "PlayerInput" and stopped.round == 6 and stopped.actor == "ally-0", "Actual first enemy attack returns to Bowie control")
     _check(stopped.mainSeed == 0xAF881234 and stopped.thinkingSeed == 0x01340000 and stopped.actors[7].x == 11 and stopped.actors[7].y == 14 and stopped.actors[0].hp == 9, "Actual physical state and both RNG channels match the retained reference")
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     await _press(KEY_TAB)
     for _index in range(4):
         await _press(KEY_TAB)
@@ -794,7 +794,7 @@ func _private_actions(initial: Dictionary) -> void:
     var hit := _read("actual-enemy-hit")
     _check(hit.mainSeed == 0xAF881234 and hit.thinkingSeed == 0x01340000 and hit.actors[0].hp == 9 and hit.actor == "ally-0", "Actual controlled action route matches the first enemy reference hit")
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     for _index in range(5):
         await _press(KEY_TAB)
     await _press(KEY_ENTER)
@@ -809,7 +809,7 @@ func _private_actions(initial: Dictionary) -> void:
         current = JSON.parse_string(view.call("ReadObservationJson"))
     _check(current.actor == "ally-0" and current.mainSeed == 0x18571234 and current.actors[0].hp == 6, "Actual continuation matches the retained first-kill selection boundary")
     await _press(KEY_ENTER)
-    await _press(KEY_X)
+    await _press(KEY_F)
     for _index in range(5):
         await _press(KEY_TAB)
     await _press(KEY_ENTER)

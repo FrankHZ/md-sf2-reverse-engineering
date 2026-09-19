@@ -9,6 +9,8 @@ runs entity actions, a call/return and a timer, transfers maps, executes map ini
 hooks, initializes the encounter and reaches first player control. Declining returns field input.
 Neither package identity nor an expected route/receipt admits a command.
 
+Exploration and return consume the same [logical input/settings owner](./development-and-verification.md#logical-input-and-accessibility-adr-0010-9a) as battle. Confirm talks/acknowledges/accepts and Cancel declines. Text reveal stays in the adapter; completing reveal does not release an Application wait. Reduced-flash suppresses the reached white overlay while completing its real token/kind through the existing presentation service, an intentional 9A deviation.
+
 `GameSession` remains the sole snapshot publisher. `ExplorationDispatcher`, `ProgramRunner`,
 `EntityActionRunner`, `SceneEntities`, `MapTransfer`, `BattleEntry` and `BattleOutcome` compute immutable results. The active payload is either
 `ActiveExploration` or `ActiveBattle`; story flags, program PC/call stack, typed wait, text window,

@@ -34,7 +34,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
                 texts.append({"id":s.textId,"speaker":s.speaker,"flags":s.speakerFlags,"program":s.cursor,"tick":s.simulationTick})
                 await key(KEY_ENTER)
         elif s.wait == "ChoiceWait":
-            await key(KEY_ENTER if yes else KEY_N)
+            await key(KEY_ENTER if yes else KEY_X)
             choices += 1
         elif s.stop == "PlayerInput" and not player(s).get("moving", true):
             return s
@@ -43,7 +43,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
     remember(stopped, label)
     return stopped
 func input_code(name: String) -> int:
-    return {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_C}[name]
+    return {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_Z}[name]
 func castle_route(s: Dictionary) -> Dictionary:
     castle_identity = s.sessionId
     remember(s, "live-opening-completed")
@@ -67,18 +67,18 @@ func castle_route(s: Dictionary) -> Dictionary:
             await key(KEY_UP)
             s = await settle(segment.id)
             if issue != "": return s
-            await key(KEY_C)
+            await key(KEY_Z)
             s = await settle(segment.id, false)
             if issue != "": return s
             remember(s, "astral-declined")
             if not s.flags.has(607.0) or s.flags.has(608.0):
                 issue = "astral-decline-flags"
                 return s
-            await key(KEY_C)
+            await key(KEY_Z)
             s = await settle("astral-reprompt-accept")
             if issue != "": return s
         elif segment.kind == "entity-terminal":
-            for input in [KEY_RIGHT, KEY_RIGHT, KEY_C]:
+            for input in [KEY_RIGHT, KEY_RIGHT, KEY_Z]:
                 await key(input)
                 s = await settle(segment.id)
                 if issue != "": return s
@@ -93,7 +93,7 @@ func castle_route(s: Dictionary) -> Dictionary:
                 issue = "guard-sprite-service-incomplete"
                 return s
             var before_texts := texts.size()
-            for input in [KEY_RIGHT, KEY_RIGHT, KEY_C]:
+            for input in [KEY_RIGHT, KEY_RIGHT, KEY_Z]:
                 await key(input)
                 s = await settle("guard-repeat-interaction")
                 if issue != "": return s
