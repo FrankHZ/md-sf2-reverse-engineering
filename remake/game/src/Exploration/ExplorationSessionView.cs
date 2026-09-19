@@ -4,6 +4,7 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.Exploration;
 
@@ -18,6 +19,9 @@ public sealed partial class ExplorationSessionView : Control
     private Label _title = null!;
     private Label _dialogue = null!;
     private Label _help = null!;
+    private GameInput _input = null!;
+    private WaitToken? _textToken;
+    private double _revealed;
     private double _tickTime;
     private ExplorationState? _lastWorld;
     private ExplorationPresentation? _presentation;
@@ -38,13 +42,13 @@ public sealed partial class ExplorationSessionView : Control
     }
     public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
 
-    internal void Begin(GameSession session, SessionResult result, Action<SessionResult> enterBattle,
+    internal void Begin(GameSession session, SessionResult result, GameInput input, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
-        _session = session; _result = result; _enterBattle = enterBattle;
+        _session = session; _result = result; _input = input; _enterBattle = enterBattle;
         _releaseBattle = releaseBattle;
         _battleMounted = releaseBattle is not null;
-        _presentation = new(this, session.Definition.Exploration!, () =>
+        _presentation = new(this, session.Definition.Exploration!, input.Settings.ReducedFlash, () =>
         {
             prepareBattle(_result!);
             _battleMounted = true;
@@ -59,6 +63,11 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if (_dialogue.VisibleCharacters >= 0)
+        {
+            _revealed = Math.Min(_dialogue.GetTotalCharacterCount(), _revealed + delta * _input.Settings.CharactersPerSecond);
+            _dialogue.VisibleCharacters = (int)_revealed;
+        }
         if (_presentation is { } presentation)
         {
             foreach (var completion in presentation.Update(delta, _session.Current))
@@ -92,27 +101,29 @@ public sealed partial class ExplorationSessionView : Control
         current.StopReason == SessionStopReason.SimulationWait ||
         current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
 
-    public override void _UnhandledInput(InputEvent input)
+    internal void HandleAction(GameAction action)
     {
-        if (_handedOff || _session is null || input is not InputEventKey { Pressed: true, Echo: false } key) return;
+        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl) return;
         var current = _session.Current;
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
-            command = key.Keycode switch { Key.Y or Key.Enter => new ChooseDialogue(choice.Token, true),
-                Key.N or Key.Escape => new ChooseDialogue(choice.Token, false), _ => null };
+        {
+            if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
+            command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+        }
         else if (current.Story.Wait is DialogueWait)
         {
-            if (key.Keycode is Key.Enter or Key.Space) command = new Acknowledge(current.Story.Wait.Token);
+            if (action == GameAction.Confirm && !RevealText()) command = new Acknowledge(current.Story.Wait.Token);
         }
         else if (current.StopReason == SessionStopReason.PlayerInput && current.Exploration is { } world)
         {
-            command = key.Keycode switch
+            command = action switch
             {
-                Key.W or Key.Up => new Move(ExplorationDirection.North), Key.D or Key.Right => new Move(ExplorationDirection.East),
-                Key.S or Key.Down => new Move(ExplorationDirection.South), Key.A or Key.Left => new Move(ExplorationDirection.West),
+                GameAction.Up => new Move(ExplorationDirection.North), GameAction.Right => new Move(ExplorationDirection.East),
+                GameAction.Down => new Move(ExplorationDirection.South), GameAction.Left => new Move(ExplorationDirection.West),
                 _ => null,
             };
-            if (key.Keycode is Key.Enter or Key.C)
+            if (action == GameAction.Confirm)
             {
                 var player = world.PlayerEntity;
                 (int x, int y) = player.Motion.Facing switch { 0 => (1, 0), 1 => (0, -1), 2 => (-1, 0), _ => (0, 1) };
@@ -123,7 +134,14 @@ public sealed partial class ExplorationSessionView : Control
         }
         if (command is null) return;
         Send(command);
-        GetViewport().SetInputAsHandled();
+    }
+
+    private bool RevealText()
+    {
+        if (_dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount()) return false;
+        _revealed = _dialogue.GetTotalCharacterCount();
+        _dialogue.VisibleCharacters = (int)_revealed;
+        return true;
     }
 
     private void Send(SessionCommand command)
@@ -153,10 +171,11 @@ public sealed partial class ExplorationSessionView : Control
         _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
         bool portrait = _session.Definition.Exploration?.Visuals is not null && current.Story.TextWindow is OpenTextWindow { Speaker: not null };
         bool rightPortrait = current.Story.TextWindow is OpenTextWindow { SpeakerFlags: var speakerFlags } && (speakerFlags & 0x80) != 0;
-        _dialogue.Position = new(portrait && !rightPortrait ? 110 : 20, Mathf.Max(80, size.Y - 140));
+        _dialogue.Position = new(portrait && !rightPortrait ? 110 : 20, Mathf.Max(80, size.Y - 175));
         _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 110 : 20)), 75);
-        _help.Position = new(20, Mathf.Max(130, size.Y - 55));
-        _help.Size = new(Mathf.Max(1, size.X - 40), 45);
+        _help.Position = new(20, Mathf.Max(130, size.Y - 90));
+        _help.Size = new(Mathf.Max(1, size.X - 40), 80);
+        string previousText = _dialogue.Text;
         _dialogue.Text = current.Story.Wait switch
         {
             DialogueWait text => _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
@@ -173,13 +192,20 @@ public sealed partial class ExplorationSessionView : Control
         });
         _help.Text = current.Story.Wait switch
         {
-            ChoiceWait => "Y / Enter: Yes     N / Esc: No",
-            DialogueWait => "Enter / Space: Continue",
+            ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
+            DialogueWait => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             EntityWait or TickWait or PresentationWait => "",
-            _ => "WASD / arrows: Move     Enter / C: Talk",
+            _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
+        var token = (current.Story.Wait as DialogueWait)?.Token;
+        if (_dialogue.Text != previousText || token is not null && token != _textToken)
+        {
+            _revealed = 0;
+            _dialogue.VisibleCharacters = _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : 0;
+        }
+        _textToken = token;
         QueueRedraw();
     }
 
@@ -221,7 +247,9 @@ public sealed partial class ExplorationSessionView : Control
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
-            dialogue = _dialogue.Text, help = _help.Text,
+            dialogue = _dialogue.Text, help = _help.Text, visibleCharacters = _dialogue.VisibleCharacters,
+            totalCharacters = _dialogue.GetTotalCharacterCount(), textMode = _input.Settings.TextMode,
+            reducedFlash = _input.Settings.ReducedFlash,
             textId = (current?.Story.Wait as DialogueWait)?.Text,
             speaker = (current?.Story.Wait as DialogueWait)?.Speaker?.Value,
             speakerFlags = (current?.Story.Wait as DialogueWait)?.SpeakerFlags,
@@ -231,7 +259,9 @@ public sealed partial class ExplorationSessionView : Control
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
                 mosaicOutDraws = _presentation?.MosaicOutDraws,
                 paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
-                whiteOpacity = _presentation?.WhiteOpacity, mosaicDraws = _presentation?.MosaicDraws,
+                whiteOpacity = _presentation?.WhiteOpacity, suppressedWhiteCues = _presentation?.SuppressedWhiteCues,
+                completedCueToken = _presentation?.CompletedCueToken, completedCueKind = _presentation?.CompletedCueKind,
+                mosaicDraws = _presentation?.MosaicDraws,
                 shiverDraws = _presentation?.ShiverDraws, battleLoads = _presentation?.BattleLoads,
                 cameraX = _presentation?.Camera.X, cameraY = _presentation?.Camera.Y, activeCue = _presentation?.ActiveCue,
                 error = _presentation?.Error },

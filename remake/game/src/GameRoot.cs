@@ -4,31 +4,60 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Battles;
+using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter;
 
 // Ordinary game composition only. Reference play has its own project and entry scene.
 public sealed partial class GameRoot : Node
 {
+    private GameInput? _input;
+    private BattleSessionView? _battle;
+    private ExplorationSessionView? _exploration;
+
+    public override void _Input(InputEvent input)
+    {
+        if (_input?.Resolve(input) is not { } action) return;
+        // Resolve once, even for releases and inactive modes. A transition cannot dispatch
+        // this same event to the newly attached view as another command.
+        if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
+            exploration.HandleAction(action);
+        else if (_battle?.IsVisibleInTree() == true) _battle.HandleAction(action);
+        GetViewport().SetInputAsHandled();
+    }
+
     public override void _Ready()
     {
         var view = new BattleSessionView { Name = "BattleSessionView" };
+        _battle = view;
         AddChild(view);
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var arguments = OS.GetCmdlineUserArgs();
         for (int index = 0; index < arguments.Length; index++)
         {
             string option = arguments[index];
-            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start"))
-            { Fail("unknown-startup-option", "Unknown game option. Select an authored package, private battle start, or private exploration start."); return; }
+            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--input-settings"))
+            { Fail("unknown-startup-option", "Unknown game option. Select a session entry and optional input settings."); return; }
             if (options.ContainsKey(option))
             { Fail("duplicate-startup-option", "Each game option may appear only once."); return; }
-            if (options.Count != 0)
+            if (option != "--input-settings" && options.Keys.Any(key => key != "--input-settings"))
             { Fail("conflicting-startup-options", "Select one session entry."); return; }
             if (++index >= arguments.Length || string.IsNullOrWhiteSpace(arguments[index]) ||
                 arguments[index].StartsWith("--", StringComparison.Ordinal))
             { Fail("missing-startup-path", "The selected game option requires a path."); return; }
             options.Add(option, arguments[index]);
+        }
+        try
+        {
+            _input = new GameInput(InputSettings.Load(options.GetValueOrDefault("--input-settings")));
+            view.ConfigureInput(_input);
+        }
+        catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or
+            System.Text.Json.JsonException or ArgumentException or NotSupportedException)
+        {
+            // File exceptions may contain private paths; report a bounded startup diagnostic.
+            Fail("invalid-input-settings", error is ArgumentException ? error.Message : "Cannot read the versioned input settings.");
+            return;
         }
         if (options.TryGetValue("--private-battle-start", out string? controlledStart))
             BeginSource(PrivateBattle(controlledStart));
@@ -64,14 +93,16 @@ public sealed partial class GameRoot : Node
             void ShowExploration(SessionResult initial, bool returning)
             {
                 var exploration = new ExplorationSessionView { Name = "ExplorationSessionView" };
+                _exploration = exploration;
                 AddChild(exploration);
                 if (returning)
                 {
                     view.Reparent(exploration, false);
                     exploration.MoveChild(view, 0);
                 }
-                exploration.Begin(started.Session, initial, result =>
+                exploration.Begin(started.Session, initial, _input!, result =>
                 {
+                    _exploration = null;
                     if (view.GetParent() == exploration) view.Reparent(this, false);
                     exploration.QueueFree();
                     view.Attach(started.Session, result);

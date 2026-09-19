@@ -158,7 +158,7 @@ func after_admission(s: Dictionary) -> Dictionary:
             var old: Dictionary = step.path[i - 1]
             await key(KEY_RIGHT if p.x > old.x else KEY_LEFT if p.x < old.x else KEY_DOWN if p.y > old.y else KEY_UP)
         await key(KEY_ENTER)
-        await key(KEY_H if step.action == "heal" else KEY_X if step.action == "attack" else KEY_SPACE)
+        await key(KEY_H if step.action == "heal" else KEY_F if step.action == "attack" else KEY_SPACE)
         await process_frame
         s = state()
         if step.target != null:
