@@ -396,4 +396,7 @@ FPS may reach different battle seeds because real presentation allows background
 The adjacent `.outcome.json` and normal output retain actual observations. Require `passed:true`,
 exit0 and no Godot errors. Direct engine checks are `BattleOutcomeProgramTests`,
 `PrivateBattleOutcomeProgramTests` and `BattleGrowthTests`; the private continuous victory also
-crosses a real level threshold. Preserve completed failures and rerun their affected nodes only.
+crosses a real level threshold. It reads the accepted R4a static spine
+(`sf2-map3-battle01-victory-return-static-v1`) for the unlocked/completed flags, the Battle01 join
+row and the after-program, clear, set, SwitchMap and exploration order; that static spine proves
+source order, not natural original execution. Preserve completed failures and rerun their affected nodes only.

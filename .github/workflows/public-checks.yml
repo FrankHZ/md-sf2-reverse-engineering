@@ -50,7 +50,7 @@ jobs:
               $engine = $true
               $adapter = $true
               $research = $true
-            } elseif ($changedPath -in @('tests/fixtures/h3/battlefield-movement-matrix-v1.json', 'tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json')) {
+            } elseif ($changedPath -in @('tests/fixtures/h2/map3-battle01-admission-static-v1.json', 'tests/fixtures/h2/map3-battle01-victory-return-static-v1.json', 'tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json', 'tests/fixtures/h3/battle-exp-level-up-v1.json', 'tests/fixtures/h3/battlefield-movement-matrix-v1.json', 'tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-admitted-start-v1.json', 'tests/fixtures/h3/map3-battle01-natural-route-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json', 'tests/fixtures/h3/map3-messenger-acceptance-v1.json')) {
               $engine = $true
               $research = $true
             } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
