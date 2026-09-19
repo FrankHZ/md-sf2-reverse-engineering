@@ -228,10 +228,14 @@ explicit output directory; they must never patch the canonical ROM in place.
 
 ## Branch, Worktree, and Review Workflow
 
+Main-gate dispatches authorized, bounded Issues into fresh execution tasks under
+[Project governance](./docs/operations/github-project-governance.md#task-lifecycle). Keep corrections
+to the same outcome in that task. Roles and reusable environments may outlive individual tasks.
+
 `main` is the serialized integration branch. Start a short-lived topic from accepted `origin/main` in
-the task's existing dedicated isolated worktree after its old topic is merged, tracked state is clean,
-and owned processes are settled. Create another worktree only for concurrent writers or a concrete
-reproduction/isolation need:
+an available dedicated isolated worktree after its old topic is merged, tracked state is clean,
+owned processes are settled and ownership is transferred. Create another worktree only for concurrent
+writers or a concrete reproduction/isolation need:
 
 - `codex/research-*` for Phase 2 evidence, parsers, fixtures, and owning research docs;
 - `codex/design-*` for cross-subsystem design synthesis from accepted `main` evidence;

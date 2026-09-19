@@ -32,9 +32,10 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
   connected private-local Map 3 through Battle 01 world. Its [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
-- Research scheduling and its live frontier belong to
-  [`research/source-coverage.md`](../research/source-coverage.md), not this route. The continuous Map
-  3-through-completion-of-Battle 01 milestone and H4 result remain incomplete eventual acceptance
+- Research coverage, evidence gaps and cadence belong to
+  [`research/source-coverage.md`](../research/source-coverage.md); work scheduling and assignments
+  belong to Issues/Project. The continuous Map 3-through-completion-of-Battle 01 milestone and H4
+  result remain incomplete eventual acceptance
   work, not an automatic runtime-closure queue or default implementation prerequisite for an
   authorized bounded slice.
 - Private ROMs, extracted assets, runtime captures, downloaded tools, and generated binaries remain
@@ -46,7 +47,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   rounds. M5 retired the transitional reference assembly, host and legacy tests; only external
   controlled inputs remain under `remake/reference/inputs`. After environment setup use `uv run sf2 verify engine`
   and affected `uv run sf2 verify adapter`. Main-gate owns independent acceptance and remote checks.
-- Reuse the task's existing isolated worktree, environments and Godot installation/project/instance.
+- Reuse an available isolated worktree, environments and Godot installation/project/instance across
+  sequential tasks after explicit ownership transfer under
+  [Project governance](./github-project-governance.md#worktree-selection-and-retirement).
   New isolation needs concurrent ownership or a concrete reproduction/launch failure. Godot acceptance
   uses actual state/input observations; screenshots are prohibited.
 - Repository documents and exact Git objects are durable state. Old chats and external memory are not.
@@ -85,9 +88,11 @@ not duplicate them.
 
 Open work, ownership, and next steps are tracked as GitHub Issues in the
 [SF2 Modernization project](https://github.com/users/FrankHZ/projects/1) under
-[GitHub Project Governance](./github-project-governance.md). For a dispatched task, read the Issue
-first, then this route and the owners it names. `gh issue view <n>` locates the work; it does not
-replace the read-only Git/worktree/ownership check. Repository documents remain the durable source
+[GitHub Project Governance](./github-project-governance.md#task-lifecycle). Main-gate creates a fresh
+task for each dispatched coherent Issue outcome; its review corrections stay in that task. For a
+dispatched task, read the Issue and current handoff first, then this route and the owners it names.
+`gh issue view <n>` locates the work; it does not replace the read-only Git/worktree/ownership check.
+Repository documents remain the durable source
 of truth for evidence and accepted behavior; the Project holds coordination state only.
 
 ## When to Read the Global Documents

@@ -79,7 +79,9 @@ or a transcript that embeds it.
 
 ## Handoff Contract
 
-A worker-to-root, root-to-main-gate, or correction handoff is concise and self-contained. Include:
+A worker-to-root, root-to-main-gate, or correction handoff is concise and self-contained. Record the
+execution task's current handoff on its Issue and link the PR; a bounded subagent reports to that
+executor, which consolidates the result. Include:
 
 1. repository, worktree, branch, exact base, head, merge base, and candidate tree;
 2. PR URL and number when a PR exists, plus its Draft/open, mergeable, and check state;
@@ -94,9 +96,12 @@ A worker-to-root, root-to-main-gate, or correction handoff is concise and self-c
 8. private/generated/tracked-boundary result;
 9. findings first, ordered P0, P1, then P2, with an exact path and line, Git object, fixture, address,
    or command result;
-10. residual risks and meaningful test gaps; and
+10. residual risks and meaningful test gaps;
 11. ACCEPT, ACCEPT-WITH-FOLLOW-UP, CORRECTION-REQUIRED, or REJECT, plus the smallest correction owner
-   and path scope when applicable.
+   and path scope when applicable; and
+12. the Issue, execution task identity, next stopping condition, owned process state, and any local
+   environment/result retention needs. Keep absolute private paths in the local handoff, not public
+   Issue/PR text. Task retirement follows [Project governance](./github-project-governance.md#worktree-selection-and-retirement).
 
 Exact base, head, and tree identify Git objects but do not prove that the reviewed handoff matches the
 pushed remote candidate. For a PR handoff, reproduce the freeze before review:

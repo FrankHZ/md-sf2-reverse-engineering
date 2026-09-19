@@ -8,14 +8,17 @@
 
 Keep `main` as the serialized integration branch. Ordinary agent changes use a short-lived topic branch
 created from an up-to-date `origin/main` and an isolated Git worktree. A worktree may persist across
-slices, but its topic branch does not become a second durable source of truth. Prefer that reuse:
+sequential Issue tasks, but its topic branch does not become a second durable source of truth. Prefer reuse:
 after the old topic is merged, tracked state is clean and owned processes are settled, start the next
-topic at accepted `origin/main` in the same dedicated worktree. Another worktree needs concurrent
-ownership or a concrete reproduction/isolation requirement; a new slice alone is insufficient.
+topic at accepted `origin/main` in the same dedicated worktree and transfer exclusive ownership to the
+new executor. Another worktree needs concurrent ownership or a concrete reproduction/isolation
+requirement; a new task alone is insufficient. Task launch and archive must follow
+[the environment and retention boundary](../operations/github-project-governance.md#worktree-selection-and-retirement);
+neither implies permission to recreate dependencies or delete retained local evidence.
 
 Run at most one active Phase 2 research write lane and one active design-synthesis write lane by default.
-The research lane follows [ADR 0018](./0018-astra-role-routing-trial.md): its dedicated owner may execute
-directly; only explicitly bounded reverse-engineering subtasks use Terra. Independent acceptance
+The research lane follows [ADR 0018](./0018-astra-role-routing-trial.md): its assigned Issue executor
+may execute directly; only explicitly bounded reverse-engineering subtasks use Terra. Independent acceptance
 remains. The design lane may concurrently explain accepted evidence from `main`, but it cannot alter or
 promote research findings, schemas, fixtures, manifests, extractors, or evidence-bound subsystem design
 contracts without a separately assigned research slice and declared merge dependency.

@@ -12,8 +12,10 @@ research, and a tooling investigation. The user authorized formal closeout and o
 for main-gate, godot-architect, and research. Model choice continues to preserve independent
 integration, evidence boundaries, and proportional verification.
 
-A role is a continuing responsibility; a task/session hosts that role; a lane is its owned work;
-a slice is one bounded change, normally one PR; a subagent is a temporary bounded worker.
+A role is a continuing responsibility; a lane identifies an area of work. An execution task hosts one
+coherent Issue outcome, including its corrections, rather than all future work for a role. A slice is
+one bounded change, normally one PR; a subagent is a temporary bounded worker. Main-gate retains
+cross-Issue planning and independent integration; Issues and repository owners hold the durable state.
 
 ## Current Routing
 
@@ -40,13 +42,18 @@ Phase 2 wording prescribes a model or mandatory worker, this routing controls. A
 Worker Acceptance Checklist, handoff, and independent acceptance requirements remain binding for
 Phase 2 work. Main-gate-authored changes also require independent review before integration.
 
-## Task Migration and Smoke Experiment
+## Task Lifecycle and Recovery
 
-Task creation requires the user's explicit request; this decision is not blanket authority to
-replace or archive every role. Keep the old owner paused during a requested migration. Start the
-replacement with a compact current-state anchor as required by `AGENTS.md`, and require a read-only
-Git/ownership check and acknowledgement of its stopping condition before assigning mutations. A
-fresh role must consume accepted `main`, not a pending decision branch or replayed old instructions.
+The user-authorized Issue-based workflow replaces the former manual creation of replacement role
+sessions. Main-gate may create an execution task for an authorized, scoped Issue under
+[GitHub Project Governance](../operations/github-project-governance.md#task-lifecycle), which owns
+dispatch, recovery, worktree selection and retirement. This does not authorize arbitrary new work,
+bulk archival or cleanup. Model defaults above are independent of task lifetime.
+
+Keep same-outcome implementation and review corrections in the same task. Recover a failed task with
+the compact current-state anchor required by `AGENTS.md`, after its old writer has stopped. Require a
+read-only Git/ownership check before mutation. New work starts from accepted `main`; recovery preserves
+the existing candidate and results instead of discarding them or replaying completed instructions.
 
 After compaction or a progress-report interruption, reconcile the latest instruction with live Git,
 completed command results, and owned process state before resuming. The current-state anchor
@@ -56,7 +63,10 @@ report does not pause or replace an unfinished slice. Repeated old instructions 
 commit do not invalidate completed gates. Preserve failures and use the existing dependency-based
 verification rules for actual new changes.
 
-The requested startup/rename smoke is complete. A future task-management smoke requires a new explicit
+### Closed Smoke Experiment
+
+The requested startup/rename smoke is complete. Ordinary Issue dispatch does not require another
+startup/rename experiment. A future task-management smoke requires a new explicit
 user request. For that smoke, create one read-only Astra task, record the returned task identity and
 requested model/reasoning, wait for its bounded acknowledgement, rename
 that same identity, and read back the title. Treat queued creation as pending, not successful startup.

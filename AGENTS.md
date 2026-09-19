@@ -48,17 +48,21 @@ For H3, callback exceptions must reach the status/exit contract. New schema plac
 ## Agent and Session Routing
 
 Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for accepted Astra/Sol role routing,
-its default models, task-migration boundary, and completed trial's exit decision. Dedicated owners
-may execute their complete lane; reserve `gpt-5.6-terra` for an explicitly bounded single-file, single-assembly, or
-single-function reverse-engineering subtask, never a whole lane or integration. This routing replaces
+its default models and completed trial's exit decision. Use
+[GitHub Project Governance](./docs/operations/github-project-governance.md#task-lifecycle) for
+Issue dispatch, task creation, recovery and retirement. Main-gate may create a fresh task for an
+executable Issue within the user's authorized scope; roles and lanes do not require permanent sessions.
+The assigned executor may complete its Issue directly; reserve `gpt-5.6-terra` for an explicitly bounded
+single-file, single-assembly, or single-function reverse-engineering subtask, never a whole lane or
+integration. This routing replaces
 ADR 0004's earlier model and mandatory-worker choice; its evidence, handoff, and root-acceptance
 checklist remains normative for any bounded Phase 2 task.
 
-Do not silently replace a long-lived lane owner with an in-thread subagent when its context becomes
-unreliable or a fresh session is needed. Stop, tell the user, and let the user create the replacement
-session. Keep in-thread subagents limited to small, independent subtasks.
+Keep implementation and corrections for the same outcome in the same task. Start a fresh task for a
+new independent outcome; compaction alone is not a new task boundary. Keep in-thread subagents limited
+to small, independent subtasks, not replacements for an Issue's accountable executor or main-gate.
 
-For routine continuation with the same long-lived owner, send only the current objective, changes to
+For routine continuation of the same Issue, send only the current objective, changes to
 base/branch/ownership, slice-specific constraints, acceptance and stopping conditions, and links to
 necessary owners and results. Reference stable rules rather than repeating them. Explicitly carry
 unresolved failures and Unknowns that affect this slice; retain completed counts, CI results, and
@@ -80,10 +84,13 @@ current accepted `origin/main` in an isolated worktree and a short-lived topic b
 matches the lane: `codex/research-*`, `codex/design-*`, `codex/tooling-*`, `codex/remake-*`, or
 `codex/repo-*`.
 
-Prefer reusing the same dedicated isolated worktree for successive slices of one task. After the
-previous slice is merged, tracked changes are clean, and its owned processes have exited, start the
-next topic branch from current accepted `origin/main` in that worktree. Preserve private inputs,
-completed gate results, and failure records; use separate ignored output locations for new runs and
+Prefer reusing a dedicated isolated worktree across sequential Issue tasks. After the previous slice
+is merged, tracked changes are clean and the old writer has stopped, start the next topic branch from
+current accepted `origin/main` in that worktree and explicitly transfer ownership to the new executor.
+Record any retained idle Godot/debug instance and transfer its control with the environment; a task
+boundary alone does not require restarting it. Task creation or archival does not itself authorize
+environment creation or cleanup. Preserve private inputs, completed gate results and failure records;
+use separate ignored output locations for new runs and
 apply the existing dependency-based gate invalidation rules. Create another worktree when concurrent
 work or preserving a required reproduction environment needs separate isolation. Reuse never permits
 ordinary writes on `main` or multiple active writers in one worktree.
