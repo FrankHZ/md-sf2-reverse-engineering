@@ -50,7 +50,7 @@ jobs:
               $engine = $true
               $adapter = $true
               $research = $true
-            } elseif ($changedPath -in @('tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json')) {
+            } elseif ($changedPath -in @('tests/fixtures/h3/battlefield-movement-matrix-v1.json', 'tests/fixtures/h3/entity-movement-matrix-v1.json', 'tests/fixtures/h3/map3-battle01-player-ready-v1.json')) {
               $engine = $true
               $research = $true
             } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
