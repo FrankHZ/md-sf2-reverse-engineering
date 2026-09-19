@@ -106,6 +106,73 @@ passive observer policy; it does not read this capability's candidate, receipt, 
 create a scenario ledger. It adds no counter, research-index registration, R2b observation, natural
 continuity fact, or H4 result.
 
+## Source-backed start and capture boundary
+
+Evidence date: 2026-09-19. **Confirmed — static API/source only:** the official
+[2.11.1 tag](https://github.com/TASEmulators/BizHawk/releases/tag/2.11.1) resolves to BizHawk commit
+`bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`. Its
+[gitlink](https://github.com/TASEmulators/BizHawk/tree/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/waterbox/gpgx/Genesis-Plus-GX)
+and [submodule declaration](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/.gitmodules)
+select `TASEmulators/Genesis-Plus-GX` commit `051d430d3d1b54625f9900c8f152d7f232e06daf`.
+The release archive identity remains owned by [`manifests/toolchain.json`](../../manifests/toolchain.json).
+This inspection neither rebuilt that binary nor established source-to-binary equivalence or runtime
+compatibility. The complete observation-seam and reproduction inventory is in the
+[scenario owner](original-reference-replay-scenario-api.md#pinned-source-inventory).
+
+The selected implementation route for ADR 0010's controlled start is a **separately admitted BK2
+with an embedded binary core state**, loaded by the host before playback. This is a specification,
+not permission to change this capability:
+
+- [`Bk2Movie.IO.LoadFields`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/bk2/Bk2Movie.IO.cs)
+  reads the core-state lump when the header has `StartsFromSavestate True`.
+  [`BinaryStateLump`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/savestates/BinaryStateLump.cs)
+  names the binary member `Core`; `MovieSaveRam` is a different member. “CoreState” in this
+  capability's prohibition describes the state class, not a claim that `CoreState` is the native
+  binary member name. Exact-three-member validation also rejects `Core`, compressed state members,
+  framebuffer and all other extras.
+- [`MovieSession.RunQueuedMovie`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/MovieSession.cs)
+  invokes `ProcessSavestate` / `ProcessSram` before `StartNewPlayback`.
+  [`IMovie` extensions](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/movie/interfaces/IMovie.cs)
+  load binary state, optionally populate a stored framebuffer, then reset emulator counters.
+  [`GPGX.LoadStateBinary`](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Emulation.Cores/Consoles/Sega/gpgx64/GPGX.IStatable.cs)
+  restores Waterbox state and managed frame/lag state, reinstalls callbacks, invalidates the pattern
+  cache and updates video. It is an opaque emulator state, not a portable RAM snapshot or game save.
+- `StartsFromSaveRam` only calls `StoreSaveRam`; it does not establish CPU/program/VDP/audio/RNG
+  continuation. It is not the selected 1A mechanism. Do not import host persistence incidentally or
+  combine independent SRAM with the selected embedded state.
+
+The current capability stays **power-on-only**, fixed at 33 physical rows, with the exact existing
+recipe, observer, configuration and identity checks. Its CoreState/SaveRAM prohibition is unchanged.
+The scenario v1 schemas also fix `startState` to `power-on`; neither schema currently admits the
+selected snapshot route. A separately reviewed scenario transport must explicitly represent and
+validate that route. Widening this capability, feeding a longer movie to its runner, or using a Lua
+state load would bypass its accepted boundary.
+
+The [R1 admitted-start owner](map3-admitted-start.md) supplies controlled state facts and their widths,
+not a reusable BK2 core-state artifact: its timer values include explicit post-observation
+normalization and a later restoration check. A future private start artifact must name its actual
+producer, immutable bytes, configuration, initial source checkpoint and controlled interventions;
+it cannot be synthesized by treating the R1 JSON vector as complete emulator state. After the declared
+admission, input is frozen and the original game alone advances route/battle/return state. No R2d
+bridge, seed/time rewrite, PC redirection, state reload, or adaptive correction may occur there.
+
+**Unknown — runtime and capture:** startup after the movie's first row, state restoration, exact
+input polling, console cleanliness and capture alignment still require their own admitted observation.
+The source-backed A/V APIs and hardware gaps are specified in the
+[8C seam matrix](original-reference-replay-scenario-api.md#selected-8c-observation-seams).
+The capability's disabled sound, receipt-only cleanup and fixed observer cannot simply be reused as
+complete capture support.
+
+The known corrected preflight candidate
+`B003732B61A375C7980BDC1F328E5C8B00553E6F38E669746041E9E6BC7BE0EA` was reported
+`PASS / ProcessStarts: 0`; it is not runtime evidence. The genuine consumed ordinal-1 ledger and
+receipt bytes remain unavailable. Do not synthesize them from these public identities or repeat a
+search without a new named location. Recovery and independent launch admission remain prerequisites:
+only ordinal 2 diagnostic and ordinal 3 same-candidate frozen acceptance can remain, never a fourth
+launch. A new scenario wrapper or runner does not reset that lineage; a genuinely separate scenario
+requires main-gate's explicit lineage/budget adjudication under the
+[readiness owner](../design/synthesis/map3-battle01-readiness.md#original-replay-lineage-and-launch-admission).
+
 ## Reproduction
 
 Run `uv run sf2 h3 original-reference-replay-capability --preflight-only`. The focused public test
