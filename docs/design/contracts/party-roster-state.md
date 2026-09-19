@@ -6,7 +6,9 @@
 - **Inferred original behavior:** none in this contract.
 - **Unknown original behavior:** normal-story reachability, roster/list capacity, player-visible
   roster/death outcomes, and physical/cross-process SRAM durability.
-- Remake status: implementation-neutral Phase 3 contract; no engine has been selected.
+- Remake status: implementation-neutral Phase 3 contract; implementation direction and capability
+  status are owned by [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md)
+  and the [remake capability ledger](../../../remake/docs/capability-status.md).
 
 ## Import Boundary
 

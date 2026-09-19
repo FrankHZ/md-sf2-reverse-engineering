@@ -9,6 +9,9 @@
   tree `28c5f9c00a2b095d8b990eb8adc5249ede911704`
 - Static-owner refresh: 2026-08-30, commit `1647ea15c3fabd900d451d5e2bc9c52699137a62`,
   tree `dddc48d1c0e1d87016b35d9d8f79bf40c1ceef3f`
+- Controlled PlayerReady refresh: accepted `main` commit
+  `8a581a82e297ea2947cc9837e661752163d2806d`, tree
+  `f1df3b15969181be58e751362f7988238333fe29`; consumes research merge #303 (`e51b37e8`)
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
 - Product profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md)
@@ -25,10 +28,11 @@ own each closure, and what eventual continuous-milestone acceptance must inspect
 
 The product-choice slots and battle-functions contract are closed. Accepted runtime evidence now
 closes the controlled Map 3 start and two bounded natural-route prefixes, while accepted static owners
-close the R2b-through-R4a source/H1/ROM topology. The current judgment is still **NOT READY** for
-eventual milestone acceptance because those owners do not join the last runtime prefix to natural
-Battle 01 admission, a complete playable battle, an executed after-battle program, and one exact
-observable ending state.
+close the R2b-through-R4a source/H1/ROM topology. R2d adds a **Confirmed** explicit-bridge H3
+continuation through Battle 01 initialization to the first stable player-input seam. The current
+judgment is still **NOT READY** for eventual milestone acceptance because those owners do not join
+the last natural runtime prefix to natural Battle 01 admission, a complete playable battle, an
+executed after-battle program, and one exact observable ending state.
 
 The following distinctions are normative:
 
@@ -49,6 +53,23 @@ The 2026-08-20 refresh records the integrated battle-functions contract and ADR 
 refresh records only the later accepted R1/R2/R2a runtime owners and R2b-through-R4a static chain
 against the named accepted-main base. Neither refresh reruns the complete original gap audit or
 promotes an unmerged Research, ignored/private, failed-replay, or tooling conclusion.
+
+The controlled PlayerReady refresh reconciles accepted #303, not a new emulator observation. Review
+checked the [admission research owner](../../research/map3-battle01-admission.md),
+[H3 fixture](../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json),
+[fixture schema](../../../schemas/h3/map3-battle01-player-ready-fixture.schema.json), and
+[verifier](../../../src/sf2tool/h3/map3_battle01_player_ready.py). The owning reproduction commands
+are `uv run sf2 h2 map3-battle01-admission` and `uv run sf2 h3 map3-battle01-player-ready`; neither is
+rerun for this documentation-only reconciliation. The fixture explicitly records a
+`controlled-harness-bridge` with `naturalR2bContinuity: false` and stops at
+`ControlBattleEntity.after-WaitForVInt-before-input-read`. Thus the bounded ready state is accepted,
+but natural R2a-to-R2b continuity remains **Unknown**.
+
+Current remake behavior is tracked separately by
+[ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md) and the
+[capability ledger](../../../remake/docs/capability-status.md). Implemented common-session admission,
+battle outcomes, and exploration return do not establish original natural continuity or complete
+8C/H4 acceptance. This refresh does not rerun the full gap audit or close those gaps.
 
 ## Readiness Classification
 
@@ -158,14 +179,16 @@ reachability, persistence, visible sequencing, and story consequences open.
 
 [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md) closes the generic
 victory mutation order: heal eligible party, run the after-battle seam, clear the unlocked flag, set
-the completed flag, and return `D4=1`. The accepted Battle 01 H3 entry uses Debug Battle Test and
-skips the before/start cutscenes. Neither fact establishes natural Battle 01 admission, after-battle
+the completed flag, and return `D4=1`. The earlier Battle 01 debug H3 entry uses Debug Battle Test and
+skips the before/start cutscenes. The separate R2d explicit-bridge observation below does observe
+those programs returning, but neither entry establishes natural Battle 01 admission, after-battle
 program effects, or the milestone's observable endpoint.
 
 ### Accepted scenario evidence-chain refresh
 
 The accepted scenario-specific owners now form this exact bounded chain. Runtime and static labels are
-not interchangeable:
+not interchangeable. Each row's retained boundary describes that fixture, not a denial of the
+separate bounded R2d observation:
 
 | Stage | Accepted owner | Closed surface | Retained boundary |
 | --- | --- | --- | --- |
@@ -174,6 +197,7 @@ not interchangeable:
 | R2a | `sf2-map3-messenger-acceptance-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-messenger-acceptance-v1.json); [research owner](../../research/map3-messenger-acceptance.md) | accepted messenger continuation through follower-ready `WaitForEvent`; `FieldMenu` **NotReached** | natural continuation into the static castle/battle route, later effects, and Battle 01 remain open |
 | R2b | `sf2-map3-castle-battle-unlock-static-v1`; [fixture](../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json); [research owner](../../research/map3-castle-battle-unlock.md) | legal source-derived route and unlock topology | natural execution, caller order, endpoint, and R2c continuity are **Unknown** |
 | R2c | `sf2-map3-battle01-admission-static-v1`; [fixture](../../../tests/fixtures/h2/map3-battle01-admission-static-v1.json); [research owner](../../research/map3-battle01-admission.md) | legal admission/initialization spine | natural admission, cutscene execution, initialized snapshot, first actor, and player-ready state are **Unknown** |
+| R2d | `sf2-map3-battle01-player-ready-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json); [research owner](../../research/map3-battle01-admission.md) | **Confirmed** explicit harness bridge from R2a to the retained R2b terminal, then original control through Maps 21/40/57, admission, before/start program returns, initialization, turn generation, actor 1 dispatch, and the first stable input seam | natural R2a-to-R2b continuity, wholly natural snapshot/actor selection, post-seam input/actions/results, presentation, victory, and complete 8C remain **Unknown** |
 | R3a | `sf2-map3-battle01-turn-control-static-v1`; [fixture](../../../tests/fixtures/h2/map3-battle01-turn-control-static-v1.json); [research owner](../../research/map3-battle01-turn-control.md) | turn/control source topology | reached player/AI branch, commands, movement, targets, actions, and results are **Unknown** |
 | R3b | `sf2-map3-battle01-action-effect-static-v1`; [fixture](../../../tests/fixtures/h2/map3-battle01-action-effect-static-v1.json); [research owner](../../research/map3-battle01-action-effect.md) | action/effect dispatcher and caller topology | actual branch selection, resolution, status, death, EXP, gold, drop, follow-up, and victory are **Unknown** |
 | R3c | `sf2-map3-battle01-action-completion-static-v1`; [fixture](../../../tests/fixtures/h2/map3-battle01-action-completion-static-v1.json); [research owner](../../research/map3-battle01-action-completion.md) | action-completion and replay return topology | reached completion, replay, follow-up, after-turn, and next-turn dispatch are **Unknown** |
@@ -194,9 +218,9 @@ association.
 | dialogue and interaction | [Dialogue System](../contracts/dialogue-system.md), [Sprite Dialogue Property Data](../contracts/sprite-dialogue-property-data.md), [Text and Font System](../contracts/text-and-font-system.md), [Portrait Window State](../contracts/portrait-window-state.md), R2a owner above | **Contract-ready static seams and bounded messenger runtime result**; **Accepted product decision** for private-local original text | later dialogue/program effects, visible prose, speaker/window presentation, timing, and continuity remain **Unknown/Deferred** |
 | field menu and UI | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Window System](../contracts/window-system.md), [UI Layout Data](../contracts/ui-layout-data.md), [UI Graphics Asset Data](../contracts/ui-graphics-asset-data.md) | **Contract-ready** handoff/layout/resource seams; `FieldMenu` is **Confirmed NotReached** in the accepted R2/R2a prefix; **Explicit product decision** for required pages and presentation | no field-menu contract is required by the reached prefix; a later naturally reached route requirement would trigger a bounded conditional owner |
 | map resources and camera | [Map Layout Data](../contracts/map-layout-data.md), [Map Palette Data](../contracts/map-palette-data.md), [Map Tileset Data](../contracts/map-tileset-data.md), [Map Sprite Graphics Data](../contracts/map-sprite-graphics-data.md), [Map Entity Data](../contracts/map-entity-data.md), [Map Camera Update](../contracts/map-camera-update-control-flow.md) | **Contract-ready static import/local-control owners**; **Accepted product decision** for private originals and 8C | reached pixel/palette/frame/hardware behavior, private capture provenance, and exact tolerances remain **Unknown/Deferred** |
-| map-to-battle admission | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md), R2b/R2c owners above | **Contract-ready static route/admission spine**; **Missing design contract** for continuous scenario composition | natural R2a-to-R2b-to-R2c continuity, caller order, cutscene execution, and first battle-ready state remain **Unknown/Deferred** |
-| Battle 01 encounter setup | [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md), [Battlefield Navigation](../contracts/battlefield-navigation.md), R2c/R3a owners above | **Contract-ready static encounter/control spine** | natural initialized snapshot, first actor, player-ready state, and later-round state remain **Unknown/Deferred** |
-| player turn and battle menus | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), [Input System](../contracts/input-system.md), R3a owner above | **Contract-ready static branch/request/local-output owners**; **Accepted product decision** for manual agency and UI | reached player/AI branch, command, movement, target, action, cancellation, and result remain **Unknown/Deferred** |
+| map-to-battle admission | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md), R2b/R2c/R2d owners above | **Contract-ready static route/admission spine and bounded explicit-bridge runtime seam**; **Missing design contract** for continuous scenario composition | natural R2a-to-R2b continuity and wholly natural admission/caller state remain **Unknown/Deferred**; R2d's program returns and first ready state are controlled, not natural-route closure |
+| Battle 01 encounter setup | [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md), [Battlefield Navigation](../contracts/battlefield-navigation.md), R2c/R2d/R3a owners above | **Contract-ready static encounter/control spine and bounded initialized/player-ready observation** | wholly natural initialized snapshot and first-actor selection, post-seam input, and later-round state remain **Unknown/Deferred** |
+| player turn and battle menus | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), [Input System](../contracts/input-system.md), R2d/R3a owners above | **Contract-ready static branch/request/local-output owners and bounded actor-1 player-control dispatch**; **Accepted product decision** for manual agency and UI | inputs after the ready seam, AI execution, command, movement, target, action, cancellation, and result remain **Unknown/Deferred** |
 | AI and navigation | [Battle AI Decision](../contracts/battle-ai-decision.md), [Battlefield Navigation](../contracts/battlefield-navigation.md), R3a/R3b owners above | **Contract-ready algorithms and static caller topology** | actual AI branch, command, movement, target, result, and multi-round decisions remain **Unknown/Deferred** |
 | action construction and resolution | [Battle Action Construction](../contracts/battle-action-construction.md), [Combat Resolution](../contracts/combat-resolution.md), [Spell Resolution](../contracts/spell-resolution.md), [Randomness](../contracts/randomness.md), R3b/R3c owners above | **Contract-ready bounded algorithms and static action/effect/completion topology**; **Accepted product decision** for one deterministic H4 trace | reached seed, actions, resolution/status/death/EXP/gold/drop/follow-up outcomes, replay, and next-turn dispatch remain **Unknown/Deferred** |
 | battle presentation | [Battle Scene Presentation](../contracts/battle-scene-presentation.md), dedicated graphics-data contracts, and R3c/R3d owners above | **Contract-ready loader/static asset and replay/finalization topology**; **Accepted product decision** for private originals and 8C | reached scenes, frames, audio, hardware chronology, private captures, and exact tolerances remain **Unknown/Deferred** |
@@ -232,8 +256,8 @@ without turning evidence-owned exact values into product choices.
 | Decision slot | Accepted state | Remaining closure |
 | --- | --- | --- |
 | admitted start | **Accepted: 1A controlled admitted snapshot** | R1 owns the exact controlled values/provenance through the first wait; it is not a canonical natural New/load claim |
-| route | **Accepted: 2A smallest Research-proven natural route** | R2/R2a own only the reached runtime prefix and R2b/R2c own static continuation; complete natural continuity, effects, and backtracking remain open |
-| natural battle/cutscene | **Accepted: 3A chronology, with placeholder subclause superseded by 7C/8C** | R2c owns static admission topology only; natural admission, before/start execution, rendered timing, and first battle-ready state remain open |
+| route | **Accepted: 2A smallest Research-proven natural route** | R2/R2a own the natural runtime prefix, R2b/R2c the static continuation, and R2d an explicit-bridge continuation to PlayerReady; complete natural continuity, effects, and backtracking remain open |
+| natural battle/cutscene | **Accepted: 3A chronology, with placeholder subclause superseded by 7C/8C** | R2c owns static admission topology; R2d observes before/start returns and first ready state only after the declared bridge; natural admission, wholly natural state, and rendered timing remain open |
 | completion endpoint | **Accepted: 5B first stable controllable post-after-program state** | exact return map/location/state remains Research-owned; `D4=1` alone is insufficient |
 | save/load | **Accepted: 6A excluded** | restart returns to the admitted snapshot; later save support is a separate milestone |
 | player control and UI | **Accepted: 4A/9A manual agency and modern accessible logical controls** | exact reached actions/input trace and executable accessibility assertions remain open |
@@ -267,7 +291,9 @@ does not start Phase 4.
 
 ### Slice 3: accepted static chain and conditional runtime closures
 
-The R1/R2/R2a runtime fixtures and R2b-through-R4a static fixtures listed above are now accepted.
+The R1/R2/R2a runtime fixtures, R2b-through-R4a static fixtures, and R2d explicit-bridge PlayerReady
+fixture listed above are accepted. R2d closes only its controlled continuation and first input seam;
+it does not close the omitted natural castle segment or a complete battle.
 Eventual continuous-milestone acceptance still requires bounded closure for:
 
 1. natural R2a-to-R2b-to-R2c continuation and caller order into Battle 01;
@@ -384,7 +410,8 @@ uploads, public-CI requirements, or distributable build contents.
 | natural Map 3 route exact | OPEN | Research, then scenario contract |
 | required exploration/dialogue/menu/UI scope exact | OPEN | Research plus route-required conditional contracts; ADR 0010 fixes the minimum-scope rule |
 | static Battle 01 admission spine accepted | PASS | `sf2-map3-battle01-admission-static-v1`; natural admission remains the separate OPEN row below |
-| natural Battle 01 admission exact | OPEN | conditional runtime evidence, then scenario contract |
+| explicit-bridge Battle 01 PlayerReady seam observed | PASS (bounded) | `sf2-map3-battle01-player-ready-runtime-v1`; controlled bridge, not natural continuity or post-seam play |
+| natural Battle 01 admission exact | OPEN | conditional runtime evidence, then scenario contract; R2d does not close natural R2a-to-R2b continuity |
 | player-turn contract present | PASS | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md) |
 | R3a–R3d static control/action/completion/finalization chain accepted | PASS | accepted static fixtures; reached branches/results remain open |
 | complete playable Battle 01 trace exact | OPEN | conditional runtime evidence plus existing/extended battle contracts |
@@ -415,6 +442,7 @@ is open. Those rows do not block a separately user-authorized concrete implement
 | 26 Map 3 source-path records exist and are aggregate-owned | **Confirmed indexed inventory** | `sf2-map-data-static-v1`, [map-data research](../../research/map-data-inventory.md) | Not route chronology, reachability, effects, or automatic future associations |
 | natural opening and messenger-acceptance prefixes are observed | **Contract-ready bounded runtime prefixes** | `sf2-map3-battle01-natural-route-runtime-v1`, `sf2-map3-messenger-acceptance-runtime-v1` | End at program-entry/follower-ready boundaries; later continuity is unproved and `FieldMenu` is NotReached |
 | R2b/R2c legal route, unlock, admission, and initialization topology exists | **Contract-ready static chain** | `sf2-map3-castle-battle-unlock-static-v1`, `sf2-map3-battle01-admission-static-v1` | Not natural execution, caller order, cutscene execution, initialized snapshot, or first actor |
+| explicit-bridge continuation reaches first Battle 01 PlayerReady | **Confirmed bounded runtime** | `sf2-map3-battle01-player-ready-runtime-v1`, [admission research](../../research/map3-battle01-admission.md) | Natural R2a-to-R2b continuity, wholly natural snapshot/actor, post-seam play, victory, presentation, and complete 8C remain Unknown |
 | R3a–R3d turn, action/effect, completion, replay, and finalization topology exists | **Contract-ready static chain** | the four accepted R3 static fixtures and linked research owners | Not reached player/AI/action/results, replay, next turn, multi-round play, or victory |
 | 15 battle-functions records have accepted static evidence and one bounded design contract | **Contract-ready** | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), `sf2-battle-functions-static-v1` | No camera-owner overlap and no runtime/input/presentation generalization |
 | R4a victory, after-program, return, SwitchMap, and exploration-call spine exists | **Contract-ready static chain** | `sf2-map3-battle01-victory-return-static-v1`, [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md) | Victory/program reach and completion, flags/join outcomes, exploration re-entry, stable endpoint, R4b, and H4 remain open |
