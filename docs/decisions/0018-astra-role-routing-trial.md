@@ -24,16 +24,43 @@ required solely to evaluate the model; the completed startup/rename experiment s
 
 | Role | Default model / reasoning | Responsibility |
 | --- | --- | --- |
-| main-gate | `gpt-6-astra` / `xhigh` | cross-lane scope, independent review, and serialized integration |
-| godot-architect | `gpt-6-astra` / `xhigh` | remake architecture, evidence-to-product boundaries, and implementation ownership |
-| investigator | `gpt-6-astra` / `high` or `xhigh` | bounded investigation of suspected workflow or systemic problems |
-| research | `gpt-6-astra` / `xhigh` | complete evidence slices, static extraction, and justified H3 execution |
+| main-gate | `gpt-6-astra` / `high` | cross-lane scope, independent review, and serialized integration |
+| godot-architect | `gpt-6-astra` / `medium` | scoped remake implementation; select High for difficult architecture or evidence-to-product decisions |
+| investigator | `gpt-6-astra` / `high` | bounded investigation of suspected workflow or systemic problems; routine implementation of an accepted correction can use Medium |
+| research | `gpt-6-astra` / `medium` | scoped evidence execution and static extraction; select High for complex reverse engineering or runtime-observation design |
 | design-doc | `gpt-5.6-sol` / `high` or `xhigh` | contracts and synthesis from accepted evidence |
 
-These are defaults, not an obligation to switch models between planning and implementation. A lane
-owner may propose a bounded override for conflicting evidence or cross-owner decisions; the assigned
-model and scope belong in the task handoff. A frozen implementation can remain with its current
-owner. Do not create an extra executor solely to spend emulator or test wait time on another model.
+Model choice and reasoning effort are separate. These Astra effort defaults replace the former
+role-wide XHigh default; they do not migrate Sol or Terra roles, interrupt running tasks, or require
+switching models between planning and implementation. A frozen implementation may remain with its
+current executor. Do not create an extra executor solely to spend emulator or test wait time on
+another model.
+
+### Select Effort for the Task
+
+For an authorized Astra execution task, use `medium` unless its actual work calls for another level:
+
+- `low`: simple mechanical edits, document synchronization, or straightforward lookup with little
+  unresolved reasoning.
+- `high`: difficult architecture, cross-owner acceptance decisions, complex debugging or reverse
+  engineering, and conflicting evidence that requires substantial judgment.
+- `xhigh`: an exceptional, named reasoning difficulty for which High is insufficient or prior
+  comparable work shows a concrete benefit. Record that reason in the Issue handoff; do not select
+  it merely because the project is large, the role is Research, or a command takes a long time.
+
+Distinguish reasoning difficulty from unclear requirements, missing inputs, environment failures and
+ordinary failed checks before raising effort. Escalation changes neither scope nor acceptance and
+does not reset runtime budgets. Use normal review findings to adjust future choices; add no benchmark,
+telemetry, duplicated task or extra verification run to compare effort levels. The earlier trial
+supports model routing, not a measured quality or quota-saving claim for these effort levels.
+
+At dispatch, main-gate explicitly sets the supported reasoning level through the task-creation
+tool's `thinking` parameter instead of inheriting an application default. Record the selected effort
+and any override reason in the current Issue handoff. For an existing task, a supported setting change
+can apply on its next continuation; do not restart the task or repeat completed gates solely to change
+effort. A tool request establishes the requested setting; confirm it through tool or host evidence
+when available. If selection cannot be applied or verified, report that limitation instead of claiming
+the task is running at the chosen level. An agent's self-description is not verification.
 
 Terra remains available only for explicitly bounded single-file, single-assembly, or single-function
 reverse-engineering work. It does not own a complete research lane or integration. A dedicated lane
@@ -125,6 +152,10 @@ routing above; it does not start a new product slice or authorize worktree/ref c
 - [OpenAI Astra guidance](https://developers.openai.com/api/docs/guides/latest-model), accessed
   2026-09-05: instruction sensitivity, clarification, delegation, and proportional testing motivate
   explicit task boundaries; this is guidance, not project benchmark evidence.
+- [OpenAI reasoning-effort guidance](https://developers.openai.com/api/docs/guides/reasoning#reasoning-effort),
+  accessed 2026-09-19: Medium balances ordinary workloads, High targets difficult reasoning, and
+  XHigh needs a benefit that justifies its additional cost. This informs task selection, not a
+  measured Codex quota multiplier or a new project benchmark requirement.
 - [ADR 0012: Partitioned verification](./0012-dependency-aware-partitioned-verification.md).
 - [ADR 0013: Agent workflow without a benchmark program](./0013-token-efficient-agent-research-workflow.md).
 - [Phase 2 lane runbook](../operations/phase2-lane-runbook.md).
