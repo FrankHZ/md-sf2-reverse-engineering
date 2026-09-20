@@ -8,6 +8,9 @@
 - Product owner: [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), selected
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 
+The current additional observation is [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed),
+independently accepted by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
+
 ## Current milestone applicability
 
 [ADR 0010's current amendment](../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)
@@ -224,8 +227,8 @@ surfaces. Do not create a new fixture when an extension of this batched rail can
 ADR 0014 parts 1/2 identify a real missing acceptance fact, but part 3 does **not** justify a separate
 one-case fixture here.
 
-This reuse is **not currently executable as an admitted observation**. The observer's controlled
-bootstrap ROM/RAM/register writes and state-aware joypad policy are not an ADR 0015 passive replay.
+At this dossier's initial review, this reuse was **not executable as an admitted observation**.
+The observer's controlled bootstrap ROM/RAM/register writes and state-aware joypad policy are not an ADR 0015 passive replay.
 Removing the bridge alone does not make it one. A passive method would also need a concrete admitted
 start artifact, frozen non-adaptive input transport and removal of continuing shims/writes; neither
 is supplied by the existing command. Actual text consumption cannot reuse `DisplayText`-RTS.
@@ -351,8 +354,8 @@ provenance. The later accepted static graph and the explicit bridge's success do
 natural work or prove a corrected natural runner. Any further execution requires main-gate to
 independently decide whether additional accepted static evidence or a separately corrected capability
 changes admission, and exactly how prior R2b/replay and the completed diagnostic consumption constrain
-it. The two exact further-work dispositions and exhausted results above do not reopen the disabled
-replay path or establish any further allowance.
+it. The exhausted dispositions above and the separately admitted #475 result below do not reopen the
+disabled replay path or establish any further allowance.
 
 The [capability failure owner](original-reference-replay-capability.md) and
 [scenario boundary](original-reference-replay-scenario-api.md) retain actual failure details and
@@ -360,8 +363,45 @@ missing receipts. Ordinal 2 cannot be presumed unused; its reported FAIL is not 
 PASS required by the disabled path for ordinal 3. No nominal reset, fourth launch, renamed runner
 or task creates allowance. Recovery of that disabled path is not this proposal's milestone
 prerequisite; an explicit lineage/budget disposition is. No additional observer/fixture/launch is admitted
-by this dossier. The next boundary is independent main-gate review of the failed diagnostic and its
-remaining caller-dependent question, not automatic runtime execution.
+by this dossier. Main-gate independently accepted the bounded #475 observation below in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476); no automatic runtime execution follows.
+
+### Interactive acquisition reached Map19; admission consumed
+
+**Confirmed bounded original observation, independently accepted by main-gate in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476):** after PR #474 was independently accepted,
+[Issue #475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475) explicitly admitted
+one `run_map3_observation_candidate(..., interactive=True)` call and at most one native start from
+accepted `9cb14a55c2777b515a18450e98fc37ca90350292`, tree `63659d8c0d16f662279727dc1301f641ef0a3d4c`.
+Only retained #473 prepared-02 was used, after full identity/ROM/process checks and a pre-call note;
+no reprepare, old frozen-input execution, smoke or retry occurred. This was interactive controlled-R1
+acquisition with ordinary controller inputs after service/scratch restoration. It was not passive
+reset/New/load replay. That sole admission is exhausted: historical controlled total **3**, while
+old replay ordinal 1/2 restrictions and all #460/#465/#471 failures/preparations remain intact.
+
+The [result owner](map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result) retains
+exact material/log identities, source/PC/frame/order joins, analysis failures and read-only reproduction.
+The immutable acquisition-runner result remains `OBSERVATION-COMPLETE-UNREVIEWED`, describing the
+collector output before independent review. Main-gate acceptance now applies to the bounded original
+observation at first source-bound Map19 movement acceptance; the label is not a replay/H4 PASS:
+
+| Dossier question | Reached boundary and remaining scope |
+| --- | --- |
+| R1 inherited state | All 30 status words were 0 in this attempt; live entities/index, RNG and unnormalized raw time were retained. This does not establish universal/reset-start POISON absence. |
+| Unshimmed opening and messenger | House/Sarah/Astral consumers returned; messenger `cs_5149A` ran through real text consumers and YesNoPrompt D0=0. Follower-ready frame 8515 observed F600/F66/F603 true, F604 false at `(43,10)`, Down, with no pending consumers. No FieldMenu callback occurred. |
+| Caller-dependent gate | `cs_51652` entry 8903; its six texts completed, script return and original F604 false→true trap followed in strict order at 10032. Guard readbacks are retained without inventing additional movement-completion observations. |
+| North warp / first Map19 control | Original north handler 10197 selected Map19; init and `cs_53104` entry/return 10259, first wait 10285, original Up movement acceptance `0x52E8` at 10329 / emulator 10328. Map19 `(26,30)`, event word 0, F604 true, no pending script/text/prompt/init/close consumers. The frame-end position did not yet move to the next tile. |
+| Evidence and cleanup | 10329 complete frames including 355 bootstrap, 200 explicit batches, 582 checkpoints; all ordered command/result/input records agree with the host receipt. PID 39748 exit 0, elapsed 1778.575/1800 seconds, no timeout/forced termination, callbacks and declared scope restored, session ROM deleted and canonical unchanged; independent OS found no survivors. |
+
+The 2A gate/F604/warp question now has one bounded original observation independently accepted
+by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476). It does not retroactively repair the failed frozen diagnostic or update accepted fixture
+projections. Source mapping rows elsewhere in this dossier retain their original evidence scopes;
+this result is a separate observation, with no index/schema/golden/counter changes. The final log's
+outer emulator clock is restored to 214 after cleanup while its acquired frame-end snapshot remains
+10329; preserve both, as the result owner explains. Native EOF/abort and partial-batch termination
+were not exercised. Full downstream castle/tower/battle/5B continuity, complete 8D and H4 remain
+**Unknown** and #437 remains incomplete. No second invocation, fourth start, new replay, engine/code
+repair, merge or retained-environment cleanup follows this result.
 
 ## Documentation verification and handoff boundary
 
