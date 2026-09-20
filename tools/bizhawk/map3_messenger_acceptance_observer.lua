@@ -3123,7 +3123,7 @@ local function install_candidate()
                 r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
                 state=sample(), paused=client.ispaused(), batches=batches,
                 deliveredFrames=delivered_frames(), activeSeconds=natural and elapsed() or false,
-                inputReadiness=c.input_readiness and c.input_readiness("C") or false,
+                inputReadiness=natural and c.input_readiness("C") or false,
                 saveReadiness=readiness or (segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false),
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
