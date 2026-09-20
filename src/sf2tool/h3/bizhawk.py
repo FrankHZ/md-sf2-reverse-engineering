@@ -111,6 +111,7 @@ def materialize_bizhawk_launch(
         "PreferredCores": {"GEN": "Genplus-gx"},
         "FirstBoot": False,
         "SingleInstanceMode": False,
+        "SoundEnabled": False,
         "UpdateAutoCheckEnabled": False,
         "RACheevosActive": False,
         "AutoLoadLastSaveSlot": False,

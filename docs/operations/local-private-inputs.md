@@ -92,6 +92,11 @@ temporary-file manager before loading configuration. Failed preparation and exis
 remain available; preparation does not clean prior runs. No whole-local junction or shared writable
 emulator directory is used.
 
+New runtime copies default to muted host audio (`SoundEnabled=false`). A caller can explicitly
+enable host audio with `materialize_bizhawk_launch(..., config={"SoundEnabled": True})`; caller
+settings override the defaults. This applies only to newly prepared copies; existing runtime
+configurations and the shared installation are unchanged.
+
 **Confirmed:** source resolution and direct materialization establish selected paths, fixed
 release bytes and independent local copies. Main-gate directly observed one Windows launch with
 no ROM/movie argument: Lua reported `emu.getsystemid() == "NULL"`, TEMP was local, config expanded
