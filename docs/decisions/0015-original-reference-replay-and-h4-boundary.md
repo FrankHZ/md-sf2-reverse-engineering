@@ -77,8 +77,12 @@ unchanged. Existing 8D, 7C, 9A/10A and H4 acceptance boundaries remain unchanged
 For [Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485), the user's
 instruction “用即时存档功能分片采集” authorizes the savestate method and supersedes the earlier
 single-process/no-savestate choice for this new lineage. It does not reopen disabled frozen replay
-or erase its failures. Historical controlled native starts remain **3**, including #475; every
-resumed native process adds one. The first stopping condition is independently reviewable offline
+or erase its failures. Historical controlled native starts are now **4**, including #475 and the
+[failed initial segment](../research/map3-messenger-acceptance.md#segment-1-clock-registration-failure);
+its 4.289788499998394 active seconds remain recorded, and no retry or second segment is admitted.
+Historical starts are independent of segment ordinal: initial material needs explicit reviewed prior
+starts, and children derive their count from actual parent receipts. Every actual new process adds one.
+The first implementation stopping condition was independently reviewable offline
 implementation and prepare-only material in a Draft PR, with **zero new native starts**. Main-gate
 must accept the implementation and admit its concrete lineage before execution; another user
 confirmation solely for using savestates is unnecessary.

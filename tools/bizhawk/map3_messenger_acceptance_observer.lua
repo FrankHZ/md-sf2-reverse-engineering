@@ -2964,8 +2964,9 @@ local function install_candidate()
         local batch, previous_id, batches, connected = nil, 0, segment and segment.priorBatches or 0, false
         local clock, launch, idle_since
         if natural then
-            local stopwatch = luanet.import_type("System.Diagnostics.Stopwatch")
-            local utc = luanet.import_type("System.DateTimeOffset")
+            luanet.load_assembly("System")
+            local stopwatch = assert(luanet.import_type("System.Diagnostics.Stopwatch"), "Stopwatch unavailable")
+            local utc = assert(luanet.import_type("System.DateTimeOffset"), "DateTimeOffset unavailable")
             clock = stopwatch.StartNew()
             launch = tonumber(tostring(utc.UtcNow:ToUnixTimeMilliseconds())) / 1000
                 - assert(tonumber(os.getenv("SF2_BRIDGE_LAUNCH_EPOCH")))

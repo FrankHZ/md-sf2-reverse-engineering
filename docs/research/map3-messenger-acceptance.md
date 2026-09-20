@@ -252,13 +252,20 @@ newer savestate-method authorization.
 [ADR 0015's amendment](../decisions/0015-original-reference-replay-and-h4-boundary.md#savestate-linked-segmented-acquisition-amendment)
 authorize this method. Implementation/preparation is offline only until independent main-gate review
 and concrete lineage admission. No new native start is supplied by preparation. The historical total
-remains **3**. The planning envelope is one forward lineage of at most four starts, without retry,
-smoke, replay, reset or branch. Each actual resumed process increments the historical total.
+is **4** after the [first segment's registration failure](#segment-1-clock-registration-failure).
+That admitted invocation is exhausted. The planning envelope is one forward lineage of at most four
+starts, without retry, smoke, replay, reset or branch. Each actual resumed process increments the
+historical total.
 
 **Confirmed (offline/source boundary only):** the existing prepare/run APIs accept `segment=1..4`
 with `interactive=True, continuation=NATURAL_CONTINUATION`. Preparation for segments 2–4 also
 requires `resume_directory` naming the completed parent's candidate directory. The runner requires
-the matching explicit segment ordinal. It uses BizHawk 2.11.1 native disk `savestate.save/load`,
+the matching explicit segment ordinal. New segment-1 preparation also requires an explicit
+`reviewed_prior_starts` (currently **4**); a future actual start would increment that to **5**.
+Segment numbering is independent of historical starts. Child preparation disallows an override and
+derives the prior count from the parent's actual bridge receipt. Run, pair publication and pair read
+validate the reported prior/future counts against the actual-start receipt. This fixes accounting,
+not permission to run or reset any budget. It uses BizHawk 2.11.1 native disk `savestate.save/load`,
 not the old memorysavestate rollback handle. The matching
 [official implementation](https://raw.githubusercontent.com/TASEmulators/BizHawk/2.11.1/src/BizHawk.Client.Common/lua/CommonLibs/SaveStateLuaLibrary.cs)
 rejects input/memory-callback use and may return save success without producing the requested file.
@@ -320,7 +327,7 @@ report = prepare_map3_observation_candidate(
     private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
     output_directory=Path("local/issue485/your-new-preparation"),
     proposed_timeout_seconds=7200, interactive=True,
-    continuation=NATURAL_CONTINUATION, segment=1,
+    continuation=NATURAL_CONTINUATION, segment=1, reviewed_prior_starts=4,
 )
 ```
 
@@ -339,6 +346,50 @@ remain under ignored `local/issue485/`; corrected results and frozen material id
 the Issue/PR handoff. **Unknown:** real native save/load compatibility, complete observer continuity,
 route timing/reach and first actor, abrupt-failure cleanup, downstream victory/5B, remaining 8D/7C/H4.
 Only an admitted segment can supply native roundtrip evidence; there is no extra smoke process.
+
+### Segment 1 clock registration failure
+
+**Confirmed, independently checked by main-gate:** the first invocation of frozen
+`local/issue485/prepared-01` on accepted `1cce8b997a4f244e5e1461cf4b4bb65a26ea0264` started PID18440
+at 2026-09-20 18:08:49 UTC, then exited 1 after **4.289788499998394 active seconds**. Its sole
+checkpoint is `candidate:registration` failure at observer/emulator frame 0, before controlled R1,
+with `stopwatch` nil at the `StartNew()` call. Host hello failed with WinError 10054. There were zero
+commands, input batches or delivered frames and no native state, continuation metadata or pair.
+This is actual historical controlled start **4** despite not completing segment 1. Full identities
+and bounded diagnostics are in the [failure handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5751654860).
+
+Process termination, zero retained callbacks, session-ROM deletion and unchanged canonical identity
+were confirmed; there was no timeout or forced termination. `scopeArmed=false` and
+`sessionStateRestored=false` remain a failed/unarmed restoration result, not successful acquisition
+cleanup. Retain the original runtime directory and all prior failures unchanged. The consumed time
+above is separately recorded failure cost; preparing a new candidate does not erase it, renew the
+7200-second allowance, or admit a retry/second segment. No resumable parent exists.
+
+**Confirmed (actual-library offline boundary):** the installed release's NLua 1.4.1.0 and Lua 5.4,
+hosted on CLR 4.0.30319.42000 with the release's .NET Framework 4.8 binding configuration, reproduce
+`luanet.import_type("System.Diagnostics.Stopwatch") == nil` in a fresh NLua interpreter. Loading
+`System` first resolves the type and permits increasing `Stopwatch.Elapsed.TotalSeconds` readings;
+`System.DateTimeOffset` and its Unix milliseconds conversion also resolve. The observer now uses
+the existing `luanet.load_assembly` convention and explicit type assertions before clock use.
+Its elapsed clock remains monotonic; UTC is used only for the existing one-time launch offset.
+
+To reproduce without starting EmuHawk or loading a ROM/core, instantiate the installed
+`NLua.Lua(true)` in a small .NET Framework console host, use the pinned `dll` directory for managed
+dependency/native Lua resolution and copy the release's `EmuHawk.exe.config` binding redirects as
+the host config. Execute the observer's actual `if natural` clock-initialization block through
+`Lua.DoString`, with `SF2_BRIDGE_LAUNCH_EPOCH` supplied before host startup. In a fresh interpreter,
+first record the unresolved import; then run the corrected block and verify a second elapsed sample
+exceeds the first, without replacing `luanet`, the imported types or clock with stubs. Check the loaded
+assembly/module inventory excludes BizHawk/game/core components. This checks the real Lua/.NET type
+and call boundary only; it does not establish the complete EmuHawk registration/transport, native
+state roundtrip or original route.
+
+The earlier offline mechanical checks supplied successful `import_type` stubs and therefore could
+not detect the missing assembly initialization. Their PASS was not native compatibility evidence.
+The failed original run, initial offline-host constructor/dependency/compiler setup errors, and the
+corrected actual-library observations remain under ignored `local/issue485/`. This correction adds
+no helper suite or game launch. New review material must use a fresh destination, explicit current
+prior-start accounting and NOT-ADMITTED status; the failed `prepared-01` must not be overwritten.
 
 ## Single admitted interactive acquisition result
 
