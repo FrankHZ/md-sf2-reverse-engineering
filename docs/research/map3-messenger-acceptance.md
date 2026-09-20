@@ -515,9 +515,15 @@ same failure before correction; ordinary return and missing-admission rejection 
 After correction all six cases pass: wrapped CheckBattle, bus-zero return, ordinary return,
 wrong-stack exclusion, nested same-return-PC ordering/single-use and absent-admission rejection.
 The existing 17 actual-Lua stabilization checks also pass. Reproduce with the actual helper/callback
-bodies, recorded stack/PC, D7=1 and both full `0x1000000` and masked-zero returned A7. Ignored command
-`local/issue485/check-return-stack.py` takes `return-stack-before before` or `return-stack-after after`;
-`stabilization-lua-checks.py return-stack-regression` runs the existing direct checks. Load current
+bodies, recorded stack/PC, D7=1 and both full `0x1000000` and masked-zero returned A7. The retained
+`check-return-stack.py return-stack-before before` result is a historical execution of the observer
+from accepted `06b9dad9f0cfa94866efb1b555d731b14704fe29`, before the edit. The driver reads the current
+observer; its `before` argument does not select an old version. On corrected HEAD, run
+`uv run python -X utf8 local/issue485/check-return-stack.py <fresh-ignored-output-name> after`.
+To reproduce the old failure, extract the named old observer with `git show` into ignored scratch
+and point an isolated diagnostic driver at it; never overwrite the frozen current execution source.
+The retained `stabilization-lua-checks.py return-stack-regression` execution checks the existing cases.
+Load current
 private-input configuration to select pinned Lua. No tracked helper tests are added.
 **Inferred:** the asymmetric mask caused the native missed return. **Unknown:** corrected native
 battle admission, lifecycle and first player-ready; direct Lua is not native acceptance.
