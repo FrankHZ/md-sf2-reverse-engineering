@@ -3003,12 +3003,12 @@ local function install_candidate()
             file:write("\n"); file:close()
         end
         local save_readiness
-        local function snapshot()
+        local function snapshot(readiness)
             return {boundary="frame-end", frame=frame_count, emulatorFrame=emu.framecount(),
                 r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
                 state=sample(), paused=client.ispaused(), batches=batches,
                 deliveredFrames=delivered_frames(),
-                saveReadiness=segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false,
+                saveReadiness=readiness or (segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false),
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
         -- Only these data facts survive a closed field boundary. Dynamic return
@@ -3223,7 +3223,7 @@ local function install_candidate()
                         c.failureReason = "segment-save-failure"
                         local outcome = c.save_segment(false)
                         c.failureReason = nil
-                        c.frameEnd = snapshot()
+                        c.frameEnd = snapshot(outcome.readiness)
                         if outcome.status == "not-ready" then reply(true, nil, false, outcome)
                         else return end
                     elseif op == "step" then
