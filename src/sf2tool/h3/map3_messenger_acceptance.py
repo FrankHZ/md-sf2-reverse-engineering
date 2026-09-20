@@ -1056,7 +1056,6 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
         if (
             not host.get("canonicalRomUnchanged")
             or not host.get("sessionRomDeleted")
-            or receipt.get("returncode") is None
             or not (host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION")
             or report["Segment"]["parentDirectory"] != directory.as_posix()
             or report["HistoricalControlledStarts"] != totals["starts"]
@@ -1067,6 +1066,35 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
             raise ValueError(
                 "retry needs a completed failed attempt with reconciled cleanup/accounting"
             )
+        if receipt.get("started") is False:
+            # Absence of an input log is not evidence of zero delivery. Both owners
+            # must positively record a completed failure before process creation.
+            if (
+                host.get("failureKind") != "pre-process-failure"
+                or host.get("process", {}).get("started") is not False
+                or host["process"].get("pid") is not None
+                or receipt.get("outcome") != "failed"
+                or not receipt.get("error")
+                or receipt.get("commands") != []
+                or receipt.get("pid") is not None
+                or receipt.get("returncode") is not None
+                or "historicalStarts" in receipt
+                or receipt.get("luaStatus") is not None
+                or (child / "runtime/actual-inputs.jsonl").exists()
+            ):
+                raise ValueError(
+                    "pre-process retry lacks consistent no-process/no-delivery evidence"
+                )
+            # A failed Popen can have a measured launch-attempt duration. Retain it
+            # conservatively in cumulative charged seconds, even without a native start.
+            if "elapsedSeconds" in receipt:
+                seconds = receipt["elapsedSeconds"]
+                if type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds < 0:
+                    raise ValueError("pre-process attempt duration is invalid")
+                totals["seconds"] += seconds
+            continue
+        if receipt.get("started") is not True or receipt.get("returncode") is None:
+            raise ValueError("started retry needs a completed process receipt")
         rows = [
             json.loads(line)
             for line in (child / "runtime/actual-inputs.jsonl")

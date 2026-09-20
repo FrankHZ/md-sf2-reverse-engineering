@@ -326,6 +326,10 @@ session deletion, canonical identity and frame/batch/order reconciliation. An ex
 claim records the first child; additional numbered claims retain retries after completed failed children
 with verified cleanup and accumulated real costs. A successful child blocks reuse of that parent:
 continue from the newest complete child. Missing/incomplete attempt receipts block automatic retry.
+An explicitly recorded, cleanup-verified pre-process failure may retry without adding a native start,
+frame or batch only when both owners prove no process/input; missing logs alone never prove zero.
+Any measured failed launch-attempt duration remains charged in cumulative seconds, even without a
+native start. Failures before the launch timer retain their unmeasured duration in the original receipt.
 No claim, failed branch, parent or evidence file is overwritten. Observer/runner/source/tool identities
 must still match the parent; a source correction can make an old parent incompatible and does not
 authorize bypassing that check.
