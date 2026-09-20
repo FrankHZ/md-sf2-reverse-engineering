@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for eventual continuous-milestone acceptance; not a default blocker for a separately authorized implementation start
-- Accepted evidence baseline: `ffc3f64d7c1ace4accc41eaf0c31cbf4ccb9e04f`; original findings
+- Accepted evidence baseline: `aabec912372c06a89265369c767399c7573154eb`; original findings
   retain the exact provenance in their linked owners and fixtures.
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
@@ -35,12 +35,13 @@ links. Its purpose is to state what accepted `main` can already support, what re
 own each closure, and what eventual continuous-milestone acceptance must inspect.
 
 The product-choice slots and battle-functions contract are closed. Accepted runtime evidence now
-closes the controlled Map 3 start and two bounded natural-route prefixes, while accepted static owners
-close the R2b-through-R4a source/H1/ROM topology. R2d adds a **Confirmed** explicit-bridge H3
-continuation through Battle 01 initialization to the first stable player-input seam. The current
+closes the controlled Map 3 start, older fixture-local prefixes, and a separately accepted interactive
+acquisition through first original Up acceptance in Map19 `(26,30)`, before next-tile displacement.
+Accepted static owners close the R2b-through-R4a source/H1/ROM topology. R2d adds a **Confirmed**
+explicit-bridge H3 continuation through Battle 01 initialization to the first stable player-input seam. The current
 judgment is still **NOT READY** for eventual milestone acceptance because those owners do not join
-the last natural runtime prefix to natural Battle 01 admission, a complete playable battle, an
-executed after-battle program, and one exact observable ending state.
+that Map19 boundary through the remaining castle/tower route to natural Battle 01 admission, a complete
+playable battle, an executed after-battle program, and one exact observable ending state.
 
 The following distinctions are normative:
 
@@ -57,7 +58,7 @@ The following distinctions are normative:
 No unmerged Research result contributes to this ledger. A future update may consume new evidence only
 after it is accepted on `main`.
 
-The evidence review reuses accepted #303, not a new emulator observation. Review
+The retained R2d review reused accepted #303, not a new emulator observation. It
 checked the [admission research owner](../../research/map3-battle01-admission.md),
 [H3 fixture](../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json),
 [fixture schema](../../../schemas/h3/map3-battle01-player-ready-fixture.schema.json), and
@@ -66,13 +67,45 @@ are `uv run sf2 h2 map3-battle01-admission` and `uv run sf2 h3 map3-battle01-pla
 rerun for this documentation-only reconciliation. The fixture explicitly records a
 `explicit-controlled-harness-bridge` with `naturalR2bContinuity: false` and stops at
 `ControlBattleEntity.after-WaitForVInt-before-input-read`. Thus the bounded ready state is accepted,
-but natural R2a-to-R2b continuity remains **Unknown**.
+but that fixture does not prove natural R2a-to-R2b continuity. The separate observation below closes
+only the prefix through first Map19 control.
+
+### Accepted controlled-R1-to-first-Map19 observation
+
+**Confirmed bounded original observation:** this reconciliation consumes the accepted
+[Research result and provenance](../../research/map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result)
+and [audit disposition](../../research/map3-battle01-audit.md#interactive-acquisition-reached-map19-admission-consumed)
+on `aabec912372c06a89265369c767399c7573154eb` (tree
+`5fa4cdae544a7a7215cf416f29ba53901d2b7447`), including the
+[independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476#issuecomment-5747831234).
+Those owners retain pinned source/H1/ROM/tool identities, actual input/checkpoint/order records,
+private artifact identities and read-only reproduction. This is a separate accepted observation,
+with no new evidence ID or changed R1/R2/R2a/R2d fixture projection.
+
+After controlled R1 service/scratch restoration, ordinary controller input reached the real
+messenger text consumers, original YesNoPrompt return `D0=0`, follower-ready wait, gate
+`cs_51652` return, original F604 false-to-true trap, north warp, Map19 init/`cs_53104` returns,
+wait and original Up acceptance at `0x52E8`. The terminal is Map19 `(26,30)`, F604 true,
+event word 0 and no tracked pending consumers. The completed frame still has that position;
+next-tile arrival is **Unknown**. No FieldMenu callback occurred on this acquisition.
+All 30 R1 ally status words were 0 in this attempt, resolving its inherited POISON question only;
+this does not establish universal reset-start state or update the older R1 fixture.
+
+The collector's immutable `OBSERVATION-COMPLETE-UNREVIEWED` label describes its raw output;
+main-gate independently accepted the bounded facts. Neither label nor acceptance is a frozen-replay,
+complete 8D or H4 PASS. Exact post-447 wait entry remains **Inferred**; a stale text poll is not
+that observation. Unobserved prompt branches and general backend/EOF/abort/partial-batch behavior
+remain **Unknown**. Natural New/load, the remaining castle/tower route, Battle01 admission/actions,
+victory and 5B are not established. Historical controlled starts total **3**, with no runtime
+allowance remaining; the two completed controlled **FAIL** observations and disabled replay lineage
+remain preserved. This document review performs no acquisition, replay, preparation or input change.
 
 Current remake behavior is tracked separately by
 [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md) and the
 [capability ledger](../../../remake/docs/capability-status.md). Implemented common-session admission,
 battle outcomes, and exploration return do not establish original natural continuity or complete
-8D/H4 acceptance. The review reuses the existing Research audit and does not rerun or close its gaps.
+8D/H4 acceptance. This review consumes the bounded audit disposition above without rerunning evidence
+or closing downstream gaps.
 
 ## Readiness Classification
 
@@ -115,8 +148,8 @@ user-authorized bounded implementation start under ADR 0016.
 [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md) controls that separate start
 policy. It preserves this ledger's eventual acceptance target while allowing a user-authorized
 implementation slice to require only the accepted owners it concretely needs. Natural continuity,
-original-reference replay, required 8D observations, the continuous-scenario contract, and H4 completion
-remain **OPEN** acceptance work rather than default pre-start blockers.
+required original behavioral evidence, required 8D observations, the continuous-scenario contract,
+and H4 completion remain **OPEN** acceptance work rather than default pre-start blockers.
 
 ## Exact Accepted-Index Audit
 
@@ -190,14 +223,15 @@ program effects, or the milestone's observable endpoint.
 ### Accepted scenario evidence-chain refresh
 
 The accepted scenario-specific owners now form this exact bounded chain. Runtime and static labels are
-not interchangeable. Each row's retained boundary describes that fixture, not a denial of the
-separate bounded R2d observation:
+not interchangeable. Each row's retained boundary describes its own fixture or observation, not a
+denial of the separate R2d or controlled-R1-to-first-Map19 result:
 
 | Stage | Accepted owner | Closed surface | Retained boundary |
 | --- | --- | --- | --- |
 | R1 | `sf2-map3-admitted-start-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-admitted-start-v1.json); [research owner](../../research/map3-admitted-start.md) | controlled Map 3 state through the first `WaitForEvent` | not a natural New/load route, later Map 3 behavior, raw-time golden, or 8C capture |
 | R2 | `sf2-map3-battle01-natural-route-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-battle01-natural-route-v1.json); [research owner](../../research/map3-battle01-natural-route.md) | natural opening through `cs_5149A` entry-before-body; `FieldMenu` **NotReached** | messenger body, later route, effects, Battle 01 admission, and presentation remain open |
 | R2a | `sf2-map3-messenger-acceptance-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-messenger-acceptance-v1.json); [research owner](../../research/map3-messenger-acceptance.md) | accepted messenger continuation through follower-ready `WaitForEvent`; `FieldMenu` **NotReached** | natural continuation into the static castle/battle route, later effects, and Battle 01 remain open |
+| Controlled R1 to first Map19 control (separate observation) | [accepted result/provenance](../../research/map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result); [audit disposition](../../research/map3-battle01-audit.md#interactive-acquisition-reached-map19-admission-consumed) | **Confirmed** real messenger/prompt/gate/F604/north-warp/init-return chain through original Up acceptance at Map19 `(26,30)` | no next-tile displacement, remaining castle/tower route, natural battle admission, winning trace, 5B, frozen replay or complete 8D/H4; no fixture projection changed |
 | R2b | `sf2-map3-castle-battle-unlock-static-v1`; [fixture](../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json); [research owner](../../research/map3-castle-battle-unlock.md) | legal source-derived route and unlock topology | natural execution, caller order, endpoint, and R2c continuity are **Unknown** |
 | R2c | `sf2-map3-battle01-admission-static-v1`; [fixture](../../../tests/fixtures/h2/map3-battle01-admission-static-v1.json); [research owner](../../research/map3-battle01-admission.md) | legal admission/initialization spine | natural admission, cutscene execution, initialized snapshot, first actor, and player-ready state are **Unknown** |
 | R2d | `sf2-map3-battle01-player-ready-runtime-v1`; [fixture](../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json); [research owner](../../research/map3-battle01-admission.md) | **Confirmed** explicit harness bridge from R2a to the retained R2b terminal, then original control through Maps 21/40/57, admission, before/start program returns, initialization, turn generation, actor 1 dispatch, and the first stable input seam | natural R2a-to-R2b continuity, wholly natural snapshot/actor selection, post-seam input/actions/results, presentation, victory, and complete 8C remain **Unknown** |
@@ -216,12 +250,12 @@ association.
 | Scenario segment | Accepted owner surface | Readiness classification | Required closure |
 | --- | --- | --- | --- |
 | admitted Map 3 start | [Map 3 Controlled Admission](../contracts/map3-controlled-admission.md), [New-Game State Initialization](../contracts/new-game-state-initialization.md), [Save System](../contracts/save-system.md), [Story Progression](story-progression.md) | **Contract-ready bounded runtime owner** through the first exploration wait; **Accepted product decision** for controlled admission | natural player-visible New/load equivalence and later route remain **Unknown**; raw time and complete 8C remain open |
-| Map 3 setup and content | [Map Setup Data](../contracts/map-setup-data.md), [Map and Exploration](../contracts/map-exploration.md), R1/R2/R2a and R2b owners above | **Contract-ready static/bounded-runtime owners** for selected default setup, reached prefixes, and legal continuation topology; **Missing design contract** for continuous scenario composition | natural R2a-to-R2b execution, selected later effects, and complete route-required content remain **Unknown/Deferred**; no bulk association of 26 rows |
-| exploration loop and input | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Input System](../contracts/input-system.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), R2/R2a owners above | **Contract-ready bounded runtime prefix** and local handoffs; **Accepted product decision** for modern logical controls/accessibility | natural continuation beyond the follower-ready wait and later input/result chronology remain **Unknown/Deferred** |
-| dialogue and interaction | [Dialogue System](../contracts/dialogue-system.md), [Sprite Dialogue Property Data](../contracts/sprite-dialogue-property-data.md), [Text and Font System](../contracts/text-and-font-system.md), [Portrait Window State](../contracts/portrait-window-state.md), R2a owner above | **Contract-ready static seams and bounded messenger runtime result**; **Accepted product decision** for private-local original text | later dialogue/program effects, visible prose, speaker/window presentation, timing, and continuity remain **Unknown/Deferred** |
-| field menu and UI | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Window System](../contracts/window-system.md), [UI Layout Data](../contracts/ui-layout-data.md), [UI Graphics Asset Data](../contracts/ui-graphics-asset-data.md) | **Contract-ready** handoff/layout/resource seams; `FieldMenu` is **Confirmed NotReached** in the accepted R2/R2a prefix; **Explicit product decision** for required pages and presentation | no field-menu contract is required by the reached prefix; a later naturally reached route requirement would trigger a bounded conditional owner |
+| Map 3 setup and content | [Map Setup Data](../contracts/map-setup-data.md), [Map and Exploration](../contracts/map-exploration.md), R1/R2/R2a, the separate Map19 observation and R2b owners above | **Contract-ready static/bounded-runtime owners** for selected default setup, reached prefixes, and legal continuation topology; **Missing design contract** for continuous scenario composition | natural continuation after first Map19 Up acceptance, selected later effects, and complete route-required content remain **Unknown/Deferred**; no bulk association of 26 rows |
+| exploration loop and input | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Input System](../contracts/input-system.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), R2/R2a and separate Map19 observation above | **Contract-ready bounded runtime prefix** and local handoffs; **Accepted product decision** for modern logical controls/accessibility | next-tile displacement after Map19 Up acceptance and subsequent input/result chronology remain **Unknown/Deferred** |
+| dialogue and interaction | [Dialogue System](../contracts/dialogue-system.md), [Sprite Dialogue Property Data](../contracts/sprite-dialogue-property-data.md), [Text and Font System](../contracts/text-and-font-system.md), [Portrait Window State](../contracts/portrait-window-state.md), R2a and separate Map19 observation above | **Contract-ready static seams and bounded messenger result**, plus accepted real messenger/gate text consumers and returns; **Accepted product decision** for private-local original text | exact post-447 wait entry remains **Inferred**; remaining required dialogue/program and presentation consumption/completion and downstream continuity remain **Unknown/Deferred** |
+| field menu and UI | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Window System](../contracts/window-system.md), [UI Layout Data](../contracts/ui-layout-data.md), [UI Graphics Asset Data](../contracts/ui-graphics-asset-data.md) | **Contract-ready** handoff/layout/resource seams; `FieldMenu` is **Confirmed NotReached** in R2/R2a; no FieldMenu callback occurred in the separate Map19 acquisition; **Explicit product decision** for required pages and presentation | no field-menu contract is required by the reached prefix; a later naturally reached route requirement would trigger a bounded conditional owner |
 | map resources and camera | [Map Layout Data](../contracts/map-layout-data.md), [Map Palette Data](../contracts/map-palette-data.md), [Map Tileset Data](../contracts/map-tileset-data.md), [Map Sprite Graphics Data](../contracts/map-sprite-graphics-data.md), [Map Entity Data](../contracts/map-entity-data.md), [Map Camera Update](../contracts/map-camera-update-control-flow.md) | **Contract-ready static import/local-control owners**; **Accepted product decision** for private originals and 8D | reached scene/resource/cue identities, order, completion/readiness and private provenance remain **Unknown/Deferred**; hardware exactness is outside scope |
-| map-to-battle admission | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md), R2b/R2c/R2d owners above | **Contract-ready static route/admission spine and bounded explicit-bridge runtime seam**; **Missing design contract** for continuous scenario composition | natural R2a-to-R2b continuity and wholly natural admission/caller state remain **Unknown/Deferred**; R2d's program returns and first ready state are controlled, not natural-route closure |
+| map-to-battle admission | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md), R2b/R2c/R2d owners above | **Contract-ready static route/admission spine and bounded explicit-bridge runtime seam**; **Missing design contract** for continuous scenario composition | continuity after first Map19 control through the remaining R2b route and natural admission/caller state remain **Unknown/Deferred**; R2d's program returns and first ready state are controlled, not natural-route closure |
 | Battle 01 encounter setup | [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md), [Battlefield Navigation](../contracts/battlefield-navigation.md), R2c/R2d/R3a owners above | **Contract-ready static encounter/control spine and bounded initialized/player-ready observation** | wholly natural initialized snapshot and first-actor selection, post-seam input, and later-round state remain **Unknown/Deferred** |
 | player turn and battle menus | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), [Input System](../contracts/input-system.md), R2d/R3a owners above | **Contract-ready static branch/request/local-output owners and bounded actor-1 player-control dispatch**; **Accepted product decision** for manual agency and UI | inputs after the ready seam, AI execution, command, movement, target, action, cancellation, and result remain **Unknown/Deferred** |
 | AI and navigation | [Battle AI Decision](../contracts/battle-ai-decision.md), [Battlefield Navigation](../contracts/battlefield-navigation.md), R3a/R3b owners above | **Contract-ready algorithms and static caller topology** | actual AI branch, command, movement, target, result, and multi-round decisions remain **Unknown/Deferred** |
@@ -259,13 +293,13 @@ without turning evidence-owned exact values into product choices.
 | Decision slot | Accepted state | Remaining closure |
 | --- | --- | --- |
 | admitted start | **Accepted: 1A controlled admitted snapshot** | R1 owns the exact controlled values/provenance through the first wait; it is not a canonical natural New/load claim |
-| route | **Accepted: 2A smallest Research-proven natural route** | R2/R2a own the natural runtime prefix, R2b/R2c the static continuation, and R2d an explicit-bridge continuation to PlayerReady; complete natural continuity, effects, and backtracking remain open |
+| route | **Accepted: 2A smallest Research-proven natural route** | The separate acquisition extends the controlled-start runtime prefix to first Map19 Up acceptance; R2b/R2c own static continuation and R2d the explicit bridge to PlayerReady. Next-tile displacement, remaining castle/tower continuity, effects and required backtracking remain open |
 | natural battle/cutscene | **Accepted: 3A chronology, with placeholder subclause superseded by 7C/8D** | R2c owns static admission topology; R2d observes before/start returns and first ready state only after the declared bridge; natural admission, wholly natural state, and presentation completion/readiness remain open |
 | completion endpoint | **Accepted: 5B first stable controllable post-after-program state** | exact return map/location/state remains Research-owned; `D4=1` alone is insufficient |
 | save/load | **Accepted: 6A excluded** | restart returns to the admitted snapshot; later save support is a separate milestone |
 | player control and UI | **Accepted: 4A/9A manual agency and modern accessible logical controls** | product 9A is implemented and directly observed; exact original reached actions/input trace and continuous H4 accessibility composition/execution remain open |
 | assets | **Accepted: 7C private-local originals only** | ignored private provenance/inventory must close; public distribution remains blocked without rights/replacements |
-| visual/audio parity | **Accepted: 8D presentation semantics** | reached scene/resource/cue identities, order, completion and input-ready evidence plus H4 definitions remain open; hardware exactness is excluded |
+| visual/audio parity | **Accepted: 8D presentation semantics** | accepted messenger/gate consumer returns and first Map19 input acceptance are reusable; remaining reached scene/resource/cue identities, semantic order/completion/readiness and H4 definitions remain open; hardware exactness is excluded |
 | RNG and action trace | **Accepted: one deterministic H4 reference trace** | R3a–R3d own static control/action/completion/finalization topology only; viable seed and reached logical trace remain open, and ordinary interactive play is not scripted |
 | intentional deviations | **Accepted: 10A explicit ledger** | controlled admission, optional scope, modern controls, no save, fixed reference trace, and out-of-domain engine behavior require named checks |
 | optional tooling | **Deferred and non-blocking; no MCP adopted** | CLI gates remain authoritative; no tooling choice starts Phase 4 |
@@ -281,13 +315,13 @@ and the eventual continuous contract. Closing this planning work closes neither 
 
 | Existing owner or gap | Reusable accepted surface | Remaining acceptance disposition |
 | --- | --- | --- |
-| RA-01 / controlled start | R1 exact controlled start and the admitted-start contract | Keep the bounded PASS; do not demand a visible New/load flow excluded by 1A. Any route-relevant initial field still needs its declared provenance. |
-| RA-02–RA-05 / route, admission, state | R1/R2/R2a prefixes, R2b/R2c static chain and R2d controlled PlayerReady | Retain each closed local boundary. Research must resolve the omitted natural follower-ready-to-Map21 segment and route-carried caller/state facts before closing natural composition. |
+| RA-01 / controlled start | R1 exact controlled start/contract; separate acquisition read all 30 status words as 0 | Keep the bounded PASS and this attempt-specific no-POISON result; do not demand a visible New/load flow excluded by 1A. Any route-relevant initial field still needs its declared provenance. |
+| RA-02–RA-05 / route, admission, state | Controlled-start prefix through first Map19 Up acceptance, R2b/R2c static chain and R2d controlled PlayerReady | Retain each closed local boundary. The next unobserved segment begins with Map19 next-tile displacement and continues through the remaining castle/tower route to Map21 and natural admission; route-carried caller/state facts remain required. |
 | RA-06 / complete battle | R3a–R3d static owners and existing local battle contracts | Keep complete original trace, viable fixed seed and reached action/results open. Remake victories do not close this row. |
 | RA-07 / RA-12 / return and endpoint | R4a static spine; remake comparison described below | Research must establish original after-program effects and the first stable controllable 5B endpoint. Design then binds exact fields, input readiness and no pending program/modal/transfer/battle. |
-| RA-08 / RA-09 / menu and dialogue | R2/R2a `FieldMenu` NotReached; static program/text identities | Close only route-required coverage after the natural route is known. No blanket field-menu or optional-dialogue task; prose/captures stay private. |
+| RA-08 / RA-09 / menu and dialogue | R2/R2a `FieldMenu` NotReached; separate acquisition has no FieldMenu callback and real messenger/gate text returns | Reuse those bounded results; exact post-447 wait entry remains Inferred. Close only remaining route-required coverage. No blanket field-menu or optional-dialogue task; prose/captures stay private. |
 | RA-10 / persistence | Accepted 6A exclusion | No save implementation or durability observation is needed for this milestone. H4 must check restart-to-admitted-state and absent user save/resume surfaces. |
-| RA-11 / original presentation | Static presentation/resource owners and bounded observations | Required 8D identities/order, completion, readiness and provenance remain open. Asset availability alone does not prove presentation consumption. Old hardware gaps are not milestone requirements. |
+| RA-11 / original presentation | Static presentation/resource owners plus accepted messenger/gate consumers and Map19 control | Reuse observed returns/readiness without treating them as all visual/audio completions. Remaining required 8D identities/order, completion, readiness and provenance stay open. Asset availability alone does not prove presentation consumption. Old hardware gaps are not milestone requirements. |
 | Design contracts and product choices | Battle-functions contract and ADR 0010 profile | Keep these closures. The missing continuous contract and H4 definitions/execution remain separate gates, not a reason to reopen closed subsystem contracts. |
 
 **Confirmed remake scope:** accepted outcome implementation
@@ -310,6 +344,13 @@ implemented presentation services; their presence alone does not establish origi
 semantic order, completion or 7C compliance. Compare those 8D boundaries. Original pixel/frame/audio
 waveform differences are outside the selected domain; no exact backend or hardware capture is required.
 Do not exclude a gameplay-affecting difference or private-original content requirement as visual polish.
+
+**Independent 7C audio gap:** the [Research presentation audit](../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)
+and [remake presentation owner](../../../remake/docs/exploration-programs.md) identify
+`MUSIC_JOIN`/`MUSIC_SAD_JOIN` as project-authored chord loops. An original command ID and an actual
+`AudioStreamPlayer` start/fade/stop do not establish private-original asset identity/provenance or
+its binding to the consumed cue. Accepted Map19 acquisition and 8D semantic comparisons do not close
+that content gap; 9A/10A do not waive it.
 
 **Confirmed product implementation and direct observation:** accepted
 [9A implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/445) supplies shared
@@ -350,7 +391,7 @@ proceed using accepted static facts; missing runtime values stay unfilled.
 | Surface and accountable owner | Entry/dependency | Completion and stopping condition |
 | --- | --- | --- |
 | Disabled old replay path — main-gate | Preserved capability/lineage owner; no launch | Disposition belongs to the milestone Issue. Recovery, runtime validation and transport implementation do not gate 8D/H4. Separate concrete removal/replacement work only if needed; no budget reset. |
-| Original behavioral evidence — Research | Accepted static facts and bounded observations; specific unresolved gameplay claims | Establish missing natural route/caller/accounting/RNG, battle results, after-program and 5B state using an independently admitted evidence method. Name fields/checkpoints and why existing evidence is insufficient before any new observation. Preserve Unknowns and typed failures; no dependency on the disabled runner. |
+| Original behavioral evidence — Research | Accepted static facts and controlled-start prefix through first Map19 control; specific unresolved gameplay claims | Establish downstream natural route/caller/accounting/RNG, battle results, after-program and 5B state using an independently admitted evidence method. Name fields/checkpoints and why existing evidence is insufficient before any new observation. Preserve Unknowns and typed failures; no dependency on the disabled runner. |
 | Continuous-scenario contract — Design | Accepted Research values for every asserted continuous boundary | Proposed `docs/design/contracts/map3-battle01-continuous-scenario.md` composes admitted start, natural route/admission, winning logical trace, after-program and exact endpoint. Prepare structure now; final evidence-bound acceptance waits for the required observations. Derive associations from evidence, never all 26 aggregate Map3 rows. |
 | H4 definitions — Design | Continuous contract plus accepted Research comparison domains/provenance and ADR 0010 deviations | Specify each layer's input, observation, expected value/owner, exactness/tolerance, failure/unavailable and cleanup rules. Future `schemas/h4/` and `tests/fixtures/h4/` identities/registrations are selected by that slice, not invented here. Definitions can be prepared alongside the contract but cannot claim missing evidence. |
 | 9A input/accessibility — accepted Remake capability; Design/H4 composition remains | Accepted implementation and direct observations above; independent of original replay recovery | Reuse the implemented settings and bounded input/state/projection results. Compose the accessibility assertions into the future continuous H4 definitions and execute them; report accessibility variants and their state equivalence separately. Physical controller-driver/hot-plug and export limitations remain. |
@@ -365,6 +406,31 @@ movie or scenario execution. Both owners are accepted at
 [`f00c20f3`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/f00c20f317b3e1c5c63a858df5e5b5abcb4a309d).
 If a new evidence method needs transport, assess reusable containment, receipt and observer policy;
 changing a CLI entry point does not complete the missing transport or grant a new launch lineage.
+
+### Original evidence methods and exhausted admission
+
+[ADR 0015's method distinction](../../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
+controls all runtime questions here:
+
+- **Interactive acquisition:** Research's operator/host may choose explicit ordinary controller
+  inputs from original observations; Lua delivers inputs and observes, without choosing the route
+  or implementing mechanics. Preserve actual delivered frames, including neutral/bootstrap frames,
+  and distinguish callback facts from paused frame-end state. Controlled R1 initialization and final
+  restoration are declared interventions; no state injection occurs between R1 service/scratch
+  restoration and final cleanup.
+- **Frozen original replay:** immutable non-adaptive inputs and passive observer rules apply to this
+  method. A recording is not a replay PASS. Freezing/replaying acquisition requires a separate
+  determinism need and independent admission; it is not an automatic next step.
+- **Remake H4:** consumes independently accepted Research evidence through accepted comparison
+  definitions; it cannot generate original truth inside the comparison. A remake observer choosing
+  actions from live state supplies implementation evidence, not original evidence.
+
+The one additional interactive acquisition is complete: historical controlled starts are **3**,
+including the preserved #460/#465 **FAIL** results. No fourth start, retry, replay, preparation or
+budget reset is authorized. The disabled replay ordinal-1/2 lineage below is separate and unchanged;
+its missing genuine ledger/receipts and ordinal-2 timeout/cleanup failure are not repaired by the
+successful bounded acquisition. Any future runtime question needs a new explicit purpose/method and
+lineage/budget decision; the question table grants no launch allowance.
 
 ### Original replay lineage and launch admission
 
@@ -400,16 +466,17 @@ fresh allowance.
 These are admission dossiers for concrete acceptance gaps, not authorization to run. ADR 0014/0016
 require caller dependence, material contract impact and inability to use an existing batched rail
 before creating any new H3 fixture. Prefer extending an accepted rail; no per-NPC or per-Unknown work.
-ADR 0015 additionally requires passive observation, a frozen non-adaptive input trace, private outputs,
-typed callback/exit/cleanup failures and the unchanged stop-loss.
+ADR 0015's method distinction above applies: only frozen replay requires a non-adaptive input trace;
+interactive acquisition permits explicit observation-based controller choices. Both retain private
+outputs, typed callback/exit/cleanup failures and their independently admitted limits. No allowance remains.
 
 | Question and acceptance impact | Existing static evidence / rails to reuse | Independent admission and stop boundary |
 | --- | --- | --- |
 | Is a new behavioral observation necessary and admissible? | Reuse accepted facts/rails first; declare the missing gameplay assertion and required checkpoints. The disabled transport is not a prerequisite. | Independent ADR 0014/0015/0016 method and lineage/budget decision before launch; retain the old prohibition and stop at the named typed failure or endpoint. |
-| Does the admitted original state naturally traverse the omitted R2a-to-R2b segment, carry the real caller/accounting/RNG state into Battle01, and complete the selected winning route through a controllable 5B endpoint? This determines 2A/3A/4A/5B and RA-02–RA-07/RA-09/RA-12. | R1/R2/R2a and R2d observation seams; R2b/R2c/R3a–R3d/R4a static fixtures. R2d's state-writing bridge cannot prove the omitted natural segment; R4a stops before exploration executes. Existing remake observers choose actions from live state and are not admissible original frozen replay traces. | Research first states which accepted rail can cover the question and why static topology cannot establish reached caller state. Prefer one batched admitted scenario; any new fixture requires an explicit rail-reuse finding. Freeze trace/start/seed before launch, no live state injection or adaptive input. Stop at first typed failure, budget limit or declared stable endpoint. |
-| Which reached presentation cues, order, completion and input-ready state does 8D require? This determines RA-11 and H4 layer 9. | Existing graphics/audio/resource/program owners and bounded passive observations; asset identities alone do not prove host consumption. | Specify semantic fields and evidence before observation. Reuse accepted facts/rails; admit a new observation only for a concrete unresolved behavior. Hardware APIs/clocks are not prerequisites. |
+| After accepted first Map19 Up input, does next-tile displacement and the remaining castle/tower route naturally carry the real caller/accounting/RNG state into Battle01, and complete the selected winning route through a controllable 5B endpoint? This determines 2A/3A/4A/5B and RA-02–RA-07/RA-09/RA-12. | Accepted Map19 terminal and R1/R2/R2a/R2d observation fields; R2b's remaining royal/tower programs and F605/F607/F608/F401/F256 callers, then R2c/R3a–R3d/R4a static fixtures. R2d's bridge cannot prove natural state across the remaining route; R4a stops before exploration executes. | Research first names the unresolved caller/setup/program-return fields and why the Map19 observation plus static topology are insufficient. Prefer existing batched rails; new fixtures need a rail-reuse finding. Explicitly select acquisition or frozen replay under ADR 0015 and obtain separate admission; preserve controlled-start provenance and forbid live state injection. Stop at the first typed failure, admitted limit or declared endpoint; no execution is currently authorized. |
+| Which reached presentation cues, order, completion and input-ready state does 8D require? This determines RA-11 and H4 layer 9. | Reuse accepted messenger/gate real text returns and Map19 input acceptance, plus dialogue/window, graphics/audio/resource/program owners. Exact post-447 wait entry remains Inferred; later cues and actual host consumption are not established by IDs/returns alone. | Name the reached cue/resource, caller, dispatch/consumer completion or acknowledgement, associated state effect and blocked/available input relation. Persistent music needs start/replacement/stop semantics where reached, not a fictitious end event. Reuse evidence first; only a material unresolved assertion can justify separately admitted observation. Hardware APIs/clocks are not prerequisites; 7C asset provenance remains independent. |
 
-Only complete, independently accepted Research projections on main close evidence rows. Keep private
+Only independently accepted Research evidence on main closes its explicitly observed bounded claims. Keep private
 capture payloads and detailed receipts ignored. Complete original-reference playback is still not
 H4 PASS; remake parity requires the separately accepted definition and execution path above.
 
@@ -432,7 +499,8 @@ blob:
    licensing-safe public reports; no hardware-exact assertions;
 10. separately named expected deviations.
 
-Each layer must reference its owning accepted fixture. The continuous adapter must not replace
+Each layer must reference its accepted comparison definition and Research evidence/provenance;
+a bounded acquisition result does not itself supply an H4 fixture. The continuous adapter must not replace
 subsystem fixtures, copy their expected numbers into engine-specific tests, require original RAM/ROM
 addresses in the remake, or publish private original text, graphics, audio, or captures.
 
@@ -486,11 +554,12 @@ uploads, public-CI requirements, or distributable build contents.
 | exact milestone and engine baseline accepted | PASS | ADR 0008 / ADR 0009 |
 | product acceptance profile selected | PASS | ADR 0010 |
 | controlled admitted Map 3 start state exact | PASS | `sf2-map3-admitted-start-runtime-v1` and [Map 3 Controlled Admission](../contracts/map3-controlled-admission.md); not a natural New/load claim |
-| natural Map 3 route exact | OPEN | Research, then scenario contract |
+| controlled R1 through first original Map19 Up acceptance | PASS (bounded) | [separate accepted acquisition](../../research/map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result); stops before next-tile displacement, no older fixture update |
+| natural route continuity after first Map19 control | OPEN | Research, then scenario contract; remaining castle/tower route to Map21 and natural battle admission |
 | required exploration/dialogue/menu/UI scope exact | OPEN | Research plus route-required conditional contracts; ADR 0010 fixes the minimum-scope rule |
 | static Battle 01 admission spine accepted | PASS | `sf2-map3-battle01-admission-static-v1`; natural admission remains the separate OPEN row below |
 | explicit-bridge Battle 01 PlayerReady seam observed | PASS (bounded) | `sf2-map3-battle01-player-ready-runtime-v1`; controlled bridge, not natural continuity or post-seam play |
-| natural Battle 01 admission exact | OPEN | conditional runtime evidence, then scenario contract; R2d does not close natural R2a-to-R2b continuity |
+| natural Battle 01 admission exact | OPEN | conditional runtime evidence, then scenario contract; R2d does not close the remaining natural Map19-to-admission continuity |
 | player-turn contract present | PASS | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md) |
 | R3a–R3d static control/action/completion/finalization chain accepted | PASS | accepted static fixtures; reached branches/results remain open |
 | complete playable Battle 01 trace exact | OPEN | conditional runtime evidence plus existing/extended battle contracts |
@@ -509,7 +578,7 @@ uploads, public-CI requirements, or distributable build contents.
 | required reached 8D evidence and comparison fields accepted | OPEN | Research/provenance, then continuous H4 contract; no pixel/waveform/cycle capture requirement |
 | continuous H4 acceptance surface and executable check definitions accepted | OPEN | Design H4 definitions after the continuous contract |
 | old replay lineage/runtime recovery | NOT REQUIRED / PATH DISABLED | Main-gate disposition; preserve failures, missing ledger/receipts and launch prohibition |
-| necessary natural behavioral reference evidence accepted | OPEN | Research; reuse accepted facts and independently admit any necessary new observation method |
+| necessary natural behavioral reference evidence accepted | OPEN beyond first Map19 control | Research; reuse the bounded acquisition and accepted facts; no runtime allowance remains |
 | continuous-scenario contract accepted | OPEN | Design, consuming accepted Research |
 | all applicable remake H4 layers and deviations executed successfully | OPEN | Remake/harness then independent main-gate; separate from definition readiness |
 | main-gate readiness report accepted | OPEN | Main-gate |
@@ -520,11 +589,14 @@ is open. Those rows do not block a separately user-authorized concrete implement
 
 ## Evidence Matrix
 
+Fixture rows retain their own limits; the separate Map19 observation does not update their projections.
+
 | Ledger statement | Classification | Accepted owner | Boundary retained |
 | --- | --- | --- | --- |
 | controlled Map 3 start reaches the first exploration wait with an exact bounded state | **Contract-ready / bounded runtime** | `sf2-map3-admitted-start-runtime-v1`, [Map 3 Controlled Admission](../contracts/map3-controlled-admission.md) | Not a natural player-visible New/load flow or later Map 3 route |
 | 26 Map 3 source-path records exist and are aggregate-owned | **Confirmed indexed inventory** | `sf2-map-data-static-v1`, [map-data research](../../research/map-data-inventory.md) | Not route chronology, reachability, effects, or automatic future associations |
 | natural opening and messenger-acceptance prefixes are observed | **Contract-ready bounded runtime prefixes** | `sf2-map3-battle01-natural-route-runtime-v1`, `sf2-map3-messenger-acceptance-runtime-v1` | End at program-entry/follower-ready boundaries; later continuity is unproved and `FieldMenu` is NotReached |
+| controlled R1 through real messenger/gate/F604/north-warp/init returns reaches first Map19 Up acceptance | **Confirmed bounded original observation** | [Research result/provenance](../../research/map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result) and [audit disposition](../../research/map3-battle01-audit.md#interactive-acquisition-reached-map19-admission-consumed) | Map19 `(26,30)` before next-tile displacement; exact post-447 wait entry Inferred; downstream continuity, frozen replay and complete 8D/H4 unproved; older fixtures unchanged |
 | R2b/R2c legal route, unlock, admission, and initialization topology exists | **Contract-ready static chain** | `sf2-map3-castle-battle-unlock-static-v1`, `sf2-map3-battle01-admission-static-v1` | Not natural execution, caller order, cutscene execution, initialized snapshot, or first actor |
 | explicit-bridge continuation reaches first Battle 01 PlayerReady | **Confirmed bounded runtime** | `sf2-map3-battle01-player-ready-runtime-v1`, [admission research](../../research/map3-battle01-admission.md) | Natural R2a-to-R2b continuity, wholly natural snapshot/actor, post-seam play, victory, presentation, and complete 8C remain Unknown |
 | R3a–R3d turn, action/effect, completion, replay, and finalization topology exists | **Contract-ready static chain** | the four accepted R3 static fixtures and linked research owners | Not reached player/AI/action/results, replay, next turn, multi-round play, or victory |
