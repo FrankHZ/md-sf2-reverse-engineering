@@ -141,6 +141,7 @@ from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
+from sf2tool.h3.bizhawk import materialize_bizhawk_launch
 from sf2tool.h3.blacksmith_mithril import verify_blacksmith_mithril
 from sf2tool.h3.church_cure_lifecycle import verify_church_cure_lifecycle
 from sf2tool.h3.church_raise_lifecycle import verify_church_raise_lifecycle
@@ -227,7 +228,7 @@ from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import build_adapter, verify, verify_engine
-from sf2tool.legacy import run_powershell
+from sf2tool.jsonio import load_json
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
@@ -240,6 +241,14 @@ from sf2tool.texture_extract import (
     extract_map_textures,
     extract_misc_graphics,
     extract_ui_windows,
+)
+from sf2tool.toolchain import (
+    DEFAULT_MANIFEST,
+    h1_tool_paths,
+    initialize_research,
+    local_tool_environment,
+    require_local_upstream,
+    verify_toolchain,
 )
 from sf2tool.verification_plan import PARTITIONS_BY_ID, build_verification_plan
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
@@ -358,7 +367,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     init_parser = commands.add_parser("init", help="initialize ignored local research inputs")
-    init_parser.add_argument("--rom-path", type=_path, required=True)
+    init_parser.add_argument("--rom-path", type=_path, default=_default_rom_path())
+    init_parser.add_argument("--manifest-path", type=_path, default=DEFAULT_MANIFEST)
+    init_parser.add_argument("--skip-defender-scan", action="store_true")
+
+    toolchain_parser = commands.add_parser("toolchain", help="shared installation entrypoints")
+    toolchain_commands = toolchain_parser.add_subparsers(dest="toolchain_command", required=True)
+    toolchain_verify = toolchain_commands.add_parser("verify")
+    toolchain_verify.add_argument("--manifest-path", type=_path, default=DEFAULT_MANIFEST)
+    toolchain_verify.add_argument("--upstream-path", type=_path, default=DEFAULT_UPSTREAM)
+    toolchain_verify.add_argument("--java-path", type=_path)
+    toolchain_paths = toolchain_commands.add_parser("paths")
+    toolchain_paths.add_argument("--manifest-path", type=_path, default=DEFAULT_MANIFEST)
+    toolchain_paths.add_argument("--upstream-path", type=_path, default=DEFAULT_UPSTREAM)
+    toolchain_material = toolchain_commands.add_parser("bizhawk-materialize")
+    toolchain_material.add_argument("--output-path", type=_path, required=True)
 
     rom_parser = commands.add_parser("rom", help="inspect or verify the ROM baseline")
     rom_commands = rom_parser.add_subparsers(dest="rom_command", required=True)
@@ -1456,7 +1479,23 @@ def dispatch(args: argparse.Namespace) -> None:
                 full=full_verify_requested(args),
             )
     elif args.command == "init":
-        run_powershell("Initialize-LocalResearch.ps1", ("-RomPath", args.rom_path))
+        print_record(
+            initialize_research(
+                args.rom_path, args.manifest_path, skip_defender_scan=args.skip_defender_scan
+            )
+        )
+    elif args.command == "toolchain":
+        if args.toolchain_command == "verify":
+            print_record(verify_toolchain(args.upstream_path, args.manifest_path, args.java_path))
+        elif args.toolchain_command == "paths":
+            require_local_upstream(args.upstream_path)
+            environment = local_tool_environment()
+            print_json(
+                {"tools": h1_tool_paths(load_json(args.manifest_path)),
+                 "environment": {key: environment[key] for key in ("TEMP", "TMP")}}
+            )
+        else:
+            print_json(materialize_bizhawk_launch(args.output_path))
     elif args.command == "rom":
         print_record(verify_rom(args.rom_path))
     elif args.command in {"research-index", "index"}:

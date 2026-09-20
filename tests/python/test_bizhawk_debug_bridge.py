@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 import json
+import os
 import socket
 import subprocess
 from pathlib import Path
@@ -150,10 +151,10 @@ def test_cleanup_only_kills_retained_process_handle(monkeypatch, tmp_path: Path)
 
 def _lua_contract(commands: list[str], *, callback_fault: bool = False) -> dict:
     """Execute the real Lua script with bounded fake emulator APIs, never a game."""
-    manifest = bridge.load_json(bridge.repo_path("manifests/toolchain.json"))["bizhawk"]
-    dll = bridge.repo_path(manifest["localExecutablePath"]).parent / "dll/lua54.dll"
-    if not dll.is_file():
-        pytest.skip("requires the local pinned BizHawk Lua DLL; no emulator is launched")
+    if "SF2_TOOLCHAIN_ROOT" not in os.environ:
+        pytest.skip("shared tool root is unconfigured; no emulator is launched")
+    _, executable = bridge.bizhawk_contract()
+    dll = executable.parent / "dll/lua54.dll"
     library = ctypes.CDLL(str(dll))
     pointer = ctypes.c_void_p
     library.luaL_newstate.restype = pointer

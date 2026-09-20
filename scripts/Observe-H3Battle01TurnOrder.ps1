@@ -11,8 +11,6 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$toolchain = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'manifests\toolchain.json') -Encoding utf8 | ConvertFrom-Json
-$bizHawk = (Resolve-Path -LiteralPath (Join-Path $repoRoot ([string] $toolchain.bizhawk.localExecutablePath))).Path
 $derived = Join-Path $repoRoot 'local\derived\h3'
 $luaPath = Join-Path $derived 'battle01-turn-order-observe.generated.lua'
 $outputPath = Join-Path $derived 'battle01-turn-order-observed.json'
@@ -1044,10 +1042,19 @@ end
 '@.Replace('__OUTPUT__', $luaOutput).Replace('__STATUS__', $luaStatus).Replace('__SEED__', [string] $Seed).Replace('__SCENARIO__', $luaScenario).Replace('__SPECIAL_COUNTER_CASE__', $luaSpecialCounterCase).Replace('__DOUBLE_VALIDATION_CASE__', $luaDoubleValidationCase)
 Set-Content -LiteralPath $luaPath -Value $lua -Encoding utf8
 
+Push-Location -LiteralPath $repoRoot
+try {
+    $launch = & uv run sf2 toolchain bizhawk-materialize --output-path (Join-Path $derived 'turn-order-runtime')
+    if ($LASTEXITCODE -ne 0) { throw "BizHawk preparation failed: $LASTEXITCODE" }
+    $launch = ($launch -join "`n") | ConvertFrom-Json
+} finally { Pop-Location }
+$bizHawk = $launch.executable
 $start = [Diagnostics.ProcessStartInfo]::new()
-$start.FileName = $bizHawk; $start.WorkingDirectory = Split-Path -Parent $bizHawk
+$start.FileName = $bizHawk; $start.WorkingDirectory = $launch.cwd
 $start.UseShellExecute = $false; $start.CreateNoWindow = $true
 $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
+$start.ArgumentList.Add("--config=$($launch.config)")
+foreach ($property in $launch.environment.PSObject.Properties) { $start.Environment[$property.Name] = $property.Value }
 $start.ArgumentList.Add("--lua=$luaPath"); $start.ArgumentList.Add((Resolve-Path -LiteralPath $RomPath).Path)
 $process = [Diagnostics.Process]::new(); $process.StartInfo = $start
 try {

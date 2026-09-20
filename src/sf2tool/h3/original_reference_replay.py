@@ -21,6 +21,8 @@ from typing import Any
 
 from sf2tool.h3.bizhawk import (
     TOOLCHAIN_MANIFEST,
+    bizhawk_contract,
+    materialize_bizhawk_launch,
     run_native_bizhawk_process,
     validate_lua_syntax,
 )
@@ -38,6 +40,7 @@ from sf2tool.h3.original_reference_transport import (
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.rom import inspect_rom
+from sf2tool.toolchain import _resolve_bizhawk_archive
 
 CAPABILITY_ID = "sf2-original-reference-replay-capability-v1"
 FIXTURE_PATH = repo_path("tests/fixtures/core/original-reference-replay-capability-v1.json")
@@ -266,7 +269,7 @@ def _archive_facts(fixture: dict[str, Any]) -> tuple[dict[str, Any], Path]:
     manifest = load_json(TOOLCHAIN_MANIFEST)
     contract = manifest["bizhawk"]
     toolchain = fixture["toolchainContract"]
-    archive = repo_path(contract["localArchivePath"]).resolve(strict=True)
+    archive = _resolve_bizhawk_archive(contract)
     identity = _file_identity(archive)
     if (
         identity["sizeBytes"] != toolchain["archiveSizeBytes"]
@@ -286,7 +289,7 @@ def _archive_facts(fixture: dict[str, Any]) -> tuple[dict[str, Any], Path]:
         "memberCount": _ARCHIVE_MEMBER_COUNT,
         "memberSetSha256": _ARCHIVE_MEMBER_SET_SHA256,
         "hostToolchainRoot": str(
-            repo_path(contract["localExecutablePath"]).resolve(strict=True).parent
+            bizhawk_contract()[1].parent
         ),
         "executableRelativePath": "EmuHawk.exe",
         "lua54RelativePath": "dll/lua54.dll",
@@ -850,32 +853,11 @@ def _first_host_toolchain_difference(
 def _extract_contained_toolchain(
     archive: Path, launch: Path, expected_archive: dict[str, Any]
 ) -> Path:
-    """Extract only validated, regular archive members below one fresh launch directory."""
-
-    toolchain = launch / "toolchain"
-    if toolchain.exists():
-        raise CapabilityError("contained toolchain target already exists")
-    toolchain.mkdir()
-    _ensure_contained(toolchain, launch)
-    try:
-        if _file_identity(archive) != expected_archive:
-            raise CapabilityError("pristine BizHawk archive changed after preflight")
-        with zipfile.ZipFile(archive, "r") as bundle:
-            infos = bundle.infolist()
-            _validate_archive_members(infos)
-            for info in infos:
-                name = _safe_archive_member(info.filename.rstrip("/"))
-                target = toolchain.joinpath(*name.parts)
-                _ensure_contained(target, toolchain)
-                if info.is_dir():
-                    target.mkdir(parents=True, exist_ok=True)
-                    continue
-                target.parent.mkdir(parents=True, exist_ok=True)
-                with bundle.open(info, "r") as source, target.open("xb") as destination:
-                    shutil.copyfileobj(source, destination)
-    except (OSError, zipfile.BadZipFile) as error:
-        raise CapabilityError(f"contained toolchain extraction failed: {error}") from error
-    return toolchain
+    """Use the shared verified installation to prepare the existing local runtime copy."""
+    if _file_identity(archive) != expected_archive:
+        raise CapabilityError("pristine BizHawk archive changed after preflight")
+    prepared = materialize_bizhawk_launch(launch)
+    return Path(prepared["cwd"])
 
 
 def _prepare_contained_launch(
@@ -1454,6 +1436,8 @@ def run_original_reference_replay(
         {
             "SF2_ORIGINAL_REFERENCE_STATUS": str(status_path),
             "SF2_ORIGINAL_REFERENCE_EXPECTED_ROWS": "32",
+            "TEMP": str(prepared["toolchain"] / "Temp"),
+            "TMP": str(prepared["toolchain"] / "Temp"),
         }
     )
     command = _launch_command(
