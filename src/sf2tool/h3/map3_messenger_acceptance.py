@@ -20,6 +20,7 @@ from sf2tool.h3.bizhawk import (
     verify_runtime_contract,
 )
 from sf2tool.h3.observer_status import (
+    SUCCESS_STATUS_TAIL,
     assert_observer_status,
     callback_failure_status,
     observer_failure_contract,
@@ -1014,6 +1015,8 @@ def prepare_map3_observation_candidate(
         "FORCEMEMBER_ACTIVE_FLAGS_START",
         "FLAG_INDEX_DIFFICULTY1",
         "FLAG_INDEX_DIFFICULTY2",
+        "CURRENT_PORTRAIT",
+        "CURRENT_SPEECH_SFX",
     )
     equates = (
         (disasm / "sf2const.asm").read_text(encoding="utf-8")
@@ -1022,6 +1025,8 @@ def prepare_map3_observation_candidate(
     )
     config["ram"].update(r1._equates(equates, ram_names))
     config["cases"] = [{**EXPECTED_CASES[0], "frameBudget": len(frames) + 3600}]
+    castle_fixture = repo_path("tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json")
+    castle_segments = load_json(castle_fixture)["static"]["routeGraph"]["segments"]
     config["candidate"] = {
         "functions": functions,
         "frames": frames,
@@ -1030,6 +1035,8 @@ def prepare_map3_observation_candidate(
         "provenance": trace["provenance"],
         "checkpointPath": (output / "checkpoints.jsonl").as_posix(),
         "admission": load_json(R1_FIXTURE)["expectedObservation"]["records"][0]["scenarioState"],
+        "northWarp": castle_segments[3],
+        "gatePoint": castle_segments[1]["point"],
     }
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
@@ -1040,6 +1047,7 @@ def prepare_map3_observation_candidate(
         "RuntimeGates": "NOT RUN / pending independent method and lineage-budget admission",
         "RomSha256": r1.CANONICAL_ROM_SHA256,
         "SourceCommit": r1.UPSTREAM_COMMIT,
+        "CastleFixtureSha256": sha256(castle_fixture.read_bytes()).hexdigest().upper(),
         "H1ListingSha256": sha256((upstream_path / LISTING).read_bytes()).hexdigest().upper(),
         "RetainedFixtures": {
             key: contract["retained"][key]
@@ -1135,16 +1143,15 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
             timeout_seconds=timeout_seconds,
         )
         diagnostic["stage"] = "status-and-terminal"
-        assert_observer_status(
-            runtime / "observer.status.txt",
-            owner=OWNER,
-            schema_path=FAILURE_SCHEMA,
-            required_milestones=(
-                "milestone:observer-started",
-                "milestone:callbacks-cleared:0",
-                "milestone:observer-finished",
-            ),
-        )
+        # The candidate has private phase/role diagnostics, not the legacy
+        # fixture's closed failure enum. Reuse the shared terminal protocol.
+        lines = (runtime / "observer.status.txt").read_text(encoding="utf-8").splitlines()
+        if (
+            "milestone:observer-started" not in lines
+            or any(line.startswith("failure:") for line in lines)
+            or tuple(lines[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
+        ):
+            raise RuntimeError("candidate callback/terminal status did not complete cleanly")
         if (
             observed.get("kind") != "bounded-original-observation"
             or observed["terminal"]["map"] != 19

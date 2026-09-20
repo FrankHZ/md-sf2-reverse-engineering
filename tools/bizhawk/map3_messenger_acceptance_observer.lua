@@ -13,6 +13,7 @@ local pending_core_snapshot, pending_failure, finish_pending = false, nil, false
 local last_input, input_trace, chronology, map_transitions, script_trace = nil, {}, {}, {}, {}
 local route_started, initial_wait_seen, route_control_ready, wait_after_warp = false, false, false, false
 local append_trace
+local json_write
 local route_stall_key, route_stall_frames = nil, 0
 local route_progress_frame = nil
 local messenger_progress_frame = nil
@@ -246,6 +247,17 @@ end
 
 local function write_failure(restoration, mismatch, cleared, output_removed)
     local p = pending_failure
+    if candidate then
+        local file = assert(io.open(config.statusPath, "a"))
+        file:write("failure:observer-callback:")
+        json_write(file, { kind = "map3-candidate-callback-failure", owner = OWNER,
+            caseId = "candidate-r1-through-first-map19", phase = p.phase, role = p.role,
+            actualPc = p.actualPc, expectedPc = p.expectedPc,
+            callbackCount = #callback_order, callbacksCleared = cleared, outputRemoved = output_removed,
+            restoration = restoration, restorationMismatch = mismatch, error = p.message })
+        file:write("\n"); file:close()
+        return
+    end
     local mismatch_json = "null"
     if mismatch then mismatch_json = string.format('{"domain":"%s","address":%d,"expected":%d,"actual":%d}', json_escape(mismatch.domain), mismatch.address, mismatch.expected, mismatch.actual) end
     local file = assert(io.open(config.statusPath, "a"))
@@ -1936,7 +1948,7 @@ local function write_followers(file, values)
     file:write("]")
 end
 
-local function json_write(file, value)
+json_write = function(file, value)
     local kind = type(value)
     if kind == "nil" then file:write("null"); return end
     if kind == "boolean" or kind == "number" then file:write(tostring(value)); return end
@@ -2188,6 +2200,8 @@ local function install_candidate()
         result.mapEventWord = memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS")
         result.typewriting = memory.read_u8(ram.CURRENTLY_TYPEWRITING, "M68K BUS")
         result.windowState = memory.read_u8(ram.WINDOW_IS_PRESENT, "M68K BUS")
+        result.portrait = memory.read_u16_be(ram.CURRENT_PORTRAIT, "M68K BUS")
+        result.speechSfx = memory.read_u16_be(ram.CURRENT_SPEECH_SFX, "M68K BUS")
         result.rngBytes = read_span(ram.RANDOM_SEED, 4)
         result.rngCopyByte = memory.read_u8(ram.RANDOM_SEED_COPY, "M68K BUS")
         result.rawTime = { frame = memory.read_u8(ram.FRAME_COUNTER, "M68K BUS"),
@@ -2322,7 +2336,10 @@ local function install_candidate()
         end
         assert(known or target == f.cs_51652 or target == f.cs_53104, "unexpected program beyond bounded route")
         if target == config.functions.cs_5149A then
-            assert(not flag_is_set(603), "R2 messenger already committed")
+            assert(c.messengerZone and not flag_is_set(603), "R2 messenger admission missing/already committed")
+            for _, name in ipairs({ "afterHouseExit", "classroomSarah", "afterEntity142", "afterAstralZone" }) do
+                assert(flag_is_set(config.route.flags[name]), "R2 opening guard missing: " .. name)
+            end
             messenger_started, messenger_entry_seen, phase = true, true, "messenger"
             c.record("r2:messenger-before-body", { target = target })
         elseif target == f.cs_51652 then
@@ -2334,8 +2351,24 @@ local function install_candidate()
             if target == f.cs_53104 then c.gates.map19ProgramReturned = true end
         end)
     end)
+    add_callback(config.functions.ProcessMapEventType6_ZoneEvent, "candidate:zone-dispatch", function()
+        if c.epoch then
+            c.zoneTarget = { x = memory.read_u16_be(ram.MAP_EVENT_PARAM_1, "M68K BUS"),
+                y = memory.read_u16_be(ram.MAP_EVENT_PARAM_3, "M68K BUS") }
+            c.record("zone:original-dispatch", c.zoneTarget)
+        end
+    end)
+    add_callback(config.functions.Map3_ZoneEvent8, "candidate:messenger-zone", function()
+        local expected = config.route.endpoint.sourceTarget
+        assert(c.zoneTarget and c.zoneTarget.x == expected.x and c.zoneTarget.y == expected.y
+            and memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == expected.map, "R2 messenger raw zone target drift")
+        c.messengerZone = true
+        c.record("r2:original-zone8-entry", c.zoneTarget)
+    end)
     add_callback(f.Map3_ZoneEvent4, "candidate:gate-entry", function()
         assert(c.r2a and not flag_is_set(604), "gate entered outside follower-ready prefix")
+        assert(c.zoneTarget and c.zoneTarget.x == config.candidate.gatePoint[1]
+            and c.zoneTarget.y == config.candidate.gatePoint[2], "gate raw zone target drift")
         c.gates.entry = true
         c.record("gate:entry", { guard138 = entity(138), guard139 = entity(139) })
     end)
@@ -2380,6 +2413,14 @@ local function install_candidate()
         c.record("warp:original-handler", { operands = read_span(ram.MAP_EVENT_PARAM_1, 5) })
         if destination == 19 then
             assert(c.gates.returned and flag_is_set(604), "north warp bypassed gate")
+            local warp = config.candidate.northWarp
+            local x, y = current_destination()
+            assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == warp.from.map
+                and x == warp.from.point[1] and y == warp.from.point[2]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_3, "M68K BUS") == warp.to.point[1]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_4, "M68K BUS") == warp.to.point[2]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_1 + 4, "M68K BUS") == ram[warp.to.facing],
+                "original north warp operands/source target drift")
             c.gates.warp = true
         else assert(destination == 3 and not c.gates.warp, "warp beyond bounded Map3/19 route") end
     end)
@@ -2392,6 +2433,17 @@ local function install_candidate()
             if c.epoch then returned(name, reg("D0") & 0xFFFF) end
         end)
     end
+    for _, name in ipairs({ "csc00_displaySingleTextbox", "csc02_displayTextbox" }) do
+        add_callback(config.functions[name], "candidate:text-command", function()
+            if not c.epoch then return end
+            c.record("text:original-command", { command = name, cursorPc = reg("A6") & 0xFFFFFF,
+                textId = memory.read_u16_be(ram.CUTSCENE_DIALOG_INDEX, "M68K BUS"),
+                packedSpeaker = memory.read_u16_be(reg("A6") & 0xFFFFFF, "M68K BUS") })
+        end)
+    end
+    add_callback(config.functions.YesNoPrompt, "candidate:prompt", function()
+        if c.epoch then returned("prompt", config.functions.YesNoPrompt) end
+    end)
     add_callback(f.symbol_wait1, "candidate:text-wait", function()
         if c.epoch then c.record("text:wait1", { textCursor = memory.read_u16_be(ram.CUTSCENE_DIALOG_INDEX, "M68K BUS") }) end
     end)

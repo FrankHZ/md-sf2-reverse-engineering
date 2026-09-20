@@ -115,8 +115,10 @@ binds `cs_51652`. The original F604 trap is `0x50E3E`, followed by the original 
 The observer retains messenger text/prompt/join/follower callbacks and checks R2's messenger entry
 and R2a's follower-ready state. It records actual script/text/close-window entry and stack-matched
 return, text wait1 and acknowledgement input reads, controller reads and accepted movement. A
-single physical-PC dispatcher handles shared return sites. Callback failures reach the existing
-typed status and nonzero exit; JSONL preserves actual checkpoints and the last checkpoint on failure.
+single physical-PC dispatcher handles shared return sites. Callback failures use the shared failure
+prefix/nonzero exit with private `kind=map3-candidate-callback-failure` JSON; JSONL preserves actual
+checkpoints and the last checkpoint on failure. Candidate phase/role names are not claimed to satisfy
+the closed legacy R2a failure schema. That schema and the default rail remain unchanged.
 
 Gate admission requires R2a, original `Map3_ZoneEvent4`, `cs_51652` return, original F604 trap/readback,
 then the north warp. `csc14_setEntityActscriptManual` (`0x46950`), `loc_46966` and `loc_46970` bind
