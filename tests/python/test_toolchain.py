@@ -12,14 +12,14 @@ import sf2tool.toolchain as toolchain
 from sf2tool.private_inputs import (
     BIZHAWK_ARCHIVE_INPUT_IDENTITY,
     JDK_INPUT_IDENTITY,
-    SHARED_INPUT_ROOT_ENV,
+    TOOLCHAIN_ROOT_ENV,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def _write_jdk(shared_root: Path) -> Path:
-    root = shared_root / JDK_INPUT_IDENTITY
+    root = shared_root / JDK_INPUT_IDENTITY.name
     java = root / "jdk-17.0.19+10" / "bin" / "java.exe"
     java.parent.mkdir(parents=True)
     java.write_bytes(b"synthetic-java")
@@ -48,8 +48,8 @@ def _contract(root: Path) -> dict[str, object]:
 
 
 def _write_bizhawk_archive(shared_root: Path) -> Path:
-    archive = shared_root / BIZHAWK_ARCHIVE_INPUT_IDENTITY
-    archive.parent.mkdir(parents=True)
+    archive = shared_root / BIZHAWK_ARCHIVE_INPUT_IDENTITY.name
+    archive.parent.mkdir(parents=True, exist_ok=True)
     archive.write_bytes(b"synthetic-bizhawk-archive")
     return archive
 
@@ -164,7 +164,7 @@ def test_default_java_uses_and_verifies_the_shared_jdk(
     shared = tmp_path / "shared"
     root = _write_jdk(shared)
     manifest = {"java": _contract(root)}
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, str(shared.resolve()))
 
     resolved = toolchain._resolve_java_path(manifest, None)
 
@@ -178,20 +178,22 @@ def test_default_java_rejects_manifest_layout_drift(
     root = _write_jdk(shared)
     contract = _contract(root)
     contract["sharedJavaRelativePath"] = "jdk-17.0.19+10/bin/other.exe"
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, str(shared.resolve()))
 
-    with pytest.raises(ValueError, match="layouts disagree"):
+    with pytest.raises(FileNotFoundError):
         toolchain._resolve_java_path({"java": contract}, None)
 
 
-def test_explicit_java_override_ignores_an_invalid_shared_root(
+def test_explicit_java_override_cannot_bypass_an_invalid_shared_root(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     java = tmp_path / "explicit-java.exe"
     java.write_bytes(b"synthetic-explicit-java")
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, "relative-invalid-root")
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, "relative-invalid-root")
 
-    assert toolchain._resolve_java_path({}, java) == java.resolve()
+    manifest = json.loads((ROOT / "manifests/toolchain.json").read_text(encoding="utf-8"))
+    with pytest.raises(ValueError, match="absolute path"):
+        toolchain._resolve_java_path(manifest, java)
 
 
 def test_jdk_verifier_rejects_unknown_digest_algorithm(tmp_path: Path) -> None:
@@ -212,32 +214,32 @@ def test_bizhawk_archive_uses_the_shared_input_without_a_local_archive(
     contract = json.loads(
         (ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8")
     )["bizhawk"]
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, str(shared.resolve()))
 
     assert not (repo / contract["localArchivePath"]).exists()
     assert toolchain._resolve_bizhawk_archive(contract) == expected
 
 
-def test_bizhawk_archive_keeps_the_repo_local_fallback_when_unset(
+def test_bizhawk_archive_rejects_unconfigured_tools(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    repo = _use_synthetic_repo(monkeypatch, tmp_path)
+    _use_synthetic_repo(monkeypatch, tmp_path)
     contract = json.loads(
         (ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8")
     )["bizhawk"]
-    monkeypatch.delenv(SHARED_INPUT_ROOT_ENV, raising=False)
+    monkeypatch.delenv(TOOLCHAIN_ROOT_ENV, raising=False)
 
-    assert toolchain._resolve_bizhawk_archive(contract) == repo / contract["localArchivePath"]
+    with pytest.raises(ValueError, match="SF2_TOOLCHAIN_ROOT"):
+        toolchain._resolve_bizhawk_archive(contract)
 
 
 @pytest.mark.parametrize(
     ("field", "value", "message"),
     (
         ("sharedArchiveInputIdentity", "archives/other.zip", "registered identity"),
-        ("localArchivePath", "local/toolchains/other.zip", "layouts disagree"),
     ),
 )
-def test_bizhawk_archive_rejects_manifest_identity_and_layout_drift(
+def test_bizhawk_archive_rejects_manifest_identity_drift(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     field: str,
@@ -252,26 +254,40 @@ def test_bizhawk_archive_rejects_manifest_identity_and_layout_drift(
         ]
     )
     contract[field] = value
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, str(shared.resolve()))
 
     with pytest.raises(ValueError, match=message):
         toolchain._resolve_bizhawk_archive(contract)
 
 
-def test_verify_toolchain_uses_shared_archive_and_repo_local_executable_independently(
+def test_verify_toolchain_uses_shared_archive_and_shared_executable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     repo = _use_synthetic_repo(monkeypatch, tmp_path)
     manifest = json.loads((ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8"))
     manifest_path = tmp_path / "toolchain.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    upstream = tmp_path / "upstream"
-    upstream.mkdir()
-    java = tmp_path / "java.exe"
-    java.write_bytes(b"synthetic-java")
+    upstream = repo / "local/upstream"
+    upstream.mkdir(parents=True)
     shared = tmp_path / "shared"
+    jdk = _write_jdk(shared)
+    manifest["java"].update(_contract(jdk))
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    java = jdk / "jdk-17.0.19+10/bin/java.exe"
+    for tool in manifest["sf2disasm"]["buildTools"]:
+        target = shared / "sf2disasm-c834c652" / tool["path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"synthetic-H1")
+    for support in manifest["sf2disasm"]["buildSupportFiles"]:
+        (shared / "sf2disasm-c834c652" / support).write_bytes(b"synthetic-message-catalog")
+    executable = shared / "BizHawk-2.11.1-win-x64/EmuHawk.exe"
+    executable.parent.mkdir()
+    executable.write_bytes(b"synthetic-emulator")
+    lua = executable.parent / "dll/lua54.dll"
+    lua.parent.mkdir()
+    lua.write_bytes(b"synthetic-lua")
     archive = _write_bizhawk_archive(shared).resolve()
-    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    monkeypatch.setenv(TOOLCHAIN_ROOT_ENV, str(shared.resolve()))
     verified: list[tuple[Path, str]] = []
 
     def fake_run(arguments: list[str | Path], *, cwd: Path | None = None) -> str:
@@ -299,9 +315,9 @@ def test_verify_toolchain_uses_shared_archive_and_repo_local_executable_independ
 
     assert (archive, "BizHawk archive") in verified
     assert (
-        (repo / manifest["bizhawk"]["localExecutablePath"]).resolve(),
+        executable.resolve(),
         "BizHawk executable",
     ) in verified
     assert result["BizHawkPath"] == str(
-        repo / manifest["bizhawk"]["localExecutablePath"]
+        executable
     )

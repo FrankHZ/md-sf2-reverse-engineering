@@ -108,7 +108,14 @@ Keep ignored writable state isolated per worktree. A specifically registered imm
 may be resolved read-only as described by the local-private-input owner, but writable emulator state,
 derived assets, exports, traces, reports, and scratch remain local to their owning worktree.
 
-The authorized exception is one shared .NET installation and one explicitly configured
+Managed JDK, H1 binaries, .NET and Godot installations are shared through ignored machine
+configuration; maintained research tool consumers require `SF2_TOOLCHAIN_ROOT`. BizHawk uses the
+verified shared installation to supply clean worktree-local runtime copies because its Windows
+configuration/save defaults follow the executable directory. Keep this simple copy exception;
+unrelated preferences do not require extra isolation machinery. Follow the
+[local input/tool owner](./docs/operations/local-private-inputs.md) for selection and verification.
+
+The writable-state exception is one explicitly configured
 `DOTNET_CLI_HOME` for this project's worktrees on the same host. Use absolute `DOTNET_BIN` and
 `DOTNET_CLI_HOME` selections and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` before every controlled
 SDK launch, including informational commands. Only SDK-owned CLI state belongs in the shared home;

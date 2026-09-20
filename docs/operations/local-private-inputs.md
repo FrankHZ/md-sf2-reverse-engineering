@@ -1,110 +1,125 @@
-# Local Private Input Layout
+# Local Private Inputs and Shared Tools
 
-This guide applies [ADR 0006](../decisions/0006-parallel-worktrees-and-topic-branch-integration.md)
-to machine-private inputs. It does not make private files distributable or turn a shared local tree
-into repository state.
-
-## Operational Now
-
-`SF2_SHARED_INPUT_ROOT` may name one explicit absolute, machine-private directory. The operational
-registered shared identities are:
-
-```text
-roms/sf2-us.bin
-toolchains/jdk-17.0.19+10
-archives/BizHawk-2.11.1-win-x64.zip
-```
-
-The resolver treats the ROM and pristine BizHawk archive as files and the JDK as a directory. It
-rejects an empty, relative, drive-relative, traversing, unregistered, missing, wrong-type, or
-post-resolution escaping path. It does not discover sibling directories, create a junction, copy an
-input, extract an archive, or read the ROM payload. The existing ROM verifier remains responsible for
-the accepted ROM size and hashes.
-
-When the variable is absent, the default remains the worktree-local ignored
-`local/roms/sf2-us.bin`. An explicit `--rom-path` still overrides either default. Save the selection
-in the worktree's existing ignored environment configuration. If none exists, a local
-`local/private-inputs.ps1` containing this assignment is sufficient; keep the actual value untracked:
-
-```powershell
-$env:SF2_SHARED_INPUT_ROOT = '<absolute-machine-private-shared-root>'
-```
-
-Load that configuration in the same PowerShell process that launches local verification. For the
-standalone configuration above, run from the owning worktree root:
+Load the owning worktree's ignored `local/private-inputs.ps1` in the same PowerShell process as
+its command. Keep actual machine paths untracked. No user/machine PATH changes are required.
 
 ```powershell
 . ./local/private-inputs.ps1
-uv run sf2 rom verify
+uv sync --locked
+uv run sf2 toolchain verify
 ```
 
-Each fresh shell or agent command process must load the configuration again; setting it in an earlier
-command does not configure later processes. Preserve the selection when reusing a worktree, and carry
-the current configuration location in a local handoff. Historical per-slice launch scripts are not
-the setup entrypoint. This is process-scoped configuration, not a user or machine environment change.
+## Selections
 
-Before reporting ROM verification as unavailable, distinguish an unconfigured shared root and absent
-worktree default from a missing selected file or a manifest identity mismatch. Load the known
-configuration and use `uv run sf2 rom verify` to check the ROM boundary. If it passes, report the ROM
-as verified and identify any later normal-verifier dependency separately. Preserve previous failed
-results; a corrected input selection does not retroactively make those runs pass or establish H1/H3
-readiness. Do not search for alternate ROMs or copy inputs merely to fill the default path.
+`SF2_SHARED_INPUT_ROOT` selects the registered immutable `roms/sf2-us.bin`. With no selection,
+the ROM default remains `local/roms/sf2-us.bin`; an explicit `--rom-path` overrides it. Before
+reporting a ROM blocker, load the configuration and run `uv run sf2 rom verify` when that check
+is authorized. Distinguish missing configuration, missing input, identity mismatch and later tool
+failures. Do not copy a ROM merely to fill a default filename.
 
-Do not include the private root's absolute machine path or any private input filename supplied by the
-user in a public handoff. Report the registered repository-owned identity and its allowed provenance
-instead.
+`SF2_TOOLCHAIN_ROOT` is the required absolute shared installation root for maintained research
+tool consumers. Missing, empty, relative, escaping, missing-file and wrong-type selections fail;
+they never trigger a local installation download or fallback. The existing resolver registers:
 
-The Python `verify_toolchain` default validates the complete registered JDK tree before invoking its
-existing version check. The durable tree digest uses POSIX relative paths in ordinal order. Each row
-is `PATH<TAB>SIZE<TAB>UPPERCASE_SHA256`; rows are joined with LF and no trailing LF, then the UTF-8
-manifest is SHA-256 hashed. The tracked toolchain manifest owns the exact count, size, digest, Java
-relative path, and executable identity. An explicit Python `java_path` remains an override and does
-not consult the shared root.
+| Registered identity | Relative to tool root | Kind |
+| --- | --- | --- |
+| `toolchains/jdk-17.0.19+10` | `jdk-17.0.19+10` | Complete JDK directory |
+| `archives/BizHawk-2.11.1-win-x64.zip` | `BizHawk-2.11.1-win-x64.zip` | Pristine release archive |
+| `toolchains/BizHawk-2.11.1-win-x64` | `BizHawk-2.11.1-win-x64` | Installed release |
+| `toolchains/sf2disasm-c834c652/tools` | `sf2disasm-c834c652/tools` | Complete pinned H1 installation |
 
-The frozen PowerShell bootstrap and H1 toolchain checks remain worktree-local. This slice does not
-redirect them to the shared JDK or change their execution semantics.
+The toolchain manifest retains fixed upstream/binary provenance. The complete H1 installation
+includes the five pinned executables and `tools/asw/{as,cmdarg,ioerrs,p2bin,tools}.msg` from the same
+pinned SF2DISASM checkout. `asw` cannot start without its adjacent message catalogs; checking only
+EXE identities is insufficient. `buildSupportFiles` names these required nonempty files so shared
+selection rejects an incomplete installation before a build starts. Promotion verifies support
+file bytes against their existing pinned Git objects; no second checksum inventory is required.
 
-The Python `verify_toolchain` default also resolves the pristine BizHawk release archive through the
-registered shared identity and verifies its exact size and SHA-256. It does not extract or launch that
-archive. The extracted `EmuHawk.exe`, adjacent `dll/lua54.dll`, executable working directory, and all
-configuration, SaveRAM, movie, state, capture, and other runtime write surfaces remain beneath the
-owning worktree's ignored `local/` directory.
+The JDK digest is the existing
+POSIX-relative-path ordinal inventory: `PATH<TAB>SIZE<TAB>UPPERCASE_SHA256`, LF-separated without a
+trailing LF, then UTF-8 SHA-256. Java's executable identity and version are also checked. BizHawk's
+archive, executable and Lua identities are checked; runtime preparation compares release files
+directly with the pinned archive and copies only those files, excluding any old installation saves
+or configuration. Manifest `localJavaPath`, `localArchivePath` and `localExecutablePath` describe
+legacy layouts only; maintained consumers no longer select them.
 
-This archive consumer is limited to the Python normal toolchain verifier. PowerShell initialization,
-H1 rebuild/toolchain checks, ordinary H3 launch and Lua syntax paths, and the original-reference replay
-runner retain their repo-local archive or extracted-toolchain behavior. In particular, this slice does
-not change an original-reference candidate or receipt identity.
+Select the existing shared .NET installation with absolute `DOTNET_BIN` and the accepted shared
+SDK-only `DOTNET_CLI_HOME`. Select the existing Godot editor with absolute `GODOT_BIN` (ordinary
+PowerShell examples use `$godotBinary = $env:GODOT_BIN`). Both installations belong under the chosen
+shared tool root in local machine configuration. Preserve the pinned SDK/editor versions and complete
+runtime dependencies. Their [environment owner](../../remake/docs/development-and-verification.md#locked-net-workflow)
+retains forced `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and worktree-local NuGet/build state.
 
-## Per-Worktree Writable State
+## Maintained Consumers
 
-Only immutable inputs may be considered for shared read-only resolution. Keep these isolated beneath
-each owning worktree's ignored local state:
+| Consumer | Shared input and local writes |
+| --- | --- |
+| `sf2 init` / `Initialize-LocalResearch.ps1` | Validate shared tools; initialize only local writable SF2DISASM checkout; no tool downloads/extraction or redundant ROM copy |
+| `sf2 toolchain verify` / `Test-Toolchain.ps1` | Verify local checkout provenance and shared JDK, complete H1 installation, BizHawk archive/executable/Lua |
+| `Invoke-Sf2Rebuild.ps1` | `sf2 toolchain paths` checks the complete installation and supplies all five shared binaries; source, cwd, builds and TEMP stay local; build algorithm unchanged |
+| Ordinary Python H3 and Lua syntax | Compile with shared Lua; prepare a fresh local BizHawk runtime copy for native launch |
+| `Observe-H3Battle01TurnOrder.ps1` | `sf2 toolchain bizhawk-materialize` supplies executable, config, cwd and TEMP; observation Lua unchanged |
+| Debug bridge | Same local runtime preparation, retaining its explicit output, paused startup and bounded process lifecycle |
+| Disabled original-reference replay | Shared archive/installation resolution feeds its local contained runtime; original disabled admission and budget remain unchanged |
+| .NET / Godot | Shared complete installations, explicit process selection; owning project, imports, outputs and caches remain local |
 
-- upstream checkouts used by H1, because rebuild and split steps write into them;
-- extracted emulator installations and their configuration, save-RAM, movie, and capture state;
-- derived ROMs, extracted assets, reports, gate receipts, and other generated output; and
-- H3 scratch, instrumentation, and launch state.
+The initialization/verification PowerShell scripts are thin forwarding entrypoints. Their manifest,
+upstream, Java and Defender-scan parameters still propagate. `JavaPath` may explicitly select only
+the registered shared executable; another executable fails rather than bypassing the shared selection.
+`sf2 init --skip-defender-scan` preserves the explicit scan opt-out. A supplied upstream checkout must
+be under the owning worktree's `local/`; H1 cannot write into another task's source tree.
 
-Do not replace a worktree's complete `local/` directory with a junction or shared writable root.
+## BizHawk Runtime Copies
 
-## Proposed or Deferred
+Configuration, SaveRAM and movie contamination can change observations. The accepted simple policy
+is to supply a clean local runtime copy from the verified shared installation. This exception to
+direct shared execution is intentional. Unrelated preference settings do not require additional
+isolation machinery. There is no hardlink or cross-volume strategy.
 
-The following are prepared or possible follow-ups, not operational consumers of this resolver:
+For pinned BizHawk commit `bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`, Windows
+[PathUtils](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Common/Extensions/PathExtensions.cs)
+uses the executable's application base for both installation and data directories, ignoring
+`BIZHAWK_DATA_HOME`.
+[GameDBHelper](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Emulation.Cores/GameDBHelper.cs)
+places the user database beneath that data directory;
+[Config](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/Config.cs)
+places controller defaults beside the executable. Thus changing cwd and `--config` alone is
+insufficient. Copying the complete release makes those defaults local as well.
 
-- PowerShell initialization and H1 toolchain consumption of the shared pristine BizHawk archive;
-- a separately reviewed original-reference archive migration that accounts for runner/candidate
-  identity;
-- reusable contained per-launch BizHawk extraction and emulator state for ordinary H3;
-- an isolated H1 scratch/copy workflow that can consume a read-only upstream source; and
-- deletion or deduplication of any existing worktree-local copy.
+The local executable, explicit local `--config`, cwd, save/movie directories and child `TEMP`/`TMP`
+share one fresh local runtime directory. TEMP is selected before startup because BizHawk starts its
+temporary-file manager before loading configuration. Failed preparation and existing observations
+remain available; preparation does not clean prior runs. No whole-local junction or shared writable
+emulator directory is used.
 
-The primary repository is therefore not yet self-contained for normal or full verification merely
-because the shared ROM, Python JDK, and BizHawk archive are configured. Normal verification still
-requires its currently owned upstream and worktree-local extracted BizHawk executable/Lua runtime;
-full verification additionally retains the PowerShell/H1 local-archive boundary. H1, H3, Godot, and
-emulator execution are unchanged.
+**Confirmed:** source resolution and direct materialization establish selected paths, fixed
+release bytes and independent local copies. Main-gate directly observed one Windows launch with
+no ROM/movie argument: Lua reported `emu.getsystemid() == "NULL"`, TEMP was local, config expanded
+and wrote back into the local runtime copy, and `client.exitCode(0)` exited successfully. The shared
+installation's file size/mtime inventory was unchanged and its 450 release files still matched the
+pinned archive. This establishes the no-ROM startup/exit/config boundary only.
 
-For every later migration, use this order: copy into a temporary destination, verify the accepted
-identity, promote without overwrite, switch one bounded consumer, rerun its gates, and only then seek
-separate authorization to remove an old copy. A shared-path mismatch stops the migration; it is not a
-reason to overwrite a known input or redirect writable output.
+Reproduce that bounded check with
+`uv run sf2 toolchain bizhawk-materialize --output-path local/<review>/runtime`, then launch its executable
+with the returned cwd/environment and `--gdi --config=<returned config> --lua=<local script>` only.
+The script writes the system ID and TEMP to an explicit local marker and calls `client.exitCode(0)`;
+compare shared file metadata/release bytes before and after. In the reviewed observation, relative
+Lua file I/O resolved beside the loaded script; inspect that local directory for its existing marker.
+This requires separate native-launch authorization; it is not part of routine material preparation.
+
+The reviewed observation and its initial marker-location checker error are retained under ignored
+`local/root459-review/`; the corrected review read the original result without a second launch.
+**Unknown:** ROM execution, actual SaveRAM/movie effects and the full H3 behavior of this preparation
+remain unobserved. No original game or movie was run, and replay admission/budgets remain unchanged.
+
+## Local State and Promotion
+
+Keep writable source/build checkouts, Python/uv/NuGet environments and caches, TEMP, emulator state,
+movies, traces, assets, reports and exports in their owning worktree. Only SDK-owned CLI state may
+use the shared CLI home. Do not replace the whole `local/` directory with a shared writable tree.
+
+Configure every retained worktree's ignored environment when selecting shared installations. Reuse
+verified existing installations. Where an authorized promotion is needed, copy a complete verified
+installation into an empty destination, verify the copy, and promote without overwrite. Preserve
+old installations, configuration backups, gate receipts and completed failures. Deletion and cleanup
+require separate authorization. A mismatch is a failure, never permission to overwrite an input.

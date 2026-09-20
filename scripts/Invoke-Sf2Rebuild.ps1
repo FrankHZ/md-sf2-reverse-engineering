@@ -36,6 +36,17 @@ function Invoke-NativeCaptured {
     return ,$output
 }
 
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+if ($UpstreamPath) { $UpstreamPath = [IO.Path]::GetFullPath($UpstreamPath) }
+Push-Location -LiteralPath $repoRoot
+try {
+    $selection = & uv run sf2 toolchain paths --upstream-path $UpstreamPath
+    if ($LASTEXITCODE -ne 0) { throw "Shared H1 selection failed: $LASTEXITCODE" }
+    $selection = ($selection -join "`n") | ConvertFrom-Json
+} finally { Pop-Location }
+$env:TEMP = $selection.environment.TEMP
+$env:TMP = $selection.environment.TMP
+
 & (Join-Path $PSScriptRoot 'Test-RomBaseline.ps1') -RomPath $RomPath
 & (Join-Path $PSScriptRoot 'Test-Toolchain.ps1') -UpstreamPath $UpstreamPath
 
@@ -47,12 +58,12 @@ $buildDir = Join-Path $resolvedUpstream 'build'
 
 Copy-Item -LiteralPath $resolvedRom -Destination $upstreamRom -Force
 
-$splitExe = Join-Path $resolvedUpstream 'tools\splitrom.exe'
+$splitExe = $selection.tools.'tools/splitrom.exe'
 $splitSpec = Join-Path $resolvedUpstream 'split\sf2splits.txt'
 $null = Invoke-NativeCaptured -Executable $splitExe -Arguments @($upstreamRom, $splitSpec) -WorkingDirectory $disasmDir
 
-$asw = Join-Path $resolvedUpstream 'tools\asw\asw.exe'
-$p2bin = Join-Path $resolvedUpstream 'tools\asw\p2bin.exe'
+$asw = $selection.tools.'tools/asw/asw.exe'
+$p2bin = $selection.tools.'tools/asw/p2bin.exe'
 $soundDriverDir = Join-Path $disasmDir 'code\common\tech\sound'
 $null = Invoke-NativeCaptured -Executable $asw -Arguments @('.\sounddriver.asm') -WorkingDirectory $soundDriverDir
 $null = Invoke-NativeCaptured -Executable $p2bin -Arguments @(
@@ -84,7 +95,7 @@ $buildArtifacts = @($outputRom, $outputSym, $outputLst, $outputLog)
 $buildPassed = $false
 
 try {
-    $asm68k = Join-Path $resolvedUpstream 'tools\ASM68K.EXE'
+    $asm68k = $selection.tools.'tools/ASM68K.EXE'
     $asmArguments = @(
         '/e',
         'VANILLA_BUILD=1',
@@ -105,7 +116,7 @@ try {
         throw "ASM68K did not produce $outputRom"
     }
 
-    $fixHeader = Join-Path $resolvedUpstream 'tools\fixheader.exe'
+    $fixHeader = $selection.tools.'tools/fixheader.exe'
     $null = Invoke-NativeCaptured -Executable $fixHeader -Arguments @($outputRom) -WorkingDirectory $buildDir
 
     $fc = (Get-Command fc.exe -ErrorAction Stop).Source

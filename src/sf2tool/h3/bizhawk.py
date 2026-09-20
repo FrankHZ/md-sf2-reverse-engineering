@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import ctypes
+import json
 import os
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +15,7 @@ from sf2tool.h3.bootstrap import BOOTSTRAP_LIBRARY, runtime_bootstrap
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 from sf2tool.rom import inspect_rom
+from sf2tool.toolchain import shared_bizhawk, verify_bizhawk_installation
 
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 DERIVED_ROOT = repo_path("local/derived/h3")
@@ -74,8 +78,60 @@ def _lua_literal(value: Any) -> str:
 def bizhawk_contract(manifest_path: Path = TOOLCHAIN_MANIFEST) -> tuple[dict[str, Any], Path]:
     manifest = load_json(manifest_path.resolve(strict=True))
     contract = manifest["bizhawk"]
-    executable = repo_path(contract["localExecutablePath"]).resolve(strict=True)
+    executable = shared_bizhawk(contract)
     return contract, executable
+
+
+def materialize_bizhawk_launch(
+    output: Path,
+    *,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Copy the verified release into local state for Windows AppContext writes.
+
+    Windows ignores BIZHAWK_DATA_HOME. This is preparation, not a runtime observation.
+    The installation is shared; each launch owns its writable runtime copy.
+    """
+    output = output.resolve()
+    local = repo_path("local")
+    if not output.is_relative_to(local) or output == local:
+        raise ValueError("BizHawk launch state must be beneath this worktree's local/")
+    contract, _ = bizhawk_contract()
+    installation, members = verify_bizhawk_installation(contract)
+    output.mkdir(parents=True, exist_ok=True)
+    state = Path(tempfile.mkdtemp(prefix="bizhawk-", dir=output))
+    # Copy release members only, never a previous launch's configuration or saves.
+    for relative in members:
+        source = installation / relative
+        target = state / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    settings = {
+        "LastWrittenFrom": contract["release"],
+        "PreferredCores": {"GEN": "Genplus-gx"},
+        "FirstBoot": False,
+        "SingleInstanceMode": False,
+        "UpdateAutoCheckEnabled": False,
+        "RACheevosActive": False,
+        "AutoLoadLastSaveSlot": False,
+        "AutoSaveLastSaveSlot": False,
+        "AutosaveSaveRAM": False,
+        "BackupSaveram": False,
+        **(config or {}),
+    }
+    config_path = state / "config.ini"
+    config_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+    (state / "Temp").mkdir(exist_ok=True)
+    environment = {
+        "TEMP": str(state / "Temp"),
+        "TMP": str(state / "Temp"),
+    }
+    return {
+        "executable": str(state / "EmuHawk.exe"),
+        "config": str(config_path),
+        "cwd": str(state),
+        "environment": environment,
+    }
 
 
 def verify_runtime_contract(fixture: dict[str, Any], rom_path: Path) -> None:
@@ -152,7 +208,8 @@ def run_native_bizhawk_process(
     on_started: Callable[[int], None] | None = None,
 ) -> NativeProcessResult:
     """Start a native BizHawk process with no shell and bound its diagnostics."""
-
+    if not executable.resolve().is_relative_to(repo_path("local")):
+        raise ValueError("native BizHawk launch requires a local runtime copy")
     process = subprocess.Popen(
         command,
         cwd=executable.parent,
@@ -252,9 +309,12 @@ def run_observer(
     validate_lua_syntax(config_path, executable)
     environment = os.environ.copy()
     environment["SF2_H3_CONFIG"] = str(config_path)
+    launch = materialize_bizhawk_launch(DERIVED_ROOT / output_name)
+    executable = Path(launch["executable"])
+    environment.update(launch["environment"])
     process = subprocess.Popen(
-        [str(executable), f"--lua={observer_path}", str(rom_path)],
-        cwd=executable.parent,
+        [str(executable), f"--config={launch['config']}", f"--lua={observer_path}", str(rom_path)],
+        cwd=launch["cwd"],
         env=environment,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -47,6 +47,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   rounds. M5 retired the transitional reference assembly, host and legacy tests; only external
   controlled inputs remain under `remake/reference/inputs`. After environment setup use `uv run sf2 verify engine`
   and affected `uv run sf2 verify adapter`. Main-gate owns independent acceptance and remote checks.
+- Load the ignored [shared tool/input selections](./local-private-inputs.md) before tool commands.
+  JDK, H1, .NET and Godot use shared installations; BizHawk receives a clean local runtime copy from
+  its verified shared installation. Source/build state and caches remain worktree-local.
 - Reuse an available isolated worktree, environments and Godot installation/project/instance across
   sequential tasks after explicit ownership transfer under
   [Project governance](./github-project-governance.md#worktree-selection-and-retirement).

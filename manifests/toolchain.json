@@ -7,6 +7,13 @@
     "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
     "licenseStatus": "no license, notice, or copying file found at the pinned commit; local research use only",
     "localPath": "local/upstream/SF2DISASM",
+    "buildSupportFiles": [
+      "tools/asw/as.msg",
+      "tools/asw/cmdarg.msg",
+      "tools/asw/ioerrs.msg",
+      "tools/asw/p2bin.msg",
+      "tools/asw/tools.msg"
+    ],
     "buildTools": [
       {
         "path": "tools/splitrom.exe",
@@ -69,6 +76,9 @@
     "executableSha256": "F8CDB93551A544F680BF3876D9D8D72643859E7A44A23B04E1A25B92E48F80CD",
     "core": "Genesis Plus GX",
     "licenseStatus": "EmuHawk source is MIT; release bundles include separately licensed components, so the binary stays local and is not redistributed",
-    "purpose": "Pinned H3 Mega Drive runtime observations through command-line Lua automation"
+    "purpose": "Pinned H3 Mega Drive runtime observations through command-line Lua automation",
+    "lua54SizeBytes": 505344,
+    "lua54Sha256": "4786E0DF4CAF120E3BEDF0B6DDA260525DF2187C66DED220A21A53ACE76B0501",
+    "sourceCommit": "bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5"
   }
 }
