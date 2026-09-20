@@ -2,6 +2,7 @@ local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG i
 local candidate = config.candidate and { index = 1, pending = 0, gates = {}, returns = {} } or nil
 local acquisition = candidate and config.candidate.interactive
 local natural = candidate and config.candidate.natural
+local segment = candidate and config.candidate.segment
 assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
@@ -190,6 +191,14 @@ local function first_entity_mismatch(records)
 end
 
 local function restore_scope()
+    if segment and segment.resume then
+        -- Resume has no R1 bootstrap intervention. Roll back only to its loaded entry.
+        local restoration = blank_restoration(saved_state ~= nil)
+        restoration.kind = "loaded-segment-entry"
+        restoration.sessionStateRestored = saved_state ~= nil and pcall(memorysavestate.loadcorestate, saved_state)
+        if restoration.sessionStateRestored then return restoration, nil end
+        return restoration, {domain="segment-entry"}
+    end
     local restoration = blank_restoration(scope ~= nil and saved_state ~= nil)
     if not restoration.scopeArmed then return restoration, {domain="scope",address=config.r1.harness.checkpointAddress,expected=1,actual=0} end
     local loaded = pcall(function()
@@ -981,6 +990,8 @@ append_trace = function(kind, value)
 end
 
 local function add_callback(address, role, handler)
+    -- Closed Map19-and-later continuation needs none of the R1/messenger locals.
+    if segment and segment.resume and not role:match("^candidate:") then return end
     if candidate and not (role:match("^candidate:") or role:match("^r1%-")
         or role:match("^prompt%-") or role:match("^join%-") or role:match("^update%-force%-")
         or role == "bootstrap-check-sram" or role == "checkpoint" or role == "map3-init-dispatch"
@@ -2950,7 +2961,7 @@ local function install_candidate()
     end
     if acquisition then
         local bridge = assert(loadfile(acquisition.bridgePath))("library")
-        local batch, previous_id, batches, connected = nil, 0, 0, false
+        local batch, previous_id, batches, connected = nil, 0, segment and segment.priorBatches or 0, false
         local clock, launch, idle_since
         if natural then
             local stopwatch = luanet.import_type("System.Diagnostics.Stopwatch")
@@ -2959,7 +2970,9 @@ local function install_candidate()
             launch = tonumber(tostring(utc.UtcNow:ToUnixTimeMilliseconds())) / 1000
                 - assert(tonumber(os.getenv("SF2_BRIDGE_LAUNCH_EPOCH")))
         end
-        local function elapsed() return launch + tonumber(clock.Elapsed.TotalSeconds) end
+        local function elapsed()
+            return (segment and segment.priorActiveSeconds or 0) + launch + tonumber(clock.Elapsed.TotalSeconds)
+        end
         local function budget()
             if not natural or c.stopReason then return end
             local now = elapsed()
@@ -2990,6 +3003,125 @@ local function install_candidate()
                 r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
                 state=sample(), paused=client.ispaused(), batches=batches,
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
+        end
+        -- Only these data facts survive a closed field boundary. Dynamic return
+        -- closures and init-registration caches are rebuilt, never serialized.
+        local continuation_keys = {"epoch", "emulatorEpoch", "order", "gates", "r2a",
+            "map19Wait", "map19Captured", "nextWarp", "consumerPoll", "activeMusic",
+            "progressFrame", "progressState"}
+        local function same(left, right)
+            if type(left) ~= type(right) then return false end
+            if type(left) ~= "table" then return left == right end
+            for key, value in pairs(left) do if not same(value, right[key]) then return false end end
+            for key, _ in pairs(right) do if left[key] == nil then return false end end
+            return true
+        end
+        local function original_state()
+            local bytes = {}
+            for i = 0, 65535 do bytes[#bytes + 1] = string.format("%02X", memory.read_u8(i, "68K RAM")) end
+            return {ramHex=table.concat(bytes), registers=emu.getregisters(), emulatorFrame=emu.framecount()}
+        end
+        local function core_check()
+            local core = bridge.core_identity()
+            assert(client.getversion() == "2.11.1" and emu.getsystemid() == "GEN"
+                and core.name == "Genplus-gx" and core.type == "BizHawk.Emulation.Cores.Consoles.Sega.gpgx.GPGX",
+                "segment native runtime/core mismatch")
+            return core
+        end
+        local function closed_field()
+            local state = sample()
+            assert(not callback_active and client.ispaused() and not pending_failure and not finish_pending,
+                "segment save is not a paused completed-frame boundary")
+            assert(c.epoch and c.map19Captured and phase == "candidate-natural-route"
+                and c.pending == 0 and #c.programs == 0 and not c.audioPending,
+                "segment has an active program/return/audio operation")
+            for _, count in pairs(c.consumers) do assert(count == 0, "segment has an active consumer") end
+            assert(c.appliedButton == "neutral" and state.mapEventWord == 0 and state.typewriting == 0
+                and state.windowState ~= 2 and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
+                and memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS") == 0
+                and memory.read_u16_be(ram.DIALOGUE_WINDOW_INDEX, "M68K BUS") == 0
+                and memory.read_u16_be(ram.PORTRAIT_WINDOW_INDEX, "M68K BUS") == 0
+                and memory.read_u8(ram.FADING_SETTING, "M68K BUS") == 0,
+                "segment has input/modal/transfer state")
+            for _, pair in ipairs({{"ENTITYDEF_OFFSET_X", "ENTITYDEF_OFFSET_XDEST"},
+                {"ENTITYDEF_OFFSET_Y", "ENTITYDEF_OFFSET_YDEST"}}) do
+                assert(memory.read_u16_be(ram.ENTITY_DATA + ram[pair[1]], "M68K BUS")
+                    == memory.read_u16_be(ram.ENTITY_DATA + ram[pair[2]], "M68K BUS"), "segment movement unsettled")
+            end
+            assert(memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_X, "M68K BUS") == memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_X_DEST, "M68K BUS")
+                and memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_Y, "M68K BUS") == memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_Y_DEST, "M68K BUS"),
+                "segment camera unsettled")
+            assert(c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
+                and frame_count - c.consumerPoll.frame <= 1, "segment field control not observed recently")
+            local ordinal = segment.resume and segment.resume.ordinal or segment.ordinal
+            if ordinal == 1 then
+                assert(c.completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29
+                    and c.nextWarp == 1 and not c.completed.royal, "segment Map19 boundary mismatch")
+            elseif ordinal == 2 then
+                assert(c.completed.royal and c.completed.royalScript and flag_is_set(605)
+                    and state.map == 20 and state.x == 23 and state.y == 39
+                    and (state.facing & ram.DIRECTION_MASK) == ram.DOWN
+                    and c.nextWarp == 2 and not c.completed.astral, "segment royal boundary mismatch")
+            elseif ordinal == 3 then
+                assert(c.completed.guardWait and c.completed.guard and flag_is_set(401) and flag_is_set(256)
+                    and state.map == 21 and state.x == 5 and state.y == 15
+                    and (state.facing & ram.DIRECTION_MASK) == ram.DOWN and c.nextWarp == 5,
+                    "segment guard boundary mismatch")
+            else error("no resumable boundary for this segment") end
+        end
+        function c.save_segment(terminal)
+            assert(segment and not callback_active and client.ispaused(), "segment save outside host pause")
+            if not terminal then
+                assert(batches < acquisition.maxBatches and frame_count < acquisition.totalFrames
+                    and elapsed() < acquisition.wallSeconds, "segment has no continuation budget")
+                -- Save this segment's end; resume validation uses the parent's ordinal.
+                local resume = segment.resume
+                segment.resume = nil
+                local ok, message = pcall(closed_field)
+                segment.resume = resume
+                assert(ok, message)
+            else
+                assert(segment.ordinal == 4 and c.stopReason == "player-ready"
+                    and c.appliedButton == "neutral", "invalid/non-neutral final segment")
+            end
+            local core = core_check()
+            for _, patch in ipairs(config.r1.sessionPatches) do
+                for index = 1, #patch.originalHex, 2 do
+                    assert(memory.read_u8(patch.address + (index - 1) // 2, "M68K BUS")
+                        == tonumber(patch.originalHex:sub(index, index + 1), 16), "segment retains a bootstrap ROM patch")
+                end
+            end
+            local path = segment.statePath
+            local existing = io.open(path, "rb")
+            if existing then existing:close(); error("segment state already exists") end
+            assert(savestate.save(path, true) == true, "native savestate.save failed")
+            local file = assert(io.open(path, "rb"), "native save produced no file")
+            local size = file:seek("end"); file:close()
+            assert(size and size > 0, "native save produced an empty file")
+            c.record("segment:saved-frame", {ordinal=segment.ordinal, resumable=not terminal})
+            local observer = {completed=c.completed, phase=phase, frame=frame_count}
+            for _, key in ipairs(continuation_keys) do observer[key] = c[key] end
+            local metadata = {ordinal=segment.ordinal, resumable=not terminal, observer=observer,
+                original=original_state(), core=core, batches=batches, activeSecondsAtSave=elapsed(),
+                stateBytes=size, boundary="neutral-completed-frame", finalCallback=terminal and c.terminal or nil}
+            local output = assert(io.open(segment.metadataPath, "w"))
+            json_write(output, metadata); output:write("\n"); output:close()
+            if not terminal then c.stop("segment-saved", {ordinal=segment.ordinal}) end
+        end
+        if segment and segment.resume then
+            local restored = segment.resume
+            core_check()
+            assert(savestate.load(segment.loadPath, true) == true, "native savestate.load failed")
+            client.pause()
+            bridge.set_button("neutral")
+            assert(same(original_state(), restored.original), "loaded native state readback mismatch")
+            for _, key in ipairs(continuation_keys) do c[key] = restored.observer[key] end
+            for key, value in pairs(restored.observer.completed) do c.completed[key] = value end
+            frame_count, phase, c.appliedButton = restored.observer.frame, restored.observer.phase, "neutral"
+            closed_field()
+            saved_state = memorysavestate.savecorestate()
+            assert(saved_state ~= nil, "resume cleanup snapshot failed")
+            c.record("segment:loaded-before-input", {ordinal=segment.ordinal, parent=restored.ordinal})
         end
         function c.capture_frame() c.frameEnd = snapshot() end
         local function reply(ok, message, terminal)
@@ -3043,6 +3175,13 @@ local function install_candidate()
                         assert(#command == 2, "wrong argument count")
                         if natural then c.failureReason = "operator-abort" end
                         error("operator aborted interactive acquisition")
+                    elseif op == "save" then
+                        assert(#command == 2 and segment and segment.ordinal < 4, "save requires a resumable segment")
+                        c.failureReason = "segment-save-failure"
+                        c.save_segment(false)
+                        c.failureReason = nil
+                        c.frameEnd = snapshot()
+                        return
                     elseif op == "step" then
                         local count, button = bridge.step_arguments(command)
                         c.failureReason = nil
@@ -3140,6 +3279,7 @@ local function write_observation(restoration)
 end
 
 local function finalize_success()
+    if segment and candidate.stopReason == "player-ready" then candidate.save_segment(true) end
     finish_pending = false
     local restoration, mismatch = restore_scope()
     if mismatch or not restoration.sessionStateRestored then
