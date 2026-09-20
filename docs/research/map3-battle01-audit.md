@@ -236,8 +236,25 @@ now defines an opt-in candidate in the existing messenger Python/Lua rail: servi
 at the R1 wait, explicit frozen diagnostic input, missing status/NPC readbacks and bounded gate/Map19
 callbacks. It has no CLI wiring or runtime result. Its materialization status is
 `CANDIDATE-PREPARED-NOT-ADMITTED`, not `PRELAUNCH-PASS`; ordinary R2a/R2d fixtures remain unchanged.
-The timed diagnostic input is not an accepted original recording and may fail. Independent method,
-exact material, code, verification and old-lineage/budget review still precede any launch.
+The timed diagnostic input is not an accepted original recording and may fail. Issue #460 classifies
+the proposed method as controlled-start H3: declared R1 bootstrap mutations, restoration of original
+services/scratch at the first wait, and only original gameplay execution plus frozen input thereafter.
+This method classification grants no execution budget. The candidate now retains optional typed
+native-process diagnostics, immediate PID and pre-termination timeout recording, actual local-copy
+identity, preserved Lua artifacts and independent host cleanup outcomes. Existing ordinary helper
+callers retain their semantics. Synthetic no-process error-path checks are not original evidence.
+
+The [preparation owner](map3-messenger-acceptance.md#reproduce-preparation-without-execution) records a
+source-visible input-construction defect: candidate-06 inserts C pulses before the trace's entity142
+facing/interaction sequence. A separate fixed-input proposal relocates those blocks after interaction,
+retaining the same counts and proposed budgets; candidate-06 is preserved. Its reach/timing and menu
+risk remain **Unknown**. The initial claim that the gate had no dialogue was an analysis error from
+using H2's selected operation subset; the complete pinned `cs_51652` contains six `nextSingleText`
+commands. That claim is withdrawn and the gate confirmation block remains unchanged.
+
+Exact material/code review, actual CI and old-lineage/budget disposition still precede any launch.
+The first stopping condition is a frozen Draft PR with runtime gates explicitly **NOT RUN**, not
+an automatic original execution after diagnostic implementation.
 
 Required private inputs/toolchain are the canonical ROM, pinned upstream/H1 anchors, retained
 fixtures, BizHawk 2.11.1 / Genesis Plus GX and the manifest-owned executable/Lua identities. Resolve

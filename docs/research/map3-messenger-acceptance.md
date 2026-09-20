@@ -131,17 +131,47 @@ no typewriting and F604 set. No royal/tower, battle or 5B continuation is includ
 
 Unexpected programs, warps or FieldMenu entry, ordering/state drift, exhausted fixed input, frame
 budget, host timeout and cleanup failure remain failures. A fresh `runtime` directory is mandatory;
-the execution composition refuses to overwrite an attempt, uses the shared process helper with a
-contained absolute output stem, copies the canonical ROM to a disposable session, preserves
-checkpoint/status/host diagnostics and checks canonical identity after deleting that session.
+the execution composition reserves a fresh attempt before identity checks and refuses to overwrite it.
+It copies the canonical ROM to a disposable session, preserves checkpoint/status/host diagnostics,
+and independently attempts session deletion and the canonical-identity check even after failure.
 The accepted [shared-tool mechanism](../operations/local-private-inputs.md#bizhawk-runtime-copies)
 resolves the reviewed EXE/Lua identities from the shared installation and copies verified release
 files into `runtime/observer/bizhawk-*` before any separately admitted launch. Its executable,
 configuration, cwd and TEMP/TMP stay in that local copy; observer outputs remain beside the
-`runtime/observer` stem. The candidate runner uses this existing helper without a second launcher.
+`runtime/observer` stem. The candidate opts into `run_observer`'s diagnostic callbacks, which use
+`run_native_bizhawk_process` and `NativeProcessResult`. Callers without the optional result callback
+retain their existing process/timeout/status behavior; the native helper's existing consumers also
+retain their default behavior.
 Preparation itself creates only `input.json`, `config.json`, `config.lua` and `candidate.json` in an
 explicit fresh worktree-local ignored directory. Missing input is `FileNotFoundError`/unavailable;
 bad input/source binding is rejected before materialization, never `PRELAUNCH-PASS`.
+
+### Private process diagnostics
+
+Issue #460 retains one `runtime/host-status.json` per attempted composition, including identity or
+preparation failure before process creation. `process.started=false` distinguishes that boundary;
+PID is written immediately after creation, before waiting. Exit code, stdout/stderr, timeout,
+termination and tree-kill result come from the native helper, never exception-message matching.
+Timeout is persisted before termination is attempted, so a failed kill cannot erase that fact.
+Unavailable results remain JSON null: a PID alone does not prove termination, and an interrupted
+helper with no final result leaves exit/output/termination unknown. `timeout_tree_killed` retains
+the helper's existing meaning (including its on-started-error cleanup); it is not an independent
+residual-process scan. Original callback compatibility and residual process state still need an
+admitted observation.
+
+The private report retains the reviewed candidate identities, actual runtime-copy path/command,
+settings path, cwd/TEMP/TMP, and exact runtime EXE/Lua/settings/generated observer-config identities.
+Preparation also binds the process helper, bootstrap descriptor/library and tool resolver. Execution
+rejects helper/bootstrap drift and copied EXE/Lua drift before creation. The generated config is
+retained beside the observer stem; it derives from the frozen JSON with only the existing bootstrap
+and attempt-local output/status/checkpoint paths supplied by the reviewed helpers. These private
+paths and payloads must not be pasted into public PR/Issue output.
+
+Lua status, checkpoints and observation files remain intact when the process, callback or terminal
+checks fail. Host cleanup records session deletion and canonical ROM comparison independently;
+a primary exception and cleanup errors both survive in the diagnostic. This is an opt-in host
+report, not a new replay ledger, fixture or launch allowance. A failed attempt is preserved and
+requires independent disposition; a fresh directory is not permission to retry.
 
 ### Reproduce preparation without execution
 
@@ -154,8 +184,8 @@ from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 
 prepare_map3_observation_candidate(
     private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
-    input_path=Path("local/issue456/diagnostic-input.json"),
-    output_directory=Path("local/issue456/review-candidate"),  # must not exist
+    input_path=Path("local/issue460/diagnostic-input-proposal.json"),
+    output_directory=Path("local/issue460/review-candidate"),  # must not exist
     proposed_timeout_seconds=600,  # proposal for review, not a launch allowance
 )
 ```
@@ -167,25 +197,53 @@ No conditions, coordinates, executable expressions or unknown timing values are 
 The report binds ROM/source/listing/observer/configuration/input identities and retains Unknowns.
 
 The private review trace's reproducible **diagnostic** recipe uses R2
-`expectedObservation.records[0].logicalInputTrace` in order and R2b
+`expectedObservation.records[0].logicalInputTrace` in its complete order and R2b
 `static.routeGraph.segments[0].inputs` / `[2].inputs`; these provide logical directions, not observed
-timing. Start with 120 neutral frames; give each logical input 2 pressed + 22 neutral frames. At each
-R2 waypoint's last input, add 12 repetitions of 2 C + 118 neutral for `map3-house-exit-zone`,
-`map3-sarah-classroom`, `map3-astral-zone-introduction`, `map3-entity142`, `map3-astral-zone`; add 120
-neutral for other waypoints. Then add 60 C/neutral repetitions for the messenger, segment 0 inputs,
-24 C/neutral repetitions for the gate, segment 2 inputs, 240 neutral, 2 Up, and 120 neutral.
-This produces 23,234 frames. These deliberately unvalidated hold/release/wait parameters may exhaust
-or enter FieldMenu; neither reachability nor compatibility is claimed. They must be reviewed before
-any launch and may not be adapted to live state. The material is an inspectable method candidate,
-not an accepted playback recording or proof that this input reaches Map19.
-The example proposes a 600-second host timeout and reports the total frame watchdog as 28,634
-(the frozen input plus the retained bootstrap/controlled-prefix margins). Execution consumes this
-materialized limit; a different proposed limit requires different reviewed material and does not
-reset the old lineage allowance.
+timing. Start with 120 neutral frames; give each logical input 2 pressed + 22 neutral frames. After
+the last input of each contiguous waypoint group, append 120 neutral, except:
+
+- For `map3-house-exit-zone`, `map3-sarah-classroom`, `map3-astral-zone-introduction` and
+  `map3-astral-zone`, append 12 repetitions of 2 C + 118 neutral instead.
+- Append no block after the first `map3-entity142` navigation group or `map3-entity142-face`.
+  Consume the trace's Left facing input and then its actual C interaction first. After that final
+  `map3-entity142` C, append 120 neutral and 24 repetitions of 2 C + 118 neutral. This relocates
+  the earlier proposal's premature 12-confirm block and facing wait after interaction while
+  preserving all its pulse counts and durations.
+
+Then append 60 C/neutral repetitions for the messenger, segment 0 inputs (2 pressed + 22 neutral
+each), 24 C/neutral repetitions for the gate, segment 2 inputs at the same duration, 240 neutral,
+2 Up, and 120 neutral. This separate proposal still has 23,234 frames, a proposed 600-second host
+timeout and a 28,634-frame watchdog (input plus retained bootstrap/controlled-prefix margins).
+Neither limit is an allowance or a reset of historical consumption. All pulse counts, waits and
+reach remain **Unknown**; moving the blocks after interaction does not establish that they finish
+before control resumes or avoid FieldMenu. No block may be rescheduled from live state.
+
+**Confirmed input-construction defect, not an original-game observation:** the retained Issue #456
+candidate-06 expands each contiguous waypoint group, placing 12 C pulses at frame ordinals
+6769–8208 before the trace's entity142 Left-facing step and actual C interaction at `(55,17)`.
+The complete trace contains a navigation group, a separate facing row and the final interaction
+under the repeated `map3-entity142` name. The new proposal only reorders frames 6769–9816 to
+preserve this logical order; old candidate/input material remains unchanged. Source
+`code/gameflow/exploration/explorationfunctions_0.asm:GetActivatedEntity` uses player facing for
+the target block. `explorationvints.asm:ProcessPlayerAction` sends C through entity/area selection,
+with FieldMenu as a fallback. Thus premature C is not a harmless generic wait; the actual selected
+action and timing are still **Unknown**.
+
+**Confirmed source correction:** the full pinned
+`data/maps/entries/map03/mapsetups/scripts_1.asm:cs_51652` through `csc_end` contains six
+`nextSingleText` commands between the two guard-action groups. The H2 `programs/cs_51652/operations`
+array is a selected control-effect projection, not the complete script. The initial Issue #460
+analysis incorrectly inferred no gate dialogue from that subset; that finding is withdrawn.
+The gate's 24-confirm block remains unchanged. Source confirmation uses the pinned commit named
+above and blob `5e9b260b9e07dd22387a0ab1ab3b6666d1ab05e1`; it does not prove the proposed timing.
 
 Direct acceptance consists of source/H1/ROM binding, materialization and rejection checks,
 Python lint/compile, Lua compilation, normal research verification and the clean committed planner.
-Selected original-runtime gates are **NOT RUN / pending independent launch admission**. The local
+Issue #460 directly exercises the opted-in process handoff and error paths with synthetic process
+doubles only, including pre-process failure, PID persistence, timeout/failed termination, callback
+failure, missing output and independent cleanup. These checks launch no native process and are not
+original evidence. Selected original-runtime gates are **NOT RUN / pending independent launch
+admission**. The local
 environment needed an explicitly authorized pinned checkout, verified tool copies and one real
 bit-perfect H1 build; its kept listing/log precede preparation and are not runtime evidence. Consuming
 the accepted shared-tool mechanism requires direct preparation/copy checks, not another H1 build or
