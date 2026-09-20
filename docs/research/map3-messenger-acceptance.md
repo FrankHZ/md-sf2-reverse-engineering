@@ -134,6 +134,11 @@ budget, host timeout and cleanup failure remain failures. A fresh `runtime` dire
 the execution composition refuses to overwrite an attempt, uses the shared process helper with a
 contained absolute output stem, copies the canonical ROM to a disposable session, preserves
 checkpoint/status/host diagnostics and checks canonical identity after deleting that session.
+The accepted [shared-tool mechanism](../operations/local-private-inputs.md#bizhawk-runtime-copies)
+resolves the reviewed EXE/Lua identities from the shared installation and copies verified release
+files into `runtime/observer/bizhawk-*` before any separately admitted launch. Its executable,
+configuration, cwd and TEMP/TMP stay in that local copy; observer outputs remain beside the
+`runtime/observer` stem. The candidate runner uses this existing helper without a second launcher.
 Preparation itself creates only `input.json`, `config.json`, `config.lua` and `candidate.json` in an
 explicit fresh worktree-local ignored directory. Missing input is `FileNotFoundError`/unavailable;
 bad input/source binding is rejected before materialization, never `PRELAUNCH-PASS`.
@@ -182,8 +187,10 @@ Direct acceptance consists of source/H1/ROM binding, materialization and rejecti
 Python lint/compile, Lua compilation, normal research verification and the clean committed planner.
 Selected original-runtime gates are **NOT RUN / pending independent launch admission**. The local
 environment needed an explicitly authorized pinned checkout, verified tool copies and one real
-bit-perfect H1 build; its kept listing/log precede preparation and are not runtime evidence. Shared
-tool consumer migration is separately owned; it does not invalidate that completed H1 result.
+bit-perfect H1 build; its kept listing/log precede preparation and are not runtime evidence. Consuming
+the accepted shared-tool mechanism requires direct preparation/copy checks, not another H1 build or
+normal suite solely because the base changed. Local-copy EXE/Lua bytes must equal the candidate's
+reviewed identities. These checks do not establish native startup or original-game compatibility.
 
 Old R2b/replay ordinal-2 timeout **FAIL**, cleanup failure, missing genuine receipts/ledger,
 retry/reset prohibition and completed #431/#434 failures remain preserved by the
