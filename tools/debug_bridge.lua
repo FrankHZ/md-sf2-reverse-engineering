@@ -66,20 +66,33 @@ local function core_identity()
   error('loaded core identity unavailable')
 end
 
-local function neutral_frame()
+local function set_button(button)
   local neutral = {}
   for button, _ in pairs(joypad.get()) do neutral[button] = false end
   joypad.set(neutral)
+  if button ~= 'neutral' then joypad.set({[button]=true}, 1) end
+end
+
+local function step_arguments(command)
+  assert(#command == 4, 'wrong argument count')
+  local count = integer(command[3], 1, 120)
+  local allowed = {neutral=true, Up=true, Down=true, Left=true, Right=true, A=true, B=true, C=true}
+  assert(allowed[command[4]], 'unsupported step button')
+  return count, command[4]
+end
+
+local function neutral_frame()
+  set_button('neutral')
   client.unpause()
   emu.frameadvance()
   client.pause()
   assert(not callback_error, callback_error)
 end
 
-local function main()
+local function connect(timeout_ms, state)
   client.pause()
   status('starting')
-  comm.socketServerSetTimeout(5000)
+  comm.socketServerSetTimeout(timeout_ms)
   local domains = {}
   for _, name in pairs(memory.getmemorydomainlist()) do
     domains[name] = memory.getmemorydomainsize(name)
@@ -89,8 +102,27 @@ local function main()
     'unsupported core: ' .. core.type)
   send({protocol=1, token=os.getenv('SF2_BRIDGE_TOKEN'), core=core,
     version=client.getversion(), system=emu.getsystemid(), domains=domains,
-    state=snapshot()})
+    state=state or snapshot()})
   status('ready')
+  return domains
+end
+
+local function receive(previous_id)
+  local wire = comm.socketServerResponse()
+  assert(wire and #wire > 0, 'socket timeout or incomplete message')
+  local command = fields(wire)
+  local id = integer(command[1], previous_id + 1, previous_id + 1)
+  return command, id
+end
+
+-- Fixed library entry used by the Map3 observer. No network text is loaded/evaluated.
+if ... == 'library' then
+  return {connect=connect, receive=receive, send=send, set_button=set_button,
+    step_arguments=step_arguments, status=status}
+end
+
+local function main()
+  local domains = connect(5000)
   local previous_id = 0
   while true do
     local wire = comm.socketServerResponse()

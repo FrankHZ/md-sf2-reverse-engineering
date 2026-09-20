@@ -1,5 +1,6 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
 local candidate = config.candidate and { index = 1, pending = 0, gates = {}, returns = {} } or nil
+local acquisition = candidate and config.candidate.interactive
 assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
@@ -9,6 +10,7 @@ local OWNER = extension_enabled and config.extension.owner or "map3-messenger-ac
 local phase, frame_count, route_index = "await-check-sram", 0, 1
 local active, scope, saved_state = nil, nil, nil
 local callbacks, callback_order = {}, {}
+local callback_active = false
 local pending_core_snapshot, pending_failure, finish_pending = false, nil, false
 local last_input, input_trace, chronology, map_transitions, script_trace = nil, {}, {}, {}, {}
 local route_started, initial_wait_seen, route_control_ready, wait_after_warp = false, false, false, false
@@ -283,6 +285,9 @@ local function finalize_failure()
     if output then output:close() end
     restoration.callbacksCleared, restoration.outputRemoved = cleared, output_removed
     write_failure(restoration, mismatch, cleared, output_removed)
+    if acquisition and candidate.close then
+        pcall(candidate.close, false, pending_failure.message)
+    end
     client.exitCode(config.observerFailureContract.exitCode)
 end
 
@@ -984,14 +989,16 @@ local function add_callback(address, role, handler)
     end
     assert(callbacks[address] == nil, "more than one callback registered at physical PC " .. string.format("%X", address))
     callbacks[address] = { role = role, handlers = { handler }, id = event.on_bus_exec(function()
-        if pending_failure then return end
+        if pending_failure or (acquisition and finish_pending) then return end
         if route_started or extension_progress_frame then
             last_callback_role, last_callback_pc = role, address
         end
+        callback_active = true
         local ok, message = pcall(function()
             for _, dispatch in ipairs(callbacks[address].handlers) do dispatch() end
         end)
         if not ok then fail(role, address, message) end
+        callback_active = false
     end, address, "sf2-" .. OWNER .. "-" .. role, "M68K BUS") }
     callback_order[#callback_order + 1] = address
 end
@@ -2193,6 +2200,12 @@ end
 -- callbacks may fail/stop, but cannot choose, delay or repair an input edge.
 local function install_candidate()
     local c, f, ram = candidate, config.candidate.functions, config.ram
+    c.order, c.consumers = 0, {}
+    local function poll(kind, pc)
+        if not acquisition or not c.epoch then return end
+        if c.consumerPoll and c.consumerPoll.kind == kind and c.consumerPoll.frame == frame_count then return end
+        c.consumerPoll = {kind=kind, frame=frame_count, emulatorFrame=emu.framecount(), pc=pc}
+    end
     local function sample()
         local result = current_position_diagnostic()
         result.rawX = memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_X, "M68K BUS")
@@ -2211,14 +2224,23 @@ local function install_candidate()
         for _, flag in ipairs({ 66, 600, 601, 602, 603, 604, 605, 607, 608, 401, 256, 501, 507, 982 }) do
             result.flags[tostring(flag)] = flag_is_set(flag)
         end
+        if acquisition then
+            result.pendingReturns, result.activeConsumers = c.pending, c.consumers
+            result.lastConsumerPoll = c.consumerPoll or false
+            result.readiness = "Unknown; use source consumer events, not typewriting/script-return alone"
+        end
         return result
     end
     function c.record(kind, facts)
         c.lastCheckpoint = kind
+        c.order = c.order + 1
         local file = assert(io.open(config.candidate.checkpointPath, "a"))
         json_write(file, { kind = kind, frame = frame_count, pc = reg("PC") & 0xFFFFFF,
             inputFrame = c.epoch and frame_count - c.epoch or false,
-            facts = facts, state = sample() })
+            facts = facts, state = sample(),
+            order = acquisition and c.order or nil,
+            boundary = acquisition and (callback_active and "callback-time" or "host-loop") or nil,
+            emulatorFrame = acquisition and emu.framecount() or nil })
         file:write("\n"); file:close()
     end
     local function returned(kind, target, on_return)
@@ -2227,10 +2249,12 @@ local function install_candidate()
         assert(pc < 0x200000 and pc % 2 == 0, "original return is outside canonical code")
         local pending = true
         c.pending = c.pending + 1
+        c.consumers[kind] = (c.consumers[kind] or 0) + 1
         c.record(kind .. ":entry", { target = target, returnPc = pc, stack = stack })
         add_callback(pc, "candidate:return", function()
             if not pending or (reg("A7") & 0xFFFFFF) ~= stack + 4 then return end
             pending, c.pending = false, c.pending - 1
+            c.consumers[kind] = c.consumers[kind] - 1
             c.record(kind .. ":return", { target = target, returnPc = pc, d0 = reg("D0") & 0xFFFF })
             if on_return then on_return() end
         end)
@@ -2305,6 +2329,7 @@ local function install_candidate()
         restore_span(config.r1.harness.checkpointAddress, scope.generatedRam)
         assert(not first_mismatch("bootstrap-scratch", config.r1.harness.checkpointAddress, scope.generatedRam), "bootstrap scratch not restored")
         c.epoch, phase = frame_count, "candidate-route"
+        c.emulatorEpoch = emu.framecount()
         c.record("r1:controlled-admission-ended", { patchesRestored = true, scratchRestored = true,
             retained = "NewGame/SaveGame/default Map3 state and inherited live NPC/RNG/raw time",
             inputIdentity = config.candidate.inputIdentity })
@@ -2473,14 +2498,29 @@ local function install_candidate()
     add_callback(f.FieldMenu, "candidate:unexpected-field-menu", function()
         if c.epoch then
             c.record("field-menu:reached", {})
-            error("frozen input reached FieldMenu outside the declared route")
+            error((acquisition and "interactive" or "frozen") .. " input reached FieldMenu outside the declared route")
         end
     end)
     add_callback(f.loc_65B4, "candidate:text-ack", function()
+        poll("text-wait1", f.loc_65B4)
         if c.epoch and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") ~= 0 then
             c.record("text:acknowledgement-read", { input = memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") })
         end
     end)
+    if acquisition then
+        add_callback(f.loc_2593C, "candidate:field-action-poll", function()
+            poll("WaitForEvent-action", f.loc_2593C)
+        end)
+        add_callback(f.loc_6472, "candidate:text-wait2-poll", function()
+            poll("text-wait2-loop", f.loc_6472)
+        end)
+        add_callback(f.loc_1530C, "candidate:prompt-release-poll", function()
+            poll("YesNoPrompt-release", f.loc_1530C)
+        end)
+        add_callback(f.loc_15314, "candidate:prompt-choice-poll", function()
+            poll("YesNoPrompt-choice", f.loc_15314)
+        end)
+    end
     add_callback(config.functions.loc_52E8, "candidate:first-map19-control", function()
         if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
         c.record("input:original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
@@ -2504,6 +2544,7 @@ local function install_candidate()
         end
     end)
     function c.input()
+        if acquisition then return end -- fixed mechanical delivery below owns this mode
         if not c.epoch then set_messenger_input(""); return end
         local index = frame_count - c.epoch
         assert(index >= 1 and index <= #config.candidate.frames, "candidate input exhausted before Map19 control")
@@ -2514,13 +2555,102 @@ local function install_candidate()
             c.lastButton = button
         end
     end
+    if acquisition then
+        local bridge = assert(loadfile(acquisition.bridgePath))("library")
+        local batch, previous_id, batches, connected = nil, 0, 0, false
+        local function log(value)
+            c.order = c.order + 1
+            value.order, value.frame = c.order, frame_count
+            value.emulatorFrame, value.r1Epoch = emu.framecount(), c.epoch or false
+            value.r1EmulatorEpoch = c.emulatorEpoch or false
+            local file = assert(io.open(acquisition.inputLogPath, "a"))
+            json_write(file, value)
+            file:write("\n"); file:close()
+        end
+        local function snapshot()
+            return {boundary="frame-end", frame=frame_count, emulatorFrame=emu.framecount(),
+                r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
+                state=sample(), paused=client.ispaused(), batches=batches,
+                totalFrameLimit=acquisition.totalFrames, phase=phase}
+        end
+        local function reply(ok, message, terminal)
+            local result = {state=c.frameEnd or snapshot(), advanced=batch and batch.applied or 0,
+                terminal=terminal or false, terminalCallback=c.terminal or false,
+                stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl"}
+            log({kind="result", id=previous_id, ok=ok, result=result, error=message or false})
+            bridge.send({id=previous_id, ok=ok, result=result, error=message or false})
+        end
+        function c.close(ok, message)
+            -- Snapshot was captured before restoration; it is never replaced by restored state.
+            bridge.status(ok and "closed" or "failed", message or "first Map19 control")
+            if connected then reply(ok, message, ok) end
+        end
+        function c.prepare_frame()
+            client.pause()
+            if c.epoch then
+                if not connected then
+                    c.frameEnd = snapshot()
+                    bridge.connect(acquisition.wallSeconds * 1000, c.frameEnd)
+                    connected = true
+                end
+                if batch and batch.applied == batch.requested then
+                    reply(true)
+                    batch = nil
+                end
+                while not batch do
+                    local command, id = bridge.receive(previous_id)
+                    previous_id = id
+                    log({kind="command", id=id, fields=command})
+                    local op = command[2]
+                    if op == "state" or op == "ping" then
+                        assert(#command == 2, "wrong argument count")
+                        c.frameEnd = snapshot()
+                        reply(true)
+                    elseif op == "abort" then
+                        assert(#command == 2, "wrong argument count")
+                        error("operator aborted interactive acquisition")
+                    elseif op == "step" then
+                        local count, button = bridge.step_arguments(command)
+                        assert(batches < acquisition.maxBatches, "input batch budget exhausted")
+                        assert(count <= acquisition.totalFrames - frame_count, "total frame budget exceeded")
+                        batches = batches + 1
+                        batch = {id=id, requested=count, applied=0, button=button}
+                    else error("unsupported acquisition command") end
+                    emu.yield()
+                end
+            end
+            c.appliedButton = batch and batch.button or (phase == "await-check-sram" and "Start" or "neutral")
+            c.beforeFrame = emu.framecount()
+            bridge.set_button(c.appliedButton)
+            log({kind="applying", id=batch and batch.id or 0, button=c.appliedButton,
+                beforeFrame=c.beforeFrame, inputFrame=c.epoch and frame_count + 1 - c.epoch or false,
+                bootstrap=not c.epoch})
+        end
+        function c.after_frame()
+            client.pause()
+            local after = emu.framecount()
+            -- A completed-frame entry is emitted only after frameadvance returned.
+            log({kind="frame", id=batch and batch.id or 0, button=c.appliedButton,
+                beforeFrame=c.beforeFrame, afterFrame=after,
+                inputFrame=c.epoch and frame_count - c.epoch or false,
+                bootstrap=not batch})
+            if batch then batch.applied = batch.applied + 1 end
+            c.frameEnd = snapshot()
+            bridge.set_button("neutral")
+            assert(after == c.beforeFrame + 1, "interactive frame advance drift")
+            assert(frame_count < acquisition.totalFrames or finish_pending,
+                "total frame budget exhausted before terminal")
+        end
+    end
 end
 
 local function write_observation(restoration)
     if candidate then
         local file = assert(io.open(config.outputPath, "w"))
         json_write(file, { kind = "bounded-original-observation", terminal = assert(candidate.terminal),
-            inputIdentity = config.candidate.inputIdentity, restoration = restoration })
+            inputIdentity = config.candidate.inputIdentity, restoration = restoration,
+            mode = acquisition and "interactive-acquisition" or nil,
+            inputIdentityMeaning = acquisition and "mode declaration; actual inputs in actual-inputs.jsonl" or nil })
         file:write("\n"); file:close()
         return
     end
@@ -2580,6 +2710,7 @@ local function finalize_success()
     write_observation(restoration)
     status("milestone:callbacks-cleared:0")
     status("milestone:observer-finished")
+    if acquisition then candidate.close(true) end
     client.exitCode(0)
 end
 
@@ -2589,7 +2720,7 @@ if candidate then
 end
 status("milestone:observer-started")
 while true do
-    frame_count = frame_count + 1
+    if not acquisition then frame_count = frame_count + 1 end
     if pending_failure then
         finish_failure_safely()
         return
@@ -2620,15 +2751,32 @@ while true do
         if pending_failure then finish_failure_safely() end
         return
     end
+    if acquisition then
+        if pending_failure then finish_failure_safely(); return end
+        local ok, message = pcall(candidate.prepare_frame)
+        if not ok then fail("interactive:command", nil, message) end
+        if pending_failure then finish_failure_safely(); return end
+        frame_count = frame_count + 1
+    end
     if frame_count > config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget then
         fail((phase == "await-check-sram" or phase == "await-safe-core-snapshot" or phase == "await-checkpoint") and "bootstrap-watchdog" or "case-watchdog", nil, "frame budget exceeded at phase " .. phase)
     end
     enforce_route_phase_watchdog()
-    if phase == "await-check-sram" then
+    if acquisition then
+        -- No route policy or post-R1 memory/register writes: explicit controller only.
+    elseif phase == "await-check-sram" then
         set_input("Start", "bootstrap")
     else
         local ok, message = pcall(candidate and candidate.input or route_input)
         if not ok then fail("case-watchdog", nil, message) end
     end
-    emu.frameadvance()
+    if acquisition then
+        if pending_failure then finish_failure_safely(); return end
+        local ok, message = pcall(function()
+            client.unpause()
+            emu.frameadvance()
+            candidate.after_frame()
+        end)
+        if not ok then fail("interactive:frame", nil, message) end
+    else emu.frameadvance() end
 end
