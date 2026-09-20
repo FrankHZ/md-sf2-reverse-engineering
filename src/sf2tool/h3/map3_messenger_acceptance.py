@@ -939,6 +939,225 @@ def _candidate_warps(
     }
 
 
+NATURAL_CONTINUATION = "natural-battle01-player-ready"
+
+
+def _interactive_limits(continuation: str | None) -> dict[str, int]:
+    if continuation not in (None, NATURAL_CONTINUATION):
+        raise ValueError("unsupported candidate continuation")
+    if continuation:
+        return {
+            "wallSeconds": 7200,
+            "totalFrames": 36000,
+            "maxBatches": 600,
+            "maxBatchFrames": 120,
+            "map19Seconds": 2400,
+            "guardSeconds": 5700,
+            "idleSeconds": 120,
+            "progressFrames": 3600,
+        }
+    return {"wallSeconds": 1800, "totalFrames": 28634, "maxBatches": 2048, "maxBatchFrames": 120}
+
+
+def _natural_configuration(
+    rom_path: Path,
+    upstream: Path,
+    config: dict[str, Any],
+    sources: dict[str, str],
+    addresses: dict[str, int],
+    listing: str,
+    rom: bytes,
+    castle: dict[str, Any],
+) -> dict[str, Any]:
+    """Read-only R2d shapes plus pinned natural callers; never install its bridge."""
+    from sf2tool.h3 import map3_battle01_player_ready as ready
+
+    static = ready._static_contract(rom_path, upstream)
+    config["ram"].update(static["ram"])
+    disasm = upstream / DISASM
+    paths = {p.as_posix() for p in ready.SOURCE_PATHS} | {
+        "code/common/scripting/map/mapscriptengine_2.asm",
+        "code/common/scripting/map/mapsetupsfunctions_1.asm",
+        "code/common/tech/interrupts/trap0_soundcommand.asm",
+        "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm",
+        "code/gameflow/battle/ai/startaicontrol.asm",
+        "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
+        "code/gameflow/battle/battleloop_2.asm",
+        "code/common/maps/getbattle.asm",
+        "code/common/stats/gold.asm",
+    }
+    for number in (19, 20, 21, 40, 57):
+        root = disasm / f"data/maps/entries/map{number:02}"
+        paths.update(p.relative_to(disasm).as_posix() for p in (root / "mapsetups").glob("*.asm"))
+        paths.add(f"data/maps/entries/map{number:02}/6-warp-events.asm")
+    for name in sorted(paths):
+        source = (disasm / name).read_text(encoding="utf-8")
+        pinned = subprocess.run(
+            ["git", "-C", str(upstream), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{name}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        if source != pinned:
+            raise ValueError(f"natural candidate pinned source differs: {name}")
+        sources[name] = source
+    constants = _parse_equates(disasm)
+    extra_ram = (
+        "VIEW_PLANE_A_PIXEL_X",
+        "VIEW_PLANE_A_PIXEL_Y",
+        "VIEW_PLANE_A_PIXEL_X_DEST",
+        "VIEW_PLANE_A_PIXEL_Y_DEST",
+        "FADING_SETTING",
+        "FADING_POINTER",
+        "FADING_COUNTER",
+        "SOUND_COMMAND_QUEUE",
+        "SOUND_COMMANDS_DEACTIVATED",
+        "AUTO_BATTLE_TOGGLE",
+        "STATUSEFFECT_MUDDLE",
+        "AIBITFIELD_AI_CONTROLLED",
+        "COMBATANT_ALLIES_NUMBER",
+        "COMBATANT_ENEMIES_NUMBER",
+        "MUSIC_STACK",
+        "DIALOGUE_WINDOW_INDEX",
+        "PORTRAIT_WINDOW_INDEX",
+    )
+    constants.update(
+        r1._equates(sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"], extra_ram)
+    )
+    config["ram"].update({name: constants[name] for name in extra_ram})
+    names = (
+        "ms_map19_InitFunction",
+        "ms_map20_InitFunction",
+        "ms_map21_InitFunction",
+        "Map19_EntityEvent12",
+        "Map21_EntityEvent0",
+        "Map19_DefaultZoneEvent",
+        "GetEntityAddressFromCharacter",
+        "cs_53996",
+        "cs_52F0C",
+        "cs_52F24",
+        "cs_52F40",
+        "cs_53EF4",
+        "cs_53B60",
+        "bbcs_01",
+        "ms_Empty",
+        "loc_47140",
+        "loc_47156",
+        "loc_4756A",
+        "Trap0_SoundCommand",
+        "ApplyZ80BusUpdates",
+        "StartAiControl",
+        "ExecuteAiControl",
+        "battlesceneScript_ApplyActionEffect",
+        "BattleLoop_Victory",
+        "BattleLoop_Defeat",
+        "ms_map40_InitFunction",
+    )
+    functions = {
+        name: static["functions"][name]
+        for name in (
+            "CheckBattle",
+            "BattleLoop",
+            "ExecuteBeforeBattleCutscene",
+            "LoadBattle",
+            "ExecuteBattleStartCutscene",
+            "ActivateEnemies",
+            "ExecuteBattleRegionCutscene",
+            "PopulateTargetsListWithSpawningEnemies",
+            "GenerateBattleTurnOrder",
+            "ExecuteIndividualTurn",
+            "ProcessBattleEntityControlPlayerInput",
+            "playerReadyPc",
+        )
+    }
+    for name in names:
+        functions[name] = addresses[name]
+    # The stable seam is a named original input-read instruction, not a synthetic PC.
+    for name, address in functions.items():
+        if _h1_bytes(listing, address, 2) != rom[address : address + 2].hex().upper():
+            raise ValueError(f"natural callback H1/ROM mismatch: {name}")
+    programs = ["cs_53996", "cs_52F0C", "cs_53EF4", "bbcs_01", "ms_Empty"]
+    segments = (
+        castle["routeGraph"]["segments"][4:]
+        + load_json(ready.R2C[0])["static"]["extensionRoute"]["segments"]
+    )
+    warps = []
+    for i, segment in enumerate(segments):
+        if segment["kind"] != "warp":
+            continue
+        origin, destination = segment["from"], segment["to"]
+        number = origin["map"]
+        path = disasm / f"data/maps/entries/map{number:02}/6-warp-events.asm"
+        encoded, count, trailing = _encode_source(path, "warpEvents", constants)
+        start = addresses[f"Map{number:02}s6_WarpEvents"]
+        if trailing or rom[start : start + len(encoded)] != encoded:
+            raise ValueError("natural warp source/ROM mismatch")
+        rows = [
+            row
+            for row in _decode_warps(encoded, count)
+            if row["trigger"]["x"] in (255, origin["point"][0])
+            and row["trigger"]["y"] in (255, origin["point"][1])
+            and row["targetMap"] == destination["map"]
+            and row["destination"] == dict(zip(("x", "y"), destination["point"], strict=True))
+        ]
+        if len(rows) != 1 or rows[0]["scrollMode"] != 0:
+            raise ValueError("natural selected warp missing/ambiguous")
+        previous = segments[i - 1]
+        # Royal return is a one-tile Up movement from the script-owned (23,39).
+        source = previous["points"][-2]
+        warps.append(
+            {
+                "id": segment["id"],
+                "fromMap": number,
+                "target": origin["point"],
+                "source": source,
+                **rows[0],
+            }
+        )
+    entity_calls = []
+    for line in listing.splitlines():
+        match = re.match(r"^([0-9A-F]{8})\s+4E90\s+jsr\s+\(a0\)(?:\s|$)", line)
+        if (
+            match
+            and addresses["RunMapSetupEntityEvent"] <= int(match[1], 16) < addresses["sub_476DC"]
+        ):
+            entity_calls.append(int(match[1], 16))
+    if len(entity_calls) != 1 or rom[entity_calls[0] : entity_calls[0] + 2] != bytes.fromhex(
+        "4E90"
+    ):
+        raise ValueError("entity dispatch source/H1/ROM seam drift")
+    functions["entityCallPc"] = entity_calls[0]
+    sound_dispatch = []
+    for line in listing.splitlines():
+        match = re.match(r"^([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)\s*(move\.b.*)", line)
+        if (
+            match
+            and "(Z80_SoundDriverCommand).l" in match[3]
+            and 0x8DE <= int(match[1], 16) < 0xB1E
+        ):
+            address = int(match[1], 16)
+            emitted = bytes.fromhex(match[2])
+            if rom[address : address + len(emitted)] != emitted:
+                raise ValueError("sound dispatch H1/ROM operand drift")
+            sound_dispatch.append(
+                {"pc": address, "width": len(emitted), "previousMusic": "MUSIC_STACK" in match[3]}
+            )
+    if len(sound_dispatch) != 4:
+        raise ValueError("sound dispatch use-site inventory drift")
+    config["ram"]["MUSIC_STACK"] = constants["MUSIC_STACK"]
+    return {
+        "selection": NATURAL_CONTINUATION,
+        "soundDispatch": sound_dispatch,
+        "setups": {str(n): addresses[f"ms_map{n}"] for n in (3, 19, 20, 21, 40)},
+        "functions": functions,
+        "programs": [functions[name] for name in programs],
+        "warps": warps,
+        "admission": static["admission"],
+        "turnOrderEntries": static["turnOrderEntries"],
+    }
+
+
 def prepare_map3_observation_candidate(
     rom_path: Path,
     upstream_path: Path,
@@ -947,6 +1166,7 @@ def prepare_map3_observation_candidate(
     output_directory: Path,
     proposed_timeout_seconds: int,
     interactive: bool = False,
+    continuation: str | None = None,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -959,9 +1179,14 @@ def prepare_map3_observation_candidate(
     local = repo_path("local").resolve()
     if not output.is_relative_to(local) or output == local or output.exists():
         raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
-    if interactive and (input_path is not None or proposed_timeout_seconds != 1800):
+    limits = _interactive_limits(continuation)
+    if continuation and not interactive:
+        raise ValueError("natural continuation requires explicit interactive acquisition")
+    if interactive and (
+        input_path is not None or proposed_timeout_seconds != limits["wallSeconds"]
+    ):
         raise ValueError(
-            "interactive preparation requires no frozen input and exactly 1800 seconds"
+            "interactive preparation requires no frozen input and the selected wall limit"
         )
     if not interactive and (input_path is None or not input_path.is_file()):
         raise FileNotFoundError(
@@ -1205,19 +1430,22 @@ def prepare_map3_observation_candidate(
         "northWarp": castle_segments[3],
         "gatePoint": castle_segments[1]["point"],
     }
+    if continuation:
+        config["candidate"]["natural"] = _natural_configuration(
+            rom_path, upstream_path, config, sources, addresses, listing, rom, castle
+        )
     if interactive:
         from sf2tool.bizhawk_debug_bridge import SCRIPT
 
         validate_lua_syntax(SCRIPT, executable)
         config["candidate"]["interactive"] = {
-            "wallSeconds": 1800,
-            "totalFrames": 28634,
-            "maxBatches": 2048,
-            "maxBatchFrames": 120,
+            **limits,
             "bridgePath": SCRIPT.as_posix(),
             "inputLogPath": (output / "actual-inputs.jsonl").as_posix(),
         }
-        config["cases"][0]["frameBudget"] = 28634 - config["r1"]["harness"]["bootstrapFrameBudget"]
+        config["cases"][0]["frameBudget"] = (
+            limits["totalFrames"] - config["r1"]["harness"]["bootstrapFrameBudget"]
+        )
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -1270,6 +1498,17 @@ def prepare_map3_observation_candidate(
             InputBatchesLimit=2048,
             InputBatchFramesLimit=120,
         )
+    if continuation:
+        report.update(
+            Continuation=continuation,
+            HistoricalControlledStarts=3,
+            FutureControlledOrdinal=4,
+            MaximumAdditionalStarts=0,
+            InputBatchesLimit=limits["maxBatches"],
+            ProposedLimits=limits,
+            Terminal="first natural Battle01 player-ready at 0x22E70",
+            RuntimeAuthorization="NONE; independent acceptance and fresh approval required",
+        )
     # All validation precedes materialization; no shared launch helper is invoked.
     output.mkdir()
     (output / "input.json").write_bytes(input_bytes)
@@ -1286,6 +1525,7 @@ def run_map3_observation_candidate(
     candidate_directory: Path,
     *,
     interactive: bool = False,
+    continuation: str | None = None,
 ) -> dict[str, Any]:
     """Future admitted execution composition; NOT authorized by preparation.
 
@@ -1366,6 +1606,9 @@ def run_map3_observation_candidate(
     try:
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
+        expected_limits = _interactive_limits(continuation)
+        if report.get("Continuation") != continuation or (continuation and not interactive):
+            raise ValueError("execution continuation must explicitly match preparation")
         if (report.get("Mode") == "interactive-acquisition") != interactive:
             raise ValueError("execution mode must explicitly match reviewed preparation")
         if _candidate_execution_sources(interactive) != report["ExecutionSources"]:
@@ -1394,11 +1637,8 @@ def run_map3_observation_candidate(
         if interactive:
             limits = config["candidate"]["interactive"]
             if (
-                timeout_seconds != 1800
-                or limits["wallSeconds"] != 1800
-                or limits["totalFrames"] != 28634
-                or limits["maxBatches"] != 2048
-                or limits["maxBatchFrames"] != 120
+                timeout_seconds != expected_limits["wallSeconds"]
+                or any(limits.get(key) != value for key, value in expected_limits.items())
                 or config["candidate"]["frames"]
             ):
                 raise ValueError("interactive bounds or empty input declaration drift")
@@ -1427,7 +1667,8 @@ def run_map3_observation_candidate(
                         observer=OBSERVER,
                         observer_config=config_path,
                         rom_path=session,
-                        wall_seconds=1800,
+                        wall_seconds=expected_limits["wallSeconds"],
+                        acquisition_limits=expected_limits if continuation else None,
                     )
                     if hello["system"] != "GEN" or hello["version"] != "2.11.1":
                         raise ValueError("interactive runtime identity drift")
@@ -1475,17 +1716,25 @@ def run_map3_observation_candidate(
             or tuple(lines[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
         ):
             raise RuntimeError("candidate callback/terminal status did not complete cleanly")
-        if (
-            observed.get("kind") != "bounded-original-observation"
-            or observed["terminal"]["map"] != 19
+        if observed.get("kind") != "bounded-original-observation" or (
+            not continuation and observed["terminal"]["map"] != 19
         ):
-            raise ValueError("candidate terminal output is not the first Map19 observation")
+            raise ValueError("candidate terminal output differs from its selected boundary")
         if (
             not observed["restoration"]["callbacksCleared"]
             or not observed["restoration"]["sessionStateRestored"]
         ):
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
+        if continuation:
+            reason = observed.get("stopReason")
+            diagnostic["stopReason"] = reason
+            if reason == "out-of-scope-before-player-ready":
+                diagnostic["status"] = "OUT-OF-SCOPE-BEFORE-PLAYER-READY"
+            elif reason != "player-ready":
+                diagnostic["status"] = "INCOMPLETE-OBSERVATION"
+            elif observed["terminal"]["map"] != 57:
+                raise ValueError("natural player-ready map mismatch")
     except BaseException as error:
         process = diagnostic["process"]
         diagnostic["failureKind"] = (
@@ -1523,7 +1772,8 @@ def run_map3_observation_candidate(
         if cleanup_errors and "error" not in diagnostic:
             raise RuntimeError("; ".join(cleanup_errors))
     return {
-        "Status": "OBSERVATION-COMPLETE-UNREVIEWED",
+        "Status": diagnostic["status"],
+        "StopReason": diagnostic.get("stopReason"),
         "EmulatorLaunches": int(diagnostic["process"]["started"]),
         "SessionRomDeleted": diagnostic["sessionRomDeleted"],
         "H4": "not established",

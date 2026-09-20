@@ -416,6 +416,14 @@ and ADRs [0014](../decisions/0014-static-first-runtime-evidence-after-map3-battl
 [0015](../decisions/0015-original-reference-replay-and-h4-boundary.md) and
 [0016](../decisions/0016-remake-start-evidence-deferral.md) govern any later admission.
 
+[Issue #483](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/483) subsequently authorizes
+implementation and offline preparation of this selection only. The
+[capability owner](map3-messenger-acceptance.md#natural-battle01-continuation-capability-offline-only)
+records the implementation, direct checks and remaining native Unknowns. Its prepared limits are
+reviewable configuration, **not runtime admission**. Actual controlled starts remain three; no
+natural continuation, first actor/readiness, winning trace or H4 result is supplied by that work.
+The recommendation below continues to own a later runtime decision.
+
 ### Actual start and retained-artifact limit
 
 **Confirmed by bounded read-only inspection:** `local/issue473/prepared-02/runtime/` retains

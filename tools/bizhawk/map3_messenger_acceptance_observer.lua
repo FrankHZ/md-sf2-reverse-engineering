@@ -1,6 +1,7 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
 local candidate = config.candidate and { index = 1, pending = 0, gates = {}, returns = {} } or nil
 local acquisition = candidate and config.candidate.interactive
+local natural = candidate and config.candidate.natural
 assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
@@ -238,6 +239,7 @@ end
 
 local function fail(role, expected_pc, message, restoration, mismatch)
     if pending_failure then return end
+    if natural and not candidate.failureReason then candidate.failureReason = "callback-source-order-readback-failure" end
     pending_failure = { role = role, expectedPc = expected_pc, actualPc = reg("PC") & 0xFFFFFF,
         phase = phase, message = tostring(message), restoration = restoration, mismatch = mismatch }
     if candidate and candidate.record then
@@ -323,6 +325,7 @@ end
 
 local function enforce_route_phase_watchdog()
     if finish_pending or pending_failure then return end
+    if natural and candidate.epoch then return end
     if extension_enabled and extension_progress_frame then
         if frame_count - extension_progress_frame > EXTENSION_PHASE_WATCHDOG_FRAME_LIMIT then
             local entity = config.ram.ENTITY_DATA
@@ -989,12 +992,16 @@ local function add_callback(address, role, handler)
     end
     assert(callbacks[address] == nil, "more than one callback registered at physical PC " .. string.format("%X", address))
     callbacks[address] = { role = role, handlers = { handler }, id = event.on_bus_exec(function()
-        if pending_failure or (acquisition and finish_pending) then return end
+        if pending_failure or (acquisition and finish_pending and not natural) then return end
         if route_started or extension_progress_frame then
             last_callback_role, last_callback_pc = role, address
         end
         callback_active = true
         local ok, message = pcall(function()
+            if natural and finish_pending then
+                candidate.record("after-stop:callback", {role=role, address=address})
+                return
+            end
             for _, dispatch in ipairs(callbacks[address].handlers) do dispatch() end
         end)
         if not ok then fail(role, address, message) end
@@ -2227,17 +2234,27 @@ local function install_candidate()
         if acquisition then
             result.pendingReturns, result.activeConsumers = c.pending, c.consumers
             result.lastConsumerPoll = c.consumerPoll or false
+            if natural then
+                for _, flag in ipairs({88, 89, 451}) do result.flags[tostring(flag)] = flag_is_set(flag) end
+                result.completed = c.completed
+                result.stopReason = c.stopReason or c.failureReason or false
+                result.battle = memory.read_u8(ram.CURRENT_BATTLE, "M68K BUS")
+                result.lastMusicOrControlCommand = c.activeMusic or false
+            end
             result.readiness = "Unknown; use source consumer events, not typewriting/script-return alone"
         end
         return result
     end
     function c.record(kind, facts)
         c.lastCheckpoint = kind
+        if natural and (kind == "operation:entry" or kind:match(":return$")
+            or kind:match("^natural:")) then c.progressFrame = frame_count end
         c.order = c.order + 1
         local file = assert(io.open(config.candidate.checkpointPath, "a"))
         json_write(file, { kind = kind, frame = frame_count, pc = reg("PC") & 0xFFFFFF,
             inputFrame = c.epoch and frame_count - c.epoch or false,
             facts = facts, state = sample(),
+            afterStop = natural and c.stopReason or nil,
             order = acquisition and c.order or nil,
             boundary = acquisition and (callback_active and "callback-time" or "host-loop") or nil,
             emulatorFrame = acquisition and emu.framecount() or nil })
@@ -2266,6 +2283,356 @@ local function install_candidate()
         return { character = character, selector = selector, physical = physical,
             address = address, bytes = read_span(address, ram.ENTITYDEF_SIZE) }
     end
+    if natural then
+        local nf, completed = natural.functions, {}
+        c.completed, c.programs, c.nextWarp = completed, {}, 1
+        local function byte(name) return memory.read_u8(ram[name], "M68K BUS") end
+        local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
+        function c.stop(reason, facts)
+            if c.stopReason then return end
+            c.stopReason = reason
+            c.record("stop:" .. reason, facts or {})
+            c.terminal = sample()
+            c.terminal.accounting = c.accounting()
+            c.terminal.stop = {reason=reason, facts=facts or {}, boundary=callback_active and "callback-time" or "host-loop",
+                pc=reg("PC") & 0xFFFFFF, frame=frame_count, emulatorFrame=emu.framecount(), order=c.order}
+            finish_pending = true
+        end
+        function c.accounting()
+            local allies, joined, active, party, combatants, order, regions = {}, {}, {}, {}, {}, {}, {}
+            for id = 0, ram.COMBATANT_ALLIES_NUMBER - 1 do
+                allies[#allies + 1] = extension_combatant(id)
+                joined[#joined + 1] = flag_is_set(ram.FORCEMEMBER_JOINED_FLAGS_START + id)
+                active[#active + 1] = flag_is_set(ram.FORCEMEMBER_ACTIVE_FLAGS_START + id)
+            end
+            local count = word("BATTLE_PARTY_MEMBERS_NUMBER")
+            assert(count <= ram.COMBATANT_ALLIES_NUMBER, "party count out of bounds")
+            for i = 0, count - 1 do
+                party[#party + 1] = memory.read_u8(ram.BATTLE_PARTY_MEMBERS + i, "M68K BUS")
+            end
+            for _, id in ipairs(party) do combatants[#combatants + 1] = extension_combatant(id) end
+            for id = ram.COMBATANT_ENEMIES_START, ram.COMBATANT_ENEMIES_START + ram.COMBATANT_ENEMIES_NUMBER - 1 do
+                local entry = extension_combatant(id)
+                if entry.x ~= 255 and entry.y ~= 255 then combatants[#combatants + 1] = entry end
+            end
+            for i = 0, natural.turnOrderEntries - 1 do
+                local address = ram.BATTLE_TURN_ORDER + i * 2
+                local actor = memory.read_u8(address, "M68K BUS")
+                if actor == 255 then break end
+                order[#order + 1] = {actor=actor, score=memory.read_u8(address + 1, "M68K BUS")}
+            end
+            for flag = 90, 105 do regions[#regions + 1] = flag_is_set(flag) end
+            return {allies=allies, joined=joined, active=active, party=party, combatants=combatants,
+                gold=memory.read_u32_be(ram.CURRENT_GOLD, "M68K BUS"), turnOrder=order, turnOffset=byte("CURRENT_BATTLE_TURN"),
+                regionFlags=regions, actor=c.firstActor or false, entity135=entity(135),
+                rngBytes=read_span(ram.RANDOM_SEED, 4), rngCopyByte=byte("RANDOM_SEED_COPY"),
+                rawTime=sample().rawTime}
+        end
+        function c.checkpoint(name)
+            completed[name] = true
+            c.record("natural:" .. name, c.accounting())
+        end
+        function c.program_entry(target)
+            if target == nf.cs_52F0C then
+                assert(completed.royal and not flag_is_set(607), "off-route Astral repeat/premature prompt")
+            elseif target == nf.cs_53996 then
+                assert(c.map19Captured and not flag_is_set(605) and not flag_is_set(507), "unexpected royal program caller")
+            elseif target == nf.cs_53EF4 then
+                assert(completed.astral and flag_is_set(608) and not flag_is_set(256), "guard caller flags drift")
+            elseif target == nf.bbcs_01 then
+                assert(completed.admission and not completed.beforeScript, "before program out of order")
+            end
+            c.programs[#c.programs + 1] = {target=target, stack=reg("A7") & 0xFFFFFF}
+        end
+        function c.program_return(target)
+            local program = table.remove(c.programs)
+            assert(program and program.target == target and not program.operation, "program/operation return stack mismatch")
+            if target == nf.cs_53996 then completed.royalScript = true end
+            if target == nf.cs_52F0C then
+                assert(flag_is_set(89) and flag_is_set(608), "off-route Astral decline")
+                completed.astralScript = true
+            end
+            if target == nf.cs_53EF4 then
+                assert(flag_is_set(401) and not flag_is_set(256), "guard script/caller flag order drift")
+                completed.guardScript = true
+            end
+            if target == nf.bbcs_01 then completed.beforeScript = true end
+            if target == nf.ms_Empty and completed.load then completed.startScript = true end
+        end
+        -- A completed dispatcher iteration proves only that operation's blocking work returned.
+        -- Non-waited entity scripts remain live and are not declared complete here.
+        add_callback(nf.loc_47140, "candidate:operation-return", function()
+            if not c.epoch then return end
+            local program = c.programs[#c.programs]
+            assert(program, "script dispatcher without an observed program")
+            if program.operation then
+                if program.awaited then
+                    local target = entity(program.entity)
+                    assert(memory.read_u32_be(target.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTADDR, "M68K BUS") == f.eas_Idle,
+                        "awaited operation returned with a non-idle entity")
+                end
+                c.record("operation:return", {program=program.target, operation=program.operation,
+                    nextCursor=reg("A6") & 0xFFFFFF, entity=program.entity and entity(program.entity) or false})
+                if program.target == nf.cs_52F0C and program.operation.opcode == 0x0C
+                    and memory.read_u16_be(program.operation.pc + 2, "M68K BUS") == 89
+                    and not flag_is_set(89) then
+                    c.stop("selected-prompt-decline", {program=program.target, operation=program.operation})
+                end
+                program.operation, program.entity, program.awaited = nil, nil, nil
+            end
+        end)
+        add_callback(nf.loc_47156, "candidate:operation-entry", function()
+            if not c.epoch then return end
+            local program, cursor = c.programs[#c.programs], reg("A6") & 0xFFFFFF
+            assert(program and not program.operation, "overlapping script operation")
+            local opcode = memory.read_u16_be(cursor, "M68K BUS")
+            if cursor == nf.cs_52F24 then error("off-route Astral repeat") end
+            if cursor == nf.cs_52F40 then assert(flag_is_set(89), "Astral accepted branch without F89") end
+            if opcode == 65535 then return end
+            program.operation = {pc=cursor, opcode=opcode}
+            local facts = {program=program.target, operation=program.operation,
+                operands=read_span(cursor + 2, 8), inputBlocked=true}
+            if opcode == 0x14 or opcode == 0x15 or opcode == 0x16 or opcode == 0x23 then
+                local character = memory.read_u16_be(cursor + 2, "M68K BUS")
+                -- Explicit grouping: both actscript commands encode a byte character.
+                if opcode == 0x14 or opcode == 0x15 or opcode == 0x23 then character = memory.read_u8(cursor + 2, "M68K BUS") end
+                program.entity = character
+                facts.entity = entity(character)
+                facts.awaited = opcode == 0x16 or ((opcode == 0x14 or opcode == 0x15)
+                    and memory.read_u8(cursor + 3, "M68K BUS") ~= 0)
+            end
+            program.awaited = facts.awaited
+            c.record("operation:entry", facts)
+        end)
+        add_callback(nf.GetEntityAddressFromCharacter, "candidate:entity-lookup", function()
+            local program = c.programs[#c.programs]
+            if not c.epoch or not program or not program.entity then return end
+            local character = reg("D0") & 0xFF
+            local expected = entity(character)
+            c.record("entity:lookup-before", expected)
+            returned("entity:lookup", nf.GetEntityAddressFromCharacter, function()
+                local target = reg("A5") & 0xFFFFFF
+                c.record("entity:lookup-return", {character=character, selector=expected.selector,
+                    physical=reg("D0") & 0xFF, target=target,
+                    bytes=read_span(target, ram.ENTITYDEF_SIZE)})
+                assert(target == expected.address, "entity lookup source/readback drift")
+            end)
+        end)
+        add_callback(config.r1.functions.setupResolutionReturnAddress, "candidate:setup-selection", function()
+            if not c.epoch then return end
+            local pointer = reg("A0") & 0xFFFFFF
+            local map = byte("CURRENT_MAP")
+            local expected = natural.setups[tostring(map)]
+            assert(expected and pointer == expected, "unexpected selected map setup")
+            c.record("setup:selected", {map=map, pointer=pointer})
+        end)
+        add_callback(config.r1.functions.initCallAddress, "candidate:init-selection", function()
+            if not c.epoch then return end
+            local target = reg("A0") & 0xFFFFFF
+            c.record("init:selected", {target=target, stack=reg("A7") & 0xFFFFFF})
+            c.initCallbacks = c.initCallbacks or {}
+            if c.initCallbacks[target] then return end
+            c.initCallbacks[target] = true
+            add_callback(target, "candidate:init-entry", function()
+                if not c.epoch or (reg("A0") & 0xFFFFFF) ~= target then return end
+                returned("natural:init", target, function()
+                    if target == nf.ms_map20_InitFunction and completed.royalScript and not completed.royal then
+                        assert(flag_is_set(605), "royal caller returned before F605")
+                        c.checkpoint("royal")
+                    end
+                end)
+            end)
+        end)
+        for _, name in ipairs({"Map19_EntityEvent12", "Map21_EntityEvent0"}) do
+            add_callback(nf[name], "candidate:caller", function()
+                assert(c.epoch and c.map19Captured, "natural caller before Map19")
+                if name == "Map19_EntityEvent12" then
+                    assert(completed.royal and not flag_is_set(607), "off-route Astral caller")
+                else
+                    assert(completed.astral and flag_is_set(608) and not flag_is_set(256), "off-route guard caller")
+                end
+                returned("caller:" .. name, nf[name], function()
+                    if name == "Map19_EntityEvent12" then
+                        assert(completed.astralScript and flag_is_set(607), "Astral caller/flag return mismatch")
+                        c.checkpoint("astral")
+                    else
+                        assert(completed.guardScript and flag_is_set(256), "guard caller/flag return mismatch")
+                        c.checkpoint("guard")
+                    end
+                end)
+            end)
+        end
+        add_callback(nf.loc_4756A, "candidate:zone-target", function()
+            if not c.map19Captured then return end
+            local target = reg("A0") & 0xFFFFFF
+            assert(byte("CURRENT_MAP") == 19 and target == nf.Map19_DefaultZoneEvent,
+                "unexpected continuation zone")
+            c.record("zone:selected-target", {target=target})
+        end)
+        add_callback(nf.entityCallPc, "candidate:entity-target", function()
+            if not c.map19Captured then return end
+            local target = reg("A0") & 0xFFFFFF
+            assert(target == nf.Map19_EntityEvent12 or target == nf.Map21_EntityEvent0,
+                "off-route entity interaction")
+            c.record("entity:caller-selected", {target=target})
+        end)
+        add_callback(nf.CheckBattle, "candidate:battle-check", function()
+            if not c.epoch then return end
+            local incoming = reg("D0") & 0xFF
+            c.record("battle:check", {incomingMap=incoming})
+            if incoming ~= natural.admission.map then return end
+            assert(completed.guard and c.nextWarp > #natural.warps and flag_is_set(401)
+                and not flag_is_set(501), "premature battle admission")
+            returned("battle:check", nf.CheckBattle, function()
+                assert((reg("D7") & 0xFFFF) == natural.admission.battle, "CheckBattle index drift")
+                c.record("battle:check-result", {battleIndex=reg("D7") & 0xFFFF})
+                c.checkpoint("admission")
+            end)
+        end)
+        add_callback(nf.BattleLoop, "candidate:battle-loop", function()
+            assert(completed.admission and not flag_is_set(88) and (reg("D1") & 0xFF) == natural.admission.battle,
+                "premature battle loop")
+            c.record("battle:loop", {d0=reg("D0"), d1=reg("D1"), d2=reg("D2"), d3=reg("D3"), d4=reg("D4"), f88=flag_is_set(88)})
+        end)
+        local chain = {
+            {"ExecuteBeforeBattleCutscene", "admission", "before"},
+            {"LoadBattle", "before", "load"},
+            {"ExecuteBattleStartCutscene", "load", "start"},
+            {"ActivateEnemies", "start", "activate"},
+            {"ExecuteBattleRegionCutscene", "activate", "region"},
+            {"PopulateTargetsListWithSpawningEnemies", "region", "spawn"},
+            {"GenerateBattleTurnOrder", "spawn", "generation"},
+        }
+        for _, row in ipairs(chain) do
+            add_callback(nf[row[1]], "candidate:battle-lifecycle", function()
+                assert(completed[row[2]] and not completed[row[3]], "battle lifecycle order/repetition drift: " .. row[1])
+                if row[3] == "load" then assert(completed.beforeScript, "before program did not return") end
+                if row[3] == "activate" then assert(completed.startScript and flag_is_set(451), "battle-start selection/flag drift") end
+                c.record("battle:" .. row[3] .. ":before", c.accounting())
+                returned("battle:" .. row[3], nf[row[1]], function() c.checkpoint(row[3]) end)
+            end)
+        end
+        add_callback(nf.ExecuteIndividualTurn, "candidate:first-dispatch", function()
+            assert(completed.generation and not c.firstActor, "unexpected individual-turn dispatch")
+            c.firstActor = reg("D0") & 0xFF
+            local actor = extension_combatant(c.firstActor)
+            c.checkpoint("firstDispatch")
+            if c.firstActor >= ram.COMBATANT_ENEMIES_START
+                or (actor.statusEffects & ram.STATUSEFFECT_MUDDLE) ~= 0
+                or (actor.activationBitfield & ram.AIBITFIELD_AI_CONTROLLED) ~= 0
+                or byte("AUTO_BATTLE_TOGGLE") ~= 0 then
+                c.stop("out-of-scope-before-player-ready", {cause="non-player-first-dispatch"})
+            end
+        end)
+        for _, name in ipairs({"StartAiControl", "ExecuteAiControl", "battlesceneScript_ApplyActionEffect"}) do
+            add_callback(nf[name], "candidate:unsupported-action", function()
+                if c.epoch then c.stop("out-of-scope-before-player-ready", {cause=name}) end
+            end)
+        end
+        for _, name in ipairs({"BattleLoop_Victory", "BattleLoop_Defeat"}) do
+            add_callback(nf[name], "candidate:premature-outcome", function()
+                if c.epoch then c.stop("premature-battle-outcome", {cause=name}) end
+            end)
+        end
+        add_callback(nf.ProcessBattleEntityControlPlayerInput, "candidate:player-control", function()
+            assert(c.firstActor and completed.generation, "player control before first dispatch")
+            completed.playerControl = true
+        end)
+        add_callback(nf.playerReadyPc, "candidate:player-ready", function()
+            if c.stopReason then return end
+            local state = sample()
+            local offset = byte("CURRENT_BATTLE_TURN")
+            local actor = memory.read_u8(ram.BATTLE_TURN_ORDER + offset, "M68K BUS")
+            local mapped = memory.read_u8(ram.ENTITY_INDEX_LIST + actor, "M68K BUS")
+            local area = {byte("BATTLE_AREA_X"), byte("BATTLE_AREA_Y"), byte("BATTLE_AREA_WIDTH"), byte("BATTLE_AREA_HEIGHT")}
+            assert(completed.playerControl and completed.beforeScript and completed.startScript and completed.generation
+                and #c.programs == 0 and c.pending == 0, "player-ready lifecycle/consumer mismatch")
+            assert(state.map == natural.admission.map and byte("CURRENT_BATTLE") == natural.admission.battle
+                and flag_is_set(401) and not flag_is_set(501) and flag_is_set(451), "player-ready admission mismatch")
+            for i, value in ipairs(area) do assert(value == natural.admission.area[i], "battle area mismatch") end
+            assert(actor == c.firstActor and actor < ram.COMBATANT_ENEMIES_START
+                and word("MOVING_BATTLE_ENTITY_INDEX") == actor and byte("VIEW_TARGET_ENTITY") == mapped,
+                "player-ready actor/turn/moving/view mismatch")
+            local modal = #c.programs > 0 or c.pending > 0 or state.typewriting ~= 0
+                or state.windowState == 2 or word("DIALOGUE_WINDOW_INDEX") ~= 0
+                or word("PORTRAIT_WINDOW_INDEX") ~= 0
+            assert(not modal and byte("CURRENT_PLAYER_INPUT") == 0 and byte("IS_TARGETING") == 0
+                and word("CURRENT_BATTLEACTION") == 0 and state.mapEventWord == 0
+                and state.typewriting == 0 and state.windowState ~= 2
+                and word("DIALOGUE_WINDOW_INDEX") == 0 and word("PORTRAIT_WINDOW_INDEX") == 0
+                and byte("FADING_SETTING") == 0
+                and word("VIEW_PLANE_A_PIXEL_X") == word("VIEW_PLANE_A_PIXEL_X_DEST")
+                and word("VIEW_PLANE_A_PIXEL_Y") == word("VIEW_PLANE_A_PIXEL_Y_DEST"),
+                "player-ready input/modal/transfer mismatch")
+            c.checkpoint("ready")
+            c.stop("player-ready", {area=area, actor=actor, movingActor=word("MOVING_BATTLE_ENTITY_INDEX"),
+                viewEntity=mapped, cutsceneOrMenuModal=modal, pendingBlockingConsumers=c.pending,
+                boundary="ControlBattleEntity.after-WaitForVInt-before-input-read"})
+        end)
+        add_callback(nf.Trap0_SoundCommand, "candidate:audio-command", function()
+            if not c.epoch then return end
+            local operand = memory.read_u32_be((reg("A7") & 0xFFFFFF) + 2, "M68K BUS") & 0xFFFFFF
+            local command = memory.read_u16_be(operand, "M68K BUS")
+            if command == 65535 then command = reg("D0") & 0xFFFF end
+            local program = c.programs[#c.programs]
+            c.record("audio:request", {command=command, sourcePc=operand - 2,
+                program=program and program.target or false, operation=program and program.operation or false,
+                disabled=byte("SOUND_COMMANDS_DEACTIVATED")})
+        end)
+        for _, site in ipairs(natural.soundDispatch) do
+            add_callback(site.pc, "candidate:audio-dispatch", function()
+                if not c.epoch then return end
+                local command = site.previousMusic and byte("MUSIC_STACK") or (reg("D0") & 0xFF)
+                c.record("audio:consumer-dispatch", {command=command, previous=c.activeMusic or false,
+                    sourcePc=site.pc, boundary="before original Z80 mailbox write"})
+                c.audioPending = {pc=site.pc, stack=reg("A7"), command=command}
+            end)
+            add_callback(site.pc + site.width, "candidate:audio-dispatch-return", function()
+                local pending = c.audioPending
+                if not pending or pending.pc ~= site.pc or pending.stack ~= reg("A7") then return end
+                c.record("audio:mailbox-written", pending)
+                local command = pending.command
+                -- Raw last music/control dispatch; no assertion of audible output or track completion.
+                if command <= 0x40 or command >= 0x80 then c.activeMusic = command end
+                c.audioPending = nil
+            end)
+        end
+        function c.natural_frame()
+            if not c.epoch then return end
+            local state = sample()
+            if c.map19Captured and not completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29 then
+                c.checkpoint("map19Displacement")
+            end
+            if completed.guard and not completed.guardWait and state.map == 21 and state.x == 5 and state.y == 15
+                and (state.facing & ram.DIRECTION_MASK) == ram.DOWN and c.appliedButton == "neutral"
+                and state.mapEventWord == 0 and state.typewriting == 0 and c.pending == 0
+                and state.rawX == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                and state.rawY == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS")
+                and c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
+                and frame_count - c.consumerPoll.frame <= 1 then
+                c.checkpoint("guardWait")
+            end
+            local values = {state.map, state.rawX, state.rawY, state.facing}
+            for _, name in ipairs({"VIEW_PLANE_A_PIXEL_X", "VIEW_PLANE_A_PIXEL_Y", "FADING_POINTER", "FADING_COUNTER"}) do
+                values[#values + 1] = word(name)
+            end
+            -- Only the entity currently bound to a reached operation counts, not idle NPC churn.
+            local program = c.programs[#c.programs]
+            if program and program.entity then
+                local e = entity(program.entity)
+                values[#values + 1] = memory.read_u16_be(e.address + ram.ENTITYDEF_OFFSET_X, "M68K BUS")
+                values[#values + 1] = memory.read_u16_be(e.address + ram.ENTITYDEF_OFFSET_Y, "M68K BUS")
+                values[#values + 1] = memory.read_u32_be(e.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTADDR, "M68K BUS")
+                values[#values + 1] = memory.read_u8(e.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER, "M68K BUS")
+            end
+            local key = table.concat(values, ":")
+            if key ~= c.progressState then c.progressState, c.progressFrame = key, frame_count end
+            if frame_count - (c.progressFrame or c.epoch) >= acquisition.progressFrames and not c.stopReason then
+                c.stop("source-progress-limit")
+            end
+        end
+    end
+
     local function admission()
         local declared, state = config.candidate.admission, sample()
         c.record("r1:first-wait-before-restoration", state)
@@ -2330,6 +2697,7 @@ local function install_candidate()
         assert(not first_mismatch("bootstrap-scratch", config.r1.harness.checkpointAddress, scope.generatedRam), "bootstrap scratch not restored")
         c.epoch, phase = frame_count, "candidate-route"
         c.emulatorEpoch = emu.framecount()
+        if natural then c.checkpoint("r1") end
         c.record("r1:controlled-admission-ended", { patchesRestored = true, scratchRestored = true,
             retained = "NewGame/SaveGame/default Map3 state and inherited live NPC/RNG/raw time",
             inputIdentity = config.candidate.inputIdentity })
@@ -2345,7 +2713,7 @@ local function install_candidate()
             c.r2a, phase = true, "candidate-gate-route"
             c.record("r2a:follower-ready", { endpoint = messenger_result,
                 guard138 = entity(138), guard139 = entity(139), followers = read_span(ram.FOLLOWERS_LIST, 32) })
-        elseif memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19 then
+        elseif memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19 and not c.map19Captured then
             assert(c.gates.commit and c.gates.returned and c.gates.warp and c.gates.initReturned
                 and c.gates.map19ProgramReturned and c.pending == 0, "Map19 wait lacks original gate/warp/init/consumer closure")
             assert(memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS") == 0, "Map19 pending event")
@@ -2359,6 +2727,9 @@ local function install_candidate()
         for _, name in ipairs(config.route.scriptSymbols) do
             if target == config.functions[name] then known = true end
         end
+        if natural then
+            for _, address in ipairs(natural.programs) do if target == address then known = true end end
+        end
         assert(known or target == f.cs_51652 or target == f.cs_53104, "unexpected program beyond bounded route")
         if target == config.functions.cs_5149A then
             assert(c.messengerZone and not flag_is_set(603), "R2 messenger admission missing/already committed")
@@ -2371,7 +2742,9 @@ local function install_candidate()
             assert(c.r2a and c.gates.entry and not flag_is_set(604), "gate program skipped original admission")
             phase = "candidate-gate-program"
         end
+        if natural then c.program_entry(target) end
         returned("script", target, function()
+            if natural then c.program_return(target) end
             if target == f.cs_51652 then c.gates.programReturned = true end
             if target == f.cs_53104 then c.gates.map19ProgramReturned = true end
         end)
@@ -2446,6 +2819,21 @@ local function install_candidate()
         c.record("warp:original-handler", { operands = operands, currentMap = map,
             effectiveDestinationMap = effective, source = { x = x, y = y },
             target = { x = target_x, y = target_y } })
+        if natural and c.gates.warp then
+            local warp = natural.warps[c.nextWarp]
+            assert(c.map19Captured and warp and map == warp.fromMap
+                and target_x == warp.target[1] and target_y == warp.target[2]
+                and x == warp.source[1] and y == warp.source[2]
+                and operands[1] == warp.scrollMode and effective == warp.targetMap
+                and operands[3] == warp.destination.x and operands[4] == warp.destination.y
+                and operands[5] == warp.facing, "unexpected continuation warp")
+            assert(c.completed.map19Displacement, "missing actual Map19 displacement")
+            if c.nextWarp >= 3 then assert(c.completed.astral, "tower warp before Astral acceptance") end
+            if c.nextWarp >= 5 then assert(c.completed.guardWait, "tower exit before selected guard wait") end
+            c.record("natural:warp", {id=warp.id, ordinal=c.nextWarp})
+            c.nextWarp = c.nextWarp + 1
+            return
+        end
         assert(not c.gates.warp, "warp beyond first Map19 admission")
         local function matches(warp)
             return map == warp.fromMap and effective == warp.toMap
@@ -2524,15 +2912,16 @@ local function install_candidate()
     add_callback(config.functions.loc_52E8, "candidate:first-map19-control", function()
         if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
         c.record("input:original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
-        if not c.map19Wait then return end
+        if not c.map19Wait or c.map19Captured then return end
         assert(c.pending == 0 and flag_is_set(604), "first Map19 accepted input with pending consumer")
         assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19
             and memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS") == 0
             and memory.read_u8(ram.CURRENTLY_TYPEWRITING, "M68K BUS") == 0,
             "Map19 input boundary has pending transfer/typewriting")
-        c.terminal = sample()
+        if not natural then c.terminal = sample() end
         c.record("map19:first-original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
-        finish_pending = true
+        if natural then c.map19Captured = true; phase = "candidate-natural-route"; c.checkpoint("map19")
+        else finish_pending = true end
     end)
     add_callback(config.functions.esc02_controlCharacter, "candidate:input-read", function()
         if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
@@ -2558,6 +2947,31 @@ local function install_candidate()
     if acquisition then
         local bridge = assert(loadfile(acquisition.bridgePath))("library")
         local batch, previous_id, batches, connected = nil, 0, 0, false
+        local clock, launch, idle_since
+        if natural then
+            local stopwatch = luanet.import_type("System.Diagnostics.Stopwatch")
+            local utc = luanet.import_type("System.DateTimeOffset")
+            clock = stopwatch.StartNew()
+            launch = tonumber(tostring(utc.UtcNow:ToUnixTimeMilliseconds())) / 1000
+                - assert(tonumber(os.getenv("SF2_BRIDGE_LAUNCH_EPOCH")))
+        end
+        local function elapsed() return launch + tonumber(clock.Elapsed.TotalSeconds) end
+        local function budget()
+            if not natural or c.stopReason then return end
+            local now = elapsed()
+            if now >= acquisition.wallSeconds then c.stop("wall-limit")
+            elseif not c.completed.map19 and now >= acquisition.map19Seconds then c.stop("map19-stage-limit")
+            elseif not c.completed.guard and now >= acquisition.guardSeconds then c.stop("guard-stage-limit")
+            elseif idle_since and now - idle_since >= acquisition.idleSeconds then c.stop("operator-idle-limit") end
+        end
+        local function receive_timeout()
+            local now = elapsed()
+            local remaining = acquisition.wallSeconds - now
+            if not c.completed.map19 then remaining = math.min(remaining, acquisition.map19Seconds - now) end
+            if not c.completed.guard then remaining = math.min(remaining, acquisition.guardSeconds - now) end
+            if idle_since then remaining = math.min(remaining, acquisition.idleSeconds - now + idle_since) end
+            comm.socketServerSetTimeout(math.max(1, math.floor(remaining * 1000)))
+        end
         local function log(value)
             c.order = c.order + 1
             value.order, value.frame = c.order, frame_count
@@ -2573,48 +2987,68 @@ local function install_candidate()
                 state=sample(), paused=client.ispaused(), batches=batches,
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
+        function c.capture_frame() c.frameEnd = snapshot() end
         local function reply(ok, message, terminal)
             local result = {state=c.frameEnd or snapshot(), advanced=batch and batch.applied or 0,
                 terminal=terminal or false, terminalCallback=c.terminal or false,
+                stopReason=natural and (c.stopReason or c.failureReason or false) or nil,
                 stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl"}
             log({kind="result", id=previous_id, ok=ok, result=result, error=message or false})
             bridge.send({id=previous_id, ok=ok, result=result, error=message or false})
         end
         function c.close(ok, message)
             -- Snapshot was captured before restoration; it is never replaced by restored state.
-            bridge.status(ok and "closed" or "failed", message or "first Map19 control")
+            bridge.status(ok and "closed" or "failed", message or c.stopReason or "first Map19 control")
             if connected then reply(ok, message, ok) end
         end
         function c.prepare_frame()
             client.pause()
+            budget()
+            if finish_pending then return end
             if c.epoch then
                 if not connected then
                     c.frameEnd = snapshot()
                     bridge.connect(acquisition.wallSeconds * 1000, c.frameEnd)
                     connected = true
+                    if natural then idle_since = elapsed() end
                 end
                 if batch and batch.applied == batch.requested then
                     reply(true)
                     batch = nil
+                    if natural then idle_since = elapsed() end
                 end
                 while not batch do
-                    local command, id = bridge.receive(previous_id)
+                    budget()
+                    if finish_pending then c.frameEnd = snapshot(); return end
+                    if natural then receive_timeout() end
+                    local received, command, id = pcall(bridge.receive, previous_id)
+                    budget()
+                    if finish_pending then c.frameEnd = snapshot(); return end
+                    if natural and not received then c.failureReason = "transport-disconnect-or-exchange" end
+                    assert(received, "transport-disconnect-or-exchange: " .. tostring(command))
                     previous_id = id
                     log({kind="command", id=id, fields=command})
                     local op = command[2]
+                    if natural then c.failureReason = "malformed-input" end
                     if op == "state" or op == "ping" then
                         assert(#command == 2, "wrong argument count")
+                        c.failureReason = nil
                         c.frameEnd = snapshot()
                         reply(true)
                     elseif op == "abort" then
                         assert(#command == 2, "wrong argument count")
+                        if natural then c.failureReason = "operator-abort" end
                         error("operator aborted interactive acquisition")
                     elseif op == "step" then
                         local count, button = bridge.step_arguments(command)
+                        c.failureReason = nil
+                        if natural and batches >= acquisition.maxBatches then c.stop("batch-limit"); return end
+                        if natural and count > acquisition.totalFrames - frame_count then c.stop("frame-limit"); return end
                         assert(batches < acquisition.maxBatches, "input batch budget exhausted")
                         assert(count <= acquisition.totalFrames - frame_count, "total frame budget exceeded")
                         batches = batches + 1
                         batch = {id=id, requested=count, applied=0, button=button}
+                        idle_since = nil
                     else error("unsupported acquisition command") end
                     emu.yield()
                 end
@@ -2628,6 +3062,7 @@ local function install_candidate()
         end
         function c.after_frame()
             client.pause()
+            if natural then c.natural_frame(); budget() end
             local after = emu.framecount()
             -- A completed-frame entry is emitted only after frameadvance returned.
             log({kind="frame", id=batch and batch.id or 0, button=c.appliedButton,
@@ -2638,6 +3073,7 @@ local function install_candidate()
             c.frameEnd = snapshot()
             bridge.set_button("neutral")
             assert(after == c.beforeFrame + 1, "interactive frame advance drift")
+            if natural and frame_count >= acquisition.totalFrames and not finish_pending then c.stop("frame-limit") end
             assert(frame_count < acquisition.totalFrames or finish_pending,
                 "total frame budget exhausted before terminal")
         end
@@ -2650,6 +3086,9 @@ local function write_observation(restoration)
         json_write(file, { kind = "bounded-original-observation", terminal = assert(candidate.terminal),
             inputIdentity = config.candidate.inputIdentity, restoration = restoration,
             mode = acquisition and "interactive-acquisition" or nil,
+            continuation = natural and natural.selection or nil,
+            stopReason = natural and candidate.stopReason or nil,
+            completedFrame = natural and candidate.frameEnd or nil,
             inputIdentityMeaning = acquisition and "mode declaration; actual inputs in actual-inputs.jsonl" or nil })
         file:write("\n"); file:close()
         return
@@ -2756,8 +3195,10 @@ while true do
         local ok, message = pcall(candidate.prepare_frame)
         if not ok then fail("interactive:command", nil, message) end
         if pending_failure then finish_failure_safely(); return end
-        frame_count = frame_count + 1
+        if finish_pending and natural then candidate.capture_frame() end
+        if not finish_pending then frame_count = frame_count + 1 end
     end
+    if not finish_pending then
     if frame_count > config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget then
         fail((phase == "await-check-sram" or phase == "await-safe-core-snapshot" or phase == "await-checkpoint") and "bootstrap-watchdog" or "case-watchdog", nil, "frame budget exceeded at phase " .. phase)
     end
@@ -2779,4 +3220,5 @@ while true do
         end)
         if not ok then fail("interactive:frame", nil, message) end
     else emu.frameadvance() end
+    end
 end
