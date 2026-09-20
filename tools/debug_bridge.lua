@@ -118,7 +118,7 @@ end
 -- Fixed library entry used by the Map3 observer. No network text is loaded/evaluated.
 if ... == 'library' then
   return {connect=connect, receive=receive, send=send, set_button=set_button,
-    step_arguments=step_arguments, status=status}
+    step_arguments=step_arguments, status=status, core_identity=core_identity}
 end
 
 local function main()

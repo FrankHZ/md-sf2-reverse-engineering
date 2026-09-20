@@ -940,6 +940,139 @@ def _candidate_warps(
 
 
 NATURAL_CONTINUATION = "natural-battle01-player-ready"
+SEGMENT_FILES = (
+    "segment.State",
+    "continuation.json",
+    "checkpoints.jsonl",
+    "actual-inputs.jsonl",
+    "observer.observed.json",
+    "observer.status.txt",
+    "host-status.json",
+    "bridge/receipt.json",
+)
+SEGMENT_IDENTITIES = (
+    "RomSha256",
+    "SourceCommit",
+    "H1ListingSha256",
+    "CastleFixtureSha256",
+    "RetainedFixtures",
+    "ObserverSha256",
+    "RunnerSha256",
+    "ExecutionSources",
+    "ExecutableSha256",
+    "LuaLibrarySha256",
+    "SourceHashes",
+)
+
+
+def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Read one complete private pair; a save API success alone never admits resume."""
+    directory = directory.resolve(strict=True)
+    if not directory.is_relative_to(repo_path("local").resolve()):
+        raise ValueError("segment must belong to this worktree's ignored local directory")
+    runtime = directory / "runtime"
+    pair = load_json(runtime / "segment-pair.json")
+    if pair.get("kind") != "savestate-linked-original-acquisition" or not pair.get("resumable"):
+        raise ValueError("segment is incomplete or not resumable")
+    if set(pair["files"]) != set(SEGMENT_FILES):
+        raise ValueError("segment evidence set mismatch")
+    for name in SEGMENT_FILES:
+        if sha256((runtime / name).read_bytes()).hexdigest().upper() != pair["files"][name]:
+            raise ValueError(f"segment state/evidence identity mismatch: {name}")
+    if sha256((directory / "candidate.json").read_bytes()).hexdigest().upper() != pair["material"]:
+        raise ValueError("segment prepared material identity mismatch")
+    report = load_json(directory / "candidate.json")
+    metadata = load_json(runtime / "continuation.json")
+    ordinal = pair["ordinal"]
+    if (
+        type(ordinal) is not int
+        or not 1 <= ordinal <= 3
+        or metadata["ordinal"] != ordinal
+        or not metadata["resumable"]
+        or report["Segment"]["ordinal"] != ordinal
+        or pair["historicalStarts"] != 3 + ordinal
+        or not 0 < pair["activeSeconds"] < 7200
+        or not 0 < metadata["observer"]["frame"] < 36000
+        or not 0 < metadata["batches"] < 600
+        or metadata["observer"]["phase"] != "candidate-natural-route"
+        or metadata["stateBytes"] != (runtime / "segment.State").stat().st_size
+    ):
+        raise ValueError("segment continuation/accounting mismatch")
+    host = load_json(runtime / "host-status.json")
+    bridge = load_json(runtime / "bridge/receipt.json")
+    if (
+        host["status"] != "SEGMENT-SAVED-UNREVIEWED"
+        or host.get("error")
+        or not host["canonicalRomUnchanged"]
+        or not host["sessionRomDeleted"]
+        or bridge["outcome"] != "completed"
+        or bridge["returncode"] != 0
+        or bridge["forcedTermination"]
+        or bridge["timedOut"]
+        or bridge["historicalStarts"] != pair["historicalStarts"]
+        or bridge["runtimeSettingsSha256"] != pair["runtimeSettingsSha256"]
+    ):
+        raise ValueError("segment process/cleanup did not complete")
+    return pair, metadata
+
+
+def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str, Any]) -> None:
+    """Publish the pair last, after native exit, original identity and cleanup checks."""
+    runtime = directory / "runtime"
+    metadata = load_json(runtime / "continuation.json")
+    prior = report["Segment"]["priorActiveSeconds"]
+    active = prior + diagnostic["bridge"]["elapsedSeconds"]
+    if not metadata["activeSecondsAtSave"] <= active < 7200:
+        raise ValueError("segment cumulative active-time budget mismatch/exhaustion")
+    inputs = [
+        json.loads(line)
+        for line in (runtime / "actual-inputs.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    frames = [row for row in inputs if row["kind"] == "frame"]
+    steps = [row for row in inputs if row["kind"] == "command" and row["fields"][1] == "step"]
+    prior_frame, prior_order = 0, 0
+    if report["Segment"]["parentDirectory"]:
+        parent, previous = _read_segment(Path(report["Segment"]["parentDirectory"]))
+        prior_frame, prior_order = previous["observer"]["frame"], parent["lastOrder"]
+    if (
+        not frames
+        or len(frames) + prior_frame != metadata["observer"]["frame"]
+        or len(steps) + report["Segment"]["priorBatches"] != metadata["batches"]
+        or frames[-1]["afterFrame"] != metadata["original"]["emulatorFrame"]
+        or any(
+            row["frame"] != prior_frame + i or row["afterFrame"] != row["beforeFrame"] + 1
+            for i, row in enumerate(frames, 1)
+        )
+        or any(
+            a["afterFrame"] != b["beforeFrame"] for a, b in zip(frames, frames[1:], strict=False)
+        )
+    ):
+        raise ValueError("segment delivered-frame/batch reconciliation failed")
+    orders = [
+        json.loads(line)["order"]
+        for name in ("checkpoints.jsonl", "actual-inputs.jsonl")
+        for line in (runtime / name).read_text(encoding="utf-8").splitlines()
+    ]
+    if len(orders) != len(set(orders)) or not orders or min(orders) <= prior_order:
+        raise ValueError("segment evidence order is not unique")
+    pair = {
+        "kind": "savestate-linked-original-acquisition",
+        "ordinal": metadata["ordinal"],
+        "resumable": metadata["resumable"],
+        "historicalStarts": diagnostic["bridge"]["historicalStarts"],
+        "activeSeconds": active,
+        "endedAtUnix": diagnostic["bridge"]["endedAtUnix"],
+        "lastOrder": max(orders),
+        "runtimeSettingsSha256": diagnostic["bridge"]["runtimeSettingsSha256"],
+        "material": sha256((directory / "candidate.json").read_bytes()).hexdigest().upper(),
+        "files": {
+            name: sha256((runtime / name).read_bytes()).hexdigest().upper()
+            for name in SEGMENT_FILES
+        },
+    }
+    # Exclusive publication: partial JSON also fails closed, never repaired in place.
+    with (runtime / "segment-pair.json").open("x", encoding="utf-8") as output:
+        output.write(json.dumps(pair, indent=2) + "\n")
 
 
 def _interactive_limits(continuation: str | None) -> dict[str, int]:
@@ -1168,6 +1301,8 @@ def prepare_map3_observation_candidate(
     proposed_timeout_seconds: int,
     interactive: bool = False,
     continuation: str | None = None,
+    segment: int | None = None,
+    resume_directory: Path | None = None,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -1181,6 +1316,24 @@ def prepare_map3_observation_candidate(
     if not output.is_relative_to(local) or output == local or output.exists():
         raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
     limits = _interactive_limits(continuation)
+    parent_pair, parent_metadata = None, None
+    if segment is not None:
+        if (
+            type(segment) is not int
+            or not 1 <= segment <= 4
+            or continuation != NATURAL_CONTINUATION
+            or not interactive
+        ):
+            raise ValueError("segment requires ordinal 1..4 and natural interactive continuation")
+        if (segment == 1) != (resume_directory is None):
+            raise ValueError("only the first segment may start without a complete parent pair")
+        if resume_directory is not None:
+            resume_directory = resume_directory.resolve(strict=True)
+            parent_pair, parent_metadata = _read_segment(resume_directory)
+            if parent_pair["ordinal"] != segment - 1:
+                raise ValueError("segment skips or repeats its parent")
+    elif resume_directory is not None:
+        raise ValueError("resume requires an explicit segment")
     if continuation and not interactive:
         raise ValueError("natural continuation requires explicit interactive acquisition")
     if interactive and (
@@ -1447,6 +1600,12 @@ def prepare_map3_observation_candidate(
         config["cases"][0]["frameBudget"] = (
             limits["totalFrames"] - config["r1"]["harness"]["bootstrapFrameBudget"]
         )
+    if segment is not None:
+        config["candidate"]["segment"] = {
+            "ordinal": segment,
+            "priorActiveSeconds": parent_pair["activeSeconds"] if parent_pair else 0,
+            "priorBatches": parent_metadata["batches"] if parent_metadata else 0,
+        }
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -1510,6 +1669,36 @@ def prepare_map3_observation_candidate(
             Terminal="first natural Battle01 player-ready at 0x22E70",
             RuntimeAuthorization="NONE; independent acceptance and fresh approval required",
         )
+    if segment is not None:
+        if parent_pair:
+            parent_report = load_json(resume_directory / "candidate.json")
+            if any(report[key] != parent_report[key] for key in SEGMENT_IDENTITIES):
+                raise ValueError("segment ROM/source/observer/tool lineage identity drift")
+        report.update(
+            Segment={
+                **config["candidate"]["segment"],
+                "parentDirectory": resume_directory.as_posix() if resume_directory else None,
+                "parentPairSha256": sha256(
+                    (resume_directory / "runtime/segment-pair.json").read_bytes()
+                )
+                .hexdigest()
+                .upper()
+                if resume_directory
+                else None,
+            },
+            HistoricalControlledStarts=parent_pair["historicalStarts"] if parent_pair else 3,
+            FutureControlledOrdinal=3 + segment,
+            MaximumAdditionalStarts=0,
+            PlanningMaximumStarts=4,
+            RuntimeAuthorization="Pending independent implementation/lineage admission: Issue485",
+            Start="native parent savestate; no R1 bootstrap" if parent_pair else report["Start"],
+            Terminal=(
+                "settled Map19 next-tile field control",
+                "returned royal field control",
+                "neutral Map21(5,15)/Down guard wait",
+                "first natural player-ready",
+            )[segment - 1],
+        )
     # All validation precedes materialization; no shared launch helper is invoked.
     output.mkdir()
     (output / "input.json").write_bytes(input_bytes)
@@ -1527,6 +1716,7 @@ def run_map3_observation_candidate(
     *,
     interactive: bool = False,
     continuation: str | None = None,
+    segment: int | None = None,
 ) -> dict[str, Any]:
     """Future admitted execution composition; NOT authorized by preparation.
 
@@ -1607,6 +1797,11 @@ def run_map3_observation_candidate(
     try:
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
+        selection = report.get("Segment")
+        if (selection is None) != (segment is None) or (
+            selection and (type(segment) is not int or selection["ordinal"] != segment)
+        ):
+            raise ValueError("execution segment must explicitly match prepared material")
         expected_limits = _interactive_limits(continuation)
         if report.get("Continuation") != continuation or (continuation and not interactive):
             raise ValueError("execution continuation must explicitly match preparation")
@@ -1632,6 +1827,49 @@ def run_map3_observation_candidate(
         if type(timeout_seconds) is not int or timeout_seconds <= 0:
             raise ValueError("candidate is missing its reviewed positive wall-time limit")
         config = load_json(directory / "config.json")
+        parent_pair = None
+        if selection:
+            if continuation != NATURAL_CONTINUATION or not interactive or not 1 <= segment <= 4:
+                raise ValueError("invalid segmented composition")
+            settings = config["candidate"]["segment"]
+            if settings != {
+                key: selection[key] for key in ("ordinal", "priorActiveSeconds", "priorBatches")
+            }:
+                raise ValueError("segment configuration/accounting drift")
+            settings.update(
+                statePath=(runtime / "segment.State").as_posix(),
+                metadataPath=(runtime / "continuation.json").as_posix(),
+            )
+            if segment > 1:
+                parent = Path(selection["parentDirectory"])
+                parent_pair, metadata = _read_segment(parent)
+                if (
+                    sha256((parent / "runtime/segment-pair.json").read_bytes()).hexdigest().upper()
+                    != selection["parentPairSha256"]
+                    or parent_pair["ordinal"] != segment - 1
+                    or parent_pair["activeSeconds"] != settings["priorActiveSeconds"]
+                    or metadata["batches"] != settings["priorBatches"]
+                    or any(
+                        report[key] != load_json(parent / "candidate.json")[key]
+                        for key in SEGMENT_IDENTITIES
+                    )
+                ):
+                    raise ValueError("parent segment identity/accounting drift")
+                metadata["observer"]["order"] = parent_pair["lastOrder"]
+                settings.update(
+                    resume=metadata, loadPath=(parent / "runtime/segment.State").as_posix()
+                )
+                # One forward lineage. A failed attempt consumes this reservation too.
+                with (parent / "runtime/resumed-by.json").open("x", encoding="utf-8") as claim:
+                    claim.write(
+                        json.dumps({"candidate": directory.as_posix(), "ordinal": segment}) + "\n"
+                    )
+            elif (
+                selection["parentDirectory"] is not None
+                or settings["priorActiveSeconds"]
+                or settings["priorBatches"]
+            ):
+                raise ValueError("initial segment has unexpected parent accounting")
         if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
             raise ValueError("candidate frame table differs from its frozen input")
         config["candidate"]["checkpointPath"] = (runtime / "checkpoints.jsonl").as_posix()
@@ -1670,6 +1908,13 @@ def run_map3_observation_candidate(
                         rom_path=session,
                         wall_seconds=expected_limits["wallSeconds"],
                         acquisition_limits=expected_limits if continuation else None,
+                        prior_active_seconds=selection["priorActiveSeconds"] if selection else 0,
+                        historical_starts=report["HistoricalControlledStarts"]
+                        if selection
+                        else None,
+                        expected_settings=parent_pair["runtimeSettingsSha256"]
+                        if parent_pair
+                        else None,
                     )
                     if hello["system"] != "GEN" or hello["version"] != "2.11.1":
                         raise ValueError("interactive runtime identity drift")
@@ -1678,6 +1923,10 @@ def run_map3_observation_candidate(
                     bridge.interact()
             finally:
                 diagnostic["bridge"] = bridge.receipt
+                if parent_pair and bridge.receipt.get("started"):
+                    diagnostic["offlineGapSeconds"] = (
+                        bridge.receipt["startedAtUnix"] - parent_pair["endedAtUnix"]
+                    )
                 diagnostic["launch"] = bridge.receipt.get("launch")
                 diagnostic["process"].update(
                     started=bridge.receipt["started"],
@@ -1732,6 +1981,8 @@ def run_map3_observation_candidate(
             diagnostic["stopReason"] = reason
             if reason == "out-of-scope-before-player-ready":
                 diagnostic["status"] = "OUT-OF-SCOPE-BEFORE-PLAYER-READY"
+            elif selection and segment < 4 and reason == "segment-saved":
+                diagnostic["status"] = "SEGMENT-SAVED-UNREVIEWED"
             elif reason != "player-ready":
                 diagnostic["status"] = "INCOMPLETE-OBSERVATION"
             elif observed["terminal"]["map"] != 57:
@@ -1772,6 +2023,21 @@ def run_map3_observation_candidate(
         persist()
         if cleanup_errors and "error" not in diagnostic:
             raise RuntimeError("; ".join(cleanup_errors))
+    if segment is not None and diagnostic["status"] in (
+        "SEGMENT-SAVED-UNREVIEWED",
+        "OBSERVATION-COMPLETE-UNREVIEWED",
+    ):
+        try:
+            _seal_segment(directory, report, diagnostic)
+        except BaseException as error:
+            diagnostic.update(
+                status="FAIL",
+                stage="segment-pair-publication",
+                errorType=type(error).__name__,
+                error=str(error),
+            )
+            persist()
+            raise
     return {
         "Status": diagnostic["status"],
         "StopReason": diagnostic.get("stopReason"),

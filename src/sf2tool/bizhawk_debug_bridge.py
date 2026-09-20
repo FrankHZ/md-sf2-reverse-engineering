@@ -75,6 +75,7 @@ def command_text(sequence: int, operation: str, *arguments: str | int) -> str:
         "advance": 1,
         "step": 2,
         "abort": 0,
+        "save": 0,
         "watch": 2,
         "run": 1,
         "clear": 0,
@@ -191,6 +192,9 @@ class DebugBridge:
         rom_path: Path | None = None,
         wall_seconds: int | None = None,
         acquisition_limits: dict[str, int] | None = None,
+        prior_active_seconds: float = 0,
+        historical_starts: int | None = None,
+        expected_settings: str | None = None,
     ) -> dict[str, Any]:
         if self.listener is not None:
             raise RuntimeError("bridge already started")
@@ -208,6 +212,10 @@ class DebugBridge:
             ):
                 raise ValueError("natural acquisition bounds/composition mismatch")
             self.acquisition_limits = dict(acquisition_limits)
+        if not 0 <= prior_active_seconds < (wall_seconds or 1):
+            raise ValueError("cumulative active wall budget exhausted")
+        if prior_active_seconds and not self.acquisition_limits:
+            raise ValueError("continuation accounting requires natural acquisition")
         ceiling = 7200 if self.acquisition_limits else 1800
         if wall_seconds is not None and (
             type(wall_seconds) is not int or not 1 <= wall_seconds <= ceiling
@@ -244,6 +252,10 @@ class DebugBridge:
         launch = materialize_bizhawk_launch(self.output, config=config)
         executable = Path(launch["executable"])
         config_path = Path(launch["config"])
+        settings_identity = hashlib.sha256(config_path.read_bytes()).hexdigest().upper()
+        if expected_settings is not None and settings_identity != expected_settings:
+            raise ValueError("continuation runtime settings identity mismatch")
+        self.receipt["runtimeSettingsSha256"] = settings_identity
         token = secrets.token_hex(16)
         environment = {
             **os.environ,
@@ -271,8 +283,9 @@ class DebugBridge:
             startup.wShowWindow = 7
         started_at = time.monotonic()
         self.started_at = started_at
+        self.receipt["startedAtUnix"] = time.time()
         if self.acquisition_limits:
-            environment["SF2_BRIDGE_LAUNCH_EPOCH"] = str(time.time())
+            environment["SF2_BRIDGE_LAUNCH_EPOCH"] = str(self.receipt["startedAtUnix"])
         self.process = subprocess.Popen(
             [
                 str(executable),
@@ -291,7 +304,7 @@ class DebugBridge:
             startupinfo=startup,
         )
         if wall_seconds is not None:
-            self.deadline = started_at + wall_seconds
+            self.deadline = started_at + wall_seconds - prior_active_seconds
 
             def expire() -> None:
                 self.expired.set()
@@ -304,6 +317,8 @@ class DebugBridge:
             self.watchdog.daemon = True
             self.watchdog.start()
         self.receipt.update(started=True, pid=self.process.pid, port=port, wallSeconds=wall_seconds)
+        if historical_starts is not None:
+            self.receipt["historicalStarts"] = historical_starts + 1
         self._save()
         self.connection, address = self.listener.accept()
         self.receipt["connected"] = True
@@ -393,9 +408,9 @@ class DebugBridge:
                 if (
                     not isinstance(request, list)
                     or not request
-                    or request[0] not in ("state", "ping", "step", "abort")
+                    or request[0] not in ("state", "ping", "step", "abort", "save")
                 ):
-                    raise ValueError("expected state, ping, step or abort JSON array")
+                    raise ValueError("expected state, ping, step, save or abort JSON array")
                 command_text(self.sequence + 1, *request)
                 dispatched = True
                 result = self.command(*request)
@@ -433,6 +448,7 @@ class DebugBridge:
                 self.process.wait(timeout=3)
                 self.receipt["forcedTermination"] = True
             self.receipt.update(returncode=self.process.returncode, processTerminated=True)
+            self.receipt["endedAtUnix"] = time.time()
         if self.log is not None:
             self.log.close()
         if self.watchdog is not None:

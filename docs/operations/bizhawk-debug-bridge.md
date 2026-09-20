@@ -141,6 +141,22 @@ Lua clears all exposed inputs, applies the chosen player-one button and records 
 frame before advancing again. Unsupported/malformed commands fail before input application and
 terminate the acquisition. A callback failure or terminal within a batch skips its remaining frames.
 
+For [Issue #485's explicit segmented selection](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485),
+the same input loop also accepts zero-argument `save` (`["save"]`). Only the Map3 observer's first
+three segment modes implement it; standalone bridge mode and other acquisition modes reject it.
+No arbitrary save/load path or memory command is exposed over TCP. Paths and parent material are
+fixed by offline preparation and the existing runner. The library exports its existing actual-core
+identity reader for checks before native save/load, without adding a general reflection API.
+
+The bridge subtracts previously consumed active-session seconds from the new process deadline and
+binds the initial runtime settings to the completed parent before Popen. Its receipt records actual
+launch/exit timestamps, cumulative historical starts when a native process is created, and elapsed
+time through teardown. The observer carries cumulative frames, batches and source/stage progress;
+the runner reconciles these with completed-frame records and publishes a state/evidence pair only
+after successful cleanup. Resume never causes the bridge to retry a failed process. Native state and
+callback restoration remain **Unknown** until admitted segmented acquisition; offline checks are not
+a native smoke or a new launch allowance. The original five-second standalone experiment is unchanged.
+
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall
 budget; no keepalive or gameplay input is generated while paused. EOF, Ctrl-C or invalid host input

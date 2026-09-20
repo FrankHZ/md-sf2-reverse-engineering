@@ -72,6 +72,34 @@ No extra smoke, automatic retry, replay, fourth start or general future acquisit
 The disabled original replay ordinal 1/2 lineage and its existing restrictions remain separate and
 unchanged. Existing 8D, 7C, 9A/10A and H4 acceptance boundaries remain unchanged.
 
+### Savestate-linked segmented acquisition amendment
+
+For [Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485), the user's
+instruction “用即时存档功能分片采集” authorizes the savestate method and supersedes the earlier
+single-process/no-savestate choice for this new lineage. It does not reopen disabled frozen replay
+or erase its failures. Historical controlled native starts remain **3**, including #475; every
+resumed native process adds one. The first stopping condition is independently reviewable offline
+implementation and prepare-only material in a Draft PR, with **zero new native starts**. Main-gate
+must accept the implementation and admit its concrete lineage before execution; another user
+confirmation solely for using savestates is unnecessary.
+
+The [Map3 owner](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
+defines one forward lineage, at most four normal starts (initial plus three resumes), and no automatic
+retry, smoke, replay or branching attempt. A failure or unsupported first-AI stop ends that attempt
+for review. Native disk states pair with observer continuation and evidence only after successful
+exit/cleanup. Resume requires closed blocking consumers/programs/return stacks, reconstructs observer
+registrations and progress, checks original state before input, and never repeats R1/NewGame or
+injects route/actor/RNG state. Save/load execute outside bus/input callbacks at paused completed frames.
+
+The limits are cumulative: 36000 delivered frames, 600 batches of 1–120 frames, 7200 seconds of active
+native-session time including paused decisions, first Map19 by 2400 active seconds and returned guard
+by 5700. Source-progress 3600 advanced frames survives resume; paused operator idle 120 seconds,
+startup/exchange 60 seconds and teardown 3+3 seconds retain their existing meanings. Offline gaps
+are recorded separately and advance no frames. A saved frame is distinct from the earlier terminal
+callback. This is **savestate-linked segmented original acquisition**, not uninterrupted wall-time
+execution, frozen replay, natural visible New/load, or H4. Native save/load compatibility and complete
+observation continuity remain **Unknown** until admitted native segments and independent acceptance.
+
 ### Use distinct names and evidence owners
 
 The following terms are normative:

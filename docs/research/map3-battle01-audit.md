@@ -578,7 +578,33 @@ it does not justify adding savestate/export or silently continuing into combat n
 
 ### Proposed ceilings and decision sequence
 
-All numbers below are **proposal only**, not a remaining allowance. #475 consumed **1778.575/1800
+The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
+supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
+of that choice. The user has authorized savestate-based segmentation. First deliver offline
+implementation/material in a Draft PR with zero new native starts; main-gate retains independent
+implementation acceptance and concrete lineage admission. The previous proposal and failures below
+are retained as their original scope, not instructions to reject the new method.
+
+The four selected completed-frame ends are settled Map19 `(26,29)` field control; returned royal
+Map20 `(23,39)`/Down control after F605; existing neutral Map21 `(5,15)`/Down guard wait; and the
+completed frame after the first player-ready callback. The first three add zero pending blocking
+consumer/return/program/audio operation, neutral input, settled player/camera, no modal/transfer and
+recent source field-control poll predicates. These are **Inferred** safe resumable points from the
+source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
+reachability/native save/load remains **Unknown**. The final frame is evidence only, not resumable.
+Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
+R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
+
+The planning envelope becomes one lineage of at most four normal starts, no automatic retries or
+branching; actual historical starts remain **3** before it. The 36000 frames/600 batches and 7200
+active-session seconds remain cumulative. First Map19 by 2400 and returned guard by 5700 use cumulative
+active time, so loading cannot renew either stage allowance. The 3600-frame progress clock carries
+forward; offline gaps are separately recorded. Original first-AI/action/decline/failure stopping
+rules remain, with no forced order or intervening combat. Native compatibility belongs to admitted
+segments, not an additional smoke process. Existing #475 raw, #483 preparation and prior failures
+remain preserved; none contains a continuation state to substitute for this lineage's first segment.
+
+All numbers below describe the **earlier proposal**, not a remaining allowance. #475 consumed **1778.575/1800
 seconds for 10329 frames and 200 batches**, including 355 bootstrap frames and 9974 operator frames.
 Only 21.425 seconds of its wall limit remained. Roughly 172 seconds of nominal 60-Hz emulated time
 is not 1778 seconds of emulation work: wall time includes host, native execution, log/transport and

@@ -8,6 +8,9 @@
 
 ## Bounded interactive acquisition
 
+The current new-method boundary is [Issue #485's segmented acquisition](#savestate-linked-segments-issue-485).
+The exhausted #475 allowance and historical restrictions below remain scoped to their original attempts.
+
 Issue [473](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/473) implements an explicit
 interactive acquisition mode for the existing candidate. That implementation slice was **offline
 preparation only, zero emulator launches**. After PR #474 was independently accepted and merged,
@@ -239,8 +242,103 @@ The final Issue/PR handoff identifies the frozen prepared material and actual pu
 restoration under abrupt EOF, natural battle/victory/5B, remaining 8D, 7C audio and H4. The two controlled
 FAILs, accepted bounded #475 observation, old unused candidates and disabled replay's missing receipts,
 timeout and cleanup failure remain intact. No original/native start, smoke/replay/H1/H2/H3 or broad
-suite was run for this capability. Independent capability review and fresh explicit runtime approval
-remain necessary before any fourth controlled start.
+suite was run for this capability. Independent capability review and concrete main-gate lineage
+admission remain necessary before any fourth controlled start. Issue #485 below supplies the user's
+newer savestate-method authorization.
+
+## Savestate-linked segments (Issue #485)
+
+[Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485) and
+[ADR 0015's amendment](../decisions/0015-original-reference-replay-and-h4-boundary.md#savestate-linked-segmented-acquisition-amendment)
+authorize this method. Implementation/preparation is offline only until independent main-gate review
+and concrete lineage admission. No new native start is supplied by preparation. The historical total
+remains **3**. The planning envelope is one forward lineage of at most four starts, without retry,
+smoke, replay, reset or branch. Each actual resumed process increments the historical total.
+
+**Confirmed (offline/source boundary only):** the existing prepare/run APIs accept `segment=1..4`
+with `interactive=True, continuation=NATURAL_CONTINUATION`. Preparation for segments 2–4 also
+requires `resume_directory` naming the completed parent's candidate directory. The runner requires
+the matching explicit segment ordinal. It uses BizHawk 2.11.1 native disk `savestate.save/load`,
+not the old memorysavestate rollback handle. The matching
+[official implementation](https://raw.githubusercontent.com/TASEmulators/BizHawk/2.11.1/src/BizHawk.Client.Common/lua/CommonLibs/SaveStateLuaLibrary.cs)
+rejects input/memory-callback use and may return save success without producing the requested file.
+The observer therefore checks API results and the actual nonempty file outside callbacks. Native
+full CPU/RAM/core serialization is delegated to that API; neither RAM injection nor manually rebuilt
+game state is a resume mechanism.
+
+| Segment end | Required completed-frame predicate and source evidence |
+| --- | --- |
+| 1: settled Map19 next tile | Original gate/F604/warp/init closure and first controller acceptance, then observed `(26,29)` displacement; no continuation warp yet. This goes beyond #475's callback-time movement acceptance. |
+| 2: royal return | Map20 `(23,39)`/Down after `cs_53996` and `ms_map20_InitFunction` return/F605; first natural warp consumed, no Astral caller yet. The static route owner supplies this post-program position. |
+| 3: guard wait | Existing neutral Map21 `(5,15)`/Down checkpoint after guard script/caller returns, F401/F256 and four natural warps; before tower exit. |
+| 4: first player-ready | Existing `0x22E70` callback and stop policy, followed by its completed frame with neutral delivered input. Saved as final evidence only, never resumable; no additional battle frame is requested to make it saveable. |
+
+For the first three, `save` is an explicit zero-argument command after a neutral completed frame.
+It requires zero pending returns, no active blocking consumer, an empty program/operation stack and
+no unfinished audio dispatch; full event word/input/typewriting/modal/fade checks; settled player
+destination and camera; and a field-action poll no older than one completed frame. An unsafe request
+fails and ends the attempt; it never advances an extra frame, repairs state or silently chooses a
+different boundary. Non-waited live NPC scripts remain original native core state, not asserted idle.
+Bootstrap service bytes must have been restored. Saving occurs before cleanup restores the initial
+bootstrap scope (segment 1) or the loaded entry (resumes). The latter is a memorysavestate rollback
+only, with no NewGame or manual RAM/register restoration on resume.
+
+`continuation.json` retains the reached checkpoints, gate/warp progress, R1 observer/emulator epochs,
+shared record order, last consumer poll, raw music-command observation and source-progress frame/key.
+The closed-boundary rule makes dynamic return closures unnecessary; init callbacks are registered
+again when their original selector is reached. The fresh observer restores the facts into its actual
+callback closure tables and retains cumulative frame/batch counts. It loads the native state and
+compares all exposed registers, the complete 68K RAM readback and emulator frame before controller
+input. ROM/tool/helper/source material and initial runtime settings must match the parent; actual
+loaded system/version/core name/type are checked in Lua before load/save. These checks detect a wrong
+pair; matching RAM alone is not a claim of complete observation continuity or native roundtrip success.
+
+The immutable segment output consists of `runtime/segment.State`, `continuation.json`, existing raw
+input/checkpoint/observation/status/host/bridge receipts and a final `segment-pair.json`. The pair is
+published exclusively only after successful native exit, callback cleanup, session-ROM deletion and
+canonical ROM verification. Existing artifact identities bind the state to its exact continuation,
+evidence and prepared material. Delivered-frame/batch/order reconciliation precedes publication.
+Missing, interrupted, mismatched or incomplete pairs cannot resume. Each parent's exclusive
+`resumed-by.json` reservation allows one forward attempt; a failed attempt is retained and cannot be
+retried automatically. No completed state/evidence file is rewritten.
+
+All 36000 delivered frames (including initial bootstrap), 600 batches and 7200 active-session seconds
+are cumulative. Host active time includes startup, paused decisions and teardown; native launch/exit
+timestamps separately record the offline gap. Lua and host subtract previous active time; Map19's
+2400-second and returned-guard's 5700-second limits use that same cumulative clock. Their original
+milestones, rather than the later save request, satisfy those stage deadlines. The 3600-frame source
+progress counter carries across load without renewal. A fresh 120-second paused operator interval
+starts after a verified load, within the remaining active budget. Startup/exchange remains 60 seconds,
+and existing 3+3-second teardown containment remains in place. A budget, identity, save/load, game or
+infrastructure failure stops the lineage for review. First AI/action/decline/premature outcome stops
+retain their previous meanings and produce no resumable pair.
+
+Prepare the first segment after source freeze in a fresh ignored destination:
+
+```python
+report = prepare_map3_observation_candidate(
+    private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
+    output_directory=Path("local/issue485/your-new-preparation"),
+    proposed_timeout_seconds=7200, interactive=True,
+    continuation=NATURAL_CONTINUATION, segment=1,
+)
+```
+
+After admitted native acquisition only, prepare the next ordinal with `resume_directory` pointing to
+that segment's completed candidate directory; there is no existing Map19 savestate in #475 or #483.
+The operator protocol adds `["save"]` for segments 1–3. Segment 4 saves automatically at its existing
+first-ready stop. The runner reports `SEGMENT-SAVED-UNREVIEWED` for the first three; final readiness
+retains `OBSERVATION-COMPLETE-UNREVIEWED`. These are savestate-linked original observations, not
+uninterrupted wall-time execution, frozen replay or H4. A later saved frame never substitutes for a
+callback-time claim.
+
+Verification is direct AST/Ruff/Lua compile, pinned source/H1/ROM binding and bounded offline native-API
+stubs for closed boundaries, continuation, identity/pair failures and cumulative limits. No helper
+tests or normal/full/H1/H2/H3 queue is added or launched. Initial lint and driver-environment failures
+remain under ignored `local/issue485/`; corrected results and frozen material identities belong to
+the Issue/PR handoff. **Unknown:** real native save/load compatibility, complete observer continuity,
+route timing/reach and first actor, abrupt-failure cleanup, downstream victory/5B, remaining 8D/7C/H4.
+Only an admitted segment can supply native roundtrip evidence; there is no extra smoke process.
 
 ## Single admitted interactive acquisition result
 
