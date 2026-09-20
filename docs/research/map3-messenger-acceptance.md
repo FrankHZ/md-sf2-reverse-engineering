@@ -254,11 +254,12 @@ cumulative resource stop ceilings for this work. Continue correction, independen
 actual acquisition until stable. Historical failures and consumption remain evidence; preparation
 does not erase them. Main-gate retains independent review and serialized integration. The current
 acceptance is an early safe native save, load with original-core and observer checks before input,
-then forward movement to a later safe save. Offline checks alone do not establish stability.
+then forward movement to a later safe save. That bounded chain is now
+[Confirmed in native execution](#accepted-early-native-save-and-resume); later route collection continues.
 
 The prepare/run APIs use `interactive=True, continuation=NATURAL_CONTINUATION, segment=1..4`.
 A fresh segment 1 requires explicit reviewed starts, active seconds, delivered frames and advancing
-batches. Current failed-attempt totals are **6 / 2080.6977567999857 / 13561 / 225**. Seconds must be
+batches. Initial failed-attempt totals were **6 / 2080.6977567999857 / 13561 / 225**. Seconds must be
 finite and nonnegative; counts must be nonnegative integers, excluding booleans. Resumes take
 `resume_directory` and inherit accounting from the complete parent plus completed failed child
 attempts. Overrides are rejected. Logical observer/emulator frames and R1 epochs resume from the
@@ -343,14 +344,65 @@ renew idle time. Offline gaps advance no game frames. Ordinary standalone bridge
 Prepare after source freeze in a fresh ignored destination; initial arguments currently include
 `reviewed_prior_starts=6`, `reviewed_prior_active_seconds=2080.6977567999857`,
 `reviewed_prior_delivered_frames=13561`, `reviewed_prior_advancing_batches=225`,
-`proposed_timeout_seconds=7200` (the retained observational configuration value). Native outcomes
+`proposed_timeout_seconds=7200` (the retained observational configuration value). Those initial values
+belong to the completed first segment; continue from the latest Sarah parent and inherit its actual
+totals below. Native outcomes
 remain `SEGMENT-SAVED-UNREVIEWED` or `OBSERVATION-COMPLETE-UNREVIEWED` until independent acceptance.
 
 Direct source/ROM preparation, actual-Lua branch checks and host/pair checks cover this implementation.
-No helper tests or unrelated long runtime queue is added. **Unknown:** native early save/load and
-complete observer continuity until actual acceptance; Map19/later readiness under this predicate,
+No helper tests or unrelated long runtime queue is added. **Confirmed:** the bounded early native
+save/load/Sarah forward-save chain below. **Unknown:** resumed messenger reach and Map19/later readiness under this predicate,
 route timing/first actor, abrupt-failure graceful cleanup, downstream victory/5B and remaining 8D/7C/H4.
 These are savestate-linked original observations, not uninterrupted wall-time execution, replay or H4.
+
+### Accepted early native save and resume
+
+**Confirmed:** [independent main-gate acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752645799)
+validated an actual house save → native load before input → Sarah forward save on accepted
+`22728bbf563b2b251cf870073675b5a33bb504e0`, tree `a34247fde3a61871efd30f3efc950d18c6b281a9`
+([PR #489](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/489)). The ROM/source baseline above,
+BizHawk 2.11.1 Genplus-gx, runner `10D6483121BABEE8D4460722504D10A1FB17BEF077B8468196E5C04945C84C67`
+and observer `AF154C1C272FD8418A2996099B7B8A4616D1AB30FEF73ABE49DC722DFDB01090` were unchanged across both processes.
+
+| Native segment | Closed checkpoint | Actual result |
+| --- | --- | --- |
+| `prepared-09`, historical start 7 / PID 1624 | House `(4,4)`, F601, rank 1, observer/emulator 1030 | 1030 frames including initial bootstrap; 11 advancing batches; 140.23876470001414 seconds; native save and complete pair. |
+| `prepared-10`, historical start 8 / PID 15492 | Sarah `(42,9)`/Up, F601/F256, rank 2, observer/emulator 2080 | Loaded parent at 1030 before input, then 1050 new frames and 26 advancing batches; 199.03445660002762 seconds; later native save and complete pair. |
+
+Both exited 0 without timeout/forced termination; callback removal, original-state restoration,
+session deletion and canonical identity passed. The child restores the loaded-entry core snapshot;
+individual bootstrap restoration booleans are inapplicable on this resume. The live Sarah entity C
+passed waypoint/facing/target/field readiness, followed by active text-consumer acknowledgements.
+
+The child's first event is `segment:loaded-before-input`, frame 1030/order 2333, after full exposed
+register, complete 68K RAM and emulator-frame equality checks. It inherits R1 epoch 355 without
+repeating bootstrap. Parent/child records have contiguous unique orders 1–2332 / 2333–4812 and
+logical frames 1–1030 / 1031–2080. The parent claim, material/runtime-setting identities and strictly
+forward checkpoint match; save readiness was inspected before each save, not after terminal cleanup.
+
+Parent pair/state SHA-256:
+`5BBB918BA76B45C2D3F1327BE156DA9B8D55D5E7ABCE1F4D2FC1AAC4086B12CF` /
+`B7009BEEF34006ACCF5B54EB91C1E8AF39BC7D2538FE91B0632CF95CD6E2E2BD`.
+Latest Sarah pair/state SHA-256:
+`5B41893058ABAFDE38F54070F2EFD751FF33B105A0E258DA2CEA6E13F526A03D` /
+`AC52CD193B71DAA6578BE44B3DA13418EFEC67A297F2B70BA5118ABBA724BFE7`.
+
+Reproduce validation without a native rerun by loading private-input configuration and using the
+tracked `_read_segment(Path(...).resolve())` for each retained candidate directory. Reconcile their
+bound completed-frame and shared-order logs as above, compare the child's declared parent pair,
+and inspect its load-before-input event and pre-save bridge snapshot. The original acquisition used
+`prepare_map3_observation_candidate` / `run_map3_observation_candidate` with the natural interactive
+selection, ordinal 1 for both and `resume_directory` naming the house parent for the child. Actual
+controller commands are retained in the bound input receipts; this is not a reusable frozen replay.
+The [execution handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752640589)
+locates the private receipts and direct reconciliation command; no state or game-content artifact is public.
+
+Current cumulative accounting is **8 actual starts / 2419.9709781000274 charged seconds /
+15641 resource frames / 262 advancing batches**, including all earlier failures. The successful chain
+has 2080 logical frames. Continue from the latest Sarah parent; the house parent already has a
+successful child. **Unknown:** later messenger callback continuity, native FieldMenu cancellation,
+Map19/later save boundaries, Battle01 readiness/completion and H4. This accepted basic mechanism does
+not close Issue #485's remaining natural route or epic #437.
 
 ### Segment 1 wrong-facing failure
 

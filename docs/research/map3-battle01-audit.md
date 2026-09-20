@@ -586,7 +586,11 @@ FieldMenu cancel recovery, and requires actual save → verified load → forwar
 Completed failed children may retry from the last compatible complete parent with unique retained
 attempts; successful children become the next parent. Historical costs are never refunded.
 Single-step/exchange/disconnection and identity/core/I/O containment remain; offline implementation
-does not close native continuity or any later Battle01/H4 acceptance boundary.
+does not close native continuity or any later Battle01/H4 acceptance boundary. Subsequently the
+[actual house → native load → Sarah forward-save chain](map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
+was independently accepted as **Confirmed**: native core/observer continuity before input, inherited
+epochs, 1050 forward child frames and a later closed checkpoint. The latest complete Sarah parent is
+the continuation point. Later messenger/Map19/Battle01 and H4 remain **Unknown**, with all failed costs retained.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
