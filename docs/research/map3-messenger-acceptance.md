@@ -352,7 +352,7 @@ remain `SEGMENT-SAVED-UNREVIEWED` or `OBSERVATION-COMPLETE-UNREVIEWED` until ind
 Direct source/ROM preparation, actual-Lua branch checks and host/pair checks cover this implementation.
 No helper tests or unrelated long runtime queue is added. **Confirmed:** the bounded early native
 save/load chain through the resumed messenger and Map19 checkpoints below. **Unknown:** native
-FieldMenu cancellation, later royal/guard/Battle01 readiness, route timing/first actor, downstream
+FieldMenu cancellation, corrected-observer Battle01 readiness, route timing/first actor, downstream
 victory/5B and remaining 8D/7C/H4. The retained idle failure proves only its named graceful cleanup.
 These are savestate-linked original observations, not uninterrupted wall-time execution, replay or H4.
 
@@ -458,11 +458,83 @@ Use the same `_read_segment` validation and bound-receipt reconciliation describ
 11, 13 and 14. For failed 12 inspect completed host/bridge/input/checkpoint receipts; `_resume_accounting`
 on absolute parent 11 reconciled its failure before retry preparation. Each successful child used natural
 interactive ordinal 1 and its immediately preceding complete parent. No private artifacts are public.
-Current cumulative accounting is **12 actual starts / 3424.7338451000396 charged seconds / 24520 resource
-frames / 411 advancing batches**; the successful branch has 10030 logical frames. Continue from complete
-Map19 parent 14 with ordinal 2; successful parents cannot be reused. **Unknown:** royal/guard native
-save/resume, Battle01 first-player readiness/completion, native menu cancellation and H4. Issue #485's
-remaining natural route and epic #437 remain open.
+At Map19, cumulative accounting was **12 actual starts / 3424.7338451000396 charged seconds / 24520
+resource frames / 411 advancing batches**, with 10030 logical frames on the successful branch. The
+royal/guard continuation and final-segment failure below supersede this continuation point.
+
+### Royal and guard saves; BattleLoop return-stack failure
+
+**Confirmed:** independent reviews accepted the [royal segment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752906075)
+and [guard segment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752930085)
+on the unchanged PR #489 execution sources. The subsequent source correction makes these historical
+pairs incompatible with the corrected observer; they remain preserved evidence.
+
+| Candidate / actual start | Native load and saved boundary | New charged consumption / record orders |
+| --- | --- | --- |
+| `prepared-15` / 13, PID 40052, ordinal 2 | Load Map19 parent 14 at 10030 → rank 6 Map20 `(23,39)`/Down at 14970, F605 | 4940 frames / 79 batches / 445.02149070001906 seconds; orders 23676–35469. |
+| `prepared-16` / 14, PID 23532, ordinal 3 | Load royal parent 15 at 14970 → rank 7 Map21 `(5,15)`/Down at 17004, F401/F256/F607/F608 | 2034 frames / 47 batches / 213.08364640001673 seconds; orders 35470–40531. |
+
+The royal original init return is observed at frame 14853; the completed snapshot at 14912 has F605
+and closed consumers at `(23,39)` but faces Left, so save readiness correctly remains false. Ordinary
+Down/Up/neutral movement subsequently establishes the declared Down-facing checkpoint at 14970.
+The guard caller is closed in snapshot 16943 at `(4,16)`/Down; ordinary Right/Up/Down/neutral movement
+then reaches `(5,15)`/Down at 17004. Neither original return is the later save. Both processes exit 0
+without timeout/forced kill; pair/source/core identity, loaded-entry restoration, callback removal,
+canonical input and session-ROM cleanup pass. No repeated bootstrap or FieldMenu occurs. The reviewer
+initially confused royal Down value 3 with Up value 1; its failed checker is retained and corrected
+against actual state/input without a native rerun.
+
+Pair / state SHA-256:
+
+- Royal: `5895CA0C4CE0520252E7C3A2B58AC42816AB079551D9BD3D1506A2629E7BD256` /
+  `1C14E95F23FC9ED405763EC493CBCE928960F5F8CF586B63BEEF37752879E382`.
+- Guard: `D0F362C791136D8ECDDAFB1639DBC10C3A5FA38EB8E8A96D7D7E629D6A68C6B3` /
+  `26205BCD2E6956CF2FF05498546A8A560F9CF41C47835C92469BA48C8E198344`.
+
+**Confirmed (failed observation):** `prepared-17`, ordinal 4 / actual start 15 / PID 38404, loads guard
+parent 16 before input at 17004 and reaches the Map40 wildcard warp at 17653. Its incoming/effective
+destination is Map57 while raw `CURRENT_MAP` is still Map40; the convenience snapshot map field must
+not conflate these. `CheckBattle` at `0x799C` records stack `0xFFFFFC`, return PC `0x75D0`, then
+`BattleLoop` at `0x23A84` fails with `premature battle loop`: one `battle:check` return remains pending
+and no admitted checkpoint exists. Failure checkpoint is order 42061; the full receipt ends at 42063.
+The last 48-frame Up request delivers only 37 frames; remaining queued input is not delivered. New
+consumption is 649 frames / 18 batches / 60.111493600008544 seconds. Exit 1 has no timeout/forced kill;
+completed failure receipts retain loaded-entry restoration, cleared callbacks, removed partial
+observation, session deletion, canonical identity and unchanged parent 16. No final pair is published.
+
+**Confirmed (source and direct Lua):** pinned `code/common/maps/getbattle.asm` ends `CheckBattle`
+with balanced `movem` and `rts`; `code/gameflow/mainloop.asm` calls it, tests D7 at `0x75D0`, moves D7
+to D1 and calls `BattleLoop`. This is an ordinary return, not a tail transfer. The existing observer
+`returned()` helper masks actual A7 to 24 bits but formerly compared it with unmasked `stack + 4`.
+For stack `0xFFFFFC`, expected `0x1000000` cannot equal masked live value 0. The one-line correction
+applies `0xFFFFFF` to the expected address too, retaining return-PC, stack, single-use closure and
+pending-consumer checks. It changes no original state.
+
+Direct execution of the extracted actual Lua helper and battle-admission callbacks reproduces the
+same failure before correction; ordinary return and missing-admission rejection controls pass.
+After correction all six cases pass: wrapped CheckBattle, bus-zero return, ordinary return,
+wrong-stack exclusion, nested same-return-PC ordering/single-use and absent-admission rejection.
+The existing 17 actual-Lua stabilization checks also pass. Reproduce with the actual helper/callback
+bodies, recorded stack/PC, D7=1 and both full `0x1000000` and masked-zero returned A7. The retained
+`check-return-stack.py return-stack-before before` result is a historical execution of the observer
+from accepted `06b9dad9f0cfa94866efb1b555d731b14704fe29`, before the edit. The driver reads the current
+observer; its `before` argument does not select an old version. On corrected HEAD, run
+`uv run python -X utf8 local/issue485/check-return-stack.py <fresh-ignored-output-name> after`.
+To reproduce the old failure, extract the named old observer with `git show` into ignored scratch
+and point an isolated diagnostic driver at it; never overwrite the frozen current execution source.
+The retained `stabilization-lua-checks.py return-stack-regression` execution checks the existing cases.
+Load current
+private-input configuration to select pinned Lua. No tracked helper tests are added.
+**Inferred:** the asymmetric mask caused the native missed return. **Unknown:** corrected native
+battle admission, lifecycle and first player-ready; direct Lua is not native acceptance.
+
+Current accounting is **15 actual starts / 4142.950475800084 charged seconds / 32143 resource frames /
+555 advancing batches**, including all failures. Observer SHA changes invalidate the old parents under
+mandatory identity checks. After independent source acceptance, create a fresh compatible chain with
+those totals as reviewed prior consumption. Preserve old pairs and failure receipts; do not rewrite
+or waive their identities, or treat the old controller log as an assumed-ready replay. Live readiness
+still governs each interaction. First player-ready and its evidence-only, nonresumable final frame
+remain **Unknown**, as do Battle01 actions/victory/5B, native menu cancellation and H4. #485/#437 stay open.
 
 ### Segment 1 wrong-facing failure
 

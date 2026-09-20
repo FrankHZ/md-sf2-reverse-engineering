@@ -157,14 +157,18 @@ complete native continuity. The [actual house save → native load → Sarah sav
 is now **Confirmed**, including input-before-load exclusion, inherited epochs, forward checkpoint,
 process exit and cleanup. The [forward chain](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 now reaches independently accepted messenger closure and native Map19 save. Later
-royal/guard/Battle01 boundaries and native menu recovery remain **Unknown**.
+[royal/guard saves and loads](../research/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
+are independently accepted; final Battle01 readiness and native menu recovery remain **Unknown**.
+A missed CheckBattle return exposed asymmetric 24-bit stack masking in the composed observer. Its
+expected return stack now uses the same mask as actual A7. This does not change the shared bridge or
+waive parent identities: the corrected observer requires a fresh compatible chain.
 The original standalone five-second idle experiment and its wall limit remain unchanged.
 
 Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
 owner. Their costs are inherited, not reset; the completed initial segment started with totals 6 / active seconds
-2080.6977567999857 / delivered frames 13561 / advancing batches 225. The latest complete Map19 parent
-now carries starts 12 / seconds 3424.7338451000396 / frames 24520 / batches 411, including the completed
-operator-context idle failure and its independently reconciled cleanup. Full receipts remain local; use
+2080.6977567999857 / delivered frames 13561 / advancing batches 225. Totals after the retained final-segment
+callback failure are starts 15 / seconds 4142.950475800084 / frames 32143 / batches 555, including that
+failure and the operator-context idle failure with reconciled cleanup. Full receipts remain local; use
 compact control readbacks and a supported safe save before context recovery, without artificial input
 to renew the idle deadline. The clock still uses explicit
 System assembly loading and Stopwatch. Cumulative time/stage/frame/batch/progress thresholds are now
