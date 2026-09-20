@@ -23,7 +23,7 @@ from sf2tool.h3.bizhawk import (
     validate_lua_syntax,
     verify_runtime_contract,
 )
-from sf2tool.h3.bootstrap import BOOTSTRAP_LIBRARY
+from sf2tool.h3.bootstrap import BOOTSTRAP_LIBRARY, runtime_bootstrap
 from sf2tool.h3.observer_status import (
     SUCCESS_STATUS_TAIL,
     assert_observer_status,
@@ -806,7 +806,7 @@ def verify_map3_messenger_acceptance(
     }
 
 
-def _candidate_execution_sources() -> dict[str, str]:
+def _candidate_execution_sources(interactive: bool = False) -> dict[str, str]:
     """Bind the executed launch/bootstrap helpers, beyond the observer/runner."""
     return {
         name: sha256(repo_path(name).read_bytes()).hexdigest().upper()
@@ -815,6 +815,15 @@ def _candidate_execution_sources() -> dict[str, str]:
             "src/sf2tool/h3/bootstrap.py",
             "src/sf2tool/toolchain.py",
             BOOTSTRAP_LIBRARY.relative_to(repo_path(".")).as_posix(),
+        )
+        + (
+            (
+                "src/sf2tool/bizhawk_debug_bridge.py",
+                "tools/debug_bridge.lua",
+                "tools/bizhawk/json.lua",
+            )
+            if interactive
+            else ()
         )
     }
 
@@ -934,9 +943,10 @@ def prepare_map3_observation_candidate(
     rom_path: Path,
     upstream_path: Path,
     *,
-    input_path: Path,
+    input_path: Path | None = None,
     output_directory: Path,
     proposed_timeout_seconds: int,
+    interactive: bool = False,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -949,23 +959,40 @@ def prepare_map3_observation_candidate(
     local = repo_path("local").resolve()
     if not output.is_relative_to(local) or output == local or output.exists():
         raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
-    if not input_path.is_file():
+    if interactive and (input_path is not None or proposed_timeout_seconds != 1800):
+        raise ValueError(
+            "interactive preparation requires no frozen input and exactly 1800 seconds"
+        )
+    if not interactive and (input_path is None or not input_path.is_file()):
         raise FileNotFoundError(
             "candidate unavailable: explicit non-adaptive input table is missing"
         )
-    input_bytes = input_path.read_bytes()
+    input_bytes = (
+        (
+            json.dumps(
+                {
+                    "clock": "first-r1-wait-next-frame",
+                    "provenance": "interactive-acquisition",
+                    "frames": [],
+                },
+                indent=2,
+            )
+            + "\n"
+        ).encode()
+        if interactive
+        else input_path.read_bytes()
+    )
     trace = json.loads(input_bytes)
     if not isinstance(trace, dict) or set(trace) != {"clock", "provenance", "frames"}:
         raise ValueError("candidate input requires only clock, provenance and frames")
-    if (
-        trace["clock"] != "first-r1-wait-next-frame"
-        or trace["provenance"] != "diagnostic-parameters"
+    if trace["clock"] != "first-r1-wait-next-frame" or trace["provenance"] != (
+        "interactive-acquisition" if interactive else "diagnostic-parameters"
     ):
         raise ValueError("candidate input clock/provenance is not the declared controlled start")
     frames = trace["frames"]
     if (
         not isinstance(frames, list)
-        or not 1 <= len(frames) <= 36000
+        or not (len(frames) == 0 if interactive else 1 <= len(frames) <= 36000)
         or any(
             type(button) is not str
             or button not in {"", "Up", "Down", "Left", "Right", "A", "B", "C"}
@@ -1005,6 +1032,9 @@ def prepare_map3_observation_candidate(
             "code/common/scripting/text/textfunctions_1.asm",
         )
     }
+    if interactive:
+        name = "code/common/menus/yesnoprompt.asm"
+        sources[name] = (disasm / name).read_text(encoding="utf-8")
     for name, source in sources.items():
         pinned = subprocess.run(
             ["git", "-C", str(upstream_path), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{name}"],
@@ -1086,6 +1116,8 @@ def prepare_map3_observation_candidate(
         "FieldMenu",
         "loc_2593C",
     )
+    if interactive:
+        symbols += ("loc_6472", "loc_1530C", "loc_15314")
     missing = sorted(set(symbols) - set(addresses))
     if missing:
         raise ValueError(f"candidate unavailable: H1 symbols missing: {missing}")
@@ -1173,6 +1205,19 @@ def prepare_map3_observation_candidate(
         "northWarp": castle_segments[3],
         "gatePoint": castle_segments[1]["point"],
     }
+    if interactive:
+        from sf2tool.bizhawk_debug_bridge import SCRIPT
+
+        validate_lua_syntax(SCRIPT, executable)
+        config["candidate"]["interactive"] = {
+            "wallSeconds": 1800,
+            "totalFrames": 28634,
+            "maxBatches": 2048,
+            "maxBatchFrames": 120,
+            "bridgePath": SCRIPT.as_posix(),
+            "inputLogPath": (output / "actual-inputs.jsonl").as_posix(),
+        }
+        config["cases"][0]["frameBudget"] = 28634 - config["r1"]["harness"]["bootstrapFrameBudget"]
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -1190,7 +1235,7 @@ def prepare_map3_observation_candidate(
         },
         "ObserverSha256": sha256(OBSERVER.read_bytes()).hexdigest().upper(),
         "RunnerSha256": sha256(Path(__file__).read_bytes()).hexdigest().upper(),
-        "ExecutionSources": _candidate_execution_sources(),
+        "ExecutionSources": _candidate_execution_sources(interactive),
         "ExecutableSha256": executable_hash,
         "LuaLibrarySha256": sha256((executable.parent / "dll/lua54.dll").read_bytes())
         .hexdigest()
@@ -1215,6 +1260,16 @@ def prepare_map3_observation_candidate(
             "runtime callback/cleanup compatibility",
         ],
     }
+    if interactive:
+        report.update(
+            Mode="interactive-acquisition",
+            HistoricalControlledStarts=2,
+            FutureControlledOrdinal=3,
+            MaximumAdditionalStarts=1,
+            InputIdentityMeaning="mode declaration; actual input not yet acquired",
+            InputBatchesLimit=2048,
+            InputBatchFramesLimit=120,
+        )
     # All validation precedes materialization; no shared launch helper is invoked.
     output.mkdir()
     (output / "input.json").write_bytes(input_bytes)
@@ -1226,7 +1281,12 @@ def prepare_map3_observation_candidate(
     return report
 
 
-def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) -> dict[str, Any]:
+def run_map3_observation_candidate(
+    rom_path: Path,
+    candidate_directory: Path,
+    *,
+    interactive: bool = False,
+) -> dict[str, Any]:
     """Future admitted execution composition; NOT authorized by preparation.
 
     There is deliberately no CLI wiring or call from prepare/preflight. Independent
@@ -1306,7 +1366,9 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
     try:
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
-        if _candidate_execution_sources() != report["ExecutionSources"]:
+        if (report.get("Mode") == "interactive-acquisition") != interactive:
+            raise ValueError("execution mode must explicitly match reviewed preparation")
+        if _candidate_execution_sources(interactive) != report["ExecutionSources"]:
             raise ValueError("frozen candidate execution helper/bootstrap identity drift")
         _, executable = bizhawk_contract()
         for path, field in (
@@ -1329,22 +1391,80 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
         if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
             raise ValueError("candidate frame table differs from its frozen input")
         config["candidate"]["checkpointPath"] = (runtime / "checkpoints.jsonl").as_posix()
+        if interactive:
+            limits = config["candidate"]["interactive"]
+            if (
+                timeout_seconds != 1800
+                or limits["wallSeconds"] != 1800
+                or limits["totalFrames"] != 28634
+                or limits["maxBatches"] != 2048
+                or limits["maxBatchFrames"] != 120
+                or config["candidate"]["frames"]
+            ):
+                raise ValueError("interactive bounds or empty input declaration drift")
+            limits["inputLogPath"] = (runtime / "actual-inputs.jsonl").as_posix()
+            diagnostic["artifacts"]["actualInputs"] = "actual-inputs.jsonl"
         diagnostic["stage"] = "session-copy"
         persist()
         shutil.copy2(rom_path, session)
         diagnostic["stage"] = "observer-preparation"
         persist()
-        observed = run_observer(
-            rom_path=session,
-            observer_path=OBSERVER,
-            config=config,
-            output_name=(runtime / "observer").as_posix(),
-            timeout_seconds=timeout_seconds,
-            on_launch=prepared,
-            on_started=started,
-            on_timeout=timed_out,
-            on_result=completed,
-        )
+        if interactive:
+            from sf2tool.bizhawk_debug_bridge import DebugBridge
+
+            config.update(
+                bootstrap=runtime_bootstrap(OBSERVER),
+                bootstrapLibraryPath=BOOTSTRAP_LIBRARY.as_posix(),
+                outputPath=(runtime / "observer.observed.json").as_posix(),
+                statusPath=(runtime / "observer.status.txt").as_posix(),
+            )
+            config_path = runtime / "observer.config.lua"
+            config_path.write_text("return " + _lua_literal(config) + "\n", encoding="utf-8")
+            bridge = DebugBridge(runtime / "bridge", timeout=60)
+            try:
+                with bridge:
+                    hello = bridge.start(
+                        observer=OBSERVER,
+                        observer_config=config_path,
+                        rom_path=session,
+                        wall_seconds=1800,
+                    )
+                    if hello["system"] != "GEN" or hello["version"] != "2.11.1":
+                        raise ValueError("interactive runtime identity drift")
+                    started(bridge.process.pid)
+                    print(json.dumps(hello["state"]), flush=True)
+                    bridge.interact()
+            finally:
+                diagnostic["bridge"] = bridge.receipt
+                diagnostic["launch"] = bridge.receipt.get("launch")
+                diagnostic["process"].update(
+                    started=bridge.receipt["started"],
+                    pid=bridge.receipt.get("pid"),
+                    returncode=bridge.receipt.get("returncode"),
+                    timed_out=bridge.receipt.get("timedOut"),
+                    process_terminated=bridge.receipt.get("processTerminated"),
+                    forcedTermination=bridge.receipt.get("forcedTermination"),
+                )
+                persist()
+            if (
+                bridge.receipt["outcome"] != "completed"
+                or bridge.receipt.get("forcedTermination")
+                or (bridge.receipt.get("luaStatus") or {}).get("state") != "closed"
+            ):
+                raise RuntimeError("interactive process/transport cleanup failed")
+            observed = load_json(runtime / "observer.observed.json")
+        else:
+            observed = run_observer(
+                rom_path=session,
+                observer_path=OBSERVER,
+                config=config,
+                output_name=(runtime / "observer").as_posix(),
+                timeout_seconds=timeout_seconds,
+                on_launch=prepared,
+                on_started=started,
+                on_timeout=timed_out,
+                on_result=completed,
+            )
         diagnostic["stage"] = "status-and-terminal"
         # The candidate has private phase/role diagnostics, not the legacy
         # fixture's closed failure enum. Reuse the shared terminal protocol.
@@ -1366,7 +1486,7 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
         ):
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
-    except Exception as error:
+    except BaseException as error:
         process = diagnostic["process"]
         diagnostic["failureKind"] = (
             "timeout"

@@ -6,6 +6,133 @@
 - ROM: USA retail SHA-256 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
 - Source baseline: ShiningForceCentral/SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6
 
+## Bounded interactive acquisition
+
+Issue [473](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/473) implements an explicit
+interactive acquisition mode for the existing candidate. Its scope is **offline preparation only,
+zero emulator launches**. [ADR 0015](../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
+separates this operation from frozen replay and remake H4. The
+[bridge protocol](../operations/bizhawk-debug-bridge.md#map3-interactive-composition-offline-only)
+owns communication, serial requests and the single process. This observer retains source-bound R1
+admission, checkpoints, typed failures and final restoration. No new CLI, debugger service, fixture,
+schema, planner, route policy or verification-helper test is introduced.
+
+**Confirmed (source/implementation boundary):** preparation checks the pinned SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, H1 listing/ROM callback bytes, retained R1/R2/RA
+contracts and installed tool identities. The explicit mode uses an empty input declaration; it does
+not load, convert or execute #471's frozen house-neutral input. The old default API retains its
+frozen frame-table semantics. New mode preparation binds the shared bridge Python/Lua/JSON sources
+in addition to existing candidate execution identities. Preparation grants no execution permission.
+
+The readback and terminal stay as described below: controlled NewGame/SaveGame/default Map3 state,
+allies (including inherited POISON), full live entity/index state, RNG/raw time and service/scratch
+restoration at the first R1 `WaitForEvent`. Nothing normalizes those inherited values after that seam.
+The first original Map19 movement acceptance must follow the real gate program, original F604 trap,
+north warp, Map19 init/program returns, original wait/controller installation and closed pending
+consumers. The terminal callback is retained once; remaining batch frames are skipped. The current
+frame may finish before final restoration, and the reply distinguishes those two observation times.
+
+### Consumer observations for explicit operator decisions
+
+Existing `DisplayText`, `CloseDialogueWindow`, script and prompt entry/return events remain source
+observations. Interactive frame-end snapshots additionally report pending returns, active consumer
+counts, and the most recent source consumer poll with its observer/emulator frame and PC:
+
+| Poll | Pinned source owner and meaning |
+| --- | --- |
+| `text-wait1` | `code/common/scripting/text/textfunctions_1.asm`, `loc_65B4`: current-input read after `WaitForVInt` in `symbol_wait1` |
+| `text-wait2-loop` | Same source, `loc_6472`: wait2 loop before animation/VInt/input processing; not the later acknowledgement read itself |
+| `WaitForEvent-action` | `code/gameflow/exploration/explorationfunctions_2.asm`, `loc_2593C`: field loop A/C dispatch; another C may invoke an entity/area action or FieldMenu |
+| `YesNoPrompt-release` | `code/common/menus/yesnoprompt.asm`, `loc_1530C`: wait for release of player-one input |
+| `YesNoPrompt-choice` | Same source, `loc_15314`: choice loop; B selects No, A/C accepts the current choice |
+
+These named symbols are bound to H1 and canonical ROM bytes during preparation. A last poll can be
+stale; its timestamp and active consumers must be read together. `CURRENTLY_TYPEWRITING=0`, a script
+return or a past poll alone is **not** readiness proof. Lua never converts these facts into a button
+decision. FieldMenu remains a typed stop, not a condition to repair with injected state. Native
+availability, timing and natural downstream reach of the new observations remain **Unknown**.
+
+### Offline preparation and future operator entry
+
+Load the current worktree's `local/private-inputs.ps1` in the launching shell. Use installed `uv`
+dependencies and shared Lua. The existing API prepares into a fresh ignored directory without a
+runtime copy or process:
+
+```python
+from pathlib import Path
+from sf2tool.h3.map3_messenger_acceptance import UPSTREAM, prepare_map3_observation_candidate
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+
+report = prepare_map3_observation_candidate(
+    private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
+    output_directory=Path("local/issue473/prepared-01"),
+    proposed_timeout_seconds=1800, interactive=True,
+)
+```
+
+Outputs are `candidate.json`, `config.json`, syntax-checked `config.lua` and `input.json`. The last
+file identifies the explicit mode/clock and contains zero preselected frames; its digest is **not an
+actual input recording**. The report retains `CANDIDATE-PREPARED-NOT-ADMITTED`, zero launches, the
+1800-second wall bound, 28634-frame total, 2048 batches and 120-frame maximum batch. It records
+historical controlled starts 2 and future ordinal 3 without claiming that ordinal was executed.
+
+Only after independent merge and a separate main-gate admission, the operator can invoke the same
+runner with the explicit matching mode (this example is an execution instruction, **not part of
+Issue 473's checks**):
+
+```powershell
+uv run python -c "from pathlib import Path; from sf2tool.h3.map3_messenger_acceptance import run_map3_observation_candidate; from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path; run_map3_observation_candidate(private_input_path(ROM_INPUT_IDENTITY), Path('local/issue473/prepared-01'), interactive=True)"
+```
+
+After the admitted R1 frame finishes, hello prints its paused state. Enter one JSON array per line:
+`["state"]`, `["step", 1, "C"]`, `["step", 1, "neutral"]`, or `["abort"]`. Each button is held for
+the requested 1–120 frames; neutral requires its own explicit step to advance a release frame. Paused
+queries consume no original frames. The operator chooses from original observations; no fixed pulse
+schedule or automatic B replacement is supplied. Inspect the private callback records as needed.
+
+### Actual input, clocks, order, and failure boundary
+
+Each `runtime/actual-inputs.jsonl` object has a shared monotonic `order`, observer `frame`,
+`emulatorFrame`, `r1Epoch` and `r1EmulatorEpoch` (false before admission). Checkpoints share this order;
+their `boundary` distinguishes `callback-time` from `host-loop` diagnostics. Input log kinds are:
+
+| Kind | Meaning |
+| --- | --- |
+| `command` | Validly framed command ID and fields received; not proof of application |
+| `applying` | Button submitted, `beforeFrame`, next `inputFrame`, command ID (0 for bootstrap); a crash here does not prove completion |
+| `frame` | `emu.frameadvance` returned; actual button, `beforeFrame`, `afterFrame`, R1-relative `inputFrame`, command ID and bootstrap marker |
+| `result` | Command outcome, actually advanced count, source snapshot labelled `frame-end`, terminal callback separately and error if any |
+
+Record every completed frame, including neutral and the declared automatic Start/neutral bootstrap.
+The R1 admission callback may occur inside a bootstrap frame; retain both its callback emulator clock
+and that frame's completion instead of relabelling it an operator frame. JSONL gaps in `order` are
+expected because `checkpoints.jsonl` shares the sequence. No requested batch substitutes for completed
+`frame` records. Physical input-consumption evidence remains the original controller/consumer callbacks.
+
+The first error or terminal ends remaining advances. Unsupported buttons, wrong arity, malformed
+counts, budget overflow, disconnect and abort fail closed. At 28634 total frames without terminal the
+session fails; at most 2048 accepted input batches are allowed. The 1800-second wall limit starts at
+the owned process launch and includes startup and all paused time. Host containment, short exchange
+timeouts, callback exceptions, restoration and final session-ROM deletion keep their distinct statuses.
+EOF graceful cleanup remains **Unknown** at the native boundary; a killed process is not proof of Lua
+restoration. The future actual run must independently check owned process survivors and canonical ROM
+identity. An acquisition completion remains `OBSERVATION-COMPLETE-UNREVIEWED`, not replay/H4 PASS.
+
+### Offline verification and retained limitations
+
+Use Python AST/compile, targeted Ruff, the shared Lua syntax compiler and bounded direct protocol,
+input-log/budget/error-path checks. API stubs can check delivery ordering and skipped batch remainders;
+they cannot establish actual emulator input, core behavior, natural reach or native EOF cleanup.
+Record the clean committed planner and actual public CI, but shared-path fanout does not authorize
+local normal/full/H1/H2/H3 runtime queues for this slice. No bridge smoke or warmup is permitted.
+
+Preserve #460's raw-MAP_CURRENT failure, #465's FieldMenu failure, #469's source/trace audit, #471's
+pre-API CRLF assertion failure/correction and its unexecuted fourteen-neutral replacement candidate.
+The controlled historical count is still **2**. At most one future acquisition can make it **3**;
+there is no reset, extra smoke/replay/retry or fourth start. Disabled original replay ordinals 1/2 and
+their restrictions remain separate. Arrival timing, NPC/RNG effects, prompt/gate/natural continuity,
+complete 8D and H4 stay **Unknown** until their own required evidence and independent acceptance.
+
 ## Boundary
 
 This is a continuation of the accepted R1 admitted-start and R2 natural-opening fixtures. It begins

@@ -6,11 +6,15 @@ import argparse
 import hashlib
 import json
 import os
+import queue
 import secrets
 import shutil
 import socket
 import subprocess
+import sys
+import threading
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -69,6 +73,8 @@ def command_text(sequence: int, operation: str, *arguments: str | int) -> str:
         "state": 0,
         "read": 3,
         "advance": 1,
+        "step": 2,
+        "abort": 0,
         "watch": 2,
         "run": 1,
         "clear": 0,
@@ -78,6 +84,12 @@ def command_text(sequence: int, operation: str, *arguments: str | int) -> str:
         raise ValueError("unknown command or wrong argument count")
     if type(sequence) is not int or not 1 <= sequence <= 1000000:
         raise ValueError("command sequence out of range")
+    if operation == "step":
+        count, button = arguments
+        if type(count) is not int or not 1 <= count <= 120:
+            raise ValueError("step requires 1..120 frames")
+        if button not in ("neutral", "Up", "Down", "Left", "Right", "A", "B", "C"):
+            raise ValueError("unsupported step button")
     parts = [str(sequence), operation, *(str(arg) for arg in arguments)]
     if any(not part or any(ord(c) < 32 or ord(c) > 126 for c in part) for part in parts):
         raise ValueError("command fields must be nonempty printable ASCII")
@@ -114,6 +126,10 @@ class DebugBridge:
         self.created = False
         self.receipt: dict[str, Any] = {"started": False, "commands": [], "outcome": "running"}
         self.log = None
+        self.deadline: float | None = None
+        self.watchdog: threading.Timer | None = None
+        self.expired = threading.Event()
+        self.started_at: float | None = None
 
     def __enter__(self) -> DebugBridge:
         self.output.mkdir(parents=True, exist_ok=False)
@@ -126,9 +142,26 @@ class DebugBridge:
             json.dumps(self.receipt, indent=2) + "\n", encoding="utf-8"
         )
 
-    def start(self) -> dict[str, Any]:
+    def remaining(self) -> float:
+        remaining = self.deadline - time.monotonic() if self.deadline else self.timeout
+        if remaining <= 0 or self.expired.is_set():
+            raise TimeoutError("interactive wall budget exhausted")
+        return remaining
+
+    def start(
+        self,
+        *,
+        observer: Path = SCRIPT,
+        observer_config: Path | None = None,
+        rom_path: Path | None = None,
+        wall_seconds: int | None = None,
+    ) -> dict[str, Any]:
         if self.listener is not None:
             raise RuntimeError("bridge already started")
+        if wall_seconds is not None and (
+            type(wall_seconds) is not int or not 1 <= wall_seconds <= 1800
+        ):
+            raise ValueError("wall budget must be 1..1800 seconds")
         toolchain, executable = bizhawk_contract()
         if (
             executable.stat().st_size != toolchain["executableSizeBytes"]
@@ -136,10 +169,12 @@ class DebugBridge:
             != toolchain["executableSha256"]
         ):
             raise ValueError("BizHawk executable identity mismatch")
-        rom = private_input_path(ROM_INPUT_IDENTITY)
+        rom = rom_path or private_input_path(ROM_INPUT_IDENTITY)
         verify_rom(rom)
-        shutil.copyfile(rom, self.output / "input.bin")
-        validate_lua_syntax(SCRIPT, executable)
+        if observer_config is None:
+            shutil.copyfile(rom, self.output / "input.bin")
+            rom = self.output / "input.bin"
+        validate_lua_syntax(observer, executable)
         config = {
             "LastWrittenFrom": toolchain["release"],
             "PreferredCores": {"GEN": "Genplus-gx"},
@@ -166,6 +201,10 @@ class DebugBridge:
             "SF2_BRIDGE_JSON": str(repo_path("tools/bizhawk/json.lua")),
             "SF2_BRIDGE_STATUS": str(self.output / "lua-status.json"),
         }
+        if observer_config is not None:
+            validate_lua_syntax(observer_config, executable)
+            environment["SF2_H3_CONFIG"] = str(observer_config)
+        self.receipt["launch"] = launch
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -180,15 +219,16 @@ class DebugBridge:
             # without activating it; SW_HIDE can conceal pre-Lua modal failures.
             startup.wShowWindow = 7
         started_at = time.monotonic()
+        self.started_at = started_at
         self.process = subprocess.Popen(
             [
                 str(executable),
                 "--gdi",
                 f"--config={config_path}",
-                f"--lua={SCRIPT}",
+                f"--lua={observer}",
                 "--socket-ip=127.0.0.1",
                 f"--socket-port={port}",
-                str(self.output / "input.bin"),
+                str(rom),
             ],
             cwd=launch["cwd"],
             env=environment,
@@ -197,7 +237,19 @@ class DebugBridge:
             stderr=self.log,
             startupinfo=startup,
         )
-        self.receipt.update(started=True, pid=self.process.pid, port=port)
+        if wall_seconds is not None:
+            self.deadline = started_at + wall_seconds
+
+            def expire() -> None:
+                self.expired.set()
+                # Retained process handle only; no retry, attach, or name-based kill.
+                if self.process is not None and self.process.poll() is None:
+                    self.process.kill()
+
+            self.watchdog = threading.Timer(max(0, self.deadline - time.monotonic()), expire)
+            self.watchdog.daemon = True
+            self.watchdog.start()
+        self.receipt.update(started=True, pid=self.process.pid, port=port, wallSeconds=wall_seconds)
         self._save()
         self.connection, address = self.listener.accept()
         self.receipt["connected"] = True
@@ -205,7 +257,9 @@ class DebugBridge:
         self.listener.close()
         if address[0] != "127.0.0.1":
             raise ValueError("non-loopback peer")
-        hello = json.loads(receive_frame(self.connection, timeout=self.timeout))
+        hello = json.loads(
+            receive_frame(self.connection, timeout=min(self.timeout, self.remaining()))
+        )
         if hello.get("protocol") != 1 or hello.pop("token", None) != token:
             raise ValueError("bridge handshake identity mismatch")
         self.receipt.update(hello=hello, startupSeconds=time.monotonic() - started_at)
@@ -222,8 +276,10 @@ class DebugBridge:
         self._save()
         started_at = time.monotonic()
         try:
-            send_frame(self.connection, wire, timeout=self.timeout)
-            response = json.loads(receive_frame(self.connection, timeout=self.timeout))
+            send_frame(self.connection, wire, timeout=min(self.timeout, self.remaining()))
+            response = json.loads(
+                receive_frame(self.connection, timeout=min(self.timeout, self.remaining()))
+            )
             if (
                 not isinstance(response, dict)
                 or response.get("id") != self.sequence
@@ -238,6 +294,52 @@ class DebugBridge:
         if not response["ok"]:
             raise ValueError(f"bridge command rejected: {response.get('error')}")
         return response["result"]
+
+    def interact(self) -> None:
+        """One stdin request at a time; waiting consumes the owned wall budget.
+
+        JSON arrays such as ["state"] or ["step", 1, "C"]. No gameplay policy.
+        The daemon reads only one line per request, so piped input cannot queue
+        unbounded commands. EOF, Ctrl-C and invalid commands abort the session.
+        """
+        while True:
+            lines: queue.Queue = queue.Queue(maxsize=1)
+            dispatched = False
+
+            def read_line(destination=lines) -> None:
+                try:
+                    destination.put(sys.stdin.readline(1025))
+                except Exception as error:
+                    destination.put(error)
+
+            threading.Thread(target=read_line, daemon=True).start()
+            try:
+                try:
+                    line = lines.get(timeout=self.remaining())
+                except queue.Empty as error:
+                    raise TimeoutError("operator wait exceeded wall budget") from error
+                if isinstance(line, Exception):
+                    raise line
+                if not line:
+                    raise EOFError("operator disconnected")
+                request = json.loads(line)
+                if (
+                    not isinstance(request, list)
+                    or not request
+                    or request[0] not in ("state", "ping", "step", "abort")
+                ):
+                    raise ValueError("expected state, ping, step or abort JSON array")
+                command_text(self.sequence + 1, *request)
+                dispatched = True
+                result = self.command(*request)
+                print(json.dumps(result), flush=True)
+                if result.get("terminal"):
+                    return
+            except BaseException:
+                if not dispatched and self.connection is not None and not self.expired.is_set():
+                    with suppress(Exception):
+                        self.command("abort")
+                raise
 
     def disconnect(self) -> None:
         """Deliberately exercise abrupt EOF. No reconnect/retry of partial messages."""
@@ -266,6 +368,13 @@ class DebugBridge:
             self.receipt.update(returncode=self.process.returncode, processTerminated=True)
         if self.log is not None:
             self.log.close()
+        if self.watchdog is not None:
+            self.watchdog.cancel()
+        self.receipt["timedOut"] = self.expired.is_set()
+        if self.started_at is not None:
+            self.receipt["elapsedSeconds"] = time.monotonic() - self.started_at
+        if self.expired.is_set() or self.receipt.get("returncode", 0) != 0:
+            self.receipt["outcome"] = "failed"
         status_path = self.output / "lua-status.json"
         self.receipt["luaStatus"] = load_json(status_path) if status_path.exists() else None
         self._save()

@@ -124,6 +124,46 @@ observed as `Genplus-gx` and `BizHawk.Emulation.Cores.Consoles.Sega.gpgx.GPGX`.
 It is a Windows/NLua/version-specific dependency, not a config echo or a general
 reflection command exposed to the controller.
 
+## Map3 interactive composition (offline only)
+
+The [Map3 acquisition owner](../research/map3-messenger-acceptance.md#bounded-interactive-acquisition)
+composes `DebugBridge` with the existing candidate observer. `start` accepts the fixed observer,
+prepared observer configuration and session ROM supplied by that owner; it retains the same single
+`Popen` handle, loopback framing/token, serial `command` receipts and contained teardown. The fixed
+`tools/debug_bridge.lua` library entry shares connection, parsing, explicit button validation and
+input clearing. The standalone experiment commands and its five-second idle limit retain their
+previous scope; they do not execute the Map3 acquisition protocol or prove controller delivery.
+
+Only the explicit acquisition mode accepts `step <count> <button>`, `state`, `ping` and `abort`.
+`step` uses 1–120 frames and exactly one of `neutral`, `Up`, `Down`, `Left`, `Right`, `A`, `B`, `C`.
+No combinations, Start, reset, memory writes, arbitrary watches or eval are exposed in this mode.
+Lua clears all exposed inputs, applies the chosen player-one button and records each completed
+frame before advancing again. Unsupported/malformed commands fail before input application and
+terminate the acquisition. A callback failure or terminal within a batch skips its remaining frames.
+
+`DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
+`["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall
+budget; no keepalive or gameplay input is generated while paused. EOF, Ctrl-C or invalid host input
+attempts `abort` if the connection remains usable, then closes through the existing process owner.
+An independent timer contains the owned process at 1800 seconds even during operator wait or a
+blocked native receive. Startup and individual exchanges retain a shorter 60-second bound. Normal
+teardown waits up to three seconds before killing the retained handle, then waits up to three seconds
+for termination; this cleanup grace grants no further gameplay frames or starts.
+
+The acquired observer raises its receive idle bound to the reviewed wall limit. This change and
+actual button delivery are **Unknown at the native runtime boundary** until an admitted applicable
+observation. The earlier neutral-advance experiment does not validate them. Abrupt native TCP EOF
+can still strand the upstream receive loop: graceful Lua callback removal/restoration on that path
+remains **Unknown**, while host containment is mandatory. At actual execution, independently inspect
+owned survivors and retain PID/exit/timeout, host and Lua statuses, restoration, callback removal,
+session deletion and canonical identity. Never replace that check with a global process kill.
+
+`bridge/receipt.json` preserves command/response order and process diagnostics; the observer owns
+`actual-inputs.jsonl`, `checkpoints.jsonl`, its typed failure/status and final restored observation.
+The bridge's own callback fields describe only bridge callbacks; candidate callback cleanup is proved
+by the candidate status/restoration, not by an empty bridge callback slot. All these outputs remain
+private under the owning worktree's fresh ignored attempt directory.
+
 ## Observed acceptance and launch accounting
 
 Execution date: 2026-09-05 America/Chicago. Baseline ROM identity and BizHawk archive,

@@ -38,6 +38,40 @@ counter: every such delta is zero in this governance slice.
 
 ## Decision
 
+### Distinguish interactive acquisition, frozen replay, and remake H4
+
+**Interactive original acquisition** is Research-owned observation in which an operator or host
+selects the next explicit ordinary controller input from facts observed in the original. Lua only
+delivers that input and observes source-bound events; it does not choose a route or implement game
+mechanics. Record actual delivered frames, including neutral and declared bootstrap frames, rather
+than treating a requested batch as an input trace. Report callback-time facts separately from the
+paused frame-end state. An acquisition result remains unreviewed original evidence until independent
+Research acceptance; it is neither a frozen-replay PASS nor an H4 PASS.
+
+**Frozen original-reference replay** retains the immutable non-adaptive trace and passive observer
+rules below. Acquisition may produce an input recording, but freezing/replaying it is a separate
+operation only when a determinism claim needs it and that operation is separately admitted. It is
+not an automatic sequel to successful acquisition. **Remake H4** consumes independently accepted
+Research evidence and cannot generate original truth inside its comparison.
+
+The specific [Issue 473](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/473)
+authorization permits governance, minimal implementation and offline preparation with **zero emulator
+starts**. Its [Map3 owner](../research/map3-messenger-acceptance.md#bounded-interactive-acquisition)
+reuses the existing bridge and controlled R1 start. R1 initialization and final restoration are
+declared interventions. Between R1 service/scratch restoration and final cleanup, ordinary controller
+input is the only advancing mechanism: no RAM/register/ROM writes, forced flags, prompt results,
+warps, or route transitions. This controlled start is not a passive frozen replay.
+
+The method retains **two completed controlled failures**, #460 and #465. After independent review
+and merge, main-gate may separately admit **at most one additional acquisition**, bringing that
+historical controlled total to **three**, never resetting it. Its limits are one process, 1800 seconds
+including paused operator time, 28634 total emulator frames including bootstrap, and at most 2048
+batches of 1–120 frames. First typed failure, disconnect/abort, or first source-bound Map19 movement
+control after gate/F604/north-warp/init/consumer returns ends it, including the remainder of a batch.
+No extra smoke, automatic retry, replay, fourth start or general future acquisition allowance follows.
+The disabled original replay ordinal 1/2 lineage and its existing restrictions remain separate and
+unchanged. Existing 8D, 7C, 9A/10A and H4 acceptance boundaries remain unchanged.
+
 ### Use distinct names and evidence owners
 
 The following terms are normative:
