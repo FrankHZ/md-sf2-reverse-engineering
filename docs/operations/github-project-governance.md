@@ -177,7 +177,9 @@ Main-gate-authored changes still require another independent reviewer.
 Before dispatch, main-gate checks the Issue's scope, dependencies, authorization and competing owners,
 then selects an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
 Create the task with the Issue number and outcome in its title. The initial message names the Issue,
-selected checkout, accepted base, local ownership constraints and stopping condition; link stable
+selected checkout, accepted base, local ownership constraints, stopping condition, and exact main-gate
+recipient task/thread ID; explicitly require completion or blocker notification via the available
+`send_message_to_thread` tool to that ID before the executor finalizes its task. Link stable
 rules and relevant results instead of copying controller history. The core instruction is:
 
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
@@ -201,7 +203,16 @@ The executor:
 6. After independent review, acceptance, and merge, the item may move to `Done`. Closing the Issue
    or the PR never substitutes for the task's own acceptance boundary.
 
-Report slice completion or a concrete blocker to main-gate; do not add routine status polling.
+At slice completion or a concrete blocker, record the Issue/PR handoff and freeze at the declared
+stopping condition, then send one concise notification to the dispatched main-gate ID before the local
+final answer: Issue/PR, exact head, handoff link, checks/CI summary, and stopped writer/process or
+blocker/approval state. Link detailed evidence. Confirm that `send_message_to_thread` returns success;
+this proves submission, not independent acceptance or that anyone read it. A local final, Issue comment,
+PR creation or Project status does not substitute for this send. If the recipient is missing or the
+tool is unavailable/fails, retain the handoff and report **NOT SENT** with the concrete cause in the
+local final. Treat this as a reporting blocker: do not claim delivery, choose unrelated recipients,
+blindly duplicate sends or redo completed work/gates. Send a new completed correction handoff once;
+do not add routine status polling.
 Review corrections return to the same execution task and scoped Issue, with In Progress restored when
 the executor resumes. An optional bounded subagent reports to that executor; it is not another
 top-level Issue owner. Completion stops execution rather than starting the lane's next Issue.
