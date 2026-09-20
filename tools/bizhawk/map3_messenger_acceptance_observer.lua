@@ -2594,15 +2594,20 @@ local function install_candidate()
             assert(actor == c.firstActor and actor < ram.COMBATANT_ENEMIES_START
                 and word("MOVING_BATTLE_ENTITY_INDEX") == actor and byte("VIEW_TARGET_ENTITY") == mapped,
                 "player-ready actor/turn/moving/view mismatch")
-            local modal = #c.programs > 0 or c.pending > 0 or state.typewriting ~= 0
-                or state.windowState == 2 or word("DIALOGUE_WINDOW_INDEX") ~= 0
-                or word("PORTRAIT_WINDOW_INDEX") ~= 0
-            assert(not modal and byte("CURRENT_PLAYER_INPUT") == 0 and byte("IS_TARGETING") == 0
-                and word("CURRENT_BATTLEACTION") == 0 and state.mapEventWord == 0
-                and state.typewriting == 0 and state.windowState ~= 2
-                and word("DIALOGUE_WINDOW_INDEX") == 0 and word("PORTRAIT_WINDOW_INDEX") == 0
-                and byte("FADING_SETTING") == 0
-                and camera_state().effectiveScrollingPlanes == 0,
+            -- WINDOW_IS_PRESENT is a count: the normal battlefield mini status
+            -- window increments it before ControlBattleEntity accepts movement.
+            local readiness = {windowCount=state.windowState, typewriting=state.typewriting,
+                dialogueWindow=word("DIALOGUE_WINDOW_INDEX"), portraitWindow=word("PORTRAIT_WINDOW_INDEX"),
+                currentPlayerInput=byte("CURRENT_PLAYER_INPUT"), isTargeting=byte("IS_TARGETING"),
+                currentBattleAction=word("CURRENT_BATTLEACTION"), mapEventWord=state.mapEventWord,
+                fading=byte("FADING_SETTING"), effectiveScrollingPlanes=camera_state().effectiveScrollingPlanes}
+            local modal = #c.programs > 0 or c.pending > 0 or readiness.typewriting ~= 0
+                or readiness.dialogueWindow ~= 0 or readiness.portraitWindow ~= 0
+            readiness.cutsceneOrMenuModal = modal
+            c.record("battle:player-ready-check", readiness)
+            assert(not modal and readiness.currentPlayerInput == 0 and readiness.isTargeting == 0
+                and readiness.currentBattleAction == 0 and readiness.mapEventWord == 0
+                and readiness.fading == 0 and readiness.effectiveScrollingPlanes == 0,
                 "player-ready input/modal/transfer mismatch")
             c.checkpoint("ready")
             c.stop("player-ready", {area=area, actor=actor, movingActor=word("MOVING_BATTLE_ENTITY_INDEX"),

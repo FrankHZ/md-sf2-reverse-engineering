@@ -525,16 +525,124 @@ and point an isolated diagnostic driver at it; never overwrite the frozen curren
 The retained `stabilization-lua-checks.py return-stack-regression` execution checks the existing cases.
 Load current
 private-input configuration to select pinned Lua. No tracked helper tests are added.
-**Inferred:** the asymmetric mask caused the native missed return. **Unknown:** corrected native
-battle admission, lifecycle and first player-ready; direct Lua is not native acceptance.
+**Inferred at this correction:** the asymmetric mask caused the native missed return. The
+[subsequent compatible chain](#corrected-chain-and-player-entry-window-count-failure) confirms the
+native return and lifecycle; first player-ready acceptance remains **Unknown**.
 
-Current accounting is **15 actual starts / 4142.950475800084 charged seconds / 32143 resource frames /
+Accounting before the compatible restart was **15 actual starts / 4142.950475800084 charged seconds / 32143 resource frames /
 555 advancing batches**, including all failures. Observer SHA changes invalidate the old parents under
 mandatory identity checks. After independent source acceptance, create a fresh compatible chain with
 those totals as reviewed prior consumption. Preserve old pairs and failure receipts; do not rewrite
 or waive their identities, or treat the old controller log as an assumed-ready replay. Live readiness
 still governs each interaction. First player-ready and its evidence-only, nonresumable final frame
 remain **Unknown**, as do Battle01 actions/victory/5B, native menu cancellation and H4. #485/#437 stay open.
+
+### Corrected chain and player-entry window-count failure
+
+**Confirmed:** after [PR #492](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/492), the fresh
+chain uses accepted `6b9120a43788c61be68f024cfd5e6d1c376963be`, observer
+`B19D23C93F90AF48C021746ACD1A81A6EAE0E1DE7F6BC21387D58437134F6177` and unchanged runner
+`10D6483121BABEE8D4460722504D10A1FB17BEF077B8468196E5C04945C84C67`. The ROM, pinned upstream
+and BizHawk 2.11.1/Genplus-gx identities are unchanged. It inherits all 15 prior starts and costs.
+Only 18 bootstraps R1 (observer/emulator epochs 355/354); every later child loads its complete parent
+before input. Independent main-gate reviews accept each successful save through guard 26.
+
+| Prepared attempt / actual start | Parent; logical frames | Result | New resource frames / batches / seconds |
+| --- | --- | --- | --- |
+| 18 / 16 | fresh; 0→1030 | House rank 1 | 1030 / 11 / 78.33681439998327 |
+| 19 / 17 | 18; 1030→2080 | Sarah rank 2 | 1050 / 26 / 104.844541700033 |
+| 20 / 18 | 19; 2080→2656 | Astral approach rank 3 | 576 / 14 / 71.5148315000115 |
+| 21 / 19 | 20; 2656→7041 | Operator idle timeout; no pair | 4385 / 69 / 407.4769251999678 |
+| 22 / 20 | 20; 2656→8585 | Messenger rank 4 | 5929 / 82 / 501.6548577999929 |
+| 23 / 21 | 22; 8585→10366 | Map19 rank 5 | 1781 / 33 / 42.77628290001303 |
+| 24 / 22 | 23; 10366→15586 | Royal rank 6 | 5220 / 77 / 100.00866600003792 |
+| 25 / 23 | 24; 15586→16981 | Local operator abort; no pair | 1395 / 27 / 33.145016900030896 |
+| 26 / 24 | 24; 15586→17720 | Guard rank 7 | 2134 / 46 / 53.04010589997051 |
+| 27 / 25 | 26; 17720→22348 | Player-entry predicate failure; no pair | 4628 / 181 / 93.92492390004918 |
+
+At 20, the operator sees Down-facing not-ready at 2651 and turns Left before any entity142 C.
+No wrong-facing C or FieldMenu is delivered. At 24, royal closure at 15528 faces Left; ordinary
+movement reaches the required Down-facing save at 15586. At 26, guard caller closure at 17659
+`(4,16)` is distinct from the `(5,15)`/Down save at 17720. Successful pairs retain source identity,
+contiguous delivered frames, unique local record order, actual ready-before-C, exit 0 and confirmed
+restoration/callback/ROM cleanup. They do not reset resource costs to their logical clocks.
+
+Attempt 21 (PID 9772) times out during task context recovery at the actual YesNoPrompt choice 0.
+It exits 1 without forced termination; host termination, session deletion and canonical identity are
+confirmed. **Unknown:** final loaded-entry restoration and callback removal, because its status file
+only retains `observer-started` and the bridge's last `ready` is not final cleanup evidence. This
+differs from the earlier attempt 12; its cleanup wording cannot be copied to 21.
+
+The ignored finite operator for 22 advances the main route with actual position/consumer/readiness
+checks, then rejects the legitimate `WaitForPlayerInput` consumer locally. The same live process is
+immediately checked and finished manually with C1, neutral60 and safe save. Thus 22 is assisted,
+not wholly automatic. The exact executed script is retained as `operator22-executed.js`. Attempts
+23 and 24 complete through a direct stdin/stdout operator that waits for each full JSON response.
+Attempt 25 (PID 28792) exposes a separate operator bug: while awaiting another acknowledgement,
+neutral frames legitimately close Astral's caller with F607/F608 and no active consumers/returns.
+The operator fails to recheck completion and requests abort 28, delivering zero additional frames.
+Its explicit observer abort failure retains loaded-entry restoration, callback removal, output
+removal and ROM cleanup; it is not an original-game mismatch. The corrected local operator checks
+stage completion after each neutral wait, including royal, Astral and guard closure, and waits for
+gate/guard closure only while an actual consumer/return owns that wait. Attempt 26 completes
+automatically. These ignored operators change no observer/runner/bridge or game-state semantics,
+extend no watchdog, and send no artificial keepalive.
+
+**Confirmed (failed observation):** [main-gate's attempt 27 review](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5753234168)
+records PID 36576, orders 41946–52958, 13 ready-checked C acknowledgements and exit 1 without timeout
+or forced termination. The last neutral120 delivers only 6 frames. At 18369, CheckBattle entry
+43706 uses stack `0xFFFFFC`; return 43707 reaches `0x75D0`, result 43708 reports D7=1, admission
+43709 precedes BattleLoop 43710 with D1=1/F88 clear. Incoming map 57 remains distinct from raw
+source map 40. This is native confirmation of the wrapped-return correction.
+
+The original before-program returns at 22246; load/start return at 22314; activation/region/spawn
+return at 22316; generation and first dispatch occur at 22319 with actual actor **2**. Player control
+then reaches `0x22E70` at observer frame 22348 / emulator frame 22347. Failure order 52956 reports
+`player-ready input/modal/transfer mismatch`: window count 2, no active consumers or pending returns,
+typewriting/input/event word zero. This proves entry at the named PC, **not passed player-ready**.
+The compound assertion short-circuits; unrecorded later guard values are not established by this
+failure. Loaded-entry restoration, callback removal, partial-output removal, session deletion and
+canonical identity pass. No final evidence pair is published, and no battle action follows.
+
+**Confirmed (pinned source/H1/ROM):** `WINDOW_IS_PRESENT` at `0xFFB13F` is a count. In
+`code/common/windows/windowengine.asm`, `InitializeWindowProperties` clears it at `0x47E4`, tests
+MAP_CURRENT at `0x47E8` and increments the non-current-map baseline at `0x47F0`.
+`code/gameflow/battle/battlefunctions/executeindividualturn.asm` calls the mini status window at
+`0x23F72` before calling `ProcessBattleEntityControlPlayerInput` at `0x23FE6`→`0x24662`.
+`code/common/menus/ministatuswindow.asm` increments the count at `0x11572` and returns after its
+window movement; this nonblocking battlefield display remains during movement input at `0x22E70`.
+The jump at `0x10014`→`0x11572` and the relative input-control call are resolved against named H1
+symbols and canonical ROM operands; other cited instruction spans match directly.
+
+The observer correction removes only the two final-battle `windowState == 2` modal exclusions.
+It preserves lifecycle/actor/area checks and actual script, return, typewriting, dialogue/portrait,
+input, targeting, action, event-word, fade and effective-scroll checks. A `battle:player-ready-check`
+record now retains those already-read guard fields before the compound assertion. Field/save/menu
+predicates, the runner and RAM configuration are unchanged. Corrected observer SHA is
+`F5859C05A4D43A837973BCA95F6B87E974C928EB5FC0E88FE40CF5821A89B218`.
+
+Direct actual-Lua callback checks reproduce rejection of count 2 on the old body and acceptance
+after correction, with 15 distinct invalid-state rejection controls. Retained reproduction uses
+`check-player-ready-window.py window-count-before-corrected-driver before local/issue485/window-count-old-observer.lua`
+for the observer extracted from accepted `6b9120a4`, and
+`check-player-ready-window.py <fresh-ignored-output> after` for current source, each under
+`uv run python -X utf8` after loading private configuration. The initial local driver's Lua `assert`
+returned two values and incorrectly enlarged the area table; its 15/16 result is retained separately,
+not a native failure or a passed guard check. Corrected before/after drivers require the named
+failure reason and pass all 16 cases. `check-window-source.py` verifies the source/H1/ROM relationships;
+the six return-stack checks and 17 stabilization checks pass. Normal `uv run sf2 verify` passes
+148 tests plus document/index/ROM/toolchain checks. These are direct verification, not added helper tests.
+Fresh `prepared-28` passes offline source/H1/ROM and Lua preparation on the corrected observer with
+the reviewed cumulative costs below; it has not launched at this source handoff.
+
+Current consumption is **25 actual starts / 5629.673442000174 charged seconds / 60271 resource frames /
+1121 advancing batches**, preserving every failed branch. Read-only reconciliation is retained in
+`summarize-corrected.py` and `corrected-summary-through27.json`; individual candidate, input,
+checkpoint, process and pair receipts remain authoritative. New source identity requires another
+fresh compatible chain after independent acceptance; do not waive or rewrite parents 18–26.
+**Unknown:** native acceptance of all corrected final guards, final evidence-only frame, native menu
+recovery, battle actions/victory/5B and H4. #485/#437 remain open; the first-player-ready objective
+continues under the existing stabilization authorization.
 
 ### Segment 1 wrong-facing failure
 

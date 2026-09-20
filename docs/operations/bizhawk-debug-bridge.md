@@ -161,16 +161,29 @@ now reaches independently accepted messenger closure and native Map19 save. Late
 are independently accepted; final Battle01 readiness and native menu recovery remain **Unknown**.
 A missed CheckBattle return exposed asymmetric 24-bit stack masking in the composed observer. Its
 expected return stack now uses the same mask as actual A7. This does not change the shared bridge or
-waive parent identities: the corrected observer requires a fresh compatible chain.
+waive parent identities. The [fresh compatible chain](../research/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
+now confirms that wrapped return and battle lifecycle, but fails a different final predicate at
+the first input PC: `WINDOW_IS_PRESENT=2` includes the normal mini status display, not necessarily
+a blocking menu. The final-battle correction removes that mistaken count test and records the
+actual guard fields before asserting; runner/bridge and field/save/menu checks are unchanged.
+Its changed observer identity again requires fresh compatible parents. Passed first-ready remains
+**Unknown**; reaching its PC alone does not satisfy the acceptance contract.
 The original standalone five-second idle experiment and its wall limit remain unchanged.
 
 Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
 owner. Their costs are inherited, not reset; the completed initial segment started with totals 6 / active seconds
 2080.6977567999857 / delivered frames 13561 / advancing batches 225. Totals after the retained final-segment
-callback failure are starts 15 / seconds 4142.950475800084 / frames 32143 / batches 555, including that
-failure and the operator-context idle failure with reconciled cleanup. Full receipts remain local; use
-compact control readbacks and a supported safe save before context recovery, without artificial input
-to renew the idle deadline. The clock still uses explicit
+callback failure were starts 15 / seconds 4142.950475800084 / frames 32143 / batches 555. After the
+compatible chain's player-entry failure, totals are **25 / 5629.673442000174 / 60271 / 1121**.
+This includes the second context-idle failure (21), whose final restoration/callback cleanup remains
+**Unknown**, and the explicit local-operator abort (25), whose loaded-entry cleanup is confirmed.
+Full receipts remain local. The improved ignored finite operator checks actual positions, consumer
+readiness, prompt choice and caller completion, and reads one full JSON response before the next
+meaningful input. It completes whole gate/royal/guard segments without task-context dependence;
+messenger 22 still requires a documented manual finish at the valid `WaitForPlayerInput` consumer.
+The operator rechecks closure after neutral waits and switches from bounded one-frame approach
+inputs to neutral/dialogue immediately on actual battle admission. It extends no watchdog or bridge
+protocol and sends no artificial keepalive. The clock still uses explicit
 System assembly loading and Stopwatch. Cumulative time/stage/frame/batch/progress thresholds are now
 observations under the user's stabilization authorization, not hard stop conditions.
 

@@ -593,9 +593,14 @@ epochs, 1050 forward child frames and a later closed checkpoint. The subsequent
 [resumed messenger and Map19 checkpoints](map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 retain the corrected entity facing, native messenger closure and Map19 first movement/save. The Map19
 child passed independent review. Later [royal/guard saves and the BattleLoop failure](map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
-are now recorded: royal and guard saves/loads are independently accepted, while first player-ready
-remains **Unknown**. Both failures and all consumption are retained. The corrected observer requires
-a fresh compatible chain; old parent identities cannot be waived. H4 remains **Unknown**.
+are now recorded. The [compatible corrected chain](map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
+independently confirms royal/guard saves and loads, the wrapped CheckBattle return, BattleLoop
+admission and original before/load/start/activation/region/spawn/generation lifecycle. Its actual
+first actor is 2, and `0x22E70` is reached at frame 22348, but the final predicate rejects the legitimate
+window count 2. First player-ready acceptance remains **Unknown**. The source/H1/ROM-confirmed
+correction distinguishes the nonblocking mini status display from actual modal consumers and retains
+all other guards. Failed attempts and costs remain evidence; the new observer needs a fresh compatible
+chain without a parent identity waiver. H4 remains **Unknown**.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
@@ -610,9 +615,10 @@ completed frame after the first player-ready callback. The first three add zero 
 consumer/return/program/audio operation, neutral input, settled player/camera, no modal/transfer and
 recent source field-control poll predicates. These are **Inferred** safe resumable points from the
 source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
-Map19/royal/guard saves and later loads are now **Confirmed** on the prior frozen observer. The final
-segment failed at BattleLoop admission; the corrected observer needs native validation on a fresh
-compatible chain. The final frame is evidence only, not resumable.
+Map19/royal/guard saves and later loads are now **Confirmed** on both completed observer chains.
+The first final-segment failure was at BattleLoop admission; the next reached the first input PC and
+failed the window-count predicate. Neither produces a passed terminal pair. The corrected final
+guards need native validation on a fresh compatible chain. The final frame is evidence only, not resumable.
 Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
 

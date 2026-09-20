@@ -102,10 +102,17 @@ is now **Confirmed** by actual execution and independent acceptance. Its
 [forward continuation](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 includes independently accepted messenger and native Map19 saves.
 Later [royal/guard saves and loads](../research/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
-are independently accepted. The final segment failed on a missed CheckBattle return; corrected native
-Battle01 admission/readiness remains **Unknown**. The stack-mask correction changes observer identity,
-requiring a fresh compatible chain with all prior costs retained. No parent-identity waiver is allowed.
-Both failed attempts and their cleanup evidence remain preserved. This remains
+are independently accepted. The [fresh compatible chain](../research/map3-messenger-acceptance.md#corrected-chain-and-player-entry-window-count-failure)
+confirms the corrected CheckBattle return and original battle lifecycle. It reaches the first-player
+input PC but fails a mistaken final window-count predicate; this is not passed readiness. Pinned
+source/H1/ROM shows the normal mini status window contributes to that count while movement input is
+available. Removing only that incorrect modal inference retains the actual consumer/input/transfer
+guards and requires another fresh compatible chain with all costs retained. No parent-identity waiver
+is allowed. Native acceptance of the corrected final guards remains **Unknown**. The second idle
+failure's final callback/restoration evidence is also **Unknown**; preserve it separately from the
+confirmed cleanup of explicit abort and callback failures. Finite local operators may consume the
+existing request/response interface with actual readiness and source-closure checks; they neither
+change the acquisition into frozen replay nor authorize gameplay beyond the endpoint. This remains
 **savestate-linked segmented original acquisition**, not uninterrupted wall-time execution, frozen
 replay, natural visible New/load, or H4. Historical stop restrictions below apply to their original
 attempts and cannot override this user-directed stabilization.
