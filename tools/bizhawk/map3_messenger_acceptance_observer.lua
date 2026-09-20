@@ -2293,7 +2293,7 @@ local function install_candidate()
         c.consumers[kind] = (c.consumers[kind] or 0) + 1
         c.record(kind .. ":entry", { target = target, returnPc = pc, stack = stack })
         add_callback(pc, "candidate:return", function()
-            if not pending or (reg("A7") & 0xFFFFFF) ~= stack + 4 then return end
+            if not pending or (reg("A7") & 0xFFFFFF) ~= ((stack + 4) & 0xFFFFFF) then return end
             pending, c.pending = false, c.pending - 1
             c.consumers[kind] = c.consumers[kind] - 1
             c.record(kind .. ":return", { target = target, returnPc = pc, d0 = reg("D0") & 0xFFFF })

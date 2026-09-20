@@ -592,8 +592,10 @@ was independently accepted as **Confirmed**: native core/observer continuity bef
 epochs, 1050 forward child frames and a later closed checkpoint. The subsequent
 [resumed messenger and Map19 checkpoints](map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 retain the corrected entity facing, native messenger closure and Map19 first movement/save. The Map19
-child passed independent review and is the latest complete continuation parent. The intervening
-operator-idle failure is retained and charged; later royal/guard/Battle01 and H4 remain **Unknown**.
+child passed independent review. Later [royal/guard saves and the BattleLoop failure](map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
+are now recorded: royal and guard saves/loads are independently accepted, while first player-ready
+remains **Unknown**. Both failures and all consumption are retained. The corrected observer requires
+a fresh compatible chain; old parent identities cannot be waived. H4 remains **Unknown**.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
@@ -608,9 +610,9 @@ completed frame after the first player-ready callback. The first three add zero 
 consumer/return/program/audio operation, neutral input, settled player/camera, no modal/transfer and
 recent source field-control poll predicates. These are **Inferred** safe resumable points from the
 source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
-royal/guard reachability/native save/load remains **Unknown**. Map19 now has the bounded native save
-above; its later load and forward continuation remain **Unknown**. The final frame is evidence only,
-not resumable.
+Map19/royal/guard saves and later loads are now **Confirmed** on the prior frozen observer. The final
+segment failed at BattleLoop admission; the corrected observer needs native validation on a fresh
+compatible chain. The final frame is evidence only, not resumable.
 Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
 

@@ -101,8 +101,11 @@ independent review. The [house → native load → Sarah forward-save chain](../
 is now **Confirmed** by actual execution and independent acceptance. Its
 [forward continuation](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
 includes independently accepted messenger and native Map19 saves.
-The latest complete Map19 parent is the continuation point; royal/guard/Battle01 continuity remains
-**Unknown**. The intervening operator-idle failure and all its costs remain preserved. This remains
+Later [royal/guard saves and loads](../research/map3-messenger-acceptance.md#royal-and-guard-saves-battleloop-return-stack-failure)
+are independently accepted. The final segment failed on a missed CheckBattle return; corrected native
+Battle01 admission/readiness remains **Unknown**. The stack-mask correction changes observer identity,
+requiring a fresh compatible chain with all prior costs retained. No parent-identity waiver is allowed.
+Both failed attempts and their cleanup evidence remain preserved. This remains
 **savestate-linked segmented original acquisition**, not uninterrupted wall-time execution, frozen
 replay, natural visible New/load, or H4. Historical stop restrictions below apply to their original
 attempts and cannot override this user-directed stabilization.
