@@ -589,8 +589,11 @@ Single-step/exchange/disconnection and identity/core/I/O containment remain; off
 does not close native continuity or any later Battle01/H4 acceptance boundary. Subsequently the
 [actual house → native load → Sarah forward-save chain](map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
 was independently accepted as **Confirmed**: native core/observer continuity before input, inherited
-epochs, 1050 forward child frames and a later closed checkpoint. The latest complete Sarah parent is
-the continuation point. Later messenger/Map19/Battle01 and H4 remain **Unknown**, with all failed costs retained.
+epochs, 1050 forward child frames and a later closed checkpoint. The subsequent
+[resumed messenger and Map19 checkpoints](map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
+retain the corrected entity facing, native messenger closure and Map19 first movement/save. The Map19
+child passed independent review and is the latest complete continuation parent. The intervening
+operator-idle failure is retained and charged; later royal/guard/Battle01 and H4 remain **Unknown**.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
@@ -605,7 +608,9 @@ completed frame after the first player-ready callback. The first three add zero 
 consumer/return/program/audio operation, neutral input, settled player/camera, no modal/transfer and
 recent source field-control poll predicates. These are **Inferred** safe resumable points from the
 source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
-reachability/native save/load remains **Unknown**. The final frame is evidence only, not resumable.
+royal/guard reachability/native save/load remains **Unknown**. Map19 now has the bounded native save
+above; its later load and forward continuation remain **Unknown**. The final frame is evidence only,
+not resumable.
 Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
 

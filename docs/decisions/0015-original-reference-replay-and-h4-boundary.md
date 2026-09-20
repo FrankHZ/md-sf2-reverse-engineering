@@ -98,8 +98,11 @@ inherit sealed and failed-child consumption without fabricating observer/emulato
 
 Acceptance requires an actual early save → verified native load → forward later save, followed by
 independent review. The [house → native load → Sarah forward-save chain](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
-is now **Confirmed** by actual execution and independent acceptance. Later messenger/Map19/Battle01
-continuity remains **Unknown**; the latest complete Sarah parent is the continuation point. This remains
+is now **Confirmed** by actual execution and independent acceptance. Its
+[forward continuation](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
+includes independently accepted messenger and native Map19 saves.
+The latest complete Map19 parent is the continuation point; royal/guard/Battle01 continuity remains
+**Unknown**. The intervening operator-idle failure and all its costs remain preserved. This remains
 **savestate-linked segmented original acquisition**, not uninterrupted wall-time execution, frozen
 replay, natural visible New/load, or H4. Historical stop restrictions below apply to their original
 attempts and cannot override this user-directed stabilization.

@@ -155,13 +155,18 @@ parent; successful children require forward continuation. Runtime/core/observer/
 checks remain mandatory. Loaded RAM/register/frame equality and offline checks alone do not establish
 complete native continuity. The [actual house save → native load → Sarah save](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
 is now **Confirmed**, including input-before-load exclusion, inherited epochs, forward checkpoint,
-process exit and cleanup. Later route boundaries and native menu recovery remain **Unknown**.
+process exit and cleanup. The [forward chain](../research/map3-messenger-acceptance.md#resumed-messenger-and-map19-checkpoints)
+now reaches independently accepted messenger closure and native Map19 save. Later
+royal/guard/Battle01 boundaries and native menu recovery remain **Unknown**.
 The original standalone five-second idle experiment and its wall limit remain unchanged.
 
 Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
 owner. Their costs are inherited, not reset; the completed initial segment started with totals 6 / active seconds
-2080.6977567999857 / delivered frames 13561 / advancing batches 225. The latest complete Sarah parent
-now carries starts 8 / seconds 2419.9709781000274 / frames 15641 / batches 262. The clock still uses explicit
+2080.6977567999857 / delivered frames 13561 / advancing batches 225. The latest complete Map19 parent
+now carries starts 12 / seconds 3424.7338451000396 / frames 24520 / batches 411, including the completed
+operator-context idle failure and its independently reconciled cleanup. Full receipts remain local; use
+compact control readbacks and a supported safe save before context recovery, without artificial input
+to renew the idle deadline. The clock still uses explicit
 System assembly loading and Stopwatch. Cumulative time/stage/frame/batch/progress thresholds are now
 observations under the user's stabilization authorization, not hard stop conditions.
 

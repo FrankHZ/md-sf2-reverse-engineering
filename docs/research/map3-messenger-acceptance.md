@@ -345,14 +345,15 @@ Prepare after source freeze in a fresh ignored destination; initial arguments cu
 `reviewed_prior_starts=6`, `reviewed_prior_active_seconds=2080.6977567999857`,
 `reviewed_prior_delivered_frames=13561`, `reviewed_prior_advancing_batches=225`,
 `proposed_timeout_seconds=7200` (the retained observational configuration value). Those initial values
-belong to the completed first segment; continue from the latest Sarah parent and inherit its actual
+belong to the completed first segment; continue from the latest complete parent and inherit its actual
 totals below. Native outcomes
 remain `SEGMENT-SAVED-UNREVIEWED` or `OBSERVATION-COMPLETE-UNREVIEWED` until independent acceptance.
 
 Direct source/ROM preparation, actual-Lua branch checks and host/pair checks cover this implementation.
 No helper tests or unrelated long runtime queue is added. **Confirmed:** the bounded early native
-save/load/Sarah forward-save chain below. **Unknown:** resumed messenger reach and Map19/later readiness under this predicate,
-route timing/first actor, abrupt-failure graceful cleanup, downstream victory/5B and remaining 8D/7C/H4.
+save/load chain through the resumed messenger and Map19 checkpoints below. **Unknown:** native
+FieldMenu cancellation, later royal/guard/Battle01 readiness, route timing/first actor, downstream
+victory/5B and remaining 8D/7C/H4. The retained idle failure proves only its named graceful cleanup.
 These are savestate-linked original observations, not uninterrupted wall-time execution, replay or H4.
 
 ### Accepted early native save and resume
@@ -383,7 +384,7 @@ forward checkpoint match; save readiness was inspected before each save, not aft
 Parent pair/state SHA-256:
 `5BBB918BA76B45C2D3F1327BE156DA9B8D55D5E7ABCE1F4D2FC1AAC4086B12CF` /
 `B7009BEEF34006ACCF5B54EB91C1E8AF39BC7D2538FE91B0632CF95CD6E2E2BD`.
-Latest Sarah pair/state SHA-256:
+Sarah pair/state SHA-256:
 `5B41893058ABAFDE38F54070F2EFD751FF33B105A0E258DA2CEA6E13F526A03D` /
 `AC52CD193B71DAA6578BE44B3DA13418EFEC67A297F2B70BA5118ABBA724BFE7`.
 
@@ -397,12 +398,71 @@ controller commands are retained in the bound input receipts; this is not a reus
 The [execution handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752640589)
 locates the private receipts and direct reconciliation command; no state or game-content artifact is public.
 
-Current cumulative accounting is **8 actual starts / 2419.9709781000274 charged seconds /
-15641 resource frames / 262 advancing batches**, including all earlier failures. The successful chain
-has 2080 logical frames. Continue from the latest Sarah parent; the house parent already has a
-successful child. **Unknown:** later messenger callback continuity, native FieldMenu cancellation,
-Map19/later save boundaries, Battle01 readiness/completion and H4. This accepted basic mechanism does
-not close Issue #485's remaining natural route or epic #437.
+At the Sarah checkpoint, cumulative accounting was **8 actual starts / 2419.9709781000274 charged
+seconds / 15641 resource frames / 262 advancing batches**, including all earlier failures. Its successful
+chain had 2080 logical frames; the forward continuation below supersedes Sarah as the latest parent.
+
+### Resumed messenger and Map19 checkpoints
+
+**Confirmed:** the same frozen implementation subsequently saved the Astral approach and resumed
+through the messenger. Independent reviews accepted the [Astral checkpoint](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752705908)
+and [messenger checkpoint](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752796810).
+The [Map19 child](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752816999)
+was independently accepted after native save, pair validation and raw receipt reconciliation.
+Runner/observer identities remain those above. Each child loads complete original RAM/register/frame
+and observer state before input, preserves epoch 355, and advances to a higher checkpoint rank.
+
+| Candidate / actual start | Completed boundary | New charged consumption / successful record orders |
+| --- | --- | --- |
+| `prepared-11` / 9, PID 38348 | Parent Sarah frame 2080 → rank 3, Map3 `(55,17)`/Left, before F602, frame 2656 | 576 frames / 14 batches / 121.39703140000347 seconds; orders 4813–6141. |
+| `prepared-13` / 11, PID 40308 | Parent 11 frame 2656 → rank 4, Map3 `(43,10)`/Down, F602/F603/F600/F66/F89, frame 8409 | 5753 frames / 86 batches / 535.700546099979 seconds; orders 6142–19759. |
+| `prepared-14` / 12, PID 17196 | Parent 13 frame 8409 → rank 5, Map19 `(26,29)`/Up after F604, frame 10030 | 1621 frames / 33 batches / 128.33305830002064 seconds; orders 19760–23675. |
+
+At frame 2651 the live readiness result identified Down as the wrong player facing for entity 142.
+No C was sent then: original Left1 + neutral4 established the required Left facing and ready state at
+2656. This is pre-input detection and correction, not an actual zero-frame C rejection. The resumed
+messenger uses actual text/prompt polls and the original default-zero Yes answer. After join text 447,
+`PlayMusicAfterCurrentOne` returns before the original `WaitForPlayerInput` poll permits C. Its return,
+follow commands, F603 and closed field control precede the rank 4 save. No FieldMenu occurred.
+The next child traverses the original six-text gate program, F604, north warp, Map19 initialization
+and first accepted movement before rank 5. F604 changes at frame 9781/orders 23078–23079; the warp
+handler at 9902/order 23355 targets Map19. First movement at 10014/order 23627 still observes `(26,30)`;
+the next-tile marker at 10015/order 23634 observes `(26,29)`. Save is later at 10030. These callback
+and completed-frame boundaries remain distinct. Pre-save snapshots show empty consumers/programs/returns,
+neutral input, fresh field polls and `saveReady=true`. All three saved processes exited 0 without
+forced termination or timeout; loaded-entry restoration, callback removal, session deletion and
+canonical identity passed. Map19 camera readiness uses the source effective-scroll predicate; raw
+coordinate equality is not required.
+
+The failed sibling `prepared-12` is preserved separately: actual start 10 / PID 41588 loaded parent 11,
+reached F602 without FieldMenu, and stopped at frame 3585, Map3 `(58,13)`, text-wait1. Context recovery
+exceeded the existing operator-idle deadline. Exit 1 / timeout true / forced termination false charged
+929 frames / 16 batches / 219.33223120000912 seconds, orders 6142–8422. Independent
+[failure-accounting review](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752766124)
+confirmed loaded-entry restoration, cleared callbacks, removed partial observation, deleted session ROM,
+unchanged canonical input and unchanged parent. No child state/pair exists. This is an operator-context
+failure, not a route or facing defect. Its overlapping branch orders are not successful continuation;
+all actual costs remain charged in the retry. Compact live readbacks and saving at supported checkpoints
+before context recovery improve operation without changing watchdogs or generating keepalive input.
+
+Pair / native-state SHA-256:
+
+- Astral: `A552026FE5C59998820EF1758E9552CD3BBBB7FB92C204A61B5391BE6C5EEE1B` /
+  `B1896926C9B6382E2977A726648155DADC2492BB1006C92AB15919E7866BB0E8`.
+- Messenger: `958C672CEE6F1B3BC02BECDF6B5D8F4329DC1459B2CF604E2646F9C72292D66A` /
+  `8AF7B04CDEE26FF81E7909B14CB0C3EE026BDE60C13C1C054FA4236E0FC35BAA`.
+- Map19: `E4EC12E4D687D9FFDFB85D7AF9AD596B6D5F7751145E71C5065A644C65207FD9` /
+  `B00B8AD2A41D055DBD9282719E84C26F9E86A7F42C2635A5AEF810D08A6D673B`.
+
+Use the same `_read_segment` validation and bound-receipt reconciliation described above for candidates
+11, 13 and 14. For failed 12 inspect completed host/bridge/input/checkpoint receipts; `_resume_accounting`
+on absolute parent 11 reconciled its failure before retry preparation. Each successful child used natural
+interactive ordinal 1 and its immediately preceding complete parent. No private artifacts are public.
+Current cumulative accounting is **12 actual starts / 3424.7338451000396 charged seconds / 24520 resource
+frames / 411 advancing batches**; the successful branch has 10030 logical frames. Continue from complete
+Map19 parent 14 with ordinal 2; successful parents cannot be reused. **Unknown:** royal/guard native
+save/resume, Battle01 first-player readiness/completion, native menu cancellation and H4. Issue #485's
+remaining natural route and epic #437 remain open.
 
 ### Segment 1 wrong-facing failure
 
