@@ -309,6 +309,39 @@ later fixed-input reach and natural continuity remain **Unknown**; no public gol
 is promoted. Further action returns to independent main-gate disposition, with no remaining launch
 inferred from this failed diagnostic.
 
+### Corrected candidate diagnostic and exhausted permission
+
+**Confirmed failure, 2026-09-19 project date:**
+[Issue #465](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/465) admitted exactly one
+further diagnostic after independent acceptance of PR #464's MAP_CURRENT correction. Execution used
+accepted commit `07dce82ac1f157e626521549aa30b62c0a064165`, tree
+`dff51195c746619ba4953c73a2dc71a255367399`, the retained corrected candidate and unchanged
+23,234-frame input / 28,634-frame watchdog / 600-second hard timeout. All retained material identities
+were checked before the sole API call. This was controlled-method actual start **2**, distinct from
+the disabled replay's ordinal 1/2; its exact permission is now exhausted and grants no third start.
+The old PID 42464 / frame 499 / input 145 / exit 1 failure and cleanup remain intact.
+
+This run passed the first raw-255 house warp admission and recorded original controller readback at
+Map 3 `(3,3)`, Right, frame 643 / input 289, then opening `cs_5145C` return at frame 1167 / input 813.
+It failed at original `FieldMenu` entry `0x2127E`, frame **1749 / input 1395**, after the frozen
+house-exit block's C at inputs 1393–1394. The last checkpoint is `field-menu:reached`, Map 3 `(4,4)`,
+F601 set and F603/F604 clear; there are zero tracked pending returns. This confirms that this
+particular trace reaches the menu, not that the intended original route is impossible. No menu
+selection/effect, school warp, messenger/R2a boundary, gate/F604/north warp or Map19 control was
+observed. RA-08's accepted R2/R2a NotReached projection remains limited to its own prefix;
+this separate failed diagnostic is not a replacement golden or a reason to require optional menu
+coverage. Source-only school/north destinations remain expectations, not reached endpoints.
+
+PID **26448** exited **1**, without timeout or tree-kill. Lua reports zero callbacks and all recorded
+restoration flags true; host session deletion/canonical-identity checks succeeded. Independent OS
+inspection found no owned PID/runtime-copy survivor, so no extra cleanup was required. The
+[corrected result owner](map3-messenger-acceptance.md#corrected-candidate-single-run-result) retains
+exact material identities, bounded checkpoint/exit/finalization details and read-only reproduction.
+All old/new private artifacts remain preserved. No repair, rescheduling, re-materialization,
+warmup or second call followed. The intended 2A gate question, natural continuity, full 8D and H4
+remain **Unknown**; #437 is not complete. Only result-document/scope/planner/public-CI acceptance
+follows this failure, with no automatic further original-runtime action.
+
 ### Lineage decision before implementation or launch
 
 This proposal targets stateful gate movement/F604/warp semantics and reuses the earlier batched
@@ -318,8 +351,8 @@ provenance. The later accepted static graph and the explicit bridge's success do
 natural work or prove a corrected natural runner. Any further execution requires main-gate to
 independently decide whether additional accepted static evidence or a separately corrected capability
 changes admission, and exactly how prior R2b/replay and the completed diagnostic consumption constrain
-it. The single further-work disposition and exhausted result above do not reopen the disabled replay
-path or establish any further allowance.
+it. The two exact further-work dispositions and exhausted results above do not reopen the disabled
+replay path or establish any further allowance.
 
 The [capability failure owner](original-reference-replay-capability.md) and
 [scenario boundary](original-reference-replay-scenario-api.md) retain actual failure details and
