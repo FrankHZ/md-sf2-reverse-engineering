@@ -262,9 +262,14 @@ with `interactive=True, continuation=NATURAL_CONTINUATION`. Preparation for segm
 requires `resume_directory` naming the completed parent's candidate directory. The runner requires
 the matching explicit segment ordinal. New segment-1 preparation also requires an explicit
 `reviewed_prior_starts` (currently **4**); a future actual start would increment that to **5**.
+It also requires `reviewed_prior_active_seconds` (currently **4.289788499998394**), a finite
+nonnegative number below 7200; booleans are rejected. This is consumed time from the failed initial
+invocation even though no parent pair exists. Initial frames and batches remain zero.
 Segment numbering is independent of historical starts. Child preparation disallows an override and
-derives the prior count from the parent's actual bridge receipt. Run, pair publication and pair read
-validate the reported prior/future counts against the actual-start receipt. This fixes accounting,
+derives the prior count from the parent's actual bridge receipt and active time from its sealed pair.
+The existing `Segment.priorActiveSeconds` carries both reviewed initial and inherited time through
+the host deadline, Lua total/stage deadlines and cumulative pair publication. Run, pair publication
+and pair read validate the reported prior/future counts against the actual-start receipt. This fixes accounting,
 not permission to run or reset any budget. It uses BizHawk 2.11.1 native disk `savestate.save/load`,
 not the old memorysavestate rollback handle. The matching
 [official implementation](https://raw.githubusercontent.com/TASEmulators/BizHawk/2.11.1/src/BizHawk.Client.Common/lua/CommonLibs/SaveStateLuaLibrary.cs)
@@ -328,6 +333,7 @@ report = prepare_map3_observation_candidate(
     output_directory=Path("local/issue485/your-new-preparation"),
     proposed_timeout_seconds=7200, interactive=True,
     continuation=NATURAL_CONTINUATION, segment=1, reviewed_prior_starts=4,
+    reviewed_prior_active_seconds=4.289788499998394,
 )
 ```
 
@@ -362,8 +368,11 @@ Process termination, zero retained callbacks, session-ROM deletion and unchanged
 were confirmed; there was no timeout or forced termination. `scopeArmed=false` and
 `sessionStateRestored=false` remain a failed/unarmed restoration result, not successful acquisition
 cleanup. Retain the original runtime directory and all prior failures unchanged. The consumed time
-above is separately recorded failure cost; preparing a new candidate does not erase it, renew the
-7200-second allowance, or admit a retry/second segment. No resumable parent exists.
+above must enter new first-segment material as reviewed prior active seconds; preparing a new
+candidate does not erase it, renew the 7200-second allowance, or admit a retry/second segment.
+No resumable parent exists. Retained `local/issue485/prepared-02` is stale and forbidden for execution:
+it incorrectly carries zero prior active seconds. Preserve it unchanged; replacement prepare-only
+material and its identities are recorded in the Issue handoff.
 
 **Confirmed (actual-library offline boundary):** the installed release's NLua 1.4.1.0 and Lua 5.4,
 hosted on CLR 4.0.30319.42000 with the release's .NET Framework 4.8 binding configuration, reproduce

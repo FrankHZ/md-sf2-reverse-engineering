@@ -164,7 +164,9 @@ retains the actual start, zero delivered frames and unarmed restoration. The obs
 loading convention as this bridge's `System.Windows.Forms` reader. Direct installed NLua/Lua/.NET
 verification now covers that previously stubbed boundary; it does not validate EmuHawk registration
 or authorize another process. Historical starts derive from reviewed initial accounting and actual
-parent receipts, independently of segment ordinal.
+parent receipts, independently of segment ordinal. The initial segment's reviewed prior active time
+includes the failed invocation's 4.289788499998394 seconds; children inherit active time exclusively
+from the sealed parent pair. Both enter the existing host and observer cumulative deadlines.
 
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall

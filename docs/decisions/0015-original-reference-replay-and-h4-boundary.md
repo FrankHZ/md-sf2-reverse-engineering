@@ -79,7 +79,9 @@ instruction “用即时存档功能分片采集” authorizes the savestate met
 single-process/no-savestate choice for this new lineage. It does not reopen disabled frozen replay
 or erase its failures. Historical controlled native starts are now **4**, including #475 and the
 [failed initial segment](../research/map3-messenger-acceptance.md#segment-1-clock-registration-failure);
-its 4.289788499998394 active seconds remain recorded, and no retry or second segment is admitted.
+its 4.289788499998394 active seconds must be included in new initial material's explicit reviewed
+prior active time, and no retry or second segment is admitted. Children inherit time only from the
+sealed parent pair; no preparation renews the cumulative total or stage deadlines.
 Historical starts are independent of segment ordinal: initial material needs explicit reviewed prior
 starts, and children derive their count from actual parent receipts. Every actual new process adds one.
 The first implementation stopping condition was independently reviewable offline

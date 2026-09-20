@@ -599,8 +599,9 @@ The planning envelope becomes one lineage of at most four normal starts, no auto
 branching. Historical starts were **3** before it and are now **4** after the
 [first segment's registration failure](map3-messenger-acceptance.md#segment-1-clock-registration-failure).
 That invocation consumed 4.289788499998394 active seconds, zero delivered frames/batches, and produced
-no state/pair. Its separate failure cost is retained; there is no admitted retry or second segment.
-Initial preparation now requires reviewed prior-start accounting; children use actual parent receipts,
+no state/pair. Its failure cost must enter initial preparation as explicit reviewed prior active seconds;
+there is no admitted retry or second segment. Initial preparation also requires reviewed prior-start
+accounting; children inherit time only from the sealed parent pair and starts from actual parent receipts,
 never `3 + segment`. The clock correction is verified with real installed libraries offline only.
 The 36000 frames/600 batches and 7200
 active-session seconds remain cumulative. First Map19 by 2400 and returned guard by 5700 use cumulative
