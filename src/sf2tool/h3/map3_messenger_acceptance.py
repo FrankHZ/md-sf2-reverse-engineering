@@ -12,6 +12,8 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
+from sf2tool.h2.map_content import _encode_source, _parse_equates
+from sf2tool.h2.map_import import _decode_warps
 from sf2tool.h3 import map3_admitted_start as r1
 from sf2tool.h3.bizhawk import (
     NativeProcessResult,
@@ -817,6 +819,117 @@ def _candidate_execution_sources() -> dict[str, str]:
     }
 
 
+def _candidate_warps(
+    config: dict[str, Any],
+    disasm: Path,
+    sources: dict[str, str],
+    addresses: dict[str, int],
+    listing: str,
+    rom: bytes,
+    castle: dict[str, Any],
+) -> dict[str, Any]:
+    """Bind read-only admission to original no-scroll operands and R2 navigation."""
+    constants = _parse_equates(disasm)
+    current = constants["MAP_CURRENT"]
+    exploration = sources["code/gameflow/exploration/explorationfunctions_2.asm"]
+    _require_order(
+        _section(exploration, "ProcessMapEventType1_Warp"),
+        (
+            ("tst.b", "((map_event_param_1-$1000000)).w"),
+            ("bne.w", "loc_259cc"),
+            ("movem.l", "(sp)+,d0"),
+            ("move.b", "((map_event_param_2-$1000000)).w,d0"),
+            ("bsr.w", "updateplayerposfrommapevent"),
+            ("rts", ""),
+            ("move.b", "d0,((current_map-$1000000)).w"),
+        ),
+        "candidate no-scroll warp",
+    )
+    _require_order(
+        _section(exploration, "ExplorationLoop"),
+        (
+            ("cmpi.b", "#-1,d0"),
+            ("beq.s", "@mapindexnotprovided"),
+            ("move.b", "d0,((current_map-$1000000)).w"),
+            ("bra.s", "loc_25836"),
+            ("bsr.w", "waitforfadetofinish"),
+            ("bsr.w", "updatemainentityproperties"),
+            ("jsr", "j_declareraftentity"),
+        ),
+        "candidate current-map branch",
+    )
+    # Named pinned instruction seams; final ROM resolves H1's branch placeholders.
+    compare = bytes.fromhex("0C00") + current.to_bytes(2, "big")
+    if (
+        _h1_bytes(listing, 0x257E4, 4) != compare.hex().upper()
+        or rom[0x257E4:0x257E8] != compare
+        or rom[0x257E8] != 0x67
+        or 0x257EA + int.from_bytes(rom[0x257E9:0x257EA], "big", signed=True) != 0x25828
+        or rom[0x2597C:0x2597E] != bytes.fromhex("6600")
+        or 0x2597E + int.from_bytes(rom[0x2597E:0x25980], "big", signed=True)
+        != addresses["loc_259CC"]
+    ):
+        raise ValueError("candidate current-map equate/ROM branch drift")
+    encoded, count, trailing = _encode_source(
+        disasm / "data/maps/entries/map03/6-warp-events.asm", "warpEvents", constants
+    )
+    start = addresses["Map03s6_WarpEvents"]
+    if trailing or rom[start : start + len(encoded)] != encoded:
+        raise ValueError("candidate Map3 warp source/ROM table drift")
+    rows = _decode_warps(encoded, count)
+
+    def bind(warp: dict[str, int]) -> dict[str, Any]:
+        matches = [row for row in rows if row["trigger"] == {"x": warp["x"], "y": warp["y"]}]
+        if len(matches) != 1:
+            raise ValueError("candidate warp source row missing/ambiguous")
+        row = matches[0]
+        effective = warp["fromMap"] if row["targetMap"] == current else row["targetMap"]
+        if (
+            row["scrollMode"] != 0
+            or row["targetMap"] != warp["eventDestinationMap"]
+            or effective != warp["toMap"]
+            or row["destination"] != {"x": warp["destinationX"], "y": warp["destinationY"]}
+        ):
+            raise ValueError("candidate retained warp/source operand drift")
+        return {**warp, "scrollMode": row["scrollMode"], "facing": row["facing"]}
+
+    prefix = []
+    for warp in config["route"]["warps"]:
+        steps = [
+            step
+            for step in config["route"]["navigation"]["inputPlan"]
+            if step["to"] == {"map": warp["fromMap"], "x": warp["x"], "y": warp["y"]}
+        ]
+        if len(steps) != 1:
+            raise ValueError("candidate warp navigation join missing/ambiguous")
+        prefix.append({**bind(warp), "source": steps[0]["from"], "target": steps[0]["to"]})
+    north = castle["routeGraph"]["segments"][3]
+    retained = next(
+        join["row"] for join in castle["retainedWarpJoins"] if join["segment"] == north["id"]
+    )
+    north_row = bind(retained)
+    if (
+        north_row["toMap"] != north["to"]["map"]
+        or [north_row["destinationX"], north_row["destinationY"]] != north["to"]["point"]
+        or north_row["facing"] != constants[north["to"]["facing"]]
+    ):
+        raise ValueError("candidate north warp graph/source drift")
+    points = castle["routeGraph"]["segments"][2]["points"]
+    if (
+        north["from"]["map"] != north_row["fromMap"]
+        or points[-1] != north["from"]["point"]
+        or north_row["x"] != 255
+        or north_row["y"] != points[-1][1]
+    ):
+        raise ValueError("candidate north warp navigation/source trigger drift")
+    return {
+        "currentMapOperand": current,
+        "prefixWarps": prefix,
+        "northWarpOperands": north_row,
+        "northWarpSource": points[-2],
+    }
+
+
 def prepare_map3_observation_candidate(
     rom_path: Path,
     upstream_path: Path,
@@ -881,6 +994,10 @@ def prepare_map3_observation_candidate(
     sources = {
         name: (disasm / name).read_text(encoding="utf-8")
         for name in (
+            "sf2enums.asm",
+            "sf2mapmacros.asm",
+            "data/maps/entries/map03/6-warp-events.asm",
+            "code/gameflow/exploration/explorationfunctions_2.asm",
             "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
             "data/maps/entries/map03/mapsetups/scripts_1.asm",
             "data/maps/entries/map19/mapsetups/s6_initfunction.asm",
@@ -1042,8 +1159,10 @@ def prepare_map3_observation_candidate(
     config["ram"].update(r1._equates(equates, ram_names))
     config["cases"] = [{**EXPECTED_CASES[0], "frameBudget": len(frames) + 3600}]
     castle_fixture = repo_path("tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json")
-    castle_segments = load_json(castle_fixture)["static"]["routeGraph"]["segments"]
+    castle = load_json(castle_fixture)["static"]
+    castle_segments = castle["routeGraph"]["segments"]
     config["candidate"] = {
+        **_candidate_warps(config, disasm, sources, addresses, listing, rom, castle),
         "functions": functions,
         "frames": frames,
         "inputIdentity": sha256(input_bytes).hexdigest().upper(),

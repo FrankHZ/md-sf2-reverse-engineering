@@ -1230,10 +1230,10 @@ def _assert_source_route(
         return {
             "fromMap": source_map,
             "toMap": destination_map,
-            # `MAP_CURRENT` remains the raw event operand (0xFF) until
-            # UpdatePlayerPosFromMapEvent resolves it at the original warp
-            # handler.  The observer therefore validates both raw operand and
-            # later resolved destination, rather than conflating the two.
+            # On the no-scroll path, raw `MAP_CURRENT` (0xFF) reaches
+            # ExplorationLoop, whose sentinel branch retains CURRENT_MAP.
+            # UpdatePlayerPosFromMapEvent handles only position/facing.
+            # Validate the raw operand separately from the effective map.
             "eventDestinationMap": 255 if destination_symbol == "MAP_CURRENT" else destination_map,
             "x": x,
             "y": y,

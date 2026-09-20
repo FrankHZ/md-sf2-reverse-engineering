@@ -2409,20 +2409,43 @@ local function install_candidate()
     end
     add_callback(config.functions.ProcessMapEventType1_Warp, "candidate:warp", function()
         if not c.epoch then return end
-        local destination = memory.read_u8(ram.MAP_EVENT_PARAM_2, "M68K BUS")
-        c.record("warp:original-handler", { operands = read_span(ram.MAP_EVENT_PARAM_1, 5) })
-        if destination == 19 then
+        local operands = read_span(ram.MAP_EVENT_PARAM_1, 5)
+        local map, x, y = current_position()
+        local target_x, target_y = current_destination()
+        -- MAP_CURRENT retains CURRENT_MAP only on the original no-scroll path.
+        -- This is an admission calculation, never a write or replacement warp.
+        local effective = operands[2]
+        if operands[1] == 0 and effective == config.candidate.currentMapOperand then
+            effective = map
+        end
+        c.record("warp:original-handler", { operands = operands, currentMap = map,
+            effectiveDestinationMap = effective, source = { x = x, y = y },
+            target = { x = target_x, y = target_y } })
+        assert(not c.gates.warp, "warp beyond first Map19 admission")
+        local function matches(warp)
+            return map == warp.fromMap and effective == warp.toMap
+                and operands[1] == warp.scrollMode and operands[2] == warp.eventDestinationMap
+                and operands[3] == warp.destinationX and operands[4] == warp.destinationY
+                and operands[5] == warp.facing
+        end
+        if effective == config.candidate.northWarp.to.map then
             assert(c.gates.returned and flag_is_set(604), "north warp bypassed gate")
-            local warp = config.candidate.northWarp
-            local x, y = current_destination()
-            assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == warp.from.map
-                and x == warp.from.point[1] and y == warp.from.point[2]
-                and memory.read_u8(ram.MAP_EVENT_PARAM_3, "M68K BUS") == warp.to.point[1]
-                and memory.read_u8(ram.MAP_EVENT_PARAM_4, "M68K BUS") == warp.to.point[2]
-                and memory.read_u8(ram.MAP_EVENT_PARAM_1 + 4, "M68K BUS") == ram[warp.to.facing],
+            local warp, source = config.candidate.northWarp, config.candidate.northWarpSource
+            assert(matches(config.candidate.northWarpOperands)
+                and x == source[1] and y == source[2]
+                and target_x == warp.from.point[1] and target_y == warp.from.point[2],
                 "original north warp operands/source target drift")
             c.gates.warp = true
-        else assert(destination == 3 and not c.gates.warp, "warp beyond bounded Map3/19 route") end
+        else
+            local admitted = false
+            for _, warp in ipairs(config.candidate.prefixWarps) do
+                if matches(warp) and x == warp.source.x and y == warp.source.y
+                    and target_x == warp.target.x and target_y == warp.target.y then
+                    admitted = true
+                end
+            end
+            assert(admitted, "warp beyond source-bound Map3 prefix")
+        end
     end)
     add_callback(f.ms_map19_InitFunction, "candidate:map19-init", function()
         assert(c.gates.warp, "Map19 init without original north warp")
