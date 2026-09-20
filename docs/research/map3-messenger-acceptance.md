@@ -149,6 +149,7 @@ prepare_map3_observation_candidate(
     private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
     input_path=Path("local/issue456/diagnostic-input.json"),
     output_directory=Path("local/issue456/review-candidate"),  # must not exist
+    proposed_timeout_seconds=600,  # proposal for review, not a launch allowance
 )
 ```
 
@@ -170,6 +171,10 @@ This produces 23,234 frames. These deliberately unvalidated hold/release/wait pa
 or enter FieldMenu; neither reachability nor compatibility is claimed. They must be reviewed before
 any launch and may not be adapted to live state. The material is an inspectable method candidate,
 not an accepted playback recording or proof that this input reaches Map19.
+The example proposes a 600-second host timeout and reports the total frame watchdog as 28,634
+(the frozen input plus the retained bootstrap/controlled-prefix margins). Execution consumes this
+materialized limit; a different proposed limit requires different reviewed material and does not
+reset the old lineage allowance.
 
 Direct acceptance consists of source/H1/ROM binding, materialization and rejection checks,
 Python lint/compile, Lua compilation, normal research verification and the clean committed planner.

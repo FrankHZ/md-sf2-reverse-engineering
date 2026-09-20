@@ -801,7 +801,12 @@ def verify_map3_messenger_acceptance(
 
 
 def prepare_map3_observation_candidate(
-    rom_path: Path, upstream_path: Path, *, input_path: Path, output_directory: Path
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    input_path: Path,
+    output_directory: Path,
+    proposed_timeout_seconds: int,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -809,6 +814,8 @@ def prepare_map3_observation_candidate(
     not a route planner, a replay receipt, or a replacement public golden.
     """
     output = output_directory.resolve()
+    if type(proposed_timeout_seconds) is not int or proposed_timeout_seconds <= 0:
+        raise ValueError("candidate needs an explicit positive proposed wall-time limit")
     local = repo_path("local").resolve()
     if not output.is_relative_to(local) or output == local or output.exists():
         raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
@@ -1047,6 +1054,9 @@ def prepare_map3_observation_candidate(
         "ConfigurationSha256": sha256(config_bytes).hexdigest().upper(),
         "InputSha256": config["candidate"]["inputIdentity"],
         "InputFrames": len(frames),
+        "ProposedWallTimeoutSeconds": proposed_timeout_seconds,
+        "TotalFrameBudget": config["r1"]["harness"]["bootstrapFrameBudget"]
+        + config["cases"][0]["frameBudget"],
         "InputClock": trace["clock"],
         "InputProvenance": trace["provenance"],
         "Start": "controlled R1 bootstrap; original services restored at first WaitForEvent",
@@ -1072,9 +1082,7 @@ def prepare_map3_observation_candidate(
     return report
 
 
-def run_map3_observation_candidate(
-    rom_path: Path, candidate_directory: Path, *, timeout_seconds: int
-) -> dict[str, Any]:
+def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) -> dict[str, Any]:
     """Future admitted execution composition; NOT authorized by preparation.
 
     There is deliberately no CLI wiring or call from prepare/preflight. Independent
@@ -1098,8 +1106,9 @@ def run_map3_observation_candidate(
     canonical = inspect_rom(rom_path)["sha256"]
     if canonical != report["RomSha256"] or canonical != r1.CANONICAL_ROM_SHA256:
         raise ValueError("candidate canonical ROM identity drift")
+    timeout_seconds = report["ProposedWallTimeoutSeconds"]
     if type(timeout_seconds) is not int or timeout_seconds <= 0:
-        raise ValueError("an independently admitted positive wall-time budget is required")
+        raise ValueError("candidate is missing its reviewed positive wall-time limit")
     config = load_json(directory / "config.json")
     if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
         raise ValueError("candidate frame table differs from its frozen input")
