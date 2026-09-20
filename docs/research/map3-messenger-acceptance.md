@@ -70,12 +70,13 @@ session ROM is deleted; canonical ROM bytes are rechecked unchanged.
 
 ## Unshimmed Map3 candidate (preparation only)
 
-**Inferred / not runtime-admitted:** Issue #456 adds `prepare_map3_observation_candidate` and
+**Confirmed capability; bounded diagnostic failed:** Issue #456 adds `prepare_map3_observation_candidate` and
 `run_map3_observation_candidate` to the existing Python owner, with an opt-in `candidate` mode in
 the same observer. The old command, default R2a cases, schemas and observed fixture remain unchanged.
 Neither Python function is wired into the CLI. Preparation performs no original emulator launch;
-the execution composition is for a later independently admitted method and lineage/budget decision.
-Its result is `OBSERVATION-COMPLETE-UNREVIEWED`, never a public golden or H4 verdict.
+execution requires an independent method and lineage/budget disposition. The single separately
+admitted diagnostic below failed and exhausted its permission. A successful API return would be
+`OBSERVATION-COMPLETE-UNREVIEWED`, never a public golden or H4 verdict.
 
 The controlled prefix still uses the accepted CheckSram return redirect, checkpoint/menu thunk,
 NewGame→SaveGame→MainLoop→default Map3 setup/init path. At the first `WaitForEvent`, before
@@ -242,8 +243,8 @@ Python lint/compile, Lua compilation, normal research verification and the clean
 Issue #460 directly exercises the opted-in process handoff and error paths with synthetic process
 doubles only, including pre-process failure, PID persistence, timeout/failed termination, callback
 failure, missing output and independent cleanup. These checks launch no native process and are not
-original evidence. Selected original-runtime gates are **NOT RUN / pending independent launch
-admission**. The local
+original evidence. Ordinary planner-selected runtime gates remain **NOT RUN**; the separately admitted candidate
+diagnostic and its failed result are recorded below. The local
 environment needed an explicitly authorized pinned checkout, verified tool copies and one real
 bit-perfect H1 build; its kept listing/log precede preparation and are not runtime evidence. Consuming
 the accepted shared-tool mechanism requires direct preparation/copy checks, not another H1 build or
@@ -254,3 +255,65 @@ Old R2b/replay ordinal-2 timeout **FAIL**, cleanup failure, missing genuine rece
 retry/reset prohibition and completed #431/#434 failures remain preserved by the
 [audit dossier](map3-battle01-audit.md#first-necessary-original-observation-dossier).
 This candidate grants no launch allowance and supplies no natural continuity, full 8D or H4 PASS.
+
+## Single admitted controlled-start diagnostic result
+
+**Confirmed failure, 2026-09-19 project date (2026-09-20 02:07 UTC):** the
+[one-run main-gate disposition](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/460#issuecomment-5746916798)
+was executed once from accepted commit `4386c0148362e44d8d9256cf183671832f7c10e2`, tree
+`3f0aeda35c7715f6e7002baf3f3021b4e78fe7c3`. This was a controlled-R1-start diagnostic, not
+scenario acceptance or passive reset/New/load replay. The disposition invoked ADR 0015's accepted
+further-work condition after independent acceptance of the source/admission, observer-restoration
+and diagnostic-capability corrections. It did not reset historical consumption, grant a two-plus-one
+sequence or satisfy the disabled replay's ordinal-3 prerequisite. Its single process allowance is
+now exhausted. No retry, repair launch, longer limit or follow-on H3 is authorized.
+
+The existing `run_map3_observation_candidate` API consumed the retained `candidate-proposal-03`
+once after an invocation note and read-only identity/process checks. Frozen input SHA-256 was
+`37544D8C526F41A60D13B79971744D0A99303BCB08E407FBB1AE01C8AD7F1145`, runner
+`C6EDA0CCBD4BBEFE1732883F31B51B0736EF4DA7BC5D7B39CE4C969432509F14`, configuration
+`8495B3D379970403AD4672E321E1D87F688903700DF470B07F2B1D027FCDCD07`, and observer
+`335148A5D50383CA4152E14C4E18498AE1CAE2FC615E830421DCB29D108DB028`.
+The reviewed report's helper/bootstrap, EXE/Lua, pinned source, retained fixtures, H1 listing and ROM
+identities matched before invocation. Limits stayed 23,234 frozen input frames, 28,634 watchdog
+frames and 600 seconds. No preceding native warmup or old H3 command ran.
+
+**Confirmed observed boundary:** 13 private checkpoints record the first R1 wait and reported
+service/scratch restoration at observer frame 354, followed by the first two accepted Left inputs.
+At observer frame 499 / input frame 145, `ProcessMapEventType1_Warp` entry `0x25978` reached
+`candidate:warp`. Current map was 3; the raw destination-map operand was `255` (`MAP_CURRENT`).
+The candidate asserted `warp beyond bounded Map3/19 route` in phase `candidate-route`. The failure
+record's expected and actual PC both equal `0x25978`; this was not an unexpected callback address.
+It stopped at handler entry, before observing completion of that warp. Messenger, entity142, gate,
+F604, north warp and first Map19 control were not reached by this diagnostic. The proposed input
+reordering was therefore not exercised at its corrected interaction.
+
+**Confirmed observer/source mismatch:** at that accepted Git object,
+`tools/bizhawk/map3_messenger_acceptance_observer.lua:2425` permits only raw map 3 for a prefix
+warp, besides its separately guarded raw map 19 branch. Pinned `sf2enums.asm:MAP_CURRENT` defines
+255 as reloading the current map. `data/maps/entries/map03/6-warp-events.asm` gives the house stair
+warp at `(54,3)` that sentinel and destination `(3,3)`. In
+`code/gameflow/exploration/explorationfunctions_2.asm`, `ProcessMapEventType1_Warp` reads
+`MAP_EVENT_PARAM_2`, while `ExplorationLoop` branches on byte `-1` to `@MapIndexNotProvided`
+instead of replacing `CURRENT_MAP`. The observer rejects this valid source representation at the
+first opening warp. This explains the reported assertion; it is not an original route failure or
+proof that the warp completed. Python/Lua and the attempted material remain unchanged after failure.
+
+**Confirmed process and retained cleanup:** native PID 42464 started once, returned exit code 1,
+reported `timed_out=false` and `process_terminated=true`; timeout tree-kill was not used. The host
+result is `FAIL` / `started-failure`. Full stdout/stderr remain private. Lua emitted the typed failure,
+reported callback count zero, scope/session restoration and output removal. No terminal observation
+file remains. The host independently recorded session ROM deletion and unchanged canonical ROM.
+A separate post-exit operating-system check found neither that PID nor a process executing from this
+attempt's runtime directory alive; no additional process cleanup was needed. Runtime copies, status,
+checkpoints and all prior results are retained.
+
+For read-only reproduction of the finding, inspect the retained `candidate-proposal-03/runtime/`
+`host-status.json`, `observer.status.txt` and `checkpoints.jsonl`, together with the Issue #460
+invocation note and post-exit process check. Compare the exact executed observer and pinned source
+sections named above; do not invoke the candidate again or rematerialize it around collision refusal.
+The failure reaches the host exit contract and bounds the native cleanup result for this attempt.
+It establishes no general callback compatibility, successful gate transition, natural continuity,
+full 8D or H4. The intended caller-dependent gate question and later timing/reach remain **Unknown**.
+Historical R2b/replay failures and missing genuine receipts remain intact; documentation of this
+failed diagnostic does not replenish any allowance.

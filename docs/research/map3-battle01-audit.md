@@ -234,7 +234,7 @@ cannot silently inherit permission from historical R2a. The accepted evidence do
 execution permission. Issue #456's [preparation owner](map3-messenger-acceptance.md#unshimmed-map3-candidate-preparation-only)
 now defines an opt-in candidate in the existing messenger Python/Lua rail: service/scratch restoration
 at the R1 wait, explicit frozen diagnostic input, missing status/NPC readbacks and bounded gate/Map19
-callbacks. It has no CLI wiring or runtime result. Its materialization status is
+callbacks. It has no CLI wiring. Its materialization status is
 `CANDIDATE-PREPARED-NOT-ADMITTED`, not `PRELAUNCH-PASS`; ordinary R2a/R2d fixtures remain unchanged.
 The timed diagnostic input is not an accepted original recording and may fail. Issue #460 classifies
 the proposed method as controlled-start H3: declared R1 bootstrap mutations, restoration of original
@@ -253,8 +253,9 @@ using H2's selected operation subset; the complete pinned `cs_51652` contains si
 commands. That claim is withdrawn and the gate confirmation block remains unchanged.
 
 Exact material/code review, actual CI and old-lineage/budget disposition still precede any launch.
-The first stopping condition is a frozen Draft PR with runtime gates explicitly **NOT RUN**, not
-an automatic original execution after diagnostic implementation.
+The implementation-stage stopping condition was a frozen Draft PR with runtime gates explicitly
+**NOT RUN**. The separately admitted single diagnostic result is recorded below; all other selected
+runtime gates and the old replay path remain unexecuted.
 
 Required private inputs/toolchain are the canonical ROM, pinned upstream/H1 anchors, retained
 fixtures, BizHawk 2.11.1 / Genesis Plus GX and the manifest-owned executable/Lua identities. Resolve
@@ -273,24 +274,55 @@ facts. No forced flags, positions, movement completion, PC advance, longer-budge
 continuation may repair a divergence. A successful bounded route result would still leave real cue
 consumption outside its instrumented boundaries, the rest of R2b, natural battle results and 5B open.
 
+### Executed diagnostic and remaining boundary
+
+**Confirmed failure, 2026-09-19 project date:** after PR #461 was accepted, main-gate issued the
+[exact single controlled-start diagnostic disposition](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/460#issuecomment-5746916798)
+under ADR 0015's further-work condition. The accepted execution commit was
+`4386c0148362e44d8d9256cf183671832f7c10e2`, tree `3f0aeda35c7715f6e7002baf3f3021b4e78fe7c3`.
+The frozen 23,234-frame proposal ran once with its 600-second timeout and 28,634-frame watchdog;
+no warmup, old H3 command, repair or retry occurred. This was neither old replay ordinal 3 nor a
+new two-plus-one allowance. The specific permission is exhausted.
+
+The diagnostic stopped before the intended gate question: `candidate:warp` rejected the first
+opening warp's raw `MAP_CURRENT=255` at `ProcessMapEventType1_Warp` `0x25978`, observer frame 499 /
+input frame 145. The source represents that same-map house stair warp with the sentinel; the
+candidate prefix check allowed only literal map 3. This is a confirmed observer/source mismatch,
+not an observed original route failure. Handler completion, messenger/gate/F604/north warp and
+Map19 control were not observed. The
+[result owner](map3-messenger-acceptance.md#single-admitted-controlled-start-diagnostic-result)
+retains exact code/material identities, source attribution, reproduction route and limitations.
+
+The native process exited 1 without timeout; Lua reported zero remaining callbacks and restored
+scope/session state, the host recorded deleted session ROM and unchanged canonical ROM, and an
+independent process check found no owned PID/runtime-copy survivor. The diagnostic is **FAIL** and
+has no terminal observation, even though its failure and cleanup diagnostics were retained.
+The runtime/status/checkpoints and earlier failures remain private and preserved. No Python/Lua
+correction or extra launch follows this result. The original caller-dependent gate transition,
+later fixed-input reach and natural continuity remain **Unknown**; no public golden, full 8D or H4
+is promoted. Further action returns to independent main-gate disposition, with no remaining launch
+inferred from this failed diagnostic.
+
 ### Lineage decision before implementation or launch
 
 This proposal targets stateful gate movement/F604/warp semantics and reuses the earlier batched
 observer, rather than the disabled replay capability's fixed movie/capture backend. That technical
 difference does **not** establish a new budget: it overlaps the failed R2b route and inherits its
 provenance. The later accepted static graph and the explicit bridge's success do not erase the failed
-natural work or prove a corrected natural runner. Main-gate must independently decide the method
-class, whether accepted new static evidence or a separately corrected capability changes admission,
-and exactly how prior R2b/replay consumption constrains it. Until then the old prohibition remains.
+natural work or prove a corrected natural runner. Any further execution requires main-gate to
+independently decide whether additional accepted static evidence or a separately corrected capability
+changes admission, and exactly how prior R2b/replay and the completed diagnostic consumption constrain
+it. The single further-work disposition and exhausted result above do not reopen the disabled replay
+path or establish any further allowance.
 
 The [capability failure owner](original-reference-replay-capability.md) and
 [scenario boundary](original-reference-replay-scenario-api.md) retain actual failure details and
 missing receipts. Ordinal 2 cannot be presumed unused; its reported FAIL is not the same-candidate
 PASS required by the disabled path for ordinal 3. No nominal reset, fourth launch, renamed runner
 or task creates allowance. Recovery of that disabled path is not this proposal's milestone
-prerequisite; an explicit lineage/budget disposition is. No new observer/fixture/launch is admitted
-by this dossier. The next boundary is independent main-gate review of these fields and that concrete
-method/reuse/admission decision, not automatic runtime execution.
+prerequisite; an explicit lineage/budget disposition is. No additional observer/fixture/launch is admitted
+by this dossier. The next boundary is independent main-gate review of the failed diagnostic and its
+remaining caller-dependent question, not automatic runtime execution.
 
 ## Documentation verification and handoff boundary
 
