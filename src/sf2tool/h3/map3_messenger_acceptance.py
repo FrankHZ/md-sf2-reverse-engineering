@@ -1021,6 +1021,7 @@ def _natural_configuration(
         "MUSIC_STACK",
         "DIALOGUE_WINDOW_INDEX",
         "PORTRAIT_WINDOW_INDEX",
+        "CURRENT_DIAMOND_MENU_CHOICE",
     )
     constants.update(
         r1._equates(sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"], extra_ram)

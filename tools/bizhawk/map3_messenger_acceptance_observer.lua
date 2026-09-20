@@ -2236,6 +2236,8 @@ local function install_candidate()
             result.lastConsumerPoll = c.consumerPoll or false
             if natural then
                 for _, flag in ipairs({88, 89, 451}) do result.flags[tostring(flag)] = flag_is_set(flag) end
+                result.promptChoice = (c.consumers.prompt or 0) > 0
+                    and memory.read_u8(ram.CURRENT_DIAMOND_MENU_CHOICE, "M68K BUS") or false
                 result.completed = c.completed
                 result.stopReason = c.stopReason or c.failureReason or false
                 result.battle = memory.read_u8(ram.CURRENT_BATTLE, "M68K BUS")
@@ -2248,6 +2250,7 @@ local function install_candidate()
     function c.record(kind, facts)
         c.lastCheckpoint = kind
         if natural and (kind == "operation:entry" or kind:match(":return$")
+            or kind == "text:acknowledgement-read" or kind == "input:original-movement-acceptance"
             or kind:match("^natural:")) then c.progressFrame = frame_count end
         c.order = c.order + 1
         local file = assert(io.open(config.candidate.checkpointPath, "a"))
@@ -2625,6 +2628,7 @@ local function install_candidate()
                 values[#values + 1] = memory.read_u32_be(e.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTADDR, "M68K BUS")
                 values[#values + 1] = memory.read_u8(e.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER, "M68K BUS")
             end
+            if (c.consumers.prompt or 0) > 0 then values[#values + 1] = byte("CURRENT_DIAMOND_MENU_CHOICE") end
             local key = table.concat(values, ":")
             if key ~= c.progressState then c.progressState, c.progressFrame = key, frame_count end
             if frame_count - (c.progressFrame or c.epoch) >= acquisition.progressFrames and not c.stopReason then

@@ -176,6 +176,10 @@ neutral completed frame, settled raw position/destination, no pending event/cons
 field-action poll. The operator must acquire it before taking the tower exit; Lua supplies no route
 or input policy.
 
+The source-progress clock resets on reached operation/consumer returns, accepted movement/text
+acknowledgements and actual position, relevant entity/camera/fade or prompt-choice changes. Repeated
+unchanged polling, held input without an accepted read and `state`/`ping` do not renew it.
+
 The first `0x22E70` sample requires returned before/start/load/generation work, Map57/Battle1/area,
 F401/F501/F451, matching natural first ally/turn/moving actor and **mapped entity** view target,
 neutral input, zero full event word, no action/targeting/modal or pending blocking consumer, and
