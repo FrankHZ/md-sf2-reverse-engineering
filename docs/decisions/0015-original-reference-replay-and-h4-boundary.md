@@ -77,13 +77,13 @@ unchanged. Existing 8D, 7C, 9A/10A and H4 acceptance boundaries remain unchanged
 For [Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485), the user's
 instruction “用即时存档功能分片采集” authorizes the savestate method and supersedes the earlier
 single-process/no-savestate choice for this new lineage. It does not reopen disabled frozen replay
-or erase its failures. Historical controlled native starts are now **4**, including #475 and the
-[failed initial segment](../research/map3-messenger-acceptance.md#segment-1-clock-registration-failure);
-its 4.289788499998394 active seconds must be included in new initial material's explicit reviewed
-prior active time, and no retry or second segment is admitted. Children inherit time only from the
-sealed parent pair; no preparation renews the cumulative total or stage deadlines.
-Historical starts are independent of segment ordinal: initial material needs explicit reviewed prior
-starts, and children derive their count from actual parent receipts. Every actual new process adds one.
+or erase its failures. Historical controlled native starts are now **5**, including the
+[completed segment-1 camera-readiness failure](../research/map3-messenger-acceptance.md#segment-1-camera-readiness-failure).
+Reviewed initial consumption is **1556.4798537000315 active seconds, 10740 delivered frames and
+174 advancing batches**. Neither failed segment-1 attempt produced a state/pair. Initial material
+requires all four explicit reviewed consumption values; children inherit starts from actual parent
+receipts and resource consumption from their sealed parent. No preparation renews budgets or fabricates
+observer/emulator frames or R1 epochs. No retry or second segment is admitted.
 The first implementation stopping condition was independently reviewable offline
 implementation and prepare-only material in a Draft PR, with **zero new native starts**. Main-gate
 must accept the implementation and admit its concrete lineage before execution; another user
@@ -96,6 +96,11 @@ for review. Native disk states pair with observer continuation and evidence only
 exit/cleanup. Resume requires closed blocking consumers/programs/return stacks, reconstructs observer
 registrations and progress, checks original state before input, and never repeats R1/NewGame or
 injects route/actor/RNG state. Save/load execute outside bus/input callbacks at paused completed frames.
+Under [main-gate's bounded correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752040919),
+ordinary well-formed not-ready saves now return typed nonterminal results and retain the pause with
+zero frames, no files/restoration and no budget reset. State/step and save share one readiness
+predicate. This supersedes the earlier all-save-rejections-fatal policy; malformed/off-route,
+identity, callback, I/O and hard-budget failures still end the attempt.
 
 The limits are cumulative: 36000 delivered frames, 600 batches of 1–120 frames, 7200 seconds of active
 native-session time including paused decisions, first Map19 by 2400 active seconds and returned guard
@@ -105,6 +110,10 @@ are recorded separately and advance no frames. A saved frame is distinct from th
 callback. This is **savestate-linked segmented original acquisition**, not uninterrupted wall-time
 execution, frozen replay, natural visible New/load, or H4. Native save/load compatibility and complete
 observation continuity remain **Unknown** until admitted native segments and independent acceptance.
+The Map3 owner's current feasibility analysis finds only 843.5201462999685 seconds left before the
+unchanged Map19 deadline, below the last 1552.1900652000331-second reacquisition. Its proposal to change
+only that stage deadline to 3600 is pending main-gate review, not adopted or implemented here. All
+other limits remain fixed; fresh preparation remains NOT-ADMITTED.
 
 ### Use distinct names and evidence owners
 

@@ -596,16 +596,27 @@ Callback-time player-ready and later saved frame remain separate. The implementa
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
 
 The planning envelope becomes one lineage of at most four normal starts, no automatic retries or
-branching. Historical starts were **3** before it and are now **4** after the
-[first segment's registration failure](map3-messenger-acceptance.md#segment-1-clock-registration-failure).
-That invocation consumed 4.289788499998394 active seconds, zero delivered frames/batches, and produced
-no state/pair. Its failure cost must enter initial preparation as explicit reviewed prior active seconds;
-there is no admitted retry or second segment. Initial preparation also requires reviewed prior-start
-accounting; children inherit time only from the sealed parent pair and starts from actual parent receipts,
-never `3 + segment`. The clock correction is verified with real installed libraries offline only.
+branching. Historical starts were **3** before it and are now **5**, including the registration
+failure and the [completed camera-readiness failure](map3-messenger-acceptance.md#segment-1-camera-readiness-failure).
+Neither produced a state/pair. Reviewed cumulative consumption is 1556.4798537000315 active seconds,
+10740 delivered frames and 174 advancing batches, leaving 5643.5201462999685 seconds, 25260 frames and
+426 batches. Initial preparation requires all reviewed values; children inherit only their sealed
+parent's consumption and actual start receipt. Actual observer/emulator frames and R1 epochs remain
+independent of resource consumption. The completed real-library clock proof is preserved without
+rerun. No retry or second segment is admitted.
+
+State/step and save now share a completed-frame readiness predicate exposing raw camera A/B targets
+and original scrolling bits alongside closure/input fields. Ordinary not-ready saves return typed
+nonterminal results, advance zero frames, write/restore nothing and renew no budget. Fatal
+malformed/off-route/identity/I/O/callback/budget failures retain their stops. The last failed save
+passed player/closure checks but rejected camera equality; its raw camera values and extra settling
+time are **Unknown**. Original source masks are now ROM-bound and added without removing that guard.
 The 36000 frames/600 batches and 7200
 active-session seconds remain cumulative. First Map19 by 2400 and returned guard by 5700 use cumulative
-active time, so loading cannot renew either stage allowance. The 3600-frame progress clock carries
+active time, so loading cannot renew either stage allowance. Only 843.5201462999685 seconds remain
+before Map19's current deadline, below the last 1552.1900652000331-second reacquisition. The Map3 owner
+proposes changing only that deadline to 3600 for main-gate review; this is not implemented, admitted or
+a completion prediction. Other caps stay unchanged. The 3600-frame progress clock carries
 forward; offline gaps are separately recorded. Original first-AI/action/decline/failure stopping
 rules remain, with no forced order or intervening combat. Native compatibility belongs to admitted
 segments, not an additional smoke process. Existing #475 raw, #483 preparation and prior failures

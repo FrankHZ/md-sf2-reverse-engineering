@@ -147,6 +147,13 @@ three segment modes implement it; standalone bridge mode and other acquisition m
 No arbitrary save/load path or memory command is exposed over TCP. Paths and parent material are
 fixed by offline preparation and the existing runner. The library exports its existing actual-core
 identity reader for checks before native save/load, without adding a general reflection API.
+State/step results expose the observer's shared `saveReadiness` predicate, unmet reasons and raw
+camera/scrolling/closure fields. An ordinary not-ready `save` returns `ok=true`, `terminal=false`,
+`advanced=0`, `save.status="not-ready"` and the same readiness structure. The existing host command
+path returns this typed result without resetting idle/deadlines; only an explicit advancing step
+renews the normal paused interval. The observer stays paused, creates no state/pair, performs no
+restoration and accepts subsequent explicit commands. Malformed/off-route, identity, callback,
+I/O and hard-budget failures remain fatal. A ready save still requires native API/file checks.
 
 The bridge subtracts previously consumed active-session seconds from the new process deadline and
 binds the initial runtime settings to the completed parent before Popen. Its receipt records actual
@@ -164,9 +171,13 @@ retains the actual start, zero delivered frames and unarmed restoration. The obs
 loading convention as this bridge's `System.Windows.Forms` reader. Direct installed NLua/Lua/.NET
 verification now covers that previously stubbed boundary; it does not validate EmuHawk registration
 or authorize another process. Historical starts derive from reviewed initial accounting and actual
-parent receipts, independently of segment ordinal. The initial segment's reviewed prior active time
-includes the failed invocation's 4.289788499998394 seconds; children inherit active time exclusively
-from the sealed parent pair. Both enter the existing host and observer cumulative deadlines.
+parent receipts, independently of segment ordinal. Following the
+[completed camera-readiness failure](../research/map3-messenger-acceptance.md#segment-1-camera-readiness-failure),
+reviewed initial consumption is starts 5 / seconds 1556.4798537000315 / deliveredFrames 10740 /
+advancingBatches 174. Children inherit consumption exclusively from their sealed parent. Delivered
+resource frames are distinct from actual observer/emulator frames and R1 epochs; no clock is forged
+to carry failed-attempt consumption. Both host and observer retain cumulative deadlines. No native
+retry is admitted, and the original Map19 stage deadline remains pending feasibility review.
 
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall

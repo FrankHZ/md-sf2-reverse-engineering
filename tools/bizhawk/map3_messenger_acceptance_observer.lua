@@ -2962,6 +2962,8 @@ local function install_candidate()
     if acquisition then
         local bridge = assert(loadfile(acquisition.bridgePath))("library")
         local batch, previous_id, batches, connected = nil, 0, segment and segment.priorBatches or 0, false
+        local frame_offset = segment and (segment.priorFrames - (segment.resume and segment.resume.observer.frame or 0)) or 0
+        local function delivered_frames() return frame_offset + frame_count end
         local clock, launch, idle_since
         if natural then
             luanet.load_assembly("System")
@@ -2993,16 +2995,20 @@ local function install_candidate()
         local function log(value)
             c.order = c.order + 1
             value.order, value.frame = c.order, frame_count
+            value.deliveredFrames = delivered_frames()
             value.emulatorFrame, value.r1Epoch = emu.framecount(), c.epoch or false
             value.r1EmulatorEpoch = c.emulatorEpoch or false
             local file = assert(io.open(acquisition.inputLogPath, "a"))
             json_write(file, value)
             file:write("\n"); file:close()
         end
+        local save_readiness
         local function snapshot()
             return {boundary="frame-end", frame=frame_count, emulatorFrame=emu.framecount(),
                 r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
                 state=sample(), paused=client.ispaused(), batches=batches,
+                deliveredFrames=delivered_frames(),
+                saveReadiness=segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false,
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
         -- Only these data facts survive a closed field boundary. Dynamic return
@@ -3029,58 +3035,92 @@ local function install_candidate()
                 "segment native runtime/core mismatch")
             return core
         end
-        local function closed_field()
+        save_readiness = function(ordinal)
+            assert(ordinal >= 1 and ordinal <= 3, "no resumable boundary for this segment")
             local state = sample()
-            assert(not callback_active and client.ispaused() and not pending_failure and not finish_pending,
-                "segment save is not a paused completed-frame boundary")
-            assert(c.epoch and c.map19Captured and phase == "candidate-natural-route"
-                and c.pending == 0 and #c.programs == 0 and not c.audioPending,
-                "segment has an active program/return/audio operation")
-            for _, count in pairs(c.consumers) do assert(count == 0, "segment has an active consumer") end
-            assert(c.appliedButton == "neutral" and state.mapEventWord == 0 and state.typewriting == 0
-                and state.windowState ~= 2 and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
-                and memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS") == 0
-                and memory.read_u16_be(ram.DIALOGUE_WINDOW_INDEX, "M68K BUS") == 0
-                and memory.read_u16_be(ram.PORTRAIT_WINDOW_INDEX, "M68K BUS") == 0
-                and memory.read_u8(ram.FADING_SETTING, "M68K BUS") == 0,
-                "segment has input/modal/transfer state")
-            for _, pair in ipairs({{"ENTITYDEF_OFFSET_X", "ENTITYDEF_OFFSET_XDEST"},
-                {"ENTITYDEF_OFFSET_Y", "ENTITYDEF_OFFSET_YDEST"}}) do
-                assert(memory.read_u16_be(ram.ENTITY_DATA + ram[pair[1]], "M68K BUS")
-                    == memory.read_u16_be(ram.ENTITY_DATA + ram[pair[2]], "M68K BUS"), "segment movement unsettled")
+            local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
+            local function byte(name) return memory.read_u8(ram[name], "M68K BUS") end
+            local camera = {planeA={x=word("VIEW_PLANE_A_PIXEL_X"), y=word("VIEW_PLANE_A_PIXEL_Y"),
+                    destinationX=word("VIEW_PLANE_A_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_A_PIXEL_Y_DEST")},
+                planeB={x=word("VIEW_PLANE_B_PIXEL_X"), y=word("VIEW_PLANE_B_PIXEL_Y"),
+                    destinationX=word("VIEW_PLANE_B_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_B_PIXEL_Y_DEST")},
+                scrollingPlanes=byte("VIEW_SCROLLING_PLANES_BITFIELD"), layerType=byte("MAP_AREA_LAYER_TYPE"),
+                layer1AutoscrollXY=word("MAP_AREA_LAYER1_AUTOSCROLL_X"),
+                layer2AutoscrollXY=word("MAP_AREA_LAYER2_AUTOSCROLL_X")}
+            -- IsMapScrollingToViewTarget tests each packed X/Y word, then masks d7.
+            local scrolling = camera.scrollingPlanes
+            if camera.layer1AutoscrollXY ~= 0 then scrolling = scrolling & 3 end
+            if camera.layer2AutoscrollXY ~= 0 then scrolling = scrolling & 12 end
+            camera.effectiveScrollingPlanes = scrolling
+            local player = {}
+            for key, name in pairs({x="ENTITYDEF_OFFSET_X", y="ENTITYDEF_OFFSET_Y",
+                destinationX="ENTITYDEF_OFFSET_XDEST", destinationY="ENTITYDEF_OFFSET_YDEST"}) do
+                player[key] = memory.read_u16_be(ram.ENTITY_DATA + ram[name], "M68K BUS")
             end
-            assert(memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_X, "M68K BUS") == memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_X_DEST, "M68K BUS")
-                and memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_Y, "M68K BUS") == memory.read_u16_be(ram.VIEW_PLANE_A_PIXEL_Y_DEST, "M68K BUS"),
-                "segment camera unsettled")
-            assert(c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
-                and frame_count - c.consumerPoll.frame <= 1, "segment field control not observed recently")
-            local ordinal = segment.resume and segment.resume.ordinal or segment.ordinal
+            local raw = {camera=camera, player=player, map=state.map, x=state.x, y=state.y, facing=state.facing,
+                phase=phase, r1Admitted=not not c.epoch, map19Captured=not not c.map19Captured,
+                pendingReturns=c.pending, programDepth=#c.programs, audioPending=not not c.audioPending,
+                activeConsumers=c.consumers, appliedButton=c.appliedButton, mapEventWord=state.mapEventWord,
+                typewriting=state.typewriting, windowState=state.windowState,
+                currentPlayerInput=byte("CURRENT_PLAYER_INPUT"), player1Input=byte("PLAYER_1_INPUT"),
+                dialogueWindow=word("DIALOGUE_WINDOW_INDEX"), portraitWindow=word("PORTRAIT_WINDOW_INDEX"),
+                fading=byte("FADING_SETTING"), fieldPoll=c.consumerPoll or false,
+                completed=c.completed, nextWarp=c.nextWarp, flags=state.flags,
+                deliveredFrames=delivered_frames(), batches=batches}
+            local result = {eligibleSegment=ordinal, saveReady=false, unmetReasons={}, raw=raw, hardFailure=false}
+            local function need(condition, reason, fatal)
+                if not condition then
+                    result.unmetReasons[#result.unmetReasons + 1] = reason
+                    if fatal then result.hardFailure = reason end
+                end
+            end
+            need(not callback_active and client.ispaused() and not pending_failure and not finish_pending,
+                "not-paused-completed-frame", true)
+            need(batches < acquisition.maxBatches and delivered_frames() < acquisition.totalFrames
+                and elapsed() < acquisition.wallSeconds, "continuation-budget-exhausted", true)
+            need(c.epoch and c.map19Captured and phase == "candidate-natural-route", "route-boundary-not-reached")
+            need(c.pending == 0, "pending-returns")
+            need(#c.programs == 0, "active-program")
+            need(not c.audioPending, "pending-audio-dispatch")
+            for kind, count in pairs(c.consumers) do need(count == 0, "active-consumer:" .. kind) end
+            need(c.appliedButton == "neutral" and raw.currentPlayerInput == 0 and raw.player1Input == 0,
+                "input-not-neutral")
+            need(state.mapEventWord == 0, "pending-map-event")
+            need(state.typewriting == 0, "text-typewriting")
+            need(state.windowState ~= 2 and raw.dialogueWindow == 0 and raw.portraitWindow == 0, "open-window")
+            need(raw.fading == 0, "active-fade")
+            need(player.x == player.destinationX and player.y == player.destinationY, "player-unsettled")
+            need(camera.planeA.x == camera.planeA.destinationX and camera.planeA.y == camera.planeA.destinationY,
+                "camera-plane-a-unsettled")
+            need(scrolling == 0, "original-view-scrolling")
+            need(c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
+                and frame_count - c.consumerPoll.frame <= 1, "field-poll-not-recent")
             if ordinal == 1 then
-                assert(c.completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29
-                    and c.nextWarp == 1 and not c.completed.royal, "segment Map19 boundary mismatch")
+                need(c.nextWarp <= 1 and not c.completed.royal, "segment-endpoint-passed", true)
+                need(c.completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29
+                    and c.nextWarp == 1, "map19-boundary-not-reached")
             elseif ordinal == 2 then
-                assert(c.completed.royal and c.completed.royalScript and flag_is_set(605)
+                need(c.nextWarp <= 2 and not c.completed.astral, "segment-endpoint-passed", true)
+                need(c.completed.royal and c.completed.royalScript and flag_is_set(605)
                     and state.map == 20 and state.x == 23 and state.y == 39
                     and (state.facing & ram.DIRECTION_MASK) == ram.DOWN
-                    and c.nextWarp == 2 and not c.completed.astral, "segment royal boundary mismatch")
+                    and c.nextWarp == 2, "royal-boundary-not-reached")
             elseif ordinal == 3 then
-                assert(c.completed.guardWait and c.completed.guard and flag_is_set(401) and flag_is_set(256)
+                need(c.nextWarp <= 5, "segment-endpoint-passed", true)
+                need(c.completed.guardWait and c.completed.guard and flag_is_set(401) and flag_is_set(256)
                     and state.map == 21 and state.x == 5 and state.y == 15
                     and (state.facing & ram.DIRECTION_MASK) == ram.DOWN and c.nextWarp == 5,
-                    "segment guard boundary mismatch")
-            else error("no resumable boundary for this segment") end
+                    "guard-boundary-not-reached")
+            end
+            result.saveReady = #result.unmetReasons == 0
+            return result
         end
         function c.save_segment(terminal)
             assert(segment and not callback_active and client.ispaused(), "segment save outside host pause")
             if not terminal then
-                assert(batches < acquisition.maxBatches and frame_count < acquisition.totalFrames
-                    and elapsed() < acquisition.wallSeconds, "segment has no continuation budget")
-                -- Save this segment's end; resume validation uses the parent's ordinal.
-                local resume = segment.resume
-                segment.resume = nil
-                local ok, message = pcall(closed_field)
-                segment.resume = resume
-                assert(ok, message)
+                local readiness = save_readiness(segment.ordinal)
+                assert(not readiness.hardFailure, readiness.hardFailure)
+                if not readiness.saveReady then return {status="not-ready", readiness=readiness} end
             else
                 assert(segment.ordinal == 4 and c.stopReason == "player-ready"
                     and c.appliedButton == "neutral", "invalid/non-neutral final segment")
@@ -3103,11 +3143,12 @@ local function install_candidate()
             local observer = {completed=c.completed, phase=phase, frame=frame_count}
             for _, key in ipairs(continuation_keys) do observer[key] = c[key] end
             local metadata = {ordinal=segment.ordinal, resumable=not terminal, observer=observer,
-                original=original_state(), core=core, batches=batches, activeSecondsAtSave=elapsed(),
+                original=original_state(), core=core, batches=batches, deliveredFrames=delivered_frames(), activeSecondsAtSave=elapsed(),
                 stateBytes=size, boundary="neutral-completed-frame", finalCallback=terminal and c.terminal or nil}
             local output = assert(io.open(segment.metadataPath, "w"))
             json_write(output, metadata); output:write("\n"); output:close()
             if not terminal then c.stop("segment-saved", {ordinal=segment.ordinal}) end
+            return {status="saved"}
         end
         if segment and segment.resume then
             local restored = segment.resume
@@ -3119,17 +3160,18 @@ local function install_candidate()
             for _, key in ipairs(continuation_keys) do c[key] = restored.observer[key] end
             for key, value in pairs(restored.observer.completed) do c.completed[key] = value end
             frame_count, phase, c.appliedButton = restored.observer.frame, restored.observer.phase, "neutral"
-            closed_field()
+            local readiness = save_readiness(restored.ordinal)
+            assert(readiness.saveReady, "loaded segment not ready: " .. table.concat(readiness.unmetReasons, ","))
             saved_state = memorysavestate.savecorestate()
             assert(saved_state ~= nil, "resume cleanup snapshot failed")
             c.record("segment:loaded-before-input", {ordinal=segment.ordinal, parent=restored.ordinal})
         end
         function c.capture_frame() c.frameEnd = snapshot() end
-        local function reply(ok, message, terminal)
+        local function reply(ok, message, terminal, save)
             local result = {state=c.frameEnd or snapshot(), advanced=batch and batch.applied or 0,
                 terminal=terminal or false, terminalCallback=c.terminal or false,
                 stopReason=natural and (c.stopReason or c.failureReason or false) or nil,
-                stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl"}
+                stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl", save=save}
             log({kind="result", id=previous_id, ok=ok, result=result, error=message or false})
             bridge.send({id=previous_id, ok=ok, result=result, error=message or false})
         end
@@ -3179,17 +3221,18 @@ local function install_candidate()
                     elseif op == "save" then
                         assert(#command == 2 and segment and segment.ordinal < 4, "save requires a resumable segment")
                         c.failureReason = "segment-save-failure"
-                        c.save_segment(false)
+                        local outcome = c.save_segment(false)
                         c.failureReason = nil
                         c.frameEnd = snapshot()
-                        return
+                        if outcome.status == "not-ready" then reply(true, nil, false, outcome)
+                        else return end
                     elseif op == "step" then
                         local count, button = bridge.step_arguments(command)
                         c.failureReason = nil
                         if natural and batches >= acquisition.maxBatches then c.stop("batch-limit"); return end
-                        if natural and count > acquisition.totalFrames - frame_count then c.stop("frame-limit"); return end
+                        if natural and count > acquisition.totalFrames - delivered_frames() then c.stop("frame-limit"); return end
                         assert(batches < acquisition.maxBatches, "input batch budget exhausted")
-                        assert(count <= acquisition.totalFrames - frame_count, "total frame budget exceeded")
+                        assert(count <= acquisition.totalFrames - delivered_frames(), "total frame budget exceeded")
                         batches = batches + 1
                         batch = {id=id, requested=count, applied=0, button=button}
                         idle_since = nil
@@ -3217,8 +3260,8 @@ local function install_candidate()
             c.frameEnd = snapshot()
             bridge.set_button("neutral")
             assert(after == c.beforeFrame + 1, "interactive frame advance drift")
-            if natural and frame_count >= acquisition.totalFrames and not finish_pending then c.stop("frame-limit") end
-            assert(frame_count < acquisition.totalFrames or finish_pending,
+            if natural and delivered_frames() >= acquisition.totalFrames and not finish_pending then c.stop("frame-limit") end
+            assert(delivered_frames() < acquisition.totalFrames or finish_pending,
                 "total frame budget exhausted before terminal")
         end
     end
