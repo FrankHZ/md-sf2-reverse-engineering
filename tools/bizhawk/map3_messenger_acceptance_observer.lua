@@ -2604,10 +2604,13 @@ local function install_candidate()
             local modal = #c.programs > 0 or c.pending > 0 or readiness.typewriting ~= 0
                 or readiness.dialogueWindow ~= 0 or readiness.portraitWindow ~= 0
             readiness.cutsceneOrMenuModal = modal
+            -- CreatePulsatingBlocksForGrid selects PULSATING_1 (5) before player
+            -- movement; its palette cycle is not a blocking screen transition.
+            readiness.paletteModeAllowed = readiness.fading == 0 or readiness.fading == 5
             c.record("battle:player-ready-check", readiness)
             assert(not modal and readiness.currentPlayerInput == 0 and readiness.isTargeting == 0
                 and readiness.currentBattleAction == 0 and readiness.mapEventWord == 0
-                and readiness.fading == 0 and readiness.effectiveScrollingPlanes == 0,
+                and readiness.paletteModeAllowed and readiness.effectiveScrollingPlanes == 0,
                 "player-ready input/modal/transfer mismatch")
             c.checkpoint("ready")
             c.stop("player-ready", {area=area, actor=actor, movingActor=word("MOVING_BATTLE_ENTITY_INDEX"),

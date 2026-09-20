@@ -108,7 +108,12 @@ input PC but fails a mistaken final window-count predicate; this is not passed r
 source/H1/ROM shows the normal mini status window contributes to that count while movement input is
 available. Removing only that incorrect modal inference retains the actual consumer/input/transfer
 guards and requires another fresh compatible chain with all costs retained. No parent-identity waiver
-is allowed. Native acceptance of the corrected final guards remains **Unknown**. The second idle
+is allowed. The [next compatible chain](../research/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
+confirms window-count handling but rejects mode 5 of `FADING_SETTING`, which the original enables for
+nonblocking movement-grid pulsation before accepting player input. The final-only correction admits
+idle mode 0 or that selected mode 5 and retains the other input/consumer/transfer guards; field/save
+fade checks are unchanged. The final pair and native acceptance of this correction remain **Unknown**.
+The second idle
 failure's final callback/restoration evidence is also **Unknown**; preserve it separately from the
 confirmed cleanup of explicit abort and callback failures. Finite local operators may consume the
 existing request/response interface with actual readiness and source-closure checks; they neither

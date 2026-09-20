@@ -168,19 +168,26 @@ a blocking menu. The final-battle correction removes that mistaken count test an
 actual guard fields before asserting; runner/bridge and field/save/menu checks are unchanged.
 Its changed observer identity again requires fresh compatible parents. Passed first-ready remains
 **Unknown**; reaching its PC alone does not satisfy the acceptance contract.
+The [following chain](../research/map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
+passes the native window-count condition, then records the remaining rejected field exactly:
+`FADING_SETTING=5`, the original movement-grid pulse. The final predicate now admits mode 0 or that
+source-selected mode 5; field/save fade checks and the shared bridge remain unchanged. Another fresh
+source-compatible chain is required. It still has no passed final pair.
 The original standalone five-second idle experiment and its wall limit remain unchanged.
 
 Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
 owner. Their costs are inherited, not reset; the completed initial segment started with totals 6 / active seconds
 2080.6977567999857 / delivered frames 13561 / advancing batches 225. Totals after the retained final-segment
 callback failure were starts 15 / seconds 4142.950475800084 / frames 32143 / batches 555. After the
-compatible chain's player-entry failure, totals are **25 / 5629.673442000174 / 60271 / 1121**.
+compatible chain's window-count failure, totals were 25 / 5629.673442000174 / 60271 / 1121.
+After the next chain's palette failure, current totals are **30 / 6094.842934200191 / 82639 / 1592**.
 This includes the second context-idle failure (21), whose final restoration/callback cleanup remains
 **Unknown**, and the explicit local-operator abort (25), whose loaded-entry cleanup is confirmed.
 Full receipts remain local. The improved ignored finite operator checks actual positions, consumer
 readiness, prompt choice and caller completion, and reads one full JSON response before the next
 meaningful input. It completes whole gate/royal/guard segments without task-context dependence;
-messenger 22 still requires a documented manual finish at the valid `WaitForPlayerInput` consumer.
+messenger 22 requires a documented manual finish at the valid `WaitForPlayerInput` consumer, while
+fresh prefix 28 now completes that entire prefix automatically through a valid messenger save.
 The operator rechecks closure after neutral waits and switches from bounded one-frame approach
 inputs to neutral/dialogue immediately on actual battle admission. It extends no watchdog or bridge
 protocol and sends no artificial keepalive. The clock still uses explicit
