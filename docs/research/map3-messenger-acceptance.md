@@ -615,3 +615,114 @@ warmups, materialization or tests of verification programs for this documentatio
 Both controlled starts remain consumed, both completed failures and the separate disabled replay
 ordinal-1/2 restrictions remain preserved. This proposal grants no third start, runtime permission,
 natural-continuity claim, full 8D/H4 acceptance or completion of #437.
+
+## Prepared house-neutral correction (not executed)
+
+**Confirmed preparation only, 2026-09-19 project date:**
+[Issue #471](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/471) materializes the
+[bounded proposal above](#bounded-correction-proposal-and-reproduction) from accepted commit
+`ddd17b2442455ac4ab9864418ed2f30f4837fda6`, tree `d7e8d6b06f7f9537e6d72e55388dcccc328c771c`.
+The original `local/issue463/candidate-02/input.json` remains unchanged at SHA-256
+`37544D8C526F41A60D13B79971744D0A99303BCB08E407FBB1AE01C8AD7F1145`.
+Only one-based ordinals **913–914, 1033–1034, 1153–1154, 1273–1274, 1393–1394,
+1513–1514 and 1633–1634** change from C to neutral (empty string) in the new private copy.
+Direct comparison confirms exactly 14 changed entries, identical remaining frames and metadata,
+23,234 total frames and no insertion, deletion or ordinal shift. The prefix through 793–794,
+the remaining house tail and every later block retain their original positions and contents.
+
+The fresh input is `local/issue471/house-neutral-input.json`; the prepared output is
+`local/issue471/candidate-01/`. The existing `prepare_map3_observation_candidate` completed its
+first and only call for this Issue with `CANDIDATE-PREPARED-NOT-ADMITTED`, `EmulatorLaunches=0`,
+23,234 input frames, proposed timeout 600 seconds and watchdog 28,634 frames. Its source/H1/ROM
+binding and Lua syntax checks passed without building H1 or starting an emulator. The ROM's narrow
+identity verifier also passed. The candidate has no `runtime/` directory; an OS process check found
+zero EmuHawk processes. No launch API, runtime materialization or no-ROM warmup was invoked.
+
+| Prepared material | SHA-256 |
+| --- | --- |
+| New input (standalone and candidate copy) | `4BA1E4738877A72866BCC0B6A644F75479FB5A9E21CC761E7D99FEC24403A76A` |
+| `candidate.json` | `B7D8D6116490DD5A1DB122F23275603273695A66B32D2C0CA30C7211A63D28BF` |
+| `config.json` | `47D7A3C287B3DEB0ABDF429DFA0C782BB8873826A4CBAC5310F5B3014B89A405` |
+| `config.lua` | `19BFFE2BB3AC0B1D90698436E283A70714A97CFAD86077ADF477C1670A775A3A` |
+| Current `src/sf2tool/h3/bizhawk.py` | `832966617D63CA97B341C09F684F0E7021B16CAF4578A4D27B77F82AD8779B64` |
+| Shared BizHawk executable | `F8CDB93551A544F680BF3876D9D8D72643859E7A44A23B04E1A25B92E48F80CD` |
+| Shared Lua library | `4786E0DF4CAF120E3BEDF0B6DDA260525DF2187C66DED220A21A53ACE76B0501` |
+
+The report binds USA ROM `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`,
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, listing
+`FA21225556FC916ED287A42E8D2451A15326B4FBF02816DDE7D82C6D4354E982`, every selected source,
+retained fixture and execution helper. Runner and observer identities equal those in the
+[completed #465 result](#corrected-candidate-single-run-result). The current helper includes the
+accepted default mute change; no existing runtime configuration was changed. A parsed comparison
+with the retained candidate-02 configuration finds only the 14 frames, their input identity and
+fresh output/checkpoint/status paths changed. All other observation configuration is identical;
+no adaptive input, callback semantics or downstream schedule was added.
+
+Reproduce the input transformation below only into a fresh ignored destination. The original has
+CRLF line endings; the new copy uses the same observed serialization. Neither parsing nor
+comparison rewrites the original. The accepted source rationale remains the fixed-schedule review
+above; these assertions verify the transformation, not successful gameplay.
+
+```python
+import json
+from copy import deepcopy
+from hashlib import sha256
+from pathlib import Path
+
+original = Path("local/issue463/candidate-02/input.json").read_bytes()
+assert sha256(original).hexdigest().upper() == (
+    "37544D8C526F41A60D13B79971744D0A99303BCB08E407FBB1AE01C8AD7F1145"
+)
+old = json.loads(original)
+new = deepcopy(old)
+changed = [n for start in (913, 1033, 1153, 1273, 1393, 1513, 1633)
+           for n in (start, start + 1)]
+for n in changed:
+    assert old["frames"][n - 1] == "C"
+    new["frames"][n - 1] = ""
+assert len(old["frames"]) == len(new["frames"]) == 23234
+assert {k: v for k, v in old.items() if k != "frames"} == {
+    k: v for k, v in new.items() if k != "frames"
+}
+assert [i + 1 for i, (a, b) in enumerate(zip(old["frames"], new["frames"], strict=True))
+        if a != b] == changed
+new_bytes = (json.dumps(new, indent=2) + "\n").replace("\n", "\r\n").encode("utf-8")
+assert sha256(new_bytes).hexdigest().upper() == (
+    "4BA1E4738877A72866BCC0B6A644F75479FB5A9E21CC761E7D99FEC24403A76A"
+)
+with Path("local/<fresh-review>/house-neutral-input.json").open("xb") as stream:
+    stream.write(new_bytes)
+```
+
+Load `. ./local/private-inputs.ps1` in the launching PowerShell process, run `uv run sf2 rom verify`,
+then use `uv run python -P -X utf8` and the existing
+[preparation API example](#reproduce-preparation-without-execution), substituting that new input,
+an absent `local/<fresh-review>/candidate-01` output and `proposed_timeout_seconds=600`.
+The report/config identities above name the retained Issue #471 destination; another destination
+changes generated path-bearing configuration and its identity. Read the retained candidate for
+review instead of overwriting or regenerating it.
+
+The actual invocation and PASS output are retained as
+`local/issue471/preparation-command-02.txt` and `preparation-output-02.txt`, with
+`preparation-summary.json`, `rom-verify.txt` and `process-check-02.json`. The initial
+`preparation-command.txt` / `preparation-output.txt` and `failure-state.json` preserve a completed
+local inspection **FAIL**: an extra assertion required original bytes to equal LF-only JSON
+serialization despite the original's CRLF. It failed before any new input or preparation API call.
+Main-gate independently checked that boundary and authorized removal of this extra assertion in
+the same task; the original was never normalized or written back. This was not a preparation API,
+ROM, toolchain or game failure, and no native attempt was retried.
+
+**Unknown:** downstream arrival, timing, NPC/RNG evolution, prompt choices, later C consumers,
+gate/F604/north/Map19 reach, callback/cleanup compatibility and natural continuity remain unobserved.
+The transformation removes demonstrated surplus actions from the input; it proves no successful
+route or original-game outcome. Full 8D/H4 and #437 remain incomplete.
+
+Acceptance is direct input/source/preparation and document/link/scope/whitespace checks, followed
+by the clean committed planner and actual public CI. Local normal/full/H1/H2/H3 queues and tests
+of verification programs are **NOT RUN**, outside this preparation-only scope. The completed
+#460 and #465 **FAIL** results and original artifacts remain preserved. Controlled-method actual
+starts remain **2 with no remaining permission**; disabled replay ordinal-1/2 consumption,
+timeout/cleanup failure, missing genuine receipts, ordinal-3 prerequisites and retry/reset/fourth-
+launch prohibitions remain separate and unchanged. This Issue, new identity, preparation PASS or
+independent PR review grants no third controlled start or frozen acceptance. Stop at the Draft PR
+for independent main-gate review; there is no launch, merge or cleanup authorization.
