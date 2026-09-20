@@ -153,12 +153,15 @@ The runner publishes immutable native-state/continuation pairs after cleanup and
 consumption. Failed child attempts remain recorded and may be retried from a compatible complete
 parent; successful children require forward continuation. Runtime/core/observer/runner/source identity
 checks remain mandatory. Loaded RAM/register/frame equality and offline checks alone do not establish
-complete native continuity; actual early save/load/forward-save acceptance remains **Unknown**.
+complete native continuity. The [actual house save → native load → Sarah save](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
+is now **Confirmed**, including input-before-load exclusion, inherited epochs, forward checkpoint,
+process exit and cleanup. Later route boundaries and native menu recovery remain **Unknown**.
 The original standalone five-second idle experiment and its wall limit remain unchanged.
 
 Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
-owner. Their costs are inherited, not reset; current initial totals are starts 6 / active seconds
-2080.6977567999857 / delivered frames 13561 / advancing batches 225. The clock still uses explicit
+owner. Their costs are inherited, not reset; the completed initial segment started with totals 6 / active seconds
+2080.6977567999857 / delivered frames 13561 / advancing batches 225. The latest complete Sarah parent
+now carries starts 8 / seconds 2419.9709781000274 / frames 15641 / batches 262. The clock still uses explicit
 System assembly loading and Stopwatch. Cumulative time/stage/frame/batch/progress thresholds are now
 observations under the user's stabilization authorization, not hard stop conditions.
 
