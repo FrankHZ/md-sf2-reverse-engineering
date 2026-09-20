@@ -141,6 +141,107 @@ call, reset, extra smoke/replay/retry or fourth start. Disabled original replay 
 their restrictions remain separate. Arrival timing, NPC/RNG effects, prompt/gate/natural continuity,
 complete 8D and H4 stay **Unknown** until their own required evidence and independent acceptance.
 
+## Natural Battle01 continuation capability (offline only)
+
+[Issue #483](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/483) adds the explicit
+`continuation="natural-battle01-player-ready"` selection to the existing prepare/run APIs, with
+`interactive=True`. The [accepted route and admission proposal](map3-battle01-audit.md#map19-continuation-admission-proposal-issue-479-not-authorized)
+owns its scope and proposed limits. **Confirmed (offline implementation checks only):** this
+selection serializes an empty interactive declaration, keeps first Map19 control as an intermediate
+checkpoint and observes the selected natural castle/tower callers. Preparation supplies no saved
+Map19 core, generated inputs, R2d injection, actor/order assertion or launch permission. Omitting the
+selection retains the previous frozen/Map19 behavior and limits; the R2d bridge remains separate.
+
+The candidate reuses R2d's `_static_contract` read-only RAM/admission fields and Lua
+`extension_combatant`, without installing `config.extension`. Additional source files are compared
+with pinned Git objects; callback instructions, selected warp operands and sound-dispatch write sites
+are bound to the existing H1 listing and canonical ROM. Setup selections are observed on every init
+call. Stack-matched returns distinguish repeated init/program/consumer invocations. Caller records
+join F605, F607/F608 and F401/F256 to their real program returns. Astral's decline stops at the reached
+F89 branch; it never inherits the messenger's fixed default prompt-result assertion.
+
+`loc_47156` records the reached operation PC/opcode/operands and enclosing program; `loc_47140`
+records its returned blocking work. Reached awaited entity operations additionally read back
+`eas_Idle`. Entity lookup records retain selector/index bytes and actual returned A5, including alias135;
+non-waited actions remain live. Text/prompt consumers retain the existing acknowledgement and return
+observations. Sound trap requests and original 68K mailbox writes are separate observations, including
+raw music/control replacement commands. Neither a script return nor a mailbox write establishes all
+presentation completion, audible output, fade/resume behavior or 7C asset provenance.
+
+Accounting checkpoints read all ally records, joined/active flags, full item words/spells, 32-bit gold,
+actual party/placed combatants, RNG bytes/copy byte/raw time and actual turn order/offset. They occur at
+R1, first Map19 control, actual next-tile displacement, royal return, Astral/guard caller return,
+before/after load and generation, and ready. The selected Map21 `(5,15)`/Down checkpoint requires a
+neutral completed frame, settled raw position/destination, no pending event/consumer and a reached
+field-action poll. The operator must acquire it before taking the tower exit; Lua supplies no route
+or input policy.
+
+The source-progress clock resets on reached operation/consumer returns, accepted movement/text
+acknowledgements and actual position, relevant entity/camera/fade or prompt-choice changes. Repeated
+unchanged polling, held input without an accepted read and `state`/`ping` do not renew it.
+
+The first `0x22E70` sample requires returned before/start/load/generation work, Map57/Battle1/area,
+F401/F501/F451, matching natural first ally/turn/moving actor and **mapped entity** view target,
+neutral input, zero full event word, no action/targeting/modal or pending blocking consumer, and
+settled camera/fade state. Region flags and carried state are observations, never natural goldens.
+The callback sample and completed frame are stored separately. After a stop, remaining callbacks in
+that same frame still record PC/role/state; semantic collection ends at the first stop and the rest
+of the requested batch is skipped. This cannot suspend an instruction or prevent original code from
+executing during the remainder of that frame.
+
+`player-ready` yields `OBSERVATION-COMPLETE-UNREVIEWED`. First non-player dispatch or action entry
+produces `OUT-OF-SCOPE-BEFORE-PLAYER-READY`, a coverage stop. Decline, premature outcome and budget
+stops produce `INCOMPLETE-OBSERVATION`; malformed input, abort, transport and callback/readback errors
+retain their failure role/reason and cleanup record. Cleanup failure defeats any successful endpoint.
+No retry or forced ally follows an AI-first result. These statuses establish neither replay nor H4.
+
+### Offline preparation and verification boundary
+
+Load the current worktree's ignored `local/private-inputs.ps1` in the launching PowerShell process.
+The narrow ROM check is `uv run sf2 rom verify`. Direct syntax/lint checks use
+`uv run ruff check src/sf2tool/h3/map3_messenger_acceptance.py src/sf2tool/bizhawk_debug_bridge.py`,
+`ast.parse(Path(name).read_text(encoding="utf-8"))` for both Python files, and
+`validate_lua_syntax(Path("tools/bizhawk/map3_messenger_acceptance_observer.lua"), bizhawk_contract()[1])`
+from `sf2tool.h3.bizhawk`, executed with `uv run python -X utf8`. The last command only loads the
+installed Lua library to compile the chunk; it does not start BizHawk.
+
+Prepare only, choosing a **fresh** ignored destination each time:
+
+```python
+from pathlib import Path
+from sf2tool.h3.map3_messenger_acceptance import (
+    NATURAL_CONTINUATION, UPSTREAM, prepare_map3_observation_candidate,
+)
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+report = prepare_map3_observation_candidate(
+    private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
+    output_directory=Path("local/issue483/your-new-preparation"),
+    proposed_timeout_seconds=7200, interactive=True, continuation=NATURAL_CONTINUATION,
+)
+```
+
+The candidate report carries exact ROM/source/H1/tool, observer/runner/helper, configuration and
+input-declaration identities. It declares historical starts **3**, proposed future ordinal **4** and
+**zero** authorized additional starts. A future independently admitted invocation must explicitly
+select the same continuation in `run_map3_observation_candidate`; no run API was called in #483.
+
+Direct offline checks exercise the actual Lua operation/return/dispatch and frame-delivery blocks
+with synthetic memory/clocks, plus host framing, idle containment and selection rejection. They cover
+full-word event rejection, pending consumers/modal/input/actor/view mismatches, waited entity return,
+actual lookup-target readback, same-frame AI coverage stop, prompt decline, repeated stack returns,
+source progress and independent wall/stage/idle/frame/batch limits. These are implementation checks,
+not original observations or new helper-test suites. Initial lint/source-binding and offline driver
+environment failures are retained under the Issue's ignored outputs; corrected direct checks use new
+output directories. Earlier offline source projections are stale, not prepared or resumable candidates.
+The final Issue/PR handoff identifies the frozen prepared material and actual public CI/planner result.
+
+**Unknown:** native compatibility and real route feasibility, natural actor/order, failure-path Lua
+restoration under abrupt EOF, natural battle/victory/5B, remaining 8D, 7C audio and H4. The two controlled
+FAILs, accepted bounded #475 observation, old unused candidates and disabled replay's missing receipts,
+timeout and cleanup failure remain intact. No original/native start, smoke/replay/H1/H2/H3 or broad
+suite was run for this capability. Independent capability review and fresh explicit runtime approval
+remain necessary before any fourth controlled start.
+
 ## Single admitted interactive acquisition result
 
 **Confirmed bounded original observation, independently accepted by main-gate in

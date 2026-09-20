@@ -164,6 +164,30 @@ The bridge's own callback fields describe only bridge callbacks; candidate callb
 by the candidate status/restoration, not by an empty bridge callback slot. All these outputs remain
 private under the owning worktree's fresh ignored attempt directory.
 
+### Natural Battle01 selection
+
+The [natural continuation capability](../research/map3-messenger-acceptance.md#natural-battle01-continuation-capability-offline-only)
+uses the same serial bridge and controller protocol. Only its exact selected `acquisition_limits`
+composition permits a proposed 7200-second host deadline; ordinary bridge/Map19 calls retain the
+1800-second maximum. `_interactive_limits` in the candidate owner supplies the reviewed configuration,
+including stage/frame/batch/progress limits. The [proposal](../research/map3-battle01-audit.md#proposed-ceilings-and-decision-sequence)
+retains their rationale and lack of runtime permission.
+
+A separate host idle deadline contains the owned process after 120 paused seconds without an
+advancing batch. `state`/`ping` do not renew it. A valid step suspends that paused deadline during its
+bounded exchange; completion starts the next paused interval. Cancelled timer callbacks cannot kill a
+later interval. Startup and each exchange retain 60 seconds; teardown retains the existing 3+3 seconds.
+Lua also checks wall/stage/idle deadlines before accepting input and after completed frames, narrows
+its receive timeout to the earliest pending deadline, and checks frame/batch/source-progress limits.
+No extra frames are delivered when a stop occurs while paused. Native receive/EOF restoration remains
+Unknown; host containment does not prove graceful Lua cleanup.
+
+The response and host receipt preserve a typed stop reason. Successful restoration after AI-first is
+a coverage stop, and after a limit is an incomplete observation; neither is a player-ready result.
+Callback-time terminal state, later same-frame callbacks and completed-frame state remain separate.
+The additional selection has only offline implementation checks and preparation authorization. No
+bridge experiment, native startup, reconnection, replay or new acquisition allowance is implied.
+
 ## Observed acceptance and launch accounting
 
 Execution date: 2026-09-05 America/Chicago. Baseline ROM identity and BizHawk archive,

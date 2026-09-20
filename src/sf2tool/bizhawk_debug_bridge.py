@@ -130,6 +130,9 @@ class DebugBridge:
         self.watchdog: threading.Timer | None = None
         self.expired = threading.Event()
         self.started_at: float | None = None
+        self.idle_deadline: float | None = None
+        self.idle_watchdog: threading.Timer | None = None
+        self.acquisition_limits: dict[str, int] | None = None
 
     def __enter__(self) -> DebugBridge:
         self.output.mkdir(parents=True, exist_ok=False)
@@ -144,9 +147,41 @@ class DebugBridge:
 
     def remaining(self) -> float:
         remaining = self.deadline - time.monotonic() if self.deadline else self.timeout
+        if self.idle_deadline is not None:
+            remaining = min(remaining, self.idle_deadline - time.monotonic())
         if remaining <= 0 or self.expired.is_set():
+            if self.acquisition_limits:
+                reason = self.receipt.get("stopReason") or (
+                    "operator-idle-limit"
+                    if self.idle_deadline is not None and time.monotonic() >= self.idle_deadline
+                    else "wall-limit"
+                )
+                self.receipt["stopReason"] = reason
+                raise TimeoutError(reason)
             raise TimeoutError("interactive wall budget exhausted")
         return remaining
+
+    def _operator_idle(self, *, advancing: bool = False) -> None:
+        if self.idle_watchdog is not None:
+            self.idle_watchdog.cancel()
+        self.idle_deadline = None
+        if self.acquisition_limits is None or advancing:
+            return
+        self.idle_deadline = time.monotonic() + self.acquisition_limits["idleSeconds"]
+
+        idle_deadline = self.idle_deadline
+
+        def expire_idle() -> None:
+            if self.idle_deadline != idle_deadline:
+                return
+            self.expired.set()
+            self.receipt["stopReason"] = "operator-idle-limit"
+            if self.process is not None and self.process.poll() is None:
+                self.process.kill()
+
+        self.idle_watchdog = threading.Timer(self.acquisition_limits["idleSeconds"], expire_idle)
+        self.idle_watchdog.daemon = True
+        self.idle_watchdog.start()
 
     def start(
         self,
@@ -155,13 +190,29 @@ class DebugBridge:
         observer_config: Path | None = None,
         rom_path: Path | None = None,
         wall_seconds: int | None = None,
+        acquisition_limits: dict[str, int] | None = None,
     ) -> dict[str, Any]:
         if self.listener is not None:
             raise RuntimeError("bridge already started")
+        if acquisition_limits is not None:
+            from sf2tool.h3.map3_messenger_acceptance import (
+                NATURAL_CONTINUATION,
+                _interactive_limits,
+            )
+
+            if (
+                acquisition_limits != _interactive_limits(NATURAL_CONTINUATION)
+                or wall_seconds != acquisition_limits["wallSeconds"]
+                or observer_config is None
+                or observer != repo_path("tools/bizhawk/map3_messenger_acceptance_observer.lua")
+            ):
+                raise ValueError("natural acquisition bounds/composition mismatch")
+            self.acquisition_limits = dict(acquisition_limits)
+        ceiling = 7200 if self.acquisition_limits else 1800
         if wall_seconds is not None and (
-            type(wall_seconds) is not int or not 1 <= wall_seconds <= 1800
+            type(wall_seconds) is not int or not 1 <= wall_seconds <= ceiling
         ):
-            raise ValueError("wall budget must be 1..1800 seconds")
+            raise ValueError("wall budget exceeds selected composition ceiling")
         toolchain, executable = bizhawk_contract()
         if (
             executable.stat().st_size != toolchain["executableSizeBytes"]
@@ -220,6 +271,8 @@ class DebugBridge:
             startup.wShowWindow = 7
         started_at = time.monotonic()
         self.started_at = started_at
+        if self.acquisition_limits:
+            environment["SF2_BRIDGE_LAUNCH_EPOCH"] = str(time.time())
         self.process = subprocess.Popen(
             [
                 str(executable),
@@ -242,6 +295,7 @@ class DebugBridge:
 
             def expire() -> None:
                 self.expired.set()
+                self.receipt["stopReason"] = "wall-limit"
                 # Retained process handle only; no retry, attach, or name-based kill.
                 if self.process is not None and self.process.poll() is None:
                     self.process.kill()
@@ -257,19 +311,28 @@ class DebugBridge:
         self.listener.close()
         if address[0] != "127.0.0.1":
             raise ValueError("non-loopback peer")
+        startup_remaining = self.timeout
+        if self.acquisition_limits:
+            startup_remaining -= time.monotonic() - started_at
+            if startup_remaining <= 0:
+                raise TimeoutError("startup-exchange-limit")
         hello = json.loads(
-            receive_frame(self.connection, timeout=min(self.timeout, self.remaining()))
+            receive_frame(self.connection, timeout=min(startup_remaining, self.remaining()))
         )
         if hello.get("protocol") != 1 or hello.pop("token", None) != token:
             raise ValueError("bridge handshake identity mismatch")
         self.receipt.update(hello=hello, startupSeconds=time.monotonic() - started_at)
         self._save()
+        self._operator_idle()
         return hello
 
     def command(self, operation: str, *arguments: str | int) -> dict[str, Any]:
         if self.connection is None:
             raise RuntimeError("bridge is not connected")
         wire = command_text(self.sequence + 1, operation, *arguments)
+        self.remaining()
+        if self.acquisition_limits and operation == "step":
+            self._operator_idle(advancing=True)
         self.sequence += 1
         record: dict[str, Any] = {"request": wire}
         self.receipt["commands"].append(record)
@@ -289,6 +352,8 @@ class DebugBridge:
         except (OSError, EOFError, ValueError):
             self.disconnect()
             raise
+        if self.acquisition_limits and operation == "step" and response["ok"]:
+            self._operator_idle()
         record.update(response=response, seconds=time.monotonic() - started_at)
         self._save()
         if not response["ok"]:
@@ -317,6 +382,8 @@ class DebugBridge:
                 try:
                     line = lines.get(timeout=self.remaining())
                 except queue.Empty as error:
+                    if self.acquisition_limits:
+                        self.remaining()
                     raise TimeoutError("operator wait exceeded wall budget") from error
                 if isinstance(line, Exception):
                     raise line
@@ -370,6 +437,8 @@ class DebugBridge:
             self.log.close()
         if self.watchdog is not None:
             self.watchdog.cancel()
+        if self.idle_watchdog is not None:
+            self.idle_watchdog.cancel()
         self.receipt["timedOut"] = self.expired.is_set()
         if self.started_at is not None:
             self.receipt["elapsedSeconds"] = time.monotonic() - self.started_at
