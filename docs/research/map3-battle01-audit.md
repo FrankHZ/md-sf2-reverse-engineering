@@ -56,25 +56,36 @@ ROM/source identity above; their parent hashes guard dependencies, not continuou
 
 ### What the admitted projection does not contain
 
-R1's public `scenarioState/allies` is not a full raw combatant dump: it has no `statusEffects` field.
-`S/defaultGuardFlags` names the six checked selector/route guards (1/602/603/506/543/609); it is not
-an emitted full GAME_FLAGS bitset. `programRequest="none"` and the observed call/return chain do not
-supply every internal script/event cursor. Do not copy this audit's former “complete snapshot/flag
-bitset” wording into an exact-field contract. The
-[new-game initialization contract](../design/contracts/new-game-state-initialization.md) and
-[`common-stats-static-v1.json`](../../tests/fixtures/h2/common-stats-static-v1.json)
-`/expected/statsFacts/newGame` establish settings/flags clear and initialization order, not every
-numeric call-time field. R1 is sufficient for the fields it actually exposes and for controlled 1A;
-visible New/naming/load is excluded by 1A and does not remain an RA-01 closure requirement.
+R1's public `scenarioState/allies` is not a full raw combatant dump: status is omitted,
+and its four consecutive item bytes are not four complete two-byte item slots.
+`S/defaultGuardFlags` names only six checked guards (1/602/603/506/543/609).
+The [R1 source completion](map3-admitted-start.md#static-completion-of-the-admission-projection)
+establishes the controlled NewGame→SaveGame→MainLoop→Map3-init→first-wait boundary:
 
-Before requiring another observation for a missing admission field, resolve its source initializer,
-width and intervening writers under the [combatant state](../design/contracts/combatant-state-access.md)
-and [global flag](../design/contracts/global-flag-state.md) owners. Status bytes, route-relevant flags
-outside R1's guard set, and any required pending cursor value remain **Unknown** at this exact public
-snapshot unless that source chain is established. A restoration boolean is not the restored value.
-If a caller-dependent value remains after that static check, collect it at the admitted wait in the
-same approved observation; it does not justify a separate launch. Do not replace R1's raw coordinates
-or normalized time with R2's tile coordinates or R2d's seed.
+- **Confirmed (static):** status is a word at ally offset 44. For the 30 living
+  allies and original start equipment, status at the wait equals status at controlled NewGame
+  entry masked with `3` (STUN/POISON). NewGame does not clear status; exploration healing clears
+  other conditions and the stat updater recalculates CURSE. No starting equipped item is cursed.
+  Existing MOV observations equal class bases, with no starting equipment MOV effect; STUN
+  would subtract 1, so STUN is also excluded. **Unknown:** only inherited POISON per ally remains.
+  Reset-based zero is a conditional/inference, not a restored-span boolean or a runtime observation.
+- **Confirmed (static):** F604/F605/F607/F608/F401/F256 and additional castle selectors
+  F501/F507/F982 are clear at R1: the 128-byte settings clear, intervening writers and
+  F256–F383 map-local clear are traced in the owner. This does not assign their values at
+  R2a or a later castle wait.
+- **Confirmed (static):** event type is a word and remains 0 on this initialized idle-player,
+  no-script prefix; event parameters are inactive. Map-script A6 is call-local. Window entries
+  and dialogue/portrait/timer indices reset before init; empty-window guards exclude
+  stale animation storage. The first wait entry precedes installation of the player-controlled
+  actscript, so its idle cursor need not be fixed. Active NPC scripts remain live.
+
+The smallest missing R1 readback is 30 POISON bits (mask 2 of each status low byte;
+30 byte reads, or 60 bytes through a word getter), in a future independently admitted batch. Exact active-NPC continuation, when
+needed, requires its relevant state/phase as well as RNG; this bounded projection is not a
+complete save state. Preserve raw entity coordinates, separately observed four-byte RNG, and
+explicitly normalized time. Visible New/naming/load remains excluded by controlled 1A.
+The DisplayText/name/menu seams below and natural-route/presentation Unknowns remain.
+No separate observation or replay recovery is authorized by these deductions.
 
 ### Presentation sufficiency under 8D
 
@@ -116,7 +127,7 @@ proved by the mapped evidence; it is not permission to run a scenario.
 
 | RA | Admitted sufficiency | Minimum missing fields/checkpoints and why they matter |
 | --- | --- | --- |
-| RA-01 | R1 captured 1A fields; no visible New/load requirement | Static-first completion of the admission projection above. If source cannot settle a required value, read that value at first admitted `WaitForEvent`, with initializer/write provenance. No alternate seed or natural-New campaign is needed. |
+| RA-01 | R1 captured 1A fields; source-proved route/active-state conditions above; no visible New/load requirement | Remaining R1 dependency: inherited POISON per ally. Read mask 2 from 30 status low bytes at the first admitted `WaitForEvent` in a future accepted batch, retaining initializer/write provenance. Add active NPC state only if exact continuation is required. No alternate seed, raw flag dump or natural-New campaign is needed. |
 | RA-02 | R1 default selector/init call and no guarded program request | Along the selected route: actual setup identity, entry/return of each real init/event program, changed route flags and pending script/event state. Static selector rows cannot fix later caller flags. Observe only the selected path, not every 506/543/609 alternative. |
 | RA-03 | R2/R2a prefix; R2b legal graph; R2d post-bridge traversal | R2a→R2b natural control: ordered logical inputs and accepted input reads, map/position/facing, zone/warp identity, program call/return and F604/F605/F607/F608/F401/F256 changes with their callers. These stateful waits/interactions determine whether the route actually reaches admission; static topology and bridge writes cannot prove them. First proposal is bounded below. |
 | RA-04 | R2c structure; R2d post-bridge CheckBattle/BattleLoop/before/start/load order | At naturally carried Map57 admission: F401/F501/F88, map/battle/area, before/start program entry/return and F451, transfer/modal state. No new algorithm is needed; the missing assertion is continuity of caller state from the omitted story segment. Reuse R2d's observation fields after that seam is settled. |
