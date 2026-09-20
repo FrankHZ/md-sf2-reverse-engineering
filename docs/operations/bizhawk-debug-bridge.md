@@ -157,6 +157,17 @@ after successful cleanup. Resume never causes the bridge to retry a failed proce
 callback restoration remain **Unknown** until admitted segmented acquisition; offline checks are not
 a native smoke or a new launch allowance. The original five-second standalone experiment is unchanged.
 
+The first admitted segmented invocation failed before hello during the observer's clock type
+initialization; the [failure/correction owner](../research/map3-messenger-acceptance.md#segment-1-clock-registration-failure)
+retains the actual start, zero delivered frames and unarmed restoration. The observer must load the
+`System` assembly before importing `System.Diagnostics.Stopwatch`, using the same explicit assembly
+loading convention as this bridge's `System.Windows.Forms` reader. Direct installed NLua/Lua/.NET
+verification now covers that previously stubbed boundary; it does not validate EmuHawk registration
+or authorize another process. Historical starts derive from reviewed initial accounting and actual
+parent receipts, independently of segment ordinal. The initial segment's reviewed prior active time
+includes the failed invocation's 4.289788499998394 seconds; children inherit active time exclusively
+from the sealed parent pair. Both enter the existing host and observer cumulative deadlines.
+
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall
 budget; no keepalive or gameplay input is generated while paused. EOF, Ctrl-C or invalid host input

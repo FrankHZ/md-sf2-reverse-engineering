@@ -990,7 +990,11 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
         or metadata["ordinal"] != ordinal
         or not metadata["resumable"]
         or report["Segment"]["ordinal"] != ordinal
-        or pair["historicalStarts"] != 3 + ordinal
+        or type(report["HistoricalControlledStarts"]) is not int
+        or report["HistoricalControlledStarts"] < 0
+        or pair["historicalStarts"] != report["HistoricalControlledStarts"] + 1
+        or pair["historicalStarts"] != report["FutureControlledOrdinal"]
+        or type(pair["activeSeconds"]) not in (int, float)
         or not 0 < pair["activeSeconds"] < 7200
         or not 0 < metadata["observer"]["frame"] < 36000
         or not 0 < metadata["batches"] < 600
@@ -1006,6 +1010,7 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
         or not host["canonicalRomUnchanged"]
         or not host["sessionRomDeleted"]
         or bridge["outcome"] != "completed"
+        or bridge["started"] is not True
         or bridge["returncode"] != 0
         or bridge["forcedTermination"]
         or bridge["timedOut"]
@@ -1019,6 +1024,12 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
 def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str, Any]) -> None:
     """Publish the pair last, after native exit, original identity and cleanup checks."""
     runtime = directory / "runtime"
+    if (
+        diagnostic["bridge"]["started"] is not True
+        or diagnostic["bridge"]["historicalStarts"] != report["HistoricalControlledStarts"] + 1
+        or diagnostic["bridge"]["historicalStarts"] != report["FutureControlledOrdinal"]
+    ):
+        raise ValueError("segment actual native-start accounting mismatch")
     metadata = load_json(runtime / "continuation.json")
     prior = report["Segment"]["priorActiveSeconds"]
     active = prior + diagnostic["bridge"]["elapsedSeconds"]
@@ -1303,6 +1314,8 @@ def prepare_map3_observation_candidate(
     continuation: str | None = None,
     segment: int | None = None,
     resume_directory: Path | None = None,
+    reviewed_prior_starts: int | None = None,
+    reviewed_prior_active_seconds: float | None = None,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -1327,13 +1340,33 @@ def prepare_map3_observation_candidate(
             raise ValueError("segment requires ordinal 1..4 and natural interactive continuation")
         if (segment == 1) != (resume_directory is None):
             raise ValueError("only the first segment may start without a complete parent pair")
+        if segment == 1:
+            if type(reviewed_prior_starts) is not int or reviewed_prior_starts < 0:
+                raise ValueError("initial segment requires an explicit reviewed prior-start count")
+            if (
+                type(reviewed_prior_active_seconds) not in (int, float)
+                or not 0 <= reviewed_prior_active_seconds < limits["wallSeconds"]
+            ):
+                raise ValueError(
+                    "initial segment requires reviewed finite prior active seconds in [0, 7200)"
+                )
+        elif reviewed_prior_starts is not None:
+            raise ValueError("resumed historical starts come only from the parent receipt")
+        elif reviewed_prior_active_seconds is not None:
+            raise ValueError("resumed active seconds come only from the parent pair")
         if resume_directory is not None:
             resume_directory = resume_directory.resolve(strict=True)
             parent_pair, parent_metadata = _read_segment(resume_directory)
             if parent_pair["ordinal"] != segment - 1:
                 raise ValueError("segment skips or repeats its parent")
+            reviewed_prior_starts = parent_pair["historicalStarts"]
+            reviewed_prior_active_seconds = parent_pair["activeSeconds"]
     elif resume_directory is not None:
         raise ValueError("resume requires an explicit segment")
+    elif reviewed_prior_starts is not None:
+        raise ValueError("reviewed prior-start count requires explicit segmented acquisition")
+    elif reviewed_prior_active_seconds is not None:
+        raise ValueError("reviewed prior active seconds require explicit segmented acquisition")
     if continuation and not interactive:
         raise ValueError("natural continuation requires explicit interactive acquisition")
     if interactive and (
@@ -1603,7 +1636,7 @@ def prepare_map3_observation_candidate(
     if segment is not None:
         config["candidate"]["segment"] = {
             "ordinal": segment,
-            "priorActiveSeconds": parent_pair["activeSeconds"] if parent_pair else 0,
+            "priorActiveSeconds": reviewed_prior_active_seconds,
             "priorBatches": parent_metadata["batches"] if parent_metadata else 0,
         }
     config["outputPath"] = (output / "observed.json").as_posix()
@@ -1686,8 +1719,8 @@ def prepare_map3_observation_candidate(
                 if resume_directory
                 else None,
             },
-            HistoricalControlledStarts=parent_pair["historicalStarts"] if parent_pair else 3,
-            FutureControlledOrdinal=3 + segment,
+            HistoricalControlledStarts=reviewed_prior_starts,
+            FutureControlledOrdinal=reviewed_prior_starts + 1,
             MaximumAdditionalStarts=0,
             PlanningMaximumStarts=4,
             RuntimeAuthorization="Pending independent implementation/lineage admission: Issue485",
@@ -1802,7 +1835,18 @@ def run_map3_observation_candidate(
             selection and (type(segment) is not int or selection["ordinal"] != segment)
         ):
             raise ValueError("execution segment must explicitly match prepared material")
+        if selection and (
+            type(report["HistoricalControlledStarts"]) is not int
+            or report["HistoricalControlledStarts"] < 0
+            or report["FutureControlledOrdinal"] != report["HistoricalControlledStarts"] + 1
+        ):
+            raise ValueError("segment reviewed prior-start accounting mismatch")
         expected_limits = _interactive_limits(continuation)
+        if selection and (
+            type(selection["priorActiveSeconds"]) not in (int, float)
+            or not 0 <= selection["priorActiveSeconds"] < expected_limits["wallSeconds"]
+        ):
+            raise ValueError("segment requires reviewed finite prior active seconds in [0, 7200)")
         if report.get("Continuation") != continuation or (continuation and not interactive):
             raise ValueError("execution continuation must explicitly match preparation")
         if (report.get("Mode") == "interactive-acquisition") != interactive:
@@ -1832,7 +1876,7 @@ def run_map3_observation_candidate(
             if continuation != NATURAL_CONTINUATION or not interactive or not 1 <= segment <= 4:
                 raise ValueError("invalid segmented composition")
             settings = config["candidate"]["segment"]
-            if settings != {
+            if type(settings["priorActiveSeconds"]) not in (int, float) or settings != {
                 key: selection[key] for key in ("ordinal", "priorActiveSeconds", "priorBatches")
             }:
                 raise ValueError("segment configuration/accounting drift")
@@ -1847,6 +1891,7 @@ def run_map3_observation_candidate(
                     sha256((parent / "runtime/segment-pair.json").read_bytes()).hexdigest().upper()
                     != selection["parentPairSha256"]
                     or parent_pair["ordinal"] != segment - 1
+                    or report["HistoricalControlledStarts"] != parent_pair["historicalStarts"]
                     or parent_pair["activeSeconds"] != settings["priorActiveSeconds"]
                     or metadata["batches"] != settings["priorBatches"]
                     or any(
@@ -1864,11 +1909,7 @@ def run_map3_observation_candidate(
                     claim.write(
                         json.dumps({"candidate": directory.as_posix(), "ordinal": segment}) + "\n"
                     )
-            elif (
-                selection["parentDirectory"] is not None
-                or settings["priorActiveSeconds"]
-                or settings["priorBatches"]
-            ):
+            elif selection["parentDirectory"] is not None or settings["priorBatches"]:
                 raise ValueError("initial segment has unexpected parent accounting")
         if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
             raise ValueError("candidate frame table differs from its frozen input")
