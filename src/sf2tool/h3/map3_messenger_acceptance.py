@@ -803,7 +803,7 @@ def verify_map3_messenger_acceptance(
 def prepare_map3_observation_candidate(
     rom_path: Path, upstream_path: Path, *, input_path: Path, output_directory: Path
 ) -> dict[str, Any]:
-    """Materialize a private review candidate. This API never starts a process.
+    """Materialize a private review candidate without starting an emulator.
 
     The input is an explicit frame table relative to the first admitted wait,
     not a route planner, a replay receipt, or a replacement public golden.
@@ -842,7 +842,13 @@ def prepare_map3_observation_candidate(
     contract = build_map3_messenger_acceptance_source_contract(rom_path, upstream_path)
     _assert_fixture(fixture, contract)
     _assert_lua_roles()
-    _, executable = bizhawk_contract()
+    toolchain, executable = bizhawk_contract()
+    executable_hash = sha256(executable.read_bytes()).hexdigest().upper()
+    if (
+        executable.stat().st_size != toolchain["executableSizeBytes"]
+        or executable_hash != toolchain["executableSha256"]
+    ):
+        raise ValueError("candidate BizHawk executable identity drift")
     validate_lua_syntax(OBSERVER, executable)
     disasm = upstream_path / DISASM
     listing = (upstream_path / LISTING).read_text(encoding="utf-8")
@@ -1033,6 +1039,11 @@ def prepare_map3_observation_candidate(
             for key in ("r1FixtureSha256", "r2FixtureSha256", "projectionSha256")
         },
         "ObserverSha256": sha256(OBSERVER.read_bytes()).hexdigest().upper(),
+        "RunnerSha256": sha256(Path(__file__).read_bytes()).hexdigest().upper(),
+        "ExecutableSha256": executable_hash,
+        "LuaLibrarySha256": sha256((executable.parent / "dll/lua54.dll").read_bytes())
+        .hexdigest()
+        .upper(),
         "ConfigurationSha256": sha256(config_bytes).hexdigest().upper(),
         "InputSha256": config["candidate"]["inputIdentity"],
         "InputFrames": len(frames),
@@ -1073,8 +1084,12 @@ def run_map3_observation_candidate(
     if not directory.is_relative_to(repo_path("local").resolve()):
         raise ValueError("candidate must remain in the owning worktree's ignored local directory")
     report = load_json(directory / "candidate.json")
+    _, executable = bizhawk_contract()
     for path, field in (
         (OBSERVER, "ObserverSha256"),
+        (Path(__file__), "RunnerSha256"),
+        (executable, "ExecutableSha256"),
+        (executable.parent / "dll/lua54.dll", "LuaLibrarySha256"),
         (directory / "config.json", "ConfigurationSha256"),
         (directory / "input.json", "InputSha256"),
     ):
