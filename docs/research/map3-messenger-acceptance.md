@@ -1,6 +1,6 @@
 # Map 3 Messenger Acceptance
 
-- Status: **Confirmed** for the one admitted R2a continuation only
+- Status: **Confirmed** for the accepted R2a continuation; Issue #475 acquisition reached Map19, pending independent acceptance.
 - Fixture: sf2-map3-messenger-acceptance-runtime-v1
 - Case: natural-map3-messenger-accept-to-follower-ready-wait
 - ROM: USA retail SHA-256 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
@@ -9,8 +9,11 @@
 ## Bounded interactive acquisition
 
 Issue [473](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/473) implements an explicit
-interactive acquisition mode for the existing candidate. Its scope is **offline preparation only,
-zero emulator launches**. [ADR 0015](../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
+interactive acquisition mode for the existing candidate. That implementation slice was **offline
+preparation only, zero emulator launches**. After PR #474 was independently accepted and merged,
+[Issue #475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475) separately admitted
+and consumed exactly one acquisition. Its [result](#single-admitted-interactive-acquisition-result)
+reached the Map19 terminal and remains unreviewed; no execution allowance remains. [ADR 0015](../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
 separates this operation from frozen replay and remake H4. The
 [bridge protocol](../operations/bizhawk-debug-bridge.md#map3-interactive-composition-offline-only)
 owns communication, serial requests and the single process. This observer retains source-bound R1
@@ -49,10 +52,15 @@ counts, and the most recent source consumer poll with its observer/emulator fram
 These named symbols are bound to H1 and canonical ROM bytes during preparation. A last poll can be
 stale; its timestamp and active consumers must be read together. `CURRENTLY_TYPEWRITING=0`, a script
 return or a past poll alone is **not** readiness proof. Lua never converts these facts into a button
-decision. FieldMenu remains a typed stop, not a condition to repair with injected state. Native
-availability, timing and natural downstream reach of the new observations remain **Unknown**.
+decision. FieldMenu remains a typed stop, not a condition to repair with injected state. The #475
+result below records the reached native boundary. Other availability, timing and downstream reach
+remain **Unknown**.
 
-### Offline preparation and future operator entry
+### Preparation and operator protocol
+
+The following describes capability use, not remaining launch permission. The sole reviewed #475
+material was retained `local/issue473/prepared-02`; `prepared-01` is stale and forbidden for execution.
+Do not reprepare or invoke either after the consumed attempt.
 
 Load the current worktree's `local/private-inputs.ps1` in the launching shell. Use installed `uv`
 dependencies and shared Lua. The existing API prepares into a fresh ignored directory without a
@@ -76,12 +84,11 @@ actual input recording**. The report retains `CANDIDATE-PREPARED-NOT-ADMITTED`, 
 1800-second wall bound, 28634-frame total, 2048 batches and 120-frame maximum batch. It records
 historical controlled starts 2 and future ordinal 3 without claiming that ordinal was executed.
 
-Only after independent merge and a separate main-gate admission, the operator can invoke the same
-runner with the explicit matching mode (this example is an execution instruction, **not part of
-Issue 473's checks**):
+After independent merge and separate main-gate admission, #475 invoked this same runner with the
+explicit matching mode. This records the consumed invocation; **do not repeat it**:
 
 ```powershell
-uv run python -c "from pathlib import Path; from sf2tool.h3.map3_messenger_acceptance import run_map3_observation_candidate; from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path; run_map3_observation_candidate(private_input_path(ROM_INPUT_IDENTITY), Path('local/issue473/prepared-01'), interactive=True)"
+uv run python -c "from pathlib import Path; from sf2tool.h3.map3_messenger_acceptance import run_map3_observation_candidate; from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path; run_map3_observation_candidate(private_input_path(ROM_INPUT_IDENTITY), Path('local/issue473/prepared-02'), interactive=True)"
 ```
 
 After the admitted R1 frame finishes, hello prints its paused state. Enter one JSON array per line:
@@ -115,10 +122,9 @@ session fails; at most 2048 accepted input batches are allowed. The 1800-second 
 the owned process launch and includes startup and all paused time. Host containment, short exchange
 timeouts, callback exceptions, restoration and final session-ROM deletion keep their distinct statuses.
 EOF graceful cleanup remains **Unknown** at the native boundary; a killed process is not proof of Lua
-restoration. The future actual run must independently check owned process survivors and canonical ROM
-identity. An acquisition completion remains `OBSERVATION-COMPLETE-UNREVIEWED`, not replay/H4 PASS.
+restoration. The #475 result below includes independent owned-process and canonical-identity checks. An acquisition completion remains `OBSERVATION-COMPLETE-UNREVIEWED`, not replay/H4 PASS.
 
-### Offline verification and retained limitations
+### Issue #473 offline verification and retained limitations
 
 Use Python AST/compile, targeted Ruff, the shared Lua syntax compiler and bounded direct protocol,
 input-log/budget/error-path checks. API stubs can check delivery ordering and skipped batch remainders;
@@ -128,10 +134,142 @@ local normal/full/H1/H2/H3 runtime queues for this slice. No bridge smoke or war
 
 Preserve #460's raw-MAP_CURRENT failure, #465's FieldMenu failure, #469's source/trace audit, #471's
 pre-API CRLF assertion failure/correction and its unexecuted fourteen-neutral replacement candidate.
-The controlled historical count is still **2**. At most one future acquisition can make it **3**;
-there is no reset, extra smoke/replay/retry or fourth start. Disabled original replay ordinals 1/2 and
+At #473 preparation the controlled historical count was **2**. The separately admitted #475
+acquisition below consumed the one additional start, making the total **3**. There is no remaining
+call, reset, extra smoke/replay/retry or fourth start. Disabled original replay ordinals 1/2 and
 their restrictions remain separate. Arrival timing, NPC/RNG effects, prompt/gate/natural continuity,
 complete 8D and H4 stay **Unknown** until their own required evidence and independent acceptance.
+
+## Single admitted interactive acquisition result
+
+**Confirmed observation, pending independent acceptance:** Issue [475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475)
+consumed its sole API call/native start on 2026-09-20 UTC (2026-09-19 America/Chicago launch date).
+The unchanged accepted base was `9cb14a55c2777b515a18450e98fc37ca90350292`, tree
+`63659d8c0d16f662279727dc1301f641ef0a3d4c`. This separately admitted interactive controlled-R1
+acquisition superseded preparation's NOT-ADMITTED disposition only for that attempt. The return was
+`OBSERVATION-COMPLETE-UNREVIEWED`, not frozen replay, a public golden, complete 8D or H4 PASS.
+Historical controlled starts are now **3**; #460/#465 completed FAIL, #471's pre-API CRLF assertion
+and unexecuted house-neutral preparation, stale #473 prepared-01, and disabled replay ordinal 1/2
+failures/restrictions remain preserved. No retry, fourth start, follow-up replay or cleanup is authorized.
+
+### Frozen material and actual transport
+
+Read-only Git/ownership/process checks found a clean transferred Research worktree, no open PR and
+no EmuHawk. The retained `local/issue473/prepared-02/runtime` did not exist. Current private-input
+configuration and narrow ROM verification passed; all report source/H1/fixture/helper/tool identities
+matched without preparation or material changes. The pre-call note and full identity check are retained
+under ignored `local/issue475/`. Exact SHA-256 identities were:
+
+| Material | SHA-256 |
+| --- | --- |
+| `candidate.json` | `73AE17BEA9290DF305A313063F139429E329114BDEE3DBD578B3695DEB591F84` |
+| `config.json` | `B0C0D8BB16F3440BB64F9851257DAEFD81288C7E1C8782C322F0EE15B8E38A80` |
+| `config.lua` | `C58438B4B3A830C00A145774EBFEFD2C102269F71A38EDF039D0F69B76CBC2DB` |
+| Empty mode declaration `input.json` | `05562B5546BEBE81C0EA462E2285268CA6CB943091F7B5A01536CD6D94C4AA95` |
+| Observer | `33766BE3A243EE782AF0F156DD6B48EE15BF8CEF0D20D285AC8CB66A68C063A3` |
+| Runner | `37FAF15B03745C984316456051C6C7CA242A54E59078CC1B281F8D7A4927CC27` |
+
+The existing `run_map3_observation_candidate(..., interactive=True)` ran once through a persistent
+PTY with `uv run python -X utf8 -c`; stdin remained available for one JSON array plus carriage return
+per command. No transport drycheck, warmup, smoke, replay or second API call occurred. All 200 commands
+were explicit `step` requests; there were no B/A inputs, state/ping probes, abort or disconnect.
+Button/release choices used current coordinates, source route topology, active/pending consumers and
+fresh polls. The post-join choice also used text 447's actual return plus the existing source chain
+`csc08_joinForce` → `FadeOut_WaitForP1Input` → `WaitForPlayerInput`. That wait has no dedicated poll
+in this observer: its exact live entry was **Inferred**, not established by the stale text poll.
+After C at frame 8495 the original window-close callback ran, then the messenger returned.
+
+### Reached source boundaries
+
+Frames below are observer frames; callback `emulatorFrame` is one lower in this run. They are
+provenance for this acquisition, not gameplay timing requirements or a reusable input schedule.
+All PCs/symbols refer to the pinned source/H1/ROM identified above.
+
+| Boundary | Actual observation |
+| --- | --- |
+| Controlled R1 service/scratch restoration | Frame 355 / emulator 354, `WaitForEvent` `0x2591C`; patches/scratch restored before operator input. All 30 retained ally status words read 0, hence no inherited POISON in this attempt. Live entity/index and raw RNG/time readbacks remain private; raw time was not normalized. |
+| House, Sarah and Astral | House `cs_5145C` entry/return 501/1015; Sarah `cs_513D6` 2025/2052; Astral exit `cs_5148C` 3541/3543. Original house and school stair handlers reached; F601/F602 became true. No FieldMenu callback occurred. |
+| Messenger and prompt | `cs_5149A` entry 3881, YesNoPrompt entry 7267, fresh choice poll 7291, C 7292, original return D0=0 at 7297 (`0x47498`). Accepted-path text IDs 517–531, 535–536 and join text 447 reached their real DisplayText consumers. |
+| Follower-ready return | Messenger return 8514; follower-ready wait 8515 at `(43,10)`, Down, F600/F66/F603 true, F604 false. All tracked script/text/prompt/close consumers returned. |
+| Gate `Map3_ZoneEvent4` / `cs_51652` | Entry 8903 at the source-selected gate edge. Six real text IDs 537–542 completed. Script return at 10032 has order 20952, followed by F604 false before trap at `0x50E3E` (20953) and true at `0x50E42` (20954). Guard readbacks are retained; no unobserved entity motion is inferred from script return alone. |
+| North warp | Frame 10197, original handler `0x25978`, source `(28,2)` to target `(28,1)`, operands `[0,19,26,30,1]`; effective destination Map19. |
+| Map19 setup and consumers | `ms_map19_InitFunction` `0x530EA` entry, `cs_53104` entry/return, init return all at 10259, orders 21446–21449. First wait `0x2591C` at 10285 precedes original controller installation. |
+| Sole terminal | Frame 10329 / emulator 10328, original movement acceptance `0x52E8`, Up input 1, Map19 `(26,30)`, F604 true, event word 0, pending returns 0 and every tracked consumer count 0. The completed frame remains `(26,30)`; acceptance of movement does not prove next-tile arrival. |
+
+### Complete logs, process and cleanup
+
+**Confirmed:** PID 39748 ran BizHawk 2.11.1 / Genplus-gx, startup 9.433 seconds and total owned
+elapsed 1778.575 seconds including paused operator time, within 1800. Exactly 10329 applying/completed
+frame pairs cover emulator frames 0→10329 without gaps: 355 bootstrap frames (214 Start, 141 neutral)
+and 9974 operator frames (8351 neutral, 302 Left, 597 Right, 325 Down, 361 Up, 38 C). The 200 batches
+all contain 1–120 completed frames, below 2048 batches and 28634 total frames. No partial batch or
+skipped remainder was exercised because the last request was one Up frame. The 582 checkpoints and
+input records share all 21640 unique ordered records; each command/result agrees with the host receipt.
+
+The terminal callback precedes final frame completion. Its checkpoint reports emulator 10328 and
+its snapshot has raw frame-counter 206; the preserved frame-end snapshot reports emulator 10329 and counter 207. Final
+restoration then reloads the declared bootstrap core state: the enclosing last `result` log metadata
+reports emulator 214 while its nested acquired snapshot remains 10329. This is a cleanup boundary,
+not a missing input-frame interval or permission to replace the acquired terminal with restored state.
+
+Host/API exit was 0, `timedOut=false`, `forcedTermination=false`, process terminated and bridge
+Lua status `closed`. Candidate status ends with `callbacks-cleared:0` / `observer-finished`, without
+failure lines. Every declared restoration field is true; `outputRemoved=false` preserves the result.
+The runner deleted the session ROM and rechecked canonical identity unchanged. Independent OS
+inspection after completion found no PID/runtime-copy survivors and zero EmuHawk; no containment
+or extra cleanup was needed. Host stdout/stderr slots are null in this composition; actual native
+output remains in the bridge process log, while `local/issue475/api-console.txt` retains API stdout.
+
+Private runtime evidence stays in `local/issue473/prepared-02/runtime/`:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `actual-inputs.jsonl` | `21A9422DA146189FE8C46CAAAE141E7694EF24F67C6B135AB077F896C514E021` |
+| `checkpoints.jsonl` | `E7D50E264F73DECB6129240067F5E36FCBB177954903F8634E829224054748C2` |
+| `host-status.json` | `9716B8BC9FCAC809E6AC688B2D9B188556C7C198846748EAE50D6584E89A0E46` |
+| `observer.observed.json` | `EA6EE99767C49F4B9E16CDD48C91AAC9C4634B1BC03E307FCBCBBAAE69EAB8D4` |
+| `bridge/receipt.json` | `1C0B1158A20F9D24CA1D68B6807DF7078D08387696B856D0370C4763AEDF5F15` |
+
+### Verification and remaining boundary
+
+Read-only result reproduction loads those existing JSON/JSONL/status files: pair `applying`/`frame`
+by ID/button/beforeFrame, require consecutive completed frames, merge checkpoint/input `order`, join
+all 200 commands/results against `bridge/receipt.json`, and inspect the named callback sequence,
+terminal/restoration/host status and independent OS result. The retained direct command is
+`uv run python -X utf8 local/issue475/check_result.py` (with current private configuration loaded);
+it does not invoke or import the acquisition runner. Its exact assertions and summary remain local.
+
+The core retained-record integrity check can also be reproduced without that local analysis script:
+
+```python
+import json
+from pathlib import Path
+root = Path("local/issue473/prepared-02/runtime")
+inputs = [json.loads(line) for line in (root / "actual-inputs.jsonl").read_text().splitlines()]
+checkpoints = [json.loads(line) for line in (root / "checkpoints.jsonl").read_text().splitlines()]
+frames = [row for row in inputs if row["kind"] == "frame"]
+assert [row["afterFrame"] for row in frames] == list(range(1, 10330))
+assert sorted(row["order"] for row in inputs + checkpoints) == list(range(1, 21641))
+terminal = [row for row in checkpoints if row["kind"] == "map19:first-original-movement-acceptance"]
+assert len(terminal) == 1 and terminal[0]["frame"] == 10329
+assert terminal[0]["state"]["pendingReturns"] == 0
+```
+
+Preserved local analysis failures: identity checker 01 compared raw CRLF bytes to normalized source
+text hashes; checker 02 hashed the returned projection wrapper instead of its `projectionSha256`.
+The corrected checker 03 matched existing preparation semantics. Result checker 01 incorrectly
+required a gap between final frame order and result order; corrected checker 02 accepts adjacent
+records and passed on the same completed run. No material, source, input or native result was repaired,
+and no native invocation followed any analysis correction. One tool-output formatter failed before
+sending a controller command; it was corrected without an emulator restart or extra input.
+
+Direct result/material checks and 64 document links/anchors passed. Acceptance also records the
+clean committed planner and actual Public CI on the Draft PR. No normal/full/H1/H2/H3 queues or new verification-helper tests are authorized.
+**Unknown:** unobserved prompt branches, native EOF/abort recovery, dedicated long-idle thresholds,
+partial-batch termination, repeatability/frozen replay, downstream tower/battle/5B continuity and
+complete 8D/H4. Paused snapshots and ordinary controller delivery are observed only for this run;
+no general backend or presentation compatibility follows. Independent main-gate acceptance is required
+before these bounded facts become an accepted downstream contract. Stop with a clean pushed Draft PR.
 
 ## Boundary
 
