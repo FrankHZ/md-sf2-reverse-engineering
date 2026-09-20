@@ -466,3 +466,152 @@ control, general callback compatibility and the continuous milestone remain open
 full 8D or H4 result is promoted. Normal/full/H1/H2/H3 queues and new tests are excluded from this
 result-only scope. The diagnostic stops here regardless of further hypotheses; independent
 main-gate review of this result does not authorize another launch or complete #437.
+
+## Fixed acknowledgement schedule: source and retained-trace review
+
+**Confirmed, zero-launch review (Issue #469):** the frozen house block treats C as a generic
+acknowledgement for longer than the opening dialogue lasts. C is also an exploration action.
+The completed #465 failure therefore contradicts that scheduling assumption, not the original
+route's legality. This section consumes the result above and the complete pinned source; it changes
+no input, observer, fixture, golden or launch permission.
+
+### Opening dialogue, return and subsequent actions
+
+**Confirmed source:** `scripts_1.asm:cs_5145C` first waits for entity 128's initialization and
+movement, then executes `textCursor 510`, two `nextText` commands (510, 511), `textCursor 483`,
+one `nextSingleText` (483), a final `setActscriptWait 128,eas_Init`, and `csc_end`.
+The pinned `gamescript.txt` gives 510/511 one `{W2}` each and 483 one `{W1}`. These are three
+text commands, not twelve acknowledgement requirements. The complete script has no Yes/No prompt.
+
+`sf2cutscenemacros.asm` maps `nextText` to command 2 and `nextSingleText` to command 0.
+`mapscriptengine_2.asm:csc02_displayTextbox` calls `DisplayText` and increments the cutscene
+cursor; `csc00_displaySingleTextbox` additionally closes portrait/dialogue windows and sleeps
+10 ticks before returning. `textfunctions_1.asm` implements `{W2}` at
+`ParseSpecialTextSymbol:@wait2/loc_6472` and `{W1}` at `symbol_wait1/loc_659C/loc_65B4`.
+Both wait for ordinary directional/A/B/C input through `CURRENT_PLAYER_INPUT`; both temporarily
+clear `CURRENTLY_TYPEWRITING` while waiting. Thus typewriting 0 alone does not mean input-ready.
+`HandleDialogueTypewriting` in `textfunctions_2.asm` can also shorten character delay when
+`PLAYER_1_INPUT` is nonzero; a supplied pulse is not necessarily a completed acknowledgement.
+
+**Confirmed retained observations:** all ordinals below are the existing candidate's one-based
+input clock, with observer frame = input + 354. Entry/return pairs are the observer's original-PC,
+stack-matched callbacks, not reconstructed timings.
+
+| Input ordinal | Observed boundary |
+| --- | --- |
+| 289 | `ExecuteMapScript` entry for `cs_5145C`; zone target `(4,4)` |
+| 339–553; 557–673 | `DisplayText` entry/return for 510, then 511; returns coincide with C pulses |
+| 677; 790; 793 | Text 483 entry; `symbol_wait1`; actual `loc_65B4` acknowledgement read `0x20` (C), then text return |
+| 793–802; 813 | Single-text dialogue close; script return at `0x58C`; the zone wrapper's extra close also enters/returns at 813 |
+| 913; 916–1033; 1042 | Controller reads C; a new trap-based text 483 enters/returns at `0x6260`/`0x574`; its dialogue close returns |
+| 1153; 1156–1273; 1282 | Controller reads C; another trap-based text 483 and dialogue close complete |
+| 1393; 1395 | Controller reads C; `FieldMenu` entry `0x2127E` fails the candidate, although the input table is neutral by 1395 |
+
+The observer instruments `{W1}`'s read, not `{W2}`'s loop. The first two text returns and concurrent
+C pulses are **Confirmed**; their exact internal `{W2}` read times are **Unknown**. The later
+`text:wait1` records carry cutscene cursor 484, but the paired `DisplayText` target is 483:
+trap-based `txt` does not set that cutscene cursor. Those records do not establish text 484.
+
+**Confirmed source:** after `cs_5145C`, `s3_zoneevents.asm:Map3_ZoneEvent6` calls
+`MakeEntityWalk` for selector 128 with `(5,6,1)`, sets F601 and returns. `MakeEntityWalk` and
+`entityfunctions_2.asm:SetWalkingActscript` install walking work without waiting for its completion.
+`mapsetupsfunctions_1.asm:RunMapSetupZoneEvent` closes windows, waits a VInt and waits for the
+player to stop before returning to exploration. Script return is therefore not the whole caller's
+return or a proof of completed NPC movement. The observed F601 readback changes after script
+return; the first retained subsequent nonzero controller read is 913. The exact first ready frame
+between those boundaries is **Unknown**, since neutral controller reads are not logged.
+
+`explorationfunctions_2.asm:WaitForEvent/loc_2593C` tests A/C after pending map events;
+`ExplorationLoop/loc_2587E` dispatches `ProcessPlayerAction`. In `explorationvints.asm`, that
+function saves `PLAYER_1_INPUT` in D7 before waiting for player/view movement. A goes to
+`loc_25BCC`; ordinary C goes through `GetActivatedEntity`, entity-event dispatch, then
+`CheckArea` if no entity was selected. If neither yields an action, control falls through to `j_FieldMenu`
+(`s05_jumpinterface.asm` resolves it to `FieldMenu`). Releasing C after dispatch need not cancel
+the saved action. `esc02_controlCharacter` at `0x4FF8` separately chooses `PLAYER_1_INPUT` when
+D7 is nonzero, matching the observed D7=48/value=32 reads; it is not itself a menu-entry callback.
+
+**Inferred:** the two post-opening displays are re-interactions with entity 128: the F602-clear
+`s2_entityevents.asm:Map3_EntityEvent2` displays 483, matching the two trap-based calls, player
+position/facing and the source's departing NPC. The final C's ordinary entity/area fallback
+explains the later menu entry. **Unknown:** the exact selected entity/negative lookup result,
+NPC position and area-check result at each action were not recorded by this candidate. Do not
+promote the plausible explanation that the NPC moved out of interaction range to an observed fact.
+The confirmed repeated text and menu callbacks already establish that these extra pulses were
+not harmless opening-dialogue acknowledgements.
+
+### Later blocks: complete source, no later runtime claim
+
+**Confirmed construction/source; Unknown reach and timing:** direct expansion of the documented
+recipe equals all 23,234 frozen input frames. Each listed block repeats 2 C + 118 neutral; ranges
+include its final neutral tail. Later rows were never reached by #465. They share the same risk
+whenever C outlasts the intended consumer; source command counts cannot prove which frame crosses
+that boundary or justify replacing the pulse count with a text count.
+
+| Block / input range / pulse count | Complete owning flow and acknowledgement boundary |
+| --- | --- |
+| House / 313–1752 / 12 | `cs_5145C`: 510, 511, 483 as above. Pulses start at 313 + 120k, k=0..11; seven start after the observed script return. |
+| Sarah classroom / 3433–4872 / 12 | Intended first `Map3_EntityEvent0`, F602/F603/F256 clear: `txt` 512 (`W2`), 480 (no explicit W token), 481 (`W1`), then complete movement-only `cs_513D6` and F256. Later interactions take the flag-dependent branch; the entity-event wrapper closes windows. |
+| Astral introduction / 5161–6600 / 12 | `Map3_ZoneEvent7`, F602/F603 clear: portrait and `txt` 513 (`W1`), then return and wrapper close. No twelve-acknowledgement loop. |
+| Entity 142 / 6937–9816 / 24 | After the frozen Left-facing step and actual C interaction: `Map3_EntityEvent15` conditionally displays 500 (`W2`) and sets F261, then 501 (`W1`) and F602. Repeating C can select later interactions; F602-related re-init `cs_513A0` only positions Sarah, with no text. |
+| Astral zone / 9985–11424 / 12 | `Map3_ZoneEvent7`, F602 set and F603/F260 clear: 514 (`W2`), 515 (`W2`), 516 (`W1`), then complete positioning-only `cs_5148C`, F260 and wrapper close. |
+| Messenger / 11881–19080 / 60 | Complete `cs_5149A` through its branches: accepted Yes path uses 517–531, 535–536, a real Yes/No prompt/F89 branch, plus `csc08_joinForce` text 447 and `FadeOut_WaitForP1Input`. The decline path uses 532–533 instead of the accepted join ending. Entity movement/waits separate text commands; the caller sets F603 after script return. |
+| Gate / 19825–22704 / 24 | Complete `cs_51652`: six `nextSingleText` commands, 537–542 (each `W1`), between two guard-action groups; entity 139 is awaited, 138 is not. `Map3_ZoneEvent4` commits F604 after script return, then the zone wrapper returns. |
+
+The messenger block cannot be treated as text acknowledgements alone: `YesNoPrompt` initializes
+choice zero, may wait for release of entry input, handles left/right selection and C/A confirmation,
+and treats B as No. Join text 447 has no explicit W token, but its caller separately waits for
+player input. Replacing every C with B or assigning one pulse per displayed command is therefore
+not a source-supported correction for the entire route. The gate's six real text commands remain
+required; the withdrawn no-dialogue assertion is not revived. None of these static branches proves
+the proposed later arrival state, completion frame, selected prompt result or absence of extra C
+actions in the unshimmed candidate.
+
+### Bounded correction proposal and reproduction
+
+**Inferred correction proposal, not executed:** preserve the house prefix through the final
+observed acknowledgement at 793–794 and replace only the seven remaining house C pairs
+(913–914, 1033–1034, 1153–1154, 1273–1274, 1393–1394, 1513–1514, 1633–1634) with neutral frames.
+Keep the block length and subsequent ordinals unchanged. This removes the demonstrated extra
+actions at their cause; neutralizing only 1393 would retain the two unintended conversations and
+later surplus pulses. It adds no adaptive input or observer behavior. This is a concrete candidate
+correction for independent review, not an established successful replacement: altered interaction
+and RNG/NPC evolution can change later state, and the downstream blocks have no measured safe
+cutoff. No complete fixed-frame route replacement can be established from the retained failure.
+
+Reproduce the static review against `ShiningForceCentral/SF2DISASM` at
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, with paths relative to `disasm/`:
+
+- `data/maps/entries/map03/mapsetups/{scripts_1,s2_entityevents,s3_zoneevents,s6_initfunction}.asm`
+  supplies the complete programs/callers above; `scripts_1.asm` blob is
+  `5e9b260b9e07dd22387a0ab1ab3b6666d1ab05e1`.
+- `data/scripting/text/gamescript.txt` blob `d1f5c1fa20ff2a2d442408d71d2dcfbffc2cb7bd`
+  supplies hex-indexed text control tokens. Retain IDs/tokens only, not dialogue prose.
+- `code/common/scripting/map/{mapscriptengine_2,mapsetupsfunctions_1}.asm`,
+  `code/common/scripting/text/textfunctions_{1,2}.asm`,
+  `code/common/scripting/entity/{entityscriptengine_2,entityfunctions_2}.asm`, and
+  `code/gameflow/exploration/{explorationfunctions_0,explorationfunctions_2,explorationvints}.asm`
+  supply the named consumers, return order, action dispatch and input masks.
+- `sf2cutscenemacros.asm`, `code/common/tech/interrupts/trap5_textbox.asm`,
+  `code/common/menus/yesnoprompt.asm`, and
+  `code/gameflow/battle/battlefunctions/battlefunctions_0.asm:FadeOut_WaitForP1Input`
+  resolve macro/trap/prompt/join behavior; the latter calls `code/common/tech/input.asm:WaitForPlayerInput`.
+
+Use `git -C local/upstream/SF2DISASM show <pinned-commit>:disasm/<path>` for these source sections.
+Read the unchanged `local/issue463/candidate-02/input.json` (identity in the preceding result) and
+its `runtime/checkpoints.jsonl`, `host-status.json`, `observer.status.txt`; filter checkpoint kinds
+`script:*`, `DisplayText:*`, `CloseDialogueWindow:*`, `text:*`, `input:original-controller-read`
+and `field-menu:reached`. The read-only local `local/issue469/audit.py` compares the reviewed source
+files to pinned Git objects, expands the existing recipe in memory and reports only IDs/control
+facts from the retained 72 checkpoints. Run with
+`.venv/Scripts/python.exe -P -X utf8 local/issue469/audit.py`; it creates no candidate or runtime.
+The [observer](../../tools/bizhawk/map3_messenger_acceptance_observer.lua)'s `install_candidate`
+owns the recorded fields and callback limitations; H2 projections are not substitutes for these
+complete scripts.
+
+Acceptance is direct source/trace, document/link/scope and `git diff --check` review, then the
+clean committed `uv run sf2 verify plan --base origin/main --head HEAD` and actual public CI.
+The planner's generic `public-core` selection does not authorize local normal/full/H1/H2/H3,
+warmups, materialization or tests of verification programs for this documentation-only slice.
+Both controlled starts remain consumed, both completed failures and the separate disabled replay
+ordinal-1/2 restrictions remain preserved. This proposal grants no third start, runtime permission,
+natural-continuity claim, full 8D/H4 acceptance or completion of #437.
