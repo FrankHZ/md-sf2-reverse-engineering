@@ -756,8 +756,10 @@ do not advance the original game or reset costs.
 
 The final child observes Map21→40 at 17945 and the original initialization return at 17997, then
 the Map57 warp at 18389. CheckBattle entry/return/result orders 43733/43734/43735 establish D7=1;
-admission 43736 precedes BattleLoop 43737 with D1=1 and F88 clear. Before-program return is frame
-22266/order52740; load/start return at 22334/orders52883/52889; activation/region/spawn return at
+admission 43736 precedes BattleLoop 43737 with D1=1 and F88 clear. At frame 22266, before-program
+`script:return` is order 52738, owning function `battle:before:return` is 52739 and the
+`natural:before` completion checkpoint is 52740. Load/start completion checkpoints are at
+22334/orders52883/52889; activation/region/spawn completion checkpoints are at
 22336/orders52897/52901/52905; generation/first dispatch occur at 22339/orders52915/52916.
 Actual first actor is **2**, not the seeded R2d actor 1. F401/F451 are set and F501 is clear.
 
