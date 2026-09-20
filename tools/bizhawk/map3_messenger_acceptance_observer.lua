@@ -1,4 +1,6 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
+local candidate = config.candidate and { index = 1, pending = 0, gates = {}, returns = {} } or nil
+assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
 
@@ -11,6 +13,7 @@ local pending_core_snapshot, pending_failure, finish_pending = false, nil, false
 local last_input, input_trace, chronology, map_transitions, script_trace = nil, {}, {}, {}, {}
 local route_started, initial_wait_seen, route_control_ready, wait_after_warp = false, false, false, false
 local append_trace
+local json_write
 local route_stall_key, route_stall_frames = nil, 0
 local route_progress_frame = nil
 local messenger_progress_frame = nil
@@ -235,10 +238,26 @@ local function fail(role, expected_pc, message, restoration, mismatch)
     if pending_failure then return end
     pending_failure = { role = role, expectedPc = expected_pc, actualPc = reg("PC") & 0xFFFFFF,
         phase = phase, message = tostring(message), restoration = restoration, mismatch = mismatch }
+    if candidate and candidate.record then
+        pcall(candidate.record, "failure", { role = role, expectedPc = expected_pc,
+            actualPc = pending_failure.actualPc, lastCheckpoint = candidate.lastCheckpoint,
+            pendingReturns = candidate.pending, error = tostring(message) })
+    end
 end
 
 local function write_failure(restoration, mismatch, cleared, output_removed)
     local p = pending_failure
+    if candidate then
+        local file = assert(io.open(config.statusPath, "a"))
+        file:write("failure:observer-callback:")
+        json_write(file, { kind = "map3-candidate-callback-failure", owner = OWNER,
+            caseId = "candidate-r1-through-first-map19", phase = p.phase, role = p.role,
+            actualPc = p.actualPc, expectedPc = p.expectedPc,
+            callbackCount = #callback_order, callbacksCleared = cleared, outputRemoved = output_removed,
+            restoration = restoration, restorationMismatch = mismatch, error = p.message })
+        file:write("\n"); file:close()
+        return
+    end
     local mismatch_json = "null"
     if mismatch then mismatch_json = string.format('{"domain":"%s","address":%d,"expected":%d,"actual":%d}', json_escape(mismatch.domain), mismatch.address, mismatch.expected, mismatch.actual) end
     local file = assert(io.open(config.statusPath, "a"))
@@ -265,6 +284,19 @@ local function finalize_failure()
     restoration.callbacksCleared, restoration.outputRemoved = cleared, output_removed
     write_failure(restoration, mismatch, cleared, output_removed)
     client.exitCode(config.observerFailureContract.exitCode)
+end
+
+local function finish_failure_safely()
+    if not candidate then finalize_failure(); return end
+    local ok, message = pcall(finalize_failure)
+    if not ok then
+        pcall(status, "failure:cleanup:" .. tostring(message))
+        if candidate.record then
+            pcall(candidate.record, "cleanup:error", { error = tostring(message), callbackCount = #callback_order })
+        end
+        pcall(cleanup_callbacks)
+        client.exitCode(config.observerFailureContract.exitCode)
+    end
 end
 
 local function current_position()
@@ -941,13 +973,24 @@ append_trace = function(kind, value)
 end
 
 local function add_callback(address, role, handler)
+    if candidate and not (role:match("^candidate:") or role:match("^r1%-")
+        or role:match("^prompt%-") or role:match("^join%-") or role:match("^update%-force%-")
+        or role == "bootstrap-check-sram" or role == "checkpoint" or role == "map3-init-dispatch"
+        or role == "messenger-text-command" or role == "follower-command"
+        or role == "follower-service" or role == "zone-event8-return") then return end
+    if candidate and callbacks[address] then
+        table.insert(callbacks[address].handlers, handler)
+        return
+    end
     assert(callbacks[address] == nil, "more than one callback registered at physical PC " .. string.format("%X", address))
-    callbacks[address] = { role = role, id = event.on_bus_exec(function()
+    callbacks[address] = { role = role, handlers = { handler }, id = event.on_bus_exec(function()
         if pending_failure then return end
         if route_started or extension_progress_frame then
             last_callback_role, last_callback_pc = role, address
         end
-        local ok, message = pcall(handler)
+        local ok, message = pcall(function()
+            for _, dispatch in ipairs(callbacks[address].handlers) do dispatch() end
+        end)
         if not ok then fail(role, address, message) end
     end, address, "sf2-" .. OWNER .. "-" .. role, "M68K BUS") }
     callback_order[#callback_order + 1] = address
@@ -1905,7 +1948,7 @@ local function write_followers(file, values)
     file:write("]")
 end
 
-local function json_write(file, value)
+json_write = function(file, value)
     local kind = type(value)
     if kind == "nil" then file:write("null"); return end
     if kind == "boolean" or kind == "number" then file:write(tostring(value)); return end
@@ -2145,7 +2188,319 @@ local function capture_messenger_result()
     }
 end
 
+-- The candidate shares bootstrap, dispatch, readback and finalization with R2a.
+-- Only this frozen frame table supplies input after admission. Observation
+-- callbacks may fail/stop, but cannot choose, delay or repair an input edge.
+local function install_candidate()
+    local c, f, ram = candidate, config.candidate.functions, config.ram
+    local function sample()
+        local result = current_position_diagnostic()
+        result.rawX = memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_X, "M68K BUS")
+        result.rawY = memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_Y, "M68K BUS")
+        result.mapEventWord = memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS")
+        result.typewriting = memory.read_u8(ram.CURRENTLY_TYPEWRITING, "M68K BUS")
+        result.windowState = memory.read_u8(ram.WINDOW_IS_PRESENT, "M68K BUS")
+        result.portrait = memory.read_u16_be(ram.CURRENT_PORTRAIT, "M68K BUS")
+        result.speechSfx = memory.read_u16_be(ram.CURRENT_SPEECH_SFX, "M68K BUS")
+        result.rngBytes = read_span(ram.RANDOM_SEED, 4)
+        result.rngCopyByte = memory.read_u8(ram.RANDOM_SEED_COPY, "M68K BUS")
+        result.rawTime = { frame = memory.read_u8(ram.FRAME_COUNTER, "M68K BUS"),
+            seconds = memory.read_u32_be(ram.SECONDS_COUNTER, "M68K BUS"),
+            secondsFrames = memory.read_u8(ram.SECONDS_COUNTER_FRAMES, "M68K BUS") }
+        result.flags = {}
+        for _, flag in ipairs({ 66, 600, 601, 602, 603, 604, 605, 607, 608, 401, 256, 501, 507, 982 }) do
+            result.flags[tostring(flag)] = flag_is_set(flag)
+        end
+        return result
+    end
+    function c.record(kind, facts)
+        c.lastCheckpoint = kind
+        local file = assert(io.open(config.candidate.checkpointPath, "a"))
+        json_write(file, { kind = kind, frame = frame_count, pc = reg("PC") & 0xFFFFFF,
+            inputFrame = c.epoch and frame_count - c.epoch or false,
+            facts = facts, state = sample() })
+        file:write("\n"); file:close()
+    end
+    local function returned(kind, target, on_return)
+        local stack = reg("A7") & 0xFFFFFF
+        local pc = memory.read_u32_be(stack, "M68K BUS") & 0xFFFFFF
+        assert(pc < 0x200000 and pc % 2 == 0, "original return is outside canonical code")
+        local pending = true
+        c.pending = c.pending + 1
+        c.record(kind .. ":entry", { target = target, returnPc = pc, stack = stack })
+        add_callback(pc, "candidate:return", function()
+            if not pending or (reg("A7") & 0xFFFFFF) ~= stack + 4 then return end
+            pending, c.pending = false, c.pending - 1
+            c.record(kind .. ":return", { target = target, returnPc = pc, d0 = reg("D0") & 0xFFFF })
+            if on_return then on_return() end
+        end)
+    end
+    local function entity(character)
+        local selector = character >= 128 and character - ram.ENTITY_ENEMY_INDEX_DIFFERENCE or character
+        local physical = memory.read_u8(ram.ENTITY_INDEX_LIST + selector, "M68K BUS")
+        local address = ram.ENTITY_DATA + physical * ram.ENTITYDEF_SIZE
+        return { character = character, selector = selector, physical = physical,
+            address = address, bytes = read_span(address, ram.ENTITYDEF_SIZE) }
+    end
+    local function admission()
+        local declared, state = config.candidate.admission, sample()
+        c.record("r1:first-wait-before-restoration", state)
+        assert(state.map == 3 and state.rawX == declared.playerEntity.x
+            and state.rawY == declared.playerEntity.y and state.facing == declared.playerEntity.facing
+            and state.mapEventWord == 0, "controlled R1 map/player/event admission mismatch")
+        assert(memory.read_u16_be(ram.CURRENT_GOLD, "M68K BUS") == declared.gold, "R1 gold drift")
+        assert(flag_is_set(ram.FLAG_INDEX_DIFFICULTY1) == declared.difficultyFlags[1]
+            and flag_is_set(ram.FLAG_INDEX_DIFFICULTY2) == declared.difficultyFlags[2], "R1 difficulty drift")
+        for _, flag in ipairs({ 600, 601, 602, 603, 604, 605, 607, 608, 401, 256, 501, 507, 982 }) do
+            assert(not flag_is_set(flag), "R1 source-proved route guard set: " .. flag)
+        end
+        local allies = {}
+        local fields = {
+            { "class", "COMBATANT_OFFSET_CLASS", 1 }, { "level", "COMBATANT_OFFSET_LEVEL", 1 },
+            { "hpMax", "COMBATANT_OFFSET_HP_MAX", 2 }, { "hpCurrent", "COMBATANT_OFFSET_HP_CURRENT", 2 },
+            { "mpMax", "COMBATANT_OFFSET_MP_MAX", 1 }, { "mpCurrent", "COMBATANT_OFFSET_MP_CURRENT", 1 },
+            { "attack", "COMBATANT_OFFSET_ATT_CURRENT", 1 }, { "defense", "COMBATANT_OFFSET_DEF_CURRENT", 1 },
+            { "agility", "COMBATANT_OFFSET_AGI_CURRENT", 1 }, { "move", "COMBATANT_OFFSET_MOV_CURRENT", 1 },
+        }
+        for _, expected in ipairs(declared.allies) do
+            local base = ram.COMBATANT_DATA + expected.id * ram.COMBATANT_DATA_ENTRY_SIZE
+            local statusAddress = base + ram.COMBATANT_OFFSET_STATUSEFFECTS
+            local statusWord = memory.read_u16_be(statusAddress, "M68K BUS")
+            assert(flag_is_set(ram.FORCEMEMBER_JOINED_FLAGS_START + expected.id) == declared.joinedFlags[expected.id + 1], "R1 joined flag drift")
+            assert(flag_is_set(ram.FORCEMEMBER_ACTIVE_FLAGS_START + expected.id) == declared.activeFlags[expected.id + 1], "R1 active flag drift")
+            allies[#allies + 1] = { id = expected.id, address = statusAddress, widthBytes = 2,
+                statusWord = statusWord, poisonMask = ram.STATUSEFFECT_POISON,
+                poison = (statusWord & ram.STATUSEFFECT_POISON) ~= 0 }
+            for _, field in ipairs(fields) do
+                local value = field[3] == 2 and memory.read_u16_be(base + ram[field[2]], "M68K BUS")
+                    or memory.read_u8(base + ram[field[2]], "M68K BUS")
+                assert(value == expected[field[1]], "R1 ally field drift: " .. expected.id .. ":" .. field[1])
+            end
+            -- R1's four item observations are consecutive bytes, not four words.
+            for index = 0, 3 do
+                assert(memory.read_u8(base + ram.COMBATANT_OFFSET_ITEM_0 + index, "M68K BUS") == expected.items[index + 1], "R1 item storage drift")
+                assert(memory.read_u8(base + ram.COMBATANT_OFFSET_SPELLS + index, "M68K BUS") == expected.spells[index + 1], "R1 spell drift")
+            end
+        end
+        local npcs = {}
+        for physical = 0, ram.ENTITIES_COUNTER - 1 do
+            local base = ram.ENTITY_DATA + physical * ram.ENTITYDEF_SIZE
+            npcs[#npcs + 1] = { physical = physical, address = base, widthBytes = ram.ENTITYDEF_SIZE,
+                bytes = read_span(base, ram.ENTITYDEF_SIZE) }
+        end
+        c.record("r1:inherited-status-and-live-entities", { allies = allies, entities = npcs,
+            entityIndexBytes = read_span(ram.ENTITY_INDEX_LIST, 64), rawTimeNormalized = false })
+        for _, patch in ipairs(config.r1.sessionPatches) do
+            local ok, mismatch = restore_cart(patch)
+            assert(ok, "admission service restoration mismatch: " .. patch.purpose)
+            local original = {}
+            for index = 1, #patch.originalHex, 2 do
+                original[#original + 1] = tonumber(patch.originalHex:sub(index, index + 1), 16)
+            end
+            assert(not first_mismatch("restored-service-bus", patch.address, original), "service bus readback failed")
+        end
+        -- The CheckSram return redirect was consumed to enter the bootstrap
+        -- trampoline. Original main-loop calls now own the live stack. Do not
+        -- overwrite that stack with the pre-bootstrap snapshot.
+        restore_span(config.r1.harness.checkpointAddress, scope.generatedRam)
+        assert(not first_mismatch("bootstrap-scratch", config.r1.harness.checkpointAddress, scope.generatedRam), "bootstrap scratch not restored")
+        c.epoch, phase = frame_count, "candidate-route"
+        c.record("r1:controlled-admission-ended", { patchesRestored = true, scratchRestored = true,
+            retained = "NewGame/SaveGame/default Map3 state and inherited live NPC/RNG/raw time",
+            inputIdentity = config.candidate.inputIdentity })
+    end
+    add_callback(config.r1.functions.waitForEventAddress, "candidate:wait", function()
+        if not c.epoch then
+            assert(phase == "await-r1-wait", "candidate first wait bypassed controlled bootstrap")
+            admission()
+        elseif phase == "messenger" and zone_return_seen then
+            assert(c.pending == 0, "R2a wait with pending consumer/program returns")
+            follower_wait_seen = true
+            capture_messenger_result()
+            c.r2a, phase = true, "candidate-gate-route"
+            c.record("r2a:follower-ready", { endpoint = messenger_result,
+                guard138 = entity(138), guard139 = entity(139), followers = read_span(ram.FOLLOWERS_LIST, 32) })
+        elseif memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19 then
+            assert(c.gates.commit and c.gates.returned and c.gates.warp and c.gates.initReturned
+                and c.gates.map19ProgramReturned and c.pending == 0, "Map19 wait lacks original gate/warp/init/consumer closure")
+            assert(memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS") == 0, "Map19 pending event")
+            c.map19Wait = true
+            c.record("map19:first-wait", { boundary = "before original controller installation" })
+        end
+    end)
+    add_callback(config.functions.ExecuteMapScript, "candidate:script", function()
+        if not c.epoch then return end
+        local target, known = reg("A0") & 0xFFFFFF, false
+        for _, name in ipairs(config.route.scriptSymbols) do
+            if target == config.functions[name] then known = true end
+        end
+        assert(known or target == f.cs_51652 or target == f.cs_53104, "unexpected program beyond bounded route")
+        if target == config.functions.cs_5149A then
+            assert(c.messengerZone and not flag_is_set(603), "R2 messenger admission missing/already committed")
+            for _, name in ipairs({ "afterHouseExit", "classroomSarah", "afterEntity142", "afterAstralZone" }) do
+                assert(flag_is_set(config.route.flags[name]), "R2 opening guard missing: " .. name)
+            end
+            messenger_started, messenger_entry_seen, phase = true, true, "messenger"
+            c.record("r2:messenger-before-body", { target = target })
+        elseif target == f.cs_51652 then
+            assert(c.r2a and c.gates.entry and not flag_is_set(604), "gate program skipped original admission")
+            phase = "candidate-gate-program"
+        end
+        returned("script", target, function()
+            if target == f.cs_51652 then c.gates.programReturned = true end
+            if target == f.cs_53104 then c.gates.map19ProgramReturned = true end
+        end)
+    end)
+    add_callback(config.functions.ProcessMapEventType6_ZoneEvent, "candidate:zone-dispatch", function()
+        if c.epoch then
+            c.zoneTarget = { x = memory.read_u16_be(ram.MAP_EVENT_PARAM_1, "M68K BUS"),
+                y = memory.read_u16_be(ram.MAP_EVENT_PARAM_3, "M68K BUS") }
+            c.record("zone:original-dispatch", c.zoneTarget)
+        end
+    end)
+    add_callback(config.functions.Map3_ZoneEvent8, "candidate:messenger-zone", function()
+        local expected = config.route.endpoint.sourceTarget
+        assert(c.zoneTarget and c.zoneTarget.x == expected.x and c.zoneTarget.y == expected.y
+            and memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == expected.map, "R2 messenger raw zone target drift")
+        c.messengerZone = true
+        c.record("r2:original-zone8-entry", c.zoneTarget)
+    end)
+    add_callback(f.Map3_ZoneEvent4, "candidate:gate-entry", function()
+        assert(c.r2a and not flag_is_set(604), "gate entered outside follower-ready prefix")
+        assert(c.zoneTarget and c.zoneTarget.x == config.candidate.gatePoint[1]
+            and c.zoneTarget.y == config.candidate.gatePoint[2], "gate raw zone target drift")
+        c.gates.entry = true
+        c.record("gate:entry", { guard138 = entity(138), guard139 = entity(139) })
+    end)
+    add_callback(f.gateCommit, "candidate:f604-before", function()
+        assert(c.gates.programReturned and c.pending == 0 and not flag_is_set(604), "F604 before original script return")
+        c.gates.commit = true
+        c.record("gate:f604-before-original-trap", {})
+    end)
+    add_callback(f.return_50E42, "candidate:gate-return", function()
+        assert(c.gates.commit and flag_is_set(604), "F604 missing after original trap")
+        c.gates.returned = true
+        c.record("gate:f604-after-original-trap", { guard138 = entity(138), guard139 = entity(139) })
+    end)
+    add_callback(f.csc14_setEntityActscriptManual, "candidate:entity-actions", function()
+        if phase ~= "candidate-gate-program" then return end
+        local operand = reg("A6") & 0xFFFFFF
+        local character = memory.read_u8(operand, "M68K BUS")
+        local awaited = memory.read_u8(operand + 1, "M68K BUS") ~= 0
+        assert((character == 138 and not awaited) or (character == 139 and awaited), "gate await flag drift")
+        c.record("gate:entity-command-before-write", { entity = entity(character), awaited = awaited, operandPc = operand })
+        c.action = { character = character, awaited = awaited }
+        returned("gate:entity-actions", character, function()
+            local facts = entity(character)
+            facts.awaited = awaited
+            if awaited then
+                assert(memory.read_u32_be(facts.address + ram.ENTITYDEF_OFFSET_ACTSCRIPTADDR, "M68K BUS") == f.eas_Idle, "awaited guard not idle")
+            end
+            c.record("gate:entity-command-return", facts)
+        end)
+    end)
+    for _, name in ipairs({ "loc_46966", "loc_46970" }) do
+        add_callback(f[name], "candidate:entity-script-boundary", function()
+            if phase ~= "candidate-gate-program" or not c.action or c.action[name] then return end
+            c.action[name] = true
+            c.record("gate:" .. name, { awaited = c.action.awaited,
+                entity = entity(c.action.character), otherGuard = entity(c.action.character == 138 and 139 or 138) })
+        end)
+    end
+    add_callback(config.functions.ProcessMapEventType1_Warp, "candidate:warp", function()
+        if not c.epoch then return end
+        local destination = memory.read_u8(ram.MAP_EVENT_PARAM_2, "M68K BUS")
+        c.record("warp:original-handler", { operands = read_span(ram.MAP_EVENT_PARAM_1, 5) })
+        if destination == 19 then
+            assert(c.gates.returned and flag_is_set(604), "north warp bypassed gate")
+            local warp = config.candidate.northWarp
+            local x, y = current_destination()
+            assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == warp.from.map
+                and x == warp.from.point[1] and y == warp.from.point[2]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_3, "M68K BUS") == warp.to.point[1]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_4, "M68K BUS") == warp.to.point[2]
+                and memory.read_u8(ram.MAP_EVENT_PARAM_1 + 4, "M68K BUS") == ram[warp.to.facing],
+                "original north warp operands/source target drift")
+            c.gates.warp = true
+        else assert(destination == 3 and not c.gates.warp, "warp beyond bounded Map3/19 route") end
+    end)
+    add_callback(f.ms_map19_InitFunction, "candidate:map19-init", function()
+        assert(c.gates.warp, "Map19 init without original north warp")
+        returned("map19:init", f.ms_map19_InitFunction, function() c.gates.initReturned = true end)
+    end)
+    for _, name in ipairs({ "DisplayText", "CloseDialogueWindow" }) do
+        add_callback(f[name], "candidate:consumer", function()
+            if c.epoch then returned(name, reg("D0") & 0xFFFF) end
+        end)
+    end
+    for _, name in ipairs({ "csc00_displaySingleTextbox", "csc02_displayTextbox" }) do
+        add_callback(config.functions[name], "candidate:text-command", function()
+            if not c.epoch then return end
+            c.record("text:original-command", { command = name, cursorPc = reg("A6") & 0xFFFFFF,
+                textId = memory.read_u16_be(ram.CUTSCENE_DIALOG_INDEX, "M68K BUS"),
+                packedSpeaker = memory.read_u16_be(reg("A6") & 0xFFFFFF, "M68K BUS") })
+        end)
+    end
+    add_callback(config.functions.YesNoPrompt, "candidate:prompt", function()
+        if c.epoch then returned("prompt", config.functions.YesNoPrompt) end
+    end)
+    add_callback(f.symbol_wait1, "candidate:text-wait", function()
+        if c.epoch then c.record("text:wait1", { textCursor = memory.read_u16_be(ram.CUTSCENE_DIALOG_INDEX, "M68K BUS") }) end
+    end)
+    add_callback(f.FieldMenu, "candidate:unexpected-field-menu", function()
+        if c.epoch then
+            c.record("field-menu:reached", {})
+            error("frozen input reached FieldMenu outside the declared route")
+        end
+    end)
+    add_callback(f.loc_65B4, "candidate:text-ack", function()
+        if c.epoch and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") ~= 0 then
+            c.record("text:acknowledgement-read", { input = memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") })
+        end
+    end)
+    add_callback(config.functions.loc_52E8, "candidate:first-map19-control", function()
+        if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
+        c.record("input:original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
+        if not c.map19Wait then return end
+        assert(c.pending == 0 and flag_is_set(604), "first Map19 accepted input with pending consumer")
+        assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19
+            and memory.read_u16_be(ram.MAP_EVENT_TYPE, "M68K BUS") == 0
+            and memory.read_u8(ram.CURRENTLY_TYPEWRITING, "M68K BUS") == 0,
+            "Map19 input boundary has pending transfer/typewriting")
+        c.terminal = sample()
+        c.record("map19:first-original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
+        finish_pending = true
+    end)
+    add_callback(config.functions.esc02_controlCharacter, "candidate:input-read", function()
+        if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
+        local d7 = reg("D7") & 0xFFFF
+        local address = d7 == 0 and ram.CURRENT_PLAYER_INPUT or ram.PLAYER_1_INPUT
+        local value = memory.read_u8(address, "M68K BUS")
+        if value ~= 0 or c.map19Wait then
+            c.record("input:original-controller-read", { address = address, widthBytes = 1, value = value, d7 = d7 })
+        end
+    end)
+    function c.input()
+        if not c.epoch then set_messenger_input(""); return end
+        local index = frame_count - c.epoch
+        assert(index >= 1 and index <= #config.candidate.frames, "candidate input exhausted before Map19 control")
+        local button = config.candidate.frames[index]
+        set_messenger_input(button)
+        if button ~= c.lastButton then
+            c.record("input:frozen-frame-edge", { input = button, inputFrame = index })
+            c.lastButton = button
+        end
+    end
+end
+
 local function write_observation(restoration)
+    if candidate then
+        local file = assert(io.open(config.outputPath, "w"))
+        json_write(file, { kind = "bounded-original-observation", terminal = assert(candidate.terminal),
+            inputIdentity = config.candidate.inputIdentity, restoration = restoration })
+        file:write("\n"); file:close()
+        return
+    end
     if extension_enabled then
         local result = assert(extension_result, "player-ready result was not captured before restoration")
         local file = assert(io.open(config.outputPath, "w"))
@@ -2205,19 +2560,33 @@ local function finalize_success()
     client.exitCode(0)
 end
 
+if candidate then
+    local ok, message = pcall(install_candidate)
+    if not ok then fail("candidate:registration", nil, message) end
+end
 status("milestone:observer-started")
 while true do
     frame_count = frame_count + 1
-    if pending_failure then finalize_failure(); return end
+    if pending_failure then
+        finish_failure_safely()
+        return
+    end
     if pending_core_snapshot then
         pending_core_snapshot = false
-        saved_state = memorysavestate.savecorestate()
-        phase = "await-checkpoint"
-        status("milestone:r1-core-state-saved-outside-callback")
+        if candidate then
+            local ok, value = pcall(memorysavestate.savecorestate)
+            if not ok then fail("candidate:core-snapshot", nil, value)
+            else saved_state = value end
+        else saved_state = memorysavestate.savecorestate() end
+        if not pending_failure then
+            phase = "await-checkpoint"
+            status("milestone:r1-core-state-saved-outside-callback")
+        end
     end
     if finish_pending then
         local captured, capture_message
-        if extension_enabled then captured, capture_message = pcall(capture_extension_result)
+        if candidate then captured, capture_message = candidate.terminal ~= nil, "candidate terminal missing"
+        elseif extension_enabled then captured, capture_message = pcall(capture_extension_result)
         else captured, capture_message = pcall(capture_messenger_result) end
         if not captured then
             fail(extension_enabled and "player-ready" or "follower-ready-wait", nil, "terminal result capture exception: " .. tostring(capture_message))
@@ -2225,7 +2594,7 @@ while true do
             local ok, message = pcall(finalize_success)
             if not ok then fail("restoration", nil, "success finalization exception: " .. tostring(message)) end
         end
-        if pending_failure then finalize_failure() end
+        if pending_failure then finish_failure_safely() end
         return
     end
     if frame_count > config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget then
@@ -2235,7 +2604,7 @@ while true do
     if phase == "await-check-sram" then
         set_input("Start", "bootstrap")
     else
-        local ok, message = pcall(route_input)
+        local ok, message = pcall(candidate and candidate.input or route_input)
         if not ok then fail("case-watchdog", nil, message) end
     end
     emu.frameadvance()

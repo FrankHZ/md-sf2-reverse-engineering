@@ -67,3 +67,132 @@ The verifier validates all three closed schemas, source/H1/ROM derivations, reta
 digests before launch and at the golden boundary, then requires a typed-clean callback status. A failure
 removes output, restores the declared scope, clears all callbacks, and returns nonzero. The disposable
 session ROM is deleted; canonical ROM bytes are rechecked unchanged.
+
+## Unshimmed Map3 candidate (preparation only)
+
+**Inferred / not runtime-admitted:** Issue #456 adds `prepare_map3_observation_candidate` and
+`run_map3_observation_candidate` to the existing Python owner, with an opt-in `candidate` mode in
+the same observer. The old command, default R2a cases, schemas and observed fixture remain unchanged.
+Neither Python function is wired into the CLI. Preparation performs no original emulator launch;
+the execution composition is for a later independently admitted method and lineage/budget decision.
+Its result is `OBSERVATION-COMPLETE-UNREVIEWED`, never a public golden or H4 verdict.
+
+The controlled prefix still uses the accepted CheckSram return redirect, checkpoint/menu thunk,
+NewGame→SaveGame→MainLoop→default Map3 setup/init path. At the first `WaitForEvent`, before
+original player control installation, the candidate checks the observed R1 player/ally/item-byte/
+spell/party/difficulty fields, gold, idle event word and source-proved initial route guards. It reads
+all 30 **16-bit** status words at `COMBATANT_DATA + id * COMBATANT_DATA_ENTRY_SIZE +
+COMBATANT_OFFSET_STATUSEFFECTS` and reports POISON using the source mask, without asserting its
+omitted value. Entity records and index mappings are private raw readbacks for active-NPC comparison.
+RNG, its copied byte and raw VInt time are captured; R1's post-boundary normalized time is not imposed
+on this continuation. The [admitted-start owner](map3-admitted-start.md) supplies those boundaries.
+
+Before starting its input clock, it restores **all three** session patches (menu alias, name alias,
+DisplayText) and verifies both cartridge and bus bytes. It also restores generated checkpoint/thunk
+RAM. The original CheckSram return redirect has already been consumed; the original main-loop calls
+own the live stack, so the pre-bootstrap stack is not written over it. Retained setup mutations are
+the original controlled NewGame/SaveGame/default-map state, inherited status/NPC/RNG/raw time and
+the in-process bootstrap lineage. This is not natural New/load or passive reset replay.
+
+After that boundary, the candidate does not call the adaptive route driver, write automation markers,
+inject MAP_EVENT, bridge flags/positions/RNG, force entity completion, or advance PC. Only original
+execution changes game state until terminal/failure cleanup restores the saved core/scope. Ordinary
+joypad input comes from the already existing `set_messenger_input` boundary and a prebound frame
+array. The epoch is selected once at the admitted wait; subsequent selection depends only on elapsed
+frames. Callbacks can record, fail or stop, but cannot reschedule input. The generic scenario facade
+is a data-only descriptor check and cannot supply a movie/start; the disabled replay materializer's
+fixed 33-row recording is unsuitable. Neither is revived or silently substituted.
+
+### Source binding and observation boundary
+
+The canonical ROM and pinned source revision at the top of this document remain required. Material
+preparation validates the retained R1/R2/R2a projections, the actual H1 listing, original source
+sections, final ROM operands, and Lua syntax. Newly consumed source files must match their exact
+pinned Git objects. H1's unresolved PC-relative listing words are **not** final ROM operands:
+`byte_50E32` binds the `chkFlg 604` branch and original LEA/script macro; ROM displacement decoding
+binds `cs_51652`. The original F604 trap is `0x50E3E`, followed by the original RTS at `0x50E42`.
+
+The observer retains messenger text/prompt/join/follower callbacks and checks R2's messenger entry
+and R2a's follower-ready state. It records actual script/text/close-window entry and stack-matched
+return, text wait1 and acknowledgement input reads, controller reads and accepted movement. A
+single physical-PC dispatcher handles shared return sites. Callback failures use the shared failure
+prefix/nonzero exit with private `kind=map3-candidate-callback-failure` JSON; JSONL preserves actual
+checkpoints and the last checkpoint on failure. Candidate phase/role names are not claimed to satisfy
+the closed legacy R2a failure schema. That schema and the default rail remain unchanged.
+
+Gate admission requires R2a, original `Map3_ZoneEvent4`, `cs_51652` return, original F604 trap/readback,
+then the north warp. `csc14_setEntityActscriptManual` (`0x46950`), `loc_46966` and `loc_46970` bind
+action installation and the original idle wait. Entity 138 is **not awaited**; its sampled state is
+not declared complete because entity 139 or the program returned. Entity 139 must actually have
+`eas_Idle` at its awaited command return. The first Map19 wait requires original warp/init and
+`cs_53104` returns with no tracked program/text/close return pending. The terminal is the first
+original player movement acceptance at `loc_52E8` after that wait, with Map19, no pending event,
+no typewriting and F604 set. No royal/tower, battle or 5B continuation is included.
+
+Unexpected programs, warps or FieldMenu entry, ordering/state drift, exhausted fixed input, frame
+budget, host timeout and cleanup failure remain failures. A fresh `runtime` directory is mandatory;
+the execution composition refuses to overwrite an attempt, uses the shared process helper with a
+contained absolute output stem, copies the canonical ROM to a disposable session, preserves
+checkpoint/status/host diagnostics and checks canonical identity after deleting that session.
+The accepted [shared-tool mechanism](../operations/local-private-inputs.md#bizhawk-runtime-copies)
+resolves the reviewed EXE/Lua identities from the shared installation and copies verified release
+files into `runtime/observer/bizhawk-*` before any separately admitted launch. Its executable,
+configuration, cwd and TEMP/TMP stay in that local copy; observer outputs remain beside the
+`runtime/observer` stem. The candidate runner uses this existing helper without a second launcher.
+Preparation itself creates only `input.json`, `config.json`, `config.lua` and `candidate.json` in an
+explicit fresh worktree-local ignored directory. Missing input is `FileNotFoundError`/unavailable;
+bad input/source binding is rejected before materialization, never `PRELAUNCH-PASS`.
+
+### Reproduce preparation without execution
+
+After loading the current ignored private-input configuration, this API prepares a supplied trace:
+
+```python
+from pathlib import Path
+from sf2tool.h3.map3_messenger_acceptance import UPSTREAM, prepare_map3_observation_candidate
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+
+prepare_map3_observation_candidate(
+    private_input_path(ROM_INPUT_IDENTITY), UPSTREAM,
+    input_path=Path("local/issue456/diagnostic-input.json"),
+    output_directory=Path("local/issue456/review-candidate"),  # must not exist
+    proposed_timeout_seconds=600,  # proposal for review, not a launch allowance
+)
+```
+
+Run through `uv run python -X utf8` in the owning worktree. The closed input object has
+`clock="first-r1-wait-next-frame"`, `provenance="diagnostic-parameters"` and `frames`: 1–36,000
+explicit single-button strings (`Up`, `Down`, `Left`, `Right`, `A`, `B`, `C`, or empty for neutral).
+No conditions, coordinates, executable expressions or unknown timing values are accepted as input.
+The report binds ROM/source/listing/observer/configuration/input identities and retains Unknowns.
+
+The private review trace's reproducible **diagnostic** recipe uses R2
+`expectedObservation.records[0].logicalInputTrace` in order and R2b
+`static.routeGraph.segments[0].inputs` / `[2].inputs`; these provide logical directions, not observed
+timing. Start with 120 neutral frames; give each logical input 2 pressed + 22 neutral frames. At each
+R2 waypoint's last input, add 12 repetitions of 2 C + 118 neutral for `map3-house-exit-zone`,
+`map3-sarah-classroom`, `map3-astral-zone-introduction`, `map3-entity142`, `map3-astral-zone`; add 120
+neutral for other waypoints. Then add 60 C/neutral repetitions for the messenger, segment 0 inputs,
+24 C/neutral repetitions for the gate, segment 2 inputs, 240 neutral, 2 Up, and 120 neutral.
+This produces 23,234 frames. These deliberately unvalidated hold/release/wait parameters may exhaust
+or enter FieldMenu; neither reachability nor compatibility is claimed. They must be reviewed before
+any launch and may not be adapted to live state. The material is an inspectable method candidate,
+not an accepted playback recording or proof that this input reaches Map19.
+The example proposes a 600-second host timeout and reports the total frame watchdog as 28,634
+(the frozen input plus the retained bootstrap/controlled-prefix margins). Execution consumes this
+materialized limit; a different proposed limit requires different reviewed material and does not
+reset the old lineage allowance.
+
+Direct acceptance consists of source/H1/ROM binding, materialization and rejection checks,
+Python lint/compile, Lua compilation, normal research verification and the clean committed planner.
+Selected original-runtime gates are **NOT RUN / pending independent launch admission**. The local
+environment needed an explicitly authorized pinned checkout, verified tool copies and one real
+bit-perfect H1 build; its kept listing/log precede preparation and are not runtime evidence. Consuming
+the accepted shared-tool mechanism requires direct preparation/copy checks, not another H1 build or
+normal suite solely because the base changed. Local-copy EXE/Lua bytes must equal the candidate's
+reviewed identities. These checks do not establish native startup or original-game compatibility.
+
+Old R2b/replay ordinal-2 timeout **FAIL**, cleanup failure, missing genuine receipts/ledger,
+retry/reset prohibition and completed #431/#434 failures remain preserved by the
+[audit dossier](map3-battle01-audit.md#first-necessary-original-observation-dossier).
+This candidate grants no launch allowance and supplies no natural continuity, full 8D or H4 PASS.

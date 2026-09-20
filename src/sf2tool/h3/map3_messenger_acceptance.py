@@ -13,12 +13,14 @@ from typing import Any
 
 from sf2tool.h3 import map3_admitted_start as r1
 from sf2tool.h3.bizhawk import (
+    _lua_literal,
     bizhawk_contract,
     run_observer,
     validate_lua_syntax,
     verify_runtime_contract,
 )
 from sf2tool.h3.observer_status import (
+    SUCCESS_STATUS_TAIL,
     assert_observer_status,
     callback_failure_status,
     observer_failure_contract,
@@ -796,4 +798,392 @@ def verify_map3_messenger_acceptance(
         "BizHawkLaunches": 1,
         "SessionRomDeleted": session_deleted,
         "Status": "PASS",
+    }
+
+
+def prepare_map3_observation_candidate(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    input_path: Path,
+    output_directory: Path,
+    proposed_timeout_seconds: int,
+) -> dict[str, Any]:
+    """Materialize a private review candidate without starting an emulator.
+
+    The input is an explicit frame table relative to the first admitted wait,
+    not a route planner, a replay receipt, or a replacement public golden.
+    """
+    output = output_directory.resolve()
+    if type(proposed_timeout_seconds) is not int or proposed_timeout_seconds <= 0:
+        raise ValueError("candidate needs an explicit positive proposed wall-time limit")
+    local = repo_path("local").resolve()
+    if not output.is_relative_to(local) or output == local or output.exists():
+        raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
+    if not input_path.is_file():
+        raise FileNotFoundError(
+            "candidate unavailable: explicit non-adaptive input table is missing"
+        )
+    input_bytes = input_path.read_bytes()
+    trace = json.loads(input_bytes)
+    if not isinstance(trace, dict) or set(trace) != {"clock", "provenance", "frames"}:
+        raise ValueError("candidate input requires only clock, provenance and frames")
+    if (
+        trace["clock"] != "first-r1-wait-next-frame"
+        or trace["provenance"] != "diagnostic-parameters"
+    ):
+        raise ValueError("candidate input clock/provenance is not the declared controlled start")
+    frames = trace["frames"]
+    if (
+        not isinstance(frames, list)
+        or not 1 <= len(frames) <= 36000
+        or any(
+            type(button) is not str
+            or button not in {"", "Up", "Down", "Left", "Right", "A", "B", "C"}
+            for button in frames
+        )
+    ):
+        raise ValueError(
+            "candidate input must contain 1..36000 explicit single-button/neutral frames"
+        )
+    fixture = load_json(FIXTURE)
+    contract = build_map3_messenger_acceptance_source_contract(rom_path, upstream_path)
+    _assert_fixture(fixture, contract)
+    _assert_lua_roles()
+    toolchain, executable = bizhawk_contract()
+    executable_hash = sha256(executable.read_bytes()).hexdigest().upper()
+    if (
+        executable.stat().st_size != toolchain["executableSizeBytes"]
+        or executable_hash != toolchain["executableSha256"]
+    ):
+        raise ValueError("candidate BizHawk executable identity drift")
+    validate_lua_syntax(OBSERVER, executable)
+    disasm = upstream_path / DISASM
+    listing = (upstream_path / LISTING).read_text(encoding="utf-8")
+    addresses = listing_symbol_addresses(listing)
+    rom = rom_path.read_bytes()
+    sources = {
+        name: (disasm / name).read_text(encoding="utf-8")
+        for name in (
+            "data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+            "data/maps/entries/map03/mapsetups/scripts_1.asm",
+            "data/maps/entries/map19/mapsetups/s6_initfunction.asm",
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            "code/common/scripting/text/textfunctions_1.asm",
+        )
+    }
+    for name, source in sources.items():
+        pinned = subprocess.run(
+            ["git", "-C", str(upstream_path), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{name}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        if source != pinned:
+            raise ValueError(f"candidate pinned source differs: {name}")
+    _require_order(
+        _section(sources["data/maps/entries/map03/mapsetups/s3_zoneevents.asm"], "Map3_ZoneEvent4"),
+        (
+            ("chkflg", "600"),
+            ("bne.s", "byte_50e32"),
+            ("chkflg", "604"),
+            ("bne.s", "return_50e42"),
+            ("script", "cs_51652"),
+            ("setflg", "604"),
+            ("rts", ""),
+        ),
+        "candidate gate branch",
+    )
+    gate = _stream(sources["data/maps/entries/map03/mapsetups/scripts_1.asm"], "cs_51652")
+    _require_order(
+        [(op["opcode"], op["operand"]) for op in gate],
+        (
+            ("textcursor", "537"),
+            ("entityactions", "138"),
+            ("moveright", "1"),
+            ("entityactionswait", "139"),
+            ("moveleft", "1"),
+            ("entityactions", "138"),
+            ("moveleft", "1"),
+            ("entityactionswait", "139"),
+            ("moveright", "1"),
+            ("csc_end", ""),
+        ),
+        "candidate non-awaited/awaited guards",
+    )
+    _require_order(
+        _section(
+            sources["code/common/scripting/map/mapscriptengine_1.asm"],
+            "csc14_setEntityActscriptManual",
+        ),
+        (
+            ("move.b", "(a6)+,d0"),
+            ("bsr.w", "getentityaddressfromcharacter"),
+            ("move.b", "(a6)+,d0"),
+            ("move.l", "a6,entitydef_offset_actscriptaddr(a5)"),
+            ("tst.b", "d0"),
+            ("beq.w", "loc_46970"),
+            ("cmpi.l", "#eas_idle,entitydef_offset_actscriptaddr(a5)"),
+            ("bne.s", "loc_46966"),
+            ("cmpi.w", "#$8080,(a6)+"),
+            ("rts", ""),
+        ),
+        "candidate original entity wait",
+    )
+    symbols = (
+        "Map3_ZoneEvent4",
+        "byte_50E32",
+        "return_50E42",
+        "cs_51652",
+        "cs_516A8",
+        "ms_map19_InitFunction",
+        "ms_map19_flag_501_InitFunction",
+        "cs_53104",
+        "csc14_setEntityActscriptManual",
+        "loc_46966",
+        "loc_46970",
+        "eas_Idle",
+        "DisplayText",
+        "loc_62FE",
+        "symbol_wait1",
+        "loc_65B4",
+        "loc_62CA",
+        "CloseDialogueWindow",
+        "FieldMenu",
+        "loc_2593C",
+    )
+    missing = sorted(set(symbols) - set(addresses))
+    if missing:
+        raise ValueError(f"candidate unavailable: H1 symbols missing: {missing}")
+    # H1 emitted bytes, not fixture guesses, bind every added entry callback.
+    functions = {name: addresses[name] for name in symbols}
+    for name, address in functions.items():
+        if _h1_bytes(listing, address, 2) != rom[address : address + 2].hex().upper():
+            raise ValueError(f"candidate H1/ROM callback drift: {name}")
+    branch = addresses["byte_50E32"]
+    end = addresses["return_50E42"]
+    # ASM68K's listing leaves PC-relative relocations unresolved. Bind its
+    # instruction locations/opcodes and independently decode final ROM operands.
+    span = rom[branch : end + 2]
+    if (
+        len(span) != 18
+        or span[:5].hex().upper() != "4E41025C66"
+        or span[6:8] != b"\x41\xfa"
+        or span[10:12] != b"\x4e\x46"
+    ):
+        raise ValueError("candidate original chkFlg/branch/LEA/script macro drift")
+    if (
+        branch + 6 + int.from_bytes(span[5:6], "big", signed=True) != end
+        or branch + 8 + int.from_bytes(span[8:10], "big", signed=True) != addresses["cs_51652"]
+    ):
+        raise ValueError("candidate gate branch/script ROM target drift")
+    commit = branch + 12
+    if (
+        _h1_bytes(listing, commit, 6) != "4E42025C4E75"
+        or rom[commit : end + 2].hex().upper() != "4E42025C4E75"
+    ):
+        raise ValueError("candidate original F604 setFlg/RTS seam drift")
+    functions["gateCommit"] = commit
+    config = _observer_config(fixture, contract)
+    ram_names = (
+        "COMBATANT_OFFSET_STATUSEFFECTS",
+        "ENTITIES_COUNTER",
+        "ENTITYDEF_OFFSET_ACTSCRIPTADDR",
+        "ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER",
+        "CURRENTLY_TYPEWRITING",
+        "WINDOW_IS_PRESENT",
+        "RANDOM_SEED",
+        "RANDOM_SEED_COPY",
+        "FRAME_COUNTER",
+        "SECONDS_COUNTER",
+        "SECONDS_COUNTER_FRAMES",
+        "COMBATANT_OFFSET_CLASS",
+        "COMBATANT_OFFSET_LEVEL",
+        "COMBATANT_OFFSET_HP_MAX",
+        "COMBATANT_OFFSET_HP_CURRENT",
+        "COMBATANT_OFFSET_MP_MAX",
+        "COMBATANT_OFFSET_MP_CURRENT",
+        "COMBATANT_OFFSET_ATT_CURRENT",
+        "COMBATANT_OFFSET_DEF_CURRENT",
+        "COMBATANT_OFFSET_AGI_CURRENT",
+        "COMBATANT_OFFSET_MOV_CURRENT",
+        "COMBATANT_OFFSET_ITEM_0",
+        "COMBATANT_OFFSET_SPELLS",
+        "STATUSEFFECT_POISON",
+        "FORCEMEMBER_JOINED_FLAGS_START",
+        "FORCEMEMBER_ACTIVE_FLAGS_START",
+        "FLAG_INDEX_DIFFICULTY1",
+        "FLAG_INDEX_DIFFICULTY2",
+        "CURRENT_PORTRAIT",
+        "CURRENT_SPEECH_SFX",
+    )
+    equates = (
+        (disasm / "sf2const.asm").read_text(encoding="utf-8")
+        + "\n"
+        + (disasm / "sf2enums.asm").read_text(encoding="utf-8")
+    )
+    config["ram"].update(r1._equates(equates, ram_names))
+    config["cases"] = [{**EXPECTED_CASES[0], "frameBudget": len(frames) + 3600}]
+    castle_fixture = repo_path("tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json")
+    castle_segments = load_json(castle_fixture)["static"]["routeGraph"]["segments"]
+    config["candidate"] = {
+        "functions": functions,
+        "frames": frames,
+        "inputIdentity": sha256(input_bytes).hexdigest().upper(),
+        "clock": trace["clock"],
+        "provenance": trace["provenance"],
+        "checkpointPath": (output / "checkpoints.jsonl").as_posix(),
+        "admission": load_json(R1_FIXTURE)["expectedObservation"]["records"][0]["scenarioState"],
+        "northWarp": castle_segments[3],
+        "gatePoint": castle_segments[1]["point"],
+    }
+    config["outputPath"] = (output / "observed.json").as_posix()
+    config["statusPath"] = (output / "status.txt").as_posix()
+    config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
+    report = {
+        "Status": "CANDIDATE-PREPARED-NOT-ADMITTED",
+        "EmulatorLaunches": 0,
+        "RuntimeGates": "NOT RUN / pending independent method and lineage-budget admission",
+        "RomSha256": r1.CANONICAL_ROM_SHA256,
+        "SourceCommit": r1.UPSTREAM_COMMIT,
+        "CastleFixtureSha256": sha256(castle_fixture.read_bytes()).hexdigest().upper(),
+        "H1ListingSha256": sha256((upstream_path / LISTING).read_bytes()).hexdigest().upper(),
+        "RetainedFixtures": {
+            key: contract["retained"][key]
+            for key in ("r1FixtureSha256", "r2FixtureSha256", "projectionSha256")
+        },
+        "ObserverSha256": sha256(OBSERVER.read_bytes()).hexdigest().upper(),
+        "RunnerSha256": sha256(Path(__file__).read_bytes()).hexdigest().upper(),
+        "ExecutableSha256": executable_hash,
+        "LuaLibrarySha256": sha256((executable.parent / "dll/lua54.dll").read_bytes())
+        .hexdigest()
+        .upper(),
+        "ConfigurationSha256": sha256(config_bytes).hexdigest().upper(),
+        "InputSha256": config["candidate"]["inputIdentity"],
+        "InputFrames": len(frames),
+        "ProposedWallTimeoutSeconds": proposed_timeout_seconds,
+        "TotalFrameBudget": config["r1"]["harness"]["bootstrapFrameBudget"]
+        + config["cases"][0]["frameBudget"],
+        "InputClock": trace["clock"],
+        "InputProvenance": trace["provenance"],
+        "Start": "controlled R1 bootstrap; original services restored at first WaitForEvent",
+        "Terminal": "first Map19 player controller after original gate/F604/warp/init returns",
+        "Functions": functions,
+        "SourceHashes": {
+            name: sha256(value.encode()).hexdigest().upper() for name, value in sources.items()
+        },
+        "RemainingUnknowns": [
+            "unshimmed input timing and natural reach",
+            "inherited POISON and live NPC state",
+            "runtime callback/cleanup compatibility",
+        ],
+    }
+    # All validation precedes materialization; no shared launch helper is invoked.
+    output.mkdir()
+    (output / "input.json").write_bytes(input_bytes)
+    (output / "config.json").write_bytes(config_bytes)
+    lua = output / "config.lua"
+    lua.write_text("return " + _lua_literal(config) + "\n", encoding="utf-8")
+    validate_lua_syntax(lua, executable)
+    (output / "candidate.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
+def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) -> dict[str, Any]:
+    """Future admitted execution composition; NOT authorized by preparation.
+
+    There is deliberately no CLI wiring or call from prepare/preflight. Independent
+    method and old-lineage/budget admission must precede invoking this function.
+    """
+    directory = candidate_directory.resolve(strict=True)
+    if not directory.is_relative_to(repo_path("local").resolve()):
+        raise ValueError("candidate must remain in the owning worktree's ignored local directory")
+    report = load_json(directory / "candidate.json")
+    _, executable = bizhawk_contract()
+    for path, field in (
+        (OBSERVER, "ObserverSha256"),
+        (Path(__file__), "RunnerSha256"),
+        (executable, "ExecutableSha256"),
+        (executable.parent / "dll/lua54.dll", "LuaLibrarySha256"),
+        (directory / "config.json", "ConfigurationSha256"),
+        (directory / "input.json", "InputSha256"),
+    ):
+        if sha256(path.read_bytes()).hexdigest().upper() != report[field]:
+            raise ValueError(f"frozen candidate identity drift: {field}")
+    canonical = inspect_rom(rom_path)["sha256"]
+    if canonical != report["RomSha256"] or canonical != r1.CANONICAL_ROM_SHA256:
+        raise ValueError("candidate canonical ROM identity drift")
+    timeout_seconds = report["ProposedWallTimeoutSeconds"]
+    if type(timeout_seconds) is not int or timeout_seconds <= 0:
+        raise ValueError("candidate is missing its reviewed positive wall-time limit")
+    config = load_json(directory / "config.json")
+    if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
+        raise ValueError("candidate frame table differs from its frozen input")
+    # mkdir without exist_ok prevents retries from overwriting any attempt.
+    runtime = directory / "runtime"
+    runtime.mkdir()
+    config["candidate"]["checkpointPath"] = (runtime / "checkpoints.jsonl").as_posix()
+    session = runtime / "session.bin"
+    diagnostic: dict[str, Any] = {
+        "kind": "candidate-host-status",
+        "status": "FAIL",
+        "stage": "session-copy",
+    }
+    try:
+        shutil.copy2(rom_path, session)
+        diagnostic["stage"] = "observer-process"
+        # The helper appends suffixes to output_name; an absolute, contained stem
+        # retains its process/timeout behavior and keeps every output in this run.
+        observed = run_observer(
+            rom_path=session,
+            observer_path=OBSERVER,
+            config=config,
+            output_name=(runtime / "observer").as_posix(),
+            timeout_seconds=timeout_seconds,
+        )
+        diagnostic["stage"] = "status-and-terminal"
+        # The candidate has private phase/role diagnostics, not the legacy
+        # fixture's closed failure enum. Reuse the shared terminal protocol.
+        lines = (runtime / "observer.status.txt").read_text(encoding="utf-8").splitlines()
+        if (
+            "milestone:observer-started" not in lines
+            or any(line.startswith("failure:") for line in lines)
+            or tuple(lines[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
+        ):
+            raise RuntimeError("candidate callback/terminal status did not complete cleanly")
+        if (
+            observed.get("kind") != "bounded-original-observation"
+            or observed["terminal"]["map"] != 19
+        ):
+            raise ValueError("candidate terminal output is not the first Map19 observation")
+        if (
+            not observed["restoration"]["callbacksCleared"]
+            or not observed["restoration"]["sessionStateRestored"]
+        ):
+            raise ValueError("candidate cleanup did not complete")
+        diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
+    except Exception as error:
+        diagnostic["failureKind"] = "timeout" if "timed out" in str(error) else "error"
+        diagnostic["errorType"], diagnostic["error"] = type(error).__name__, str(error)
+        raise
+    finally:
+        try:
+            session.unlink(missing_ok=True)
+            diagnostic["sessionRomDeleted"] = not session.exists()
+            diagnostic["canonicalRomUnchanged"] = inspect_rom(rom_path)["sha256"] == canonical
+            if not diagnostic["canonicalRomUnchanged"]:
+                raise ValueError("canonical ROM changed during candidate execution")
+        except Exception as error:
+            diagnostic["status"], diagnostic["cleanupError"] = "FAIL", str(error)
+            raise
+        finally:
+            (runtime / "host-status.json").write_text(
+                json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8"
+            )
+    return {
+        "Status": "OBSERVATION-COMPLETE-UNREVIEWED",
+        "EmulatorLaunches": 1,
+        "SessionRomDeleted": not session.exists(),
+        "H4": "not established",
     }

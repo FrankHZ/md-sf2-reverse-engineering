@@ -230,8 +230,14 @@ Removing the bridge alone does not make it one. A passive method would also need
 start artifact, frozen non-adaptive input transport and removal of continuing shims/writes; neither
 is supplied by the existing command. Actual text consumption cannot reuse `DisplayText`-RTS.
 A narrower controlled-H3 method must be explicitly classified and accepted with its limitations; it
-cannot silently inherit permission from historical R2a. This task implements neither method and
-provides no runnable “new observation” command.
+cannot silently inherit permission from historical R2a. The accepted evidence dossier grants no
+execution permission. Issue #456's [preparation owner](map3-messenger-acceptance.md#unshimmed-map3-candidate-preparation-only)
+now defines an opt-in candidate in the existing messenger Python/Lua rail: service/scratch restoration
+at the R1 wait, explicit frozen diagnostic input, missing status/NPC readbacks and bounded gate/Map19
+callbacks. It has no CLI wiring or runtime result. Its materialization status is
+`CANDIDATE-PREPARED-NOT-ADMITTED`, not `PRELAUNCH-PASS`; ordinary R2a/R2d fixtures remain unchanged.
+The timed diagnostic input is not an accepted original recording and may fail. Independent method,
+exact material, code, verification and old-lineage/budget review still precede any launch.
 
 Required private inputs/toolchain are the canonical ROM, pinned upstream/H1 anchors, retained
 fixtures, BizHawk 2.11.1 / Genesis Plus GX and the manifest-owned executable/Lua identities. Resolve
