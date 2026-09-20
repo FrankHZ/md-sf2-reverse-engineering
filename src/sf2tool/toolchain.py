@@ -208,6 +208,15 @@ def h1_tool_paths(manifest: dict[str, Any]) -> dict[str, str]:
             raise ValueError("H1 tool escapes the shared installation")
         _verify_file(path, size=tool["sizeBytes"], sha256=tool["sha256"], owner=tool["path"])
         result[tool["path"]] = str(path)
+    # asw/p2bin load adjacent message catalogs even for ordinary successful builds.
+    # An EXE-only installation passes binary identity checks but cannot start asw.
+    for support in manifest["sf2disasm"]["buildSupportFiles"]:
+        relative = _relative_manifest_path(support, owner="H1 support file")
+        path = (root / relative.relative_to("tools")).resolve()
+        if not path.is_relative_to(root):
+            raise ValueError("H1 support file escapes the shared installation")
+        if not path.is_file() or path.stat().st_size == 0:
+            raise ValueError(f"H1 installation requires a nonempty support file: {support}")
     return result
 
 

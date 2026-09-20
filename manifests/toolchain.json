@@ -7,6 +7,13 @@
     "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
     "licenseStatus": "no license, notice, or copying file found at the pinned commit; local research use only",
     "localPath": "local/upstream/SF2DISASM",
+    "buildSupportFiles": [
+      "tools/asw/as.msg",
+      "tools/asw/cmdarg.msg",
+      "tools/asw/ioerrs.msg",
+      "tools/asw/p2bin.msg",
+      "tools/asw/tools.msg"
+    ],
     "buildTools": [
       {
         "path": "tools/splitrom.exe",

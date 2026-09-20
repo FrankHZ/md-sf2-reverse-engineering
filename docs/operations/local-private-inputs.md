@@ -26,9 +26,16 @@ they never trigger a local installation download or fallback. The existing resol
 | `toolchains/jdk-17.0.19+10` | `jdk-17.0.19+10` | Complete JDK directory |
 | `archives/BizHawk-2.11.1-win-x64.zip` | `BizHawk-2.11.1-win-x64.zip` | Pristine release archive |
 | `toolchains/BizHawk-2.11.1-win-x64` | `BizHawk-2.11.1-win-x64` | Installed release |
-| `toolchains/sf2disasm-c834c652/tools` | `sf2disasm-c834c652/tools` | Pinned H1 binaries |
+| `toolchains/sf2disasm-c834c652/tools` | `sf2disasm-c834c652/tools` | Complete pinned H1 installation |
 
-The toolchain manifest retains fixed upstream/binary provenance. The JDK digest is the existing
+The toolchain manifest retains fixed upstream/binary provenance. The complete H1 installation
+includes the five pinned executables and `tools/asw/{as,cmdarg,ioerrs,p2bin,tools}.msg` from the same
+pinned SF2DISASM checkout. `asw` cannot start without its adjacent message catalogs; checking only
+EXE identities is insufficient. `buildSupportFiles` names these required nonempty files so shared
+selection rejects an incomplete installation before a build starts. Promotion verifies support
+file bytes against their existing pinned Git objects; no second checksum inventory is required.
+
+The JDK digest is the existing
 POSIX-relative-path ordinal inventory: `PATH<TAB>SIZE<TAB>UPPERCASE_SHA256`, LF-separated without a
 trailing LF, then UTF-8 SHA-256. Java's executable identity and version are also checked. BizHawk's
 archive, executable and Lua identities are checked; runtime preparation compares release files
@@ -48,8 +55,8 @@ retains forced `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and worktree-local NuGet/
 | Consumer | Shared input and local writes |
 | --- | --- |
 | `sf2 init` / `Initialize-LocalResearch.ps1` | Validate shared tools; initialize only local writable SF2DISASM checkout; no tool downloads/extraction or redundant ROM copy |
-| `sf2 toolchain verify` / `Test-Toolchain.ps1` | Verify local checkout provenance and shared JDK, five H1 tools, BizHawk archive/executable/Lua |
-| `Invoke-Sf2Rebuild.ps1` | `sf2 toolchain paths` supplies all five shared binaries; source, cwd, builds and TEMP stay local; build algorithm unchanged |
+| `sf2 toolchain verify` / `Test-Toolchain.ps1` | Verify local checkout provenance and shared JDK, complete H1 installation, BizHawk archive/executable/Lua |
+| `Invoke-Sf2Rebuild.ps1` | `sf2 toolchain paths` checks the complete installation and supplies all five shared binaries; source, cwd, builds and TEMP stay local; build algorithm unchanged |
 | Ordinary Python H3 and Lua syntax | Compile with shared Lua; prepare a fresh local BizHawk runtime copy for native launch |
 | `Observe-H3Battle01TurnOrder.ps1` | `sf2 toolchain bizhawk-materialize` supplies executable, config, cwd and TEMP; observation Lua unchanged |
 | Debug bridge | Same local runtime preparation, retaining its explicit output, paused startup and bounded process lifecycle |
@@ -85,10 +92,25 @@ temporary-file manager before loading configuration. Failed preparation and exis
 remain available; preparation does not clean prior runs. No whole-local junction or shared writable
 emulator directory is used.
 
-**Confirmed:** source resolution and direct materialization can establish selected paths, fixed
-release bytes and independent local copies. **Unknown:** actual Windows startup/write behavior of
-the new launch preparation remains pending a separately authorized native observation. Preparation
-is not H3 acceptance and does not enable replay or reset diagnostic budgets.
+**Confirmed:** source resolution and direct materialization establish selected paths, fixed
+release bytes and independent local copies. Main-gate directly observed one Windows launch with
+no ROM/movie argument: Lua reported `emu.getsystemid() == "NULL"`, TEMP was local, config expanded
+and wrote back into the local runtime copy, and `client.exitCode(0)` exited successfully. The shared
+installation's file size/mtime inventory was unchanged and its 450 release files still matched the
+pinned archive. This establishes the no-ROM startup/exit/config boundary only.
+
+Reproduce that bounded check with
+`uv run sf2 toolchain bizhawk-materialize --output-path local/<review>/runtime`, then launch its executable
+with the returned cwd/environment and `--gdi --config=<returned config> --lua=<local script>` only.
+The script writes the system ID and TEMP to an explicit local marker and calls `client.exitCode(0)`;
+compare shared file metadata/release bytes before and after. In the reviewed observation, relative
+Lua file I/O resolved beside the loaded script; inspect that local directory for its existing marker.
+This requires separate native-launch authorization; it is not part of routine material preparation.
+
+The reviewed observation and its initial marker-location checker error are retained under ignored
+`local/root459-review/`; the corrected review read the original result without a second launch.
+**Unknown:** ROM execution, actual SaveRAM/movie effects and the full H3 behavior of this preparation
+remain unobserved. No original game or movie was run, and replay admission/budgets remain unchanged.
 
 ## Local State and Promotion
 

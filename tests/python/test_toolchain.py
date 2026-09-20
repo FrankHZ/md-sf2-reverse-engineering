@@ -278,6 +278,8 @@ def test_verify_toolchain_uses_shared_archive_and_shared_executable(
         target = shared / "sf2disasm-c834c652" / tool["path"]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(b"synthetic-H1")
+    for support in manifest["sf2disasm"]["buildSupportFiles"]:
+        (shared / "sf2disasm-c834c652" / support).write_bytes(b"synthetic-message-catalog")
     executable = shared / "BizHawk-2.11.1-win-x64/EmuHawk.exe"
     executable.parent.mkdir()
     executable.write_bytes(b"synthetic-emulator")
