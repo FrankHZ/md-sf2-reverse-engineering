@@ -112,7 +112,15 @@ is allowed. The [next compatible chain](../research/map3-messenger-acceptance.md
 confirms window-count handling but rejects mode 5 of `FADING_SETTING`, which the original enables for
 nonblocking movement-grid pulsation before accepting player input. The final-only correction admits
 idle mode 0 or that selected mode 5 and retains the other input/consumer/transfer guards; field/save
-fade checks are unchanged. The final pair and native acceptance of this correction remain **Unknown**.
+fade checks are unchanged. The [final compatible chain 33–37](../research/map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
+now provides **Confirmed** actual first-player-ready acceptance and an independently reviewed,
+nonresumable final evidence pair. At `0x22E70`, actor 2 has window count 2 and palette mode 5 with
+the other actual blocking guards clear. Observer frame 22368/emulator frame 22367 at the callback
+is distinct from completed save emulator frame 22368. The last batch stops after 6 neutral frames;
+no battle action follows. All five segments complete automatically with verified continuity and
+cleanup. All historical costs remain charged: 35 starts, 6562.418724000221 seconds, 105007 resource
+frames and 2063 advancing batches. This completes the bounded acquisition endpoint, not #437,
+Battle01 actions/victory/5B or H4, which remain **Unknown**.
 The second idle
 failure's final callback/restoration evidence is also **Unknown**; preserve it separately from the
 confirmed cleanup of explicit abort and callback failures. Finite local operators may consume the

@@ -8,8 +8,9 @@
 - Product owner: [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), selected
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 
-The current additional observation is [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed),
-independently accepted by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
+The current additional observation is [Issue #485's first Battle01 player-ready acquisition](map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition),
+independently reviewed by main-gate, extending [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed)
+accepted in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 
 ## Current milestone applicability
 
@@ -597,15 +598,23 @@ are now recorded. The [compatible corrected chain](map3-messenger-acceptance.md#
 independently confirms royal/guard saves and loads, the wrapped CheckBattle return, BattleLoop
 admission and original before/load/start/activation/region/spawn/generation lifecycle. Its actual
 first actor is 2, and `0x22E70` is reached at frame 22348, but the final predicate rejects the legitimate
-window count 2. First player-ready acceptance remains **Unknown**. The source/H1/ROM-confirmed
+window count 2. First player-ready acceptance was **Unknown** for that attempt. The source/H1/ROM-confirmed
 correction distinguishes the nonblocking mini status display from actual modal consumers and retains
 all other guards. Failed attempts and costs remain evidence; the new observer needs a fresh compatible
 chain without a parent identity waiver. The [next compatible chain](map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
 confirms that window-count correction but fails the remaining palette guard at frame 22368:
 `FADING_SETTING=5` is the original movement-grid `PULSATING_1` mode. Its diagnostic explicitly records
 all other guard fields as ready. The final-only source correction accepts idle mode 0 or that selected
-nonblocking pulse while retaining other guards. Its native acceptance still requires another compatible
-chain. Neither failure produces a terminal pair. H4 remains **Unknown**.
+nonblocking pulse while retaining other guards. Neither failure produces a terminal pair.
+The [accepted final chain 33–37](map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition)
+now establishes **Confirmed** corrected final guards and a first player-ready endpoint through actual execution
+and independent main-gate review. Actor 2 reaches `0x22E70` at observer frame 22368/emulator frame
+22367 with window count 2, palette mode 5 and all actual blocking guards clear. Its distinct completed
+save has emulator frame 22368 and is evidence-only/nonresumable. All five segments complete
+automatically with verified parent loads and cleanup. Actual cumulative costs are 35 starts /
+6562.418724000221 charged seconds / 105007 frames / 2063 batches, retaining every failure and attempt
+21's final-cleanup **Unknown**. Battle actions/victory/5B, native menu recovery and H4 remain **Unknown**;
+the controlled-R1 segmented result does not complete #437 or establish frozen replay.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
@@ -620,11 +629,11 @@ completed frame after the first player-ready callback. The first three add zero 
 consumer/return/program/audio operation, neutral input, settled player/camera, no modal/transfer and
 recent source field-control poll predicates. These are **Inferred** safe resumable points from the
 source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
-Map19/royal/guard saves and later loads are now **Confirmed** on both completed observer chains.
+Map19/royal/guard saves and later loads are now **Confirmed** on the independently reviewed chains.
 The first final-segment failure was at BattleLoop admission; the next reached the first input PC and
-failed the window-count predicate; the following chain fails the movement-grid palette predicate.
-None produces a passed terminal pair. The corrected final
-guards need native validation on a fresh compatible chain. The final frame is evidence only, not resumable.
+failed the window-count predicate; the following chain failed the movement-grid palette predicate.
+Those failures produce no terminal pair. The final compatible chain now passes all final guards and
+seals the terminal pair. The final frame is evidence only, not resumable.
 Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
 

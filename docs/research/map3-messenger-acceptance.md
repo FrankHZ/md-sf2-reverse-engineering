@@ -1,6 +1,6 @@
 # Map 3 Messenger Acceptance
 
-- Status: **Confirmed** for the accepted R2a continuation and the bounded Issue #475 Map19 observation independently accepted by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
+- Status: **Confirmed** for the accepted R2a continuation, the bounded Issue #475 Map19 observation independently accepted in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476), and [Issue #485's independently reviewed first Battle01 player-ready acquisition](#accepted-first-battle01-player-ready-acquisition).
 - Fixture: sf2-map3-messenger-acceptance-runtime-v1
 - Case: natural-map3-messenger-accept-to-follower-ready-wait
 - ROM: USA retail SHA-256 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
@@ -351,9 +351,11 @@ remain `SEGMENT-SAVED-UNREVIEWED` or `OBSERVATION-COMPLETE-UNREVIEWED` until ind
 
 Direct source/ROM preparation, actual-Lua branch checks and host/pair checks cover this implementation.
 No helper tests or unrelated long runtime queue is added. **Confirmed:** the bounded early native
-save/load chain through the resumed messenger and Map19 checkpoints below. **Unknown:** native
-FieldMenu cancellation, corrected-observer Battle01 readiness, route timing/first actor, downstream
-victory/5B and remaining 8D/7C/H4. The retained idle failure proves only its named graceful cleanup.
+save/load chain through the resumed messenger and Map19 checkpoints below, and the
+[final compatible chain's first Battle01 player-ready endpoint](#accepted-first-battle01-player-ready-acquisition)
+with actual actor 2. **Unknown:** native FieldMenu cancellation, unobserved route timing/actors,
+downstream victory/5B and remaining 8D/7C/H4. Idle-failure cleanup remains attempt-specific; attempt
+21's final restoration and callback removal are **Unknown**.
 These are savestate-linked original observations, not uninterrupted wall-time execution, replay or H4.
 
 ### Accepted early native save and resume
@@ -527,15 +529,16 @@ Load current
 private-input configuration to select pinned Lua. No tracked helper tests are added.
 **Inferred at this correction:** the asymmetric mask caused the native missed return. The
 [subsequent compatible chain](#corrected-chain-and-player-entry-window-count-failure) confirms the
-native return and lifecycle; first player-ready acceptance remains **Unknown**.
+native return and lifecycle; first player-ready acceptance was still **Unknown** at that correction.
 
 Accounting before the compatible restart was **15 actual starts / 4142.950475800084 charged seconds / 32143 resource frames /
 555 advancing batches**, including all failures. Observer SHA changes invalidate the old parents under
 mandatory identity checks. After independent source acceptance, create a fresh compatible chain with
 those totals as reviewed prior consumption. Preserve old pairs and failure receipts; do not rewrite
 or waive their identities, or treat the old controller log as an assumed-ready replay. Live readiness
-still governs each interaction. First player-ready and its evidence-only, nonresumable final frame
-remain **Unknown**, as do Battle01 actions/victory/5B, native menu cancellation and H4. #485/#437 stay open.
+still governs each interaction. At that handoff, first player-ready and its evidence-only final frame
+were **Unknown**; the [accepted final chain](#accepted-first-battle01-player-ready-acquisition) resolves
+that bounded endpoint. Battle01 actions/victory/5B, native menu cancellation and H4 remain **Unknown**.
 
 ### Corrected chain and player-entry window-count failure
 
@@ -640,9 +643,9 @@ Consumption before the window-count-compatible chain was **25 actual starts / 56
 `summarize-corrected.py` and `corrected-summary-through27.json`; individual candidate, input,
 checkpoint, process and pair receipts remain authoritative. New source identity requires another
 fresh compatible chain after independent acceptance; do not waive or rewrite parents 18–26.
-**Unknown:** native acceptance of all corrected final guards, final evidence-only frame, native menu
-recovery, battle actions/victory/5B and H4. #485/#437 remain open; the first-player-ready objective
-continues under the existing stabilization authorization.
+At that source handoff, native acceptance of all corrected final guards and the final evidence-only
+frame remained **Unknown**. The [accepted final chain](#accepted-first-battle01-player-ready-acquisition)
+resolves that endpoint; native menu recovery, battle actions/victory/5B and H4 remain **Unknown**.
 
 ### Movement-grid palette failure and correction
 
@@ -711,14 +714,93 @@ to canonical ROM. The initial incomplete-listing-span diagnostic is retained, no
 ROM mismatch. Six return-stack and 17 stabilization checks pass; normal `uv run sf2 verify` passes
 148 tests and document/index/ROM/toolchain checks. No verification-helper tests are added.
 
-Current cumulative consumption is **30 actual starts / 6094.842934200191 charged seconds /
+Consumption before the palette-compatible restart was **30 actual starts / 6094.842934200191 charged seconds /
 82639 resource frames / 1592 advancing batches**. Read-only reconciliation is retained in
 `corrected-summary-through32.json`; authoritative receipts and all prior failures, including attempt
 21's final cleanup Unknown, remain intact. Fresh `prepared-33` passes offline source/H1/ROM and Lua
 preparation without a launch for another compatible chain after source acceptance; no old source
-parent may be reused. **Unknown:** native
-acceptance of the corrected final palette guard and evidence-only final frame. Battle actions,
-victory/5B, native menu recovery and H4 also remain **Unknown**. Both Issues remain open.
+parent may be reused. Native acceptance of the corrected final palette guard and evidence-only final
+frame was **Unknown** at that source handoff; the following result resolves that bounded endpoint.
+
+### Accepted first Battle01 player-ready acquisition
+
+**Confirmed:** the fresh compatible chain 33→34→35→36→37 reaches the first Battle01 player-ready
+callback and seals its evidence-only native state/continuation pair. [Main-gate independently accepts](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5753580250)
+all five segments, including the final guards, lifecycle, parent/source identities, clocks, delivered
+inputs, mandatory pair hashes and cleanup. This is the bounded Issue #485 result; it does not complete
+Issue #437, Battle01 actions/victory/5B, frozen replay or H4.
+
+Source acceptance is [PR #494](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/494), commit
+`1b84a878fbe48b6bae1ed3e3274269efbcf90317`, tree `fc1a3d3e9ce1f7a1f443700d3d9b87ab374a44be`.
+CI run 35544390278 passes scope/research-public and skips engine/adapter. All five segments freeze
+observer SHA `42DA091C807A6BC0262317E168D9519F4AFF5C0ACC1E97EBE4928DF4185FC3BB` and unchanged
+runner `10D6483121BABEE8D4460722504D10A1FB17BEF077B8468196E5C04945C84C67`, with the USA ROM,
+pinned SF2DISASM baseline and BizHawk 2.11.1/Genplus-gx identities above. Only 33 bootstraps R1,
+at observer/emulator epochs 355/354; each later child verifies its complete parent load before input.
+The finite direct stdin/stdout operator completes all five segments without manual fallback or a
+changed input policy. Every C below follows actual consumer/entity readiness.
+
+| Prepared attempt / actual start / PID | Parent; logical frames | Saved endpoint | Actual frames / batches / C / charged seconds |
+| --- | --- | --- | --- |
+| 33 / 31 / 21728 | fresh; 0→8605 | Messenger rank 4, Map3 `(43,10)`/Down | 8605 / 134 / 32 / 176.29173870000523 |
+| 34 / 32 / 28440 | 33; 8605→10386 | Map19 rank 5, `(26,29)`/Up | 1781 / 33 / 6 / 42.333924799982924 |
+| 35 / 33 / 40308 | 34; 10386→15606 | Royal rank 6, Map20 `(23,39)`/Down | 5220 / 77 / 22 / 99.83197920001112 |
+| 36 / 34 / 22484 | 35; 15606→17740 | Guard rank 7, Map21 `(5,15)`/Down | 2134 / 46 / 8 / 53.93224510003347 |
+| 37 / 35 / 39136 | 36; 17740→22368 | Player-ready rank 8, Map57/Battle1 | 4628 / 181 / 13 / 95.18590199999744 |
+
+The first row includes all 355 bootstrap frames. Royal caller closure at 15548/Left remains distinct
+from the Down-facing save at 15606; guard caller closure at 17679 `(4,16)` remains distinct from its
+save at 17740. Shared record orders are respectively 1–20106, 20107–24342, 24343–36692,
+36693–41972 and 41973–52988. Actual frames are contiguous across successful parents; offline gaps
+do not advance the original game or reset costs.
+
+The final child observes Map21→40 at 17945 and the original initialization return at 17997, then
+the Map57 warp at 18389. CheckBattle entry/return/result orders 43733/43734/43735 establish D7=1;
+admission 43736 precedes BattleLoop 43737 with D1=1 and F88 clear. At frame 22266, before-program
+`script:return` is order 52738, owning function `battle:before:return` is 52739 and the
+`natural:before` completion checkpoint is 52740. Load/start completion checkpoints are at
+22334/orders52883/52889; activation/region/spawn completion checkpoints are at
+22336/orders52897/52901/52905; generation/first dispatch occur at 22339/orders52915/52916.
+Actual first actor is **2**, not the seeded R2d actor 1. F401/F451 are set and F501 is clear.
+
+At `ControlBattleEntity` `0x22E70`, after `WaitForVInt` and before input read, guard order 52983
+records window count **2**, palette setting **5**, `paletteModeAllowed=true` and
+`cutsceneOrMenuModal=false`. Input, targeting, current battle action, map event word, typewriting,
+dialogue/portrait window indices and effective scrolling are all zero. There are zero pending blocking
+consumers; actor/moving actor/view entity are all 2 and area is `[0,0,16,20]`. Natural-ready order
+52984 precedes stop order **52985**, observer frame **22368**, emulator frame **22367**.
+The neutral completed-frame save is separately order **52987**, PC `0xF00`, observer/emulator frame
+**22368/22368**. Command 181 requests neutral120 but delivers only **6** frames, skipping the other
+114. The operator's `requestedFrames=4742` is not actual delivery: the receipt records **4628**.
+No battle action or further gameplay input follows readiness.
+
+The terminal checkpoint is rank 8/ordinal 4, `player-ready`, **resumable=false**. Its native state is
+167514 bytes, SHA `63EE0E6D14660E8825362CF75A8DC586427C0BED533BFAA1225F9F38D4B36B40`; pair SHA
+is `BC5F0D377C42772B839D8DA519755EA5679964BCA6FE1EE4986A2B5B4DC349A3`. These identify local
+private evidence, not distributable artifacts or a gameplay continuation parent. All five processes
+complete with exit 0, no timeout or forced termination, confirmed entry-state restoration and callback
+removal, session-ROM deletion and unchanged canonical ROM. Initial 33 restores its bootstrap entry;
+children restore their loaded entry. Attempt 21's separate final-cleanup **Unknown** remains intact.
+
+Current cumulative consumption is **35 actual starts / 6562.418724000221 charged seconds /
+105007 resource frames / 2063 advancing batches**, including every earlier failed branch. The final
+successful lineage contributes 22368 resource frames, 471 batches, 81 actual-ready C acknowledgements
+and 467.5757898000302 active seconds. Retained read-only commands
+are `uv run python -X utf8 local/issue485/check-final37.py` and
+`uv run python -X utf8 local/issue485/summarize-corrected.py corrected-summary-through37.json`.
+They pass; `final37-acceptance.json` and `corrected-summary-through37.json` retain their results.
+Main-gate's separate `root494-segment-review.py 33` (also 34, 35 and 36) and
+`root494-final-review.py` pass, with corresponding `root494-segmentNN-review.json` and
+`root494-final-review.json` reports. Independent `root494-chain-review.json` reconciles the complete
+five-process lineage, and OS inspection finds all five recorded PIDs absent. The candidate/input/checkpoint/process/pair receipts remain
+authoritative. A resumable-parent reader intentionally rejects the final pair and is not its acceptance
+command. These commands inspect retained local evidence; no native rerun is needed for this result.
+
+**Unknown:** Battle01 actions, victory and 5B, native menu recovery and H4. This result is savestate-linked
+original acquisition from controlled R1, not natural visible New/load, uninterrupted wall-time
+execution or frozen replay. Final-result documentation changes only the four existing owners and uses
+direct document/scope checks, a committed verification plan and public CI; source, normal/full suites
+and native execution are not rerun. Main-gate owns integration and Issue #485 closure; #437 remains open.
 
 ### Segment 1 wrong-facing failure
 
