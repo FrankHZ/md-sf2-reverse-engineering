@@ -9,7 +9,7 @@
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 
 The current additional observation is [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed),
-pending independent acceptance.
+independently accepted by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 
 ## Current milestone applicability
 
@@ -363,12 +363,13 @@ missing receipts. Ordinal 2 cannot be presumed unused; its reported FAIL is not 
 PASS required by the disabled path for ordinal 3. No nominal reset, fourth launch, renamed runner
 or task creates allowance. Recovery of that disabled path is not this proposal's milestone
 prerequisite; an explicit lineage/budget disposition is. No additional observer/fixture/launch is admitted
-by this dossier. The current boundary is independent main-gate review of the completed #475 acquisition below;
-no automatic runtime execution follows.
+by this dossier. Main-gate independently accepted the bounded #475 observation below in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476); no automatic runtime execution follows.
 
 ### Interactive acquisition reached Map19; admission consumed
 
-**Confirmed observation, pending independent acceptance:** after PR #474 was independently accepted,
+**Confirmed bounded original observation, independently accepted by main-gate in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476):** after PR #474 was independently accepted,
 [Issue #475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475) explicitly admitted
 one `run_map3_observation_candidate(..., interactive=True)` call and at most one native start from
 accepted `9cb14a55c2777b515a18450e98fc37ca90350292`, tree `63659d8c0d16f662279727dc1301f641ef0a3d4c`.
@@ -380,7 +381,9 @@ old replay ordinal 1/2 restrictions and all #460/#465/#471 failures/preparations
 
 The [result owner](map3-messenger-acceptance.md#single-admitted-interactive-acquisition-result) retains
 exact material/log identities, source/PC/frame/order joins, analysis failures and read-only reproduction.
-It returned `OBSERVATION-COMPLETE-UNREVIEWED` at first source-bound Map19 movement acceptance:
+The immutable acquisition-runner result remains `OBSERVATION-COMPLETE-UNREVIEWED`, describing the
+collector output before independent review. Main-gate acceptance now applies to the bounded original
+observation at first source-bound Map19 movement acceptance; the label is not a replay/H4 PASS:
 
 | Dossier question | Reached boundary and remaining scope |
 | --- | --- |
@@ -390,8 +393,8 @@ It returned `OBSERVATION-COMPLETE-UNREVIEWED` at first source-bound Map19 moveme
 | North warp / first Map19 control | Original north handler 10197 selected Map19; init and `cs_53104` entry/return 10259, first wait 10285, original Up movement acceptance `0x52E8` at 10329 / emulator 10328. Map19 `(26,30)`, event word 0, F604 true, no pending script/text/prompt/init/close consumers. The frame-end position did not yet move to the next tile. |
 | Evidence and cleanup | 10329 complete frames including 355 bootstrap, 200 explicit batches, 582 checkpoints; all ordered command/result/input records agree with the host receipt. PID 39748 exit 0, elapsed 1778.575/1800 seconds, no timeout/forced termination, callbacks and declared scope restored, session ROM deleted and canonical unchanged; independent OS found no survivors. |
 
-The 2A gate/F604/warp question now has one bounded original acquisition awaiting independent
-acceptance. It does not retroactively repair the failed frozen diagnostic or update accepted fixture
+The 2A gate/F604/warp question now has one bounded original observation independently accepted
+by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476). It does not retroactively repair the failed frozen diagnostic or update accepted fixture
 projections. Source mapping rows elsewhere in this dossier retain their original evidence scopes;
 this result is a separate observation, with no index/schema/golden/counter changes. The final log's
 outer emulator clock is restored to 214 after cleanup while its acquired frame-end snapshot remains

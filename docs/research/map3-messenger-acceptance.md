@@ -1,6 +1,6 @@
 # Map 3 Messenger Acceptance
 
-- Status: **Confirmed** for the accepted R2a continuation; Issue #475 acquisition reached Map19, pending independent acceptance.
+- Status: **Confirmed** for the accepted R2a continuation and the bounded Issue #475 Map19 observation independently accepted by main-gate in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 - Fixture: sf2-map3-messenger-acceptance-runtime-v1
 - Case: natural-map3-messenger-accept-to-follower-ready-wait
 - ROM: USA retail SHA-256 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
@@ -13,7 +13,8 @@ interactive acquisition mode for the existing candidate. That implementation sli
 preparation only, zero emulator launches**. After PR #474 was independently accepted and merged,
 [Issue #475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475) separately admitted
 and consumed exactly one acquisition. Its [result](#single-admitted-interactive-acquisition-result)
-reached the Map19 terminal and remains unreviewed; no execution allowance remains. [ADR 0015](../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
+reached the Map19 terminal and was independently accepted by main-gate in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476); no execution allowance remains. [ADR 0015](../decisions/0015-original-reference-replay-and-h4-boundary.md#distinguish-interactive-acquisition-frozen-replay-and-remake-h4)
 separates this operation from frozen replay and remake H4. The
 [bridge protocol](../operations/bizhawk-debug-bridge.md#map3-interactive-composition-offline-only)
 owns communication, serial requests and the single process. This observer retains source-bound R1
@@ -142,12 +143,15 @@ complete 8D and H4 stay **Unknown** until their own required evidence and indepe
 
 ## Single admitted interactive acquisition result
 
-**Confirmed observation, pending independent acceptance:** Issue [475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475)
+**Confirmed bounded original observation, independently accepted by main-gate in
+[PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476):** Issue [475](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/475)
 consumed its sole API call/native start on 2026-09-20 UTC (2026-09-19 America/Chicago launch date).
 The unchanged accepted base was `9cb14a55c2777b515a18450e98fc37ca90350292`, tree
 `63659d8c0d16f662279727dc1301f641ef0a3d4c`. This separately admitted interactive controlled-R1
 acquisition superseded preparation's NOT-ADMITTED disposition only for that attempt. The return was
-`OBSERVATION-COMPLETE-UNREVIEWED`, not frozen replay, a public golden, complete 8D or H4 PASS.
+`OBSERVATION-COMPLETE-UNREVIEWED`. This immutable acquisition-runner label is preserved after
+main-gate acceptance of the bounded original observation; it is not a frozen-replay PASS, public
+golden, complete 8D or H4 PASS.
 Historical controlled starts are now **3**; #460/#465 completed FAIL, #471's pre-API CRLF assertion
 and unexecuted house-neutral preparation, stale #473 prepared-01, and disabled replay ordinal 1/2
 failures/restrictions remain preserved. No retry, fourth start, follow-up replay or cleanup is authorized.
@@ -268,8 +272,9 @@ clean committed planner and actual Public CI on the Draft PR. No normal/full/H1/
 **Unknown:** unobserved prompt branches, native EOF/abort recovery, dedicated long-idle thresholds,
 partial-batch termination, repeatability/frozen replay, downstream tower/battle/5B continuity and
 complete 8D/H4. Paused snapshots and ordinary controller delivery are observed only for this run;
-no general backend or presentation compatibility follows. Independent main-gate acceptance is required
-before these bounded facts become an accepted downstream contract. Stop with a clean pushed Draft PR.
+no general backend or presentation compatibility follows. Main-gate independently accepted these
+bounded original observations in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
+Downstream contract adoption and broader acceptance remain separate; integration belongs to main-gate.
 
 ## Boundary
 
