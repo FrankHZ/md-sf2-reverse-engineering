@@ -297,8 +297,14 @@ The native process exited 1 without timeout; Lua reported zero remaining callbac
 scope/session state, the host recorded deleted session ROM and unchanged canonical ROM, and an
 independent process check found no owned PID/runtime-copy survivor. The diagnostic is **FAIL** and
 has no terminal observation, even though its failure and cleanup diagnostics were retained.
-The runtime/status/checkpoints and earlier failures remain private and preserved. No Python/Lua
-correction or extra launch follows this result. The original caller-dependent gate transition,
+The runtime/status/checkpoints and earlier failures remain private and preserved. No extra launch
+follows this result. The separately scoped Issue #463
+[zero-launch correction](map3-messenger-acceptance.md#map_current-correction-and-bounded-warp-admission)
+now distinguishes raw/effective map only for source-bound no-scroll warps, reuses R2 source/target
+coordinates for house and both school stair transitions, and retains gate/F604/north/Map19 checks.
+It verifies pinned source/equate/ROM constraints and read-only admission; it does not observe warp
+completion. The fixed 23,234-frame input and attempted material remain unchanged. The original
+caller-dependent gate transition,
 later fixed-input reach and natural continuity remain **Unknown**; no public golden, full 8D or H4
 is promoted. Further action returns to independent main-gate disposition, with no remaining launch
 inferred from this failed diagnostic.

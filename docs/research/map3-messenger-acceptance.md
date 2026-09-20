@@ -239,7 +239,8 @@ The gate's 24-confirm block remains unchanged. Source confirmation uses the pinn
 above and blob `5e9b260b9e07dd22387a0ab1ab3b6666d1ab05e1`; it does not prove the proposed timing.
 
 Direct acceptance consists of source/H1/ROM binding, materialization and rejection checks,
-Python lint/compile, Lua compilation, normal research verification and the clean committed planner.
+Python lint/compile, Lua compilation and the clean committed planner. The Issue #463 correction
+uses the narrower zero-launch checks below; it does not rerun normal/full/H1 or runtime gates.
 Issue #460 directly exercises the opted-in process handoff and error paths with synthetic process
 doubles only, including pre-process failure, PID persistence, timeout/failed termination, callback
 failure, missing output and independent cleanup. These checks launch no native process and are not
@@ -297,7 +298,8 @@ warp at `(54,3)` that sentinel and destination `(3,3)`. In
 `MAP_EVENT_PARAM_2`, while `ExplorationLoop` branches on byte `-1` to `@MapIndexNotProvided`
 instead of replacing `CURRENT_MAP`. The observer rejects this valid source representation at the
 first opening warp. This explains the reported assertion; it is not an original route failure or
-proof that the warp completed. Python/Lua and the attempted material remain unchanged after failure.
+proof that the warp completed. The executed Python/Lua identities and attempted material remain preserved. The separate
+zero-launch correction below changes the opt-in observer, without reclassifying that failure.
 
 **Confirmed process and retained cleanup:** native PID 42464 started once, returned exit code 1,
 reported `timed_out=false` and `process_terminated=true`; timeout tree-kill was not used. The host
@@ -317,3 +319,75 @@ It establishes no general callback compatibility, successful gate transition, na
 full 8D or H4. The intended caller-dependent gate question and later timing/reach remain **Unknown**.
 Historical R2b/replay failures and missing genuine receipts remain intact; documentation of this
 failed diagnostic does not replenish any allowance.
+
+## MAP_CURRENT correction and bounded warp admission
+
+**Confirmed source/code correction, 2026-09-19 project date:** Issue #463 corrects only the opt-in
+candidate warp admission. `MAP_CURRENT` is a raw operand, not map 255. On the no-scroll path
+(`MAP_EVENT_PARAM_1=0`), `ProcessMapEventType1_Warp` passes the raw map byte in D0 back to MainLoop;
+`ExplorationLoop` compares it with byte -1 and branches to `@MapIndexNotProvided`, retaining
+`CURRENT_MAP`. `UpdatePlayerPosFromMapEvent` reads coordinates/facing; it does **not** resolve the
+map sentinel. The inherited R2 builder's comment attributing resolution to that helper is inaccurate;
+that default-rail comment is outside this correction's owned code boundary. A nonzero scroll-mode
+path writes the map byte directly and must not receive the same sentinel interpretation.
+
+Preparation binds `sf2enums.asm`, `sf2mapmacros.asm`, the complete Map3 `6-warp-events.asm`, and
+`explorationfunctions_2.asm` to their pinned Git contents. Existing map-content encoding/decoding
+checks the complete nine-row table at H1 symbol `Map03s6_WarpEvents` (`0x978F0`) against the canonical
+ROM, including its terminator. Source guards retain no-scroll dispatch and current-map branch order;
+H1/ROM binds the `cmpi.b` at `0x257E4` to the parsed equate, the final ROM BEQ at `0x257E8` to
+`0x25828`, and the BNE.W at `0x2597C` to `loc_259CC`. No H1 rebuild is performed.
+
+The candidate reuses R2 `static.route.runtimeOpening.warps` and `navigation.inputPlan`, joining
+source position, attempted movement target and raw warp destination separately. The source-bound
+prefix is:
+
+| Warp | Player source | Movement target | Raw map | Effective map | Warp destination / facing |
+| --- | --- | --- | --- | --- | --- |
+| House stairs down | `(55,3)` | `(54,3)` | 255 | 3 | `(3,3)` / Right |
+| School stairs down | `(45,7)` | `(46,7)` | 255 | 3 | `(59,12)` / Left |
+| School stairs up | `(58,13)` | `(59,12)` | 255 | 3 | `(46,7)` / Down |
+| North castle entrance | `(28,2)` | `(28,1)` | 19 | 19 | `(26,30)` / Up |
+
+These are static admission constraints, not newly observed transitions. School stairs up uses R2's
+source-derived diagonal target. North uses the R2b navigation/warp segment and retained source row
+whose trigger X is wildcard 255; the bounded route still requires actual target `(28,1)`. That trigger
+wildcard is distinct from the map operand sentinel. The north callback retains original gate-return
+and F604 requirements, checks no-scroll/raw map/destination/facing, and rejects subsequent warps.
+The later original Map19 init/program/wait/input checks remain unchanged.
+
+The Lua checkpoint preserves all five raw operands, observed current map, player source and movement
+target, plus `effectiveDestinationMap`. Only no-scroll `MAP_CURRENT` uses current map for this
+read-only calculation. Admission also requires the exact source row: literal map 3 cannot substitute
+for raw 255 in the three prefix rows; raw 255 cannot substitute for north's explicit map 19. Wrong
+map, scroll mode, coordinates, destination, facing, gate state, and later/out-of-scope warps fail.
+The callback never assigns game state, simulates a warp, or selects input from live state.
+
+### Zero-launch verification and stopping condition
+
+Load `local/private-inputs.ps1` in the owning worktree and run `uv run sf2 rom verify`, then the
+preparation API shown above with the unchanged `local/issue460/candidate-proposal-03/input.json`
+and a fresh ignored output directory. Input SHA-256 remains
+`37544D8C526F41A60D13B79971744D0A99303BCB08E407FBB1AE01C8AD7F1145`; all 23,234 frames,
+600-second proposed limit and 28,634-frame watchdog are unchanged. The preparation report binds
+exact source/listing/runner/observer/configuration identities. It remains
+`CANDIDATE-PREPARED-NOT-ADMITTED` with no `runtime` directory.
+
+Direct checks retained under `local/issue463/` use `uv run python -X utf8 local/issue463/direct.py`
+(with a fresh output name on reproduction). They compile Lua without running the observer, then
+exercise only the extracted admission callback in an in-process Lua library using immutable sample
+reads: the three current-map rows and explicit north destination pass; malformed/out-of-scope
+variants fail. In-memory source branch, ROM operand/branch/table, and retained-map mutations must
+reject construction. These are checks of admission constraints, not original runtime observations;
+no tracked validation-tool tests or new parser are added. Python lint/compile, document links/scope,
+`git diff --check`, clean committed `uv run sf2 verify plan --base origin/main --head HEAD` and actual
+public CI complete the preparation review. Exact identities and check outcomes belong in the frozen
+Draft PR/Issue handoff; private payloads stay local.
+
+**Unknown:** actual handler completion, later fixed-input reach/timing, caller-dependent gate/F604
+transition, first Map19 control and general callback compatibility remain unobserved by this
+correction. Selected runtime gates are **NOT RUN**. The frame499/input145/PID42464 diagnostic remains
+**FAIL**, with its cleanup record intact. #460's permission is exhausted; no native/no-ROM startup,
+candidate execution, old H3 or replay preflight is authorized. Normal/full/H1 results and prior
+failures remain preserved without rerun. Independent main-gate review of this frozen correction
+precedes any decision on further work; code/materialization PASS never triggers a retry or closes #437.
