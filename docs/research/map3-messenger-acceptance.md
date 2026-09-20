@@ -327,9 +327,9 @@ candidate warp admission. `MAP_CURRENT` is a raw operand, not map 255. On the no
 (`MAP_EVENT_PARAM_1=0`), `ProcessMapEventType1_Warp` passes the raw map byte in D0 back to MainLoop;
 `ExplorationLoop` compares it with byte -1 and branches to `@MapIndexNotProvided`, retaining
 `CURRENT_MAP`. `UpdatePlayerPosFromMapEvent` reads coordinates/facing; it does **not** resolve the
-map sentinel. The inherited R2 builder's comment attributing resolution to that helper is inaccurate;
-that default-rail comment is outside this correction's owned code boundary. A nonzero scroll-mode
-path writes the map byte directly and must not receive the same sentinel interpretation.
+map sentinel. The R2 source builder's comment records this same no-scroll distinction; its
+executable behavior is unchanged. A nonzero scroll-mode path writes the map byte directly and
+must not receive the same sentinel interpretation.
 
 Preparation binds `sf2enums.asm`, `sf2mapmacros.asm`, the complete Map3 `6-warp-events.asm`, and
 `explorationfunctions_2.asm` to their pinned Git contents. Existing map-content encoding/decoding
