@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -995,16 +996,19 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
         or pair["historicalStarts"] != report["HistoricalControlledStarts"] + 1
         or pair["historicalStarts"] != report["FutureControlledOrdinal"]
         or type(pair["activeSeconds"]) not in (int, float)
-        or not 0 < pair["activeSeconds"] < 7200
+        or not math.isfinite(pair["activeSeconds"])
+        or pair["activeSeconds"] <= 0
         or type(pair["deliveredFrames"]) is not int
-        or not 0 < pair["deliveredFrames"] < 36000
+        or pair["deliveredFrames"] <= 0
         or type(metadata["deliveredFrames"]) is not int
         or pair["deliveredFrames"] != metadata["deliveredFrames"]
         or metadata["deliveredFrames"] < metadata["observer"]["frame"]
-        or not 0 < metadata["observer"]["frame"] < 36000
+        or metadata["observer"]["frame"] <= 0
         or type(metadata["batches"]) is not int
-        or not 0 < metadata["batches"] < 600
-        or metadata["observer"]["phase"] != "candidate-natural-route"
+        or metadata["batches"] <= 0
+        or metadata["observer"]["phase"]
+        not in ("candidate-route", "candidate-gate-route", "candidate-natural-route")
+        or type(metadata.get("checkpoint", {}).get("rank")) is not int
         or metadata["stateBytes"] != (runtime / "segment.State").stat().st_size
     ):
         raise ValueError("segment continuation/accounting mismatch")
@@ -1027,6 +1031,59 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     return pair, metadata
 
 
+def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
+    """Retain failed child attempts; only the last complete parent supplies game state."""
+    pair, metadata = _read_segment(directory)
+    totals = dict(
+        starts=pair["historicalStarts"],
+        seconds=pair["activeSeconds"],
+        frames=pair["deliveredFrames"],
+        batches=metadata["batches"],
+    )
+    runtime = directory / "runtime"
+    claims = sorted(runtime.glob("resumed-by-*.json"))
+    if (runtime / "resumed-by.json").exists():
+        claims.insert(0, runtime / "resumed-by.json")
+    for claim in claims:
+        child = Path(load_json(claim)["candidate"]).resolve(strict=True)
+        if not child.is_relative_to(repo_path("local").resolve()):
+            raise ValueError("retry attempt is outside this worktree")
+        if (child / "runtime/segment-pair.json").exists():
+            raise ValueError("parent already has a successful child; continue from that child")
+        report = load_json(child / "candidate.json")
+        host = load_json(child / "runtime/host-status.json")
+        receipt = load_json(child / "runtime/bridge/receipt.json")
+        if (
+            not host.get("canonicalRomUnchanged")
+            or not host.get("sessionRomDeleted")
+            or receipt.get("returncode") is None
+            or not (host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION")
+            or report["Segment"]["parentDirectory"] != directory.as_posix()
+            or report["HistoricalControlledStarts"] != totals["starts"]
+            or report["Segment"]["priorActiveSeconds"] != totals["seconds"]
+            or report["Segment"]["priorFrames"] != totals["frames"]
+            or report["Segment"]["priorBatches"] != totals["batches"]
+        ):
+            raise ValueError(
+                "retry needs a completed failed attempt with reconciled cleanup/accounting"
+            )
+        rows = [
+            json.loads(line)
+            for line in (child / "runtime/actual-inputs.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        ]
+        frames = [row for row in rows if row["kind"] == "frame"]
+        seconds = receipt["elapsedSeconds"]
+        if not math.isfinite(seconds) or seconds < 0 or receipt.get("started") is not True:
+            raise ValueError("failed attempt elapsed/start accounting is unavailable")
+        totals["starts"] += 1
+        totals["seconds"] += seconds
+        totals["frames"] += len(frames)
+        totals["batches"] += len({row["id"] for row in frames if row["id"] != 0})
+    return totals, len(claims)
+
+
 def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str, Any]) -> None:
     """Publish the pair last, after native exit, original identity and cleanup checks."""
     runtime = directory / "runtime"
@@ -1039,23 +1096,25 @@ def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str,
     metadata = load_json(runtime / "continuation.json")
     prior = report["Segment"]["priorActiveSeconds"]
     active = prior + diagnostic["bridge"]["elapsedSeconds"]
-    if not metadata["activeSecondsAtSave"] <= active < 7200:
+    if not math.isfinite(active) or not metadata["activeSecondsAtSave"] <= active:
         raise ValueError("segment cumulative active-time budget mismatch/exhaustion")
     inputs = [
         json.loads(line)
         for line in (runtime / "actual-inputs.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     frames = [row for row in inputs if row["kind"] == "frame"]
-    steps = [row for row in inputs if row["kind"] == "command" and row["fields"][1] == "step"]
+    steps = {row["id"] for row in frames if row["id"] != 0}
     prior_frame, prior_order = 0, 0
     if report["Segment"]["parentDirectory"]:
         parent, previous = _read_segment(Path(report["Segment"]["parentDirectory"]))
         prior_frame, prior_order = previous["observer"]["frame"], parent["lastOrder"]
+        if metadata["checkpoint"]["rank"] <= previous["checkpoint"]["rank"]:
+            raise ValueError("segment must advance beyond its parent's checkpoint")
     if (
         not frames
         or len(frames) + prior_frame != metadata["observer"]["frame"]
         or len(frames) + report["Segment"]["priorFrames"] != metadata["deliveredFrames"]
-        or not 0 < metadata["deliveredFrames"] <= 36000
+        or metadata["deliveredFrames"] <= 0
         or len(steps) + report["Segment"]["priorBatches"] != metadata["batches"]
         or frames[-1]["afterFrame"] != metadata["original"]["emulatorFrame"]
         or any(
@@ -1100,6 +1159,7 @@ def _interactive_limits(continuation: str | None) -> dict[str, int]:
         raise ValueError("unsupported candidate continuation")
     if continuation:
         return {
+            "stabilization": True,
             "wallSeconds": 7200,
             "totalFrames": 36000,
             "maxBatches": 600,
@@ -1140,6 +1200,14 @@ def _natural_configuration(
         "code/common/stats/gold.asm",
         "code/common/maps/camerafunctions.asm",
         "code/common/maps/animations.asm",
+        "code/common/maps/mapload.asm",
+        "code/common/tech/graphics/display.asm",
+        "code/gameflow/exploration/exploration.asm",
+        "code/gameflow/exploration/explorationvints.asm",
+        "code/gameflow/exploration/explorationfunctions_0.asm",
+        "code/common/menus/main/mainactions.asm",
+        "code/common/menus/diamondmenu.asm",
+        "code/common/tech/input.asm",
         "data/maps/entries/map19/2-areas.asm",
     }
     for number in (19, 20, 21, 40, 57):
@@ -1158,6 +1226,52 @@ def _natural_configuration(
         if source != pinned:
             raise ValueError(f"natural candidate pinned source differs: {name}")
         sources[name] = source
+    for path, symbol, instructions in (
+        (
+            "code/common/menus/main/mainactions.asm",
+            "FieldMenu",
+            (
+                ("jsr", "j_executediamondmenu"),
+                ("cmpi.w", "#-1,d0"),
+                ("beq.s", "@exitmain"),
+                ("unlk", "a6"),
+                ("movem.l", "(sp)+,d0-a5"),
+                ("rts", ""),
+            ),
+        ),
+        (
+            "code/common/menus/diamondmenu.asm",
+            "ExecuteDiamondMenu",
+            (
+                ("btst", "#input_bit_b,((current_player_input-$1000000)).w"),
+                ("beq.s", "@loc_11"),
+                ("moveq", "#-1,d1"),
+                ("moveq", "#-1,d0"),
+                ("move.b", "d0,((current_diamond_menu_choice-$1000000)).w"),
+            ),
+        ),
+        (
+            "code/common/maps/mapload.asm",
+            "LoadMap",
+            (
+                (
+                    "move.l",
+                    "((view_plane_a_pixel_x_dest-$1000000)).w,((view_plane_a_pixel_x-$1000000)).w",
+                ),
+                ("lsl.w", "#7,d0"),
+                ("mulu.w", "((map_area_layer1_parallax_x-$1000000)).w,d0"),
+                ("lsr.l", "#byte_shift_count,d0"),
+                ("add.w", "d4,d0"),
+                ("move.w", "d0,((view_plane_a_pixel_x-$1000000)).w"),
+            ),
+        ),
+    ):
+        _require_order(_section(sources[path], symbol), instructions, symbol)
+    # These non-relocated original instructions bind the reviewed cancellation and
+    # loaded-view coordinate writes to the canonical ROM, beyond callback entries.
+    for address, size in ((0x2CB4, 22), (0x102EC, 6), (0x102F4, 8)):
+        if _h1_bytes(listing, address, size) != rom[address : address + size].hex().upper():
+            raise ValueError("loaded camera source/H1/ROM mismatch")
     constants = _parse_equates(disasm)
     extra_ram = (
         "VIEW_PLANE_A_PIXEL_X",
@@ -1200,7 +1314,8 @@ def _natural_configuration(
         start, end = addresses[start_name], addresses[end_name]
         encoded = bytearray.fromhex(_h1_bytes(listing, start, end - start))
         rows = [
-            line for line in listing.splitlines()
+            line
+            for line in listing.splitlines()
             if re.match(r"^[0-9A-F]{8} ", line) and start <= int(line[:8], 16) < end
         ]
         local_labels = {
@@ -1210,23 +1325,20 @@ def _natural_configuration(
         }
         resolved = 0
         for line in rows:
-            match = re.match(
-                r"^([0-9A-F]{8}) +(6100 0000|6700) +(bsr\.w|beq\.s) +([@\w]+)", line
-            )
+            match = re.match(r"^([0-9A-F]{8}) +(6100 0000|6700) +(bsr\.w|beq\.s) +([@\w]+)", line)
             if not match:
                 continue
             address, form, mnemonic, target_name = match.groups()
             pc = int(address, 16)
             target = local_labels.get(target_name, addresses.get(target_name))
             if target is None or (form, mnemonic) not in {
-                ("6100 0000", "bsr.w"), ("6700", "beq.s")
+                ("6100 0000", "bsr.w"),
+                ("6700", "beq.s"),
             }:
                 raise ValueError(f"camera predicate H1 relocation drift: {start_name}")
             width = 2 if mnemonic == "bsr.w" else 1
             offset = pc - start + (2 if width == 2 else 1)
-            encoded[offset : offset + width] = (target - pc - 2).to_bytes(
-                width, "big", signed=True
-            )
+            encoded[offset : offset + width] = (target - pc - 2).to_bytes(width, "big", signed=True)
             resolved += 1
         if resolved != relocation_count or encoded != rom[start:end]:
             raise ValueError(f"camera predicate H1/ROM mismatch: {start_name}")
@@ -1235,6 +1347,8 @@ def _natural_configuration(
     if rom[area_start : area_start + len(area)] != area:
         raise ValueError("Map19 camera area source/ROM mismatch")
     names = (
+        "ExecuteDiamondMenu",
+        "WaitForPlayerInput",
         "ms_map19_InitFunction",
         "ms_map20_InitFunction",
         "ms_map21_InitFunction",
@@ -1354,6 +1468,56 @@ def _natural_configuration(
     if len(sound_dispatch) != 4:
         raise ValueError("sound dispatch use-site inventory drift")
     config["ram"]["MUSIC_STACK"] = constants["MUSIC_STACK"]
+    # Consume the existing route owners; do not add a second hand-entered route.
+    interactions = [
+        point for point in config["route"]["waypoints"] if point["interaction"] == "entity"
+    ]
+    for point in castle["routeGraph"]["segments"]:
+        if point["kind"] not in ("entity-interaction", "entity-terminal"):
+            continue
+        x, y = point.get("interactionPoint", point["player"])
+        facing = point.get("interactionFacing", point["facing"])
+        dx, dy = {"UP": (0, -1), "DOWN": (0, 1), "LEFT": (-1, 0), "RIGHT": (1, 0)}[facing]
+        tx, ty = point.get("entityPointBefore", [x + dx, y + dy])
+        interactions.append(
+            dict(
+                id=point["id"],
+                map=point["map"],
+                x=x,
+                y=y,
+                facing=facing,
+                entityTarget=dict(id=point["entity"], map=point["map"], x=tx, y=ty),
+            )
+        )
+    checkpoints = []
+    for rank, name in enumerate(
+        ("map3-house-exit-zone", "map3-sarah-classroom", "map3-entity142", "map3-zone-messenger"), 1
+    ):
+        point = next(point for point in config["route"]["waypoints"] if point["id"] == name)
+        checkpoints.append(
+            dict(
+                id=name,
+                rank=rank,
+                map=point["map"],
+                x=point["x"],
+                y=point["y"],
+                flag=256 if rank == 3 else point["completionFlag"],
+                beforeFlag=602 if rank == 3 else None,
+                phase="candidate-gate-route" if rank == 4 else "candidate-route",
+                r2a=rank == 4,
+            )
+        )
+    checkpoints.append(
+        dict(
+            id="map19-first-displacement",
+            rank=5,
+            map=19,
+            x=26,
+            y=29,
+            flag=604,
+            phase="candidate-natural-route",
+        )
+    )
     return {
         "selection": NATURAL_CONTINUATION,
         "soundDispatch": sound_dispatch,
@@ -1361,6 +1525,8 @@ def _natural_configuration(
         "functions": functions,
         "programs": [functions[name] for name in programs],
         "warps": warps,
+        "interactions": interactions,
+        "checkpoints": checkpoints,
         "admission": static["admission"],
         "turnOrderEntries": static["turnOrderEntries"],
     }
@@ -1403,26 +1569,25 @@ def prepare_map3_observation_candidate(
             or not interactive
         ):
             raise ValueError("segment requires ordinal 1..4 and natural interactive continuation")
-        if (segment == 1) != (resume_directory is None):
+        if segment != 1 and resume_directory is None:
             raise ValueError("only the first segment may start without a complete parent pair")
-        if segment == 1:
+        if resume_directory is None:
             if type(reviewed_prior_starts) is not int or reviewed_prior_starts < 0:
                 raise ValueError("initial segment requires an explicit reviewed prior-start count")
             if (
                 type(reviewed_prior_active_seconds) not in (int, float)
-                or not 0 <= reviewed_prior_active_seconds < limits["wallSeconds"]
+                or not math.isfinite(reviewed_prior_active_seconds)
+                or reviewed_prior_active_seconds < 0
             ):
                 raise ValueError(
-                    "initial segment requires reviewed finite prior active seconds in [0, 7200)"
+                    "initial segment requires reviewed finite nonnegative prior active seconds"
                 )
-            for value, ceiling, label in (
-                (reviewed_prior_delivered_frames, limits["totalFrames"], "delivered frames"),
-                (reviewed_prior_advancing_batches, limits["maxBatches"], "advancing batches"),
+            for value, label in (
+                (reviewed_prior_delivered_frames, "delivered frames"),
+                (reviewed_prior_advancing_batches, "advancing batches"),
             ):
-                if type(value) is not int or not 0 <= value < ceiling:
-                    raise ValueError(
-                        f"initial segment requires reviewed prior {label} below its cap"
-                    )
+                if type(value) is not int or value < 0:
+                    raise ValueError(f"initial segment requires reviewed nonnegative prior {label}")
         elif reviewed_prior_starts is not None:
             raise ValueError("resumed historical starts come only from the parent receipt")
         elif reviewed_prior_active_seconds is not None:
@@ -1435,12 +1600,15 @@ def prepare_map3_observation_candidate(
         if resume_directory is not None:
             resume_directory = resume_directory.resolve(strict=True)
             parent_pair, parent_metadata = _read_segment(resume_directory)
-            if parent_pair["ordinal"] != segment - 1:
+            if parent_pair["ordinal"] != segment - 1 and not (
+                segment == parent_pair["ordinal"] == 1 and parent_metadata["checkpoint"]["rank"] < 5
+            ):
                 raise ValueError("segment skips or repeats its parent")
-            reviewed_prior_starts = parent_pair["historicalStarts"]
-            reviewed_prior_active_seconds = parent_pair["activeSeconds"]
-            reviewed_prior_delivered_frames = parent_pair["deliveredFrames"]
-            reviewed_prior_advancing_batches = parent_metadata["batches"]
+            totals, _ = _resume_accounting(resume_directory)
+            reviewed_prior_starts = totals["starts"]
+            reviewed_prior_active_seconds = totals["seconds"]
+            reviewed_prior_delivered_frames = totals["frames"]
+            reviewed_prior_advancing_batches = totals["batches"]
     elif resume_directory is not None:
         raise ValueError("resume requires an explicit segment")
     elif reviewed_prior_starts is not None:
@@ -1724,10 +1892,8 @@ def prepare_map3_observation_candidate(
             "priorFrames": reviewed_prior_delivered_frames,
             "priorBatches": reviewed_prior_advancing_batches,
         }
-        # The acquired frame/R1 clocks remain unchanged; only budget consumption is offset.
-        config["cases"][0]["frameBudget"] -= reviewed_prior_delivered_frames - (
-            parent_metadata["observer"]["frame"] if parent_metadata else 0
-        )
+        # Historical consumption is observational; never shorten a new bootstrap
+        # watchdog or forge acquired frame/R1 clocks to carry that consumption.
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -1810,9 +1976,10 @@ def prepare_map3_observation_candidate(
             },
             HistoricalControlledStarts=reviewed_prior_starts,
             FutureControlledOrdinal=reviewed_prior_starts + 1,
-            MaximumAdditionalStarts=0,
-            PlanningMaximumStarts=4,
-            RuntimeAuthorization="Pending independent implementation/lineage admission: Issue485",
+            MaximumAdditionalStarts=None,
+            RuntimeAuthorization=(
+                "Issue485 user-directed stabilization; independent integration required"
+            ),
             Start="native parent savestate; no R1 bootstrap" if parent_pair else report["Start"],
             Terminal=(
                 "settled Map19 next-tile field control",
@@ -1933,15 +2100,13 @@ def run_map3_observation_candidate(
         expected_limits = _interactive_limits(continuation)
         if selection and (
             type(selection["priorActiveSeconds"]) not in (int, float)
-            or not 0 <= selection["priorActiveSeconds"] < expected_limits["wallSeconds"]
+            or not math.isfinite(selection["priorActiveSeconds"])
+            or selection["priorActiveSeconds"] < 0
         ):
-            raise ValueError("segment requires reviewed finite prior active seconds in [0, 7200)")
+            raise ValueError("segment requires reviewed finite nonnegative prior active seconds")
         if selection:
-            for key, ceiling in (
-                ("priorFrames", expected_limits["totalFrames"]),
-                ("priorBatches", expected_limits["maxBatches"]),
-            ):
-                if type(selection[key]) is not int or not 0 <= selection[key] < ceiling:
+            for key in ("priorFrames", "priorBatches"):
+                if type(selection[key]) is not int or selection[key] < 0:
                     raise ValueError(f"invalid reviewed segment {key}")
         if report.get("Continuation") != continuation or (continuation and not interactive):
             raise ValueError("execution continuation must explicitly match preparation")
@@ -1976,7 +2141,8 @@ def run_map3_observation_candidate(
                 type(settings["priorActiveSeconds"]) not in (int, float)
                 or type(settings["priorFrames"]) is not int
                 or type(settings["priorBatches"]) is not int
-                or settings != {
+                or settings
+                != {
                     key: selection[key]
                     for key in ("ordinal", "priorActiveSeconds", "priorFrames", "priorBatches")
                 }
@@ -1986,17 +2152,24 @@ def run_map3_observation_candidate(
                 statePath=(runtime / "segment.State").as_posix(),
                 metadataPath=(runtime / "continuation.json").as_posix(),
             )
-            if segment > 1:
+            if selection["parentDirectory"] is not None:
                 parent = Path(selection["parentDirectory"])
                 parent_pair, metadata = _read_segment(parent)
+                totals, attempts = _resume_accounting(parent)
                 if (
                     sha256((parent / "runtime/segment-pair.json").read_bytes()).hexdigest().upper()
                     != selection["parentPairSha256"]
-                    or parent_pair["ordinal"] != segment - 1
-                    or report["HistoricalControlledStarts"] != parent_pair["historicalStarts"]
-                    or parent_pair["activeSeconds"] != settings["priorActiveSeconds"]
-                    or parent_pair["deliveredFrames"] != settings["priorFrames"]
-                    or metadata["batches"] != settings["priorBatches"]
+                    or not (
+                        parent_pair["ordinal"] == segment - 1
+                        or (
+                            segment == parent_pair["ordinal"] == 1
+                            and metadata["checkpoint"]["rank"] < 5
+                        )
+                    )
+                    or report["HistoricalControlledStarts"] != totals["starts"]
+                    or totals["seconds"] != settings["priorActiveSeconds"]
+                    or totals["frames"] != settings["priorFrames"]
+                    or totals["batches"] != settings["priorBatches"]
                     or any(
                         report[key] != load_json(parent / "candidate.json")[key]
                         for key in SEGMENT_IDENTITIES
@@ -2007,8 +2180,9 @@ def run_map3_observation_candidate(
                 settings.update(
                     resume=metadata, loadPath=(parent / "runtime/segment.State").as_posix()
                 )
-                # One forward lineage. A failed attempt consumes this reservation too.
-                with (parent / "runtime/resumed-by.json").open("x", encoding="utf-8") as claim:
+                # Exclusive attempts preserve failed branches and their real costs.
+                name = "resumed-by.json" if attempts == 0 else f"resumed-by-{attempts + 1:04}.json"
+                with (parent / "runtime" / name).open("x", encoding="utf-8") as claim:
                     claim.write(
                         json.dumps({"candidate": directory.as_posix(), "ordinal": segment}) + "\n"
                     )

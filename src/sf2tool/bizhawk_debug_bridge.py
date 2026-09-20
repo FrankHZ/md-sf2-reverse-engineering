@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import queue
 import secrets
@@ -147,7 +148,13 @@ class DebugBridge:
         )
 
     def remaining(self) -> float:
-        remaining = self.deadline - time.monotonic() if self.deadline else self.timeout
+        remaining = (
+            self.deadline - time.monotonic()
+            if self.deadline
+            else (
+                self.acquisition_limits["idleSeconds"] if self.acquisition_limits else self.timeout
+            )
+        )
         if self.idle_deadline is not None:
             remaining = min(remaining, self.idle_deadline - time.monotonic())
         if remaining <= 0 or self.expired.is_set():
@@ -162,13 +169,17 @@ class DebugBridge:
             raise TimeoutError("interactive wall budget exhausted")
         return remaining
 
-    def _operator_idle(self, *, advancing: bool = False) -> None:
+    def _operator_idle(self, *, advancing: bool = False, deadline: float | None = None) -> None:
         if self.idle_watchdog is not None:
             self.idle_watchdog.cancel()
         self.idle_deadline = None
         if self.acquisition_limits is None or advancing:
             return
-        self.idle_deadline = time.monotonic() + self.acquisition_limits["idleSeconds"]
+        self.idle_deadline = (
+            deadline
+            if deadline is not None
+            else (time.monotonic() + self.acquisition_limits["idleSeconds"])
+        )
 
         idle_deadline = self.idle_deadline
 
@@ -180,7 +191,7 @@ class DebugBridge:
             if self.process is not None and self.process.poll() is None:
                 self.process.kill()
 
-        self.idle_watchdog = threading.Timer(self.acquisition_limits["idleSeconds"], expire_idle)
+        self.idle_watchdog = threading.Timer(max(0, idle_deadline - time.monotonic()), expire_idle)
         self.idle_watchdog.daemon = True
         self.idle_watchdog.start()
 
@@ -212,7 +223,11 @@ class DebugBridge:
             ):
                 raise ValueError("natural acquisition bounds/composition mismatch")
             self.acquisition_limits = dict(acquisition_limits)
-        if not 0 <= prior_active_seconds < (wall_seconds or 1):
+        if (
+            not math.isfinite(prior_active_seconds)
+            or prior_active_seconds < 0
+            or (not self.acquisition_limits and prior_active_seconds >= (wall_seconds or 1))
+        ):
             raise ValueError("cumulative active wall budget exhausted")
         if prior_active_seconds and not self.acquisition_limits:
             raise ValueError("continuation accounting requires natural acquisition")
@@ -303,7 +318,7 @@ class DebugBridge:
             stderr=self.log,
             startupinfo=startup,
         )
-        if wall_seconds is not None:
+        if wall_seconds is not None and not self.acquisition_limits:
             self.deadline = started_at + wall_seconds - prior_active_seconds
 
             def expire() -> None:
@@ -346,6 +361,7 @@ class DebugBridge:
             raise RuntimeError("bridge is not connected")
         wire = command_text(self.sequence + 1, operation, *arguments)
         self.remaining()
+        previous_idle_deadline = self.idle_deadline
         if self.acquisition_limits and operation == "step":
             self._operator_idle(advancing=True)
         self.sequence += 1
@@ -368,7 +384,14 @@ class DebugBridge:
             self.disconnect()
             raise
         if self.acquisition_limits and operation == "step" and response["ok"]:
-            self._operator_idle()
+            # A typed zero-frame rejection is inspection, not progress or an idle renewal.
+            self._operator_idle(
+                deadline=(
+                    previous_idle_deadline
+                    if response.get("result", {}).get("advanced", 0) == 0
+                    else None
+                )
+            )
         record.update(response=response, seconds=time.monotonic() - started_at)
         self._save()
         if not response["ok"]:

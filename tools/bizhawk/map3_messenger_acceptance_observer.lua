@@ -991,7 +991,11 @@ end
 
 local function add_callback(address, role, handler)
     -- Closed Map19-and-later continuation needs none of the R1/messenger locals.
-    if segment and segment.resume and not role:match("^candidate:") then return end
+    if segment and segment.resume and not role:match("^candidate:") then
+        if segment.resume.observer.r2a or role:match("^r1%-")
+            or role == "bootstrap-check-sram" or role == "checkpoint"
+            or role == "map3-init-dispatch" then return end
+    end
     if candidate and not (role:match("^candidate:") or role:match("^r1%-")
         or role:match("^prompt%-") or role:match("^join%-") or role:match("^update%-force%-")
         or role == "bootstrap-check-sram" or role == "checkpoint" or role == "map3-init-dispatch"
@@ -2223,6 +2227,10 @@ local function install_candidate()
         if not acquisition or not c.epoch then return end
         if c.consumerPoll and c.consumerPoll.kind == kind and c.consumerPoll.frame == frame_count then return end
         c.consumerPoll = {kind=kind, frame=frame_count, emulatorFrame=emu.framecount(), pc=pc}
+        if kind == "WaitForEvent-action" and c.fieldMenu and c.fieldMenu.stage == "returned" then
+            c.record("field-menu:restored-field-poll", {entry=c.fieldMenu.entry, poll=c.consumerPoll})
+            c.fieldMenu, c.pauseBatch = nil, true
+        end
     end
     local function sample()
         local result = current_position_diagnostic()
@@ -2250,6 +2258,8 @@ local function install_candidate()
                 result.promptChoice = (c.consumers.prompt or 0) > 0
                     and memory.read_u8(ram.CURRENT_DIAMOND_MENU_CHOICE, "M68K BUS") or false
                 result.completed = c.completed
+                result.fieldMenuRecovery = c.fieldMenu or false
+                result.progressStalled = c.progressStalled or false
                 result.stopReason = c.stopReason or c.failureReason or false
                 result.battle = memory.read_u8(ram.CURRENT_BATTLE, "M68K BUS")
                 result.lastMusicOrControlCommand = c.activeMusic or false
@@ -2293,9 +2303,26 @@ local function install_candidate()
     local function entity(character)
         local selector = character >= 128 and character - ram.ENTITY_ENEMY_INDEX_DIFFERENCE or character
         local physical = memory.read_u8(ram.ENTITY_INDEX_LIST + selector, "M68K BUS")
+        if physical >= 48 then return {character=character, selector=selector, physical=physical} end
         local address = ram.ENTITY_DATA + physical * ram.ENTITYDEF_SIZE
         return { character = character, selector = selector, physical = physical,
             address = address, bytes = read_span(address, ram.ENTITYDEF_SIZE) }
+    end
+    local function camera_state()
+        local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
+        local camera = {planeA={x=word("VIEW_PLANE_A_PIXEL_X"), y=word("VIEW_PLANE_A_PIXEL_Y"),
+                destinationX=word("VIEW_PLANE_A_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_A_PIXEL_Y_DEST")},
+            planeB={x=word("VIEW_PLANE_B_PIXEL_X"), y=word("VIEW_PLANE_B_PIXEL_Y"),
+                destinationX=word("VIEW_PLANE_B_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_B_PIXEL_Y_DEST")},
+            scrollingPlanes=memory.read_u8(ram.VIEW_SCROLLING_PLANES_BITFIELD, "M68K BUS"),
+            layerType=memory.read_u8(ram.MAP_AREA_LAYER_TYPE, "M68K BUS"),
+            layer1AutoscrollXY=word("MAP_AREA_LAYER1_AUTOSCROLL_X"),
+            layer2AutoscrollXY=word("MAP_AREA_LAYER2_AUTOSCROLL_X")}
+        local scrolling = camera.scrollingPlanes
+        if camera.layer1AutoscrollXY ~= 0 then scrolling = scrolling & 3 end
+        if camera.layer2AutoscrollXY ~= 0 then scrolling = scrolling & 12 end
+        camera.effectiveScrollingPlanes = scrolling
+        return camera
     end
     if natural then
         local nf, completed = natural.functions, {}
@@ -2575,8 +2602,7 @@ local function install_candidate()
                 and state.typewriting == 0 and state.windowState ~= 2
                 and word("DIALOGUE_WINDOW_INDEX") == 0 and word("PORTRAIT_WINDOW_INDEX") == 0
                 and byte("FADING_SETTING") == 0
-                and word("VIEW_PLANE_A_PIXEL_X") == word("VIEW_PLANE_A_PIXEL_X_DEST")
-                and word("VIEW_PLANE_A_PIXEL_Y") == word("VIEW_PLANE_A_PIXEL_Y_DEST"),
+                and camera_state().effectiveScrollingPlanes == 0,
                 "player-ready input/modal/transfer mismatch")
             c.checkpoint("ready")
             c.stop("player-ready", {area=area, actor=actor, movingActor=word("MOVING_BATTLE_ENTITY_INDEX"),
@@ -2642,9 +2668,7 @@ local function install_candidate()
             if (c.consumers.prompt or 0) > 0 then values[#values + 1] = byte("CURRENT_DIAMOND_MENU_CHOICE") end
             local key = table.concat(values, ":")
             if key ~= c.progressState then c.progressState, c.progressFrame = key, frame_count end
-            if frame_count - (c.progressFrame or c.epoch) >= acquisition.progressFrames and not c.stopReason then
-                c.stop("source-progress-limit")
-            end
+            c.progressStalled = frame_count - (c.progressFrame or c.epoch) >= acquisition.progressFrames
         end
     end
 
@@ -2901,7 +2925,15 @@ local function install_candidate()
     add_callback(f.FieldMenu, "candidate:unexpected-field-menu", function()
         if c.epoch then
             c.record("field-menu:reached", {})
-            error((acquisition and "interactive" or "frozen") .. " input reached FieldMenu outside the declared route")
+            if not natural then error("frozen input reached FieldMenu outside the declared route") end
+            assert(not c.fieldMenu, "nested FieldMenu recovery")
+            c.fieldMenu, c.pauseBatch = {stage="entered", entry=frame_count}, true
+            returned("FieldMenu", f.FieldMenu, function()
+                if c.fieldMenu.stage == "cancel-return" then c.fieldMenu.stage = "returned"
+                else c.fieldMenu.stage = "unsupported-return" end
+                c.record("field-menu:original-return", c.fieldMenu)
+                c.pauseBatch = true
+            end)
         end
     end)
     add_callback(f.loc_65B4, "candidate:text-ack", function()
@@ -2910,6 +2942,28 @@ local function install_candidate()
             c.record("text:acknowledgement-read", { input = memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") })
         end
     end)
+    if natural then
+        add_callback(natural.functions.ExecuteDiamondMenu, "candidate:field-diamond", function()
+            if not c.fieldMenu then return end
+            if c.fieldMenu.stage ~= "entered" then
+                c.fieldMenu.stage, c.pauseBatch = "unsupported-submenu", true
+                return
+            end
+            c.fieldMenu.stage = "diamond"
+            returned("FieldDiamond", natural.functions.ExecuteDiamondMenu, function()
+                c.fieldMenu.stage = (reg("D0") & 0xFFFF) == 0xFFFF and "cancel-return" or "unsupported-choice"
+                c.record("field-menu:diamond-result", {stage=c.fieldMenu.stage, choice=reg("D0") & 0xFFFF})
+                c.pauseBatch = true
+            end)
+        end)
+        add_callback(natural.functions.WaitForPlayerInput, "candidate:wait-player-input", function()
+            if not c.epoch then return end
+            if (c.consumers.WaitForPlayerInput or 0) == 0 then
+                returned("WaitForPlayerInput", natural.functions.WaitForPlayerInput)
+            end
+            poll("WaitForPlayerInput", natural.functions.WaitForPlayerInput)
+        end)
+    end
     if acquisition then
         add_callback(f.loc_2593C, "candidate:field-action-poll", function()
             poll("WaitForEvent-action", f.loc_2593C)
@@ -2976,19 +3030,80 @@ local function install_candidate()
         local function elapsed()
             return (segment and segment.priorActiveSeconds or 0) + launch + tonumber(clock.Elapsed.TotalSeconds)
         end
+        function c.input_readiness(button)
+            local state = sample()
+            local result = {ready=true, button=button, unmetReasons={}, state=state}
+            local function need(condition, reason)
+                if not condition then result.ready=false; result.unmetReasons[#result.unmetReasons+1]=reason end
+            end
+            local poll = c.consumerPoll
+            local fresh = poll and frame_count - poll.frame <= 1
+            if c.fieldMenu then
+                result.consumer = "FieldMenu-recovery"
+                need(not c.fieldMenu.stage:match("^unsupported"), "unsupported-field-menu-state")
+                need(button == "neutral" or button == "B", "field-menu-recovery-neutral-or-B-only")
+                return result
+            end
+            if button == "neutral" then return result end
+            need(button ~= "A" and button ~= "B" and button ~= "Start", "input-outside-declared-route")
+            if button ~= "C" then return result end
+            need(c.appliedButton == "neutral" and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
+                and memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS") == 0, "release-before-C")
+            if (c.consumers.prompt or 0) > 0 then
+                result.consumer = "prompt"
+                need(fresh and poll.kind == "YesNoPrompt-choice", "prompt-choice-not-ready")
+            elseif (c.consumers.DisplayText or 0) > 0 then
+                result.consumer = "dialogue"
+                need(state.typewriting == 0 and fresh
+                    and (poll.kind == "text-wait1" or poll.kind == "text-wait2-loop"), "dialogue-not-ready")
+            elseif (c.consumers.WaitForPlayerInput or 0) > 0 then
+                result.consumer = "WaitForPlayerInput"
+                need(fresh and poll.kind == "WaitForPlayerInput", "input-consumer-not-ready")
+            else
+                result.consumer = "entity"
+                need(c.pending == 0 and #c.programs == 0 and not c.audioPending, "active-consumer-or-program")
+                for kind, count in pairs(c.consumers) do need(count == 0, "active-consumer:" .. kind) end
+                need(fresh and poll.kind == "WaitForEvent-action", "field-poll-not-recent")
+                need(state.mapEventWord == 0 and state.typewriting == 0 and state.windowState ~= 2
+                    and memory.read_u16_be(ram.DIALOGUE_WINDOW_INDEX, "M68K BUS") == 0
+                    and memory.read_u16_be(ram.PORTRAIT_WINDOW_INDEX, "M68K BUS") == 0
+                    and memory.read_u8(ram.FADING_SETTING, "M68K BUS") == 0, "field-modal-or-event")
+                need(state.rawX == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                    and state.rawY == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS")
+                    and camera_state().effectiveScrollingPlanes == 0, "field-motion")
+                local point
+                for _, waypoint in ipairs(natural.interactions) do
+                    if waypoint.map == state.map and waypoint.x == state.x and waypoint.y == state.y then point=waypoint end
+                end
+                need(point, "no-declared-entity-waypoint")
+                if point then
+                    result.waypoint = point
+                    need((state.facing & ram.DIRECTION_MASK) == ram[point.facing:upper()], "wrong-player-facing")
+                    local target = entity(point.entityTarget.id)
+                    result.target = target
+                    need(target.address, "target-not-loaded")
+                    if target.address then
+                        local function value(offset) return memory.read_u16_be(target.address + ram[offset], "M68K BUS") end
+                        target.x, target.y = value("ENTITYDEF_OFFSET_X"), value("ENTITYDEF_OFFSET_Y")
+                        target.destinationX, target.destinationY = value("ENTITYDEF_OFFSET_XDEST"), value("ENTITYDEF_OFFSET_YDEST")
+                        target.facing = memory.read_u8(target.address + ram.ENTITYDEF_OFFSET_FACING, "M68K BUS") & ram.DIRECTION_MASK
+                        need(point.entityTarget.map == state.map and target.x == point.entityTarget.x * ram.MAP_TILE_SIZE
+                            and target.y == point.entityTarget.y * ram.MAP_TILE_SIZE, "target-position-mismatch")
+                        need(target.x == target.destinationX and target.y == target.destinationY, "target-moving")
+                        need(not point.entityTarget.facing or target.facing == ram[point.entityTarget.facing:upper()], "target-facing-mismatch")
+                    end
+                end
+            end
+            return result
+        end
         local function budget()
             if not natural or c.stopReason then return end
             local now = elapsed()
-            if now >= acquisition.wallSeconds then c.stop("wall-limit")
-            elseif not c.completed.map19 and now >= acquisition.map19Seconds then c.stop("map19-stage-limit")
-            elseif not c.completed.guard and now >= acquisition.guardSeconds then c.stop("guard-stage-limit")
-            elseif idle_since and now - idle_since >= acquisition.idleSeconds then c.stop("operator-idle-limit") end
+            if idle_since and now - idle_since >= acquisition.idleSeconds then c.stop("operator-idle-limit") end
         end
         local function receive_timeout()
             local now = elapsed()
-            local remaining = acquisition.wallSeconds - now
-            if not c.completed.map19 then remaining = math.min(remaining, acquisition.map19Seconds - now) end
-            if not c.completed.guard then remaining = math.min(remaining, acquisition.guardSeconds - now) end
+            local remaining = acquisition.idleSeconds
             if idle_since then remaining = math.min(remaining, acquisition.idleSeconds - now + idle_since) end
             comm.socketServerSetTimeout(math.max(1, math.floor(remaining * 1000)))
         end
@@ -3007,7 +3122,8 @@ local function install_candidate()
             return {boundary="frame-end", frame=frame_count, emulatorFrame=emu.framecount(),
                 r1Epoch=c.epoch or false, r1EmulatorEpoch=c.emulatorEpoch or false,
                 state=sample(), paused=client.ispaused(), batches=batches,
-                deliveredFrames=delivered_frames(),
+                deliveredFrames=delivered_frames(), activeSeconds=natural and elapsed() or false,
+                inputReadiness=c.input_readiness and c.input_readiness("C") or false,
                 saveReadiness=readiness or (segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false),
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
@@ -3015,7 +3131,7 @@ local function install_candidate()
         -- closures and init-registration caches are rebuilt, never serialized.
         local continuation_keys = {"epoch", "emulatorEpoch", "order", "gates", "r2a",
             "map19Wait", "map19Captured", "nextWarp", "consumerPoll", "activeMusic",
-            "progressFrame", "progressState"}
+            "progressFrame", "progressState", "consumers", "programs", "pending", "zoneTarget", "messengerZone"}
         local function same(left, right)
             if type(left) ~= type(right) then return false end
             if type(left) ~= "table" then return left == right end
@@ -3035,23 +3151,13 @@ local function install_candidate()
                 "segment native runtime/core mismatch")
             return core
         end
-        save_readiness = function(ordinal)
+        save_readiness = function(ordinal, loading)
             assert(ordinal >= 1 and ordinal <= 3, "no resumable boundary for this segment")
             local state = sample()
             local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
             local function byte(name) return memory.read_u8(ram[name], "M68K BUS") end
-            local camera = {planeA={x=word("VIEW_PLANE_A_PIXEL_X"), y=word("VIEW_PLANE_A_PIXEL_Y"),
-                    destinationX=word("VIEW_PLANE_A_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_A_PIXEL_Y_DEST")},
-                planeB={x=word("VIEW_PLANE_B_PIXEL_X"), y=word("VIEW_PLANE_B_PIXEL_Y"),
-                    destinationX=word("VIEW_PLANE_B_PIXEL_X_DEST"), destinationY=word("VIEW_PLANE_B_PIXEL_Y_DEST")},
-                scrollingPlanes=byte("VIEW_SCROLLING_PLANES_BITFIELD"), layerType=byte("MAP_AREA_LAYER_TYPE"),
-                layer1AutoscrollXY=word("MAP_AREA_LAYER1_AUTOSCROLL_X"),
-                layer2AutoscrollXY=word("MAP_AREA_LAYER2_AUTOSCROLL_X")}
-            -- IsMapScrollingToViewTarget tests each packed X/Y word, then masks d7.
-            local scrolling = camera.scrollingPlanes
-            if camera.layer1AutoscrollXY ~= 0 then scrolling = scrolling & 3 end
-            if camera.layer2AutoscrollXY ~= 0 then scrolling = scrolling & 12 end
-            camera.effectiveScrollingPlanes = scrolling
+            local camera = camera_state()
+            local scrolling = camera.effectiveScrollingPlanes
             local player = {}
             for key, name in pairs({x="ENTITYDEF_OFFSET_X", y="ENTITYDEF_OFFSET_Y",
                 destinationX="ENTITYDEF_OFFSET_XDEST", destinationY="ENTITYDEF_OFFSET_YDEST"}) do
@@ -3076,9 +3182,9 @@ local function install_candidate()
             end
             need(not callback_active and client.ispaused() and not pending_failure and not finish_pending,
                 "not-paused-completed-frame", true)
-            need(batches < acquisition.maxBatches and delivered_frames() < acquisition.totalFrames
-                and elapsed() < acquisition.wallSeconds, "continuation-budget-exhausted", true)
-            need(c.epoch and c.map19Captured and phase == "candidate-natural-route", "route-boundary-not-reached")
+            need(c.epoch and (phase == "candidate-route" or phase == "candidate-gate-route"
+                or phase == "candidate-natural-route"), "route-boundary-not-reached")
+            need(not c.fieldMenu, "field-menu-recovery")
             need(c.pending == 0, "pending-returns")
             need(#c.programs == 0, "active-program")
             need(not c.audioPending, "pending-audio-dispatch")
@@ -3090,35 +3196,48 @@ local function install_candidate()
             need(state.windowState ~= 2 and raw.dialogueWindow == 0 and raw.portraitWindow == 0, "open-window")
             need(raw.fading == 0, "active-fade")
             need(player.x == player.destinationX and player.y == player.destinationY, "player-unsettled")
-            need(camera.planeA.x == camera.planeA.destinationX and camera.planeA.y == camera.planeA.destinationY,
-                "camera-plane-a-unsettled")
             need(scrolling == 0, "original-view-scrolling")
             need(c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
                 and frame_count - c.consumerPoll.frame <= 1, "field-poll-not-recent")
             if ordinal == 1 then
                 need(c.nextWarp <= 1 and not c.completed.royal, "segment-endpoint-passed", true)
-                need(c.completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29
-                    and c.nextWarp == 1, "map19-boundary-not-reached")
+                for _, point in ipairs(natural.checkpoints) do
+                    if state.map == point.map and state.x == point.x and state.y == point.y
+                        and (not point.flag or flag_is_set(point.flag))
+                        and (not point.beforeFlag or not flag_is_set(point.beforeFlag))
+                        and phase == point.phase and (not point.r2a or c.r2a)
+                        and (point.rank ~= 5 or c.completed.map19Displacement) then
+                        result.checkpoint = {name=point.id, rank=point.rank}
+                    end
+                end
+                need(result.checkpoint, "named-checkpoint-not-reached")
             elseif ordinal == 2 then
+                result.checkpoint = {name="royal-closed-field", rank=6}
                 need(c.nextWarp <= 2 and not c.completed.astral, "segment-endpoint-passed", true)
                 need(c.completed.royal and c.completed.royalScript and flag_is_set(605)
                     and state.map == 20 and state.x == 23 and state.y == 39
                     and (state.facing & ram.DIRECTION_MASK) == ram.DOWN
                     and c.nextWarp == 2, "royal-boundary-not-reached")
             elseif ordinal == 3 then
+                result.checkpoint = {name="guard-closed-field", rank=7}
                 need(c.nextWarp <= 5, "segment-endpoint-passed", true)
                 need(c.completed.guardWait and c.completed.guard and flag_is_set(401) and flag_is_set(256)
                     and state.map == 21 and state.x == 5 and state.y == 15
                     and (state.facing & ram.DIRECTION_MASK) == ram.DOWN and c.nextWarp == 5,
                     "guard-boundary-not-reached")
             end
+            if segment.resume and not loading then
+                need(result.checkpoint and result.checkpoint.rank > segment.resume.checkpoint.rank
+                    and frame_count > segment.resume.observer.frame, "parent-checkpoint-not-advanced")
+            end
             result.saveReady = #result.unmetReasons == 0
             return result
         end
         function c.save_segment(terminal)
             assert(segment and not callback_active and client.ispaused(), "segment save outside host pause")
+            local readiness
             if not terminal then
-                local readiness = save_readiness(segment.ordinal)
+                readiness = save_readiness(segment.ordinal)
                 assert(not readiness.hardFailure, readiness.hardFailure)
                 if not readiness.saveReady then return {status="not-ready", readiness=readiness} end
             else
@@ -3143,6 +3262,7 @@ local function install_candidate()
             local observer = {completed=c.completed, phase=phase, frame=frame_count}
             for _, key in ipairs(continuation_keys) do observer[key] = c[key] end
             local metadata = {ordinal=segment.ordinal, resumable=not terminal, observer=observer,
+                checkpoint=readiness and readiness.checkpoint or {name="player-ready", rank=8},
                 original=original_state(), core=core, batches=batches, deliveredFrames=delivered_frames(), activeSecondsAtSave=elapsed(),
                 stateBytes=size, boundary="neutral-completed-frame", finalCallback=terminal and c.terminal or nil}
             local output = assert(io.open(segment.metadataPath, "w"))
@@ -3160,18 +3280,19 @@ local function install_candidate()
             for _, key in ipairs(continuation_keys) do c[key] = restored.observer[key] end
             for key, value in pairs(restored.observer.completed) do c.completed[key] = value end
             frame_count, phase, c.appliedButton = restored.observer.frame, restored.observer.phase, "neutral"
-            local readiness = save_readiness(restored.ordinal)
+            local readiness = save_readiness(restored.ordinal, true)
+            assert(same(readiness.checkpoint, restored.checkpoint), "loaded checkpoint identity mismatch")
             assert(readiness.saveReady, "loaded segment not ready: " .. table.concat(readiness.unmetReasons, ","))
             saved_state = memorysavestate.savecorestate()
             assert(saved_state ~= nil, "resume cleanup snapshot failed")
             c.record("segment:loaded-before-input", {ordinal=segment.ordinal, parent=restored.ordinal})
         end
         function c.capture_frame() c.frameEnd = snapshot() end
-        local function reply(ok, message, terminal, save)
+        local function reply(ok, message, terminal, save, input)
             local result = {state=c.frameEnd or snapshot(), advanced=batch and batch.applied or 0,
                 terminal=terminal or false, terminalCallback=c.terminal or false,
                 stopReason=natural and (c.stopReason or c.failureReason or false) or nil,
-                stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl", save=save}
+                stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl", save=save, input=input}
             log({kind="result", id=previous_id, ok=ok, result=result, error=message or false})
             bridge.send({id=previous_id, ok=ok, result=result, error=message or false})
         end
@@ -3187,7 +3308,7 @@ local function install_candidate()
             if c.epoch then
                 if not connected then
                     c.frameEnd = snapshot()
-                    bridge.connect(acquisition.wallSeconds * 1000, c.frameEnd)
+                    bridge.connect((natural and acquisition.idleSeconds or acquisition.wallSeconds) * 1000, c.frameEnd)
                     connected = true
                     if natural then idle_since = elapsed() end
                 end
@@ -3229,13 +3350,20 @@ local function install_candidate()
                     elseif op == "step" then
                         local count, button = bridge.step_arguments(command)
                         c.failureReason = nil
-                        if natural and batches >= acquisition.maxBatches then c.stop("batch-limit"); return end
-                        if natural and count > acquisition.totalFrames - delivered_frames() then c.stop("frame-limit"); return end
-                        assert(batches < acquisition.maxBatches, "input batch budget exhausted")
-                        assert(count <= acquisition.totalFrames - delivered_frames(), "total frame budget exceeded")
-                        batches = batches + 1
-                        batch = {id=id, requested=count, applied=0, button=button}
-                        idle_since = nil
+                        local readiness = natural and c.input_readiness(button) or {ready=true}
+                        if not readiness.ready then
+                            c.record("input:not-ready", {button=button, readiness=readiness})
+                            c.frameEnd = snapshot()
+                            reply(true, nil, false, nil, {status="not-ready", readiness=readiness})
+                        else
+                            if not natural then
+                                assert(batches < acquisition.maxBatches, "input batch budget exhausted")
+                                assert(count <= acquisition.totalFrames - delivered_frames(), "total frame budget exceeded")
+                            end
+                            batches = batches + 1
+                            batch = {id=id, requested=count, applied=0, button=button}
+                            idle_since = nil
+                        end
                     else error("unsupported acquisition command") end
                     emu.yield()
                 end
@@ -3256,12 +3384,15 @@ local function install_candidate()
                 beforeFrame=c.beforeFrame, afterFrame=after,
                 inputFrame=c.epoch and frame_count - c.epoch or false,
                 bootstrap=not batch})
-            if batch then batch.applied = batch.applied + 1 end
+            if batch then
+                batch.applied = batch.applied + 1
+                if c.pauseBatch then batch.requested = batch.applied end
+            end
+            c.pauseBatch = nil
             c.frameEnd = snapshot()
             bridge.set_button("neutral")
             assert(after == c.beforeFrame + 1, "interactive frame advance drift")
-            if natural and delivered_frames() >= acquisition.totalFrames and not finish_pending then c.stop("frame-limit") end
-            assert(delivered_frames() < acquisition.totalFrames or finish_pending,
+            assert(natural or delivered_frames() < acquisition.totalFrames or finish_pending,
                 "total frame budget exhausted before terminal")
         end
     end
@@ -3387,7 +3518,9 @@ while true do
         if not finish_pending then frame_count = frame_count + 1 end
     end
     if not finish_pending then
-    if frame_count > config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget then
+    local frame_limit = natural and config.r1.harness.bootstrapFrameBudget
+        or config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget
+    if not (natural and candidate.epoch) and frame_count > frame_limit then
         fail((phase == "await-check-sram" or phase == "await-safe-core-snapshot" or phase == "await-checkpoint") and "bootstrap-watchdog" or "case-watchdog", nil, "frame budget exceeded at phase " .. phase)
     end
     enforce_route_phase_watchdog()

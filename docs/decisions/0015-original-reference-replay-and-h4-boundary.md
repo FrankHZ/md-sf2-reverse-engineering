@@ -74,48 +74,33 @@ unchanged. Existing 8D, 7C, 9A/10A and H4 acceptance boundaries remain unchanged
 
 ### Savestate-linked segmented acquisition amendment
 
-For [Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485), the user's
-instruction “用即时存档功能分片采集” authorizes the savestate method and supersedes the earlier
-single-process/no-savestate choice for this new lineage. It does not reopen disabled frozen replay
-or erase its failures. Historical controlled native starts are now **5**, including the
-[completed segment-1 camera-readiness failure](../research/map3-messenger-acceptance.md#segment-1-camera-readiness-failure).
-Reviewed initial consumption is **1556.4798537000315 active seconds, 10740 delivered frames and
-174 advancing batches**. Neither failed segment-1 attempt produced a state/pair. Initial material
-requires all four explicit reviewed consumption values; children inherit starts from actual parent
-receipts and resource consumption from their sealed parent. No preparation renews budgets or fabricates
-observer/emulator frames or R1 epochs. No retry or second segment is admitted.
-The first implementation stopping condition was independently reviewable offline
-implementation and prepare-only material in a Draft PR, with **zero new native starts**. Main-gate
-must accept the implementation and admit its concrete lineage before execution; another user
-confirmation solely for using savestates is unnecessary.
+For [Issue #485](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485), the user authorized
+native savestate collection and then explicitly required continuing until stable, including improving
+wrong-facing interaction handling. The [stabilization authorization](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752405430)
+supersedes prior per-run approval stops, fixed cumulative ceilings and failure retirement for this work.
+Main-gate retains independent review/integration. Historical failures, consumed starts and resource
+costs remain unchanged; disabled frozen replay is not reopened.
 
-The [Map3 owner](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
-defines one forward lineage, at most four normal starts (initial plus three resumes), and no automatic
-retry, smoke, replay or branching attempt. A failure or unsupported first-AI stop ends that attempt
-for review. Native disk states pair with observer continuation and evidence only after successful
-exit/cleanup. Resume requires closed blocking consumers/programs/return stacks, reconstructs observer
-registrations and progress, checks original state before input, and never repeats R1/NewGame or
-injects route/actor/RNG state. Save/load execute outside bus/input callbacks at paused completed frames.
-Under [main-gate's bounded correction](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752040919),
-ordinary well-formed not-ready saves now return typed nonterminal results and retain the pause with
-zero frames, no files/restoration and no budget reset. State/step and save share one readiness
-predicate. This supersedes the earlier all-save-rejections-fatal policy; malformed/off-route,
-identity, callback, I/O and hard-budget failures still end the attempt.
+The [Map3 owner](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485) defines
+early closed-field checkpoints, live entity/consumer readiness and original B cancellation recovery.
+Ordinary not-ready input/save requests remain paused nonterminal zero-frame results. No direct RAM,
+register, actor or RNG repair is allowed. Save/load execute outside callbacks and require coherent
+original core plus observer continuation; verified load precedes any input. Forward checkpoints cannot
+repeat a parent. Completed failed children may retry from the last complete compatible parent while
+retaining unique attempts and all real costs; a successful child becomes the next parent. Source/tool/
+observer identity mismatch blocks reuse rather than weakening compatibility checks.
 
-The limits are cumulative: 36000 delivered frames, 600 batches of 1–120 frames, 7200 seconds of active
-native-session time including paused decisions, first Map19 by 3600 active seconds and returned guard
-by 5700. Source-progress 3600 advanced frames survives resume; paused operator idle 120 seconds,
-startup/exchange 60 seconds and teardown 3+3 seconds retain their existing meanings. Offline gaps
-are recorded separately and advance no frames. A saved frame is distinct from the earlier terminal
-callback. This is **savestate-linked segmented original acquisition**, not uninterrupted wall-time
-execution, frozen replay, natural visible New/load, or H4. Native save/load compatibility and complete
-observation continuity remain **Unknown** until admitted native segments and independent acceptance.
-[Main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
-adopts only the Map19 cumulative deadline change to 3600. With unchanged reviewed consumption, this
-leaves 2043.5201462999685 seconds before Map19, 491.3300810999354 above the last observed reacquisition
-cost. This is an allowance, not a prediction. All other limits remain fixed. Preserve `prepared-05`
-and all earlier failures/material; fresh preparation remains NOT-ADMITTED until final independent
-review/merge and a separate concrete runtime admission.
+Cumulative time, frames, batches, stage and source-progress values remain observations. Single-step
+maximum 120, startup/exchange 60 seconds, operator/disconnection idle 120 seconds and teardown 3+3
+seconds retain fault containment, as do identity, I/O, core and irrecoverable callback failures.
+Standalone bridge limits are unaffected. Initial accounting includes every failed attempt; children
+inherit sealed and failed-child consumption without fabricating observer/emulator clocks.
+
+Acceptance requires an actual early save → verified native load → forward later save, followed by
+independent review. Offline checks alone leave native continuity **Unknown**. This remains
+**savestate-linked segmented original acquisition**, not uninterrupted wall-time execution, frozen
+replay, natural visible New/load, or H4. Historical stop restrictions below apply to their original
+attempts and cannot override this user-directed stabilization.
 
 ### Use distinct names and evidence owners
 

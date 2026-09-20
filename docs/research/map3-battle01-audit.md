@@ -578,6 +578,16 @@ it does not justify adding savestate/export or silently continuing into combat n
 
 ### Proposed ceilings and decision sequence
 
+The table and approval sequence below record the original proposal. For current Issue #485 work,
+the user's [stabilization authorization](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752405430)
+supersedes its cumulative stopping/one-attempt restrictions. The [current acquisition owner](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
+retains real costs and failures, adds early checkpoints, source-consumer/facing checks and original
+FieldMenu cancel recovery, and requires actual save → verified load → forward save acceptance.
+Completed failed children may retry from the last compatible complete parent with unique retained
+attempts; successful children become the next parent. Historical costs are never refunded.
+Single-step/exchange/disconnection and identity/core/I/O containment remain; offline implementation
+does not close native continuity or any later Battle01/H4 acceptance boundary.
+
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
 of that choice. The user has authorized savestate-based segmentation. First deliver offline
