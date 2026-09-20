@@ -403,6 +403,221 @@ were not exercised. Full downstream castle/tower/battle/5B continuity, complete 
 **Unknown** and #437 remains incomplete. No second invocation, fourth start, new replay, engine/code
 repair, merge or retained-environment cleanup follows this result.
 
+## Map19 continuation admission proposal (Issue #479; not authorized)
+
+This **static proposal**, reviewed against accepted `origin/main`
+`1a37c2825746db0f04f6adccd1d125dc5b792cb5`, tree
+`d8c511f37427fac2ce2d3cd1e3278b567c3c2ddb` on 2026-09-20, recommends one future
+interactive controlled-R1 traversal to the first natural Battle01 player-ready seam. It does not
+admit implementation, preparation or execution. [Issue #479](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/479)
+is related to #437; completing this proposal does not close the milestone. The
+[accepted readiness boundary](../design/synthesis/map3-battle01-readiness.md#conditional-runtime-questions)
+and ADRs [0014](../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md),
+[0015](../decisions/0015-original-reference-replay-and-h4-boundary.md) and
+[0016](../decisions/0016-remake-start-evidence-deferral.md) govern any later admission.
+
+### Actual start and retained-artifact limit
+
+**Confirmed by bounded read-only inspection:** `local/issue473/prepared-02/runtime/` retains
+`actual-inputs.jsonl`, `checkpoints.jsonl`, `observer.observed.json`, `observer.status.txt`,
+`host-status.json`, `bridge/receipt.json`, the runtime copy and its SaveRAM. Its `Genesis/State`
+directory is empty; no saved emulator state was found in that runtime or `local/issue475/` or
+`local/root476-review/`. The latter two contain analysis/handoff material and the independent result
+check, not a continuation state. This is an inventory of these named roots, not a machine-wide search.
+No private payload or input was modified. The retained host result says session ROM deleted,
+canonical unchanged, PID 39748 exited 0, no timeout/forced termination; the observation reports all
+declared restoration fields true. Current process inspection found no EmuHawk or Research collector.
+
+The [observer](../../tools/bizhawk/map3_messenger_acceptance_observer.lua) keeps `saved_state` from
+`memorysavestate.savecorestate` only in memory at bootstrap; `restore_scope` loads it on finalization.
+It does not serialize the acquired Map19 core. The acquired callback/frame-end projection and
+completed input trace cannot reconstruct CPU/core/NPC state. SaveRAM is persistent save data, not
+that execution state, and has not been loaded or admitted as a start. The immutable collector label
+remains `OBSERVATION-COMPLETE-UNREVIEWED`; PR #476 independently accepted only the bounded facts.
+
+| Candidate start | Availability and consequence |
+| --- | --- |
+| Continue the #475 process at Map19 | Unavailable: process exited and core restored. The last accepted Up input did not establish next-tile displacement. |
+| Load a genuine retained Map19 state | None found in the named evidence roots. A future state would need actual acquisition, identity, lineage and a separately reviewed save/load boundary; there is none to authorize or use here. |
+| Fresh interactive controlled-R1 traversal | The existing bootstrap is reusable after a separately accepted capability extension. Restore services/scratch at the first `WaitForEvent`; thereafter only explicit ordinary controller inputs advance the original. Reacquire the prefix within the same attempt before the missing continuation. This is controlled 1A, not natural New/load. |
+| Replay #475's frozen prefix, or synthesize Map19 from its projection/R2d bridge | Frozen replay is a separate method/determinism/admission question under ADR 0015, not an optimization automatically granted by the recording. Synthesis/bridge writes cannot establish the missing natural continuity. Neither is recommended for this slice. |
+
+### Selected route and necessary reached assertions
+
+Reuse [R2b](map3-castle-battle-unlock.md) and its
+[static fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json)
+`static/routeGraph/segments`, `zones/zoneAdmissionOrder`, `programs`, `flags` and `warps`, then
+[R2c/R2d](map3-battle01-admission.md) and the
+[admission fixture](../../tests/fixtures/h2/map3-battle01-admission-static-v1.json)
+`static/extensionRoute`, `admission`, `cutscenes` and `loadAndTurnOrder`.
+The pinned source/ROM identities at the top of this audit apply. The following are **Confirmed
+static** relationships; their natural reached caller state and completion are **Unknown**.
+Navigation rows are legal topology, not timed inputs or guaranteed NPC clearance.
+
+| Segment / existing source owner | Proposed observation and acceptance reason |
+| --- | --- |
+| Reacquired R1→first Map19 control | Reuse #475's real consumer, prompt, F604, north-warp and init-return checkpoints. Retain this attempt's POISON, entity/index, party, gold, RNG/copy and raw-time readback; do not copy #475's values. Keep its acquired Map19 checkpoint as an intermediate event, then observe actual movement beyond `(26,30)` (selected next tile `(26,29)`). This supplies the missing displacement and a single continuous lineage for 2A. |
+| Map19 royal route→Map20 palace | R2b segment `map19-entry-to-royal-warp` crosses `(29,15)` and `(25,13)` through `Map19_DefaultZoneEvent` direct returns, then warp `(23,3)`→Map20 `(23,37)`. Record the actual zone/warp operands, selected setup and init entry/return. `ms_map20_InitFunction` gates the royal entry on raw entity position `0x22803780` and F605 clear; `cs_53996` returns before its caller sets F605. Observe its text/actscript/entity waits and returned caller; source post-program player `(23,39)`, Down is a comparison, not an injected terminal. Also read F507 to exclude the later init branch. |
+| Royal return→Astral | Map20 `(23,37)`→Map19 `(23,3)`; LEFT is the static warp operand, not a substitute for observed facing. `ms_map19_InitFunction` hides alias140 via `cs_53104` when F605 is clear or F608 is set; with F605 set/F608 clear the return makes Astral available. Record setup, both flag reads and the actual init path, then selected `(16,6)`/Up interaction with alias140. |
+| `Map19_EntityEvent12` at `0x52EF2` | With F607 clear, `cs_52F0C` (`0x52F0C`) prompts and branches to `cs_52F40` (`0x52F40`) only on F89 set. Observe actual prompt input/return/F89; do not transfer the messenger's D0=0 expectation. Acceptance executes waited alias140 movement, hides it and sets F608; the caller sets F607 after the script returns. F607 alone is not agreement. The selected minimal route accepts on this first interaction; decline/repeat (`cs_52F24`) is an explicit off-route stop, not an automatic retry or permission to force F89. |
+| West tower→Map21 guard | Cross Map19 `(16,5)` default-zone return; warp `(6,2)`→Map20 `(6,37)`, then `(3,36)`→Map21 `(3,16)`. Observe each setup/init/warp return and map-local F256 at the guard caller. At `(4,16)` facing Right, alias128's `Map21_EntityEvent0` needs F608 set/F256 clear for `cs_53EF4` (`0x53EF4`). Record its awaited guard `(5,16)`→`(6,16)` action, actual alias135 lookup/facing target, script F401 write, script return, then caller F256 write. [The unchecked lookup owner](map3-castle-battle-unlock.md#map-21-entity-135-unchecked-lookup-and-conditional-continuation) already explains the conditional slot0 effect; observe index byte 39 and the reached target/return, not a new missing-entity algorithm. The selected Map21 `(5,15)`/Down wait is a checkpoint, not a state to seed. |
+| Map21→40→57 | Reuse R2c's 46 logical-input topology: Map21 `(9,1)`→Map40 `(4,30)`, then selected event cell `(14,12)`→Map57 `(8,18)`. Wildcard `y=12` does not make all that row valid warp events. At `CheckBattle` (`0x799C`), use incoming D0 map, because `CURRENT_MAP` may still hold the source; record F401/F501, selected area `(0,0,16,20)`, returned battle index and `BattleLoop` arguments. |
+| Natural admission/load/first dispatch | Record F88 and the new-battle branch, `bbcs_01` (`0x494BC`) entry/return, `LoadBattle` (`0x25610`) entry/return, `ms_Empty` start selection/F451 and return, F90–105 reset, activation/region/spawn/generation order and actual first actor dispatch. The before program's `loadMapFadeIn MAP_ANCIENT_TOWER_ENTRANCE,2,10`, `ce_49694` entity population and white fades are script-owned scene changes, not extra player warps. Preserve their waits/returns and the later Map57 reload. R2d supplies structural/readback fields; its seeded RNG/order/actor are never natural goldens. |
+
+For each stateful checkpoint retain source PC/program/operation, callback order, actual completed
+input frames, map/position/facing, relevant flag before/after and caller return. Reuse R1/R2d readers
+for party/joined/active flags, gold, ally class/level, HP/MP, stats, status, full item/spell slots,
+and RNG/RNG-copy/raw time at R1, Map19, post-royal, guard return, pre-load, post-load/generation and
+ready. These joins distinguish carried accounting from battle initialization/healing and random AGI
+draws. Preserve observed changes and source causes, not an assumed unchanged inventory or fixed seed.
+Record participating combatants' position/activation/status and turn order/offset at load and ready.
+No optional dialogue, shop, chest, church or alternate branch campaign is necessary for this 2A path.
+
+For reached 8D assertions, extend the existing real `DisplayText`, `CloseDialogueWindow`, prompt,
+acknowledgement and stack-matched program returns. Bind each cue to its program operation/resource,
+blocked/available input relation and source completion predicate: waited entity/actscript idle,
+camera/fade completion or returned blocking consumer as applicable. Non-waited actions may remain
+live; a whole script return cannot assert every animation finished. R2d's long-scene liveness hooks
+are not completion observations. Track only reached relevant cues, using accepted dialogue, program,
+entity/camera/screen and [audio](../design/contracts/audio-system.md) contracts; no hardware clock,
+frame/audio capture platform or screenshot is needed. For persistent music, observe selected command
+and source consumer dispatch, replacement/fade/stop when actually reached (including map/battle
+music selection); do not wait for or invent a track-end event. If no stop is reached, retain active
+music at terminal. Mailbox consumption alone does not prove audible output or all fade/resume
+semantics. **7C original audio asset identity/provenance remains independently open**, even if these
+command observations succeed; modern authored chords do not close it.
+
+### Minimum capability extension before any runtime decision
+
+The implementation inspection is read-only. Reuse
+[`prepare_map3_observation_candidate` / `run_map3_observation_candidate`](../../src/sf2tool/h3/map3_messenger_acceptance.py),
+the shared observer's `install_candidate`, `returned`, `sample`, `add_callback`, frame logging and
+`finalize_success`/failure restoration, and
+[`DebugBridge`](../../src/sf2tool/bizhawk_debug_bridge.py)'s serial connection, identity, explicit
+`step/state/ping/abort`, process receipt and containment. The
+[bridge composition owner](../operations/bizhawk-debug-bridge.md#map3-interactive-composition-offline-only)
+already owns transport. No new transport, automation service, input-policy engine or state authority
+is justified.
+
+Concrete extension points are necessary because the present candidate rejects programs beyond its
+Map3/gate/`cs_53104` set, rejects warps after first Map19, and sets `finish_pending` at first Map19
+movement acceptance. Its init-return booleans are specific to first entry. Replace only the selected
+continuation's terminal/phase predicates with the source-bound table above, preserving Map19 as an
+intermediate checkpoint and distinguishing repeated init calls by stack and selected setup/flags.
+Bind the additional callbacks to pinned source/H1/ROM through existing preparation checks. Extend
+pending-consumer tracking for reached waited actions/camera/fades and flag-caller returns; do not
+convert liveness into completion or silently allow arbitrary programs.
+
+Reuse the R2d reader shapes in
+[`map3_battle01_player_ready.py`](../../src/sf2tool/h3/map3_battle01_player_ready.py)'s
+`_static_contract`/`_observer_config` and Lua `extension_combatant`/`capture_extension_result`, but
+separate their read-only fields from the bridge requirements. Enabling `config.extension` wholesale
+is wrong: `seed_extension_terminal` writes flags, map/event/guard state, RNG and time, while existing
+`extension-check-battle` requires `extension_bridge_seeded`; result continuity is explicitly false
+and deterministic state contains a seeded block. Candidate callback registration also filters out
+ordinary `extension-*` roles. Integrate the source-bound reads under candidate dispatch, preserving
+shared-PC dispatch/error handling and recording acquired values instead of satisfying those bridge
+guards. Read the full word `MAP_EVENT_TYPE`, not only R2d's low-byte readiness projection. Derive
+modal/transfer/consumer readiness from actual state; do not copy its constant `cutsceneOrMenuModal=false`.
+
+The runner hardcodes 1800 seconds in preparation, run validation and `DebugBridge.start`, as well as
+28634 frames/2048 batches/120 frames per batch. Any new bounds require an explicit reviewed candidate
+configuration and consistent host/Lua enforcement. Existing candidate watchdog coverage is not a
+new-route progress proof. Add the bounded idle/progress accounting below to this same mechanism;
+no helper-test project, fixture duplication, aggregate gate, input generation or native dry run is
+part of #479. Future capability ownership must declare its exact source/observer/bridge paths and
+any required documentation before editing; this proposal owns only this audit.
+
+### Recommended endpoint, failure and preserved scope
+
+Proposed success is the **first natural player-ready callback at `0x22E70`**, within
+`ControlBattleEntity` (`0x22E1A`), after its `WaitForVInt` and before its input read. Require original
+before/start/load/generation returns, Map57/Battle1/area, F401 set/F501 clear/F451 set, actual region
+flags, ally actor matching the current turn/moving/view target, neutral current input, no targeting
+or committed battle action, event **word** zero, no pending script/text/prompt/transfer/modal and no
+unfulfilled blocking presentation consumer. Capture callback-time state and the completed frame
+separately. This bridge stops at frame end, not by suspending a CPU instruction: retain any later
+callbacks/state changes in that same neutral frame, skip the rest of the requested batch, and do not
+call the frame-end snapshot a before-input sample.
+
+Do not seed or demand actor1, order or RNG `0x1234`. To keep this admission-only proposal bounded,
+stop at a non-player first `ExecuteIndividualTurn` dispatch or any action-resolution entry before
+player-ready with an explicit **out-of-scope-before-player-ready** result. That is a coverage stop,
+not evidence that the original's legal AI turn is wrong. Record actual order/actor/state; no forced
+ally, hidden combat execution or retry. Whether the natural first dispatch permits the proposed
+success remains **Unknown**. Extending through intervening actions would require separate R3a–d
+observation coverage and review, not a runtime fallback.
+
+Other first stops are callback/source-identity/order/readback failure, unexpected setup/program/
+warp/FieldMenu or selected prompt decline, premature battle/defeat/victory, exhausted wall/frame/
+batch/idle/progress limit, malformed input, disconnect or abort. Preserve distinct typed reasons,
+last source checkpoint and actual delivered frames; a limit is an incomplete observation, not proof
+that a game wait cannot complete. Any restoration/callback/process/session-deletion failure defeats
+an otherwise reached endpoint. Keep `OBSERVATION-COMPLETE-UNREVIEWED` on a successful collector
+result until independent Research review; never emit replay/H4 PASS.
+
+A reviewed success could close the selected 2A castle/tower caller continuity and natural admission/
+first-player state portion of RA-02–RA-05, plus specifically observed 8D consumers. It cannot close
+natural battle actions/results/RNG draws (RA-06), victory/after-program/5B (RA-07/RA-12), remaining
+8D or H4. [R3a–d](map3-battle01-turn-control.md) and
+[R4a](map3-battle01-victory-return.md) remain reusable static evidence for a later winning trace:
+`BattleLoop_Victory` `0x23CBA`, `abcs_battle01` `0x496DC`, F401 clear→F501 set, D4=1,
+MainLoop/SwitchMap and the unentered `ExplorationLoop` call at `0x75E4` do not prove 5B. Reaching a
+stable controllable post-after-program state requires its own declared fields/consumer closure.
+The proposed player-ready run exits/restores too; absent a separately admitted retention mechanism,
+a later continuous winning observation must budget a fresh traversal again. This cost is explicit;
+it does not justify adding savestate/export or silently continuing into combat now.
+
+### Proposed ceilings and decision sequence
+
+All numbers below are **proposal only**, not a remaining allowance. #475 consumed **1778.575/1800
+seconds for 10329 frames and 200 batches**, including 355 bootstrap frames and 9974 operator frames.
+Only 21.425 seconds of its wall limit remained. Roughly 172 seconds of nominal 60-Hz emulated time
+is not 1778 seconds of emulation work: wall time includes host, native execution, log/transport and
+paused operator decisions. The retained result does not isolate those components, so no CPU speed
+or exact operator-idle measurement is claimed. The observed aggregate is about 5.8 completed
+frames/wall-second and 8.9 wall-seconds/batch, not a throughput guarantee.
+
+| Proposed ceiling | Rationale and required stop |
+| --- | --- |
+| One run API invocation, at most one owned native process start; no smoke/retry/reconnect | No automatic fourth-start right. A future explicit decision must identify this as an additional historical controlled start (total would become 4 if it starts), with the existing three and both controlled FAIL results intact. ADR 0015's present prohibition must be explicitly resolved by accepted capability/static review and a fresh user/main-gate decision; a new Issue does not reset it. Preflight failure also ends this proposed invocation. |
+| 7200 seconds from native launch, including startup and all paused time | Four times the exhausted prior ceiling, explicitly proposed for reacquisition plus two long scenes and downstream route. Check first Map19 by 2400 seconds and returned Map21 guard by 5700; missing either stops as stage-budget exhaustion, leaving 1500 seconds for R2c/before/start/readiness. These are stop-loss estimates, not predicted completion times. |
+| 36000 total emulator frames including bootstrap; 600 input batches; 1–120 frames each | R2b has 72 remaining navigation inputs after Map19 plus R2c's 46, alongside unshimmed palace/prompt/before-battle waits. Roughly 3.5 times prior completed frames at the observed aggregate would cost about 6200 wall seconds; 600 batches at the prior mean cost about 5336. Neither extrapolation proves feasibility, but both leave measurable headroom under 7200, unlike reusing 1800. Wall, frame and batch ceilings are independent; first reached wins. No frozen timing table is inferred from topology. |
+| 120 seconds paused without an accepted advancing batch; state/ping do not renew this deadline | Bounds a missing operator without consuming emulated time. Keep the existing 60-second startup/individual exchange limit. Enforce operator idle on the host too so a stalled native receive cannot evade it; prompt waiting is intentional only within these explicit limits. |
+| 3600 advanced frames without source-bound progress | Reset on a new program operation/return, actual relevant entity/camera/fade progress or accepted input/position change; repeated identical polling/liveness does not reset it. Paused host time consumes the idle/wall limits instead. Explicit source waits in the selected palace/before program are at most 60 each, but total entity/text-consumer duration is unmeasured; exceeding this 60 nominal-second window stops for review, never skips the wait or raises the cap. |
+| Existing teardown grace: 3 seconds wait, then owned-handle termination and 3 seconds wait | Zero extra gameplay frames/starts. Preserve primary failure and separate cleanup result. Forced containment proves process termination only; native EOF/abort restoration remains unproved by the successful #475 path. |
+
+Before any proposed run, a later capability slice must implement and independently review the exact
+checkpoint/readback/limit/typed-stop changes, including same-frame terminal and unsupported-first-AI
+handling. Only then may main-gate present the concrete method, estimates and stop-loss exception to
+the user for fresh explicit runtime approval. If these budgets or the bounded first-actor restriction
+are unacceptable, revise the static plan; do not launch to discover a better budget. Offline
+preparation/materialization is also separately scoped, and must not overwrite #473/#475/root-review
+material. No such API has been called for this proposal.
+
+Research would own the one process/controller and fresh ignored attempt output in the existing
+Research environment. Reuse installed immutable tools; do not attach to a stale process or share
+writable emulator state. Require launch identity/PID, actual command/frame/checkpoint reconciliation,
+Lua status and errors, all restoration domains, zero candidate callbacks, neutral input, process
+exit/timeout/forced-containment status, independent owned-survivor inspection, session-ROM deletion
+and canonical identity unchanged. Keep those results private and publish only the reviewed bounded
+projection. Stop/cleanup here means the runner's declared restoration and process teardown, not
+permission to delete retained evidence or remove worktrees/refs.
+
+The two controlled failures, actual three starts, disabled replay ordinal 1/2 timeout/cleanup failure
+and missing genuine receipts remain with their existing owners. Exact post-447 wait entry remains
+**Inferred**; #475's terminal still establishes no next-tile displacement. Remaining continuity,
+7C audio, remaining 8D, H4 and 5B retain their existing **Unknown** boundaries. This proposal supplies
+no new runtime evidence.
+
+Reproduce this proposal's checks by reading the named fixture JSON pointers and pinned source
+sections, the runner/observer functions above, and enumerating only the three named private evidence
+roots. Parse the small terminal/status/receipt projections read-only; do not load SaveRAM or execute
+retained analysis scripts. Check Markdown targets/anchors, exact one-file scope, public/private
+boundary and `git diff --check`; record exact Git identity and actual public CI in the Draft PR.
+For #479 specifically, the Issue restricts verification to these direct checks: the general planner
+command below is **NOT RUN**, as are all runtime APIs, H1/H2/H3, normal/full suites and helper tests.
+
 ## Documentation verification and handoff boundary
 
 This review reads accepted fixture fields and maintained source/contract owners without replaying
