@@ -141,47 +141,26 @@ Lua clears all exposed inputs, applies the chosen player-one button and records 
 frame before advancing again. Unsupported/malformed commands fail before input application and
 terminate the acquisition. A callback failure or terminal within a batch skips its remaining frames.
 
-For [Issue #485's explicit segmented selection](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485),
-the same input loop also accepts zero-argument `save` (`["save"]`). Only the Map3 observer's first
-three segment modes implement it; standalone bridge mode and other acquisition modes reject it.
-No arbitrary save/load path or memory command is exposed over TCP. Paths and parent material are
-fixed by offline preparation and the existing runner. The library exports its existing actual-core
-identity reader for checks before native save/load, without adding a general reflection API.
-State/step results expose the observer's shared `saveReadiness` predicate, unmet reasons and raw
-camera/scrolling/closure fields. An ordinary not-ready `save` returns `ok=true`, `terminal=false`,
-`advanced=0`, `save.status="not-ready"` and the same readiness structure. The existing host command
-path returns this typed result without resetting idle/deadlines; only an explicit advancing step
-renews the normal paused interval. The observer stays paused, creates no state/pair, performs no
-restoration and accepts subsequent explicit commands. Malformed/off-route, identity, callback,
-I/O and hard-budget failures remain fatal. A ready save still requires native API/file checks.
+For [Issue #485's segmented stabilization](../research/map3-messenger-acceptance.md#savestate-linked-segments-issue-485),
+the same loop also accepts zero-argument `save`. The observer supplies early closed checkpoints,
+live entity/consumer C readiness and original FieldMenu B recovery. `saveReadiness` and `inputReadiness`
+expose predicates; ordinary rejected saves/steps return typed `ok=true`, nonterminal, zero-frame
+results. They do not reset idle time or charge advancing batches. A batch is truncated when recovery
+begins or returns; replies report actual delivered frames without automatically finishing the batch.
+No new protocol command or generic bridge-library mutation is needed.
 
-The bridge subtracts previously consumed active-session seconds from the new process deadline and
-binds the initial runtime settings to the completed parent before Popen. Its receipt records actual
-launch/exit timestamps, cumulative historical starts when a native process is created, and elapsed
-time through teardown. The observer carries cumulative frames, batches and source/stage progress;
-the runner reconciles these with completed-frame records and publishes a state/evidence pair only
-after successful cleanup. Resume never causes the bridge to retry a failed process. Native state and
-callback restoration remain **Unknown** until admitted segmented acquisition; offline checks are not
-a native smoke or a new launch allowance. The original five-second standalone experiment is unchanged.
+The runner publishes immutable native-state/continuation pairs after cleanup and reconciles all actual
+consumption. Failed child attempts remain recorded and may be retried from a compatible complete
+parent; successful children require forward continuation. Runtime/core/observer/runner/source identity
+checks remain mandatory. Loaded RAM/register/frame equality and offline checks alone do not establish
+complete native continuity; actual early save/load/forward-save acceptance remains **Unknown**.
+The original standalone five-second idle experiment and its wall limit remain unchanged.
 
-The first admitted segmented invocation failed before hello during the observer's clock type
-initialization; the [failure/correction owner](../research/map3-messenger-acceptance.md#segment-1-clock-registration-failure)
-retains the actual start, zero delivered frames and unarmed restoration. The observer must load the
-`System` assembly before importing `System.Diagnostics.Stopwatch`, using the same explicit assembly
-loading convention as this bridge's `System.Windows.Forms` reader. Direct installed NLua/Lua/.NET
-verification now covers that previously stubbed boundary; it does not validate EmuHawk registration
-or authorize another process. Historical starts derive from reviewed initial accounting and actual
-parent receipts, independently of segment ordinal. Following the
-[completed camera-readiness failure](../research/map3-messenger-acceptance.md#segment-1-camera-readiness-failure),
-reviewed initial consumption is starts 5 / seconds 1556.4798537000315 / deliveredFrames 10740 /
-advancingBatches 174. Children inherit consumption exclusively from their sealed parent. Delivered
-resource frames are distinct from actual observer/emulator frames and R1 epochs; no clock is forged
-to carry failed-attempt consumption. Both host and observer retain cumulative deadlines.
-[Main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
-adopts Map19 by 3600 cumulative seconds, leaving 2043.5201462999685 seconds at this reviewed start.
-The host validates the runner's same limit dictionary passed into observer configuration; guard 5700,
-total 7200 and all other limits remain unchanged. This is a stage allowance, not native admission:
-final independent review/merge and concrete admission remain required. Old material stays immutable.
+Historical clock-registration, camera-readiness and wrong-facing failures are retained in the Map3
+owner. Their costs are inherited, not reset; current initial totals are starts 6 / active seconds
+2080.6977567999857 / delivered frames 13561 / advancing batches 225. The clock still uses explicit
+System assembly loading and Stopwatch. Cumulative time/stage/frame/batch/progress thresholds are now
+observations under the user's stabilization authorization, not hard stop conditions.
 
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall
@@ -209,20 +188,19 @@ private under the owning worktree's fresh ignored attempt directory.
 ### Natural Battle01 selection
 
 The [natural continuation capability](../research/map3-messenger-acceptance.md#natural-battle01-continuation-capability-offline-only)
-uses the same serial bridge and controller protocol. Only its exact selected `acquisition_limits`
-composition permits a proposed 7200-second host deadline; ordinary bridge/Map19 calls retain the
-1800-second maximum. `_interactive_limits` in the candidate owner supplies the reviewed configuration,
-including stage/frame/batch/progress limits. The [proposal](../research/map3-battle01-audit.md#proposed-ceilings-and-decision-sequence)
-retains their rationale and lack of runtime permission.
+uses the same serial bridge and controller protocol. Only this exact acquisition composition
+uses the stabilization policy supplied by `_interactive_limits`; ordinary bridge/Map19 calls retain
+their existing wall limits. Cumulative costs and progress remain visible without a historical total
+deadline terminating stabilization. No process is restarted automatically by the host.
 
-A separate host idle deadline contains the owned process after 120 paused seconds without an
-advancing batch. `state`/`ping` do not renew it. A valid step suspends that paused deadline during its
-bounded exchange; completion starts the next paused interval. Cancelled timer callbacks cannot kill a
-later interval. Startup and each exchange retain 60 seconds; teardown retains the existing 3+3 seconds.
-Lua also checks wall/stage/idle deadlines before accepting input and after completed frames, narrows
-its receive timeout to the earliest pending deadline, and checks frame/batch/source-progress limits.
-No extra frames are delivered when a stop occurs while paused. Native receive/EOF restoration remains
-Unknown; host containment does not prove graceful Lua cleanup.
+A host timer contains the owned process after 120 paused seconds without advancement. `state`, `ping`,
+save inspection and rejected steps do not renew it. During a step exchange the paused timer is
+suspended; a zero-frame rejection restores its previous absolute deadline, while actual advancement
+starts a new interval. Cancelled timer callbacks cannot kill a later interval. Startup and each
+exchange retain 60 seconds; teardown retains 3+3 seconds. Lua enforces idle/disconnection timeout and
+the bridge parser retains the 120-frame per-step maximum. No frames are filled in after a truncated
+batch. Native receive/EOF restoration remains **Unknown**; host containment does not prove graceful
+Lua cleanup.
 
 The response and host receipt preserve a typed stop reason. Successful restoration after AI-first is
 a coverage stop, and after a limit is an incomplete observation; neither is a player-ready result.
