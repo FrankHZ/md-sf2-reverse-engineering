@@ -176,8 +176,12 @@ parent receipts, independently of segment ordinal. Following the
 reviewed initial consumption is starts 5 / seconds 1556.4798537000315 / deliveredFrames 10740 /
 advancingBatches 174. Children inherit consumption exclusively from their sealed parent. Delivered
 resource frames are distinct from actual observer/emulator frames and R1 epochs; no clock is forged
-to carry failed-attempt consumption. Both host and observer retain cumulative deadlines. No native
-retry is admitted, and the original Map19 stage deadline remains pending feasibility review.
+to carry failed-attempt consumption. Both host and observer retain cumulative deadlines.
+[Main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
+adopts Map19 by 3600 cumulative seconds, leaving 2043.5201462999685 seconds at this reviewed start.
+The host validates the runner's same limit dictionary passed into observer configuration; guard 5700,
+total 7200 and all other limits remain unchanged. This is a stage allowance, not native admission:
+final independent review/merge and concrete admission remain required. Old material stays immutable.
 
 `DebugBridge.interact()` reads one JSON array per stdin line, such as `["state"]` or
 `["step", 1, "C"]`, and prints each JSON result. Waiting for a line consumes the same process wall

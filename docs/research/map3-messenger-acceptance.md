@@ -336,7 +336,7 @@ retried automatically. No completed state/evidence file is rewritten.
 All 36000 delivered frames (including initial bootstrap), 600 batches and 7200 active-session seconds
 are cumulative. Host active time includes startup, paused decisions and teardown; native launch/exit
 timestamps separately record the offline gap. Lua and host subtract previous active time; Map19's
-2400-second and returned-guard's 5700-second limits use that same cumulative clock. Their original
+3600-second and returned-guard's 5700-second limits use that same cumulative clock. Their original
 milestones, rather than the later save request, satisfy those stage deadlines. The 3600-frame source
 progress counter carries across load without renewal. A fresh 120-second paused operator interval
 starts after a verified load, within the remaining active budget. Startup/exchange remains 60 seconds,
@@ -421,16 +421,17 @@ parent inheritance, reconciliation and unchanged host deadlines. Drivers and res
 under `local/issue485/`; no helper tests or native process were added. These checks do not prove actual
 native save/load or the time needed to settle the camera.
 
-**Inferred feasibility / pending policy review:** remaining total resources are
-**5643.5201462999685 seconds, 25260 frames and 426 batches**. The unchanged cumulative Map19 deadline
-of 2400 leaves only **843.5201462999685 seconds**, **708.6699189000646** less than the previous
-reacquisition cost before any additional readiness wait. Repeating that cost would reach cumulative
-**3108.6699189000646 seconds**. The smallest policy surface to reconsider is only this first stage's
-absolute cumulative deadline; a proposed **3600 seconds** would allow **2043.5201462999685 seconds**
-for reacquisition (491.3300810999354 above the last cost). This is a review proposal, not a performance
-guarantee or implemented increase. The code and fresh prepare-only material retain 2400; total 7200,
-guard 5700, frame/batch/progress/idle limits remain unchanged. Main-gate must resolve this infeasibility
-against observed cost and admit exact material before any future process. No retry, replay, smoke,
+**Confirmed adopted policy:** [main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
+sets only the first Map19 absolute cumulative deadline to **3600 seconds**. Remaining total resources
+are **5643.5201462999685 seconds, 25260 frames and 426 batches**; reviewed prior consumption is unchanged.
+The former 2400 deadline left only 843.5201462999685 seconds, below the last reacquisition cost.
+The adopted deadline leaves **2043.5201462999685 seconds**, **491.3300810999354** above that observed
+cost. This is an allowance, not a prediction or guarantee of reaching a saveable boundary. The runner,
+host limit validation and generated observer configuration consume this same stage value. Total 7200,
+guard 5700, frame/batch/progress/idle limits remain unchanged. `prepared-05` and prior material remain
+immutable; new prepare-only material records the adopted limit without granting execution. Main-gate
+must independently accept/merge the final material and issue concrete admission before any process.
+No retry, replay, smoke,
 backup-state search or broader verification queue is authorized; Issue #485 remains open.
 
 ### Segment 1 clock registration failure

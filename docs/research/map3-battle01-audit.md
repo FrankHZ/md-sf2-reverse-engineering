@@ -612,11 +612,14 @@ malformed/off-route/identity/I/O/callback/budget failures retain their stops. Th
 passed player/closure checks but rejected camera equality; its raw camera values and extra settling
 time are **Unknown**. Original source masks are now ROM-bound and added without removing that guard.
 The 36000 frames/600 batches and 7200
-active-session seconds remain cumulative. First Map19 by 2400 and returned guard by 5700 use cumulative
-active time, so loading cannot renew either stage allowance. Only 843.5201462999685 seconds remain
-before Map19's current deadline, below the last 1552.1900652000331-second reacquisition. The Map3 owner
-proposes changing only that deadline to 3600 for main-gate review; this is not implemented, admitted or
-a completion prediction. Other caps stay unchanged. The 3600-frame progress clock carries
+active-session seconds remain cumulative. First Map19 by **3600** and returned guard by 5700 use
+cumulative active time, so loading cannot renew either stage allowance.
+[Main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
+adopts only that first-stage change: it leaves 2043.5201462999685 seconds before Map19, 491.3300810999354
+above the last 1552.1900652000331-second reacquisition. This allowance is not a completion prediction.
+Other caps and reviewed consumption stay unchanged. Fresh prepare-only material replaces no old
+artifact and grants no native admission; final independent review/merge and concrete admission are
+still required. The 3600-frame progress clock carries
 forward; offline gaps are separately recorded. Original first-AI/action/decline/failure stopping
 rules remain, with no forced order or intervening combat. Native compatibility belongs to admitted
 segments, not an additional smoke process. Existing #475 raw, #483 preparation and prior failures

@@ -103,17 +103,19 @@ predicate. This supersedes the earlier all-save-rejections-fatal policy; malform
 identity, callback, I/O and hard-budget failures still end the attempt.
 
 The limits are cumulative: 36000 delivered frames, 600 batches of 1–120 frames, 7200 seconds of active
-native-session time including paused decisions, first Map19 by 2400 active seconds and returned guard
+native-session time including paused decisions, first Map19 by 3600 active seconds and returned guard
 by 5700. Source-progress 3600 advanced frames survives resume; paused operator idle 120 seconds,
 startup/exchange 60 seconds and teardown 3+3 seconds retain their existing meanings. Offline gaps
 are recorded separately and advance no frames. A saved frame is distinct from the earlier terminal
 callback. This is **savestate-linked segmented original acquisition**, not uninterrupted wall-time
 execution, frozen replay, natural visible New/load, or H4. Native save/load compatibility and complete
 observation continuity remain **Unknown** until admitted native segments and independent acceptance.
-The Map3 owner's current feasibility analysis finds only 843.5201462999685 seconds left before the
-unchanged Map19 deadline, below the last 1552.1900652000331-second reacquisition. Its proposal to change
-only that stage deadline to 3600 is pending main-gate review, not adopted or implemented here. All
-other limits remain fixed; fresh preparation remains NOT-ADMITTED.
+[Main-gate decision 5752243620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752243620)
+adopts only the Map19 cumulative deadline change to 3600. With unchanged reviewed consumption, this
+leaves 2043.5201462999685 seconds before Map19, 491.3300810999354 above the last observed reacquisition
+cost. This is an allowance, not a prediction. All other limits remain fixed. Preserve `prepared-05`
+and all earlier failures/material; fresh preparation remains NOT-ADMITTED until final independent
+review/merge and a separate concrete runtime admission.
 
 ### Use distinct names and evidence owners
 

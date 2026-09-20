@@ -1104,7 +1104,7 @@ def _interactive_limits(continuation: str | None) -> dict[str, int]:
             "totalFrames": 36000,
             "maxBatches": 600,
             "maxBatchFrames": 120,
-            "map19Seconds": 2400,
+            "map19Seconds": 3600,
             "guardSeconds": 5700,
             "idleSeconds": 120,
             "progressFrames": 3600,
