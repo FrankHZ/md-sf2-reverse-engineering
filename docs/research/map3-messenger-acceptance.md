@@ -74,8 +74,9 @@ session ROM is deleted; canonical ROM bytes are rechecked unchanged.
 `run_map3_observation_candidate` to the existing Python owner, with an opt-in `candidate` mode in
 the same observer. The old command, default R2a cases, schemas and observed fixture remain unchanged.
 Neither Python function is wired into the CLI. Preparation performs no original emulator launch;
-execution requires an independent method and lineage/budget disposition. The single separately
-admitted diagnostic below failed and exhausted its permission. A successful API return would be
+execution requires an independent method and lineage/budget disposition. The two separately
+admitted diagnostics below failed and exhausted their respective permissions. A successful API return
+would be
 `OBSERVATION-COMPLETE-UNREVIEWED`, never a public golden or H4 verdict.
 
 The controlled prefix still uses the accepted CheckSram return redirect, checkpoint/menu thunk,
@@ -391,3 +392,77 @@ correction. Selected runtime gates are **NOT RUN**. The frame499/input145/PID424
 candidate execution, old H3 or replay preflight is authorized. Normal/full/H1 results and prior
 failures remain preserved without rerun. Independent main-gate review of this frozen correction
 precedes any decision on further work; code/materialization PASS never triggers a retry or closes #437.
+
+## Corrected candidate single-run result
+
+**Confirmed failure, 2026-09-19 project date (2026-09-20 02:42 UTC):**
+[Issue #465's exact main-gate disposition](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/465)
+admitted only the retained corrected candidate once, from accepted commit
+`07dce82ac1f157e626521549aa30b62c0a064165`, tree `dff51195c746619ba4953c73a2dc71a255367399`.
+The accepted MAP_CURRENT correction above was the sole capability change from the failed #460
+attempt. Under ADR 0015's further-work condition this was the **second actual native process start
+of the controlled-observation method**. It consumed #465's entire permission; no third controlled
+start or frozen acceptance is reserved. The disabled replay's separate ordinal 1/2 consumption,
+ordinal-2 timeout/cleanup **FAIL**, missing genuine receipts/ledger, ordinal-3 prerequisites and
+no nominal reset/fourth-attempt rule remain unchanged. PID 42464 / frame 499 / input 145 / exit 1
+from #460 remains **FAIL**, with all original artifacts and cleanup records preserved.
+
+The retained `candidate-02` preparation used the same 23,234 input frames as #460, a 28,634-frame
+watchdog and a 600-second hard timeout. Before the one `run_map3_observation_candidate` call,
+read-only checks verified the accepted Git tree, no competing writer/emulator, absent runtime,
+canonical ROM, complete retained source/helper/bootstrap/tool/fixture/listing identities and limits.
+The ignored invocation note was written first. No material was regenerated, warmed up or repaired;
+no old H3/replay command or alternative input was run. Frozen SHA-256 identities were:
+
+| Material | SHA-256 |
+| --- | --- |
+| Input | `37544D8C526F41A60D13B79971744D0A99303BCB08E407FBB1AE01C8AD7F1145` |
+| Python runner | `BC0A62798DDDC4128C719E35A3C504F08FD9D634B64F9AE682614980872BAEB5` |
+| Lua observer | `264C75201CCE8C4A1DAB1F2D63057395E0359EE51C7A4CAEB1C5C8327E23679D` |
+| Configuration | `30E80814C4A6D240484E515253BFD98835112E2ED2976422C29AC478374B5682` |
+
+**Confirmed bounded observations:** the 72 retained checkpoints include the original first warp
+handler at `0x25978`, frame 499 / input 145: no-scroll raw map 255, observed current/effective map 3,
+source `(55,3)`, movement target `(54,3)`, destination `(3,3)` / Right. Unlike the old failed attempt,
+execution continued to the original controller read at frame 643 / input 289 with Map 3 `(3,3)`,
+Right and no pending map event. This establishes post-warp control for this house transition;
+the effective-map calculation alone would not establish it. The same frame records movement
+acceptance and zone dispatch toward `(4,4)`, followed by `cs_5145C` (`0x5145C`) entry and its
+stack-matched return at frame 1167 / input 813. These are reached callbacks, distinct from the
+static school/north warp expectations above; neither school warp was reached.
+
+**Confirmed failure boundary:** the original `FieldMenu` entry at `0x2127E` triggered
+`candidate:unexpected-field-menu` in phase `candidate-route`, frame **1749 / input 1395**.
+The observer's expected and actual PC agree. The last checkpoint before the failure record is
+`field-menu:reached`; readback is Map 3 `(4,4)`, F601 set, F603/F604 clear, map-event word 0,
+typewriting 0 and zero tracked pending returns. The frozen house-exit acknowledgement block had
+supplied C at input frames 1393–1394; the original controller read at 1393 records that C, and
+1395 is already neutral. Thus this fixed trace actually reaches the forbidden menu after the
+opening script returns. It does not establish that the original route is impossible or that
+any particular alternate timing would succeed. No menu choice/return/effect, corrected entity142
+interaction, messenger/R2a boundary, gate/F604, north warp or Map19 terminal was observed.
+
+**Confirmed process and cleanup:** native PID **26448** started once and exited **1**, with
+`timed_out=false`, `process_terminated=true` and `timeout_tree_killed=false`. Host status is
+`FAIL` / `started-failure`. Lua reports callback count zero, output removal and every recorded
+scope/session restoration flag true. The host records session ROM deletion and unchanged canonical
+ROM. An independent post-exit OS scan found neither the owned PID nor a process attributable to
+this runtime copy; no extra process/tree termination was needed. Runtime copies, generated config,
+checkpoints, typed status and full stdout/stderr remain private and retained. No terminal observation
+exists. The API interval 02:42:04.211612–02:42:40.001038 UTC includes preparation/cleanup and is not
+an exact native-runtime measurement.
+
+Read-only reproduction uses `local/issue465/invocation-note.json`, `result-review.py`,
+`result-summary.json` and `process-survival.json`, with the retained
+`local/issue463/candidate-02/runtime/host-status.json`, `observer.status.txt` and `checkpoints.jsonl`.
+Load the current ignored private-input configuration, then run
+`uv run python -P -X utf8 local/issue465/result-review.py` with a fresh summary output name.
+Inspect the named accepted Git object and unchanged input for the source
+expectations and callback checks; do not invoke the candidate again. Direct result, material,
+document/scope checks and the committed planner validate this report, not successful gameplay.
+
+**Unknown:** later fixed-input timing/reach, the original gate/F604/north transition, first Map19
+control, general callback compatibility and the continuous milestone remain open. No public golden,
+full 8D or H4 result is promoted. Normal/full/H1/H2/H3 queues and new tests are excluded from this
+result-only scope. The diagnostic stops here regardless of further hypotheses; independent
+main-gate review of this result does not authorize another launch or complete #437.
