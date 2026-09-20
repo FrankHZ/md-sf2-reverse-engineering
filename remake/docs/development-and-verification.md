@@ -39,6 +39,12 @@ justify copying the project, extracting another editor, or building a debug fram
 Load the existing ignored host/worktree environment before every SDK command, including informational
 commands. Select one existing absolute `DOTNET_BIN` and one absolute `DOTNET_CLI_HOME` shared by this
 project's worktrees. Force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` at the actual child launch.
+The ignored machine configuration places complete .NET and Godot installations beneath its selected
+shared tool root; `GODOT_BIN` selects the editor and `$godotBinary = $env:GODOT_BIN` supplies the
+examples below. Reuse those installations without repeating setup or gates merely to change paths.
+The maintained .NET helper preserves valid local NuGet selections, rejects external cache paths and
+selects worktree-local TEMP/TMP. See the [shared tool owner](../../docs/operations/local-private-inputs.md)
+for the BizHawk runtime-copy exception and preparation/runtime distinction.
 The maintained entrypoints reject missing/relative selections. No launch may change registry PATH.
 
 The SDK otherwise adds its tools directory by default; a new CLI home can repeat first-run setup.

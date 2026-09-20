@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from sf2tool.h3.bizhawk import validate_lua_syntax
+from sf2tool.h3.bizhawk import bizhawk_contract, materialize_bizhawk_launch, validate_lua_syntax
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
@@ -129,8 +129,7 @@ class DebugBridge:
     def start(self) -> dict[str, Any]:
         if self.listener is not None:
             raise RuntimeError("bridge already started")
-        toolchain = load_json(repo_path("manifests/toolchain.json"))["bizhawk"]
-        executable = _local_destination(repo_path(toolchain["localExecutablePath"]))
+        toolchain, executable = bizhawk_contract()
         if (
             executable.stat().st_size != toolchain["executableSizeBytes"]
             or hashlib.sha256(executable.read_bytes()).hexdigest().upper()
@@ -156,11 +155,13 @@ class DebugBridge:
             "AutosaveSaveRAM": False,
             "BackupSaveram": False,
         }
-        config_path = self.output / "config.json"
-        config_path.write_text(json.dumps(config), encoding="utf-8")
+        launch = materialize_bizhawk_launch(self.output, config=config)
+        executable = Path(launch["executable"])
+        config_path = Path(launch["config"])
         token = secrets.token_hex(16)
         environment = {
             **os.environ,
+            **launch["environment"],
             "SF2_BRIDGE_TOKEN": token,
             "SF2_BRIDGE_JSON": str(repo_path("tools/bizhawk/json.lua")),
             "SF2_BRIDGE_STATUS": str(self.output / "lua-status.json"),
@@ -189,7 +190,7 @@ class DebugBridge:
                 f"--socket-port={port}",
                 str(self.output / "input.bin"),
             ],
-            cwd=executable.parent,
+            cwd=launch["cwd"],
             env=environment,
             stdin=subprocess.DEVNULL,
             stdout=self.log,
