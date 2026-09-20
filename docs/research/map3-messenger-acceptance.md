@@ -635,7 +635,7 @@ the six return-stack checks and 17 stabilization checks pass. Normal `uv run sf2
 Fresh `prepared-28` passes offline source/H1/ROM and Lua preparation on the corrected observer with
 the reviewed cumulative costs below; it has not launched at this source handoff.
 
-Current consumption is **25 actual starts / 5629.673442000174 charged seconds / 60271 resource frames /
+Consumption before the window-count-compatible chain was **25 actual starts / 5629.673442000174 charged seconds / 60271 resource frames /
 1121 advancing batches**, preserving every failed branch. Read-only reconciliation is retained in
 `summarize-corrected.py` and `corrected-summary-through27.json`; individual candidate, input,
 checkpoint, process and pair receipts remain authoritative. New source identity requires another
@@ -643,6 +643,82 @@ fresh compatible chain after independent acceptance; do not waive or rewrite par
 **Unknown:** native acceptance of all corrected final guards, final evidence-only frame, native menu
 recovery, battle actions/victory/5B and H4. #485/#437 remain open; the first-player-ready objective
 continues under the existing stabilization authorization.
+
+### Movement-grid palette failure and correction
+
+**Confirmed:** [PR #493](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/493) is accepted at
+`d5e9a6cf7aa7a4c8d0e0aff399aa752972b8fbd6` (tree `e8344883fb426bb504f6769c82f98daf16c01249`).
+Its observer `F5859C05A4D43A837973BCA95F6B87E974C928EB5FC0E88FE40CF5821A89B218` and unchanged
+runner form a fresh compatible chain with all prior consumption inherited. CI run 35543107750 passes
+scope/research-public; engine/adapter are skipped. The finite operator completes the entire fresh
+R1→house→Sarah→Astral→messenger prefix, including actual `WaitForPlayerInput`, without manual fallback.
+Source identity stays frozen through all five attempts; only the ignored summary label changes from
+`frames` to `requestedFrames`. Actual costs always come from delivered input records.
+
+| Prepared attempt / actual start | Parent; logical frames | Result | New resource frames / batches / seconds |
+| --- | --- | --- | --- |
+| 28 / 26 | fresh; 0→8605 | Messenger rank 4; 32 ready-checked C | 8605 / 134 / 174.67164269997738 |
+| 29 / 27 | 28; 8605→10386 | Map19 rank 5 | 1781 / 33 / 42.078283500042744 |
+| 30 / 28 | 29; 10386→15606 | Royal rank 6 | 5220 / 77 / 99.46084710001014 |
+| 31 / 29 | 30; 15606→17740 | Guard rank 7 | 2134 / 46 / 53.35756550001679 |
+| 32 / 30 | 31; 17740→22368 | Final palette predicate failure; no pair | 4628 / 181 / 95.60115339996992 |
+
+Main-gate independently accepts parents 28–31 and reconciles failure 32. Fresh R1 epochs remain
+355/354; later children load before input without another bootstrap. Royal closure at 15548/Left
+is distinct from its Down-facing save at 15606; guard caller closure at 17679 `(4,16)` is distinct
+from its `(5,15)`/Down save at 17740. Successful native pairs, clocks, orders and cleanup pass.
+
+**Confirmed (failed observation):** attempt 32, PID 41396, reaches the actual first player-input PC
+`0x22E70` at observer frame 22368 / emulator frame 22367, after the original lifecycle and first
+dispatch of actor 2. Diagnostic order 52983 records window count 2, `fading=5`, and
+`cutsceneOrMenuModal=false`; input, targeting, action, event word, typewriting, dialogue/portrait
+indices and effective scrolling are all explicitly zero. The corrected window-count handling now
+passes at the native boundary. The remaining `fading == 0` condition rejects this actual state,
+producing failure 52984; total record order is 41973–52986. The final neutral120 delivers only 6
+frames, with no later battle input. Exit 1 has no timeout/forced termination; loaded-entry restoration,
+callback removal, partial-output removal, session deletion and canonical ROM identity pass. This is
+a completed failed observation, not a passed ready point or a mere local readback-format error.
+
+**Confirmed (pinned source/H1/ROM):** `FADING_SETTING` at `0xFFDEF0` selects palette effects, including
+nonblocking movement-grid pulsation. `sf2enums.asm` defines `PULSATING_1=5`.
+`CreatePulsatingBlocksForGrid` in `code/gameflow/battle/battlefunctions/battlefunctions_0.asm` writes
+5 at `0x22CD4` and returns through `CheckMapLayerType`. `ExecuteIndividualTurn` calls it at
+`0x23F88`→`0x22C84` before `ProcessBattleEntityControlPlayerInput`. The fifth mode starts at
+`table_FadingData+32` (`0xB3E`) in `data/tech/fadingdata.asm`; its `0x88` command at offset 10 sends
+the palette pointer back eight places. `ApplyFadingEffect` in
+`code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm` handles that loop instead of the
+`0x80` end marker. Thus mode 5 remains active during player movement; waiting for zero at this seam
+cannot establish readiness. This is not an unfinished screen transition.
+
+The final-only correction admits mode 0 or this source-selected mode 5 and records
+`paletteModeAllowed` with the raw setting. Other modes remain rejected at this bounded seam; this
+does not classify every other palette mode as universally blocking. All other actual guards and the
+field/save `fading == 0` checks remain unchanged. Runner, RAM configuration, original state, input
+logic and parent identity rules are unchanged. Corrected observer SHA is
+`42DA091C807A6BC0262317E168D9519F4AFF5C0ACC1E97EBE4928DF4185FC3BB`.
+
+Direct actual-callback verification under window count 2/mode 5 reproduces the old rejection and
+passes the corrected 31-case local check (two allowed states, 15 retained invalid-state controls and
+14 other palette modes). Main-gate independently passes 271 cases covering both allowed byte modes,
+all 254 other byte values and 15 existing guard negatives. Retained commands are
+`uv run python -X utf8 local/issue485/check-player-ready-pulse.py <fresh-output> after` and
+`uv run python -X utf8 local/issue485/check-grid-pulse-source.py`, after loading private configuration.
+For the old body, supply the observer extracted from `d5e9a6cf` as the driver's fourth argument and
+use `before`; that mode does not itself select historical source. The source check binds setter,
+call and input instructions to H1/ROM. H1 truncates the long table row, so only its displayed eight-byte
+prefix is compared as H1 evidence; the full row and loop byte are compared directly from pinned source
+to canonical ROM. The initial incomplete-listing-span diagnostic is retained, not interpreted as a
+ROM mismatch. Six return-stack and 17 stabilization checks pass; normal `uv run sf2 verify` passes
+148 tests and document/index/ROM/toolchain checks. No verification-helper tests are added.
+
+Current cumulative consumption is **30 actual starts / 6094.842934200191 charged seconds /
+82639 resource frames / 1592 advancing batches**. Read-only reconciliation is retained in
+`corrected-summary-through32.json`; authoritative receipts and all prior failures, including attempt
+21's final cleanup Unknown, remain intact. Fresh `prepared-33` passes offline source/H1/ROM and Lua
+preparation without a launch for another compatible chain after source acceptance; no old source
+parent may be reused. **Unknown:** native
+acceptance of the corrected final palette guard and evidence-only final frame. Battle actions,
+victory/5B, native menu recovery and H4 also remain **Unknown**. Both Issues remain open.
 
 ### Segment 1 wrong-facing failure
 

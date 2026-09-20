@@ -600,7 +600,12 @@ first actor is 2, and `0x22E70` is reached at frame 22348, but the final predica
 window count 2. First player-ready acceptance remains **Unknown**. The source/H1/ROM-confirmed
 correction distinguishes the nonblocking mini status display from actual modal consumers and retains
 all other guards. Failed attempts and costs remain evidence; the new observer needs a fresh compatible
-chain without a parent identity waiver. H4 remains **Unknown**.
+chain without a parent identity waiver. The [next compatible chain](map3-messenger-acceptance.md#movement-grid-palette-failure-and-correction)
+confirms that window-count correction but fails the remaining palette guard at frame 22368:
+`FADING_SETTING=5` is the original movement-grid `PULSATING_1` mode. Its diagnostic explicitly records
+all other guard fields as ready. The final-only source correction accepts idle mode 0 or that selected
+nonblocking pulse while retaining other guards. Its native acceptance still requires another compatible
+chain. Neither failure produces a terminal pair. H4 remains **Unknown**.
 
 The current [Issue #485 method amendment](map3-messenger-acceptance.md#savestate-linked-segments-issue-485)
 supersedes this proposal's single-process/no-savestate choice and request for fresh user confirmation
@@ -617,7 +622,8 @@ recent source field-control poll predicates. These are **Inferred** safe resumab
 source and observer structure, with **Confirmed** offline predicate rejection checks; their actual
 Map19/royal/guard saves and later loads are now **Confirmed** on both completed observer chains.
 The first final-segment failure was at BattleLoop admission; the next reached the first input PC and
-failed the window-count predicate. Neither produces a passed terminal pair. The corrected final
+failed the window-count predicate; the following chain fails the movement-grid palette predicate.
+None produces a passed terminal pair. The corrected final
 guards need native validation on a fresh compatible chain. The final frame is evidence only, not resumable.
 Callback-time player-ready and later saved frame remain separate. The implementation must not repeat
 R1 bootstrap, reconstruct original state manually or silently abandon observer continuity on load.
