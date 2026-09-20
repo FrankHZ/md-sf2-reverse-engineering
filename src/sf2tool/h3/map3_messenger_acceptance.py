@@ -7,18 +7,21 @@ import re
 import shutil
 import subprocess
 import tempfile
+from dataclasses import asdict
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 from sf2tool.h3 import map3_admitted_start as r1
 from sf2tool.h3.bizhawk import (
+    NativeProcessResult,
     _lua_literal,
     bizhawk_contract,
     run_observer,
     validate_lua_syntax,
     verify_runtime_contract,
 )
+from sf2tool.h3.bootstrap import BOOTSTRAP_LIBRARY
 from sf2tool.h3.observer_status import (
     SUCCESS_STATUS_TAIL,
     assert_observer_status,
@@ -801,6 +804,19 @@ def verify_map3_messenger_acceptance(
     }
 
 
+def _candidate_execution_sources() -> dict[str, str]:
+    """Bind the executed launch/bootstrap helpers, beyond the observer/runner."""
+    return {
+        name: sha256(repo_path(name).read_bytes()).hexdigest().upper()
+        for name in (
+            "src/sf2tool/h3/bizhawk.py",
+            "src/sf2tool/h3/bootstrap.py",
+            "src/sf2tool/toolchain.py",
+            BOOTSTRAP_LIBRARY.relative_to(repo_path(".")).as_posix(),
+        )
+    }
+
+
 def prepare_map3_observation_candidate(
     rom_path: Path,
     upstream_path: Path,
@@ -1055,6 +1071,7 @@ def prepare_map3_observation_candidate(
         },
         "ObserverSha256": sha256(OBSERVER.read_bytes()).hexdigest().upper(),
         "RunnerSha256": sha256(Path(__file__).read_bytes()).hexdigest().upper(),
+        "ExecutionSources": _candidate_execution_sources(),
         "ExecutableSha256": executable_hash,
         "LuaLibrarySha256": sha256((executable.parent / "dll/lua54.dll").read_bytes())
         .hexdigest()
@@ -1099,48 +1116,115 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
     directory = candidate_directory.resolve(strict=True)
     if not directory.is_relative_to(repo_path("local").resolve()):
         raise ValueError("candidate must remain in the owning worktree's ignored local directory")
-    report = load_json(directory / "candidate.json")
-    _, executable = bizhawk_contract()
-    for path, field in (
-        (OBSERVER, "ObserverSha256"),
-        (Path(__file__), "RunnerSha256"),
-        (executable, "ExecutableSha256"),
-        (executable.parent / "dll/lua54.dll", "LuaLibrarySha256"),
-        (directory / "config.json", "ConfigurationSha256"),
-        (directory / "input.json", "InputSha256"),
-    ):
-        if sha256(path.read_bytes()).hexdigest().upper() != report[field]:
-            raise ValueError(f"frozen candidate identity drift: {field}")
-    canonical = inspect_rom(rom_path)["sha256"]
-    if canonical != report["RomSha256"] or canonical != r1.CANONICAL_ROM_SHA256:
-        raise ValueError("candidate canonical ROM identity drift")
-    timeout_seconds = report["ProposedWallTimeoutSeconds"]
-    if type(timeout_seconds) is not int or timeout_seconds <= 0:
-        raise ValueError("candidate is missing its reviewed positive wall-time limit")
-    config = load_json(directory / "config.json")
-    if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
-        raise ValueError("candidate frame table differs from its frozen input")
-    # mkdir without exist_ok prevents retries from overwriting any attempt.
+    # Reserve the attempt before validation, retaining pre-process failures too.
+    # A collision never overwrites or cleans up an earlier attempt.
     runtime = directory / "runtime"
     runtime.mkdir()
-    config["candidate"]["checkpointPath"] = (runtime / "checkpoints.jsonl").as_posix()
     session = runtime / "session.bin"
+    canonical: str | None = None
     diagnostic: dict[str, Any] = {
         "kind": "candidate-host-status",
         "status": "FAIL",
-        "stage": "session-copy",
+        "stage": "identity",
+        "process": {
+            "started": False,
+            "pid": None,
+            "returncode": None,
+            "stdout": None,
+            "stderr": None,
+            "timed_out": None,
+            "process_terminated": None,
+            "timeout_tree_killed": None,
+            "error": None,
+        },
+        "launch": None,
+        "sessionRomDeleted": None,
+        "canonicalRomUnchanged": None,
+        "artifacts": {
+            "luaStatus": "observer.status.txt",
+            "checkpoints": "checkpoints.jsonl",
+            "observation": "observer.observed.json",
+        },
     }
+
+    def persist() -> None:
+        (runtime / "host-status.json").write_text(
+            json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8"
+        )
+
+    def prepared(launch: dict[str, Any]) -> None:
+        diagnostic["launch"] = launch
+        identities = {
+            "ExecutableSha256": Path(launch["executable"]),
+            "LuaLibrarySha256": Path(launch["executable"]).parent / "dll/lua54.dll",
+            "RuntimeSettingsSha256": Path(launch["config"]),
+            "RuntimeObserverConfigSha256": Path(launch["observerConfig"]),
+        }
+        diagnostic["runtimeIdentities"] = {
+            key: sha256(path.read_bytes()).hexdigest().upper() for key, path in identities.items()
+        }
+        persist()
+        for key in ("ExecutableSha256", "LuaLibrarySha256"):
+            if diagnostic["runtimeIdentities"][key] != report[key]:
+                raise ValueError(f"candidate runtime-copy identity drift: {key}")
+
+    def started(pid: int) -> None:
+        diagnostic["stage"] = "process-started"
+        diagnostic["process"].update(started=True, pid=pid)
+        persist()
+
+    def timed_out() -> None:
+        diagnostic["stage"] = "process-timeout"
+        diagnostic["process"]["timed_out"] = True
+        persist()
+
+    def completed(result: NativeProcessResult) -> None:
+        diagnostic["process"] = asdict(result)
+        diagnostic["stage"] = "process-ended"
+        persist()
+
+    persist()
     try:
+        report = load_json(directory / "candidate.json")
+        diagnostic["reviewedMaterial"] = report
+        if _candidate_execution_sources() != report["ExecutionSources"]:
+            raise ValueError("frozen candidate execution helper/bootstrap identity drift")
+        _, executable = bizhawk_contract()
+        for path, field in (
+            (OBSERVER, "ObserverSha256"),
+            (Path(__file__), "RunnerSha256"),
+            (executable, "ExecutableSha256"),
+            (executable.parent / "dll/lua54.dll", "LuaLibrarySha256"),
+            (directory / "config.json", "ConfigurationSha256"),
+            (directory / "input.json", "InputSha256"),
+        ):
+            if sha256(path.read_bytes()).hexdigest().upper() != report[field]:
+                raise ValueError(f"frozen candidate identity drift: {field}")
+        canonical = inspect_rom(rom_path)["sha256"]
+        if canonical != report["RomSha256"] or canonical != r1.CANONICAL_ROM_SHA256:
+            raise ValueError("candidate canonical ROM identity drift")
+        timeout_seconds = report["ProposedWallTimeoutSeconds"]
+        if type(timeout_seconds) is not int or timeout_seconds <= 0:
+            raise ValueError("candidate is missing its reviewed positive wall-time limit")
+        config = load_json(directory / "config.json")
+        if config["candidate"]["frames"] != load_json(directory / "input.json")["frames"]:
+            raise ValueError("candidate frame table differs from its frozen input")
+        config["candidate"]["checkpointPath"] = (runtime / "checkpoints.jsonl").as_posix()
+        diagnostic["stage"] = "session-copy"
+        persist()
         shutil.copy2(rom_path, session)
-        diagnostic["stage"] = "observer-process"
-        # The helper appends suffixes to output_name; an absolute, contained stem
-        # retains its process/timeout behavior and keeps every output in this run.
+        diagnostic["stage"] = "observer-preparation"
+        persist()
         observed = run_observer(
             rom_path=session,
             observer_path=OBSERVER,
             config=config,
             output_name=(runtime / "observer").as_posix(),
             timeout_seconds=timeout_seconds,
+            on_launch=prepared,
+            on_started=started,
+            on_timeout=timed_out,
+            on_result=completed,
         )
         diagnostic["stage"] = "status-and-terminal"
         # The candidate has private phase/role diagnostics, not the legacy
@@ -1164,26 +1248,44 @@ def run_map3_observation_candidate(rom_path: Path, candidate_directory: Path) ->
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
     except Exception as error:
-        diagnostic["failureKind"] = "timeout" if "timed out" in str(error) else "error"
+        process = diagnostic["process"]
+        diagnostic["failureKind"] = (
+            "timeout"
+            if process["timed_out"] is True
+            else "started-failure"
+            if process["started"]
+            else "pre-process-failure"
+        )
         diagnostic["errorType"], diagnostic["error"] = type(error).__name__, str(error)
         raise
     finally:
+        # Attempt both cleanup checks independently, preserving the primary failure
+        # and available Lua status/checkpoints even when either cleanup step fails.
+        cleanup_errors = []
         try:
             session.unlink(missing_ok=True)
             diagnostic["sessionRomDeleted"] = not session.exists()
-            diagnostic["canonicalRomUnchanged"] = inspect_rom(rom_path)["sha256"] == canonical
-            if not diagnostic["canonicalRomUnchanged"]:
-                raise ValueError("canonical ROM changed during candidate execution")
         except Exception as error:
-            diagnostic["status"], diagnostic["cleanupError"] = "FAIL", str(error)
-            raise
-        finally:
-            (runtime / "host-status.json").write_text(
-                json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8"
-            )
+            diagnostic["sessionRomDeleted"] = not session.exists()
+            cleanup_errors.append(f"session removal: {type(error).__name__}: {error}")
+        try:
+            if canonical is not None:
+                diagnostic["canonicalRomUnchanged"] = inspect_rom(rom_path)["sha256"] == canonical
+                if not diagnostic["canonicalRomUnchanged"]:
+                    raise ValueError("canonical ROM changed during candidate execution")
+        except Exception as error:
+            cleanup_errors.append(f"canonical check: {type(error).__name__}: {error}")
+        diagnostic["artifactsPresent"] = {
+            key: (runtime / name).is_file() for key, name in diagnostic["artifacts"].items()
+        }
+        if cleanup_errors:
+            diagnostic["status"], diagnostic["cleanupErrors"] = "FAIL", cleanup_errors
+        persist()
+        if cleanup_errors and "error" not in diagnostic:
+            raise RuntimeError("; ".join(cleanup_errors))
     return {
         "Status": "OBSERVATION-COMPLETE-UNREVIEWED",
-        "EmulatorLaunches": 1,
-        "SessionRomDeleted": not session.exists(),
+        "EmulatorLaunches": int(diagnostic["process"]["started"]),
+        "SessionRomDeleted": diagnostic["sessionRomDeleted"],
         "H4": "not established",
     }

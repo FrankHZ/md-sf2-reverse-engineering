@@ -206,6 +206,7 @@ def run_native_bizhawk_process(
     environment: dict[str, str],
     timeout_seconds: int,
     on_started: Callable[[int], None] | None = None,
+    on_timeout: Callable[[], None] | None = None,
 ) -> NativeProcessResult:
     """Start a native BizHawk process with no shell and bound its diagnostics."""
     if not executable.resolve().is_relative_to(repo_path("local")):
@@ -241,7 +242,13 @@ def run_native_bizhawk_process(
     try:
         stdout, stderr = process.communicate(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
-        tree_killed = _terminate_process_tree(process)
+        # Persist the known timeout before cleanup, which can itself fail.
+        # A diagnostic write failure must still attempt process termination.
+        try:
+            if on_timeout is not None:
+                on_timeout()
+        finally:
+            tree_killed = _terminate_process_tree(process)
         stdout, stderr = process.communicate()
         return NativeProcessResult(
             process.returncode,
@@ -284,6 +291,10 @@ def run_observer(
     config: dict[str, Any],
     output_name: str,
     timeout_seconds: int,
+    on_launch: Callable[[dict[str, Any]], None] | None = None,
+    on_started: Callable[[int], None] | None = None,
+    on_timeout: Callable[[], None] | None = None,
+    on_result: Callable[[NativeProcessResult], None] | None = None,
 ) -> dict[str, Any]:
     """Run a tracked Lua observer with JSON configuration and return its JSON facts."""
     rom_path = rom_path.resolve(strict=True)
@@ -312,46 +323,75 @@ def run_observer(
     launch = materialize_bizhawk_launch(DERIVED_ROOT / output_name)
     executable = Path(launch["executable"])
     environment.update(launch["environment"])
-    process = subprocess.Popen(
-        [str(executable), f"--config={launch['config']}", f"--lua={observer_path}", str(rom_path)],
-        cwd=launch["cwd"],
-        env=environment,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired as error:
-        if os.name == "nt":
-            subprocess.run(
-                ["taskkill.exe", "/PID", str(process.pid), "/T", "/F"],
-                check=False,
-                capture_output=True,
-            )
-        else:
-            process.kill()
-        stdout, stderr = process.communicate()
-        status = (
-            status_path.read_text(encoding="utf-8").strip() if status_path.exists() else "no status"
+    command = [
+        str(executable),
+        f"--config={launch['config']}",
+        f"--lua={observer_path}",
+        str(rom_path),
+    ]
+    if on_launch is not None:
+        on_launch({**launch, "command": command, "observerConfig": str(config_path)})
+    if on_result is not None:
+        # Candidate-only diagnostic handoff; ordinary observer callers retain
+        # their existing process and exception behavior below.
+        result = run_native_bizhawk_process(
+            command=command,
+            executable=executable,
+            environment=environment,
+            timeout_seconds=timeout_seconds,
+            on_started=on_started,
+            on_timeout=on_timeout,
         )
-        diagnostic = (stdout + "\n" + stderr).strip()[-4000:]
-        raise RuntimeError(
-            f"BizHawk observation timed out after {timeout_seconds}s ({status}).\n{diagnostic}"
-        ) from error
+        on_result(result)
+        stdout, stderr, returncode = result.stdout, result.stderr, result.returncode
+        if result.timed_out:
+            raise RuntimeError(f"BizHawk observation timed out after {timeout_seconds}s")
+        if result.error or not result.started or not result.process_terminated:
+            raise RuntimeError(f"BizHawk native process failed: {result.error or result}")
+    else:
+        process = subprocess.Popen(
+            command,
+            cwd=launch["cwd"],
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        try:
+            stdout, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired as error:
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill.exe", "/PID", str(process.pid), "/T", "/F"],
+                    check=False,
+                    capture_output=True,
+                )
+            else:
+                process.kill()
+            stdout, stderr = process.communicate()
+            status = (
+                status_path.read_text(encoding="utf-8").strip()
+                if status_path.exists()
+                else "no status"
+            )
+            diagnostic = (stdout + "\n" + stderr).strip()[-4000:]
+            raise RuntimeError(
+                f"BizHawk observation timed out after {timeout_seconds}s ({status}).\n{diagnostic}"
+            ) from error
+        returncode = process.returncode
     status_tail = (
         status_path.read_text(encoding="utf-8").strip() if status_path.exists() else "no status"
     )
     if "failure:observer-callback:" in status_tail:
         raise RuntimeError(
-            f"BizHawk observer callback failure (exit code {process.returncode}).\n"
+            f"BizHawk observer callback failure (exit code {returncode}).\n"
             f"STATUS:\n{status_tail}\nSTDOUT:\n{stdout[-4000:]}\nSTDERR:\n{stderr[-4000:]}"
         )
-    if process.returncode != 0:
+    if returncode != 0:
         raise RuntimeError(
-            f"BizHawk observation failed with exit code {process.returncode}.\n"
+            f"BizHawk observation failed with exit code {returncode}.\n"
             f"STDOUT:\n{stdout}\nSTDERR:\n{stderr}"
         )
     if not output_path.is_file():
