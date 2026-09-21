@@ -321,6 +321,64 @@ settled neutral frames 61009/61010 with actual field-control polls. Current tota
 The terminal reader rejects resume from 86. No post-endpoint nonneutral input is delivered;
 its state effect, full RA-12, remaining 8D and H4 remain **Unknown**. Protocol and framing are unchanged.
 
+## Acquisition performance boundary
+
+**Confirmed:** a short comparison at accepted source
+`5102804b98f3574bb87d6ba4b43d88413c501a68` separates the slow acquisition controller
+from original emulation. Both runs used the registered BizHawk 2.11.1 / Genplus-gx
+executable directly, the manifest US ROM, the same accepted resumable state and
+the same 1,030 actually applied input frames from one retained Battle01 segment.
+No emulator installation was copied. This is a performance diagnostic, not another
+scenario acceptance or a continuation of the completed acquisition.
+
+| Measurement | Observed result |
+| --- | --- |
+| Continuous Lua input delivery, without acquisition callbacks or host round trips | 1,030 frames in 17.1813 s: 59.95 simulated frames/s |
+| Existing acquisition observer and bridge, immediate next request, no operator sleep | 1,030 frames across 228 step requests plus save in 77.2158 s: 13.34 simulated frames per wall second |
+| Bridge request/execution/response intervals | 23.8662 s total; includes emulation, observer work, serialization and transport, not just network latency |
+| Whole-receipt serialization and writes, timed around `DebugBridge._save` | 53.5420 s across the run; 11.9246 GB cumulative rewritten file lengths, not measured physical-device traffic |
+| End-state comparison | All 65,536 bytes of 68K RAM, all reported CPU registers and emulator frame count equal |
+| Comparison with retained acquisition | Every request's applied-frame count, frame number, selected gameplay/RNG fields and battlefield accounting equal |
+
+Command time excludes startup and process teardown. The `_save` total includes its
+few lifecycle calls outside the command loop, so the two time columns are not an
+exact additive partition. Both processes exited 0 without forced termination.
+Windows ran them minimized with the retained GDI/throttle settings. These are
+simulation/wall-progress measurements, **not screen presentation FPS** or a general
+animation-cadence benchmark. No screenshots were taken.
+
+The main measured cost is receipt persistence: `command` rewrites the growing
+`commands` array before and after each exchange. Mean `_save` time grew from
+20.96 ms in the first 50 commands to 221.42 ms in the last 50. A final receipt is
+about 52 MB. The observer additionally pauses and snapshots after each frame;
+209 of the 228 step requests advanced only one frame, including neutral requests
+shortened at observed boundaries. These safeguards explain why acquisition is not
+real-time play, but they do not justify repeatedly rewriting the full history.
+
+**Inferred improvement:** first retain incremental command/results and write the
+aggregate receipt once at finalization, while preserving interrupted-command and
+failure evidence. Reuse the existing append-log pattern rather than adding a
+storage framework. Then profile observer snapshots/stop boundaries before changing
+batching; do not remove readiness guards or full input recording just to improve
+speed. No performance fix is implemented by this diagnostic. The comparison found
+no original-state divergence in this segment; other segments remain unmeasured.
+
+Reproduction uses ignored `local/acquisition-speed-diagnostic/run_comparison.py`
+after loading `local/private-inputs.ps1`. It consumes the retained `prepared-73`
+state and `prepared-74` requests under `local/issue496`, expands **actual** advanced
+frames (not requested counts), delivers them continuously, then repeats the original
+requests through the existing observer. A task-local launch substitution returns the
+registered executable and local config/TEMP without calling materialization.
+`summarize.py` reads the resulting `comparison-report.json`, acquisition `timing.json`
+and original segment pairs. Fresh output names and explicit native-run ownership are
+required; the completed directories must not be overwritten. Inputs, native states,
+RAM/register dumps, receipts and scripts stay private/ignored. This bounded local
+recipe is not a new maintained CLI or a dependency of H4.
+
+Installation reuse is a separate question: see
+[the direct-execution findings](./local-private-inputs.md#direct-installation-reuse-findings).
+Changing executable location alone does not remove receipt or observer overhead.
+
 ## Observed acceptance and launch accounting
 
 Execution date: 2026-09-05 America/Chicago. Baseline ROM identity and BizHawk archive,
