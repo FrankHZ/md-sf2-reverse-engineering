@@ -2397,6 +2397,11 @@ local function install_candidate()
                 -- The list shares storage across scene/field phases. Retain its raw length;
                 -- decode only within the original combatant capacity.
                 facts.targetCount = count
+                facts.heal = natural.victory.heal
+                facts.displayedSpells = {}
+                for slot=0,3 do
+                    facts.displayedSpells[#facts.displayedSpells + 1] = memory.read_u16_be(ram.DISPLAYED_ICON_1 + slot * 2, "M68K BUS")
+                end
                 if count <= ram.COMBATANT_ALLIES_NUMBER + ram.COMBATANT_ENEMIES_NUMBER then
                     facts.targets = read_span(ram.TARGETS_LIST, count)
                 end
@@ -2482,7 +2487,7 @@ local function install_candidate()
                 completed.afterReturn = true
             end)
             battle_call("EndAfterBattleCutscene")
-            for _, name in ipairs({"BattlefieldMenu", "ExecuteBattlefieldMagicMenu", "ExecuteBattlefieldItemMenu",
+            for _, name in ipairs({"BattlefieldMenu", "ExecuteBattlefieldItemMenu",
                 "ExecuteBattleaction_Egress", "ExecuteBattleaction_AngelWing"}) do
                 add_callback(nf[name], "candidate:unsupported-battle-input", function()
                     if completed.admission then c.stop("unsupported-battle-input", {source=name, observation=c.battle_observation()}) end
@@ -2513,10 +2518,17 @@ local function install_candidate()
                 c.record("victory:exploration-entry", c.accounting())
             end)
             for _, item in ipairs({{"ExecuteDiamondMenu", "diamondInputPc", "battle-menu"},
+                {"ExecuteBattlefieldMagicMenu", "magicInputPc", "battle-magic"},
+                {"SelectSpellLevel", "spellLevelInputPc", "battle-spell-level"},
                 {"ControlCursorEntity_ChooseTarget", "targetInputPc", "battle-target"}}) do
                 add_callback(nf[item[1]], "candidate:battle-input-consumer", function()
                     if not c.battleReturns.player or #c.programs > 0 then return end
                     c.battlePoll = nil
+                    if item[1] == "SelectSpellLevel" and ((c.consumers["battle-magic"] or 0) ~= 1
+                        or (reg("D0") & 0xFFFF) ~= ram.SPELL_HEAL) then
+                        c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                        return
+                    end
                     c.record(item[3] .. ":selected", c.battle_observation())
                     returned(item[3], nf[item[1]], function()
                         c.battlePoll = nil
@@ -3291,6 +3303,9 @@ local function install_candidate()
                 need(c.battleReturns.player and #c.programs == 0 and not c.audioPending, "battle-player-consumer-not-active")
                 local blocking = c.pending
                 if current and current.kind ~= "battle-movement" then blocking = blocking - (c.consumers[current.kind] or 0) end
+                if current and current.kind == "battle-spell-level" then
+                    blocking = blocking - (c.consumers["battle-magic"] or 0)
+                end
                 need(blocking == 0 and state.typewriting == 0, "battle-blocking-consumer")
                 need(memory.read_u16_be(ram.DIALOGUE_WINDOW_INDEX, "M68K BUS") == 0
                     and memory.read_u16_be(ram.PORTRAIT_WINDOW_INDEX, "M68K BUS") == 0
@@ -3575,8 +3590,17 @@ local function install_candidate()
         end
         function c.capture_frame() c.frameEnd = snapshot() end
         local function reply(ok, message, terminal, save, input)
+            local terminalCallback = c.terminal or false
+            if victory and c.terminal then
+                -- Full callback facts already live in checkpoints and observer.observed.json.
+                -- Repeating combatant records here can exceed the bridge's 64 KiB frame.
+                local stop = c.terminal.stop
+                terminalCallback = {observationFile="observer.observed.json", stop={
+                    reason=stop.reason, boundary=stop.boundary, pc=stop.pc,
+                    frame=stop.frame, emulatorFrame=stop.emulatorFrame, order=stop.order}}
+            end
             local result = {state=c.frameEnd or snapshot(), advanced=batch and batch.applied or 0,
-                terminal=terminal or false, terminalCallback=c.terminal or false,
+                terminal=terminal or false, terminalCallback=terminalCallback,
                 stopReason=natural and (c.stopReason or c.failureReason or false) or nil,
                 stopBoundary="frame-end", actualInputLog="actual-inputs.jsonl", save=save, input=input}
             log({kind="result", id=previous_id, ok=ok, result=result, error=message or false})

@@ -1599,7 +1599,12 @@ def _victory_configuration(
             start, width = row["address"], row["width"]
             if sha256(rom[start : start + width]).hexdigest().upper() != row["sha256"]:
                 raise ValueError(f"victory retained H1/ROM drift: {row['id']}")
-    for path in ("code/common/tech/randomnumbergenerator.asm", "code/common/menus/diamondmenu.asm"):
+    for path in (
+        "code/common/tech/randomnumbergenerator.asm",
+        "code/common/menus/diamondmenu.asm",
+        "code/common/menus/magicmenu.asm",
+        "data/stats/spells/spelldefs.asm",
+    ):
         source = (disasm / path).read_text(encoding="utf-8")
         pinned = subprocess.run(
             ["git", "-C", str(upstream), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{path}"],
@@ -1635,6 +1640,7 @@ def _victory_configuration(
         "loc_23186",
         "BattlefieldMenu",
         "ExecuteBattlefieldMagicMenu",
+        "SelectSpellLevel",
         "ExecuteBattlefieldItemMenu",
         "ExecuteBattleaction_Egress",
         "ExecuteBattleaction_AngelWing",
@@ -1645,23 +1651,26 @@ def _victory_configuration(
             raise ValueError(f"victory callback H1/ROM drift: {name}")
         natural["functions"][name] = address
     # Select the actual menu input read, not the entry before its window animation.
-    reads = []
-    for line in listing.splitlines():
-        match = re.match(r"^([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)\s*(btst.*)", line)
-        if (
-            match
-            and addresses["ExecuteDiamondMenu"]
-            <= int(match[1], 16)
-            < addresses["LoadDiamondMenuWindowLayout"]
-            and "#INPUT_BIT_LEFT,((CURRENT_PLAYER_INPUT" in match[3]
-        ):
-            pc, data = int(match[1], 16), bytes.fromhex(match[2])
-            if rom[pc : pc + len(data)] != data:
-                raise ValueError("diamond input H1/ROM drift")
-            reads.append(pc)
-    if len(reads) != 1:
-        raise ValueError("diamond input source seam missing/ambiguous")
-    natural["functions"]["diamondInputPc"] = reads[0]
+    for name, start, end in (
+        ("diamondInputPc", "ExecuteDiamondMenu", "LoadDiamondMenuWindowLayout"),
+        ("magicInputPc", "ExecuteBattlefieldMagicMenu", "BuildMagicMenu"),
+        ("spellLevelInputPc", "SelectSpellLevel", "sub_10D56"),
+    ):
+        reads = []
+        for line in listing.splitlines():
+            match = re.match(r"^([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)\s*(btst.*)", line)
+            if (
+                match
+                and addresses[start] <= int(match[1], 16) < addresses[end]
+                and "#INPUT_BIT_LEFT,((CURRENT_PLAYER_INPUT" in match[3]
+            ):
+                pc, data = int(match[1], 16), bytes.fromhex(match[2])
+                if rom[pc : pc + len(data)] != data:
+                    raise ValueError(f"{name} input H1/ROM drift")
+                reads.append(pc)
+        if len(reads) != 1:
+            raise ValueError(f"{name} input source seam missing/ambiguous")
+        natural["functions"][name] = reads[0]
     # loc_23186 waits one VInt, then examines the live target count before input.
     pc = addresses["loc_23186"]
     if (
@@ -1696,6 +1705,8 @@ def _victory_configuration(
         "INPUT_B",
         "INPUT_C",
         "NOT_CURRENTLY_IN_BATTLE",
+        "DISPLAYED_ICON_1",
+        "SPELL_HEAL",
     )
     constants = r1._equates(
         sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"],
@@ -1743,10 +1754,24 @@ def _victory_configuration(
         or rom[no_battle_pc : no_battle_pc + 6] != expected_write
     ):
         raise ValueError("ExplorationLoop no-battle source/H1/ROM operand drift")
+    heal = re.search(
+        r"^\s*entry\s+HEAL\s*;[^\n]*\n\s*mpCost\s+(\d+)\s*$",
+        sources["data/stats/spells/spelldefs.asm"],
+        re.MULTILINE,
+    )
+    if heal is None:
+        raise ValueError("Heal 1 source definition missing/ambiguous")
+    heal_bytes = bytes((constants["SPELL_HEAL"], int(heal[1])))
+    heal_pc = addresses["table_SpellDefinitions"]
+    # These byte data macros have no machine-word row for _h1_bytes; the pinned
+    # source fields bind directly to ROM at the H1 table symbol.
+    if rom[heal_pc : heal_pc + 2] != heal_bytes:
+        raise ValueError("Heal 1 spell/MP cost source/H1/ROM drift")
     natural["programs"].append(addresses["abcs_battle01"])
     natural["victory"] = {
         "owners": owners,
         "noBattleWritePc": no_battle_pc,
+        "heal": {"spell": constants["SPELL_HEAL"], "mpCost": int(heal[1])},
         "checkpoint": "neutral completed player-movement frame with reconstructible battle returns",
         "terminal": "after-program/flags/BattleLoop/SwitchMap return and stable exploration input",
     }

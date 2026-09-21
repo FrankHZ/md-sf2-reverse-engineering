@@ -12,12 +12,18 @@ The current additional observation is [Issue #485's first Battle01 player-ready 
 independently reviewed by main-gate, extending [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed)
 accepted in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 
-The [Issue #496 continuation implementation](map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496-offline)
+The [Issue #496 continuation](map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
 extends that same rail through source-bound player/AI action observation, coherent battle checkpoints
-and victory/after-program/controllable-5B predicates. Its present evidence is **offline only**;
-native actions, victory and 5B remain **Unknown**. It does not change the accepted #485 observation,
-RA-06/RA-07/RA-12 runtime status, 8D completeness, deterministic replay or H4. Unsupported input
-consumers and defeat are explicit incomplete outcomes in that owner.
+and victory/after-program/controllable-5B predicates. Native prepared-06..16 at accepted
+`a7383cd9133a00de456c9f4575af1482070f6aff` now record recoverable battle save/load, player/AI actions,
+effects, RNG, scene consumption/reloads and original defeat. RA-06 therefore has this bounded
+additional observation, not complete action-branch coverage. The terminal reply exceeds 64 KiB;
+the host **FAIL** and complete cleanup/cost evidence remain preserved in the acquisition owner.
+Current totals are 46 starts / 7479.841504100186 seconds / 140632 frames / 3306 batches, including
+failed16; failed21's missing final cleanup payload remains **Unknown**. The reply projection,
+minimal Heal 1 consumers and revised cohesion/healing/focus operator are **offline only, native
+NOT RUN**. A fresh compatible chain must inherit all costs after independent source acceptance.
+Victory/after-program/5B (RA-07/RA-12), full 8D, deterministic replay and H4 remain **Unknown**.
 
 ## Current milestone applicability
 

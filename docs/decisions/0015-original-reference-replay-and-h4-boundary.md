@@ -135,7 +135,7 @@ attempts and cannot override this user-directed stabilization.
 [Issue #496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/496) is the user's next
 authorized #437 outcome after accepted #485. It reuses segmented interactive acquisition for
 ordinary player/AI actions, natural victory, the actual after-program and controllable 5B. The
-[existing acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496-offline)
+[existing acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
 defines the explicit continuation, source bindings, input consumers, reconstructible battle-return
 descriptors, unsupported outcomes and final readiness predicate. No new fixture/transport/framework
 or frozen replay is admitted. The previous terminal pair remains nonresumable; changed execution
@@ -147,8 +147,17 @@ Ordinary reviewed collection and corrections require no repeated user permission
 approval. Historical cumulative totals remain charged observations, while identity, core, I/O,
 callback, exchange and operator-idle containment remain enforced. A capability Draft PR does not
 complete the Issue: actual observation, independent acceptance and tracked result integration are
-still required. Until then, victory/5B and remaining presentation consumption are **Unknown**, and
-this implementation's native status is **NOT RUN**. H4 and disabled replay boundaries are unchanged.
+still required. PR499's accepted source now has bounded native battle save/load/action evidence
+ending in original defeat, with a preserved terminal transport **FAIL**: 78571 bytes exceed the
+unchanged 65536-byte bridge limit. All **46 starts / 7479.841504100186 seconds / 140632 frames /
+3306 batches** remain charged, including the failed child; failed21's final cleanup Unknown remains.
+The narrow reply projection preserves full original facts in existing local files. The concrete
+defeat also justifies minimal original Heal 1 icon/level/target input support and a revised finite
+operator using party cohesion, actual weakened targets and wounded allies. These corrections are
+**offline only, native NOT RUN** and require independent source acceptance followed by a fresh
+compatible R1 chain. They grant no reuse of old-source parents or normalization of HP/MP/RNG.
+Victory/5B and remaining presentation consumption remain **Unknown**. H4 and disabled replay
+boundaries are unchanged.
 
 ### Use distinct names and evidence owners
 
