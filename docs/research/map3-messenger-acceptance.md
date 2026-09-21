@@ -18,17 +18,20 @@ After [PR #500 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engi
 subsequent native collection confirmed the corrected terminal reply and original Heal 1 input/effects.
 After [PR #501 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/501),
 the compatible chain below confirms original Medical Herb selection, consumption and healing.
-Victory, after-program completion, controllable 5B and H4 remain **Unknown**.
+After [PR #502 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/502),
+prepared-45..67 confirm original victory and after-program return, followed by a post-victory
+observer **FAIL** described below. Stable controllable 5B and H4 remain **Unknown**.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
 Issue #485's accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches; the current total through prepared-44 is **73 starts /
-10247.52403570019 charged seconds / 229866 resource frames / 7193 advancing batches**.
+frames and 2063 advancing batches; the current total through prepared-67 is **96 starts /
+12405.304031100066 charged seconds / 304294 resource frames / 10553 advancing batches**.
 These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
-Prepared-41 independently retains another final callback/restoration **Unknown**.
+Prepared-41, explicit abort 61 and callback failure 67 independently retain final
+callback/restoration **Unknown**.
 
 ### Native save/load, actions and failed terminal
 
@@ -189,13 +192,14 @@ parents. The selected parent's original state/order is restored; all branches' r
 are inherited. No pair, claim, failed observation or original state is overwritten. This retains
 the single-writer execution boundary; it does not admit concurrent branch launches.
 
-**Confirmed offline; native NOT RUN for the revised runner:** actual 33..44 records reconcile
+**Confirmed at the PR502 offline boundary:** actual 33..44 records reconcile
 to the same 73-start totals when selecting either 42 or 43. Direct sibling/cousin, zero-start,
 terminal and rejection cases exercise the actual accounting function. The runner identity changed,
 so all PR501 pairs remain incompatible with new execution: independent source acceptance must
 precede one fresh compatible R1 carrying the complete totals. Future branches within that new
 identity can recover an earlier save without repeating R1. No hash whitelist or identity exception
-is introduced. Victory/after-program/5B, full 8D and H4 remain **Unknown**.
+is introduced. The following native result exercises that recovery; stable 5B, full 8D and H4
+remain **Unknown**.
 
 Reproduce with `uv run python -X utf8 local/issue496/victory-native-summary.py 44 <fresh-output>`
 and the existing pair/scene readers. Retained projections include `victory-native-through44.json`,
@@ -207,6 +211,89 @@ and `branch-accounting-real42.json` retain full real-pair validation. The ordina
 host check, committed plan and actual CI belong to the source PR handoff. Inspection/driver errors
 are retained separately in `branch-offline-failures.json`; they neither change native evidence nor
 add launches.
+
+### Native victory, after-program return and post-victory observer failure
+
+**Confirmed (bounded native observation):** prepared-45..67 use accepted PR502 main
+`193802d3b5dca0ce43f9f4f8e8f54d88037179f3`, tree
+`53f4661d3cfcb772eea04494a1c4f0b73e614bd0`. Runner identity is
+`43EDFA090AADE098EF31972AECAFB7DE2F20AEB4C16310016D8B8CF94827393F`, observer
+`A85C12B920D79161AC5082D5B5AC596F83FD3A111E60428253251C09D83367C7`.
+Fresh 45 inherits all 73 prior starts. Original snapshots at 45..49 match the corresponding
+33..37 prefix, reaching first battle control at frame 22368. Complete battle pairs pass original
+RAM/register/frame, order/epoch, return-stack and forward-checkpoint checks before reuse.
+
+The selected successful lineage is 45→46→47→48→49→50→51→52→53→54→55→57→58→59→62→63→65→66→67.
+The intervening attempts remain retained and charged; no state, claim or pair was repaired.
+In particular, 62 loads earlier successful parent 59 after completed 60 and failed 61, proving
+actual whole-lineage branch recovery. Saved game state rolls back; cumulative resource costs do not.
+
+| Candidate / actual start | Parent | Bounded result |
+| --- | --- | --- |
+| 56 / 85 | 55 | Original defeat at frame 40851. Chester kills 133, but enemy attacks lower Bowie 9→6→3→0. |
+| 57 / 86 | 55 | Chester instead uses his herb on Bowie 9→12; retreat survives to round 8, frame 40815. |
+| 58..59 / 87..88 | 57..58 | Enemy 133 dies; Sarah's Heal restores Chester, MP 4→1; round 10 save at 46287. |
+| 60 / 89 | 59 | Complete round 11 save at 51300 with Chester dead. Sarah, not Chester, kills enemy 129. This pair was saved, not aborted. |
+| 61 / 90 | 60 | Explicit stdin abort: zero completed frames/batches, 3.5335696999682114 seconds, native exit 1. |
+| 62 / 91 | 59 | Earlier-parent branch; Chester then Sarah kill 131, no ally HP damage; round 11 save at 48287. |
+| 63 / 92 | 62 | Sarah uses herb on Bowie 3→12 and reaches level 2; round 12 save at 51066. |
+| 64 / 93 | 63 | Sarah's last herb heals Chester 4→11. Enemy 129 lowers Bowie 12→6; Bowie kills 129, then 128/130 lower Bowie 6→2→0. Defeat at 54922. |
+| 65 / 94 | 63 | Revised leader protection survives the exhausted healing inventory; Bowie retreats with 6 HP. Round 13 save at 53013. |
+| 66 / 95 | 65 | Sarah kills 129; Bowie lowers 128 to 1 HP. Round 14 save at 56476, all three allies alive. |
+| 67 / 96 | 66 | Chester turn 102 kills 128; Sarah turn 103 kills 130. Victory and after-program return are reached, then setup callback fails at 60983. |
+
+The local operator retains its versions and actual decisions. Corrections permit self-healing
+retreat, original herb holders as healers, threatened-leader healing before later enemy turns,
+safe rendezvous, supported attacks, and leader survival even after the final herb is consumed.
+Distance, threat and damage estimates remain tactics, never original legality or damage guarantees.
+A prospective finish-before-retreat variant was inspected but never executed. The driver now stops
+after one audited round with `continue-rounds.py <parent> <child-number> once`, preventing the
+previous automatic-next-child race. Every resumed attempt still uses the accepted source protocol.
+
+**Confirmed:** 67 reaches victory at frame 58657. `ExecuteAfterBattleCutscene` enters at 58660,
+order 151133, and `abcs_battle01` (`0x496DC`) has 67 matched actual operation entry/return pairs.
+The fixture's 80 source records also include embedded entity actions and trailing entity data;
+they are not 80 dispatcher iterations. At frame 60945, program return is order 157461;
+shared-tail entry 157463; enclosing after-routine return 157464; F401-clear return 157467;
+F501-set return 157469; BattleLoop return with D4=1 157470; SwitchMap return 157472;
+ExplorationLoop entry 157473. The failure frame 60983 reads map 57, battle 255, F401 clear and
+F501 set. This proves that bounded spine, not two settled field-control frames or full 8D.
+
+67 ends **FAIL**, `unexpected selected map setup` at `0x47504`, order 157550. Native exit is 1,
+without forced termination or timeout; session-ROM deletion and canonical identity are confirmed.
+The missing final observation leaves restoration/callback clearing **Unknown**. No terminal pair
+was produced. Its 4507 frames / 83 batches / 98.33460810000543 seconds remain fully charged.
+61 likewise retains missing final-observer cleanup **Unknown** despite host containment and ROM
+cleanup; its reader originally awaited a normal step reply after abort, then reported EOF. That
+local caller now drains abort completion separately. These failures do not invalidate earlier
+complete pairs. Ordinary defeats 56/64 and other successful segments have complete cleanup.
+
+**Confirmed source correction; changed-source native NOT RUN:** pinned `MapSetups` has no map57
+row. `GetCurrentMapSetup` returns `ms_Void` (`0x477E8`), whose word is `$FFFF`; the existing
+pre-battle setup whitelist omitted this actual post-victory selection. Preparation reuses the
+map-setup parser/encoder, checks the entire routing table against ROM and binds the named fallback
+load and sentinel. Only map57 after the observed victory/flag/BattleLoop/exploration sequence,
+with actual battle255, accepts that exact pointer. Other map/pointer checks remain strict.
+
+A second false consumer would prevent stable 5B even after that correction.
+`EndAfterBattleCutscene` is the BRA-entered tail of `ExecuteAfterBattleCutscene`, not a new call.
+The native tail A7=`0xFFFFF0` points at saved D0/D1, while the owning entry A7=`0xFFFFF8`
+contains return PC `0x23D0E`. The old generic callback mistakes saved D0=0 for a return PC and
+leaves one pending consumer after the enclosing call returns. Source/H1/ROM bind the prologue,
+branch and `movem.l (sp)+,d0-d1; rts` tail. The corrected observer records tail entry only under
+its live owning call and requires that entry at the existing enclosing return; it neither clears
+pending state nor creates another return consumer. Existing flag and stable-field predicates remain.
+
+Reproduce with `victory-native-summary.py 67 <fresh-output>`, `audit-native-pair.py`, the existing
+scene readers and `check-post-victory.py <fresh-output-directory>` under `local/issue496/`, via
+`uv run python -X utf8`. `victory-native-through67.json` and `post-victory67-readback.json` retain
+costs and chronology. The actual-Lua driver covers the real saved-register tail shape, the full
+return/two-frame sequence, invalid setup phase/flags/pointer/map and unchanged old setup rejection;
+`check-old-post-victory.py` reproduces both old defects. `post-victory-offline-failures.json`
+separates local inspection/driver mistakes from native failures. All private inputs/outputs remain
+ignored; no new fixture, schema, CLI or shared bridge is introduced. Corrected source identities
+invalidate every old pair: independent source/preparation acceptance must precede fresh prepared-68,
+future actual start 97, carrying all 96-start totals. Stable 5B, frozen replay and H4 remain **Unknown**.
 
 ### Source binding and observation fields
 
@@ -328,8 +415,9 @@ by the existing pair protocol. Victory mode requires explicit segmented accounti
 is included in parent compatibility. Native save/load are still outside callbacks.
 
 The next revised-runner preparation must use a fresh ignored destination, segment 1 without a parent,
-73 historical starts and future actual start 74, carrying all four current totals above under the
-existing 7200-second proposal. Prepared-33 is already consumed by the PR501 chain; do not reuse it.
+96 historical starts and future actual start 97, carrying all four current totals above under the
+existing 7200-second proposal. Prepared-68 is the fresh post-victory correction candidate; old
+preparations and source-incompatible pairs must not be reused.
 Preparation reports `CANDIDATE-PREPARED-NOT-ADMITTED`. It does not authorize execution or count
 as another actual start; independent source/preparation acceptance must precede native collection.
 
@@ -351,7 +439,8 @@ permits transit through allies while rejecting occupied final positions as the o
 does, prefers weakened targets and limits unnecessary separation. Enemy move-plus-one distance,
 cohesion and injury thresholds are tactical estimates, not exact enemy reach or gameplay legality.
 `operator-victory-before-herb.py` retains the pre-extension policy. Readback proposals are not
-replayed outcomes; herb use is observed above, while a winning route remains **Unknown**. The sequential
+replayed outcomes; herb use and a winning battle route are observed above, while stable 5B remains
+**Unknown**. The sequential
 `continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
 the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 

@@ -29,9 +29,9 @@ Conversely, a remake H4 runner must consume accepted evidence; it must not gener
 running an original emulator inside the same comparison and must not treat Lua as a second gameplay
 implementation.
 
-The current accepted frontier is deliberately **static-only / Unknown** at this boundary. The accepted
-R4a evidence records a static victory/after-battle/return spine, while natural execution and the stable
-endpoint remain Unknown. R4b has not been implemented. For R4b original-reference replay and remake H4,
+R4a owns the static victory/after-battle/return spine. The Issue #496 amendment below additionally
+records bounded interactive victory and after-program observations; stable 5B remains **Unknown**.
+Frozen R4b replay has not been implemented. For R4b original-reference replay and remake H4,
 the launch counts are therefore **H3 = 0** and **H4 = 0**. This decision adds no fixture, schema,
 research-index record or association, address binding, CLI command, verification partition, or
 counter: every such delta is zero in this governance slice.
@@ -159,7 +159,7 @@ extension admits only original Item→Use→Medical Herb→target input, with me
 consumption/effect, cancellation and pending/save checks; Equip/Give/Drop and other manual items
 stay explicitly unsupported. Inventory/spell review identifies no other currently necessary
 ordinary input for this battle route. After source acceptance, 33..44 confirm original herb use,
-consumption/healing and a later original defeat. Current totals are **73 starts /
+consumption/healing and a later original defeat. Totals through that chain were **73 starts /
 10247.52403570019 seconds / 229866 frames / 7193 batches**. Segment 41's local operator
 readiness/pipe failure retains forced containment and final restoration/callback **Unknown**;
 defeat 44 has complete cleanup. It grants no reuse
@@ -172,11 +172,20 @@ to reconcile the whole compatible source lineage before selecting an earlier com
 Sibling/cousin costs remain charged, with actual increments checked against cumulative prior-cost
 order; missing, active, duplicate, cyclic, incompatible or unreconciled attempts block resume.
 Terminal pairs are chargeable completed descendants, never resume parents. The one-writer boundary
-remains. This is **offline only, native NOT RUN**: strict runner identity requires independent
-acceptance then one fresh R1 carrying all 73 starts; no whitelist or old-pair compatibility bypass
-is allowed. The acquisition owner retains the exact recovery and verification boundaries.
-Victory/5B and remaining presentation consumption remain **Unknown**. H4 and disabled replay
-boundaries are unchanged.
+remains. Accepted PR502 subsequently records actual earlier-parent recovery and a selected branch
+through original victory, after-program return, F401-clear/F501-set, BattleLoop D4=1 return and
+exploration reentry in prepared-67. The subsequent setup callback fails before stable field control;
+its host cleanup does not prove missing final observer restoration/callback cleanup. Abort 61 retains
+the same distinct Unknown. Current totals are **96 starts / 12405.304031100066 seconds /
+304294 frames / 10553 batches**, including every branch and failure.
+
+The [acquisition owner](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
+records the bounded native result and minimal offline correction: source-bound map 57 void setup
+selection and the after-cutscene's actual shared function-tail ownership. Changed-source native is
+**NOT RUN** pending independent source/preparation acceptance; strict identities require a fresh R1
+with all historical costs, never a whitelist or edited old pair. Actual victory/after-program return
+is now bounded **Confirmed** evidence. Stable 5B, remaining presentation consumption, full 8D and H4
+remain **Unknown**. Disabled replay boundaries are unchanged.
 
 ### Use distinct names and evidence owners
 
@@ -345,8 +354,8 @@ private-boundary, ownership, or stop-loss requirements.
 - Runner bring-up has a bounded diagnostic budget and cannot grow into a Lua reimplementation.
 - H3 and H4 fixtures, counters, indexes, CLI commands, and planner partitions acquire explicit,
   serialized owners when their separately authorized slices begin.
-- Current R4b and H4 state remains static-only / Unknown with zero launches and zero repository
-  evidence-counter delta.
+- Frozen R4b replay and H4 remain **Unknown**, with zero launches and zero repository
+  evidence-counter delta on those rails. Interactive acquisition has its own observed costs and results.
 - This decision does not start R4b, H4, Godot, `remake/`, Phase 4, or any runtime process.
 
 ## References

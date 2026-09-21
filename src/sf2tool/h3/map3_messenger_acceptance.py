@@ -1676,6 +1676,8 @@ def _victory_configuration(
     rom: bytes,
 ) -> None:
     """Bind the continuation to the accepted R3a-d/R4a evidence, without a new fixture."""
+    from sf2tool.h2.map_setup import _encode_routes, _parse_routes, _select_route
+
     natural = config["candidate"]["natural"]
     natural["selection"] = VICTORY_CONTINUATION
     disasm = upstream / DISASM
@@ -1712,6 +1714,8 @@ def _victory_configuration(
         "code/gameflow/battle/battleactions/breakuseditem.asm",
         "data/stats/items/itemdefs.asm",
         "data/stats/spells/spelldefs.asm",
+        "data/maps/mapsetups.asm",
+        "code/common/scripting/map/mapsetupsfunctions_1.asm",
     ):
         source = (disasm / path).read_text(encoding="utf-8")
         pinned = subprocess.run(
@@ -1724,6 +1728,85 @@ def _victory_configuration(
         if source != pinned:
             raise ValueError(f"victory pinned source drift: {path}")
         sources[path] = source
+    # Map 57 has no setup row. The original resolver returns ms_Void after
+    # victory, so bind that exact fallback instead of accepting arbitrary setups.
+    routes = _parse_routes(sources["data/maps/mapsetups.asm"])
+    encoded_routes = _encode_routes(routes, addresses)
+    setup_pc, void_pc = addresses["MapSetups"], addresses["ms_Void"]
+    if (
+        _select_route(routes, 57, set()) != "ms_Void"
+        or rom[setup_pc : setup_pc + len(encoded_routes)] != encoded_routes
+        or rom[void_pc : void_pc + 2] != bytes.fromhex("FFFF")
+    ):
+        raise ValueError("post-victory Map57 void setup source/H1/ROM drift")
+    _require_order(
+        _section(
+            sources["code/common/scripting/map/mapsetupsfunctions_1.asm"], "GetCurrentMapSetup"
+        ),
+        (("cmpi.w", "#-1,(a1)"), ("lea", "ms_void(pc),a0"), ("bra.w", "@return")),
+        "post-victory void setup resolver",
+    )
+    # H1 leaves PC-relative operands unresolved; bind those from named symbols
+    # and check their canonical ROM encoding instead of comparing placeholders.
+    void_loads = [
+        int(match[1], 16)
+        for line in listing.splitlines()
+        if (
+            match := re.match(
+                r"^([0-9A-F]{8})\s+41FA\s+[0-9A-F]{4}\s+lea\s+ms_Void\(pc\),\s*a0", line
+            )
+        )
+    ]
+    if len(void_loads) != 1:
+        raise ValueError("void setup resolver load missing/ambiguous")
+    void_load = void_loads[0]
+    tail_branch = addresses["rpt_AfterBattleCutscenes"] - 4
+    bindings = (
+        (
+            void_load,
+            bytes.fromhex("41FA") + (void_pc - void_load - 2).to_bytes(2, "big", signed=True),
+            2,
+        ),
+        (void_pc, bytes.fromhex("FFFF"), 2),
+        (addresses["ExecuteAfterBattleCutscene"], bytes.fromhex("48E7C000"), 4),
+        (
+            tail_branch,
+            bytes.fromhex("6000")
+            + (addresses["EndAfterBattleCutscene"] - tail_branch - 2).to_bytes(
+                2, "big", signed=True
+            ),
+            2,
+        ),
+        (addresses["table_AfterBattleJoins"] - 6, bytes.fromhex("4CDF00034E75"), 6),
+    )
+    for pc, encoded, listing_width in bindings:
+        if (
+            rom[pc : pc + len(encoded)] != encoded
+            or _h1_bytes(listing, pc, listing_width) != encoded[:listing_width].hex().upper()
+        ):
+            raise ValueError("post-victory setup/tail source/H1/ROM operand drift")
+    _require_order(
+        _section(
+            sources["code/gameflow/battle/cutscenes/afterbattlecutscenesstart.asm"],
+            "ExecuteAfterBattleCutscene",
+        ),
+        (
+            ("movem.l", "d0-d1,-(sp)"),
+            ("bsr.w", "executemapscript"),
+            ("movem.l", "(sp)+,d0/a0"),
+            ("bra.w", "endafterbattlecutscene"),
+        ),
+        "after-cutscene shared tail entry",
+    )
+    _require_order(
+        _section(
+            sources["code/gameflow/battle/cutscenes/afterbattlecutscenesend.asm"],
+            "EndAfterBattleCutscene",
+        ),
+        (("jsr", "j_joinforce"), ("movem.l", "(sp)+,d0-d1"), ("rts", "")),
+        "after-cutscene shared tail return",
+    )
+    natural["postVictorySetup"] = {"map": 57, "pointer": void_pc}
     names = (
         "ExecuteAfterBattleCutscene",
         "EndAfterBattleCutscene",
