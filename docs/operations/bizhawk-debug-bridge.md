@@ -151,7 +151,10 @@ No new protocol command or generic bridge-library mutation is needed.
 
 The runner publishes immutable native-state/continuation pairs after cleanup and reconciles all actual
 consumption. Failed child attempts remain recorded and may be retried from a compatible complete
-parent; successful children require forward continuation. Runtime/core/observer/runner/source identity
+parent. Earlier complete parents can also be selected after the runner reconciles every completed
+branch in the same source lineage, including siblings/cousins; active or incomplete attempts block
+resume. Existing pairs/claims are immutable and terminal pairs remain nonresumable.
+Runtime/core/observer/runner/source identity
 checks remain mandatory. Loaded RAM/register/frame equality and offline checks alone do not establish
 complete native continuity. The [actual house save → native load → Sarah save](../research/map3-messenger-acceptance.md#accepted-early-native-save-and-resume)
 is now **Confirmed**, including input-before-load exclusion, inherited epochs, forward checkpoint,
@@ -258,7 +261,7 @@ responses carry private original battlefield/grid/target facts and stage-specifi
 After battle admission each nonneutral step is one frame; neutral steps retain the 120-frame bound.
 Consumed input invalidates its previous poll, and the finite operator waits for the new source
 consumer before acting again. Heal 1's original icon/level/target input and effects have now been
-observed natively. The offline Medical Herb extension distinguishes the top battle diamond from
+observed natively. The Medical Herb extension distinguishes the top battle diamond from
 the source `MENU_ITEM` diamond, admits only Use=0, then reads the original item poll at `0x10616`.
 Original D0 item / D1 slot and the inventory word must agree; only herb 0 after the original index
 mask is admitted. It reuses the target consumer and records original effect/slot removal. Nested
@@ -282,10 +285,22 @@ At that failure, totals were **46 / 7479.841504100186 / 140632 / 3306** (starts/
 Prepared-17..32 subsequently confirm native corrected replies and Heal input/effects at PR500's
 accepted source. Defeats 27/29/32 report INCOMPLETE-OBSERVATION with native exit 0, restored entry
 state, cleared callbacks, deleted session ROM and unchanged canonical identity. All costs remain
-charged: **61 / 8837.811812300177 / 192811 / 5222** (starts / seconds / frames / batches). The Herb
-extension is **native NOT RUN**; independent source acceptance and a fresh compatible R1 carrying
-all costs precede execution. No shared bridge limit/protocol change or old-parent compatibility
-exception is introduced. Original victory/5B/H4 remain **Unknown**.
+charged. PR501's 33..44 then confirm original herb use/slot consumption/healing and a later
+original defeat. Current totals are **73 / 10247.52403570019 / 229866 / 7193**
+(starts / seconds / frames / batches). Snapshot readiness probes C; directional navigation is
+still checked independently when the sole unmet reason is `unsupported-battle-selection`.
+The old local operator's failure to distinguish these caused 41 to stall. Upstream operator
+termination lost the reader; receipt Errno 22, exit 1 and forced containment are preserved.
+Session-ROM cleanup is confirmed, final restoration/callback cleanup **Unknown**. The local
+operator now has an explicit stdin abort hook that keeps the response reader alive.
+
+The runner's completed-branch recovery is **offline only, native NOT RUN**. It follows parent
+links to the root and existing claims through the whole source lineage, validates edge identities,
+then reconciles actual increments in frozen prior-cost order. Active/incomplete attempts, duplicate
+or cyclic claims and cost gaps fail closed at prepare and run. Terminal descendants are charged
+without becoming loadable parents. No shared bridge/protocol change, new manifest, concurrent
+writer support or old-runner identity exception is introduced. Independent source acceptance
+must precede a fresh compatible R1 carrying all costs. Original victory/5B/H4 remain **Unknown**.
 
 ## Observed acceptance and launch accounting
 

@@ -151,17 +151,30 @@ still required. PR499's accepted source now has bounded native battle save/load/
 ending in original defeat, with a preserved terminal transport **FAIL**: 78571 bytes exceed the
 unchanged 65536-byte bridge limit. Subsequent accepted PR500 source collected prepared-17..32:
 corrected native replies, original Heal 1 input/effects, recoverable battle checkpoints through
-round 8, and three further original defeats with complete cleanup. Current totals are **61 starts /
-8837.811812300177 seconds / 192811 frames / 5222 batches**, including every failed child;
+round 8, and three further original defeats with complete cleanup. Those totals were 61 starts /
+8837.811812300177 seconds / 192811 frames / 5222 batches, including every failed child;
 failed16's transport FAIL and failed21's final cleanup Unknown remain preserved.
-Unused original Medical Herbs expose a concrete remaining input gap. The bounded offline
+Unused original Medical Herbs exposed a concrete input gap. The bounded PR501
 extension admits only original Item→Use→Medical Herb→target input, with menu-context, slot,
 consumption/effect, cancellation and pending/save checks; Equip/Give/Drop and other manual items
 stay explicitly unsupported. Inventory/spell review identifies no other currently necessary
-ordinary input for this battle route. The extension is **native NOT RUN** and requires independent
-source acceptance followed by a fresh compatible R1 chain carrying all costs. It grants no reuse
+ordinary input for this battle route. After source acceptance, 33..44 confirm original herb use,
+consumption/healing and a later original defeat. Current totals are **73 starts /
+10247.52403570019 seconds / 229866 frames / 7193 batches**. Segment 41's local operator
+readiness/pipe failure retains forced containment and final restoration/callback **Unknown**;
+defeat 44 has complete cleanup. It grants no reuse
 of old-source parents or normalization of HP/MP/items/RNG. Finite operator tactics may change
 within accepted source, while failures and actual input decisions remain retained.
+
+Successful descendants previously locked an earlier parent against tactical recovery, even after
+all native processes ended. The bounded runner correction reuses immutable parent links/claims
+to reconcile the whole compatible source lineage before selecting an earlier complete save.
+Sibling/cousin costs remain charged, with actual increments checked against cumulative prior-cost
+order; missing, active, duplicate, cyclic, incompatible or unreconciled attempts block resume.
+Terminal pairs are chargeable completed descendants, never resume parents. The one-writer boundary
+remains. This is **offline only, native NOT RUN**: strict runner identity requires independent
+acceptance then one fresh R1 carrying all 73 starts; no whitelist or old-pair compatibility bypass
+is allowed. The acquisition owner retains the exact recovery and verification boundaries.
 Victory/5B and remaining presentation consumption remain **Unknown**. H4 and disabled replay
 boundaries are unchanged.
 
