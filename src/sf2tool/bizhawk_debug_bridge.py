@@ -109,6 +109,56 @@ def _local_destination(path: Path) -> Path:
     return resolved
 
 
+def read_receipt(output: Path) -> dict[str, Any]:
+    """Read persisted evidence only; never repair files or infer process completion.
+
+    Legacy launches have only receipt.json. New launches retain a JSONL journal;
+    only its newline-terminated records are committed, including on abrupt exit.
+    """
+    journal = output / "receipt.jsonl"
+    if not journal.exists():
+        return load_json(output / "receipt.json")
+    receipt = None
+    commands: list[dict[str, Any]] = []
+    incomplete_tail = False
+    with journal.open("rb") as source:
+        for line in source:
+            if not line.endswith(b"\n"):
+                incomplete_tail = True
+                break
+            entry = json.loads(line)
+            kind = entry["kind"]
+            if kind == "state":
+                if not isinstance(entry["value"], dict) or "commands" in entry["value"]:
+                    raise ValueError("invalid bridge journal state")
+                receipt = {**entry["value"], "commands": commands}
+            elif receipt is None:
+                raise ValueError("bridge journal lacks initial state")
+            elif kind == "request":
+                if entry["sequence"] != len(commands) + 1 or entry["request"].split("\t", 1)[
+                    0
+                ] != str(entry["sequence"]):
+                    raise ValueError("bridge journal request sequence mismatch")
+                commands.append({"request": entry["request"]})
+            elif kind == "result":
+                if (
+                    not commands
+                    or entry["sequence"] != len(commands)
+                    or set(commands[-1]) != {"request"}
+                    or "request" in entry["value"]
+                    or not ({"response", "error"} & entry["value"].keys())
+                ):
+                    raise ValueError("bridge journal result sequence mismatch")
+                commands[-1].update(entry["value"])
+            else:
+                raise ValueError("unknown bridge journal record")
+    if receipt is None:
+        raise ValueError("bridge journal lacks initial state")
+    if incomplete_tail:
+        receipt["incompleteJournalTail"] = True
+    return receipt
+
+
 class DebugBridge:
     """Own exactly one newly launched process and one loopback connection.
 
@@ -142,10 +192,23 @@ class DebugBridge:
         self._save()
         return self
 
-    def _save(self) -> None:
-        (self.output / "receipt.json").write_text(
-            json.dumps(self.receipt, indent=2) + "\n", encoding="utf-8"
+    def _append(self, entry: dict[str, Any]) -> None:
+        # Close/flush before returning, especially before sending request intent.
+        # Like the observer's append logs, this promises process-crash evidence,
+        # not power-loss durability. Do not keep a buffered history in lieu of disk.
+        with (self.output / "receipt.jsonl").open("a", encoding="utf-8", newline="\n") as log:
+            log.write(json.dumps(entry, separators=(",", ":")) + "\n")
+
+    def _save(self, *, final: bool = False) -> None:
+        self._append(
+            {"kind": "state", "value": {k: v for k, v in self.receipt.items() if k != "commands"}}
         )
+        if final:
+            # One aggregate at context exit, not two growing rewrites per command.
+            # Interrupted aggregation leaves the journal and any old aggregate intact.
+            temporary = self.output / "receipt.json.tmp"
+            temporary.write_text(json.dumps(self.receipt, indent=2) + "\n", encoding="utf-8")
+            temporary.replace(self.output / "receipt.json")
 
     def remaining(self) -> float:
         remaining = (
@@ -301,6 +364,7 @@ class DebugBridge:
         self.receipt["startedAtUnix"] = time.time()
         if self.acquisition_limits:
             environment["SF2_BRIDGE_LAUNCH_EPOCH"] = str(self.receipt["startedAtUnix"])
+        self._save()
         self.process = subprocess.Popen(
             [
                 str(executable),
@@ -367,21 +431,35 @@ class DebugBridge:
         self.sequence += 1
         record: dict[str, Any] = {"request": wire}
         self.receipt["commands"].append(record)
-        self._save()
+        self._append({"kind": "request", "sequence": self.sequence, "request": wire})
         started_at = time.monotonic()
         try:
             send_frame(self.connection, wire, timeout=min(self.timeout, self.remaining()))
             response = json.loads(
                 receive_frame(self.connection, timeout=min(self.timeout, self.remaining()))
             )
+            record["response"] = response
             if (
                 not isinstance(response, dict)
                 or response.get("id") != self.sequence
                 or type(response.get("ok")) is not bool
             ):
                 raise ValueError("bridge response envelope mismatch")
-        except (OSError, EOFError, ValueError):
-            self.disconnect()
+        except BaseException as error:
+            record.update(
+                error=str(error),
+                errorType=type(error).__name__,
+                seconds=time.monotonic() - started_at,
+            )
+            self._append(
+                {
+                    "kind": "result",
+                    "sequence": self.sequence,
+                    "value": {k: v for k, v in record.items() if k != "request"},
+                }
+            )
+            if isinstance(error, (OSError, EOFError, ValueError)):
+                self.disconnect()
             raise
         if self.acquisition_limits and operation == "step" and response["ok"]:
             # A typed zero-frame rejection is inspection, not progress or an idle renewal.
@@ -393,7 +471,13 @@ class DebugBridge:
                 )
             )
         record.update(response=response, seconds=time.monotonic() - started_at)
-        self._save()
+        self._append(
+            {
+                "kind": "result",
+                "sequence": self.sequence,
+                "value": {k: v for k, v in record.items() if k != "request"},
+            }
+        )
         if not response["ok"]:
             raise ValueError(f"bridge command rejected: {response.get('error')}")
         return response["result"]
@@ -485,7 +569,7 @@ class DebugBridge:
             self.receipt["outcome"] = "failed"
         status_path = self.output / "lua-status.json"
         self.receipt["luaStatus"] = load_json(status_path) if status_path.exists() else None
-        self._save()
+        self._save(final=True)
 
 
 def experiment(bridge: DebugBridge, mode: str) -> None:
@@ -553,7 +637,8 @@ def main() -> int:
         # Detailed failures, including potentially private paths, stay in local receipts.
         if bridge.created:
             bridge.receipt.update(outcome="failed", error=str(failure))
-            bridge._save()
+            # A post-context experiment assertion may correct the final outcome.
+            bridge._save(final=True)
         print(f"FAIL {arguments.mode}: {type(failure).__name__}; inspect local receipt")
         return 1
     print(f"PASS {arguments.mode}; forced termination={bridge.receipt['forcedTermination']}")

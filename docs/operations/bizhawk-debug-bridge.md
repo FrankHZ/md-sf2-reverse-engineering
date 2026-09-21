@@ -77,6 +77,64 @@ handle, with another three-second bounded wait. No name-based or global PID clea
 is used. No child-process tree was observed in this experiment; arbitrary future
 emulator helpers/child processes are outside this cleanup contract.
 
+## Receipt persistence and interrupted reads
+
+Each new launch appends UTF-8 JSON objects to `bridge/receipt.jsonl` (or
+`receipt.jsonl` directly in the standalone bridge output). The single controller
+closes the file after each newline-terminated append, flushing it before continuing,
+following the observer's existing append-log pattern:
+
+| `kind` | Recorded fields and ordering |
+| --- | --- |
+| `state` | `value`: lifecycle receipt fields, excluding `commands`; initial state, launch intent, process start, connection, hello and final cleanup |
+| `request` | `sequence`, `request`: the exact wire intent, persisted before socket send |
+| `result` | `sequence`, `value`: that request's response and exchange seconds, or exception type/message and seconds; a decoded invalid envelope is retained too |
+
+There is no growing-history serialization in the command loop. Context exit appends
+the final lifecycle state and writes the complete existing `receipt.json` shape
+once via `receipt.json.tmp` and replacement. The standalone experiment entry point
+can write one additional aggregate if its final assertion/failure handler corrects
+the outcome. Normal acquisition writes one. The in-memory `bridge.receipt` remains
+available to its existing caller. Successful/rejected responses keep their existing
+shape; transport/interruption failures add `error`, `errorType` and `seconds` to
+their command. Exit, timeout and process-containment semantics are unchanged.
+
+Inspect persisted evidence without modifying it:
+
+```python
+from pathlib import Path
+from sf2tool.bizhawk_debug_bridge import read_receipt
+
+receipt = read_receipt(Path("local/<run>/bridge"))
+```
+
+`read_receipt` replays the journal when present and otherwise reads an old
+`receipt.json`. It accepts only complete newline-terminated records, rejects
+malformed complete records or sequence mismatches, and ignores an unterminated
+final line while reporting `incompleteJournalTail=true`. Even a parseable final
+JSON object without its newline is uncommitted. It neither truncates the source nor
+repairs an aggregate. A partial `receipt.json.tmp` is not evidence used by the
+reader. Already flushed records survive a host-process kill; disk/power-loss
+durability is **Unknown** and no `fsync` guarantee is made.
+
+A request without a result is **pending/unknown delivery**, not permission to retry
+it: the emulator may already have advanced. A recovered running receipt never
+invents exit status, cleanup or elapsed time. The existing segment readers still
+require the final aggregate, completed host/process accounting and sealed evidence
+identities before admission. Recovery for inspection does not make an interrupted
+attempt resumable. Existing receipts, segment pairs and lineage are read-only;
+the journal is additional local diagnostics, not a change to `SEGMENT_FILES`.
+
+**Confirmed:** direct loopback calls covered completion, refusal, EOF, receive
+timeout and invalid-envelope failures; journal reconstruction equaled each final
+aggregate. A killed Python host retained one completed command and the next
+pending request without a fabricated completion. Truncated UTF-8 at the last line
+was ignored and flagged; malformed newline-terminated JSON was rejected. The
+private reproduction is `uv run --locked python -X utf8
+local/issue508/observe_failures.py` with fresh output destinations. These are
+transport/persistence observations, not original-game observations or new tests
+of verification tooling.
+
 ## Wire and command contract
 
 BizHawk is the TCP **client** despite the `socketServer*` API names. Both directions
@@ -323,57 +381,65 @@ its state effect, full RA-12, remaining 8D and H4 remain **Unknown**. Protocol a
 
 ## Acquisition performance boundary
 
-**Confirmed:** a short comparison at accepted source
-`5102804b98f3574bb87d6ba4b43d88413c501a68` separates the slow acquisition controller
-from original emulation. Both runs used the registered BizHawk 2.11.1 / Genplus-gx
-executable directly, the manifest US ROM, the same accepted resumable state and
-the same 1,030 actually applied input frames from one retained Battle01 segment.
-No emulator installation was copied. This is a performance diagnostic, not another
-scenario acceptance or a continuation of the completed acquisition.
+**Confirmed:** the incremental persistence above removes the measured repeated
+whole-history rewrite cost. A paired run compares the bridge at accepted base
+`180c95081effb9a99fa2ec9de885f531e444a138` with this implementation. Both use the
+registered BizHawk 2.11.1 / Genplus-gx executable directly, the manifest US ROM,
+the same accepted resumable state and exactly 1,030 applied input frames: 228 step
+requests plus save. The observer, requests, single-frame guards and GDI/throttle
+settings are unchanged. No runtime copy or full-game acquisition was made.
 
-| Measurement | Observed result |
-| --- | --- |
-| Continuous Lua input delivery, without acquisition callbacks or host round trips | 1,030 frames in 17.1813 s: 59.95 simulated frames/s |
-| Existing acquisition observer and bridge, immediate next request, no operator sleep | 1,030 frames across 228 step requests plus save in 77.2158 s: 13.34 simulated frames per wall second |
-| Bridge request/execution/response intervals | 23.8662 s total; includes emulation, observer work, serialization and transport, not just network latency |
-| Whole-receipt serialization and writes, timed around `DebugBridge._save` | 53.5420 s across the run; 11.9246 GB cumulative rewritten file lengths, not measured physical-device traffic |
-| End-state comparison | All 65,536 bytes of 68K RAM, all reported CPU registers and emulator frame count equal |
-| Comparison with retained acquisition | Every request's applied-frame count, frame number, selected gameplay/RNG fields and battlefield accounting equal |
+| Measurement | Whole-history baseline | Incremental records |
+| --- | --- | --- |
+| Command total, immediate next request without operator sleep | 79.2479 s | 23.4292 s |
+| Request/execution/response intervals | 23.9233 s | 23.2541 s |
+| Persistence including lifecycle and final aggregate | 55.5210 s | 0.4031 s |
+| Cumulative written file lengths, decimal bytes | 11,924,540,900 | 61,499,312 |
+| Complete aggregate writes | 463 | 1 (0.2575 s) |
+| Mean persistence per command, first / last 50 commands | 41.7452 / 455.8646 ms | 0.6121 / 0.6593 ms |
+| Total command time, first / last 50 commands | 4.1732 / 26.3564 s | 2.0142 / 3.4285 s |
 
-Command time excludes startup and process teardown. The `_save` total includes its
-few lifecycle calls outside the command loop, so the two time columns are not an
-exact additive partition. Both processes exited 0 without forced termination.
-Windows ran them minimized with the retained GDI/throttle settings. These are
-simulation/wall-progress measurements, **not screen presentation FPS** or a general
-animation-cadence benchmark. No screenshots were taken.
+The incremental total consists of a 9,830,387-byte journal and a 51,668,925-byte
+final aggregate. These are application-written lengths, not physical-device I/O.
+Timing wraps baseline `_save`, incremental `_append` and final aggregation without
+double-counting the final lifecycle append. Command time excludes startup/teardown;
+persistence totals include those lifecycle calls, so the columns are not an exact
+additive partition. Per-command persistence excludes lifecycle calls, including
+the final baseline rewrite. First/last groups contain different frame workloads; their
+persistence cost, rather than overall command time, isolates the removed growth.
 
-The main measured cost is receipt persistence: `command` rewrites the growing
-`commands` array before and after each exchange. Mean `_save` time grew from
-20.96 ms in the first 50 commands to 221.42 ms in the last 50. A final receipt is
-about 52 MB. The observer additionally pauses and snapshots after each frame;
-209 of the 228 step requests advanced only one frame, including neutral requests
-shortened at observed boundaries. These safeguards explain why acquisition is not
-real-time play, but they do not justify repeatedly rewriting the full history.
+**Confirmed:** all 229 request strings and response trees match between runs except
+`result.state.activeSeconds`, the correctly measured cumulative wall time reduced
+by this change. Applied frames, all returned gameplay/RNG/battlefield accounting
+and frame numbers match. Final all-65,536-byte 68K RAM, reported CPU registers and
+emulator frame count also equal the retained continuous-run endpoint. The journal
+reconstructs the exact final receipt. Both native processes exited 0 without forced
+termination; explicit local SaveRAM paths were used and the shared-installation
+file size/mtime inventory and backed-up settings bytes remained unchanged. The
+retained parent/source segment pairs validated before and after each run.
 
-**Inferred improvement:** first retain incremental command/results and write the
-aggregate receipt once at finalization, while preserving interrupted-command and
-failure evidence. Reuse the existing append-log pattern rather than adding a
-storage framework. Then profile observer snapshots/stop boundaries before changing
-batching; do not remove readiness guards or full input recording just to improve
-speed. No performance fix is implemented by this diagnostic. The comparison found
-no original-state divergence in this segment; other segments remain unmeasured.
+The earlier accepted continuous-input measurement at
+`5102804b98f3574bb87d6ba4b43d88413c501a68` delivered these 1,030 frames in 17.1813 s
+(59.95 simulated frames/s) without acquisition callbacks or host round trips.
+The remaining 23.2541 s exchange interval includes emulation, observer snapshots,
+serialization and transport; this observation does not separately time them.
+209 of the 228 step requests advanced one frame. **Unknown:** other segments,
+general presentation cadence and the split of remaining observer/transport costs.
+These are simulated-progress/wall-time measurements, not display FPS guarantees,
+another scenario acceptance or H4 evidence. No screenshots were taken.
 
-Reproduction uses ignored `local/acquisition-speed-diagnostic/run_comparison.py`
-after loading `local/private-inputs.ps1`. It consumes the retained `prepared-73`
-state and `prepared-74` requests under `local/issue496`, expands **actual** advanced
-frames (not requested counts), delivers them continuously, then repeats the original
-requests through the existing observer. A task-local launch substitution returns the
-registered executable and local config/TEMP without calling materialization.
-`summarize.py` reads the resulting `comparison-report.json`, acquisition `timing.json`
-and original segment pairs. Fresh output names and explicit native-run ownership are
-required; the completed directories must not be overwritten. Inputs, native states,
-RAM/register dumps, receipts and scripts stay private/ignored. This bounded local
-recipe is not a new maintained CLI or a dependency of H4.
+Reproduction loads `local/private-inputs.ps1` in the same process and uses
+`uv run --locked python -X utf8 local/issue508/run_short.py before` and `after`,
+then `local/issue508/compare_responses.py`. The private wrapper reuses
+`local/acquisition-speed-diagnostic/run_comparison.py`, reading the retained
+`prepared-73` state and `prepared-74` requests under `local/issue496`; it loads the
+baseline bridge from the accepted Git object and uses the current bridge for the
+second run. Its explicit per-run config/paths/TEMP follow the installation findings
+below. `before-report.json`, `after-report.json`, per-run `timing.json` and
+`response-difference-paths.json` retain the measurements. New output names and
+explicit serial native ownership are required; completed evidence is never
+overwritten. All scripts, receipts, native states and RAM/register payloads remain
+private/ignored. They introduce no maintained CLI or H4 dependency.
 
 Installation reuse is a separate question: see
 [the direct-execution findings](./local-private-inputs.md#direct-installation-reuse-findings).
