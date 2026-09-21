@@ -396,7 +396,7 @@ settings are unchanged. No runtime copy or full-game acquisition was made.
 | Persistence including lifecycle and final aggregate | 55.5210 s | 0.4031 s |
 | Cumulative written file lengths, decimal bytes | 11,924,540,900 | 61,499,312 |
 | Complete aggregate writes | 463 | 1 (0.2575 s) |
-| Mean persistence per command, first / last 50 commands | 41.7452 / 460.9622 ms | 0.6121 / 0.6593 ms |
+| Mean persistence per command, first / last 50 commands | 41.7452 / 455.8646 ms | 0.6121 / 0.6593 ms |
 | Total command time, first / last 50 commands | 4.1732 / 26.3564 s | 2.0142 / 3.4285 s |
 
 The incremental total consists of a 9,830,387-byte journal and a 51,668,925-byte
@@ -404,7 +404,8 @@ final aggregate. These are application-written lengths, not physical-device I/O.
 Timing wraps baseline `_save`, incremental `_append` and final aggregation without
 double-counting the final lifecycle append. Command time excludes startup/teardown;
 persistence totals include those lifecycle calls, so the columns are not an exact
-additive partition. First/last groups contain different frame workloads; their
+additive partition. Per-command persistence excludes lifecycle calls, including
+the final baseline rewrite. First/last groups contain different frame workloads; their
 persistence cost, rather than overall command time, isolates the removed growth.
 
 **Confirmed:** all 229 request strings and response trees match between runs except
