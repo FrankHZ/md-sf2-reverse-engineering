@@ -257,9 +257,14 @@ bridge protocol, standalone limits and transport implementation are unchanged. `
 responses carry private original battlefield/grid/target facts and stage-specific input readiness.
 After battle admission each nonneutral step is one frame; neutral steps retain the 120-frame bound.
 Consumed input invalidates its previous poll, and the finite operator waits for the new source
-consumer before acting again. Offline Heal 1 support adds original magic icon/level input polls
-and reuses the target consumer; nested short callers must close before save. Unsupported menus,
-other manual spells and defeat remain incomplete observations.
+consumer before acting again. Heal 1's original icon/level/target input and effects have now been
+observed natively. The offline Medical Herb extension distinguishes the top battle diamond from
+the source `MENU_ITEM` diamond, admits only Use=0, then reads the original item poll at `0x10616`.
+Original D0 item / D1 slot and the inventory word must agree; only herb 0 after the original index
+mask is admitted. It reuses the target consumer and records original effect/slot removal. Nested
+short callers must close before save. Equip/Give/Drop confirmation and other manual items/spells
+remain explicitly unsupported; source polls/results and input-readiness rejection enforce that
+boundary. B cancellation and consumed-poll invalidation retain their original return contexts.
 
 The same `save` command may seal later battle checkpoints only in this selection. The observer
 requires a neutral completed movement frame, closed short consumers and the three exact original
@@ -269,13 +274,18 @@ rules apply. The old first-player-ready terminal pair cannot resume. The final v
 flag/field predicate and nonresumable terminal pair are owned by acquisition, not by a bridge success
 receipt. Accepted PR499 source produced native battle save/load and actions through original defeat
 in prepared-16, but its 78571-byte terminal reply exceeded the unchanged **65536-byte** bridge
-limit. Host FAIL is preserved despite clean native exit/restoration/ROM cleanup. The offline
+limit. Host FAIL is preserved despite clean native exit/restoration/ROM cleanup. The accepted
 correction sends a compact stop descriptor and local observation filename in victory-mode
 `terminalCallback`; full original terminal facts stay in existing private evidence files. Direct
 replay of the failed reply produces 41926 bytes. Shared framing and limits are unchanged.
-Current totals are **46 / 7479.841504100186 / 140632 / 3306** (starts/seconds/frames/batches).
-The corrected reply and Heal input consumers are **native NOT RUN**; source acceptance and a fresh
-compatible chain carrying all prior costs precede execution. Original victory/5B/H4 remain Unknown.
+At that failure, totals were **46 / 7479.841504100186 / 140632 / 3306** (starts/seconds/frames/batches).
+Prepared-17..32 subsequently confirm native corrected replies and Heal input/effects at PR500's
+accepted source. Defeats 27/29/32 report INCOMPLETE-OBSERVATION with native exit 0, restored entry
+state, cleared callbacks, deleted session ROM and unchanged canonical identity. All costs remain
+charged: **61 / 8837.811812300177 / 192811 / 5222** (starts / seconds / frames / batches). The Herb
+extension is **native NOT RUN**; independent source acceptance and a fresh compatible R1 carrying
+all costs precede execution. No shared bridge limit/protocol change or old-parent compatibility
+exception is introduced. Original victory/5B/H4 remain **Unknown**.
 
 ## Observed acceptance and launch accounting
 

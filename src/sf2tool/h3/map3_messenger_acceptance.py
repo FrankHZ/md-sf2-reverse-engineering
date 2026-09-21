@@ -1603,6 +1603,10 @@ def _victory_configuration(
         "code/common/tech/randomnumbergenerator.asm",
         "code/common/menus/diamondmenu.asm",
         "code/common/menus/magicmenu.asm",
+        "code/common/menus/itemmenu.asm",
+        "code/common/stats/itemstats.asm",
+        "code/gameflow/battle/battleactions/breakuseditem.asm",
+        "data/stats/items/itemdefs.asm",
         "data/stats/spells/spelldefs.asm",
     ):
         source = (disasm / path).read_text(encoding="utf-8")
@@ -1642,6 +1646,10 @@ def _victory_configuration(
         "ExecuteBattlefieldMagicMenu",
         "SelectSpellLevel",
         "ExecuteBattlefieldItemMenu",
+        "CreatePulsatingItemRangeGrid",
+        "battlesceneScript_UseItem",
+        "battlesceneScript_BreakUsedItem",
+        "RemoveItemBySlot",
         "ExecuteBattleaction_Egress",
         "ExecuteBattleaction_AngelWing",
     )
@@ -1655,6 +1663,7 @@ def _victory_configuration(
         ("diamondInputPc", "ExecuteDiamondMenu", "LoadDiamondMenuWindowLayout"),
         ("magicInputPc", "ExecuteBattlefieldMagicMenu", "BuildMagicMenu"),
         ("spellLevelInputPc", "SelectSpellLevel", "sub_10D56"),
+        ("itemInputPc", "ExecuteBattlefieldItemMenu", "BuildItemMenu"),
     ):
         reads = []
         for line in listing.splitlines():
@@ -1707,6 +1716,19 @@ def _victory_configuration(
         "NOT_CURRENTLY_IN_BATTLE",
         "DISPLAYED_ICON_1",
         "SPELL_HEAL",
+        "MENU_BATTLE_WITH_STAY",
+        "MENU_BATTLE_WITH_SEARCH",
+        "MENU_ITEM",
+        "ITEM_MEDICAL_HERB",
+        "ITEMENTRY_MASK_INDEX",
+        "ITEMDEF_SIZE",
+        "ITEMTYPE_CONSUMABLE",
+        "SPELL_HEALIN",
+        "SPELLDEF_ENTRY_SIZE",
+        "SPELLANIMATION_HEALING_FAIRY",
+        "SPELLPROPS_TYPE_HEAL",
+        "SPELLPROPS_TARGET_TEAMMATES",
+        "BATTLESCENE_ITEM",
     )
     constants = r1._equates(
         sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"],
@@ -1767,11 +1789,73 @@ def _victory_configuration(
     # source fields bind directly to ROM at the H1 table symbol.
     if rom[heal_pc : heal_pc + 2] != heal_bytes:
         raise ValueError("Heal 1 spell/MP cost source/H1/ROM drift")
+    # The first item is Medical Herb. Bind its complete definition, then its
+    # packed HEALIN-1 spell entry; never infer item use from the display name.
+    herb = re.search(
+        r"; 0: Medical Herb\s+equipFlags\s+NONE\s+range\s+(\d+),\s*(\d+)\s+"
+        r"price\s+(\d+)\s+itemType\s+CONSUMABLE\s+useSpell\s+HEALIN\s+"
+        r"equipEffects\s+NONE, 0, &\s+NONE, 0, &\s+NONE, 0",
+        sources["data/stats/items/itemdefs.asm"],
+    )
+    if herb is None or constants["ITEM_MEDICAL_HERB"] != 0:
+        raise ValueError("Medical Herb source definition missing/ambiguous")
+    herb_bytes = (
+        bytes(4)
+        + bytes((int(herb[2]), int(herb[1])))
+        + int(herb[3]).to_bytes(2, "big")
+        + bytes((constants["ITEMTYPE_CONSUMABLE"], constants["SPELL_HEALIN"]))
+        + bytes(6)
+    )
+    herb_pc = addresses["table_ItemDefinitions"]
+    if (
+        len(herb_bytes) != constants["ITEMDEF_SIZE"]
+        or rom[herb_pc : herb_pc + len(herb_bytes)] != herb_bytes
+    ):
+        raise ValueError("Medical Herb item source/H1/ROM drift")
+    spell_source = sources["data/stats/spells/spelldefs.asm"]
+    herb_spell = re.search(
+        r"^\s*entry\s+HEALIN\s*;[^\n]*\n\s*mpCost\s+(\d+)\s+"
+        r"animation\s+HEALING_FAIRY\s+properties\s+TYPE_HEAL\|TARGET_TEAMMATES\s+"
+        r"range\s+(\d+),\s*(\d+)\s+radius\s+(\d+)\s+power\s+(\d+)",
+        spell_source,
+        re.MULTILINE,
+    )
+    if herb_spell is None:
+        raise ValueError("Medical Herb HEALIN-1 source definition missing/ambiguous")
+    spell_ordinal = len(
+        re.findall(r"^\s*entry\s+", spell_source[: herb_spell.start()], re.MULTILINE)
+    )
+    herb_spell_pc = heal_pc + spell_ordinal * constants["SPELLDEF_ENTRY_SIZE"]
+    herb_spell_bytes = bytes(
+        (
+            constants["SPELL_HEALIN"],
+            int(herb_spell[1]),
+            constants["SPELLANIMATION_HEALING_FAIRY"],
+            constants["SPELLPROPS_TYPE_HEAL"] | constants["SPELLPROPS_TARGET_TEAMMATES"],
+            int(herb_spell[3]),
+            int(herb_spell[2]),
+            int(herb_spell[4]),
+            int(herb_spell[5]),
+        )
+    )
+    if (
+        len(herb_spell_bytes) != constants["SPELLDEF_ENTRY_SIZE"]
+        or rom[herb_spell_pc : herb_spell_pc + len(herb_spell_bytes)] != herb_spell_bytes
+    ):
+        raise ValueError("Medical Herb HEALIN-1 source/H1/ROM drift")
     natural["programs"].append(addresses["abcs_battle01"])
     natural["victory"] = {
         "owners": owners,
         "noBattleWritePc": no_battle_pc,
         "heal": {"spell": constants["SPELL_HEAL"], "mpCost": int(heal[1])},
+        "herb": {
+            "item": constants["ITEM_MEDICAL_HERB"],
+            "indexMask": constants["ITEMENTRY_MASK_INDEX"],
+            "spell": constants["SPELL_HEALIN"],
+            "minRange": int(herb_spell[2]),
+            "maxRange": int(herb_spell[3]),
+            "power": int(herb_spell[5]),
+        },
         "checkpoint": "neutral completed player-movement frame with reconstructible battle returns",
         "terminal": "after-program/flags/BattleLoop/SwitchMap return and stable exploration input",
     }

@@ -149,13 +149,19 @@ callback, exchange and operator-idle containment remain enforced. A capability D
 complete the Issue: actual observation, independent acceptance and tracked result integration are
 still required. PR499's accepted source now has bounded native battle save/load/action evidence
 ending in original defeat, with a preserved terminal transport **FAIL**: 78571 bytes exceed the
-unchanged 65536-byte bridge limit. All **46 starts / 7479.841504100186 seconds / 140632 frames /
-3306 batches** remain charged, including the failed child; failed21's final cleanup Unknown remains.
-The narrow reply projection preserves full original facts in existing local files. The concrete
-defeat also justifies minimal original Heal 1 icon/level/target input support and a revised finite
-operator using party cohesion, actual weakened targets and wounded allies. These corrections are
-**offline only, native NOT RUN** and require independent source acceptance followed by a fresh
-compatible R1 chain. They grant no reuse of old-source parents or normalization of HP/MP/RNG.
+unchanged 65536-byte bridge limit. Subsequent accepted PR500 source collected prepared-17..32:
+corrected native replies, original Heal 1 input/effects, recoverable battle checkpoints through
+round 8, and three further original defeats with complete cleanup. Current totals are **61 starts /
+8837.811812300177 seconds / 192811 frames / 5222 batches**, including every failed child;
+failed16's transport FAIL and failed21's final cleanup Unknown remain preserved.
+Unused original Medical Herbs expose a concrete remaining input gap. The bounded offline
+extension admits only original Item→Use→Medical Herb→target input, with menu-context, slot,
+consumption/effect, cancellation and pending/save checks; Equip/Give/Drop and other manual items
+stay explicitly unsupported. Inventory/spell review identifies no other currently necessary
+ordinary input for this battle route. The extension is **native NOT RUN** and requires independent
+source acceptance followed by a fresh compatible R1 chain carrying all costs. It grants no reuse
+of old-source parents or normalization of HP/MP/items/RNG. Finite operator tactics may change
+within accepted source, while failures and actual input decisions remain retained.
 Victory/5B and remaining presentation consumption remain **Unknown**. H4 and disabled replay
 boundaries are unchanged.
 

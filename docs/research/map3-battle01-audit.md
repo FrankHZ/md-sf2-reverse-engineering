@@ -19,10 +19,18 @@ and victory/after-program/controllable-5B predicates. Native prepared-06..16 at 
 effects, RNG, scene consumption/reloads and original defeat. RA-06 therefore has this bounded
 additional observation, not complete action-branch coverage. The terminal reply exceeds 64 KiB;
 the host **FAIL** and complete cleanup/cost evidence remain preserved in the acquisition owner.
-Current totals are 46 starts / 7479.841504100186 seconds / 140632 frames / 3306 batches, including
-failed16; failed21's missing final cleanup payload remains **Unknown**. The reply projection,
-minimal Heal 1 consumers and revised cohesion/healing/focus operator are **offline only, native
-NOT RUN**. A fresh compatible chain must inherit all costs after independent source acceptance.
+After PR500 source acceptance at `43b92d14de774f153e263ba00b511aaa8fa22955`, prepared-17..32
+confirm native reply projection, Heal 1 selection/effects and save/load through round 8. Children
+27, 29 and 32 end in original defeat with **INCOMPLETE-OBSERVATION**, exit 0 and complete cleanup.
+The acquisition owner preserves the double-attack distinction, actual scene HP/MP transitions,
+all failed-child costs and the local preparation-28 failure that launched nothing. Current totals
+are **61 starts / 8837.811812300177 seconds / 192811 frames / 5222 batches**; failed16's transport
+FAIL and failed21's missing final cleanup payload **Unknown** remain preserved.
+Original inventories still contain Medical Herbs. The minimal two-stage Use/item/target extension,
+source-bound slot consumption observations and revised finite operator are **offline only, native
+NOT RUN**. Equip/Give/Drop and other manual items remain unsupported. A new source identity
+requires independently accepted preparation and a fresh compatible R1 carrying all costs; no old
+parent is relabeled or reused.
 Victory/after-program/5B (RA-07/RA-12), full 8D, deterministic replay and H4 remain **Unknown**.
 
 ## Current milestone applicability
