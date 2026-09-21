@@ -6,22 +6,82 @@
 - ROM: USA retail SHA-256 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
 - Source baseline: ShiningForceCentral/SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6
 
-## Battle01 actions and victory continuation (Issue #496, offline)
+## Battle01 actions and victory continuation (Issue #496)
 
 [Issue #496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/496) extends the existing
 segmented acquisition with the explicit `VICTORY_CONTINUATION = "natural-battle01-victory-5b"`
-selection. **Confirmed only at the offline implementation boundary:** source/ROM binding, ordinary
-input delivery, observation and coherent checkpoint branches described below. **Unknown:** actual
-native compatibility, acquired actions, natural victory, after-program completion and controllable
-5B. Native execution is **NOT RUN** for this implementation slice. Independent source integration
-and main-gate inspection of the concrete preparation precede native collection in the same Issue.
+selection. After independent [PR #499 acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/499),
+native collection at accepted `a7383cd9133a00de456c9f4575af1482070f6aff` confirmed recoverable battle
+save/load, player/AI actions, effects, RNG, scene consumption/reloads and an original **defeat**.
+The final response exceeded the existing bridge limit and the host result remains **FAIL**.
+The reply correction and Heal 1 input support below are **offline only, native NOT RUN**.
+Victory, after-program completion, controllable 5B and H4 remain **Unknown**.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
 The accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches. These are retained observations, not stopping ceilings. Failed21's
+frames and 2063 advancing batches; the current total after this chain is **46 starts /
+7479.841504100186 charged seconds / 140632 resource frames / 3306 advancing batches**.
+These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
+
+### Native save/load, actions and failed terminal
+
+All candidates below are in the owning worktree's ignored `local/issue496/`. Only prepared-06
+bootstraps R1; every child loads and verifies original RAM/register/frame and observer state before
+input. The battle parents retain the three original return descriptors, checked against saved RAM.
+
+| Candidate / actual start | Saved frame / checkpoint | Delivered frames / batches / active seconds |
+| --- | --- | --- |
+| 06 / 36 | 8605, messenger rank 4 | 8605 / 134 / 178.91040549997706 |
+| 07 / 37 | 10386, Map19 rank 5 | 1781 / 33 / 43.00154950004071 |
+| 08 / 38 | 15606, royal rank 6 | 5220 / 77 / 100.50722060003318 |
+| 09 / 39 | 17740, guard rank 7 | 2134 / 46 / 54.40373250003904 |
+| 10 / 40 | 22368, turn 1 / rank 9 | 4628 / 181 / 103.56984469998861 |
+| 11 / 41 | 22479, turn 2 / rank 10 | 111 / 44 / 8.227438599977177 |
+| 12 / 42 | 23211, round 2 / turn 10 / rank 18 | 732 / 66 / 22.08622260001721 |
+| 13 / 43 | 24277, round 3 / turn 19 / rank 27 | 1066 / 241 / 87.14023969997652 |
+| 14 / 44 | 27203, round 4 / turn 28 / rank 36 | 2926 / 269 / 138.76676889997907 |
+| 15 / 45 | 32727, round 5 / turn 39 / rank 47 | 5524 / 115 / 122.41380649997154 |
+| 16 / 46 | 35625, original `observed-defeat`; no new pair | 2898 / 37 / 58.39555099996505 |
+
+Prepared-11 demonstrates actual load of the first battle parent, movement and STAY, original
+player/turn returns, RNG and a forward save. Later segments record actual attack script/effect,
+scene consumption, reload and death-processing seams. These bounded observations do not cover
+every R3 action branch. At defeat Bowie is 0/12 HP, Chester 0/11, Sarah 9/11 with all 10 MP unused;
+two enemies have died, gold is 180 and four enemies remain alive. The first isolated Chester
+advance leaves him at 5 HP before his first attack; later consecutive three-point hits kill
+Chester and Bowie. This is a failed tactic, not an original-game defect or a winning trace.
+
+The exact final logged reply encodes to **78571 bytes**: completed state 41557 and terminal callback
+36814 bytes plus envelope. The unchanged bridge rejects it above **65536 bytes** with
+`bridge payload length out of range`. Its native receipt exits 0 without timeout or forced
+termination; the observation records `loaded-segment-entry` restoration and callbacks cleared,
+the host confirms session-ROM deletion/canonical identity, and an independent process check finds
+no survivor. This completed failure is fully charged; it is not an interrupted run.
+
+The narrow correction projects only victory-mode `terminalCallback` to stop reason, callback
+PC/frame/order/boundary and `observationFile="observer.observed.json"`. The full terminal facts
+remain unchanged in that file and checkpoints; completed state remains in the reply. Direct
+execution of the actual old/current Lua reply blocks on this retained defeat produces
+78571 / **41926** bytes. Substituting success, unsupported-input and segment-save reasons exercises
+the same projection without claiming those native outcomes. Legacy mode is unchanged. The runner
+still reads full local observation/cleanup evidence and distinguishes incomplete outcomes from 5B.
+
+Reproduce retained pair/ordering/core/stack checks with `uv run python -X utf8
+local/issue496/audit-native-pair.py <prepared-name> <fresh-audit-name.json>` when repeating;
+the retained results are `<prepared-name>-pair-audit.json`. `inspect-blocker.py`,
+`check-terminal-wire.py <fresh-output>`, `review-defeat.py` and `review-targets.py` reconstruct the
+failure, wire sizes and scene HP changes from `runtime/{actual-inputs.jsonl,checkpoints.jsonl,
+observer.observed.json,host-status.json,bridge/receipt.json}`. `native-blocker-16.json`,
+`defeat-scene-results.jsonl` and `defeat-targets.jsonl` retain the compact results. The earlier local
+audit assertion about saved versus final parent order and the wire-driver function-serialization
+failure are preserved separately; neither changed original evidence or launched native.
+
+Prepared-15 is the last complete parent of the failed source chain. The corrected execution bytes
+make **every old parent incompatible**. After independent source acceptance, prepare a fresh R1
+chain carrying the full 46-start totals above; do not resume or relabel old pairs.
 
 ### Source binding and observation fields
 
@@ -55,8 +115,20 @@ steps may advance up to the existing 120-frame maximum and stop early at a new c
 Dialogue acknowledgements still require an active text/wait consumer, preventing an automatic C
 from becoming a battle/menu action. No script chooses a button inside the observer.
 
-Movement, physical attack, STAY and ordinary diamond/target cancellation are available. Entering
-`BattlefieldMenu`, manual magic/item selection, Egress or Angel Wing produces an explicit
+Movement, physical attack, STAY and ordinary diamond/target cancellation are available. Offline
+Heal 1 support reuses `ExecuteBattlefieldMagicMenu` and its nested `SelectSpellLevel`, then the same
+original target consumer. Pinned `magicmenu.asm` and H1/ROM input reads bind `loc_10AD8` and
+`loc_10CF4`; the selected entry must be exactly `SPELL_HEAL` (level 1). Its source definition and
+ROM bytes at the H1 `table_SpellDefinitions` symbol bind spell 0 / MP cost 3. The reply exposes the
+four original displayed spell words; D1 indexes the actual target list. Up/Left decrement and
+Down/Right increment that original index. Both nested magic consumers must close before saving;
+only the enclosing magic consumer is additionally discounted at the level input poll. Other
+pending callers still block input. C/B consumption invalidates the old poll, including cancellation
+back to the icon menu. The existing action-1/effect/RNG observations consume the original result;
+no HP, MP, target, action or RNG is written by the observer.
+
+Entering `BattlefieldMenu`, selecting a manual spell other than Heal 1, manual item selection,
+Egress or Angel Wing produces an explicit
 `unsupported-battle-input` observation, not a fabricated continuation. AI spell/item/effect paths
 remain observable. Defeat produces `observed-defeat`. Neither outcome is accepted as victory/5B.
 The finite operator can use current grid/positions and the actual available targets; no fixed
@@ -114,7 +186,16 @@ from that movement checkpoint to the next coherent checkpoint or a terminal obse
 current original grid/positions, menu choices and targets, and only acknowledges active dialogue
 consumers. Its `invoke-reviewed.py` wrapper checks clean accepted execution sources and parent
 accounting before invoking `run_map3_observation_candidate` with the same explicit selection.
-These local scripts are not evidence of an executed operator; they have not launched native here.
+Prepared-06..16 retain the executed operator decisions. After the observed defeat, the local
+operator now limits separation from living allies where the original grid permits, prefers weaker
+actual enemy targets and lower nearby exposure, and approaches badly injured allies with a Heal 1
+caster that has at least the source-bound MP cost. It selects healing targets only from the original
+list, prioritizing an endangered Bowie. The four-tile cohesion and injury thresholds are operator
+tactics, not gameplay legality. `operator-victory-defeat-path.py` preserves the failed strategy;
+`operator-correction-decisions.json` contains proposals against retained readbacks, not replayed
+game outcomes. New Heal effects and the revised winning route remain **Unknown**. The sequential
+`continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
+the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 
 Direct reproduction uses `local/issue496/bind.py`, `check-lua.py <fresh-output>`,
 `check-host.py <fresh-output>` and `prepare.py <fresh-output>` with `uv run python -X utf8`.

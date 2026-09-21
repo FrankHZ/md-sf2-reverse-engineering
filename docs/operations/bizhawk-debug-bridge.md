@@ -249,15 +249,17 @@ Callback-time terminal state, later same-frame callbacks and completed-frame sta
 The additional selection has only offline implementation checks and preparation authorization. No
 bridge experiment, native startup, reconnection, replay or new acquisition allowance is implied.
 
-### Battle01 victory continuation (Issue #496, offline)
+### Battle01 victory continuation (Issue #496)
 
-The [acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496-offline)
+The [acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496)
 adds the explicit `natural-battle01-victory-5b` selection to the existing runner/observer. The shared
 bridge protocol, standalone limits and transport implementation are unchanged. `state` and step
 responses carry private original battlefield/grid/target facts and stage-specific input readiness.
 After battle admission each nonneutral step is one frame; neutral steps retain the 120-frame bound.
 Consumed input invalidates its previous poll, and the finite operator waits for the new source
-consumer before acting again. Unsupported menus and defeat remain incomplete observations.
+consumer before acting again. Offline Heal 1 support adds original magic icon/level input polls
+and reuses the target consumer; nested short callers must close before save. Unsupported menus,
+other manual spells and defeat remain incomplete observations.
 
 The same `save` command may seal later battle checkpoints only in this selection. The observer
 requires a neutral completed movement frame, closed short consumers and the three exact original
@@ -265,8 +267,15 @@ long-call return descriptors; load verifies original core state and rebuilds the
 input. Existing parent identity, forward-checkpoint, exclusive publication and failed-child accounting
 rules apply. The old first-player-ready terminal pair cannot resume. The final victory/after-program/
 flag/field predicate and nonresumable terminal pair are owned by acquisition, not by a bridge success
-receipt. Native is **NOT RUN** until independent source integration and concrete preparation admission;
-offline synthetic branch checks prove neither a native load nor original victory/5B/H4.
+receipt. Accepted PR499 source produced native battle save/load and actions through original defeat
+in prepared-16, but its 78571-byte terminal reply exceeded the unchanged **65536-byte** bridge
+limit. Host FAIL is preserved despite clean native exit/restoration/ROM cleanup. The offline
+correction sends a compact stop descriptor and local observation filename in victory-mode
+`terminalCallback`; full original terminal facts stay in existing private evidence files. Direct
+replay of the failed reply produces 41926 bytes. Shared framing and limits are unchanged.
+Current totals are **46 / 7479.841504100186 / 140632 / 3306** (starts/seconds/frames/batches).
+The corrected reply and Heal input consumers are **native NOT RUN**; source acceptance and a fresh
+compatible chain carrying all prior costs precede execution. Original victory/5B/H4 remain Unknown.
 
 ## Observed acceptance and launch accounting
 
