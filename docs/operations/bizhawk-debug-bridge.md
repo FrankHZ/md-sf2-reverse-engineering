@@ -278,7 +278,7 @@ limit. Host FAIL is preserved despite clean native exit/restoration/ROM cleanup.
 correction sends a compact stop descriptor and local observation filename in victory-mode
 `terminalCallback`; full original terminal facts stay in existing private evidence files. Direct
 replay of the failed reply produces 41926 bytes. Shared framing and limits are unchanged.
-Current totals are **46 / 7479.841504100186 / 140632 / 3306** (starts/seconds/frames/batches).
+At that failure, totals were **46 / 7479.841504100186 / 140632 / 3306** (starts/seconds/frames/batches).
 Prepared-17..32 subsequently confirm native corrected replies and Heal input/effects at PR500's
 accepted source. Defeats 27/29/32 report INCOMPLETE-OBSERVATION with native exit 0, restored entry
 state, cleared callbacks, deleted session ROM and unchanged canonical identity. All costs remain
