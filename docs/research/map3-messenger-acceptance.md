@@ -20,14 +20,16 @@ After [PR #501 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engi
 the compatible chain below confirms original Medical Herb selection, consumption and healing.
 After [PR #502 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/502),
 prepared-45..67 confirm original victory and after-program return, followed by a post-victory
-observer **FAIL** described below. Stable controllable 5B and H4 remain **Unknown**.
+observer **FAIL** described below. After [PR #503 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/503),
+prepared-68..86 reach [two-frame stable field readiness](#native-victory-and-stable-field-readiness).
+Post-endpoint nonneutral input effect, full RA-12 and H4 remain **Unknown**.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
 Issue #485's accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches; the current total through prepared-67 is **96 starts /
-12405.304031100066 charged seconds / 304294 resource frames / 10553 advancing batches**.
+frames and 2063 advancing batches; the current total through prepared-86 is **115 starts /
+14197.020479699888 charged seconds / 365304 resource frames / 13351 advancing batches**.
 These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
 Prepared-41, explicit abort 61 and callback failure 67 independently retain final
@@ -268,7 +270,7 @@ cleanup; its reader originally awaited a normal step reply after abort, then rep
 local caller now drains abort completion separately. These failures do not invalidate earlier
 complete pairs. Ordinary defeats 56/64 and other successful segments have complete cleanup.
 
-**Confirmed source correction; changed-source native NOT RUN:** pinned `MapSetups` has no map57
+**Confirmed source correction (PR503 offline review boundary):** pinned `MapSetups` has no map57
 row. `GetCurrentMapSetup` returns `ms_Void` (`0x477E8`), whose word is `$FFFF`; the existing
 pre-battle setup whitelist omitted this actual post-victory selection. Preparation reuses the
 map-setup parser/encoder, checks the entire routing table against ROM and binds the named fallback
@@ -292,8 +294,98 @@ return/two-frame sequence, invalid setup phase/flags/pointer/map and unchanged o
 `check-old-post-victory.py` reproduces both old defects. `post-victory-offline-failures.json`
 separates local inspection/driver mistakes from native failures. All private inputs/outputs remain
 ignored; no new fixture, schema, CLI or shared bridge is introduced. Corrected source identities
-invalidate every old pair: independent source/preparation acceptance must precede fresh prepared-68,
-future actual start 97, carrying all 96-start totals. Stable 5B, frozen replay and H4 remain **Unknown**.
+invalidate every old pair. Independent source/preparation acceptance preceded fresh prepared-68,
+actual start 97, carrying all 96-start totals. The following result records that completed chain.
+
+### Native victory and stable field readiness
+
+**Confirmed (bounded native observation):** after independent PR503 source/preparation acceptance,
+prepared-68..86 execute accepted main `9c3ea03ac5f5b467ee744f1ac624870da2408443`, tree
+`7edb5a5169f1847100598c62f147b247579df433`. Fresh 68 starts from R1, carrying all 96 earlier
+starts. Its configuration identity is
+`221F0B722B802656ECEE6B4806075B05252B2FED26E49F8EAD42BC3A22E51B16`; runner identity is
+`97D424459D190B843598642F078BBF0CEDE2C7787F8FC0EB5492255E263D1339`, and observer identity is
+`8349604F919EB7071897CF9921ED51F951F5875A745B51289257B3F7CBB7D75B`.
+No incompatible save is loaded. The local operator reuses only successful original controller
+requests from 45→46→47→48→49→50→51→52→53→54→55→57→58→59→62→63→65→66→67,
+checking actual returned frame, positions, flags, RNG/time and battle accounting at each request.
+The failed request from 67 is excluded; after its last successful response at 60928, only neutral
+continuation is delivered. Accepted source readiness and host guards remain enforced.
+
+The 18 complete intermediate pairs (68..85) match the selected old checkpoints' entire `original`
+and `core` objects, including RAM/register/frame state. New 72 reaches first battle control at
+22368; new 85 saves round 14 at 56476. Segment 86 reaches `controllable-5b`, rank 112,
+round 14 / turn 103, at frame **61010**. Its pair is terminal and **nonresumable**: the production
+reader accepts explicit terminal inspection and rejects its use as a resume parent.
+
+| Segment 86 event | Observer frame / order |
+| --- | --- |
+| Natural victory | 58657 / 151125 |
+| `abcs_battle01` return | 60945 / 157461 |
+| Shared after-tail / enclosing `ExecuteAfterBattleCutscene` return | 60945 / 157462, 157463 |
+| F401 clear / F501 set returns | 60945 / 157466, 157468 |
+| BattleLoop D4=1 / SwitchMap / ExplorationLoop | 60945 / 157469, 157471, 157472 |
+| Map57 selects exact `ms_Void` at `0x477E8` | 60983 / 157549 |
+| `controllable-5b` terminal | 61010 / 157607 |
+
+All **67** reached after-program operation entry/return pairs match. The static fixture's 80
+source operations include embedded action records and trailing entity data; they are not 80
+runtime iterations. Independent native review also verifies 106 audio dispatch/mailbox pairs in
+this final segment; that bounded evidence does not establish full 8D presentation coverage.
+
+Two consecutive completed neutral frames, **61009 and 61010**, retain Map57, player `(5,12)`,
+raw `(1920,4608)`, facing 3 (DOWN), battle sentinel 255, F401 false and F501 true. Original player
+control and field-action input polls are observed; the final player poll is at `0x4FF8`, frame
+61010, value 0. Movement and camera are settled; map-event word, typewriting, pending returns and
+all active-consumer counts are zero. No map program, battle return, transfer or modal remains.
+The generic window-state byte is 1; actual dialogue/portrait predicates, rather than that byte
+alone, establish readiness. Party, joined and active roster are `[0,1,2]`; gold is 420.
+
+| Ally | Level | HP / MP | Items | Spells |
+| --- | --- | --- | --- | --- |
+| Bowie | 1 | 12/12, 8/8 | `[199,127,127,127]` | `[10,63,63,63]` |
+| Sarah | 2 | 12/12, 12/12 | `[213,127,127,127]` | `[0,63,63,63]` |
+| Chester | 2 | 12/12, 0/0 | `[184,127,127,127]` | `[63,63,63,63]` |
+
+All three status-effect fields are zero; no herbs remain and equipped weapons are retained.
+The player field entity determines the endpoint position: ally battle-record positions are not
+additional field entities. RNG bytes are `[188,203,0,0]`, copy 188; raw time fields are frame 170,
+seconds 674 and secondsFrames 40. Full original records remain in the private terminal evidence.
+
+All 19 native invocations exit 0 without timeout or forced termination, restore their recorded
+entry state, clear callbacks, delete session ROMs and preserve canonical ROM identity. Final 86
+reports `loaded-segment-entry` restoration and host `OBSERVATION-COMPLETE-UNREVIEWED`; that status
+does not itself grant independent acceptance. Native/operator process inspection finds no owned
+survivor. Segment 86 costs 4534 frames / 83 batches / 108.69000169995707 seconds. The new chain adds
+19 starts / 1791.716448599822 seconds / 61010 frames / 2798 batches, yielding complete historical
+**115 / 14197.020479699888 / 365304 / 13351** totals. Terminal-pair accounting, production
+lineage reconciliation and the complete native summary agree. Previous failures and cleanup
+Unknowns, including 21/41/61/67, remain unchanged.
+
+Reproduce the retained result without launching native, after loading `local/private-inputs.ps1`:
+
+```powershell
+uv run python -X utf8 local/issue496/audit-victory-terminal.py prepared-86 <fresh-output.json>
+uv run python -X utf8 local/issue496/compare-winning-checkpoints.py <fresh-output.json>
+uv run python -X utf8 local/issue496/victory-native-summary.py 86 <fresh-output.json>
+```
+
+`stable86-audit-01.json`, `stable86-checkpoints.json` and `victory-native-through86.json` retain
+passing executor results. Main-gate's independent `root-final-chain-review.json`,
+`prepared-86-root-final-structure.json`, `prepared-86-root-final-semantic.json` and
+`root-final-scenes-batch.jsonl` verify the full chain, terminal structure/state/consumers and scenes.
+These local readers and reports remain ignored inspection aids; the tracked runner/observer at
+the exact accepted Git object, original source and private native records own the observations.
+PR503's completed source checks (normal verification, actual Lua/host and ROM bindings) remain
+recorded in its handoff. This four-document result requires direct document/scope checks and its
+committed verification plan, not another native or aggregate suite.
+
+**Unknown:** the terminal collector executes no post-endpoint nonneutral ordinary input. RA-12's
+requirement that the next ordinary logical input be accepted and its state effect observed remains
+unchanged and unproved. Bounded two-frame stable 5B readiness is Confirmed; full RA-12, remaining
+8D, frozen replay, H4 and completion of #437 are not claimed. This result is savestate-linked
+original acquisition, not uninterrupted wall-time execution. No additional native launch is part
+of this result handoff.
 
 ### Source binding and observation fields
 
@@ -414,10 +506,10 @@ the next ordinal and `resume_directory` only; successful parents and failed-chil
 by the existing pair protocol. Victory mode requires explicit segmented accounting. Mode identity
 is included in parent compatibility. Native save/load are still outside callbacks.
 
-The next revised-runner preparation must use a fresh ignored destination, segment 1 without a parent,
-96 historical starts and future actual start 97, carrying all four current totals above under the
-existing 7200-second proposal. Prepared-68 is the fresh post-victory correction candidate; old
-preparations and source-incompatible pairs must not be reused.
+The completed post-victory correction chain began with prepared-68 in a fresh ignored destination,
+segment 1 without a parent, 96 historical starts and actual start 97, carrying the four totals
+through prepared-67 under the existing 7200-second proposal. It ended at terminal prepared-86;
+old preparations and source-incompatible pairs must not be reused.
 Preparation reports `CANDIDATE-PREPARED-NOT-ADMITTED`. It does not authorize execution or count
 as another actual start; independent source/preparation acceptance must precede native collection.
 
@@ -439,8 +531,8 @@ permits transit through allies while rejecting occupied final positions as the o
 does, prefers weakened targets and limits unnecessary separation. Enemy move-plus-one distance,
 cohesion and injury thresholds are tactical estimates, not exact enemy reach or gameplay legality.
 `operator-victory-before-herb.py` retains the pre-extension policy. Readback proposals are not
-replayed outcomes; herb use and a winning battle route are observed above, while stable 5B remains
-**Unknown**. The sequential
+replayed outcomes; herb use, a winning battle route and bounded stable field readiness are observed
+above. Post-endpoint ordinary input effect remains **Unknown**. The sequential
 `continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
 the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 

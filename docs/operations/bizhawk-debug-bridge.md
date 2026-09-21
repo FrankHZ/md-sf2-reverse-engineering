@@ -302,14 +302,24 @@ callback fails before stable 5B; native exit 1 and host ROM cleanup are confirme
 restoration/callback clearing **Unknown**. The explicit stdin abort 61 also lacks that final payload;
 a local abort-reader correction does not retroactively establish cleanup.
 
-Current totals are **96 / 12405.304031100066 / 304294 / 10553** (starts/seconds/frames/batches).
+Totals through that failed source chain were **96 / 12405.304031100066 / 304294 / 10553**
+(starts/seconds/frames/batches).
 The [acquisition result](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
 owns exact lineage, chronology, native failures and reproduction. Its offline correction binds
 map 57's original `ms_Void` only after the observed victory return and treats
 `EndAfterBattleCutscene` as a tail of the existing call, eliminating the false independent consumer.
 No protocol, framing, shared bridge or original-state mutation is added. Old source pairs remain
-incompatible; source/preparation acceptance and a fresh R1 with all costs precede further native.
-Stable 5B and H4 remain **Unknown**.
+incompatible. After independent PR503 source/preparation acceptance, fresh R1 prepared-68 carries
+all prior costs; 68..86 complete with 18 resumable checkpoints and one nonresumable terminal pair.
+All 19 native invocations exit 0 without timeout/forced termination, restore entry state, clear
+callbacks, delete their session ROM and preserve canonical identity; no owned native/operator
+process survives. Final host status is `OBSERVATION-COMPLETE-UNREVIEWED`, not H4 acceptance.
+The [final acquisition result](../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+records original victory, actual after-program/shared-tail return, source-correct void setup and
+settled neutral frames 61009/61010 with actual field-control polls. Current totals are **115 /
+14197.020479699888 / 365304 / 13351** (starts/seconds/frames/batches), including every earlier failure.
+The terminal reader rejects resume from 86. No post-endpoint nonneutral input is delivered;
+its state effect, full RA-12, remaining 8D and H4 remain **Unknown**. Protocol and framing are unchanged.
 
 ## Observed acceptance and launch accounting
 

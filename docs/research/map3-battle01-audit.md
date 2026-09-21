@@ -8,7 +8,7 @@
 - Product owner: [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), selected
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 
-The current additional observation is [Issue #485's first Battle01 player-ready acquisition](map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition),
+The earlier additional observation is [Issue #485's first Battle01 player-ready acquisition](map3-messenger-acceptance.md#accepted-first-battle01-player-ready-acquisition),
 independently reviewed by main-gate, extending [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed)
 accepted in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 
@@ -37,21 +37,28 @@ branch, including sibling/cousin costs. Native 45..67 exercise this recovery: 62
 charging completed 60 and failed 61. The selected branch reaches original victory at frame 58657 and
 after-program/after-routine return, F401 clear→F501 set, BattleLoop D4=1 return, SwitchMap return and
 ExplorationLoop entry at 60945. These bounded RA-07 observations are **Confirmed**; complete action
-coverage and stable controllable 5B (RA-12) remain **Unknown**.
+coverage remained incomplete and stable controllable 5B (RA-12) was still **Unknown** at that boundary.
 
 67 fails at 60983 in the setup callback: Map57 selects source-defined `ms_Void`, missing from the
 observer's whitelist. It exits 1 with host ROM cleanup confirmed, final callback/restoration
 **Unknown** and no terminal pair. A second observer defect treats the BRA-entered
 `EndAfterBattleCutscene` function tail as a new call and leaves a false pending consumer. The bounded
 offline correction binds the exact void setup after victory and observes the tail through its live
-enclosing call. No original state is repaired. Actual-Lua/source/H1/ROM checks pass; changed-source
-native remains **NOT RUN** pending independent acceptance and a fresh identity-compatible R1.
+enclosing call. No original state is repaired. Actual-Lua/source/H1/ROM checks passed before
+independent PR503 acceptance and a fresh identity-compatible R1.
 
-Current totals are **96 starts / 12405.304031100066 seconds / 304294 frames / 10553 batches**.
-The [acquisition owner](map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
-retains the winning lineage, failures 56/61/64/67, tactical corrections, exact source bindings and
-reproduction routes. Earlier 16/21/41 failures remain preserved. Full 8D, frozen replay and H4 remain
-**Unknown**; this source correction does not complete Issue #496 or #437.
+The final PR503-source chain, prepared-68..86, confirms victory/after-program return and bounded
+stable field readiness at frames 61009/61010: Map57, player (5,12), facing DOWN, battle255,
+F401 false/F501 true, settled movement/camera and no pending program/modal/transfer/battle consumer.
+Actual neutral player and field-action input polls are observed. The terminal pair is nonresumable;
+all 19 invocations exit 0 with entry restoration, callback removal and ROM cleanup confirmed.
+The 18 intermediate original/core snapshots exactly match the selected old winning checkpoints.
+Current totals are **115 starts / 14197.020479699888 seconds / 365304 frames / 13351 batches**.
+The [acquisition owner](map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+retains exact terminal fields, chronology, lineage, source identities and reproduction routes.
+Earlier failures 16/21/41/56/61/64/67 remain preserved. **Unknown:** the effect of the next ordinary
+nonneutral input was not executed or observed. RA-12 keeps that requirement; bounded two-frame
+readiness does not establish full RA-12, full 8D, frozen replay, H4 or completion of #437.
 
 ## Current milestone applicability
 
@@ -183,7 +190,7 @@ proved by the mapped evidence; it is not permission to run a scenario.
 | RA-09 | R2a text IDs/speaker/prompt chronology and static program/text corpus | On reached programs only: text ID/packed speaker/portrait identity, selected prompt return, cursor advance, actual text consumer/acknowledgement/close and program return order. Original prose stays private. Service shims and static ID lists leave actual consumption **Unknown**. |
 | RA-10 | 6A excludes save/load/checkpoint/suspend | Restart-to-admitted-state is a product check. No new persistence observation; cross-process durability remains a separate **Unknown**, and harness reset is not a save feature. |
 | RA-11 | Source-backed identities, local semantics, bounded request/return evidence | Reached scene/dialogue/entity-animation/audio cue identities and semantic consumption/completion/blocking/input-ready relations above, with private content provenance. Capture only necessary consumer boundaries not proved statically or by retained observations. Hardware precision is excluded; no complete 8C capture inventory or backend is required. |
-| RA-12 | 5B defines endpoint shape only | First stable control after RA-07: map/egress, player position/facing, party and combatant status/stats/items/spells, gold, route/battle flags, RNG/time relevant to continuation; no pending battle/transfer/script/modal; next ordinary logical input is accepted and its state effect observed. Final numeric values and map are **Unknown** here. An ExplorationLoop call alone does not prove controllability. |
+| RA-12 | 5B defines endpoint shape only | First stable control after RA-07: map/egress, player position/facing, party and combatant status/stats/items/spells, gold, route/battle flags, RNG/time relevant to continuation; no pending battle/transfer/script/modal; next ordinary logical input is accepted and its state effect observed. The [Issue #496 terminal](map3-messenger-acceptance.md#native-victory-and-stable-field-readiness) confirms the named values and two neutral settled frames with actual input polls. Post-endpoint nonneutral input acceptance/effect remains **Unknown**, so this row is not fully satisfied. An ExplorationLoop call alone does not prove controllability. |
 
 RA-07/12 reuse the [victory-return owner](map3-battle01-victory-return.md) and
 [battle cutscene routing contract](../design/contracts/battle-cutscene-routing.md); RA-04 uses
