@@ -30,7 +30,8 @@ running an original emulator inside the same comparison and must not treat Lua a
 implementation.
 
 R4a owns the static victory/after-battle/return spine. The Issue #496 amendment below additionally
-records bounded interactive victory and after-program observations; stable 5B remains **Unknown**.
+records bounded interactive victory, after-program return and two-frame stable field readiness.
+Post-endpoint ordinary input effect, full RA-12 and H4 remain **Unknown**.
 Frozen R4b replay has not been implemented. For R4b original-reference replay and remake H4,
 the launch counts are therefore **H3 = 0** and **H4 = 0**. This decision adds no fixture, schema,
 research-index record or association, address binding, CLI command, verification partition, or
@@ -176,16 +177,27 @@ remains. Accepted PR502 subsequently records actual earlier-parent recovery and 
 through original victory, after-program return, F401-clear/F501-set, BattleLoop D4=1 return and
 exploration reentry in prepared-67. The subsequent setup callback fails before stable field control;
 its host cleanup does not prove missing final observer restoration/callback cleanup. Abort 61 retains
-the same distinct Unknown. Current totals are **96 starts / 12405.304031100066 seconds /
+the same distinct Unknown. Totals through that failed chain were **96 starts / 12405.304031100066 seconds /
 304294 frames / 10553 batches**, including every branch and failure.
 
 The [acquisition owner](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
 records the bounded native result and minimal offline correction: source-bound map 57 void setup
-selection and the after-cutscene's actual shared function-tail ownership. Changed-source native is
-**NOT RUN** pending independent source/preparation acceptance; strict identities require a fresh R1
-with all historical costs, never a whitelist or edited old pair. Actual victory/after-program return
-is now bounded **Confirmed** evidence. Stable 5B, remaining presentation consumption, full 8D and H4
-remain **Unknown**. Disabled replay boundaries are unchanged.
+selection and the after-cutscene's actual shared function-tail ownership. After independent PR503
+source/preparation acceptance, prepared-68 starts a fresh R1 with all historical costs; strict
+identities prohibit loading old-source pairs. Prepared-68..86 finish at a nonresumable terminal
+pair, with all 19 native exits, entry restoration, callback removal and ROM cleanup confirmed.
+The [final result](../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)
+records bounded **Confirmed** original victory/after-program return and settled neutral field frames
+61009/61010 with actual player-control polls at Map57 (5,12), facing DOWN and battle255. Current
+interactive totals are **115 starts / 14197.020479699888 seconds / 365304 frames / 13351 batches**;
+all earlier failures remain charged and their unresolved cleanup Unknowns are preserved.
+
+The collector stops before any post-endpoint nonneutral ordinary input. Its acceptance and state
+effect remain **Unknown**; RA-12 retains that explicit requirement. Two-frame 5B readiness does not
+prove full RA-12, remaining presentation consumption, full 8D, H4 or completion of #437. This remains
+savestate-linked interactive original acquisition, not uninterrupted wall-time or frozen replay.
+Disabled replay boundaries and their zero launch/counter delta are unchanged. No new fixture,
+schema, CLI, shared transport or H4 claim is introduced by the result.
 
 ### Use distinct names and evidence owners
 
