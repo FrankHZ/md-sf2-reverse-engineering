@@ -14,19 +14,24 @@ selection. After independent [PR #499 acceptance](https://github.com/FrankHZ/md-
 native collection at accepted `a7383cd9133a00de456c9f4575af1482070f6aff` confirmed recoverable battle
 save/load, player/AI actions, effects, RNG, scene consumption/reloads and an original **defeat**.
 The final response exceeded the existing bridge limit and the host result remains **FAIL**.
-The reply correction and Heal 1 input support below are **offline only, native NOT RUN**.
+After [PR #500 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/500),
+subsequent native collection confirmed the corrected terminal reply and original Heal 1 input/effects.
+The Medical Herb extension below is **offline only, native NOT RUN**.
 Victory, after-program completion, controllable 5B and H4 remain **Unknown**.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
 The accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches; the current total after this chain is **46 starts /
-7479.841504100186 charged seconds / 140632 resource frames / 3306 advancing batches**.
+frames and 2063 advancing batches; the current total through prepared-32 is **61 starts /
+8837.811812300177 charged seconds / 192811 resource frames / 5222 advancing batches**.
 These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
 
 ### Native save/load, actions and failed terminal
+
+The table below retains the first source chain. Its terminal total was 46 / 7479.841504100186 /
+140632 / 3306; it must not be resumed by either later observer identity.
 
 All candidates below are in the owning worktree's ignored `local/issue496/`. Only prepared-06
 bootstraps R1; every child loads and verifies original RAM/register/frame and observer state before
@@ -83,6 +88,45 @@ Prepared-15 is the last complete parent of the failed source chain. The correcte
 make **every old parent incompatible**. After independent source acceptance, prepare a fresh R1
 chain carrying the full 46-start totals above; do not resume or relabel old pairs.
 
+### Native Heal 1 chain and remaining item-input gap
+
+Prepared-17..32 use accepted `43b92d14de774f153e263ba00b511aaa8fa22955`, tree
+`97ea2c7b206ed3e5ad3fa8f985fe214bbded233d`. Prepared-17 bootstraps a fresh R1, carrying all
+46 prior starts; 18..21 reach the same first battle checkpoint at frame 22368. Prepared-22..26
+save rounds 2..6 at frames 23256, 24286, 25755, 27627 and 31872. Every complete pair passed
+original core/frame/register/RAM, observer order, original return-stack and forward-checkpoint
+readbacks before reuse. These saves and failed children remain retained under their own identities.
+
+| Candidate / actual start | Parent | Observed result |
+| --- | --- | --- |
+| 27 / 57 | 26 | Heal 1 restores Chester 4→11, Sarah MP 10→7. Enemy 133's one turn/scene has FIRST then SECOND attacks, Bowie 8→4→0. Defeat frame 34945. |
+| 29 / 58 | 26 | Heal restores Bowie 8→12. Enemy 133 again hits twice, 12→4; the attempted short retreat does not prevent enemy 129's later 4→0 hit. Defeat frame 36272. |
+| 30 / 59 | 26 | Heal plus retreat using all original reachable destinations survives to round 7 / turn 54 / rank 62, frame 36182. Bowie 4 HP, Sarah 5 HP / 7 MP, Chester 1 HP. |
+| 31 / 60 | 30 | Bowie healed 4→12; Chester dies. Save round 8 / turn 65 / rank 73, frame 41170: Bowie 6 HP, Sarah 1 HP / 4 MP. |
+| 32 / 61 | 31 | Bowie kills enemy 133. Sarah self-heals 1→11 / MP 4→1, then enemy 128 lowers her to 9. Enemy 130 lowers Bowie 6→3; next-round enemy 128 lowers him 3→0. Defeat frame 44706 / turn 69. |
+
+Each of 27, 29 and 32 is a completed **INCOMPLETE-OBSERVATION**, not a transport failure or an
+interrupted run. All 15 native invocations exit 0 without timeout/forced termination, clear
+callbacks, restore the entry state, delete the session ROM and retain the canonical identity;
+post-run process inspection found no owned survivor. Failed-child accounting includes every
+attempt. Preparation 28 failed in the local caller's relative-parent reconciliation before creating
+a candidate or launching; resolving the parent path fixed that caller, without changing source.
+
+Reproduce the compact retained projections with `herb-native-summary.py`, `root-scene-review.py
+<prepared-name>`, `review-fatal-scene27.py`, `review-round29.py` and `reconcile-32.py` under
+`local/issue496/`, using `uv run python -X utf8`. `herb-native-summary.json`,
+`fatal-scene27.jsonl`, `round29-scenes.jsonl`, `failed-{27,29,32}-accounting.json` and the native
+receipts preserve results. Scene HP changes compare before `WriteBattlesceneScript` with after
+`EndBattlescene`; script construction temporarily computes and restores HP, so its return alone
+does not prove consumed damage/healing.
+
+The last complete parent's original inventories are Bowie `[199,0,127,127]`, Sarah
+`[213,0,0,127]`, Chester `[184,0,127,127]`. Pinned `ITEM_MEDICAL_HERB=0` and index mask `0x7F`
+identify unused herbs; equipped weapon bits are already present. This concrete missing manual
+input justifies the bounded extension below. No further native start uses the constrained old
+source. Its parents remain incompatible with the changed observer; the next accepted fresh R1
+must inherit all **61 / 8837.811812300177 / 192811 / 5222** costs. Victory and 5B remain **Unknown**.
+
 ### Source binding and observation fields
 
 Preparation reads the five accepted R3a/R3b/R3c/R3d/R4a fixtures and validates their named source
@@ -115,7 +159,7 @@ steps may advance up to the existing 120-frame maximum and stop early at a new c
 Dialogue acknowledgements still require an active text/wait consumer, preventing an automatic C
 from becoming a battle/menu action. No script chooses a button inside the observer.
 
-Movement, physical attack, STAY and ordinary diamond/target cancellation are available. Offline
+Movement, physical attack, STAY and ordinary diamond/target cancellation are available.
 Heal 1 support reuses `ExecuteBattlefieldMagicMenu` and its nested `SelectSpellLevel`, then the same
 original target consumer. Pinned `magicmenu.asm` and H1/ROM input reads bind `loc_10AD8` and
 `loc_10CF4`; the selected entry must be exactly `SPELL_HEAL` (level 1). Its source definition and
@@ -127,12 +171,37 @@ pending callers still block input. C/B consumption invalidates the old poll, inc
 back to the icon menu. The existing action-1/effect/RNG observations consume the original result;
 no HP, MP, target, action or RNG is written by the observer.
 
-Entering `BattlefieldMenu`, selecting a manual spell other than Heal 1, manual item selection,
+The offline Medical Herb extension pins `itemmenu.asm`, `itemstats.asm`, `itemdefs.asm` and
+`breakuseditem.asm` in addition to the retained player-dispatch/action sources. H1/ROM bind the
+actual item input read at `loc_10616`, the complete first item definition at `table_ItemDefinitions`,
+and its HEALIN-1 definition: consumable item 0, spell 16, range 0–1, radius 0, nominal power 10.
+Actual restored HP, target validity and consumption remain original results, not observer writes.
+
+The first diamond's source `D2` distinguishes battle STAY/SEARCH contexts from `MENU_ITEM`.
+The second diamond is exposed as `battle-item-action`; only Use=0 or B cancellation is admitted.
+Equip/Give/Drop confirmation is rejected before advancing input, with a defensive unsupported stop
+at the original poll/return seams. `battle-item` then requires the preceding Use result and the
+original `CreatePulsatingItemRangeGrid` callback. The four displayed item words and inventory
+remain original; confirmation permits only Medical Herb after masking flags. Return D0 is the
+item, D1 the actual inventory slot, checked against that actor's full item word. Item B returns to
+the item-action diamond; target B returns to the top battle diamond. Each closed consumer clears
+its poll; pending item/target/effect calls block saving and unrelated pending calls block input.
+The same target consumer supplies the actual allowed allies. Before/after observations of
+`battlesceneScript_UseItem`, `battlesceneScript_BreakUsedItem` and `RemoveItemBySlot` retain the
+original action, item, slot, full inventories and HP/MP, alongside the existing effect/scene chain.
+No herb effect or successful native item cancellation is claimed by the offline checks.
+
+Entering `BattlefieldMenu`, selecting a manual spell other than Heal 1, any other manual item,
 Egress or Angel Wing produces an explicit
 `unsupported-battle-input` observation, not a fabricated continuation. AI spell/item/effect paths
 remain observable. Defeat produces `observed-defeat`. Neither outcome is accepted as victory/5B.
 The finite operator can use current grid/positions and the actual available targets; no fixed
-actor, round count, winning route or reward is required. A later extension of unsupported input
+actor, round count, winning route or reward is required. Existing equipped weapons need no Equip
+operation; herbs can target an allowed ally without Give; Drop and field menus are unnecessary
+for this route. Bowie's only recorded spell is Egress, which leaves the requested battle; Sarah's
+recorded Heal is supported. No other presently necessary ordinary input was identified from this
+inventory/spell/caller review. This is a bounded capability assessment, not full menu coverage.
+A later extension of unsupported input
 consumers needs source-bound readiness in this same owner.
 
 Segments 1–3 retain the existing early/royal/guard checkpoints. In victory mode, segment 4 and later
@@ -177,6 +246,12 @@ the next ordinal and `resume_directory` only; successful parents and failed-chil
 by the existing pair protocol. Victory mode requires explicit segmented accounting. Mode identity
 is included in parent compatibility. Native save/load are still outside callbacks.
 
+The current offline destination is `local/issue496/prepared-33`: preparation reports
+`CANDIDATE-PREPARED-NOT-ADMITTED`, zero emulator launches, 61 historical starts and future actual
+start 62. It is a fresh segment 1 with no parent and no runtime directory, carrying the four totals
+above under the existing 7200-second proposal. Preparation does not authorize execution or count
+as another actual start; independent source/preparation acceptance must precede native collection.
+
 The local prepared operator uses the same finite stdin/stdout request/response mechanism as #485.
 After main-gate admits the concrete preparation, `local/issue496/operator-prefix.py
 <prepared-name> <initial|gate|royal|guard|battle>` reuses the existing finite prefix operator to drive
@@ -186,27 +261,37 @@ from that movement checkpoint to the next coherent checkpoint or a terminal obse
 current original grid/positions, menu choices and targets, and only acknowledges active dialogue
 consumers. Its `invoke-reviewed.py` wrapper checks clean accepted execution sources and parent
 accounting before invoking `run_map3_observation_candidate` with the same explicit selection.
-Prepared-06..16 retain the executed operator decisions. After the observed defeat, the local
-operator now limits separation from living allies where the original grid permits, prefers weaker
-actual enemy targets and lower nearby exposure, and approaches badly injured allies with a Heal 1
-caster that has at least the source-bound MP cost. It selects healing targets only from the original
-list, prioritizing an endangered Bowie. The four-tile cohesion and injury thresholds are operator
-tactics, not gameplay legality. `operator-victory-defeat-path.py` preserves the failed strategy;
-`operator-correction-decisions.json` contains proposals against retained readbacks, not replayed
-game outcomes. New Heal effects and the revised winning route remain **Unknown**. The sequential
+Prepared-06..32 retain their executed operator decisions and prior operator versions. Current
+offline tactics consider healing resources before retreat, allow each herb holder to heal an
+original allowed target, and distinguish the item-action and item-icon menus. Threatened injured
+allies precede already sheltered allies; a threatened Bowie's identity breaks comparable choices,
+rather than overriding every more urgent wound. The operator evaluates the original grid,
+permits transit through allies while rejecting occupied final positions as the original caller
+does, prefers weakened targets and limits unnecessary separation. Enemy move-plus-one distance,
+cohesion and injury thresholds are tactical estimates, not exact enemy reach or gameplay legality.
+`operator-victory-before-herb.py` retains the pre-extension policy. Readback proposals are not
+replayed outcomes; herb use and the revised winning route remain **Unknown**. The sequential
 `continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
 the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 
-Direct reproduction uses `local/issue496/bind.py`, `check-lua.py <fresh-output>`,
-`check-host.py <fresh-output>` and `prepare.py <fresh-output>` with `uv run python -X utf8`.
+Direct reproduction uses `local/issue496/bind.py`, `check-herb.py <fresh-output>`,
+`check-host.py <fresh-output>` and `prepare-herb.py <fresh-output>` with `uv run python -X utf8`.
 The Lua driver executes the actual observer blocks with synthetic memory/core APIs; its save/load
 results prove observer continuation logic only, never native savestate compatibility. It covers
 residual actions, repeated turns/polls, menu/target isolation, unclosed consumers, corrupted stack,
 saved callback reconstruction/forward save, RNG, defeat, incomplete after-program/flag order and
-the complete two-frame endpoint. Existing #485 first-ready, stabilization and host/pair direct
+the complete two-frame endpoint. The item cases additionally exercise two diamond contexts,
+selection/slot mismatch, cancellation returns, consumed polls, pending/save rejection, effect and
+inventory-removal callback closure, and unsupported subcommands/items. Existing #485 first-ready,
+stabilization and host/pair direct
 checks also exercise the unchanged mode. Ruff/Lua syntax and normal `uv run sf2 verify` are selected;
 the committed planner and actual CI results belong in the PR handoff. No new helper tests, broad
 legacy H3 queue, full suite or native launch is selected by this bounded offline change.
+
+`herb-offline-failures.json` retains corrected local Ruff, source-discovery and result-projection
+failures separately from game outcomes. `herb-operator-readback-review.json` contains the prospective
+decisions against retained native states plus the newly bound static herb metadata; it is not
+evidence that those proposed movements or item actions executed.
 
 ## Bounded interactive acquisition
 

@@ -2385,6 +2385,7 @@ local function install_candidate()
                 local facts = {actor=c.currentActor, turn=c.turnNumber, round=c.roundNumber,
                     action=word("CURRENT_BATTLEACTION"), itemOrSpell=word("BATTLEACTION_ITEM_OR_SPELL"),
                     itemSlot=word("BATTLEACTION_ITEM_SLOT"), attackType=word("BATTLESCENE_ATTACK_TYPE"),
+                    sceneItem=word("BATTLESCENE_ITEM"), diamondMenuIndex=c.battleDiamond or false,
                     sceneActor=byte("BATTLESCENE_ACTOR"), sceneExp=word("BATTLESCENE_EXP"), sceneGold=word("BATTLESCENE_GOLD"),
                     actorX=word("BATTLE_ACTOR_X"), actorY=word("BATTLE_ACTOR_Y"),
                     targetX=word("BATTLE_TARGET_X"), targetY=word("BATTLE_TARGET_Y"),
@@ -2398,10 +2399,12 @@ local function install_candidate()
                 -- decode only within the original combatant capacity.
                 facts.targetCount = count
                 facts.heal = natural.victory.heal
+                facts.herb = natural.victory.herb
                 facts.displayedSpells = {}
                 for slot=0,3 do
                     facts.displayedSpells[#facts.displayedSpells + 1] = memory.read_u16_be(ram.DISPLAYED_ICON_1 + slot * 2, "M68K BUS")
                 end
+                facts.displayedItems = facts.displayedSpells
                 if count <= ram.COMBATANT_ALLIES_NUMBER + ram.COMBATANT_ENEMIES_NUMBER then
                     facts.targets = read_span(ram.TARGETS_LIST, count)
                 end
@@ -2472,7 +2475,8 @@ local function install_candidate()
             for _, name in ipairs({"StartAiControl", "ExecuteAiControl", "ExecuteAiCommand", "WriteBattlesceneScript",
                 "battlesceneScript_ApplyActionEffect", "battlesceneScript_DropEnemyItem", "battlesceneScript_End",
                 "InitializeBattlescene", "ExecuteBattlesceneScript", "EndBattlescene",
-                "ProcessAfterTurnEffects", "ProcessKilledCombatants", "CountRemainingCombatants"}) do battle_call(name) end
+                "ProcessAfterTurnEffects", "ProcessKilledCombatants", "CountRemainingCombatants",
+                "battlesceneScript_UseItem", "battlesceneScript_BreakUsedItem", "RemoveItemBySlot"}) do battle_call(name) end
             for _, name in ipairs({"GenerateRandomNumber", "GenerateRandomOrDebugNumber"}) do
                 add_callback(nf[name], "candidate:battle-rng", function()
                     if not completed.admission or c.stopReason then return end
@@ -2487,7 +2491,7 @@ local function install_candidate()
                 completed.afterReturn = true
             end)
             battle_call("EndAfterBattleCutscene")
-            for _, name in ipairs({"BattlefieldMenu", "ExecuteBattlefieldItemMenu",
+            for _, name in ipairs({"BattlefieldMenu",
                 "ExecuteBattleaction_Egress", "ExecuteBattleaction_AngelWing"}) do
                 add_callback(nf[name], "candidate:unsupported-battle-input", function()
                     if completed.admission then c.stop("unsupported-battle-input", {source=name, observation=c.battle_observation()}) end
@@ -2517,28 +2521,81 @@ local function install_candidate()
                 completed.exploration = true
                 c.record("victory:exploration-entry", c.accounting())
             end)
+            function c.battle_selection_supported(kind)
+                local choice = byte("CURRENT_DIAMOND_MENU_CHOICE")
+                if kind == "battle-item-action" then return choice == 0 end
+                if kind == "battle-item" then
+                    return choice < 4 and (memory.read_u16_be(ram.DISPLAYED_ICON_1 + choice * 2, "M68K BUS")
+                        & ram.ITEMENTRY_MASK_INDEX) == ram.ITEM_MEDICAL_HERB
+                end
+                return true
+            end
             for _, item in ipairs({{"ExecuteDiamondMenu", "diamondInputPc", "battle-menu"},
                 {"ExecuteBattlefieldMagicMenu", "magicInputPc", "battle-magic"},
                 {"SelectSpellLevel", "spellLevelInputPc", "battle-spell-level"},
+                {"ExecuteBattlefieldItemMenu", "itemInputPc", "battle-item"},
                 {"ControlCursorEntity_ChooseTarget", "targetInputPc", "battle-target"}}) do
+                local function consumer_kind()
+                    return item[1] == "ExecuteDiamondMenu" and c.battleDiamond == ram.MENU_ITEM
+                        and "battle-item-action" or item[3]
+                end
                 add_callback(nf[item[1]], "candidate:battle-input-consumer", function()
                     if not c.battleReturns.player or #c.programs > 0 then return end
                     c.battlePoll = nil
+                    if item[1] == "ExecuteDiamondMenu" then
+                        c.battleDiamond, c.itemUseSelected = reg("D2") & 0xFFFF, false
+                        if c.battleDiamond ~= ram.MENU_ITEM and c.battleDiamond ~= ram.MENU_BATTLE_WITH_STAY
+                            and c.battleDiamond ~= ram.MENU_BATTLE_WITH_SEARCH then
+                            c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                            return
+                        end
+                    elseif item[1] == "ExecuteBattlefieldItemMenu" and (not c.itemUseSelected
+                        or (reg("A0") & 0xFFFFFF) ~= nf.CreatePulsatingItemRangeGrid) then
+                        c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                        return
+                    end
                     if item[1] == "SelectSpellLevel" and ((c.consumers["battle-magic"] or 0) ~= 1
                         or (reg("D0") & 0xFFFF) ~= ram.SPELL_HEAL) then
                         c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
                         return
                     end
-                    c.record(item[3] .. ":selected", c.battle_observation())
-                    returned(item[3], nf[item[1]], function()
+                    local kind = consumer_kind()
+                    c.record(kind .. ":selected", c.battle_observation())
+                    returned(kind, nf[item[1]], function()
                         c.battlePoll = nil
-                        c.record(item[3] .. ":result", c.battle_observation())
+                        c.record(kind .. ":result", c.battle_observation())
+                        local result = reg("D0") & 0xFFFF
+                        if kind == "battle-item-action" then
+                            c.itemUseSelected = result == 0
+                            if result ~= 0 and result ~= 0xFFFF then
+                                c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                            end
+                        elseif kind == "battle-item" then
+                            c.itemUseSelected = false
+                            if result ~= 0xFFFF then
+                                local slot = reg("D1") & 0xFFFF
+                                local actor = extension_combatant(c.currentActor)
+                                if (result & ram.ITEMENTRY_MASK_INDEX) ~= ram.ITEM_MEDICAL_HERB then
+                                    c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                                else
+                                    assert(slot < 4 and actor.items[slot + 1] == result, "Medical Herb selected slot/inventory mismatch")
+                                end
+                            end
+                        end
+                        if item[1] == "ExecuteDiamondMenu" then c.battleDiamond = nil end
                         c.pauseBatch = true
                     end)
                 end)
                 add_callback(nf[item[2]], "candidate:battle-input-poll", function()
-                    if (c.consumers[item[3]] or 0) == 0 then return end
-                    c.battlePoll = {kind=item[3], frame=frame_count, pc=nf[item[2]], turn=c.turnNumber,
+                    local kind = consumer_kind()
+                    if (c.consumers[kind] or 0) == 0 then return end
+                    local input = byte("CURRENT_PLAYER_INPUT")
+                    if (input & (ram.INPUT_A | ram.INPUT_C)) ~= 0 and not c.battle_selection_supported(kind) then
+                        c.stop("unsupported-battle-input", {source=item[1], observation=c.battle_observation()})
+                        return
+                    end
+                    c.battlePoll = {kind=kind, frame=frame_count, pc=nf[item[2]], turn=c.turnNumber,
+                        menuIndex=c.battleDiamond or false,
                         targetIndex=reg("D1") & 0xFFFF, targetCount=reg("D7") & 0xFFFF}
                     if byte("CURRENT_PLAYER_INPUT") == 0 then c.pauseBatch = true end
                     c.record("battle:input-read", {poll=c.battlePoll, input=byte("CURRENT_PLAYER_INPUT"), choice=byte("CURRENT_DIAMOND_MENU_CHOICE")})
@@ -3299,6 +3356,9 @@ local function install_candidate()
                 local current = c.battlePoll
                 result.consumer, result.poll = current and current.kind or "battle-not-ready", current or false
                 need(button ~= "Start", "battle-start-unsupported")
+                if current and (button == "A" or button == "C") then
+                    need(c.battle_selection_supported(current.kind), "unsupported-battle-selection")
+                end
                 need(current and current.turn == c.turnNumber and frame_count - current.frame <= 1, "battle-poll-not-recent")
                 need(c.battleReturns.player and #c.programs == 0 and not c.audioPending, "battle-player-consumer-not-active")
                 local blocking = c.pending
