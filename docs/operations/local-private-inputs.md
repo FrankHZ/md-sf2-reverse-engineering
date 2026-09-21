@@ -117,6 +117,62 @@ The reviewed observation and its initial marker-location checker error are retai
 **Unknown:** ROM execution, actual SaveRAM/movie effects and the full H3 behavior of this preparation
 remain unobserved. No original game or movie was run, and replay admission/budgets remain unchanged.
 
+## Direct Installation Reuse Findings
+
+**Confirmed:** a separately user-authorized investigation launched the registered
+BizHawk 2.11.1 / Genplus-gx executable directly, without runtime copies. A paired
+1,030-frame replay of retained input produced identical final 68K RAM, CPU registers
+and emulator frame counts with and without the acquisition observer. Its
+[performance result](./bizhawk-debug-bridge.md#acquisition-performance-boundary) is
+independent of the installation-reuse decision.
+
+The initial direct pair used local `--config`, cwd and child TEMP, with save-slot
+autoload/autosave and periodic SaveRAM disabled. It still created a Genesis SaveRAM
+file and backup **under the shared installation**. Thus `AutosaveSaveRAM=false` and
+a separate config file do not by themselves isolate runtime writes. Those generated
+files were retained outside the installation; original settings were restored.
+
+A corrective 120-frame direct probe set existing `PathEntries.Paths` entries:
+
+| System / type | Explicit absolute destination |
+| --- | --- |
+| `Global_NULL` / `Base` | This run's ignored output directory |
+| `GEN` / `Base` | Its `Genesis` subdirectory |
+| `GEN` / `Save RAM` | Its `SaveRAM` subdirectory |
+
+**Confirmed:** the probe exited 0, wrote SaveRAM at the selected local destination
+and added/changed/removed no shared-installation files. The three diagnostic
+processes all terminated; all 450 release files still matched the pinned archive,
+the ROM and retained parent/source segment pairs validated, and backed-up settings
+matched their original bytes. Two empty generated directories remain after an
+automatic policy rejection of their removal; no generated save file remains there.
+
+**Inferred:** serial Genesis research can reuse the installed executable with
+explicit per-run config, absolute writable paths, TEMP and disabled accidental
+autoload. Copying roughly 155 MB of release files per launch is not intrinsically
+required for this workload. Reuse must keep outputs separate from immutable inputs.
+The smallest follow-up is an explicit direct-launch mode in the existing launcher,
+with the observed SaveRAM path fix; no new emulator tree or isolation framework is
+needed for the demonstrated case. Existing maintained consumers still materialize
+copies: this investigation does not silently change their default policy.
+
+**Unknown:** arbitrary UI/core/tool operations and concurrent users modifying the
+same installation. Controller defaults and the user game database still have
+executable-base paths, as established above; `PathEntries` does not relocate those
+surfaces. Start with one installation owner, avoid modifying shared defaults/database
+during a run, and retain isolated copies only for a demonstrated conflict or required
+reproduction. A broader direct mode must explicitly handle other enabled writable
+outputs, rather than assuming cwd redirects them.
+
+The pinned [path defaults](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/PathEntryCollection.cs)
+and [path resolution](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/PathEntryCollectionExtensions.cs)
+own these configuration names. The private reproduction is
+`uv run --locked python -X utf8 local/acquisition-speed-diagnostic/probe_paths.py`,
+after same-process input configuration. It reuses the performance recipe with only
+120 input frames and the three explicit path entries. The retained
+`path-probe-report.json`, comparison report and `shared-backup/` record actual writes
+and restoration. No generic environment-variable redirect or new binary was used.
+
 ## Local State and Promotion
 
 Keep writable source/build checkouts, Python/uv/NuGet environments and caches, TEMP, emulator state,
