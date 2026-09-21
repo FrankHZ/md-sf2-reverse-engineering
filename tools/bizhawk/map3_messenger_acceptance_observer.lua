@@ -2222,6 +2222,7 @@ end
 -- callbacks may fail/stop, but cannot choose, delay or repair an input edge.
 local function install_candidate()
     local c, f, ram = candidate, config.candidate.functions, config.ram
+    local victory = natural and natural.victory
     c.order, c.consumers = 0, {}
     local function poll(kind, pc)
         if not acquisition or not c.epoch then return end
@@ -2263,6 +2264,11 @@ local function install_candidate()
                 result.stopReason = c.stopReason or c.failureReason or false
                 result.battle = memory.read_u8(ram.CURRENT_BATTLE, "M68K BUS")
                 result.lastMusicOrControlCommand = c.activeMusic or false
+                if victory then
+                    result.battlePoll = c.battlePoll or false
+                    result.battleReturns = c.battleReturns
+                    result.turnNumber, result.roundNumber, result.currentActor = c.turnNumber, c.roundNumber, c.currentActor
+                end
             end
             result.readiness = "Unknown; use source consumer events, not typewriting/script-return alone"
         end
@@ -2327,6 +2333,7 @@ local function install_candidate()
     if natural then
         local nf, completed = natural.functions, {}
         c.completed, c.programs, c.nextWarp = completed, {}, 1
+        if victory then c.battleReturns, c.turnNumber, c.roundNumber = {}, 0, 0 end
         local function byte(name) return memory.read_u8(ram[name], "M68K BUS") end
         local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
         function c.stop(reason, facts)
@@ -2373,6 +2380,160 @@ local function install_candidate()
             completed[name] = true
             c.record("natural:" .. name, c.accounting())
         end
+        if victory then
+            function c.battle_observation(grid)
+                local facts = {actor=c.currentActor, turn=c.turnNumber, round=c.roundNumber,
+                    action=word("CURRENT_BATTLEACTION"), itemOrSpell=word("BATTLEACTION_ITEM_OR_SPELL"),
+                    itemSlot=word("BATTLEACTION_ITEM_SLOT"), attackType=word("BATTLESCENE_ATTACK_TYPE"),
+                    sceneActor=byte("BATTLESCENE_ACTOR"), sceneExp=word("BATTLESCENE_EXP"), sceneGold=word("BATTLESCENE_GOLD"),
+                    actorX=word("BATTLE_ACTOR_X"), actorY=word("BATTLE_ACTOR_Y"),
+                    targetX=word("BATTLE_TARGET_X"), targetY=word("BATTLE_TARGET_Y"),
+                    chosenX=byte("BATTLE_ENTITY_CHOSEN_X"), chosenY=byte("BATTLE_ENTITY_CHOSEN_Y"),
+                    menuChoice=byte("CURRENT_DIAMOND_MENU_CHOICE"), targeting=byte("IS_TARGETING"),
+                    registers={d0=reg("D0"), d1=reg("D1"), d2=reg("D2"), d3=reg("D3"),
+                        d4=reg("D4"), d5=reg("D5"), d6=reg("D6"), d7=reg("D7"), a0=reg("A0"), a1=reg("A1")},
+                    accounting=c.accounting(), records={}}
+                local count = word("TARGETS_LIST_LENGTH")
+                -- The list shares storage across scene/field phases. Retain its raw length;
+                -- decode only within the original combatant capacity.
+                facts.targetCount = count
+                if count <= ram.COMBATANT_ALLIES_NUMBER + ram.COMBATANT_ENEMIES_NUMBER then
+                    facts.targets = read_span(ram.TARGETS_LIST, count)
+                end
+                local function record(id)
+                    local index = id >= ram.COMBATANT_ENEMIES_START and id - ram.ENTITY_ENEMY_INDEX_DIFFERENCE or id
+                    local address = ram.COMBATANT_DATA + index * ram.COMBATANT_DATA_ENTRY_SIZE
+                    local target = entity(id)
+                    if target.address then
+                        target.x = memory.read_u16_be(target.address + ram.ENTITYDEF_OFFSET_X, "M68K BUS")
+                        target.y = memory.read_u16_be(target.address + ram.ENTITYDEF_OFFSET_Y, "M68K BUS")
+                        target.destinationX = memory.read_u16_be(target.address + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                        target.destinationY = memory.read_u16_be(target.address + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS")
+                        target.facing = memory.read_u8(target.address + ram.ENTITYDEF_OFFSET_FACING, "M68K BUS")
+                    end
+                    facts.records[#facts.records + 1] = {id=id, exp=memory.read_u8(address + ram.COMBATANT_OFFSET_EXP, "M68K BUS"),
+                        bytes=read_span(address, ram.COMBATANT_DATA_ENTRY_SIZE), entity=target}
+                end
+                for id=0,ram.COMBATANT_ALLIES_NUMBER-1 do record(id) end
+                for id=ram.COMBATANT_ENEMIES_START,ram.COMBATANT_ENEMIES_START+ram.COMBATANT_ENEMIES_NUMBER-1 do record(id) end
+                if grid then
+                    facts.movableGrid = read_span(ram.FF4D00_LOADING_SPACE, ram.MAP_ARRAY_BYTESIZE)
+                    facts.gridWidth, facts.gridHeight, facts.tileSize = ram.MAP_SIZE_MAX_TILEWIDTH, ram.MAP_SIZE_MAX_TILEHEIGHT, ram.MAP_TILE_SIZE
+                end
+                return facts
+            end
+            -- Only these long-lived calls may cross a movement save. Their original
+            -- return descriptors are data; the callback behavior is rebuilt on load.
+            function c.arm_battle_return(kind, target, restored)
+                assert(kind == "loop" or kind == "turn" or kind == "player", "unknown persistent battle return")
+                local entry = restored or {kind=kind, target=target, stack=reg("A7") & 0xFFFFFF}
+                if not restored then entry.pc = memory.read_u32_be(entry.stack, "M68K BUS") & 0xFFFFFF end
+                assert(entry.kind == kind and entry.target == target and entry.pc < 0x200000 and entry.pc % 2 == 0
+                    and (memory.read_u32_be(entry.stack, "M68K BUS") & 0xFFFFFF) == entry.pc,
+                    "battle return descriptor/readback mismatch")
+                assert(not c.battleReturns[kind], "overlapping persistent battle return")
+                c.battleReturns[kind] = entry
+                add_callback(entry.pc, "candidate:battle-return:" .. kind, function()
+                    if c.battleReturns[kind] ~= entry or (reg("A7") & 0xFFFFFF) ~= ((entry.stack + 4) & 0xFFFFFF) then return end
+                    c.battleReturns[kind], c.battlePoll = nil, nil
+                    c.record("battle:" .. kind .. "-return", c.battle_observation())
+                    if kind == "loop" then
+                        assert(completed.victory and completed.afterProgram and completed.afterReturn and completed.flagSet
+                            and not flag_is_set(401) and flag_is_set(501) and (reg("D4") & 0xFFFF) == 1,
+                            "BattleLoop returned without the observed victory/program/flag sequence")
+                        completed.battleReturn = true
+                    end
+                end)
+            end
+            function c.restore_battle_returns()
+                local entries = c.battleReturns
+                c.battleReturns = {}
+                local targets = {loop=nf.BattleLoop, turn=nf.ExecuteIndividualTurn, player=nf.ProcessBattleEntityControlPlayerInput}
+                for kind, entry in pairs(entries) do
+                    assert(targets[kind], "unsupported saved battle closure")
+                    c.arm_battle_return(kind, targets[kind], entry)
+                end
+            end
+            local function battle_call(name, after)
+                add_callback(nf[name], "candidate:battle-observe:" .. name, function()
+                    if not completed.admission or c.stopReason then return end
+                    c.record("battle:" .. name .. ":before", c.battle_observation())
+                    returned("battle:" .. name, nf[name], function()
+                        c.record("battle:" .. name .. ":after", c.battle_observation())
+                        if after then after() end
+                    end)
+                end)
+            end
+            for _, name in ipairs({"StartAiControl", "ExecuteAiControl", "ExecuteAiCommand", "WriteBattlesceneScript",
+                "battlesceneScript_ApplyActionEffect", "battlesceneScript_DropEnemyItem", "battlesceneScript_End",
+                "InitializeBattlescene", "ExecuteBattlesceneScript", "EndBattlescene",
+                "ProcessAfterTurnEffects", "ProcessKilledCombatants", "CountRemainingCombatants"}) do battle_call(name) end
+            for _, name in ipairs({"GenerateRandomNumber", "GenerateRandomOrDebugNumber"}) do
+                add_callback(nf[name], "candidate:battle-rng", function()
+                    if not completed.admission or c.stopReason then return end
+                    local before = {seed=read_span(ram.RANDOM_SEED, 4), d0=reg("D0"), d6=reg("D6")}
+                    returned("rng:" .. name, nf[name], function()
+                        c.record("rng:draw", {source=name, before=before, seed=read_span(ram.RANDOM_SEED, 4), d0=reg("D0"), d7=reg("D7")})
+                    end)
+                end)
+            end
+            battle_call("ExecuteAfterBattleCutscene", function()
+                assert(completed.afterProgram and flag_is_set(401) and not flag_is_set(501), "after-program return/flags drift")
+                completed.afterReturn = true
+            end)
+            battle_call("EndAfterBattleCutscene")
+            for _, name in ipairs({"BattlefieldMenu", "ExecuteBattlefieldMagicMenu", "ExecuteBattlefieldItemMenu",
+                "ExecuteBattleaction_Egress", "ExecuteBattleaction_AngelWing"}) do
+                add_callback(nf[name], "candidate:unsupported-battle-input", function()
+                    if completed.admission then c.stop("unsupported-battle-input", {source=name, observation=c.battle_observation()}) end
+                end)
+            end
+            for _, name in ipairs({"ClearFlag", "SetFlag"}) do
+                add_callback(nf[name], "candidate:victory-flag", function()
+                    if not completed.victory then return end
+                    local flag = reg("D1") & 0xFFFF
+                    if flag ~= 401 and flag ~= 501 then return end
+                    assert(completed.afterReturn and ((name == "ClearFlag" and flag == 401 and not completed.flagClear)
+                        or (name == "SetFlag" and flag == 501 and completed.flagClear and not completed.flagSet)), "victory flag order drift")
+                    returned("victory:" .. name, nf[name], function()
+                        assert(flag_is_set(flag) == (name == "SetFlag"), "victory flag write failed")
+                        completed[name == "ClearFlag" and "flagClear" or "flagSet"] = true
+                    end)
+                end)
+            end
+            add_callback(nf.SwitchMap, "candidate:victory-switch-map", function()
+                if not completed.battleReturn then return end
+                assert(not completed.switchReturn, "repeated post-victory SwitchMap")
+                returned("victory:SwitchMap", nf.SwitchMap, function() completed.switchReturn = true end)
+            end)
+            add_callback(nf.ExplorationLoop, "candidate:victory-exploration", function()
+                if not completed.battleReturn then return end
+                assert(completed.switchReturn, "exploration before SwitchMap return")
+                completed.exploration = true
+                c.record("victory:exploration-entry", c.accounting())
+            end)
+            for _, item in ipairs({{"ExecuteDiamondMenu", "diamondInputPc", "battle-menu"},
+                {"ControlCursorEntity_ChooseTarget", "targetInputPc", "battle-target"}}) do
+                add_callback(nf[item[1]], "candidate:battle-input-consumer", function()
+                    if not c.battleReturns.player or #c.programs > 0 then return end
+                    c.battlePoll = nil
+                    c.record(item[3] .. ":selected", c.battle_observation())
+                    returned(item[3], nf[item[1]], function()
+                        c.battlePoll = nil
+                        c.record(item[3] .. ":result", c.battle_observation())
+                        c.pauseBatch = true
+                    end)
+                end)
+                add_callback(nf[item[2]], "candidate:battle-input-poll", function()
+                    if (c.consumers[item[3]] or 0) == 0 then return end
+                    c.battlePoll = {kind=item[3], frame=frame_count, pc=nf[item[2]], turn=c.turnNumber,
+                        targetIndex=reg("D1") & 0xFFFF, targetCount=reg("D7") & 0xFFFF}
+                    if byte("CURRENT_PLAYER_INPUT") == 0 then c.pauseBatch = true end
+                    c.record("battle:input-read", {poll=c.battlePoll, input=byte("CURRENT_PLAYER_INPUT"), choice=byte("CURRENT_DIAMOND_MENU_CHOICE")})
+                    if byte("CURRENT_PLAYER_INPUT") ~= 0 then c.battlePoll, c.pauseBatch = nil, true end
+                end)
+            end
+        end
         function c.program_entry(target)
             if target == nf.cs_52F0C then
                 assert(completed.royal and not flag_is_set(607), "off-route Astral repeat/premature prompt")
@@ -2382,6 +2543,8 @@ local function install_candidate()
                 assert(completed.astral and flag_is_set(608) and not flag_is_set(256), "guard caller flags drift")
             elseif target == nf.bbcs_01 then
                 assert(completed.admission and not completed.beforeScript, "before program out of order")
+            elseif victory and target == nf.abcs_battle01 then
+                assert(completed.victory and not completed.afterProgram, "after-program before natural victory/repeated")
             end
             c.programs[#c.programs + 1] = {target=target, stack=reg("A7") & 0xFFFFFF}
         end
@@ -2399,6 +2562,7 @@ local function install_candidate()
             end
             if target == nf.bbcs_01 then completed.beforeScript = true end
             if target == nf.ms_Empty and completed.load then completed.startScript = true end
+            if victory and target == nf.abcs_battle01 then completed.afterProgram = true end
         end
         -- A completed dispatcher iteration proves only that operation's blocking work returned.
         -- Non-waited entity scripts remain live and are not declared complete here.
@@ -2521,6 +2685,12 @@ local function install_candidate()
             if not c.epoch then return end
             local incoming = reg("D0") & 0xFF
             c.record("battle:check", {incomingMap=incoming})
+            if victory and completed.victory then
+                returned("victory:CheckBattle", nf.CheckBattle, function()
+                    c.record("victory:battle-check-result", {battleIndex=reg("D7") & 0xFFFF})
+                end)
+                return
+            end
             if incoming ~= natural.admission.map then return end
             assert(completed.guard and c.nextWarp > #natural.warps and flag_is_set(401)
                 and not flag_is_set(501), "premature battle admission")
@@ -2534,6 +2704,7 @@ local function install_candidate()
             assert(completed.admission and not flag_is_set(88) and (reg("D1") & 0xFF) == natural.admission.battle,
                 "premature battle loop")
             c.record("battle:loop", {d0=reg("D0"), d1=reg("D1"), d2=reg("D2"), d3=reg("D3"), d4=reg("D4"), f88=flag_is_set(88)})
+            if victory then c.arm_battle_return("loop", nf.BattleLoop) end
         end)
         local chain = {
             {"ExecuteBeforeBattleCutscene", "admission", "before"},
@@ -2546,38 +2717,58 @@ local function install_candidate()
         }
         for _, row in ipairs(chain) do
             add_callback(nf[row[1]], "candidate:battle-lifecycle", function()
-                assert(completed[row[2]] and not completed[row[3]], "battle lifecycle order/repetition drift: " .. row[1])
+                assert(completed[row[2]] and (not completed[row[3]] or victory), "battle lifecycle order/repetition drift: " .. row[1])
                 if row[3] == "load" then assert(completed.beforeScript, "before program did not return") end
                 if row[3] == "activate" then assert(completed.startScript and flag_is_set(451), "battle-start selection/flag drift") end
                 c.record("battle:" .. row[3] .. ":before", c.accounting())
-                returned("battle:" .. row[3], nf[row[1]], function() c.checkpoint(row[3]) end)
+                returned("battle:" .. row[3], nf[row[1]], function()
+                    if victory and row[3] == "generation" then c.roundNumber = c.roundNumber + 1 end
+                    c.checkpoint(row[3])
+                end)
             end)
         end
         add_callback(nf.ExecuteIndividualTurn, "candidate:first-dispatch", function()
-            assert(completed.generation and not c.firstActor, "unexpected individual-turn dispatch")
-            c.firstActor = reg("D0") & 0xFF
+            assert(completed.generation and (not c.firstActor or victory), "unexpected individual-turn dispatch")
+            if victory then
+                c.currentActor, c.turnNumber, c.battlePoll = reg("D0") & 0xFF, c.turnNumber + 1, nil
+                completed.playerControl = false
+                c.arm_battle_return("turn", nf.ExecuteIndividualTurn)
+                c.record("battle:turn-dispatch", c.battle_observation())
+            end
+            c.firstActor = c.firstActor or (reg("D0") & 0xFF)
             local actor = extension_combatant(c.firstActor)
-            c.checkpoint("firstDispatch")
-            if c.firstActor >= ram.COMBATANT_ENEMIES_START
+            if not victory or c.turnNumber == 1 then c.checkpoint("firstDispatch") end
+            if not victory and (c.firstActor >= ram.COMBATANT_ENEMIES_START
                 or (actor.statusEffects & ram.STATUSEFFECT_MUDDLE) ~= 0
                 or (actor.activationBitfield & ram.AIBITFIELD_AI_CONTROLLED) ~= 0
-                or byte("AUTO_BATTLE_TOGGLE") ~= 0 then
+                or byte("AUTO_BATTLE_TOGGLE") ~= 0) then
                 c.stop("out-of-scope-before-player-ready", {cause="non-player-first-dispatch"})
             end
         end)
         for _, name in ipairs({"StartAiControl", "ExecuteAiControl", "battlesceneScript_ApplyActionEffect"}) do
             add_callback(nf[name], "candidate:unsupported-action", function()
-                if c.epoch then c.stop("out-of-scope-before-player-ready", {cause=name}) end
+                if c.epoch and not victory then c.stop("out-of-scope-before-player-ready", {cause=name}) end
             end)
         end
         for _, name in ipairs({"BattleLoop_Victory", "BattleLoop_Defeat"}) do
             add_callback(nf[name], "candidate:premature-outcome", function()
-                if c.epoch then c.stop("premature-battle-outcome", {cause=name}) end
+                if not c.epoch then return end
+                if not victory then c.stop("premature-battle-outcome", {cause=name})
+                elseif name == "BattleLoop_Defeat" then c.stop("observed-defeat", c.battle_observation())
+                else
+                    assert(completed.generation and not completed.victory, "victory outside the natural battle")
+                    completed.victory, c.battlePoll = true, nil
+                    c.record("battle:natural-victory", c.battle_observation())
+                end
             end)
         end
         add_callback(nf.ProcessBattleEntityControlPlayerInput, "candidate:player-control", function()
             assert(c.firstActor and completed.generation, "player control before first dispatch")
             completed.playerControl = true
+            if victory then
+                c.arm_battle_return("player", nf.ProcessBattleEntityControlPlayerInput)
+                c.record("battle:player-branch", c.battle_observation())
+            end
         end)
         add_callback(nf.playerReadyPc, "candidate:player-ready", function()
             if c.stopReason then return end
@@ -2586,6 +2777,18 @@ local function install_candidate()
             local actor = memory.read_u8(ram.BATTLE_TURN_ORDER + offset, "M68K BUS")
             local mapped = memory.read_u8(ram.ENTITY_INDEX_LIST + actor, "M68K BUS")
             local area = {byte("BATTLE_AREA_X"), byte("BATTLE_AREA_Y"), byte("BATTLE_AREA_WIDTH"), byte("BATTLE_AREA_HEIGHT")}
+            if victory then
+                assert(completed.playerControl and c.battleReturns.player and actor == c.currentActor, "battle movement without player owner")
+                c.battlePoll = {kind="battle-movement", frame=frame_count, pc=nf.playerReadyPc, turn=c.turnNumber}
+                if byte("CURRENT_PLAYER_INPUT") == 0 then c.pauseBatch = true end
+                c.record("battle:movement-input", {poll=c.battlePoll, input=byte("CURRENT_PLAYER_INPUT"),
+                    entity=entity(actor), chosenX=byte("BATTLE_ENTITY_CHOSEN_X"), chosenY=byte("BATTLE_ENTITY_CHOSEN_Y")})
+                if (byte("CURRENT_PLAYER_INPUT") & (ram.INPUT_A | ram.INPUT_B | ram.INPUT_C)) ~= 0 then
+                    c.battlePoll, c.pauseBatch = nil, true
+                end
+                completed.ready = true
+                return
+            end
             assert(completed.playerControl and completed.beforeScript and completed.startScript and completed.generation
                 and #c.programs == 0 and c.pending == 0, "player-ready lifecycle/consumer mismatch")
             assert(state.map == natural.admission.map and byte("CURRENT_BATTLE") == natural.admission.battle
@@ -2648,6 +2851,29 @@ local function install_candidate()
         function c.natural_frame()
             if not c.epoch then return end
             local state = sample()
+            if victory and completed.exploration then
+                local camera = camera_state()
+                local ready = completed.afterProgram and completed.afterReturn and completed.flagClear and completed.flagSet
+                    and completed.battleReturn and completed.switchReturn and not next(c.battleReturns)
+                    and byte("CURRENT_BATTLE") == ram.NOT_CURRENTLY_IN_BATTLE
+                    and c.pending == 0 and #c.programs == 0 and not c.audioPending and not c.fieldMenu
+                    and not flag_is_set(401) and flag_is_set(501) and state.mapEventWord == 0
+                    and state.typewriting == 0 and word("DIALOGUE_WINDOW_INDEX") == 0 and word("PORTRAIT_WINDOW_INDEX") == 0
+                    and byte("FADING_SETTING") == 0 and camera.effectiveScrollingPlanes == 0
+                    and c.appliedButton == "neutral" and byte("CURRENT_PLAYER_INPUT") == 0 and byte("PLAYER_1_INPUT") == 0
+                    and state.rawX == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                    and state.rawY == memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS")
+                    and c.explorationPoll and c.explorationPoll.frame == frame_count
+                    and c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action" and frame_count - c.consumerPoll.frame <= 1
+                for _, count in pairs(c.consumers) do if count ~= 0 then ready = false end end
+                local key = table.concat({state.map, state.rawX, state.rawY, state.facing}, ":")
+                if ready and c.stableExploration and c.stableExploration.key == key and c.stableExploration.frame == frame_count - 1 then
+                    c.stop("controllable-5b", {firstFrame=c.stableExploration.frame, completedFrame=frame_count,
+                        inputPoll=c.explorationPoll, camera=camera, accounting=c.battle_observation(),
+                        flags=read_span(ram.GAME_FLAGS, 128), player=entity(0), boundary="two neutral completed exploration frames"})
+                end
+                c.stableExploration = ready and {key=key, frame=frame_count} or nil
+            end
             if c.map19Captured and not completed.map19Displacement and state.map == 19 and state.x == 26 and state.y == 29 then
                 c.checkpoint("map19Displacement")
             end
@@ -3005,6 +3231,9 @@ local function install_candidate()
         local d7 = reg("D7") & 0xFFFF
         local address = d7 == 0 and ram.CURRENT_PLAYER_INPUT or ram.PLAYER_1_INPUT
         local value = memory.read_u8(address, "M68K BUS")
+        if victory and c.completed.exploration then
+            c.explorationPoll = {frame=frame_count, pc=reg("PC") & 0xFFFFFF, address=address, value=value, d7=d7}
+        end
         if value ~= 0 or c.map19Wait then
             c.record("input:original-controller-read", { address = address, widthBytes = 1, value = value, d7 = d7 })
         end
@@ -3053,6 +3282,23 @@ local function install_candidate()
                 return result
             end
             if button == "neutral" then return result end
+            if victory and c.completed.admission and not c.completed.victory
+                and (c.consumers.DisplayText or 0) == 0 and (c.consumers.WaitForPlayerInput or 0) == 0 then
+                local current = c.battlePoll
+                result.consumer, result.poll = current and current.kind or "battle-not-ready", current or false
+                need(button ~= "Start", "battle-start-unsupported")
+                need(current and current.turn == c.turnNumber and frame_count - current.frame <= 1, "battle-poll-not-recent")
+                need(c.battleReturns.player and #c.programs == 0 and not c.audioPending, "battle-player-consumer-not-active")
+                local blocking = c.pending
+                if current and current.kind ~= "battle-movement" then blocking = blocking - (c.consumers[current.kind] or 0) end
+                need(blocking == 0 and state.typewriting == 0, "battle-blocking-consumer")
+                need(memory.read_u16_be(ram.DIALOGUE_WINDOW_INDEX, "M68K BUS") == 0
+                    and memory.read_u16_be(ram.PORTRAIT_WINDOW_INDEX, "M68K BUS") == 0
+                    and state.mapEventWord == 0 and camera_state().effectiveScrollingPlanes == 0, "battle-modal-or-transfer")
+                need(c.appliedButton == "neutral" and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
+                    and memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS") == 0, "release-before-battle-input")
+                return result
+            end
             need(button ~= "A" and button ~= "B" and button ~= "Start", "input-outside-declared-route")
             if button ~= "C" then return result end
             need(c.appliedButton == "neutral" and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
@@ -3132,7 +3378,8 @@ local function install_candidate()
                 state=sample(), paused=client.ispaused(), batches=batches,
                 deliveredFrames=delivered_frames(), activeSeconds=natural and elapsed() or false,
                 inputReadiness=natural and c.input_readiness("C") or false,
-                saveReadiness=readiness or (segment and segment.ordinal < 4 and save_readiness(segment.ordinal) or false),
+                saveReadiness=readiness or (segment and (segment.ordinal < 4 or victory) and save_readiness(segment.ordinal) or false),
+                battlefield=victory and c.completed.admission and c.battle_observation(true) or nil,
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
         end
         -- Only these data facts survive a closed field boundary. Dynamic return
@@ -3140,6 +3387,11 @@ local function install_candidate()
         local continuation_keys = {"epoch", "emulatorEpoch", "order", "gates", "r2a",
             "map19Wait", "map19Captured", "nextWarp", "consumerPoll", "activeMusic",
             "progressFrame", "progressState", "consumers", "programs", "pending", "zoneTarget", "messengerZone"}
+        if victory then
+            for _, key in ipairs({"battleReturns", "battlePoll", "turnNumber", "roundNumber", "currentActor", "firstActor"}) do
+                continuation_keys[#continuation_keys + 1] = key
+            end
+        end
         local function same(left, right)
             if type(left) ~= type(right) then return false end
             if type(left) ~= "table" then return left == right end
@@ -3160,7 +3412,7 @@ local function install_candidate()
             return core
         end
         save_readiness = function(ordinal, loading)
-            assert(ordinal >= 1 and ordinal <= 3, "no resumable boundary for this segment")
+            assert(ordinal >= 1 and (ordinal <= 3 or victory), "no resumable boundary for this segment")
             local state = sample()
             local function word(name) return memory.read_u16_be(ram[name], "M68K BUS") end
             local function byte(name) return memory.read_u8(ram[name], "M68K BUS") end
@@ -3201,12 +3453,13 @@ local function install_candidate()
                 "input-not-neutral")
             need(state.mapEventWord == 0, "pending-map-event")
             need(state.typewriting == 0, "text-typewriting")
-            need(state.windowState ~= 2 and raw.dialogueWindow == 0 and raw.portraitWindow == 0, "open-window")
-            need(raw.fading == 0, "active-fade")
-            need(player.x == player.destinationX and player.y == player.destinationY, "player-unsettled")
+            local battleSave = victory and ordinal >= 4
+            need((battleSave or state.windowState ~= 2) and raw.dialogueWindow == 0 and raw.portraitWindow == 0, "open-window")
+            need(raw.fading == 0 or (battleSave and raw.fading == 5), "active-fade")
+            need(battleSave or (player.x == player.destinationX and player.y == player.destinationY), "player-unsettled")
             need(scrolling == 0, "original-view-scrolling")
-            need(c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
-                and frame_count - c.consumerPoll.frame <= 1, "field-poll-not-recent")
+            need(battleSave or (c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action"
+                and frame_count - c.consumerPoll.frame <= 1), "field-poll-not-recent")
             if ordinal == 1 then
                 need(c.nextWarp <= 1 and not c.completed.royal, "segment-endpoint-passed", true)
                 for _, point in ipairs(natural.checkpoints) do
@@ -3233,6 +3486,29 @@ local function install_candidate()
                     and state.map == 21 and state.x == 5 and state.y == 15
                     and (state.facing & ram.DIRECTION_MASK) == ram.DOWN and c.nextWarp == 5,
                     "guard-boundary-not-reached")
+            elseif battleSave then
+                result.checkpoint = {name="battle-player-movement", rank=8 + c.turnNumber}
+                raw.battleReturns, raw.battlePoll = c.battleReturns, c.battlePoll
+                need(c.completed.ready and not c.completed.victory and c.completed.playerControl
+                    and flag_is_set(401) and not flag_is_set(501) and byte("CURRENT_BATTLE") == natural.admission.battle
+                    and state.map == natural.admission.map, "not-active-battle-player")
+                need(c.battlePoll and c.battlePoll.kind == "battle-movement" and c.battlePoll.turn == c.turnNumber
+                    and c.battlePoll.frame == frame_count and byte("IS_TARGETING") == 0, "not-completed-movement-poll")
+                need(c.battleReturns.loop and c.battleReturns.turn and c.battleReturns.player, "missing-battle-return-descriptor")
+                local targets = {loop=natural.functions.BattleLoop, turn=natural.functions.ExecuteIndividualTurn,
+                    player=natural.functions.ProcessBattleEntityControlPlayerInput}
+                for kind, entry in pairs(c.battleReturns) do
+                    need(targets[kind] == entry.target and entry.kind == kind
+                        and (memory.read_u32_be(entry.stack, "M68K BUS") & 0xFFFFFF) == entry.pc, "battle-return-readback-mismatch", true)
+                end
+                local actor = c.currentActor and entity(c.currentActor) or {}
+                raw.actor = actor
+                need(actor.address and word("MOVING_BATTLE_ENTITY_INDEX") == c.currentActor
+                    and byte("VIEW_TARGET_ENTITY") == actor.physical, "battle-actor-view-mismatch")
+                if actor.address then
+                    need(memory.read_u16_be(actor.address + ram.ENTITYDEF_OFFSET_X, "M68K BUS") == memory.read_u16_be(actor.address + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                        and memory.read_u16_be(actor.address + ram.ENTITYDEF_OFFSET_Y, "M68K BUS") == memory.read_u16_be(actor.address + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS"), "battle-actor-unsettled")
+                end
             end
             if segment.resume and not loading then
                 need(result.checkpoint and result.checkpoint.rank > segment.resume.checkpoint.rank
@@ -3249,7 +3525,8 @@ local function install_candidate()
                 assert(not readiness.hardFailure, readiness.hardFailure)
                 if not readiness.saveReady then return {status="not-ready", readiness=readiness} end
             else
-                assert(segment.ordinal == 4 and c.stopReason == "player-ready"
+                assert(((not victory and segment.ordinal == 4 and c.stopReason == "player-ready")
+                    or (victory and c.stopReason == "controllable-5b"))
                     and c.appliedButton == "neutral", "invalid/non-neutral final segment")
             end
             local core = core_check()
@@ -3270,7 +3547,7 @@ local function install_candidate()
             local observer = {completed=c.completed, phase=phase, frame=frame_count}
             for _, key in ipairs(continuation_keys) do observer[key] = c[key] end
             local metadata = {ordinal=segment.ordinal, resumable=not terminal, observer=observer,
-                checkpoint=readiness and readiness.checkpoint or {name="player-ready", rank=8},
+                checkpoint=readiness and readiness.checkpoint or {name=victory and "controllable-5b" or "player-ready", rank=victory and 9 + c.turnNumber or 8},
                 original=original_state(), core=core, batches=batches, deliveredFrames=delivered_frames(), activeSecondsAtSave=elapsed(),
                 stateBytes=size, boundary="neutral-completed-frame", finalCallback=terminal and c.terminal or nil}
             local output = assert(io.open(segment.metadataPath, "w"))
@@ -3288,6 +3565,7 @@ local function install_candidate()
             for _, key in ipairs(continuation_keys) do c[key] = restored.observer[key] end
             for key, value in pairs(restored.observer.completed) do c.completed[key] = value end
             frame_count, phase, c.appliedButton = restored.observer.frame, restored.observer.phase, "neutral"
+            if victory then c.restore_battle_returns() end
             local readiness = save_readiness(restored.ordinal, true)
             assert(same(readiness.checkpoint, restored.checkpoint), "loaded checkpoint identity mismatch")
             assert(readiness.saveReady, "loaded segment not ready: " .. table.concat(readiness.unmetReasons, ","))
@@ -3348,7 +3626,7 @@ local function install_candidate()
                         if natural then c.failureReason = "operator-abort" end
                         error("operator aborted interactive acquisition")
                     elseif op == "save" then
-                        assert(#command == 2 and segment and segment.ordinal < 4, "save requires a resumable segment")
+                        assert(#command == 2 and segment and (segment.ordinal < 4 or victory), "save requires a resumable segment")
                         c.failureReason = "segment-save-failure"
                         local outcome = c.save_segment(false)
                         c.failureReason = nil
@@ -3359,6 +3637,10 @@ local function install_candidate()
                         local count, button = bridge.step_arguments(command)
                         c.failureReason = nil
                         local readiness = natural and c.input_readiness(button) or {ready=true}
+                        if victory and c.completed.admission and button ~= "neutral" and count ~= 1 then
+                            readiness.ready = false
+                            readiness.unmetReasons[#readiness.unmetReasons + 1] = "battle-continuation-input-requires-one-frame"
+                        end
                         if not readiness.ready then
                             c.record("input:not-ready", {button=button, readiness=readiness})
                             c.frameEnd = snapshot()
@@ -3462,7 +3744,7 @@ local function write_observation(restoration)
 end
 
 local function finalize_success()
-    if segment and candidate.stopReason == "player-ready" then candidate.save_segment(true) end
+    if segment and (candidate.stopReason == "player-ready" or candidate.stopReason == "controllable-5b") then candidate.save_segment(true) end
     finish_pending = false
     local restoration, mismatch = restore_scope()
     if mismatch or not restoration.sessionStateRestored then

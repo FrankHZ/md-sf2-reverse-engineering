@@ -941,6 +941,7 @@ def _candidate_warps(
 
 
 NATURAL_CONTINUATION = "natural-battle01-player-ready"
+VICTORY_CONTINUATION = "natural-battle01-victory-5b"
 SEGMENT_FILES = (
     "segment.State",
     "continuation.json",
@@ -952,6 +953,7 @@ SEGMENT_FILES = (
     "bridge/receipt.json",
 )
 SEGMENT_IDENTITIES = (
+    "Continuation",
     "RomSha256",
     "SourceCommit",
     "H1ListingSha256",
@@ -987,7 +989,8 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     ordinal = pair["ordinal"]
     if (
         type(ordinal) is not int
-        or not 1 <= ordinal <= 3
+        or ordinal < 1
+        or (ordinal > 3 and report.get("Continuation") != VICTORY_CONTINUATION)
         or metadata["ordinal"] != ordinal
         or not metadata["resumable"]
         or report["Segment"]["ordinal"] != ordinal
@@ -1183,7 +1186,7 @@ def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str,
 
 
 def _interactive_limits(continuation: str | None) -> dict[str, int]:
-    if continuation not in (None, NATURAL_CONTINUATION):
+    if continuation not in (None, NATURAL_CONTINUATION, VICTORY_CONTINUATION):
         raise ValueError("unsupported candidate continuation")
     if continuation:
         return {
@@ -1560,6 +1563,195 @@ def _natural_configuration(
     }
 
 
+def _victory_configuration(
+    upstream: Path,
+    config: dict[str, Any],
+    sources: dict[str, str],
+    addresses: dict[str, int],
+    listing: str,
+    rom: bytes,
+) -> None:
+    """Bind the continuation to the accepted R3a-d/R4a evidence, without a new fixture."""
+    natural = config["candidate"]["natural"]
+    natural["selection"] = VICTORY_CONTINUATION
+    disasm = upstream / DISASM
+    owners = {}
+    for suffix in (
+        "turn-control",
+        "action-effect",
+        "action-completion",
+        "turn-finalization",
+        "victory-return",
+    ):
+        fixture = load_json(repo_path(f"tests/fixtures/h2/map3-battle01-{suffix}-static-v1.json"))
+        if (
+            fixture["upstream"]["commit"] != r1.UPSTREAM_COMMIT
+            or fixture["romSha256"] != r1.CANONICAL_ROM_SHA256
+        ):
+            raise ValueError("victory retained provenance drift")
+        owners[suffix] = fixture["id"]
+        for row in fixture["sourceContext"]["sourceIdentities"]:
+            data = (disasm / row["path"]).read_bytes()
+            if sha256(data).hexdigest().upper() != row["sha256"]:
+                raise ValueError(f"victory retained source drift: {row['path']}")
+            sources[row["path"]] = data.decode("utf-8")
+        for row in fixture["sourceContext"]["h1RomAnchors"]:
+            start, width = row["address"], row["width"]
+            if sha256(rom[start : start + width]).hexdigest().upper() != row["sha256"]:
+                raise ValueError(f"victory retained H1/ROM drift: {row['id']}")
+    for path in ("code/common/tech/randomnumbergenerator.asm", "code/common/menus/diamondmenu.asm"):
+        source = (disasm / path).read_text(encoding="utf-8")
+        pinned = subprocess.run(
+            ["git", "-C", str(upstream), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{path}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        if source != pinned:
+            raise ValueError(f"victory pinned source drift: {path}")
+        sources[path] = source
+    names = (
+        "ExecuteAfterBattleCutscene",
+        "EndAfterBattleCutscene",
+        "abcs_battle01",
+        "SwitchMap",
+        "ExplorationLoop",
+        "ClearFlag",
+        "SetFlag",
+        "GenerateRandomNumber",
+        "GenerateRandomOrDebugNumber",
+        "WriteBattlesceneScript",
+        "ExecuteAiCommand",
+        "ControlCursorEntity_ChooseTarget",
+        "InitializeBattlescene",
+        "ExecuteBattlesceneScript",
+        "EndBattlescene",
+        "ProcessAfterTurnEffects",
+        "ProcessKilledCombatants",
+        "CountRemainingCombatants",
+        "battlesceneScript_DropEnemyItem",
+        "battlesceneScript_End",
+        "loc_23186",
+        "BattlefieldMenu",
+        "ExecuteBattlefieldMagicMenu",
+        "ExecuteBattlefieldItemMenu",
+        "ExecuteBattleaction_Egress",
+        "ExecuteBattleaction_AngelWing",
+    )
+    for name in names:
+        address = addresses[name]
+        if _h1_bytes(listing, address, 2) != rom[address : address + 2].hex().upper():
+            raise ValueError(f"victory callback H1/ROM drift: {name}")
+        natural["functions"][name] = address
+    # Select the actual menu input read, not the entry before its window animation.
+    reads = []
+    for line in listing.splitlines():
+        match = re.match(r"^([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)\s*(btst.*)", line)
+        if (
+            match
+            and addresses["ExecuteDiamondMenu"]
+            <= int(match[1], 16)
+            < addresses["LoadDiamondMenuWindowLayout"]
+            and "#INPUT_BIT_LEFT,((CURRENT_PLAYER_INPUT" in match[3]
+        ):
+            pc, data = int(match[1], 16), bytes.fromhex(match[2])
+            if rom[pc : pc + len(data)] != data:
+                raise ValueError("diamond input H1/ROM drift")
+            reads.append(pc)
+    if len(reads) != 1:
+        raise ValueError("diamond input source seam missing/ambiguous")
+    natural["functions"]["diamondInputPc"] = reads[0]
+    # loc_23186 waits one VInt, then examines the live target count before input.
+    pc = addresses["loc_23186"]
+    if (
+        rom[pc : pc + 4] != bytes.fromhex("4EB8") + addresses["WaitForVInt"].to_bytes(2, "big")
+        or _h1_bytes(listing, pc + 4, 4) != rom[pc + 4 : pc + 8].hex().upper()
+    ):
+        raise ValueError("target input WaitForVInt seam drift")
+    natural["functions"]["targetInputPc"] = pc + 4
+    extra = (
+        "COMBATANT_OFFSET_EXP",
+        "BATTLEACTION_ITEM_OR_SPELL",
+        "BATTLEACTION_ITEM_SLOT",
+        "BATTLESCENE_ATTACK_TYPE",
+        "BATTLESCENE_ACTOR",
+        "BATTLESCENE_EXP",
+        "BATTLESCENE_GOLD",
+        "TARGETS_LIST_LENGTH",
+        "TARGETS_LIST",
+        "BATTLE_ACTOR_X",
+        "BATTLE_ACTOR_Y",
+        "BATTLE_TARGET_X",
+        "BATTLE_TARGET_Y",
+        "BATTLE_ENTITY_CHOSEN_X",
+        "BATTLE_ENTITY_CHOSEN_Y",
+        "FF4D00_LOADING_SPACE",
+        "FF5600_LOADING_SPACE",
+        "GAME_FLAGS",
+        "MAP_SIZE_MAX_TILEWIDTH",
+        "MAP_SIZE_MAX_TILEHEIGHT",
+        "MAP_ARRAY_BYTESIZE",
+        "INPUT_A",
+        "INPUT_B",
+        "INPUT_C",
+        "NOT_CURRENTLY_IN_BATTLE",
+    )
+    constants = r1._equates(
+        sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"],
+        tuple(name for name in extra if name != "MAP_ARRAY_BYTESIZE"),
+    )
+    if not re.search(
+        r"^MAP_ARRAY_BYTESIZE:\s+equ\s+MAP_SIZE_MAX_TILEWIDTH\*MAP_SIZE_MAX_TILEHEIGHT\s*(?:;[^\n]*)?$",
+        sources["sf2enums.asm"],
+        re.MULTILINE,
+    ):
+        raise ValueError("movement grid size expression drift")
+    constants["MAP_ARRAY_BYTESIZE"] = (
+        constants["MAP_SIZE_MAX_TILEWIDTH"] * constants["MAP_SIZE_MAX_TILEHEIGHT"]
+    )
+    config["ram"].update({name: constants[name] for name in extra})
+    if (
+        config["ram"]["MAP_ARRAY_BYTESIZE"]
+        != config["ram"]["FF5600_LOADING_SPACE"] - config["ram"]["FF4D00_LOADING_SPACE"]
+    ):
+        raise ValueError("original movement grid storage mismatch")
+    # ExplorationLoop entry precedes the conditional original no-battle write.
+    # Bind its actual byte operand; entry/return bookkeeping alone cannot prove it ran.
+    no_battle_writes = [
+        int(match[1], 16)
+        for line in listing.splitlines()
+        if (
+            match := re.match(
+                r"^([0-9A-F]{8})\s+[0-9A-F ]+\s+move\.b\s+#NOT_CURRENTLY_IN_BATTLE,"
+                r"\(\(CURRENT_BATTLE-\$1000000\)\)\.w\s*$",
+                line,
+            )
+        )
+        and addresses["ExplorationLoop"] <= int(match[1], 16) < addresses["WaitForEvent"]
+    ]
+    expected_write = (
+        bytes.fromhex("11FC")
+        + constants["NOT_CURRENTLY_IN_BATTLE"].to_bytes(2, "big")
+        + (config["ram"]["CURRENT_BATTLE"] & 0xFFFF).to_bytes(2, "big")
+    )
+    if len(no_battle_writes) != 1:
+        raise ValueError("ExplorationLoop no-battle write missing/ambiguous")
+    no_battle_pc = no_battle_writes[0]
+    if (
+        _h1_bytes(listing, no_battle_pc, 6) != expected_write.hex().upper()
+        or rom[no_battle_pc : no_battle_pc + 6] != expected_write
+    ):
+        raise ValueError("ExplorationLoop no-battle source/H1/ROM operand drift")
+    natural["programs"].append(addresses["abcs_battle01"])
+    natural["victory"] = {
+        "owners": owners,
+        "noBattleWritePc": no_battle_pc,
+        "checkpoint": "neutral completed player-movement frame with reconstructible battle returns",
+        "terminal": "after-program/flags/BattleLoop/SwitchMap return and stable exploration input",
+    }
+
+
 def prepare_map3_observation_candidate(
     rom_path: Path,
     upstream_path: Path,
@@ -1588,15 +1780,20 @@ def prepare_map3_observation_candidate(
     if not output.is_relative_to(local) or output == local or output.exists():
         raise ValueError("candidate output must be a fresh directory beneath this worktree's local")
     limits = _interactive_limits(continuation)
+    if continuation == VICTORY_CONTINUATION and segment is None:
+        raise ValueError("victory continuation requires explicit savestate-linked accounting")
     parent_pair, parent_metadata = None, None
     if segment is not None:
         if (
             type(segment) is not int
-            or not 1 <= segment <= 4
-            or continuation != NATURAL_CONTINUATION
+            or segment < 1
+            or (segment > 4 and continuation != VICTORY_CONTINUATION)
+            or continuation not in (NATURAL_CONTINUATION, VICTORY_CONTINUATION)
             or not interactive
         ):
-            raise ValueError("segment requires ordinal 1..4 and natural interactive continuation")
+            raise ValueError(
+                "segment requires a valid ordinal and natural interactive continuation"
+            )
         if segment != 1 and resume_directory is None:
             raise ValueError("only the first segment may start without a complete parent pair")
         if resume_directory is None:
@@ -1901,6 +2098,8 @@ def prepare_map3_observation_candidate(
         config["candidate"]["natural"] = _natural_configuration(
             rom_path, upstream_path, config, sources, addresses, listing, rom, castle
         )
+        if continuation == VICTORY_CONTINUATION:
+            _victory_configuration(upstream_path, config, sources, addresses, listing, rom)
     if interactive:
         from sf2tool.bizhawk_debug_bridge import SCRIPT
 
@@ -1982,7 +2181,11 @@ def prepare_map3_observation_candidate(
             MaximumAdditionalStarts=0,
             InputBatchesLimit=limits["maxBatches"],
             ProposedLimits=limits,
-            Terminal="first natural Battle01 player-ready at 0x22E70",
+            Terminal=(
+                "first stable controllable exploration after natural Battle01 victory"
+                if continuation == VICTORY_CONTINUATION
+                else "first natural Battle01 player-ready at 0x22E70"
+            ),
             RuntimeAuthorization="NONE; independent acceptance and fresh approval required",
         )
     if segment is not None:
@@ -2006,10 +2209,14 @@ def prepare_map3_observation_candidate(
             FutureControlledOrdinal=reviewed_prior_starts + 1,
             MaximumAdditionalStarts=None,
             RuntimeAuthorization=(
-                "Issue485 user-directed stabilization; independent integration required"
+                "Issue496; accepted source and concrete preparation required before native"
+                if continuation == VICTORY_CONTINUATION
+                else "Issue485 user-directed stabilization; independent integration required"
             ),
             Start="native parent savestate; no R1 bootstrap" if parent_pair else report["Start"],
-            Terminal=(
+            Terminal="forward battle checkpoint or stable 5B"
+            if continuation == VICTORY_CONTINUATION and segment >= 4
+            else (
                 "settled Map19 next-tile field control",
                 "returned royal field control",
                 "neutral Map21(5,15)/Down guard wait",
@@ -2115,6 +2322,8 @@ def run_map3_observation_candidate(
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
         selection = report.get("Segment")
+        if continuation == VICTORY_CONTINUATION and selection is None:
+            raise ValueError("victory execution requires reviewed segmented accounting")
         if (selection is None) != (segment is None) or (
             selection and (type(segment) is not int or selection["ordinal"] != segment)
         ):
@@ -2162,7 +2371,12 @@ def run_map3_observation_candidate(
         config = load_json(directory / "config.json")
         parent_pair = None
         if selection:
-            if continuation != NATURAL_CONTINUATION or not interactive or not 1 <= segment <= 4:
+            if (
+                continuation not in (NATURAL_CONTINUATION, VICTORY_CONTINUATION)
+                or not interactive
+                or segment < 1
+                or (segment > 4 and continuation != VICTORY_CONTINUATION)
+            ):
                 raise ValueError("invalid segmented composition")
             settings = config["candidate"]["segment"]
             if (
@@ -2327,8 +2541,23 @@ def run_map3_observation_candidate(
             diagnostic["stopReason"] = reason
             if reason == "out-of-scope-before-player-ready":
                 diagnostic["status"] = "OUT-OF-SCOPE-BEFORE-PLAYER-READY"
-            elif selection and segment < 4 and reason == "segment-saved":
+            elif (
+                selection
+                and (segment < 4 or continuation == VICTORY_CONTINUATION)
+                and reason == "segment-saved"
+            ):
                 diagnostic["status"] = "SEGMENT-SAVED-UNREVIEWED"
+            elif continuation == VICTORY_CONTINUATION:
+                if reason != "controllable-5b":
+                    diagnostic["status"] = "INCOMPLETE-OBSERVATION"
+                elif (
+                    not observed["terminal"]["flags"]["501"]
+                    or observed["terminal"]["flags"]["401"]
+                    or observed["terminal"].get("battle")
+                    != config["ram"]["NOT_CURRENTLY_IN_BATTLE"]
+                ):
+                    diagnostic["status"] = "FAIL"
+                    raise ValueError("natural victory terminal flag/no-battle mismatch")
             elif reason != "player-ready":
                 diagnostic["status"] = "INCOMPLETE-OBSERVATION"
             elif observed["terminal"]["map"] != 57:

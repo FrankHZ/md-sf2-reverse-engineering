@@ -12,6 +12,13 @@ The current additional observation is [Issue #485's first Battle01 player-ready 
 independently reviewed by main-gate, extending [Issue #475's bounded Map19 acquisition](#interactive-acquisition-reached-map19-admission-consumed)
 accepted in [PR #476](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/476).
 
+The [Issue #496 continuation implementation](map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496-offline)
+extends that same rail through source-bound player/AI action observation, coherent battle checkpoints
+and victory/after-program/controllable-5B predicates. Its present evidence is **offline only**;
+native actions, victory and 5B remain **Unknown**. It does not change the accepted #485 observation,
+RA-06/RA-07/RA-12 runtime status, 8D completeness, deterministic replay or H4. Unsupported input
+consumers and defeat are explicit incomplete outcomes in that owner.
+
 ## Current milestone applicability
 
 [ADR 0010's current amendment](../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)

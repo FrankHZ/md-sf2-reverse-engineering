@@ -130,6 +130,26 @@ change the acquisition into frozen replay nor authorize gameplay beyond the endp
 replay, natural visible New/load, or H4. Historical stop restrictions below apply to their original
 attempts and cannot override this user-directed stabilization.
 
+### Battle01 victory acquisition amendment (Issue #496)
+
+[Issue #496](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/496) is the user's next
+authorized #437 outcome after accepted #485. It reuses segmented interactive acquisition for
+ordinary player/AI actions, natural victory, the actual after-program and controllable 5B. The
+[existing acquisition owner](../research/map3-messenger-acceptance.md#battle01-actions-and-victory-continuation-issue-496-offline)
+defines the explicit continuation, source bindings, input consumers, reconstructible battle-return
+descriptors, unsupported outcomes and final readiness predicate. No new fixture/transport/framework
+or frozen replay is admitted. The previous terminal pair remains nonresumable; changed execution
+sources require a fresh compatible chain.
+
+First integrate the offline implementation independently. Main-gate then checks the concrete
+source/start/checkpoint preparation and dispatches native collection in the same accountable task.
+Ordinary reviewed collection and corrections require no repeated user permission or per-segment
+approval. Historical cumulative totals remain charged observations, while identity, core, I/O,
+callback, exchange and operator-idle containment remain enforced. A capability Draft PR does not
+complete the Issue: actual observation, independent acceptance and tracked result integration are
+still required. Until then, victory/5B and remaining presentation consumption are **Unknown**, and
+this implementation's native status is **NOT RUN**. H4 and disabled replay boundaries are unchanged.
+
 ### Use distinct names and evidence owners
 
 The following terms are normative:
