@@ -16,17 +16,19 @@ save/load, player/AI actions, effects, RNG, scene consumption/reloads and an ori
 The final response exceeded the existing bridge limit and the host result remains **FAIL**.
 After [PR #500 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/500),
 subsequent native collection confirmed the corrected terminal reply and original Heal 1 input/effects.
-The Medical Herb extension below is **offline only, native NOT RUN**.
+After [PR #501 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/501),
+the compatible chain below confirms original Medical Herb selection, consumption and healing.
 Victory, after-program completion, controllable 5B and H4 remain **Unknown**.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
-The accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
+Issue #485's accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches; the current total through prepared-32 is **61 starts /
-8837.811812300177 charged seconds / 192811 resource frames / 5222 advancing batches**.
+frames and 2063 advancing batches; the current total through prepared-44 is **73 starts /
+10247.52403570019 charged seconds / 229866 resource frames / 7193 advancing batches**.
 These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
+Prepared-41 independently retains another final callback/restoration **Unknown**.
 
 ### Native save/load, actions and failed terminal
 
@@ -127,6 +129,85 @@ input justifies the bounded extension below. No further native start uses the co
 source. Its parents remain incompatible with the changed observer; the next accepted fresh R1
 must inherit all **61 / 8837.811812300177 / 192811 / 5222** costs. Victory and 5B remain **Unknown**.
 
+### Native herb observation and completed-branch recovery
+
+Prepared-33..44 use accepted `5e25c5e0b71a4be9f1924de89ce07c848696c225`, tree
+`24ae083b6cd8b06dfabfcd7f45f7753ff80461b6`. Fresh 33 inherits all 61 earlier starts;
+33..37 reach the original first player-ready frame 22368. Complete 38..40 save rounds 2..4
+at frames 23256, 24286 and 25755. Each complete pair passes core/RAM/register/frame,
+original return-stack and forward-checkpoint readback before reuse.
+
+| Candidate / actual start | Parent | Observed result and charged frames / batches / seconds |
+| --- | --- | --- |
+| 41 / 70 | 40 | Local operator stalls at the herb icon menu; forced containment, no pair. 2083 / 608 / 488.6106827999465. |
+| 42 / 71 | 40 | Original herb heals Chester 6→11; save round 5 / turn 37 / rank 45, frame 28381. 2626 / 139 / 77.18620880000526. |
+| 43 / 72 | 42 | Enemy 132 dies; save round 6 / turn 46 / rank 54, frame 33640. Bowie 4 HP, Sarah 7 HP / 10 MP, Chester 11 HP. 5259 / 127 / 123.45435800001724. |
+| 44 / 73 | 43 | Chester attacks 133 (5→3); enemy 128 then kills Bowie (4→0), defeat frame 34972. 1332 / 43 / 31.629579000000376. |
+
+**Confirmed (bounded native observation):** 42's turn 33 follows Item→Use=0, Left from
+weapon choice 0 to herb choice 1, then C. Original action 2 / item 0 / slot 1 enters
+`battlesceneScript_UseItem`, uses HEALIN 16 and reaches `RemoveItemBySlot`. Bowie's inventory
+changes `[199,0,127,127]`→`[199,127,127,127]`; consumed `EndBattlescene` shows Chester 6→11
+and Bowie MP unchanged at 8. Herb confirmation and effect are observed; native cancellation is
+still **Unknown**. Complete 42/43 and defeat 44 exit 0, restore entry, clear callbacks, delete
+their session ROM and preserve canonical identity. No owned native process survives.
+
+41 is a distinct **FAIL**, not a defeat or clean abort. A snapshot evaluates readiness for C;
+at a selected weapon it correctly reports `unsupported-battle-selection`, while a directional
+step remains individually admissible. The old local operator mistook this for a navigation
+prohibition and repeatedly sent neutral. Ctrl-C ended its outer shell without stopping the
+native chain. Stopping only the verified upstream operator then lost the pipe reader; the bridge
+records `[Errno 22] Invalid argument`, exit 1 and forced termination. Host ROM cleanup/identity
+are confirmed, but the missing final observation leaves restoration/callback removal **Unknown**.
+All 2083 completed frames through 27838 and 608 batches remain charged. The corrected local
+operator permits only directions/B for that sole readiness reason and supplies a per-segment
+`abort.request` hook through its existing stdin, preserving the response reader.
+
+43 exposes a tactical recovery limit: Bowie at `(8,8)` is surrounded by four enemies and has
+no herb; Chester acts before enemies 128/129/130, then Sarah/Bowie. The actual grid supplies
+no unoccupied position from which Chester can heal Bowie or attack 1-HP enemy 128. Pinned
+`itemdefs.asm` entry 56 / `sf2enums.asm` identify his equipped item 184 as Wooden Stick,
+range 1..1, not Short Spear (72). ROM record `0x17226`, source-defined range offsets 4/5,
+confirms both range bytes are 1. This rules out the proposed two-tile attack; it does not
+prove every possible original outcome from 43. The revised local policy considers enemies still
+due to act and avoids advancing Bowie beyond immediate healing range into multiple estimated
+threats. Rescue positioning considers every original reachable destination before cohesion.
+`leader-guard-readback-review.json` records changed prospective choices against 43's retained
+turn-42 states; it does not prove a replayed outcome or exact AI reach.
+
+The runner now permits choosing an earlier compatible complete parent after **every claimed
+attempt in its source lineage has completed**. It follows existing parent links to the root and
+existing immutable claims through all branches, including siblings/cousins. Each edge verifies
+parent-pair identity, source identities, ordinal and forward checkpoint. A unique traversal rejects
+duplicate children, cycles, missing ancestry claims and descendants of an unsealed/terminal pair.
+Raw receipt/input increments are reconciled in frozen prior-cost order, not traversal order;
+zero-cost pre-process failures precede a launch with identical prior totals. Saved cumulative
+costs must agree with those increments. Missing/incomplete receipts, unfinished processes,
+unreconciled cleanup and accounting gaps reject both preparation and the launch-time recheck.
+Terminal pairs may be verified and charged as completed descendants but remain forbidden resume
+parents. The selected parent's original state/order is restored; all branches' resource costs
+are inherited. No pair, claim, failed observation or original state is overwritten. This retains
+the single-writer execution boundary; it does not admit concurrent branch launches.
+
+**Confirmed offline; native NOT RUN for the revised runner:** actual 33..44 records reconcile
+to the same 73-start totals when selecting either 42 or 43. Direct sibling/cousin, zero-start,
+terminal and rejection cases exercise the actual accounting function. The runner identity changed,
+so all PR501 pairs remain incompatible with new execution: independent source acceptance must
+precede one fresh compatible R1 carrying the complete totals. Future branches within that new
+identity can recover an earlier save without repeating R1. No hash whitelist or identity exception
+is introduced. Victory/after-program/5B, full 8D and H4 remain **Unknown**.
+
+Reproduce with `uv run python -X utf8 local/issue496/victory-native-summary.py 44 <fresh-output>`
+and the existing pair/scene readers. Retained projections include `victory-native-through44.json`,
+`prepared-42-root-herb-review.json`, `rescue43-readback.json`, `weapon56-pinned-review.json`,
+`prepared-41-root-failure-review.json` and the raw native receipts. Readers that publish results
+exclusively require fresh output names when rerun. `check-branch-accounting.py <fresh-directory>`
+executes the production function with explicit synthetic pair-read seams; `branch-real-boundaries.json`
+and `branch-accounting-real42.json` retain full real-pair validation. The ordinary verification,
+host check, committed plan and actual CI belong to the source PR handoff. Inspection/driver errors
+are retained separately in `branch-offline-failures.json`; they neither change native evidence nor
+add launches.
+
 ### Source binding and observation fields
 
 Preparation reads the five accepted R3a/R3b/R3c/R3d/R4a fixtures and validates their named source
@@ -171,7 +252,7 @@ pending callers still block input. C/B consumption invalidates the old poll, inc
 back to the icon menu. The existing action-1/effect/RNG observations consume the original result;
 no HP, MP, target, action or RNG is written by the observer.
 
-The offline Medical Herb extension pins `itemmenu.asm`, `itemstats.asm`, `itemdefs.asm` and
+The Medical Herb extension pins `itemmenu.asm`, `itemstats.asm`, `itemdefs.asm` and
 `breakuseditem.asm` in addition to the retained player-dispatch/action sources. H1/ROM bind the
 actual item input read at `loc_10616`, the complete first item definition at `table_ItemDefinitions`,
 and its HEALIN-1 definition: consumable item 0, spell 16, range 0–1, radius 0, nominal power 10.
@@ -246,10 +327,10 @@ the next ordinal and `resume_directory` only; successful parents and failed-chil
 by the existing pair protocol. Victory mode requires explicit segmented accounting. Mode identity
 is included in parent compatibility. Native save/load are still outside callbacks.
 
-The current offline destination is `local/issue496/prepared-33`: preparation reports
-`CANDIDATE-PREPARED-NOT-ADMITTED`, zero emulator launches, 61 historical starts and future actual
-start 62. It is a fresh segment 1 with no parent and no runtime directory, carrying the four totals
-above under the existing 7200-second proposal. Preparation does not authorize execution or count
+The next revised-runner preparation must use a fresh ignored destination, segment 1 without a parent,
+73 historical starts and future actual start 74, carrying all four current totals above under the
+existing 7200-second proposal. Prepared-33 is already consumed by the PR501 chain; do not reuse it.
+Preparation reports `CANDIDATE-PREPARED-NOT-ADMITTED`. It does not authorize execution or count
 as another actual start; independent source/preparation acceptance must precede native collection.
 
 The local prepared operator uses the same finite stdin/stdout request/response mechanism as #485.
@@ -270,7 +351,7 @@ permits transit through allies while rejecting occupied final positions as the o
 does, prefers weakened targets and limits unnecessary separation. Enemy move-plus-one distance,
 cohesion and injury thresholds are tactical estimates, not exact enemy reach or gameplay legality.
 `operator-victory-before-herb.py` retains the pre-extension policy. Readback proposals are not
-replayed outcomes; herb use and the revised winning route remain **Unknown**. The sequential
+replayed outcomes; herb use is observed above, while a winning route remains **Unknown**. The sequential
 `continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
 the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 
@@ -611,9 +692,10 @@ patches must be restored; cleanup restores the initial bootstrap scope or the lo
 The immutable pair binds `segment.State`, `continuation.json`, input/checkpoint/observation/status and
 host/bridge receipts to prepared material. Publication follows successful exit and callback cleanup,
 session deletion, canonical identity and frame/batch/order reconciliation. An exclusive `resumed-by.json`
-claim records the first child; additional numbered claims retain retries after completed failed children
-with verified cleanup and accumulated real costs. A successful child blocks reuse of that parent:
-continue from the newest complete child. Missing/incomplete attempt receipts block automatic retry.
+claim records the first child; additional numbered claims retain subsequent attempts without replacing
+earlier branches. The [completed-branch recovery](#native-herb-observation-and-completed-branch-recovery)
+now reconciles the entire source lineage before reuse of any compatible complete parent, including
+successful descendants and sibling/cousin costs. Missing/incomplete attempt receipts block resume.
 An explicitly recorded, cleanup-verified pre-process failure may retry without adding a native start,
 frame or batch only when both owners prove no process/input; missing logs alone never prove zero.
 Any measured failed launch-attempt duration remains charged in cumulative seconds, even without a

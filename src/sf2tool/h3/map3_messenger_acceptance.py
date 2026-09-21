@@ -968,14 +968,20 @@ SEGMENT_IDENTITIES = (
 )
 
 
-def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def _read_segment(
+    directory: Path, *, require_resumable: bool = True
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Read one complete private pair; a save API success alone never admits resume."""
     directory = directory.resolve(strict=True)
     if not directory.is_relative_to(repo_path("local").resolve()):
         raise ValueError("segment must belong to this worktree's ignored local directory")
     runtime = directory / "runtime"
     pair = load_json(runtime / "segment-pair.json")
-    if pair.get("kind") != "savestate-linked-original-acquisition" or not pair.get("resumable"):
+    if (
+        pair.get("kind") != "savestate-linked-original-acquisition"
+        or type(pair.get("resumable")) is not bool
+        or (require_resumable and not pair["resumable"])
+    ):
         raise ValueError("segment is incomplete or not resumable")
     if set(pair["files"]) != set(SEGMENT_FILES):
         raise ValueError("segment evidence set mismatch")
@@ -990,9 +996,12 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     if (
         type(ordinal) is not int
         or ordinal < 1
-        or (ordinal > 3 and report.get("Continuation") != VICTORY_CONTINUATION)
+        or (
+            ordinal > (3 if pair["resumable"] else 4)
+            and report.get("Continuation") != VICTORY_CONTINUATION
+        )
         or metadata["ordinal"] != ordinal
-        or not metadata["resumable"]
+        or metadata["resumable"] != pair["resumable"]
         or report["Segment"]["ordinal"] != ordinal
         or type(report["HistoricalControlledStarts"]) is not int
         or report["HistoricalControlledStarts"] < 0
@@ -1018,7 +1027,8 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     host = load_json(runtime / "host-status.json")
     bridge = load_json(runtime / "bridge/receipt.json")
     if (
-        host["status"] != "SEGMENT-SAVED-UNREVIEWED"
+        host["status"]
+        != ("SEGMENT-SAVED-UNREVIEWED" if pair["resumable"] else "OBSERVATION-COMPLETE-UNREVIEWED")
         or host.get("error")
         or not host["canonicalRomUnchanged"]
         or not host["sessionRomDeleted"]
@@ -1035,39 +1045,121 @@ def _read_segment(directory: Path) -> tuple[dict[str, Any], dict[str, Any]]:
 
 
 def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
-    """Retain failed child attempts; only the last complete parent supplies game state."""
-    pair, metadata = _read_segment(directory)
+    """Reconcile the completed lineage before choosing any compatible saved game state."""
+    directory = directory.resolve(strict=True)
+    _read_segment(directory)  # The selected parent must itself remain resumable.
+    local = repo_path("local").resolve()
+
+    def claims_for(parent: Path) -> list[Path]:
+        runtime = parent / "runtime"
+        claims = sorted(runtime.glob("resumed-by-*.json"))
+        if (runtime / "resumed-by.json").exists():
+            claims.insert(0, runtime / "resumed-by.json")
+        return claims
+
+    root = directory
+    ancestors: set[Path] = set()
+    while True:
+        if root in ancestors or not root.is_relative_to(local):
+            raise ValueError("segment ancestry is cyclic or outside this worktree")
+        ancestors.add(root)
+        report = load_json(root / "candidate.json")
+        parent = report["Segment"]["parentDirectory"]
+        if parent is None:
+            break
+        root = Path(parent).resolve(strict=True)
+    pair, metadata = _read_segment(root)
     totals = dict(
         starts=pair["historicalStarts"],
         seconds=pair["activeSeconds"],
         frames=pair["deliveredFrames"],
         batches=metadata["batches"],
     )
-    runtime = directory / "runtime"
-    claims = sorted(runtime.glob("resumed-by-*.json"))
-    if (runtime / "resumed-by.json").exists():
-        claims.insert(0, runtime / "resumed-by.json")
-    for claim in claims:
-        child = Path(load_json(claim)["candidate"]).resolve(strict=True)
-        if not child.is_relative_to(repo_path("local").resolve()):
-            raise ValueError("retry attempt is outside this worktree")
-        if (child / "runtime/segment-pair.json").exists():
-            raise ValueError("parent already has a successful child; continue from that child")
-        report = load_json(child / "candidate.json")
+    seen = {root}
+    pending = [(root, pair, metadata)]
+    attempts = []
+    while pending:
+        parent, parent_pair, previous = pending.pop()
+        parent_report = load_json(parent / "candidate.json")
+        if not parent_pair["resumable"] and claims_for(parent):
+            raise ValueError("terminal segment cannot have descendants")
+        for claim in claims_for(parent):
+            claimed = load_json(claim)
+            child = Path(claimed["candidate"]).resolve(strict=True)
+            if child in seen or not child.is_relative_to(local):
+                raise ValueError(
+                    "segment claims repeat a child, form a cycle or leave this worktree"
+                )
+            seen.add(child)
+            report = load_json(child / "candidate.json")
+            selection = report["Segment"]
+            ordinal = selection["ordinal"]
+            if (
+                selection["parentDirectory"] != parent.as_posix()
+                or selection["parentPairSha256"]
+                != sha256((parent / "runtime/segment-pair.json").read_bytes()).hexdigest().upper()
+                or claimed["ordinal"] != ordinal
+                or report["HistoricalControlledStarts"] < parent_pair["historicalStarts"]
+                or selection["priorActiveSeconds"] < parent_pair["activeSeconds"]
+                or selection["priorFrames"] < parent_pair["deliveredFrames"]
+                or selection["priorBatches"] < previous["batches"]
+                or not (
+                    ordinal == parent_pair["ordinal"] + 1
+                    or ordinal == parent_pair["ordinal"] == 1
+                    and previous["checkpoint"]["rank"] < 5
+                )
+                or any(report[key] != parent_report[key] for key in SEGMENT_IDENTITIES)
+            ):
+                raise ValueError("segment claim parent/source/ordinal identity mismatch")
+            sealed = None
+            if (child / "runtime/segment-pair.json").exists():
+                sealed = _read_segment(child, require_resumable=False)
+                if sealed[1]["checkpoint"]["rank"] <= previous["checkpoint"]["rank"]:
+                    raise ValueError("child checkpoint does not advance beyond its parent")
+                pending.append((child, *sealed))
+            elif claims_for(child):
+                raise ValueError("unsealed attempt cannot have descendants")
+            attempts.append((child, report, sealed))
+    if not ancestors.issubset(seen):
+        raise ValueError("selected segment ancestry is missing its parent claim")
+
+    def prior_cost(attempt: tuple) -> tuple:
+        report = attempt[1]
+        selection = report["Segment"]
+        values = (
+            report["HistoricalControlledStarts"],
+            selection["priorActiveSeconds"],
+            selection["priorFrames"],
+            selection["priorBatches"],
+        )
+        if (
+            any(type(values[i]) is not int or values[i] < 0 for i in (0, 2, 3))
+            or type(values[1]) not in (int, float)
+            or not math.isfinite(values[1])
+            or values[1] < 0
+        ):
+            raise ValueError("segment prior accounting is invalid")
+        # A zero-duration pre-process failure can have exactly the same prior
+        # totals as the next actual launch; charge the no-start attempt first.
+        receipt = load_json(attempt[0] / "runtime/bridge/receipt.json")
+        return (*values, receipt.get("started") is not False)
+
+    # Claims express parentage, not launch order: a later attempt can return to
+    # an ancestor or cousin. Its frozen cumulative prior cost supplies the order.
+    for child, report, sealed in sorted(attempts, key=prior_cost):
         host = load_json(child / "runtime/host-status.json")
         receipt = load_json(child / "runtime/bridge/receipt.json")
         if (
             not host.get("canonicalRomUnchanged")
             or not host.get("sessionRomDeleted")
-            or not (host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION")
-            or report["Segment"]["parentDirectory"] != directory.as_posix()
+            or not (sealed or host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION")
             or report["HistoricalControlledStarts"] != totals["starts"]
             or report["Segment"]["priorActiveSeconds"] != totals["seconds"]
             or report["Segment"]["priorFrames"] != totals["frames"]
             or report["Segment"]["priorBatches"] != totals["batches"]
         ):
             raise ValueError(
-                "retry needs a completed failed attempt with reconciled cleanup/accounting"
+                "resume needs completed lineage attempts with reconciled cleanup/accounting"
             )
         if receipt.get("started") is False:
             # Absence of an input log is not evidence of zero delivery. Both owners
@@ -1098,6 +1190,11 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
             continue
         if receipt.get("started") is not True or receipt.get("returncode") is None:
             raise ValueError("started retry needs a completed process receipt")
+        if (
+            receipt.get("historicalStarts") != totals["starts"] + 1
+            or report["FutureControlledOrdinal"] != totals["starts"] + 1
+        ):
+            raise ValueError("segment actual native-start accounting mismatch")
         rows = [
             json.loads(line)
             for line in (child / "runtime/actual-inputs.jsonl")
@@ -1106,13 +1203,20 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
         ]
         frames = [row for row in rows if row["kind"] == "frame"]
         seconds = receipt["elapsedSeconds"]
-        if not math.isfinite(seconds) or seconds < 0 or receipt.get("started") is not True:
+        if type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds < 0:
             raise ValueError("failed attempt elapsed/start accounting is unavailable")
         totals["starts"] += 1
         totals["seconds"] += seconds
         totals["frames"] += len(frames)
         totals["batches"] += len({row["id"] for row in frames if row["id"] != 0})
-    return totals, len(claims)
+        if sealed and (
+            sealed[0]["historicalStarts"] != totals["starts"]
+            or sealed[0]["activeSeconds"] != totals["seconds"]
+            or sealed[0]["deliveredFrames"] != totals["frames"]
+            or sealed[1]["batches"] != totals["batches"]
+        ):
+            raise ValueError("sealed child cumulative accounting mismatch")
+    return totals, len(claims_for(directory))
 
 
 def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str, Any]) -> None:

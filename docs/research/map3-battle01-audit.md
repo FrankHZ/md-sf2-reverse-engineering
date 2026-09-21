@@ -23,14 +23,24 @@ After PR500 source acceptance at `43b92d14de774f153e263ba00b511aaa8fa22955`, pre
 confirm native reply projection, Heal 1 selection/effects and save/load through round 8. Children
 27, 29 and 32 end in original defeat with **INCOMPLETE-OBSERVATION**, exit 0 and complete cleanup.
 The acquisition owner preserves the double-attack distinction, actual scene HP/MP transitions,
-all failed-child costs and the local preparation-28 failure that launched nothing. Current totals
-are **61 starts / 8837.811812300177 seconds / 192811 frames / 5222 batches**; failed16's transport
-FAIL and failed21's missing final cleanup payload **Unknown** remain preserved.
-Original inventories still contain Medical Herbs. The minimal two-stage Use/item/target extension,
-source-bound slot consumption observations and revised finite operator are **offline only, native
-NOT RUN**. Equip/Give/Drop and other manual items remain unsupported. A new source identity
-requires independently accepted preparation and a fresh compatible R1 carrying all costs; no old
-parent is relabeled or reused.
+all failed-child costs and the local preparation-28 failure that launched nothing. Accepted PR501
+source then collects 33..44. Segment 42 confirms Item→Use→Medical Herb→target, Bowie's one-herb
+consumption and Chester 6→11 HP with unchanged MP. Segment 43 saves round 6; 44 ends in original
+defeat with complete cleanup. Segment 41 instead records forced containment after a local menu
+readiness mistake and upstream pipe loss; its missing final restoration/callback evidence is
+**Unknown**. Current totals are **73 starts / 10247.52403570019 seconds / 229866 frames /
+7193 batches**. Earlier failed16 transport FAIL and failed21 cleanup Unknown remain preserved.
+Equip/Give/Drop and other manual items remain unsupported; herb cancellation remains Unknown.
+
+The latest parent traps 4-HP Bowie with no reachable Chester healing/attack rescue position.
+The bounded runner correction therefore permits earlier compatible saves only after reconciling
+all completed source-lineage branches through existing claims, including sibling/cousin costs.
+Duplicate/cyclic/missing claims, identity drift, active or unreconciled attempts block resume.
+Terminal pairs remain nonresumable. This correction is **offline only, native NOT RUN**;
+the changed runner identity requires independent acceptance and one fresh compatible R1 carrying
+all 73 starts. Existing source identities, pairs and failure records remain intact. The
+[acquisition owner](map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
+retains exact observations, reproduction routes and the distinction between game state and costs.
 Victory/after-program/5B (RA-07/RA-12), full 8D, deterministic replay and H4 remain **Unknown**.
 
 ## Current milestone applicability
