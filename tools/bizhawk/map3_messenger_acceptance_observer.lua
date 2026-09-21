@@ -2855,6 +2855,7 @@ local function install_candidate()
                 local camera = camera_state()
                 local ready = completed.afterProgram and completed.afterReturn and completed.flagClear and completed.flagSet
                     and completed.battleReturn and completed.switchReturn and not next(c.battleReturns)
+                    and byte("CURRENT_BATTLE") == ram.NOT_CURRENTLY_IN_BATTLE
                     and c.pending == 0 and #c.programs == 0 and not c.audioPending and not c.fieldMenu
                     and not flag_is_set(401) and flag_is_set(501) and state.mapEventWord == 0
                     and state.typewriting == 0 and word("DIALOGUE_WINDOW_INDEX") == 0 and word("PORTRAIT_WINDOW_INDEX") == 0

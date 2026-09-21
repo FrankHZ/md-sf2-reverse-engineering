@@ -82,11 +82,19 @@ save, and no register/RAM/ROM/flag/actor/RNG repair is introduced.
 The final `controllable-5b` predicate requires observed after-program and after-routine returns,
 F401-clear→F501-set, actual BattleLoop return with D4=1, SwitchMap return and ExplorationLoop entry,
 then two consecutive neutral completed frames at the same map/location/facing. Both require actual
-player entity control and recent field-action polls, settled movement/camera, no program, modal,
+`CURRENT_BATTLE=NOT_CURRENTLY_IN_BATTLE` (255), player entity control and recent field-action polls,
+settled movement/camera, no program, modal,
 transfer or live battle return. The final observation retains exact reached flags, map/player,
 party/roster, inventory/stats/spells/EXP/gold and consumer facts. Its saved pair is terminal and
 nonresumable. A runtime receipt remains unreviewed evidence until independent acceptance; it is
 neither deterministic replay nor H4.
+
+The original `ExplorationLoop` entry precedes its conditional write of the no-battle sentinel.
+Preparation binds that write's sentinel and RAM operands against source/H1/ROM; both completed
+frames must read it, and the runner rejects a contradictory terminal battle value with FAIL.
+Main-gate's retained PR499 counterexample showed that return bookkeeping alone could accept battle1.
+That completed failure remains in the local review results; the corrected direct sequence rejects
+battle1 and other active indices, performs the original no-battle transition and only then accepts.
 
 ### Preparation, operator and verification
 

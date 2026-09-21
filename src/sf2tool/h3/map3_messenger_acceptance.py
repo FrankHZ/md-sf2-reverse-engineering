@@ -1695,6 +1695,7 @@ def _victory_configuration(
         "INPUT_A",
         "INPUT_B",
         "INPUT_C",
+        "NOT_CURRENTLY_IN_BATTLE",
     )
     constants = r1._equates(
         sources["sf2const.asm"] + "\n" + sources["sf2enums.asm"],
@@ -1715,9 +1716,37 @@ def _victory_configuration(
         != config["ram"]["FF5600_LOADING_SPACE"] - config["ram"]["FF4D00_LOADING_SPACE"]
     ):
         raise ValueError("original movement grid storage mismatch")
+    # ExplorationLoop entry precedes the conditional original no-battle write.
+    # Bind its actual byte operand; entry/return bookkeeping alone cannot prove it ran.
+    no_battle_writes = [
+        int(match[1], 16)
+        for line in listing.splitlines()
+        if (
+            match := re.match(
+                r"^([0-9A-F]{8})\s+[0-9A-F ]+\s+move\.b\s+#NOT_CURRENTLY_IN_BATTLE,"
+                r"\(\(CURRENT_BATTLE-\$1000000\)\)\.w\s*$",
+                line,
+            )
+        )
+        and addresses["ExplorationLoop"] <= int(match[1], 16) < addresses["WaitForEvent"]
+    ]
+    expected_write = (
+        bytes.fromhex("11FC")
+        + constants["NOT_CURRENTLY_IN_BATTLE"].to_bytes(2, "big")
+        + (config["ram"]["CURRENT_BATTLE"] & 0xFFFF).to_bytes(2, "big")
+    )
+    if len(no_battle_writes) != 1:
+        raise ValueError("ExplorationLoop no-battle write missing/ambiguous")
+    no_battle_pc = no_battle_writes[0]
+    if (
+        _h1_bytes(listing, no_battle_pc, 6) != expected_write.hex().upper()
+        or rom[no_battle_pc : no_battle_pc + 6] != expected_write
+    ):
+        raise ValueError("ExplorationLoop no-battle source/H1/ROM operand drift")
     natural["programs"].append(addresses["abcs_battle01"])
     natural["victory"] = {
         "owners": owners,
+        "noBattleWritePc": no_battle_pc,
         "checkpoint": "neutral completed player-movement frame with reconstructible battle returns",
         "terminal": "after-program/flags/BattleLoop/SwitchMap return and stable exploration input",
     }
@@ -2522,9 +2551,13 @@ def run_map3_observation_candidate(
                 if reason != "controllable-5b":
                     diagnostic["status"] = "INCOMPLETE-OBSERVATION"
                 elif (
-                    not observed["terminal"]["flags"]["501"] or observed["terminal"]["flags"]["401"]
+                    not observed["terminal"]["flags"]["501"]
+                    or observed["terminal"]["flags"]["401"]
+                    or observed["terminal"].get("battle")
+                    != config["ram"]["NOT_CURRENTLY_IN_BATTLE"]
                 ):
-                    raise ValueError("natural victory terminal flag mismatch")
+                    diagnostic["status"] = "FAIL"
+                    raise ValueError("natural victory terminal flag/no-battle mismatch")
             elif reason != "player-ready":
                 diagnostic["status"] = "INCOMPLETE-OBSERVATION"
             elif observed["terminal"]["map"] != 57:
