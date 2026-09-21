@@ -2487,10 +2487,18 @@ local function install_candidate()
                 end)
             end
             battle_call("ExecuteAfterBattleCutscene", function()
-                assert(completed.afterProgram and flag_is_set(401) and not flag_is_set(501), "after-program return/flags drift")
+                assert(completed.afterProgram and completed.afterTail and flag_is_set(401) and not flag_is_set(501), "after-program return/flags drift")
                 completed.afterReturn = true
             end)
-            battle_call("EndAfterBattleCutscene")
+            -- This is a shared function tail reached by BRA, with saved D0/D1
+            -- above the caller's return address. The enclosing call owns return.
+            add_callback(nf.EndAfterBattleCutscene, "candidate:after-tail", function()
+                if not completed.admission or c.stopReason then return end
+                assert(completed.afterProgram and not completed.afterTail
+                    and c.consumers["battle:ExecuteAfterBattleCutscene"] == 1, "after-cutscene tail without owning call")
+                completed.afterTail = true
+                c.record("battle:after-tail", {stack=reg("A7") & 0xFFFFFF, target=nf.EndAfterBattleCutscene})
+            end)
             for _, name in ipairs({"BattlefieldMenu",
                 "ExecuteBattleaction_Egress", "ExecuteBattleaction_AngelWing"}) do
                 add_callback(nf[name], "candidate:unsupported-battle-input", function()
@@ -2697,6 +2705,12 @@ local function install_candidate()
             local pointer = reg("A0") & 0xFFFFFF
             local map = byte("CURRENT_MAP")
             local expected = natural.setups[tostring(map)]
+            if victory and completed.exploration and map == natural.postVictorySetup.map then
+                assert(completed.afterReturn and completed.battleReturn and completed.flagClear and completed.flagSet
+                    and not flag_is_set(401) and flag_is_set(501)
+                    and byte("CURRENT_BATTLE") == ram.NOT_CURRENTLY_IN_BATTLE, "post-victory setup before field return")
+                expected = natural.postVictorySetup.pointer
+            end
             assert(expected and pointer == expected, "unexpected selected map setup")
             c.record("setup:selected", {map=map, pointer=pointer})
         end)

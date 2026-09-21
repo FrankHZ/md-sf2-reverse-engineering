@@ -286,7 +286,7 @@ Prepared-17..32 subsequently confirm native corrected replies and Heal input/eff
 accepted source. Defeats 27/29/32 report INCOMPLETE-OBSERVATION with native exit 0, restored entry
 state, cleared callbacks, deleted session ROM and unchanged canonical identity. All costs remain
 charged. PR501's 33..44 then confirm original herb use/slot consumption/healing and a later
-original defeat. Current totals are **73 / 10247.52403570019 / 229866 / 7193**
+original defeat. Totals through that chain were **73 / 10247.52403570019 / 229866 / 7193**
 (starts / seconds / frames / batches). Snapshot readiness probes C; directional navigation is
 still checked independently when the sole unmet reason is `unsupported-battle-selection`.
 The old local operator's failure to distinguish these caused 41 to stall. Upstream operator
@@ -294,13 +294,22 @@ termination lost the reader; receipt Errno 22, exit 1 and forced containment are
 Session-ROM cleanup is confirmed, final restoration/callback cleanup **Unknown**. The local
 operator now has an explicit stdin abort hook that keeps the response reader alive.
 
-The runner's completed-branch recovery is **offline only, native NOT RUN**. It follows parent
-links to the root and existing claims through the whole source lineage, validates edge identities,
-then reconciles actual increments in frozen prior-cost order. Active/incomplete attempts, duplicate
-or cyclic claims and cost gaps fail closed at prepare and run. Terminal descendants are charged
-without becoming loadable parents. No shared bridge/protocol change, new manifest, concurrent
-writer support or old-runner identity exception is introduced. Independent source acceptance
-must precede a fresh compatible R1 carrying all costs. Original victory/5B/H4 remain **Unknown**.
+Accepted PR502's completed-branch recovery follows parent links and immutable claims through the
+whole source lineage, charging terminal/failed descendants without making them loadable. Native 62
+loads earlier parent 59 after completed 60 and failed 61, with their costs retained. The selected branch
+reaches victory and actual after-program/flag/return/exploration events in 67. Its later map 57 setup
+callback fails before stable 5B; native exit 1 and host ROM cleanup are confirmed, final observer
+restoration/callback clearing **Unknown**. The explicit stdin abort 61 also lacks that final payload;
+a local abort-reader correction does not retroactively establish cleanup.
+
+Current totals are **96 / 12405.304031100066 / 304294 / 10553** (starts/seconds/frames/batches).
+The [acquisition result](../research/map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
+owns exact lineage, chronology, native failures and reproduction. Its offline correction binds
+map 57's original `ms_Void` only after the observed victory return and treats
+`EndAfterBattleCutscene` as a tail of the existing call, eliminating the false independent consumer.
+No protocol, framing, shared bridge or original-state mutation is added. Old source pairs remain
+incompatible; source/preparation acceptance and a fresh R1 with all costs precede further native.
+Stable 5B and H4 remain **Unknown**.
 
 ## Observed acceptance and launch accounting
 

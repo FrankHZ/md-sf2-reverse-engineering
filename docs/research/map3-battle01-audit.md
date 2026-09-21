@@ -28,20 +28,30 @@ source then collects 33..44. Segment 42 confirms Item→Use→Medical Herb→tar
 consumption and Chester 6→11 HP with unchanged MP. Segment 43 saves round 6; 44 ends in original
 defeat with complete cleanup. Segment 41 instead records forced containment after a local menu
 readiness mistake and upstream pipe loss; its missing final restoration/callback evidence is
-**Unknown**. Current totals are **73 starts / 10247.52403570019 seconds / 229866 frames /
-7193 batches**. Earlier failed16 transport FAIL and failed21 cleanup Unknown remain preserved.
+**Unknown**. Totals through that PR501 chain were **73 starts / 10247.52403570019 seconds /
+229866 frames / 7193 batches**. Earlier failed16 transport FAIL and failed21 cleanup Unknown remain preserved.
 Equip/Give/Drop and other manual items remain unsupported; herb cancellation remains Unknown.
 
-The latest parent traps 4-HP Bowie with no reachable Chester healing/attack rescue position.
-The bounded runner correction therefore permits earlier compatible saves only after reconciling
-all completed source-lineage branches through existing claims, including sibling/cousin costs.
-Duplicate/cyclic/missing claims, identity drift, active or unreconciled attempts block resume.
-Terminal pairs remain nonresumable. This correction is **offline only, native NOT RUN**;
-the changed runner identity requires independent acceptance and one fresh compatible R1 carrying
-all 73 starts. Existing source identities, pairs and failure records remain intact. The
-[acquisition owner](map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
-retains exact observations, reproduction routes and the distinction between game state and costs.
-Victory/after-program/5B (RA-07/RA-12), full 8D, deterministic replay and H4 remain **Unknown**.
+Accepted PR502 then permits earlier compatible saves after reconciling every completed source-lineage
+branch, including sibling/cousin costs. Native 45..67 exercise this recovery: 62 loads parent 59 while
+charging completed 60 and failed 61. The selected branch reaches original victory at frame 58657 and
+after-program/after-routine return, F401 clear→F501 set, BattleLoop D4=1 return, SwitchMap return and
+ExplorationLoop entry at 60945. These bounded RA-07 observations are **Confirmed**; complete action
+coverage and stable controllable 5B (RA-12) remain **Unknown**.
+
+67 fails at 60983 in the setup callback: Map57 selects source-defined `ms_Void`, missing from the
+observer's whitelist. It exits 1 with host ROM cleanup confirmed, final callback/restoration
+**Unknown** and no terminal pair. A second observer defect treats the BRA-entered
+`EndAfterBattleCutscene` function tail as a new call and leaves a false pending consumer. The bounded
+offline correction binds the exact void setup after victory and observes the tail through its live
+enclosing call. No original state is repaired. Actual-Lua/source/H1/ROM checks pass; changed-source
+native remains **NOT RUN** pending independent acceptance and a fresh identity-compatible R1.
+
+Current totals are **96 starts / 12405.304031100066 seconds / 304294 frames / 10553 batches**.
+The [acquisition owner](map3-messenger-acceptance.md#native-victory-after-program-return-and-post-victory-observer-failure)
+retains the winning lineage, failures 56/61/64/67, tactical corrections, exact source bindings and
+reproduction routes. Earlier 16/21/41 failures remain preserved. Full 8D, frozen replay and H4 remain
+**Unknown**; this source correction does not complete Issue #496 or #437.
 
 ## Current milestone applicability
 
@@ -168,7 +178,7 @@ proved by the mapped evidence; it is not permission to run a scenario.
 | RA-04 | R2c structure; R2d post-bridge CheckBattle/BattleLoop/before/start/load order | At naturally carried Map57 admission: F401/F501/F88, map/battle/area, before/start program entry/return and F451, transfer/modal state. No new algorithm is needed; the missing assertion is continuity of caller state from the omitted story segment. Reuse R2d's observation fields after that seam is settled. |
 | RA-05 | R2d exact controlled combatants/order/readiness | At natural load/generation/first input: party, all participating combatant fields in `O/scenario`, region flags 90–105, actor/order/turn offset, RNG and RNG copy/time, and `O/readiness` fields. Natural values remain **Unknown**; bridge-seeded actor 1/order is not a natural golden. |
 | RA-06 | R3a–d plus existing combat/action/after-turn local rules | For reached turns: round/order/actor, input and cancel/commit, movement/target/action selector, AI choice, RNG before/after each relevant draw/effect, per-target HP/MP/status/death, EXP/level/spell/gold/drop/item effects, follow-ups only if reached, action/replay return, after-turn mutations and outcome gate. Local controlled rules do not select a natural winning trace or account for its carried state. Reuse those rules; do not rerun unrelated branch matrices or predetermine a winner by bridge state. |
-| RA-07 | R4a selected victory/after-program/return spine | Observe natural victory entry, selected after-program and reached operation completions/effects, join result, F401-clear→F501-set, D4 return, MainLoop/SwitchMap result and ExplorationLoop reentry. Merely entering `abcs_battle01` or reaching R4a's unentered target does not establish completion. |
+| RA-07 | R4a static spine plus Issue #496 bounded natural victory, after-program return, flags and BattleLoop/SwitchMap/exploration observations | Prepared-67 records 67 matched operation pairs and the actual return spine. Preserve reached effects/consumer boundaries at their observed scope; the post-return setup callback FAIL and false tail consumer prevent stable-5B acceptance. The offline correction itself supplies no additional native outcome. |
 | RA-08 | FieldMenu static caller graph; R2/R2a NotReached | Record whether selected later route actually calls FieldMenu. If absent, no menu-page matrix is required by 2A; if present, capture that call's logical choice, return and effect. Do not turn optional menu coverage into a milestone gate. |
 | RA-09 | R2a text IDs/speaker/prompt chronology and static program/text corpus | On reached programs only: text ID/packed speaker/portrait identity, selected prompt return, cursor advance, actual text consumer/acknowledgement/close and program return order. Original prose stays private. Service shims and static ID lists leave actual consumption **Unknown**. |
 | RA-10 | 6A excludes save/load/checkpoint/suspend | Restart-to-admitted-state is a product check. No new persistence observation; cross-process durability remains a separate **Unknown**, and harness reset is not a save feature. |
