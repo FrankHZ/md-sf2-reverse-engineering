@@ -65,7 +65,7 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Continuous contract and ten-layer definitions | DELIVERED FOR REVIEW | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; independent acceptance still required |
 | Original expected fields complete for every assertion | OPEN | Missing selected trace/RNG/continuation/cancel fields and required 8D consumption/ack evidence; not a new native authorization |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
-| 7C content/provenance | OPEN | Complete reached private inventory, especially original audio; authored JoinCue chords or mute cannot pass |
+| 7C content/provenance | OPEN | Complete reached original scene inventory, especially original audio; authored JoinCue chords or mute cannot pass. Modern HUD/theme/input glyphs/fonts follow accepted authorship/license and 9A, not a ROM-original-font requirement |
 | 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; source dispatch pairs alone insufficient. BattlePresentation board markers/status/roster do not implement battle-scene consumers |
 | 9A configuration and bounded direct observations | PASS bounded implementation | [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation); not full continuous variants |
 | 9A variants / 10A deviations composed | DELIVERED FOR REVIEW; execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
