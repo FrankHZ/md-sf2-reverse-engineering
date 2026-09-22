@@ -39,6 +39,22 @@ counter: every such delta is zero in this governance slice.
 
 ## Decision
 
+### Post-victory ordinary-input acquisition (Issue #515)
+
+Issue #515 extends the accepted segmented victory rail to observe RA-12's next ordinary input and
+its settled state effect. The [acquisition owner](../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
+owns the concrete source/preparation boundary, missing fields, shortest compatible method and
+retained costs. Prepared-86 remains terminal/nonresumable; old execution sources or raw settings
+cannot be migrated to bypass compatibility. A fresh compatible natural chain retains the full
+victory/after-program lineage, then delivers one direction through the ordinary field input rail.
+
+Independent main-gate source/preparation admission precedes native execution. Existing stabilization
+authorization then continues in the same Issue without an old attempt quota or repeated user approval;
+identity, core, callback, I/O, idle/exchange and process containment remain binding. A source Draft PR
+is an intermediate checkpoint, not observed input, Issue completion, full 8D or H4. Keep old failures,
+later tooling diagnostics and all newly incurred costs; native evidence still needs independent
+acceptance and a tracked result handoff.
+
 ### Distinguish interactive acquisition, frozen replay, and remake H4
 
 **Interactive original acquisition** is Research-owned observation in which an operator or host

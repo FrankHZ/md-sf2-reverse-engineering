@@ -59,6 +59,10 @@ retains exact terminal fields, chronology, lineage, source identities and reprod
 Earlier failures 16/21/41/56/61/64/67 remain preserved. **Unknown:** the effect of the next ordinary
 nonneutral input was not executed or observed. RA-12 keeps that requirement; bounded two-frame
 readiness does not establish full RA-12, full 8D, frozen replay, H4 or completion of #437.
+The [Issue515 source/preparation checkpoint](map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
+extends that collector to retain pre-input readiness, one actual direction read/movement acceptance
+and the settled state effect. Native collection still requires concrete source/preparation admission;
+no new original observation or RA-12 closure is claimed by this capability change.
 
 ## Current milestone applicability
 
