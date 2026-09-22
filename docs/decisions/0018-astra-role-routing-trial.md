@@ -1,9 +1,10 @@
-# ADR 0018: Astra Role Routing After Trial
+# ADR 0018: Task Model Routing After the Astra Trial
 
-- Status: **Accepted**; trial closed, Astra research default adopted
+- Status: **Accepted**; trial closed, task-based routing adopted
 - Proposal date: 2026-09-05
 - Decision date: 2026-09-06
-- Scope: continuing role routing and task handoffs after the bounded trial
+- Routing update: 2026-09-22
+- Scope: task model routing and handoffs after the bounded trial
 
 ## Context
 
@@ -19,48 +20,41 @@ cross-Issue planning and independent integration; Issues and repository owners h
 
 ## Current Routing
 
-Use these defaults for ordinary authorized work. No further slice or task-management smoke is
-required solely to evaluate the model; the completed startup/rename experiment stays closed.
+Choose the model for the task's reasoning difficulty within its assigned role and Issue ownership:
 
-| Role | Default model / reasoning | Responsibility |
-| --- | --- | --- |
-| main-gate | `gpt-6-astra` / `high` | cross-lane scope, independent review, and serialized integration |
-| godot-architect | `gpt-6-astra` / `medium` | scoped remake implementation; select High for difficult architecture or evidence-to-product decisions |
-| investigator | `gpt-6-astra` / `high` | bounded investigation of suspected workflow or systemic problems; routine implementation of an accepted correction can use Medium |
-| research | `gpt-6-astra` / `medium` | scoped evidence execution and static extraction; select High for complex reverse engineering or runtime-observation design |
-| design-doc | `gpt-5.6-sol` / `high` or `xhigh` | contracts and synthesis from accepted evidence |
+| Work | Default model / reasoning |
+| --- | --- |
+| Main-gate planning, independent review and serialized integration; independently assigned investigation of systemic problems | `gpt-6-astra` / `high` |
+| Difficult architecture, conflicting evidence, novel reverse engineering or runtime-admission design | `gpt-6-astra` / `high` |
+| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6-sol` / `medium` |
+| Focused repeatable work with settled semantics, explicit ownership and direct acceptance, such as mechanical documentation or translation synchronization and routine bounded implementation | `gpt-6-luna` / `high` |
 
-Model choice and reasoning effort are separate. These Astra effort defaults replace the former
-role-wide XHigh default; they do not migrate Sol or Terra roles, interrupt running tasks, or require
-switching models between planning and implementation. A frozen implementation may remain with its
-current executor. Do not create an extra executor solely to spend emulator or test wait time on
-another model.
+The godot-architect, research and design-doc roles retain their responsibilities; a lane name alone
+does not select a model. Main-gate and independently assigned investigator retain Astra/High. Keep
+unclear evidence and integration authority with the accountable owner rather than assigning Luna
+solely for cost. A user-specific choice overrides these defaults.
 
-### Select Effort for the Task
+Model and reasoning effort are separate. Use High above Medium only for a concrete reasoning
+difficulty; reserve XHigh for an exceptional named difficulty where High is insufficient or comparable
+work shows a concrete benefit. Record an override reason in the Issue handoff. Distinguish reasoning
+difficulty or scope limitations from missing input, tool or environment failures and ordinary failed
+checks. Escalate Luna to Sol or Sol to Astra when a named reasoning or scope limitation warrants it;
+escalation changes neither scope nor acceptance and does not reset runtime budgets.
 
-For an authorized Astra execution task, use `medium` unless its actual work calls for another level:
+Preserve running or frozen executors and completed results. No model switch, task recreation, extra
+verification, benchmark or investigator dispatch follows from this routing update. Do not create an
+extra executor solely to spend emulator or test wait time on another model. Official model guidance
+informs these defaults; it does not establish project performance, account quota savings or a model
+ranking for this repository.
 
-- `low`: simple mechanical edits, document synchronization, or straightforward lookup with little
-  unresolved reasoning.
-- `high`: difficult architecture, cross-owner acceptance decisions, complex debugging or reverse
-  engineering, and conflicting evidence that requires substantial judgment.
-- `xhigh`: an exceptional, named reasoning difficulty for which High is insufficient or prior
-  comparable work shows a concrete benefit. Record that reason in the Issue handoff; do not select
-  it merely because the project is large, the role is Research, or a command takes a long time.
-
-Distinguish reasoning difficulty from unclear requirements, missing inputs, environment failures and
-ordinary failed checks before raising effort. Escalation changes neither scope nor acceptance and
-does not reset runtime budgets. Use normal review findings to adjust future choices; add no benchmark,
-telemetry, duplicated task or extra verification run to compare effort levels. The earlier trial
-supports model routing, not a measured quality or quota-saving claim for these effort levels.
-
-At dispatch, main-gate explicitly sets the supported reasoning level through the task-creation
-tool's `thinking` parameter instead of inheriting an application default. Record the selected effort
-and any override reason in the current Issue handoff. For an existing task, a supported setting change
-can apply on its next continuation; do not restart the task or repeat completed gates solely to change
-effort. A tool request establishes the requested setting; confirm it through tool or host evidence
-when available. If selection cannot be applied or verified, report that limitation instead of claiming
-the task is running at the chosen level. An agent's self-description is not verification.
+At dispatch, main-gate requests the selected model and supported reasoning level through the
+task-creation tool instead of inheriting an application default. Record the request and any override
+reason in the current Issue handoff. Respect the callable tool's current choices and constraints.
+For an existing task, a supported setting change can apply on its next continuation; do not restart
+the task or repeat completed gates solely to change settings. A tool request establishes the requested
+selection; confirm it through tool or host evidence when available. If selection cannot be applied or
+verified, report that limitation instead of claiming the task is running at the chosen settings. An
+agent's self-description is not verification.
 
 Terra remains available only for explicitly bounded single-file, single-assembly, or single-function
 reverse-engineering work. It does not own a complete research lane or integration. A dedicated lane
@@ -109,7 +103,9 @@ Elapsed time and account usage are optional operational impressions, not per-rol
 Under ADR 0013, add no telemetry, benchmark harness, copied prompts, usage ledger, or extra test runs.
 API token prices do not establish Codex account quota consumption or project cost savings.
 
-The accepted work supports Astra as the continuing main-gate, godot-architect, and research default:
+At the 2026-09-06 trial closeout, the accepted work supported Astra as the main-gate,
+godot-architect, and research default. This is the trial's historical outcome, superseded for new
+tasks by Current Routing above:
 
 | Evaluated responsibility | Accepted evidence and limit |
 | --- | --- |
@@ -117,9 +113,10 @@ The accepted work supports Astra as the continuing main-gate, godot-architect, a
 | Research | [Original warp-record facing](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/309) and [warp-facing source guard](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/311) support adopting Astra for complete research slices. Source, fixture and regression checks passed independent acceptance without promoting source structure to natural runtime behavior. |
 | Bounded investigation | [BizHawk debug bridge](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/310) exercised a separately requested Astra task and retained unsuccessful experiments and runtime limitations. It supports the existing investigator default but did not migrate the old investigator task. |
 
-Design-doc remains on Sol because this trial did not exercise that role. Terra retains its bounded
-reverse-engineering role. Existing accepted work and frozen tasks remain valid; the routing decision
-does not require recreating tasks, repeating completed slices, or adding a benchmark program.
+Design-doc remained on Sol at trial closeout because this trial did not exercise that role. Terra
+retained its bounded reverse-engineering role. Existing accepted work and frozen tasks remained
+valid; the trial decision did not require recreating tasks, repeating completed slices, or adding a
+benchmark program.
 
 The user also observed old instructions being replayed after compaction and had to request a reminder.
 Current-state anchors and explicit continuation instructions allowed work to proceed, but this trial
@@ -138,17 +135,23 @@ Those commands remain **NOT RUN**; trial closeout does not resume them or genera
 This is a small project-local acceptance sample with no matched Sol comparison, per-role cost
 measurement, or design-doc trial. It does not establish general Astra superiority or quota savings.
 Future routing changes use a concrete observed need and independent review. If a role regresses,
-correct the affected slice and
-recommend returning that role to Sol without automatically undoing accepted code or evidence.
+correct the affected slice and reconsider its model without automatically undoing accepted code or
+evidence.
 
 Verification remains governed by ADR 0012: normal public core and affected gates, retained failure
 history, targeted retries, and no full-suite rerun solely for a new model or task. Role migration alone
 does not resume game development; a separate user instruction does. This trial changes no product scope, original-game claim,
-private-input rule, runtime launch budget, or H4 acceptance requirement. Formal closeout adopts the
-routing above; it does not start a new product slice or authorize worktree/ref cleanup.
+private-input rule, runtime launch budget, or H4 acceptance requirement. The trial closeout did not
+start a new product slice or authorize worktree/ref cleanup.
 
 ## References
 
+- [Codex Sol and Luna selection guidance](https://learn.chatgpt.com/docs/whats-new#choose-gpt-6-sol-and-luna),
+  accessed 2026-09-22: recommends Sol Medium for everyday coding and Luna High for focused,
+  repeatable tasks, subject to plan, client and workspace availability.
+- [GPT-6 Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) and
+  [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna), accessed 2026-09-22:
+  describe their intended workloads; API prices do not measure this project's Codex account usage.
 - [OpenAI Astra guidance](https://developers.openai.com/api/docs/guides/latest-model), accessed
   2026-09-05: instruction sensitivity, clarification, delegation, and proportional testing motivate
   explicit task boundaries; this is guidance, not project benchmark evidence.
