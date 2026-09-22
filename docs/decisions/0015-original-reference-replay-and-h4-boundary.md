@@ -31,7 +31,8 @@ implementation.
 
 R4a owns the static victory/after-battle/return spine. The Issue #496 amendment below additionally
 records bounded interactive victory, after-program return and two-frame stable field readiness.
-Post-endpoint ordinary input effect, full RA-12 and H4 remain **Unknown**.
+Issue515 also records the post-endpoint ordinary input effect described below. Independent result
+acceptance remains required; remaining 8D and H4 are not established.
 Frozen R4b replay has not been implemented. For R4b original-reference replay and remake H4,
 the launch counts are therefore **H3 = 0** and **H4 = 0**. This decision adds no fixture, schema,
 research-index record or association, address binding, CLI command, verification partition, or
@@ -54,6 +55,17 @@ identity, core, callback, I/O, idle/exchange and process containment remain bind
 is an intermediate checkpoint, not observed input, Issue completion, full 8D or H4. Keep old failures,
 later tooling diagnostics and all newly incurred costs; native evidence still needs independent
 acceptance and a tracked result handoff.
+
+**Confirmed (bounded native observation, 2026-09-22):** after PR519 source/preparation acceptance,
+the [Issue515 result](../research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
+retains the observed natural victory/after-program spine and pre-input facts, then observes one Down
+read and movement acceptance at frame 61011. Map57 player `(5,12)` becomes `(5,13)`, settled at 61023/61024,
+with original raw displacement, complete state readbacks and no pending consumers. All 19 new
+native invocations complete with cleanup; segmented totals are 136 starts / 15540.144989400113
+seconds / 428408 frames / 16188 batches. A local accepted-main guard failed before process launch
+and is separately retained; a later account-limit interruption did not interrupt native completion.
+No old seal or source/settings compatibility was changed. Host unreviewed status still requires
+independent result acceptance; this evidence does not itself close RA-12, remaining 8D, H4 or #437.
 
 ### Distinguish interactive acquisition, frozen replay, and remake H4
 
@@ -208,9 +220,9 @@ records bounded **Confirmed** original victory/after-program return and settled 
 interactive totals are **115 starts / 14197.020479699888 seconds / 365304 frames / 13351 batches**;
 all earlier failures remain charged and their unresolved cleanup Unknowns are preserved.
 
-The collector stops before any post-endpoint nonneutral ordinary input. Its acceptance and state
-effect remain **Unknown**; RA-12 retains that explicit requirement. Two-frame 5B readiness does not
-prove full RA-12, remaining presentation consumption, full 8D, H4 or completion of #437. This remains
+The PR504 collector stopped before any post-endpoint nonneutral ordinary input. Its acceptance and
+state effect remained **Unknown** at that boundary; the later Issue515 result above observes it.
+Two-frame 5B readiness does not prove full RA-12, remaining presentation consumption, full 8D, H4 or completion of #437. This remains
 savestate-linked interactive original acquisition, not uninterrupted wall-time or frozen replay.
 Disabled replay boundaries and their zero launch/counter delta are unchanged. No new fixture,
 schema, CLI, shared transport or H4 claim is introduced by the result.
