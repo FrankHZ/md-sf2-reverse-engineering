@@ -19,13 +19,13 @@
 <a id="accepted-original-frontier"></a>
 ## 已接受原版前沿
 
-**Confirmed（已确认）有界原版观测**：[最终采集所有者](../../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)与[审计](../../../research/map3-battle01-audit.md)建立受控 R1 经 messenger、Map19、royal/guard、城堡/塔、自然 Battle01 准入、reached actions、自然胜利至战后程序返回后的稳定 field readiness。已接受源码为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`，PR #504 / `5102804b` 接受结果。选定 fresh prepared-68..86 链验证 18 个 parent pairs，只用成功获胜请求。这是 savestate-linked 连续性，不是不中断墙钟或自然 New/load。
+**Confirmed有界原版观测**（**已确认**）：[最终采集所有者](../../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)与[审计](../../../research/map3-battle01-audit.md)建立受控 R1 经 messenger、Map19、royal/guard、城堡/塔、自然 Battle01 准入、reached actions、自然胜利至战后程序返回后的稳定 field readiness。已接受源码为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`，PR #504 / `5102804b` 接受结果。选定 fresh prepared-68..86 链验证 18 个 parent pairs，只用成功获胜请求。这是 savestate-linked 连续性，不是不中断墙钟或自然 New/load。
 
 自然 first actor 为 **2**，R2d seeded actor 1 仍是显式受控 bridge。最终链到 round **14** / turn **103**，victory frame **58657**、`abcs_battle01` return **60945**，随后 shared-tail/enclosing return、F401 clear、F501 set、BattleLoop D4=1、SwitchMap、ExplorationLoop、Map57 `ms_Void`。**67** 个 reached operation pairs 不等于静态语料 80 条记录。
 
-两个完成的 neutral frames **61009/61010** 确认 Map57、player `(5,12)`、DOWN、battle255、F401=false/F501=true、roster `[0,1,2]`、gold **420**、motion/camera settled，且无阻塞 script/modal/transfer/battle/consumer。精确 ally HP/MP/level/items/spells/status 与 RNG readback 见[合同端点](../contracts/map3-battle01-continuous-scenario.md#exact-observed-endpoint)及原版所有者。generic window byte 1 不是 blocking dialogue。已观测 original input poll，但值为 neutral：**Unknown（未知） / OPEN RA-12** 是下一次 nonneutral input 的接受与效果。名为 `controllable-5b` 的证据 terminal 不证明完整 RA-12 或里程碑 PASS，且不可续跑。末段 106 audio dispatch/mailbox pairs 不证明完整 8D。
+两个完成的 neutral frames **61009/61010** 确认 Map57、player `(5,12)`、DOWN、battle255、F401=false/F501=true、roster `[0,1,2]`、gold **420**、motion/camera settled，且无阻塞 script/modal/transfer/battle/consumer。精确 ally HP/MP/level/items/spells/status 与 RNG readback 见[合同端点](../../contracts/map3-battle01-continuous-scenario.md#exact-observed-endpoint)及原版所有者。generic window byte 1 不是 blocking dialogue。已观测 original input poll，但值为 neutral：**Unknown / OPEN RA-12**（**未知**） 是下一次 nonneutral input 的接受与效果。名为 `controllable-5b` 的证据 terminal 不证明完整 RA-12 或里程碑 PASS，且不可续跑。末段 106 audio dispatch/mailbox pairs 不证明完整 8D。
 
-旧 R1/R2/R2a/R2d fixtures、Map19/first-player-ready 观测保留各自有界投影，不因末链而自动扩展。精确 post-447 wait entry 仍为**Inferred（推断）**；公开 R1 缺 status/完整 item slots。使用获胜链 readback，不复制别的 attempt 的 zero status 或 R2d seeded order。历史失败与 cleanup **Unknown（未知）**（含 21/41/61/67）保留在采集所有者；已完成 defeat/transport/observer failure 不是中断运行，也不会被成功抹去。
+旧 R1/R2/R2a/R2d fixtures、Map19/first-player-ready 观测保留各自有界投影，不因末链而自动扩展。精确 post-447 wait entry 仍为**Inferred**（**推断**）；公开 R1 缺 status/完整 item slots。使用获胜链 readback，不复制别的 attempt 的 zero status 或 R2d seeded order。历史失败与 cleanup **Unknown**（**未知**）（含 21/41/61/67）保留在采集所有者；已完成 defeat/transport/observer failure 不是中断运行，也不会被成功抹去。
 
 <a id="readiness-checklist"></a>
 ## 就绪检查表
@@ -33,20 +33,20 @@
 | Gate | 当前结果 | 所有者 / 精确剩余边界 |
 | --- | --- | --- |
 | 里程碑、引擎、产品选择 | PASS | ADR0008/0009/0010；本次没有新产品决定 |
-| 受控准入 | 有界 PASS | [准入合同](../../contracts/map3-controlled-admission.md)；连续链 status/完整 slots/NPC/RNG 投影缺失部分仍需绑定 |
+| 受控准入 | 有界 PASS | [准入合同](../../contracts/map3-controlled-admission.md)；选定 status/完整 item slots/NPC/RNG 已有[离线绑定](../../contracts/map3-battle01-continuous-scenario.md#offline-reference-bindings)；完整 R1 flags 等未输出字段仍 OPEN |
 | 自然必经路线及 encounter 准入 | 有界原版证据 PASS | 最终采集、actual actor 2；不是 R2d bridge |
-| 获胜动作与 consumed results | 有界原版证据 PASS | 选定获胜链；完整 logical input/seed/per-draw 比较投影及 cancel/reselect 仍 OPEN |
+| 获胜动作与 consumed results | 有界原版证据 PASS | 选定获胜链；committed actions/seed/main draw 已离线绑定；完整 field-input normalization、逐 draw-to-effect 与 cancel/reselect 仍 OPEN |
 | 胜利、战后程序、flag/return spine | 有界原版证据 PASS | 67 reached operation pairs 与最终链；不是完整呈现声明 |
 | 精确 neutral settled endpoint | 有界原版证据 PASS | 合同端点与 original terminal；其余完整记录必须从私有证据消费 |
 | 完整可控 5B / RA-12 | OPEN | Research：下一次 nonneutral input 及实际效果；不能用 remake 提供 expected truth |
-| 连续合同与十层定义 | 定义已接受；缺失绑定 OPEN | 合同明确字段、来源、actual mapping、failure/unavailable；executable binding 与完整定义就绪仍 OPEN |
-| 所有断言原版 expected 完整 | OPEN | 缺 selected trace/RNG/continuation/cancel 字段及必需 8D consumption/ack；不构成新 native 授权 |
+| 连续合同与十层定义 | 定义已接受；缺失绑定 OPEN | 合同明确字段、来源、actual mapping、failure/unavailable；已有受限离线绑定；剩余字段缺口与完整定义就绪仍 OPEN |
+| 所有断言原版 expected 完整 | OPEN | 缺完整 R1 字段、field-input normalization、thinking RNG/逐 draw effect、cancel 字段及必需 8D consumption/ack；不构成新 native 授权 |
 | 6A save 政策 | 已选择；连续 H4 执行 OPEN | 无用户 persistence surface；restart 回到准入状态 |
 | 7C 内容/溯源 | OPEN | 完整 reached 原版场景清单，尤其原版音频；authored JoinCue chords 或 mute 不能 PASS。现代 HUD/theme/input glyphs/fonts 按已接受作者/许可与 9A 检查，不要求 ROM 原版字体 |
 | 8D 呈现语义 | OPEN | 必需 identity/order、real host use、completion/ack/readiness；source dispatch pairs 不足；BattlePresentation board markers/status/roster 不实现 battle-scene consumers |
 | 9A 配置与有界直接观测 | 有界实现 PASS | [9A 所有者](../../../../remake/docs/development-and-verification.md#native-9a-observation)；不是全部连续 variants |
 | 9A variants / 10A deviations 组合 | 定义已接受；缺失绑定与执行 OPEN | 合同要求 baseline/variant 分开结果及 state/ack equivalence |
-| 必需 reached action 支持 | OPEN | 检查到的 SessionAction 没有手动 Medical Herb（#518）；保留原版 reached 要求 |
+| 必需 reached action 支持 | PASS bounded implementation；连续比较 OPEN | PR #521（`78c201c3`）已接受普通 Medical Herb selection/live inventory 及 host inventories/itemSlot 观测；仍须单独比较获胜原版动作 |
 | 所有适用 H4 layers 成功执行 | OPEN | 定义接受后的 Remake/harness；实际连续 session 至完整 5B |
 | 独立里程碑就绪接受 | OPEN | Main-gate；Issue 关闭或有界实现 PASS 均不足 |
 | 单独实现启动授权 | PASS | [Remake README](../../../../remake/README.md)中的用户授权；不等于本里程碑接受 |
@@ -55,7 +55,7 @@
 <a id="h4-composition-rules"></a>
 ## H4 组合规则
 
-[合同十层](../contracts/map3-battle01-continuous-scenario.md#ten-h4-comparison-layers)：(1) admission/provenance，(2) logical input/route，(3) world/story transitions，(4) encounter admission，(5) turn/action/RNG/consumed effects，(6) victory/after-program/return，(7) exact endpoint/ordinary input effect，(8) save exclusion/private assets，(9) presentation identity/order/consumption/completion/ack/readiness，(10) explicit deviations。
+[合同十层](../../contracts/map3-battle01-continuous-scenario.md#ten-h4-comparison-layers)：(1) admission/provenance，(2) logical input/route，(3) world/story transitions，(4) encounter admission，(5) turn/action/RNG/consumed effects，(6) victory/after-program/return，(7) exact endpoint/ordinary input effect，(8) save exclusion/private assets，(9) presentation identity/order/consumption/completion/ack/readiness，(10) explicit deviations。
 
 每条断言分别保留 expected source 和 actual observation。缺原版字段或 private inputs 时报告缺失侧/字段并输出 Unavailable，不得 PASS、填零或隐含排除。mismatch/已观测 required action unsupported 为 FAIL。原版Unknown（未知）使定义就绪保持 OPEN。整体 PASS 要求每个适用 assertion、variant、deviation 结果通过。Production legality 必须来自 state/content，不来自固定 actor sequence/round count/reference receipt history。既有 subsystem fixture 继续由原所有者维护。
 
@@ -70,8 +70,8 @@
 | 所有者 | 剩余工作 / 依赖 |
 | --- | --- |
 | Research | 缺失原版字段与 RA-12 effect 的接受；PR #519 仅是 source preparation，不是 native 结果；后续 #515 观测待 main 接受 |
-| Design | 比较定义已独立接受；缺失 executable bindings 仍 OPEN；已接受原版修正留在同一结果中纳入 |
-| Remake/content | 必需 manual action、原版音频/private provenance/actual host consumption；#517 独立拥有实现，不假定未合并结果 |
+| Design | 比较定义已独立接受；受限 offline bindings 可用，明确剩余缺口仍 OPEN；已接受原版修正留在同一结果中纳入 |
+| Remake/content | 手动 Herb 已由 PR #521 接受；原版音频/private provenance（#517）与 battle-scene consumption（#523）仍 OPEN，不假定未合并结果 |
 | H4 executor | 绑定已接受记录，通过既有 actual state/input/presentation 执行十层与 9A variants；保留失败/Unavailable |
 | Main-gate | 独立接受定义、证据闭合与最终完整 H4；串行整合 |
 

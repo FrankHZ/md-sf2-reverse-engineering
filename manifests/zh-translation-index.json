@@ -358,6 +358,15 @@
       "translatedDate": "2026-08-20"
     },
     {
+      "source": "docs/design/contracts/map3-battle01-continuous-scenario.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map3-battle01-continuous-scenario.md",
+      "sourceSha256": "d3e367e666ed150c52548edfdd767c6b7cbed24d3b2cbfafe0cad7f52896049e",
+      "mirrorSha256": "adb262d0326f0371b2f147957a45111bdec1d23a0cbb42d2a6f8f40ef0bded85",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-09-22"
+    },
+    {
       "source": "docs/design/contracts/map3-controlled-admission.md",
       "status": "pending"
     },
@@ -644,8 +653,8 @@
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
-      "sourceSha256": "e3812539fc3aad4d3bbeae4afdef419ffdce342ef0c99a012cdcc129008dff8a",
-      "mirrorSha256": "980c9be18159b11f3544322e90b107623b87f5a7351eb1c71f1ea390e058188d",
+      "sourceSha256": "e838bffec98e21d3d2ce281bbe8e0732789bf57dfe81abb2e4e574a7a2d57659",
+      "mirrorSha256": "45d225c801e2c5f8bdbd9c53ce79d3a8582dd320f63826d887aad0454dffdd9d",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-09-19"
     },

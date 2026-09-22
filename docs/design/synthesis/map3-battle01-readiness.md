@@ -56,20 +56,20 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Gate | Current result | Owner / exact remaining boundary |
 | --- | --- | --- |
 | Milestone, engine and product choices | PASS | ADR0008/0009/0010; no new product decision here |
-| Controlled admission | PASS bounded | [Admission contract](../contracts/map3-controlled-admission.md); selected continuous status/complete slots/NPC/RNG projection still needs binding where absent |
+| Controlled admission | PASS bounded | [Admission contract](../contracts/map3-controlled-admission.md); selected status/full item slots/NPC/RNG now have [offline bindings](../contracts/map3-battle01-continuous-scenario.md#offline-reference-bindings); full R1 flags and other omitted fields remain OPEN |
 | Natural mandatory route and encounter admission | PASS bounded original evidence | Final acquisition; actual actor 2; not the R2d bridge |
-| Winning actions and consumed results | PASS bounded original evidence | Selected winning chain; complete logical input/seed/per-draw comparison projection and cancel/reselect remain OPEN |
+| Winning actions and consumed results | PASS bounded original evidence | Selected winning chain; committed actions/seed/main-draw records are bound offline; full field-input normalization, individual draw-to-effect and cancel/reselect remain OPEN |
 | Victory, after-program, flag and return spine | PASS bounded original evidence | 67 reached operation pairs and selected final chain; not a full presentation claim |
 | Exact neutral settled endpoint | PASS bounded original evidence | Contract endpoint and original terminal; remaining full records must be consumed from private evidence |
 | Full controllable 5B / RA-12 | OPEN | Research: next nonneutral input and actual effect; no remake-derived expected truth |
-| Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; executable binding and complete definition readiness remain OPEN |
-| Original expected fields complete for every assertion | OPEN | Missing selected trace/RNG/continuation/cancel fields and required 8D consumption/ack evidence; not a new native authorization |
+| Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; bounded offline bindings available; remaining field gaps and complete definition readiness OPEN |
+| Original expected fields complete for every assertion | OPEN | Missing full R1 fields, field-input normalization, thinking RNG/individual draw effects, cancel and required 8D consumption/ack evidence; not a new native authorization |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
 | 7C content/provenance | OPEN | Complete reached original scene inventory, especially original audio; authored JoinCue chords or mute cannot pass. Modern HUD/theme/input glyphs/fonts follow accepted authorship/license and 9A, not a ROM-original-font requirement |
 | 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; source dispatch pairs alone insufficient. BattlePresentation board markers/status/roster do not implement battle-scene consumers |
 | 9A configuration and bounded direct observations | PASS bounded implementation | [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation); not full continuous variants |
 | 9A variants / 10A deviations composed | Accepted definitions; missing bindings and execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
-| Required reached action support | OPEN | Inspected SessionAction lacks manual Medical Herb (#518); retain the original reached requirement |
+| Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
 | All applicable H4 layers executed successfully | OPEN | Remake/harness after definition acceptance; actual continuous session through full 5B |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
@@ -103,8 +103,8 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 | Owner | Work remaining / dependency |
 | --- | --- |
 | Research | Accepted missing original fields and RA-12 effect; PR #519 is source preparation only, not a native result; later #515 observations await acceptance on main |
-| Design | Comparison definitions independently accepted; missing executable bindings remain OPEN; incorporate accepted original corrections in the same outcome |
-| Remake/content | Required manual actions, original audio/private provenance and actual host consumption; #517 is a separate implementation owner, no unmerged results assumed |
+| Design | Comparison definitions independently accepted; bounded offline bindings available, precise remaining gaps OPEN; incorporate accepted original corrections in the same outcome |
+| Remake/content | Manual Herb accepted in PR #521; original audio/private provenance (#517) and battle-scene consumption (#523) remain OPEN, no unmerged results assumed |
 | H4 executor | Bind accepted records, run all ten layers and 9A variants through existing actual state/input/presentation surfaces; preserve failures and Unavailable |
 | Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
 
