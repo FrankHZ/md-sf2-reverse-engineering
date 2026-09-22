@@ -205,7 +205,7 @@ def source_actor(value):
     return int(index) + (128 if family == "enemy" else 0)
 
 
-def compare(ref, plan, actual_path, host_log):
+def compare(ref, plan, actual_path, host_log, host_exit):
     require(plan["sourceCommit"] == SOURCE, "plan/reference source mismatch")
     samples, signals, terminal = [], [], None
     record_sequences = []
@@ -290,15 +290,23 @@ def compare(ref, plan, actual_path, host_log):
                 original["source"],
                 unavailable=actual_key not in actual,
             )
+        loadout = actual.get("SourceLoadout")
+        items = loadout.get("Items") if isinstance(loadout, dict) else None
+        if loadout is None:
+            item_reason = "Admission SourceLoadout is absent/null; later inventories cannot fill it"
+        elif not isinstance(items, list):
+            item_reason = "Admission SourceLoadout has no supported typed Items array"
+        else:
+            item_reason = "Compare the admission typed SourceLoadout.Items slot array"
         check(
             1,
             f"ally-{ally['id']}.items",
             [x["raw"] for x in ally["items"]],
-            actual.get("SourceLoadout"),
+            items if isinstance(items, list) else loadout,
             admission,
             original["source"],
-            "Admission SourceLoadout is null; later inventories cannot fill this boundary",
-            True,
+            item_reason,
+            not isinstance(items, list),
         )
     npc_differences = []
     for entity in a.get("entities", []):
@@ -345,9 +353,10 @@ def compare(ref, plan, actual_path, host_log):
                 3,
                 f"flag.{flag}",
                 value,
-                int(flag) in state.get("flags", []),
+                int(flag) in state["flags"] if state.get("flags") is not None else None,
                 sample,
                 step.get("beforeSource", step["source"]),
+                "Actual flags field absent/null" if state.get("flags") is None else "",
             )
 
     first = labels.get("first-control")
@@ -559,7 +568,46 @@ def compare(ref, plan, actual_path, host_log):
         for line in host_log.read_text(encoding="utf-8-sig").splitlines()
         if "ERROR:" in line or "Unhandled exception" in line
     ]
-    check(2, "host-process-errors", [], errors, last, {}, "Inspect actual Godot process errors")
+    check(
+        2,
+        "host-process-errors",
+        [],
+        errors,
+        last,
+        {},
+        "Inspect actual Godot process errors",
+        scope="observation",
+    )
+    terminal_failure = terminal.get("failure")
+    controlled_divergence = terminal_failure == "next-decision-actor-mismatch" and any(
+        row["assertion"] == "next-decision.actor" and row["result"] == "FAIL" for row in assertions
+    )
+    check(
+        2,
+        "probe-terminal",
+        terminal_failure if controlled_divergence else "",
+        terminal_failure,
+        last,
+        {},
+        "Controlled stop corroborated by the actual next-actor comparison"
+        if controlled_divergence
+        else "Explicit probe failures/timeouts are observation failures",
+        scope="diagnostic" if controlled_divergence else "observation",
+    )
+    # A probe-reported failure intentionally exits 2. Its assertion above still fails
+    # unless the controlled divergence is corroborated. Any other nonzero exit,
+    # including a crash after a complete terminal record, is a process failure.
+    expected_exit = 2 if terminal_failure else 0
+    check(
+        2,
+        "host-process-exit",
+        expected_exit,
+        host_exit,
+        last,
+        {},
+        "Actual completed process exit; terminal/log success cannot hide shutdown failure",
+        scope="observation",
+    )
     for group in ref["coverage"]:
         if "RA-12" in group["fields"]:
             check(
@@ -617,6 +665,7 @@ def compare(ref, plan, actual_path, host_log):
         result="FAIL" if failures else "Unavailable",
         milestonePass=False,
         stop=terminal,
+        hostExit=host_exit,
         remainder="Battle/return/endpoint and 9A variants not established; "
         "diagnostic extension stops at actor divergence",
     )
@@ -631,6 +680,7 @@ def main():
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--actual", type=Path)
     parser.add_argument("--host-log", type=Path)
+    parser.add_argument("--host-exit", type=int)
     args = parser.parse_args()
     ref = reference(args.reference)
     if args.mode == "plan":
@@ -647,10 +697,13 @@ def main():
         )
     else:
         require(
-            args.plan is not None and args.actual is not None and args.host_log is not None,
-            "compare requires plan, actual and host-log",
+            args.plan is not None
+            and args.actual is not None
+            and args.host_log is not None
+            and args.host_exit is not None,
+            "compare requires plan, actual, host-log and the recorded host-exit",
         )
-        result = compare(ref, read(args.plan), args.actual, args.host_log)
+        result = compare(ref, read(args.plan), args.actual, args.host_log, args.host_exit)
         write(args.output, result)
         print(
             json.dumps(

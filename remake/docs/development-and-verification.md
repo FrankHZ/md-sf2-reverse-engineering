@@ -283,7 +283,7 @@ $env:SF2_H4_ACTUAL = [IO.Path]::GetFullPath("$run/actual.jsonl")
 $hostExit = $LASTEXITCODE
 uv run --locked python -m sf2tool.remake_h4_comparison compare `
   --reference $reference --plan "$run/plan.json" --actual "$run/actual.jsonl" `
-  --host-log "$run/godot.log" --output "$run/comparison.json"
+  --host-log "$run/godot.log" --host-exit $hostExit --output "$run/comparison.json"
 $comparisonExit = $LASTEXITCODE
 ```
 
@@ -304,8 +304,13 @@ ordinal; logical route steps and original request ordinals remain separate. Scre
 
 Read both the report and process log. Comparison exit 1 means an observed FAIL; exit 2 means only
 Unavailable assertions. Host exit 2 can be an explicitly recorded next-actor divergence, a route
-failure, or a probe error; its terminal reason and error log distinguish them. A clean process exit
-alone is not H4 acceptance. The report records layer/assertion, original record/Git owner, actual
+failure, or a probe error; its terminal reason and error log distinguish them. Pass the recorded
+process exit even when re-comparing a completed run. Abnormal exits, including crashes after a
+complete terminal record, and explicit probe failures/timeouts are FAIL with observation scope.
+The controlled next-actor stop is classified as diagnostic only when its actual comparison also
+fails. Missing actual flags or loadout fields are Unavailable; an available typed loadout Items
+array is compared at admission. A clean process exit alone is not H4 acceptance.
+The report records layer/assertion, original record/Git owner, actual
 sequence/input, expected/actual/result/reason and diagnostic scope. Unreached or unbound groups and
 unexecuted 9A variants remain Unavailable, alongside observed failures.
 
