@@ -40,8 +40,9 @@ POSIX-relative-path ordinal inventory: `PATH<TAB>SIZE<TAB>UPPERCASE_SHA256`, LF-
 trailing LF, then UTF-8 SHA-256. Java's executable identity and version are also checked. BizHawk's
 archive, executable and Lua identities are checked; runtime preparation compares release files
 directly with the pinned archive. Preparation creates fresh local configuration and writable paths;
-it neither copies release files nor imports installation saves or configuration. Manifest `localJavaPath`, `localArchivePath` and `localExecutablePath` describe
-legacy layouts only; maintained consumers no longer select them.
+it neither copies release files nor imports installation saves or configuration. Manifest
+`localJavaPath`, `localArchivePath` and `localExecutablePath` describe legacy layouts only;
+maintained consumers no longer select them.
 
 Select the existing shared .NET installation with absolute `DOTNET_BIN` and the accepted shared
 SDK-only `DOTNET_CLI_HOME`. Select the existing Godot editor with absolute `GODOT_BIN` (ordinary
@@ -114,6 +115,40 @@ authorized by launch preparation. Old copies/evidence and the two retained empty
 Genesis directories remain untouched.
 
 ## Direct Installation Reuse Findings
+
+### Maintained Default Boundary
+
+**Confirmed:** the default CLI prepares no executable copy, and ordinary `sf2 h3 rng`
+uses the registered installation successfully. A default `DebugBridge.start` run
+reuses the retained 1,030-frame/229-request short comparison with no launcher
+substitution: final 68K RAM, reported registers and emulator frame match the
+retained continuous endpoint; journal reconstruction equals the final receipt.
+SaveRAM is local. Shared file size/mtime inventory and backed-up settings bytes
+remain unchanged, with all 450 release members matching the pinned archive.
+
+**Confirmed:** two fresh acquisition segments in distinct directories save at the
+house-exit and Sarah-classroom checkpoints, advancing cumulative delivered frames
+from 1,030 to 2,080. Raw configuration hashes differ; explicit continuation
+identities match. Both sealed pairs read successfully. Actual sound-setting drift,
+additional unknown settings and unrelated absolute strings change compatibility
+identity; an escaped path, mismatched settings and historical raw identity are
+rejected before process start. Missing/null/unknown identity markers cannot bypass
+segment checks. The [bridge identity owner](./bizhawk-debug-bridge.md#configuration-identity-across-segments)
+defines this contract; historical pairs remain unchanged.
+
+Reproduction uses the maintained preparation, observer, bridge and segment APIs
+after same-process private-input configuration. The ignored `local/issue510/`
+recipes retain `run_short.py` (the prior short input recipe without its launcher
+substitution), `segment.py parent prepare/run`, `segment.py child prepare/run`,
+`read_segments.py`, `check_settings.py` and `check_marker.py`. The segment input
+comes from the retained house-exit/classroom request records, not a full Battle01
+acquisition; use fresh output names and serial installation ownership when
+reproducing. `short-report.json`, `segment-report.json`, settings/marker reports
+and the original native receipts retain the results. Config/state/input payloads
+remain private and are not public fixtures. These checks establish launch and
+continuation compatibility, not new original-game or H4 acceptance.
+
+### Earlier Isolation Probe
 
 **Confirmed:** a separately user-authorized investigation launched the registered
 BizHawk 2.11.1 / Genplus-gx executable directly, without runtime copies. A paired

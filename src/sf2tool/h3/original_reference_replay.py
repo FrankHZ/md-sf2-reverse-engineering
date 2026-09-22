@@ -880,12 +880,12 @@ def _prepare_contained_launch(
         "sha256": toolchain_contract["executableSha256"],
         "sizeBytes": toolchain_contract["executableSizeBytes"],
     }:
-        raise CapabilityError("contained EmuHawk identity mismatch")
+        raise CapabilityError("registered EmuHawk identity mismatch")
     if _file_identity(lua54) != {
         "sha256": toolchain_contract["lua54Sha256"],
         "sizeBytes": toolchain_contract["lua54SizeBytes"],
     }:
-        raise CapabilityError("contained lua54 identity mismatch")
+        raise CapabilityError("registered lua54 identity mismatch")
     config_path = Path(prepared["config"])
     movie_path = toolchain / "Movies" / "replay.bk2"
     movie_path.parent.mkdir(parents=True, exist_ok=True)
