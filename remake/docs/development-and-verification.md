@@ -246,6 +246,91 @@ case with EXPECT_FAILURE=`invalid-input-settings`; require no session/actors/RNG
 Each launch tests an actual startup configuration in the retained project/installation; no editor,
 project copy, screenshot, original emulator, reference replay or test of the observer is needed.
 
+## Continuous H4 Comparison
+
+The external [comparison module](../../src/sf2tool/remake_h4_comparison.py) and
+[ordinary-input probe](../game/probes/engine_h4_observation.gd) execute the accepted original field
+route through natural Battle01 first control. Their current battle scope is the first STAY and the
+next selected actor, explicitly a diagnostic extension after divergent initial state/order. They
+never chase an actor, reseed, inject state, or substitute the older outcome probe's winning policy.
+The [ten-layer contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md) still owns
+whole-run acceptance. This bounded comparison always reports `milestonePass: false`.
+
+Use the retained environment, shared Godot and current Debug adapter build. Load
+`local/private-inputs.ps1` in the launching process and retain the existing worktree-local SDK/cache
+selections. After an adapter change, build `game/Sf2.Remake.Godot.csproj --configuration Debug
+--no-restore` from `remake/`, with absolute `DOTNET_BIN` and `DOTNET_CLI_HOME` and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. No research suite or helper tests are required.
+Select the seven private world/battle/static/enemy inputs and R1 controlled party/start described
+in [exploration reproduction](./exploration-programs.md#reproduction). Product inputs supply actual
+content; they are not original expected values. Reuse a compatible prepared world, or regenerate it
+with the accepted compiler and pinned clean upstream into this worktree's fresh ignored output.
+Never edit its semantics or the controlled party to make comparison pass.
+
+First produce the accepted read-only reference using the contract's projector command, or reuse
+that completed projection. `$acceptedEvidenceRoot` below selects only its prepared-68..86 lineage.
+Choose a fresh worktree-local `$run` directory; all plans, JSONL observations, logs and reports are
+private. After an owned debug process has exited, the direct bounded invocation is:
+
+```powershell
+uv run --locked python -m sf2tool.remake_h4_comparison plan `
+  --reference $reference --evidence-root $acceptedEvidenceRoot --output "$run/plan.json"
+$env:SF2_H4_PLAN = [IO.Path]::GetFullPath("$run/plan.json")
+$env:SF2_H4_ACTUAL = [IO.Path]::GetFullPath("$run/actual.jsonl")
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_h4_observation.gd -- `
+  --private-exploration-start $selectedR1Start *> "$run/godot.log"
+$hostExit = $LASTEXITCODE
+uv run --locked python -m sf2tool.remake_h4_comparison compare `
+  --reference $reference --plan "$run/plan.json" --actual "$run/actual.jsonl" `
+  --host-log "$run/godot.log" --host-exit $hostExit --output "$run/comparison.json"
+$comparisonExit = $LASTEXITCODE
+```
+
+The plan derives each field movement from a consumed original displacement and matching cardinal
+request, adds evidenced stationary facing changes, and identifies field Confirm from idle
+`WaitForEvent-action` request/result boundaries. It does not convert held-frame counts to modern
+steps. The first battle movement uses actual one-frame nonneutral `battle:movement-input` polls
+before the committed decision. The plan reads only the needed accepted checkpoint files to bind
+those polls and shared `DisplayText:entry` IDs; the latter includes direct callers omitted by the
+projector's narrower cutscene-text callbacks. Acknowledging actual dialogue/choices uses ordinary
+keys. Original shimmed DisplayText completion remains insufficient for natural reveal/ack equality.
+
+The probe subscribes to `SessionResultObserved` from `node_added` before Begin/Attach, retaining
+every result, rejection and error alongside live snapshots. Reparented views retain their existing
+subscription. The comparator checks session identity, monotonic records, observation watermarks
+and repeated attach records. Every key press, including acknowledgements, has an actual input
+ordinal; logical route steps and original request ordinals remain separate. Screenshots are unused.
+
+Read both the report and process log. Comparison exit 1 means an observed FAIL; exit 2 means only
+Unavailable assertions. Host exit 2 can be an explicitly recorded next-actor divergence, a route
+failure, or a probe error; its terminal reason and error log distinguish them. Pass the recorded
+process exit even when re-comparing a completed run. Abnormal exits, including crashes after a
+complete terminal record, and explicit probe failures/timeouts are FAIL with observation scope.
+The controlled next-actor stop is classified as diagnostic only when its actual comparison also
+fails. Missing actual flags or loadout fields are Unavailable; an available typed loadout Items
+array is compared at admission. A clean process exit alone is not H4 acceptance.
+The report records layer/assertion, original record/Git owner, actual
+sequence/input, expected/actual/result/reason and diagnostic scope. Unreached or unbound groups and
+unexecuted 9A variants remain Unavailable, alongside observed failures.
+
+**Confirmed:** the current R1 product selection admits gold 0 where the selected original readback
+has 60. Natural first control exposes different carried item slots and first-round order. The input
+chain is `map3-opening-party.json` → `ControlledBattleStartReader` (slot order and gold preserved) →
+`PrivateBattleScenarioReader` (definition SourceLoadout and BattleStartInput) →
+`EngineBattleActor` (loadout fallback to its definition) → live inventories. These are input/actual
+differences, not permission to change expected evidence. Admission `SourceLoadout`/`Progress` are
+null in the existing observation; later inventories cannot retrospectively prove that boundary.
+NPC phase differences and timing-to-RNG mapping remain separately Unknown. A different seed
+readback is not an established RNG algorithm defect. Independent route/state assertions remain
+usable after an admission difference; subsequent battle decisions cease to be a continuous
+original comparison after turn-order divergence.
+
+The accepted [post-victory original extension](../../docs/research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
+supplies Down from Map57 `(5,12)` to `(5,13)`. This driver does not reach that boundary or bind its
+new-chain payload; its Unavailable result means missing comparison/actual execution, not absent
+original evidence. Complete battle, return, resource/consumer provenance and 9A acceptance remain open.
+
 ## Exploration and Program Observations
 
 Use [the exploration/program owner](./exploration-programs.md#reproduction) for the current
