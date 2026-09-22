@@ -10,6 +10,21 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 public sealed partial class BattleSessionView : Control
 {
+    [Signal]
+    public delegate void SessionResultObservedEventHandler(string resultJson);
+
+    private void PublishResult(string boundary)
+    {
+        if (!HasConnections(SignalName.SessionResultObserved)) return;
+        var result = _result!;
+        EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(new
+        {
+            boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
+            observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
+            stopReason = result.StopReason.ToString(), failure = result.Failure, observations = result.Observations,
+        }));
+    }
+
     private GameSession? _session;
     private SessionResult? _result;
     private SessionFailure? _startupFailure;
@@ -112,6 +127,7 @@ public sealed partial class BattleSessionView : Control
         _started = true;
         _session = session;
         _result = result;
+        PublishResult("attach");
         if (first) _map.Build(result.Snapshot.Battle.Definition);
         Show();
         Present();
@@ -179,6 +195,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
+        PublishResult("submit");
         if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
             _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay or SessionAction.Item) _spellCandidate = null;

@@ -10,6 +10,21 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView : Control
 {
+    [Signal]
+    public delegate void SessionResultObservedEventHandler(string resultJson);
+
+    private void PublishResult(string boundary)
+    {
+        if (!HasConnections(SignalName.SessionResultObserved)) return;
+        var result = _result!;
+        EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(new
+        {
+            boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
+            observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
+            stopReason = result.StopReason.ToString(), failure = result.Failure, observations = result.Observations,
+        }));
+    }
+
     private GameSession? _session;
     private SessionResult? _result;
     private Action<SessionResult>? _enterBattle;
@@ -46,6 +61,7 @@ public sealed partial class ExplorationSessionView : Control
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle;
+        PublishResult("attach");
         _releaseBattle = releaseBattle;
         _battleMounted = releaseBattle is not null;
         _presentation = new(this, session.Definition.Exploration!, input.Settings.ReducedFlash, () =>
@@ -148,6 +164,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        PublishResult("submit");
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
         {
