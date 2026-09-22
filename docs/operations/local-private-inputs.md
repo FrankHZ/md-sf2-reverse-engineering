@@ -136,6 +136,52 @@ rejected before process start. Missing/null/unknown identity markers cannot bypa
 segment checks. The [bridge identity owner](./bizhawk-debug-bridge.md#configuration-identity-across-segments)
 defines this contract; historical pairs remain unchanged.
 
+**Confirmed:** all selected H3 commands completed successfully with the new default:
+
+| Partition | Completed commands |
+| --- | --- |
+| `h3-battle01` | 31 |
+| `h3-map-debug` | 25 |
+| `h3-direct-seam` | 11 |
+| `h3-witch` | 8 |
+| `h3-sound` | 1 |
+| `h3-original-reference` | 2, both `--preflight-only`; no replay launch |
+
+The serial `local/issue510/run_gates.py` recipe reads the committed plan and invokes
+the real CLI through `h3_entry.py`, which redirects only generated H3 output paths
+into fresh ignored directories. It does not replace launch preparation, executable,
+config, core or process execution. The earlier completed ordinary RNG result is
+retained rather than repeated. `gates/results.jsonl` and `gate-summary.json` record
+each result and the unchanged installation inventory after each command.
+
+**Confirmed:** controlled ordinary-observer timeout and guarded controller-input
+callback failure remain visible; the latter exits 1 and retains its typed terminal
+failure status. Native `on_started` and `on_timeout` exceptions retain an error in
+`NativeProcessResult` and terminate/reap the owned process. A failed timeout
+diagnostic callback no longer skips the result/reap step. Bridge disconnect retains
+its known forced-termination boundary; idle timeout exits 1 without forced
+termination and clears its callback. Both failure receipts reconstruct exactly
+from the journal. Reproduce with `observe_native_failures.py` and the maintained
+bridge module's `--mode disconnect` / `--mode idle-timeout`, using new local outputs.
+No owned EmuHawk remains afterward. Final ROM verification, all 450 release members,
+shared file metadata and backed-up settings bytes pass. No additional restoration
+was needed beyond the existing instrumented-H3 database cleanup, and no emulator
+release copy was created.
+
+Verification accounting remains explicit: the normal gate passed (148 tests),
+and the direct H3/preflight results above are complete. The attempted full profile
+was interrupted during Python verification when the volume filled; its partial
+failure stream has no completed node summary and it never reached H1/H2/H3. It was
+not blindly restarted. Focused checks exposed stale preparation mocks and a
+hardcoded ROM path, corrected in the existing affected tests. The remaining
+`test_observer_config_has_no_accepted_output_and_closed_roles_and_phases` assertion
+also fails on accepted main's unchanged Lua/schema; production role validation
+and the actual messenger H3 command pass. That preserved failure is tracked by
+[#512](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/512), not hidden
+by changing a schema/golden. The planner's H1/H2 fanout comes from CLI help text;
+their execution semantics, source and inputs are unchanged. This is not a claim
+that the interrupted full profile passed.
+
 Reproduction uses the maintained preparation, observer, bridge and segment APIs
 after same-process private-input configuration. The ignored `local/issue510/`
 recipes retain `run_short.py` (the prior short input recipe without its launcher
