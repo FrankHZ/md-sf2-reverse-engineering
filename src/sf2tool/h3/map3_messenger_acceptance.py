@@ -1913,6 +1913,10 @@ def _victory_configuration(
         "INPUT_A",
         "INPUT_B",
         "INPUT_C",
+        "INPUT_UP",
+        "INPUT_DOWN",
+        "INPUT_LEFT",
+        "INPUT_RIGHT",
         "NOT_CURRENTLY_IN_BATTLE",
         "DISPLAYED_ICON_1",
         "SPELL_HEAL",
@@ -2057,7 +2061,7 @@ def _victory_configuration(
             "power": int(herb_spell[5]),
         },
         "checkpoint": "neutral completed player-movement frame with reconstructible battle returns",
-        "terminal": "after-program/flags/BattleLoop/SwitchMap return and stable exploration input",
+        "terminal": "stable exploration, ordinary direction read/acceptance, settled displacement",
     }
 
 
@@ -2491,7 +2495,7 @@ def prepare_map3_observation_candidate(
             InputBatchesLimit=limits["maxBatches"],
             ProposedLimits=limits,
             Terminal=(
-                "first stable controllable exploration after natural Battle01 victory"
+                "ordinary input and settled field displacement after natural Battle01 victory"
                 if continuation == VICTORY_CONTINUATION
                 else "first natural Battle01 player-ready at 0x22E70"
             ),
@@ -2518,12 +2522,12 @@ def prepare_map3_observation_candidate(
             FutureControlledOrdinal=reviewed_prior_starts + 1,
             MaximumAdditionalStarts=None,
             RuntimeAuthorization=(
-                "Issue496; accepted source and concrete preparation required before native"
+                "Issue515; accepted source and concrete preparation required before native"
                 if continuation == VICTORY_CONTINUATION
                 else "Issue485 user-directed stabilization; independent integration required"
             ),
             Start="native parent savestate; no R1 bootstrap" if parent_pair else report["Start"],
-            Terminal="forward battle checkpoint or stable 5B"
+            Terminal="forward battle checkpoint or post-victory ordinary input effect"
             if continuation == VICTORY_CONTINUATION and segment >= 4
             else (
                 "settled Map19 next-tile field control",
@@ -2870,6 +2874,39 @@ def run_map3_observation_candidate(
                 ):
                     diagnostic["status"] = "FAIL"
                     raise ValueError("natural victory terminal flag/no-battle mismatch")
+                else:
+                    facts = observed["terminal"]["stop"]["facts"]
+                    before, applied = facts["beforeInput"], facts["input"]
+                    poll, accepted = applied["poll"], applied["acceptance"]
+                    direction = applied["button"]
+                    if (
+                        direction not in ("Up", "Down", "Left", "Right")
+                        or poll["value"] != config["ram"][f"INPUT_{direction.upper()}"]
+                        or not before["completedFrame"] < applied["frame"] < facts["firstFrame"]
+                        or poll["frame"] != applied["frame"]
+                        or accepted["frame"] != applied["frame"]
+                        or poll["pc"] != config["functions"]["esc02_controlCharacter"]
+                        or accepted["pc"] != config["functions"]["loc_52E8"]
+                        or any(
+                            facts["state"][key] != observed["terminal"][key]
+                            for key in ("map", "rawX", "rawY", "facing", "battle", "flags")
+                        )
+                        or before["state"]["map"] != facts["state"]["map"]
+                        or (before["state"]["rawX"], before["state"]["rawY"])
+                        == (facts["state"]["rawX"], facts["state"]["rawY"])
+                        or (before["state"]["rawX"] + accepted["d4"]) & 0xFFFF
+                        != facts["state"]["rawX"]
+                        or (before["state"]["rawY"] + accepted["d5"]) & 0xFFFF
+                        != facts["state"]["rawY"]
+                        or any(
+                            point["pending"] != 0
+                            or any(point["consumers"].values())
+                            or point["completedFrame"] != point["firstFrame"] + 1
+                            for point in (before, facts)
+                        )
+                    ):
+                        diagnostic["status"] = "FAIL"
+                        raise ValueError("post-victory ordinary input/effect mismatch")
             elif reason != "player-ready":
                 diagnostic["status"] = "INCOMPLETE-OBSERVATION"
             elif observed["terminal"]["map"] != 57:

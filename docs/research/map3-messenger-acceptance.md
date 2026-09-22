@@ -387,6 +387,67 @@ unchanged and unproved. Bounded two-frame stable 5B readiness is Confirmed; full
 original acquisition, not uninterrupted wall-time execution. No additional native launch is part
 of this result handoff.
 
+### Post-victory ordinary-input preparation (Issue #515)
+
+**Unknown (native result):** RA-12 still lacks an observed ordinary nonneutral input after the
+accepted prepared-86 endpoint. The current collector extends the existing victory continuation;
+this source/preparation checkpoint is not another original-game observation or Issue completion.
+Prepared-86 remains terminal/nonresumable and unchanged. Prepared-85 has incompatible execution
+sources; PR511's new early pairs also have a different continuation selection. None is a legal
+resume parent for this extension. The shortest compatible method is a fresh R1 chain reusing the
+retained successful ordinary input requests, comparing each original response/checkpoint, then
+continuing beyond the former terminal. This does not reopen frozen original-reference replay.
+
+The pre-input boundary retains the existing two consecutive neutral settled frames and the entire
+natural victory/after-program/flag/BattleLoop/SwitchMap lineage. It records map/player, flags,
+party/combatants/items/spells/gold, RNG/time, camera, actual polls and zero blocking consumers, then
+pauses the current batch without terminating. The operator sees `postVictoryInputReady`. Exactly
+one one-frame direction request is allowed after that boundary; field menu buttons, multi-frame
+directions and a second direction request are rejected without advancing. Only neutral continuation
+is needed after delivery. No field checkpoint is newly made resumable.
+
+The existing source/H1/ROM-bound `esc02_controlCharacter` (`0x4FF8`) and `loc_52E8` (`0x52E8`)
+callbacks retain the original input selection and movement acceptance. The selected direction bit
+must equal the observed byte in the delivery frame; the movement callback must occur in that same
+frame. Its D4/D5 are the original destination increments, not host-computed movement. Terminal
+`controllable-5b` now also requires changed coordinates on the same map and two further neutral
+settled frames with the original readiness guards. The host checks input identity/order, both PCs,
+zero consumers, unchanged no-battle/flag requirements and final raw coordinates against the observed
+D4/D5 additions modulo 16 bits. Full before/input/after facts stay in the private observation and
+checkpoint log; bridge replies retain the bounded terminal reference.
+
+**Confirmed (offline only, 2026-09-22):** direct execution of the current Lua and Python terminal
+validation with a mocked emulator boundary rejects the old battle sentinel, premature completion,
+blocked/menu/repeated/multi-frame input, acceptance without displacement and a neutral input byte.
+It preserves an accepted direction/read/movement/settled-result sequence. This validates collector
+logic, not natural reach. Reproduce after loading `local/private-inputs.ps1` with
+`uv run python -X utf8 local/issue515/check-field.py <fresh-output-name>`; the ignored driver reuses
+the retained Lua host glue and executes current production blocks. Preparation uses
+`local/issue515/prepare.py`; ordinary production-role, ROM, affected messenger and normal verification
+checks plus the committed planner/CI belong in the exact-head handoff. No new verification-tool
+tests, schemas, fixtures or registry entries are introduced.
+
+Historical costs through PR504 remain **115 starts / 14197.020479699888 seconds / 365304 frames /
+13351 batches**. Production lineage reconciliation of PR511's separate early parent/child adds
+**2 / 53.36055679997662 / 2080 / 37**, so the new preparation carries segmented totals
+**117 / 14250.381036499864 / 367384 / 13388** before any Issue515 native start.
+Separate later tooling diagnostics also remain charged in `local/issue515/later-diagnostics.json`:
+the PR507/509/511 short bridge comparisons have four starts, each 1030 frames and 228 advancing
+requests; PR507 additionally has its separate 1030-frame continuous comparison. PR511's disconnect
+and idle diagnostics preserve both starts, actual elapsed times and forced-disconnect containment.
+These are separate diagnostic observations, not descendants or additional victory evidence; their
+receipts and the prior ordinary H3 gate results remain with their tooling owners. Old 21/41/61/67
+cleanup Unknowns and the disk-exhausted interrupted full verification remain unchanged.
+
+The concrete preparation and source must pass independent main-gate admission before collection.
+The intended first post-boundary request is one frame of Down, followed by neutral settling; actual
+input/readiness/result remain original observations. If no acceptance or settled displacement occurs,
+the finite operator preserves the failed attempt and stops rather than inventing success. Use the
+registered installation, fresh worktree-local paths and strict versioned continuation-settings
+identity. Old raw-settings pairs cannot be converted, resealed or normalized. Reuse successful
+forward saves, preserve every new cost/failure, and return native evidence for independent acceptance
+in this same Issue. Audio, remaining 8D, H4 and #437 completion are outside this source checkpoint.
+
 ### Source binding and observation fields
 
 Preparation reads the five accepted R3a/R3b/R3c/R3d/R4a fixtures and validates their named source
@@ -480,13 +541,15 @@ still verifies the complete original RAM/register/frame snapshot before input an
 same checkpoint predicate. No live closure is discarded, no pending count is cleared to permit a
 save, and no register/RAM/ROM/flag/actor/RNG repair is introduced.
 
-The final `controllable-5b` predicate requires observed after-program and after-routine returns,
+The `controllable-5b` readiness predicate requires observed after-program and after-routine returns,
 F401-clear→F501-set, actual BattleLoop return with D4=1, SwitchMap return and ExplorationLoop entry,
 then two consecutive neutral completed frames at the same map/location/facing. Both require actual
 `CURRENT_BATTLE=NOT_CURRENTLY_IN_BATTLE` (255), player entity control and recent field-action polls,
 settled movement/camera, no program, modal,
 transfer or live battle return. The final observation retains exact reached flags, map/player,
-party/roster, inventory/stats/spells/EXP/gold and consumer facts. Its saved pair is terminal and
+party/roster, inventory/stats/spells/EXP/gold and consumer facts. The Issue515 extension above retains
+this pre-input boundary and terminates only after the ordinary input and settled displacement.
+Its saved pair is terminal and
 nonresumable. A runtime receipt remains unreviewed evidence until independent acceptance; it is
 neither deterministic replay nor H4.
 

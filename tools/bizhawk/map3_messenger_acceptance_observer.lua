@@ -2949,11 +2949,25 @@ local function install_candidate()
                     and c.explorationPoll and c.explorationPoll.frame == frame_count
                     and c.consumerPoll and c.consumerPoll.kind == "WaitForEvent-action" and frame_count - c.consumerPoll.frame <= 1
                 for _, count in pairs(c.consumers) do if count ~= 0 then ready = false end end
+                c.explorationReady = ready
                 local key = table.concat({state.map, state.rawX, state.rawY, state.facing}, ":")
                 if ready and c.stableExploration and c.stableExploration.key == key and c.stableExploration.frame == frame_count - 1 then
-                    c.stop("controllable-5b", {firstFrame=c.stableExploration.frame, completedFrame=frame_count,
+                    local facts = {firstFrame=c.stableExploration.frame, completedFrame=frame_count,
                         inputPoll=c.explorationPoll, camera=camera, accounting=c.battle_observation(),
-                        flags=read_span(ram.GAME_FLAGS, 128), player=entity(0), boundary="two neutral completed exploration frames"})
+                        flags=read_span(ram.GAME_FLAGS, 128), player=entity(0), state=state,
+                        pending=c.pending, consumers={},
+                        boundary="two neutral completed exploration frames"}
+                    for name, count in pairs(c.consumers) do facts.consumers[name] = count end
+                    if not c.postVictoryReady then
+                        c.postVictoryReady = facts
+                        c.record("field:post-victory-ready", facts)
+                        c.pauseBatch = true
+                    elseif c.postVictoryInput and c.postVictoryInput.poll and c.postVictoryInput.acceptance
+                        and state.map == c.postVictoryReady.state.map
+                        and (state.rawX ~= c.postVictoryReady.state.rawX or state.rawY ~= c.postVictoryReady.state.rawY) then
+                        facts.beforeInput, facts.input = c.postVictoryReady, c.postVictoryInput
+                        c.stop("controllable-5b", facts)
+                    end
                 end
                 c.stableExploration = ready and {key=key, frame=frame_count} or nil
             end
@@ -3298,6 +3312,12 @@ local function install_candidate()
     add_callback(config.functions.loc_52E8, "candidate:first-map19-control", function()
         if not c.epoch or (reg("A0") & 0xFFFFFF) ~= ram.ENTITY_DATA then return end
         c.record("input:original-movement-acceptance", { d2 = reg("D2"), d3 = reg("D3"), d4 = reg("D4"), d5 = reg("D5") })
+        if victory and c.postVictoryInput and c.postVictoryInput.poll and not c.postVictoryInput.acceptance then
+            assert(c.postVictoryInput.poll.frame == frame_count, "post-victory acceptance without same-frame input read")
+            c.postVictoryInput.acceptance = {frame=frame_count, pc=reg("PC") & 0xFFFFFF,
+                d2=reg("D2"), d3=reg("D3"), d4=reg("D4"), d5=reg("D5"), player=entity(0)}
+            c.record("field:post-victory-input-accepted", c.postVictoryInput.acceptance)
+        end
         if not c.map19Wait or c.map19Captured then return end
         assert(c.pending == 0 and flag_is_set(604), "first Map19 accepted input with pending consumer")
         assert(memory.read_u8(ram.CURRENT_MAP, "M68K BUS") == 19
@@ -3316,6 +3336,12 @@ local function install_candidate()
         local value = memory.read_u8(address, "M68K BUS")
         if victory and c.completed.exploration then
             c.explorationPoll = {frame=frame_count, pc=reg("PC") & 0xFFFFFF, address=address, value=value, d7=d7}
+            if c.postVictoryInput and not c.postVictoryInput.poll and value ~= 0 then
+                assert(frame_count == c.postVictoryInput.frame and c.appliedButton == c.postVictoryInput.button
+                    and value == ram["INPUT_" .. c.appliedButton:upper()], "post-victory input read differs from delivered request")
+                c.postVictoryInput.poll = c.explorationPoll
+                c.record("field:post-victory-input-read", c.explorationPoll)
+            end
         end
         if value ~= 0 or c.map19Wait then
             c.record("input:original-controller-read", { address = address, widthBytes = 1, value = value, d7 = d7 })
@@ -3365,6 +3391,14 @@ local function install_candidate()
                 return result
             end
             if button == "neutral" then return result end
+            if victory and c.completed.exploration then
+                result.consumer = "post-victory-field"
+                need(button == "Up" or button == "Down" or button == "Left" or button == "Right", "post-victory-direction-only")
+                need(c.postVictoryReady and c.explorationReady and not c.postVictoryInput, "post-victory-ready-or-input-already-delivered")
+                need(c.appliedButton == "neutral" and memory.read_u8(ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0
+                    and memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS") == 0, "release-before-field-input")
+                return result
+            end
             if victory and c.completed.admission and not c.completed.victory
                 and (c.consumers.DisplayText or 0) == 0 and (c.consumers.WaitForPlayerInput or 0) == 0 then
                 local current = c.battlePoll
@@ -3467,6 +3501,7 @@ local function install_candidate()
                 state=sample(), paused=client.ispaused(), batches=batches,
                 deliveredFrames=delivered_frames(), activeSeconds=natural and elapsed() or false,
                 inputReadiness=natural and c.input_readiness("C") or false,
+                postVictoryInputReady=victory and c.postVictoryReady and c.explorationReady and not c.postVictoryInput or nil,
                 saveReadiness=readiness or (segment and (segment.ordinal < 4 or victory) and save_readiness(segment.ordinal) or false),
                 battlefield=victory and c.completed.admission and c.battle_observation(true) or nil,
                 totalFrameLimit=acquisition.totalFrames, phase=phase}
@@ -3749,6 +3784,10 @@ local function install_candidate()
                                 assert(count <= acquisition.totalFrames - delivered_frames(), "total frame budget exceeded")
                             end
                             batches = batches + 1
+                            if victory and c.completed.exploration and button ~= "neutral" then
+                                c.postVictoryInput = {button=button, frame=frame_count + 1, requestId=id, batch=batches}
+                                c.record("field:post-victory-input-request", c.postVictoryInput)
+                            end
                             batch = {id=id, requested=count, applied=0, button=button}
                             idle_since = nil
                         end
