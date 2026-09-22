@@ -18,17 +18,16 @@ The implementation is [the standalone Python module](../../src/sf2tool/bizhawk_d
 [focused tests](../../tests/python/test_bizhawk_debug_bridge.py). It does not register
 an `sf2` command or change existing H3 observers, harnesses, fixtures, or schemas.
 
-Use an isolated worktree and its own pristine extracted emulator, as described in
-[local private inputs](./local-private-inputs.md). Resolve the registered ROM and
-pristine release archive; verify the archive size/SHA-256 and extracted executable
-against `manifests/toolchain.json` before extraction/use. Never copy another task's
-configuration or save state. Extract the archive to its manifest-owned local path.
-`uv sync --locked` owns the Python environment. The bridge uses the standard library
-for TCP, existing ROM validation, the existing Lua syntax check, and the existing
-project JSON encoder. The imported H3 syntax helper does not launch an H3 observer.
+Use an isolated worktree and the registered verified installation, as described in
+[local private inputs](./local-private-inputs.md#bizhawk-direct-launch-state).
+Load `local/private-inputs.ps1` in the same process and use `uv sync --locked`.
+The bridge uses the existing resolver, complete release verifier, ROM validation,
+Lua syntax check and local launch-state helper. It creates no emulator copy and
+imports no installation configuration or save state.
 
-Before launching, inspect current EmuHawk processes and ensure the extracted
-installation belongs to this worktree and is idle. The API never attaches to an
+Before launching, inspect EmuHawk processes and obtain exclusive serial control of
+the shared installation. Arbitrary controller-default/user-game-database editing
+and other UI/core operations remain unsupported executable-base surfaces. The API never attaches to an
 existing process. Run sequentially, with a **new** output directory every time:
 
 ```powershell
@@ -45,8 +44,8 @@ It passes `--socket-ip=127.0.0.1`, an ephemeral `--socket-port`, `--lua`, and a 
 `--config`. Configuration disables single-instance forwarding, sets
 `LastWrittenFrom=2.11.1`, selects `Genplus-gx`, disables sound/update checks, and
 starts paused. The window starts minimized without activation. Working directory,
-configuration, copied ROM, SaveRAM and defaults remain inside this worktree's
-ignored local installation/output. This is a Windows GUI application, not headless
+configuration, copied ROM, SaveRAM and configured state/movie/log paths remain inside
+this worktree's ignored output; bridge launches leave shared defaults/database untouched. This is a Windows GUI application, not headless
 emulation; startup modal errors can still require bounded process termination.
 
 The controller validates the ROM and executable before launch, copies the ROM into
@@ -76,6 +75,24 @@ then waits at most three seconds before killing only the retained `Popen` proces
 handle, with another three-second bounded wait. No name-based or global PID cleanup
 is used. No child-process tree was observed in this experiment; arbitrary future
 emulator helpers/child processes are outside this cleanup contract.
+
+## Configuration Identity Across Segments
+
+The raw `runtimeSettingsSha256` still identifies exact pre-launch config bytes for
+each run. New receipts and sealed pairs additionally carry
+`continuationSettingsIdentity`, with contract `bizhawk-local-path-roles-v1` and a
+SHA256. Before calculating it, the launcher verifies its registered executable and
+all path entries against the current local launch directory. Only each known
+entry's `Path` value is replaced by its fixed system/type role for this second
+digest. All other configuration fields participate unchanged; unknown or modified
+path collections fail validation. Arbitrary absolute strings are never normalized.
+
+New parent/child chains compare this explicitly marked compatibility identity,
+while retaining distinct raw hashes. Pair reading requires receipt/pair agreement
+and a recognized contract. Historical pairs without this marker retain the old
+exact-byte comparison and are not resealed or upgraded. Their resume into the new
+default fails before native start with a settings mismatch; a controlled read-only
+state comparison does not turn old evidence into a compatible parent.
 
 ## Receipt persistence and interrupted reads
 

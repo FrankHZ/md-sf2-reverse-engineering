@@ -248,7 +248,8 @@ than restarting it solely because the task changed, including during recovery.
 A new task alone does not justify a new SDK, Godot installation, cache or worktree.
 Load the retained worktree's ignored shared installation selections under the
 [local input/tool owner](./local-private-inputs.md). JDK, H1, .NET and Godot installations are shared;
-BizHawk alone uses a clean local runtime copy to keep configuration/save/movie writes local. Keep
+BizHawk executes its registered installation under serial ownership with explicit local
+configuration/save/movie paths; follow the local-input owner for executable-base exceptions. Keep
 source/build checkouts and Python/NuGet caches owned by one worktree, and preserve old copies and
 completed results until separately authorized cleanup.
 

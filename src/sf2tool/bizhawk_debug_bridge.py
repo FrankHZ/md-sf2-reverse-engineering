@@ -19,7 +19,13 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
-from sf2tool.h3.bizhawk import bizhawk_contract, materialize_bizhawk_launch, validate_lua_syntax
+from sf2tool.h3.bizhawk import (
+    bizhawk_contract,
+    continuation_settings_identity,
+    materialize_bizhawk_launch,
+    validate_bizhawk_launch,
+    validate_lua_syntax,
+)
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
@@ -269,6 +275,7 @@ class DebugBridge:
         prior_active_seconds: float = 0,
         historical_starts: int | None = None,
         expected_settings: str | None = None,
+        expected_continuation_settings: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         if self.listener is not None:
             raise RuntimeError("bridge already started")
@@ -331,9 +338,18 @@ class DebugBridge:
         executable = Path(launch["executable"])
         config_path = Path(launch["config"])
         settings_identity = hashlib.sha256(config_path.read_bytes()).hexdigest().upper()
+        continuation_identity = continuation_settings_identity(launch)
+        self.receipt["runtimeSettingsSha256"] = settings_identity
+        self.receipt["continuationSettingsIdentity"] = continuation_identity
+        self.receipt["launch"] = launch
+        self._save()
         if expected_settings is not None and settings_identity != expected_settings:
             raise ValueError("continuation runtime settings identity mismatch")
-        self.receipt["runtimeSettingsSha256"] = settings_identity
+        if (
+            expected_continuation_settings is not None
+            and continuation_identity != expected_continuation_settings
+        ):
+            raise ValueError("continuation settings compatibility identity mismatch")
         token = secrets.token_hex(16)
         environment = {
             **os.environ,
@@ -365,6 +381,7 @@ class DebugBridge:
         if self.acquisition_limits:
             environment["SF2_BRIDGE_LAUNCH_EPOCH"] = str(self.receipt["startedAtUnix"])
         self._save()
+        validate_bizhawk_launch(executable, Path(launch["cwd"]), config_path, environment)
         self.process = subprocess.Popen(
             [
                 str(executable),

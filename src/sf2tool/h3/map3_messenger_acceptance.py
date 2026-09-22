@@ -1039,8 +1039,19 @@ def _read_segment(
         or bridge["timedOut"]
         or bridge["historicalStarts"] != pair["historicalStarts"]
         or bridge["runtimeSettingsSha256"] != pair["runtimeSettingsSha256"]
+        or ("continuationSettingsIdentity" in bridge) != ("continuationSettingsIdentity" in pair)
+        or bridge.get("continuationSettingsIdentity") != pair.get("continuationSettingsIdentity")
     ):
         raise ValueError("segment process/cleanup did not complete")
+    identity = pair.get("continuationSettingsIdentity")
+    if "continuationSettingsIdentity" in pair and (
+        not isinstance(identity, dict)
+        or set(identity) != {"contract", "sha256"}
+        or identity["contract"] != "bizhawk-local-path-roles-v1"
+        or not isinstance(identity["sha256"], str)
+        or re.fullmatch(r"[0-9A-F]{64}", identity["sha256"]) is None
+    ):
+        raise ValueError("segment continuation settings contract mismatch")
     return pair, metadata
 
 
@@ -1285,6 +1296,8 @@ def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str,
         },
     }
     # Exclusive publication: partial JSON also fails closed, never repaired in place.
+    if "continuationSettingsIdentity" in diagnostic["bridge"]:
+        pair["continuationSettingsIdentity"] = diagnostic["bridge"]["continuationSettingsIdentity"]
     with (runtime / "segment-pair.json").open("x", encoding="utf-8") as output:
         output.write(json.dumps(pair, indent=2) + "\n")
 
@@ -2769,6 +2782,9 @@ def run_map3_observation_candidate(
                         if selection
                         else None,
                         expected_settings=parent_pair["runtimeSettingsSha256"]
+                        if parent_pair and "continuationSettingsIdentity" not in parent_pair
+                        else None,
+                        expected_continuation_settings=parent_pair.get("continuationSettingsIdentity")
                         if parent_pair
                         else None,
                     )

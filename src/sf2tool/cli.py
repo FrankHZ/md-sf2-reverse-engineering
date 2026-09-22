@@ -380,7 +380,9 @@ def build_parser() -> argparse.ArgumentParser:
     toolchain_paths = toolchain_commands.add_parser("paths")
     toolchain_paths.add_argument("--manifest-path", type=_path, default=DEFAULT_MANIFEST)
     toolchain_paths.add_argument("--upstream-path", type=_path, default=DEFAULT_UPSTREAM)
-    toolchain_material = toolchain_commands.add_parser("bizhawk-materialize")
+    toolchain_material = toolchain_commands.add_parser(
+        "bizhawk-materialize", help="prepare local launch state for registered BizHawk (no copy)"
+    )
     toolchain_material.add_argument("--output-path", type=_path, required=True)
 
     rom_parser = commands.add_parser("rom", help="inspect or verify the ROM baseline")

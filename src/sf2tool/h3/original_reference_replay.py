@@ -850,14 +850,13 @@ def _first_host_toolchain_difference(
     raise CapabilityError("host toolchain inventory digest changed without an entry difference")
 
 
-def _extract_contained_toolchain(
-    archive: Path, launch: Path, expected_archive: dict[str, Any]
-) -> Path:
-    """Use the shared verified installation to prepare the existing local runtime copy."""
+def _prepare_registered_launch(
+    archive: Path, launch: Path, expected_archive: dict[str, Any], config: dict[str, Any]
+) -> dict[str, Any]:
+    """Prepare local state without changing the frozen replay's admission contract."""
     if _file_identity(archive) != expected_archive:
         raise CapabilityError("pristine BizHawk archive changed after preflight")
-    prepared = materialize_bizhawk_launch(launch)
-    return Path(prepared["cwd"])
+    return materialize_bizhawk_launch(launch, config=config)
 
 
 def _prepare_contained_launch(
@@ -867,26 +866,27 @@ def _prepare_contained_launch(
     launch: Path,
     rom_path: Path,
 ) -> dict[str, Any]:
-    toolchain = _extract_contained_toolchain(Path(facts["archivePath"]), launch, facts["archive"])
-    executable = toolchain / "EmuHawk.exe"
-    lua54 = toolchain / "dll" / "lua54.dll"
+    prepared = _prepare_registered_launch(
+        Path(facts["archivePath"]), launch, facts["archive"],
+        _config_template(fixture["launchContract"]["configProjection"]),
+    )
+    toolchain = Path(prepared["cwd"])
+    executable = Path(prepared["executable"])
+    lua54 = executable.parent / "dll" / "lua54.dll"
     if not executable.is_file() or not lua54.is_file():
-        raise CapabilityError("pristine archive lacks contained EmuHawk/lua54")
+        raise CapabilityError("registered installation lacks EmuHawk/lua54")
     toolchain_contract = fixture["toolchainContract"]
     if _file_identity(executable) != {
         "sha256": toolchain_contract["executableSha256"],
         "sizeBytes": toolchain_contract["executableSizeBytes"],
     }:
-        raise CapabilityError("contained EmuHawk identity mismatch")
+        raise CapabilityError("registered EmuHawk identity mismatch")
     if _file_identity(lua54) != {
         "sha256": toolchain_contract["lua54Sha256"],
         "sizeBytes": toolchain_contract["lua54SizeBytes"],
     }:
-        raise CapabilityError("contained lua54 identity mismatch")
-    config_path = toolchain / "config.ini"
-    config_path.write_bytes(
-        _canonical_json(_config_template(fixture["launchContract"]["configProjection"]))
-    )
+        raise CapabilityError("registered lua54 identity mismatch")
+    config_path = Path(prepared["config"])
     movie_path = toolchain / "Movies" / "replay.bk2"
     movie_path.parent.mkdir(parents=True, exist_ok=True)
     movie_path.write_bytes(movie.data)
@@ -1050,7 +1050,7 @@ def _receipt(
             "romPost": rom_post,
         },
         "runner": {
-            "emulatorPath": "contained-toolchain/EmuHawk.exe",
+            "emulatorPath": "registered-installation/EmuHawk.exe",
             "processStarts": int(process["started"]),
             "bizhawkRelease": fixture["toolchainContract"]["bizhawkRelease"],
             "core": fixture["toolchainContract"]["core"],
@@ -1485,6 +1485,7 @@ def run_original_reference_replay(
         native = run_native_bizhawk_process(
             command=command,
             executable=executable,
+            cwd=prepared["toolchain"],
             environment=environment,
             timeout_seconds=timeout_seconds,
             on_started=mark_started,
@@ -1643,7 +1644,7 @@ def run_original_reference_replay(
     rom_post = _snapshot_file_identity(rom_path)
     archive_post = _snapshot_file_identity(Path(facts["archivePath"]))
     contained_emulator = _snapshot_file_identity(executable)
-    contained_lua54 = _snapshot_file_identity(prepared["toolchain"] / "dll" / "lua54.dll")
+    contained_lua54 = _snapshot_file_identity(executable.parent / "dll" / "lua54.dll")
     for name, snapshot in (
         ("config", config_after),
         ("contained mutable surfaces", toolchain_after),
