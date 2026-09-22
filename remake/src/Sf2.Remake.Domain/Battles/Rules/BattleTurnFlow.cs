@@ -14,7 +14,7 @@ internal static class BattleTurnFlow
             var input = inputs[deployment.Actor];
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
-                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status, progress: input.Progress);
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status, progress: input.Progress, sourceLoadout: input.SourceLoadout);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle);
         return start.NewBattle is null ? initial : BattleInitializationRules.Initialize(initial, start);
@@ -66,6 +66,13 @@ internal static class BattleTurnFlow
         {
             ValidateDeployment(deployment);
             var input = inputs[deployment.Actor]; var actor = deployment.Definition;
+            var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
+            if (loadout is not null)
+                Require(loadout.Items.Count == 4 && loadout.Spells.Count == 4 && loadout.Items.All(word => word <= 511),
+                    "source-loadout", "start.actors.sourceLoadout");
+            if (deployment.AiStrategy == BattleAiStrategy.AttackThenApproach)
+                Require(loadout is null || loadout.Items.All(word => (word & 127) == 127),
+                    "ai-action-categories", "start.actors.items", true);
             if (input.Progress is { } progress)
                 Require(actor.Growth is not null && progress.Level >= actor.Level && progress.Level <= 99 &&
                     progress.MaxHp is > 0 and <= 200 && progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100,

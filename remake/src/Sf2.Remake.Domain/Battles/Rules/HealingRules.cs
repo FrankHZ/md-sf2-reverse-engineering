@@ -14,6 +14,9 @@ internal readonly record struct HealingResolution(
 
 internal static class HealingRules
 {
+    internal static int Experience(int recovery, ushort maximumHp) =>
+        Math.Min(25, Math.Max(10, 25 * recovery / maximumHp));
+
     // Ordinary same-side healing after class/power selection, for an EXP-eligible priest.
     // This scalar rule does not select a spell, target, turn, class, or reference history.
     internal static HealingResolution ResolvePriest(PriestHealingInput input)
@@ -28,7 +31,7 @@ internal static class HealingRules
             throw new ArgumentException("The caster has insufficient MP.", nameof(input.ActorMp));
 
         int recovery = Math.Min(input.AdjustedPower, input.TargetMaxHp - input.TargetHp);
-        int accumulated = Math.Min(25, Math.Max(10, 25 * recovery / input.TargetMaxHp));
+        int accumulated = Experience(recovery, input.TargetMaxHp);
         var plus = BattleRandom.NextMain(input.MainSeed, 16);
         var minus = BattleRandom.NextMain(plus.After, 16);
         int award = Math.Max(1, accumulated + (plus.Value == 0 ? 1 : 0) - (minus.Value == 0 ? 1 : 0));

@@ -27,7 +27,7 @@ active-flag write, so the immediately exposed list can lag that final write. Thi
 source chronology. The opening input supplies the first three R1 allies' class, resources,
 equipment and spells. Other initial ally appearances and names come from pinned source data;
 this group does not claim a full travelling roster, mutable names, promotion/death appearance,
-inventory operations or later battles. At Battle01 admission the sequencer rebuilds active membership
+general field inventory operations or later battles. At Battle01 admission the sequencer rebuilds active membership
 from live flags, so the earlier `JoinForce` list timing never forces a missing ally into battle.
 
 ## Definitions and execution
@@ -239,7 +239,7 @@ is unclaimed. The renderer reports an adapter failure if an admitted service can
 ## Battle01 outcome, after-program and return
 
 The connected private world binds the original outcome hooks and growth tables through Content.
-Actual HEAL/physical awards consume one EXP threshold, grow the five base stats with carried main
+Actual HEAL/item/physical awards consume one EXP threshold, grow the five base stats with carried main
 RNG, refresh admitted ATT-only equipment and retain current HP/MP separately from their new maxima.
 Learned spell upgrades update both the live spell choices and packed source spellbook. Class caps
 consume the threshold without a growth draw. Missing growth or unsupported status/equipment/spell
@@ -402,3 +402,107 @@ crosses a real level threshold. It reads the accepted R4a static spine
 (`sf2-map3-battle01-victory-return-static-v1`) for the unlocked/completed flags, the Battle01 join
 row and the after-program, clear, set, SwitchMap and exploration order; that static spine proves
 source order, not natural original execution. Preserve completed failures and rerun their affected nodes only.
+
+## Ordinary Medical Herb battle action
+
+The common battle session accepts `SelectItem(slot)`, `SelectTarget(actor)` and `Confirm`
+from ordinary action choice. `Cancel` returns to provisional movement. Item reselection
+clears the previous target. Invalid slots, empty inventory, unsupported item effects,
+dead/opposing/out-of-range targets and failed reward/growth admission publish no partial
+movement, HP, inventory or RNG change. Reusing an old command envelope cannot consume twice.
+The shared target validator measures from the provisional destination, including self-targets.
+
+`BattleActorState.SourceLoadout` is the live ordered four-slot loadout. Definition loadouts
+supply initial content only; explicit `BattleActorStartInput.SourceLoadout` carries later
+state. Growth retains that live inventory while changing learned spells, and `BattleOutcome`
+passes it into the exploration party on both victory and defeat. Resource resets heal HP/MP
+without replenishing items. `item-consumed` records the original item word in `Before` and
+the chosen zero-based slot in `After`; the resulting snapshot exposes the arranged inventory.
+There is no separate inventory service or field inventory UI.
+
+### Original source and effect boundary
+
+**Confirmed static:** the pinned SF2DISASM revision
+`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies these dependencies beneath `disasm/`:
+
+| Source / symbol | Consumed rule |
+| --- | --- |
+| `data/stats/items/itemdefs.asm`, item 0 at `table_ItemDefinitions` (`0x16EA6`) | Medical Herb is CONSUMABLE, with no equip effects; use spell HEALIN-1 and item range 0–1. |
+| `data/stats/spells/spelldefs.asm`, HEALIN-1 | Base ID 16, MP cost 0, teammate healing, range 0–1, radius 0, power 10. |
+| `code/gameflow/battle/battleactions/useitem.asm`, `battlesceneScript_UseItem` (`0xBBB8`) | Select the held item definition, unpack use spell and delegate to its spell effect. |
+| `castspell.asm`, `spellEffect_Heal`; `calculatespelldamage.asm`, `AdjustSpellPower` (same battleactions directory) | Recovery is `min(power, missing HP)`. Item actions skip the spell-only promotion multiplier. HEALIN recovery has no variance draw. |
+| `earnexp.asm`, `battlesceneScript_CalculateHealingExp`; `giveexpandgold.asm`, `battlesceneScript_GiveExpAndGold` | Ally healer classes contribute `min(25, max(10, floor(25 * recovered / maxHp)))`; other classes contribute zero. Same-side actions skip battle halving. Two range-16 draws add/subtract one on zero, with final minimum one. |
+| `breakuseditem.asm`, `battlesceneScript_BreakUsedItem` (`0xBBE6`); `code/common/stats/itemstats.asm`, `RemoveItemBySlot` / `RemoveAndArrangeItems` | Non-equipment consumes without a break roll, shifts subsequent full item words down one slot and appends NOTHING (127). Identity lookup masks the low seven bits; retained words preserve flags. |
+
+The [item-definition](../../docs/design/contracts/item-definition-data.md),
+[spell-definition](../../docs/design/contracts/spell-definition-data.md),
+[spell-resolution](../../docs/design/contracts/spell-resolution.md) and
+[action-construction](../../docs/design/contracts/battle-action-construction.md) contracts
+own the accepted boundaries. **Confirmed native:** the
+[original herb observations](../../docs/research/map3-messenger-acceptance.md#native-herb-observation-and-completed-branch-recovery)
+and winning continuation record the reached item/slot/HEALIN/consumption family. Their bounded
+HP facts include 6→11, 9→12, 3→12 and 4→11; these are missing-HP clamps, not four different
+item powers. `MedicalHerbTests` checks those minimal facts separately from controlled RNG cases.
+It does not relabel authored tests as an original trace replay.
+
+Private Content admits only the selected Medical Herb definition into this item family.
+Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
+not herbs. The current class model admits PRST healing EXP and the existing non-healer
+classes. VICR/MMNK class admission, broader item families, Equip/Give/Drop, field inventory,
+AI healing-item choice, save/load and original presentation remain unsupported. The existing
+physical-only AI policy rejects a nonempty item loadout at start. This does not close the
+continuous H4 milestone or establish successful native-original cancellation.
+
+### Ordinary controls and reproduction
+
+I / gamepad Back selects and cycles held slots; Tab cycles living allied targets, Enter commits
+and Escape cancels. The inventory HUD shows slot, item name, selection and rejected attempts.
+`bindings.item` in the existing version-1 input settings remaps both keyboard and gamepad.
+The adapter initially targets self after selection; legality and all resource changes stay
+in the common session.
+
+Authored format-7 packages may supply an optional root `items` list of
+`{id, name, effect: "consumable-healing", power, minimumRange, maximumRange}` definitions.
+IDs are 0–126; 127 is the empty slot. `actors[].items` contains up to four ordered item words,
+padded with 127. This supports independently authored powers/ranges without changing private
+source admission. There is no new public schema or original asset in that format.
+
+Run `uv run sf2 verify engine` and `uv run sf2 verify adapter` after same-process private-input
+configuration. For the actual host observation, create a fresh ignored directory and derive
+this controlled variant of the existing authored package:
+
+```powershell
+. ./local/private-inputs.ps1
+$run = Join-Path (Get-Location) 'local/herb-observation'
+New-Item -ItemType Directory -Path $run -ErrorAction Stop | Out-Null
+$package = Get-Content remake/content/authored/practice-yard.json -Raw | ConvertFrom-Json
+$items = @(
+    @{ id=0; name='Recovery leaf'; effect='consumable-healing'; power=10; minimumRange=0; maximumRange=1 },
+    @{ id=6; name='Small remedy'; effect='consumable-healing'; power=4; minimumRange=0; maximumRange=2 }
+)
+$package | Add-Member -NotePropertyName items -NotePropertyValue $items
+$package.actors[0].items = @(0,6)
+$package.actors[1].items = @(0)
+$package.start.actors[0].hp = 60
+$packagePath = Join-Path $run 'package.json'
+$package | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8
+$settingsPath = Join-Path $run 'settings.json'
+@{ formatVersion=1; bindings=@{ item=@{ keys=@('J'); buttons=@('Start'); axes=@() } } } |
+    ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $settingsPath -Encoding utf8
+```
+
+Check for an already-owned Godot instance before starting. With none, this new item-input
+observation is the reason to launch the existing project/editor. Build its actual Debug DLL
+using the [locked environment](./development-and-verification.md#locked-net-workflow), then:
+
+```powershell
+$env:SF2_OBSERVATION_CASE = 'item-selection'
+$env:SF2_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
+& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --input-settings $settingsPath
+```
+
+The existing observer uses real keyboard/gamepad events, reads the ordinary session and HUD,
+and verifies cancellation, reselection, range rejection, carried inventory/HP/MP/EXP/RNG,
+next control and empty-inventory rejection. It neither sets runtime state nor takes screenshots.
+Preserve failed and successful output separately. Original-emulator work and the broader
+private continuous comparison are not part of this command.

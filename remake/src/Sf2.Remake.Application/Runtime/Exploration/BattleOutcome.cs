@@ -25,7 +25,7 @@ internal static class BattleOutcome
                 : new FieldReturnAnchor(route.EgressMap, route.EgressPosition, route.EgressFacing);
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
-                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress)),
+                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout)),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy);
             if (kind == BattleOutcomeKind.Victory) party = Heal(definition, party, all: false);
             var map = definition.Exploration!.Maps[route.BattleMap];
