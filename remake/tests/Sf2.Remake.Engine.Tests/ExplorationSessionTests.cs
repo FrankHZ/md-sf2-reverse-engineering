@@ -9,6 +9,52 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    [Fact]
+    public void OpenTextCanWaitForFiniteSoundAndPreviousMusicBeforeAcceptingInput()
+    {
+        var session = StartProgram("""
+            [{"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"waitForAcknowledgement":false},
+             {"op":"present","kind":"SoundWait","resource":null,"entity":null,"position":null},
+             {"op":"present","kind":"PreviousMusic","resource":null,"entity":null,"position":null},
+             {"op":"wait-text-input"},{"op":"close-text"},
+             {"op":"set-flag","flag":7,"value":true},{"op":"end"}]
+            """);
+        var sound = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Assert.Equal(PresentationCueKind.SoundWait, sound.Cue.Kind);
+        Assert.Equal(100, Assert.IsType<OpenTextWindow>(session.Current.Story.TextWindow).Text);
+        var waiting = session.Current;
+        Assert.NotNull(Send(session, new Acknowledge(sound.Token)).Failure);
+        Assert.Same(waiting, session.Current);
+        Accept(session, new CompletePresentation(sound.Token, PresentationCueKind.SoundWait));
+        var previous = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Assert.Equal(PresentationCueKind.PreviousMusic, previous.Cue.Kind);
+        Assert.NotNull(Send(session, new Acknowledge(previous.Token)).Failure);
+        Accept(session, new CompletePresentation(previous.Token, PresentationCueKind.PreviousMusic));
+        var input = Assert.IsType<DialogueWait>(session.Current.Story.Wait);
+        Assert.Equal(100, input.Text);
+        Assert.Equal(101, session.Current.Story.TextCursor);
+        Assert.DoesNotContain(7, session.Current.Story.Flags);
+        Accept(session, new Acknowledge(input.Token));
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.Contains(7, session.Current.Story.Flags);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+    }
+
+    [Fact]
+    public void WaitingForTextInputWithoutAnOpenWindowFailsAtThatInstruction()
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = System.Text.Json.Nodes.JsonNode.Parse("""
+                [{"op":"wait-text-input"},{"op":"end"}]
+                """);
+        });
+        var result = Send(session, new Interact(new("ferryman")));
+        Assert.Equal("text-input-without-window", result.Failure!.Code);
+        Assert.Equal(new ProgramLocation("invitation", 0), session.Current.Story.Cursor);
+    }
+
     [Theory]
     [InlineData("harbor-arrival", "ferryman", 2, 1, 3, 1)]
     [InlineData("hill-passage", "watcher", 3, 2, 3, 1)]

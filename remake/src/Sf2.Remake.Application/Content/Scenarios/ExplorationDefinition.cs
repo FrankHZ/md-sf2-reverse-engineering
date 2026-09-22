@@ -25,12 +25,27 @@ public sealed class ExplorationRaster
     public byte[] CopyBytes() => [.. _bytes];
 }
 public sealed record MapOverlayOffset(int X, int Y);
+public sealed record ExplorationMapMusic(int Field, int Battle);
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
-    IReadOnlyList<IReadOnlyList<ushort>> Blocks);
+    IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech);
 public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster);
+public sealed class ExplorationAudio
+{
+    private readonly byte[] _pcm;
+    internal ExplorationAudio(int command, int sampleRate, int channels, byte[] pcm, int? loopBegin, int? loopEnd)
+    { Command = command; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; LoopBegin = loopBegin; LoopEnd = loopEnd; }
+    public int Command { get; }
+    public int SampleRate { get; }
+    public int Channels { get; }
+    public int SampleFrames => _pcm.Length / (Channels * 2);
+    public int? LoopBegin { get; }
+    public int? LoopEnd { get; }
+    public byte[] CopyPcm() => [.. _pcm];
+}
 public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMapVisual> Maps,
-    IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits);
+    IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits,
+    IReadOnlyDictionary<string, ExplorationAudio> Audio);
 public enum ExplorationEventKind { Step, Interact, Warp }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,

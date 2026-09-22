@@ -40,7 +40,7 @@
       "type": "array",
       "minItems": 1,
       "maxItems": 4096,
-      "items": { "$ref": "#/$defs/rasterAsset" }
+      "items": { "oneOf": [{ "$ref": "#/$defs/rasterAsset" }, { "$ref": "#/$defs/audioAsset" }] }
     }
   },
   "$defs": {
@@ -155,6 +155,112 @@
           "items": false,
           "minItems": 2,
           "maxItems": 2
+        }
+      }
+    },
+    "audioRuntime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtimePath",
+        "byteLength",
+        "sha256",
+        "mediaType",
+        "sampleRate",
+        "channels",
+        "sampleFrames",
+        "loopBegin",
+        "loopEnd"
+      ],
+      "properties": {
+        "runtimePath": {
+          "type": "string",
+          "pattern": "^runtime/[A-Za-z0-9][A-Za-z0-9._@-]*(?:/[A-Za-z0-9][A-Za-z0-9._@-]*)*$"
+        },
+        "byteLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{64}$"
+        },
+        "mediaType": {
+          "const": "audio/wav"
+        },
+        "sampleRate": {
+          "type": "integer",
+          "minimum": 8000,
+          "maximum": 192000
+        },
+        "channels": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "sampleFrames": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "loopBegin": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "loopEnd": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "audioAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetId",
+        "kind",
+        "cue",
+        "command",
+        "source",
+        "derivation",
+        "runtime"
+      ],
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "kind": {
+          "const": "audio"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "command": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "derivation": {
+          "$ref": "#/$defs/derivation"
+        },
+        "runtime": {
+          "$ref": "#/$defs/audioRuntime"
         }
       }
     }

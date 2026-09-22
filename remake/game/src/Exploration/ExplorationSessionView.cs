@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Godot;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Maps;
@@ -40,6 +41,7 @@ public sealed partial class ExplorationSessionView : Control
     private double _tickTime;
     private ExplorationState? _lastWorld;
     private ExplorationPresentation? _presentation;
+    private SessionAudio? _audio;
     private SessionFailure? PresentationFailure => _result?.Failure ??
         (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
             "presentation-unavailable", "presentation", error) : null);
@@ -57,11 +59,12 @@ public sealed partial class ExplorationSessionView : Control
     }
     public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
 
-    internal void Begin(GameSession session, SessionResult result, GameInput input, Action<SessionResult> enterBattle,
+    internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle;
         PublishResult("attach");
+        _audio = audio; audio.Observe(result);
         _releaseBattle = releaseBattle;
         _battleMounted = releaseBattle is not null;
         _presentation = new(this, session.Definition.Exploration!, input.Settings.ReducedFlash, () =>
@@ -71,7 +74,7 @@ public sealed partial class ExplorationSessionView : Control
             _lastWorld = null;
             _title.Hide(); _dialogue.Hide(); _help.Hide();
             QueueRedraw();
-        });
+        }, audio);
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
     }
@@ -119,7 +122,7 @@ public sealed partial class ExplorationSessionView : Control
 
     internal void HandleAction(GameAction action)
     {
-        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl) return;
+        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl || PresentationFailure is not null) return;
         var current = _session.Current;
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
@@ -165,6 +168,7 @@ public sealed partial class ExplorationSessionView : Control
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
         PublishResult("submit");
+        _audio?.Observe(_result);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
         {
@@ -274,6 +278,9 @@ public sealed partial class ExplorationSessionView : Control
             presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
                 nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,
                 soundStarts = _presentation?.SoundStarts, soundFades = _presentation?.SoundFades,
+                soundCompletions = _presentation?.SoundCompletions, soundStops = _presentation?.SoundStops,
+                musicCue = _presentation?.MusicCue, musicPlaying = _presentation?.MusicPlaying,
+                musicFinished = _presentation?.MusicFinished, musicPosition = _presentation?.MusicPosition,
                 mosaicOutDraws = _presentation?.MosaicOutDraws,
                 paletteFades = _presentation?.PaletteFades, paletteBrightness = _presentation?.PaletteBrightness,
                 whiteOpacity = _presentation?.WhiteOpacity, suppressedWhiteCues = _presentation?.SuppressedWhiteCues,

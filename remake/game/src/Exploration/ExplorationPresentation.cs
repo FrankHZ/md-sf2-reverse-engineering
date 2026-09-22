@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -14,7 +15,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror), ImageTexture> _portraits = [];
-    private readonly AudioStreamPlayer _music;
+    private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
     private readonly bool _reducedFlash;
@@ -32,24 +33,30 @@ internal sealed class ExplorationPresentation : IDisposable
     private float _scale;
     private const int ViewWidth = 320, ViewHeight = 192;
 
-    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle)
+    internal ExplorationPresentation(Control owner, ExplorationDefinition definition, bool reducedFlash, Action prepareBattle, SessionAudio audio)
     {
         _owner = owner; _visuals = definition.Visuals; _reducedFlash = reducedFlash; _prepareBattle = prepareBattle;
-        _music = new AudioStreamPlayer { Name = "ExplorationMusic" };
-        owner.AddChild(_music);
+        _audio = audio; Error = audio.Error;
         _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),
             MouseFilter = Control.MouseFilterEnum.Ignore, ZIndex = 100 };
         owner.AddChild(_white);
         _white.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
     }
 
-    internal string? Error { get; private set; }
+    private string? _error;
+    internal string? Error { get => _error ?? _audio.Error; private set => _error = value; }
     internal int SpriteMounts => _spriteMounts;
     internal int GestureDraws { get; private set; }
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
-    internal int SoundStarts { get; private set; }
+    internal int SoundStarts => _audio.Starts;
     internal int SoundFades { get; private set; }
+    internal int SoundCompletions => _audio.Completions;
+    internal int SoundStops => _audio.Stops;
+    internal string? MusicCue => _audio.MusicCue;
+    internal bool MusicPlaying => _audio.MusicPlaying;
+    internal bool MusicFinished => _audio.MusicFinished;
+    internal double MusicPosition => _audio.MusicPosition;
     internal int PaletteFades { get; private set; }
     internal int ShiverDraws { get; private set; }
     internal int MosaicDraws { get; private set; }
@@ -133,11 +140,11 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
-                    if (wait.Cue.Resource is not ("MUSIC_JOIN" or "MUSIC_SAD_JOIN" or "MUSIC_SAD_THEME_2")) throw new InvalidOperationException("sound-binding");
-                    _music.Stop();
-                    var previous = _music.Stream; _music.Stream = null; previous?.Dispose();
-                    _music.Stream = JoinCue(wait.Cue.Resource);
-                    _music.VolumeDb = -12; _music.Play(); SoundStarts++;
+                    _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
+                }
+                else if (wait.Cue.Kind == PresentationCueKind.PreviousMusic)
+                {
+                    _audio.PlayPrevious();
                 }
             }
             _cueAge += delta;
@@ -162,11 +169,13 @@ internal sealed class ExplorationPresentation : IDisposable
                 case PresentationCueKind.BattleLoad:
                     // The existing battle board and roster have been mounted for a frame; input is still program-owned.
                     complete = _cueAge > 0; break;
-                case PresentationCueKind.Sound: complete = _music.Playing; break;
+                case PresentationCueKind.Sound: complete = true; break;
+                case PresentationCueKind.SoundWait: complete = _audio.FiniteMusicFinished(); break;
+                case PresentationCueKind.PreviousMusic: complete = true; break;
                 case PresentationCueKind.SoundFade:
-                    _music.VolumeDb = (float)(-12 - 60 * Math.Min(1, _cueAge / 0.5));
+                    _audio.FadeOut(_cueAge / 0.5);
                     complete = _cueAge >= 0.5;
-                    if (complete) { _music.Stop(); SoundFades++; }
+                    if (complete) SoundFades++;
                     break;
                 default: throw new InvalidOperationException("presentation-binding-" + wait.Cue.Kind);
             }
@@ -322,28 +331,9 @@ internal sealed class ExplorationPresentation : IDisposable
         return image;
     }
 
-    // Explicit project-authored presentation mapping. It preserves command identity, not the original driver waveform.
-    private static AudioStreamWav JoinCue(string resource)
-    {
-        const int rate = 22050, count = rate * 2;
-        byte[] samples = new byte[count * 2];
-        double[] notes = resource switch { "MUSIC_SAD_THEME_2" => [196, 233.08, 293.66],
-            "MUSIC_SAD_JOIN" => [261.63, 311.13, 392], _ => [261.63, 329.63, 392] };
-        for (int index = 0; index < count; index++)
-        {
-            double time = index / (double)rate, envelope = Math.Min(1, time * 20) * Math.Min(1, (2 - time) * 20);
-            short value = (short)(6500 * envelope * notes.Sum(note => Math.Sin(Math.Tau * note * time)) / notes.Length);
-            samples[index * 2] = (byte)(value & 255); samples[index * 2 + 1] = (byte)((value >> 8) & 255);
-        }
-        return new AudioStreamWav { Format = AudioStreamWav.FormatEnum.Format16Bits, MixRate = rate, Stereo = false, Data = samples,
-            LoopMode = AudioStreamWav.LoopModeEnum.Forward, LoopBegin = 0, LoopEnd = count };
-    }
-
     public void Dispose()
     {
         foreach (var texture in _blocks.Values.Concat(_sprites.Values).Concat(_portraits.Values)) texture.Dispose();
         foreach (var image in _atlases.Values) image.Dispose();
-        _music.Stop();
-        var stream = _music.Stream; _music.Stream = null; stream?.Dispose();
     }
 }
