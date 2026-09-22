@@ -1,8 +1,8 @@
 <a id="map-3-to-battle-01-continuous-scenario-contract"></a>
 # Map 3 至 Battle 01 连续场景合同
 
-- 状态：**比较定义提案**；原版证据有界，H4 执行 OPEN。
-- 已接受证据基线：`bbc20e387f9ae8e94d1702340449acd197ecf9aa`，包含 PR #504 / `5102804b`；已接受观测源码为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`。
+- 状态：**Accepted comparison definitions（比较定义已接受）**；executable binding 与 H4 执行 OPEN。
+- 已接受证据基线：`58c5a94a4c5349fd221a130a0970222962715528`，包含 PR #504 / `5102804b`；已接受观测源码为 `9c3ea03ac5f5b467ee744f1ac624870da2408443`。
 - 产品：[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md)，`1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`。
 - 范围：受控准入、自然必经路线、获胜战斗与战后 field 边界；组合既有所有者，不注册 fixture、schema 或研究关联。
 
@@ -104,6 +104,6 @@ Layer 10 独立报告：受控构造（1A/layers1–2）；排除 optional 但�
 <a id="remaining-acceptance-work"></a>
 ## 剩余验收工作
 
-**Unknown（未知） / OPEN 原版字段**：尚未绑定比较记录的完整 selected logical trace/seed/draw-to-effect projection、缺失 status/continuation、cancel/reselect、unshimmed required dialogue 和其他不完整 8D consumer boundary、RA-12 nonneutral effect。这是逐字段 evidence/adaptation 要求，不是新 native run 授权。Research #515 仅在 main 独立接受后可消费。
+**Unknown（未知） / OPEN 原版字段**：尚未绑定比较记录的完整 selected logical trace/seed/draw-to-effect projection、缺失 status/continuation、cancel/reselect、unshimmed required dialogue 和其他不完整 8D consumer boundary、RA-12 nonneutral effect。这是逐字段 evidence/adaptation 要求，不是新 native run 授权。已接受 [PR #519 source preparation](../../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515) 仅提供 collector 能力，不是 native RA-12 结果；nonneutral acceptance/effect 仍 OPEN，后续 Research #515 观测须 main 独立接受后消费。
 
-**OPEN 内容/实现**：7C 音频与完整 reached asset provenance、必需手动 Medical Herb input（检查到的 `SessionAction` 仅有 Stay/Heal/PhysicalAttack）、缺失 snapshot/cue correlation、上述 actual battle-scene consumers、continuous comparator、全部适用 actual host/9A 执行。音频/host（#517）与 Medical Herb（#518）是独立实现所有者，未合并结果不闭合这些条目。不得用当前 remake 限制删除原版 reached action。定义审阅可接受明确 OPEN 边界，但不能据此宣称里程碑就绪。[就绪台账](../synthesis/map3-battle01-readiness.md)记录闭合，main-gate 独立验收。本 slice 不实现 H4、不采集 native、不运行 suite。
+**OPEN 内容/实现**：7C 音频与完整 reached asset provenance、必需手动 Medical Herb input（检查到的 `SessionAction` 仅有 Stay/Heal/PhysicalAttack）、缺失 snapshot/cue correlation、上述 actual battle-scene consumers、continuous comparator、全部适用 actual host/9A 执行。音频/host（#517）与 Medical Herb（#518）是独立实现所有者，未合并结果不闭合这些条目。不得用当前 remake 限制删除原版 reached action。独立审阅已接受比较定义及其明确 OPEN 边界，不代表完整定义就绪或里程碑就绪。[就绪台账](../synthesis/map3-battle01-readiness.md)记录闭合，main-gate 独立验收。本 slice 不实现 H4、不采集 native、不运行 suite。

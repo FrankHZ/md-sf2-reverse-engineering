@@ -2,7 +2,7 @@
 # Map 3 至 Battle 01 就绪台账
 
 - 状态：连续里程碑验收**未就绪**；不默认阻塞另行授权的实现。
-- 已接受证据基线：`bbc20e387f9ae8e94d1702340449acd197ecf9aa`，包含 [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504)。
+- 已接受证据基线：`58c5a94a4c5349fd221a130a0970222962715528`，包含 [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504)。
 - 里程碑：[ADR 0009](../../../decisions/0009-first-phase4-playable-slice.md)；画像：[ADR 0010](../../../decisions/0010-map3-battle01-product-acceptance.md)。
 - 启动政策：[ADR 0016](../../../decisions/0016-remake-start-evidence-deferral.md)；引擎方向：[ADR 0019](../../../decisions/0019-state-and-content-driven-remake-engine.md)。
 - 定义所有者：[连续场景合同](../contracts/map3-battle01-continuous-scenario.md)。
@@ -39,13 +39,13 @@
 | 胜利、战后程序、flag/return spine | 有界原版证据 PASS | 67 reached operation pairs 与最终链；不是完整呈现声明 |
 | 精确 neutral settled endpoint | 有界原版证据 PASS | 合同端点与 original terminal；其余完整记录必须从私有证据消费 |
 | 完整可控 5B / RA-12 | OPEN | Research：下一次 nonneutral input 及实际效果；不能用 remake 提供 expected truth |
-| 连续合同与十层定义 | 已交付待审阅 | 合同明确字段、来源、actual mapping、failure/unavailable；仍需独立接受 |
+| 连续合同与十层定义 | 定义已接受；缺失绑定 OPEN | 合同明确字段、来源、actual mapping、failure/unavailable；executable binding 与完整定义就绪仍 OPEN |
 | 所有断言原版 expected 完整 | OPEN | 缺 selected trace/RNG/continuation/cancel 字段及必需 8D consumption/ack；不构成新 native 授权 |
 | 6A save 政策 | 已选择；连续 H4 执行 OPEN | 无用户 persistence surface；restart 回到准入状态 |
 | 7C 内容/溯源 | OPEN | 完整 reached 原版场景清单，尤其原版音频；authored JoinCue chords 或 mute 不能 PASS。现代 HUD/theme/input glyphs/fonts 按已接受作者/许可与 9A 检查，不要求 ROM 原版字体 |
 | 8D 呈现语义 | OPEN | 必需 identity/order、real host use、completion/ack/readiness；source dispatch pairs 不足；BattlePresentation board markers/status/roster 不实现 battle-scene consumers |
 | 9A 配置与有界直接观测 | 有界实现 PASS | [9A 所有者](../../../../remake/docs/development-and-verification.md#native-9a-observation)；不是全部连续 variants |
-| 9A variants / 10A deviations 组合 | 已交付待审阅；执行 OPEN | 合同要求 baseline/variant 分开结果及 state/ack equivalence |
+| 9A variants / 10A deviations 组合 | 定义已接受；缺失绑定与执行 OPEN | 合同要求 baseline/variant 分开结果及 state/ack equivalence |
 | 必需 reached action 支持 | OPEN | 检查到的 SessionAction 没有手动 Medical Herb（#518）；保留原版 reached 要求 |
 | 所有适用 H4 layers 成功执行 | OPEN | 定义接受后的 Remake/harness；实际连续 session 至完整 5B |
 | 独立里程碑就绪接受 | OPEN | Main-gate；Issue 关闭或有界实现 PASS 均不足 |
@@ -69,8 +69,8 @@
 
 | 所有者 | 剩余工作 / 依赖 |
 | --- | --- |
-| Research | 缺失原版字段与 RA-12 effect 的接受；#515 在 main 接受前不消费 |
-| Design | 当前连续合同/台账双语审阅；已接受原版修正留在同一结果中纳入 |
+| Research | 缺失原版字段与 RA-12 effect 的接受；PR #519 仅是 source preparation，不是 native 结果；后续 #515 观测待 main 接受 |
+| Design | 比较定义已独立接受；缺失 executable bindings 仍 OPEN；已接受原版修正留在同一结果中纳入 |
 | Remake/content | 必需 manual action、原版音频/private provenance/actual host consumption；#517 独立拥有实现，不假定未合并结果 |
 | H4 executor | 绑定已接受记录，通过既有 actual state/input/presentation 执行十层与 9A variants；保留失败/Unavailable |
 | Main-gate | 独立接受定义、证据闭合与最终完整 H4；串行整合 |

@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Continuous Scenario Contract
 
-- Status: **Proposed comparison definitions**; original evidence is bounded, H4 execution is OPEN.
-- Accepted evidence base: `bbc20e387f9ae8e94d1702340449acd197ecf9aa`, including PR #504 at
+- Status: **Accepted comparison definitions**; executable binding and H4 execution are OPEN.
+- Accepted evidence base: `58c5a94a4c5349fd221a130a0970222962715528`, including PR #504 at
   `5102804b` (accepted observation source `9c3ea03ac5f5b467ee744f1ac624870da2408443`).
 - Product: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md),
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
@@ -204,7 +204,7 @@ waive an in-domain required action. Private-only 7C handling is a product bounda
 where not yet bound to comparison records, missing status/continuation fields, cancel/reselect,
 unshimmed required dialogue and other incomplete 8D consumer boundaries, and RA-12 nonneutral effect.
 This is a field-specific evidence/adaptation requirement, not permission for another native run.
-Research #515 results enter only after independent acceptance on main.
+Accepted [PR #519 source preparation](../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515) supplies collector capability, not a native RA-12 result. Nonneutral acceptance/effect remains OPEN; future Research #515 observations enter only after independent acceptance on main.
 
 **OPEN content/implementation:** 7C audio and complete reached asset provenance, manual required
 Medical Herb input (the inspected `SessionAction` exposes only Stay/Heal/PhysicalAttack), any missing
@@ -212,6 +212,7 @@ snapshot/cue correlation, actual battle-scene consumers above, continuous compar
 applicable actual host/9A executions. Audio/host work (#517) and Medical Herb (#518) are separate
 implementation owners; their unmerged results do not close these entries.
 Do not use current remake limitations to remove reached actions from the expected contract.
-Definition review can accept these precise open boundaries without declaring the milestone ready.
+Independent review accepts these comparison definitions with their precise open boundaries; this
+does not establish complete definition readiness or milestone readiness.
 The [readiness ledger](../synthesis/map3-battle01-readiness.md) tracks closure; main-gate independently
 reviews acceptance. No executable H4 implementation, native acquisition or suite runs occur here.

@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for continuous-milestone acceptance; not a default blocker for separately authorized implementation.
-- Accepted evidence baseline: `bbc20e387f9ae8e94d1702340449acd197ecf9aa`, including [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504).
+- Accepted evidence baseline: `58c5a94a4c5349fd221a130a0970222962715528`, including [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504).
 - Milestone: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md); profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md).
 - Start policy: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md); engine direction: [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md).
 - Definition owner: [Continuous Scenario Contract](../contracts/map3-battle01-continuous-scenario.md).
@@ -62,13 +62,13 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Victory, after-program, flag and return spine | PASS bounded original evidence | 67 reached operation pairs and selected final chain; not a full presentation claim |
 | Exact neutral settled endpoint | PASS bounded original evidence | Contract endpoint and original terminal; remaining full records must be consumed from private evidence |
 | Full controllable 5B / RA-12 | OPEN | Research: next nonneutral input and actual effect; no remake-derived expected truth |
-| Continuous contract and ten-layer definitions | DELIVERED FOR REVIEW | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; independent acceptance still required |
+| Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; executable binding and complete definition readiness remain OPEN |
 | Original expected fields complete for every assertion | OPEN | Missing selected trace/RNG/continuation/cancel fields and required 8D consumption/ack evidence; not a new native authorization |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
 | 7C content/provenance | OPEN | Complete reached original scene inventory, especially original audio; authored JoinCue chords or mute cannot pass. Modern HUD/theme/input glyphs/fonts follow accepted authorship/license and 9A, not a ROM-original-font requirement |
 | 8D semantic presentation | OPEN | Required identity/order, real host use, completion/ack and readiness; source dispatch pairs alone insufficient. BattlePresentation board markers/status/roster do not implement battle-scene consumers |
 | 9A configuration and bounded direct observations | PASS bounded implementation | [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation); not full continuous variants |
-| 9A variants / 10A deviations composed | DELIVERED FOR REVIEW; execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
+| 9A variants / 10A deviations composed | Accepted definitions; missing bindings and execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
 | Required reached action support | OPEN | Inspected SessionAction lacks manual Medical Herb (#518); retain the original reached requirement |
 | All applicable H4 layers executed successfully | OPEN | Remake/harness after definition acceptance; actual continuous session through full 5B |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
@@ -102,8 +102,8 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 
 | Owner | Work remaining / dependency |
 | --- | --- |
-| Research | Accepted missing original fields and RA-12 effect; #515 remains unconsumed until accepted on main |
-| Design | Independent review of this continuous contract/readiness pair; incorporate accepted original corrections in the same outcome |
+| Research | Accepted missing original fields and RA-12 effect; PR #519 is source preparation only, not a native result; later #515 observations await acceptance on main |
+| Design | Comparison definitions independently accepted; missing executable bindings remain OPEN; incorporate accepted original corrections in the same outcome |
 | Remake/content | Required manual actions, original audio/private provenance and actual host consumption; #517 is a separate implementation owner, no unmerged results assumed |
 | H4 executor | Bind accepted records, run all ten layers and 9A variants through existing actual state/input/presentation surfaces; preserve failures and Unavailable |
 | Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
