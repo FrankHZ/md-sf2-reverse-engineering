@@ -58,8 +58,8 @@ acceptance and a tracked result handoff.
 
 **Confirmed (bounded native observation, 2026-09-22):** after PR519 source/preparation acceptance,
 the [Issue515 result](../research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
-retains the identical natural victory/after-program/pre-input state, then observes one Down read and
-movement acceptance at frame 61011. Map57 player `(5,12)` becomes `(5,13)`, settled at 61023/61024,
+retains the observed natural victory/after-program spine and pre-input facts, then observes one Down
+read and movement acceptance at frame 61011. Map57 player `(5,12)` becomes `(5,13)`, settled at 61023/61024,
 with original raw displacement, complete state readbacks and no pending consumers. All 19 new
 native invocations complete with cleanup; segmented totals are 136 starts / 15540.144989400113
 seconds / 428408 frames / 16188 batches. A local accepted-main guard failed before process launch
