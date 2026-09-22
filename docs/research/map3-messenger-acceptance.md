@@ -22,13 +22,15 @@ After [PR #502 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engi
 prepared-45..67 confirm original victory and after-program return, followed by a post-victory
 observer **FAIL** described below. After [PR #503 source acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/503),
 prepared-68..86 reach [two-frame stable field readiness](#native-victory-and-stable-field-readiness).
-Post-endpoint nonneutral input effect, full RA-12 and H4 remain **Unknown**.
+The [Issue515 native result](#native-post-victory-ordinary-input-result-issue-515) records the next
+ordinary Down input and settled displacement. Independent result acceptance remains required;
+remaining 8D and H4 are not established.
 
 The existing `NATURAL_CONTINUATION` first-player-ready mode retains its original terminal predicate.
 Issue #485's accepted prepared-37 final pair remains nonresumable. New execution sources require a fresh
 compatible chain; neither a changed mode nor a changed observer may reuse an incompatible parent.
 Historical accounting begins at 35 starts, 6562.418724000221 charged seconds, 105007 delivered resource
-frames and 2063 advancing batches; the current total through prepared-86 is **115 starts /
+frames and 2063 advancing batches; the retained Issue496 total through prepared-86 is **115 starts /
 14197.020479699888 charged seconds / 365304 resource frames / 13351 advancing batches**.
 These are retained observations, not stopping ceilings. Failed21's
 missing final callback/restoration payload remains **Unknown**. Other retained failures are unchanged.
@@ -380,18 +382,19 @@ PR503's completed source checks (normal verification, actual Lua/host and ROM bi
 recorded in its handoff. This four-document result requires direct document/scope checks and its
 committed verification plan, not another native or aggregate suite.
 
-**Unknown:** the terminal collector executes no post-endpoint nonneutral ordinary input. RA-12's
+**Unknown at the PR504 boundary:** that terminal collector executes no post-endpoint nonneutral ordinary input. RA-12's
 requirement that the next ordinary logical input be accepted and its state effect observed remains
 unchanged and unproved. Bounded two-frame stable 5B readiness is Confirmed; full RA-12, remaining
 8D, frozen replay, H4 and completion of #437 are not claimed. This result is savestate-linked
 original acquisition, not uninterrupted wall-time execution. No additional native launch is part
-of this result handoff.
+of that result handoff. The later Issue515 result below observes the additional input without
+loading or modifying prepared-86.
 
 ### Post-victory ordinary-input preparation (Issue #515)
 
-**Unknown (native result):** RA-12 still lacks an observed ordinary nonneutral input after the
-accepted prepared-86 endpoint. The current collector extends the existing victory continuation;
-this source/preparation checkpoint is not another original-game observation or Issue completion.
+**Confirmed (source checkpoint):** accepted PR519 extended the existing victory continuation to
+observe RA-12's then-missing nonneutral input after stable field readiness. This preparation alone
+was not original-game evidence; the subsequent native result is recorded below.
 Prepared-86 remains terminal/nonresumable and unchanged. Prepared-85 has incompatible execution
 sources; PR511's new early pairs also have a different continuation selection. None is a legal
 resume parent for this extension. The shortest compatible method is a fresh R1 chain reusing the
@@ -447,6 +450,95 @@ registered installation, fresh worktree-local paths and strict versioned continu
 identity. Old raw-settings pairs cannot be converted, resealed or normalized. Reuse successful
 forward saves, preserve every new cost/failure, and return native evidence for independent acceptance
 in this same Issue. Audio, remaining 8D, H4 and #437 completion are outside this source checkpoint.
+
+### Native post-victory ordinary-input result (Issue #515)
+
+**Confirmed (bounded native observation, 2026-09-22):** following independent PR519 source and
+concrete-preparation admission, `local/issue515/prepared-02..20` completed a fresh compatible chain
+under the same victory continuation. The accepted execution source is
+`58c5a94a4c5349fd221a130a0970222962715528`; the worktree advanced to accepted
+`7c90c147e6746567732a812c410fcf04b1ed0cc4` before segment 17 without changing the runner, observer
+or any frozen execution dependency. Runner identity is
+`0E41A02DD87532D0D178A5E574EEA3219CCB12977702A1A3824265AB7C8A8319`; observer identity is
+`85520F65CE34292430F8779B8AA2EB4E5B739F63DEBFF0A284D9398598BFF061`. The unmodified initial
+prepared-02 configuration is `D40091D71FAF2F48AAA585413E95CC5121D6A3F75F193DC4C06E86A1DB13210B`;
+final prepared-20 configuration is `EA571EC14A60B29DDFBF6F6C3E43552DB0E14EB9B69E379CB157CBA99CD6911D`.
+The pinned USA ROM, upstream, H1 and fixture identities remain those bound by this owner and each
+private preparation. No old terminal save, source-incompatible pair or raw-settings identity was
+converted or loaded.
+
+All 18 resumable checkpoints match the corresponding old successful 68..85 `original` and `core`
+objects in full, including saved RAM, registers and emulator frame. Every retained input response
+also matches its original frame, position, flags, RNG/time and battle accounting. Each child loads
+and validates its new compatible parent; no original state is injected after the declared R1 start.
+All 19 pairs retain the same `bizhawk-local-path-roles-v1` settings identity
+`16D3F8DCFF20863937B4F417A8AD2E7505164F54D63CCC2733120B1E9A1F9C33`, while preserving their own
+raw settings identities and local writable paths.
+
+The final segment preserves natural victory at **58657**, after-program/shared-tail/enclosing
+return at **60945**, F401 clear before F501 set, BattleLoop D4=1, SwitchMap/exploration return,
+and exact Map57 void setup at **60983**. All **67** after-program operation pairs and **106**
+audio dispatch/mailbox pairs in that segment close; this remains bounded consumer evidence, not
+complete presentation or audible-output acceptance. The pre-input facts at frames **61009/61010**
+match the old prepared-86 terminal's position, flags, RNG/time, camera, player and complete battle
+accounting. That old terminal remains unchanged and nonresumable.
+
+| Boundary | Original observation |
+| --- | --- |
+| Pre-input settled frames 61009/61010 | Map57, `(5,12)`, raw `(1920,4608)`, facing 3 (DOWN); battle255, F401 false/F501 true; settled camera/movement and no pending battle, program, transfer or modal consumers |
+| One Down frame 61011 | Request 84; `esc02_controlCharacter` at `0x4FF8` observes value 2 from `PLAYER_1_INPUT` (`0xFFDE97`), with D7=48 selecting that original input source |
+| Movement acceptance, same frame 61011 | `loc_52E8` at `0x52E8`: D2=0, D3=32, D4=0, D5=384; the original destination increment is retained rather than supplied by the host |
+| Final settled frames 61023/61024 | Map57, `(5,13)`, raw `(1920,4992)`, facing DOWN; position equals destination, battle255, F401 false/F501 true, actual neutral player/field polls and all blocking-consumer counts zero |
+
+Exactly one nonneutral frame follows pre-input readiness, followed by **13 neutral frames**.
+The final raw displacement equals the original D4/D5 additions modulo 16 bits. Party, joined and
+active roster remain `[0,1,2]`, gold remains 420, and all ally records match the pre-input records,
+including stats, zero status effects, items and spells described above. RNG remains
+`[188,203,0,0]`, copy 188. Raw time advances from frame/seconds/secondsFrames `170/674/40` to
+`184/674/54`. Direct reads of the saved original RAM agree with these serialized fields.
+The final evidence pair is terminal and the production reader rejects it as a resume parent.
+
+All **19** native invocations exit 0, without timeout or forced termination; callbacks clear,
+entry core state is restored, session ROMs are removed and the canonical ROM remains unchanged.
+For resumed segments the restoration kind is `loaded-segment-entry`; the original R1-specific
+restoration flags are not substituted for that entry-core check. Shared installation file size/mtime
+inventories remain unchanged after each run. No acquisition process survives. The final host status
+is `OBSERVATION-COMPLETE-UNREVIEWED`: independent main-gate result acceptance remains required.
+The observed direction/effect supplies RA-12's missing evidence for review; it does not itself
+claim accepted RA-12 closure, remaining 8D, H4 or completion of #437.
+
+New chain costs are **19 starts / 1289.7639529002481 seconds / 61024 frames / 2800 batches**.
+The final segment contributes **4548 frames / 85 batches / 90.85220870003104 seconds**.
+Complete segmented totals, including the prior costs above, are **136 starts /
+15540.144989400113 seconds / 428408 frames / 16188 batches**. Frame-log counting, native receipts,
+sealed pairs and production lineage reconciliation agree. The two source-admission H3 gates are
+separate controlled observations: two starts and 183.27032080001663 seconds of wrapper elapsed
+including preparation, not an invented emulator-active total. Later tooling diagnostics and old
+21/41/61/67 cleanup Unknowns remain in their existing records.
+
+One local operator guard failed before invoking the production runner for prepared-17: an unrelated
+accepted `remake_h4_reference.py` addition made its broad `src/tools` comparison fail. No runtime
+folder, process start or frame delivery occurred. The closed-pipe abort then raised OSError 22;
+both diagnostics remain preserved. After advancing to accepted main and rechecking identical
+frozen sources, the unchanged preparation ran successfully with separate retry logs. The local
+wrapper now checks accepted ancestry plus the unchanged production identity checks; it does not
+waive compatibility. The later account-limit interruption did not interrupt native execution:
+prepared-19 and 20 completed normally and were audited on recovery, never rerun or relabeled FAIL.
+
+Reproduce the completed evidence read-only after loading `local/private-inputs.ps1`:
+
+```powershell
+uv run python -X utf8 local/issue515/audit-terminal.py prepared-20 <fresh-output.json>
+uv run python -X utf8 local/issue515/final-ram.py prepared-20 <fresh-output.json>
+uv run python -X utf8 local/issue515/summary-native.py <fresh-output.json>
+```
+
+The retained results are `terminal-audit.json`, `prepared-20-final-ram.json`, `native-summary.json`
+and each segment's audit/receipt/status files. These ignored readers and reports aid reproduction;
+the accepted production source, pinned original inputs and native records own the evidence. PR519's
+normal verification, affected checks, two actual H3 gates and public CI remain valid because this
+result changes only documentation. Direct result, scope/link/private-boundary checks, the committed
+result plan and actual CI are recorded in the handoff; no full suite or native-chain rerun is needed.
 
 ### Source binding and observation fields
 
@@ -595,7 +687,7 @@ does, prefers weakened targets and limits unnecessary separation. Enemy move-plu
 cohesion and injury thresholds are tactical estimates, not exact enemy reach or gameplay legality.
 `operator-victory-before-herb.py` retains the pre-extension policy. Readback proposals are not
 replayed outcomes; herb use, a winning battle route and bounded stable field readiness are observed
-above. Post-endpoint ordinary input effect remains **Unknown**. The sequential
+above. The Issue515 result additionally records post-endpoint ordinary input. The sequential
 `continue-rounds.py` performs preparation, one finite round operator, complete pair audit and then
 the next preparation; an incomplete result stops the chain. No script acts inside a callback.
 
