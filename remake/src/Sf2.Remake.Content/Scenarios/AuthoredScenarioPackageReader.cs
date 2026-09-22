@@ -40,7 +40,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
 
     internal static ScenarioReadAccepted DecodeBattle(JsonElement root)
     {
-        Object(root, "document", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
+        ObjectOptional(root, "document", "items", "formatVersion", "package", "profile", "ruleProfile", "start", "terrains", "maps", "spells", "actors", "encounters");
         Require(Number(root, "formatVersion", 7, 7) == 7, "format-version", "formatVersion");
         Require(Text(root, "profile") == "public-authored", "profile", "profile");
         Require(Text(root, "ruleProfile") == "sf2-semantic-subset-v1", "rule-profile", "ruleProfile", true);
@@ -117,6 +117,18 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (ushort)Number(effect, "adjustedPower", 0, 65535), minimum, maximum);
             Require(spells.TryAdd(key, definition), "duplicate-spell", "spells.id/level");
         }
+        var healingItems = new Dictionary<byte, HealingItemDefinition>();
+        if (root.TryGetProperty("items", out _))
+            foreach (var item in Array(root, "items"))
+            {
+                Object(item, "item", "id", "name", "effect", "power", "minimumRange", "maximumRange");
+                Require(Text(item, "effect") == "consumable-healing", "item-effect", "items.effect", true);
+                byte id = (byte)Number(item, "id", 0, 126);
+                byte minimum = (byte)Number(item, "minimumRange", 0, 3);
+                var definition = new HealingItemDefinition(id, Text(item, "name"), (ushort)Number(item, "power", 1, 254),
+                    minimum, (byte)Number(item, "maximumRange", minimum, 3));
+                Require(healingItems.TryAdd(id, definition), "duplicate-item", "items.id");
+            }
         var actors = new Dictionary<ActorRef, BattleActorDefinition>();
         foreach (var actor in Array(root, "actors"))
         {
@@ -126,7 +138,16 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             string className = Text(actor, "classRule");
             Require(className is "unpromoted-priest" or "ordinary" or "unpromoted-swordsman" or "unpromoted-warrior",
                 "class-rule", "actors.classRule", true);
-            Require(!Array(actor, "items").Any(), "actor-items", "actors.items", true);
+            var items = Array(actor, "items").Select(value =>
+            {
+                Require(value.ValueKind == JsonValueKind.Number && value.TryGetUInt16(out _), "item-word", "actors.items");
+                ushort word = value.GetUInt16();
+                Require(word <= 511 && ((word & 127) == 127 || healingItems.ContainsKey((byte)(word & 127))),
+                    "missing-item", "actors.items", true);
+                return word;
+            }).ToArray();
+            Require(items.Length <= 4, "inventory-capacity", "actors.items");
+            var loadout = new BattleSourceLoadout(items.Concat(Enumerable.Repeat((ushort)127, 4 - items.Length)), [63, 63, 63, 63]);
             PhysicalActorDefinition? physical = null;
             if (actor.TryGetProperty("physical", out var physicalInput))
             {
@@ -164,7 +185,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 (byte)Number(actor, "level", 0, 99), maximumHp, maximumMp,
                 (byte)Number(actor, "attack", 0, 255), (byte)Number(actor, "defense", 0, 255),
                 (byte)Number(actor, "agility", 0, 127), Boolean(actor, "extraRoundAction"),
-                (byte)Number(actor, "move", 1, 255), learned, physical);
+                (byte)Number(actor, "move", 1, 255), learned, physical, sourceLoadout: loadout);
             Require(actors.TryAdd(id, definition), "duplicate-actor", "actors.id");
         }
         var encounters = new Dictionary<string, BattleDefinition>(StringComparer.Ordinal);
@@ -213,7 +234,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             }
             Require(placements.Count(p => p.Faction == BattleFaction.Ally) <= 30 &&
                 placements.Count(p => p.Faction == BattleFaction.Enemy) <= 32, "faction-capacity", "encounters.placements");
-            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards)),
+            Require(encounters.TryAdd(id, new(id, new MapId(map), terrain.Width, terrain.Height, terrain.Cells, placements, spells.Values, rewards, healingItems: healingItems.Values)),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");

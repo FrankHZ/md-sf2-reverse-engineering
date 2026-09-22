@@ -165,7 +165,7 @@ internal static class ExplorationContentReader
             var firstEnemy = encounter.Deployments.FirstOrDefault(row => row.Faction == BattleFaction.Enemy);
             Require(leader is not null && firstEnemy is not null, "outcome-roster", "map.battle.outcome");
             encounters[index] = new(encounter.Encounter, encounter.Map, encounter.Width, encounter.Height, encounter.Terrain,
-                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor));
+                encounter.Deployments, encounter.Spells.Values, encounter.Rewards, encounter.Initialization, new(leader!.Actor, firstEnemy!.Actor), encounter.HealingItems.Values);
         }
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),

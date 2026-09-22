@@ -71,6 +71,10 @@ func _run() -> void:
         return
     var observation_case := _diagnostic("CASE")
     if not observation_case.is_empty():
+        if observation_case == "item-selection":
+            await _item_selection(initial)
+            _finish()
+            return
         if observation_case == "spell-selection":
             await _spell_selection(initial)
             _finish()
@@ -838,3 +842,62 @@ func _private_actions(initial: Dictionary) -> void:
         _check(healed.stopReason == "PlayerInput", "HEAL returns actual control")
     else:
         _check(false, "Actual route reaches Sarah for HEAL")
+
+func _item_selection(initial: Dictionary) -> void:
+    # Recipe selects J/Start as the item bindings. Every transition goes through ordinary host input.
+    await _press(KEY_ENTER)
+    var choosing := _read("item-action-choice")
+    await _press(KEY_I)
+    var unmapped := _read("old-binding-inert")
+    _check(unmapped.revision == choosing.revision, "Overridden item key does not trigger a command")
+    await _press(KEY_J)
+    var selected := _read("held-item-selected")
+    _check(selected.itemSlot == 0 and selected.target == initial.actor and selected.stage == "CommitReady", "Remapped item selects the held slot and self")
+    _check(selected.itemChoices.contains("Recovery leaf · selected") and selected.help.contains("J / Pad Start"), "Actual HUD shows item identity, selected slot and remapped controls")
+    await _press(KEY_TAB)
+    var rejected := _read("item-outside-range")
+    _check(rejected.failure == "target-range" and rejected.target == initial.actor and rejected.mainSeed == initial.mainSeed, "Distant target rejection retains accepted target and RNG")
+    _check(rejected.inventories == initial.inventories, "Rejected target consumes no inventory")
+    await _press(KEY_J)
+    var reselected := _read("different-item-selected")
+    _check(reselected.itemSlot == 1 and reselected.target == initial.actor, "Cycling selects the next real inventory slot")
+    await _press(KEY_ESCAPE)
+    var cancelled := _read("item-cancelled")
+    _check(cancelled.itemSlot == null and cancelled.stage == "Movement" and cancelled.inventories == initial.inventories and cancelled.mainSeed == initial.mainSeed, "Cancel discards choices without resource changes")
+    await _press(KEY_ENTER)
+    await _press(KEY_J)
+    await _press(KEY_ENTER)
+    var committed := _read("item-consumed")
+    _check(committed.failure == null and committed.actors[0].hp == 70 and committed.actors[0].mp == initial.actors[0].mp, "Herb restores ten missing HP without MP payment")
+    _check(committed.inventories[0].items == [6.0, 127.0, 127.0, 127.0] and committed.actor == "guard-a", "Consumption shifts remaining slot and advances to another holder")
+    _check(committed.thinkingSeed == initial.thinkingSeed and committed.mainSeed != initial.mainSeed, "Only the action's main RNG channel advances")
+    await _press(KEY_ENTER)
+    var event := InputEventJoypadButton.new()
+    event.button_index = JOY_BUTTON_START
+    event.pressed = true
+    Input.parse_input_event(event)
+    await process_frame
+    await process_frame
+    event = InputEventJoypadButton.new()
+    event.button_index = JOY_BUTTON_START
+    event.pressed = false
+    Input.parse_input_event(event)
+    await process_frame
+    var pad := _read("gamepad-item-selection")
+    _check(pad.itemSlot == 0 and pad.target == "guard-a" and pad.failure == null, "Remapped gamepad selects another holder's own item")
+    await _press(KEY_ENTER)
+    var other := _read("other-holder-consumed")
+    _check(other.failure == null and other.actors[1].hp == 12 and other.actors[1].exp == 1 and other.inventories[1].items == [127.0, 127.0, 127.0, 127.0], "Non-healer consumes once, clamps HP and earns minimum EXP")
+    var current := other
+    for _turn in range(6):
+        if current.actor == "guard-a":
+            break
+        await _press(KEY_ENTER)
+        await _press(KEY_SPACE)
+        await _press(KEY_ENTER)
+        current = JSON.parse_string(view.call("ReadObservationJson"))
+    _check(current.actor == "guard-a", "Ordinary turns return the empty holder")
+    await _press(KEY_ENTER)
+    await _press(KEY_J)
+    var empty := _read("empty-inventory")
+    _check(empty.failure == "empty-item-slot" and empty.mainSeed == current.mainSeed and empty.inventories == current.inventories, "Empty inventory rejection is visible and atomic")

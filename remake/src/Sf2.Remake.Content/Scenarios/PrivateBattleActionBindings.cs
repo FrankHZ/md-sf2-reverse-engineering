@@ -8,6 +8,22 @@ namespace Sf2.Remake.Content.Scenarios;
 // start policy; checking the source equipment must never apply its bonus a second time.
 internal static class PrivateBattleActionBindings
 {
+    internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
+    {
+        // Accepted item 0 delegates to HEALIN-1. Other carried families remain explicit unsupported commands.
+        if (!definitions.Items.TryGetValue(0, out var item)) yield break;
+        Require(item.Code == "MEDICAL_HERB" && item.ItemTypeExpression == "CONSUMABLE" &&
+            item.UseSpell == "HEALIN" && item.UseSpellLevel == 1 && item.EquipFlagsExpression == "NONE" &&
+            item.MinimumRange == 0 && item.MaximumRange == 1 &&
+            item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+            "source-herb-definition", "items", true);
+        Require(definitions.Spells.TryGetValue(new("healin", 1), out var spell) &&
+            spell is { BaseId: 16, MpCost: 0, Radius: 0, Power: 10, MinimumRange: 0, MaximumRange: 1 } &&
+            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES",
+            "source-herb-effect", "items.useSpell", true);
+        yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange);
+    }
+
     internal static PhysicalActorDefinition Physical(PrivateBattleDefinitions definitions, string prowess,
         IEnumerable<ushort> items, bool leader, ushort gold)
     {

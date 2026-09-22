@@ -137,7 +137,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
             encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),
             initialization: new(regions, BattleRegionProgram.None,
-                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y))));
+                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y))),
+            healingItems: PrivateBattleActionBindings.HealingItems(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);

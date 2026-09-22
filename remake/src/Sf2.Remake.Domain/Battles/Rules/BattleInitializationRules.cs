@@ -68,7 +68,7 @@ internal static class BattleInitializationRules
                 heal ? actor.MaxHp : actor.Hp, heal ? actor.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
                 actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : EnemyAttack(actor.Definition.Attack, policy.Difficulty),
                 status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
-                activationWord: actor.IsAlly ? null : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress);
+                activationWord: actor.IsAlly ? null : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress, sourceLoadout: actor.SourceLoadout);
         });
         return before.With(actors: actors, regions: new(new bool[16], 0));
     }

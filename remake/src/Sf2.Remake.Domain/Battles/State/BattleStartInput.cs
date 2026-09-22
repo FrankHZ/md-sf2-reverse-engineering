@@ -4,7 +4,8 @@ namespace Sf2.Remake.Domain.Battles;
 
 // External controlled/session input. Each start is validated against admitted definitions before use.
 public sealed record BattleActorStartInput(ActorRef Actor, ushort Hp, byte Mp, byte? Exp,
-    ushort? Kills, ushort? Defeats, ushort Status, MapPosition? PositionOverride, BattleActorProgress? Progress = null);
+    ushort? Kills, ushort? Defeats, ushort Status, MapPosition? PositionOverride, BattleActorProgress? Progress = null,
+    BattleSourceLoadout? SourceLoadout = null);
 
 public sealed class BattleStartInput
 {

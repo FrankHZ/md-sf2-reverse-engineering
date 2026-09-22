@@ -10,12 +10,13 @@ public sealed record SessionFailure(SessionFailureKind Kind, string Code, string
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
 public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady }
-public enum SessionAction { Stay, Heal, PhysicalAttack }
+public enum SessionAction { Stay, Heal, PhysicalAttack, Item }
 
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
 public sealed record ChooseAction(SessionAction Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
+public sealed record SelectItem(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
 public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
@@ -30,12 +31,13 @@ public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, Acto
 public sealed class BattleSelection
 {
     internal BattleSelection(ActorRef actor, BattleMovementPreview preview, BattleSelectionStage stage,
-        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null)
-    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; }
+        SessionAction? action = null, SpellRef? spell = null, ActorRef? target = null, int? itemSlot = null)
+    { Actor = actor; Preview = preview; Stage = stage; Action = action; Spell = spell; Target = target; ItemSlot = itemSlot; }
     public ActorRef Actor { get; }
     public BattleMovementPreview Preview { get; }
     public BattleSelectionStage Stage { get; }
     public SessionAction? Action { get; }
+    public int? ItemSlot { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
 }

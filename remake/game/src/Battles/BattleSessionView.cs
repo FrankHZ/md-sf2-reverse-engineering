@@ -21,6 +21,8 @@ public sealed partial class BattleSessionView : Control
     private Label _help = null!;
     private GameInput _input = null!;
     private SpellRef? _spellCandidate;
+    private int? _itemCandidate;
+    private Label _items = null!;
     private BattleMapViewport _map = null!;
     private ScrollContainer _hud = null!;
     private VBoxContainer _hudContent = null!;
@@ -47,6 +49,7 @@ public sealed partial class BattleSessionView : Control
         _title = AddLabel("Title");
         _status = AddLabel("Status");
         _spells = AddLabel("Spells");
+        _items = AddLabel("Items");
         _roster = AddLabel("Roster");
         _help = AddLabel("Help");
         Arrange();
@@ -57,6 +60,7 @@ public sealed partial class BattleSessionView : Control
         _input = input;
         _help.Text = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
             $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
+            $"{input.Hint(GameAction.Item)}: select / cycle carried items; target self\n" +
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
             $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n\nAI and rounds advance automatically.";
     }
@@ -141,6 +145,16 @@ public sealed partial class BattleSessionView : Control
             _ => null,
         };
         if (command is not null) Send(command);
+        else if (action == GameAction.Item && _session.Current.Selection is { } itemSelection)
+        {
+            var slots = _session.Current.Battle.GetActor(itemSelection.Actor).SourceLoadout?.Items;
+            // Even an empty inventory submits a real command, so the player sees its rejection.
+            var held = slots is null ? [] : Enumerable.Range(0, slots.Count).Where(slot => (slots[slot] & 127) != 127).ToArray();
+            int index = Array.IndexOf(held, _itemCandidate ?? itemSelection.ItemSlot ?? -1);
+            _itemCandidate = held.Length == 0 ? 0 : held[(index + 1) % held.Length];
+            Send(new SelectItem(_itemCandidate.Value));
+            if (_result?.Failure is null) Send(new SelectTarget(itemSelection.Actor));
+        }
         else if (action == GameAction.Spell && _session.Current.Selection is { } selection)
         {
             var spells = _session.Current.Battle.GetActor(selection.Actor).Spells;
@@ -150,9 +164,9 @@ public sealed partial class BattleSessionView : Control
             Send(new SelectSpell(_spellCandidate.Value));
             if (_result?.Failure is null) Send(new SelectTarget(selection.Actor));
         }
-        else if (action == GameAction.Target && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.PhysicalAttack } targeting)
+        else if (action == GameAction.Target && _session.Current.Selection is { Action: SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack } targeting)
         {
-            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action == SessionAction.Heal)).ToArray();
+            var targets = _session.Current.Battle.Actors.Where(a => a.Hp > 0 && a.IsAlly == (targeting.Action != SessionAction.PhysicalAttack)).ToArray();
             if (targets.Length == 0) return;
             int selected = Array.FindIndex(targets, a => a.Actor == (_targetCandidate ?? targeting.Target));
             Send(new SelectTarget(targets[(selected + 1) % targets.Length].Actor));
@@ -165,9 +179,11 @@ public sealed partial class BattleSessionView : Control
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
-        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.PhysicalAttack)) _targetCandidate = null;
+        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
-            _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay) _spellCandidate = null;
+            _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay or SessionAction.Item) _spellCandidate = null;
+        if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
+            (_result.Failure is null && _result.Snapshot.Selection?.Action != SessionAction.Item)) _itemCandidate = null;
         if (_result.Snapshot.Mode == SessionMode.Exploration)
         {
             LeaveBattle?.Invoke(_result);
@@ -187,6 +203,11 @@ public sealed partial class BattleSessionView : Control
             _session.Current.Battle.GetActor(selection.Actor).Spells.Select(spell =>
                 $"{spell.Value.ToUpperInvariant()} {spell.Level}" + (spell == selection.Spell ? " · selected" : "") +
                 (spell == _spellCandidate && _result!.Failure is not null ? " · unavailable" : "")));
+        var inventory = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor).SourceLoadout?.Items;
+        _items.Text = inventory is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
+            inventory.Select((word, slot) => $"{slot + 1}: " + ((word & 127) == 127 ? "Empty" :
+                _session.Current.Battle.Definition.HealingItems.TryGetValue((byte)(word & 127), out var item) ? item.Name : $"Item {word & 127} · unsupported") +
+                (slot == selection!.ItemSlot ? " · selected" : "") + (slot == _itemCandidate && _result!.Failure is not null ? " · unavailable" : "")));
         _map.Present(projection);
     }
 
@@ -220,6 +241,8 @@ public sealed partial class BattleSessionView : Control
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             terrain = current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()),
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
+            itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
+            inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells.Text,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
