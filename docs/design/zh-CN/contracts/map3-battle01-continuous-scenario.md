@@ -19,7 +19,7 @@
 
 - `PASS`：双方值存在，命名边界上的断言成立。
 - `FAIL`：已观测不匹配、禁止的转换、runtime error、必需动作不受支持、在已有可观测执行中缺少必需 host completion，或有归属的 timeout。
-- `Unavailable`：必需私有输入/溯源、原版 expected 字段或 actual 观测能力缺失。列明哪一侧/字段；不得填零、空列表或 remake 输出。原版值仍**Unknown（未知）**时定义为 OPEN，执行为 `Unavailable`，不能 skipped/PASS。已观测 FAIL 与 unavailable 断言同时保留。
+- `Unavailable`：必需私有输入/溯源、原版 expected 字段或 actual 观测能力缺失。列明哪一侧/字段；不得填零、空列表或 remake 输出。原版值仍**Unknown**（**未知**）时定义为 OPEN，执行为 `Unavailable`，不能 skipped/PASS。已观测 FAIL 与 unavailable 断言同时保留。
 
 十层全部必需；整体 PASS 要求全部必需断言和 accessibility variants 通过。证据就绪、定义审阅、实际 H4 执行分别报告。准入后重启 session、注入 story state、重设 seed、直接进入战斗或跳过战后程序均违反连续性。全程保持同一 session identity 与单调观测，保留拒绝/error 记录。不要求 frame/pixel/waveform/chip/hardware 相等，但影响玩法的 timing、因果顺序和输入阻塞仍在范围内。
 
@@ -51,7 +51,7 @@
 | 4 — natural encounter | 选定 CheckBattle/load/start/first-control records；R2c/R2d 仅供字段结构：battle ID、before/start programs、F88/F451、region flags 90–105、party/combatants、position/stats/status/equipment、activation/spawn、turn scores/order/cursor、first actor、readiness guards | 自然路线建立 Battle01，程序完成后才交给手动控制；比较 actor 2 与选定精确初始值。无阻塞 script/modal/transfer/action/target/scroll。原版 window count 2/palette mode 5 是允许的非阻塞呈现，不要求 host 字节同值。 |
 | 5 — battle | 选定 action/checkpoint/scene records 与 R3a–R3d/局部规则：round/order/actor/control、movement origin/path/destination、action/resource/slot/target、AI choice/memory、RNG before/range/value/after、follow-up kind、逐 target HP/MP/status/death、item removal、EXP/level/stats/spells/gold/drop、after-turn/outcome | 逐项匹配 reached 决策与 consumed effect 顺序，包括资源消耗和 RNG 结果。比较 WriteBattlesceneScript 前 HP 与 EndBattlescene 消费后 HP，不能使用脚本计算临时 HP。有证据的每次 RNG draw/effect 必须配对；draw mapping 缺失即使末端 HP 相同也 OPEN。round 14/actor history 不能成为 gameplay legality。 |
 | 6 — victory/return | 选定末段与 R4a：winning condition、eligible-party healing、reached after-program operations/effects、joins、F401/F501、controller result、transfer/setup | 自然胜利和全部 reached entry/return 成对；shared tail 在 enclosing return 前，继而 flags clear/set、D4=1 等效结果与 exploration handoff。源码 `0x477E8` 的 `ms_Void` 是 Map57 精确 fallback。单个 return 不替代战后消费。 |
-| 7 — endpoint | 下述精确有界值、pending consumers/readiness、RA-12 ordinary-input 证据 | 比较全部 scenario state，不能有 pending battle/script/modal/transfer；在两个 host update 边界观测 settled player/camera，不造原版帧相等要求。随后接受独立有证据的 nonneutral logical input 并比较效果。当前原版效果**Unknown（未知） / OPEN**，neutral readiness 不能使完整 5B PASS。 |
+| 7 — endpoint | 下述精确有界值、pending consumers/readiness、RA-12 ordinary-input 证据 | 比较全部 scenario state，不能有 pending battle/script/modal/transfer；在两个 host update 边界观测 settled player/camera，不造原版帧相等要求。随后接受独立有证据的 nonneutral logical input 并比较效果。当前原版效果**Unknown / OPEN**（**未知**），neutral readiness 不能使完整 5B PASS。 |
 | 8 — save/7C | 6A restart；每个 reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity/binding 的私有清单与 ROM/source/extraction 溯源 | 无用户 save/load/suspend/checkpoint surface；restart 重建 layer 1。每个 consumed original scene resource 绑定已准入原版私有内容。缺私有输入为 Unavailable；必需原版场景内容的已观测 authored substitute 为 7C FAIL。MUSIC_JOIN/MUSIC_SAD_JOIN chord loops 和 host mute 不满足原版音频。公开发行仍在范围外。 |
 | 9 — 8D presentation | reached program/operation 与 scene/dialogue/animation/audio resource identities、dispatch/consumer/ack boundaries、blocking/resulting state，来自 accepted source 与 bounded observation | 匹配语义 identity/因果顺序；按下节观测实际 host use 与 completion/ack。request/mailbox pair、程序 return 或 counter 单独不能使 delivery PASS。缺原版消费证据 OPEN；缺 host 观测 Unavailable。不使用截图。 |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A 与下述清单 | 每个已接受 deviation 及其 expected behavior 独立命名输出，即使 PASS。不允许隐含排除、缺输入豁免或新增未接受 deviation。 |
@@ -61,7 +61,7 @@ Layer 8 区分原版场景内容与现代界面资源。按既有[呈现所有�
 <a id="exact-observed-endpoint"></a>
 ## 精确已观测端点
 
-**Confirmed（已确认）**，仅限已接受原版末段：map **57**、player tile **(5,12)**、raw **(1920,4608)**、facing **3/DOWN**、battle sentinel **255**、F401=false、F501=true；party/joined/active roster **[0,1,2]**，gold **420**。三名 ally 的 status-effect word 均为零。
+**Confirmed**（**已确认**），仅限已接受原版末段：map **57**、player tile **(5,12)**、raw **(1920,4608)**、facing **3/DOWN**、battle sentinel **255**、F401=false、F501=true；party/joined/active roster **[0,1,2]**，gold **420**。三名 ally 的 status-effect word 均为零。
 
 | Actor | Level | HP current/max | MP current/max | Raw item slots | Raw spell slots |
 | --- | ---: | --- | --- | --- | --- |
@@ -71,7 +71,7 @@ Layer 8 区分原版场景内容与现代界面资源。按既有[呈现所有�
 
 item identity 按 `0x7F` mask 解码并保留 equipped state；127 是 empty。用既有 source decoder 保留 spell identity/rank 和 empty 63，不以名称/字符串比较。没有剩余 herbs。其他 stats/flags/records 从已接受 private terminal 比较，不从摘要补齐。player field entity position 不等于 ally battle-record position。RNG bytes `[188,203,0,0]`、copy 188 和 raw time `(frame=170, seconds=674, secondsFrames=40)` 是溯源/readback 值；需要合理的语义 RNG mapping，不要求 raw host-clock 相等。
 
-movement/camera settled，map-event word/typewriting/pending returns/active consumers 为零，无 map program/battle return/transfer/modal。两帧都有原版 input poll，末次 player poll `0x4FF8` 读到 0。generic window-state byte 1 不是阻塞 dialogue。**Unknown（未知）**：下一次 nonneutral input 的接受及状态效果（RA-12）；remake movement 不能提供原版 expected。
+movement/camera settled，map-event word/typewriting/pending returns/active consumers 为零，无 map program/battle return/transfer/modal。两帧都有原版 input poll，末次 player poll `0x4FF8` 读到 0。generic window-state byte 1 不是阻塞 dialogue。**Unknown**（**未知**）：下一次 nonneutral input 的接受及状态效果（RA-12）；remake movement 不能提供原版 expected。
 
 <a id="mapping-to-existing-actual-observations"></a>
 ## 既有 actual 观测映射
@@ -115,7 +115,7 @@ uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRo
 
 生成 JSON 为私有输出，不是公开 fixture/schema。每个绑定含 prepared segment、JSONL 文件与一基行号、kind/order/frame 及最近 request ordinal；order 仅定位原版记录，不要求现代时序相等。`logicalInputs` 将 movement poll、prompt choice、menu return、committed player decision 按顺序关联。`requests` 区分 **2,798 controller schedules** 与 **18 acquisition saves**；后者不是 6A 用户存档。neutral schedule 只保留 timing/RNG 来源，不能猜成 STAY/Confirm。request result state 是整次请求结束的实际观测，不是每次先前 movement poll 的独立效果；逐 movement arrival 与完整 field logical-input normalization 仍可能 OPEN。
 
-**Confirmed（已确认）**，限所选原版链：
+**Confirmed**（**已确认**），限所选原版链：
 
 | 绑定 | 来源与语义边界 | 覆盖及限制 |
 | --- | --- | --- |
@@ -138,6 +138,6 @@ uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRo
 <a id="remaining-acceptance-work"></a>
 ## 剩余验收工作
 
-**Unknown（未知） / OPEN 原版字段**：R1 未序列化的完整 flags 与基础属性/prowess/EXP、完整 field logical-input effect、AI 内部 memory/thinking draw、逐 draw-to-effect 映射与 timing normalization、cancel/reselect、unshimmed required dialogue、其他不完整 8D consumer boundary，以及 RA-12 nonneutral effect。离线绑定区分已解码、保留但未解码、静态规则、原版缺失与 remake 观测缺失，不授权新 native run。已接受 [PR #519 source preparation](../../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515) 仅提供 collector 能力；后续 #515 结果须 main 独立接受后消费。
+**Unknown / OPEN 原版字段**（**未知**）：R1 未序列化的完整 flags 与基础属性/prowess/EXP、完整 field logical-input effect、AI 内部 memory/thinking draw、逐 draw-to-effect 映射与 timing normalization、cancel/reselect、unshimmed required dialogue、其他不完整 8D consumer boundary，以及 RA-12 nonneutral effect。离线绑定区分已解码、保留但未解码、静态规则、原版缺失与 remake 观测缺失，不授权新 native run。已接受 [PR #519 source preparation](../../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515) 仅提供 collector 能力；后续 #515 结果须 main 独立接受后消费。
 
 **OPEN 内容/实现**：7C 音频与完整 reached asset provenance、snapshot/cue correlation、actual battle-scene consumers、continuous comparator 及全部适用 host/9A 执行。Medical Herb 和 carried inventory 观测已由 PR #521（`78c201c3`）接受：普通 `SelectItem`、live inventory、`ReadObservationJson` 的 `inventories`/`itemSlot` 及使用后消耗可供 actual 映射；它不是此连续比较的 PASS。音频（#517）与 battle scenes（#523）仍是独立 OPEN 实现。不得用 remake 限制删除原版 reached action。已接受比较定义不代表完整定义或里程碑就绪。[就绪台账](../synthesis/map3-battle01-readiness.md)记录闭合，main-gate 独立验收。离线投影不执行 H4，不启动 native acquisition。
