@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "id": "private-local-map3-r1-party-v1",
-  "evidenceOwner": "docs/research/map3-admitted-start.md; tests/fixtures/h3/map3-admitted-start-v1.json",
-  "bridgeBoundary": "Named R1 controlled initialization seam. The first three source-initial allies supply unentered encounter definitions/vitals; live joined/active flags belong to the exploration start. Their resources, equipment, spells and the 32-bit main RNG image are from R1. EXP/kills/defeats and the independent thinking image remain explicitly controlled padding. This is not natural title/menu reach or a battle-entry claim.",
+  "evidenceOwner": "Pinned SF2DISASM c834c652: disasm/code/common/stats/newgame.asm, disasm/data/stats/allies/allystartdefs.asm, disasm/sf2enums.asm; docs/design/contracts/map3-battle01-continuous-scenario.md selected R1; docs/research/map3-admitted-start.md and tests/fixtures/h3/map3-admitted-start-v1.json for separate controlled projection",
+  "bridgeBoundary": "Connected selected R1 start. The first three source-initial allies supply unentered encounter definitions/vitals and complete item words from pinned NewGame start definitions; live joined/active flags belong to the exploration start. Starting gold 60 comes from pinned GAMESTART_GOLD/NewGame and the selected continuous original R1 readback. The separate controlled Map 3 admission fixture records gold 0 and only four consecutive item-storage bytes, so it does not establish these full slots or this selected-chain gold. The 32-bit main RNG image is from R1. EXP/kills/defeats and the independent thinking image remain explicitly controlled padding. This is not natural title/menu reach or a battle-entry claim.",
   "profile": "private-local-controlled-start",
   "battle": 1,
   "policy": {
@@ -16,7 +16,7 @@
   },
   "mainSeed": 2568421376,
   "thinkingSeed": 305397760,
-  "gold": 0,
+  "gold": 60,
   "allies": [
     {
       "id": 0,
@@ -32,10 +32,10 @@
       "move": 6,
       "status": 0,
       "items": [
-        0,
         199,
         0,
-        0
+        127,
+        127
       ],
       "spells": [
         10,
@@ -61,10 +61,10 @@
       "move": 5,
       "status": 0,
       "items": [
-        0,
         213,
         0,
-        0
+        0,
+        127
       ],
       "spells": [
         0,
@@ -90,10 +90,10 @@
       "move": 7,
       "status": 0,
       "items": [
-        0,
         184,
         0,
-        0
+        127,
+        127
       ],
       "spells": [
         63,
