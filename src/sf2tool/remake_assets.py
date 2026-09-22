@@ -630,7 +630,7 @@ def _inspect_manifest(
     if not isinstance(assets, list):
         raise _reject("InvalidManifest", "assets", "The asset collection is invalid.")
     asset_ids: set[str] = set()
-    audio_commands: set[int] = set()
+    audio_commands: set[tuple[int, int]] = set()
     audio_cues: set[str] = set()
     runtime_paths: set[str] = set()
     resolved_payload_identities: set[str] = set()
@@ -647,11 +647,14 @@ def _inspect_manifest(
             )
         asset_ids.add(asset_id)
         if asset.get("kind") == "audio":
-            if asset["command"] in audio_commands or asset["cue"] in audio_cues:
+            identity = (asset["command"], asset["timerB"] if asset["command"] >= 65 else 0)
+            if identity in audio_commands or asset["cue"] in audio_cues:
                 raise _reject(
-                    "DuplicateIdentity", "audio", "Audio commands and cues must be unique."
+                    "DuplicateIdentity",
+                    "audio",
+                    "Audio command/timer contexts and cues must be unique.",
                 )
-            audio_commands.add(asset["command"])
+            audio_commands.add(identity)
             audio_cues.add(asset["cue"])
         buckets = [asset["runtime"]] if asset.get("kind") == "audio" else asset.get("buckets")
         if not isinstance(buckets, list):

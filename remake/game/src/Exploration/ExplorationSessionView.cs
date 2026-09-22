@@ -36,7 +36,7 @@ public sealed partial class ExplorationSessionView : Control
     private Label _dialogue = null!;
     private Label _help = null!;
     private GameInput _input = null!;
-    private WaitToken? _textToken;
+    private TextWindow? _textWindow;
     private double _revealed;
     private double _tickTime;
     private ExplorationState? _lastWorld;
@@ -220,13 +220,14 @@ public sealed partial class ExplorationSessionView : Control
         };
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
-        var token = (current.Story.Wait as DialogueWait)?.Token;
-        if (_dialogue.Text != previousText || token is not null && token != _textToken)
+        // A sound wait can become an input wait on the same already-visible text window.
+        // Restart reveal only for changed text or a newly opened window, not that wait handoff.
+        if (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow))
         {
             _revealed = 0;
             _dialogue.VisibleCharacters = _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : 0;
         }
-        _textToken = token;
+        _textWindow = current.Story.TextWindow;
         QueueRedraw();
     }
 
@@ -299,6 +300,7 @@ public sealed partial class ExplorationSessionView : Control
                 moving = entity.Motion.IsMoving, busy = entity.Busy, entity.Visible, actionCursor = entity.ActionCursor, speedX = entity.Motion.XSpeed, flagsA = entity.Motion.FlagsA, flagsB = entity.Motion.FlagsB,
             }),
             observations = _result?.Observations,
+            audio = _audio?.ObservePlayback(),
         });
     }
 }

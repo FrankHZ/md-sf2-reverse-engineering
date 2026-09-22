@@ -14,6 +14,11 @@ internal sealed class SessionAudio : IDisposable
     private readonly AudioStreamPlayer _music;
     private readonly AudioStreamPlayer _sound;
     private readonly List<string> _history = [];
+    private readonly List<AudioPlaybackReceipt> _receipts = [];
+    private string? _soundCue;
+    private long _sequence;
+    private long _revision;
+    private long? _waitToken;
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
@@ -21,8 +26,8 @@ internal sealed class SessionAudio : IDisposable
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
         _sound = new AudioStreamPlayer { Name = "SessionSound" };
         owner.AddChild(_music); owner.AddChild(_sound);
-        _music.Finished += () => { MusicFinished = true; Completions++; };
-        _sound.Finished += () => Completions++;
+        _music.Finished += () => { MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
+        _sound.Finished += () => { Completions++; Record("finished", _sound, _soundCue!); };
         if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
     }
 
@@ -34,9 +39,38 @@ internal sealed class SessionAudio : IDisposable
     internal bool MusicFinished { get; private set; }
     internal bool MusicPlaying => _music.Playing;
     internal double MusicPosition => _music.GetPlaybackPosition();
+    internal int? TimerB { get; private set; }
+
+    internal object ObservePlayback() => new
+    {
+        error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
+        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished,
+        musicPosition = MusicPosition, timerB = TimerB,
+        soundCue = _soundCue, soundPlaying = _sound.Playing, soundPosition = _sound.GetPlaybackPosition(),
+        receipts = _receipts.ToArray(),
+    };
+
+    private void Record(string operation, AudioStreamPlayer player, string cue)
+    {
+        var asset = _assets[cue];
+        _receipts.Add(new(++_sequence, operation, cue, asset.Command, asset.TimerB, asset.PcmSha256,
+            asset.SampleRate, asset.Channels, asset.SampleFrames, asset.LoopBegin, asset.LoopEnd,
+            player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken));
+        // Existing inspectors poll live state. Sequence makes a missed bounded window explicit.
+        if (_receipts.Count > 64) _receipts.RemoveAt(0);
+    }
+
+    private void Stop(AudioStreamPlayer player, string? cue)
+    {
+        if (!player.Playing) return;
+        player.Stop(); Stops++;
+        if (cue is not null) Record("stopped", player, cue);
+    }
 
     internal void Observe(SessionResult result)
     {
+        _revision = result.Snapshot.Revision;
+        _waitToken = result.Snapshot.Story.Wait?.Token.Value;
         if (Error is not null || result.Failure is not null || _assets.Count == 0) return;
         try
         {
@@ -64,7 +98,8 @@ internal sealed class SessionAudio : IDisposable
     internal void Play(int command)
     {
         if (command == 0) return;
-        string? cue = _assets.FirstOrDefault(pair => pair.Value.Command == command).Key;
+        string? cue = _assets.FirstOrDefault(pair => pair.Value.Command == command &&
+            (command < 65 || pair.Value.TimerB == TimerB)).Key;
         Play(cue ?? throw new InvalidOperationException("audio-command-unavailable"));
     }
 
@@ -75,7 +110,8 @@ internal sealed class SessionAudio : IDisposable
         // The source suppresses identical music requests even when the finite track already ended.
         if (music && remember && MusicCue == resource) return;
         var player = music ? _music : _sound;
-        if (player.Playing) { player.Stop(); Stops++; }
+        if (!music && audio.TimerB != TimerB) throw new InvalidOperationException("sfx-timer-context-unavailable");
+        Stop(player, music ? MusicCue : _soundCue);
         var previous = player.Stream; player.Stream = null; previous?.Dispose();
         player.Stream = new AudioStreamWav
         {
@@ -86,17 +122,19 @@ internal sealed class SessionAudio : IDisposable
         };
         if (music)
         {
-            MusicCue = resource; MusicFinished = false;
+            MusicCue = resource; MusicFinished = false; TimerB = audio.TimerB;
             if (remember)
             {
                 _history.Insert(0, resource);
                 if (_history.Count > 10) _history.RemoveAt(10);
             }
         }
+        else _soundCue = resource;
         player.VolumeDb = 0;
         player.Play();
         if (!player.Playing) throw new InvalidOperationException("audio-stream-did-not-start");
         Starts++;
+        Record("started", player, resource);
     }
 
     internal bool FiniteMusicFinished()
@@ -117,7 +155,7 @@ internal sealed class SessionAudio : IDisposable
     internal void FadeOut(double progress)
     {
         _music.VolumeDb = (float)(-60 * Math.Clamp(progress, 0, 1));
-        if (progress >= 1 && _music.Playing) { _music.Stop(); Stops++; }
+        if (progress >= 1) Stop(_music, MusicCue);
     }
 
     public void Dispose()
@@ -129,3 +167,7 @@ internal sealed class SessionAudio : IDisposable
         }
     }
 }
+
+internal sealed record AudioPlaybackReceipt(long Sequence, string Operation, string Cue, int Command,
+    int TimerB, string PcmSha256, int SampleRate, int Channels, int SampleFrames, int? LoopBegin,
+    int? LoopEnd, bool Playing, double PlaybackPosition, ulong Microseconds, long Revision, long? WaitToken);

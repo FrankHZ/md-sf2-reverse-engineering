@@ -33,9 +33,11 @@ public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster R
 public sealed class ExplorationAudio
 {
     private readonly byte[] _pcm;
-    internal ExplorationAudio(int command, int sampleRate, int channels, byte[] pcm, int? loopBegin, int? loopEnd)
-    { Command = command; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; LoopBegin = loopBegin; LoopEnd = loopEnd; }
+    internal ExplorationAudio(int command, int timerB, int sampleRate, int channels, byte[] pcm, string pcmSha256, int? loopBegin, int? loopEnd)
+    { Command = command; TimerB = timerB; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; PcmSha256 = pcmSha256; LoopBegin = loopBegin; LoopEnd = loopEnd; }
     public int Command { get; }
+    public int TimerB { get; }
+    public string PcmSha256 { get; }
     public int SampleRate { get; }
     public int Channels { get; }
     public int SampleFrames => _pcm.Length / (Channels * 2);

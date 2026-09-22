@@ -21,6 +21,7 @@ def prepare_audio(
     output: Path,
     *,
     command: int,
+    timer_b: int,
     cue: str,
     start_sample: int,
     end_sample: int,
@@ -34,7 +35,12 @@ def prepare_audio(
     source_digest = hashlib.sha256(source_bytes).hexdigest().upper()
     if source_digest != expected_sha256.upper():
         raise ValueError("reviewed audio capture identity mismatch")
-    if not 1 <= command <= 120 or not cue or not cue.replace("_", "").isalnum():
+    if (
+        not 1 <= command <= 120
+        or not 0 <= timer_b <= 255
+        or not cue
+        or not cue.replace("_", "").isalnum()
+    ):
         raise ValueError("invalid audio command or cue identity")
     with wave.open(str(capture), "rb") as source:
         channels, rate, width = source.getnchannels(), source.getframerate(), source.getsampwidth()
@@ -59,7 +65,8 @@ def prepare_audio(
     ):
         raise ValueError("reviewed audio loop interval is invalid")
     output.mkdir(parents=True, exist_ok=False)
-    runtime = output / f"command-{command:02x}.wav"
+    identity = f"command-{command:02x}-timer-{timer_b:02x}"
+    runtime = output / f"{identity}.wav"
     with wave.open(str(runtime), "wb") as target:
         target.setnchannels(channels)
         target.setsampwidth(width)
@@ -67,11 +74,12 @@ def prepare_audio(
         target.writeframes(pcm)
     payload = runtime.read_bytes()
     asset = {
-        "assetId": f"audio.command-{command:02x}",
+        "assetId": f"audio.{identity}",
         "kind": "audio",
         "cue": cue,
         "command": command,
-        "source": {"assetId": f"source.audio.command-{command:02x}", "sha256": source_digest},
+        "timerB": timer_b,
+        "source": {"assetId": f"source.audio.{identity}", "sha256": source_digest},
         "derivation": {
             "policyId": "private-reviewed-pcm16-sample-interval-v1",
             "generatorId": "sf2tool.remake_audio",
@@ -111,6 +119,7 @@ def main() -> None:
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--command", type=int, required=True)
+    parser.add_argument("--timer-b", type=int, required=True)
     parser.add_argument("--cue", required=True)
     parser.add_argument(
         "--start-sample", type=int, required=True, help="First interleaved sample frame, inclusive"
@@ -126,6 +135,7 @@ def main() -> None:
         args.expected_sha256,
         args.output,
         command=args.command,
+        timer_b=args.timer_b,
         cue=args.cue,
         start_sample=args.start_sample,
         end_sample=args.end_sample,

@@ -45,6 +45,7 @@ public sealed partial class BattleSessionView : Control
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
     internal Action<SessionResult>? LeaveBattle { get; set; }
+    internal Action<SessionResult>? ObserveResult { get; set; }
 
     public override void _Ready()
     {
@@ -128,6 +129,8 @@ public sealed partial class BattleSessionView : Control
         _session = session;
         _result = result;
         PublishResult("attach");
+        ObserveResult?.Invoke(result);
+        if (_startupFailure is not null) return;
         if (first) _map.Build(result.Snapshot.Battle.Definition);
         Show();
         Present();
@@ -142,12 +145,12 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
-        if (_session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
+        if (_startupFailure is null && _session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
     }
 
     internal void HandleAction(GameAction action)
     {
-        if (!IsVisibleInTree() || _session?.Current.HasBattleControl != true) return;
+        if (_startupFailure is not null || !IsVisibleInTree() || _session?.Current.HasBattleControl != true) return;
         SessionCommand? command = action switch
         {
             GameAction.Up => new Move(ExplorationDirection.North),
@@ -196,6 +199,8 @@ public sealed partial class BattleSessionView : Control
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
         PublishResult("submit");
+        ObserveResult?.Invoke(_result);
+        if (_startupFailure is not null) return;
         if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
             _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay or SessionAction.Item) _spellCandidate = null;

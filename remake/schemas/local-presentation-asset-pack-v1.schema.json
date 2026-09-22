@@ -229,6 +229,7 @@
         "kind",
         "cue",
         "command",
+        "timerB",
         "source",
         "derivation",
         "runtime"
@@ -252,6 +253,11 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 120
+        },
+        "timerB": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
         },
         "source": {
           "$ref": "#/$defs/source"

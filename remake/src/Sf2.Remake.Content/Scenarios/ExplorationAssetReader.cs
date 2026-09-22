@@ -59,26 +59,28 @@ internal static class ExplorationAssetReader
         }
         Require(sprites.Values.All(sprite => sprite.Portrait is null || portraits.ContainsKey(sprite.Portrait.Value)), "missing-portrait", "presentation.sprites");
         var audio = new Dictionary<string, ExplorationAudio>(StringComparer.Ordinal);
-        var commands = new HashSet<int>();
+        var commands = new HashSet<(int Command, int Timer)>();
         if (row.TryGetProperty("audio", out _))
             foreach (var sound in Array(row, "audio"))
             {
-                Object(sound, "audio", "cue", "command", "sampleRate", "channels", "sampleFrames", "pcm16", "sha256", "loopBegin", "loopEnd");
+                Object(sound, "audio", "cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", "pcm16", "sha256", "loopBegin", "loopEnd");
                 string cue = Text(sound, "cue");
                 int command = Number(sound, "command", 1, 120);
-                Require(!string.IsNullOrWhiteSpace(cue) && commands.Add(command), "audio-command-identity", "presentation.audio");
+                int timerB = Number(sound, "timerB", 0, 255);
+                Require(!string.IsNullOrWhiteSpace(cue) && commands.Add((command, command < 65 ? 0 : timerB)), "audio-command-identity", "presentation.audio");
                 byte[] pcm;
                 try { pcm = Convert.FromBase64String(Text(sound, "pcm16")); }
                 catch (FormatException) { Require(false, "audio-encoding", "presentation.audio"); throw; }
                 int channels = Number(sound, "channels", 1, 2);
                 int frames = Number(sound, "sampleFrames", 1, 32 * 1024 * 1024);
+                string digest = Convert.ToHexString(SHA256.HashData(pcm));
                 Require(pcm.Length == frames * channels * 2 &&
-                    Convert.ToHexString(SHA256.HashData(pcm)).Equals(Text(sound, "sha256"), StringComparison.OrdinalIgnoreCase),
+                    digest.Equals(Text(sound, "sha256"), StringComparison.OrdinalIgnoreCase),
                     "audio-identity", "presentation.audio");
                 int? begin = sound.GetProperty("loopBegin").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopBegin", 0, frames - 1);
                 int? end = sound.GetProperty("loopEnd").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopEnd", 1, frames);
                 Require(begin.HasValue == end.HasValue && (begin is null || begin < end), "audio-loop", "presentation.audio");
-                Require(audio.TryAdd(cue, new(command, Number(sound, "sampleRate", 8000, 192000), channels, pcm, begin, end)),
+                Require(audio.TryAdd(cue, new(command, timerB, Number(sound, "sampleRate", 8000, 192000), channels, pcm, digest, begin, end)),
                     "duplicate-audio-cue", "presentation.audio");
             }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),

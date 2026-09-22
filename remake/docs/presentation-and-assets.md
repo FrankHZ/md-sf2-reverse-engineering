@@ -603,10 +603,50 @@ runtime forms are versioned in the local asset repository. The product uses the 
 material; it does not generate replacement tracks or substitute sound effects. Application emits
 semantic audio cues, and the Godot audio adapter resolves those cues to admitted local asset IDs.
 
-Exact container/codec normalization, loop points, streaming versus resident policy, channel layout,
-gain normalization, transition timing, and audio cache receipts remain **Unknown** until a separate
-audio contract closes them. This document authorizes neither guessed loop metadata nor a new audio
-implementation slice.
+The private audio implementation uses the existing version-1 pack with `kind: audio` entries.
+Each entry retains its original command, semantic cue, source capture identity, derivation identity,
+and one PCM16 WAV runtime payload. `timerB` identifies the original scheduling context. Music commands
+are unique; finite SFX may have multiple reviewed `(command, timerB)` variants. Cue IDs remain unique.
+Preflight verifies the pinned local Git payload, SHA-256, rate, channel count, sample-frame count and
+explicit loop range. Missing content is an error; the former synthesized JOIN chords are removed.
+
+`python -m sf2tool.remake_audio --help` describes the offline candidate materializer. It accepts a
+reviewed capture SHA-256, command/timer context, explicit inclusive/exclusive sample-frame interval,
+and optional loop boundaries. It creates a new candidate under the worktree's ignored `local/`
+directory. It neither launches an emulator nor promotes assets. Original captures, native observer
+configuration, failed attempts and runtime WAVs remain private. The source capture and its observed
+boundaries must be reviewed before the existing local asset admission transaction.
+
+The compiler embeds the admitted PCM and metadata in the private world. Content checks its identity
+again. The Godot session owner creates `AudioStreamWav` resources at their admitted rate and channel
+layout, with no gain normalization or pitch change. Streams are resident; resource ownership survives
+exploration/battle view replacement. Looping is enabled only when both admitted sample boundaries
+are present. Natural `Finished` and deliberate replacement/stop remain distinct observations.
+`GameRoot.ReadAudioObservationJson()` exposes the live players and the last 64 ordered start/stop/
+finish receipts, including PCM identity, command/timer, loop range, session revision and wait token.
+Inspectors must collect these during execution; sequence gaps are not complete playback evidence.
+
+**Confirmed source structure:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`sounddriver.asm:Load_Music` writes the music header's Timer B value; `Load_SFX` initializes channel
+records without replacing it, and `UpdateSound` advances them under that timer. Note-frequency
+register writes use separate frequency tables. SFX variants therefore retain the reached timer
+context; `pitch_scale` is not a tempo substitute because it would transpose the sampled sound.
+The existing [sound inventory](../../docs/research/sound-data-inventory.md) owns the ROM/source
+parity, command identities, type-specific channels and stream termination facts.
+
+**Implemented, pending private playback acceptance:** JOIN opens its text window, waits for the
+actual finite stream to finish, reissues previous music, and then accepts acknowledgement. The
+source `csc08_joinForce`, `FadeOut_WaitForP1Input`, `PlayMusicAfterCurrentOne` and
+`ApplyFadingEffectAndZ80BusUpdate` support this order. The source previous operation reissues the
+prior command; it does not restore a PCM offset. Map-area field/battle music selection uses imported
+area music and `PlayMapMusic` substitutions. Application retains wait tokens and player input
+ownership; Godot reports service completion.
+
+**Unknown / incomplete:** persistent PCM loop boundaries, complete reached SFX/action-music
+consumption, fade timing and mixing/interruption policy still require bounded evidence and host
+observation. No original audio pack has yet completed admission. A controlled JOIN export and its
+offline crop candidate establish a possible materialization route only. Neither successful resource
+requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 
 ## Public Synthetic and Test Fixtures
 

@@ -922,8 +922,12 @@ def prepare_visuals(
             {
                 "map": map["id"],
                 "music": [
-                    {"field": area["defaultMusic"],
-                     "battle": music_replacements.get(area["defaultMusic"], area["defaultMusic"])}
+                    {
+                        "field": area["defaultMusic"],
+                        "battle": music_replacements.get(
+                            area["defaultMusic"], area["defaultMusic"]
+                        ),
+                    }
                     for area in resources["areaTables"][refs["areaTable"]]["records"]
                 ],
                 "atlas": raster(bucket["width"], bucket["height"], payload, "png"),
@@ -1074,6 +1078,7 @@ def prepare_visuals(
             {
                 "cue": asset["cue"],
                 "command": asset["command"],
+                "timerB": asset["timerB"],
                 "sampleRate": runtime["sampleRate"],
                 "channels": runtime["channels"],
                 "sampleFrames": runtime["sampleFrames"],

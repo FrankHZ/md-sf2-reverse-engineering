@@ -19,6 +19,8 @@ public sealed partial class GameRoot : Node
 
     public override void _ExitTree() => _audio?.Dispose();
 
+    public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
+
     public override void _Input(InputEvent input)
     {
         if (_input?.Resolve(input) is not { } action) return;
@@ -93,6 +95,11 @@ public sealed partial class GameRoot : Node
             {
                 _audio = new SessionAudio(this, definition);
                 if (_audio.Error is { } error) { Fail(error, "Selected private audio content is unavailable."); return; }
+                view.ObserveResult = result =>
+                {
+                    _audio.Observe(result);
+                    if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
+                };
             }
             if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
