@@ -173,12 +173,21 @@ and the direct H3/preflight results above are complete. The attempted full profi
 was interrupted during Python verification when the volume filled; its partial
 failure stream has no completed node summary and it never reached H1/H2/H3. It was
 not blindly restarted. Focused checks exposed stale preparation mocks and a
-hardcoded ROM path, corrected in the existing affected tests. The remaining
-`test_observer_config_has_no_accepted_output_and_closed_roles_and_phases` assertion
-also fails on accepted main's unchanged Lua/schema; production role validation
-and the actual messenger H3 command pass. That preserved failure is tracked by
-[#512](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/512), not hidden
-by changing a schema/golden. The planner's H1/H2 fanout comes from CLI help text;
+hardcoded ROM path, corrected in the existing affected tests. The stale callback-owner
+source-shape helper and its two coupled mutation cases
+are retired under the current verification-tool test policy. It incorrectly put
+optional `candidate:*` registrations in the ordinary failure-role enum. The retained
+configuration test checks output exclusion and separate extension ownership;
+production `map3_messenger_acceptance._assert_lua_roles()` checks required roles
+and shared-PC dispatch, while `_failure_diagnostic()` validates emitted ordinary
+failures against the unchanged schema. These checks do not claim the retired
+helper's exact source-text closure for extension roles/phases. Run the affected
+file with `uv run --locked pytest tests/python/test_map3_messenger_acceptance.py -q`
+and the production role check directly after same-process private-input setup.
+[#512](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/512) retains the
+original failure and node disposition; the actual messenger H3 command already
+passed with unchanged Lua/schema. No schema/golden expansion is needed.
+The planner's H1/H2 fanout comes from CLI help text;
 their execution semantics, source and inputs are unchanged. This is not a claim
 that the interrupted full profile passed.
 
