@@ -134,15 +134,17 @@ Exploration, dialogue/choice, battle and return use the same semantic actions. D
 | `cancel` | Escape, X | East |
 | `attack` | F | West |
 | `spell` | H | North |
+| `item` | I | Back |
 | `target` | Tab | RightShoulder |
 | `stay` | Space | LeftShoulder |
 
 Confirm talks, acknowledges dialogue, answers Yes, or selects/commits in battle. Cancel answers No
 or cancels battle provisional choices; it does not acknowledge dialogue. Spell cycles learned spells
-and levels with self as the initial target. Target cycles living candidates for the selected action.
+and levels with self as the initial target. Item selects and cycles carried item slots, initially
+targeting self; Target cycles living candidates for the selected action.
 All accepted commands still use Application's existing legality and state. F replaces the former X
 attack binding; former C/Y/N exploration shortcuts are replaced by Confirm/Cancel. View help and
-spell hints read effective bindings, including after a convention swap.
+spell/item hints read effective bindings, including after a convention swap.
 
 Keyboard echo is ignored. A stick deflection crossing magnitude0.5 submits one action; it must return
 below that threshold or change sign to submit another. Unrelated axes and releases cannot repeat a
@@ -179,7 +181,7 @@ Each binding override replaces one complete action and requires all three arrays
 `axes`), at least one key and at least one button or axis. Key identities are case-sensitive Godot
 `Key` enum names (for example `I`, `F1`, `Space`, `Escape`); `None` and standalone modifier keys
 `Shift`/`Ctrl`/`Alt`/`Meta` are rejected, and key chords are not part of version1. Button identities
-are the names in the table plus `Back`, `Start`, `LeftStick` and `RightStick`. Signed axis identities
+are the names in the table plus `Start`, `LeftStick` and `RightStick`. Signed axis identities
 are `LeftX-`, `LeftX+`, `LeftY-`, `LeftY+`, `RightX-`, `RightX+`, `RightY-`, `RightY+`.
 Unknown fields/actions/identities, conflicting bindings, missing device access and invalid values
 produce `ContentError: invalid-input-settings` before a session is published. A missing or unreadable
