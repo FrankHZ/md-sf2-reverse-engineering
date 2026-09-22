@@ -1,6 +1,6 @@
 # Map 3 to Battle 01 Continuous Scenario Contract
 
-- Status: **Accepted comparison definitions**; executable binding and H4 execution are OPEN.
+- Status: **Accepted comparison definitions**; bounded offline reference bindings are available; remaining bindings and H4 execution are OPEN.
 - Accepted evidence base: `58c5a94a4c5349fd221a130a0970222962715528`, including PR #504 at
   `5102804b` (accepted observation source `9c3ea03ac5f5b467ee744f1ac624870da2408443`).
 - Product: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md),
@@ -51,7 +51,7 @@ The [projection limits](../../research/map3-battle01-audit.md#what-the-admitted-
 are binding: public R1 omits status and does not contain four complete two-byte item slots; normalized
 time is not raw time. Obtain the winning lineage's inherited status, complete equipment, RNG/copy
 and relevant NPC phase from accepted private readback. Do not assume reset POISON=0, use R2d's seeded
-actor/order, or impose `0x1234` as the natural seed. Missing readback is OPEN.
+actor/order, or impose `0x1234` as the natural seed. The offline bindings below now expose the selected status, four full item words, NPC records and RNG bytes. Other missing readback remains OPEN.
 
 The selected order is:
 
@@ -139,7 +139,7 @@ claim of complete observer coverage. Reuse them before adding machinery:
 | --- | --- |
 | [SessionContract.cs](../../../remake/src/Sf2.Remake.Application/Runtime/SessionContract.cs) | `CommandEnvelope` SessionId/ExpectedRevision/Actor/Command; `SessionResult` Failure/StopReason/Observations; `SessionSnapshot` Mode/Active/Story/Selection. `SessionObservation` Sequence/Revision/Kind/Actor/Target/Before/After/From/To/RandomRange/RandomValue/Program supplies ordered semantic changes. Match by source meaning; sequence numbers need only be monotonic, not equal original callback counts. Capture every result, not only the latest snapshot. |
 | [ExplorationSessionView.ReadObservationJson](../../../remake/game/src/Exploration/ExplorationSessionView.cs) | `sessionId`, `map`, `party`, `partyLists`, `gold`, `flags`, `mainSeed`, `entities` position/facing/moving/busy, `cursor`, `wait`, `token`, `stop`, `battleMounted`, `textId`, `speaker`, `speakerFlags`, `visibleCharacters`, `totalCharacters`, `observations`, failure fields. Normalize `map-57` to source map 57 using content identity. Story wait/cursor absence plus settled entities and released battle view support readiness; they do not alone prove input delivery or all stats. |
-| [BattleSessionView.ReadObservationJson](../../../remake/game/src/Battles/BattleSessionView.cs) | `round`, `turnOrder`, `queueCursor`, `actor`, `stage`, `target`, `spell`, `previewX/Y`, `actors`, `mainSeed`, `thinkingSeed`, `gold`, `regionFlags`, `aiMemory`, `observations`, failure fields. Use typed snapshot state for values omitted by host projection. Do not fabricate missing complete inventory, per-draw or scene-consumption records. |
+| [BattleSessionView.ReadObservationJson](../../../remake/game/src/Battles/BattleSessionView.cs) | `round`, `turnOrder`, `queueCursor`, `actor`, `stage`, `target`, `spell`, `itemSlot`, `inventories` (actor plus carried item words), `previewX/Y`, `actors`, `mainSeed`, `thinkingSeed`, `gold`, `regionFlags`, `aiMemory`, `observations`, failure fields. Use typed snapshot state for values omitted by host projection. Accepted PR #521 supplies `SelectItem` and live carried inventory/slot observations, including consumption after ordinary healing-item use. Do not fabricate per-draw or scene-consumption records. |
 | [ExplorationPresentation](../../../remake/game/src/Exploration/ExplorationPresentation.cs) and exploration projection | `presentation.activeCue`, `completedCueToken/Kind`, sprite request/ready fields, gesture/fade/mosaic counters, `soundStarts/Fades`, `error`. Pair token/kind with the real `CompletePresentation`, actual resource/node and state transition. Aggregate counters do not identify a cue or prove full playback/asset provenance; missing correlations remain OPEN implementation work. |
 | [Existing outcome probe](../../../remake/game/probes/engine_battle01_outcome_observation.gd), [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation) | Reuse actual input, single-session, wait/token, after-program, return and movement observation methods. Their previous PASS is bounded implementation evidence, not this winning original trace or continuous H4 PASS. Physical driver/hot-plug and complete export remain unverified. |
 
@@ -198,21 +198,93 @@ all 9A variants and their acknowledgement/state equivalence (layers2,3,5,7,9); a
 identified out-of-domain safe/Unsupported behavior (10A/affected layer). Out-of-domain safety cannot
 waive an in-domain required action. Private-only 7C handling is a product boundary, not a deviation.
 
+## Offline reference bindings
+
+Run the maintained [read-only projector](../../../src/sf2tool/remake_h4_reference.py) with the local
+operator's explicit retained `issue496` directory and a fresh output in this worktree:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRoot --output local/issue522/reference.json
+```
+
+`$acceptedEvidenceRoot` names only the accepted prepared-68..86 evidence, never the live #515 chain.
+The projector reads these 19 directories explicitly. It reuses `_read_segment` with an isolated
+copy of its globals whose sole `repo_path("local")` containment lookup selects the evidence's local
+root; the acquisition module and all its writable helpers remain unchanged. Terminal 86 uses
+`require_resumable=False`; no state is loaded, sealed, reconciled or rewritten. Existing file digests,
+prepared configuration/input identities, fixed ROM/upstream/runner/observer identities, parent pair
+links, ordinal/cumulative accounting and successful request/frame delivery are checked. A mismatched
+identity or unsupported mapping fails the command rather than producing a comparison PASS. The
+retained observer/runner identities above own the records, not today's collector implementation.
+
+The generated JSON is private and not a public fixture/schema. Every projection has its prepared
+segment, JSONL filename and one-based line, event kind/order/frame and most recent request ordinal.
+Orders locate original observations; they are not modern scheduling requirements. `logicalInputs`
+orders references into movement polls, prompt choices, menu returns and committed player decisions.
+`requests` retains **2,798 controller schedules** separately from **18 acquisition saves**; none of
+the saves is a player save action under 6A. Neutral schedules remain timing/RNG provenance, not
+invented STAY/Confirm actions. Request result state is the actual end-of-request observation, not an
+inferred effect for each earlier movement poll. Complete per-movement arrival and field logical-input
+normalization remain OPEN where these boundaries do not supply them.
+
+**Confirmed**, for this selected original chain:
+
+| Binding | Source and semantic boundary | Coverage / limit |
+| --- | --- | --- |
+| `admission`, `inherited` | prepared-68 `natural:r1`, `r1:inherited-status-and-live-entities` | Map/position/facing, named flags, party/joined/active lists, gold, serialized combatant fields, full four two-byte item slots and status words; 48 physical entity records plus logical index table, position/destination/facing/layer/action-script/wait fields. R1 seed bytes `[153,23,0,0]`, copy 0, are actual readback. Full flag array, base-stat/prowess/EXP fields not emitted at R1 stay unavailable; later state cannot fill them. |
+| `requests`, `movements`, `choices`, `menus`, `decisions` | successful command/result and actual source consumer records | Two Yes returns; 41 committed player actions: 21 Stay, 13 Attack, 3 CastSpell (HEAL 1), 4 UseItem (Medical Herb). Item slot is zero-based and validated against the actor's live four-word inventory. No menu return or player return carries the cancel sentinel in this lineage; cancel/reselect remains a missing branch. |
+| `encounter`, `turns`, `checkpoints` | selected natural/load/start/activate/region/spawn/generation/dispatch and before/after call records | Actual first actor 2, 103 dispatched turns, 14 generated orders; combatants/status/equipment and serialized AI before/after state. AI memory decoding from full combatant records remains OPEN; thinking-helper draws are not captured by the main/debug RNG callbacks. |
+| `scenes` and decision `effects` | WriteBattlesceneScript before → ApplyActionEffect before → Initialize/Execute scene → EndBattlescene after | 44 scene occurrences; compare before/after HP/MP/status/items/EXP/gold at consumed boundaries. Player-return `targets` is a candidate list; use the post-construction effect list, never treat all candidates as hit. Each reached effect has one target; unsupported multi-target decoding fails explicitly. |
+| `rng` | GenerateRandomNumber entry/return/draw and debug-aware wrapper | 2,935 base advances use D6 range/D7 result; all reproduce the accepted 16-bit update and scaled result. 250 wrapper results use D0 range/result, match their nested base call, and are **not additional draws**. Caller PC and enclosing consumer scope locate evidence; they do not prove an individual draw-to-effect association. Thinking-copy draws and frame/menu mutations outside these observed calls remain OPEN. |
+| `story`, `operationPairs`, `audioPairs` | named script/operation/text/warp/setup records; actual sound consumer/mailbox records | 363 matched reached operation pairs across the chain, including the accepted 67 after-program pairs; 2,552 dispatch/mailbox pairs (106 in final segment). These prove reached source seams, not rendered/audible delivery. |
+| `victory`, `endpoint` | natural-victory, after-tail/enclosing return/flag/loop/transfer records and terminal stop | Exact neutral endpoint above; terminal accounting and item/status/HP/MP fields cross-checked against retained RAM, full terminal flags against all 128 bytes. Field coordinates remain separate from battle combatant coordinates. RA-12 is absent from this evidence set. |
+
+The numeric action mapping is owned by `map3-battle01-action-effect-static-v1` dispatch and the
+STAY consumer in the battle-AI/function owners. Item mask/slot semantics come from the accepted
+herb configuration and item/stat owners; spell index/rank packing follows the existing spell/AI
+owners. The [randomness contract](randomness.md) and existing `rng-v1` / `debug-rng-v1` fixtures own
+the distinct generator register contracts. No expected value comes from remake code.
+
+`coverage` enumerates field groups across all ten layers. A `decoded` reference status only means
+that the named original field has an executable binding; `comparisonResult` remains `Unavailable`
+without actual remake observations. `retained-not-decoded` identifies available source records to
+adapt, `static-supported` identifies an accepted rule, `missing-semantic-binding` identifies an
+unresolved interpretation, and `missing-original-detail` / `missing-original-branch` distinguish
+capture gaps from `missing-remake-observation`. None queues native work automatically.
+
+Existing [dialogue](dialogue-system.md), [text/font](text-and-font-system.md),
+[music wait](music-wait-service.md) and [battle-scene](battle-scene-presentation.md) contracts supply
+static identity, decode, command ordering, resource and wait rules. They can support additional offline
+bindings. They cannot turn shimmed DisplayText returns into natural reveal/ack evidence, a sound
+mailbox into playback, or scene entry/end into a per-command animation/resource-consumption trace.
+Complete original audio assets and actual host consumer observations remain separate requirements;
+hardware/frame/pixel/waveform equality is not introduced.
+
+Verification for this adapter is its direct full-chain command, inspection of real action/scene/RNG
+and terminal mappings, the normal repository check where configured, documentation/translation
+checks and the committed dependency plan. It adds no tests of verification code, CLI registration,
+public payload, schema or planner rule; a conservative planner selection cannot authorize native/full
+execution outside this slice. Preserve failed/incomplete projections in ignored output and report their
+correction in the Issue handoff. A projected reference is never an H4 PASS.
+
 ## Remaining acceptance work
 
-**Unknown / OPEN original fields:** complete selected logical trace/seed/draw-to-effect projection
-where not yet bound to comparison records, missing status/continuation fields, cancel/reselect,
-unshimmed required dialogue and other incomplete 8D consumer boundaries, and RA-12 nonneutral effect.
-This is a field-specific evidence/adaptation requirement, not permission for another native run.
-Accepted [PR #519 source preparation](../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515) supplies collector capability, not a native RA-12 result. Nonneutral acceptance/effect remains OPEN; future Research #515 observations enter only after independent acceptance on main.
+**Unknown / OPEN original fields:** full R1 flags and fields beyond its serialized accounting,
+complete logical field-input effects, detailed AI memory/thinking draws, individual draw-to-effect
+mapping and timing normalization, cancel/reselect, unshimmed required dialogue and other incomplete
+8D consumer boundaries, and RA-12 nonneutral effect. The bindings below distinguish decoded values,
+retained but undecoded fields, static rules, missing original details and missing remake observations.
+This is not authorization for another native run. Accepted [PR #519 source preparation](../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
+is collector capability; future #515 results enter only after independent acceptance on main.
 
-**OPEN content/implementation:** 7C audio and complete reached asset provenance, manual required
-Medical Herb input (the inspected `SessionAction` exposes only Stay/Heal/PhysicalAttack), any missing
-snapshot/cue correlation, actual battle-scene consumers above, continuous comparator and all
-applicable actual host/9A executions. Audio/host work (#517) and Medical Herb (#518) are separate
-implementation owners; their unmerged results do not close these entries.
+**OPEN content/implementation:** 7C audio and complete reached asset provenance, missing snapshot/cue
+correlation, actual battle-scene consumers, the continuous comparator and applicable host/9A executions.
+Medical Herb support and carried inventory observations are accepted in PR #521 (`78c201c3`);
+that bounded implementation does not constitute this continuous comparison. Audio (#517) and
+battle scenes (#523) remain separate OPEN implementation work.
 Do not use current remake limitations to remove reached actions from the expected contract.
 Independent review accepts these comparison definitions with their precise open boundaries; this
 does not establish complete definition readiness or milestone readiness.
 The [readiness ledger](../synthesis/map3-battle01-readiness.md) tracks closure; main-gate independently
-reviews acceptance. No executable H4 implementation, native acquisition or suite runs occur here.
+reviews acceptance. The offline reference projection does not execute H4 or launch native acquisition.
