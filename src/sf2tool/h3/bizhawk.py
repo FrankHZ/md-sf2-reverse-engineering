@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import ctypes
+import hashlib
 import json
 import os
-import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable
@@ -87,25 +87,19 @@ def materialize_bizhawk_launch(
     *,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Copy the verified release into local state for Windows AppContext writes.
+    """Materialize local launch state; execute the verified registered installation.
 
-    Windows ignores BIZHAWK_DATA_HOME. This is preparation, not a runtime observation.
-    The installation is shared; each launch owns its writable runtime copy.
+    Supports serial GEN/NULL research only. Controller-default and user-game-DB
+    editing are unsupported: Windows keeps those surfaces beside the executable.
     """
     output = output.resolve()
     local = repo_path("local")
     if not output.is_relative_to(local) or output == local:
         raise ValueError("BizHawk launch state must be beneath this worktree's local/")
     contract, _ = bizhawk_contract()
-    installation, members = verify_bizhawk_installation(contract)
+    installation, _ = verify_bizhawk_installation(contract)
     output.mkdir(parents=True, exist_ok=True)
     state = Path(tempfile.mkdtemp(prefix="bizhawk-", dir=output))
-    # Copy release members only, never a previous launch's configuration or saves.
-    for relative in members:
-        source = installation / relative
-        target = state / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
     settings = {
         "LastWrittenFrom": contract["release"],
         "PreferredCores": {"GEN": "Genplus-gx"},
@@ -120,6 +114,11 @@ def materialize_bizhawk_launch(
         "BackupSaveram": False,
         **(config or {}),
     }
+    # Apply after caller settings: no inherited installation paths, even when a
+    # caller supplies a previously expanded configuration.
+    settings["PathEntries"] = _local_path_entries(state)
+    for entry in settings["PathEntries"]["Paths"]:
+        Path(entry["Path"]).mkdir(parents=True, exist_ok=True)
     config_path = state / "config.ini"
     config_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
     (state / "Temp").mkdir(exist_ok=True)
@@ -128,10 +127,74 @@ def materialize_bizhawk_launch(
         "TMP": str(state / "Temp"),
     }
     return {
-        "executable": str(state / "EmuHawk.exe"),
+        "executable": str(installation / "EmuHawk.exe"),
         "config": str(config_path),
         "cwd": str(state),
         "environment": environment,
+    }
+
+
+def _local_path_entries(state: Path) -> dict[str, Any]:
+    """Pinned Global/Genesis path names, explicitly rooted in owned launch state."""
+    paths = {
+        "Global_NULL": {
+            "Base": ".", "ROM": "ROM", "Firmware": "Firmware",
+            "Movies": "Movies", "Movie backups": "Movies/backup",
+            "A/V Dumps": "AV", "Tools": "Tools", "Lua": "Lua",
+            "Watch (.wch)": "Watch", "Debug Logs": "Logs",
+            "Macros": "Movies/Macros", "Multi-Disk Bundles": "MultiDisk",
+            "External Tools": "ExternalTools", "Temp Files": "Temp",
+        },
+        "GEN": {
+            "Base": "Genesis", "ROM": "ROM", "Savestates": "Genesis/State",
+            "Save RAM": "Genesis/SaveRAM", "Screenshots": "Genesis/Screenshots",
+            "Cheats": "Genesis/Cheats",
+        },
+    }
+    entries = []
+    for system, values in paths.items():
+        for kind, relative in values.items():
+            destination = state / relative
+            entries.append({"System": system, "Type": kind, "Path": str(destination)})
+    return {"Paths": entries}
+
+
+def validate_bizhawk_launch(
+    executable: Path, cwd: Path, config_path: Path, environment: dict[str, str]
+) -> None:
+    """Keep installation identity and writable state separate at the native seam."""
+    _, registered = bizhawk_contract()
+    if executable.resolve(strict=True) != registered.resolve(strict=True):
+        raise ValueError("native BizHawk launch requires the registered installation")
+    cwd = cwd.resolve(strict=True)
+    local = repo_path("local").resolve()
+    if cwd == local or not cwd.is_relative_to(local):
+        raise ValueError("native BizHawk cwd must be beneath this worktree's local/")
+    if config_path.resolve(strict=True).parent != cwd:
+        raise ValueError("native BizHawk config must belong to its local cwd")
+    for key in ("TEMP", "TMP"):
+        if Path(environment.get(key, "")).resolve(strict=True) != cwd / "Temp":
+            raise ValueError(f"native BizHawk {key} must belong to its local cwd")
+    if load_json(config_path).get("PathEntries") != _local_path_entries(cwd):
+        raise ValueError("native BizHawk writable paths do not match its local cwd")
+
+
+def continuation_settings_identity(launch: dict[str, Any]) -> dict[str, str]:
+    """Identify settings across runs, replacing only verified launcher path roles.
+
+    The raw config digest remains separate provenance. Unknown settings participate
+    unchanged; unsupported path collections fail instead of being normalized away.
+    """
+    cwd = Path(launch["cwd"])
+    config_path = Path(launch["config"])
+    validate_bizhawk_launch(Path(launch["executable"]), cwd, config_path, launch["environment"])
+    settings = load_json(config_path)
+    for entry in settings["PathEntries"]["Paths"]:
+        entry["Path"] = f"<launch:{entry['System']}:{entry['Type']}>"
+    encoded = json.dumps(settings, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return {
+        "contract": "bizhawk-local-path-roles-v1",
+        "sha256": hashlib.sha256(encoded).hexdigest().upper(),
     }
 
 
@@ -204,17 +267,20 @@ def run_native_bizhawk_process(
     *,
     command: list[str],
     executable: Path,
+    cwd: Path,
     environment: dict[str, str],
     timeout_seconds: int,
     on_started: Callable[[int], None] | None = None,
     on_timeout: Callable[[], None] | None = None,
 ) -> NativeProcessResult:
     """Start a native BizHawk process with no shell and bound its diagnostics."""
-    if not executable.resolve().is_relative_to(repo_path("local")):
-        raise ValueError("native BizHawk launch requires a local runtime copy")
+    config_arguments = [item[9:] for item in command if item.startswith("--config=")]
+    if len(config_arguments) != 1 or Path(command[0]).resolve() != executable.resolve():
+        raise ValueError("native BizHawk command must select its executable and local config")
+    validate_bizhawk_launch(executable, cwd, Path(config_arguments[0]), environment)
     process = subprocess.Popen(
         command,
-        cwd=executable.parent,
+        cwd=cwd,
         env=environment,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -338,6 +404,7 @@ def run_observer(
         result = run_native_bizhawk_process(
             command=command,
             executable=executable,
+            cwd=Path(launch["cwd"]),
             environment=environment,
             timeout_seconds=timeout_seconds,
             on_started=on_started,
@@ -350,6 +417,9 @@ def run_observer(
         if result.error or not result.started or not result.process_terminated:
             raise RuntimeError(f"BizHawk native process failed: {result.error or result}")
     else:
+        validate_bizhawk_launch(
+            executable, Path(launch["cwd"]), Path(launch["config"]), environment
+        )
         process = subprocess.Popen(
             command,
             cwd=launch["cwd"],
