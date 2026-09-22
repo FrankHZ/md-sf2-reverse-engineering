@@ -370,6 +370,11 @@ def test_shared_runner_promotes_callback_failure_after_process_exit(
     monkeypatch.setattr(bizhawk, "DERIVED_ROOT", tmp_path)
     monkeypatch.setattr(bizhawk, "bizhawk_contract", lambda: ({}, tmp_path / "EmuHawk.exe"))
     monkeypatch.setattr(bizhawk, "validate_lua_syntax", lambda *_: None)
+    monkeypatch.setattr(bizhawk, "materialize_bizhawk_launch", lambda _: {
+        "executable": str(tmp_path / "EmuHawk.exe"), "cwd": str(tmp_path),
+        "config": str(tmp_path / "config.ini"), "environment": {},
+    })
+    monkeypatch.setattr(bizhawk, "validate_bizhawk_launch", lambda *_: None)
     monkeypatch.setattr(bizhawk.subprocess, "Popen", fake_popen)
 
     with pytest.raises(RuntimeError, match="callback failure") as error:
@@ -416,6 +421,11 @@ def test_shared_runner_tree_kills_and_reaps_a_timed_out_windows_process(
     monkeypatch.setattr(bizhawk, "DERIVED_ROOT", tmp_path)
     monkeypatch.setattr(bizhawk, "bizhawk_contract", lambda: ({}, tmp_path / "EmuHawk.exe"))
     monkeypatch.setattr(bizhawk, "validate_lua_syntax", lambda *_: None)
+    monkeypatch.setattr(bizhawk, "materialize_bizhawk_launch", lambda _: {
+        "executable": str(tmp_path / "EmuHawk.exe"), "cwd": str(tmp_path),
+        "config": str(tmp_path / "config.ini"), "environment": {},
+    })
+    monkeypatch.setattr(bizhawk, "validate_bizhawk_launch", lambda *_: None)
     monkeypatch.setattr(bizhawk.subprocess, "Popen", fake_popen)
     monkeypatch.setattr(bizhawk.subprocess, "run", fake_taskkill)
 

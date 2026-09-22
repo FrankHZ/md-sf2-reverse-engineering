@@ -39,8 +39,8 @@ The JDK digest is the existing
 POSIX-relative-path ordinal inventory: `PATH<TAB>SIZE<TAB>UPPERCASE_SHA256`, LF-separated without a
 trailing LF, then UTF-8 SHA-256. Java's executable identity and version are also checked. BizHawk's
 archive, executable and Lua identities are checked; runtime preparation compares release files
-directly with the pinned archive and copies only those files, excluding any old installation saves
-or configuration. Manifest `localJavaPath`, `localArchivePath` and `localExecutablePath` describe
+directly with the pinned archive. Preparation creates fresh local configuration and writable paths;
+it neither copies release files nor imports installation saves or configuration. Manifest `localJavaPath`, `localArchivePath` and `localExecutablePath` describe
 legacy layouts only; maintained consumers no longer select them.
 
 Select the existing shared .NET installation with absolute `DOTNET_BIN` and the accepted shared
@@ -57,10 +57,10 @@ retains forced `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and worktree-local NuGet/
 | `sf2 init` / `Initialize-LocalResearch.ps1` | Validate shared tools; initialize only local writable SF2DISASM checkout; no tool downloads/extraction or redundant ROM copy |
 | `sf2 toolchain verify` / `Test-Toolchain.ps1` | Verify local checkout provenance and shared JDK, complete H1 installation, BizHawk archive/executable/Lua |
 | `Invoke-Sf2Rebuild.ps1` | `sf2 toolchain paths` checks the complete installation and supplies all five shared binaries; source, cwd, builds and TEMP stay local; build algorithm unchanged |
-| Ordinary Python H3 and Lua syntax | Compile with shared Lua; prepare a fresh local BizHawk runtime copy for native launch |
+| Ordinary Python H3 and Lua syntax | Compile with shared Lua; execute the registered installation with fresh local writable state |
 | `Observe-H3Battle01TurnOrder.ps1` | `sf2 toolchain bizhawk-materialize` supplies executable, config, cwd and TEMP; observation Lua unchanged |
-| Debug bridge | Same local runtime preparation, retaining its explicit output, paused startup and bounded process lifecycle |
-| Disabled original-reference replay | Shared archive/installation resolution feeds its local contained runtime; original disabled admission and budget remain unchanged |
+| Debug bridge | Same direct launch preparation, retaining explicit local output, paused startup and bounded process lifecycle |
+| Disabled original-reference replay | Registered executable with contained local launch state; original disabled admission and budget remain unchanged |
 | .NET / Godot | Shared complete installations, explicit process selection; owning project, imports, outputs and caches remain local |
 
 The initialization/verification PowerShell scripts are thin forwarding entrypoints. Their manifest,
@@ -69,53 +69,49 @@ the registered shared executable; another executable fails rather than bypassing
 `sf2 init --skip-defender-scan` preserves the explicit scan opt-out. A supplied upstream checkout must
 be under the owning worktree's `local/`; H1 cannot write into another task's source tree.
 
-## BizHawk Runtime Copies
+## BizHawk Direct Launch State
 
-Configuration, SaveRAM and movie contamination can change observations. The accepted simple policy
-is to supply a clean local runtime copy from the verified shared installation. This exception to
-direct shared execution is intentional. Unrelated preference settings do not require additional
-isolation machinery. There is no hardlink or cross-volume strategy.
+`materialize_bizhawk_launch` and `sf2 toolchain bizhawk-materialize` prepare writable
+state only. Maintained consumers execute the registered, verified installation by
+default; no release files are copied. The command returns executable, explicit
+config, cwd and child TEMP/TMP. A fresh directory beneath this worktree's ignored
+`local/` owns all of the latter. Preparation never cleans existing outputs.
+
+The helper sets absolute `PathEntries.Paths` for the pinned Global_NULL and GEN
+roles: base, ROM/firmware, movies/backups/macros, A/V, tools/Lua, watches/logs,
+bundles/external tools, temporary files, Genesis savestates, SaveRAM, screenshots
+and cheats. Launcher-owned entries replace caller path entries after merging
+settings, preventing inherited installation defaults from returning. Other
+settings retain caller overrides, including explicit `SoundEnabled=true`; default
+host audio is muted, the core is Genplus-gx, and automatic save-slot loading/saving,
+periodic SaveRAM and backups are disabled. Observers and bridge logs receive
+separate explicit local destinations. TEMP is selected before native startup.
+
+Native Python consumers validate the registered executable, local cwd/config/TEMP
+and exact writable path roles before starting. The frozen replay consumer uses
+the same direct preparation and explicit cwd; this interface migration does not
+authorize replay or change its original admission/identity checks.
+
+Only serial GEN/NULL research is supported. Before launch, inspect EmuHawk
+processes and obtain exclusive installation ownership through the repository's
+`bizhawk-original-runtime` scheduling boundary. Keep ownership through exit and
+installation/settings verification. The preparation CLI does not reserve an
+installation or attach to a process. A conflict stops launch; there is no silent
+copy fallback or general Windows sandbox.
 
 For pinned BizHawk commit `bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`, Windows
 [PathUtils](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Common/Extensions/PathExtensions.cs)
-uses the executable's application base for both installation and data directories, ignoring
-`BIZHAWK_DATA_HOME`.
+uses the executable's application base and ignores `BIZHAWK_DATA_HOME`.
 [GameDBHelper](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Emulation.Cores/GameDBHelper.cs)
-places the user database beneath that data directory;
-[Config](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/Config.cs)
-places controller defaults beside the executable. Thus changing cwd and `--config` alone is
-insufficient. Copying the complete release makes those defaults local as well.
-
-The local executable, explicit local `--config`, cwd, save/movie directories and child `TEMP`/`TMP`
-share one fresh local runtime directory. TEMP is selected before startup because BizHawk starts its
-temporary-file manager before loading configuration. Failed preparation and existing observations
-remain available; preparation does not clean prior runs. No whole-local junction or shared writable
-emulator directory is used.
-
-New runtime copies default to muted host audio (`SoundEnabled=false`). A caller can explicitly
-enable host audio with `materialize_bizhawk_launch(..., config={"SoundEnabled": True})`; caller
-settings override the defaults. This applies only to newly prepared copies; existing runtime
-configurations and the shared installation are unchanged.
-
-**Confirmed:** source resolution and direct materialization establish selected paths, fixed
-release bytes and independent local copies. Main-gate directly observed one Windows launch with
-no ROM/movie argument: Lua reported `emu.getsystemid() == "NULL"`, TEMP was local, config expanded
-and wrote back into the local runtime copy, and `client.exitCode(0)` exited successfully. The shared
-installation's file size/mtime inventory was unchanged and its 450 release files still matched the
-pinned archive. This establishes the no-ROM startup/exit/config boundary only.
-
-Reproduce that bounded check with
-`uv run sf2 toolchain bizhawk-materialize --output-path local/<review>/runtime`, then launch its executable
-with the returned cwd/environment and `--gdi --config=<returned config> --lua=<local script>` only.
-The script writes the system ID and TEMP to an explicit local marker and calls `client.exitCode(0)`;
-compare shared file metadata/release bytes before and after. In the reviewed observation, relative
-Lua file I/O resolved beside the loaded script; inspect that local directory for its existing marker.
-This requires separate native-launch authorization; it is not part of routine material preparation.
-
-The reviewed observation and its initial marker-location checker error are retained under ignored
-`local/root459-review/`; the corrected review read the original result without a second launch.
-**Unknown:** ROM execution, actual SaveRAM/movie effects and the full H3 behavior of this preparation
-remain unobserved. No original game or movie was run, and replay admission/budgets remain unchanged.
+and [Config](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/Config.cs)
+retain executable-base user-database/controller-default surfaces. Arbitrary UI
+editing of these files, other cores and concurrent use remain unsupported.
+Existing instrumented H3 owners temporarily register their ROM in the shared user
+DB and restore the prior bytes/absence in `finally`; this remains an explicit
+serialized exception, not relocated state. Preserve prior settings and verify
+restoration after those owners run. No broad UI editing or database mutation is
+authorized by launch preparation. Old copies/evidence and the two retained empty
+Genesis directories remain untouched.
 
 ## Direct Installation Reuse Findings
 
@@ -151,18 +147,17 @@ automatic policy rejection of their removal; no generated save file remains ther
 explicit per-run config, absolute writable paths, TEMP and disabled accidental
 autoload. Copying roughly 155 MB of release files per launch is not intrinsically
 required for this workload. Reuse must keep outputs separate from immutable inputs.
-The smallest follow-up is an explicit direct-launch mode in the existing launcher,
-with the observed SaveRAM path fix; no new emulator tree or isolation framework is
-needed for the demonstrated case. Existing maintained consumers still materialize
-copies: this investigation does not silently change their default policy.
+The maintained default now uses the direct-launch state contract above, including
+the observed SaveRAM correction and explicit remaining Global/Genesis paths. No
+new emulator tree or generic isolation framework is required for this workload.
 
 **Unknown:** arbitrary UI/core/tool operations and concurrent users modifying the
 same installation. Controller defaults and the user game database still have
 executable-base paths, as established above; `PathEntries` does not relocate those
 surfaces. Start with one installation owner, avoid modifying shared defaults/database
-during a run, and retain isolated copies only for a demonstrated conflict or required
-reproduction. A broader direct mode must explicitly handle other enabled writable
-outputs, rather than assuming cwd redirects them.
+during a run, and stop on a conflict or reproduction needing unsupported isolation. The default
+provides no automatic copy fallback; the existing instrumented H3 database
+registration exception is explicitly described above.
 
 The pinned [path defaults](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/PathEntryCollection.cs)
 and [path resolution](https://github.com/TASEmulators/BizHawk/blob/bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5/src/BizHawk.Client.Common/config/PathEntryCollectionExtensions.cs)

@@ -1039,11 +1039,12 @@ def _read_segment(
         or bridge["timedOut"]
         or bridge["historicalStarts"] != pair["historicalStarts"]
         or bridge["runtimeSettingsSha256"] != pair["runtimeSettingsSha256"]
+        or ("continuationSettingsIdentity" in bridge) != ("continuationSettingsIdentity" in pair)
         or bridge.get("continuationSettingsIdentity") != pair.get("continuationSettingsIdentity")
     ):
         raise ValueError("segment process/cleanup did not complete")
     identity = pair.get("continuationSettingsIdentity")
-    if identity is not None and (
+    if "continuationSettingsIdentity" in pair and (
         not isinstance(identity, dict)
         or set(identity) != {"contract", "sha256"}
         or identity["contract"] != "bizhawk-local-path-roles-v1"

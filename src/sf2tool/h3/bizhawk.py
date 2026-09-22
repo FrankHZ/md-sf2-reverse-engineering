@@ -175,8 +175,14 @@ def validate_bizhawk_launch(
     for key in ("TEMP", "TMP"):
         if Path(environment.get(key, "")).resolve(strict=True) != cwd / "Temp":
             raise ValueError(f"native BizHawk {key} must belong to its local cwd")
-    if load_json(config_path).get("PathEntries") != _local_path_entries(cwd):
+    entries = load_json(config_path).get("PathEntries")
+    if entries != _local_path_entries(cwd):
         raise ValueError("native BizHawk writable paths do not match its local cwd")
+    if any(
+        not Path(entry["Path"]).resolve(strict=True).is_relative_to(cwd)
+        for entry in entries["Paths"]
+    ):
+        raise ValueError("native BizHawk writable path resolves outside its local cwd")
 
 
 def continuation_settings_identity(launch: dict[str, Any]) -> dict[str, str]:
@@ -311,9 +317,12 @@ def run_native_bizhawk_process(
     except subprocess.TimeoutExpired:
         # Persist the known timeout before cleanup, which can itself fail.
         # A diagnostic write failure must still attempt process termination.
+        callback_error = None
         try:
             if on_timeout is not None:
                 on_timeout()
+        except Exception as error:
+            callback_error = f"on-timeout: {error}"
         finally:
             tree_killed = _terminate_process_tree(process)
         stdout, stderr = process.communicate()
@@ -326,6 +335,7 @@ def run_native_bizhawk_process(
             process_terminated=True,
             timeout_tree_killed=tree_killed,
             pid=process.pid,
+            error=callback_error,
         )
     except OSError as error:
         _terminate_process_tree(process)

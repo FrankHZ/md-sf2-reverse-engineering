@@ -18,10 +18,11 @@ from sf2tool.h3 import map3_battle01_player_ready as player_ready
 from sf2tool.h3 import map3_messenger_acceptance as rail
 from sf2tool.h3.bizhawk import bizhawk_contract
 from sf2tool.jsonio import load_json, validate_json
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 
 
 def _rom() -> Path:
-    return rail.repo_path("local/roms/sf2-us.bin")
+    return private_input_path(ROM_INPUT_IDENTITY)
 
 
 def _upstream() -> Path:

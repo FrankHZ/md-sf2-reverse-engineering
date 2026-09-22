@@ -109,10 +109,9 @@ may be resolved read-only as described by the local-private-input owner, but wri
 derived assets, exports, traces, reports, and scratch remain local to their owning worktree.
 
 Managed JDK, H1 binaries, .NET and Godot installations are shared through ignored machine
-configuration; maintained research tool consumers require `SF2_TOOLCHAIN_ROOT`. BizHawk uses the
-verified shared installation to supply clean worktree-local runtime copies because its Windows
-configuration/save defaults follow the executable directory. Keep this simple copy exception;
-unrelated preferences do not require extra isolation machinery. Follow the
+configuration; maintained research tool consumers require `SF2_TOOLCHAIN_ROOT`. BizHawk executes the verified registered installation with explicit worktree-local configuration,
+cwd, TEMP and writable paths under serial installation ownership. Follow the local input/tool
+owner for the executable-base controller-default/user-database exceptions; cwd is not a sandbox. Follow the
 [local input/tool owner](./docs/operations/local-private-inputs.md) for selection and verification.
 
 The writable-state exception is one explicitly configured
