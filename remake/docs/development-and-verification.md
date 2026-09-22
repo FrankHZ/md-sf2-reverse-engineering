@@ -314,17 +314,27 @@ The report records layer/assertion, original record/Git owner, actual
 sequence/input, expected/actual/result/reason and diagnostic scope. Unreached or unbound groups and
 unexecuted 9A variants remain Unavailable, alongside observed failures.
 
-**Confirmed:** the current R1 product selection admits gold 0 where the selected original readback
-has 60. Natural first control exposes different carried item slots and first-round order. The input
-chain is `map3-opening-party.json` → `ControlledBattleStartReader` (slot order and gold preserved) →
+**Confirmed (retained #528 baseline):** the prior R1 product selection admitted gold 0 where the selected original readback
+has 60. Natural first control exposed different carried item slots and first-round order. The corrected
+connected start selects source NewGame gold 60 and all four source item words for each of the first
+three allies; the separate controlled R1 fixture's gold 0 and four item bytes do not establish those values.
+The input chain is `map3-opening-party.json` → `ControlledBattleStartReader` (slot order and gold preserved) →
 `PrivateBattleScenarioReader` (definition SourceLoadout and BattleStartInput) →
-`EngineBattleActor` (loadout fallback to its definition) → live inventories. These are input/actual
-differences, not permission to change expected evidence. Admission `SourceLoadout`/`Progress` are
+`EngineBattleActor` (loadout fallback to its definition) → live inventories. The old input/actual
+differences did not authorize changing expected evidence. Admission `SourceLoadout`/`Progress` were
 null in the existing observation; later inventories cannot retrospectively prove that boundary.
 NPC phase differences and timing-to-RNG mapping remain separately Unknown. A different seed
 readback is not an established RNG algorithm defect. Independent route/state assertions remain
 usable after an admission difference; subsequent battle decisions cease to be a continuous
 original comparison after turn-order divergence.
+
+**Confirmed (corrected input, bounded actual run):** the retained original reference and plan,
+recompared with a new host run and recorded exit 2, report 5,340 PASS, 2 FAIL and 40 Unavailable.
+Admission gold is 60 on both sides. At natural first control, each of the three complete live
+item arrays matches. First-round turn order still differs, and the diagnostic first STAY reaches
+a different next actor; the host stops there. Admission `SourceLoadout` remains null in the actual
+projection, so the later matching inventories do not fill that unavailable assertion. RNG timing
+and NPC phase relevance remain Unknown; this is not an H4 pass.
 
 The accepted [post-victory original extension](../../docs/research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
 supplies Down from Map57 `(5,12)` to `(5,13)`. This driver does not reach that boundary or bind its

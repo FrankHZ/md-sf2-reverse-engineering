@@ -75,7 +75,7 @@ public sealed class PrivateExplorationTests
         Assert.Equal(player.GetProperty("x").GetInt16(), Entity(session, 0).Motion.X);
         Assert.Equal(player.GetProperty("y").GetInt16(), Entity(session, 0).Motion.Y);
         Assert.Equal(player.GetProperty("facing").GetByte(), Entity(session, 0).Motion.Facing);
-        Assert.Equal(0u, session.Current.Exploration!.Party.Gold);
+        Assert.Equal(60u, session.Current.Exploration!.Party.Gold);
         Assert.Equal(2568421376u, session.Current.Exploration.Party.MainSeed);
         foreach (string name in new[] { "joinedFlags", "activeFlags" })
             Assert.Equal(state.GetProperty(name).EnumerateArray().Select(flag => flag.GetBoolean()),
