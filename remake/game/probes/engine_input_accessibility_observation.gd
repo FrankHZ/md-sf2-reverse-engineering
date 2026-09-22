@@ -157,9 +157,9 @@ func write_settings(path: String) -> void:
     if OS.get_environment("SF2_INPUT_RATE") != "": settings.charactersPerSecond = int(OS.get_environment("SF2_INPUT_RATE"))
     if remapped:
         var keys := {"up":"I","right":"L","down":"K","left":"J","confirm":"Q","cancel":"E",
-            "attack":"R","spell":"T","target":"U","stay":"O"}
+            "attack":"R","spell":"T","target":"U","stay":"O","item":"P"}
         var buttons := {"up":"DpadUp","right":"DpadRight","down":"DpadDown","left":"DpadLeft",
-            "confirm":"West","cancel":"North","attack":"South","spell":"East","target":"LeftShoulder","stay":"RightShoulder"}
+            "confirm":"West","cancel":"North","attack":"South","spell":"East","target":"LeftShoulder","stay":"RightShoulder","item":"Back"}
         var axes := {"up":["RightY-"],"right":["RightX+"],"down":["RightY+"],"left":["RightX-"]}
         for action in keys:
             settings.bindings[action] = {"keys":[keys[action]],"buttons":[buttons[action]],"axes":axes.get(action, [])}
