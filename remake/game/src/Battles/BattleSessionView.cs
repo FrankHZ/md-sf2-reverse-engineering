@@ -218,7 +218,12 @@ public sealed partial class BattleSessionView : Control
         ObserveResult?.Invoke(_result);
         if (_result.Failure is null)
         {
-            if (command is SelectSpell or SelectItem or Cancel) PlayUiSound?.Invoke(66);
+            // The modern action-choice lifetime maps to the source outer menu's
+            // open/close cue, before the generic selection/confirmation bindings.
+            bool wasActionChoice = current.Selection?.Stage == BattleSelectionStage.ActionChoice;
+            bool isActionChoice = _result.Snapshot.Selection?.Stage == BattleSelectionStage.ActionChoice;
+            if (wasActionChoice != isActionChoice) PlayUiSound?.Invoke(65);
+            else if (command is SelectSpell or SelectItem or Cancel) PlayUiSound?.Invoke(66);
             else if (command is Confirm) PlayUiSound?.Invoke(67);
         }
         if (_startupFailure is not null) return;

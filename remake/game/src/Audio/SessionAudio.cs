@@ -140,12 +140,10 @@ internal sealed class SessionAudio : IDisposable
         if (!music)
         {
             var slots = SoundSlots(audio.Command);
-            // Validate the entire request before stopping anything. A whole PCM clip cannot
-            // preserve the surviving channels of a partially overwritten source effect.
-            if (_sounds.Any(active => active.Player.Playing && (active.Slots & slots) != 0 &&
-                (active.Slots & slots) != active.Slots))
-                throw new InvalidOperationException("sfx-partial-overlap-unsupported");
-            foreach (var active in _sounds.Where(active => active.Player.Playing && (active.Slots & slots) != 0).ToArray())
+            // Whole-clip approximation: replace covered groups, but let a partially
+            // overlapping clip finish alongside the new cue. Cosmetic tails never block input.
+            foreach (var active in _sounds.Where(active => active.Player.Playing &&
+                (active.Slots & slots) == active.Slots).ToArray())
             {
                 // Leave already-ended voices alive for their actual queued Finished callback.
                 Stop(active.Player, active.Cue);
@@ -256,8 +254,8 @@ internal sealed class SessionAudio : IDisposable
     private enum Slots { Ym4 = 1, Ym5 = 2, Ym6 = 4, PsgTone3 = 8, PsgNoise = 16 }
 
     // Pinned SF2DISASM c834c652, sounddriver.asm Load_SFX and the H2 sound inventory's
-    // activeSlots for the admitted commands. These are replacement identities, not a
-    // claim of acoustic independence (in particular PSG noise/tone coupling or music masking).
+    // activeSlots for the admitted commands. These are cheap whole-clip replacement groups,
+    // not hardware output masks or a claim of acoustic independence.
     private static Slots SoundSlots(int command) => command switch
     {
         65 => Slots.Ym5,
