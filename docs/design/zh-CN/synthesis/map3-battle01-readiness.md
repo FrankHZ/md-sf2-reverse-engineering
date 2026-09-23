@@ -49,7 +49,7 @@
 | 9A variants / 10A deviations 组合 | 定义已接受；缺失绑定与执行 OPEN | 合同要求 baseline/variant 分开结果及 state/ack equivalence |
 | 必需 reached action 支持 | PASS bounded implementation；连续比较 OPEN | PR #521（`78c201c3`）已接受普通 Medical Herb selection/live inventory 及 host inventories/itemSlot 观测；仍须单独比较获胜原版动作 |
 | 实际连续比较 | Diagnostic FAIL；里程碑 NOT READY | PR #533：准入 gold 和 first-control live item arrays 已相符；first-round order 与 next actor 仍 FAIL。40 项仍 Unavailable |
-| 所有适用 H4 layers 成功执行 | OPEN | 定义接受后的 Remake/harness；实际连续 session 至完整 5B |
+| 所有适用 H4 layers 成功执行 | OPEN | 已接受 comparator 有 diagnostic actual result；完整 layer coverage、完整 5B 与连续 9A variants 尚未执行 |
 | 独立里程碑就绪接受 | OPEN | Main-gate；Issue 关闭或有界实现 PASS 均不足 |
 | 单独实现启动授权 | PASS | [Remake README](../../../../remake/README.md)中的用户授权；不等于本里程碑接受 |
 | 公开发行 | 私有里程碑范围外 BLOCKED | 另行 rights/licensed replacement 决定；私有 assets 不跟踪 |
@@ -84,9 +84,9 @@
 
 仅命名的缺失原版语义断言可在 ADR0014/0016 与 [ADR0015](../../../decisions/0015-original-reference-replay-and-h4-boundary.md) 下支持另行准入观测。目前问题为未解决 selected input/RNG/state 字段、必需 8D consumption/ack；PR #526 的有界 Down/effect 已接受。先复用 accepted static rules/bounded observations。[研究呈现审计](../../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)记录 DisplayText bypass，program return 不证明 unshimmed delivery。Persistent music 要求 reached start/replacement/stop，不造结束事件。本台账不授权 native launch，也不自动建立 per-Unknown 队列。
 
-### 首次实际 H4 比较结果（PR #528）
+### 首次实际 H4 比较及修正（PR #528 / #533）
 
-**Confirmed**（**已确认的比较结果**）：PR #528 已完成 baseline 报告 **5,336 PASS / 6 FAIL / 40 Unavailable**；六个失败及原报告保留为历史证据。PR #533 将 connected selected R1 product inputs 修正为 source NewGame gold 60 和完整起始 item words，同时保留独立 controlled R1 fixture 的 gold 0/four-byte projection。修正后的 actual host run 完成 normalized field route、全部 73 个 reached text ID 和 natural first actor 2，然后因 diagnostic next-actor divergence 停止。报告 **5,340 PASS / 2 FAIL / 40 Unavailable**，`milestonePass=false`。准入 gold 及每名 ally 的 first-control live item array 现与 selected original readback 相符：Bowie `[199,0,127,127]`、Sarah `[213,0,0,127]`、Chester `[184,0,127,127]`。First-round order 仍不同；首次 diagnostic STAY 后，original next actor 是 Bowie，actual 是 Sarah；host exit 2 与该比较互证。Actual projection 的 admission `SourceLoadout` 仍为 null，后续 inventory 不能填补该字段。PR #526 post-victory extension 未重新绑定，也未到达。NPC phase 与 timing/RNG mapping 仍 Unknown。这一已完成比较不是 H4 接受；完整 Battle01/return/endpoint 与连续 9A variants 仍开放。
+**Confirmed**（**已确认的比较结果**）：PR #528 已完成 baseline 报告 **5,336 PASS / 6 FAIL / 40 Unavailable**；六个失败及原报告保留为历史证据。PR #533 将 connected selected R1 product inputs 修正为 source NewGame gold 60 和完整起始 item words，同时保留独立 controlled R1 fixture 的 gold 0/four-byte projection。修正后的 actual host run 完成 normalized field route、全部 73 个 reached text ID 和 natural first actor 2，然后因 diagnostic next-actor divergence 停止。报告 **5,340 PASS / 2 FAIL / 40 Unavailable**，`milestonePass=false`。准入 gold 为 60；完整 item arrays 在 natural first control 实际观测，且与 pinned NewGame source 支持的起始槽位相符：Bowie `[199,0,127,127]`、Sarah `[213,0,0,127]`、Chester `[184,0,127,127]`。这些后续 inventories 不能证明 admission `SourceLoadout`，actual projection 中该值仍为 null。First-round order 仍不同；首次 diagnostic STAY 后，original next actor 是 Bowie，actual 是 Sarah；host exit 2 与该比较互证。PR #526 post-victory extension 未重新绑定，也未到达。NPC phase 与 timing/RNG mapping 仍 Unknown。这一已完成比较不是 H4 接受；完整 Battle01/return/endpoint 与连续 9A variants 仍开放。
 
 <a id="original-replay-lineage-and-launch-admission"></a>
 ### 原 replay 谱系与启动准入

@@ -74,7 +74,7 @@ transport/observer failures are not interrupted runs and are not erased by final
 | 9A variants / 10A deviations composed | Accepted definitions; missing bindings and execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
 | Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
 | Actual continuous comparison | Diagnostic FAIL; milestone NOT READY | PR #533: admission gold and first-control live item arrays match; first-round order and next actor still fail. 40 assertions remain Unavailable |
-| All applicable H4 layers executed successfully | OPEN | Remake/harness after definition acceptance; actual continuous session through full 5B |
+| All applicable H4 layers executed successfully | OPEN | The accepted comparator has a diagnostic actual result; complete layer coverage, full 5B, and continuous 9A variants remain unexecuted |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
 | Public distribution | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate rights/licensed replacement decision; private assets remain untracked |
@@ -131,7 +131,7 @@ records DisplayText bypass; a program return does not prove unshimmed delivery. 
 requires start/replacement/stop where reached, not a fictitious end event. This ledger authorizes no
 native launch and no automatic per-Unknown observation queue.
 
-### First actual H4 comparison result (PR #528)
+### First actual H4 comparison and correction (PR #528 / #533)
 
 **Confirmed comparison results:** PR #528's completed baseline reported **5,336 PASS / 6 FAIL / 40
 Unavailable**; its six failures and report remain historical evidence. PR #533 corrected the
@@ -139,12 +139,12 @@ connected selected R1 product inputs to source NewGame gold 60 and complete star
 while preserving the separate controlled R1 fixture's gold 0/four-byte projection. The corrected
 actual host run completed the normalized field route, all 73 reached text IDs and natural first actor
 2, then stopped at the diagnostic next-actor divergence. It reports **5,340 PASS / 2 FAIL / 40
-Unavailable**, `milestonePass=false`. Admission gold and each ally's live first-control item array
-now match the selected original readback: Bowie `[199,0,127,127]`, Sarah `[213,0,0,127]`, Chester
-`[184,0,127,127]`. First-round order remains different; after the diagnostic first STAY, original
+Unavailable**, `milestonePass=false`. Admission gold is 60. At natural first control, each ally's live
+item array matches the starting slots supported by pinned NewGame source: Bowie `[199,0,127,127]`,
+Sarah `[213,0,0,127]`, Chester `[184,0,127,127]`. These later inventories do not establish admission
+`SourceLoadout`, which remains null. First-round order remains different; after the diagnostic first STAY, original
 next actor is Bowie and actual is Sarah. The host's exit 2 is corroborated by that comparison.
-Admission `SourceLoadout` remains null, so later inventories do not fill it. The PR #526 post-victory
-extension was not rebound or reached. NPC phase and timing/RNG mapping remain Unknown. This completed
+The PR #526 post-victory extension was not rebound or reached. NPC phase and timing/RNG mapping remain Unknown. This completed
 comparison is not H4 acceptance; full Battle01/return/endpoint and continuous 9A variants remain open.
 
 ### Original replay lineage and launch admission
