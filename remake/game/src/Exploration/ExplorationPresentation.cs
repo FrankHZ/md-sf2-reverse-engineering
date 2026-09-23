@@ -213,7 +213,6 @@ internal sealed class ExplorationPresentation : IDisposable
                 var destination = new Rect2(_screen.Position + (point - _camera) * _scale, new Vector2(24, 24) * _scale);
                 if (!_screen.Intersects(destination)) continue;
                 bool mirror = entity.Motion.Facing is 0 or 4 or 7;
-                if (mirror) { destination.Position += new Vector2(destination.Size.X, 0); destination.Size = new(-destination.Size.X, destination.Size.Y); }
                 if (_mosaic == entity.Entity)
                 {
                     double age = _mosaicOut ? 0.5 - _cueAge : _cueAge;
@@ -221,12 +220,17 @@ internal sealed class ExplorationPresentation : IDisposable
                     for (int y = 0; y < 24; y += block)
                         for (int x = 0; x < 24; x += block)
                             _owner.DrawTextureRectRegion(texture,
-                                new(destination.Position + destination.Size * new Vector2(x / 24f, y / 24f),
-                                    destination.Size * (block / 24f)), new(x, y, 1, 1));
+                                new(destination.Position + new Vector2(mirror ? 24 - x - block : x, y) * _scale,
+                                    Vector2.One * block * _scale), new(x, y, 1, 1));
                     MosaicDraws++;
                     if (_mosaicOut) MosaicOutDraws++;
                 }
-                else _owner.DrawTextureRect(texture, destination, false);
+                else
+                {
+                    // Godot flips a negative-width texture rect around its unchanged position.
+                    if (mirror) destination.Size = new(-destination.Size.X, destination.Size.Y);
+                    _owner.DrawTextureRect(texture, destination, false);
+                }
                 if (gesture)
                 {
                     GestureDraws++;
