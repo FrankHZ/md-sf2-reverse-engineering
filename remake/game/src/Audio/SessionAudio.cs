@@ -12,7 +12,10 @@ internal sealed class SessionAudio : IDisposable
     private readonly IReadOnlyDictionary<MapId, ExplorationMapVisual> _maps;
     private (MapId Map, int Area, bool Battle)? _context;
     private readonly AudioStreamPlayer _music;
-    private readonly AudioStreamPlayer _sound;
+    private readonly Node _owner;
+    private readonly List<SoundVoice> _sounds = [];
+    private readonly Action _musicFinished;
+    private bool _disposed;
     private readonly List<string> _history = [];
     private readonly List<AudioPlaybackReceipt> _receipts = [];
     private string? _soundCue;
@@ -27,10 +30,10 @@ internal sealed class SessionAudio : IDisposable
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
         _maps = definition.Visuals?.Maps ?? new Dictionary<MapId, ExplorationMapVisual>();
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
-        _sound = new AudioStreamPlayer { Name = "SessionSound" };
-        owner.AddChild(_music); owner.AddChild(_sound);
-        _music.Finished += () => { MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
-        _sound.Finished += () => { Completions++; Record("finished", _sound, _soundCue!); };
+        _owner = owner;
+        owner.AddChild(_music);
+        _musicFinished = () => { MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
+        _music.Finished += _musicFinished;
         if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
     }
 
@@ -49,7 +52,13 @@ internal sealed class SessionAudio : IDisposable
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
         musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished,
         musicPosition = MusicPosition, timerB = TimerB,
-        soundCue = _soundCue, soundPlaying = _sound.Playing, soundPosition = _sound.GetPlaybackPosition(),
+        soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
+        soundPosition = _sounds.LastOrDefault()?.Player.GetPlaybackPosition() ?? 0,
+        sounds = _sounds.Select(voice => new
+        {
+            cue = voice.Cue, command = _assets[voice.Cue].Command, slots = voice.Slots.ToString(), startSequence = voice.StartSequence,
+            playing = voice.Player.Playing, position = voice.Player.GetPlaybackPosition(),
+        }).ToArray(),
         receipts = _receipts.ToArray(),
     };
 
@@ -121,13 +130,41 @@ internal sealed class SessionAudio : IDisposable
 
     internal void Play(string resource, bool remember = true)
     {
+        if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
         if (!_assets.TryGetValue(resource, out var audio)) throw new InvalidOperationException("audio-content-unavailable");
         bool music = audio.Command < 65;
         // The source suppresses identical music requests even when the finite track already ended.
         if (music && remember && MusicCue == resource) return;
-        var player = music ? _music : _sound;
         if (!music && audio.TimerB != TimerB) throw new InvalidOperationException("sfx-timer-context-unavailable");
-        Stop(player, music ? MusicCue : _soundCue);
+        SoundVoice? voice = null;
+        if (!music)
+        {
+            var slots = SoundSlots(audio.Command);
+            // Validate the entire request before stopping anything. A whole PCM clip cannot
+            // preserve the surviving channels of a partially overwritten source effect.
+            if (_sounds.Any(active => active.Player.Playing && (active.Slots & slots) != 0 &&
+                (active.Slots & slots) != active.Slots))
+                throw new InvalidOperationException("sfx-partial-overlap-unsupported");
+            foreach (var active in _sounds.Where(active => active.Player.Playing && (active.Slots & slots) != 0).ToArray())
+            {
+                // Leave already-ended voices alive for their actual queued Finished callback.
+                Stop(active.Player, active.Cue);
+                Release(active);
+            }
+            var effect = new AudioStreamPlayer { Name = "SessionSound" };
+            _owner.AddChild(effect);
+            voice = new SoundVoice(effect, resource, slots);
+            var startedVoice = voice;
+            voice.Finished = () =>
+            {
+                Completions++; Record("finished", effect, resource);
+                Release(startedVoice);
+            };
+            effect.Finished += voice.Finished;
+            _sounds.Add(voice);
+        }
+        var player = voice?.Player ?? _music;
+        if (music) Stop(player, MusicCue);
         var previous = player.Stream; player.Stream = null; previous?.Dispose();
         player.Stream = new AudioStreamWav
         {
@@ -151,6 +188,7 @@ internal sealed class SessionAudio : IDisposable
         if (!player.Playing) throw new InvalidOperationException("audio-stream-did-not-start");
         Starts++;
         Record("started", player, resource);
+        if (voice is not null) voice.StartSequence = _sequence;
     }
 
     internal bool FiniteMusicFinished()
@@ -193,11 +231,51 @@ internal sealed class SessionAudio : IDisposable
 
     public void Dispose()
     {
-        foreach (var player in new[] { _music, _sound })
-        {
-            player.Stop();
-            var stream = player.Stream; player.Stream = null; stream?.Dispose();
-        }
+        if (_disposed) return;
+        _disposed = true;
+        _music.Finished -= _musicFinished;
+        foreach (var voice in _sounds.ToArray()) Release(voice);
+        ReleasePlayer(_music);
+    }
+
+    private void Release(SoundVoice voice)
+    {
+        voice.Player.Finished -= voice.Finished;
+        _sounds.Remove(voice);
+        ReleasePlayer(voice.Player);
+    }
+
+    private static void ReleasePlayer(AudioStreamPlayer player)
+    {
+        player.Stop();
+        var stream = player.Stream; player.Stream = null; stream?.Dispose();
+        player.QueueFree();
+    }
+
+    [Flags]
+    private enum Slots { Ym4 = 1, Ym5 = 2, Ym6 = 4, PsgTone3 = 8, PsgNoise = 16 }
+
+    // Pinned SF2DISASM c834c652, sounddriver.asm Load_SFX and the H2 sound inventory's
+    // activeSlots for the admitted commands. These are replacement identities, not a
+    // claim of acoustic independence (in particular PSG noise/tone coupling or music masking).
+    private static Slots SoundSlots(int command) => command switch
+    {
+        65 => Slots.Ym5,
+        66 or 67 or 70 or 72 or 73 or 74 or 79 or 102 => Slots.PsgTone3,
+        77 => Slots.Ym4,
+        81 or 83 or 116 => Slots.Ym6,
+        89 => Slots.PsgNoise,
+        92 or 113 => Slots.Ym4 | Slots.Ym5,
+        _ => throw new InvalidOperationException("sfx-slots-unavailable"),
+    };
+
+    private sealed class SoundVoice(AudioStreamPlayer player, string cue, Slots slots)
+    {
+        internal AudioStreamPlayer Player { get; } = player;
+        internal string Cue { get; } = cue;
+        internal Slots Slots { get; } = slots;
+        internal long StartSequence { get; set; }
+        internal Action Finished { get; set; } = null!;
     }
 }
 

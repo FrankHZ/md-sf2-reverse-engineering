@@ -25,6 +25,9 @@ var world_boundaries: Array = []
 var last_world := ""
 var herb_cases: Array = []
 var herb_mode := OS.get_environment("SF2_BATTLE_SCENE_HERB") == "1"
+var disjoint_audio := OS.get_environment("SF2_BATTLE_SCENE_DISJOINT_AUDIO") == "1"
+var audio_overlaps: Array = []
+var overlap_keys: Dictionary = {}
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -58,6 +61,7 @@ func _read() -> Dictionary:
     return state
 
 func _audio() -> void:
+    if not is_instance_valid(host): return
     var audio = JSON.parse_string(host.call("ReadAudioObservationJson"))
     if audio != null:
         for receipt in audio.receipts:
@@ -67,6 +71,14 @@ func _audio() -> void:
             last_receipt = int(receipt.Sequence)
             receipts.append(receipt)
         _check(audio.error == null, "audio remains available")
+        if disjoint_audio:
+            var playing: Array = audio.sounds.filter(func(sound): return sound.playing)
+            if playing.size() > 1:
+                var key := str(playing.map(func(sound): return sound.startSequence))
+                if not overlap_keys.has(key):
+                    overlap_keys[key] = true
+                    audio_overlaps.append({"microseconds":Time.get_ticks_usec(), "revision":audio.revision,
+                        "waitToken":audio.waitToken, "sounds":playing})
 
 func _world_settle() -> Dictionary:
     for tick in range(6000):
@@ -92,6 +104,13 @@ func _world_settle() -> Dictionary:
             await process_frame
     _check(false, "world admission bounded wait")
     return {}
+
+func _overlap_finished(sample: Dictionary, pair: Array) -> bool:
+    for command in pair:
+        var sound: Dictionary = sample.sounds.filter(func(voice): return voice.command == command)[0]
+        var ending := receipts.filter(func(receipt): return receipt.Sequence > sound.startSequence and receipt.Command == command and receipt.Operation in ["finished", "stopped"])
+        if ending.is_empty() or ending[0].Operation != "finished": return false
+    return true
 
 func _admit_world() -> void:
     exploration = host.get_node_or_null("ExplorationSessionView")
@@ -298,6 +317,7 @@ func _run() -> void:
     if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
+    if disjoint_audio: process_frame.connect(_audio)
     await process_frame
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
@@ -390,10 +410,31 @@ func _run() -> void:
     _finish()
 
 func _finish() -> void:
+    if disjoint_audio:
+        # Input is already released. Observe the remaining playback tail without
+        # adding a product wait or submitting further gameplay input.
+        var before_tail: String = view.call("ReadObservationJson") if is_instance_valid(view) else ""
+        for tick in range(120):
+            _audio()
+            var audio = JSON.parse_string(host.call("ReadAudioObservationJson"))
+            if audio == null or audio.sounds.is_empty(): break
+            await process_frame
+        if is_instance_valid(view):
+            _check(str(view.call("ReadObservationJson")) == before_tail, "playback tail adds no gameplay work after input release")
+        _audio()
+        var pair := [113,67] if herb_mode else [83,102]
+        var overlaps := audio_overlaps.filter(func(sample):
+            return sample.sounds.any(func(sound): return sound.command == pair[0]) and sample.sounds.any(func(sound): return sound.command == pair[1]))
+        _check(not overlaps.is_empty(), "ordinary scene actually plays both disjoint effects concurrently: " + str(pair))
+        # Rapid ordinary UI input may legitimately replace a tone with another tone.
+        # Require an observed concurrent pair whose two instances both finish naturally.
+        _check(overlaps.any(func(sample): return _overlap_finished(sample, pair)), "both instances of a concurrent disjoint pair reach actual Finished: " + str(pair))
+        _check(not receipts.any(func(receipt): return receipt.Command == pair[0] and receipt.Operation == "stopped"), "independent reaction effect is not truncated by UI input")
+        if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
         "scope": "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
-        "worldBoundaries": world_boundaries,
+        "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps,
         "audioDriver": AudioServer.get_driver_name()}
     output.store_string(JSON.stringify(result))
     output.flush()
