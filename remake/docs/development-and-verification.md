@@ -336,6 +336,88 @@ a different next actor; the host stops there. Admission `SourceLoadout` remains 
 projection, so the later matching inventories do not fill that unavailable assertion. RNG timing
 and NPC phase relevance remain Unknown; this is not an H4 pass.
 
+**Confirmed (bounded #534 order diagnosis):** `local/issue525/reference.json` and
+`local/issue530/actual-corrected.jsonl` agree at R1 admission on main seed
+`0x9917` (32-bit image `0x99170000`). The earliest paired seed readback then differs:
+the first original 30-frame Left request ends at `0x1091`
+(`prepared-68/runtime/actual-inputs.jsonl:772`, frame 385, order 787), while the
+probe's first logical `after:1` observation still reads `0x9917` (actual sequence 52,
+input 1). `0x1091` is two advances of the pinned `(seed * 13 + 7) & 0xFFFF`
+generator from `0x9917`; the original field segment did not capture those callers.
+The probe presses and releases one logical movement and settles it, without the
+source's 30-frame held input. This is an earlier persistent-state difference than
+the comparator's first scored FAIL at battle control, but does not establish a
+movement or RNG rule defect.
+
+At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
+order 55395), the seed is `0x6DC1`. The retained projection contains 885
+base-generator draws in that before-battle consumer scope: 690 with return PC
+`0x65A8` and 75 with return PC `0x647E`, the `symbol_wait1` and `@wait2` text loops
+in pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`
+`disasm/code/common/scripting/text/textfunctions_1.asm`; 120 have other
+caller PCs. Both loops call `GenerateRandomNumber(256)` while waiting for input.
+The actual `round-rng` result at sequence 15227 starts from `0x3905`. Read-only
+replay using the same nine first-round agility values `4,5,7,5,5,5,5,5,5`, pinned
+`GenerateRandomNumber` and `GenerateBattleTurnOrder`/
+`AddCombatantAndRandomizedAgiToTurnOrder` instructions reproduces both complete
+scored arrays in `local/issue530/comparison-corrected.json`: 27 draws take original
+`0x6DC1` to `0x79CE` and actual `0x3905` to `0x0FE2`. The first-dispatch and
+actual `round-rng` end seeds match those calculations. From this checkout, reproduce
+the bounded source-rule replay without loading private inputs:
+
+```powershell
+@'
+actors = [(0,4),(1,5),(2,7)] + [(i,5) for i in range(128,134)]
+def roll(seed, n):
+    seed = (seed * 13 + 7) & 0xffff
+    return seed, (((seed * ((n * 2) & 0xffff)) >> 16) >> 1)
+for name, seed in (("original",0x6dc1),("actual",0x3905)):
+    rows = []
+    for actor, agility in actors:
+        r = agility >> 3
+        seed, plus = roll(seed,r)
+        seed, minus = roll(seed,r)
+        seed, tie = roll(seed,3)
+        rows.append((actor,(agility + plus - minus + tie - 1) & 255))
+    rows.sort(key=lambda row: (row[1] + 128) % 256 - 128, reverse=True)
+    print(name,hex(seed),rows)
+'@ | uv run --locked python -X utf8 -
+```
+
+To reproduce the comparison report from completed evidence without a host run,
+load the selected private environment as above and choose a fresh ignored output:
+
+```powershell
+uv run --locked python -m sf2tool.remake_h4_comparison compare `
+  --reference local/issue525/reference.json --plan local/issue525/plan-v2.json `
+  --actual local/issue530/actual-corrected.jsonl `
+  --host-log local/issue530/godot-corrected.log --host-exit 2 `
+  --output local/issue534/comparison-reread.json
+```
+
+**Inferred:** differing pre-round seeds fully explain the two scored arrays under
+the same source rule. Exploration/dialogue caller scheduling is a credible source
+of the seed difference, but the complete call correspondence is not established.
+The matching per-seed replays provide no evidence of a turn-order or main-generator
+rule defect. The comparator
+correctly leaves first-control `mainSeed readback` Unavailable because its
+timing-to-RNG mapping is not established; scored order and diagnostic next actor
+remain FAIL. The exact callers of the first two original field draws, complete
+exploration-to-battle call correspondence, and NPC phase contribution remain
+**Unknown**. If exact selected H4 order is pursued, the next bounded observation
+must identify seed-before/range/caller/seed-after for those first original field
+draws and pair them with actual simulation/input events before changing a rule.
+The deterministic comparison condition is also unresolved: the selected original
+route includes elapsed polling and caller opportunities while the probe applies
+immediate logical inputs. A behavioral contract must say which gameplay-affecting
+opportunities the host must preserve, including acknowledgement and route results,
+without equating original and host clocks or frame counts. Reassess this against
+accepted wait/consumer behavior before a timing-dependent production correction.
+The accepted contract compares reached turn scores/order and gameplay decisions;
+ADR 0010/0019 do not impose original held-frame or text-wait timing on the host.
+Do not reseed, pad waits, alter the selected golden, or assert a general engine
+defect from this trace. Whole H4 remains open.
+
 The accepted [post-victory original extension](../../docs/research/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)
 supplies Down from Map57 `(5,12)` to `(5,13)`. This driver does not reach that boundary or bind its
 new-chain payload; its Unavailable result means missing comparison/actual execution, not absent
