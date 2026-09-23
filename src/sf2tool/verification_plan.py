@@ -650,6 +650,7 @@ ENGINE_WIRING_PATHS = frozenset(
         "src/sf2tool/harness.py",
         "src/sf2tool/verification_plan.py",
         "src/sf2tool/remake_exploration_content.py",
+        "src/sf2tool/remake_battle_scene_content.py",
         "remake/reference/inputs/map3-programs.json",
     }
 )
@@ -785,7 +786,10 @@ def plan_paths(
         if normalized in ENGINE_EVIDENCE_INPUTS:
             # Preserve the owning research selection and the actual engine consumer.
             _selection_entry(selected, "engine-unit", normalized)
-        if normalized == "src/sf2tool/remake_exploration_content.py":
+        if normalized in {
+            "src/sf2tool/remake_exploration_content.py",
+            "src/sf2tool/remake_battle_scene_content.py",
+        }:
             for partition in (
                 "engine-unit",
                 "adapter-build",

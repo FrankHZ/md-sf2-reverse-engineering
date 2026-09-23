@@ -743,6 +743,10 @@ $env:SF2_BATTLE_SCENE_OBSERVATION_OUTPUT = Join-Path $observationOutput 'observa
 ```
 
 Build the actual adapter first using the [locked SDK workflow](./development-and-verification.md#locked-net-workflow).
+The isolated scene consumer/generator uses `uv run sf2 verify plan --scope engine --base origin/main --head HEAD`
+on a clean committed head. Its exact generator path selects engine behavior, adapter compilation and
+the existing direct public checks; research inputs still reject that explicit scope. This classification
+does not extend to other generators or change research verification requirements.
 The normal host also consumes this content through `--private-exploration-start`; source private
 physical scenes fail explicitly when content is missing. The external observer reads actual node
 resources, frame/position state, session effects and audio receipts, and submits ordinary keys.
