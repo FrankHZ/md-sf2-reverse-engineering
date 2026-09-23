@@ -3,6 +3,7 @@ extends SceneTree
 # Real host input and read-only scene/node observations. Persist new events and
 # changed projections only; no frame-by-frame whole-world JSON or screenshots.
 var host: Node
+var output: FileAccess
 var view: Node
 var failures: Array = []
 var events: Array = []
@@ -151,7 +152,22 @@ func _stay() -> Dictionary:
     await _press(KEY_ENTER)
     return await _settle()
 
+func _open_output() -> bool:
+    var output_path := OS.get_environment("SF2_BATTLE_SCENE_OBSERVATION_OUTPUT").replace("\\", "/").simplify_path()
+    var local_root := ProjectSettings.globalize_path("res://../../local/").replace("\\", "/").simplify_path().trim_suffix("/") + "/"
+    if not output_path.to_lower().begins_with(local_root.to_lower()) or FileAccess.file_exists(output_path):
+        push_error("Battle scene output must be fresh and worktree-local")
+        quit(2)
+        return false
+    output = FileAccess.open(output_path, FileAccess.WRITE)
+    if output == null:
+        push_error("Battle scene output is unavailable")
+        quit(2)
+        return false
+    return true
+
 func _run() -> void:
+    if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     await process_frame
@@ -221,9 +237,12 @@ func _finish() -> void:
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries,
         "audioDriver": AudioServer.get_driver_name()}
-    var file := FileAccess.open(OS.get_environment("SF2_BATTLE_SCENE_OBSERVATION_OUTPUT"), FileAccess.WRITE)
-    file.store_string(JSON.stringify(result))
-    file.close()
+    output.store_string(JSON.stringify(result))
+    output.flush()
+    var write_error := output.get_error()
+    output.close()
+    if write_error != OK:
+        _check(false, "Battle scene output could not be written")
     if is_instance_valid(view) and view.is_connected("SessionResultObserved", _result):
         view.disconnect("SessionResultObserved", _result)
     if is_instance_valid(exploration) and exploration.is_connected("SessionResultObserved", _result):
