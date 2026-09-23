@@ -697,12 +697,60 @@ buffer and possible adaptive resampling prevent claiming exact hardware sample p
 requires the retained private capture/configuration, candidate manifest and ordinary-input host
 observation; neither the loop interval nor a waveform seam metric alone proves the host result.
 
-**Unknown / incomplete:** original per-channel mixing is not reproduced by the single replacing SFX
-player. Original command 253 fade semantics and complete reached field/UI cue bindings remain
+### Finite SFX overlap
+
+The session audio owner preserves an active finite clip when a new effect writes disjoint source
+slots. Equal or fully covered slot sets replace the old clip. A request that would overwrite only
+part of an active clip fails with `sfx-partial-overlap-unsupported` before changing any playback;
+whole PCM files cannot retain just that clip's surviving channels. An admitted command without a
+reviewed slot classification fails with `sfx-slots-unavailable`. Existing content/timer errors remain
+explicit. No extra action wait or gameplay tick is introduced for a cosmetic effect's tail.
+
+**Confirmed source structure:** pinned `sounddriver.asm:Load_SFX` initializes only non-FF channel
+entries, and its type-2 effects have separate temporary YM records. `StopMusic` preserves these
+extra records. The existing H2 sound inventory's `sfxModel.entries.activeSlots` supplies the bounded
+classification in `SessionAudio`; command names and type numbers alone are insufficient. Commands
+83 and 102 occupy YM6 and PSG tone3 respectively; 113 occupies YM4/5 while 67 occupies PSG tone3.
+The former single player truncated 83 on level sound 102 and recovery 113 on confirmation 67 in
+retained ordinary controlled scene observations. These are independent cue-lifetime defects, not
+waveform-fidelity requirements. Classification of PSG noise and tone slots expresses replacement
+identity only; it does not prove acoustic independence or reproduce their chip coupling.
+
+`ReadAudioObservationJson()` includes each live effect's cue, command, source slots, actual
+`Playing`/position and start receipt sequence in `sounds`. Every voice retains its own actual
+`Finished` callback. Already-ended voices await that callback; `Playing == false` alone is not
+reported as completion. Replacement and disposal disconnect callbacks and release streams/nodes.
+The receipt window remains bounded; inspectors must collect it without sequence gaps.
+
+For the existing controlled physical reward and Herb source-world observation modes below, set
+`SF2_BATTLE_SCENE_DISJOINT_AUDIO=1`. The observer samples actual simultaneous players and checks a
+pair of independently completed instances (83/102 or 113/67). Rapid later tone input may replace a
+tone; it must not truncate the independent reaction sound. After product input release, the observer
+collects the playback tail and requires unchanged gameplay state. This is observation latency,
+not a product wait. Pair normal/reduced-flash runs using the same semantic inputs and compare their
+session observations; no full host Option A conformance follows from an audio overlap check.
+
+**Confirmed, bounded actual consumer observations:** the controlled physical reward and Herb modes
+each passed normal/reduced-flash WASAPI runs with concurrent players and independent natural
+completion. Each settings pair produced identical ordered session observations and final shared RNG;
+playback-tail collection left the input-ready gameplay state unchanged. An independent adapter-only
+owner additionally observed reverse arrival, starts after completion, same-slot/full-coverage
+replacement, unchanged active playback on partial/unknown/missing rejection, duplicate-result
+suppression and stream/callback disposal. It reused admitted PCM and did not mutate a game session.
+PSG noise/tone coverage was a slot-lifetime check only. Earlier observations that ended before the
+queued `Finished`, or required a rapid UI tone to survive legitimate same-slot replacement, remain
+failed observations; no engine or source rule was changed to satisfy them.
+
+**Unknown / incomplete:** partial channel replacement, original music/SFX masking, live timer changes
+within an active PCM clip and full original mixing remain unsupported. Original command 253 fade semantics and complete reached field/UI cue bindings remain
 incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
 music/SFX and input-release subset; HEAL spell/fairy consumption remains unfinished. The existing modern
 half-second `SoundFade` service is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
+JOIN still lacks the source logical audio-end/interleaving binding required in addition to actual
+PCM completion by accepted Option A. Field-Wait eligibility does not supply it; PCM duration cannot
+be converted into logical work or RNG opportunities. The instant/reveal-all speech difference above
+still requires its own 10A disposition and same-semantic-Wait/acknowledgement comparison.
 
 ## Physical Battle Scenes
 
