@@ -51,11 +51,7 @@ internal static class ExplorationDispatcher
             bool playerWait = command is WaitAtInput;
             if (playerWait)
             {
-                if (current.StopReason != SessionStopReason.PlayerInput || current.Exploration is not { } field ||
-                    current.Story.Cursor is not null || current.Story.Wait is not null || current.Story.Callers.Count != 0 ||
-                    current.Story.Continuation != ProgramContinuation.FieldInput || current.Story.EnteringBattle is not null ||
-                    current.Story.EntityEvent is not null || current.Story.TextWindow is not ClosedTextWindow ||
-                    field.PlayerEntity.Busy || field.PlayerEntity.WaitingForSprite)
+                if (!current.CanWaitAtInput)
                     return Reject(current, "field-input-unavailable", "command");
                 // A deliberate input owns exactly one opportunity; use the existing update path.
                 command = new AdvanceSimulation();

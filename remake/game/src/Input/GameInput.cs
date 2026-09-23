@@ -2,13 +2,16 @@ using Godot;
 
 namespace Sf2.Remake.GodotAdapter.Input;
 
-internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item }
+internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait }
 
 internal sealed class GameInput
 {
     private readonly Dictionary<GameAction, List<InputEvent>> _bindings = [];
     private readonly Dictionary<(int Device, JoyAxis Axis), int> _axes = [];
     internal InputSettings Settings { get; }
+    internal bool WaitHeld { get; private set; }
+    private bool _waitRequiresRelease;
+    internal void DisarmWait() => _waitRequiresRelease |= WaitHeld;
 
     internal GameInput(InputSettings settings)
     {
@@ -26,6 +29,7 @@ internal sealed class GameInput
             ["item"] = new(["I"], ["Back"], []),
             ["target"] = new(["Tab"], ["RightShoulder"], []),
             ["stay"] = new(["Space"], ["LeftShoulder"], []),
+            ["wait"] = new(["V"], ["RightStick"], []),
         };
         foreach (var (name, binding) in settings.Bindings)
         {
@@ -95,6 +99,14 @@ internal sealed class GameInput
 
     internal GameAction? Resolve(InputEvent input)
     {
+        bool held = Godot.Input.IsActionPressed(MapName(GameAction.Wait));
+        bool freshWait = held && !WaitHeld;
+        WaitHeld = held;
+        // A canceled hold must pass through a real mapped release/neutral event.
+        if (!held && (InputMap.EventIsAction(input, MapName(GameAction.Wait), true) ||
+            input is InputEventJoypadMotion neutral && Math.Abs(neutral.AxisValue) < 0.5f &&
+            _bindings[GameAction.Wait].Any(binding => binding is InputEventJoypadMotion axis && axis.Axis == neutral.Axis)))
+            _waitRequiresRelease = false;
         if (input is InputEventJoypadMotion motion)
         {
             int direction = Math.Abs(motion.AxisValue) < 0.5f ? 0 : Math.Sign(motion.AxisValue);
@@ -108,7 +120,8 @@ internal sealed class GameInput
         else if (input is not (InputEventKey { Pressed: true, Echo: false } or InputEventJoypadButton { Pressed: true }))
             return null;
         foreach (var action in _bindings.Keys)
-            if (InputMap.EventIsAction(input, MapName(action), true)) return action;
+            if (InputMap.EventIsAction(input, MapName(action), true))
+                return action == GameAction.Wait && (!freshWait || _waitRequiresRelease) ? null : action;
         return null;
     }
 

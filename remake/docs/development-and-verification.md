@@ -96,11 +96,82 @@ new Wait rechecks the boundary; a result is not guaranteed to remain ready. Batt
 dialogue/choice/audio consumers and moving players reject without advancing. `Acknowledge` and
 `CompletePresentation` do not substitute for this input or supply extra field opportunities.
 
-This is an engine API only. The host has no Wait binding here; existing automatic idle ticking,
-mandatory `AdvanceSimulation`, reveal and actual delivery tokens are unchanged. No interactive rate,
-generic scheduler or scene Wait consumer is introduced. It does not normalize the old 260-step trace
-or close the first-warp, JOIN logical-audio-end or HEAL natural-order evidence gaps. Preserve the
-completed comparisons and failures in the [H4 diagnostic](#continuous-h4-comparison) below.
+The engine guard and host share `SessionSnapshot.CanWaitAtInput`. The host binds Wait to **V / Pad
+RightStick**, configurable through the existing `bindings.wait` setting. Its field help derives the
+effective binding and explains that releasing pauses field time, **including NPCs midway through
+motion**. This is an explicit modern interaction policy, not a claim about the original idle clock.
+A fresh press submits one `WaitAtInput`; holding submits at most one per host process callback and
+at most 60 repeats per second. A monotonic 16,667-microsecond deadline drops missed opportunities;
+there is no catch-up batch or accumulated field debt. Different hold durations/frame rates can
+produce different input counts. Comparisons use the same accepted semantic Wait count, not equal
+milliseconds of holding.
+
+At an eligible field boundary, no Wait means no autonomous entity update. Already committed player
+movement continues through `AdvanceSimulation`; arrival at field input clears unused tick budget.
+Each result rechecks eligibility. Release, another action, loss of window focus, hide/show, actual
+tree pause/unpause, failure or departure from this consumer disarms the hold. Returning requires a
+mapped release/neutral event and a fresh press. Reveal-only Confirm does not supply a field Wait.
+This is not a global pause action: presentation delivery continues. Existing autonomous updates at
+dialogue, audio and other non-field consumers remain unreconciled legacy behavior, not newly proven
+mandatory work or whole-host Option A conformance. The first-warp, JOIN logical-audio-end and HEAL
+natural-order evidence gaps remain Unknown; preserve the [H4 diagnostic](#continuous-h4-comparison)
+results. This input does not normalize the old 260-step trace.
+
+**Confirmed:** the bounded `field-wait-*` cases in the existing
+[input observer](../game/probes/engine_input_accessibility_observation.gd) exercise actual native
+input through ordinary `Main.tscn`, including tap/hold/release, repeated press suppression, a missed
+callback interval, NPC pause during motion, other-action/hide/tree-pause cancellation, and mandatory
+movement reaching a debt-free input boundary. A native sibling window transfers OS focus; checks
+read actual window focus and session state, never manually emit notifications. Dialogue/choice,
+actual presentation input and reveal-only Confirm produce no field Wait receipts; returning to field cannot resume
+a canceled hold. Hardware controller driver/hot-plug behavior remains outside injected events.
+
+After the protected environment above and a Debug adapter build, reproduce in the existing owned
+Godot project. Visible startup is required for this OS-focus observation. Every case writes its
+authored input, settings and output to a fresh ignored directory; changed startup settings justify
+separate runs, without copying the project or installation:
+
+The `field-wait-*` entry requires exactly one `--authored-package` and `--input-settings` argument
+and a nonempty `SF2_EXPLORATION_OBSERVATION_OUTPUT`. Before any destination is opened it normalizes
+all three absolute paths, requires distinct fresh destinations under this worktree's ignored
+`local/`, existing real parent directories, and rejects file/directory/link reuse. It opens output
+and writes/flushes/checks/closes the generated inputs before instantiating Main. I/O errors exit2
+with the names of this run's newly created files; a partial fresh file may remain as failed-run
+evidence. Existing destinations are rejected. Only this run's created package can be
+rewritten for the later presentation scenario. Final output also flushes/checks/closes before exit.
+This guard is specific to the new field-wait entry; legacy observer cases retain their prior lifecycle.
+
+```powershell
+$run = Join-Path (Get-Location) 'local/field-wait-keyboard'
+New-Item -ItemType Directory -Path $run | Out-Null
+$env:SF2_INPUT_CASE = 'field-wait-keyboard'
+# Also field-wait-gamepad, field-wait-remapped-keyboard, field-wait-remapped-gamepad.
+# field-wait-remapped-axis-gamepad uses otherwise unbound LeftX+ for Wait.
+$env:SF2_INPUT_VARIANT = 'random' # Repeat remapped-gamepad with 'collision'.
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
+& $godotBinary --path remake/game --script res://probes/engine_input_accessibility_observation.gd -- `
+  --authored-package (Join-Path $run 'package.json') --input-settings (Join-Path $run 'settings.json')
+```
+
+Require zero exit, `passed:true`, empty failures/unavailable and no native errors. Product assertion
+failure exits1; an unavailable OS-focus observation exits2 with an explicit `unavailable` entry and
+stops before dependent checks. Never replace a rejected foreground activation with a simulated
+notification or report the environmental refusal as a product failure. Compare the
+`semantic-four-waits` checkpoint across the four random cases: simulation tick, main seed and all
+entity state agree despite 120/30 FPS caps, instant/adjustable text, swapped Confirm/Cancel,
+reduced-flash settings and remapped keyboard/gamepad bindings. This checkpoint begins with a
+two-opportunity NPC wait, then a random walk. The independent `collision` variation checks two
+physical slots competing for one destination. OS focus is **Unknown** for a headless-only run;
+successful headless process exit cannot substitute for the visible observation.
+
+The axis case additionally covers fresh positive deflection, held duplicate suppression, opposite
+direction releasing the mapped Wait, neutral followed by a fresh deflection, and actual tree pause
+requiring new input. **Confirmed:** its four-Wait checkpoint equals the button/keyboard cases;
+axis/hide/pause, mandatory movement, dialogue/presentation, and native focus return/rearm checks
+pass. Independent consumer checks run before the final focus transfer so an environmental focus
+refusal does not hide their results. Preserve earlier completed focus-unavailable runs: later
+success does not make OS foreground activation universally available. The earlier five complete
+button/keyboard cases remain separate evidence; hardware driver/hot-plug behavior remains Unknown.
 
 Direct acceptance uses `ExplorationSessionTests`: independent seed/target/counter assertions for
 different valid states, physical-slot collision, Wait followed by Move, stale/wrong consumer inputs

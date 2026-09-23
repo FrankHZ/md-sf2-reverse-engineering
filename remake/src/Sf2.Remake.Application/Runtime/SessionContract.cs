@@ -73,6 +73,11 @@ public sealed class SessionSnapshot
     public ExplorationState? Exploration => (Active as ActiveExploration)?.World;
     public BattleSelection? Selection => (Active as ActiveBattle)?.Selection;
     public SessionStopReason StopReason { get; }
+    public bool CanWaitAtInput => Active is ActiveExploration field && StopReason == SessionStopReason.PlayerInput &&
+        Story.Cursor is null && Story.Wait is null && Story.Callers.Count == 0 &&
+        Story.Continuation == ProgramContinuation.FieldInput && Story.EnteringBattle is null &&
+        Story.EntityEvent is null && Story.TextWindow is ClosedTextWindow &&
+        !field.World.PlayerEntity.Busy && !field.World.PlayerEntity.WaitingForSprite;
     internal SessionSnapshot WithStory(StoryState story) => new(SessionId, Revision, ObservationSequence, Active, story, StopReason);
 }
 
