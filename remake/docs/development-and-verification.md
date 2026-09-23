@@ -375,13 +375,49 @@ while slots 6 and 8 must finish destination and wait phases before another rando
 walk. This makes slot 5 the source-supported walking-NPC candidate for the first
 field advance, but the retained field segment did not capture a caller PC or an
 entity update at that exact draw. Other source callers at that boundary have not
-been excluded. The selected actual start omits NPC action phase: `SceneEntities.Build`
-sets definition positions and synthesizes `WaitTimer` from the slot number, while
-the selected start input supplies no NPC phase. Actual admission sequence 2 shows
-slots 5, 6 and 8 stationary at action cursor 0; the first retained actual walker
-draw occurs at sequence 79/tick 23 for slot 8, followed by slot 6 at sequence
-83/tick 25 and slot 5 at sequence 85/tick 26. This is a concrete selected-start
-binding gap, separate from the unresolved logical timing choice.
+been excluded. The retained `local/issue530/actual-corrected.jsonl` run predates
+the selected-start phase binding: its admission sequence 2 shows slots 5, 6 and 8
+stationary at action cursor 0; its first walker draws occur at sequence 79/tick 23
+for slot 8, sequence 83/tick 25 for slot 6, and sequence 85/tick 26 for slot 5.
+
+**Confirmed (bounded selected R1 phase correction):** the original R1 observer
+retained each 32-byte entity record; pinned `disasm/sf2enums.asm` offsets decode
+all 18 fields consumed by `EntityMotionState` for the three walkers. The selected
+controlled start binds those fields to existing action cursors and motion gates
+after scene allocation, before the on-load program. The first eligible actual
+engine update preserves allocation and aliases, advances the seed `0x9917` to
+`0xC632` when slot 5 walks Down toward `(20,14)`, begins slot 6's wait 20, and
+moves slot 8 from raw Y 3453 to 3450. This source-rule match does not locate the
+uncaptured original caller or align host ticks to original frames. The affected
+private `FullOriginalOpeningConsumesR1InputsAndMatchesR2AndR2aThroughStableFieldControl`
+test still fails at original logical input index 29: after the preceding Right,
+the expected player tile is `(20,14)` but actual remains `(19,14)`. The actual
+command reports `movement-blocked`; host traversal allows `(20,14)`, while slot
+5 is settled there with flags A `0xEF`, and the host occupancy predicate is true.
+The selected route's autonomous/input opportunity mapping and any later movement
+rule difference remain **Unknown**. This correction is not an H4 pass; the
+original route assertion and fixture remain unchanged.
+
+**Confirmed (bounded ordinary host prefix):** with the selected R1 phase input,
+the closed accepted #517 audio world (asset-library commit `7219d9c6`) and the
+first 30 unchanged logical steps of
+`local/issue525/plan-v2.json`, the existing ordinary-input observer retained one
+session, 514 result signals, no reported session-result failure and native exit 0.
+At actual `after:1`, player tile `(55,3)` and seed `0xC632` match the earliest
+original same-tile boundary above; slot 5 is already moving Down. At `after:30`,
+the player has reached `(21,14)` and slot 5 has vacated `(20,14)`. Thus this host
+prefix does not reproduce the minimal-tick test's occupancy rejection. It does
+not exercise JOIN or establish a complete original-to-host opportunity schedule.
+The first ignored run (`local/issue534/host-prefix-01/`) also logged two
+post-terminal `Parameter "f" is null` errors: the observer still subscribed to
+result signals after closing its output. The observer now disconnects after its
+terminal state read and before writing/closing the terminal record. Repeating
+the same prefix in `local/issue534/host-prefix-02/` retained 1,109 JSONL records,
+all 514 result signals, the same first seed and end tile, native exit 0 and no
+Godot log errors. The prefix plan is `local/issue534/ordinary-prefix-plan.json`,
+derived by retaining steps 1–30 from the prior plan and removing only its later
+battle-decision fields; each run uses a fresh worktree-local output destination.
+Neither run establishes finite-JOIN compatibility or an H4 milestone pass.
 
 At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
 order 55395), the seed is `0x6DC1`. The retained projection contains 885

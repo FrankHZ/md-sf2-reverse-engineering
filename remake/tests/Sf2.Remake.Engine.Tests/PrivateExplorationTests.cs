@@ -115,10 +115,24 @@ public sealed class PrivateExplorationTests
         Assert.Equal(new[] { 0, 2, 5 }, Enumerable.Range(0, 3).Select(id => Entity(session, id).Sprite!.Value));
         var identity = session.Current.SessionId;
         using var r2 = Fixture("r2");
-        foreach (var edge in Record(r2).GetProperty("logicalInputTrace").EnumerateArray())
+        var inputTrace = Record(r2).GetProperty("logicalInputTrace").EnumerateArray().ToArray();
+        string previousInputOutcome = "start";
+        for (int index = 0; index < inputTrace.Length; index++)
         {
+            var edge = inputTrace[index];
             Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
-            Assert.Equal(new MapPosition(edge.GetProperty("x").GetInt32(), edge.GetProperty("y").GetInt32()), Entity(session, 0).Position);
+            var expectedPosition = new MapPosition(edge.GetProperty("x").GetInt32(), edge.GetProperty("y").GetInt32());
+            var actualPosition = Entity(session, 0).Position;
+            if (expectedPosition != actualPosition)
+            {
+                var walker = Entity(session, 130);
+                var world = session.Current.Exploration!;
+                bool occupied = EntityMotion.FieldObstructed(expectedPosition.X * 384, expectedPosition.Y * 384,
+                    world.AllEntities.Where(entity => entity.Slot != 0 && entity.Visible).Select(entity => entity.Motion));
+                Assert.True(false, $"input {index}: expected {expectedPosition}, actual {actualPosition}; previous {previousInputOutcome}; " +
+                    $"walker5=({walker.Motion.X},{walker.Motion.Y})->({walker.Motion.XDestination},{walker.Motion.YDestination}) " +
+                    $"flagsA={walker.Motion.FlagsA}; expected tile occupied={occupied}");
+            }
             var input = edge.GetProperty("input").GetString();
             SessionCommand command;
             if (input == "C")
@@ -131,7 +145,9 @@ public sealed class PrivateExplorationTests
             }
             else command = new Move(input switch { "Left" => ExplorationDirection.West, "Right" => ExplorationDirection.East,
                 "Up" => ExplorationDirection.North, "Down" => ExplorationDirection.South, _ => throw new InvalidOperationException() });
-            observations.AddRange(Accept(session, command).Observations);
+            var commandResult = Accept(session, command);
+            observations.AddRange(commandResult.Observations);
+            previousInputOutcome = string.Join(",", commandResult.Observations.Select(observation => observation.Kind));
             if (session.Current.StopReason != SessionStopReason.PlayerInput)
                 Assert.Null(RunUntilStop(session, observations: observations, texts: texts, yes: yes).Failure);
             Assert.Equal(identity, session.Current.SessionId);
