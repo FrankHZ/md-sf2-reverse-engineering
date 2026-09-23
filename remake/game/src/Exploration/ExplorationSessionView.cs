@@ -40,6 +40,9 @@ public sealed partial class ExplorationSessionView : Control
     private double _revealed;
     private bool _speechSoundToggle;
     private double _tickTime;
+    private bool _waitingAtInput;
+    private ulong _nextWaitMicros;
+    private ulong _lastWaitFrame;
     private ExplorationState? _lastWorld;
     private ExplorationPresentation? _presentation;
     private SessionAudio? _audio;
@@ -57,8 +60,35 @@ public sealed partial class ExplorationSessionView : Control
         _help = new Label { Name = "Help", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_title); AddChild(_dialogue); AddChild(_help);
         GetViewport().SizeChanged += Present;
+        GetWindow().FocusExited += CancelFieldWait;
+        VisibilityChanged += CancelFieldWait;
     }
-    public override void _ExitTree() { GetViewport().SizeChanged -= Present; _presentation?.Dispose(); }
+    public override void _ExitTree()
+    {
+        CancelFieldWait();
+        GetViewport().SizeChanged -= Present;
+        GetWindow().FocusExited -= CancelFieldWait;
+        VisibilityChanged -= CancelFieldWait;
+        _presentation?.Dispose();
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPaused || what == NotificationUnpaused) CancelFieldWait();
+    }
+
+    private void CancelFieldWait()
+    {
+        _waitingAtInput = false; _nextWaitMicros = 0;
+        _input?.DisarmWait();
+    }
+
+    private void SubmitFieldWait()
+    {
+        _lastWaitFrame = Engine.GetProcessFrames();
+        _nextWaitMicros = Time.GetTicksUsec() + 16667;
+        Send(new WaitAtInput());
+    }
 
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
@@ -100,6 +130,17 @@ public sealed partial class ExplorationSessionView : Control
             QueueRedraw();
             if (presentation.Error is not null) { Present(); return; }
         }
+        if (_session.Current.CanWaitAtInput)
+        {
+            // Idle field time is explicitly paused. Presentation time never becomes field debt.
+            _tickTime = 0;
+            if (!GetWindow().HasFocus() || !IsVisibleInTree() || !_input.WaitHeld || PresentationFailure is not null)
+                CancelFieldWait();
+            else if (_waitingAtInput && Engine.GetProcessFrames() != _lastWaitFrame && Time.GetTicksUsec() >= _nextWaitMicros)
+                SubmitFieldWait(); // No batch or catch-up for missed repeat deadlines.
+            return;
+        }
+        if (_waitingAtInput) CancelFieldWait();
         if (NeedsTicks(_session.Current))
         {
             const double tickDuration = 1.0 / 60;
@@ -113,7 +154,7 @@ public sealed partial class ExplorationSessionView : Control
                 // The engine may yield before consuming the batch. Retain its unused time
                 // for automatic continuation, but never carry paused input time into a new wait.
                 _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
-                if (_handedOff || !NeedsTicks(_session.Current)) _tickTime = 0;
+                if (_handedOff || _session.Current.CanWaitAtInput || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
         else _tickTime = 0;
@@ -125,8 +166,16 @@ public sealed partial class ExplorationSessionView : Control
 
     internal void HandleAction(GameAction action)
     {
+        if (action != GameAction.Wait) CancelFieldWait();
         if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl || _session.Current.BattleScene is not null || PresentationFailure is not null) return;
         var current = _session.Current;
+        if (action == GameAction.Wait)
+        {
+            if (!current.CanWaitAtInput || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return; }
+            _waitingAtInput = true;
+            SubmitFieldWait();
+            return;
+        }
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
         {
@@ -187,6 +236,8 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        if (!_session.Current.CanWaitAtInput || _result.Failure is not null) CancelFieldWait();
+        else _tickTime = 0;
         PublishResult("submit");
         _audio?.Observe(_result);
         if (_result.Failure is null && command is Acknowledge or ChooseDialogue) _audio?.PlayEffect(67);
@@ -239,6 +290,8 @@ public sealed partial class ExplorationSessionView : Control
             EntityWait or TickWait or PresentationWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
+        if (current.CanWaitAtInput)
+            _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
         // A sound wait can become an input wait on the same already-visible text window.
@@ -283,6 +336,8 @@ public sealed partial class ExplorationSessionView : Control
         return JsonSerializer.Serialize(new
         {
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
+            canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
+            waitHeld = _input.WaitHeld, focused = GetWindow().HasFocus(),
             viewport = Battles.BattleMapViewport.Rectangle(GetViewportRect()),
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
             battleMounted = _battleMounted,

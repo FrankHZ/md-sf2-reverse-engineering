@@ -11,6 +11,8 @@ var private_route := "private" in input_case
 var maximum_white := 0.0
 var completed_white: Array = []
 var white_tokens: Dictionary = {}
+var wait_receipts: Array = []
+var release_at := -1
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -39,15 +41,15 @@ func physical(code: int, pressed: bool) -> void:
     var action: String = {KEY_UP:"up", KEY_W:"up", KEY_RIGHT:"right", KEY_D:"right",
         KEY_DOWN:"down", KEY_S:"down", KEY_LEFT:"left", KEY_A:"left",
         KEY_ENTER:"confirm", KEY_Z:"confirm", KEY_ESCAPE:"cancel", KEY_X:"cancel",
-        KEY_F:"attack", KEY_H:"spell", KEY_TAB:"target", KEY_SPACE:"stay"}[code]
+        KEY_F:"attack", KEY_H:"spell", KEY_TAB:"target", KEY_SPACE:"stay", KEY_V:"wait"}[code]
     if use_pad:
         var buttons := {"up":JOY_BUTTON_DPAD_UP,"right":JOY_BUTTON_DPAD_RIGHT,
             "down":JOY_BUTTON_DPAD_DOWN,"left":JOY_BUTTON_DPAD_LEFT,
             "confirm":JOY_BUTTON_A,"cancel":JOY_BUTTON_B,"attack":JOY_BUTTON_X,
-            "spell":JOY_BUTTON_Y,"target":JOY_BUTTON_RIGHT_SHOULDER,"stay":JOY_BUTTON_LEFT_SHOULDER}
+            "spell":JOY_BUTTON_Y,"target":JOY_BUTTON_RIGHT_SHOULDER,"stay":JOY_BUTTON_LEFT_SHOULDER,"wait":JOY_BUTTON_RIGHT_STICK}
         if remapped:
             buttons.merge({"confirm":JOY_BUTTON_Y,"cancel":JOY_BUTTON_X,"attack":JOY_BUTTON_A,
-                "spell":JOY_BUTTON_B,"target":JOY_BUTTON_LEFT_SHOULDER,"stay":JOY_BUTTON_RIGHT_SHOULDER}, true)
+                "spell":JOY_BUTTON_B,"target":JOY_BUTTON_LEFT_SHOULDER,"stay":JOY_BUTTON_RIGHT_SHOULDER,"wait":JOY_BUTTON_START}, true)
         var event := InputEventJoypadButton.new()
         event.button_index = buttons[action]
         event.device = 0
@@ -58,9 +60,11 @@ func physical(code: int, pressed: bool) -> void:
         event.keycode = code
         if remapped:
             event.keycode = {"up":KEY_I,"right":KEY_L,"down":KEY_K,"left":KEY_J,
-                "confirm":KEY_E,"cancel":KEY_Q,"attack":KEY_R,"spell":KEY_T,"target":KEY_U,"stay":KEY_O}[action]
+                "confirm":KEY_E,"cancel":KEY_Q,"attack":KEY_R,"spell":KEY_T,"target":KEY_U,"stay":KEY_O,"wait":KEY_B}[action]
         event.pressed = pressed
         Input.parse_input_event(event)
+
+    if "field-wait" in input_case: Input.flush_buffered_events()
 
 func key(code: int) -> void:
     physical(code, true)
@@ -157,9 +161,9 @@ func write_settings(path: String) -> void:
     if OS.get_environment("SF2_INPUT_RATE") != "": settings.charactersPerSecond = int(OS.get_environment("SF2_INPUT_RATE"))
     if remapped:
         var keys := {"up":"I","right":"L","down":"K","left":"J","confirm":"Q","cancel":"E",
-            "attack":"R","spell":"T","target":"U","stay":"O","item":"P"}
+            "attack":"R","spell":"T","target":"U","stay":"O","item":"P","wait":"B"}
         var buttons := {"up":"DpadUp","right":"DpadRight","down":"DpadDown","left":"DpadLeft",
-            "confirm":"West","cancel":"North","attack":"South","spell":"East","target":"LeftShoulder","stay":"RightShoulder","item":"Back"}
+            "confirm":"West","cancel":"North","attack":"South","spell":"East","target":"LeftShoulder","stay":"RightShoulder","item":"Back","wait":"Start"}
         var axes := {"up":["RightY-"],"right":["RightX+"],"down":["RightY+"],"left":["RightX-"]}
         for action in keys:
             settings.bindings[action] = {"keys":[keys[action]],"buttons":[buttons[action]],"axes":axes.get(action, [])}
@@ -168,6 +172,9 @@ func write_settings(path: String) -> void:
     file.close()
 
 func run() -> void:
+    if "field-wait" in input_case:
+        await run_field_wait()
+        return
     if private_route:
         var args := OS.get_cmdline_user_args()
         write_settings(args[args.find("--input-settings") + 1])
@@ -301,10 +308,206 @@ func run() -> void:
         check(attacked.help.contains("E / Pad North: choose action"), "Swapped help projects semantic Confirm")
     finish_public()
 
+func field_signature(s: Dictionary) -> Array:
+    return [s.revision, s.simulationTick, s.mainSeed, s.entities]
+
+func observe_wait(result_json: String) -> void:
+    var result: Dictionary = JSON.parse_string(result_json)
+    check(result.failure == null, "Every submitted field command succeeds")
+    for observation in result.observations:
+        if observation.Kind == "gameplay-wait":
+            wait_receipts.append({"frame":Engine.get_process_frames(), "micros":Time.get_ticks_usec(),
+                "revision":result.revision})
+            if wait_receipts.size() == release_at:
+                physical(KEY_V, false)
+
+func assert_field_paused(label: String) -> void:
+    var before := state()
+    await create_timer(0.12).timeout
+    var after := read_sample(label)
+    check(field_signature(after) == field_signature(before), label + ": no revision, tick, RNG or entity progress")
+
+func tap_wait() -> void:
+    var count := wait_receipts.size()
+    physical(KEY_V, true)
+    physical(KEY_V, false)
+    await process_frame
+    check(wait_receipts.size() == count + 1, "A fresh tap admits exactly one Wait")
+
+func run_field_wait() -> void:
+    # Use the same owned project and actual startup path. Native focus requires a visible window.
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 30 if remapped else 120
+    var args := OS.get_cmdline_user_args()
+    var package: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    var collision := OS.get_environment("SF2_INPUT_VARIANT") == "collision"
+    package.battle.start.mainSeed = 0xC632A55A
+    var entities: Array = package.world.maps[0].entities
+    entities[0].actions = [{"op":"wait","ticks":2},{"op":"random-walk","x":2,"y":1,"radius":1}]
+    if collision:
+        entities[0].actions = [{"op":"move","x":1,"y":0}]
+        entities.append({"id":"other","position":{"x":4,"y":1},"facing":2,"speed":96,
+            "visible":true,"obstruction":true,"actions":[{"op":"move","x":-1,"y":0}]})
+    var file := FileAccess.open(args[args.find("--authored-package") + 1], FileAccess.WRITE)
+    file.store_string(JSON.stringify(integer_numbers(package)))
+    file.close()
+    write_settings(args[args.find("--input-settings") + 1])
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await create_timer(0.2).timeout
+    var initial := read_sample("field-input")
+    check(initial.canWaitAtInput and initial.focused, "Actual focused eligible field consumer")
+    if not initial.focused or initial.failure != null:
+        check(false, "OS focus observation unavailable on this display")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", observe_wait)
+    check(initial.help.contains("B / Pad Start" if remapped else "V / Pad RightStick") and
+        initial.help.contains("including NPCs"), "Help uses effective Wait binding and explains NPC pause")
+    await assert_field_paused("idle")
+    await tap_wait()
+    var tap := read_sample("tap")
+    check(tap.simulationTick == initial.simulationTick + 1, "Tap advances one logical opportunity")
+    if collision:
+        check(tap.entities[1].targetX == 1152 and tap.entities[2].targetX == 1536,
+            "Competing destination follows actual physical-slot collision order")
+    else:
+        check(tap.mainSeed == 0xC632A55A, "First opportunity remains in the NPC wait phase")
+    await assert_field_paused("tap-released")
+    var first_repeat := wait_receipts.size()
+    release_at = first_repeat + 3
+    physical(KEY_V, true)
+    var pressed_count := wait_receipts.size()
+    physical(KEY_V, true)
+    check(wait_receipts.size() == pressed_count, "Repeated physical press while held is not a fresh Wait")
+    # Simulate missed host callbacks, then observe the next actual callbacks; no deadline replay.
+    OS.delay_msec(180)
+    var deadline := Time.get_ticks_msec() + 3000
+    while wait_receipts.size() < release_at and Time.get_ticks_msec() < deadline:
+        await process_frame
+    check(wait_receipts.size() == release_at, "Hold stops on exactly three accepted semantic Waits")
+    for i in range(first_repeat + 1, wait_receipts.size()):
+        check(wait_receipts[i].frame > wait_receipts[i - 1].frame and
+            wait_receipts[i].micros - wait_receipts[i - 1].micros >= 16667,
+            "Held repeat admits at most one per callback and obeys the monotonic 60/sec cap")
+    release_at = -1
+    var held := read_sample("semantic-four-waits")
+    check(held.entities[1].moving, "Released NPC is actually partway through movement")
+    if not collision: check(held.mainSeed == 0x1091A55A, "Same semantic N preserves shared RNG")
+    await assert_field_paused("held-released-no-debt")
+    # Another semantic action cancels hold even if that action has no field command.
+    physical(KEY_V, true)
+    physical(KEY_ESCAPE, true)
+    physical(KEY_ESCAPE, false)
+    await assert_field_paused("other-action-disarms")
+    physical(KEY_V, false)
+    await tap_wait()
+    physical(KEY_V, true)
+    view.hide()
+    view.show()
+    await assert_field_paused("hide-show-disarms")
+    physical(KEY_V, false)
+    await tap_wait()
+    physical(KEY_V, true)
+    paused = true
+    await create_timer(0.1, true).timeout
+    paused = false
+    await assert_field_paused("tree-pause-disarms")
+    physical(KEY_V, false)
+    await tap_wait()
+    # A real native sibling window transfers OS focus; never emit a focus notification manually.
+    physical(KEY_V, true)
+    var other := Window.new()
+    other.hide()
+    other.force_native = true
+    other.title = "Field Wait focus observation"
+    other.size = Vector2i(240, 100)
+    root.add_child(other)
+    other.show()
+    other.grab_focus()
+    await create_timer(0.15).timeout
+    check(other.has_focus() and not root.has_focus(), "OS focus actually leaves the game window")
+    await assert_field_paused("unfocused")
+    other.hide()
+    root.grab_focus()
+    await create_timer(0.15).timeout
+    check(root.has_focus(), "OS focus actually returns")
+    physical(KEY_V, true)
+    await assert_field_paused("refocused-still-disarmed")
+    other.queue_free()
+    physical(KEY_V, false)
+    await tap_wait()
+    # An already committed player move continues and discards budget at its new input boundary.
+    physical(KEY_V, true)
+    await key(KEY_A)
+    for frame in range(120):
+        await process_frame
+        if state().canWaitAtInput: break
+    var moved := read_sample("mandatory-player-move")
+    check(moved.canWaitAtInput and moved.entities[0].x == 0, "Mandatory player movement reaches new field input")
+    await assert_field_paused("movement-boundary-no-debt")
+    physical(KEY_V, false)
+    # Restart only the actual authored host to observe the initial dialogue consumer independently.
+    host.free()
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    state()
+    view.connect("SessionResultObserved", observe_wait)
+    await key(KEY_ENTER)
+    var dialogue := read_sample("dialogue-consumer")
+    var count := wait_receipts.size()
+    physical(KEY_V, true)
+    await create_timer(0.1).timeout
+    check(wait_receipts.size() == count, "Wait at dialogue does not produce a field receipt")
+    if remapped:
+        await key(KEY_ENTER)
+        var revealed := read_sample("reveal-only")
+        check(revealed.token == dialogue.token and revealed.visibleCharacters == revealed.totalCharacters and
+            wait_receipts.size() == count, "Reveal-only Confirm keeps dialogue token and produces no Wait")
+    await key(KEY_ENTER)
+    if state().visibleCharacters >= 0 and state().visibleCharacters < state().totalCharacters:
+        await key(KEY_ESCAPE) # The new choice text also needs reveal before a choice is submitted.
+    await key(KEY_ESCAPE)
+    check(state().canWaitAtInput, "Declining restores the field consumer")
+    await assert_field_paused("consumer-return-disarmed")
+    check(wait_receipts.size() == count, "Held Wait never rearms on consumer return")
+    physical(KEY_V, false)
+    await tap_wait()
+    # Delivery may finish while Wait is held; a new field consumer still requires a fresh input.
+    host.free()
+    package.world.programs[0].instructions = [
+        {"op":"present","kind":"FadeOut","resource":"white","entity":null,"position":null},
+        {"op":"present","kind":"FadeIn","resource":"white","entity":null,"position":null},
+        {"op":"end"}]
+    file = FileAccess.open(args[args.find("--authored-package") + 1], FileAccess.WRITE)
+    file.store_string(JSON.stringify(integer_numbers(package)))
+    file.close()
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    state()
+    view.connect("SessionResultObserved", observe_wait)
+    await key(KEY_ENTER)
+    check(state().wait == "PresentationWait", "Actual presentation consumer is pending")
+    count = wait_receipts.size()
+    physical(KEY_V, true)
+    deadline = Time.get_ticks_msec() + 3000
+    while not state().canWaitAtInput and Time.get_ticks_msec() < deadline:
+        await process_frame
+    check(state().canWaitAtInput and wait_receipts.size() == count,
+        "Actual presentation completes without queuing a field Wait")
+    await assert_field_paused("presentation-return-disarmed")
+    physical(KEY_V, false)
+    await tap_wait()
+    finish_public()
+
 func finish_public() -> void:
     var output := OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT")
     var file := FileAccess.open(output, FileAccess.WRITE)
     file.store_string(JSON.stringify({"passed":failures.is_empty(),"case":input_case,"failures":failures,
-        "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples}, "  "))
+        "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts}, "  "))
     file.close()
     quit(0 if failures.is_empty() else 1)
