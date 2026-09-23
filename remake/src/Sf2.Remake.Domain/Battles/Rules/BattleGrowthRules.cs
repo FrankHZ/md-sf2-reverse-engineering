@@ -4,10 +4,21 @@ internal static class BattleGrowthRules
 {
     internal static BattleActorState Award(BattleActorState actor, int amount, ref uint seed,
         List<BattleEffect> effects)
+        => Grow(Credit(actor, amount, effects), ref seed, effects);
+
+    internal static BattleActorState Credit(BattleActorState actor, int amount, List<BattleEffect> effects)
     {
         int previous = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         int total = Math.Min(200, previous + amount);
         effects.Add(new("exp", actor.Actor, previous, total));
+        return actor.With(exp: (byte)total);
+    }
+
+    // bsc0F displays earned EXP after IncreaseExp, then checks the threshold and
+    // calls LevelUp. Growth RNG must run after that message's acknowledgement.
+    internal static BattleActorState Grow(BattleActorState actor, ref uint seed, List<BattleEffect> effects)
+    {
+        int total = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (total < 100) return actor.With(exp: (byte)total);
         var growth = actor.Definition.Growth ?? throw new BattleRuleException("level-up", "actor.growth", true);
         if (actor.Status != 0) throw new BattleRuleException("growth-status-refresh", "actor.status", true);

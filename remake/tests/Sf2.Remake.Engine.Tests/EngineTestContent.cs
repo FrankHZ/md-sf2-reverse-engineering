@@ -38,4 +38,28 @@ internal static class EngineTestContent
         Accept(session, new ChooseAction(SessionAction.Stay));
         return Accept(session, new Confirm());
     }
+
+    // Explicitly cross the real scene commands when a test owns a completed-action
+    // boundary. Stage timing itself is asserted in BattleSceneTests; ordinary
+    // Accept/Start never silently consume a presentation or acknowledgement.
+    internal static SessionResult FinishBattleScenes(GameSession session, SessionResult result)
+    {
+        var observations = result.Observations.ToList();
+        while (session.Current.BattleScene is { } scene)
+        {
+            Assert.False(session.Current.HasBattleControl);
+            result = Accept(session, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            observations.AddRange(result.Observations);
+        }
+        return result with { Observations = observations.AsReadOnly() };
+    }
+
+    // Retained combat-construction expectations exclude scene reaction/growth
+    // draws. The completed scene's RNG boundary is independently asserted in
+    // BattleSceneTests; this value is not a replacement SessionSnapshot seed.
+    internal static IEnumerable<SessionObservation> ConstructionRolls(SessionResult result) => result.Observations.Where(row =>
+        row.Kind.StartsWith("rng-", StringComparison.Ordinal) && !row.Kind.StartsWith("rng-reaction-", StringComparison.Ordinal) &&
+        !row.Kind.StartsWith("rng-growth-", StringComparison.Ordinal));
+    internal static uint ConstructionSeed(SessionResult result) => checked((uint)ConstructionRolls(result).Last().After!.Value);
 }

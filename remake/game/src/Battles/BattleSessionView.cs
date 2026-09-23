@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Audio;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -42,6 +43,8 @@ public sealed partial class BattleSessionView : Control
     private ScrollContainer _hud = null!;
     private VBoxContainer _hudContent = null!;
     private readonly List<Label> _hudLabels = [];
+    private BattleSceneView _scene = null!;
+    internal SessionAudio? Audio { get; set; }
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
     internal Action<SessionResult>? LeaveBattle { get; set; }
@@ -69,6 +72,7 @@ public sealed partial class BattleSessionView : Control
         _items = AddLabel("Items");
         _roster = AddLabel("Roster");
         _help = AddLabel("Help");
+        _scene = new BattleSceneView { Name = "BattleScene" }; AddChild(_scene);
         Arrange();
     }
 
@@ -129,6 +133,7 @@ public sealed partial class BattleSessionView : Control
         _started = true;
         _session = session;
         _result = result;
+        if (first) _scene.Configure(session, _input.Settings, Audio);
         PublishResult("attach");
         ObserveResult?.Invoke(result);
         if (_startupFailure is not null) return;
@@ -146,12 +151,22 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
+        if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleScene is not null)
+        {
+            try { if (_scene.Consume(delta) is { } completion) Send(completion); }
+            catch (InvalidOperationException error) { FailStartup(new(SessionFailureKind.AdapterError, error.Message, "battleScene", "Battle scene playback is unavailable.")); }
+            return;
+        }
         if (_startupFailure is null && _session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
     }
 
     internal void HandleAction(GameAction action)
     {
-        if (_startupFailure is not null || !IsVisibleInTree() || _session?.Current.HasBattleControl != true) return;
+        if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleScene is not null)
+        { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
+        if (_session?.Current.HasBattleControl != true) return;
         SessionCommand? command = action switch
         {
             GameAction.Up => new Move(ExplorationDirection.North),
@@ -237,6 +252,8 @@ public sealed partial class BattleSessionView : Control
                 _session.Current.Battle.Definition.HealingItems.TryGetValue((byte)(word & 127), out var item) ? item.Name : $"Item {word & 127} · unsupported") +
                 (slot == selection!.ItemSlot ? " · selected" : "") + (slot == _itemCandidate && _result!.Failure is not null ? " · unavailable" : "")));
         _map.Present(projection);
+        _scene.Present();
+        if (_scene.Error is { } error) FailStartup(new(SessionFailureKind.AdapterError, error, "battleScene", "Battle scene playback is unavailable."));
     }
 
     private Label AddLabel(string name)
@@ -249,12 +266,27 @@ public sealed partial class BattleSessionView : Control
     }
 
     // Read-only native observation of the same semantic result and actual projected nodes.
+    public string ReadSceneObservationJson()
+    {
+        var current = _session?.Current;
+        return JsonSerializer.Serialize(new
+        {
+            revision = current?.Revision, observationSequence = current?.ObservationSequence,
+            mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
+            cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
+            failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(),
+            actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
+                mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
+        });
+    }
+
     public string ReadObservationJson()
     {
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
+            scene = _scene.Observe(), observationSequence = current?.ObservationSequence,
             initializationPolicy = current?.Battle.StartPolicy,
             regionFlags = current?.Battle.Regions?.Flags, regionsTested = current?.Battle.Regions?.Tested,
             turnOrder = current?.Battle.TurnOrder.Select(entry => new { actor = entry.Actor?.Value, score = entry.AlteredAgility }),

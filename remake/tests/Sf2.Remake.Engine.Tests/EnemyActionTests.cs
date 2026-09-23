@@ -23,16 +23,19 @@ public sealed class EnemyActionTests
         var ally = before.Actors[0].Actor;
         var enemy = before.Actors[2].Actor;
         var result = Stay(session);
+        Assert.Equal(500, result.Snapshot.Battle.GetActor(ally).Hp);
+        Assert.Equal(finalSeed, result.Snapshot.Battle.MainSeed);
+        result = FinishBattleScenes(session, result);
         Assert.Equal(allyHp, result.Snapshot.Battle.GetActor(ally).Hp);
         Assert.Equal(enemyHp, result.Snapshot.Battle.GetActor(enemy).Hp);
         Assert.Equal(exp, result.Snapshot.Battle.GetActor(ally).Exp!.Value);
         Assert.Equal(0, result.Snapshot.Battle.GetActor(enemy).Exp!.Value);
-        Assert.Equal(finalSeed, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(finalSeed, ConstructionSeed(result));
         Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(ally, result.Snapshot.Battle.GetActor(enemy).LastTarget);
         Assert.Equal(before.Actors[1].Actor, result.Snapshot.Selection!.Actor);
         Assert.Equal(before.Gold, result.Snapshot.Battle.Gold);
-        var rolls = result.Observations.Where(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)).ToArray();
+        var rolls = ConstructionRolls(result).ToArray();
         Assert.Equal(draws, rolls.Length);
         Assert.Equal((long)before.MainSeed, rolls[0].Before);
         for (int i = 1; i < rolls.Length; i++) Assert.Equal(rolls[i - 1].After, rolls[i].Before);
@@ -48,17 +51,18 @@ public sealed class EnemyActionTests
         doc["actors"]![0]!["agility"] = 1;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Null(started.Result.Failure);
-        Assert.Contains(started.Result.Observations, o => o.Kind == "physical-counter");
+        var completed = FinishBattleScenes(started.Session, started.Result);
+        Assert.Contains(completed.Observations, o => o.Kind == "physical-counter");
         var firstThinking = started.Session.Current.Battle.ThinkingSeed;
         var history = new List<SessionObservation>();
         for (int i = 0; i < 3 && !history.Any(o => o.Kind == "thinking-rng"); i++)
-            history.AddRange(Stay(started.Session).Observations);
+            history.AddRange(FinishBattleScenes(started.Session, Stay(started.Session)).Observations);
         var next = Assert.Single(history, o => o.Kind == "thinking-rng");
         Assert.Equal((long)firstThinking, next.Before);
         Assert.Equal(0x00EF0042L, next.After);
         Assert.Equal(2, started.Session.Current.Battle.Round);
         var round = Assert.Single(history, o => o.Kind == "round-rng");
-        Assert.Equal(started.Result.Snapshot.Battle.MainSeed, round.Before);
+        Assert.Equal((long)completed.Snapshot.Battle.MainSeed, round.Before);
         Assert.Equal(round.After, history.First(o => o.Kind == "rng-dodge").Before);
     }
 
@@ -140,16 +144,17 @@ public sealed class EnemyActionTests
         doc["start"]!["actors"]![0]!["kills"] = 9999;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Null(started.Result.Failure);
+        var completed = FinishBattleScenes(started.Session, started.Result);
         var state = started.Session.Current.Battle;
         Assert.Equal(0, state.GetActor(new("raider")).Hp);
         Assert.Null(state.GetActor(new("raider")).Position);
         Assert.Equal(24, state.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(9999, state.GetActor(new("swordsman")).Kills!.Value);
         Assert.Equal(119u, state.Gold);
-        Assert.Equal(0x9A0E1234u, state.MainSeed);
-        var history = started.Result.Observations.ToList();
+        Assert.Equal(0x9A0E1234u, ConstructionSeed(completed));
+        var history = completed.Observations.ToList();
         for (int i = 0; i < 3 && !history.Any(o => o.Kind == "dead-entry-skipped"); i++)
-            history.AddRange(Stay(started.Session).Observations);
+            history.AddRange(FinishBattleScenes(started.Session, Stay(started.Session)).Observations);
         Assert.Equal(new ActorRef("raider"), Assert.Single(history, o => o.Kind == "dead-entry-skipped").Actor);
         Assert.Single(history, o => o.Kind == "physical-first");
         Assert.DoesNotContain(history, o => o.Kind == "ai-stay" && o.Actor == new ActorRef("raider"));
@@ -164,16 +169,17 @@ public sealed class EnemyActionTests
         doc["actors"]![2]!["agility"] = 30;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc)));
         Assert.Null(started.Result.Failure);
+        var completed = FinishBattleScenes(started.Session, started.Result);
         var state = started.Session.Current.Battle;
         Assert.Null(state.GetActor(new("swordsman")).Position);
         Assert.Equal(9999, state.GetActor(new("swordsman")).Defeats!.Value);
         Assert.Equal(new ActorRef("lookout"), started.Session.Current.Selection!.Actor);
         Assert.Equal(100u, state.Gold);
-        Assert.DoesNotContain(started.Result.Observations, o => o.Kind is "exp" or "rng-exp-plus" or "physical-counter");
-        Assert.Single(started.Result.Observations, o => o.Kind == "defeats");
+        Assert.DoesNotContain(completed.Observations, o => o.Kind is "exp" or "rng-exp-plus" or "physical-counter");
+        Assert.Single(completed.Observations, o => o.Kind == "defeats");
         // Both AGI secondary entries remain owned by the queue; the one after control is
         // skipped on the subsequent advance, never converted to a living actor's action.
-        var observations = started.Result.Observations.ToList();
+        var observations = completed.Observations.ToList();
         if (observations.Count(o => o.Kind == "dead-entry-skipped") < 2)
         {
             Accept(started.Session, new Confirm()); Accept(started.Session, new ChooseAction(SessionAction.Stay));
@@ -216,10 +222,21 @@ public sealed class EnemyActionTests
         });
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var result = Send(session, new Confirm());
+        Assert.Null(result.Failure);
+        Assert.Equal(500, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
+        var history = result.Observations.ToList();
+        while (session.Current.BattleScene is { } scene)
+        {
+            result = Send(session, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            history.AddRange(result.Observations);
+            if (session.Current.BattleScene is not null) Assert.Null(result.Failure);
+        }
+        result = result with { Observations = history.AsReadOnly() };
         Assert.Equal("physical-definition", result.Failure!.Code);
         Assert.Equal(478, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new("raider")).Hp);
-        Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(0x557E1234u, ConstructionSeed(result));
         Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
         Assert.Null(result.Snapshot.Battle.GetActor(new("scavenger")).LastTarget);
         Assert.Equal(new ActorRef("scavenger"), BattleTurnFlow.QueuedActor(result.Snapshot.Battle).Actor);

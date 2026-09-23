@@ -698,11 +698,87 @@ requires the retained private capture/configuration, candidate manifest and ordi
 observation; neither the loop interval nor a waveform seam metric alone proves the host result.
 
 **Unknown / incomplete:** original per-channel mixing is not reproduced by the single replacing SFX
-player. Original command 253 fade semantics, complete reached field/UI cue bindings and battle-action
-music/SFX triggers, scene completion and input release remain incomplete. Battle scene consumption
-belongs to its scene owner; the audio resource checks do not implement that seam. The existing modern
+player. Original command 253 fade semantics and complete reached field/UI cue bindings remain
+incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
+music/SFX and input-release subset; healing scene consumption remains unfinished. The existing modern
 half-second `SoundFade` service is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
+
+## Physical Battle Scenes
+
+The common session separates physical action construction from scene execution. Domain prepares
+ordered first/second/counter reactions and the action award. Application owns each continuation and
+wait token: initialization, action text, animation, HP reaction, result/death text, EXP credit and
+text, growth and its notices, gold text, then scene end. HP changes at reaction entry; EXP credit
+precedes its text and growth follows acknowledgement. Kill/defeat accounting, after-turn, outcome
+programs and the next actor wait for scene end. Wrong, stale or unrelated input cannot release a
+wait. AI passes its prepared action to this same consumer without selecting or rolling twice.
+
+**Confirmed, static source and engine boundary:** the pinned US baseline and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` support construction/replay separation in
+`disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm:WriteBattlesceneScript`,
+`battleactionsengine_2.asm`, `attack.asm` and `battlescenes/battlesceneengine_0.asm` beneath that battle
+source directory. The admitted physical damaging reaction consumes twelve pairs of shared-main RNG
+draws (range5 for the ally and range7 for the enemy). Source loops `loc_18E6E`/`loc_19004` follow the
+reaction-mode and `d1 == 0x8000` guards; this direct-draw rule is not every hit or scene's total RNG.
+Growth consumes the carried main image after
+those reactions; an old scalar comparison that omitted scene draws is not final-session parity.
+`BattleSceneTests` checks phase boundaries, ordered followups, continuous reaction seeds, growth,
+deferred accounting and input release; migrated action tests retain their construction assertions.
+
+The private source content candidate contains the selected SDMN/PRST/KNTE and GIZMO frames,
+Wooden Sword/Rod and Short Spear, Tower Interior background9 and ground9. The generator composes
+source hardware tile chunks and background layout, preserves source frame timing/weapon flags,
+and writes the existing pack-v1 master/2x/4x structure plus `battle-scenes.json`. Raw palette
+provenance remains intact; displayed base CRAM words use mask `0x0EEE`, including the retail low
+bits in words `0x0DB0` and `0x0E50`. Canonical inputs remain read-only and generation only accepts a
+new ignored worktree-local output. This is a review candidate, not asset-library promotion.
+
+After loading the [private input/tool selections](../../docs/operations/local-private-inputs.md),
+use absolute selected ROM/upstream paths and a fresh ignored destination:
+
+```powershell
+uv run python -m sf2tool.remake_battle_scene_content --rom $selectedRom --upstream $pinnedUpstream --output $candidateOutput
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $candidateOutput 'battle-scenes.json'
+$env:SF2_BATTLE_SCENE_OBSERVATION_OUTPUT = Join-Path $observationOutput 'observation.json'
+& $env:GODOT_BIN --path remake/game --audio-driver WASAPI --script res://probes/engine_battle_scene_observation.gd -- --private-battle-start $env:SF2_PRIVATE_CONTROLLED_START
+```
+
+Build the actual adapter first using the [locked SDK workflow](./development-and-verification.md#locked-net-workflow).
+The isolated scene consumer/generator uses `uv run sf2 verify plan --scope engine --base origin/main --head HEAD`
+on a clean committed head. Its exact generator path selects engine behavior, adapter compilation and
+the existing direct public checks; research inputs still reject that explicit scope. This classification
+does not extend to other generators or change research verification requirements.
+The normal host also consumes this content through `--private-exploration-start`; source private
+physical scenes fail explicitly when content is missing. The external observer reads actual node
+resources, frame/position state, session effects and audio receipts, and submits ordinary keys.
+It accepts `SF2_BATTLE_SCENE_WORLD=1` for the controlled Map40 navigation/warp route with an admitted
+source world. `SF2_BATTLE_SCENE_REWARD=1` additionally exercises the adjacent player attack and
+requires an explicitly prepared party with Bowie HP40, attack30, defense20 and EXP99. These are
+controlled consumer observations, not original natural-entry fixtures. World, party and output
+paths remain private. No screenshots or runtime state setters are used.
+
+**Confirmed, bounded host observation:** source actor/weapon/environment textures, the 22-iteration
+entrance projection, message waits, enemy and player hits, death/EXP/growth/gold, music2/5, SFX81/83/102,
+253 requests and resumed battlefield music execute through the running Godot/WASAPI consumers.
+Normal/reduced-flash runs preserve the same reaction draws, final seeds, resources and cursor while
+the setting suppresses recoil/flashing. Battle text clears speech bleeps, matching source bsc10/11.
+The host uses the existing modern half-second fade and instant/adjustable text settings. Hardware
+timing, exact final pixels, continuous opening/outcome acceptance and original audio mixing remain
+**Unknown**; these observations grant no H4 or deviation waiver.
+
+**Unfinished healing work:** HEAL and herbs still use the existing scalar command path. They do not
+consume a healing scene or fairy RNG, and #523 remains open. Static caller analysis confirms MP
+reaction before casting animation (`createbattlesceneanimation.asm`), recovery then text
+(`castspell.asm:spellEffect_Heal`), and VInt-driven fairy updates
+(`battlesceneengine_4.asm:VInt_UpdateBattlesceneGraphics`, `updatespellanimation.asm`). Fairy phases,
+reentry, exit and dust consume source-dependent draws; bsc0D requests stop and waits for the update
+toggle, whereas bsc0C force-reinitializes. The dispatcher gates and decrements the lifetime word
+before the update; initial `-1` is not an immutable sentinel. X-boundary draws (ranges28/32) and
+the periodic dust draw (range12) can occur in the same update. Natural text/input-to-VInt alignment
+remains **Unknown**.
+The next implementation must model the proved logical update/stop state and its caller ordering;
+neither renderer frame count nor padding toward an old omitted-RNG seed may substitute for it.
 
 ## Public Synthetic and Test Fixtures
 

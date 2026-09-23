@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -43,7 +44,7 @@ public sealed class BattleSelection
 }
 
 public abstract record ActiveSessionState;
-public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection) : ActiveSessionState;
+public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -63,7 +64,8 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null;
+    public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :
         throw new InvalidOperationException("The active mode is exploration.");
     public ExplorationState? Exploration => (Active as ActiveExploration)?.World;

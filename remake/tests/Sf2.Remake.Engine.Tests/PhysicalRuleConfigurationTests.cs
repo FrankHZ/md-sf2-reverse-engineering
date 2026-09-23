@@ -38,7 +38,7 @@ public sealed class PhysicalRuleConfigurationTests
         Assert.Equal(chanceDenominator, rule.ChanceDenominator);
         Assert.Equal(bonusDenominator, rule.DamageBonusDenominator);
         Assert.Equal(0x03071234u, session.Current.Battle.MainSeed);
-        var result = enemyActs ? Stay(session) : Attack(session);
+        var result = FinishBattleScenes(session, enemyActs ? Stay(session) : Attack(session));
         Assert.Equal(target, Assert.Single(result.Observations, o => o.Kind == "critical").Target);
         Assert.Equal(attacker, Assert.Single(result.Observations, o => o.Kind == "physical-first").Actor);
         Assert.DoesNotContain(result.Observations, o => o.Kind is "physical-second" or "physical-counter");
@@ -46,12 +46,12 @@ public sealed class PhysicalRuleConfigurationTests
         // Word LCG from randomness.md: after17 draws is1, then20/267 give zero spread;
         // 3478/45221 fail the double/counter draws. No product output supplies these constants.
         Assert.Equal(hp, result.Snapshot.Battle.GetActor(target).Hp);
-        var rolls = result.Observations.Where(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)).ToArray();
+        var rolls = ConstructionRolls(result).ToArray();
         Assert.Equal(new ushort?[] { 32, (ushort)chanceDenominator, (ushort)(bonusDenominator == 2 ? 15 : 13),
             (ushort)(bonusDenominator == 2 ? 15 : 13), 32, 32 }, rolls.Take(6).Select(o => o.RandomRange));
         Assert.Equal(new ushort?[] { 4, 0, 0, 0, 1, 22 }, rolls.Take(6).Select(o => o.RandomValue));
         Assert.Equal(enemyActs ? 6 : 8, rolls.Length);
-        Assert.Equal(enemyActs ? 0xB0A51234u : 0x9D4F1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(enemyActs ? 0xB0A51234u : 0x9D4F1234u, ConstructionSeed(result));
         Assert.Equal(exp, result.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
         Assert.Equal(100u, result.Snapshot.Battle.Gold);
         Assert.Equal(new ActorRef("lookout"), result.Snapshot.Selection!.Actor);
@@ -69,7 +69,7 @@ public sealed class PhysicalRuleConfigurationTests
         document["actors"]![2]!["attack"] = 18;
         document["actors"]![2]!["physical"]!["critical"] = Critical(chance, bonus);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document))).Session;
-        var result = Attack(session);
+        var result = FinishBattleScenes(session, Attack(session));
         var criticalRolls = result.Observations.Where(o => o.Kind == "rng-critical").ToArray();
         Assert.Equal(new ushort?[] { 16, (ushort)range }, criticalRolls.Select(o => o.RandomRange));
         Assert.Equal(new ActorRef("raider"), criticalRolls[1].Actor);
@@ -80,8 +80,8 @@ public sealed class PhysicalRuleConfigurationTests
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(478, result.Snapshot.Battle.GetActor(new("raider")).Hp);
         Assert.Equal(2, result.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
-        Assert.Equal(14, result.Observations.Count(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)));
-        Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(14, ConstructionRolls(result).Count());
+        Assert.Equal(0x557E1234u, ConstructionSeed(result));
     }
 
     [Theory]

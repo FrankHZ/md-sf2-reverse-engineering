@@ -84,7 +84,8 @@ public sealed partial class GameRoot : Node
             System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE01_TERRAIN") ?? "",
             System.Environment.GetEnvironmentVariable("SF2_PRIVATE_STATIC_DATA") ?? "",
             System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_DATA") ?? "",
-            System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_GOLD") ?? "", selectedStart);
+            System.Environment.GetEnvironmentVariable("SF2_PRIVATE_ENEMY_GOLD") ?? "", selectedStart,
+            System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
 
         void BeginSource(IScenarioSource source)
         {
@@ -94,6 +95,7 @@ public sealed partial class GameRoot : Node
             if (started.Session.Definition.Exploration is { } definition)
             {
                 _audio = new SessionAudio(this, definition);
+                view.Audio = _audio;
                 if (_audio.Error is { } error) { Fail(error, "Selected private audio content is unavailable."); return; }
                 view.ObserveResult = result =>
                 {
@@ -106,7 +108,7 @@ public sealed partial class GameRoot : Node
                     if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
                 };
             }
-            if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
+            if (started.Result.Snapshot.HasBattleControl || started.Result.Snapshot.BattleScene is not null) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
             ShowExploration(started.Result, returning: false);
             view.LeaveBattle = result => ShowExploration(result, returning: true);

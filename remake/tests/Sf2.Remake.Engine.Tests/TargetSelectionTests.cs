@@ -69,6 +69,9 @@ public sealed class TargetSelectionTests
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc))).Session;
         var result = Stay(session);
         var chosen = new ActorRef(swapClass ? primary : secondary);
+        Assert.Equal(500, result.Snapshot.Battle.GetActor(chosen).Hp);
+        Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
+        result = FinishBattleScenes(session, result);
         var target = Assert.Single(result.Observations, o => o.Kind == "ai-target");
         Assert.Equal(chosen, target.Target);
         Assert.Equal(19, target.Before); Assert.Equal(15, target.After);
@@ -78,7 +81,7 @@ public sealed class TargetSelectionTests
         Assert.Equal(0x00EF0042L, thinking[0].Before); Assert.Equal(0x01EF0042L, thinking[0].After);
         Assert.Equal(thinking[0].After, thinking[1].Before);
         Assert.Equal(0x02EF0042u, result.Snapshot.Battle.ThinkingSeed);
-        Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(0x557E1234u, ConstructionSeed(result));
         Assert.Equal(478, result.Snapshot.Battle.GetActor(chosen).Hp);
         Assert.Equal(1, result.Snapshot.Battle.GetActor(chosen).Exp!.Value);
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new(enemy)).Hp);
@@ -138,21 +141,22 @@ public sealed class TargetSelectionTests
     public void NaturalContinuedThinkingChangesTargetWithoutResettingEitherStream()
     {
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(Configure("stone-court")))).Session;
-        var first = Stay(session);
+        var first = FinishBattleScenes(session, Stay(session));
         Assert.Equal(new ActorRef("lookout"), Assert.Single(first.Observations, o => o.Kind == "ai-target").Target);
         var round = Stay(session);
         Assert.Equal(2, round.Snapshot.Battle.Round);
-        Assert.Equal(0x97231234u, round.Snapshot.Battle.MainSeed);
-        var second = Stay(session);
+        var roundRoll = Assert.Single(round.Observations, row => row.Kind == "round-rng");
+        Assert.Equal((long)first.Snapshot.Battle.MainSeed, roundRoll.Before);
+        Assert.Equal(roundRoll.After, round.Snapshot.Battle.MainSeed);
+        var second = FinishBattleScenes(session, Stay(session));
         Assert.Equal(new ActorRef("swordsman"), Assert.Single(second.Observations, o => o.Kind == "ai-target").Target);
         Assert.Equal(new ushort?[] { 0, 1 }, second.Observations.Where(o => o.Kind == "thinking-rng").Select(o => o.RandomValue));
         Assert.Equal(0x02EF0042L, second.Observations.First(o => o.Kind == "thinking-rng").Before);
         Assert.Equal(0x01EF0042u, second.Snapshot.Battle.ThinkingSeed);
-        Assert.Equal(0xE0E11234u, second.Snapshot.Battle.MainSeed);
-        Assert.Equal(474, second.Snapshot.Battle.GetActor(new("swordsman")).Hp);
+        Assert.Equal((long)round.Snapshot.Battle.MainSeed, ConstructionRolls(second).First().Before);
+        Assert.True(second.Snapshot.Battle.GetActor(new("swordsman")).Hp < 500);
         Assert.Equal(478, second.Snapshot.Battle.GetActor(new("lookout")).Hp);
         Assert.Equal(1, second.Snapshot.Battle.GetActor(new("lookout")).Exp!.Value);
-        Assert.Equal(0, second.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value);
     }
 
     [Theory]

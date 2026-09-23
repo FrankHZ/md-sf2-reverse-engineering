@@ -21,6 +21,8 @@ internal static class BattleAdvancer
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations)
     {
+        if (current.BattleScene is not null)
+            return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
         long revision = current.Revision, sequence = current.ObservationSequence;
         // A bounded host tick yields real automatic work; the next frame resumes through the same facade.
@@ -79,6 +81,8 @@ internal static class BattleAdvancer
                     BattleAiStrategy.AttackThenApproach => AttackThenApproachAi.Resolve(battle, actor.Actor),
                     _ => throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true),
                 };
+                if (action.Scene is { } scene)
+                    return BattleSceneContinuation.Begin(beforeAction.WithStory(current.Story), scene, observations, action.Effects);
                 var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
                     action.Destination, action.Effects, observations);
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
