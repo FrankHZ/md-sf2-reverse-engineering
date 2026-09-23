@@ -1,7 +1,7 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for continuous-milestone acceptance; not a default blocker for separately authorized implementation.
-- Accepted evidence baseline: `58c5a94a4c5349fd221a130a0970222962715528`, including [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504).
+- Accepted evidence baseline: `57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`, including [PR #504](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/504)'s neutral endpoint, [PR #526](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/526)'s bounded Down extension, [PR #528](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/528)'s retained first comparison, and [PR #533](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/533)'s corrected selected-R1 inputs and comparison.
 - Milestone: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md); profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md).
 - Start policy: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md); engine direction: [ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md).
 - Definition owner: [Continuous Scenario Contract](../contracts/map3-battle01-continuous-scenario.md).
@@ -39,10 +39,12 @@ Two completed neutral frames **61009/61010** confirm Map57, player `(5,12)`, DOW
 F401=false/F501=true, roster `[0,1,2]`, gold **420**, settled motion/camera and no blocking
 script/modal/transfer/battle/consumer. Exact ally HP/MP/level/items/spells/status and RNG readback are
 in the [contract endpoint](../contracts/map3-battle01-continuous-scenario.md#exact-observed-endpoint)
-and its original owner. Generic window byte 1 is not a blocking dialogue. Original input polls are
-observed but neutral: **Unknown / OPEN RA-12** is the next nonneutral input's acceptance and state
-effect. The evidence terminal named `controllable-5b` does not establish full RA-12 or milestone PASS;
-it is nonresumable. The final segment's 106 audio dispatch/mailbox pairs do not establish full 8D.
+and its original owner. Generic window byte 1 is not a blocking dialogue. Original input polls at
+this PR #504 terminal are neutral; that terminal remains unchanged and nonresumable. Accepted PR
+#526 separately reproduces the boundary, observes one ordinary Down read and its settled Map57
+`(5,13)` displacement. This closes the bounded RA-12 input/effect observation, not full 5B or the
+milestone. The PR #526 extension is itself terminal/nonresumable. The final segment's 106 audio
+dispatch/mailbox pairs do not establish full 8D.
 
 Earlier R1/R2/R2a/R2d fixtures and Map19/first-player-ready observations retain their original limited
 projections. They are not silently expanded by the final chain. Exact post-447 wait entry remains
@@ -61,7 +63,8 @@ transport/observer failures are not interrupted runs and are not erased by final
 | Winning actions and consumed results | PASS bounded original evidence | Selected winning chain; committed actions/seed/main-draw records are bound offline; full field-input normalization, individual draw-to-effect and cancel/reselect remain OPEN |
 | Victory, after-program, flag and return spine | PASS bounded original evidence | 67 reached operation pairs and selected final chain; not a full presentation claim |
 | Exact neutral settled endpoint | PASS bounded original evidence | Contract endpoint and original terminal; remaining full records must be consumed from private evidence |
-| Full controllable 5B / RA-12 | OPEN | Research: next nonneutral input and actual effect; no remake-derived expected truth |
+| Bounded RA-12 ordinary input/effect | PASS bounded original evidence | PR #526: one Down read and settled displacement from Map57 `(5,12)` to `(5,13)`; separate terminal, not resumable and not part of the PR #504 projector binding |
+| Full controllable 5B | OPEN | Remaining continuous input/control and state assertions; bounded RA-12 evidence does not establish the whole 5B endpoint |
 | Continuous contract and ten-layer definitions | Accepted definitions; missing bindings OPEN | Linked contract defines fields, sources, actual mappings and failure/unavailable rules; bounded offline bindings available; remaining field gaps and complete definition readiness OPEN |
 | Original expected fields complete for every assertion | OPEN | Missing full R1 fields, field-input normalization, thinking RNG/individual draw effects, cancel and required 8D consumption/ack evidence; not a new native authorization |
 | Save policy 6A | SELECTED; continuous H4 execution OPEN | Absent user persistence surfaces; restart to admitted state |
@@ -70,7 +73,8 @@ transport/observer failures are not interrupted runs and are not erased by final
 | 9A configuration and bounded direct observations | PASS bounded implementation | [9A owner](../../../remake/docs/development-and-verification.md#native-9a-observation); not full continuous variants |
 | 9A variants / 10A deviations composed | Accepted definitions; missing bindings and execution OPEN | Contract requires separate baseline/variant results and state/ack equivalence |
 | Required reached action support | PASS bounded implementation; continuous comparison OPEN | PR #521 (`78c201c3`) accepts ordinary Medical Herb selection/live inventory and host inventories/itemSlot observations; compare the winning original actions separately |
-| All applicable H4 layers executed successfully | OPEN | Remake/harness after definition acceptance; actual continuous session through full 5B |
+| Actual continuous comparison | Diagnostic FAIL; milestone NOT READY | PR #533: admission gold and first-control live item arrays match; first-round order and next actor still fail. 40 assertions remain Unavailable |
+| All applicable H4 layers executed successfully | OPEN | The accepted comparator has a diagnostic actual result; complete layer coverage, full 5B, and continuous 9A variants remain unexecuted |
 | Independent milestone readiness acceptance | OPEN | Main-gate; neither Issue closure nor a bounded implementation PASS is sufficient |
 | Separate implementation-start authorization | PASS | User authorization in [Remake README](../../../remake/README.md); does not accept this milestone |
 | Public distribution | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate rights/licensed replacement decision; private assets remain untracked |
@@ -102,8 +106,8 @@ fidelity waiver. Missing evidence/content cannot be recategorized as a deviation
 
 | Owner | Work remaining / dependency |
 | --- | --- |
-| Research | Accepted missing original fields and RA-12 effect; PR #519 is source preparation only, not a native result; later #515 observations await acceptance on main |
-| Design | Comparison definitions independently accepted; bounded offline bindings available, precise remaining gaps OPEN; incorporate accepted original corrections in the same outcome |
+| Research | PR #526 independently accepts the bounded RA-12 input/effect. Other selected original fields, input normalization, RNG and presentation gaps remain as defined by their owners |
+| Design | PR #526 evidence is reflected here and in the contract; its payload is not bound by the PR #504 projector. PR #528 records the first actual comparison failure; whole-run criteria remain OPEN |
 | Remake/content | Manual Herb accepted in PR #521; original audio/private provenance (#517) and battle-scene consumption (#523) remain OPEN, no unmerged results assumed |
 | H4 executor | Bind accepted records, run all ten layers and 9A variants through existing actual state/input/presentation surfaces; preserve failures and Unavailable |
 | Main-gate | Independently accept definitions, evidence closures and eventual complete H4 result; serialize integration |
@@ -120,12 +124,28 @@ unverified. Missing continuous variants cannot inherit those bounded passes.
 
 Only a named missing original semantic assertion can justify separately admitted observation under
 ADRs0014/0016 and [ADR0015](../../decisions/0015-original-reference-replay-and-h4-boundary.md).
-Current questions are RA-12 nonneutral effect, unresolved selected input/RNG/state fields and required
-8D consumption/ack boundaries. Reuse accepted static rules and bounded observations first. The
+Current questions are unresolved selected input/RNG/state fields and required 8D consumption/ack
+boundaries. The bounded RA-12 Down/effect is accepted in PR #526. Reuse accepted static rules and bounded observations first. The
 [Research presentation audit](../../research/map3-battle01-audit.md#presentation-sufficiency-under-8d)
 records DisplayText bypass; a program return does not prove unshimmed delivery. Persistent music
 requires start/replacement/stop where reached, not a fictitious end event. This ledger authorizes no
 native launch and no automatic per-Unknown observation queue.
+
+### First actual H4 comparison and correction (PR #528 / #533)
+
+**Confirmed comparison results:** PR #528's completed baseline reported **5,336 PASS / 6 FAIL / 40
+Unavailable**; its six failures and report remain historical evidence. PR #533 corrected the
+connected selected R1 product inputs to source NewGame gold 60 and complete starting item words,
+while preserving the separate controlled R1 fixture's gold 0/four-byte projection. The corrected
+actual host run completed the normalized field route, all 73 reached text IDs and natural first actor
+2, then stopped at the diagnostic next-actor divergence. It reports **5,340 PASS / 2 FAIL / 40
+Unavailable**, `milestonePass=false`. Admission gold is 60. At natural first control, each ally's live
+item array matches the starting slots supported by pinned NewGame source: Bowie `[199,0,127,127]`,
+Sarah `[213,0,0,127]`, Chester `[184,0,127,127]`. These later inventories do not establish admission
+`SourceLoadout`, which remains null. First-round order remains different; after the diagnostic first STAY, original
+next actor is Bowie and actual is Sarah. The host's exit 2 is corroborated by that comparison.
+The PR #526 post-victory extension was not rebound or reached. NPC phase and timing/RNG mapping remain Unknown. This completed
+comparison is not H4 acceptance; full Battle01/return/endpoint and continuous 9A variants remain open.
 
 ### Original replay lineage and launch admission
 
