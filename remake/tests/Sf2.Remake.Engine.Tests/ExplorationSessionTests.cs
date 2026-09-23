@@ -9,6 +9,34 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    [Theory]
+    [InlineData(3, true)]
+    [InlineData(63, false)]
+    public void OrdinaryWarpPublishesOriginOnlyAfterItsDestinationIsAdmitted(int destinationX, bool accepted)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            document["world"]!["maps"]![0]!["events"]!.AsArray().Add(System.Text.Json.Nodes.JsonNode.Parse($$"""
+                {"kind":"warp","x":2,"y":1,"map":"quay","position":{"x":{{destinationX}},"y":2},
+                 "facing":3,"marker":null,"requiredFlag":null,"requiredValue":true}
+                """));
+        });
+        var before = session.Current;
+        var result = Send(session, new Move(ExplorationDirection.East));
+        if (accepted)
+        {
+            Assert.Null(result.Failure);
+            Assert.Equal(new MapPosition(destinationX, 2), session.Current.Exploration!.PlayerEntity.Position);
+            Assert.Equal(new[] { "warp-started", "map-transferred" }, result.Observations.Take(2).Select(row => row.Kind));
+        }
+        else
+        {
+            Assert.NotNull(result.Failure);
+            Assert.Equal(before.Exploration!.PlayerEntity.Position, session.Current.Exploration!.PlayerEntity.Position);
+            Assert.DoesNotContain(result.Observations, row => row.Kind == "warp-started");
+        }
+    }
+
     [Fact]
     public void OpenTextCanWaitForFiniteSoundAndPreviousMusicBeforeAcceptingInput()
     {
@@ -90,6 +118,7 @@ public sealed class ExplorationSessionTests
         Assert.Equal(1, Assert.IsType<TickWait>(session.Current.Story.Wait).Remaining);
         var transferred = Accept(session, new AdvanceSimulation(timer.Token));
         Assert.Contains(transferred.Observations, observation => observation.Kind == "map-transferred");
+        Assert.DoesNotContain(transferred.Observations, observation => observation.Kind == "warp-started");
         Assert.Contains(14, session.Current.Story.Flags);
         Assert.Contains(15, session.Current.Story.Flags);
         Assert.DoesNotContain(20, session.Current.Story.Flags);

@@ -46,6 +46,7 @@ public sealed partial class BattleSessionView : Control
     private ActorRef? _targetCandidate;
     internal Action<SessionResult>? LeaveBattle { get; set; }
     internal Action<SessionResult>? ObserveResult { get; set; }
+    internal Action<int>? PlayUiSound { get; set; }
 
     public override void _Ready()
     {
@@ -200,6 +201,11 @@ public sealed partial class BattleSessionView : Control
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
         PublishResult("submit");
         ObserveResult?.Invoke(_result);
+        if (_result.Failure is null)
+        {
+            if (command is SelectSpell or SelectItem or Cancel) PlayUiSound?.Invoke(66);
+            else if (command is Confirm) PlayUiSound?.Invoke(67);
+        }
         if (_startupFailure is not null) return;
         if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
         if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||

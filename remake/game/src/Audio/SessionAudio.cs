@@ -18,6 +18,7 @@ internal sealed class SessionAudio : IDisposable
     private string? _soundCue;
     private long _sequence;
     private long _revision;
+    private long _observedSequence;
     private long? _waitToken;
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
@@ -75,6 +76,12 @@ internal sealed class SessionAudio : IDisposable
         try
         {
             var current = result.Snapshot;
+            foreach (var observation in result.Observations.Where(row => row.Sequence > _observedSequence))
+            {
+                if (observation.Kind == "door-opened") Play(92);
+                else if (observation.Kind == "warp-started") Play(89);
+            }
+            _observedSequence = current.ObservationSequence;
             if (current.Exploration is { } world)
             {
                 int area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
@@ -101,6 +108,13 @@ internal sealed class SessionAudio : IDisposable
         string? cue = _assets.FirstOrDefault(pair => pair.Value.Command == command &&
             (command < 65 || pair.Value.TimerB == TimerB)).Key;
         Play(cue ?? throw new InvalidOperationException("audio-command-unavailable"));
+    }
+
+    internal void PlayEffect(int command)
+    {
+        if (Error is not null || _assets.Count == 0 || command == 0) return;
+        try { Play(command); }
+        catch (InvalidOperationException error) { Error = error.Message; }
     }
 
     internal void Play(string resource, bool remember = true)

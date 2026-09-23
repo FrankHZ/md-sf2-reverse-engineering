@@ -152,8 +152,13 @@ internal static class ExplorationDispatcher
                     current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(frontier), observations, "warp-program");
                     return ProgramRunner.Run(definition, current, observations);
                 }
-                var transferred = MapTransfer.Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                    warp.LoadMode, current.Story, observations);
+                // Publish an ordinary warp's origin only if its transfer is admitted. Scripted
+                // transfers do not pass this seam and do not inherit the source warp sound.
+                List<SessionObservation> warpObservations = [];
+                var started = ProgramRunner.Commit(current, current.Active, current.Story, warpObservations, "warp-started");
+                var transferred = MapTransfer.Apply(definition, started, warp.DestinationMap!, warp.Destination!, warp.Facing,
+                    warp.LoadMode, current.Story, warpObservations);
+                observations.AddRange(warpObservations);
                 return ProgramRunner.Run(definition, transferred, observations);
             }
         }

@@ -634,7 +634,7 @@ context; `pitch_scale` is not a tempo substitute because it would transpose the 
 The existing [sound inventory](../../docs/research/sound-data-inventory.md) owns the ROM/source
 parity, command identities, type-specific channels and stream termination facts.
 
-**Implemented, pending private playback acceptance:** JOIN opens its text window, waits for the
+**Confirmed in a bounded private host observation:** JOIN opens its text window, waits for the
 actual finite stream to finish, reissues previous music, and then accepts acknowledgement. The
 source `csc08_joinForce`, `FadeOut_WaitForP1Input`, `PlayMusicAfterCurrentOne` and
 `ApplyFadingEffectAndZ80BusUpdate` support this order. The source previous operation reissues the
@@ -642,10 +642,66 @@ prior command; it does not restore a PCM offset. Map-area field/battle music sel
 area music and `PlayMapMusic` substitutions. Application retains wait tokens and player input
 ownership; Godot reports service completion.
 
-**Unknown / incomplete:** persistent PCM loop boundaries, complete reached SFX/action-music
-consumption, fade timing and mixing/interruption policy still require bounded evidence and host
-observation. No original audio pack has yet completed admission. A controlled JOIN export and its
-offline crop candidate establish a possible materialization route only. Neither successful resource
+The six music resources and 25 finite SFX timer variants occupy 104,374,046 bytes in the generated
+private world; its reader permits 100 MiB. Other package limits are unchanged. A WASAPI Godot run observed Town's natural forward-loop
+wrap while `Playing` stayed true without `Finished`, then ordinary Map 3 inputs reached JOIN.
+An early acknowledgement retained the sound wait token. The finite stream ended naturally;
+previous Town restarted at its beginning before acknowledgement returned to the field with flag 603.
+The ordered player receipts were start 8, stop 8, start 19, finish 19, start 8. Native exit was zero.
+This checks real resource playback and input ownership in that bounded route; it does not establish
+original waveform/timing equality. The complete reached resource inventory is admitted at local asset
+commit `7219d9c6ac2e72d86b3d62b2042e153e4dbba34f`, tree
+`ff1d4f37271cff828f7a0bd1efde083c56915e55`, manifest SHA-256
+`82B8E862B7438D44AD65B3C0CEF328B8CFD8E53653FE39D0266590B541B3C448`;
+checkout preflight passed. Its tracked
+`manifests/audio-town-join-provenance.json` retains original capture identities, sample cuts,
+reproduction parameters, loop evidence and the host receipts. Source WAVs and capture observers
+remain in that private repository. Use the explicit asset commit/tree/manifest pins with
+`python -m sf2tool.remake_assets checkout`; the temporary world is not an implicitly selected pack.
+
+`manifests/audio-reached-inventory-provenance.json` owns the remaining capture protocols, exact
+sample cuts and actual host receipts. Music commands 2, 5, 34 and 38 passed actual forward-loop,
+continued-playing and clean-release observations through explicitly controlled field-music selections.
+That tests their resource consumption, not natural battle-action triggers. The 25 finite SFX variants
+passed original driver termination, native lifecycle, complete WAV and unchanged-installation checks.
+Their cuts retain unchanged PCM, including 441 samples before and after the selected audible interval;
+the measured quiet separation permits at most one PCM16 unit. No normalization, noise gate or waveform
+rewrite is applied. Initial-context variants retain their explicit inferred Map 3/Town context.
+
+Ordinary accepted field warps publish `warp-started` before transfer; rejected destinations and script
+transfers do not. `WarpIfSetAtPoint`, `ProcessMapEventType1_Warp` and the source `WARP_SFX` reset own
+this distinction. Audio consumes that origin marker once, before selecting destination music.
+An actual R1 input prefix observed command 89 starting once in Town's inherited Timer B context.
+The existing `door-opened` result selects command 92. Reattaching a result does not replay its effects.
+
+Adjustable text consumes the imported sprite speech identity on alternating non-space revealed
+characters; acknowledgement and choices consume command 67. Accepted battle spell/item selection
+and cancellation use 66, and confirmation uses 67. These are modern UI bindings, not reproduction of
+every original menu/window edge. An authored two-text adapter fixture with the original Bowie
+sprite/speech binding observed command 73 replacement and natural `Finished`, plus ordinary Enter's
+67, under both CB and D2 timer contexts. It collected every audio receipt without sequence gaps.
+The full inventory includes the original Woman sprite 195's 72/CB voice; a failed reduced fixture
+omitted that entry while incorrectly assuming the entity was Sarah. That fixture failure does not
+establish a missing reached asset. The complete pack and source-derived speaker metadata agree.
+
+**Modern text-mode difference:** instant text and reveal-all input suppress incremental speech
+bleeps; adjustable text uses the configured modern reveal speed. Adjustable-mode consumption PASS
+does not prove speech-cue parity for instant mode, original cadence, or every scene. H4 must retain
+suppressed or unobserved cues as differences/unavailable; 9A input/settings acceptance does not grant
+an original-audio parity claim. This behavior is not a newly accepted 10A deviation waiver.
+
+Town's inferred PCM loop uses an exact recurrence of all ten original driver channel records at
+frames 2757 and 8618 in the controlled export. The reviewed candidate loop is sample frames
+1,894,900 through 6,208,289 (exclusive), at 44,100 Hz stereo PCM16. The export bridge's startup
+buffer and possible adaptive resampling prevent claiming exact hardware sample phase. Reproduction
+requires the retained private capture/configuration, candidate manifest and ordinary-input host
+observation; neither the loop interval nor a waveform seam metric alone proves the host result.
+
+**Unknown / incomplete:** original per-channel mixing is not reproduced by the single replacing SFX
+player. Original command 253 fade semantics, complete reached field/UI cue bindings and battle-action
+music/SFX triggers, scene completion and input release remain incomplete. Battle scene consumption
+belongs to its scene owner; the audio resource checks do not implement that seam. The existing modern
+half-second `SoundFade` service is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 
 ## Public Synthetic and Test Fixtures

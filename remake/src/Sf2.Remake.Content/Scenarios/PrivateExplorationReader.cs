@@ -19,7 +19,9 @@ public sealed class PrivateExplorationReader(string path, string startPath, ISce
             Require(party is ScenarioReadAccepted { Definition.PrivateDefinitions: not null }, "private-party-required", "party");
             var admitted = (ScenarioReadAccepted)party;
             byte[] bytes = File.ReadAllBytes(path);
-            Require(bytes.Length <= 32 * 1024 * 1024, "document-size", "world");
+            // The reached six music / 25 SFX variants occupy 104,374,046 bytes in the private world.
+            // Keep the private resident document bounded; other package limits are unchanged.
+            Require(bytes.Length <= 100 * 1024 * 1024, "document-size", "world");
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
             var root = document.RootElement;
             Object(root, "private-world", "formatVersion", "profile", "package", "provenance", "world");

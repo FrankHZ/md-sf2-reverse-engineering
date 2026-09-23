@@ -100,6 +100,11 @@ public sealed partial class GameRoot : Node
                     _audio.Observe(result);
                     if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
                 };
+                view.PlayUiSound = command =>
+                {
+                    _audio.PlayEffect(command);
+                    if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
+                };
             }
             if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
             view.Hide();

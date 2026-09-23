@@ -38,6 +38,7 @@ public sealed partial class ExplorationSessionView : Control
     private GameInput _input = null!;
     private TextWindow? _textWindow;
     private double _revealed;
+    private bool _speechSoundToggle;
     private double _tickTime;
     private ExplorationState? _lastWorld;
     private ExplorationPresentation? _presentation;
@@ -84,8 +85,10 @@ public sealed partial class ExplorationSessionView : Control
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_dialogue.VisibleCharacters >= 0)
         {
+            int before = _dialogue.VisibleCharacters;
             _revealed = Math.Min(_dialogue.GetTotalCharacterCount(), _revealed + delta * _input.Settings.CharactersPerSecond);
             _dialogue.VisibleCharacters = (int)_revealed;
+            SpeakRevealedCharacters(before, _dialogue.VisibleCharacters);
         }
         if (_presentation is { } presentation)
         {
@@ -163,12 +166,30 @@ public sealed partial class ExplorationSessionView : Control
         return true;
     }
 
+    private void SpeakRevealedCharacters(int before, int after)
+    {
+        if (_session?.Current is not { Exploration: { } world, Story.TextWindow: OpenTextWindow { Speaker: { } speaker } } ||
+            !world.TryResolveEntity(speaker, out var entity) || entity.Sprite is not { } sprite ||
+            _session.Definition.Exploration!.Visuals is not { } visuals ||
+            !visuals.Sprites.TryGetValue(sprite, out var visual)) return;
+        // Source HandleDialogueTypewriting alternates non-space speech and resets at spaces.
+        // Modern instant/reveal-all input deliberately skips incremental typewriting sounds.
+        foreach (var character in _dialogue.Text.EnumerateRunes().Where(value => value.Value is not ('\r' or '\n'))
+            .Skip(before).Take(after - before))
+        {
+            if (System.Text.Rune.IsWhiteSpace(character)) { _speechSoundToggle = false; continue; }
+            _speechSoundToggle = !_speechSoundToggle;
+            if (_speechSoundToggle) _audio?.PlayEffect(visual.Speech);
+        }
+    }
+
     private void Send(SessionCommand command)
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
         PublishResult("submit");
         _audio?.Observe(_result);
+        if (_result.Failure is null && command is Acknowledge or ChooseDialogue) _audio?.PlayEffect(67);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
         {
