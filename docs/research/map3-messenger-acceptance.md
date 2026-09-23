@@ -390,6 +390,192 @@ original acquisition, not uninterrupted wall-time execution. No additional nativ
 of that result handoff. The later Issue515 result below observes the additional input without
 loading or modifying prepared-86.
 
+### Retained HEAL consumer evidence
+
+This is a readback of the accepted PR504 acquisition above, not another native run. Its original
+source remains `c834c652b6862bc5679fd7f69a38a7093206efc6`; its collector is the tracked runner and
+`tools/bizhawk/map3_messenger_acceptance_observer.lua` at
+`9c3ea03ac5f5b467ee744f1ac624870da2408443`. The canonical ROM identity is at this document's top.
+The private records remain in the research worktree's `local/issue496/`. Below, **CP** identifies
+a one-based line in the named segment's `runtime/checkpoints.jsonl`, followed by its global
+`order`. Frames are **observer frames**; callback-time `emulatorFrame` and completed-frame input
+receipts remain distinct. These minimum facts do not publish the private trace or save state.
+
+**Confirmed (original observations):** both selected actions reach HEAL 1 through ordinary magic,
+level and target input, construct a single-target effect, and consume the resulting scene.
+
+| Record | Construction and resolved target | Consumed result |
+| --- | --- | --- |
+| `prepared-78`, Sarah self-heal | CP74 / 82511 / frame32112: actor1, action1, spell0. CP76 / 82515 / frame32113, `battlesceneScript_ApplyActionEffect:before`: target count1, `[1]`. | CP277 / 83950 / frame32725, `EndBattlescene:after`: Sarah HP5→11, MP10→7. |
+| `prepared-81`, Sarah heals Chester | CP354 / 114889 / frame44669: actor1, action1, spell0. CP356 / 114893 / frame44670 resolves count1, `[2]`. | CP561 / 116436 / frame45334: Chester HP5→11; Sarah HP7 unchanged and MP4→1. |
+
+The `WriteBattlesceneScript:before` target arrays `[0,1]` and `[2,1]` still describe field selection
+storage. They are not two consumed spell targets. The later effect caller owns that distinction.
+Construction also temporarily changes resources; only the replay/scene endpoint proves persistent
+recovery. The source `createbattlesceneanimation.asm:battlesceneScript_PerformAnimation` writes the
+caster's MP reaction before the casting animation; `castspell.asm:spellEffect_Heal` writes the
+target's recovery reaction before message298. The retained outer callbacks do not sample the exact
+runtime MP/HP command instants.
+
+**Confirmed (saved settings and reached text branch):** `prepared-77/runtime/continuation.json`
+contains original RAM bytes `02 00` at offsets `F717/F718`, respectively `MESSAGE_SPEED` and
+`NO_BATTLE_MESSAGES_TOGGLE` in pinned `sf2const.asm`. The later `prepared-78` save has the same bytes.
+This is actual saved RAM, not a substitution of `InitializeGameSettings` defaults. During self-heal,
+CP118/130 (orders82685/82795, frames32177/32226) enter/return from `DisplayText`274; CP148/180
+(83099/83249, frames32367/32426) do so for text298. Both return to `0x19200` in
+`bsc10_displayMessage`. Other-target text298 is CP455/497 (115640/115810, frames44992/45055), with
+the same return PC. Neither complete scene contains a `DisplayText`362 entry.
+
+Pinned `battlescenes/battlesceneengine_0.asm:bsc10_displayMessage` skips the normal text if the
+no-message toggle is set; after displaying it, only speed0 emits text362 (`{DICT}{W2}`). These
+observations therefore bind the normal display and non-W2 trailing-wait branch. Exact speed2
+throughout the action remains **Inferred**: command-time setting bytes were not sampled. Explicit
+setting writers are `code/common/stats/newgame.asm`, `code/common/menus/battlefieldsettingswindow.asm`
+and, for speed only, `data/maps/entries/map25/mapsetups/s2_entityevents.asm`. The selected Tower
+movement/magic/target/scene route does not enter those setters; this is not an exhaustive proof
+against every indirect RAM write.
+
+**Confirmed (source-bound RNG calls):** the collector's `returned()` entry records `returnPc` and
+its `rng:draw` record executes at that return PC, with ordered before/after shared seeds. The
+following are reached calls in the self-heal, not an inferred fixed animation budget.
+
+| `prepared-78` CP / order / frame | Return PC and pinned source owner | Observed call |
+| --- | --- | --- |
+| 138 / 83081, 141 / 83084, 144 / 83087; frame32363 | `0x1A8A6`, `0x1A8BC`, `0x1A8CE`; `battlescenes/animation/healingfairy.asm:spellanimationSetup_HealingFairy` | Ordered ranges32/30/12, results21/23/0. |
+| 157 / 83148 / 32387; 210 / 83437 / 32504 | `0x1C59E`; `battlescenes/animation/update/healingfairy.asm` | Reentry range16. |
+| 161 / 83154 / 32388 through 246 / 83675 / 32604, at the intervening named draw records | `0x1C72E`, same update owner | Periodic dust range12. |
+| 204 / 83405 and 207 / 83408; frame32491. 249 / 83682 and 252 / 83685; frame32606 | `0x1C6F8`, `0x1C70C`, same update owner | X-boundary ranges28/32 in that order. |
+
+The other-target setup has the same three caller PCs at CP418/421/424,
+orders115459/115462/115465, frame44920. The two award RNG operations occur during construction;
+their nested `GenerateRandomOrDebugNumber` and `GenerateRandomNumber` records must not be counted
+as four independent seed steps. A draw gap gives neither the number of no-draw updates nor their
+gate state.
+
+#### Static VInt installation and HEAL ordering
+
+The following audit is **Confirmed for the pinned source flow**, including the transitive window
+and text calls reached by these ordinary HEAL scenes. It is not a sampled slot inventory at every
+original interrupt. Paths in this table are relative to `disasm/code/`.
+
+| Boundary and source | Installed services or ordering |
+| --- | --- |
+| `gameflow/battle/battlescenes/initializebattlescene.asm`; `common/tech/interrupts/trap9_contextualfunctions.asm` | After fade-out, `VINTS_CLEAR` clears all eight pointers and the enabled bitfield. Trap9's add selects the first empty slot and sets its bit. Later initialization adds `VInt_UpdateBattlesceneGraphics` first, then `VInt_UpdateWindows`: slots0/1 and bitfield3 at that completed installation boundary. The old field callbacks do not survive the clear. |
+| Transitive `common/menus/ministatuswindow.asm:CreateBattlesceneMiniStatusWindows`, its open/close helpers and `BuildMiniStatusWindow`; `common/windows/windowengine.asm` | Creation calls `InitializeWindowProperties` and `CreateWindow` twice between the two installs. These reset window records/indices and use layout/stat/font, move and DMA helpers; they do not install or remove a contextual function. Open/close and `WaitForWindowMovementEnd` consume the installed window callback. `sub_19B0`/`sub_1942` in `common/tech/graphics/graphics_2.asm` manage sprite state/links, not the slot table. |
+| `common/scripting/text/textfunctions_1.asm` and `textfunctions_2.asm`; `common/windows/windowengine.asm:VInt_UpdateWindows` | Display/create/typewrite/close use window records and VInt waits, without a further VInt registration. Pinned `gamescript.txt` entries **0112/012A (hex)** are decimal274/298 and have no W1/W2 or portrait operation. The contextual portrait/member/timer installers are in their separate menu owners, not this call chain. `InitializeWindowProperties` clears portrait/dialogue/timer indices; `CloseDialogueWindow` is not `ClosePortraitWindow`. |
+| `common/tech/interrupts/vdpcontrol.asm`, `vintengine_1.asm`, `vint.asm` | Enable/disable helpers control interrupts/`VINT_ENABLED`, not slot allocation. `WaitForVInt` arms `ENABLE_VINT` and waits; `Sleep(n)` requests n such waits. `VInt` checks the enable bit, processes DMA/fade/Z80 work, then invokes enabled slots ascending. It clears `WAITING_NEXT_VINT` afterward and rearms from `VINT_ENABLED`. A busy-wait caller therefore must not be modelled as zero opportunities solely because it has no explicit `Sleep`. |
+| `gameflow/battle/battlescenes/battlesceneengine_4.asm:VInt_UpdateBattlesceneGraphics` | Enemy idle, ally idle, status animation and `sub_1F282` precede `UpdateSpellanimation`; enemy/ally position and sprite linking follow. The installed window service follows this callback. This gives a source partial order, not a universal game-wide service list. |
+| `gameflow/battle/battlescenes/updatespellanimation.asm:ReinitializeSceneAfterSpell`; `battlesceneengine_0.asm:bsc0D_endAnimation` and `EndBattlescene` | Spell cleanup clears properties/lifetime/control/toggle and waits for VInt; it does not remove either contextual service. `bsc0D` requests control2, waits for toggle0, restores palette/background state and waits again. `EndBattlescene` has its own timed input wait and closes mini-status windows; it still does not restore field callbacks. |
+| `gameflow/battle/battlefunctions/executeindividualturn.asm`, `loadBattle.asm`; `gameflow/battle/battlevints.asm:SetBaseVIntFunctions` | After scene return, `LoadBattle` clears callbacks; after map/entity loading, `SetBaseVIntFunctions` clears again and installs map planes, entities, view, scrolling, sprites, windows and map animations. The special timer addition is guarded by battle44, not Battle01. |
+
+The audit excludes unrelated full-screen/map-script transitions and the invalid-combatant fatal
+branch in `combatantstats_3.asm`, which deactivates callbacks and never returns. Valid actor/target
+records and completed scene returns bind the selected ordinary path. Static slot allocation is
+therefore no longer an unconstrained service-inventory question; its live enable state and exact
+interrupt opportunities are still not directly recorded.
+
+The ordinary HEAL script and dispatcher impose this further **Confirmed source order**:
+
+1. MP resource reaction precedes PRST's casting action. `GetSpellanimation` supplies
+   `HEALING_FAIRY`, unlike the Medical Herb's `NONE`. Fairy setup sends SFX77, executes the
+   four `Sleep4`/`Sleep3` flash pairs, clears/loads spell graphics, makes its setup draws and finally
+   sets lifetime`FFFF`, current animation and control1. The scene-data clear initially covers the
+   control/toggle fields; this fairy is not already enabled during its own pre-setup flash.
+2. `bsc01_animateAllyAction` calls setup at the selected sequence trigger before that frame's
+   `Sleep`. Its header termination check is separate. The accepted
+   [animation fixture](../../tests/fixtures/h2/battle-sprite-animation-static-v1.json) binds zero
+   terminate bytes for all retail sequences; completion of the casting frames does not stop HEAL.
+3. `battleactions/animateaction.asm:battlesceneScript_SwitchTargets` writes its wait/switch only
+   when the displayed combatant changes. Recovery mode2 and text298 follow. In `DisplayText`,
+   `HandleDialogueTypewriting` has its own per-character waits/input shortcut. The subsequent
+   `bsc10` nonzero-speed loop at `loc_1921A` tests input **before** `WaitForVInt`/`DBF`; for a stable
+   speed2 and no input it requests65 waits (64 initial counter, inclusive DBF). This conditional
+   source count is neither a whole-scene duration nor proof of natural fairy update counts.
+   W2's separate range256/copy/VInt/input preamble is absent from this reached trailing-wait branch.
+4. `WriteBattlesceneScript` next writes the ordinary make-idle command. The regular
+   `bsc05_makeAllyIdle` path itself sleeps using `BATTLESCENE_ALLYBATTLESPRITE_ANIMATION_SPEED`;
+   it does not end the spell. Only afterward does the script's `endAnimation` request `bsc0D`.
+   `UpdateSpellanimation` gates on toggle/control, clears lifetime for control2 and decrements a
+   nonzero lifetime before dispatch. `FFFF` is a decrementing word, not an immutable sentinel.
+   Fairy phase3 with lifetime0 retires an instance; the last active instance invokes cleanup.
+   X-boundary range28/32 and dust range12 may occur in the same update. `bsc0C` control3 is the
+   distinct forced-cleanup path, not the ordinary HEAL terminator.
+5. `battleactions/battleactionsengine_2.asm:battlesceneScript_End` places stop before switching
+   back to the actor and awarding EXP. Its **construction** callback in self-heal is CP88..103,
+   frame32113; it cannot be cited as execution of the stop. The last observed fairy draw is
+   frame32606, while reward text263 starts at CP255/order83698/frame32611. The stop drain completes
+   before that reward, but the last draw does not identify either the stop request or toggle-clear
+   instant. No fixed fairy lifetime follows from this external bound.
+
+**Unknown (remaining dynamic boundary):** individual bsc runtime command instants, no-draw fairy
+updates/properties, live enable gates, and the stop request/last-active cleanup timing within that
+source order. The observer records ordinary target input and delivered neutral frames, but does
+not hook the actual `loc_1921A` input read. Its stale W1/W2 `lastConsumerPoll` is not such a hook.
+The self-heal's scene input is entirely neutral; an alternative explicit Wait/input stream at the
+timed consumer is not observed. These gaps concern opportunity admission and state transitions,
+not missing setup/RNG callers or an unbound choice between W2 and timed battle text.
+
+#### Rechecking the retained HEAL facts
+
+Set `$researchWorktree` to the existing evidence-owning worktree and `$pinnedUpstream` to the local
+pinned checkout root. These commands read records/source only; they do not load a save or launch
+an emulator. Read the source files named above at the fixed Git object, for example:
+
+```powershell
+git -C $pinnedUpstream show 'c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battlescenes/initializebattlescene.asm'
+git show '9c3ea03ac5f5b467ee744f1ac624870da2408443:tools/bizhawk/map3_messenger_acceptance_observer.lua'
+$records = Join-Path $researchWorktree 'local/issue496'
+. ./local/private-inputs.ps1
+@'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+for name in ("prepared-77", "prepared-78"):
+    saved = json.loads((root / name / "runtime/continuation.json").read_text())
+    ram = bytes.fromhex(saved["original"]["ramHex"])
+    assert ram[0xF717:0xF719] == bytes((2, 0))
+    print(name, "saved settings", list(ram[0xF717:0xF719]))
+for name, first, effect, last, expected in (
+    ("prepared-78", 74, 76, 277, (1, 5, 11, 10, 7)),
+    ("prepared-81", 354, 356, 561, (2, 5, 11, 4, 1)),
+):
+    rows = {}
+    with (root / name / "runtime/checkpoints.jsonl").open(encoding="utf-8") as stream:
+        for line, raw in enumerate(stream, 1):
+            if first <= line <= last:
+                rows[line] = json.loads(raw)
+            if line >= last:
+                break
+    before, resolved, after = (rows[n]["facts"] for n in (first, effect, last))
+    assert before["actor"] == 1 and before["action"] == 1 and before["itemOrSpell"] == 0
+    target, hp0, hp1, mp0, mp1 = expected
+    assert resolved["targetCount"] == 1 and resolved["targets"] == [target]
+    party0 = {x["id"]: x for x in before["accounting"]["combatants"]}
+    party1 = {x["id"]: x for x in after["accounting"]["combatants"]}
+    assert (party0[target]["hpCurrent"], party1[target]["hpCurrent"],
+            party0[1]["mpCurrent"], party1[1]["mpCurrent"]) == (hp0, hp1, mp0, mp1)
+    texts = [x["facts"]["target"] for x in rows.values() if x["kind"] == "DisplayText:entry"]
+    assert 274 in texts and 298 in texts and 362 not in texts
+    print(name, "target/resources", expected, "text entries", texts)
+    for line, row in rows.items():
+        if row["kind"] == "rng:draw" and row["facts"]["source"] == "GenerateRandomNumber":
+            f = row["facts"]
+            print(line, row["order"], row["frame"], hex(row["pc"]),
+                  f["before"]["d6"] & 65535, f["d7"] & 65535)
+'@ | uv run python -X utf8 - $records
+```
+
+For ordinary-input reproduction inspect `prepared-78/runtime/bridge/receipt.json` requests1..17
+and join `actual-inputs.jsonl` by request `id` and global `order`. Parent `prepared-77` is the
+nonterminal, resumable movement save at frame32013/rank54; child78 CP1/order82206 verifies its
+historical load before input. The next selected HEAL starts99 observer frames later. Other-target
+parent80 is likewise nonterminal at44272/rank78, with the selected child81 action397 frames later.
+These are retained save genealogies, not permission to restore them with a changed observer:
+`SEGMENT_IDENTITIES` requires matching runner/observer/execution sources at preparation and launch.
+Additional instrumentation would need an independently accepted compatibility boundary; terminal86
+remains forbidden as a resume parent. No new fixture, collector change or original acquisition is
+required merely to reproduce the facts documented here.
+
 ### Post-victory ordinary-input preparation (Issue #515)
 
 **Confirmed (source checkpoint):** accepted PR519 extended the existing victory continuation to
