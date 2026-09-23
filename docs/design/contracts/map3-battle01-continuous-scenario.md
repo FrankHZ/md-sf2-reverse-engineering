@@ -95,7 +95,7 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control; compare actual actor 2 and exact selected initialized values. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
 | 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | Match every reached decision and consumed effect in order, including resource costs and RNG-driven results. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
 | 6 — victory/return | Selected final segment plus R4a: winning condition, eligible-party healing, reached after-program operations/effects, joins, F401/F501, controller result, transfer/setup selection | Require natural victory and full reached operation entry/return pairing, shared tail before enclosing return, then clear/set flags, D4=1 equivalent and exploration handoff. `ms_Void` at source `0x477E8` is Map57's exact fallback selection. One completed return cannot replace after-program consumption. |
-| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; PR #526 extension binding/actual comparison remain open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. PR #526 supplies the original expected effect, but the current projector/run does not bind or reach it; this assertion and full 5B remain OPEN. |
+| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied, while actual comparison remains open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. The actual run does not reach this boundary; this assertion and full 5B remain OPEN. |
 | 8 — save/7C | 6A restart rule; private asset inventory and ROM/source/extraction provenance for every reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity and binding | No user save/load/suspend/checkpoint surface; restart reconstructs layer 1. Every consumed original scene resource resolves to admitted original private content. Missing private input is Unavailable; an authored substitute for required original scene content fails 7C when observed. MUSIC_JOIN/MUSIC_SAD_JOIN chord loops and host mute do not satisfy original audio. Public distribution remains outside scope. |
 | 9 — 8D presentation | Reached program/operation and scene/dialogue/animation/audio resource identities, dispatch/consumer/ack boundaries, blocking and resulting state from accepted source plus bounded observations | Match semantic identity and causal order; observe actual host use and completion/ack as defined below. Request/mailbox pairs, program return or a counter alone cannot PASS delivery. Missing original consumption evidence is OPEN; missing host evidence is Unavailable. No screenshots. |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A; inventory below | Emit a separate named result for every accepted deviation and its expected behavior, even when PASS. No implicit exclusions, missing-input waiver or newly invented deviation. |
@@ -140,8 +140,8 @@ Map57 `(5,13)`, raw `(1920,4992)`, facing DOWN, on frames 61023/61024 with origi
 displacement, battle255, F401=false, F501=true, and no blocking consumers. This is a separate
 accepted terminal pair; it does not modify or make the PR #504 terminal resumable. RA-12's bounded
 ordinary-input acceptance and displacement
-are evidenced. The existing projector still binds only the PR #504 neutral endpoint; this extension
-has no offline projector binding or H4 actual observation.
+are evidenced. The projector retains the PR #504 neutral endpoint and optionally binds this separate
+extension through an explicit `--extension-root`; H4 has no actual observation at that boundary.
 
 ## Mapping to existing actual observations
 
@@ -219,9 +219,14 @@ operator's explicit retained `issue496` directory and a fresh output in this wor
 ```powershell
 . ./local/private-inputs.ps1
 uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRoot --output local/issue522/reference.json
+# To bind the separately accepted ordinary-input effect, use a fresh output:
+uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRoot --extension-root $acceptedExtensionRoot --output local/issue538/reference.json
 ```
 
-`$acceptedEvidenceRoot` names only the accepted prepared-68..86 evidence, never the live #515 chain.
+`$acceptedEvidenceRoot` names the accepted prepared-68..86 evidence; `$acceptedExtensionRoot`
+explicitly names the separately accepted `issue515` prepared-02..20 evidence. Neither input is
+selected implicitly. Without the extension argument, RA-12 is `accepted-extension-unbound`, not
+missing original evidence; old projections remain reproducible.
 The projector reads these 19 directories explicitly. It reuses `_read_segment` with an isolated
 copy of its globals whose sole `repo_path("local")` containment lookup selects the evidence's local
 root; the acquisition module and all its writable helpers remain unchanged. Terminal 86 uses
@@ -251,7 +256,7 @@ normalization remain OPEN where these boundaries do not supply them.
 | `scenes` and decision `effects` | WriteBattlesceneScript before → ApplyActionEffect before → Initialize/Execute scene → EndBattlescene after | 44 scene occurrences; compare before/after HP/MP/status/items/EXP/gold at consumed boundaries. Player-return `targets` is a candidate list; use the post-construction effect list, never treat all candidates as hit. Each reached effect has one target; unsupported multi-target decoding fails explicitly. |
 | `rng` | GenerateRandomNumber entry/return/draw and debug-aware wrapper | 2,935 base advances use D6 range/D7 result; all reproduce the accepted 16-bit update and scaled result. 250 wrapper results use D0 range/result, match their nested base call, and are **not additional draws**. Caller PC and enclosing consumer scope locate evidence; they do not prove an individual draw-to-effect association. Thinking-copy draws and frame/menu mutations outside these observed calls remain OPEN. |
 | `story`, `operationPairs`, `audioPairs` | named script/operation/text/warp/setup records; actual sound consumer/mailbox records | 363 matched reached operation pairs across the chain, including the accepted 67 after-program pairs; 2,552 dispatch/mailbox pairs (106 in final segment). These prove reached source seams, not rendered/audible delivery. |
-| `victory`, `endpoint` | natural-victory, after-tail/enclosing return/flag/loop/transfer records and terminal stop | PR #504 neutral endpoint above; terminal accounting and item/status/HP/MP fields cross-checked against retained RAM, full terminal flags against all 128 bytes. Field coordinates remain separate from battle combatant coordinates. PR #526 separately accepts the Down-to-`(5,13)` extension; the current projector and reference table do not bind its payload. |
+| `victory`, `endpoint`, optional `postVictoryInput` | natural-victory, after-tail/enclosing return/flag/loop/transfer records and terminal stop; separate accepted extension request/read/acceptance/stop records | PR #504 neutral endpoint above; terminal accounting and item/status/HP/MP fields cross-checked against retained RAM, full terminal flags against all 128 bytes. Field coordinates remain separate from battle combatant coordinates. The optional PR #526 projection validates its independent chain, all 18 reproduced prefix states, the old neutral endpoint match, original Down acceptance and settled Map57 `(5,13)` state, facing, readiness, flags, party and resources. It supplies expected fields only; the absent actual result is `Unavailable`. |
 
 The numeric action mapping is owned by `map3-battle01-action-effect-static-v1` dispatch and the
 STAY consumer in the battle-AI/function owners. Item mask/slot semantics come from the accepted
@@ -289,8 +294,8 @@ memory/thinking draws, individual draw-to-effect mapping and timing normalizatio
 unshimmed required dialogue and other incomplete 8D consumer boundaries. The bindings below
 distinguish decoded values, retained but undecoded fields, static rules, missing original details and
 missing remake observations. PR #526 closes only the bounded RA-12 input/effect observation; it does
-not establish full 5B, remaining 8D or the milestone. The current projector still uses the PR #504
-terminal and does not bind the extension payload.
+not establish full 5B, remaining 8D or the milestone. The projector preserves the PR #504 neutral
+terminal and binds the extension payload only when its independent accepted root is supplied.
 
 **Confirmed actual comparison results (PR #528, corrected by PR #533):** PR #528's completed baseline
 reported 5,336 PASS, 6 FAIL and 40 Unavailable, with the earliest differences at admission gold,
@@ -305,7 +310,7 @@ at natural first control and match the starting slots supported by pinned NewGam
 inventories do not establish admission `SourceLoadout`, which remains null. First-round order still differs, and after the diagnostic first STAY the
 original next actor is Bowie while actual is Sarah; host exit 2 is the corroborated stop. Admission
 `SourceLoadout` remains null in the actual projection, so later inventories do not prove that field.
-The accepted PR #526 post-victory extension was not rebound and was not reached. NPC phase and
+The accepted PR #526 post-victory extension is now optionally projected; that actual run did not reach it. NPC phase and
 timing/RNG mapping remain Unknown. This corrected comparison is still not H4 acceptance.
 
 **OPEN content/implementation:** 7C audio and complete reached asset provenance, missing snapshot/cue

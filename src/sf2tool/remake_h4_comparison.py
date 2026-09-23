@@ -14,7 +14,15 @@ from collections import Counter
 from pathlib import Path
 
 from sf2tool.paths import repo_path
-from sf2tool.remake_h4_reference import ROM, SOURCE, UPSTREAM, location, require, rows
+from sf2tool.remake_h4_reference import (
+    EXTENSION_SOURCE,
+    ROM,
+    SOURCE,
+    UPSTREAM,
+    location,
+    require,
+    rows,
+)
 
 OWNER = "docs/design/contracts/map3-battle01-continuous-scenario.md"
 DIRECTIONS = {1: "Up", 2: "Down", 4: "Left", 8: "Right"}
@@ -47,6 +55,16 @@ def reference(path):
         [row["segment"] for row in result["lineage"]] == list(range(68, 87)),
         "not the selected winning lineage",
     )
+    extension = result.get("postVictoryInput")
+    if extension is not None:
+        require(
+            extension["sourceCommit"] == EXTENSION_SOURCE
+            and [row["segment"] for row in extension["lineage"]] == list(range(2, 21))
+            and extension["before"]["position"]
+            == [result["endpoint"]["state"]["x"], result["endpoint"]["state"]["y"]]
+            and extension["after"]["source"]["record"].startswith("prepared-20/runtime/"),
+            "not the accepted original extension binding",
+        )
     return result
 
 
@@ -610,19 +628,46 @@ def compare(ref, plan, actual_path, host_log, host_exit):
     )
     for group in ref["coverage"]:
         if "RA-12" in group["fields"]:
+            extension = ref.get("postVictoryInput")
+            after = extension["after"] if extension else None
+            expected = None
+            if after:
+                state = after["state"]
+                accounts = after["accounting"]
+                expected = {
+                    "input": extension["input"]["direction"],
+                    "map": state["map"],
+                    "from": extension["before"]["position"],
+                    "to": [state["x"], state["y"]],
+                    "facing": state["facing"],
+                    "flags": state["flags"],
+                    "party": accounts["party"],
+                    "gold": accounts["gold"],
+                    "allies": accounts["allies"],
+                    "rngBytes": state["rngBytes"],
+                    "rngCopyByte": state["rngCopyByte"],
+                    "readiness": after["readiness"],
+                }
             check(
                 7,
                 group["fields"],
-                {"map": 57, "input": "Down", "from": [5, 12], "to": [5, 13]},
+                expected,
                 None,
                 last,
                 {
-                    "owner": "docs/research/map3-messenger-acceptance.md"
-                    "#native-post-victory-ordinary-input-result-issue-515",
-                    "commit": "26e9d3ab988bd4440146eec8da2e7a97a53dffa8",
+                    "owner": (
+                        "docs/research/map3-messenger-acceptance.md"
+                        "#native-post-victory-ordinary-input-result-issue-515"
+                    ),
+                    "commit": EXTENSION_SOURCE,
+                    "record": after["source"] if after else None,
                 },
-                "Accepted original extension exists; old projector has no binding and actual "
-                "run did not reach this boundary. No new-chain payload was consumed",
+                "Accepted original extension projected; actual run did not reach this boundary"
+                if after
+                else (
+                    "Accepted original extension was not supplied to this projection; "
+                    "actual run did not reach this boundary"
+                ),
                 True,
             )
             continue
