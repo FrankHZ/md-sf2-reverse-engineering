@@ -310,12 +310,15 @@ internal static class ExplorationContentReader
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
                 ObjectOptional(row, opcode, "speakerFlags", ["op", "mode", "speaker",
+                    .. row.TryGetProperty("waitForAcknowledgement", out _) ? new[] { "waitForAcknowledgement" } : System.Array.Empty<string>(),
                     .. row.TryGetProperty("useEventSpeaker", out _) ? new[] { "useEventSpeaker" } : System.Array.Empty<string>()]);
                 string mode = Text(row, "mode"); Require(mode is "single" or "continued", "text-mode", "program.mode");
                 return new ShowText(mode == "single" ? TextDisplayMode.Single : TextDisplayMode.Continued,
                     row.GetProperty("speaker").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "speaker")),
                     row.TryGetProperty("speakerFlags", out _) ? (byte)Number(row, "speakerFlags", 0, 255) : (byte)0,
-                    row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"));
+                    row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"),
+                    !row.TryGetProperty("waitForAcknowledgement", out _) || Boolean(row, "waitForAcknowledgement"));
+            case "wait-text-input": Object(row, opcode, "op"); return new WaitForTextInput();
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
             case "sprite":

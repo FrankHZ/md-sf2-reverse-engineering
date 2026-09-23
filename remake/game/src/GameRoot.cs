@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Godot;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.GodotAdapter.Battles;
@@ -14,6 +15,11 @@ public sealed partial class GameRoot : Node
     private GameInput? _input;
     private BattleSessionView? _battle;
     private ExplorationSessionView? _exploration;
+    private SessionAudio? _audio;
+
+    public override void _ExitTree() => _audio?.Dispose();
+
+    public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
 
     public override void _Input(InputEvent input)
     {
@@ -85,6 +91,21 @@ public sealed partial class GameRoot : Node
             var outcome = GameSession.Start(source);
             if (outcome is SessionStartFailed failed) { view.FailStartup(failed.Failure); return; }
             var started = (SessionStarted)outcome;
+            if (started.Session.Definition.Exploration is { } definition)
+            {
+                _audio = new SessionAudio(this, definition);
+                if (_audio.Error is { } error) { Fail(error, "Selected private audio content is unavailable."); return; }
+                view.ObserveResult = result =>
+                {
+                    _audio.Observe(result);
+                    if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
+                };
+                view.PlayUiSound = command =>
+                {
+                    _audio.PlayEffect(command);
+                    if (_audio.Error is { } failure) Fail(failure, "Required private audio could not be consumed.");
+                };
+            }
             if (started.Result.Snapshot.HasBattleControl) { view.Attach(started.Session, started.Result); return; }
             view.Hide();
             ShowExploration(started.Result, returning: false);
@@ -100,7 +121,7 @@ public sealed partial class GameRoot : Node
                     view.Reparent(exploration, false);
                     exploration.MoveChild(view, 0);
                 }
-                exploration.Begin(started.Session, initial, _input!, result =>
+                exploration.Begin(started.Session, initial, _input!, _audio!, result =>
                 {
                     _exploration = null;
                     if (view.GetParent() == exploration) view.Reparent(this, false);

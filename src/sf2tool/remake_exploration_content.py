@@ -11,9 +11,11 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import io
 import json
 import re
 import subprocess
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -628,14 +630,27 @@ class OriginalPrograms:
                 result.extend(
                     [
                         {"op": "text-cursor", "text": 447 if selector & 32767 == 128 else 446},
-                        {"op": "show-text", "mode": "single", "speaker": None},
+                        {
+                            "op": "show-text",
+                            "mode": "single",
+                            "speaker": None,
+                            "waitForAcknowledgement": False,
+                        },
                         {
                             "op": "present",
-                            "kind": "SoundFade",
+                            "kind": "SoundWait",
                             "resource": None,
                             "entity": None,
                             "position": None,
                         },
+                        {
+                            "op": "present",
+                            "kind": "PreviousMusic",
+                            "resource": None,
+                            "entity": None,
+                            "position": None,
+                        },
+                        {"op": "wait-text-input"},
                         {"op": "close-text"},
                         {"op": "wait-ticks", "ticks": 10},
                     ]
@@ -878,6 +893,18 @@ def prepare_visuals(
     map_definitions = {"map-" + str(row["id"]): row for row in canonical["maps"]}
     map_visuals = []
     sprites = {0}
+    # PlayMapMusic's explicit original field-to-battle substitutions.
+    music_replacements = {
+        compiler.equates[name]: compiler.equates[target]
+        for name, target in (
+            ("MUSIC_NOTHING", "MUSIC_BATTLE_THEME_3"),
+            ("MUSIC_TOWN", "MUSIC_BATTLE_THEME_3"),
+            ("MUSIC_MITULA", "MUSIC_BATTLE_THEME_3"),
+            ("MUSIC_MITULA_SHRINE", "MUSIC_BATTLE_THEME_1"),
+            ("MUSIC_CASTLE", "MUSIC_BATTLE_THEME_1"),
+        )
+    }
+    compiler.sources.add("disasm/code/gameflow/battle/battlemusic.asm")
     for map in maps:
         refs = map_definitions[map["id"]]["references"]
         asset = assets[atlas_bindings[map["id"]]]
@@ -894,6 +921,15 @@ def prepare_visuals(
         map_visuals.append(
             {
                 "map": map["id"],
+                "music": [
+                    {
+                        "field": area["defaultMusic"],
+                        "battle": music_replacements.get(
+                            area["defaultMusic"], area["defaultMusic"]
+                        ),
+                    }
+                    for area in resources["areaTables"][refs["areaTable"]]["records"]
+                ],
                 "atlas": raster(bucket["width"], bucket["height"], payload, "png"),
                 "scale": bucket["scale"],
                 "blocks": resources["blocksets"][refs["blockset"]]["blocks"],
@@ -1012,7 +1048,54 @@ def prepare_visuals(
                         palette_index_rgba(palette, tile[y * 8 + x])
                     )
         portrait_visuals.append({"portrait": portrait, "raster": raster(64, 64, pixels)})
-    return {"maps": map_visuals, "sprites": sprite_visuals, "portraits": portrait_visuals}
+    audio = []
+    for asset in manifest["assets"]:
+        if asset["kind"] != "audio":
+            continue
+        runtime = asset["runtime"]
+        path = (asset_root / runtime["runtimePath"]).resolve(strict=True)
+        if not path.is_relative_to(asset_root.resolve()):
+            raise ValueError("audio asset path escapes selected root")
+        payload = path.read_bytes()
+        if (
+            len(payload) != runtime["byteLength"]
+            or hashlib.sha256(payload).hexdigest().upper() != runtime["sha256"].upper()
+        ):
+            raise ValueError("admitted audio identity mismatch")
+        with wave.open(io.BytesIO(payload), "rb") as sound:
+            if (
+                sound.getsampwidth() != 2
+                or sound.getcomptype() != "NONE"
+                or sound.getnchannels() != runtime["channels"]
+                or sound.getframerate() != runtime["sampleRate"]
+                or sound.getnframes() != runtime["sampleFrames"]
+            ):
+                raise ValueError("admitted audio format mismatch")
+            pcm = sound.readframes(sound.getnframes())
+            if len(pcm) != sound.getnframes() * sound.getnchannels() * 2:
+                raise ValueError("admitted audio is truncated")
+        audio.append(
+            {
+                "cue": asset["cue"],
+                "command": asset["command"],
+                "timerB": asset["timerB"],
+                "sampleRate": runtime["sampleRate"],
+                "channels": runtime["channels"],
+                "sampleFrames": runtime["sampleFrames"],
+                "loopBegin": runtime["loopBegin"],
+                "loopEnd": runtime["loopEnd"],
+                "pcm16": base64.b64encode(pcm).decode("ascii"),
+                "sha256": hashlib.sha256(pcm).hexdigest().upper(),
+            }
+        )
+    if not audio:
+        raise ValueError("private original audio is missing from the selected asset pack")
+    return {
+        "maps": map_visuals,
+        "sprites": sprite_visuals,
+        "portraits": portrait_visuals,
+        "audio": audio,
+    }
 
 
 def prepare(

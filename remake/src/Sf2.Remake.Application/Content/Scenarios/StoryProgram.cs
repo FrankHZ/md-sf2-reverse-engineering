@@ -5,7 +5,7 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public readonly record struct EntityRef(string Value);
 public readonly record struct ProgramLocation(string Program, int Instruction);
 public enum TextDisplayMode { Continued, Single }
-public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad }
+public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad, SoundWait, PreviousMusic }
 public enum MapLoadMode { Rebuild, Preserve }
 
 public abstract record StoryInstruction;
@@ -20,7 +20,9 @@ public sealed record ReturnBattleMap : StoryInstruction;
 public sealed record RetiredMap3EntityScratch : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
-public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false) : StoryInstruction;
+public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
+    bool WaitForAcknowledgement = true) : StoryInstruction;
+public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;

@@ -11,6 +11,7 @@ import stat
 import subprocess
 import sys
 import uuid
+import wave
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -629,6 +630,8 @@ def _inspect_manifest(
     if not isinstance(assets, list):
         raise _reject("InvalidManifest", "assets", "The asset collection is invalid.")
     asset_ids: set[str] = set()
+    audio_commands: set[tuple[int, int]] = set()
+    audio_cues: set[str] = set()
     runtime_paths: set[str] = set()
     resolved_payload_identities: set[str] = set()
     payloads: list[RuntimePayload] = []
@@ -643,7 +646,17 @@ def _inspect_manifest(
                 "The presentation asset manifest has duplicate asset identities.",
             )
         asset_ids.add(asset_id)
-        buckets = asset.get("buckets")
+        if asset.get("kind") == "audio":
+            identity = (asset["command"], asset["timerB"] if asset["command"] >= 65 else 0)
+            if identity in audio_commands or asset["cue"] in audio_cues:
+                raise _reject(
+                    "DuplicateIdentity",
+                    "audio",
+                    "Audio command/timer contexts and cues must be unique.",
+                )
+            audio_commands.add(identity)
+            audio_cues.add(asset["cue"])
+        buckets = [asset["runtime"]] if asset.get("kind") == "audio" else asset.get("buckets")
         if not isinstance(buckets, list):
             raise _reject("InvalidManifest", "buckets", "An asset bucket collection is invalid.")
         for bucket in buckets:
@@ -687,6 +700,33 @@ def _inspect_manifest(
                     "payload",
                     "A referenced runtime payload digest drifted.",
                 )
+            if asset.get("kind") == "audio":
+                try:
+                    with wave.open(str(source_path), "rb") as sound:
+                        frames = sound.getnframes()
+                        channels = sound.getnchannels()
+                        if (
+                            sound.getcomptype() != "NONE"
+                            or sound.getsampwidth() != 2
+                            or frames != bucket["sampleFrames"]
+                            or channels != bucket["channels"]
+                            or sound.getframerate() != bucket["sampleRate"]
+                            or len(sound.readframes(frames)) != frames * channels * 2
+                        ):
+                            raise ValueError("audio sample format or length")
+                    begin, end = bucket["loopBegin"], bucket["loopEnd"]
+                    if (
+                        (begin is None) != (end is None)
+                        or begin is not None
+                        and not 0 <= begin < end <= frames
+                    ):
+                        raise ValueError("audio loop range")
+                except (wave.Error, EOFError, ValueError) as error:
+                    raise _reject(
+                        "InvalidManifest",
+                        "audio",
+                        "The audio payload or declared sample range is invalid.",
+                    ) from error
             payloads.append(RuntimePayload(relative, source_path, actual_length, actual_digest))
 
     ordered_payloads = tuple(sorted(payloads, key=lambda payload: payload.relative_path.as_posix()))

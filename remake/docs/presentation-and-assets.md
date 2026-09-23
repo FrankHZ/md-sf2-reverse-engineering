@@ -603,10 +603,106 @@ runtime forms are versioned in the local asset repository. The product uses the 
 material; it does not generate replacement tracks or substitute sound effects. Application emits
 semantic audio cues, and the Godot audio adapter resolves those cues to admitted local asset IDs.
 
-Exact container/codec normalization, loop points, streaming versus resident policy, channel layout,
-gain normalization, transition timing, and audio cache receipts remain **Unknown** until a separate
-audio contract closes them. This document authorizes neither guessed loop metadata nor a new audio
-implementation slice.
+The private audio implementation uses the existing version-1 pack with `kind: audio` entries.
+Each entry retains its original command, semantic cue, source capture identity, derivation identity,
+and one PCM16 WAV runtime payload. `timerB` identifies the original scheduling context. Music commands
+are unique; finite SFX may have multiple reviewed `(command, timerB)` variants. Cue IDs remain unique.
+Preflight verifies the pinned local Git payload, SHA-256, rate, channel count, sample-frame count and
+explicit loop range. Missing content is an error; the former synthesized JOIN chords are removed.
+
+`python -m sf2tool.remake_audio --help` describes the offline candidate materializer. It accepts a
+reviewed capture SHA-256, command/timer context, explicit inclusive/exclusive sample-frame interval,
+and optional loop boundaries. It creates a new candidate under the worktree's ignored `local/`
+directory. It neither launches an emulator nor promotes assets. Original captures, native observer
+configuration, failed attempts and runtime WAVs remain private. The source capture and its observed
+boundaries must be reviewed before the existing local asset admission transaction.
+
+The compiler embeds the admitted PCM and metadata in the private world. Content checks its identity
+again. The Godot session owner creates `AudioStreamWav` resources at their admitted rate and channel
+layout, with no gain normalization or pitch change. Streams are resident; resource ownership survives
+exploration/battle view replacement. Looping is enabled only when both admitted sample boundaries
+are present. Natural `Finished` and deliberate replacement/stop remain distinct observations.
+`GameRoot.ReadAudioObservationJson()` exposes the live players and the last 64 ordered start/stop/
+finish receipts, including PCM identity, command/timer, loop range, session revision and wait token.
+Inspectors must collect these during execution; sequence gaps are not complete playback evidence.
+
+**Confirmed source structure:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`sounddriver.asm:Load_Music` writes the music header's Timer B value; `Load_SFX` initializes channel
+records without replacing it, and `UpdateSound` advances them under that timer. Note-frequency
+register writes use separate frequency tables. SFX variants therefore retain the reached timer
+context; `pitch_scale` is not a tempo substitute because it would transpose the sampled sound.
+The existing [sound inventory](../../docs/research/sound-data-inventory.md) owns the ROM/source
+parity, command identities, type-specific channels and stream termination facts.
+
+**Confirmed in a bounded private host observation:** JOIN opens its text window, waits for the
+actual finite stream to finish, reissues previous music, and then accepts acknowledgement. The
+source `csc08_joinForce`, `FadeOut_WaitForP1Input`, `PlayMusicAfterCurrentOne` and
+`ApplyFadingEffectAndZ80BusUpdate` support this order. The source previous operation reissues the
+prior command; it does not restore a PCM offset. Map-area field/battle music selection uses imported
+area music and `PlayMapMusic` substitutions. Application retains wait tokens and player input
+ownership; Godot reports service completion.
+
+The six music resources and 25 finite SFX timer variants occupy 104,374,046 bytes in the generated
+private world; its reader permits 100 MiB. Other package limits are unchanged. A WASAPI Godot run observed Town's natural forward-loop
+wrap while `Playing` stayed true without `Finished`, then ordinary Map 3 inputs reached JOIN.
+An early acknowledgement retained the sound wait token. The finite stream ended naturally;
+previous Town restarted at its beginning before acknowledgement returned to the field with flag 603.
+The ordered player receipts were start 8, stop 8, start 19, finish 19, start 8. Native exit was zero.
+This checks real resource playback and input ownership in that bounded route; it does not establish
+original waveform/timing equality. The complete reached resource inventory is admitted at local asset
+commit `7219d9c6ac2e72d86b3d62b2042e153e4dbba34f`, tree
+`ff1d4f37271cff828f7a0bd1efde083c56915e55`, manifest SHA-256
+`82B8E862B7438D44AD65B3C0CEF328B8CFD8E53653FE39D0266590B541B3C448`;
+checkout preflight passed. Its tracked
+`manifests/audio-town-join-provenance.json` retains original capture identities, sample cuts,
+reproduction parameters, loop evidence and the host receipts. Source WAVs and capture observers
+remain in that private repository. Use the explicit asset commit/tree/manifest pins with
+`python -m sf2tool.remake_assets checkout`; the temporary world is not an implicitly selected pack.
+
+`manifests/audio-reached-inventory-provenance.json` owns the remaining capture protocols, exact
+sample cuts and actual host receipts. Music commands 2, 5, 34 and 38 passed actual forward-loop,
+continued-playing and clean-release observations through explicitly controlled field-music selections.
+That tests their resource consumption, not natural battle-action triggers. The 25 finite SFX variants
+passed original driver termination, native lifecycle, complete WAV and unchanged-installation checks.
+Their cuts retain unchanged PCM, including 441 samples before and after the selected audible interval;
+the measured quiet separation permits at most one PCM16 unit. No normalization, noise gate or waveform
+rewrite is applied. Initial-context variants retain their explicit inferred Map 3/Town context.
+
+Ordinary accepted field warps publish `warp-started` before transfer; rejected destinations and script
+transfers do not. `WarpIfSetAtPoint`, `ProcessMapEventType1_Warp` and the source `WARP_SFX` reset own
+this distinction. Audio consumes that origin marker once, before selecting destination music.
+An actual R1 input prefix observed command 89 starting once in Town's inherited Timer B context.
+The existing `door-opened` result selects command 92. Reattaching a result does not replay its effects.
+
+Adjustable text consumes the imported sprite speech identity on alternating non-space revealed
+characters; acknowledgement and choices consume command 67. Accepted battle spell/item selection
+and cancellation use 66, and confirmation uses 67. These are modern UI bindings, not reproduction of
+every original menu/window edge. An authored two-text adapter fixture with the original Bowie
+sprite/speech binding observed command 73 replacement and natural `Finished`, plus ordinary Enter's
+67, under both CB and D2 timer contexts. It collected every audio receipt without sequence gaps.
+The full inventory includes the original Woman sprite 195's 72/CB voice; a failed reduced fixture
+omitted that entry while incorrectly assuming the entity was Sarah. That fixture failure does not
+establish a missing reached asset. The complete pack and source-derived speaker metadata agree.
+
+**Modern text-mode difference:** instant text and reveal-all input suppress incremental speech
+bleeps; adjustable text uses the configured modern reveal speed. Adjustable-mode consumption PASS
+does not prove speech-cue parity for instant mode, original cadence, or every scene. H4 must retain
+suppressed or unobserved cues as differences/unavailable; 9A input/settings acceptance does not grant
+an original-audio parity claim. This behavior is not a newly accepted 10A deviation waiver.
+
+Town's inferred PCM loop uses an exact recurrence of all ten original driver channel records at
+frames 2757 and 8618 in the controlled export. The reviewed candidate loop is sample frames
+1,894,900 through 6,208,289 (exclusive), at 44,100 Hz stereo PCM16. The export bridge's startup
+buffer and possible adaptive resampling prevent claiming exact hardware sample phase. Reproduction
+requires the retained private capture/configuration, candidate manifest and ordinary-input host
+observation; neither the loop interval nor a waveform seam metric alone proves the host result.
+
+**Unknown / incomplete:** original per-channel mixing is not reproduced by the single replacing SFX
+player. Original command 253 fade semantics, complete reached field/UI cue bindings and battle-action
+music/SFX triggers, scene completion and input release remain incomplete. Battle scene consumption
+belongs to its scene owner; the audio resource checks do not implement that seam. The existing modern
+half-second `SoundFade` service is not source-timing evidence. Neither successful resource
+requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 
 ## Public Synthetic and Test Fixtures
 
