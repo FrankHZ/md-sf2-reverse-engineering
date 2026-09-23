@@ -3530,6 +3530,11 @@ local function install_candidate()
             end
             local poll = c.consumerPoll
             local fresh = poll and frame_count - poll.frame <= 1
+            if candidate.diagnostic and c.heal.active and button ~= "neutral" then
+                result.consumer="heal-diagnostic-neutral-scene"
+                need(false, "HEAL-diagnostic-scene-input-not-admitted")
+                return result
+            end
             if c.fieldMenu then
                 result.consumer = "FieldMenu-recovery"
                 need(not c.fieldMenu.stage:match("^unsupported"), "unsupported-field-menu-state")
@@ -3537,11 +3542,6 @@ local function install_candidate()
                 return result
             end
             if button == "neutral" then return result end
-            if candidate.diagnostic and c.heal.active then
-                result.consumer="heal-diagnostic-neutral-scene"
-                need(false, "HEAL-diagnostic-scene-input-not-admitted")
-                return result
-            end
             if victory and c.completed.exploration then
                 result.consumer = "post-victory-field"
                 need(button == "Up" or button == "Down" or button == "Left" or button == "Right", "post-victory-direction-only")
