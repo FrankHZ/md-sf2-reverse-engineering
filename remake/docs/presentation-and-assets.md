@@ -852,18 +852,30 @@ by their new initialization token and the preceding scene-ended event, without r
 frame between scenes. These modes use the same fresh-output/error
 contract and no screenshots, original emulator, runtime state setters or fixed comparison seeds.
 
-**Unfinished healing work:** HEAL spells still use the existing scalar command path. They do not
-consume a healing scene or fairy RNG, and #523 remains open. Static caller analysis confirms MP
-reaction before casting animation (`createbattlesceneanimation.asm`), recovery then text
-(`castspell.asm:spellEffect_Heal`), and VInt-driven fairy updates
-(`battlesceneengine_4.asm:VInt_UpdateBattlesceneGraphics`, `updatespellanimation.asm`). Fairy phases,
-reentry, exit and dust consume source-dependent draws; bsc0D requests stop and waits for the update
-toggle, whereas bsc0C force-reinitializes. The dispatcher gates and decrements the lifetime word
-before the update; initial `-1` is not an immutable sentinel. X-boundary draws (ranges28/32) and
-the periodic dust draw (range12) can occur in the same update. Natural text/input-to-VInt alignment
-remains **Unknown**.
-The next implementation must model the proved logical update/stop state and its caller ordering;
-neither renderer frame count nor padding toward an old omitted-RNG seed may substitute for it.
+**Unfinished healing work:** HEAL spells still use the scalar command path; no healing scene or
+fairy RNG is consumed, and #523 remains open. The research owner's
+[retained HEAL consumer evidence](../../docs/research/map3-messenger-acceptance.md#retained-heal-consumer-evidence)
+binds original self/other-target recovery, actual setup/update RNG callers, saved settings02/00
+and the reached timed battle-text branch. The source audit binds scene VInt clear/install/removal
+and graphics-before-windows order. Those are available premises, not new runtime-acquisition gaps.
+
+The consumer must preserve MP-before-cast, setup enable after its flash/load/draws, live fairy
+updates across target switching/recovery text, the ordinary make-idle wait, and stop-drain before
+return-to-actor/reward. The reached `bsc10` timed input loop is distinct from W1/W2: neither text
+reveal nor every acknowledgement warrants a range256 draw. `bsc0D` requests stop and waits for the
+active toggle; `bsc0C` force-cleans. The dispatcher decrements the lifetime word before updating;
+initial `FFFF` is not an immutable sentinel. X-boundary ranges28/32 and periodic dust range12 can
+occur in the same update. Last draw, construction-time `Script_End`, animation completion and
+runtime spell termination are different boundaries.
+
+**Unknown:** the remaining natural admission of individual logical opportunities, no-draw fairy
+states/live gates, actual timed-input reads and stop/cleanup instants. Exact speed2 across every
+command is still **Inferred**, as the research owner specifies. The accepted
+[Option A contract](../../docs/decisions/0010-map3-battle01-product-acceptance.md) separates mandatory
+logical work, explicit gameplay Wait and host delivery; a settled field-Wait consumer does not
+establish these battle opportunities. Implement from the named source state/caller rules without
+renderer-frame RNG, fixed fairy duration/draw totals or seed padding. This evidence does not make
+HEAL playable or close 9A/H4; a partial kernel alone cannot do so.
 
 ## Public Synthetic and Test Fixtures
 
