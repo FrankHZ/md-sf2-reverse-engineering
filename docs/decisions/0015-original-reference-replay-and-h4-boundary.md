@@ -87,7 +87,10 @@ accounting continue to control bounded corrections after an explicit native disp
 Source implementation and offline preparation do not authorize restore or native observation.
 Main-gate independently reviews frozen source/candidate before dispatch; missing coverage, incompatible
 load or failed cleanup remains Failed/Unknown. This amendment neither reopens the disabled original
-replay nor grants a new replay launch budget. Instrumented native compatibility is still **Unknown**.
+replay nor grants a new replay launch budget. The
+[accepted neutral self-HEAL1 diagnostic](../research/map3-messenger-acceptance.md#accepted-neutral-self-heal1-diagnostic)
+confirms its named parent restore and live consumer boundary. Compatibility beyond that instance,
+other settings/targets, input shortening and broader native-state equivalence remain **Unknown**.
 
 ### Distinguish interactive acquisition, frozen replay, and remake H4
 
