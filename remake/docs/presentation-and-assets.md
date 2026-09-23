@@ -700,7 +700,7 @@ observation; neither the loop interval nor a waveform seam metric alone proves t
 **Unknown / incomplete:** original per-channel mixing is not reproduced by the single replacing SFX
 player. Original command 253 fade semantics and complete reached field/UI cue bindings remain
 incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
-music/SFX and input-release subset; healing scene consumption remains unfinished. The existing modern
+music/SFX and input-release subset; HEAL spell/fairy consumption remains unfinished. The existing modern
 half-second `SoundFade` service is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 
@@ -727,7 +727,7 @@ those reactions; an old scalar comparison that omitted scene draws is not final-
 deferred accounting and input release; migrated action tests retain their construction assertions.
 
 The private source content candidate contains the selected SDMN/PRST/KNTE and GIZMO frames,
-Wooden Sword/Rod and Short Spear, Tower Interior background9 and ground9. The generator composes
+Wooden Sword/Rod and Wooden Stick, Tower Interior background9 and ground9. The generator composes
 source hardware tile chunks and background layout, preserves source frame timing/weapon flags,
 and writes the existing pack-v1 master/2x/4x structure plus `battle-scenes.json`. Raw palette
 provenance remains intact; displayed base CRAM words use mask `0x0EEE`, including the retail low
@@ -767,7 +767,92 @@ The host uses the existing modern half-second fade and instant/adjustable text s
 timing, exact final pixels, continuous opening/outcome acceptance and original audio mixing remain
 **Unknown**; these observations grant no H4 or deviation waiver.
 
-**Unfinished healing work:** HEAL and herbs still use the existing scalar command path. They do not
+### Medical Herb scenes
+
+The admitted item family uses the same typed scene continuation. Inventory compaction and its two
+range16 award draws occur during construction; HP/MP remain unchanged until the recovery command.
+Recovery applies HP once without spending MP. The actor earns EXP after recovery text and restoration
+of the actor's displayed side, then growth follows the EXP acknowledgement. Missing growth rejects
+the whole preparation before inventory, movement or RNG can publish. Self-use, another living ally,
+full HP and PRST/non-PRST awards share this path. Application supplies the displayed ally and absent
+enemy, including outgoing/incoming target and actor phases; Godot never represents an ally as an enemy.
+
+**Confirmed, static caller selection:** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the following chain beneath `disasm/` distinguishes a
+Medical Herb from casting the HEAL spell. This consumes the existing
+[battle-scene](../../docs/design/contracts/battle-scene-presentation.md) and
+[action-construction](../../docs/design/contracts/battle-action-construction.md) contracts; it does
+not extend their natural timing claims.
+
+| Source / symbol | Selected behavior |
+| --- | --- |
+| `data/stats/items/itemdefs.asm`; `code/common/stats/itemstats.asm:GetEquipmentType` | Medical Herb is non-equipment; equipment type is zero. |
+| `code/gameflow/battle/battleactions/getspellanimation.asm:battlesceneScript_GetSpellanimation` | Non-equipment skips the use-spell animation field, retaining `SPELLANIMATION_NONE=0`. HEALIN's effect calculation does not imply its fairy animation. |
+| `battleactions/createbattlesceneanimation.asm`; `battlescenes/getallyanimation.asm`; `battlescenes/battlesceneengine_0.asm:sub_184B0` (under `code/gameflow/battle/`) | USE_ITEM type2 selects the ordinary class sequence and preserves the caller's selector, rather than substituting its header default. Candidate headers remain raw; item selector zero belongs to the action. |
+| `battlescenes/battlesceneengine_2.asm:SetupSpellanimation`; `battlescenes/animation/nothing.asm` | Selector zero dispatches to Nothing, which returns without fairy setup/update. |
+| `battleactions/battleactionsengine_1.asm:InitializeActors`; `animateaction.asm:SwitchTargets`; `battleactionsengine_2.asm:battlesceneScript_End` | Begin with the actor alone; switch to another ally before recovery and back to the actor before EXP. Self-use needs neither switch. |
+| `battleactions/castspell.asm:spellEffect_Heal`; `battlescenes/battlesceneengine_0.asm:bsc0B_executeAllyReaction` | Mode2 applies recovery then sends SFX113 and returns; no damaging-reaction recoil loop. Message298 follows recovery; item message275 names the consumed item. |
+
+Recheck any named source directly using the selected read-only upstream root, for example:
+
+```powershell
+& git -C $pinnedUpstream show 'c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battleactions/getspellanimation.asm'
+& git -C $pinnedUpstream show 'c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battlescenes/animation/nothing.asm'
+```
+
+The source starting Chester loadout is `WOODEN_STICK|EQUIPPED` in `allystartdefs.asm`:
+word184 masked by127 gives item56. `getweaponspriteandpalette.asm:table_WeaponGraphics` at ROM0x1F9E2
+selects sprite10/palette19 for item56. The class KNTE sequence is index2, including item type2;
+weapon sprite10 does not select the spear-throw specialization. The candidate admits this actual
+starting binding. Runtime checks the live equipped item against the candidate and rejects missing
+weapon support; it does not assign a class-wide weapon or silently replace equipment. An older
+Short Spear candidate does not establish starting Chester presentation. Preserved physical observations
+only prove the actor/loadout combinations they actually reached.
+
+**Confirmed, bounded host observations:** ordinary keys consume source item frames/text, one-sided
+status/resources, target/actor switches, SFX113, EXP/growth and return to battlefield control. The
+Map40 source-world startup heals the party before battle, so that observation covers full-HP use;
+a separate ordinary-input battle run first obtains actual enemy damage, then covers wounded
+self/other-ally recovery without claiming world audio.
+Normal/reduced-flash source-world runs agree on gameplay, inventory and bounded RNG records. A narrow
+Chester physical observation consumes the corrected live Wooden Stick resource and sequence2.
+
+The switch projection uses `bscWait $1E`, `bsc07_switchAllies` coordinates and
+`SwitchAllyBattlesprite`'s capped16 steps through the existing presentation timing mechanism.
+DMA/VInt/input/audio alignment remains **Unknown**. Neither those durations nor recovery sound
+playback add invented shared-RNG opportunities. No fairy or24 recoil draws means only those two
+branches are absent, not that the whole scene has zero RNG. HEAL/fairy and the pending waiting-policy
+decision remain separate; no original timing/pixel/H4 acceptance or asset-library promotion follows.
+
+For the affected engine behavior, select `MedicalHerbTests|BattleSceneTests` with the locked SDK's
+`dotnet test --filter` (fully qualified names), then build the adapter. The same committed engine-scope
+planner applies. The existing native observer accepts `SF2_BATTLE_SCENE_HERB=1`; it uses Chester
+self-use and Sarah-to-Bowie only as controlled observation inputs, not gameplay legality rules.
+Select the normal source battle inputs and the fresh candidate as above. For the source-world/audio
+pair, copy the tracked opening party to a fresh ignored JSON, retain
+all inventory words and set Sarah EXP99. Set `SF2_PRIVATE_CONTROLLED_START` to that absolute path and
+`SF2_PRIVATE_EXPLORATION_CONTENT` to the existing world without copying it, and set
+`SF2_BATTLE_SCENE_WORLD=1`. Use `--private-exploration-start $explorationStart` with the controlled
+Map40 boundary below, plus a fresh output path for each run. The world program's healing is retained.
+
+```json
+{"formatVersion":1,"controlledBoundary":"Controlled Map40 scene-consumer observation; not natural entry","start":{"map":"map-40","player":"entity-0","position":{"x":4,"y":30},"facing":1,"speed":32,"flags":[0,1,2,32,33,34,401,451]}}
+```
+
+Pass `--input-settings $settingsPath` containing `{"formatVersion":1,"reducedFlash":true}` for the
+paired accessibility run. `SF2_BATTLE_SCENE_CHESTER=1` instead selects the narrow physical binding
+observation with ordinary Tower entrance movement; its controlled party retains the starting
+inventory and gives Chester HP/maxHP40 and defense20. For positive recovery, set `SF2_BATTLE_SCENE_HERB=1` and
+`SF2_BATTLE_SCENE_WOUNDED=1` with the same controlled Chester HP/maxHP40/defense20 party,
+Sarah EXP0 and `--private-battle-start $partyPath`. The observer walks Chester into actual enemy
+attacks, brings Sarah alongside using ordinary movement, then uses Sarah's herbs on Chester and herself.
+Each action must begin below live maxHP and increase HP. Supplying a low starting HP alone does not
+establish injury: the observed battle initialization restores HP. Chained enemy scenes are identified
+by their new initialization token and the preceding scene-ended event, without requiring a hidden
+frame between scenes. These modes use the same fresh-output/error
+contract and no screenshots, original emulator, runtime state setters or fixed comparison seeds.
+
+**Unfinished healing work:** HEAL spells still use the existing scalar command path. They do not
 consume a healing scene or fairy RNG, and #523 remains open. Static caller analysis confirms MP
 reaction before casting animation (`createbattlesceneanimation.asm`), recovery then text
 (`castspell.asm:spellEffect_Heal`), and VInt-driven fairy updates

@@ -46,7 +46,7 @@ internal static class BattleSceneContentReader
             var sequences = new Dictionary<string, BattleSceneAnimation>(StringComparer.Ordinal);
             foreach (var sequence in row.GetProperty("sequences").EnumerateObject())
             {
-                Require(sequence.Name is "idle" or "attack" or "dodge", "scene-sequence", "battleScenes.sequences");
+                Require(sequence.Name is "idle" or "attack" or "dodge" or "item", "scene-sequence", "battleScenes.sequences");
                 var value = sequence.Value;
                 Object(value, "sceneSequence", "index", "trigger", "spell", "terminate", "idleWeapon", "frames");
                 var entries = Array(value, "frames").Select(frame =>
@@ -62,7 +62,8 @@ internal static class BattleSceneContentReader
                     Number(value, "spell", 0, 255), Number(value, "terminate", 0, 1) != 0,
                     Weapon(value.GetProperty("idleWeapon")), System.Array.AsReadOnly(entries))), "scene-duplicate-sequence", "battleScenes.sequences");
             }
-            Require(sequences.Count == 3, "scene-required-sequence", "battleScenes.sequences");
+            Require(new[] { "idle", "attack", "dodge" }.All(sequences.ContainsKey) &&
+                (side != "ally" || sequences.ContainsKey("item")), "scene-required-sequence", "battleScenes.sequences");
             foreach (var weapon in sequences.Values.SelectMany(sequence => sequence.Frames.Select(frame => frame.Weapon)
                 .Append(sequence.IdleWeapon)).OfType<BattleSceneWeaponFrame>())
                 Require((weapon.Frame & 7) < weapons.Length, "scene-weapon-frame-index", "battleScenes.weaponFrames");
@@ -93,7 +94,7 @@ internal static class BattleSceneContentReader
                 out int id) && value.Value.ValueKind == JsonValueKind.String, "scene-text", "battleScenes.texts");
             Require(texts.TryAdd(id, value.Value.GetString()!), "scene-duplicate-text", "battleScenes.texts");
         }
-        Require(new[] {244, 263, 266, 267, 268, 269, 270, 271, 273, 284, 285, 286, 287, 288, 290, 291, 292, 293, 393}
+        Require(new[] {244, 263, 266, 267, 268, 269, 270, 271, 273, 275, 298, 284, 285, 286, 287, 288, 290, 291, 292, 293, 393}
             .All(texts.ContainsKey), "scene-required-text", "battleScenes.texts");
         var names = Strings(root, "memberNames");
         Require(names.Length >= 3, "scene-member-names", "battleScenes.memberNames");

@@ -26,6 +26,7 @@ internal sealed partial class BattleSceneView : Control
     private double _elapsed, _revealed;
     private int _frameIndex, _allyFrame, _enemyFrame, _logicalReaction;
     private bool _completed;
+    private int? _animationIndex;
     private bool _sceneMusicStarted, _hasWeapon;
     private string? _allyResource, _enemyResource, _weaponResource;
     internal string? Error { get; private set; }
@@ -60,40 +61,48 @@ internal sealed partial class BattleSceneView : Control
         if (state is null) { Hide(); _state = null; return; }
         Show();
         if (_state?.Token == state.Token) return;
-        _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = [];
+        _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
             if (_session.Definition.PrivateDefinitions is not null && Content is null)
                 throw new InvalidOperationException("battle-scene-content-required");
             var battle = _session.Current.Battle;
             var actor = battle.GetActor(state.Actor); var target = battle.GetActor(state.Target);
-            var ally = actor.IsAlly ? actor : target; var enemy = actor.IsAlly ? target : actor;
+            var ally = battle.GetActor(state.DisplayedAlly!.Value);
+            var enemy = state.DisplayedEnemy is { } enemyRef ? battle.GetActor(enemyRef) : null;
+            _enemy.Visible = _enemyStatus.Visible = enemy is not null;
+            _enemyVisual = null; _enemyResource = null; _weaponResource = null;
             if (Content is { } content)
             {
                 if (content.Encounter != battle.Definition.Encounter || !content.Allies.TryGetValue(ally.Definition.ClassRule, out _allyVisual) ||
-                    !content.Enemies.TryGetValue(enemy.Actor, out _enemyVisual)) throw new InvalidOperationException("battle-scene-actor-unavailable");
+                    (enemy is not null && !content.Enemies.TryGetValue(enemy.Actor, out _enemyVisual))) throw new InvalidOperationException("battle-scene-actor-unavailable");
                 Bind(_background, content.Background); Bind(_backgroundWrap, content.Background); Bind(_ground, content.Ground);
                 _allyFrame = _enemyFrame = 0;
                 var equipped = ally.SourceLoadout?.Items.FirstOrDefault(item => (item & 128) != 0 && (item & 127) != 127);
                 _hasWeapon = equipped is > 0;
                 if (_hasWeapon && (equipped!.Value & 127) != _allyVisual.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
-                SetFrame(true, 0); SetFrame(false, 0);
+                SetFrame(true, 0); if (enemy is not null) SetFrame(false, 0);
                 Weapon(_allyVisual.Sequences["idle"].IdleWeapon, Vector2.Zero);
                 _ground.Visible = ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
-                    _frames = (actor.IsAlly ? _allyVisual : _enemyVisual).Sequences["attack"].Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
+                {
+                    var animation = (actor.IsAlly ? _allyVisual : _enemyVisual!).Sequences[state.Item is null ? "attack" : "item"];
+                    _animationIndex = animation.Index;
+                    _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
+                }
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
-                    _frames = (target.IsAlly ? _allyVisual : _enemyVisual).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
+                    _frames = (target.IsAlly ? _allyVisual : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
             }
             _ally.Position = new(136, 64); _enemy.Position = new(16, 48);
             _background.Position = new(0,56); _backgroundWrap.Position = new(256,56); _ground.Position = new(136,140);
             _ally.Modulate = _enemy.Modulate = Colors.White;
             _allyStatus.Text = $"{ActorName(ally.Actor)}\nHP {ally.Hp}/{ally.MaxHp}   MP {ally.Mp}";
-            _enemyStatus.Text = $"{ActorName(enemy.Actor)}\nHP {enemy.Hp}/{enemy.MaxHp}   MP {enemy.Mp}";
+            _enemyStatus.Text = enemy is null ? "" : $"{ActorName(enemy.Actor)}\nHP {enemy.Hp}/{enemy.MaxHp}   MP {enemy.Mp}";
             _message.Text = Message(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
             if (state.Phase == BattleScenePhase.Initialize) _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5);
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Damage") _audio?.PlayEffect(target.IsAlly ? 81 : 83);
+            if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Recovery") _audio?.PlayEffect(113);
             if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayEffect(102);
             if (state.Phase == BattleScenePhase.End) _audio?.BeginSceneEnd();
         }
@@ -131,6 +140,22 @@ internal sealed partial class BattleSceneView : Control
             // Existing modern fade service: a bounded consumer, not original 253 timing.
             duration = 0.5;
             _audio?.FadeOut(_elapsed / duration);
+        }
+        else if (state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter)
+        {
+            // bscWait $1E then bsc07/SwitchAllyBattlesprite: source coordinates
+            // minus the VDP 128 bias, steps capped at 16. Presentation only;
+            // these elapsed intervals do not invent shared-RNG opportunities.
+            bool exiting = state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.ActorExit;
+            float from = state.Phase == BattleScenePhase.TargetEnter ? -376 : state.Phase == BattleScenePhase.ActorEnter ? 8 : 136;
+            float to = state.Phase == BattleScenePhase.TargetExit ? 272 : state.Phase == BattleScenePhase.ActorExit ? -112 : 136;
+            double wait = exiting ? 30.0 / 60 : 0;
+            int steps = (int)MathF.Ceiling(MathF.Abs(to-from) / 16);
+            duration = wait + steps / 60.0;
+            float traveled = Math.Clamp((int)((_elapsed-wait)*60), 0, steps) * 16;
+            float x = from + MathF.Sign(to-from) * MathF.Min(traveled, MathF.Abs(to-from));
+            _ally.Position = new(x,64); _ground.Position = new(x,140);
+            Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x-136,0));
         }
         else if (_frames.Length > 0)
         {
@@ -193,8 +218,8 @@ internal sealed partial class BattleSceneView : Control
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {
-            BattleScenePhase.ActionMessage => state.ActionKind switch { "physical-second" => 293, "physical-counter" => 292, _ => 273 },
-            BattleScenePhase.ResultMessage => state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
+            BattleScenePhase.ActionMessage => state.ActionKind switch { "item-use" => 275, "physical-second" => 293, "physical-counter" => 292, _ => 273 },
+            BattleScenePhase.ResultMessage => state.ReactionKind == "Recovery" ? 298 : state.ReactionKind == "Dodge" ? 286 : state.Critical ? (ally ? 287 : 288) : (ally ? 284 : 285),
             BattleScenePhase.DeathMessage => _session.Current.Battle.GetActor(state.Target).IsAlly ? 291 : 290,
             BattleScenePhase.RewardMessage => 263, BattleScenePhase.GoldMessage => 393, _ => -1,
         };
@@ -211,7 +236,7 @@ internal sealed partial class BattleSceneView : Control
         // Text timing remains the existing product setting. No battle speech bleeps:
         // source bsc10/bsc11 clear CURRENT_SPEECH_SFX.
         return Regex.Replace(text.Replace("{NAME}", name).Replace("{#}", amount.ToString()).Replace("{N}", "\n")
-            .Replace("{SPELL}", state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? ""), @"\{D[0-9]+\}", "");
+            .Replace("{ITEM}", state.Item?.Name ?? "").Replace("{SPELL}", state.GrowthNotice?.Spell?.Value.ToUpperInvariant() ?? ""), @"\{D[0-9]+\}", "");
     }
 
     private void SetFrame(bool ally, int frame)
@@ -250,7 +275,10 @@ internal sealed partial class BattleSceneView : Control
     internal object Observe() => new
     {
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
-        elapsed = _elapsed, completed = _completed, frameIndex = _frameIndex, reactionState = _logicalReaction,
+        elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
+        displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
+        enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
+        item = _state?.Item?.ItemId, spellAnimationSelector = _state?.Item is not null ? 0 : (int?)null,
         allyFrame = _allyFrame, enemyFrame = _enemyFrame, allyResource = _allyResource, enemyResource = _enemyResource,
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,

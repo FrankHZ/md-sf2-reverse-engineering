@@ -25,7 +25,7 @@ internal static class PlayerItemUse
         PlayerHealing.RequireTarget(battle, actor, destination,
             item.MinimumRange, item.MaximumRange, target);
 
-    internal static (EngineBattleState State, IReadOnlyList<BattleEffect> Effects) Resolve(
+    internal static BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, int slot, ActorRef targetRef)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
@@ -39,7 +39,7 @@ internal static class PlayerItemUse
         List<PhysicalRoll> rolls = [];
         // Same-side actions skip battle EXP halving, including the non-healer minimum.
         int award = BattleRewards.Award(accumulated, false, ref seed, rolls);
-        List<BattleEffect> effects = [new("hp", targetRef, target.Hp, target.Hp + recovery)];
+        List<BattleEffect> effects = [];
         var items = actor.SourceLoadout!.Items.ToList();
         ushort consumed = items[slot];
         items.RemoveAt(slot); items.Add(127);
@@ -47,12 +47,13 @@ internal static class PlayerItemUse
         effects.Add(new("item-consumed", actorRef, consumed, slot));
         effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, actorRef,
             roll.Before, roll.After, roll.Range, roll.Result)));
-        var rewarded = BattleGrowthRules.Award(consumedActor, award, ref seed, effects);
-        var actors = battle.Actors.Select(a =>
-        {
-            var changed = a.Actor == actorRef ? rewarded.With(position: destination) : a;
-            return a.Actor == targetRef ? changed.With(hp: (ushort)(target.Hp + recovery)) : changed;
-        });
-        return (battle.With(actors: actors, mainSeed: seed), effects.AsReadOnly());
+        uint validationSeed = seed;
+        _ = BattleGrowthRules.Award(consumedActor, award, ref validationSeed, []);
+        var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
+            ? consumedActor.With(position: destination) : a), mainSeed: seed);
+        return new(prepared, actorRef, destination,
+            [new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
+                target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)],
+            new(actorRef, award), effects.AsReadOnly(), [], item);
     }
 }

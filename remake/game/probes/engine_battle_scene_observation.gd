@@ -16,11 +16,15 @@ var started := Time.get_ticks_msec()
 var scenes := 0
 var in_scene := false
 var start_cursor := -1
+var scene_start_token := -1
+var scene_event_index := 0
 var initial_seed := 0
 var input_checked := false
 var exploration: Node
 var world_boundaries: Array = []
 var last_world := ""
+var herb_cases: Array = []
+var herb_mode := OS.get_environment("SF2_BATTLE_SCENE_HERB") == "1"
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -41,6 +45,10 @@ func _result(json: String) -> void:
 
 func _read() -> Dictionary:
     var state: Dictionary = JSON.parse_string(view.call("ReadSceneObservationJson"))
+    if herb_mode:
+        var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        state["inventories"] = board.inventories
+        state["maximumHp"] = board.actors.map(func(actor): return {"actor":actor.id, "maxHp":actor.maxHp})
     var scene: Dictionary = state.scene
     var key := str([state.revision, scene.frameIndex, scene.reactionState, scene.visibleCharacters, scene.backgroundX, scene.allyX, scene.enemyX])
     if key != last_projection:
@@ -118,7 +126,11 @@ func _settle() -> Dictionary:
             _check(false, "host failure: " + str(state.failure))
             return state
         if state.scene.visible:
-            if not in_scene:
+            if not in_scene or (state.scene.phase == "Initialize" and int(state.scene.waitToken) != scene_start_token):
+                if in_scene:
+                    _check(events.slice(scene_event_index).any(func(event): return event.Kind == "scene-ended"), "a chained scene follows the prior scene end")
+                scene_start_token = int(state.scene.waitToken)
+                scene_event_index = events.size()
                 in_scene = true
                 scenes += 1
                 start_cursor = int(state.cursor)
@@ -138,7 +150,8 @@ func _settle() -> Dictionary:
         else:
             if in_scene:
                 in_scene = false
-                _check(int(state.mainSeed) != initial_seed, "source scene RNG changes the shared main image")
+                if not herb_mode:
+                    _check(int(state.mainSeed) != initial_seed, "source scene RNG changes the shared main image")
                 return state
             if state.actor != null:
                 return state
@@ -151,6 +164,121 @@ func _stay() -> Dictionary:
     await _press(KEY_SPACE)
     await _press(KEY_ENTER)
     return await _settle()
+
+func _chester_physical(state: Dictionary) -> Dictionary:
+    # Narrow regression for the source starting Wooden Stick resource/ordinary
+    # sequence binding. Walk and select an actual adjacent target with normal keys.
+    var attacked := false
+    for turn in range(30):
+        if not failures.is_empty() or attacked: break
+        if state.actor != "ally-2":
+            if OS.get_environment("SF2_BATTLE_SCENE_WOUNDED") == "1" and state.actor == "ally-1":
+                # Keep the healer with the advancing holder before enemies occupy the corridor.
+                for step in range(5):
+                    var formation: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+                    if formation.previewY <= 13: break
+                    var north: bool = formation.previewY == 18 or formation.previewX >= 11
+                    var next_x: int = int(formation.previewX) + (0 if north else 1)
+                    var next_y: int = int(formation.previewY) - (1 if north else 0)
+                    if formation.actors.any(func(actor): return actor.hp > 0 and actor.x == next_x and actor.y == next_y): break
+                    await _press(KEY_W if north else KEY_D)
+            state = await _stay()
+            continue
+        var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        var enemies: Array = board.actors.filter(func(actor): return str(actor.id).begins_with("enemy-") and actor.hp > 0)
+        var target: Dictionary = enemies[0]
+        for step in range(7):
+            board = JSON.parse_string(view.call("ReadObservationJson"))
+            var x: int = int(board.previewX)
+            var y: int = int(board.previewY)
+            enemies.sort_custom(func(a,b): return abs(a.x-x)+abs(a.y-y) < abs(b.x-x)+abs(b.y-y))
+            target = enemies[0]
+            if abs(target.x-x)+abs(target.y-y) <= 1: break
+            # The admitted Tower entrance route goes through column11, as in the physical observer.
+            if y == 18: await _press(KEY_W)
+            elif y >= 15 and x < 11: await _press(KEY_D)
+            else: await _press(KEY_W if y > target.y else KEY_S if y < target.y else KEY_D if x < target.x else KEY_A)
+        board = JSON.parse_string(view.call("ReadObservationJson"))
+        if abs(target.x-board.previewX)+abs(target.y-board.previewY) > 1:
+            state = await _stay()
+            continue
+        await _press(KEY_ENTER)
+        await _press(KEY_F)
+        for choice in range(7):
+            board = JSON.parse_string(view.call("ReadObservationJson"))
+            if board.failure == null and board.target == target.id: break
+            await _press(KEY_TAB)
+        _check(board.failure == null and board.target == target.id, "adjacent Chester physical target selected")
+        if not failures.is_empty(): break
+        await _press(KEY_ENTER)
+        state = await _settle()
+        attacked = true
+    _check(attacked, "Chester executes a physical action with his live starting equipment")
+    _check(projections.any(func(sample): return sample.scene.phase == "ActionAnimation" and sample.scene.displayedAlly == "ally-2" and str(sample.scene.weaponResource).begins_with("weapon56/") and sample.scene.animationIndex == 2), "Wooden Stick and ordinary KNTE sequence are consumed by a physical action")
+
+    return state
+
+func _run_herbs(state: Dictionary, requests: Array = [{"actor":"ally-2", "target":"ally-2"}, {"actor":"ally-1", "target":"ally-0"}]) -> void:
+    # Controlled starting party only; action legality and effects use ordinary keys.
+    for request in requests:
+        for turn in range(8):
+            if state.actor == request.actor or not failures.is_empty(): break
+            state = await _stay()
+        _check(state.actor == request.actor, "controlled herb holder reaches ordinary input")
+        if not failures.is_empty(): return
+        var before := state.duplicate(true)
+        await _press(KEY_ENTER)
+        for slot in range(4):
+            await _press(KEY_I)
+            var selection: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+            if selection.failure == null and selection.itemSlot != null: break
+        for target in range(3):
+            var selection: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+            if selection.failure == null and selection.target == request.target: break
+            await _press(KEY_TAB)
+        var selected: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        _check(selected.failure == null and selected.target == request.target, "ordinary herb and target selection succeeds")
+        if not failures.is_empty(): return
+        var begin_event := events.size()
+        var begin_projection := projections.size()
+        await _press(KEY_ENTER)
+        state = await _settle()
+        # The end command may immediately start automatic enemy scenes before control.
+        # Bound item assertions at its own scene/after-turn, keeping later events intact.
+        var observed := projections.slice(begin_projection).filter(func(sample): return sample.scene.actionKind == "item-use")
+        var action_events: Array = []
+        for event in events.slice(begin_event):
+            action_events.append(event)
+            if event.Kind == "after-turn" and event.Actor.Value == request.actor: break
+        _check(not observed.is_empty(), "the selected item scene is observed")
+        if observed.is_empty(): return
+        var scene_end: Dictionary = observed[-1]
+        _check(scene_end.scene.phase == "End", "item assertions end at its final scene phase")
+        herb_cases.append({"request":request,"before":before,"after":state,"sceneEnd":scene_end,"events":action_events})
+        _check(not in_scene and state.failure == null, "herb scene ends and releases input")
+        _check(action_events.filter(func(event): return event.Kind == "item-consumed").size() == 1, "one herb slot consumed")
+        _check(action_events.filter(func(event): return event.Kind == "after-turn" and event.Actor.Value == request.actor).size() == 1, "holder turn consumed once at end")
+        _check(not action_events.any(func(event): return str(event.Kind).begins_with("rng-reaction-")), "recovery adds no physical recoil RNG")
+        _check(observed.all(func(sample): return not sample.scene.visible or (sample.scene.displayedEnemy == null and not sample.scene.enemyVisible)), "single-side scene never invents an enemy")
+        _check(observed.any(func(sample): return sample.scene.phase == "ActionAnimation" and sample.scene.spellAnimationSelector == 0), "use-item selects NONE rather than fairy")
+        _check(observed.any(func(sample): return sample.scene.phase == "Reaction" and sample.scene.reactionKind == "Recovery" and sample.scene.displayedAlly == request.target), "recovery uses the actual target projection")
+        _check(observed.any(func(sample): return sample.scene.phase == "RewardMessage" and sample.scene.displayedAlly == request.actor), "reward follows restoration of the actor")
+        _check(observed.any(func(sample): return sample.scene.phase == "TargetEnter") == (request.actor != request.target), "only other-ally healing switches targets")
+        var before_target: Dictionary = before.actors.filter(func(actor): return actor.actor == request.target)[0]
+        var after_target: Dictionary = scene_end.actors.filter(func(actor): return actor.actor == request.target)[0]
+        var maximum: float = before.maximumHp.filter(func(actor): return actor.actor == request.target)[0].maxHp
+        if OS.get_environment("SF2_BATTLE_SCENE_WOUNDED") == "1":
+            _check(before_target.hp < maximum and after_target.hp > before_target.hp, "actual battle injury precedes positive herb recovery")
+        _check(after_target.hp == min(maximum, before_target.hp + 10) and after_target.mp == before_target.mp, "herb recovery clamps to live HP and preserves MP")
+        for sample in observed:
+            if sample.scene.phase in ["Initialize", "ActionMessage", "ActionAnimation", "TargetExit", "TargetEnter"]:
+                _check(sample.actors.filter(func(actor): return actor.actor == request.target)[0].hp == before_target.hp, "HP stays unchanged until the recovery command")
+    if OS.get_environment("SF2_BATTLE_SCENE_WORLD") == "1":
+        _check(receipts.filter(func(receipt): return receipt.Operation == "started" and receipt.Command == 113).size() == 2, "both actual recovery SFX start")
+    _check(not receipts.any(func(receipt): return receipt.Operation == "started" and receipt.Command == 77), "no spellcast SFX from herb NONE animation")
+    if OS.get_environment("SF2_BATTLE_SCENE_WORLD") == "1":
+        _check(projections.any(func(sample): return sample.scene.phase == "GrowthMessage"), "controlled priest reward consumes growth messages")
+    _check(input_checked, "ordinary cancel/movement cannot release a pending herb scene")
 
 func _open_output() -> bool:
     var output_path := OS.get_environment("SF2_BATTLE_SCENE_OBSERVATION_OUTPUT").replace("\\", "/").simplify_path()
@@ -184,6 +312,36 @@ func _run() -> void:
             return
     var state := await _settle()
     if state.failure != null:
+        _finish()
+        return
+    if OS.get_environment("SF2_BATTLE_SCENE_WOUNDED") == "1":
+        state = await _chester_physical(state)
+        # Bring Sarah next to the actually injured Chester through the same entrance.
+        for turn in range(12):
+            if not failures.is_empty(): break
+            if state.actor == "ally-1":
+                for step in range(5):
+                    var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+                    var chester: Dictionary = board.actors.filter(func(actor): return actor.id == "ally-2")[0]
+                    var x: int = int(board.previewX)
+                    var y: int = int(board.previewY)
+                    if abs(chester.x-x)+abs(chester.y-y) == 1: break
+                    await _press(KEY_W if y == 18 or x >= 11 else KEY_D)
+                var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+                var chester: Dictionary = board.actors.filter(func(actor): return actor.id == "ally-2")[0]
+                if abs(chester.x-board.previewX)+abs(chester.y-board.previewY) == 1: break
+            state = await _stay()
+        _check(state.actor == "ally-1", "Sarah reaches adjacent ordinary herb choice")
+        if failures.is_empty():
+            await _run_herbs(state, [{"actor":"ally-1","target":"ally-2"},{"actor":"ally-1","target":"ally-1"}])
+        _finish()
+        return
+    if OS.get_environment("SF2_BATTLE_SCENE_CHESTER") == "1":
+        await _chester_physical(state)
+        _finish()
+        return
+    if herb_mode:
+        await _run_herbs(state)
         _finish()
         return
     # Existing controlled Battle01 entry; ordinary player moves invite the first
@@ -233,7 +391,7 @@ func _run() -> void:
 
 func _finish() -> void:
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
-        "scope": "controlled-physical-source-assets-no-original-runtime-parity", "scenes": scenes,
+        "scope": "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries,
         "audioDriver": AudioServer.get_driver_name()}

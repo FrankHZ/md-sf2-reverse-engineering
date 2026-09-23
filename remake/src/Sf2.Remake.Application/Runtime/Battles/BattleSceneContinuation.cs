@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, ActionAnimation, Reaction, ResultMessage, DeathMessage, Reward, RewardMessage, GrowthMessage, GoldMessage, End }
+public enum BattleScenePhase { Initialize, ActionMessage, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -23,6 +23,14 @@ public sealed class BattleSceneState
     public ActorRef Target => Reaction.Target;
     public string ActionKind => Reaction.Action;
     public string ReactionKind => Reaction.Kind.ToString();
+    public HealingItemDefinition? Item => Action.Item;
+    public bool SwitchesAlly => Item is not null && Actor != Target;
+    // InitializeActors / SwitchTargets / Script_End: only one ally occupies this side.
+    public ActorRef? DisplayedAlly => Item is not null
+        ? Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.ActorExit ? Target : Actor
+        : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
+    public ActorRef? DisplayedEnemy => Item is not null ? null
+        : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
     public bool Critical => Reaction.Critical;
     public int HpChange => Reaction.HpAfter - Reaction.HpBefore;
     public int MpChange => Reaction.MpAfter - Reaction.MpBefore;
@@ -90,6 +98,10 @@ internal static class BattleSceneContinuation
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.Target));
                 next = BattleScenePhase.ActionAnimation; break;
             case BattleScenePhase.ActionAnimation:
+                if (scene.SwitchesAlly) { next = BattleScenePhase.TargetExit; break; }
+                goto case BattleScenePhase.TargetEnter;
+            case BattleScenePhase.TargetExit: next = BattleScenePhase.TargetEnter; break;
+            case BattleScenePhase.TargetEnter:
                 battle = scene.Action.ApplyReaction(battle, scene.Reaction);
                 if (scene.Critical) observations.Add(new(++sequence, revision, "critical", scene.Actor, Target: scene.Target));
                 if (scene.Reaction.Kind == BattleReactionKind.Dodge)
@@ -108,6 +120,10 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage:
                 if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
+                if (scene.SwitchesAlly) { next = BattleScenePhase.ActorExit; break; }
+                goto case BattleScenePhase.DeathMessage;
+            case BattleScenePhase.ActorExit: next = BattleScenePhase.ActorEnter; break;
+            case BattleScenePhase.ActorEnter:
                 goto case BattleScenePhase.DeathMessage;
             case BattleScenePhase.DeathMessage:
                 if (index + 1 < scene.Action.Reactions.Count) { index++; next = BattleScenePhase.ActionMessage; }
