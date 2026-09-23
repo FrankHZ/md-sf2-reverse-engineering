@@ -21,6 +21,8 @@ public sealed record SelectItem(int Slot) : SessionCommand;
 public sealed record SelectTarget(ActorRef Target) : SessionCommand;
 public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
+// One deliberate gameplay opportunity at an eligible settled field-input boundary.
+public sealed record WaitAtInput : SessionCommand;
 public sealed record AdvanceSimulation(WaitToken? Wait = null, int Ticks = 1) : SessionCommand;
 public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;

@@ -48,6 +48,18 @@ internal static class ExplorationDispatcher
         List<SessionObservation> observations = [];
         try
         {
+            bool playerWait = command is WaitAtInput;
+            if (playerWait)
+            {
+                if (current.StopReason != SessionStopReason.PlayerInput || current.Exploration is not { } field ||
+                    current.Story.Cursor is not null || current.Story.Wait is not null || current.Story.Callers.Count != 0 ||
+                    current.Story.Continuation != ProgramContinuation.FieldInput || current.Story.EnteringBattle is not null ||
+                    current.Story.EntityEvent is not null || current.Story.TextWindow is not ClosedTextWindow ||
+                    field.PlayerEntity.Busy || field.PlayerEntity.WaitingForSprite)
+                    return Reject(current, "field-input-unavailable", "command");
+                // A deliberate input owns exactly one opportunity; use the existing update path.
+                command = new AdvanceSimulation();
+            }
             switch (command)
             {
                 case Acknowledge ack:
@@ -119,7 +131,7 @@ internal static class ExplorationDispatcher
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) && !awaitedEntity.Busy)
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
-                        current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                        current = ProgramRunner.Commit(current, active, story, observations, playerWait ? "gameplay-wait" : "simulation-tick");
                         // Existing field input does not interrupt background ticks. Completing a
                         // wait or resuming a program still yields at its next control boundary.
                         if (story.Wait is null && !existingFieldInput)

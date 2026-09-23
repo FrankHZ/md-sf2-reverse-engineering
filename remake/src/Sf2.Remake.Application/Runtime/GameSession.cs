@@ -70,6 +70,8 @@ public sealed class GameSession
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
         bool sceneActive = current.BattleScene is not null;
         bool programActive = !sceneActive && !current.HasBattleControl;
+        if (envelope.Command is WaitAtInput && (!programActive || current.Exploration is null))
+            return BattleCommandDispatcher.Reject(current, "field-input-unavailable", "command");
         if (!programActive && envelope.Command is AdvanceSimulation { Wait: not null } or AdvanceSimulation { Ticks: not 1 })
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
         var result = sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command)

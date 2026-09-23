@@ -79,6 +79,42 @@ or native Godot. These commands launch the selected executable from `remake/`, h
 and the protected environment. Neither needs private inputs. `Sf2.Remake.sln` contains the four
 production projects and Engine.Tests; the legacy test projects and reference host were retired at M5. Use formatting only for affected product projects when needed.
 
+## Explicit field-input gameplay Wait
+
+`WaitAtInput` is an engine command for one deliberate opportunity at a settled field-input
+consumer under [Option A](../../docs/decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a).
+It carries neither a wait token nor a batch count. The current session/revision identifies the
+occurrence. Admission requires exploration `PlayerInput`, no program cursor/callers/story wait,
+field continuation with no pending battle entry/entity interaction, a closed text window, and a
+player with no motion/actions or pending sprite readiness. NPC busy state alone does not reject it.
+
+The command reuses the existing entity update path once, preserving physical-slot order, movement
+before actions, action wait/expiry, collision and shared RNG rules. A successful opportunity emits
+`gameplay-wait` and increments the simulation tick; ordinary `AdvanceSimulation` still emits
+`simulation-tick`. Entity failures retain their existing committed update and stop result. Every
+new Wait rechecks the boundary; a result is not guaranteed to remain ready. Battle control/scenes,
+dialogue/choice/audio consumers and moving players reject without advancing. `Acknowledge` and
+`CompletePresentation` do not substitute for this input or supply extra field opportunities.
+
+This is an engine API only. The host has no Wait binding here; existing automatic idle ticking,
+mandatory `AdvanceSimulation`, reveal and actual delivery tokens are unchanged. No interactive rate,
+generic scheduler or scene Wait consumer is introduced. It does not normalize the old 260-step trace
+or close the first-warp, JOIN logical-audio-end or HEAL natural-order evidence gaps. Preserve the
+completed comparisons and failures in the [H4 diagnostic](#continuous-h4-comparison) below.
+
+Direct acceptance uses `ExplorationSessionTests`: independent seed/target/counter assertions for
+different valid states, physical-slot collision, Wait followed by Move, stale/wrong consumer inputs
+and entity failure. After the locked .NET environment above and locked restore, run from `remake/`:
+
+```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  --configuration Release --no-restore --filter 'FullyQualifiedName~ExplorationSessionTests'
+```
+
+For subsequent corrections, select the changed test methods rather than repeating a completed
+broader run. This engine-only boundary does not require adapter, Godot or original-emulator work.
+
 ## Ordinary Host Startup
 
 After loading the retained worktree SDK/Godot environment, ordinary play uses:

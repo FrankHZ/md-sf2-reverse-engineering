@@ -10,6 +10,194 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class ExplorationSessionTests
 {
     [Theory]
+    [InlineData(0x12341234u, 0, 0xECAB1234u, 2, 2)]
+    [InlineData(0xC632A55Au, 2, 0x1091A55Au, 3, 1)]
+    public void PlayerWaitAdvancesOneEligibleOpportunityWithSourceWaitAndRandomWalkRules(
+        uint seed, int waitTicks, uint afterSeed, int targetX, int targetY)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            document["battle"]!["start"]!["mainSeed"] = seed;
+            document["world"]!["maps"]![0]!["entities"]![0]!["actions"] = System.Text.Json.Nodes.JsonNode.Parse($$"""
+                [{"op":"wait","ticks":{{waitTicks}}},{"op":"random-walk","x":2,"y":1,"radius":1}]
+                """);
+        });
+        var initial = session.Current;
+        for (int tick = 1; tick <= waitTicks; tick++)
+        {
+            Accept(session, new WaitAtInput());
+            Assert.Equal(tick, session.Current.Exploration!.Entities[new("ferryman")].Motion.WaitTimer);
+            Assert.Equal(seed, session.Current.Exploration.Party.MainSeed);
+        }
+        var before = session.Current;
+        var result = Accept(session, new WaitAtInput());
+        var npc = session.Current.Exploration!.Entities[new("ferryman")];
+        // Source LCG advances the high word; scaled range 4 selects South or East above.
+        Assert.Equal(afterSeed, session.Current.Exploration.Party.MainSeed);
+        Assert.Equal((targetX * 384, targetY * 384), ((int)npc.Motion.XDestination, (int)npc.Motion.YDestination));
+        Assert.Equal((768, 384), ((int)npc.Motion.X, (int)npc.Motion.Y));
+        Assert.Equal(0, npc.Motion.WaitTimer);
+        Assert.True(npc.Busy);
+        Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
+        Assert.Equal(before.Revision + 1, session.Current.Revision);
+        Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
+        Assert.Equal("gameplay-wait", Assert.Single(result.Observations).Kind);
+        Assert.Equal(initial.SessionId, session.Current.SessionId);
+        Assert.Equal(initial.Exploration!.PlayerEntity, session.Current.Exploration.PlayerEntity);
+        Assert.Equal(initial.Exploration.Party.ThinkingSeed, session.Current.Exploration.Party.ThinkingSeed);
+        Accept(session, new WaitAtInput());
+        npc = session.Current.Exploration.Entities[new("ferryman")];
+        Assert.Equal((768 + (targetX - 2) * 96, 384 + (targetY - 1) * 96), ((int)npc.Motion.X, (int)npc.Motion.Y));
+        Assert.Equal(afterSeed, session.Current.Exploration.Party.MainSeed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PlayerWaitResolvesCompetingDestinationsInPhysicalSlotOrder(bool reverse)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            var entities = document["world"]!["maps"]![0]!["entities"]!.AsArray();
+            entities[0]!["actions"] = System.Text.Json.Nodes.JsonNode.Parse("""[{"op":"move","x":1,"y":0}]""");
+            entities.Add(System.Text.Json.Nodes.JsonNode.Parse("""
+                {"id":"other","position":{"x":4,"y":1},"facing":2,"speed":96,"visible":true,
+                 "obstruction":true,"actions":[{"op":"move","x":-1,"y":0}]}
+                """));
+            if (reverse)
+            {
+                var first = entities[0]; entities.RemoveAt(0); entities.Add(first);
+            }
+        });
+        var seed = session.Current.Exploration!.Party.MainSeed;
+        Accept(session, new WaitAtInput());
+        var firstNpc = session.Current.Exploration!.AllEntities[1];
+        var secondNpc = session.Current.Exploration.AllEntities[2];
+        Assert.Equal(reverse ? "other" : "ferryman", firstNpc.Entity.Value);
+        Assert.Equal((1, 2), (firstNpc.Slot, secondNpc.Slot));
+        Assert.Equal(1152, firstNpc.Motion.XDestination);
+        Assert.Equal(1, firstNpc.ActionCursor);
+        Assert.Equal(secondNpc.Motion.X, secondNpc.Motion.XDestination);
+        Assert.Equal(0, secondNpc.ActionCursor);
+        Accept(session, new WaitAtInput());
+        var moved = session.Current.Exploration.AllEntities[1];
+        Assert.Equal(firstNpc.Motion.X + (reverse ? -96 : 96), moved.Motion.X);
+        Assert.Equal(0, session.Current.Exploration.AllEntities[2].ActionCursor);
+        Assert.Equal(seed, session.Current.Exploration.Party.MainSeed);
+    }
+
+    [Fact]
+    public void PlayerWaitThenMoveUsesChangedOccupancyAndRejectsAnotherWaitDuringPlayerMotion()
+    {
+        var session = StartProgram("""
+            [{"op":"motion","entity":"ferryman","wait":false,"actions":[{"op":"move","x":0,"y":-1}]},{"op":"end"}]
+            """);
+        var blocked = Accept(session, new Move(ExplorationDirection.East));
+        Assert.Contains(blocked.Observations, row => row.Kind == "movement-blocked");
+        Assert.Equal(new MapPosition(1, 1), session.Current.Exploration!.PlayerEntity.Position);
+        var before = session.Current;
+        foreach (SessionCommand wrong in new SessionCommand[]
+        {
+            new Acknowledge(new(1)), new CompletePresentation(new(1), PresentationCueKind.SoundWait),
+        })
+        {
+            Assert.NotNull(Send(session, wrong).Failure);
+            Assert.Same(before, session.Current);
+        }
+        Accept(session, new WaitAtInput());
+        var moving = Accept(session, new Move(ExplorationDirection.East));
+        Assert.Contains(moving.Observations, row => row.Kind == "movement-started");
+        var pending = session.Current;
+        Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
+        Assert.Same(pending, session.Current);
+        // Mandatory motion still requires the existing token-bound simulation command.
+        Accept(session, new AdvanceSimulation(pending.Story.Wait!.Token, 600));
+        Assert.Equal(new MapPosition(2, 1), session.Current.Exploration!.PlayerEntity.Position);
+        Accept(session, new WaitAtInput());
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+    }
+
+    [Theory]
+    [InlineData("dialogue")]
+    [InlineData("choice")]
+    [InlineData("ticks")]
+    [InlineData("audio")]
+    [InlineData("open-text")]
+    [InlineData("player-actions")]
+    public void PlayerWaitRejectsOtherExplorationConsumersWithoutAdvancing(string consumer)
+    {
+        string instructions = consumer switch
+        {
+            "dialogue" => """{"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":null},""",
+            "choice" => """{"op":"yes-no","flag":10},""",
+            "ticks" => """{"op":"wait-ticks","ticks":2},""",
+            "audio" => """{"op":"present","kind":"SoundWait","resource":null,"entity":null,"position":null},""",
+            "open-text" => """{"op":"text-cursor","text":100},{"op":"show-text","mode":"continued","speaker":null,"waitForAcknowledgement":false},""",
+            _ => """{"op":"motion","entity":"traveler","wait":false,"actions":[{"op":"move","x":0,"y":1}]},""",
+        };
+        var session = StartProgram("[" + instructions + """{"op":"end"}]""");
+        var before = session.Current;
+        var result = Send(session, new WaitAtInput());
+        Assert.Equal("field-input-unavailable", result.Failure!.Code);
+        Assert.Empty(result.Observations);
+        Assert.Same(before, session.Current);
+    }
+
+    [Fact]
+    public void PlayerWaitRejectsBattleControlAndSceneWithoutGrantingBattleTicks()
+    {
+        var session = Start("stone-court");
+        var battle = session.Current;
+        Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
+        Assert.Same(battle, session.Current);
+        Accept(session, new Confirm());
+        Accept(session, new ChooseAction(SessionAction.PhysicalAttack));
+        Accept(session, new SelectTarget(new("raider")));
+        Accept(session, new Confirm());
+        var scene = session.Current;
+        Assert.NotNull(scene.BattleScene);
+        Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
+        Assert.Equal("invalid-battle-tick", Send(session, new AdvanceSimulation(scene.BattleScene!.Token)).Failure!.Code);
+        Assert.Same(scene, session.Current);
+    }
+
+    [Fact]
+    public void PlayerWaitUsesSessionRevisionAndDoesNotAdvanceForStaleOrWrongActorInput()
+    {
+        var session = Start("harbor-arrival");
+        var before = session.Current;
+        var envelope = new CommandEnvelope(before.SessionId, before.Revision, null, new WaitAtInput());
+        Assert.Equal("stale-input", session.Submit(envelope with { SessionId = Guid.NewGuid() }).Failure!.Code);
+        Assert.Equal("wrong-actor", session.Submit(envelope with { Actor = new("outsider") }).Failure!.Code);
+        Assert.Same(before, session.Current);
+        Assert.Null(session.Submit(envelope).Failure);
+        var after = session.Current;
+        Assert.Equal(before.Story.SimulationTick + 1, after.Story.SimulationTick);
+        Assert.Equal(before.Exploration!.Party.MainSeed, after.Exploration!.Party.MainSeed);
+        Assert.Equal("stale-input", session.Submit(envelope).Failure!.Code);
+        Assert.Same(after, session.Current);
+    }
+
+    [Fact]
+    public void PlayerWaitPreservesEntityFailureAndCannotContinueTheStoppedConsumer()
+    {
+        var session = StartProgram("""
+            [{"op":"motion","entity":"ferryman","wait":false,"actions":[
+              {"op":"native-call","symbol":"unimplemented-service","source":"authored"}]},{"op":"end"}]
+            """);
+        var before = session.Current;
+        var result = Send(session, new WaitAtInput());
+        Assert.Equal(SessionFailureKind.UnsupportedCapability, result.Failure!.Kind);
+        Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+        Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
+        Assert.Equal(before.Exploration!.Party.MainSeed, session.Current.Exploration!.Party.MainSeed);
+        Assert.Equal("entity-action-stopped", Assert.Single(result.Observations).Kind);
+        var stopped = session.Current;
+        Assert.Equal("session-stopped", Send(session, new WaitAtInput()).Failure!.Code);
+        Assert.Same(stopped, session.Current);
+    }
+
+    [Theory]
     [InlineData(3, true)]
     [InlineData(63, false)]
     public void OrdinaryWarpPublishesOriginOnlyAfterItsDestinationIsAdmitted(int destinationX, bool accepted)
@@ -346,6 +534,8 @@ public sealed class ExplorationSessionTests
         Assert.Null(pending.Selection);
         Assert.DoesNotContain(16, pending.Story.Flags);
         Assert.Equal("program-owns-control", Send(session, new Confirm()).Failure!.Code);
+        Assert.Same(pending, session.Current);
+        Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
         Assert.Same(pending, session.Current);
         var token = pending.Story.Wait!.Token;
         SessionCommand command = waiting switch
