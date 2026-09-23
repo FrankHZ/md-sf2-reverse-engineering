@@ -361,8 +361,8 @@
       "source": "docs/design/contracts/map3-battle01-continuous-scenario.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map3-battle01-continuous-scenario.md",
-      "sourceSha256": "d3e367e666ed150c52548edfdd767c6b7cbed24d3b2cbfafe0cad7f52896049e",
-      "mirrorSha256": "adb262d0326f0371b2f147957a45111bdec1d23a0cbb42d2a6f8f40ef0bded85",
+      "sourceSha256": "2c060da64f162897f3c57d753eac6e876207bae858f8a26ebc2295c64da6eed7",
+      "mirrorSha256": "4518f1bbb0f91da11aa2c75b2c8b38e31c504831c6f7c28fa692ce7eb59be6fe",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-09-22"
     },
@@ -653,10 +653,10 @@
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
-      "sourceSha256": "e838bffec98e21d3d2ce281bbe8e0732789bf57dfe81abb2e4e574a7a2d57659",
-      "mirrorSha256": "45d225c801e2c5f8bdbd9c53ce79d3a8582dd320f63826d887aad0454dffdd9d",
+      "sourceSha256": "a698d83603c52f21548d91328d5bb638e44067683190dd2a6e0fd451f42e0ccc",
+      "mirrorSha256": "e65b061e8f23b0f96dc7ec68109b4ff13006f440da0a96214e1bc59be7ea94e4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-09-19"
+      "translatedDate": "2026-09-22"
     },
     {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",

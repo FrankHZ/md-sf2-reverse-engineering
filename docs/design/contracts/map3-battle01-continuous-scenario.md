@@ -1,8 +1,9 @@
 # Map 3 to Battle 01 Continuous Scenario Contract
 
 - Status: **Accepted comparison definitions**; bounded offline reference bindings are available; remaining bindings and H4 execution are OPEN.
-- Accepted evidence base: `58c5a94a4c5349fd221a130a0970222962715528`, including PR #504 at
-  `5102804b` (accepted observation source `9c3ea03ac5f5b467ee744f1ac624870da2408443`).
+- Accepted evidence base: `57d6cc296b77283eb5ee8a00b5121ecdfd132e1a`, including PR #504's neutral
+  endpoint, PR #526's accepted bounded post-victory Down extension, and PR #528's actual comparison
+  report. PR #526 is the original-evidence owner; PR #528 is the observed H4-result owner.
 - Product: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md),
   `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8D + 9A + 10A`.
 - Scope: one controlled admission, natural mandatory route, winning battle and post-victory field
@@ -93,7 +94,7 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control; compare actual actor 2 and exact selected initialized values. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
 | 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | Match every reached decision and consumed effect in order, including resource costs and RNG-driven results. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
 | 6 — victory/return | Selected final segment plus R4a: winning condition, eligible-party healing, reached after-program operations/effects, joins, F401/F501, controller result, transfer/setup selection | Require natural victory and full reached operation entry/return pairing, shared tail before enclosing return, then clear/set flags, D4=1 equivalent and exploration handoff. `ms_Void` at source `0x477E8` is Map57's exact fallback selection. One completed return cannot replace after-program consumption. |
-| 7 — endpoint | Exact bounded values below, pending consumers/readiness and RA-12 ordinary-input evidence | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. Then accept the independently evidenced nonneutral logical input and compare its effect. Current original nonneutral effect is **Unknown / OPEN**, so bounded neutral readiness cannot PASS full 5B. |
+| 7 — endpoint | Exact bounded values below, pending consumers/readiness and RA-12 ordinary-input evidence | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. PR #526 confirms the bounded Down input and effect; remaining input/state coverage stays OPEN, and neutral readiness or one Down cannot PASS full 5B. |
 | 8 — save/7C | 6A restart rule; private asset inventory and ROM/source/extraction provenance for every reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity and binding | No user save/load/suspend/checkpoint surface; restart reconstructs layer 1. Every consumed original scene resource resolves to admitted original private content. Missing private input is Unavailable; an authored substitute for required original scene content fails 7C when observed. MUSIC_JOIN/MUSIC_SAD_JOIN chord loops and host mute do not satisfy original audio. Public distribution remains outside scope. |
 | 9 — 8D presentation | Reached program/operation and scene/dialogue/animation/audio resource identities, dispatch/consumer/ack boundaries, blocking and resulting state from accepted source plus bounded observations | Match semantic identity and causal order; observe actual host use and completion/ack as defined below. Request/mailbox pairs, program return or a counter alone cannot PASS delivery. Missing original consumption evidence is OPEN; missing host evidence is Unavailable. No screenshots. |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A; inventory below | Emit a separate named result for every accepted deviation and its expected behavior, even when PASS. No implicit exclusions, missing-input waiver or newly invented deviation. |
@@ -127,8 +128,19 @@ are provenance/readback values: require a justified semantic RNG mapping, not ra
 Movement/camera are settled, map-event word/typewriting/pending returns/active consumers are zero,
 and no map program/battle return/transfer/modal remains. Original input polls occur on both neutral
 frames; final player poll `0x4FF8` reads 0. Generic window-state byte 1 does not denote a blocking
-dialogue. **Unknown:** acceptance and state effect of the next nonneutral input (RA-12); no remake
-movement observation can supply that original expected result.
+dialogue. This is the unchanged, terminal/nonresumable neutral endpoint from PR #504.
+
+**Confirmed (accepted bounded RA-12 extension, PR #526):** a fresh compatible natural chain
+reproduces that pre-input endpoint, then observes one Down frame at 61011. `esc02_controlCharacter`
+at `0x4FF8` reads value 2 from `PLAYER_1_INPUT` (`0xFFDE97`), with D7=48 selecting that input
+source; `loc_52E8` at `0x52E8` accepts
+destination increments D2=0, D3=32, D4=0, D5=384. After 13 neutral frames the player settles at
+Map57 `(5,13)`, raw `(1920,4992)`, facing DOWN, on frames 61023/61024 with original raw
+displacement, battle255, F401=false, F501=true, and no blocking consumers. This is a separate
+accepted terminal pair; it does not modify or make the PR #504 terminal resumable. RA-12's bounded
+ordinary-input acceptance and displacement
+are evidenced. The existing projector still binds only the PR #504 neutral endpoint; this extension
+has no offline projector binding or H4 actual observation.
 
 ## Mapping to existing actual observations
 
@@ -238,7 +250,7 @@ normalization remain OPEN where these boundaries do not supply them.
 | `scenes` and decision `effects` | WriteBattlesceneScript before → ApplyActionEffect before → Initialize/Execute scene → EndBattlescene after | 44 scene occurrences; compare before/after HP/MP/status/items/EXP/gold at consumed boundaries. Player-return `targets` is a candidate list; use the post-construction effect list, never treat all candidates as hit. Each reached effect has one target; unsupported multi-target decoding fails explicitly. |
 | `rng` | GenerateRandomNumber entry/return/draw and debug-aware wrapper | 2,935 base advances use D6 range/D7 result; all reproduce the accepted 16-bit update and scaled result. 250 wrapper results use D0 range/result, match their nested base call, and are **not additional draws**. Caller PC and enclosing consumer scope locate evidence; they do not prove an individual draw-to-effect association. Thinking-copy draws and frame/menu mutations outside these observed calls remain OPEN. |
 | `story`, `operationPairs`, `audioPairs` | named script/operation/text/warp/setup records; actual sound consumer/mailbox records | 363 matched reached operation pairs across the chain, including the accepted 67 after-program pairs; 2,552 dispatch/mailbox pairs (106 in final segment). These prove reached source seams, not rendered/audible delivery. |
-| `victory`, `endpoint` | natural-victory, after-tail/enclosing return/flag/loop/transfer records and terminal stop | Exact neutral endpoint above; terminal accounting and item/status/HP/MP fields cross-checked against retained RAM, full terminal flags against all 128 bytes. Field coordinates remain separate from battle combatant coordinates. RA-12 is absent from this evidence set. |
+| `victory`, `endpoint` | natural-victory, after-tail/enclosing return/flag/loop/transfer records and terminal stop | PR #504 neutral endpoint above; terminal accounting and item/status/HP/MP fields cross-checked against retained RAM, full terminal flags against all 128 bytes. Field coordinates remain separate from battle combatant coordinates. PR #526 separately accepts the Down-to-`(5,13)` extension; the current projector and reference table do not bind its payload. |
 
 The numeric action mapping is owned by `map3-battle01-action-effect-static-v1` dispatch and the
 STAY consumer in the battle-AI/function owners. Item mask/slot semantics come from the accepted
@@ -271,12 +283,27 @@ correction in the Issue handoff. A projected reference is never an H4 PASS.
 ## Remaining acceptance work
 
 **Unknown / OPEN original fields:** full R1 flags and fields beyond its serialized accounting,
-complete logical field-input effects, detailed AI memory/thinking draws, individual draw-to-effect
-mapping and timing normalization, cancel/reselect, unshimmed required dialogue and other incomplete
-8D consumer boundaries, and RA-12 nonneutral effect. The bindings below distinguish decoded values,
-retained but undecoded fields, static rules, missing original details and missing remake observations.
-This is not authorization for another native run. Accepted [PR #519 source preparation](../../research/map3-messenger-acceptance.md#post-victory-ordinary-input-preparation-issue-515)
-is collector capability; future #515 results enter only after independent acceptance on main.
+complete logical field-input effects beyond the accepted single Down extension, detailed AI
+memory/thinking draws, individual draw-to-effect mapping and timing normalization, cancel/reselect,
+unshimmed required dialogue and other incomplete 8D consumer boundaries. The bindings below
+distinguish decoded values, retained but undecoded fields, static rules, missing original details and
+missing remake observations. PR #526 closes only the bounded RA-12 input/effect observation; it does
+not establish full 5B, remaining 8D or the milestone. The current projector still uses the PR #504
+terminal and does not bind the extension payload.
+
+**Confirmed actual comparison results (PR #528, corrected by PR #533):** PR #528's completed baseline
+reported 5,336 PASS, 6 FAIL and 40 Unavailable, with the earliest differences at admission gold,
+all three allies' item arrays, first-round order and the diagnostic next actor. Those six failures and
+their report remain historical evidence. PR #533 corrects the connected selected R1 product inputs
+to source NewGame gold 60 and complete starting item words, preserving the separate controlled R1
+fixture's gold 0/four-byte projection. The new actual run with the retained original reference and
+plan reports 5,340 PASS, 2 FAIL and 40 Unavailable; admission gold and all three natural first-control
+live item arrays now match. The selected original R1 readback is gold 60 with item words
+`[199,0,127,127]`, `[213,0,0,127]`, and `[184,0,127,127]` for Bowie, Sarah and Chester. First-round order still differs, and after the diagnostic first STAY the
+original next actor is Bowie while actual is Sarah; host exit 2 is the corroborated stop. Admission
+`SourceLoadout` remains null in the actual projection, so later inventories do not prove that field.
+The accepted PR #526 post-victory extension was not rebound and was not reached. NPC phase and
+timing/RNG mapping remain Unknown. This corrected comparison is still not H4 acceptance.
 
 **OPEN content/implementation:** 7C audio and complete reached asset provenance, missing snapshot/cue
 correlation, actual battle-scene consumers, the continuous comparator and applicable host/9A executions.
