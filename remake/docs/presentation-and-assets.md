@@ -718,8 +718,10 @@ wait. AI passes its prepared action to this same consumer without selecting or r
 `c834c652b6862bc5679fd7f69a38a7093206efc6` support construction/replay separation in
 `disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm:WriteBattlesceneScript`,
 `battleactionsengine_2.asm`, `attack.asm` and `battlescenes/battlesceneengine_0.asm` beneath that battle
-source directory. Damaging reactions consume twelve pairs of shared-main RNG
-draws (range5 for the ally and range7 for the enemy). Growth consumes the carried main image after
+source directory. The admitted physical damaging reaction consumes twelve pairs of shared-main RNG
+draws (range5 for the ally and range7 for the enemy). Source loops `loc_18E6E`/`loc_19004` follow the
+reaction-mode and `d1 == 0x8000` guards; this direct-draw rule is not every hit or scene's total RNG.
+Growth consumes the carried main image after
 those reactions; an old scalar comparison that omitted scene draws is not final-session parity.
 `BattleSceneTests` checks phase boundaries, ordered followups, continuous reaction seeds, growth,
 deferred accounting and input release; migrated action tests retain their construction assertions.
@@ -771,7 +773,10 @@ reaction before casting animation (`createbattlesceneanimation.asm`), recovery t
 (`castspell.asm:spellEffect_Heal`), and VInt-driven fairy updates
 (`battlesceneengine_4.asm:VInt_UpdateBattlesceneGraphics`, `updatespellanimation.asm`). Fairy phases,
 reentry, exit and dust consume source-dependent draws; bsc0D requests stop and waits for the update
-toggle, whereas bsc0C force-reinitializes. Natural text/input-to-VInt alignment remains **Unknown**.
+toggle, whereas bsc0C force-reinitializes. The dispatcher gates and decrements the lifetime word
+before the update; initial `-1` is not an immutable sentinel. X-boundary draws (ranges28/32) and
+the periodic dust draw (range12) can occur in the same update. Natural text/input-to-VInt alignment
+remains **Unknown**.
 The next implementation must model the proved logical update/stop state and its caller ordering;
 neither renderer frame count nor padding toward an old omitted-RNG seed may substitute for it.
 
