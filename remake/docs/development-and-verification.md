@@ -433,6 +433,38 @@ ally 2 and the first STAY at `(9,16)` is consumed, but the next actor is ally 1
 versus original ally 0. This reaches only the existing diagnostic boundary,
 not the full battle or an H4 milestone pass.
 
+**Confirmed (retained first-control opportunity alignment):** the 260 paired field
+`before` boundaries in that completed run match map/tile and the checked logical input-idle
+predicate; only steps 1 and 2 match seed. At step 3 after the first warp, original
+`prepared-68/runtime/checkpoints.jsonl:23` (order 1039/frame 506) reads `0x75DA`, while
+actual sequence 62/tick 16 reads `0xC632`. The original held-input endpoint `(54,3)` above is
+not this post-warp `(3,3)` boundary. Actual's next advance `0xC632` to `0x1091` is at
+sequence 75/tick 21 when slot 6 begins an East walk; the original per-draw caller/slot is
+still Unknown. Walking remains a source-supported candidate, not a captured caller receipt.
+
+The retained finite JOIN SoundWait begins at actual sequence 4871/tick 2114 and its natural
+finish receipt appears at sequence 15498/tick 7427: 5,313 simulation-tick results accompany
+the 429,803-sample/44,100-Hz cue (about 9.746 seconds). The 373 observed seed transitions
+total 572 minimal LCG-equivalent advances; no per-draw entity identity is emitted. The
+host's `ExplorationSessionView.NeedsTicks` permits busy entities to advance during a
+presentation wait, while `SessionAudio` supplies actual finite completion. **Inferred:**
+host-speed or accessibility-dependent delivery latency can change the carried seed.
+No cross-speed/settings rerun has established that dependence empirically.
+
+The [accepted Option A policy](../../docs/decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)
+and [Wait admission contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
+now require evidenced gameplay waits and distinguish mandatory source work from player
+waiting and host delivery latency. This is a policy boundary, not an implemented or verified
+schedule. Early warp caller/phase ordering, source audio logical end/interleaving and natural
+dialogue/scene scheduling remain Unknown. The current 260-step plan has no automatically
+admitted Wait mapping. Keep 5,340 PASS / 2 FAIL / 40 Unavailable, the completed JOIN timeout
+and index-29 occupancy failure above; do not repeat them solely because policy changed.
+Next conformance work must first bind its named caller/gates/order, preserve source-required
+logical work during cues and require both logical and actual finite completion. Same semantic
+Wait/ack streams across 9A settings must preserve gameplay state/RNG; an additional evidenced
+player Wait may differ. No neutral-frame padding, PCM-to-tick conversion, desired-seed solve,
+golden rewrite or H4/`0x6DC1` guarantee follows from this decision.
+
 At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
 order 55395), the seed is `0x6DC1`. The retained projection contains 885
 base-generator draws in that before-battle consumer scope. The complete captured

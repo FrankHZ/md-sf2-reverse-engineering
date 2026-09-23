@@ -127,6 +127,37 @@ events, frame-exact repeat and original clock alignment are not comparison requi
 changes a gameplay result still requires an explicit behavioral contract; it cannot be waived as a
 rendering difference.
 
+#### Evidenced gameplay waits (accepted Option A)
+
+The user selected evidenced gameplay Wait semantics for 4A/9A. The shared main RNG and existing
+exact selected score/order and subsequent gameplay assertions remain required. The logical input
+stream may include genuine player waiting at an eligible consumer only when original evidence
+identifies its caller/service, enable state, phase and ordering against other active services.
+Neutral controller frames, audio sample duration and a desired seed do not by themselves establish
+a Wait. Do not infer a count by working backwards from the expected RNG state.
+
+Distinguish three kinds of progression:
+
+- Source-defined mandatory logical work follows the current state/content and command, including
+  required movement, polling preambles, counters and cue work. It is not additional player input.
+- Player waiting at an eligible consumer permits evidenced logical service opportunities without
+  selecting an action. Interactive players may choose different waits and obtain different results.
+- Host display/audio delivery latency adds no logical opportunity or accumulated tick debt. It must
+  not erase required source logical work during playback. Finite audio releases its dependent wait
+  only after both the source-grounded logical end and actual player completion are satisfied.
+
+Service order is established per mode and caller, not by a universal global ordering. Under 9A,
+compare the same semantic Wait/acknowledgement stream across settings. A reveal-only Confirm and
+pure delivery delay do not add gameplay opportunities. The [continuous-scenario contract](../design/contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
+owns admission and command-readiness details. Interactive wait rate and concrete scheduling remain
+implementation decisions requiring a bounded contract; this choice does not establish them.
+
+This is accepted product policy, not evidence of implementation conformance or original runtime
+reach. Missing caller/phase/audio-end bindings remain Unknown. The existing 260-step plan is not
+automatically a conforming Wait trace, and this decision neither promises seed `0x6DC1` nor changes
+an observed FAIL into PASS. No split RNG, reseed, outcome waiver or production reference replay is
+authorized by this policy.
+
 ### 5. Observable completion endpoint
 
 | Option | Product definition | Evidence and scope consequence |
@@ -248,6 +279,10 @@ MUST check:
 3. reduced-flash mode reaches the same gameplay completion event without the suppressed flash cue;
 4. instant or adjusted text progression preserves acknowledgement and route results; and
 5. device mapping and repeat timing are absent from original-fidelity assertions.
+
+These checks use the same admitted semantic Wait/acknowledgement stream under the
+[evidenced gameplay wait policy](#evidenced-gameplay-waits-accepted-option-a); adjustable reveal
+duration and reveal-only Confirm do not become extra gameplay waits.
 
 The exact settings serialization and UI are implementation choices for Phase 4, but omission of the
 configuration surface or these observable checks is not implementation discretion if 9A is accepted.

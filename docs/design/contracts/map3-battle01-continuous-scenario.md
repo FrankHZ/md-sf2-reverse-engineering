@@ -44,6 +44,63 @@ fails continuity. Preserve one session identity and monotonic observations throu
 Rejection/error records must not be discarded. No frame, pixel, waveform, chip or hardware equality
 is required; gameplay-affecting timing, causal order and input blocking remain in scope.
 
+## Evidenced gameplay waits
+
+[ADR 0010's accepted Option A](../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)
+admits evidenced player waiting into the external logical input stream. It retains the shared main
+RNG, exact selected turn scores/order and all subsequent gameplay assertions. This section defines
+policy; original schedule bindings and implementation conformance remain OPEN.
+
+Every admitted Wait must identify an eligible input consumer/occurrence, source caller or service,
+enable state and phase, start/end boundaries, and ordering with other active services. A logical
+opportunity advances that eligible service once; it is not a rendered frame or a command to draw a
+random number. A compressed count requires evidence for every equivalent repetition. Original
+frame/order/PC may locate provenance but are not host scheduling targets. Retained neutral schedules
+do not qualify without this mapping; elapsed PCM seconds and backwards seed solving cannot supply
+it. Missing bindings remain Unknown/Unavailable alongside existing FAILs.
+
+Source-defined mandatory work is derived from state/content and the consumed command: preserve its
+enable gates, counters, conditional branches, RNG/copy effects and evidenced service order. Do not
+duplicate it as player Wait input. Player Wait applies only at a named eligible consumer. Host
+rendering, text reveal and audio delivery latency do not generate extra logical opportunities or
+tick debt, including after a completion token releases. Required logical work while a cue plays
+still executes. The production session consumes general commands and state/content, never the
+external reference's seed checkpoints, actors, draw totals or replay schedule.
+
+A command is ready when its consumer is eligible, mandatory predecessors are complete, and required
+actual presentation/acknowledgement conditions hold. Ambient entity scripts being busy does not
+alone block field input; a settled player does not prove those services stopped. Preserve an
+accepting poll's source preamble and services before its input test. Batched opportunities must
+preserve the same boundaries and order as individual opportunities. Prove ordering for each active
+mode/caller rather than imposing one universal entity/text/scene sequence.
+Bind the actual text consumer before selecting a polling preamble: an acknowledgement is not
+automatically a W1/W2 RNG call. An animation's actual completion token does not by itself terminate
+still-required spell service updates; release follows the evidenced logical termination condition.
+
+| Family | Required logical and readiness boundary | Remaining evidence boundary |
+| --- | --- | --- |
+| Field movement | Consumed movement advances source movement and eligible entity services to the next input/event boundary, preserving collision/retry and action phases. A held input can consume multiple moves; deliberate eligible waiting is separate. | Exact original publication/poll phase and early per-draw caller attribution are Unknown. |
+| Warp | Preserve the reached warp branch, transition enable/disable phases, entity retain/reset rules and event-before-action priority; release after destination initialization and required presentation return to the field consumer. | The selected transition's complete service schedule is Unknown; an equal destination or frame delta does not establish it. |
+| Dialogue | Preserve admitted text/control-token work, wait-poll RNG/copy and gated portrait counters. Reveal-only Confirm completes reveal without consuming an acknowledgement or adding a gameplay poll. Release after required reveal/ack/choice. | Natural reveal, wait and portrait interleaving is not established by shimmed text returns or IDs. |
+| Finite audio | Advance required logical work to an evidenced source audio end, and require actual finite-player completion for the matching cue/token before release. Earlier actual completion cannot skip logical work; later delivery cannot add gameplay ticks. | Source command/timer/end-predicate phase and its service interleaving remain Unknown. PCM duration is not a logical tick budget. |
+| Battle reaction | Preserve the reached operand-dependent branch and source loop counters, draws and interleaved services through consumed effects and required scene completion. Reduced flash changes projection, not logical work. | Static loop shape does not prove natural branch reach or a whole-scene draw total. |
+| Healing fairy | Derive instances and updates from admitted payload/state; retain phase, position, conditional and periodic RNG calls, update gates and termination/cleanup order before release. | Natural caller writes and ordering of termination controls require precise binding; host animation duration is not a source lifetime. |
+
+The existing [exploration](map-exploration.md#entity-movement-and-action-timing),
+[randomness](randomness.md), [dialogue](dialogue-system.md),
+[music wait](music-wait-service.md) and [battle-scene](battle-scene-presentation.md) owners retain
+their bounded source rules and Unknowns. This policy does not promote their static facts to
+Confirmed runtime observations or prove that a named music service is the reached SoundWait caller.
+Interactive wait rate and concrete scheduler behavior need a later bounded implementation contract.
+
+9A compares identical semantic Wait/ack streams across instant/adjustable text, mappings and flash
+settings. As a different-valid-input check, an additional evidenced player Wait must execute its
+eligible services and may change later gameplay. As a settings check, slow reveal with reveal-only
+Confirm must preserve state/RNG against instant text at the same semantic Wait/ack boundaries.
+Neither check alone establishes exact selected-history parity. The existing 260-step plan requires
+newly admitted bindings before it can claim this policy's conformance; existing 5,340 PASS / 2 FAIL /
+40 Unavailable remain unchanged, with no promise of pre-round seed `0x6DC1` or H4 acceptance.
+
 ## Admitted state and ordered route
 
 Use R1's fixture `sf2-map3-admitted-start-runtime-v1`, case `controlled-new-map3-default`,
@@ -242,7 +299,9 @@ Orders locate original observations; they are not modern scheduling requirements
 orders references into movement polls, prompt choices, menu returns and committed player decisions.
 `requests` retains **2,798 controller schedules** separately from **18 acquisition saves**; none of
 the saves is a player save action under 6A. Neutral schedules remain timing/RNG provenance, not
-invented STAY/Confirm actions. Request result state is the actual end-of-request observation, not an
+invented STAY/Confirm actions or admitted gameplay Waits without the
+[required consumer/phase/order evidence](#evidenced-gameplay-waits).
+Request result state is the actual end-of-request observation, not an
 inferred effect for each earlier movement poll. Complete per-movement arrival and field logical-input
 normalization remain OPEN where these boundaries do not supply them.
 

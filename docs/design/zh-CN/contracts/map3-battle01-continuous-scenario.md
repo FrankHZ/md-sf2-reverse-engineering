@@ -23,6 +23,30 @@
 
 十层全部必需；整体 PASS 要求全部必需断言和 accessibility variants 通过。证据就绪、定义审阅、实际 H4 执行分别报告。准入后重启 session、注入 story state、重设 seed、直接进入战斗或跳过战后程序均违反连续性。全程保持同一 session identity 与单调观测，保留拒绝/error 记录。不要求 frame/pixel/waveform/chip/hardware 相等，但影响玩法的 timing、因果顺序和输入阻塞仍在范围内。
 
+<a id="evidenced-gameplay-waits"></a>
+## 有证据支持的玩法等待
+
+[ADR 0010 已接受的 Option A](../../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)允许将有证据支持的玩家等待纳入外部逻辑输入流。共享 main RNG、选定回合的精确 score/order 和全部后续玩法断言保持不变。本节定义政策；原版调度绑定及实现符合性仍为 OPEN。
+
+每个准入 Wait 必须标明符合条件的输入 consumer/occurrence、源码 caller 或 service、enable 状态与 phase、起止边界，以及相对于其他活动服务的顺序。一次逻辑机会使符合条件的服务推进一次；它不是渲染帧，也不是抽取随机数的命令。压缩计数必须有证据支持每次等价重复。原版 frame/order/PC 可定位溯源，但不是 host 调度目标。保留的 neutral schedules 未经该映射不具备准入资格；PCM 经过秒数或从 seed 反推均不能补足证据。缺失绑定保持 Unknown（未知）/Unavailable，并同时保留已有 FAIL。
+
+源码定义的必需逻辑工作由状态/内容和已消费命令导出：保留 enable gates、计数器、条件分支、RNG/copy 效果及有证据支持的服务顺序。不得将其重复计作玩家 Wait 输入。玩家 Wait 仅适用于已命名且符合条件的 consumer。Host 渲染、文本揭示和音频交付延迟不产生额外逻辑机会或积压 tick 债，completion token 释放之后也不补跑这些延迟。Cue 播放期间必需的逻辑工作仍须执行。Production session 消费通用命令与状态/内容，不读取外部 reference 的 seed checkpoints、actors、抽取总数或 replay schedule。
+
+命令就绪要求其 consumer 符合条件、必需前置逻辑完成，且所需实际 presentation/acknowledgement 条件满足。环境 entity scripts 忙碌本身不会阻塞 field 输入；玩家已停稳也不能证明这些服务已停止。接受输入的 poll 仍须在 input test 前保留源码 preamble 和服务。批量逻辑机会必须与逐次推进具有相同边界和顺序。每个活动 mode/caller 的顺序分别证明，不强加一套全局 entity/text/scene 顺序。选择 polling preamble 前必须绑定实际 text consumer：acknowledgement 不自动等同于 W1/W2 RNG call。Animation 的实际 completion token 本身不会终止仍必需的 spell service updates；释放必须遵循有证据支持的逻辑终止条件。
+
+| 类别 | 必需逻辑与就绪边界 | 剩余证据边界 |
+| --- | --- | --- |
+| Field 移动 | 已消费的移动将源码 movement 与符合条件的 entity services 推进至下一输入/event 边界，保留 collision/retry 和 action phases。一次按住输入可消费多次移动；符合条件时主动等待另行表示。 | 原版 publication/poll 的精确 phase 和早期逐次 RNG caller 归属仍 Unknown（未知）。 |
+| Warp | 保留到达的 warp 分支、transition enable/disable phases、entity retain/reset 规则和 event-before-action 优先级；目标初始化及必需 presentation 完成并返回 field consumer 后才释放。 | 选定 transition 的完整服务调度仍 Unknown（未知）；目标相同或 frame delta 不能证明该调度。 |
+| Dialogue | 保留准入的 text/control-token 工作、wait-poll RNG/copy 和受 gate 控制的 portrait counters。Reveal-only Confirm 只完成揭示，不消费 acknowledgement 或增加 gameplay poll。所需 reveal/ack/choice 完成后释放。 | 被 shim 的 text returns 或 IDs 不证明自然 reveal、wait、portrait 的交错顺序。 |
+| 有限音频 | 将必需逻辑工作推进到有证据支持的 source audio end，并在释放前要求匹配 cue/token 的实际 finite-player completion。实际播放先结束不能跳过逻辑工作；后结束也不能增加 gameplay ticks。 | 源码 command/timer/end-predicate phase 及其服务交错仍 Unknown（未知）。PCM 时长不是逻辑 tick 预算。 |
+| Battle reaction | 保留已到达的 operand-dependent 分支、源码 loop counters、抽取和交错服务，直至效果消费与必需 scene completion。Reduced flash 改变 projection，不改变逻辑工作。 | 静态 loop 结构不证明自然分支到达或整个 scene 的抽取总数。 |
+| Healing fairy | 从准入 payload/state 导出实例及更新；保留 phase、位置、条件及周期 RNG calls、update gates 和 termination/cleanup 顺序后才释放。 | 自然 caller writes 与 termination controls 的顺序需要精确绑定；host animation 时长不是源码 lifetime。 |
+
+既有[探索](../../contracts/map-exploration.md#entity-movement-and-action-timing)、[随机性](../../contracts/randomness.md)、[对话](../../contracts/dialogue-system.md)、[音乐等待](../../contracts/music-wait-service.md)和[战斗场景](../../contracts/battle-scene-presentation.md)所有者继续拥有各自有界源码规则与 Unknown（未知）项。此政策不将静态事实升级为 Confirmed（已确认）runtime 观测，也不证明某个命名音乐服务就是所到达 SoundWait 的 caller。交互等待速率和具体 scheduler 行为仍需后续有界实现合同。
+
+9A 在 instant/adjustable text、输入映射和 flash settings 间比较相同语义 Wait/ack 流。不同有效输入检查应确认：额外一个有证据支持的玩家 Wait 执行其符合条件的服务，并可能改变后续玩法。设置检查应确认：慢速揭示加 reveal-only Confirm，在同一语义 Wait/ack 边界上与 instant text 保持相同 state/RNG。两类检查本身均不证明选定历史的精确 parity。既有 260-step plan 必须补充新准入绑定才能声明符合此政策；已有 5,340 PASS / 2 FAIL / 40 Unavailable 保持不变，不保证 pre-round seed `0x6DC1` 或 H4 接受。
+
 <a id="admitted-state-and-ordered-route"></a>
 ## 准入状态与有序路线
 
@@ -117,7 +141,7 @@ uv run python -m sf2tool.remake_h4_reference --evidence-root $acceptedEvidenceRo
 
 `$acceptedEvidenceRoot` 指向已接受的 prepared-68..86；`$acceptedExtensionRoot` 显式指向另行接受的 `issue515` prepared-02..20。两者都不会被隐式选取。未提供 extension 时，RA-12 标为 `accepted-extension-unbound`，不表示缺少原版证据；旧投影仍可复现。程序显式读取这 19 个目录；复用 `_read_segment`，仅在私有 globals 副本中将 `repo_path("local")` containment lookup 绑定到证据所在 local 根。原采集模块及可写 helper 不变。终端 86 使用 `require_resumable=False`；不 load、seal、reconcile 或重写旧 state。校验既有文件摘要、prepared config/input identity、固定 ROM/upstream/runner/observer、parent pair link、ordinal/累计 accounting、成功请求与实际 frame delivery。identity 错误或不支持的映射使命令失败，不产生 comparison PASS。记录的原 observer/runner identity 是来源，不用当前 collector 替代。
 
-生成 JSON 为私有输出，不是公开 fixture/schema。每个绑定含 prepared segment、JSONL 文件与一基行号、kind/order/frame 及最近 request ordinal；order 仅定位原版记录，不要求现代时序相等。`logicalInputs` 将 movement poll、prompt choice、menu return、committed player decision 按顺序关联。`requests` 区分 **2,798 controller schedules** 与 **18 acquisition saves**；后者不是 6A 用户存档。neutral schedule 只保留 timing/RNG 来源，不能猜成 STAY/Confirm。request result state 是整次请求结束的实际观测，不是每次先前 movement poll 的独立效果；逐 movement arrival 与完整 field logical-input normalization 仍可能 OPEN。
+生成 JSON 为私有输出，不是公开 fixture/schema。每个绑定含 prepared segment、JSONL 文件与一基行号、kind/order/frame 及最近 request ordinal；order 仅定位原版记录，不要求现代时序相等。`logicalInputs` 将 movement poll、prompt choice、menu return、committed player decision 按顺序关联。`requests` 区分 **2,798 controller schedules** 与 **18 acquisition saves**；后者不是 6A 用户存档。neutral schedule 只保留 timing/RNG 来源，不能猜成 STAY/Confirm，也不能在缺少[所需 consumer/phase/order 证据](../../contracts/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)时准入为 gameplay Wait。request result state 是整次请求结束的实际观测，不是每次先前 movement poll 的独立效果；逐 movement arrival 与完整 field logical-input normalization 仍可能 OPEN。
 
 **Confirmed**（**已确认**），限所选原版链：
 
