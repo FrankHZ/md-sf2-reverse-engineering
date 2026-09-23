@@ -334,7 +334,7 @@ Admission gold is 60 on both sides. At natural first control, each of the three 
 item arrays matches. First-round turn order still differs, and the diagnostic first STAY reaches
 a different next actor; the host stops there. Admission `SourceLoadout` remains null in the actual
 projection, so the later matching inventories do not fill that unavailable assertion. RNG timing
-and NPC phase relevance remain Unknown; this is not an H4 pass.
+and the later NPC contribution remain Unknown; this is not an H4 pass.
 
 **Confirmed (bounded #534 order diagnosis):** `local/issue525/reference.json` and
 `local/issue530/actual-corrected.jsonl` agree at R1 admission on main seed
@@ -354,13 +354,50 @@ held-frame schedule. Equal tile position does not prove equal elapsed poll/calle
 opportunities. This persistent-state difference precedes the comparator's first
 scored FAIL at battle control, but does not establish a movement or RNG rule defect.
 
+**Confirmed (R1 entity readback and pinned source shape):** the original R1 projection
+at `prepared-68/runtime/checkpoints.jsonl:2` (order 711, frame 355) has Map 3
+walking entities in physical slots 5, 6 and 8. Slot 5 at `(20,13)` has an
+`ACTSCRIPTWAITTIMER` of 30 and action pointer `0xFF5600`, the first command of
+`eas_Walking`; slots 6 and 8 have zero wait timers and pointers `0xFF565A` and
+`0xFF568C`, respectively, each 40 bytes into its 50-byte copy of the script at
+`ac_waitDest`. Slot 8 is mid-movement (raw Y 3453 toward destination 3072).
+`s1_entities.asm` defines those three `msWalkingEntity` entries;
+`SetWalkingActscript` copies the 50-byte script per walker. In pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `eas_Walking` orders
+`ac_wait 30`, `ac_randomWalk`, `ac_waitDest`, and `ac_wait 20`; the entity update
+visits occupied physical slots in order without a viewport filter. A completed
+wait redispatches in the same update, and `esc06_walkRandomly` calls the main
+generator with range 4 for attempted directions. The first range-4 draw from
+`0x9917` produces `0xC632` and direction 3 (Down), a legal slot-5 candidate.
+
+**Inferred (bounded first-field caller):** slot 5's wait is already armed at R1,
+while slots 6 and 8 must finish destination and wait phases before another random
+walk. This makes slot 5 the source-supported walking-NPC candidate for the first
+field advance, but the retained field segment did not capture a caller PC or an
+entity update at that exact draw. Other source callers at that boundary have not
+been excluded. The selected actual start omits NPC action phase: `SceneEntities.Build`
+sets definition positions and synthesizes `WaitTimer` from the slot number, while
+the selected start input supplies no NPC phase. Actual admission sequence 2 shows
+slots 5, 6 and 8 stationary at action cursor 0; the first retained actual walker
+draw occurs at sequence 79/tick 23 for slot 8, followed by slot 6 at sequence
+83/tick 25 and slot 5 at sequence 85/tick 26. This is a concrete selected-start
+binding gap, separate from the unresolved logical timing choice.
+
 At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
 order 55395), the seed is `0x6DC1`. The retained projection contains 885
-base-generator draws in that before-battle consumer scope: 690 with return PC
-`0x65A8` and 75 with return PC `0x647E`, the `symbol_wait1` and `@wait2` text loops
-in pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`
-`disasm/code/common/scripting/text/textfunctions_1.asm`; 120 have other
-caller PCs. Both loops call `GenerateRandomNumber(256)` while waiting for input.
+base-generator draws in that before-battle consumer scope. The complete captured
+caller/range partition is 690 at return PC `0x65A8`/range 256 (`symbol_wait1`),
+75 at `0x647E`/range 256 (`@wait2`), 95 at `0x155BC`/range 5 (portrait mouth
+counter), and 25 at `0x15576`/range 120 (portrait blink counter). Pinned
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` places the first two
+in `disasm/code/common/scripting/text/textfunctions_1.asm` and the latter two in
+`disasm/code/common/menus/portraitfunctions.asm:VInt_PerformPortraitBlinking`.
+Each text-wait poll advances `GenerateRandomNumber(256)`, copies its result to the
+high byte of `RANDOM_SEED_COPY`, waits for VInt, then tests directional and A/B/C
+input; the accepting poll draws too. The portrait service advances the same main
+seed when an active portrait's counters require a blink or mouth reset. These are
+presentation callers with gameplay-visible shared-seed effects; the 120 portrait
+draws are classified by pinned source rather than left as unknown callers.
 The actual `round-rng` result at sequence 15227 starts from `0x3905`. Read-only
 replay using the same nine first-round agility values `4,5,7,5,5,5,5,5,5`, pinned
 `GenerateRandomNumber` in `disasm/code/common/tech/randomnumbergenerator.asm` and
@@ -401,17 +438,44 @@ uv run --locked python -m sf2tool.remake_h4_comparison compare `
   --output local/issue534/comparison-reread.json
 ```
 
+To reproduce the bounded caller partition and R1 entity phase from retained
+private readbacks without a native run (after selecting the private environment):
+
+```powershell
+@'
+import json
+from collections import Counter
+r = json.load(open('local/issue525/reference.json', encoding='utf-8'))
+cut = r['encounter'][0]['source']['order']
+print(Counter((hex(x['caller']['returnPc']), x['range']) for x in r['rng']
+              if x['source']['order'] < cut
+              and any(s['name'] == 'battle:before' for s in x['consumerScopes'])))
+print([(i, hex(r['inherited']['entities'][i]['actionScript']),
+        r['inherited']['entities'][i]['waitTimer'],
+        r['inherited']['entities'][i]['y'], r['inherited']['entities'][i]['destinationY'])
+       for i in (5, 6, 8)])
+for line in open('local/issue530/actual-corrected.jsonl', encoding='utf-8'):
+    row = json.loads(line)
+    if row.get('sequence') in (2, 52, 79, 83, 85) and 'state' in row:
+        state = row['state']
+        print(row['sequence'], state['simulationTick'],
+              hex(int(state['mainSeed']) >> 16),
+              [(int(e['slot']), int(e['actionCursor']))
+               for e in state['entities'] if e['slot'] in (5, 6, 8)])
+'@ | uv run --locked python -X utf8 -
+```
+
 **Inferred:** differing pre-round seeds fully explain the two scored arrays under
 the same source rule. Exploration/dialogue caller scheduling is a credible source
 of the seed difference, but the complete call correspondence is not established.
 The matching per-seed replays provide no evidence of a turn-order or main-generator
 rule defect. The comparator correctly leaves first-control `mainSeed readback`
 Unavailable because its timing-to-RNG mapping is not established; scored order and diagnostic next actor
-remain FAIL. The exact callers of the early original field draws, complete
-exploration-to-battle call correspondence, and NPC phase contribution remain
-**Unknown**. First use pinned source call sites and retained request/checkpoint
-records to narrow the caller and semantic event. If that still leaves a material
-gap for H4, separately admit a focused original caller/range/seed observation at
+remain FAIL. The exact caller of the early original field draw, complete
+exploration-to-battle call correspondence, and later NPC phase contribution remain
+**Unknown**. Use the pinned source call sites and retained request/checkpoint
+records to narrow the remaining caller and semantic event. If that still leaves a
+material gap for H4, separately admit a focused original caller/range/seed observation at
 the first field divergence and pair it with actual simulation/input events before
 changing a rule; this is a conditional evidence need, not an automatic emulator run.
 The deterministic comparison condition is also unresolved: the selected original
