@@ -338,16 +338,21 @@ and NPC phase relevance remain Unknown; this is not an H4 pass.
 
 **Confirmed (bounded #534 order diagnosis):** `local/issue525/reference.json` and
 `local/issue530/actual-corrected.jsonl` agree at R1 admission on main seed
-`0x9917` (32-bit image `0x99170000`). The earliest paired seed readback then differs:
-the first original 30-frame Left request ends at `0x1091`
-(`prepared-68/runtime/actual-inputs.jsonl:772`, frame 385, order 787), while the
-probe's first logical `after:1` observation still reads `0x9917` (actual sequence 52,
-input 1). `0x1091` is two advances of the pinned `(seed * 13 + 7) & 0xFFFF`
-generator from `0x9917`; the original field segment did not capture those callers.
-The probe presses and releases one logical movement and settles it, without the
-source's 30-frame held input. This is an earlier persistent-state difference than
-the comparator's first scored FAIL at battle control, but does not establish a
-movement or RNG rule defect.
+`0x9917` (32-bit image `0x99170000`). The earliest matching movement-position
+readbacks then differ: at tile `(55,3)` before original movement acceptance 2,
+the seed is `0xC632` (`local/issue525/plan-v2.json` step 2,
+`prepared-68/runtime/checkpoints.jsonl:9`, order 745, frame 368, input ordinal 1),
+while the probe's logical `after:1` at the same tile still reads `0x9917`
+(actual sequence 52, input 1). `0xC632` is one advance of the pinned
+`(seed * 13 + 7) & 0xFFFF` generator from `0x9917`. Separately, the original
+30-frame Left request spans two movements and ends at tile `(54,3)` with seed
+`0x1091` (`prepared-68/runtime/actual-inputs.jsonl:772`, frame 385, order 787),
+two advances from admission. It is not the paired boundary for actual `after:1`.
+The original field segment did not capture either caller. The probe presses and
+releases each logical movement and settles it, without reproducing the original
+held-frame schedule. Equal tile position does not prove equal elapsed poll/caller
+opportunities. This persistent-state difference precedes the comparator's first
+scored FAIL at battle control, but does not establish a movement or RNG rule defect.
 
 At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
 order 55395), the seed is `0x6DC1`. The retained projection contains 885
@@ -358,8 +363,9 @@ in pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`
 caller PCs. Both loops call `GenerateRandomNumber(256)` while waiting for input.
 The actual `round-rng` result at sequence 15227 starts from `0x3905`. Read-only
 replay using the same nine first-round agility values `4,5,7,5,5,5,5,5,5`, pinned
-`GenerateRandomNumber` and `GenerateBattleTurnOrder`/
-`AddCombatantAndRandomizedAgiToTurnOrder` instructions reproduces both complete
+`GenerateRandomNumber` in `disasm/code/common/tech/randomnumbergenerator.asm` and
+`GenerateBattleTurnOrder`/`AddCombatantAndRandomizedAgiToTurnOrder` in
+`disasm/code/gameflow/battle/battleloop/turnorderfunctions.asm` reproduces both complete
 scored arrays in `local/issue530/comparison-corrected.json`: 27 draws take original
 `0x6DC1` to `0x79CE` and actual `0x3905` to `0x0FE2`. The first-dispatch and
 actual `round-rng` end seeds match those calculations. From this checkout, reproduce
@@ -399,14 +405,15 @@ uv run --locked python -m sf2tool.remake_h4_comparison compare `
 the same source rule. Exploration/dialogue caller scheduling is a credible source
 of the seed difference, but the complete call correspondence is not established.
 The matching per-seed replays provide no evidence of a turn-order or main-generator
-rule defect. The comparator
-correctly leaves first-control `mainSeed readback` Unavailable because its
-timing-to-RNG mapping is not established; scored order and diagnostic next actor
-remain FAIL. The exact callers of the first two original field draws, complete
+rule defect. The comparator correctly leaves first-control `mainSeed readback`
+Unavailable because its timing-to-RNG mapping is not established; scored order and diagnostic next actor
+remain FAIL. The exact callers of the early original field draws, complete
 exploration-to-battle call correspondence, and NPC phase contribution remain
-**Unknown**. If exact selected H4 order is pursued, the next bounded observation
-must identify seed-before/range/caller/seed-after for those first original field
-draws and pair them with actual simulation/input events before changing a rule.
+**Unknown**. First use pinned source call sites and retained request/checkpoint
+records to narrow the caller and semantic event. If that still leaves a material
+gap for H4, separately admit a focused original caller/range/seed observation at
+the first field divergence and pair it with actual simulation/input events before
+changing a rule; this is a conditional evidence need, not an automatic emulator run.
 The deterministic comparison condition is also unresolved: the selected original
 route includes elapsed polling and caller opportunities while the probe applies
 immediate logical inputs. A behavioral contract must say which gameplay-affecting
