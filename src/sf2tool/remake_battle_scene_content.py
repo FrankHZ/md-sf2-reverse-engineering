@@ -208,7 +208,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
     for side, index, pal_index, weapon_item in (
         ("ally", 0, 0, 71),
         ("ally", 1, 0, 85),
-        ("ally", 2, 0, 72),
+        ("ally", 2, 0, 56),
         ("enemy", 22, 2, None),
     ):
         base = pointer(sprites[side + "BattlespriteTableAddress"] + index * 4)
@@ -265,6 +265,10 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
                 idleWeapon=weapon(data[4:8]) if side == "ally" else None,
                 frames=rows,
             )
+        if side == "ally":
+            # USE_ITEM=2 bypasses the KNTE/spear attack specialization and preserves
+            # the caller's NONE selector in sub_184B0; GetAllyAnimation selects index.
+            sequences["item"] = dict(sequences["idle"])
         weapon_frames = []
         if weapon_item is not None:
             # table_WeaponGraphics at 0x1F9E2, source getweaponspriteandpalette.asm.
@@ -336,6 +340,8 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
         270,
         271,
         273,
+        275,
+        298,
         284,
         285,
         286,

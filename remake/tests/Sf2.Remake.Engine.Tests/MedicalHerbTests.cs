@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -29,7 +30,63 @@ public sealed class MedicalHerbTests
     private static SessionResult Use(GameSession session, int slot, ActorRef target)
     {
         Accept(session, new Confirm()); Accept(session, new SelectItem(slot));
-        Accept(session, new SelectTarget(target)); return Accept(session, new Confirm());
+        Accept(session, new SelectTarget(target)); return FinishBattleScenes(session, Accept(session, new Confirm()));
+    }
+
+    [Theory]
+    [InlineData(false, false, 1)]
+    [InlineData(true, false, 1)]
+    [InlineData(false, true, 12)]
+    [InlineData(true, true, 12)]
+    public void ItemSceneDefersRecoveryAndRewardAndSwitchesOnlyForOtherAllies(bool other, bool priest, int hp)
+    {
+        var document = Package();
+        document["actors"]![0]!["classRule"] = priest ? "unpromoted-priest" : "unpromoted-swordsman";
+        int targetIndex = other ? 1 : 0;
+        document["actors"]![targetIndex]!["maxHp"] = 12;
+        document["start"]!["actors"]![targetIndex]!["hp"] = hp;
+        // Changed admitted range makes the other ally valid without a scenario endpoint rule.
+        document["items"]![0]!["maximumRange"] = 2;
+        var session = Session(document); var actor = session.Current.Selection!.Actor;
+        var target = other ? new ActorRef("guard-a") : actor;
+        byte mp = session.Current.Battle.GetActor(target).Mp;
+        byte? exp = session.Current.Battle.GetActor(actor).Exp;
+        int cursor = session.Current.Battle.Cursor;
+        Accept(session, new Confirm()); Accept(session, new SelectItem(0)); Accept(session, new SelectTarget(target));
+        var begun = Accept(session, new Confirm());
+        Assert.Single(begun.Observations, row => row.Kind == "item-consumed");
+        Assert.Equal(2, begun.Observations.Count(row => row.RandomRange == 16));
+        Assert.DoesNotContain(begun.Observations, row => row.Kind is "hp" or "exp" or "after-turn");
+        uint preparedSeed = session.Current.Battle.MainSeed;
+        Assert.Equal(hp, session.Current.Battle.GetActor(target).Hp);
+        Assert.Equal(new ushort[] {6,0,127,127}, session.Current.Battle.GetActor(actor).SourceLoadout!.Items);
+        var phases = new List<BattleScenePhase>();
+        while (session.Current.BattleScene is { } scene)
+        {
+            phases.Add(scene.Phase);
+            Assert.Null(scene.DisplayedEnemy);
+            Assert.Equal(scene.Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.ActorExit
+                ? target : actor, scene.DisplayedAlly);
+            Assert.Equal(0, scene.Item!.ItemId);
+            Assert.Empty(scene.Motion);
+            Assert.Equal(preparedSeed, session.Current.Battle.MainSeed);
+            Assert.Equal(cursor, session.Current.Battle.Cursor);
+            Assert.Equal(mp, session.Current.Battle.GetActor(target).Mp);
+            if (scene.Phase is BattleScenePhase.Initialize or BattleScenePhase.ActionMessage or BattleScenePhase.ActionAnimation or BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter)
+                Assert.Equal(hp, session.Current.Battle.GetActor(target).Hp);
+            else Assert.Equal(Math.Min(12, hp+10), session.Current.Battle.GetActor(target).Hp);
+            if (scene.Phase == BattleScenePhase.ActorEnter) Assert.Equal(exp, session.Current.Battle.GetActor(actor).Exp);
+            var frozen = session.Current;
+            Assert.NotNull(Send(session, new Confirm()).Failure);
+            Assert.NotNull(Send(session, new CompletePresentation(new WaitToken(scene.Token.Value + 1), scene.CompletionKind)).Failure);
+            Assert.Same(frozen, session.Current);
+            var result = Accept(session, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.DoesNotContain(result.Observations, row => row.Kind == "item-consumed" || row.Kind.StartsWith("rng-reaction-", StringComparison.Ordinal));
+        }
+        Assert.Equal(other, phases.Contains(BattleScenePhase.TargetExit));
+        Assert.Equal(other, phases.Contains(BattleScenePhase.ActorEnter));
+        Assert.Contains(BattleScenePhase.RewardMessage, phases);
+        Assert.True(session.Current.HasBattleControl);
     }
 
     [Theory]
@@ -114,7 +171,9 @@ public sealed class MedicalHerbTests
             1, 100, 20, 10, 8, 12, false, 5, [], sourceLoadout: new([199, 0, 256, 127], [63, 63, 63, 63]));
         var actor = new BattleActorState(original.Deployment with { Definition = definition }, 95, 8, 0, original.Position, 0, 0);
         var battle = initial.With(actors: initial.Actors.Select(a => a.Actor == actor.Actor ? actor : a), mainSeed: 0x12345678);
-        var (after, effects) = PlayerItemUse.Resolve(battle, actor.Actor, actor.Position!, 1, actor.Actor);
+        var action = PlayerItemUse.Prepare(battle, actor.Actor, actor.Position!, 1, actor.Actor);
+        var replay = action.ApplyReward(action.ApplyReaction(action.Prepared, action.Reactions.Single()));
+        var after = replay.Battle; var effects = action.ConstructionEffects.Concat(replay.Effects).ToArray();
         Assert.Equal((byte)expectedExp, after.GetActor(actor.Actor).Exp);
         Assert.Equal(0x04B65678u, after.MainSeed); // pinned generator: 0x1234 -> 0xECAB -> 0x04B6
         Assert.Equal(new ushort[] { 199, 256, 127, 127 }, after.GetActor(actor.Actor).SourceLoadout!.Items);
@@ -122,7 +181,7 @@ public sealed class MedicalHerbTests
         Assert.Equal(new ushort?[] { 14, 0 }, effects.Where(e => e.RandomRange == 16).Select(e => e.RandomValue));
         Assert.Equal(2, effects.Count(e => e.RandomRange is not null));
         var before = after;
-        Assert.Equal("item-effect", Assert.Throws<BattleRuleException>(() => PlayerItemUse.Resolve(before, actor.Actor, actor.Position!, 0, actor.Actor)).Code);
+        Assert.Equal("item-effect", Assert.Throws<BattleRuleException>(() => PlayerItemUse.Prepare(before, actor.Actor, actor.Position!, 0, actor.Actor)).Code);
         Assert.Equal(before.MainSeed, after.MainSeed);
     }
 
@@ -136,8 +195,22 @@ public sealed class MedicalHerbTests
         var grown = new BattleActorState(actor.Deployment with { Definition = actor.Definition.WithGrowth(growth) },
             actor.Hp, actor.Mp, 99, actor.Position, 0, 0, sourceLoadout: new([0, 213, 0, 127], [0, 63, 63, 63]));
         var before = initial.With(actors: initial.Actors.Select(a => a.Actor == actor.Actor ? grown : a));
-        var (after, _) = PlayerItemUse.Resolve(before, actor.Actor, actor.Position!, 0, actor.Actor);
-        var result = after.GetActor(actor.Actor);
+        var action = PlayerItemUse.Prepare(before, actor.Actor, actor.Position!, 0, actor.Actor);
+        var pending = BattleSceneContinuation.Begin(new SessionSnapshot(Guid.NewGuid(), 0, 0,
+            new ActiveBattle(before, null), new StoryState([]), SessionStopReason.PlayerInput), action, []);
+        while (pending.Snapshot.BattleScene!.Phase != BattleScenePhase.RewardMessage)
+        {
+            var scene = pending.Snapshot.BattleScene;
+            pending = BattleSceneContinuation.Submit(pending.Snapshot, scene.RequiresAcknowledgement
+                ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
+        }
+        Assert.Equal(1, pending.Snapshot.Battle.GetActor(actor.Actor).Level);
+        Assert.True(pending.Snapshot.Battle.GetActor(actor.Actor).Exp >= 100);
+        Assert.Equal(action.Prepared.MainSeed, pending.Snapshot.Battle.MainSeed);
+        var rewarded = BattleSceneContinuation.Submit(pending.Snapshot, new Acknowledge(pending.Snapshot.BattleScene!.Token));
+        Assert.Equal(BattleScenePhase.GrowthMessage, rewarded.Snapshot.BattleScene!.Phase);
+        Assert.False(rewarded.Snapshot.HasBattleControl);
+        var result = rewarded.Snapshot.Battle.GetActor(actor.Actor);
         Assert.Equal(2, result.Level); Assert.Contains(new SpellRef("heal", 2), result.Spells);
         Assert.Equal(new ushort[] { 213, 0, 127, 127 }, result.SourceLoadout!.Items);
         Assert.Equal(64, result.SourceLoadout.Spells[0]);
@@ -183,11 +256,13 @@ public sealed class MedicalHerbTests
         var ready = session.Current;
         var envelope = new CommandEnvelope(ready.SessionId, ready.Revision, user, new Confirm());
         var committed = session.Submit(envelope);
-        Assert.Null(committed.Failure); Assert.Equal(5, session.Current.Battle.GetActor(new("guard-a")).Hp);
+        Assert.Null(committed.Failure); Assert.Equal(1, session.Current.Battle.GetActor(new("guard-a")).Hp);
         var after = session.Current;
         Assert.NotNull(session.Submit(envelope).Failure); Assert.Same(after, session.Current);
         Assert.Equal(new ushort[] { 0, 0, 127, 127 }, after.Battle.GetActor(user).SourceLoadout!.Items);
 
+        FinishBattleScenes(session, committed);
+        Assert.Equal(5, session.Current.Battle.GetActor(new("guard-a")).Hp);
         session = Session(document); user = session.Current.Selection!.Actor;
         Accept(session, new Move(ExplorationDirection.South));
         Assert.Equal(new MapPosition(3, 3), session.Current.Battle.GetActor(user).Position);

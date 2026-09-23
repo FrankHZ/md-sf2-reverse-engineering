@@ -14,7 +14,8 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 // construction RNG, gold and inventory; reactions and giveExp have not run yet.
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
-    IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects)
+    IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
+    HealingItemDefinition? Item = null)
 {
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target

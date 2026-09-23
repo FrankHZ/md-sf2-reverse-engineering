@@ -104,7 +104,8 @@ internal static class BattleCommandDispatcher
         if (selection.Action == SessionAction.Heal && selection.Spell is { } spell && selection.Target is { } target)
             (battle, effects) = PlayerHealing.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, spell, target);
         else if (selection.Action == SessionAction.Item && selection.ItemSlot is { } slot && selection.Target is { } itemTarget)
-            (battle, effects) = PlayerItemUse.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, slot, itemTarget);
+            return BattleSceneContinuation.Begin(current, PlayerItemUse.Prepare(current.Battle,
+                selection.Actor, selection.Preview.Destination, slot, itemTarget), []);
         else if (selection.Action == SessionAction.Stay)
             battle = BattleMovement.Commit(current.Battle, selection.Actor, selection.Preview.Destination);
         else if (selection.Action == SessionAction.PhysicalAttack && selection.Target is { } physicalTarget)

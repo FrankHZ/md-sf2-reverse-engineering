@@ -418,7 +418,10 @@ state. Growth retains that live inventory while changing learned spells, and `Ba
 passes it into the exploration party on both victory and defeat. Resource resets heal HP/MP
 without replenishing items. `item-consumed` records the original item word in `Before` and
 the chosen zero-based slot in `After`; the resulting snapshot exposes the arranged inventory.
-There is no separate inventory service or field inventory UI.
+HP recovery now executes through the [Medical Herb scene](./presentation-and-assets.md#medical-herb-scenes),
+after construction has consumed inventory. EXP/growth and turn release wait for their scene commands.
+Application owns single-side target/actor switching; SFX113 and the source NONE/Nothing selection do
+not imply fairy or physical recoil draws. There is no separate inventory service or field inventory UI.
 
 ### Original source and effect boundary
 
@@ -449,7 +452,7 @@ Private Content admits only the selected Medical Herb definition into this item 
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
 classes. VICR/MMNK class admission, broader item families, Equip/Give/Drop, field inventory,
-AI healing-item choice, save/load and original presentation remain unsupported. The existing
+AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
 physical-only AI policy rejects a nonempty item loadout at start. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.
 
@@ -467,42 +470,15 @@ IDs are 0–126; 127 is the empty slot. `actors[].items` contains up to four ord
 padded with 127. This supports independently authored powers/ranges without changing private
 source admission. There is no new public schema or original asset in that format.
 
-Run `uv run sf2 verify engine` and `uv run sf2 verify adapter` after same-process private-input
-configuration. For the actual host observation, create a fresh ignored directory and derive
-this controlled variant of the existing authored package:
+For affected item/scene changes, use the locked SDK's `dotnet test --filter`
+`'FullyQualifiedName~MedicalHerbTests|FullyQualifiedName~BattleSceneTests'`, followed by
+`uv run sf2 verify adapter` and the committed engine-scope planner. Existing completed failures remain
+in their named handoff; these commands do not request a full slow-suite rerun.
 
-```powershell
-. ./local/private-inputs.ps1
-$run = Join-Path (Get-Location) 'local/herb-observation'
-New-Item -ItemType Directory -Path $run -ErrorAction Stop | Out-Null
-$package = Get-Content remake/content/authored/practice-yard.json -Raw | ConvertFrom-Json
-$items = @(
-    @{ id=0; name='Recovery leaf'; effect='consumable-healing'; power=10; minimumRange=0; maximumRange=1 },
-    @{ id=6; name='Small remedy'; effect='consumable-healing'; power=4; minimumRange=0; maximumRange=2 }
-)
-$package | Add-Member -NotePropertyName items -NotePropertyValue $items
-$package.actors[0].items = @(0,6)
-$package.actors[1].items = @(0)
-$package.start.actors[0].hp = 60
-$packagePath = Join-Path $run 'package.json'
-$package | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $packagePath -Encoding utf8
-$settingsPath = Join-Path $run 'settings.json'
-@{ formatVersion=1; bindings=@{ item=@{ keys=@('J'); buttons=@('Start'); axes=@() } } } |
-    ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $settingsPath -Encoding utf8
-```
-
-Check for an already-owned Godot instance before starting. With none, this new item-input
-observation is the reason to launch the existing project/editor. Build its actual Debug DLL
-using the [locked environment](./development-and-verification.md#locked-net-workflow), then:
-
-```powershell
-$env:SF2_OBSERVATION_CASE = 'item-selection'
-$env:SF2_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
-& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_battle_observation.gd -- --authored-package $packagePath --input-settings $settingsPath
-```
-
-The existing observer uses real keyboard/gamepad events, reads the ordinary session and HUD,
-and verifies cancellation, reselection, range rejection, carried inventory/HP/MP/EXP/RNG,
-next control and empty-inventory rejection. It neither sets runtime state nor takes screenshots.
-Preserve failed and successful output separately. Original-emulator work and the broader
-private continuous comparison are not part of this command.
+The [scene owner](./presentation-and-assets.md#medical-herb-scenes) gives the current private candidate
+and ordinary-input native reproduction. Its existing observer reads actual session inventory/HP,
+scene nodes, wait tokens and audio receipts. Source-world startup covers full-HP use after the real
+entry program heals the party; a separate controlled battle start covers wounded recovery. Authored
+item legality/changed-content assertions remain in `MedicalHerbTests`. The older scalar item observer
+is not the scene acceptance command. Preserve failed and successful outputs separately. No original
+emulator, screenshot or continuous H4 comparison is implied.
