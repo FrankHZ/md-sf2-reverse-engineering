@@ -129,7 +129,7 @@ public sealed class PrivateExplorationTests
                 var world = session.Current.Exploration!;
                 bool occupied = EntityMotion.FieldObstructed(expectedPosition.X * 384, expectedPosition.Y * 384,
                     world.AllEntities.Where(entity => entity.Slot != 0 && entity.Visible).Select(entity => entity.Motion));
-                Assert.True(false, $"input {index}: expected {expectedPosition}, actual {actualPosition}; previous {previousInputOutcome}; " +
+                Assert.Fail($"input {index}: expected {expectedPosition}, actual {actualPosition}; previous {previousInputOutcome}; " +
                     $"walker5=({walker.Motion.X},{walker.Motion.Y})->({walker.Motion.XDestination},{walker.Motion.YDestination}) " +
                     $"flagsA={walker.Motion.FlagsA}; expected tile occupied={occupied}");
             }
