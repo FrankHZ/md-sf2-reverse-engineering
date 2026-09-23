@@ -14,6 +14,24 @@ internal static class ExplorationDispatcher
         if (start.Facing > 3 || start.Speed is 0 or > 384 || start.Flags.Any(flag => flag is < 0 or > 65535))
             throw new BattleRuleException("exploration-start", "start");
         var world = MapTransfer.Build(map, start.Player, start.Position, start.Facing, start.Speed, start.Party, start.Flags);
+        if (start.EntityPhases.Count > 0)
+        {
+            var phased = new Dictionary<int, ExplorationEntity>();
+            foreach (var phase in start.EntityPhases)
+            {
+                if (!world.TryResolveEntity(phase.Entity, out var entity) || entity.Entity != phase.Entity ||
+                    entity.Slot != phase.Slot || entity.Actions is not { } actions ||
+                    phase.ActionCursor < 0 || phase.ActionCursor >= actions.Actions.Count ||
+                    actions.Actions[phase.ActionCursor] is not WaitEntityTicks wait || wait.Ticks != phase.NextWaitTicks ||
+                    (phase.WaitingForMotion && (phase.ActionCursor == 0 ||
+                        actions.Actions[phase.ActionCursor - 1] is not RandomWalkEntity)) ||
+                    !phased.TryAdd(entity.Slot, entity with { Motion = phase.Motion, ActionCursor = phase.ActionCursor,
+                        WaitingForMotion = phase.WaitingForMotion }))
+                    throw new BattleRuleException("entity-start-phase", "start.entityPhases");
+            }
+            world = world.WithEntities(world.AllEntities.Select(entity =>
+                phased.TryGetValue(entity.Slot, out var replacement) ? replacement : entity));
+        }
         if (start.EntryProgram is { } entry && (entry.Instruction != 0 || !definition.Exploration.Programs.ContainsKey(entry.Program)))
             throw new BattleRuleException("program-entry", "start.program");
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,

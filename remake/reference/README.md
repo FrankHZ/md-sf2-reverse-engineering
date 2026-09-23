@@ -27,6 +27,12 @@ Engine.Tests copies the start and party files into its output. Every file declar
 boundary. Initial accounting, seeds and the explicit H3 bridge remain controlled supplements with
 Unknown natural producers; no value in these files admits or refuses gameplay.
 
+The Map 3 opening start binds only the three active walking-entity continuation phases from the
+retained R1 raw entity readback (`prepared-68/runtime/checkpoints.jsonl:2`). Each entry names its
+allocated entity and slot, the next compiled wait instruction, and the motion fields needed to resume
+that instruction. Source action-script addresses are provenance, not runtime state. Other R1 entity
+motion fields are not yet bound by this selected input.
+
 ## Rules
 
 - Add an input only together with its first actual consumer, and delete it with its last one.

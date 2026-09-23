@@ -123,9 +123,11 @@ public sealed class ExplorationDefinition
 public sealed class ExplorationStartInput
 {
     public ExplorationStartInput(MapId map, EntityRef player, MapPosition position, byte facing, ushort speed,
-        IEnumerable<int> flags, BattleStartInput party, ProgramLocation? entryProgram = null)
+        IEnumerable<int> flags, BattleStartInput party, ProgramLocation? entryProgram = null,
+        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null)
     { Map = map; Player = player; Position = position; Facing = facing; Speed = speed;
-        Flags = Array.AsReadOnly(flags.ToArray()); Party = party; EntryProgram = entryProgram; }
+        Flags = Array.AsReadOnly(flags.ToArray()); Party = party; EntryProgram = entryProgram;
+        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); }
     public MapId Map { get; }
     public EntityRef Player { get; }
     public MapPosition Position { get; }
@@ -134,5 +136,8 @@ public sealed class ExplorationStartInput
     public IReadOnlyList<int> Flags { get; }
     public BattleStartInput Party { get; }
     public ProgramLocation? EntryProgram { get; }
+    public IReadOnlyList<ExplorationEntityStartPhase> EntityPhases { get; }
 }
+public sealed record ExplorationEntityStartPhase(EntityRef Entity, int Slot, int ActionCursor, byte NextWaitTicks,
+    bool WaitingForMotion, EntityMotionState Motion);
 public sealed record ExplorationReadAccepted(ScenarioDefinition Definition, ExplorationStartInput Start) : ScenarioReadResult;

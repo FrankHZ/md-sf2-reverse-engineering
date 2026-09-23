@@ -136,9 +136,21 @@ internal static class ExplorationContentReader
                 return name.GetString()!;
             }) : null);
         Link(definition);
-        ObjectOptional(start, "exploration-start", "program", "map", "player", "position", "facing", "speed", "flags");
+        Object(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags",
+            .. start.TryGetProperty("program", out _) ? new[] { "program" } : System.Array.Empty<string>(),
+            .. start.TryGetProperty("entityPhases", out _) ? new[] { "entityPhases" } : System.Array.Empty<string>()]);
         var selectedMap = new MapId(Id(start, "map"));
         Require(definition.Maps.ContainsKey(selectedMap), "missing-map", "start.map");
+        var entityPhases = start.TryGetProperty("entityPhases", out _) ? Array(start, "entityPhases").Select(phase =>
+        {
+            Object(phase, "start.entityPhases", "entity", "slot", "actionCursor", "nextWaitTicks", "waitingForMotion", "motion");
+            return new ExplorationEntityStartPhase(new(Id(phase, "entity")), Number(phase, "slot", 0, 48),
+                Number(phase, "actionCursor", 0, 4095), (byte)Number(phase, "nextWaitTicks", 0, 255),
+                Boolean(phase, "waitingForMotion"), ReadStartMotion(phase.GetProperty("motion")));
+        }).ToArray() : [];
+        Require(entityPhases.Select(phase => phase.Entity).Distinct().Count() == entityPhases.Length &&
+            entityPhases.Select(phase => phase.Slot).Distinct().Count() == entityPhases.Length,
+            "duplicate-entity-phase", "start.entityPhases");
         var flags = Array(start, "flags").Select(flag =>
         {
             Require(flag.ValueKind == JsonValueKind.Number && flag.TryGetInt32(out int _) &&
@@ -169,7 +181,25 @@ internal static class ExplorationContentReader
         }
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
-                (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram));
+                (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases));
+    }
+
+    private static EntityMotionState ReadStartMotion(JsonElement row)
+    {
+        Object(row, "start.entityPhases.motion", "x", "y", "xDestination", "yDestination", "xVelocity", "yVelocity",
+            "xTravel", "yTravel", "xSpeed", "ySpeed", "xAcceleration", "yAcceleration", "flagsA", "flagsB",
+            "facing", "layer", "animationCounter", "waitTimer");
+        return new((short)Number(row, "x", short.MinValue, short.MaxValue), (short)Number(row, "y", short.MinValue, short.MaxValue),
+            (short)Number(row, "xDestination", short.MinValue, short.MaxValue),
+            (short)Number(row, "yDestination", short.MinValue, short.MaxValue),
+            (short)Number(row, "xVelocity", short.MinValue, short.MaxValue),
+            (short)Number(row, "yVelocity", short.MinValue, short.MaxValue),
+            (ushort)Number(row, "xTravel", 0, ushort.MaxValue), (ushort)Number(row, "yTravel", 0, ushort.MaxValue),
+            (ushort)Number(row, "xSpeed", 0, 255), (ushort)Number(row, "ySpeed", 0, 255),
+            (byte)Number(row, "xAcceleration", 0, 255), (byte)Number(row, "yAcceleration", 0, 255),
+            (byte)Number(row, "flagsA", 0, 255), (byte)Number(row, "flagsB", 0, 255),
+            (byte)Number(row, "facing", 0, 7), (byte)Number(row, "layer", 0, 255),
+            (byte)Number(row, "animationCounter", 0, 255), (byte)Number(row, "waitTimer", 0, 255));
     }
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)

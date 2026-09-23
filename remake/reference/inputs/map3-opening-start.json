@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "controlledBoundary": "Accepted R1 controlled Map3 initialization entry at (56,3), Down. Only Bowie is joined and active. This is the named controlled initialization seam, not title/menu reachability.",
+  "controlledBoundary": "Accepted R1 controlled Map3 initialization entry at (56,3), Down, including walking-entity continuation decoded from prepared-68/runtime/checkpoints.jsonl:2. Only Bowie is joined and active. This is the named controlled initialization seam, not title/menu reachability.",
   "start": {
     "map": "map-3",
     "player": "entity-0",
@@ -13,6 +13,50 @@
     "flags": [
       0,
       32
+    ],
+    "entityPhases": [
+      {
+        "entity": "entity-130",
+        "slot": 5,
+        "actionCursor": 0,
+        "nextWaitTicks": 30,
+        "waitingForMotion": false,
+        "motion": {
+          "x": 7680, "y": 4992, "xDestination": 7680, "yDestination": 4992,
+          "xVelocity": 0, "yVelocity": 0, "xTravel": 0, "yTravel": 0,
+          "xSpeed": 0, "ySpeed": 0, "xAcceleration": 0, "yAcceleration": 0,
+          "flagsA": 224, "flagsB": 64, "facing": 3, "layer": 0,
+          "animationCounter": 6, "waitTimer": 30
+        }
+      },
+      {
+        "entity": "entity-131",
+        "slot": 6,
+        "actionCursor": 9,
+        "nextWaitTicks": 20,
+        "waitingForMotion": true,
+        "motion": {
+          "x": 6912, "y": 3840, "xDestination": 6912, "yDestination": 3840,
+          "xVelocity": 0, "yVelocity": 0, "xTravel": 0, "yTravel": 0,
+          "xSpeed": 0, "ySpeed": 0, "xAcceleration": 1, "yAcceleration": 1,
+          "flagsA": 239, "flagsB": 64, "facing": 3, "layer": 0,
+          "animationCounter": 7, "waitTimer": 0
+        }
+      },
+      {
+        "entity": "entity-133",
+        "slot": 8,
+        "actionCursor": 9,
+        "nextWaitTicks": 20,
+        "waitingForMotion": true,
+        "motion": {
+          "x": 4608, "y": 3453, "xDestination": 4608, "yDestination": 3072,
+          "xVelocity": 0, "yVelocity": -2, "xTravel": 0, "yTravel": 384,
+          "xSpeed": 0, "ySpeed": 0, "xAcceleration": 1, "yAcceleration": 1,
+          "flagsA": 239, "flagsB": 64, "facing": 1, "layer": 0,
+          "animationCounter": 9, "waitTimer": 0
+        }
+      }
     ]
   }
 }

@@ -66,6 +66,38 @@ public sealed class PrivateExplorationTests
         Path.Combine(AppContext.BaseDirectory, "fixtures", "opening-" + name + ".json")));
     private static JsonElement Record(JsonDocument fixture) => fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
 
+    [PrivateInputFact(World)]
+    public void SelectedR1WalkingPhasesResumeBeforeTheFirstAutonomousDraw()
+    {
+        var session = StartSource("map3-opening-start", opening: true);
+        var world = session.Current.Exploration!;
+        var allocation = world.AllEntities.Select(entity => (entity.Slot, entity.Entity)).ToArray();
+        var aliases = world.Aliases.ToDictionary(pair => pair.Key, pair => pair.Value);
+        Assert.Equal(20, allocation.Length);
+        Assert.Equal(30, Entity(session, 130).Motion.WaitTimer);
+        Assert.Equal(0, Entity(session, 130).ActionCursor);
+        Assert.Equal(9, Entity(session, 131).ActionCursor);
+        Assert.True(Entity(session, 131).WaitingForMotion);
+        Assert.Equal((short)3453, Entity(session, 133).Motion.Y);
+        Assert.Equal((short)3072, Entity(session, 133).Motion.YDestination);
+        Assert.Equal((short)-2, Entity(session, 133).Motion.YVelocity);
+        Assert.Equal((ushort)384, Entity(session, 133).Motion.YTravel);
+        Assert.True(Entity(session, 133).WaitingForMotion);
+
+        Accept(session, new AdvanceSimulation());
+        Assert.Equal(0xC6320000u, session.Current.Exploration!.Party.MainSeed);
+        Assert.Equal(allocation, session.Current.Exploration.AllEntities.Select(entity => (entity.Slot, entity.Entity)));
+        Assert.Equal(aliases, session.Current.Exploration.Aliases);
+        Assert.Equal(9, Entity(session, 130).ActionCursor);
+        Assert.True(Entity(session, 130).WaitingForMotion);
+        Assert.Equal((short)5376, Entity(session, 130).Motion.YDestination);
+        Assert.Equal((byte)1, Entity(session, 131).Motion.WaitTimer);
+        Assert.False(Entity(session, 131).WaitingForMotion);
+        Assert.Equal((short)3450, Entity(session, 133).Motion.Y);
+        Assert.Equal((byte)0, Entity(session, 133).Motion.WaitTimer);
+        Assert.True(Entity(session, 133).WaitingForMotion);
+    }
+
     internal static GameSession RunOpening(bool yes, List<SessionObservation> observations, List<(int Id, int? Speaker)> texts)
     {
         var session = StartSource("map3-opening-start", opening: true);
