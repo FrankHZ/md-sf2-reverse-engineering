@@ -131,24 +131,47 @@ Godot project. Visible startup is required for this OS-focus observation. Every 
 authored input, settings and output to a fresh ignored directory; changed startup settings justify
 separate runs, without copying the project or installation:
 
+The `field-wait-*` entry requires exactly one `--authored-package` and `--input-settings` argument
+and a nonempty `SF2_EXPLORATION_OBSERVATION_OUTPUT`. Before any destination is opened it normalizes
+all three absolute paths, requires distinct fresh destinations under this worktree's ignored
+`local/`, existing real parent directories, and rejects file/directory/link reuse. It opens output
+and writes/flushes/checks/closes the generated inputs before instantiating Main. I/O errors exit2
+with the names of this run's newly created files; a partial fresh file may remain as failed-run
+evidence. Existing destinations are rejected. Only this run's created package can be
+rewritten for the later presentation scenario. Final output also flushes/checks/closes before exit.
+This guard is specific to the new field-wait entry; legacy observer cases retain their prior lifecycle.
+
 ```powershell
 $run = Join-Path (Get-Location) 'local/field-wait-keyboard'
 New-Item -ItemType Directory -Path $run | Out-Null
 $env:SF2_INPUT_CASE = 'field-wait-keyboard'
 # Also field-wait-gamepad, field-wait-remapped-keyboard, field-wait-remapped-gamepad.
+# field-wait-remapped-axis-gamepad uses otherwise unbound LeftX+ for Wait.
 $env:SF2_INPUT_VARIANT = 'random' # Repeat remapped-gamepad with 'collision'.
 $env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
 & $godotBinary --path remake/game --script res://probes/engine_input_accessibility_observation.gd -- `
   --authored-package (Join-Path $run 'package.json') --input-settings (Join-Path $run 'settings.json')
 ```
 
-Require zero exit, `passed:true`, empty failures and no native errors. Compare the
+Require zero exit, `passed:true`, empty failures/unavailable and no native errors. Product assertion
+failure exits1; an unavailable OS-focus observation exits2 with an explicit `unavailable` entry and
+stops before dependent checks. Never replace a rejected foreground activation with a simulated
+notification or report the environmental refusal as a product failure. Compare the
 `semantic-four-waits` checkpoint across the four random cases: simulation tick, main seed and all
 entity state agree despite 120/30 FPS caps, instant/adjustable text, swapped Confirm/Cancel,
 reduced-flash settings and remapped keyboard/gamepad bindings. This checkpoint begins with a
 two-opportunity NPC wait, then a random walk. The independent `collision` variation checks two
 physical slots competing for one destination. OS focus is **Unknown** for a headless-only run;
 successful headless process exit cannot substitute for the visible observation.
+
+The axis case additionally covers fresh positive deflection, held duplicate suppression, opposite
+direction releasing the mapped Wait, neutral followed by a fresh deflection, and actual tree pause
+requiring new input. **Confirmed:** its four-Wait checkpoint equals the button/keyboard cases;
+axis/hide/pause, mandatory movement, dialogue/presentation, and native focus return/rearm checks
+pass. Independent consumer checks run before the final focus transfer so an environmental focus
+refusal does not hide their results. Preserve earlier completed focus-unavailable runs: later
+success does not make OS foreground activation universally available. The earlier five complete
+button/keyboard cases remain separate evidence; hardware driver/hot-plug behavior remains Unknown.
 
 Direct acceptance uses `ExplorationSessionTests`: independent seed/target/counter assertions for
 different valid states, physical-slot collision, Wait followed by Move, stale/wrong consumer inputs
