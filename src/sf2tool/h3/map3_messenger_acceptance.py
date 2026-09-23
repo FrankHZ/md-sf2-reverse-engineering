@@ -1143,6 +1143,8 @@ def _assert_heal_diagnostic_output(runtime: Path, report: dict[str, Any]) -> Non
         or not summary.get("loadedBeforeInput")
         or not summary.get("selfTarget")
         or summary.get("pendingMeasurementReturns") != 0
+        or summary.get("pendingVIntContexts") != 0
+        or summary.get("service") is not False
         or not summary.get("zeroDrawUpdates", 0) > 0
         or not summary.get("updates", 0) > summary.get("zeroDrawUpdates", 0)
         or not all(

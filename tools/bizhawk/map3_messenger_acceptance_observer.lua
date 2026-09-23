@@ -2547,7 +2547,8 @@ local function install_candidate()
                 -- pending/consumer/continuation state. A fixed return dispatcher avoids
                 -- accumulating one callback closure for every interrupt/update.
                 local d = {loaded=false, active=false, seen={}, returns={}, registered={},
-                    interrupts=0, vintDepth=0, inVint=false, draws=0, updates=0, zeroDrawUpdates=0}
+                    interrupts=0, vints={}, context={vint=0, parent=0, service=false},
+                    draws=0, updates=0, zeroDrawUpdates=0}
                 c.heal = d
                 local hf, hr = candidate.diagnostic.functions, candidate.diagnostic.ram
                 local function hb(name) return memory.read_u8(hr[name], "M68K BUS") end
@@ -2555,7 +2556,8 @@ local function install_candidate()
                 local function facts()
                     local slots = {}
                     for i=0,7 do slots[#slots+1]=memory.read_u32_be(hr.VINT_FUNC_ADDRS + 4*i, "M68K BUS") end
-                    return {vint=d.interrupts, inVint=d.inVint, service=d.service or false,
+                    return {vintCount=d.interrupts, vint=d.context.vint, vintParent=d.context.parent,
+                        vintDepth=#d.vints, inVint=#d.vints > 0, service=d.context.service,
                         vintParameters=hb("VINT_PARAMETERS"), vintEnabled=hb("VINT_ENABLED"),
                         enabledSlots=hb("VINT_FUNCS_ENABLED_BITFIELD"), slots=slots,
                         messageSpeed=hb("MESSAGE_SPEED"), noMessages=hb("NO_BATTLE_MESSAGES_TOGGLE"),
@@ -2626,19 +2628,32 @@ local function install_candidate()
                     end)
                 end
                 hook("VInt", function()
-                    d.interrupts=d.interrupts+1; d.vintDepth=d.vintDepth+1; d.inVint=true; record("vint")
+                    -- Cleanup can tail-call WaitForVInt inside graphics. A new
+                    -- activation starts outside any service, even when nested.
+                    local interrupted=d.context
+                    table.insert(d.vints, interrupted)
+                    d.interrupts=d.interrupts+1
+                    d.context={vint=d.interrupts, parent=interrupted.vint, service=false}
+                    record("vint", {interruptedService=interrupted.service})
                 end)
                 hook("vintReturn", function()
-                    record("vint-return"); d.vintDepth=d.vintDepth-1
-                    assert(d.vintDepth >= 0, "HEAL diagnostic unpaired VInt return")
-                    d.inVint=d.vintDepth > 0
+                    assert(#d.vints > 0 and not d.context.service, "HEAL diagnostic unpaired VInt/service return")
+                    record("vint-return")
+                    d.context=table.remove(d.vints)
                 end)
                 for _, entry in ipairs({{"VInt_UpdateBattlesceneGraphics","graphics"},{"VInt_UpdateWindows","windows"}}) do
                     local name, role=entry[1],entry[2]
                     hook(name,function()
-                        d.service=role
+                        local context=d.context
+                        local prior=context.service
+                        context.service=role
                         record(role .. ":before", {slot=reg("D6") & 0xFFFF})
-                        after_call(function() record(role .. ":after"); d.service=nil end)
+                        after_call(function()
+                            assert(d.context == context and context.service == role,
+                                "HEAL diagnostic service return context drift")
+                            record(role .. ":after")
+                            context.service=prior
+                        end)
                     end)
                 end
                 for _, entry in ipairs({{"spellanimationSetup_HealingFairy","setup"},
@@ -2681,7 +2696,7 @@ local function install_candidate()
                     for _, stacks in pairs(d.returns) do for _, actions in pairs(stacks) do pending=pending+#actions end end
                     return {kind=candidate.diagnostic.kind, loadedBeforeInput=d.loaded, selfTarget=d.selfTarget,
                         actionFrame=d.actionFrame, seen=d.seen, updates=d.updates, zeroDrawUpdates=d.zeroDrawUpdates,
-                        pendingMeasurementReturns=pending}
+                        pendingMeasurementReturns=pending, pendingVIntContexts=#d.vints, service=d.context.service}
                 end
             end
             for _, item in ipairs({{"ExecuteDiamondMenu", "diamondInputPc", "battle-menu"},

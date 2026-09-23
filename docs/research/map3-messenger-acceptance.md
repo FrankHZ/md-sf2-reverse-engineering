@@ -610,11 +610,35 @@ they do not change ordinary pending/consumer state or saved continuation keys. T
 must be Sarah's HEAL1 targeting herself. Only neutral input is admitted after construction starts;
 this does not pretend that the old W1/W2 poll admits a timed-text shortening input.
 
+The diagnostic's `vintCount` is the monotonic observed interrupt count; `vint` is the current
+activation ID (zero outside VInt), with `vintParent` and `vintDepth` identifying nesting. A VInt
+entry records the interrupted service separately as `interruptedService` and begins with
+`service=false`; its return restores the interrupted activation and service. Service returns restore
+their prior service, including LIFO tail calls sharing one return PC/stack. This is necessary because
+pinned `VInt`'s `andi #$F800,sr` clears the interrupt mask despite its misleading source comment.
+Graphics can call `UpdateSpellanimation`, tail-dispatch HealingFairy, branch to
+`ReinitializeSceneAfterSpell`, and tail-call `WaitForVInt` while the outer graphics service remains
+active. The source owners are `code/common/tech/interrupts/vint.asm` and
+`code/gameflow/battle/battlescenes/{updatespellanimation.asm,animation/update/healingfairy.asm}`
+at pinned revision `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+
+**Confirmed (offline observer behavior only):** direct current Lua execution with mocked host APIs
+reproduces outer graphics/update/fairy/cleanup, nested VInt graphics/windows, then outer
+cleanup/fairy/update/graphics returns. Every record retains its activation/parent/depth/service;
+the inner entry does not inherit outer graphics, and the outer return retains its original ID while
+the count remains increased. Shared-slot service tail returns also restore in LIFO order. Ordinary
+observer state is unchanged except checkpoint/order output; measurement returns and VInt contexts
+finish empty. Reproduce in a fresh ignored output with same-process private configuration and
+`uv run --locked python -X utf8 local/issue546/check-context.py <fresh-output-name>`.
+The retained pre-correction run records the completed outer-cleanup attribution failure; neither
+that failure nor the corrected mock execution is native HEAL reach evidence.
+
 The terminal is the matched `EndBattlescene` return followed by completion of its current emulator
 frame. No subsequent host step is admitted. Callback-time facts and completed-frame facts remain
 separate: this is not an instruction-exact CPU stop and does not prove an absence of same-frame
 downstream effects. The result is `HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED` only with the required
-observations, neutral scene frames and clean callback/entry-state/process/ROM cleanup. Save commands,
+observations, empty measurement-return/VInt contexts, no active service, neutral scene frames and
+clean callback/entry-state/process/ROM cleanup. Save commands,
 segment-pair publication and diagnostic descendants are prohibited. Missing coverage or failed
 cleanup remains failure/Unknown, with raw logs retained.
 
