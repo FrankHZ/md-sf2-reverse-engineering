@@ -3,6 +3,10 @@ local candidate = config.candidate and { index = 1, pending = 0, gates = {}, ret
 local acquisition = candidate and config.candidate.interactive
 local natural = candidate and config.candidate.natural
 local segment = candidate and config.candidate.segment
+if candidate then candidate.diagnostic = config.candidate.diagnostic end
+assert(not candidate or not candidate.diagnostic or (acquisition and natural and segment and segment.resume
+    and candidate.diagnostic.kind == "heal1-consumer-diagnostic" and candidate.diagnostic.inputPolicy == "neutral-scene"),
+    "HEAL diagnostic requires an explicit loaded parent and neutral scene")
 assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
@@ -2538,6 +2542,148 @@ local function install_candidate()
                 end
                 return true
             end
+            if candidate.diagnostic then
+                -- Measurement locals are never serialized, and never alter the ordinary
+                -- pending/consumer/continuation state. A fixed return dispatcher avoids
+                -- accumulating one callback closure for every interrupt/update.
+                local d = {loaded=false, active=false, seen={}, returns={}, registered={},
+                    interrupts=0, vintDepth=0, inVint=false, draws=0, updates=0, zeroDrawUpdates=0}
+                c.heal = d
+                local hf, hr = candidate.diagnostic.functions, candidate.diagnostic.ram
+                local function hb(name) return memory.read_u8(hr[name], "M68K BUS") end
+                local function hw(name) return memory.read_u16_be(hr[name], "M68K BUS") end
+                local function facts()
+                    local slots = {}
+                    for i=0,7 do slots[#slots+1]=memory.read_u32_be(hr.VINT_FUNC_ADDRS + 4*i, "M68K BUS") end
+                    return {vint=d.interrupts, inVint=d.inVint, service=d.service or false,
+                        vintParameters=hb("VINT_PARAMETERS"), vintEnabled=hb("VINT_ENABLED"),
+                        enabledSlots=hb("VINT_FUNCS_ENABLED_BITFIELD"), slots=slots,
+                        messageSpeed=hb("MESSAGE_SPEED"), noMessages=hb("NO_BATTLE_MESSAGES_TOGGLE"),
+                        toggle=hb("UPDATE_SPELLANIMATION_TOGGLE"), control=hb("byte_FFB585"),
+                        lifetime=hw("byte_FFB404"), animation=hb("CURRENT_SPELLANIMATION"),
+                        properties=read_span(hr.SPELLANIMATION_PROPERTIES, hr.byte_FFB532-hr.SPELLANIMATION_PROPERTIES),
+                        fairy=read_span(hr.byte_FFB532, 16), draws=d.draws,
+                        a6=reg("A6"), d0=reg("D0"), input=memory.read_u8(ram.PLAYER_1_INPUT, "M68K BUS")}
+                end
+                local function record(kind, extra)
+                    local value=facts()
+                    if extra then for key,item in pairs(extra) do value[key]=item end end
+                    d.seen[kind]=(d.seen[kind] or 0)+1
+                    c.record("heal:" .. kind, value)
+                end
+                local function after_call(done)
+                    local stack=reg("A7") & 0xFFFFFF
+                    local pc=memory.read_u32_be(stack, "M68K BUS") & 0xFFFFFF
+                    assert(pc < 0x200000 and pc % 2 == 0, "HEAL diagnostic return outside code")
+                    d.returns[pc]=d.returns[pc] or {}
+                    d.returns[pc][stack]=d.returns[pc][stack] or {}
+                    table.insert(d.returns[pc][stack], done)
+                    if not d.registered[pc] then
+                        d.registered[pc]=true
+                        add_callback(pc, "candidate:heal-return", function()
+                            local key=((reg("A7") & 0xFFFFFF)-4) & 0xFFFFFF
+                            local actions=d.returns[pc][key]
+                            if actions then
+                                d.returns[pc][key]=nil
+                                for i=#actions,1,-1 do actions[i]() end
+                            end
+                        end)
+                    end
+                end
+                local function hook(name, handler)
+                    add_callback(hf[name] or nf[name], "candidate:heal:" .. name, function()
+                        if d.loaded and d.active then handler() end
+                    end)
+                end
+                add_callback(nf.WriteBattlesceneScript, "candidate:heal-action", function()
+                    if not d.loaded then return end
+                    assert(not d.active, "HEAL diagnostic reached another action")
+                    local action=c.battle_observation()
+                    assert(action.actor == 1 and action.action == 1 and action.itemOrSpell == 0,
+                        "HEAL diagnostic requires Sarah HEAL1 as first action")
+                    assert(hb("MESSAGE_SPEED") == 2 and hb("NO_BATTLE_MESSAGES_TOGGLE") == 0,
+                        "HEAL diagnostic retained settings drift")
+                    d.active, d.actionFrame=true, frame_count
+                    record("action", {battle=action})
+                end)
+                hook("battlesceneScript_ApplyActionEffect", function()
+                    local action=c.battle_observation()
+                    assert(action.targetCount == 1 and action.targets[1] == 1, "HEAL diagnostic requires self target")
+                    d.selfTarget=true
+                    record("target", {battle=action})
+                end)
+                hook("ExecuteBattlesceneScript", function()
+                    assert(d.selfTarget and not d.playback, "HEAL diagnostic playback identity")
+                    d.playback=true
+                    record("playback")
+                end)
+                for _, name in ipairs(candidate.diagnostic.commands) do
+                    hook(name, function()
+                        if not d.playback then return end
+                        local stream=reg("A6") & 0xFFFFFF
+                        record("bsc:before", {name=name, opcode=memory.read_u16_be((stream-2)&0xFFFFFF,"M68K BUS")})
+                        after_call(function() record("bsc:after", {name=name}) end)
+                    end)
+                end
+                hook("VInt", function()
+                    d.interrupts=d.interrupts+1; d.vintDepth=d.vintDepth+1; d.inVint=true; record("vint")
+                end)
+                hook("vintReturn", function()
+                    record("vint-return"); d.vintDepth=d.vintDepth-1
+                    assert(d.vintDepth >= 0, "HEAL diagnostic unpaired VInt return")
+                    d.inVint=d.vintDepth > 0
+                end)
+                for _, entry in ipairs({{"VInt_UpdateBattlesceneGraphics","graphics"},{"VInt_UpdateWindows","windows"}}) do
+                    local name, role=entry[1],entry[2]
+                    hook(name,function()
+                        d.service=role
+                        record(role .. ":before", {slot=reg("D6") & 0xFFFF})
+                        after_call(function() record(role .. ":after"); d.service=nil end)
+                    end)
+                end
+                for _, entry in ipairs({{"spellanimationSetup_HealingFairy","setup"},
+                    {"UpdateSpellanimation","update"},{"spellanimationUpdate_HealingFairy","fairy"},
+                    {"ReinitializeSceneAfterSpell","cleanup"}}) do
+                    local name,role=entry[1],entry[2]
+                    hook(name,function()
+                        local draws=d.draws
+                        record(role .. ":before")
+                        after_call(function()
+                            if role == "fairy" then
+                                d.updates=d.updates+1
+                                if d.draws == draws then d.zeroDrawUpdates=d.zeroDrawUpdates+1 end
+                            end
+                            record(role .. ":after", {drawCount=d.draws-draws})
+                        end)
+                    end)
+                end
+                hook("GenerateRandomNumber", function() d.draws=d.draws+1 end)
+                hook("bsc0D_endAnimation", function()
+                    d.stopControl=false
+                    record("stop-request")
+                    after_call(function() record("stop:after") end)
+                end)
+                hook("loc_190C4", function()
+                    if not d.stopControl then d.stopControl=true; record("stop-control") end
+                end)
+                hook("setupEnabled", function() record("setup-enabled") end)
+                hook("cleanupCleared", function() record("cleanup-cleared") end)
+                hook("loc_1921A", function() record("timed-input-read") end)
+                hook("return_19228", function() record("timed-input-end") end)
+                hook("EndBattlescene", function()
+                    after_call(function()
+                        record("scene:after", {battle=c.battle_observation()})
+                        c.stop("heal-diagnostic-complete", {diagnostic=candidate.diagnostic.kind})
+                    end)
+                end)
+                function c.heal_summary()
+                    local pending=0
+                    for _, stacks in pairs(d.returns) do for _, actions in pairs(stacks) do pending=pending+#actions end end
+                    return {kind=candidate.diagnostic.kind, loadedBeforeInput=d.loaded, selfTarget=d.selfTarget,
+                        actionFrame=d.actionFrame, seen=d.seen, updates=d.updates, zeroDrawUpdates=d.zeroDrawUpdates,
+                        pendingMeasurementReturns=pending}
+                end
+            end
             for _, item in ipairs({{"ExecuteDiamondMenu", "diamondInputPc", "battle-menu"},
                 {"ExecuteBattlefieldMagicMenu", "magicInputPc", "battle-magic"},
                 {"SelectSpellLevel", "spellLevelInputPc", "battle-spell-level"},
@@ -3391,6 +3537,11 @@ local function install_candidate()
                 return result
             end
             if button == "neutral" then return result end
+            if candidate.diagnostic and c.heal.active then
+                result.consumer="heal-diagnostic-neutral-scene"
+                need(false, "HEAL-diagnostic-scene-input-not-admitted")
+                return result
+            end
             if victory and c.completed.exploration then
                 result.consumer = "post-victory-field"
                 need(button == "Up" or button == "Down" or button == "Left" or button == "Right", "post-victory-direction-only")
@@ -3474,14 +3625,25 @@ local function install_candidate()
             return result
         end
         local function budget()
-            if not natural or c.stopReason then return end
+            if not natural then return end
             local now = elapsed()
+            if candidate.diagnostic then
+                assert(now - segment.priorActiveSeconds < candidate.diagnostic.limits.activeSeconds,
+                    "HEAL diagnostic attempt active-time limit")
+                assert(delivered_frames() - segment.priorFrames <= candidate.diagnostic.limits.frames,
+                    "HEAL diagnostic attempt frame limit")
+                assert(batches - segment.priorBatches <= candidate.diagnostic.limits.batches,
+                    "HEAL diagnostic attempt batch limit")
+            end
+            if c.stopReason then return end
             if idle_since and now - idle_since >= acquisition.idleSeconds then c.stop("operator-idle-limit") end
         end
         local function receive_timeout()
             local now = elapsed()
             local remaining = acquisition.idleSeconds
             if idle_since then remaining = math.min(remaining, acquisition.idleSeconds - now + idle_since) end
+            if candidate.diagnostic then remaining=math.min(remaining,
+                candidate.diagnostic.limits.activeSeconds - now + segment.priorActiveSeconds) end
             comm.socketServerSetTimeout(math.max(1, math.floor(remaining * 1000)))
         end
         local function log(value)
@@ -3642,6 +3804,7 @@ local function install_candidate()
             return result
         end
         function c.save_segment(terminal)
+            assert(not candidate.diagnostic, "HEAL diagnostic cannot save a segment")
             assert(segment and not callback_active and client.ispaused(), "segment save outside host pause")
             local readiness
             if not terminal then
@@ -3696,6 +3859,13 @@ local function install_candidate()
             saved_state = memorysavestate.savecorestate()
             assert(saved_state ~= nil, "resume cleanup snapshot failed")
             c.record("segment:loaded-before-input", {ordinal=segment.ordinal, parent=restored.ordinal})
+            if candidate.diagnostic then
+                for _, binding in pairs(candidate.diagnostic.sourceBindings.instructions) do
+                    assert(memory.read_u16_be(binding.pc, "M68K BUS") == tonumber(binding.hex, 16),
+                        "HEAL diagnostic loaded instruction mismatch")
+                end
+                c.heal.loaded=true
+            end
         end
         function c.capture_frame() c.frameEnd = snapshot() end
         local function reply(ok, message, terminal, save, input)
@@ -3759,6 +3929,7 @@ local function install_candidate()
                         if natural then c.failureReason = "operator-abort" end
                         error("operator aborted interactive acquisition")
                     elseif op == "save" then
+                        assert(not candidate.diagnostic, "HEAL diagnostic save is prohibited")
                         assert(#command == 2 and segment and (segment.ordinal < 4 or victory), "save requires a resumable segment")
                         c.failureReason = "segment-save-failure"
                         local outcome = c.save_segment(false)
@@ -3779,6 +3950,12 @@ local function install_candidate()
                             c.frameEnd = snapshot()
                             reply(true, nil, false, nil, {status="not-ready", readiness=readiness})
                         else
+                            if candidate.diagnostic then
+                                assert(batches-segment.priorBatches < candidate.diagnostic.limits.batches,
+                                    "HEAL diagnostic attempt batch limit")
+                                assert(count <= candidate.diagnostic.limits.frames-delivered_frames()+segment.priorFrames,
+                                    "HEAL diagnostic attempt frame limit")
+                            end
                             if not natural then
                                 assert(batches < acquisition.maxBatches, "input batch budget exhausted")
                                 assert(count <= acquisition.totalFrames - delivered_frames(), "total frame budget exceeded")
@@ -3833,6 +4010,7 @@ local function write_observation(restoration)
             mode = acquisition and "interactive-acquisition" or nil,
             continuation = natural and natural.selection or nil,
             stopReason = natural and candidate.stopReason or nil,
+            diagnostic = candidate.diagnostic and candidate.heal_summary() or nil,
             completedFrame = natural and candidate.frameEnd or nil,
             inputIdentityMeaning = acquisition and "mode declaration; actual inputs in actual-inputs.jsonl" or nil })
         file:write("\n"); file:close()

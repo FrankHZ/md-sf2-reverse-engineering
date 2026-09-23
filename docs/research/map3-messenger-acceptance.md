@@ -576,6 +576,72 @@ Additional instrumentation would need an independently accepted compatibility bo
 remains forbidden as a resume parent. No new fixture, collector change or original acquisition is
 required merely to reproduce the facts documented here.
 
+### Instrumented HEAL diagnostic method (Issue #546)
+
+This capability extends the existing Map3 acquisition rail for the remaining dynamic fields in
+[retained HEAL consumer evidence](#retained-heal-consumer-evidence). It grants no native launch or
+new evidence acceptance. The first supported diagnostic observes one Sarah self-targeted HEAL1
+with neutral scene input. An input-shortening comparison remains unimplemented and **Unknown**.
+Static scene slot installation/order, existing RNG callers and historical outcomes retain their
+original owners; they are not collected again to manufacture additional coverage.
+
+The explicit `diagnostic_kind="heal1-consumer-diagnostic"` prepare/run selection requires the
+accepted Issue515 `prepared-11` nonterminal parent: ordinal9, neutral completed frame32013,
+battle-player-movement rank54. Its own child12 records a successful historical load before input.
+That parent's exposed 68K RAM/registers/emulatorFrame/core match Issue496 parent77, but this does
+not compare Z80/VDP/audio or all serialized core state. Admission uses Issue515's own lineage and
+native evidence. Old parent77's raw-settings migration is outside this method; terminal86 and
+Issue515 terminal20 remain forbidden parents.
+
+Ordinary preparation, launch and ordinary lineage edges retain all `SEGMENT_IDENTITIES` equality
+checks. The diagnostic records its immutable parent identities, sealed ancestry and settings identity
+separately from its current observer/runner and additive source/PC/ROM bindings. All old source
+bindings, helpers, fixtures, ROM, H1, tools and continuation remain exact. It requires the existing
+`bizhawk-local-path-roles-v1` configuration mechanism, which replaces only verified local path roles
+while preserving all other settings and the raw config digest. It does not convert a legacy parent,
+whitelist changed hashes or claim that code identity proves native state compatibility. Preparation
+freezes current source/configuration/input material; any later code edit invalidates that candidate.
+
+New passive callbacks retain named bsc entry/return with A6 and the preceding stream word, actual
+timed-text reads/end, command-time message settings, VInt gates/slots/service context, setup enable,
+update entry/return including zero draws and fairy properties, runtime stop/control and cleanup clear.
+Existing RNG and global order logs are reused. Measurement returns have their own dispatch storage;
+they do not change ordinary pending/consumer state or saved continuation keys. The resolved action
+must be Sarah's HEAL1 targeting herself. Only neutral input is admitted after construction starts;
+this does not pretend that the old W1/W2 poll admits a timed-text shortening input.
+
+The terminal is the matched `EndBattlescene` return followed by completion of its current emulator
+frame. No subsequent host step is admitted. Callback-time facts and completed-frame facts remain
+separate: this is not an instruction-exact CPU stop and does not prove an absence of same-frame
+downstream effects. The result is `HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED` only with the required
+observations, neutral scene frames and clean callback/entry-state/process/ROM cleanup. Save commands,
+segment-pair publication and diagnostic descendants are prohibited. Missing coverage or failed
+cleanup remains failure/Unknown, with raw logs retained.
+
+An authorized native invocation appends a typed diagnostic leaf through the existing exclusive
+`resumed-by*.json` claims. Sealed parents, metadata and prior claims remain unchanged. Full lineage
+reconciliation charges successful and failed diagnostic receipts alongside ordinary attempts; missing
+or incomplete process/input/cleanup receipts block continuation. Historical totals through Issue515
+remain 136 starts / 15540.144989400113 seconds / 428408 frames / 16188 batches, carrying the earlier
+115→117 history. Source-admission H3 gates and later tooling costs remain separately recorded.
+
+The prepared per-attempt containment is **2400 delivered frames, 256 advancing batches and 180
+active seconds**, measured above inherited totals. These are finite attempt bounds, not a permanent
+launch quota, renewed cumulative budget or restoration of retired stabilization ceilings. Existing
+60-second startup/exchange, 120-second idle/disconnected and 3+3-second teardown containment remains.
+The natural bridge's 7200 setting is not a whole-run hard wall timer. Lua checks diagnostic active
+time at command/frame boundaries and bounds socket idle waits; bridge exchange containment covers
+an unresponsive emulator. Cleanup time is still charged in the completed receipt.
+
+Offline preparation uses the existing API with `interactive=True`, `continuation=VICTORY_CONTINUATION`,
+`segment=10`, the explicit parent directory, `diagnostic_kind=HEAL_DIAGNOSTIC` and
+`proposed_timeout_seconds=7200`; it takes no prior-cost overrides. Use a fresh worktree-local ignored
+output and freeze source first. Preparation creates no runtime claim and starts no emulator.
+Source/configuration guards and direct Lua execution with mocked host APIs establish only offline
+behavior. Native load compatibility and reached diagnostic observations remain **Unknown** until
+main-gate separately admits the frozen candidate, the registered installation is exclusively owned,
+and the native result receives independent review. The old frozen replay remains disabled.
+
 ### Post-victory ordinary-input preparation (Issue #515)
 
 **Confirmed (source checkpoint):** accepted PR519 extended the existing victory continuation to

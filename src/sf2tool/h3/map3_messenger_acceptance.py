@@ -967,6 +967,265 @@ SEGMENT_IDENTITIES = (
     "SourceHashes",
 )
 
+HEAL_DIAGNOSTIC = "heal1-consumer-diagnostic"
+HEAL_DIAGNOSTIC_STATUS = "HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED"
+HEAL_DIAGNOSTIC_LIMITS = {"frames": 2400, "batches": 256, "activeSeconds": 180}
+
+
+def _segment_ancestry(directory: Path) -> list[dict[str, Any]]:
+    """Bind the existing sealed ancestry without modifying its measurement identities."""
+    result, seen = [], set()
+    while True:
+        directory = directory.resolve(strict=True)
+        if directory in seen:
+            raise ValueError("diagnostic ancestry is cyclic")
+        seen.add(directory)
+        pair, _ = _read_segment(directory)
+        result.append(
+            {
+                "directory": directory.as_posix(),
+                "pairSha256": sha256((directory / "runtime/segment-pair.json").read_bytes())
+                .hexdigest()
+                .upper(),
+                "material": pair["material"],
+            }
+        )
+        parent = load_json(directory / "candidate.json")["Segment"]["parentDirectory"]
+        if parent is None:
+            return result
+        directory = Path(parent)
+
+
+def _assert_heal_diagnostic_parent(
+    report: dict[str, Any], parent: Path, pair: dict[str, Any], metadata: dict[str, Any]
+) -> None:
+    diagnostic = report["Diagnostic"]
+    original = load_json(parent / "candidate.json")
+    if (
+        diagnostic["kind"] != HEAL_DIAGNOSTIC
+        or diagnostic["inputPolicy"] != "neutral-scene"
+        or diagnostic["limits"] != HEAL_DIAGNOSTIC_LIMITS
+        or parent.resolve() != repo_path("local/issue515/prepared-11").resolve()
+        or not pair["resumable"]
+        or pair["ordinal"] != 9
+        or metadata["boundary"] != "neutral-completed-frame"
+        or metadata["observer"]["frame"] != 32013
+        or metadata["checkpoint"] != {"name": "battle-player-movement", "rank": 54}
+        or "Diagnostic" in original
+        or pair.get("continuationSettingsIdentity", {}).get("contract")
+        != "bizhawk-local-path-roles-v1"
+        or diagnostic["parentIdentities"] != {key: original[key] for key in SEGMENT_IDENTITIES}
+        or diagnostic["ancestry"] != _segment_ancestry(parent)
+        or diagnostic["settingsIdentity"] != pair["continuationSettingsIdentity"]
+        or report["Continuation"] != VICTORY_CONTINUATION
+        or any(
+            report[key] != original[key]
+            for key in SEGMENT_IDENTITIES
+            if key not in ("ObserverSha256", "RunnerSha256")
+        )
+    ):
+        raise ValueError("HEAL diagnostic parent/provenance/settings identity mismatch")
+
+
+def _heal_diagnostic_configuration(
+    upstream: Path, addresses: dict[str, int], listing: str, rom: bytes
+) -> dict[str, Any]:
+    """Add passive source bindings separately; retain every ordinary source binding."""
+    sources = {}
+    for name in (
+        "sf2const.asm",
+        "sf2enums.asm",
+        "code/common/tech/interrupts/vint.asm",
+        "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+        "code/gameflow/battle/battlescenes/battlesceneengine_4.asm",
+        "code/gameflow/battle/battlescenes/updatespellanimation.asm",
+        "code/gameflow/battle/battlescenes/animation/healingfairy.asm",
+        "code/gameflow/battle/battlescenes/animation/update/healingfairy.asm",
+    ):
+        source = (upstream / DISASM / name).read_text(encoding="utf-8")
+        pinned = subprocess.run(
+            ["git", "-C", str(upstream), "show", f"{r1.UPSTREAM_COMMIT}:disasm/{name}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        if source != pinned:
+            raise ValueError(f"HEAL diagnostic pinned source drift: {name}")
+        sources[name] = sha256(source.encode()).hexdigest().upper()
+    engine = (
+        upstream / DISASM / "code/gameflow/battle/battlescenes/battlesceneengine_0.asm"
+    ).read_text(encoding="utf-8")
+    commands = re.findall(
+        r"^\s*dc\.w (bsc[0-9A-F]{2}_\w+)-rjt_BattlesceneScriptCommands\s*$", engine, re.M
+    )
+    if len(commands) != 21:
+        raise ValueError("HEAL diagnostic bsc command table drift")
+    names = commands + [
+        "VInt",
+        "CallContextualFunctions",
+        "VInt_UpdateBattlesceneGraphics",
+        "VInt_UpdateWindows",
+        "spellanimationSetup_HealingFairy",
+        "UpdateSpellanimation",
+        "spellanimationUpdate_HealingFairy",
+        "ReinitializeSceneAfterSpell",
+        "loc_190C4",
+        "loc_1921A",
+        "return_19228",
+    ]
+    functions = {name: addresses[name] for name in names}
+    for name, start, end, encoded in (
+        (
+            "setupEnabled",
+            "spellanimationSetup_HealingFairy",
+            "table_LightFairy_offsets",
+            "11FC0001B585",
+        ),
+        ("cleanupCleared", "ReinitializeSceneAfterSpell", "sub_1B884", "4238B584"),
+    ):
+        pattern = bytes.fromhex(encoded)
+        matches = [
+            pc
+            for pc in range(addresses[start], addresses[end], 2)
+            if rom[pc : pc + len(pattern)] == pattern
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"HEAL diagnostic enable/clear instruction drift: {name}")
+        functions[name] = matches[0] + len(pattern)
+    functions["vintReturn"] = addresses["CallContextualFunctions"] - 2
+    if rom[functions["vintReturn"] : functions["vintReturn"] + 2] != bytes.fromhex("4E73"):
+        raise ValueError("HEAL diagnostic VInt return instruction drift")
+    bindings = {}
+    for name, pc in functions.items():
+        encoded = _h1_bytes(listing, pc, 2)
+        if encoded != rom[pc : pc + 2].hex().upper():
+            raise ValueError(f"HEAL diagnostic H1/ROM callback drift: {name}")
+        bindings[name] = {"pc": pc, "hex": encoded}
+    equates = "\n".join(
+        (upstream / DISASM / name).read_text(encoding="utf-8")
+        for name in ("sf2const.asm", "sf2enums.asm")
+    )
+    ram = r1._equates(
+        equates,
+        (
+            "MESSAGE_SPEED",
+            "NO_BATTLE_MESSAGES_TOGGLE",
+            "VINT_PARAMETERS",
+            "VINT_ENABLED",
+            "VINT_FUNCS_ENABLED_BITFIELD",
+            "VINT_FUNC_ADDRS",
+            "UPDATE_SPELLANIMATION_TOGGLE",
+            "CURRENT_SPELLANIMATION",
+            "byte_FFB404",
+            "byte_FFB585",
+            "SPELLANIMATION_PROPERTIES",
+            "byte_FFB532",
+        ),
+    )
+    return {
+        "kind": HEAL_DIAGNOSTIC,
+        "inputPolicy": "neutral-scene",
+        "limits": HEAL_DIAGNOSTIC_LIMITS,
+        "functions": functions,
+        "commands": commands,
+        "ram": ram,
+        "sourceBindings": {"sources": sources, "instructions": bindings},
+    }
+
+
+def _assert_heal_diagnostic_output(runtime: Path, report: dict[str, Any]) -> None:
+    observed = load_json(runtime / "observer.observed.json")
+    summary = observed.get("diagnostic", {})
+    if (
+        observed.get("stopReason") != "heal-diagnostic-complete"
+        or summary.get("kind") != HEAL_DIAGNOSTIC
+        or not summary.get("loadedBeforeInput")
+        or not summary.get("selfTarget")
+        or summary.get("pendingMeasurementReturns") != 0
+        or not summary.get("zeroDrawUpdates", 0) > 0
+        or not summary.get("updates", 0) > summary.get("zeroDrawUpdates", 0)
+        or not all(
+            summary.get("seen", {}).get(name, 0) > 0
+            for name in (
+                "action",
+                "playback",
+                "setup-enabled",
+                "setup:after",
+                "update:before",
+                "update:after",
+                "fairy:before",
+                "fairy:after",
+                "vint",
+                "graphics:before",
+                "windows:before",
+                "timed-input-read",
+                "timed-input-end",
+                "stop-request",
+                "stop:after",
+                "stop-control",
+                "cleanup:before",
+                "cleanup-cleared",
+                "cleanup:after",
+                "scene:after",
+            )
+        )
+        or not observed.get("restoration", {}).get("callbacksCleared")
+        or not observed.get("restoration", {}).get("sessionStateRestored")
+        or observed["restoration"].get("kind") != "loaded-segment-entry"
+    ):
+        raise ValueError("HEAL diagnostic incomplete observation/cleanup")
+    rows = [
+        json.loads(line)
+        for line in (runtime / "actual-inputs.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    frames = [row for row in rows if row["kind"] == "frame"]
+    parent_pair, parent = _read_segment(Path(report["Segment"]["parentDirectory"]))
+    start = parent["observer"]["frame"]
+    terminal = observed["terminal"]["stop"]
+    if (
+        not frames
+        or len(frames) > report["Diagnostic"]["limits"]["frames"]
+        or len({row["id"] for row in frames}) > report["Diagnostic"]["limits"]["batches"]
+        or frames[0]["beforeFrame"] != parent["original"]["emulatorFrame"]
+        or any(
+            row["frame"] != start + i or row["afterFrame"] != row["beforeFrame"] + 1
+            for i, row in enumerate(frames, 1)
+        )
+        or frames[-1]["frame"] != terminal["frame"]
+        or any(a["afterFrame"] != b["beforeFrame"]
+               for a, b in zip(frames, frames[1:], strict=False))
+        or terminal["boundary"] != "callback-time"
+        or any(
+            row["button"] != "neutral" for row in frames if row["frame"] >= summary["actionFrame"]
+        )
+        or (runtime / "segment-pair.json").exists()
+        or (runtime / "segment.State").exists()
+    ):
+        raise ValueError("HEAL diagnostic input/endpoint/nonresumable boundary mismatch")
+    checkpoints = [json.loads(line) for line in
+                   (runtime / "checkpoints.jsonl").read_text(encoding="utf-8").splitlines()]
+    orders = [row["order"] for row in checkpoints + rows]
+    seen: dict[str, int] = {}
+    updates = []
+    for row in checkpoints:
+        if row["kind"].startswith("heal:"):
+            kind = row["kind"][5:]
+            seen[kind] = seen.get(kind, 0) + 1
+            if kind == "fairy:after":
+                updates.append(row["facts"]["drawCount"])
+    if (not checkpoints or checkpoints[0]["kind"] != "segment:loaded-before-input"
+        or checkpoints[0]["frame"] != start or min(orders) <= parent_pair["lastOrder"]
+        or len(orders) != len(set(orders)) or seen != summary["seen"]
+        or len(updates) != summary["updates"] or updates.count(0) != summary["zeroDrawUpdates"]):
+        raise ValueError("HEAL diagnostic loaded/order/measurement reconciliation mismatch")
+    status = (runtime / "observer.status.txt").read_text(encoding="utf-8").splitlines()
+    if (
+        any(line.startswith("failure:") for line in status)
+        or tuple(status[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
+    ):
+        raise ValueError("HEAL diagnostic callback/exit status mismatch")
+
 
 def _read_segment(
     directory: Path, *, require_resumable: bool = True
@@ -991,6 +1250,8 @@ def _read_segment(
     if sha256((directory / "candidate.json").read_bytes()).hexdigest().upper() != pair["material"]:
         raise ValueError("segment prepared material identity mismatch")
     report = load_json(directory / "candidate.json")
+    if "Diagnostic" in report:
+        raise ValueError("diagnostic observation is never a segment parent")
     metadata = load_json(runtime / "continuation.json")
     ordinal = pair["ordinal"]
     if (
@@ -1105,6 +1366,13 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
             report = load_json(child / "candidate.json")
             selection = report["Segment"]
             ordinal = selection["ordinal"]
+            diagnostic = "Diagnostic" in report
+            if diagnostic != (claimed.get("kind") == HEAL_DIAGNOSTIC):
+                raise ValueError("diagnostic claim kind mismatch")
+            if diagnostic:
+                _assert_heal_diagnostic_parent(report, parent, parent_pair, previous)
+                if (child / "runtime/segment-pair.json").exists() or claims_for(child):
+                    raise ValueError("diagnostic leaf cannot be sealed or have descendants")
             if (
                 selection["parentDirectory"] != parent.as_posix()
                 or selection["parentPairSha256"]
@@ -1119,7 +1387,9 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
                     or ordinal == parent_pair["ordinal"] == 1
                     and previous["checkpoint"]["rank"] < 5
                 )
-                or any(report[key] != parent_report[key] for key in SEGMENT_IDENTITIES)
+                or (not diagnostic and any(
+                    report[key] != parent_report[key] for key in SEGMENT_IDENTITIES
+                ))
             ):
                 raise ValueError("segment claim parent/source/ordinal identity mismatch")
             sealed = None
@@ -1163,7 +1433,8 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
         if (
             not host.get("canonicalRomUnchanged")
             or not host.get("sessionRomDeleted")
-            or not (sealed or host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION")
+            or not (sealed or host.get("error") or host.get("status") == "INCOMPLETE-OBSERVATION"
+                    or "Diagnostic" in report and host.get("status") == HEAL_DIAGNOSTIC_STATUS)
             or report["HistoricalControlledStarts"] != totals["starts"]
             or report["Segment"]["priorActiveSeconds"] != totals["seconds"]
             or report["Segment"]["priorFrames"] != totals["frames"]
@@ -1201,6 +1472,16 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
             continue
         if receipt.get("started") is not True or receipt.get("returncode") is None:
             raise ValueError("started retry needs a completed process receipt")
+        if "Diagnostic" in report and host.get("status") == HEAL_DIAGNOSTIC_STATUS:
+            if (host.get("error") or receipt.get("outcome") != "completed"
+                or receipt.get("returncode") != 0 or receipt.get("forcedTermination")
+                or receipt.get("timedOut")
+                or (receipt.get("luaStatus") or {}).get("state") != "closed"
+                or receipt.get("continuationSettingsIdentity")
+                != report["Diagnostic"]["settingsIdentity"]
+                or host.get("reviewedMaterial") != report):
+                raise ValueError("diagnostic leaf process/provenance did not complete")
+            _assert_heal_diagnostic_output(child / "runtime", report)
         if (
             receipt.get("historicalStarts") != totals["starts"] + 1
             or report["FutureControlledOrdinal"] != totals["starts"] + 1
@@ -1232,6 +1513,8 @@ def _resume_accounting(directory: Path) -> tuple[dict[str, Any], int]:
 
 def _seal_segment(directory: Path, report: dict[str, Any], diagnostic: dict[str, Any]) -> None:
     """Publish the pair last, after native exit, original identity and cleanup checks."""
+    if "Diagnostic" in report:
+        raise ValueError("HEAL diagnostic cannot publish a resumable or terminal segment pair")
     runtime = directory / "runtime"
     if (
         diagnostic["bridge"]["started"] is not True
@@ -2080,6 +2363,7 @@ def prepare_map3_observation_candidate(
     reviewed_prior_active_seconds: float | None = None,
     reviewed_prior_delivered_frames: int | None = None,
     reviewed_prior_advancing_batches: int | None = None,
+    diagnostic_kind: str | None = None,
 ) -> dict[str, Any]:
     """Materialize a private review candidate without starting an emulator.
 
@@ -2096,6 +2380,11 @@ def prepare_map3_observation_candidate(
     if continuation == VICTORY_CONTINUATION and segment is None:
         raise ValueError("victory continuation requires explicit savestate-linked accounting")
     parent_pair, parent_metadata = None, None
+    if diagnostic_kind is not None and (
+        diagnostic_kind != HEAL_DIAGNOSTIC or continuation != VICTORY_CONTINUATION
+        or not interactive or segment != 10 or resume_directory is None
+    ):
+        raise ValueError("HEAL diagnostic requires its explicit nonterminal parent and segment 10")
     if segment is not None:
         if (
             type(segment) is not int
@@ -2434,6 +2723,10 @@ def prepare_map3_observation_candidate(
         }
         # Historical consumption is observational; never shorten a new bootstrap
         # watchdog or forge acquired frame/R1 clocks to carry that consumption.
+    if diagnostic_kind:
+        config["candidate"]["diagnostic"] = _heal_diagnostic_configuration(
+            upstream_path, addresses, listing, rom
+        )
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -2504,7 +2797,17 @@ def prepare_map3_observation_candidate(
     if segment is not None:
         if parent_pair:
             parent_report = load_json(resume_directory / "candidate.json")
-            if any(report[key] != parent_report[key] for key in SEGMENT_IDENTITIES):
+            if diagnostic_kind:
+                report["Diagnostic"] = {
+                    **config["candidate"]["diagnostic"],
+                    "parentIdentities": {key: parent_report[key] for key in SEGMENT_IDENTITIES},
+                    "ancestry": _segment_ancestry(resume_directory),
+                    "settingsIdentity": parent_pair.get("continuationSettingsIdentity"),
+                }
+                _assert_heal_diagnostic_parent(
+                    report, resume_directory, parent_pair, parent_metadata
+                )
+            elif any(report[key] != parent_report[key] for key in SEGMENT_IDENTITIES):
                 raise ValueError("segment ROM/source/observer/tool lineage identity drift")
         report.update(
             Segment={
@@ -2536,6 +2839,14 @@ def prepare_map3_observation_candidate(
                 "first natural player-ready",
             )[segment - 1],
         )
+    if diagnostic_kind:
+        report.update(
+            RuntimeAuthorization="NONE; independent source/preparation review before native",
+            Terminal="self HEAL1 matched EndBattlescene return; complete current frame only",
+            RemainingUnknowns=[
+                "instrumented native restore compatibility", "reached HEAL consumer fields"
+            ],
+        )
     # All validation precedes materialization; no shared launch helper is invoked.
     output.mkdir()
     (output / "input.json").write_bytes(input_bytes)
@@ -2554,6 +2865,7 @@ def run_map3_observation_candidate(
     interactive: bool = False,
     continuation: str | None = None,
     segment: int | None = None,
+    diagnostic_kind: str | None = None,
 ) -> dict[str, Any]:
     """Future admitted execution composition; NOT authorized by preparation.
 
@@ -2634,6 +2946,9 @@ def run_map3_observation_candidate(
     try:
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
+        if (report.get("Diagnostic", {}).get("kind") != diagnostic_kind
+            or diagnostic_kind not in (None, HEAL_DIAGNOSTIC)):
+            raise ValueError("execution diagnostic must explicitly match preparation")
         selection = report.get("Segment")
         if continuation == VICTORY_CONTINUATION and selection is None:
             raise ValueError("victory execution requires reviewed segmented accounting")
@@ -2682,6 +2997,13 @@ def run_map3_observation_candidate(
         if type(timeout_seconds) is not int or timeout_seconds <= 0:
             raise ValueError("candidate is missing its reviewed positive wall-time limit")
         config = load_json(directory / "config.json")
+        if diagnostic_kind:
+            expected = {key: value for key, value in report["Diagnostic"].items()
+                        if key not in ("parentIdentities", "ancestry", "settingsIdentity")}
+            if config["candidate"].get("diagnostic") != expected:
+                raise ValueError("diagnostic observation configuration drift")
+        elif "diagnostic" in config["candidate"]:
+            raise ValueError("ordinary continuation cannot use diagnostic configuration")
         parent_pair = None
         if selection:
             if (
@@ -2711,6 +3033,8 @@ def run_map3_observation_candidate(
                 parent = Path(selection["parentDirectory"])
                 parent_pair, metadata = _read_segment(parent)
                 totals, attempts = _resume_accounting(parent)
+                if diagnostic_kind:
+                    _assert_heal_diagnostic_parent(report, parent, parent_pair, metadata)
                 if (
                     sha256((parent / "runtime/segment-pair.json").read_bytes()).hexdigest().upper()
                     != selection["parentPairSha256"]
@@ -2725,10 +3049,10 @@ def run_map3_observation_candidate(
                     or totals["seconds"] != settings["priorActiveSeconds"]
                     or totals["frames"] != settings["priorFrames"]
                     or totals["batches"] != settings["priorBatches"]
-                    or any(
+                    or (not diagnostic_kind and any(
                         report[key] != load_json(parent / "candidate.json")[key]
                         for key in SEGMENT_IDENTITIES
-                    )
+                    ))
                 ):
                     raise ValueError("parent segment identity/accounting drift")
                 metadata["observer"]["order"] = parent_pair["lastOrder"]
@@ -2739,7 +3063,10 @@ def run_map3_observation_candidate(
                 name = "resumed-by.json" if attempts == 0 else f"resumed-by-{attempts + 1:04}.json"
                 with (parent / "runtime" / name).open("x", encoding="utf-8") as claim:
                     claim.write(
-                        json.dumps({"candidate": directory.as_posix(), "ordinal": segment}) + "\n"
+                        json.dumps({
+                            "candidate": directory.as_posix(), "ordinal": segment,
+                            **({"kind": diagnostic_kind} if diagnostic_kind else {}),
+                        }) + "\n"
                     )
             elif selection["parentDirectory"] is not None:
                 raise ValueError("initial segment has unexpected parent accounting")
@@ -2852,7 +3179,11 @@ def run_map3_observation_candidate(
         ):
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
-        if continuation:
+        if diagnostic_kind:
+            _assert_heal_diagnostic_output(runtime, report)
+            diagnostic["stopReason"] = observed["stopReason"]
+            diagnostic["status"] = HEAL_DIAGNOSTIC_STATUS
+        elif continuation:
             reason = observed.get("stopReason")
             diagnostic["stopReason"] = reason
             if reason == "out-of-scope-before-player-ready":
