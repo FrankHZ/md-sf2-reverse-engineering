@@ -28,6 +28,9 @@ var herb_mode := OS.get_environment("SF2_BATTLE_SCENE_HERB") == "1"
 var disjoint_audio := OS.get_environment("SF2_BATTLE_SCENE_DISJOINT_AUDIO") == "1"
 var audio_overlaps: Array = []
 var overlap_keys: Dictionary = {}
+var menu_audio := OS.get_environment("SF2_BATTLE_SCENE_MENU_AUDIO") == "1"
+var menu_cases: Array = []
+var partial_audio := OS.get_environment("SF2_BATTLE_SCENE_PARTIAL_AUDIO") == "1"
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -71,7 +74,7 @@ func _audio() -> void:
             last_receipt = int(receipt.Sequence)
             receipts.append(receipt)
         _check(audio.error == null, "audio remains available")
-        if disjoint_audio:
+        if disjoint_audio or partial_audio:
             var playing: Array = audio.sounds.filter(func(sound): return sound.playing)
             if playing.size() > 1:
                 var key := str(playing.map(func(sound): return sound.startSequence))
@@ -111,6 +114,67 @@ func _overlap_finished(sample: Dictionary, pair: Array) -> bool:
         var ending := receipts.filter(func(receipt): return receipt.Sequence > sound.startSequence and receipt.Command == command and receipt.Operation in ["finished", "stopped"])
         if ending.is_empty() or ending[0].Operation != "finished": return false
     return true
+
+func _menu_input(key: Key, before_stage: String, after_stage: String, expected: Array, rejected := false) -> void:
+    _audio()
+    var begin := receipts.size()
+    var before: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    _check(before.stage == before_stage, "menu input starts in " + before_stage)
+    await _press(key)
+    _audio()
+    var after: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    var played := receipts.slice(begin).filter(func(receipt): return receipt.Operation == "started")
+    _check(after.stage == after_stage, "menu input ends in " + after_stage)
+    _check((after.failure != null) == rejected, "expected menu input acceptance")
+    _check(played.map(func(receipt): return int(receipt.Command)) == expected, "exact semantic input audio: " + str(expected))
+    var actual = JSON.parse_string(host.call("ReadAudioObservationJson"))
+    if 65 in expected:
+        _check(played.size() == 1 and played[0].TimerB == 189 and played[0].Playing, "one original 65/BD stream starts")
+        _check(actual.sounds.any(func(sound): return sound.command == 65 and sound.playing), "menu cue has an actual playing voice")
+    menu_cases.append({"key":key, "actor":before.actor, "before":before.stage, "after":after.stage,
+        "failure":after.failure, "revision":after.revision, "mainSeed":after.mainSeed,
+        "expected":expected, "receipts":receipts.slice(begin), "audio":actual})
+
+func _menu_idle() -> void:
+    var before: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    var begin := receipts.size()
+    for tick in range(90):
+        view.queue_redraw()
+        await process_frame
+        _audio()
+        var audio = JSON.parse_string(host.call("ReadAudioObservationJson"))
+        if audio.sounds.is_empty(): break
+    var after: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    for field in ["actor", "stage", "revision", "observationSequence", "mainSeed", "thinkingSeed"]:
+        _check(before[field] == after[field], "redraw/playback delivery preserves " + field)
+    _check(not receipts.slice(begin).any(func(receipt): return receipt.Operation == "started"), "redraw does not replay audio")
+
+func _run_menu_audio() -> void:
+    var actors: Array = []
+    for turn in range(2):
+        var initial: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        actors.append(initial.actor)
+        await _menu_input(KEY_ENTER, "Movement", "ActionChoice", [65])
+        await _menu_idle() # Real natural completion before another ordinary command.
+        await _menu_input(KEY_ENTER, "ActionChoice", "ActionChoice", [], true)
+        await _menu_input(KEY_ESCAPE, "ActionChoice", "Movement", [65])
+        await _menu_input(KEY_ESCAPE, "Movement", "Movement", [66])
+        await _menu_input(KEY_ENTER, "Movement", "ActionChoice", [65])
+        await _menu_input(KEY_F, "ActionChoice", "TargetChoice", [65])
+        await _menu_input(KEY_ENTER, "TargetChoice", "TargetChoice", [], true)
+        await _menu_input(KEY_ESCAPE, "TargetChoice", "Movement", [66])
+        await _menu_input(KEY_ENTER, "Movement", "ActionChoice", [65])
+        await _menu_input(KEY_SPACE, "ActionChoice", "CommitReady", [65])
+        await _menu_input(KEY_SPACE, "CommitReady", "CommitReady", [], true)
+        if turn == 0:
+            await _press(KEY_ENTER) # Commit the real Stay and let the ordinary turn flow run.
+            await _settle()
+        else:
+            await _menu_input(KEY_ESCAPE, "CommitReady", "Movement", [66])
+    await _menu_idle()
+    _check(actors[0] != actors[1], "action-menu mapping works for another actual actor")
+    _check(receipts.any(func(receipt): return receipt.Command == 65 and receipt.Operation == "finished"), "actual menu voice naturally finishes")
+    _check(receipts.any(func(receipt): return receipt.Command == 65 and receipt.Operation == "stopped"), "rapid menu transition legitimately replaces the same slot")
 
 func _admit_world() -> void:
     exploration = host.get_node_or_null("ExplorationSessionView")
@@ -317,7 +381,7 @@ func _run() -> void:
     if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
-    if disjoint_audio: process_frame.connect(_audio)
+    if disjoint_audio or menu_audio or partial_audio: process_frame.connect(_audio)
     await process_frame
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
@@ -332,6 +396,10 @@ func _run() -> void:
             return
     var state := await _settle()
     if state.failure != null:
+        _finish()
+        return
+    if menu_audio:
+        await _run_menu_audio()
         _finish()
         return
     if OS.get_environment("SF2_BATTLE_SCENE_WOUNDED") == "1":
@@ -410,7 +478,8 @@ func _run() -> void:
     _finish()
 
 func _finish() -> void:
-    if disjoint_audio:
+    if menu_audio and process_frame.is_connected(_audio): process_frame.disconnect(_audio)
+    if disjoint_audio or partial_audio:
         # Input is already released. Observe the remaining playback tail without
         # adding a product wait or submitting further gameplay input.
         var before_tail: String = view.call("ReadObservationJson") if is_instance_valid(view) else ""
@@ -422,6 +491,17 @@ func _finish() -> void:
         if is_instance_valid(view):
             _check(str(view.call("ReadObservationJson")) == before_tail, "playback tail adds no gameplay work after input release")
         _audio()
+    if partial_audio:
+        var partials := audio_overlaps.filter(func(sample):
+            return sample.sounds.any(func(sound): return sound.command == 113) and sample.sounds.any(func(sound): return sound.command == 65))
+        _check(not partials.is_empty(), "ordinary Herb tail and menu 65 play concurrently")
+        _check(receipts.any(func(receipt): return receipt.Command == 113 and receipt.Operation == "finished"), "Herb tail reaches actual Finished")
+        _check(not receipts.any(func(receipt): return receipt.Command == 113 and receipt.Operation == "stopped"), "menu input preserves whole Herb tail")
+        for sample in partials:
+            for sound in sample.sounds.filter(func(voice): return voice.command in [113,65]):
+                _check(receipts.any(func(receipt): return receipt.Sequence > sound.startSequence and receipt.Command == sound.command and receipt.Operation in ["finished", "stopped"]), "overlapping voice ends or is replaced")
+        if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
+    if disjoint_audio:
         var pair := [113,67] if herb_mode else [83,102]
         var overlaps := audio_overlaps.filter(func(sample):
             return sample.sounds.any(func(sound): return sound.command == pair[0]) and sample.sounds.any(func(sound): return sound.command == pair[1]))
@@ -432,9 +512,9 @@ func _finish() -> void:
         _check(not receipts.any(func(receipt): return receipt.Command == pair[0] and receipt.Operation == "stopped"), "independent reaction effect is not truncated by UI input")
         if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
-        "scope": "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "scenes": scenes,
+        "scope": "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
-        "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps,
+        "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps, "menuAudioCases": menu_cases,
         "audioDriver": AudioServer.get_driver_name()}
     output.store_string(JSON.stringify(result))
     output.flush()

@@ -697,12 +697,43 @@ buffer and possible adaptive resampling prevent claiming exact hardware sample p
 requires the retained private capture/configuration, candidate manifest and ordinary-input host
 observation; neither the loop interval nor a waveform seam metric alone proves the host result.
 
+### Action-choice menu audio
+
+A successful battle submit that enters or leaves `BattleSelectionStage.ActionChoice` plays command
+65 once through the existing UI audio callback. This boundary takes precedence over generic 66/67
+selection/confirmation sounds: entry, cancel back to movement, and selection of Stay or a target
+action all use 65. Rejected submissions, accepted operations that remain in the same stage, and
+redraws do not add a menu-boundary cue. Other existing UI bindings are unchanged. The rule uses
+before/after selection state for any actor; it adds no engine event, window RNG or gameplay delay.
+
+**Confirmed source structure:** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/battlefunctions/battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput`
+selects the outer action menu after movement/stop validation. Its `ExecuteDiamondMenu` caller in
+`code/common/menus/diamondmenu.asm` uses `MoveWindowWithSfx` for both opening and A/C-confirm or
+B-cancel closing. `code/common/windows/windowengine.asm:MoveWindowWithSfx` submits command 65
+before moving the window; directional menu selection's 66 is a separate edge. The retained original
+65 request PC `0x48F4` identifies this shared window routine, not all its parent callers. No original
+request-count target or cue on every dialogue/window follows from it.
+
+This is the current modern ActionChoice lifetime's source-backed audio mapping, not complete
+original diamond-menu/window presentation, nested menu behavior, timing or input-polling parity.
+The consumer uses the already admitted original 65 resource and current music timer context.
+Set `SF2_BATTLE_SCENE_MENU_AUDIO=1` with the source-world scene observer below to exercise ordinary
+entry, cancel/reentry, Stay, target selection, rejected and same-stage inputs for two actual actors.
+The observer checks exact per-input starts, the actual 65/BD player, natural `Finished`, legitimate
+same-slot replacement and no redraw replay or gameplay work during playback-tail collection.
+Normal/reduced-flash runs preserve the same semantic inputs and ordered session observations;
+this bounded check does not establish the separate instant/adjustable text or full host Option A
+requirements. Missing content or timer support remains an explicit error.
+
 ### Finite SFX overlap
 
-The session audio owner preserves an active finite clip when a new effect writes disjoint source
-slots. Equal or fully covered slot sets replace the old clip. A request that would overwrite only
-part of an active clip fails with `sfx-partial-overlap-unsupported` before changing any playback;
-whole PCM files cannot retain just that clip's surviving channels. An admitted command without a
+The session audio owner uses a modern whole-PCM mixing policy: disjoint and partially overlapping
+groups continue playing together; equal or fully covered groups replace the old clip. Partial
+overlap preserves the old whole clip and starts the new one, so a Herb tail cannot block ordinary
+menu input. Repeated requests replace their previous group instead of accumulating voices.
+An admitted command without a
 reviewed slot classification fails with `sfx-slots-unavailable`. Existing content/timer errors remain
 explicit. No extra action wait or gameplay tick is introduced for a cosmetic effect's tail.
 
@@ -735,14 +766,23 @@ each passed normal/reduced-flash WASAPI runs with concurrent players and indepen
 completion. Each settings pair produced identical ordered session observations and final shared RNG;
 playback-tail collection left the input-ready gameplay state unchanged. An independent adapter-only
 owner additionally observed reverse arrival, starts after completion, same-slot/full-coverage
-replacement, unchanged active playback on partial/unknown/missing rejection, duplicate-result
+replacement, preserved playback on unknown/missing rejection, duplicate-result
 suppression and stream/callback disposal. It reused admitted PCM and did not mutate a game session.
 PSG noise/tone coverage was a slot-lifetime check only. Earlier observations that ended before the
 queued `Finished`, or required a rapid UI tone to survive legitimate same-slot replacement, remain
 failed observations; no engine or source rule was changed to satisfy them.
 
-**Unknown / incomplete:** partial channel replacement, original music/SFX masking, live timer changes
-within an active PCM clip and full original mixing remain unsupported. Original command 253 fade semantics and complete reached field/UI cue bindings remain
+**Accepted modern approximation:** source slots are inexpensive replacement groups, not hardware
+output masks. Partial overlap can retain a source voice that the original would replace. Exact
+channel masking, chip coupling, sample-perfect mixing and live timer changes within a PCM clip are
+outside the current audio goal and do not block the playable milestone. The proposed #554 stem/core
+investigation was abandoned as unnecessary under this policy, not delivered.
+
+`SF2_BATTLE_SCENE_PARTIAL_AUDIO=1` observes ordinary Herb-to-menu overlap, actual completion and
+unchanged gameplay during tail collection. Independent adapter observations cover partial overlap,
+rapid bounded replacement, full/disjoint groups and disposal.
+
+**Incomplete:** Original command 253 fade semantics and complete reached field/UI cue bindings remain
 incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
 music/SFX and input-release subset; HEAL spell/fairy consumption remains unfinished. The existing modern
 half-second `SoundFade` service is not source-timing evidence. Neither successful resource
