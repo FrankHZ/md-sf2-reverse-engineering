@@ -419,6 +419,20 @@ derived by retaining steps 1–30 from the prior plan and removing only its late
 battle-decision fields; each run uses a fresh worktree-local output destination.
 Neither run establishes finite-JOIN compatibility or an H4 milestone pass.
 
+**Confirmed (selected-R1 first-control diagnostic):** the former 5,000-frame
+observer settle cap expired while finite `MUSIC_JOIN` was still playing. A
+single 30-second monotonic deadline per settle, with frames/elapsed reported on
+timeout, lets the unchanged 260-step plan finish JOIN naturally: the music has
+start/finish receipts, flag 603 is present at the next field input, and the
+route reaches first battle control. The one corrected ordinary-input run in
+`local/issue534/first-control-02/` has native exit 2 for its intentional
+next-actor stop, no host errors, one session and all 12,404 result signals.
+Direct comparison gives 5,340 PASS, 40 Unavailable and two FAIL. The first
+failure is the first-round scored turn order; the actual first actor remains
+ally 2 and the first STAY at `(9,16)` is consumed, but the next actor is ally 1
+versus original ally 0. This reaches only the existing diagnostic boundary,
+not the full battle or an H4 milestone pass.
+
 At the original before-battle boundary (`prepared-72/runtime/checkpoints.jsonl:4013`,
 order 55395), the seed is `0x6DC1`. The retained projection contains 885
 base-generator draws in that before-battle consumer scope. The complete captured
@@ -434,13 +448,14 @@ input; the accepting poll draws too. The portrait service advances the same main
 seed when an active portrait's counters require a blink or mouth reset. These are
 presentation callers with gameplay-visible shared-seed effects; the 120 portrait
 draws are classified by pinned source rather than left as unknown callers.
-The actual `round-rng` result at sequence 15227 starts from `0x3905`. Read-only
+The selected-R1 actual `round-rng` result at sequence 25798 starts from
+`0xD9E2`. Read-only
 replay using the same nine first-round agility values `4,5,7,5,5,5,5,5,5`, pinned
 `GenerateRandomNumber` in `disasm/code/common/tech/randomnumbergenerator.asm` and
 `GenerateBattleTurnOrder`/`AddCombatantAndRandomizedAgiToTurnOrder` in
 `disasm/code/gameflow/battle/battleloop/turnorderfunctions.asm` reproduces both complete
-scored arrays in `local/issue530/comparison-corrected.json`: 27 draws take original
-`0x6DC1` to `0x79CE` and actual `0x3905` to `0x0FE2`. The first-dispatch and
+scored arrays in `local/issue534/first-control-02/comparison.json`: 27 draws take original
+`0x6DC1` to `0x79CE` and actual `0xD9E2` to `0x10E3`. The first-dispatch and
 actual `round-rng` end seeds match those calculations. From this checkout, reproduce
 the bounded source-rule replay without loading private inputs:
 
@@ -450,7 +465,7 @@ actors = [(0,4),(1,5),(2,7)] + [(i,5) for i in range(128,134)]
 def roll(seed, n):
     seed = (seed * 13 + 7) & 0xffff
     return seed, (((seed * ((n * 2) & 0xffff)) >> 16) >> 1)
-for name, seed in (("original",0x6dc1),("actual",0x3905)):
+for name, seed in (("original",0x6dc1),("actual",0xd9e2)):
     rows = []
     for actor, agility in actors:
         r = agility >> 3
@@ -468,9 +483,9 @@ load the selected private environment as above and choose a fresh ignored output
 
 ```powershell
 uv run --locked python -m sf2tool.remake_h4_comparison compare `
-  --reference local/issue525/reference.json --plan local/issue525/plan-v2.json `
-  --actual local/issue530/actual-corrected.jsonl `
-  --host-log local/issue530/godot-corrected.log --host-exit 2 `
+  --reference local/issue525/reference.json --plan local/issue534/first-control-02/plan.json `
+  --actual local/issue534/first-control-02/actual.jsonl `
+  --host-log local/issue534/first-control-02/godot.log --host-exit 2 `
   --output local/issue534/comparison-reread.json
 ```
 

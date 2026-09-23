@@ -88,8 +88,12 @@ func press(action: String) -> void:
     state("input-released:" + action)
 
 func settle(boundary: String) -> Dictionary:
-    for count in range(5000):
+    var started_ms := Time.get_ticks_msec()
+    var deadline_ms := started_ms + 30_000
+    var frames := 0
+    while Time.get_ticks_msec() < deadline_ms:
         var s := await tick()
+        frames += 1
         if failure != "": return s
         if s.get("stage") != null: return s
         if s.get("wait") in ["DialogueWait", "ChoiceWait"]:
@@ -108,7 +112,7 @@ func settle(boundary: String) -> Dictionary:
             continue
         if boundary == "field" and s.get("stop") == "PlayerInput" and not player(s).get("moving", true):
             return s
-    failure = "settle-timeout:" + boundary
+    failure = "settle-timeout:" + boundary + ":frames=" + str(frames) + ":elapsed-ms=" + str(Time.get_ticks_msec() - started_ms)
     return state()
 
 func run() -> void:
