@@ -30,7 +30,7 @@ internal static class PhysicalBattleAction
         return target;
     }
 
-    internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Resolve(
+    internal static BattleActionResolution Prepare(
         EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef)
     {
         BattleMovement.RequireStop(current, actorRef, destination);
@@ -41,6 +41,7 @@ internal static class PhysicalBattleAction
         uint seed = current.MainSeed;
         int accumulated = 0;
         var effects = new List<BattleEffect>();
+        var reactions = new List<BattleReaction>();
 
         var first = Hit("physical-first", counter: false);
         bool counterRequested = first.CounterRolled;
@@ -65,7 +66,7 @@ internal static class PhysicalBattleAction
         var enemy = actor.IsAlly ? target : actor;
         bool allyDead = actor.IsAlly ? actorDead : targetDead;
         bool enemyDead = actor.IsAlly ? targetDead : actorDead;
-        var rewarded = ally;
+        BattleActionReward? reward = null;
         if (!allyDead && (actor.IsAlly || counterPerformed))
         {
             // Only a surviving ally who actually attacked earns an award (including a counter).
@@ -73,7 +74,11 @@ internal static class PhysicalBattleAction
             var awardRolls = new List<PhysicalRoll>();
             int award = BattleRewards.Award(accumulated, current.Definition.Rewards!.HalvedExperience, ref seed, awardRolls);
             AddRolls(awardRolls, ally.Actor);
-            rewarded = BattleGrowthRules.Award(ally, award, ref seed, effects);
+            reward = new(ally.Actor, award);
+            // Admission is atomic even when the later giveExp needs unsupported growth.
+            // This validation draw is not published; replay uses its then-current seed.
+            uint validationSeed = seed;
+            _ = BattleGrowthRules.Award(ally, award, ref validationSeed, []);
         }
         uint? gold = enemyDead ? BattleRewards.Gold(current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true),
             enemy.Definition.Physical!.Gold) : current.Gold;
@@ -90,16 +95,11 @@ internal static class PhysicalBattleAction
         }
         // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
-        var actors = current.Actors.Select(a => a.Actor == actorRef || a.Actor == targetRef
-            ? a.With(hp: a.Actor == actorRef ? actorHp : targetHp,
-                position: a.Actor == actorRef ? destination : a.Position,
-                exp: a.Actor == ally.Actor ? rewarded.Exp : a.Exp,
-                progress: a.Actor == ally.Actor ? rewarded.Progress : a.Progress,
-                attack: a.Actor == ally.Actor ? rewarded.Attack : a.Attack,
-                kills: a.Actor == ally.Actor && enemyDead ? BattleRewards.Kills(a.Kills ?? throw new BattleRuleException("unspecified-kills", "actor.kills", true)) : a.Kills,
-                defeats: a.Actor == ally.Actor && allyDead ? BattleRewards.Defeats(a.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true)) : a.Defeats)
-            : a);
-        return (current.With(actors: actors, mainSeed: seed, gold: gold), effects.AsReadOnly());
+        var prepared = current.With(actors: current.Actors.Select(a => a.Actor == actorRef
+            ? a.With(position: destination) : a), mainSeed: seed, gold: gold);
+        return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
+            Array.AsReadOnly(effects.Where(effect => effect.Kind is not ("kills" or "defeats" or "death-cleanup")).ToArray()),
+            Array.AsReadOnly(effects.Where(effect => effect.Kind is "kills" or "defeats" or "death-cleanup").ToArray()));
 
         PhysicalStrike Hit(string kind, bool counter)
         {
@@ -116,6 +116,9 @@ internal static class PhysicalBattleAction
                 hp, multiplier, seed, defender.Definition.Mover == BattleMover.Hovering ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter);
+            reactions.Add(new(attacker.Actor, defender.Actor, kind,
+                strike.Dodged ? BattleReactionKind.Dodge : BattleReactionKind.Damage,
+                hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical, strike.Damage));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
@@ -155,6 +158,19 @@ internal static class PhysicalBattleAction
             if (current.Actors.Count(a => a.Hp > 0 && a.IsAlly == defeated.IsAlly) == 1)
                 throw new BattleRuleException("battle-outcome-program", "battle.outcome", true);
         }
+    }
+
+    // Scalar action boundary retained for callers that explicitly evaluate combat without a
+    // presentation consumer. The session uses Prepare and replays at semantic scene edges.
+    internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) Resolve(
+        EngineBattleState current, ActorRef actor, MapPosition destination, ActorRef target)
+    {
+        var action = Prepare(current, actor, destination, target);
+        var battle = action.Prepared;
+        foreach (var reaction in action.Reactions) battle = action.ApplyReaction(battle, reaction);
+        var reward = action.ApplyReward(battle);
+        return (action.Complete(reward.Battle), Array.AsReadOnly<BattleEffect>([
+            .. action.ConstructionEffects, .. reward.Effects, .. action.CompletionEffects]));
     }
 
 }

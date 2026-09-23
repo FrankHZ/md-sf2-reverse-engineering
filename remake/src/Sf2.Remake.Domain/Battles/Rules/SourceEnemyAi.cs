@@ -4,7 +4,7 @@ namespace Sf2.Remake.Domain.Battles;
 
 internal static class SourceEnemyAi
 {
-    internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects, MapPosition Destination) Resolve(
+    internal static BattleAutomaticAction Resolve(
         EngineBattleState current, ActorRef actorRef)
     {
         var actor = current.GetActor(actorRef);
@@ -38,7 +38,7 @@ internal static class SourceEnemyAi
             var moved = BattleMovement.Commit(prepared, actorRef, decision.Destination, decision.Grid);
             moved = moved.With(thinkingSeed: Image(decision.SeedAfter), actors: moved.Actors.Select(
                 unit => unit.Actor == actorRef ? unit.With(aiMemory: decision.MemoryAfter) : unit));
-            return (moved, effects.AsReadOnly(), decision.Destination);
+            return new(moved, effects.AsReadOnly(), decision.Destination);
         }
 
         int commandset = (word >> 4) & 15;
@@ -54,8 +54,8 @@ internal static class SourceEnemyAi
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
         if (EnemyPhysicalDecision.TryResolve(prepared, actorRef) is { } attack)
-            return (attack.Battle, Array.AsReadOnly<BattleEffect>([
-                .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]), attack.Destination);
+            return attack with { Effects = Array.AsReadOnly<BattleEffect>([
+                .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1));
@@ -65,7 +65,7 @@ internal static class SourceEnemyAi
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost, Target: targetRef));
         effects.Add(new(pursuit.Destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: targetRef));
         effects.Add(new("ai-command-move1", actorRef, After: 0));
-        return (BattleMovement.Commit(prepared, actorRef, pursuit.Destination, legal), effects.AsReadOnly(), pursuit.Destination);
+        return new(BattleMovement.Commit(prepared, actorRef, pursuit.Destination, legal), effects.AsReadOnly(), pursuit.Destination);
 
         sbyte[] Costs() => current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         uint Image(ushort seed) => ((uint)seed << 16) | (current.ThinkingSeed & 65535);

@@ -20,6 +20,8 @@ internal sealed class SessionAudio : IDisposable
     private long _revision;
     private long _observedSequence;
     private long? _waitToken;
+    private string? _battlefieldMusic;
+    private int _sceneMusic;
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
@@ -51,10 +53,10 @@ internal sealed class SessionAudio : IDisposable
         receipts = _receipts.ToArray(),
     };
 
-    private void Record(string operation, AudioStreamPlayer player, string cue)
+    private void Record(string operation, AudioStreamPlayer player, string cue, int? command = null)
     {
         var asset = _assets[cue];
-        _receipts.Add(new(++_sequence, operation, cue, asset.Command, asset.TimerB, asset.PcmSha256,
+        _receipts.Add(new(++_sequence, operation, cue, command ?? asset.Command, asset.TimerB, asset.PcmSha256,
             asset.SampleRate, asset.Channels, asset.SampleFrames, asset.LoopBegin, asset.LoopEnd,
             player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken));
         // Existing inspectors poll live state. Sequence makes a missed bounded window explicit.
@@ -71,7 +73,7 @@ internal sealed class SessionAudio : IDisposable
     internal void Observe(SessionResult result)
     {
         _revision = result.Snapshot.Revision;
-        _waitToken = result.Snapshot.Story.Wait?.Token.Value;
+        _waitToken = result.Snapshot.BattleScene?.Token.Value ?? result.Snapshot.Story.Wait?.Token.Value;
         if (Error is not null || result.Failure is not null || _assets.Count == 0) return;
         try
         {
@@ -170,6 +172,23 @@ internal sealed class SessionAudio : IDisposable
     {
         _music.VolumeDb = (float)(-60 * Math.Clamp(progress, 0, 1));
         if (progress >= 1) Stop(_music, MusicCue);
+    }
+
+    internal void BeginBattleScene(int music)
+    {
+        _battlefieldMusic = MusicCue;
+        _sceneMusic = music;
+        BeginSceneEnd();
+    }
+    internal void BeginSceneEnd()
+    {
+        if (MusicCue is { } cue) Record("fade-command", _music, cue, 253);
+    }
+    internal void StartBattleSceneMusic() { if (_assets.Count > 0) Play(_sceneMusic); }
+    internal void RestoreBattlefieldMusic()
+    {
+        if (_battlefieldMusic is { } cue) Play(cue);
+        _battlefieldMusic = null;
     }
 
     public void Dispose()

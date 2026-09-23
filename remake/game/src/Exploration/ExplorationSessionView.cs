@@ -125,7 +125,7 @@ public sealed partial class ExplorationSessionView : Control
 
     internal void HandleAction(GameAction action)
     {
-        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl || PresentationFailure is not null) return;
+        if (_handedOff || !IsVisibleInTree() || _session is null || _session.Current.HasBattleControl || _session.Current.BattleScene is not null || PresentationFailure is not null) return;
         var current = _session.Current;
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
@@ -195,7 +195,7 @@ public sealed partial class ExplorationSessionView : Control
         {
             _releaseBattle(); _releaseBattle = null; _battleMounted = false;
         }
-        if (_result.Failure is null && _session.Current.HasBattleControl)
+        if (_result.Failure is null && (_session.Current.HasBattleControl || _session.Current.BattleScene is not null))
         {
             _handedOff = true;
             _enterBattle!(_result);

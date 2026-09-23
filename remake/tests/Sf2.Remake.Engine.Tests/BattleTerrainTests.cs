@@ -68,7 +68,7 @@ public sealed class BattleTerrainTests
             d["terrains"]![0]!["legend"]!["t"] = new JsonObject { ["surface"] = "open", ["protection"] = protection };
             d["terrains"]![0]!["rows"]![3] = "#pptpppp#";
         });
-        var result = Stay(session);
+        var result = FinishBattleScenes(session, Stay(session));
         // ATT30-DEF4 gives26 without protection, floor(26*205/256)=20 with heavy.
         // Primary HP24 is therefore lethal only without protection; the other candidate costs4/priority11.
         var candidate = Assert.Single(result.Observations, o => o.Kind == "ai-candidate" && o.Target == new ActorRef("swordsman"));
@@ -79,7 +79,7 @@ public sealed class BattleTerrainTests
         Assert.Equal(primaryHp, result.Snapshot.Battle.GetActor(new("swordsman")).Hp);
         Assert.Equal(secondaryHp, result.Snapshot.Battle.GetActor(new("lookout")).Hp);
         Assert.Equal(493, result.Snapshot.Battle.GetActor(new("raider")).Hp);
-        Assert.Equal(0x557E1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(0x557E1234u, ConstructionSeed(result));
         // Range3 rejection retains accepted byte0, as in EnemyActionTests continued-history case.
         Assert.Equal(0x00EF0042u, result.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(new ActorRef(target), result.Snapshot.Battle.GetActor(new("raider")).LastTarget);

@@ -46,18 +46,21 @@ public sealed class CommandsetContinuationTests
         Assert.Equal(2, round.Snapshot.Battle.Round);
         Assert.Equal(0xEE281234u, round.Snapshot.Battle.MainSeed);
         var attacked = Stay(session);
+        Assert.Equal(500, attacked.Snapshot.Battle.GetActor(ally).Hp);
+        Assert.Equal(0xDAA61234u, attacked.Snapshot.Battle.MainSeed);
+        attacked = FinishBattleScenes(session, attacked);
         Assert.Equal(new MapPosition(2, y), attacked.Snapshot.Battle.GetActor(enemy).Position);
         Assert.Equal(478, attacked.Snapshot.Battle.GetActor(ally).Hp);
         Assert.Equal(493, attacked.Snapshot.Battle.GetActor(enemy).Hp);
         Assert.Equal(1, attacked.Snapshot.Battle.GetActor(ally).Exp!.Value);
-        Assert.Equal(0xDAA61234u, attacked.Snapshot.Battle.MainSeed);
+        Assert.Equal(0xDAA61234u, ConstructionSeed(attacked));
         Assert.Equal(0x02EF0042u, attacked.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(ally, attacked.Snapshot.Battle.GetActor(enemy).LastTarget);
         Assert.Equal(new[] { "ai-command-attack1" }, attacked.Observations
             .Where(o => o.Kind.StartsWith("ai-command-", StringComparison.Ordinal)).Select(o => o.Kind));
         Assert.Single(attacked.Observations, o => o.Kind == "physical-counter");
-        Assert.Equal(new ushort?[] { 3, 3, 3, 1, 12, 0, 2, 31, 0, 0, 16, 23, 10, 13 }, attacked.Observations
-            .Where(o => o.Kind.StartsWith("rng-", StringComparison.Ordinal)).Select(o => o.RandomValue));
+        Assert.Equal(new ushort?[] { 3, 3, 3, 1, 12, 0, 2, 31, 0, 0, 16, 23, 10, 13 },
+            ConstructionRolls(attacked).Select(o => o.RandomValue));
     }
 
     [Fact]

@@ -6,7 +6,7 @@ internal static class EnemyPhysicalDecision
 {
     // Already-active ATTACK1 / script3, physical-only. This is
     // a successful first command of source commandset06, not a replacement fallback policy.
-    internal static (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects, MapPosition Destination)? TryResolve(
+    internal static BattleAutomaticAction? TryResolve(
         EngineBattleState current, ActorRef actorRef)
     {
         var actor = current.GetActor(actorRef);
@@ -47,10 +47,10 @@ internal static class EnemyPhysicalDecision
         var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,
             actors: current.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
-        var (battle, effects) = PhysicalBattleAction.Resolve(prepared, actorRef, selected.Position, selected.Target.Actor);
-        return (battle, Array.AsReadOnly<BattleEffect>([
+        var action = PhysicalBattleAction.Prepare(prepared, actorRef, selected.Position, selected.Target.Actor);
+        return new(action.Prepared, Array.AsReadOnly<BattleEffect>([
             .. decisions,
             new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor),
-            .. effects]), selected.Position);
+            .. action.ConstructionEffects]), selected.Position, action);
     }
 }

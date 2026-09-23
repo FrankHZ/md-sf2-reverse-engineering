@@ -108,7 +108,8 @@ internal static class BattleCommandDispatcher
         else if (selection.Action == SessionAction.Stay)
             battle = BattleMovement.Commit(current.Battle, selection.Actor, selection.Preview.Destination);
         else if (selection.Action == SessionAction.PhysicalAttack && selection.Target is { } physicalTarget)
-            (battle, effects) = PhysicalBattleAction.Resolve(current.Battle, selection.Actor, selection.Preview.Destination, physicalTarget);
+            return BattleSceneContinuation.Begin(current, PhysicalBattleAction.Prepare(current.Battle,
+                selection.Actor, selection.Preview.Destination, physicalTarget), []);
         else return Reject(current, "incomplete-action", "selection");
         var observations = new List<SessionObservation>();
         return BattleAdvancer.Advance(BattleActionCommitter.Publish(current, battle, selection.Actor,

@@ -53,9 +53,12 @@ public sealed class BattleControlAiTests
         Assert.Equal(before.ThinkingSeed, stayed.Snapshot.Battle.ThinkingSeed);
         Assert.Null(stayed.Snapshot.Battle.GetActor(raider).LastTarget);
         var attacked = Stay(attackSession);
+        Assert.Equal((500, 500), ((int)attacked.Snapshot.Battle.GetActor(new("swordsman")).Hp, attacked.Snapshot.Battle.GetActor(raider).Hp));
+        Assert.Equal(0x557E1234u, attacked.Snapshot.Battle.MainSeed);
+        attacked = FinishBattleScenes(attackSession, attacked);
         Assert.Equal((478, 493, 1), ((int)attacked.Snapshot.Battle.GetActor(new("swordsman")).Hp,
             attacked.Snapshot.Battle.GetActor(raider).Hp, attacked.Snapshot.Battle.GetActor(new("swordsman")).Exp!.Value));
-        Assert.Equal(0x557E1234u, attacked.Snapshot.Battle.MainSeed);
+        Assert.Equal(0x557E1234u, ConstructionSeed(attacked));
         Assert.Equal(0x02EF0042u, attacked.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(new ActorRef("swordsman"), attacked.Snapshot.Battle.GetActor(raider).LastTarget);
         Assert.Equal(new ActorRef("lookout"), attacked.Snapshot.Selection!.Actor);

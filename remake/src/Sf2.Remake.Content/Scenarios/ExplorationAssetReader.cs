@@ -87,7 +87,7 @@ internal static class ExplorationAssetReader
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio));
     }
 
-    private static ExplorationRaster Raster(JsonElement row)
+    internal static ExplorationRaster Raster(JsonElement row)
     {
         Object(row, "raster", "width", "height", "format", "data", "sha256");
         int width = Number(row, "width", 1, 2048), height = Number(row, "height", 1, 2048);

@@ -40,7 +40,8 @@ public sealed class BattleFactionOrderTests
         Assert.Equal(SessionFailureKind.IllegalCommand, friendly.Failure!.Kind);
         Assert.Same(before.Battle, session.Current.Battle);
         Accept(session, new SelectTarget(enemy)); var result = Accept(session, new Confirm());
-        Assert.Equal(0x0A7F1234u, result.Snapshot.Battle.MainSeed);
+        Assert.Equal(0x0A7F1234u, result.Snapshot.Battle.MainSeed); // construction only; HP/EXP still pending
+        result = FinishBattleScenes(session, result);
         Assert.Equal(exp, result.Snapshot.Battle.GetActor(actor).Exp);
         Assert.Equal(gold + 19, result.Snapshot.Battle.Gold);
         Assert.Equal((ushort)1, result.Snapshot.Battle.GetActor(actor).Kills);

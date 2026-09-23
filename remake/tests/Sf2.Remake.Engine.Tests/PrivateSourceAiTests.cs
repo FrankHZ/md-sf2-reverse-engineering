@@ -48,18 +48,18 @@ public sealed class PrivateSourceAiTests
         SessionResult? action = null;
         for (int turns = 0; turns < 12; turns++)
         {
-            action = Stay(session);
+            action = FinishBattleScenes(session, Stay(session));
             if (action.Observations.Any(row => row.Kind == "physical-first")) break;
         }
         // Same actual command trajectory as the retained ActualRoundSixAttack reference comparison.
         Assert.Null(action!.Failure); Assert.Equal(SessionStopReason.PlayerInput, action.StopReason);
         Assert.Equal(6, session.Current.Battle.Round); Assert.Equal(6, session.Current.Battle.Cursor);
         Assert.Equal(new ActorRef("ally-0"), session.Current.Selection!.Actor);
-        Assert.Equal(0xAF881234u, session.Current.Battle.MainSeed); Assert.Equal(0x01340000u, session.Current.Battle.ThinkingSeed);
+        Assert.Equal(0xAF881234u, ConstructionSeed(action)); Assert.Equal(0x01340000u, session.Current.Battle.ThinkingSeed);
         Assert.Equal(new MapPosition(11, 14), session.Current.Battle.GetActor(new("enemy-4")).Position);
         Assert.Equal((ushort)9, session.Current.Battle.GetActor(new("ally-0")).Hp);
         Assert.Equal(new ActorRef("ally-0"), session.Current.Battle.GetActor(new("enemy-4")).LastTarget);
-        Assert.Equal(new ushort?[] { 12, 30, 0, 0, 11, 21 }, action.Observations.Where(row => row.Kind.StartsWith("rng-", StringComparison.Ordinal)).Select(row => row.RandomValue));
+        Assert.Equal(new ushort?[] { 12, 30, 0, 0, 11, 21 }, ConstructionRolls(action).Select(row => row.RandomValue));
         Assert.Same(definition, session.Definition); Assert.Null(session.Current.Battle.Gold);
         foreach (var actor in session.Current.Battle.Actors)
         {

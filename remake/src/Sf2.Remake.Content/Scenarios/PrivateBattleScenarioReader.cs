@@ -10,7 +10,7 @@ using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 namespace Sf2.Remake.Content.Scenarios;
 
 public sealed class PrivateBattleScenarioReader(string placementPath, string scenePath, string terrainPath,
-    string staticPath, string enemyPath, string goldPath, string controlledStartPath) : IScenarioSource
+    string staticPath, string enemyPath, string goldPath, string controlledStartPath, string? battleSceneContentPath = null) : IScenarioSource
 {
     public ScenarioReadResult Read()
     {
@@ -24,7 +24,11 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             var encounter = ((BattleEncounterReadAccepted)result).Definition;
             var start = ControlledBattleStartReader.Read(controlledStartPath);
             var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, goldPath, encounter, start);
-            return Assemble(definitions, start);
+            var accepted = Assemble(definitions, start);
+            if (battleSceneContentPath is null) return accepted;
+            var scenes = BattleSceneContentReader.Read(battleSceneContentPath, definitions);
+            return new ScenarioReadAccepted(new(accepted.Definition.Package, accepted.Definition.Encounters.Values,
+                definitions, battleScenes: scenes), accepted.Start);
         }
         catch (AdmissionIssue issue) { return new ScenarioReadRejected(issue.Failure); }
         catch (PrivateBattleEncounterReader.EncounterReadException issue)
