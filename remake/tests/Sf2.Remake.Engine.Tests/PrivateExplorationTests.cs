@@ -66,6 +66,38 @@ public sealed class PrivateExplorationTests
         Path.Combine(AppContext.BaseDirectory, "fixtures", "opening-" + name + ".json")));
     private static JsonElement Record(JsonDocument fixture) => fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0];
 
+    [PrivateInputFact(World)]
+    public void SelectedR1WalkingPhasesResumeBeforeTheFirstAutonomousDraw()
+    {
+        var session = StartSource("map3-opening-start", opening: true);
+        var world = session.Current.Exploration!;
+        var allocation = world.AllEntities.Select(entity => (entity.Slot, entity.Entity)).ToArray();
+        var aliases = world.Aliases.ToDictionary(pair => pair.Key, pair => pair.Value);
+        Assert.Equal(20, allocation.Length);
+        Assert.Equal(30, Entity(session, 130).Motion.WaitTimer);
+        Assert.Equal(0, Entity(session, 130).ActionCursor);
+        Assert.Equal(9, Entity(session, 131).ActionCursor);
+        Assert.True(Entity(session, 131).WaitingForMotion);
+        Assert.Equal((short)3453, Entity(session, 133).Motion.Y);
+        Assert.Equal((short)3072, Entity(session, 133).Motion.YDestination);
+        Assert.Equal((short)-2, Entity(session, 133).Motion.YVelocity);
+        Assert.Equal((ushort)384, Entity(session, 133).Motion.YTravel);
+        Assert.True(Entity(session, 133).WaitingForMotion);
+
+        Accept(session, new AdvanceSimulation());
+        Assert.Equal(0xC6320000u, session.Current.Exploration!.Party.MainSeed);
+        Assert.Equal(allocation, session.Current.Exploration.AllEntities.Select(entity => (entity.Slot, entity.Entity)));
+        Assert.Equal(aliases, session.Current.Exploration.Aliases);
+        Assert.Equal(9, Entity(session, 130).ActionCursor);
+        Assert.True(Entity(session, 130).WaitingForMotion);
+        Assert.Equal((short)5376, Entity(session, 130).Motion.YDestination);
+        Assert.Equal((byte)1, Entity(session, 131).Motion.WaitTimer);
+        Assert.False(Entity(session, 131).WaitingForMotion);
+        Assert.Equal((short)3450, Entity(session, 133).Motion.Y);
+        Assert.Equal((byte)0, Entity(session, 133).Motion.WaitTimer);
+        Assert.True(Entity(session, 133).WaitingForMotion);
+    }
+
     internal static GameSession RunOpening(bool yes, List<SessionObservation> observations, List<(int Id, int? Speaker)> texts)
     {
         var session = StartSource("map3-opening-start", opening: true);
@@ -83,10 +115,24 @@ public sealed class PrivateExplorationTests
         Assert.Equal(new[] { 0, 2, 5 }, Enumerable.Range(0, 3).Select(id => Entity(session, id).Sprite!.Value));
         var identity = session.Current.SessionId;
         using var r2 = Fixture("r2");
-        foreach (var edge in Record(r2).GetProperty("logicalInputTrace").EnumerateArray())
+        var inputTrace = Record(r2).GetProperty("logicalInputTrace").EnumerateArray().ToArray();
+        string previousInputOutcome = "start";
+        for (int index = 0; index < inputTrace.Length; index++)
         {
+            var edge = inputTrace[index];
             Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
-            Assert.Equal(new MapPosition(edge.GetProperty("x").GetInt32(), edge.GetProperty("y").GetInt32()), Entity(session, 0).Position);
+            var expectedPosition = new MapPosition(edge.GetProperty("x").GetInt32(), edge.GetProperty("y").GetInt32());
+            var actualPosition = Entity(session, 0).Position;
+            if (expectedPosition != actualPosition)
+            {
+                var walker = Entity(session, 130);
+                var world = session.Current.Exploration!;
+                bool occupied = EntityMotion.FieldObstructed(expectedPosition.X * 384, expectedPosition.Y * 384,
+                    world.AllEntities.Where(entity => entity.Slot != 0 && entity.Visible).Select(entity => entity.Motion));
+                Assert.Fail($"input {index}: expected {expectedPosition}, actual {actualPosition}; previous {previousInputOutcome}; " +
+                    $"walker5=({walker.Motion.X},{walker.Motion.Y})->({walker.Motion.XDestination},{walker.Motion.YDestination}) " +
+                    $"flagsA={walker.Motion.FlagsA}; expected tile occupied={occupied}");
+            }
             var input = edge.GetProperty("input").GetString();
             SessionCommand command;
             if (input == "C")
@@ -99,7 +145,9 @@ public sealed class PrivateExplorationTests
             }
             else command = new Move(input switch { "Left" => ExplorationDirection.West, "Right" => ExplorationDirection.East,
                 "Up" => ExplorationDirection.North, "Down" => ExplorationDirection.South, _ => throw new InvalidOperationException() });
-            observations.AddRange(Accept(session, command).Observations);
+            var commandResult = Accept(session, command);
+            observations.AddRange(commandResult.Observations);
+            previousInputOutcome = string.Join(",", commandResult.Observations.Select(observation => observation.Kind));
             if (session.Current.StopReason != SessionStopReason.PlayerInput)
                 Assert.Null(RunUntilStop(session, observations: observations, texts: texts, yes: yes).Failure);
             Assert.Equal(identity, session.Current.SessionId);

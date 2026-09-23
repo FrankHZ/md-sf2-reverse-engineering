@@ -15,6 +15,7 @@ var choices: Array = []
 var choice_index := 0
 var seen_texts: Dictionary = {}
 var result_signals := 0
+var observed_nodes: Array[Node] = []
 
 func result_observed(raw: String) -> void:
     result_signals += 1
@@ -28,6 +29,13 @@ func observe_node(node: Node) -> void:
     # Optional accepted-host interface; older hosts remain explicitly sparse.
     if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", result_observed):
         node.connect("SessionResultObserved", result_observed)
+        observed_nodes.append(node)
+
+func stop_observing() -> void:
+    node_added.disconnect(observe_node)
+    for node in observed_nodes:
+        if is_instance_valid(node) and node.is_connected("SessionResultObserved", result_observed):
+            node.disconnect("SessionResultObserved", result_observed)
 
 func _initialize() -> void:
     call_deferred("run")
@@ -157,6 +165,7 @@ func run() -> void:
                 if s.get("actor") != "ally-" + str(int(plan.nextDecision.actor)) or s.get("round") != plan.nextDecision.round:
                     failure = "next-decision-actor-mismatch"
     state("terminal")
+    stop_observing()
     output.store_line(JSON.stringify({"terminal":true,"failure":failure,"sequence":sequence,
         "inputOrdinal":input_ordinal,"sessionId":session_id,"resultSignals":result_signals,
         "resultStream":"signal" if result_signals > 0 else "latest-result-only"}))
