@@ -22,6 +22,9 @@ UPSTREAM = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 ROM = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 OBSERVER = "8349604F919EB7071897CF9921ED51F951F5875A745B51289257B3F7CBB7D75B"
 RUNNER = "97D424459D190B843598642F078BBF0CEDE2C7787F8FC0EB5492255E263D1339"
+EXTENSION_SOURCE = "58c5a94a4c5349fd221a130a0970222962715528"
+EXTENSION_OBSERVER = "85520F65CE34292430F8779B8AA2EB4E5B739F63DEBFF0A284D9398598BFF061"
+EXTENSION_RUNNER = "0E41A02DD87532D0D178A5E574EEA3219CCB12977702A1A3824265AB7C8A8319"
 ACTIONS = {0: "Attack", 1: "CastSpell", 2: "UseItem", 3: "Stay"}
 
 
@@ -132,7 +135,7 @@ def binding(row, loc):
     return result
 
 
-def coverage():
+def coverage(extension_bound=False):
     # These are field groups of the existing ten-layer contract, not a public schema.
     groups = [
         (
@@ -278,8 +281,8 @@ def coverage():
         (
             7,
             "next nonneutral input and effect (RA-12)",
-            "missing-original-branch",
-            "not in accepted #504",
+            "decoded" if extension_bound else "accepted-extension-unbound",
+            "postVictoryInput" if extension_bound else "supply accepted #515 extension explicitly",
             "map3-battle01-continuous-scenario.md",
         ),
         (
@@ -353,7 +356,203 @@ def coverage():
     ]
 
 
-def project(evidence: Path):
+def pair_reader(evidence):
+    def evidence_path(relative):
+        require(relative == "local", "unexpected pair-reader path request")
+        return evidence.parent
+
+    reader = FunctionType(
+        _read_segment.__code__, {**_read_segment.__globals__, "repo_path": evidence_path}
+    )
+    reader.__kwdefaults__ = _read_segment.__kwdefaults__
+    return reader
+
+
+def project_extension(extension: Path, evidence: Path, endpoint):
+    extension = extension.resolve(strict=True)
+    require(
+        extension.parent.name == "local" and extension.name == "issue515",
+        "select the retained local/issue515 extension root",
+    )
+    reader = pair_reader(extension)
+    old_reader = pair_reader(evidence)
+    previous = previous_pair = previous_report = previous_meta = None
+    lineage = []
+    for number in range(2, 21):
+        directory = extension / f"prepared-{number:02d}"
+        pair, meta = reader(directory, require_resumable=number != 20)
+        report = load_json(directory / "candidate.json")
+        require(
+            (
+                report["RomSha256"],
+                report["SourceCommit"],
+                report["ObserverSha256"],
+                report["RunnerSha256"],
+            )
+            == (ROM, UPSTREAM, EXTENSION_OBSERVER, EXTENSION_RUNNER),
+            "not the accepted #515 acquisition source",
+        )
+        for filename, key in (
+            ("config.json", "ConfigurationSha256"),
+            ("input.json", "InputSha256"),
+        ):
+            require(
+                digest(directory / filename) == report[key],
+                f"extension {filename} identity mismatch",
+            )
+        selection = report["Segment"]
+        if previous is None:
+            require(selection["parentDirectory"] is None, "extension must start at fresh R1")
+        else:
+            require(
+                Path(selection["parentDirectory"]).resolve() == previous
+                and selection["parentPairSha256"] == digest(previous / "runtime/segment-pair.json")
+                and all(report[k] == previous_report[k] for k in SEGMENT_IDENTITIES)
+                and selection["priorFrames"] == previous_pair["deliveredFrames"]
+                and selection["priorActiveSeconds"] == previous_pair["activeSeconds"]
+                and selection["priorBatches"] == previous_meta["batches"],
+                "extension parent lineage mismatch",
+            )
+        if number < 20:
+            _, old_meta = old_reader(evidence / f"prepared-{number + 66}", require_resumable=True)
+            require(
+                (meta["original"], meta["core"]) == (old_meta["original"], old_meta["core"]),
+                "independent extension prefix differs from accepted winning chain",
+            )
+        lineage.append(
+            {
+                "segment": number,
+                "pairSha256": digest(directory / "runtime/segment-pair.json"),
+                "resumable": pair["resumable"],
+            }
+        )
+        previous, previous_pair, previous_report, previous_meta = directory, pair, report, meta
+
+    terminal = load_json(extension / "prepared-20/runtime/observer.observed.json")["terminal"]
+    before = terminal["stop"]["facts"]["beforeInput"]
+    old = load_json(evidence / "prepared-86/runtime/observer.observed.json")["terminal"]
+    for key in (
+        "map",
+        "battle",
+        "rawX",
+        "rawY",
+        "x",
+        "y",
+        "facing",
+        "flags",
+        "rngBytes",
+        "rngCopyByte",
+        "rawTime",
+    ):
+        require(
+            before["state"][key] == old[key], f"extension pre-input {key} differs from old endpoint"
+        )
+    for key in ("firstFrame", "completedFrame", "camera", "flags", "player", "accounting"):
+        require(
+            before[key] == old["stop"]["facts"][key], f"extension pre-input {key} readiness differs"
+        )
+    require(
+        (before["state"]["map"], before["state"]["x"], before["state"]["y"])
+        == (endpoint["state"]["map"], endpoint["state"]["x"], endpoint["state"]["y"]),
+        "extension pre-input does not match projected endpoint",
+    )
+    selected = {}
+    for line, row in rows(extension / "prepared-20/runtime/checkpoints.jsonl"):
+        if row["kind"] in (
+            "field:post-victory-ready",
+            "field:post-victory-input-request",
+            "field:post-victory-input-read",
+            "field:post-victory-input-accepted",
+            "stop:controllable-5b",
+        ):
+            require(row["kind"] not in selected, "duplicate extension boundary")
+            selected[row["kind"]] = (line, row)
+    require(len(selected) == 5, "missing extension boundary")
+    ready = selected["field:post-victory-ready"][1]
+    request = selected["field:post-victory-input-request"][1]
+    poll = selected["field:post-victory-input-read"][1]
+    accepted = selected["field:post-victory-input-accepted"][1]
+    stop_line, stop = selected["stop:controllable-5b"]
+    require(
+        ready["order"] < request["order"] < poll["order"] < accepted["order"] < stop["order"]
+        and request["facts"]["button"] == "Down"
+        and poll["facts"] == terminal["stop"]["facts"]["input"]["poll"]
+        and accepted["facts"] == terminal["stop"]["facts"]["input"]["acceptance"]
+        and terminal["stop"]["facts"]["input"]["requestId"] == request["facts"]["requestId"]
+        and poll["facts"]["value"] == 2
+        and poll["facts"]["d7"] == 48
+        and (accepted["facts"]["d4"], accepted["facts"]["d5"]) == (0, 384)
+        and (terminal["map"], terminal["battle"], terminal["x"], terminal["y"], terminal["facing"])
+        == (57, 255, 5, 13, 3),
+        "extension input/effect boundary mismatch",
+    )
+    require(
+        terminal["rawX"] == (before["state"]["rawX"] + accepted["facts"]["d4"]) & 65535
+        and terminal["rawY"] == (before["state"]["rawY"] + accepted["facts"]["d5"]) & 65535
+        and terminal["flags"] == before["state"]["flags"]
+        and all(
+            terminal["accounting"][key] == before["accounting"]["accounting"][key]
+            for key in (
+                "party",
+                "joined",
+                "active",
+                "gold",
+                "allies",
+                "combatants",
+                "regionFlags",
+                "rngBytes",
+                "rngCopyByte",
+            )
+        )
+        and terminal["accounting"]["party"] == endpoint["accounting"]["party"]
+        and terminal["accounting"]["gold"] == endpoint["accounting"]["gold"]
+        and stop["facts"]["completedFrame"] == stop["facts"]["firstFrame"] + 1
+        and stop["facts"]["firstFrame"] > poll["frame"]
+        and not stop["facts"]["pending"]
+        and not any(stop["facts"]["consumers"].values())
+        and stop["facts"]["inputPoll"]["value"] == 0,
+        "extension state/accounting effect mismatch",
+    )
+    return {
+        "sourceCommit": EXTENSION_SOURCE,
+        "lineage": lineage,
+        "before": {
+            "source": location(20, selected["field:post-victory-ready"][0], ready),
+            "map": before["state"]["map"],
+            "position": [before["state"]["x"], before["state"]["y"]],
+            "frame": before["completedFrame"],
+        },
+        "input": {
+            "direction": "Down",
+            "frame": poll["frame"],
+            "requestId": request["facts"]["requestId"],
+            "request": location(20, selected["field:post-victory-input-request"][0], request),
+            "read": location(20, selected["field:post-victory-input-read"][0], poll),
+            "acceptance": location(20, selected["field:post-victory-input-accepted"][0], accepted),
+            "delta": {k: accepted["facts"][k] for k in ("d2", "d3", "d4", "d5")},
+        },
+        "after": {
+            "source": location(20, stop_line, stop),
+            "state": state(stop),
+            "accounting": accounting(terminal["accounting"]),
+            "readiness": {
+                k: terminal["stop"]["facts"][k]
+                for k in (
+                    "firstFrame",
+                    "completedFrame",
+                    "camera",
+                    "flags",
+                    "player",
+                    "pending",
+                    "consumers",
+                    "inputPoll",
+                )
+            },
+        },
+    }
+
+
+def project(evidence: Path, extension: Path | None = None):
     evidence = evidence.resolve(strict=True)
     require(
         evidence.parent.name == "local" and evidence.name == "issue496",
@@ -363,14 +562,7 @@ def project(evidence: Path):
     # Reuse the exact pair validator with a private globals copy. Its only repo_path
     # access is the input containment check. Never mutate the acquisition module or
     # redirect its other helpers (especially resume accounting / sealing).
-    def evidence_path(relative):
-        require(relative == "local", "unexpected pair-reader path request")
-        return evidence.parent
-
-    reader = FunctionType(
-        _read_segment.__code__, {**_read_segment.__globals__, "repo_path": evidence_path}
-    )
-    reader.__kwdefaults__ = _read_segment.__kwdefaults__
+    reader = pair_reader(evidence)
     out = {
         k: []
         for k in (
@@ -395,7 +587,7 @@ def project(evidence: Path):
         sourceCommit=SOURCE,
         upstream=UPSTREAM,
         romSha256=ROM,
-        coverage=coverage(),
+        coverage=coverage(extension is not None),
         comparisonResult="Unavailable",
         reason="reference projection only; no actual H4 run",
     )
@@ -864,12 +1056,15 @@ def project(evidence: Path):
         "controllerRequests": sum(q["role"] == "controller-schedule" for q in out["requests"]),
         "comparisonResult": "Unavailable",
     }
+    if extension is not None:
+        out["postVictoryInput"] = project_extension(extension, evidence, out["endpoint"])
     return out
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence-root", type=Path, required=True)
+    parser.add_argument("--extension-root", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -880,7 +1075,12 @@ def main():
     require(
         not output.is_relative_to(args.evidence_root.resolve()), "output cannot overwrite evidence"
     )
-    result = project(args.evidence_root)
+    if args.extension_root is not None:
+        require(
+            not output.is_relative_to(args.extension_root.resolve()),
+            "output cannot overwrite extension",
+        )
+    result = project(args.evidence_root, args.extension_root)
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8") as stream:
         json.dump(result, stream, ensure_ascii=False, separators=(",", ":"))
