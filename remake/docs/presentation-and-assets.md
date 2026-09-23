@@ -812,7 +812,8 @@ only prove the actor/loadout combinations they actually reached.
 **Confirmed, bounded host observations:** ordinary keys consume source item frames/text, one-sided
 status/resources, target/actor switches, SFX113, EXP/growth and return to battlefield control. The
 Map40 source-world startup heals the party before battle, so that observation covers full-HP use;
-a separate controlled battle entry covers wounded self/other-ally recovery without claiming world audio.
+a separate ordinary-input battle run first obtains actual enemy damage, then covers wounded
+self/other-ally recovery without claiming world audio.
 Normal/reduced-flash source-world runs agree on gameplay, inventory and bounded RNG records. A narrow
 Chester physical observation consumes the corrected live Wooden Stick resource and sequence2.
 
@@ -827,11 +828,9 @@ For the affected engine behavior, select `MedicalHerbTests|BattleSceneTests` wit
 `dotnet test --filter` (fully qualified names), then build the adapter. The same committed engine-scope
 planner applies. The existing native observer accepts `SF2_BATTLE_SCENE_HERB=1`; it uses Chester
 self-use and Sarah-to-Bowie only as controlled observation inputs, not gameplay legality rules.
-Select the normal source battle inputs and the fresh candidate as above. For wounded observation,
-copy the tracked opening party to a new ignored JSON, set Bowie HP6 and Chester HP3, retain all
-inventory words and use `--private-battle-start $partyPath`. It covers HP, inventory and projection;
-standalone entry has no exploration audio consumer. For the source-world/audio pair, retain Sarah
-EXP99 in that controlled party, set `SF2_PRIVATE_CONTROLLED_START` to its absolute path and
+Select the normal source battle inputs and the fresh candidate as above. For the source-world/audio
+pair, copy the tracked opening party to a fresh ignored JSON, retain
+all inventory words and set Sarah EXP99. Set `SF2_PRIVATE_CONTROLLED_START` to that absolute path and
 `SF2_PRIVATE_EXPLORATION_CONTENT` to the existing world without copying it, and set
 `SF2_BATTLE_SCENE_WORLD=1`. Use `--private-exploration-start $explorationStart` with the controlled
 Map40 boundary below, plus a fresh output path for each run. The world program's healing is retained.
@@ -843,7 +842,14 @@ Map40 boundary below, plus a fresh output path for each run. The world program's
 Pass `--input-settings $settingsPath` containing `{"formatVersion":1,"reducedFlash":true}` for the
 paired accessibility run. `SF2_BATTLE_SCENE_CHESTER=1` instead selects the narrow physical binding
 observation with ordinary Tower entrance movement; its controlled party retains the starting
-inventory and gives Chester HP/maxHP40 and defense20. These modes use the same fresh-output/error
+inventory and gives Chester HP/maxHP40 and defense20. For positive recovery, set `SF2_BATTLE_SCENE_HERB=1` and
+`SF2_BATTLE_SCENE_WOUNDED=1` with the same controlled Chester HP/maxHP40/defense20 party,
+Sarah EXP0 and `--private-battle-start $partyPath`. The observer walks Chester into actual enemy
+attacks, brings Sarah alongside using ordinary movement, then uses Sarah's herbs on Chester and herself.
+Each action must begin below live maxHP and increase HP. Supplying a low starting HP alone does not
+establish injury: the observed battle initialization restores HP. Chained enemy scenes are identified
+by their new initialization token and the preceding scene-ended event, without requiring a hidden
+frame between scenes. These modes use the same fresh-output/error
 contract and no screenshots, original emulator, runtime state setters or fixed comparison seeds.
 
 **Unfinished healing work:** HEAL spells still use the existing scalar command path. They do not
