@@ -24,7 +24,7 @@ internal static class BattleSceneContentReader
             "scene-content-unavailable", "battleScenes", "Battle scene content cannot be read.")); }
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 16 });
         var root = document.RootElement;
-        Object(root, "battleScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames");
+        Object(root, "battleScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing");
         _ = Number(root, "version", 1, 1);
         Require(Text(root, "encounter") == "battle-" + definitions.Encounter.Battle.Id, "scene-encounter", "battleScenes.encounter");
         var rasters = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
@@ -36,7 +36,7 @@ internal static class BattleSceneContentReader
         var enemies = new Dictionary<ActorRef, BattleSceneActorVisual>();
         foreach (var row in Array(root, "actors"))
         {
-            Object(row, "sceneActor", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences");
+            Object(row, "sceneActor", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks");
             string side = Text(row, "side");
             int sprite = Number(row, "sprite", 0, 255), palette = Number(row, "palette", 0, 255);
             int? item = row.GetProperty("item").ValueKind == JsonValueKind.Null ? null : Number(row, "item", 0, 127);
@@ -46,7 +46,7 @@ internal static class BattleSceneContentReader
             var sequences = new Dictionary<string, BattleSceneAnimation>(StringComparer.Ordinal);
             foreach (var sequence in row.GetProperty("sequences").EnumerateObject())
             {
-                Require(sequence.Name is "idle" or "attack" or "dodge" or "item", "scene-sequence", "battleScenes.sequences");
+                Require(sequence.Name is "idle" or "attack" or "dodge" or "item" or "cast", "scene-sequence", "battleScenes.sequences");
                 var value = sequence.Value;
                 Object(value, "sceneSequence", "index", "trigger", "spell", "terminate", "idleWeapon", "frames");
                 var entries = Array(value, "frames").Select(frame =>
@@ -68,7 +68,8 @@ internal static class BattleSceneContentReader
                 .Append(sequence.IdleWeapon)).OfType<BattleSceneWeaponFrame>())
                 Require((weapon.Frame & 7) < weapons.Length, "scene-weapon-frame-index", "battleScenes.weaponFrames");
             var visual = new BattleSceneActorVisual(sprite, palette, item, System.Array.AsReadOnly(frames),
-                System.Array.AsReadOnly(weapons), new ReadOnlyDictionary<string, BattleSceneAnimation>(sequences));
+                System.Array.AsReadOnly(weapons), new ReadOnlyDictionary<string, BattleSceneAnimation>(sequences),
+                row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
                 Require(sprite is 0 or 1 or 2, "scene-class", "battleScenes.actors", true);
@@ -98,10 +99,24 @@ internal static class BattleSceneContentReader
             .All(texts.ContainsKey), "scene-required-text", "battleScenes.texts");
         var names = Strings(root, "memberNames");
         Require(names.Length >= 3, "scene-member-names", "battleScenes.memberNames");
+        HealingSceneVisual? healing = null;
+        if (root.TryGetProperty("healing", out var heal))
+        {
+            Object(heal, "sceneHealing", "bodies", "wings", "dust");
+            var bodies = Strings(heal, "bodies"); var wings = Strings(heal, "wings"); var dust = Strings(heal, "dust");
+            Require(bodies.Length == 2 && wings.Length == 2 && dust.Length == 5 &&
+                bodies.Concat(wings).Concat(dust).All(rasters.ContainsKey), "scene-healing-resources", "battleScenes.healing");
+            Require(texts.ContainsKey(274) && allies.TryGetValue(BattleClassRule.UnpromotedPriest, out var priest) &&
+                priest.IdleTicks > 0 && priest.Sequences.TryGetValue("cast", out var cast) &&
+                !cast.Terminate && cast.Frames.Count > 1 &&
+                (cast.Trigger == 0 || cast.Trigger >= 2 && cast.Trigger <= cast.Frames.Count),
+                "scene-healing-cast", "battleScenes.healing");
+            healing = new(System.Array.AsReadOnly(bodies), System.Array.AsReadOnly(wings), System.Array.AsReadOnly(dust));
+        }
         return new(Text(root, "encounter"), background, ground, new ReadOnlyDictionary<string, ExplorationRaster>(rasters),
             new ReadOnlyDictionary<BattleClassRule, BattleSceneActorVisual>(allies), new ReadOnlyDictionary<ActorRef, BattleSceneActorVisual>(enemies),
             new ReadOnlyDictionary<int, string>(texts),
-            System.Array.AsReadOnly(names));
+            System.Array.AsReadOnly(names), healing);
     }
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>

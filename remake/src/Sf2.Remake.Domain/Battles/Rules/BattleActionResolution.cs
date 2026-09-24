@@ -15,11 +15,15 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null)
 {
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? actor.With(hp: reaction.HpAfter, mp: reaction.MpAfter) : actor));
+            ? actor.With(hp: reaction.HpAfter, mp: Spell is null ? reaction.MpAfter : actor.Mp) : actor));
+
+    internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
+        current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
+            ? actor.With(mp: checked((byte)(actor.Mp - Spell!.MpCost))) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current)
     {

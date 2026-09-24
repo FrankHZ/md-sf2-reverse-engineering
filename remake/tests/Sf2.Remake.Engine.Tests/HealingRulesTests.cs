@@ -5,6 +5,39 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class HealingRulesTests
 {
+    [Theory]
+    [InlineData("medic-a")]
+    [InlineData("guard-a")]
+    public void PreparedSpellDefersResourcesAndPreservesCasterMpDuringSelfRecovery(string targetName)
+    {
+        var battle = EngineTestContent.Start().Current.Battle;
+        var actor = new ActorRef("medic-a"); var target = new ActorRef(targetName);
+        if (target != actor)
+        {
+            var origin = battle.GetActor(actor).Position!;
+            battle = battle.With(actors: battle.Actors.Select(a => a.Actor == target
+                ? a.With(position: new(origin.X + 1, origin.Y)) : a));
+        }
+        var before = battle.GetActor(actor); var patient = battle.GetActor(target);
+        var action = PlayerHealing.Prepare(battle, actor, before.Position!, new("mend", 1), target);
+        Assert.Equal(before.Mp, action.Prepared.GetActor(actor).Mp);
+        Assert.Equal(patient.Hp, action.Prepared.GetActor(target).Hp);
+        Assert.Equal(before.Exp, action.Prepared.GetActor(actor).Exp);
+        Assert.Equal(2, action.ConstructionEffects.Count);
+        Assert.All(action.ConstructionEffects, effect => Assert.Equal((ushort)16, effect.RandomRange));
+        var cast = action.ApplySpellCost(action.Prepared);
+        Assert.Equal(before.Mp - 3, cast.GetActor(actor).Mp);
+        Assert.Equal(patient.Hp, cast.GetActor(target).Hp);
+        var healed = action.ApplyReaction(cast, Assert.Single(action.Reactions));
+        Assert.Equal(Math.Min(patient.MaxHp, patient.Hp + 15), healed.GetActor(target).Hp);
+        Assert.Equal(before.Mp - 3, healed.GetActor(actor).Mp);
+        Assert.Equal(before.Exp, healed.GetActor(actor).Exp);
+        var credited = action.CreditReward(healed);
+        Assert.True(credited.Battle.GetActor(actor).Exp > before.Exp);
+        Assert.Equal(healed.MainSeed, credited.Battle.MainSeed);
+        Assert.Equal(battle.GetActor(actor).Mp, before.Mp);
+    }
+
     // HEAL contract and independent H3 values, plus an authored different-stat input.
     [Theory]
     [InlineData(95, 100, 20, 0, 0x12341234u, 5, 10, 9, 17, 100, 9, 0x04B61234u)]

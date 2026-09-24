@@ -10,6 +10,8 @@ internal static class PlayerHealing
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
+        if (spellRef.Level is < 1 or > 3)
+            throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest)
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
@@ -33,7 +35,7 @@ internal static class PlayerHealing
         return target;
     }
 
-    internal static (EngineBattleState State, IReadOnlyList<BattleEffect> Effects) Resolve(
+    internal static BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
@@ -42,15 +44,16 @@ internal static class PlayerHealing
         var target = RequireTarget(battle, actorRef, destination, spell, targetRef);
         var resolution = HealingRules.ResolvePriest(new(target.Hp, target.MaxHp, actor.Mp,
             actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true), spell.Power, spell.MpCost, battle.MainSeed));
-        uint seed = resolution.MainAfter;
-        List<BattleEffect> effects = [new("mp", actorRef, actor.Mp, resolution.MpAfter),
-            new("hp", targetRef, target.Hp, resolution.HpAfter)];
-        var rewarded = BattleGrowthRules.Award(actor, resolution.AwardedExp, ref seed, effects);
-        var actors = battle.Actors.Select(a =>
-        {
-            var changed = a.Actor == actorRef ? rewarded.With(mp: resolution.MpAfter, position: destination) : a;
-            return a.Actor == targetRef ? changed.With(hp: resolution.HpAfter) : changed;
-        });
-        return (battle.With(actors: actors, mainSeed: seed), effects.AsReadOnly());
+        List<BattleEffect> effects = [
+            new("rng-exp-plus", actorRef, resolution.PlusRoll.Before, resolution.PlusRoll.After, 16, resolution.PlusRoll.Value),
+            new("rng-exp-minus", actorRef, resolution.MinusRoll.Before, resolution.MinusRoll.After, 16, resolution.MinusRoll.Value)];
+        uint validationSeed = resolution.MainAfter;
+        _ = BattleGrowthRules.Award(actor, resolution.AwardedExp, ref validationSeed, []);
+        var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
+            ? a.With(position: destination) : a), mainSeed: resolution.MainAfter);
+        return new(prepared, actorRef, destination,
+            [new(actorRef, targetRef, "heal", BattleReactionKind.Recovery, target.Hp, resolution.HpAfter,
+                target.Mp, target.Mp, Amount: resolution.Recovery)], new(actorRef, resolution.AwardedExp),
+            effects.AsReadOnly(), [], Spell: spell);
     }
 }
