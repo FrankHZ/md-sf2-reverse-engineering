@@ -73,10 +73,12 @@ speed26/27, flags28/29, animation counter30 and script wait31.
 The original slot5 has velocity(0,6), travel(0,384), action pointer `0xFF5628`,
 animation6/wait0; slot8 has(0,9), (0,384), `0xFF568C`, animation9/wait0.
 All48 original records and64 index bytes are retained at first callback and endpoint.
-The remake receipt omits velocities/travel, speedY, animation and wait counters;
-its action cursor is an instruction index, not an original action address.
+The historical PR564 receipt omits velocities/travel, speedY, animation and wait
+counters. The [phase observation below](#first-warp-entity-phase-readback) supplies
+these fields. An engine action cursor remains an instruction index, not an original
+action address.
 
-**Unknown:** why the available NPC positions and player flags differ, full
+**Unknown at that result boundary:** why the available NPC positions and player flags differ, full
 motion/action/timer/CPU phase agreement, subsequent eligible entity-service count,
 and any earlier input/transition interruption difference. The73 later completed
 frames from432 to505 are not evidence of73 or74 entity services, and callback432
@@ -84,9 +86,103 @@ is distinct from completed432. No per-VInt entity-service count was captured.
 The120 neutral frames include transition work and later field waiting; they do not
 establish120 `WaitAtInput` operations. No historical seed, tick65, neutral count or
 inverted RNG sequence is an engine rule or replacement golden. No production rule
-is changed by this result. Full phase comparison needs the missing remake phase
-fields and a separately reviewed equivalent observation boundary; this slice stops
-for independent result review with #534/#437 and whole-route/H4 acceptance open.
+is changed by this result. The later phase readback resolves part of the missing
+projection; #534/#437 and whole-route/H4 acceptance remain open.
+
+## First-warp entity phase readback
+
+**Confirmed (actual remake observation plus retained original readback):** the
+observation-only adapter change on accepted base
+`5232a1762efcdba384bb4dcf735dd13fa634573d` serializes existing authoritative Motion
+fields without changing their values or service order. Private normal/reduced
+runs in `local/issue534/warp-phase-observation/{normal,reduced}/observation.json`
+use the existing first-warp probe, owned Godot 4.7.2 project/installation, accepted
+world/party/assets and unchanged PR564 display binding. Both exit 0, pass with no
+failures/unavailable, and preserve identical 97 ordered events and selected gameplay
+fields at all 85 result records. Entry, load and visible-return state are read from
+the running instance. The [verification owner](../../remake/docs/development-and-verification.md#first-warp-motion-phase-observation)
+owns the launch/readback commands; no original emulator was launched.
+
+The comparison reads accepted PR567 `checkpoints.jsonl:2` for inherited R1 entities
+and `observer.observed.json#/diagnostic/firstReturn` for the first fade-clear callback.
+The latter is observer 432/emulator 431, not its completed-frame state or endpoint505.
+Each source record uses the pinned `sf2enums.asm` offsets above. X/Y, destinations and
+velocities are signed 16-bit; travel is decoded as unsigned 16-bit; speed,
+acceleration, layer, flags, facing, animation and wait are individual bytes.
+The engine widens speeds to ushort; this capture's values remain byte-representable.
+Word arithmetic wraps in `UpdateEntityData`; acceleration is zero-extended before
+word addition/subtraction. The source animation reset uses signed byte comparison
+with30; `esc00_wait` also uses a byte comparison. This readback makes no assertion
+about unobserved high-bit timer values. No flags or velocity differences are masked.
+
+**Confirmed earliest available boundary:** at R1, physical slots 5, 6 and 8 match
+all 19 common fields (position/destination, velocity/travel, speeds/accelerations,
+facing/layer/sprite, flags, animation and wait). Other slots already differ: the
+player has speed0/0 versus32/32, animation26 versus1 and wait1 versus0. Idle
+slots1/2/4/7/9..19 have flagsA80 versusE0; most also have wait1 versus their allocated
+slot number. Slot3 has speed16/16, acceleration1/1, flagsA8F, wait1 versus32/32,
+0/0, E0,3. These are entry differences, not evidence of a fade-produced discrepancy.
+`map3-opening-start.json` binds continuation phases for the three walking slots;
+`SceneEntities.Build` initializes the others with allocation defaults. This boundary
+is therefore only a partial original entity-phase binding.
+
+At first visible return, the following additional fields refine the PR567 result
+(original/remake notation; coordinates remain fixed-point):
+
+| Slot | Differing phase fields | Matching relevant fields |
+| --- | --- | --- |
+| 0 | flagsA EF/E0; animation22/25; wait1/0 | XY/destination, velocities/travel, speed32/32, acceleration0/0 |
+| 3 | animation29/4; wait1/0 | position, speed16/16, acceleration1/1, flagsA8F |
+| 5 | Y5397/5386; Y velocity6/4 | travelY384, acceleration1/1, flagsAEF, animation6, wait0 |
+| 6 | wait7/5 | XY/destination, velocity(4,0), travel(0,0), flagsAEF, animation7 |
+| 8 | Y3117/3100; Y velocity9/7 | travelY384, acceleration1/1, flagsAEF, animation9, wait0 |
+| 1/2/4/7/9..19 | wait1/0 | all other common fields |
+
+There are25 differing slot/field pairs at return across the19-field/20-slot comparison.
+The normal run's zero-based result30 starts FadeOut at tick14/C632; result57 completes
+load/onLoad and starts FadeIn at tick40/1091; result83 is logical+actual visible return
+at tick65/F01B. The next explicit input sample is tick66/F01B. These record indices
+are receipt locations, not engine boundaries or timing rules. The original capture
+has no full entity array at pre-warp or init-return, so the first **observed** new
+walking-slot discrepancy lies between R1 and first return; its earliest CPU/service
+point remains **Unknown**. The related velocity and timer deltas do not authorize
+adding two entity services or converting original frames into engine ticks.
+
+### Idle, controlled-character and motion ordering audit
+
+**Confirmed (pinned source and current engine structure):**
+
+- `entityfunctions_2.asm:MakeEntityIdle` (`0x44BEC`) only writes action pointer
+  `eas_Idle` (`0x451FC`). It changes no flags, velocity, travel or timer.
+  `data/scripting/entity/eas_main.asm:eas_Idle` is `ac_wait 1` plus a branch back.
+  `esc00_wait` increments/yields or clears the timer and continues; the branch
+  returns to that wait. Null engine Actions is not this raw script phase.
+- `eas_ControlledCharacter` (`0x44E3E`) sets speed32/32, acceleration factors0/0
+  and enables both acceleration/deceleration axes. `esc12`/`esc13` set flagsA
+  bits0..3; with the existing high bits this explains EF. Zero acceleration factors
+  make those bits inert for this player's current trajectory, but they remain real
+  state. `MakeEntityIdle` does not explain or clear the low nibble.
+- `SceneEntities.Build` starts player flagsA atE0. `MapEventDispatcher.Move`
+  changes facing and installs movement; it does not execute that source controlled
+  setup. `MapTransfer.BeginWarp`/Preserve retain Motion and clear Actions. The
+  first-return source pointer is `0x44E3E`, while EF already remains from earlier
+  control. Copying EF at the return boundary would bypass the missing setup rule.
+- `src/sf2tool/remake_exploration_content.py:action_stream` explicitly truncates
+  `ac_jump eas_Idle`; `ExplorationContentReader.Actions` appends StopEntityActions,
+  and `EntityActionRunner` retires Actions. This accounts for an absent ongoing
+  idle timer in that projection; it cannot explain the active walking slots' gap.
+- `VInt_UpdateEntities` calls `UpdateEntityData` then that slot's action script
+  before the next physical slot. `EntityActionRunner.Tick` uses the same relative
+  order. Movement installs velocity/travel after that slot's movement pass; wait
+  completion can execute subsequent script commands in the same service. The
+  observed signed velocities and travel widths agree with their source encoding.
+
+These findings identify actual phase-model differences, not a missing serializer
+alone. They do not establish a wrong NPC acceleration formula or identify a missing
+mandatory warp service. **Unknown:** the complete interruption schedule, walking
+slot divergence point, and equivalence of raw action pointers to engine continuations.
+Production correction requires its own scope and behavior acceptance; no seed,
+coordinate, timer, flags or original input was repaired in this observation slice.
 
 ## Stable records and area relation
 

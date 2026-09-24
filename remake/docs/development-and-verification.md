@@ -228,6 +228,88 @@ engine checks, adapter compilation, direct compiler/source checks, the bounded
 actual host observation and the committed scope plan, without an automatic full
 research suite or full-route replay.
 
+### First-warp Motion phase observation
+
+`ExplorationSessionView.ReadObservationJson` now includes `velocityX/Y`,
+`travelX/Y`, `speedY`, `accelerationX/Y`, `layer`, `animationCounter` and `waitTimer`
+from the same `entity.Motion` as the existing position, destination, speedX and
+flags fields. It adds no state authority or gameplay mutation. `actionCursor` remains
+the engine instruction index, distinct from a source script address.
+
+The admitted direct observation at accepted base
+`5232a1762efcdba384bb4dcf735dd13fa634573d` uses the existing normal/reduced private
+first-warp cases above. Adapter Release and native Debug builds pass; both actual
+Godot runs pass with no failure/unavailable and exit0. No instance remained before
+startup; the probe exits each run normally, so the second setting needs a new process
+in the same project. No asset generation, world copy or original emulator run occurs.
+
+Retained outputs are `local/issue534/warp-phase-observation/normal/observation.json`
+and `reduced/observation.json`; `readback.py` / `comparison.json` retain the bounded
+readback. The already-used local `run.py` reuses the previous first-warp launcher,
+changing only the output root and referring to the existing PR564 `binding.json`.
+After loading `local/private-inputs.ps1` and forcing
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, reproduction for fresh destinations is:
+
+```powershell
+uv run --no-sync sf2 verify adapter
+uv run --no-sync python -X utf8 local/issue534/warp-phase-observation/run.py build debug-build-new
+uv run --no-sync python -X utf8 local/issue534/warp-phase-observation/run.py host normal-new warp-transition-private 3
+uv run --no-sync python -X utf8 local/issue534/warp-phase-observation/run.py host reduced-new warp-transition-private-reduced 3
+uv run --no-sync python -X utf8 local/issue534/warp-phase-observation/readback.py
+```
+
+The readback defaults to retained `normal`/`reduced`; select the fresh receipt paths
+when inspecting a rerun. The launcher uses the existing shared .NET/Godot selections,
+worktree-local caches and previously prepared inputs, not additional installations.
+No tests of the probe or engine suite are required for these observation fields.
+
+**Confirmed:** the two settings have97 identical ordered observations and equal
+entity/flags/party/resource/RNG/tick/control/map fields at all85 result records.
+Entry, first-move completion, visible return and next explicit Wait preserve every
+pre-existing selected gameplay field compared with the accepted PR564 normal receipt.
+The old receipt's entity-sprite-ready delivery is interleaved differently with early
+simulation ticks (first difference at event4); its raw event order is therefore not
+claimed equal. Removing only sprite-ready events and sequence/revision metadata
+leaves the same ordered gameplay events. Both raw histories remain retained.
+The initial stricter historical-event equality assertion failed and is preserved
+as readback discovery, not a failed native run or permission to repeat it.
+
+The [source/phase owner](../../docs/research/map3-controlled-start-egress-transition.md#first-warp-entity-phase-readback)
+records all25 first-return field differences and the earlier R1 binding gaps. To
+reproduce directly without the local report script, run the following Python after
+loading that environment; it prints every differing common field from the retained
+first-return arrays:
+
+```python
+import json
+from pathlib import Path
+load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))
+original = load("local/issue534/warp-field-return-source/prepared-review/runtime/observer.observed.json")
+original = original["diagnostic"]["firstReturn"]["entities"]
+remake = load("local/issue534/warp-phase-observation/normal/observation.json")
+remake = next(s["state"] for s in remake["samples"] if s["label"] == "warp-visible-return")
+for e in remake["entities"]:
+    slot = int(e["slot"])
+    b = bytes(original[slot]["bytes"])
+    word = lambda o: int.from_bytes(b[o:o+2], "big", signed=True)
+    unsigned = lambda o: int.from_bytes(b[o:o+2], "big")
+    fields = dict(x=word(0), y=word(2), velocityX=word(4), velocityY=word(6),
+                  travelX=unsigned(8), travelY=unsigned(10), targetX=word(12), targetY=word(14),
+                  facing=b[16] & 3, layer=b[17], sprite=b[19], accelerationX=b[24],
+                  accelerationY=b[25], speedX=b[26], speedY=b[27], flagsA=b[28],
+                  flagsB=b[29], animationCounter=b[30], waitTimer=b[31])
+    for key, value in fields.items():
+        if value != e[key]:
+            print(slot, key, value, e[key])
+```
+
+The observation does not establish full entity/CPU phase parity or a service quota.
+Original costs remain138 starts /15583.68017570005 active seconds /429625 frames /
+16332 batches; no original runtime cost is added. Preserve prior public aggregate /
+h3-witch nonruns, H4 5340 PASS /2 FAIL /40 Unavailable, HEAL recovery2vs3 and later
+RNG FAIL, JOIN coupling Unknown, and old21/41/61/67 cleanup Unknowns. #534/#437 remain
+open. Production scope is unchanged; independent review owns the next slice.
+
 ## Explicit field-input gameplay Wait
 
 `WaitAtInput` is an engine command for one deliberate opportunity at a settled field-input
