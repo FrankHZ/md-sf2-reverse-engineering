@@ -52,6 +52,7 @@ internal static class EngineTestContent
             Assert.False(session.Current.HasBattleControl);
             result = Accept(session, scene.Healing is { LogicalComplete: false } healing &&
                 (!healing.AtTimedInput || neutralHealingWait) ? new AdvanceSimulation(scene.Token) :
+                scene.IsHealingMessage && neutralHealingWait ? new CompletePresentation(scene.Token, scene.CompletionKind) :
                 scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
                     new CompletePresentation(scene.Token, scene.CompletionKind));
             observations.AddRange(result.Observations);

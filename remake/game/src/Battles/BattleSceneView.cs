@@ -130,6 +130,13 @@ internal sealed partial class BattleSceneView : Control
         {
             _revealed += delta * _settings.CharactersPerSecond;
             if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
+            // Ready text is host delivery, not another player acknowledgement.
+            // Publish at the input boundary so modern reveal speed cannot insert
+            // delivery among mandatory logical operations or advance timed input.
+            if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
+                (message.AtTimedInput || message.LogicalComplete) &&
+                (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()))
+                return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
         if (state.Healing is { } healing && state.Phase is not (BattleScenePhase.Initialize or BattleScenePhase.End))

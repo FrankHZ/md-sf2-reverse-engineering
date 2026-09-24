@@ -213,6 +213,7 @@ public sealed class BattleSceneState
     public BattleGrowthNotice? GrowthNotice => Phase == BattleScenePhase.GrowthMessage ? Growth[NoticeIndex] : null;
     public int GoldAmount => (int)(Action.ConstructionEffects.Where(effect => effect.Kind == "gold")
         .Sum(effect => effect.After!.Value - effect.Before!.Value));
+    public bool IsHealingMessage => Healing is not null && Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage;
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage;
     public PresentationCueKind CompletionKind => Phase switch
@@ -253,7 +254,8 @@ internal static class BattleSceneContinuation
         bool acknowledge = command is Acknowledge ack && ack.Wait == scene.Token && scene.RequiresAcknowledgement &&
             (healing.AtTimedInput || healing.LogicalComplete);
         bool delivery = command is CompletePresentation completion && completion.Wait == scene.Token &&
-            !scene.RequiresAcknowledgement && completion.Kind == scene.CompletionKind && !healing.Delivered;
+            (!scene.RequiresAcknowledgement || scene.IsHealingMessage) &&
+            completion.Kind == scene.CompletionKind && !healing.Delivered;
         if (!advancing && !acknowledge && !delivery)
             return BattleCommandDispatcher.Reject(current, "battle-scene-wait", "command");
         var battle = current.Battle;

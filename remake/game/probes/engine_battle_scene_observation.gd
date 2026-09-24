@@ -34,6 +34,7 @@ var partial_audio := OS.get_environment("SF2_BATTLE_SCENE_PARTIAL_AUDIO") == "1"
 var heal_mode := OS.get_environment("SF2_BATTLE_SCENE_HEAL") == "1"
 var heal_cases: Array = []
 var heal_wait_tokens: Dictionary = {}
+var heal_timeout_cases: Array = []
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -205,6 +206,45 @@ func _press(key: Key) -> void:
     Input.parse_input_event(event)
     await process_frame
 
+func _timeout_heal_message(initial: Dictionary) -> void:
+    var phase: String = initial.scene.phase
+    var token: int = int(initial.scene.waitToken)
+    var begin := events.size()
+    var state := initial
+    # Actual text reveal/delivery may be slower than mandatory logical work.
+    # No Confirm is supplied anywhere in this observation.
+    for tick in range(600):
+        if state.scene.healing.AtTimedInput and state.scene.healing.Delivered: break
+        await process_frame
+        state = _read()
+    _check(state.scene.healing.AtTimedInput and state.scene.healing.Delivered, "host naturally reveals and delivers timed HEAL text")
+    if not failures.is_empty(): return
+    var ready := state.duplicate(true)
+    var ready_events := events.size()
+    for tick in range(3): await process_frame
+    state = _read()
+    _check(state.mainSeed == ready.mainSeed and state.scene.healing.Remaining == ready.scene.healing.Remaining,
+        "ready delivery/idle does not supply a logical Wait or RNG")
+    _check(events.size() == ready_events, "ready host callbacks add no semantic work")
+    var polls := 0
+    var final_input_events: Array = []
+    while int(state.scene.waitToken) == token and polls < 66:
+        var event_start := events.size()
+        await _press(KEY_V)
+        polls += 1
+        state = _read()
+        if int(state.scene.waitToken) != token:
+            final_input_events = events.slice(event_start)
+            break
+    _check(polls == 65 and int(state.scene.waitToken) != token, "neutral timeout returns without another Confirm")
+    var steps := events.slice(begin).filter(func(event): return event.Kind == "scene-logical-step" and event.Detail == "bsc10:input-before-vint")
+    _check(steps.size() == 65, "exact neutral input stream has no extra timed opportunity")
+    var completed := final_input_events.filter(func(event): return event.Kind == "scene-step-completed" and event.Detail == phase)
+    _check(completed.size() == 1, "last neutral input completes the ready message")
+    _check(not final_input_events.any(func(event): return event.Kind == "scene-delivery"), "timeout manufactures no acknowledgement/delivery command")
+    heal_timeout_cases.append({"phase":phase, "ready":ready, "after":state, "polls":polls,
+        "timedSteps":steps.size(), "finalInputEvents":final_input_events, "confirms":0})
+
 func _settle() -> Dictionary:
     for tick in range(2400):
         var state := _read()
@@ -230,12 +270,20 @@ func _settle() -> Dictionary:
                 _check(int(state.scene.waitToken) == before, "cancel and movement cannot release the scene wait")
                 input_checked = true
             if state.scene.phase in ["ActionMessage", "ResultMessage", "DeathMessage", "RewardMessage", "GrowthMessage", "GoldMessage"]:
-                # One declared neutral input opportunity per recovery message;
-                # display/reveal callbacks themselves do not request gameplay Wait.
-                if heal_mode and state.scene.phase == "ResultMessage" and state.scene.healing != null and state.scene.healing.AtTimedInput and not heal_wait_tokens.has(state.scene.waitToken):
-                    heal_wait_tokens[state.scene.waitToken] = true
-                    await _press(KEY_V)
-                await _press(KEY_ENTER)
+                if heal_mode and state.scene.healing != null and state.scene.phase in ["ActionMessage", "ResultMessage"]:
+                    if heal_cases.is_empty():
+                        await _timeout_heal_message(state)
+                    elif not state.scene.healing.AtTimedInput or not state.scene.healing.Delivered:
+                        await process_frame
+                    else:
+                        # Later cases retain the declared one neutral recovery read
+                        # then early acknowledgement, after actual host readiness.
+                        if state.scene.phase == "ResultMessage" and not heal_wait_tokens.has(state.scene.waitToken):
+                            heal_wait_tokens[state.scene.waitToken] = true
+                            await _press(KEY_V)
+                        await _press(KEY_ENTER)
+                else:
+                    await _press(KEY_ENTER)
             else:
                 await process_frame
         else:
@@ -584,7 +632,7 @@ func _finish() -> void:
         _check(not receipts.any(func(receipt): return receipt.Command == pair[0] and receipt.Operation == "stopped"), "independent reaction effect is not truncated by UI input")
         if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
-        "scope": "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "scenes": scenes,
+        "scope": "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps, "menuAudioCases": menu_cases,
         "audioDriver": AudioServer.get_driver_name()}

@@ -81,6 +81,59 @@ public sealed class BattleSceneTests
         Assert.NotNull(session.Submit(envelope).Failure);
         Assert.Same(stepped, session.Current);
     }
+    [Theory]
+    [InlineData(BattleScenePhase.ActionMessage, false)]
+    [InlineData(BattleScenePhase.ActionMessage, true)]
+    [InlineData(BattleScenePhase.ResultMessage, false)]
+    [InlineData(BattleScenePhase.ResultMessage, true)]
+    public void HealingNeutralTimeoutNeedsDeliveryButNoAdditionalAcknowledgement(BattleScenePhase phase, bool readyBeforeTimeout)
+    {
+        var session = Start(); var actor = session.Current.Selection!.Actor;
+        Accept(session, new Confirm()); Accept(session, new SelectSpell(new("mend", 1)));
+        Accept(session, new SelectTarget(actor)); Accept(session, new Confirm());
+        while (session.Current.BattleScene!.Phase != phase) Step(session);
+        var token = session.Current.BattleScene!.Token;
+        while (!session.Current.BattleScene!.Healing!.AtTimedInput)
+            Accept(session, new AdvanceSimulation(token));
+        if (readyBeforeTimeout)
+        {
+            var before = session.Current;
+            var delivery = Accept(session, new CompletePresentation(token, session.Current.BattleScene!.CompletionKind));
+            Assert.Equal(before.Battle.MainSeed, delivery.Snapshot.Battle.MainSeed);
+            Assert.Same(before.BattleScene!.Healing!.Fairy, delivery.Snapshot.BattleScene!.Healing!.Fairy);
+            Assert.Equal(65, delivery.Snapshot.BattleScene.Healing.Remaining);
+            Assert.NotNull(Send(session, new CompletePresentation(token, session.Current.BattleScene.CompletionKind)).Failure);
+        }
+        for (int input = 0; input < 65; input++)
+        {
+            var before = session.Current; var fairy = before.BattleScene!.Healing!.Fairy;
+            uint expectedSeed = before.Battle.MainSeed;
+            if (fairy is not null) expectedSeed = HealingFairy.Advance(fairy, expectedSeed, actor).Seed;
+            var waited = Accept(session, new AdvanceSimulation(token));
+            Assert.Equal(expectedSeed, waited.Snapshot.Battle.MainSeed);
+            Assert.Single(waited.Observations, row => row.Kind == "scene-logical-step");
+            if (input < 64) Assert.Equal(token, session.Current.BattleScene!.Token);
+        }
+        if (!readyBeforeTimeout)
+        {
+            var expired = session.Current;
+            Assert.Equal(phase, expired.BattleScene!.Phase);
+            Assert.True(expired.BattleScene.Healing!.LogicalComplete);
+            Assert.False(expired.BattleScene.Healing.Delivered);
+            Assert.NotNull(Send(session, new AdvanceSimulation(token)).Failure);
+            Assert.Same(expired, session.Current);
+            var delivered = Accept(session, new CompletePresentation(token, expired.BattleScene.CompletionKind));
+            Assert.Equal(expired.Battle.MainSeed, delivered.Snapshot.Battle.MainSeed);
+            Assert.DoesNotContain(delivered.Observations, row => row.RandomRange is not null || row.Kind == "scene-logical-step");
+            Assert.Same(expired.BattleScene.Healing.Fairy, delivered.Snapshot.BattleScene!.Healing!.Fairy);
+        }
+        Assert.Equal(phase == BattleScenePhase.ActionMessage ? BattleScenePhase.SpellCost : BattleScenePhase.MakeIdle,
+            session.Current.BattleScene!.Phase);
+        var advanced = session.Current;
+        Assert.NotNull(Send(session, new CompletePresentation(token, advanced.BattleScene.CompletionKind)).Failure);
+        Assert.Same(advanced, session.Current);
+    }
+
     [Fact]
     public void HealingGrowthStartsFromTheSeedCarriedThroughFairyRetirement()
     {

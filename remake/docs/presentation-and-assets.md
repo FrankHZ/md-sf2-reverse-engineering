@@ -965,6 +965,12 @@ one opportunity. Neither reveal nor acknowledgement injects W2/range256 draws. O
 `WaitAtInput` and plain-dialogue `WaitForText` retain their own eligibility guards. Scene commands
 require the current session, revision and scene token, with exactly one logical step per command.
 Completion delivery may arrive early or late, but cannot add steps after logical completion.
+For HEAL action/recovery messages, `CompletePresentation` reports text readiness independently of
+`Acknowledge`. The source speed2 neutral timeout completes without an additional confirmation once
+text is ready; if reveal finishes later, its delivery alone releases the expired message, with no
+new logical opportunity or RNG. The host reports readiness at the timed-input boundary or after
+timeout, and idle/reveal callbacks do not supply neutral Wait. Early acknowledgement still returns
+before the next input-loop VInt. Reward/growth messages retain their existing acknowledgement policy.
 
 Source owners are pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `battlescenes/animation/healingfairy.asm`, `animation/update/healingfairy.asm`, `battlesceneengine_0.asm`
@@ -1026,8 +1032,11 @@ conformance remain open jointly with #534/H4; this is not an audio/hardware-timi
 observer exercise full-HP HEAL3, wounded other-target HEAL1 and wounded self-target HEAL2, alongside
 physical scenes. Each completes real fairy retirement/cleanup and releases input, with actual77/113
 audio and live projected nodes. Normal/instant versus reduced-flash/adjustable text uses the same
-semantic inputs; final `native-normal-02` / `native-reduced-02` records match all2159 ordered
-semantic events, RNG and final resource/turn state (delivery metadata excluded). This proves bounded settings conformance, not original neutral-input conformance.
+semantic inputs; final `native-timeout-normal-01` / `native-timeout-reduced-01` records each finish
+six scenes and match all2311 ordered semantic events, RNG and final resource/turn state (delivery
+metadata excluded). Both action and recovery messages also exhaust65 neutral inputs with zero
+Confirms after natural text readiness; their final-input receipts contain no extra RNG or delivery.
+Later HEAL cases retain early acknowledgements. This proves bounded settings conformance, not original neutral-input conformance.
 The reproduction and completed failure records belong to the
 [verification owner](./development-and-verification.md#heal-scene-verification).
 

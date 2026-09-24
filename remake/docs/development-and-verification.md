@@ -1604,6 +1604,11 @@ The affected engine checks are `HealingRulesTests`, `HealingFairyTests`, `Battle
 three existing completed-action cases `NaturalHistoriesHealThroughTheSameContentAndSessionPath`,
 `SharedDefinitionSupportsIndependentStartsAndNaturalActionHistories`,
 `SecondLearnedSpellUsesItsOwnCostAndPowerWithoutReorderingContent`, and `PrivateActionBindingTests`.
+`HealingNeutralTimeoutNeedsDeliveryButNoAdditionalAcknowledgement` covers both action/recovery
+messages and both readiness orders: exhaust the source65 neutral polls, then complete without any
+extra Ack or RNG/update opportunity. The neutral completed-scene helper uses presentation delivery
+instead of hiding a missing timeout behind an Ack. Early input-first acknowledgement remains covered
+by `TimedInputTestsAcknowledgementBeforeItsNextFairyOpportunity`.
 Construction expectations still assert the original two award draws; final assertions follow the
 real scene and independently check each main-seed transition. Growth starts from the seed carried
 through fairy retirement. `PlayerWait*` in `ExplorationSessionTests` preserves field/plain-text guard
@@ -1627,7 +1632,11 @@ MP/maxMP32 and learned HEAL3. It uses actual field/battle input and enemy injury
 setter or original-playthrough claim. Run fresh normal and `-ReducedFlash` outputs, then compare
 ordered semantic events (kind, actor/target, before/after, random range/value, detail) and each final
 main/thinking seed, resources and turn cursor. Host timestamps/revisions are delivery metadata.
-A source logical-work change invalidates this pair; documentation/test-only changes do not.
+A source logical-work or host-readiness change invalidates this pair; documentation/test-only changes
+do not. The first HEAL additionally records `healTimeoutCases` for both action and recovery text:
+natural reveal/readiness, idle callbacks with no logical progress,65 actual V inputs, no Confirm,
+and completion on the last neutral input. The final-input receipt proves no manufactured delivery/
+Ack; subsequent scene work remains a separate operation. Later HEAL cases retain early acknowledgements.
 
 Retained read-only reference comparisons after building the production assemblies:
 
@@ -1644,5 +1653,7 @@ Do not replace that failure with native settings equality or call it unavailable
 
 Completed correction records remain under `local/issue523/heal-scene/`: the initial xUnit analyzer
 failure, one invalid test target placement, incomplete private-environment selection, and the idle
-helper test's obsolete sleep-only drain. Each received a narrow correction/rerun. The earlier
+helper test's obsolete sleep-only drain. Each received a narrow correction/rerun. PR557's independent
+review also found that neutral timeout incorrectly required an extra Ack; that completed review
+failure remains retained even after the focused engine/host correction. The earlier
 completed slow-suite failure record remains unchanged; this work neither reruns nor relabels it.
