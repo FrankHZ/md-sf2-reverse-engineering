@@ -29,6 +29,8 @@ internal sealed partial class BattleSceneView : Control
     private int? _animationIndex;
     private bool _sceneMusicStarted, _hasWeapon;
     private string? _allyResource, _enemyResource, _weaponResource;
+    private readonly List<Sprite2D> _fairyBodies = [], _fairyWings = [], _fairyDust = [];
+    private bool _castSoundPlayed;
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.Definition.BattleScenes;
 
@@ -49,6 +51,13 @@ internal sealed partial class BattleSceneView : Control
         _allyStatus = Label("AllyStatus", new(136, 8), new(118, 40));
         _enemyStatus = Label("EnemyStatus", new(2, 8), new(126, 40));
         _message = Label("Message", new(8, 174), new(240, 48));
+        for (int i = 0; i < 2; i++)
+        {
+            _fairyBodies.Add(Sprite("FairyBody" + i, Vector2.Zero));
+            _fairyWings.Add(Sprite("FairyWings" + i, Vector2.Zero));
+        }
+        for (int i = 0; i < 23; i++) _fairyDust.Add(Sprite("FairyDust" + i, Vector2.Zero));
+        foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) { sprite.ZIndex = 3; sprite.Hide(); }
         Hide();
     }
 
@@ -60,7 +69,7 @@ internal sealed partial class BattleSceneView : Control
         var state = _session.Current.BattleScene;
         if (state is null) { Hide(); _state = null; return; }
         Show();
-        if (_state?.Token == state.Token) return;
+        if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
@@ -86,7 +95,7 @@ internal sealed partial class BattleSceneView : Control
                 _ground.Visible = ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
-                    var animation = (actor.IsAlly ? _allyVisual : _enemyVisual!).Sequences[state.Item is null ? "attack" : "item"];
+                    var animation = (actor.IsAlly ? _allyVisual : _enemyVisual!).Sequences[state.Spell is not null ? "cast" : state.Item is null ? "attack" : "item"];
                     _animationIndex = animation.Index;
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
                 }
@@ -99,12 +108,13 @@ internal sealed partial class BattleSceneView : Control
             _allyStatus.Text = $"{ActorName(ally.Actor)}\nHP {ally.Hp}/{ally.MaxHp}   MP {ally.Mp}";
             _enemyStatus.Text = enemy is null ? "" : $"{ActorName(enemy.Actor)}\nHP {enemy.Hp}/{enemy.MaxHp}   MP {enemy.Mp}";
             _message.Text = Message(state);
-            _message.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
-            if (state.Phase == BattleScenePhase.Initialize) _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5);
+            _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
+            if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Damage") _audio?.PlayEffect(target.IsAlly ? 81 : 83);
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Recovery") _audio?.PlayEffect(113);
             if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayEffect(102);
             if (state.Phase == BattleScenePhase.End) _audio?.BeginSceneEnd();
+            ProjectHealing(state);
         }
         catch (InvalidOperationException error) { Error = error.Message; }
     }
@@ -120,7 +130,20 @@ internal sealed partial class BattleSceneView : Control
         {
             _revealed += delta * _settings.CharactersPerSecond;
             if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
-            return null;
+            // Ready text is host delivery, not another player acknowledgement.
+            // Publish at the input boundary so modern reveal speed cannot insert
+            // delivery among mandatory logical operations or advance timed input.
+            if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
+                (message.AtTimedInput || message.LogicalComplete) &&
+                (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()))
+                return new CompletePresentation(state.Token, state.CompletionKind);
+            return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
+        }
+        if (state.Healing is { } healing && state.Phase is not (BattleScenePhase.Initialize or BattleScenePhase.End))
+        {
+            if (!healing.LogicalComplete) return new AdvanceSimulation(state.Token);
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
         }
         double duration;
         if (state.Phase == BattleScenePhase.Initialize)
@@ -200,10 +223,56 @@ internal sealed partial class BattleSceneView : Control
 
     internal SessionCommand? Acknowledge(GameAction action)
     {
+        if (action == GameAction.Wait && _state is { Healing.AtTimedInput: true } waiting && Error is null)
+            return new AdvanceSimulation(waiting.Token);
         if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null) return null;
         if (_message.VisibleCharacters >= 0 && _message.VisibleCharacters < _message.GetTotalCharacterCount())
         { _revealed = _message.GetTotalCharacterCount(); _message.VisibleCharacters = (int)_revealed; return null; }
-        return new Acknowledge(state.Token);
+        return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? null : new Acknowledge(state.Token);
+    }
+
+    private void ProjectHealing(BattleSceneState state)
+    {
+        foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
+        if (state.Healing is not { } healing) return;
+        if (healing.CastRequested && !_castSoundPlayed) { _audio?.PlayEffect(77); _castSoundPlayed = true; }
+        if (state.Phase == BattleScenePhase.ActionAnimation && healing.CastFrame is > 0 and var frame && frame <= _frames.Length)
+        {
+            _frameIndex = frame - 1;
+            var entry = _frames[_frameIndex];
+            if (entry.Frame != 15) SetFrame(true, entry.Frame);
+            _ally.Position = new Vector2(136, 64) + new Vector2(entry.X, entry.Y);
+            Weapon(entry.Weapon, new(entry.X, entry.Y));
+        }
+        _ally.Modulate = !_settings.ReducedFlash && healing.Caller == "cast-flash-on" ? new Color(0.7f, 1, 0.7f) : Colors.White;
+        if (state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter)
+        {
+            float from = state.Phase == BattleScenePhase.TargetEnter ? -376 : state.Phase == BattleScenePhase.ActorEnter ? 8 : 136;
+            float to = state.Phase == BattleScenePhase.TargetExit ? 272 : state.Phase == BattleScenePhase.ActorExit ? -112 : 136;
+            int opportunity = healing.Caller?.EndsWith(":wait", StringComparison.Ordinal) == true ? 0 : healing.Opportunity;
+            float x = from + MathF.Sign(to - from) * MathF.Min(opportunity * 16, MathF.Abs(to - from));
+            _ally.Position = new(x, 64); _ground.Position = new(x, 140);
+            Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0));
+        }
+        if (Content?.Healing is not { } visual || healing.Fairy is not { Control: not 0 } fairy) return;
+        void Put(Sprite2D sprite, string resource, ushort x, ushort y, bool mirror = false)
+        {
+            Bind(sprite, resource); sprite.FlipH = mirror;
+            sprite.Position = new Vector2(x - 128, y - 128) - sprite.GetRect().Position * sprite.Scale;
+            sprite.Show();
+        }
+        for (int i = 0; i < fairy.Fairies.Count; i++)
+        {
+            var instance = fairy.Fairies[i];
+            if (!instance.Active) continue;
+            Put(_fairyBodies[i], visual.Bodies[instance.BodyFrame], instance.X, instance.Y, instance.Mirrored);
+            Put(_fairyWings[i], visual.Wings[instance.WingFrame], instance.X, instance.Y, instance.Mirrored);
+        }
+        for (int i = 0; i < fairy.Dust.Count; i++)
+        {
+            var dust = fairy.Dust[i];
+            if (dust.Age != 0) Put(_fairyDust[i], visual.Dust[dust.Frame], dust.X, dust.Y);
+        }
     }
 
     private string ActorName(ActorRef actor)
@@ -215,6 +284,8 @@ internal sealed partial class BattleSceneView : Control
 
     private string Message(BattleSceneState state)
     {
+        if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost) return healing.ActionText;
+        if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop) return recovery.RecoveryText;
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         int id = state.Phase switch
         {
@@ -278,7 +349,13 @@ internal sealed partial class BattleSceneView : Control
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
-        item = _state?.Item?.ItemId, spellAnimationSelector = _state?.Item is not null ? 0 : (int?)null,
+        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell,
+        spellAnimationSelector = _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
+            healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
+        fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)
+            .Select(sprite => new { name = sprite.Name.ToString(), x = sprite.Position.X, y = sprite.Position.Y, mirror = sprite.FlipH,
+                width = sprite.GetRect().Size.X, height = sprite.GetRect().Size.Y }).ToArray(),
         allyFrame = _allyFrame, enemyFrame = _enemyFrame, allyResource = _allyResource, enemyResource = _enemyResource,
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,

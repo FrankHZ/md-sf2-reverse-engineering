@@ -269,6 +269,10 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
             # USE_ITEM=2 bypasses the KNTE/spear attack specialization and preserves
             # the caller's NONE selector in sub_184B0; GetAllyAnimation selects index.
             sequences["item"] = dict(sequences["idle"])
+            if index == 1:
+                # PRST CAST_SPELL uses its ordinary class animation, retaining the
+                # caller's HEALING_FAIRY selector (header FF), not item NONE.
+                sequences["cast"] = dict(sequences["idle"])
         weapon_frames = []
         if weapon_item is not None:
             # table_WeaponGraphics at 0x1F9E2, source getweaponspriteandpalette.asm.
@@ -299,6 +303,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
                 frames=frames,
                 weaponFrames=weapon_frames,
                 sequences=sequences,
+                idleTicks=word(base),
             )
         )
 
@@ -324,6 +329,27 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]
     background_asset = raster("background9", bgdata, bgpal, 256, 96, layout, opaque=True)
 
+    # LoadSpellTileset: section-14 pointer, HEALING=6, length and three CRAM
+    # replacements precede compressed tiles. Preserve all operands as ROM spans.
+    healing_base = pointer(pointer(0x1B800C) + 6 * 4)
+    healing_palette = list(base_palette)
+    for offset, color in enumerate((9, 13, 14)):
+        healing_palette[color] = md_palette_color(word(healing_base + 2 + offset * 2) & 0x0EEE)
+    healing_tiles = decode(healing_base + 8, word(healing_base))
+    # healingfairy.asm table_LightFairy_offsets: two 4x4 bodies, two 4x2 wings,
+    # then the dust tile decrements once per six updates, through five frames.
+    def healing_raster(name, tile, columns, rows):
+        return raster(
+            "healing/" + name, healing_tiles, healing_palette, columns * 8, rows * 8,
+            [tile + x * rows + y for y in range(rows) for x in range(columns)],
+        )
+
+    healing = dict(
+        bodies=[healing_raster(f"body{i}", tile, 4, 4) for i, tile in enumerate((0, 16))],
+        wings=[healing_raster(f"wing{i}", tile, 4, 2) for i, tile in enumerate((32, 40))],
+        dust=[healing_raster(f"dust{i}", 52 - i, 1, 1) for i in range(5)],
+    )
+
     def source_text(relative):
         return subprocess.check_output(
             ["git", "-C", str(upstream), "show", commit + ":" + relative]
@@ -340,6 +366,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
         270,
         271,
         273,
+        274,
         275,
         298,
         284,
@@ -397,6 +424,7 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
             rasters=rasters,
             texts=texts,
             memberNames=names,
+            healing=healing,
         ),
     )
     report = dict(

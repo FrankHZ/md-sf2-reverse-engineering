@@ -74,11 +74,13 @@ public sealed class GameSession
             return BattleCommandDispatcher.Reject(current, "field-input-unavailable", "command");
         if (envelope.Command is WaitForText && (!programActive || current.Exploration is null))
             return BattleCommandDispatcher.Reject(current, "text-input-unavailable", "command");
-        if (!programActive && envelope.Command is AdvanceSimulation { Wait: not null } or AdvanceSimulation { Ticks: not 1 })
+        if (!programActive && envelope.Command is AdvanceSimulation tick &&
+            (tick.Ticks != 1 || (current.BattleScene is { Healing: not null } healingScene
+                ? tick.Wait != healingScene.Token : tick.Wait is not null)))
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
         var result = sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command)
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command)
-            : BattleCommandDispatcher.Submit(current, envelope.Command);
+            : BattleCommandDispatcher.Submit(current, envelope.Command, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
         if (!programActive && !ReferenceEquals(result.Snapshot, current))
             result = result with { Snapshot = result.Snapshot.WithStory(current.Story) };
         if (result.Failure is null && !programActive) result = BattleOutcome.Begin(Definition, result);

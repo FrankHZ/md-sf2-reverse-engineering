@@ -1591,3 +1591,69 @@ Run the ordinary authored path with `SF2_OBSERVATION_CASE=spell-selection`. The 
 uses H twice, observes the selected second spell and HUD, then commits HP90/MP15 and next control.
 `SpellSelectionTests` exercises the same independent costs, target reset, cancellation and rejection
 semantics. The public package order remains unchanged; diagnostics stay in the external probe.
+
+## HEAL scene verification
+
+Use the current locked environment/private-input configuration before controlled .NET or Godot
+launches, including the shared CLI-home and `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` policy above.
+The bounded HEAL path and its completed original-comparison failure are owned by
+[HEAL spell scenes](./presentation-and-assets.md#heal-spell-scenes). No new original launch,
+screenshot, full route, aggregate rerun or asset promotion is needed for this boundary.
+
+The affected engine checks are `HealingRulesTests`, `HealingFairyTests`, `BattleSceneTests`, the
+three existing completed-action cases `NaturalHistoriesHealThroughTheSameContentAndSessionPath`,
+`SharedDefinitionSupportsIndependentStartsAndNaturalActionHistories`,
+`SecondLearnedSpellUsesItsOwnCostAndPowerWithoutReorderingContent`, and `PrivateActionBindingTests`.
+`HealingNeutralTimeoutNeedsDeliveryButNoAdditionalAcknowledgement` covers both action/recovery
+messages and both readiness orders: exhaust the source65 neutral polls, then complete without any
+extra Ack or RNG/update opportunity. The neutral completed-scene helper uses presentation delivery
+instead of hiding a missing timeout behind an Ack. Early input-first acknowledgement remains covered
+by `TimedInputTestsAcknowledgementBeforeItsNextFairyOpportunity`.
+Construction expectations still assert the original two award draws; final assertions follow the
+real scene and independently check each main-seed transition. Growth starts from the seed carried
+through fairy retirement. `PlayerWait*` in `ExplorationSessionTests` preserves field/plain-text guard
+coverage. Existing `PrivateBattleOutcomeProgramTests.Settle` reuses the real scene drain, but its
+long whole-route tests were not rerun for this slice. Compile acceptance is not a route PASS.
+
+```powershell
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --no-restore --configuration Release --filter 'FullyQualifiedName~HealingRulesTests|FullyQualifiedName~HealingFairyTests|FullyQualifiedName~BattleSceneTests|FullyQualifiedName~PrivateActionBindingTests|FullyQualifiedName~NaturalHistoriesHealThroughTheSameContentAndSessionPath|FullyQualifiedName~SharedDefinitionSupportsIndependentStartsAndNaturalActionHistories|FullyQualifiedName~SecondLearnedSpellUsesItsOwnCostAndPowerWithoutReorderingContent|FullyQualifiedName~PlayerWait'
+uv run sf2 verify adapter
+```
+
+Private binding checks require the existing selected private battle inputs together with
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT` pointing at the newly prepared HEAL sidecar. An older physical/
+Herb sidecar remains valid for those actions, but cannot silently supply authored HEAL graphics.
+The maintained `uv run python -m sf2tool.remake_battle_scene_content --rom <selected-rom> --upstream <pinned-checkout> --output <fresh-ignored-directory>` command creates the candidate; retain source/generator provenance and leave accepted assets untouched.
+
+The existing `engine_battle_scene_observation.gd` accepts `SF2_BATTLE_SCENE_HEAL=1` with world/wounded
+observation enabled. The retained local launcher `local/issue523/heal-scene/run-heal.ps1` selects
+source world/audio/scene inputs and a disclosed controlled party: Chester HP/maxHP40 DEF20; Sarah
+MP/maxMP32 and learned HEAL3. It uses actual field/battle input and enemy injury; no runtime state
+setter or original-playthrough claim. Run fresh normal and `-ReducedFlash` outputs, then compare
+ordered semantic events (kind, actor/target, before/after, random range/value, detail) and each final
+main/thinking seed, resources and turn cursor. Host timestamps/revisions are delivery metadata.
+A source logical-work or host-readiness change invalidates this pair; documentation/test-only changes
+do not. The first HEAL additionally records `healTimeoutCases` for both action and recovery text:
+natural reveal/readiness, idle callbacks with no logical progress,65 actual V inputs, no Confirm,
+and completion on the last neutral input. The final-input receipt proves no manufactured delivery/
+Ack; subsequent scene work remains a separate operation. Later HEAL cases retain early acknowledgements.
+
+Retained read-only reference comparisons after building the production assemblies:
+
+```powershell
+& $env:DOTNET_BIN run --project local/issue523/heal-scene/comparison/Compare.csproj -- $selectedPrepared04Checkpoints
+& $env:DOTNET_BIN run --project local/issue523/heal-scene/cursor-comparison/Compare.csproj -- $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT
+```
+
+These ignored inspection aids use the exact production kernel/cursor; the tracked source and named
+original records own the facts. The first supplies the trace's update/control schedule and passes244
+returns. The second supplies only the post-award entry seed and neutral input, and retains a completed
+**FAIL** at recovery CP2059–2091. Its final coincident seed is not a passed continuous comparison.
+Do not replace that failure with native settings equality or call it unavailable/interrupted.
+
+Completed correction records remain under `local/issue523/heal-scene/`: the initial xUnit analyzer
+failure, one invalid test target placement, incomplete private-environment selection, and the idle
+helper test's obsolete sleep-only drain. Each received a narrow correction/rerun. PR557's independent
+review also found that neutral timeout incorrectly required an extra Ack; that completed review
+failure remains retained even after the focused engine/host correction. The earlier
+completed slow-suite failure record remains unchanged; this work neither reruns nor relabels it.

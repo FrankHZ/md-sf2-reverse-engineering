@@ -48,9 +48,23 @@ public sealed class BattleStartStateTests
         Accept(first, new Confirm());
         Accept(first, new SelectSpell(new("mend", 1)));
         Accept(first, new SelectTarget(new("medic-a")));
-        var healed = Accept(first, new Confirm());
+        var prepared = Accept(first, new Confirm());
+        Assert.Equal(0x9E581234u, prepared.Snapshot.Battle.MainSeed); // Original two award draws.
+        Assert.Equal(2, prepared.Observations.Count(row => row.RandomRange is not null));
+        Assert.Equal((95, 20, 0), ((int)first.Current.Battle.Actors[0].Hp, first.Current.Battle.Actors[0].Mp, first.Current.Battle.Actors[0].Exp!.Value));
+        var healed = FinishBattleScenes(first, prepared);
         Assert.Equal((100, 17, 10), ((int)healed.Snapshot.Battle.Actors[0].Hp, healed.Snapshot.Battle.Actors[0].Mp, healed.Snapshot.Battle.Actors[0].Exp!.Value));
-        Assert.Equal(0x9E581234u, healed.Snapshot.Battle.MainSeed);
+        uint liveSeed = 0x0A061234u;
+        foreach (var roll in healed.Observations.Where(row => row.RandomRange is not null))
+        {
+            Assert.Equal((long)liveSeed, roll.Before);
+            liveSeed = ((uint)unchecked((ushort)((liveSeed >> 16) * 13 + 7)) << 16) | (liveSeed & 0xFFFF);
+            Assert.Equal((long)liveSeed, roll.After);
+            Assert.Equal((ushort)(((liveSeed >> 16) * roll.RandomRange!.Value) >> 16), roll.RandomValue);
+        }
+        Assert.Equal(liveSeed, healed.Snapshot.Battle.MainSeed);
+        Assert.Null(healed.Snapshot.BattleScene);
+        Assert.Equal(SessionStopReason.PlayerInput, healed.StopReason);
         Assert.Same(secondBefore, second.Current);
         var firstAfter = first.Current;
         Stay(second);

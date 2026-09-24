@@ -27,7 +27,27 @@ public sealed class SpellSelectionTests
         var actor = session.Current.Selection!.Actor;
         Assert.Equal(new[] { new SpellRef("mend", 1), new SpellRef("restore", 2) }, session.Current.Battle.GetActor(actor).Definition.Spells);
         Accept(session, new Confirm()); Accept(session, new SelectSpell(new("restore", 2)));
-        Accept(session, new SelectTarget(actor)); var result = Accept(session, new Confirm());
+        Accept(session, new SelectTarget(actor));
+        uint beforeSeed = session.Current.Battle.MainSeed;
+        var prepared = Accept(session, new Confirm());
+        uint constructionSeed = beforeSeed;
+        for (int draw = 0; draw < 2; draw++)
+            constructionSeed = ((uint)unchecked((ushort)((constructionSeed >> 16) * 13 + 7)) << 16) | (constructionSeed & 0xFFFF);
+        Assert.Equal(constructionSeed, prepared.Snapshot.Battle.MainSeed);
+        Assert.Equal(2, prepared.Observations.Count(row => row.RandomRange is not null));
+        Assert.Equal((ushort)60, prepared.Snapshot.Battle.GetActor(actor).Hp);
+        Assert.Equal((byte)20, prepared.Snapshot.Battle.GetActor(actor).Mp);
+        var result = FinishBattleScenes(session, prepared);
+        uint liveSeed = beforeSeed;
+        foreach (var roll in result.Observations.Where(row => row.RandomRange is not null))
+        {
+            Assert.Equal((long)liveSeed, roll.Before);
+            liveSeed = ((uint)unchecked((ushort)((liveSeed >> 16) * 13 + 7)) << 16) | (liveSeed & 0xFFFF);
+            Assert.Equal((long)liveSeed, roll.After);
+            Assert.Equal((ushort)(((liveSeed >> 16) * roll.RandomRange!.Value) >> 16), roll.RandomValue);
+        }
+        Assert.Equal(liveSeed, result.Snapshot.Battle.MainSeed);
+
         Assert.Equal((ushort)90, result.Snapshot.Battle.GetActor(actor).Hp);
         Assert.Equal((byte)15, result.Snapshot.Battle.GetActor(actor).Mp);
         Assert.Single(result.Observations, observation => observation.Kind == "after-turn" && observation.Actor == actor);

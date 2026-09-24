@@ -31,6 +31,10 @@ var overlap_keys: Dictionary = {}
 var menu_audio := OS.get_environment("SF2_BATTLE_SCENE_MENU_AUDIO") == "1"
 var menu_cases: Array = []
 var partial_audio := OS.get_environment("SF2_BATTLE_SCENE_PARTIAL_AUDIO") == "1"
+var heal_mode := OS.get_environment("SF2_BATTLE_SCENE_HEAL") == "1"
+var heal_cases: Array = []
+var heal_wait_tokens: Dictionary = {}
+var heal_timeout_cases: Array = []
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -51,7 +55,7 @@ func _result(json: String) -> void:
 
 func _read() -> Dictionary:
     var state: Dictionary = JSON.parse_string(view.call("ReadSceneObservationJson"))
-    if herb_mode:
+    if herb_mode or heal_mode:
         var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
         state["inventories"] = board.inventories
         state["maximumHp"] = board.actors.map(func(actor): return {"actor":actor.id, "maxHp":actor.maxHp})
@@ -202,6 +206,45 @@ func _press(key: Key) -> void:
     Input.parse_input_event(event)
     await process_frame
 
+func _timeout_heal_message(initial: Dictionary) -> void:
+    var phase: String = initial.scene.phase
+    var token: int = int(initial.scene.waitToken)
+    var begin := events.size()
+    var state := initial
+    # Actual text reveal/delivery may be slower than mandatory logical work.
+    # No Confirm is supplied anywhere in this observation.
+    for tick in range(600):
+        if state.scene.healing.AtTimedInput and state.scene.healing.Delivered: break
+        await process_frame
+        state = _read()
+    _check(state.scene.healing.AtTimedInput and state.scene.healing.Delivered, "host naturally reveals and delivers timed HEAL text")
+    if not failures.is_empty(): return
+    var ready := state.duplicate(true)
+    var ready_events := events.size()
+    for tick in range(3): await process_frame
+    state = _read()
+    _check(state.mainSeed == ready.mainSeed and state.scene.healing.Remaining == ready.scene.healing.Remaining,
+        "ready delivery/idle does not supply a logical Wait or RNG")
+    _check(events.size() == ready_events, "ready host callbacks add no semantic work")
+    var polls := 0
+    var final_input_events: Array = []
+    while int(state.scene.waitToken) == token and polls < 66:
+        var event_start := events.size()
+        await _press(KEY_V)
+        polls += 1
+        state = _read()
+        if int(state.scene.waitToken) != token:
+            final_input_events = events.slice(event_start)
+            break
+    _check(polls == 65 and int(state.scene.waitToken) != token, "neutral timeout returns without another Confirm")
+    var steps := events.slice(begin).filter(func(event): return event.Kind == "scene-logical-step" and event.Detail == "bsc10:input-before-vint")
+    _check(steps.size() == 65, "exact neutral input stream has no extra timed opportunity")
+    var completed := final_input_events.filter(func(event): return event.Kind == "scene-step-completed" and event.Detail == phase)
+    _check(completed.size() == 1, "last neutral input completes the ready message")
+    _check(not final_input_events.any(func(event): return event.Kind == "scene-delivery"), "timeout manufactures no acknowledgement/delivery command")
+    heal_timeout_cases.append({"phase":phase, "ready":ready, "after":state, "polls":polls,
+        "timedSteps":steps.size(), "finalInputEvents":final_input_events, "confirms":0})
+
 func _settle() -> Dictionary:
     for tick in range(2400):
         var state := _read()
@@ -227,7 +270,20 @@ func _settle() -> Dictionary:
                 _check(int(state.scene.waitToken) == before, "cancel and movement cannot release the scene wait")
                 input_checked = true
             if state.scene.phase in ["ActionMessage", "ResultMessage", "DeathMessage", "RewardMessage", "GrowthMessage", "GoldMessage"]:
-                await _press(KEY_ENTER)
+                if heal_mode and state.scene.healing != null and state.scene.phase in ["ActionMessage", "ResultMessage"]:
+                    if heal_cases.is_empty():
+                        await _timeout_heal_message(state)
+                    elif not state.scene.healing.AtTimedInput or not state.scene.healing.Delivered:
+                        await process_frame
+                    else:
+                        # Later cases retain the declared one neutral recovery read
+                        # then early acknowledgement, after actual host readiness.
+                        if state.scene.phase == "ResultMessage" and not heal_wait_tokens.has(state.scene.waitToken):
+                            heal_wait_tokens[state.scene.waitToken] = true
+                            await _press(KEY_V)
+                        await _press(KEY_ENTER)
+                else:
+                    await _press(KEY_ENTER)
             else:
                 await process_frame
         else:
@@ -377,6 +433,62 @@ func _open_output() -> bool:
         return false
     return true
 
+func _run_heals(state: Dictionary, requests: Array) -> Dictionary:
+    for request in requests:
+        for turn in range(16):
+            if state.actor == "ally-1" or not failures.is_empty(): break
+            state = await _stay()
+        _check(state.actor == "ally-1", "healer reaches ordinary control")
+        if not failures.is_empty(): return state
+        var before := state.duplicate(true)
+        await _press(KEY_ENTER)
+        for spell in range(8):
+            await _press(KEY_H)
+            var choice: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+            if choice.failure == null and choice.spell != null and choice.spell.Value == "heal" and choice.spell.Level == request.level: break
+        for target in range(3):
+            var choice: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+            if choice.failure == null and choice.target == request.target: break
+            await _press(KEY_TAB)
+        var selected: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        _check(selected.failure == null and selected.target == request.target and selected.spell.Level == request.level, "HEAL level and valid target selected through real input")
+        if not failures.is_empty(): return state
+        var begin_event := events.size()
+        var begin_projection := projections.size()
+        var begin_audio := receipts.size()
+        await _press(KEY_ENTER)
+        state = await _settle()
+        var observed := projections.slice(begin_projection).filter(func(sample): return sample.scene.actionKind == "heal")
+        _check(not observed.is_empty(), "HEAL scene consumed")
+        if observed.is_empty(): return state
+        var ending: Dictionary = observed[-1]
+        var action_events: Array = []
+        for event in events.slice(begin_event):
+            action_events.append(event)
+            if event.Kind == "after-turn" and event.Actor.Value == "ally-1": break
+        var before_target: Dictionary = before.actors.filter(func(actor): return actor.actor == request.target)[0]
+        var after_target: Dictionary = ending.actors.filter(func(actor): return actor.actor == request.target)[0]
+        var maximum: int = before.maximumHp.filter(func(actor): return actor.actor == request.target)[0].maxHp
+        if request.injured:
+            _check(before_target.hp < maximum and after_target.hp > before_target.hp, "actual injury precedes positive HEAL recovery")
+        else:
+            _check(before_target.hp == maximum and after_target.hp == maximum, "full-HP HEAL keeps HP capped")
+        var mp_before: int = before.actors.filter(func(actor): return actor.actor == "ally-1")[0].mp
+        var mp_after: int = ending.actors.filter(func(actor): return actor.actor == "ally-1")[0].mp
+        _check(mp_after == mp_before - [3, 5, 10][int(request.level)-1], "one caster MP payment survives self/other recovery")
+        _check(action_events.filter(func(event): return event.Kind == "mp" and event.Actor.Value == "ally-1").size() == 1, "exactly one MP write")
+        _check(action_events.filter(func(event): return event.Kind == "after-turn" and event.Actor.Value == "ally-1").size() == 1, "one turn consumed after complete HEAL scene")
+        _check(observed.any(func(sample): return sample.scene.phase == "SpellStop" and sample.scene.healing.Fairy.Control == 0 and not sample.scene.healing.Fairy.CleanupPending), "cleared spell and resumed cleanup precede release")
+        _check(observed.any(func(sample): return not sample.scene.fairySprites.is_empty()), "actual fairy/dust nodes project admitted graphics")
+        _check(observed.any(func(sample): return sample.scene.healing.Fairy != null and sample.scene.healing.Fairy.Fairies.size() == (2 if request.level == 3 else 1)), "level selects actual instance count")
+        _check(observed.any(func(sample): return sample.scene.phase == "TargetEnter") == (request.target != "ally-1"), "other target switches the displayed ally")
+        _check(not in_scene and state.failure == null and ending.scene.phase == "End", "HEAL ends before next usable control")
+        if OS.get_environment("SF2_BATTLE_SCENE_WORLD") == "1":
+            for sound in [77, 113]:
+                _check(receipts.slice(begin_audio).filter(func(receipt): return receipt.Operation == "started" and receipt.Command == sound).size() == 1, "one actual HEAL sound " + str(sound))
+        heal_cases.append({"request":request, "before":before, "after":state, "sceneEnd":ending, "events":action_events})
+    return state
+
 func _run() -> void:
     if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
@@ -402,6 +514,11 @@ func _run() -> void:
         await _run_menu_audio()
         _finish()
         return
+    if heal_mode:
+        state = await _run_heals(state, [{"level":3, "target":"ally-1", "injured":false}])
+        if not failures.is_empty():
+            _finish()
+            return
     if OS.get_environment("SF2_BATTLE_SCENE_WOUNDED") == "1":
         state = await _chester_physical(state)
         # Bring Sarah next to the actually injured Chester through the same entrance.
@@ -421,7 +538,10 @@ func _run() -> void:
             state = await _stay()
         _check(state.actor == "ally-1", "Sarah reaches adjacent ordinary herb choice")
         if failures.is_empty():
-            await _run_herbs(state, [{"actor":"ally-1","target":"ally-2"},{"actor":"ally-1","target":"ally-1"}])
+            if heal_mode:
+                state = await _run_heals(state, [{"level":1,"target":"ally-2","injured":true},{"level":2,"target":"ally-1","injured":true}])
+            else:
+                await _run_herbs(state, [{"actor":"ally-1","target":"ally-2"},{"actor":"ally-1","target":"ally-1"}])
         _finish()
         return
     if OS.get_environment("SF2_BATTLE_SCENE_CHESTER") == "1":
@@ -512,7 +632,7 @@ func _finish() -> void:
         _check(not receipts.any(func(receipt): return receipt.Command == pair[0] and receipt.Operation == "stopped"), "independent reaction effect is not truncated by UI input")
         if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
-        "scope": "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "scenes": scenes,
+        "scope": "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps, "menuAudioCases": menu_cases,
         "audioDriver": AudioServer.get_driver_name()}

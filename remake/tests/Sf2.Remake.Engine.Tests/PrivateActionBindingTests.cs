@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.TestSupport;
@@ -13,6 +14,14 @@ public sealed class PrivateActionBindingTests
     // Explicit controlled action input, consumed only by tests/ordinary startup selection.
     internal static ScenarioReadAccepted AdmittedActions() => Assert.IsType<ScenarioReadAccepted>(
         PrivateBattleScenarioTests.Selected(Path.Combine(AppContext.BaseDirectory, "controlled", "battle01-actions.json")).Read());
+
+    private static ScenarioReadAccepted WithHealingScene(ScenarioReadAccepted admitted)
+    {
+        var scenes = BattleSceneContentReader.Read(PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE_SCENE_CONTENT"),
+            admitted.Definition.PrivateDefinitions!);
+        return admitted with { Definition = new ScenarioDefinition(admitted.Definition.Package, admitted.Definition.Encounters.Values,
+            admitted.Definition.PrivateDefinitions, battleScenes: scenes) };
+    }
 
     [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD")]
     public void ActualDefinitionsBindEquipmentProwessGoldAndDistinctEffectiveAttack()
@@ -84,13 +93,13 @@ public sealed class PrivateActionBindingTests
         Assert.Equal((ushort)5, before.GetActor(target).Hp); Assert.Equal((byte)0, before.GetActor(attacker).Exp);
     }
 
-    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD")]
+    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_BATTLE_SCENE_CONTENT")]
     public void PrivatePriestHealsThroughCommonCommandsAndEgressKeepsItsUnsupportedEffect()
     {
-        var admitted = AdmittedActions(); var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start)).Session;
+        var admitted = WithHealingScene(AdmittedActions()); var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start)).Session;
         var actor = session.Current.Selection!.Actor;
         Accept(session, new Confirm()); Accept(session, new SelectSpell(new("heal", 1))); Accept(session, new SelectTarget(actor));
-        var result = Accept(session, new Confirm());
+        var result = FinishBattleScenes(session, Accept(session, new Confirm()));
         Assert.Equal((byte)7, result.Snapshot.Battle.GetActor(actor).Mp); Assert.InRange(result.Snapshot.Battle.GetActor(actor).Exp!.Value, 9, 11);
         Assert.Single(result.Observations, row => row.Kind == "after-turn" && row.Actor == actor);
         Stay(session); Assert.Equal(new ActorRef("ally-0"), session.Current.Selection!.Actor);
@@ -129,7 +138,7 @@ public sealed class PrivateActionBindingTests
         }
     }
 
-    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD")]
+    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_BATTLE_SCENE_CONTENT")]
     public void LearnedSourceLevelExposesLowerLevelsAndKeepsUnsupportedSpellEffectsExplicit()
     {
         var document = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "controlled", "battle01-actions.json")))!;
@@ -139,14 +148,14 @@ public sealed class PrivateActionBindingTests
         try
         {
             File.WriteAllText(file, document.ToJsonString());
-            var admitted = Assert.IsType<ScenarioReadAccepted>(PrivateBattleScenarioTests.Selected(file).Read());
+            var admitted = WithHealingScene(Assert.IsType<ScenarioReadAccepted>(PrivateBattleScenarioTests.Selected(file).Read()));
             var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start)).Session;
             var actor = session.Current.Selection!.Actor;
             Assert.Equal(new[] { new SpellRef("egress", 1), new("heal", 1), new("heal", 2), new("heal", 3) }, session.Current.Battle.GetActor(actor).Definition.Spells);
             Accept(session, new Confirm()); var before = session.Current;
             Assert.Equal("spell-effect", Send(session, new SelectSpell(new("egress", 1))).Failure!.Code); Assert.Same(before, session.Current);
             Accept(session, new SelectSpell(new("heal", 2))); Accept(session, new SelectTarget(actor));
-            var healed = Accept(session, new Confirm()); Assert.Equal((byte)5, healed.Snapshot.Battle.GetActor(actor).Mp);
+            var healed = FinishBattleScenes(session, Accept(session, new Confirm())); Assert.Equal((byte)5, healed.Snapshot.Battle.GetActor(actor).Mp);
         }
         finally { File.Delete(file); }
     }

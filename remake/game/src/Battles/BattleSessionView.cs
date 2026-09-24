@@ -83,7 +83,8 @@ public sealed partial class BattleSessionView : Control
             $"{input.Hint(GameAction.Spell)}: select / cycle learned spells and levels; target self\n" +
             $"{input.Hint(GameAction.Item)}: select / cycle carried items; target self\n" +
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
-            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n\nAI and rounds advance automatically.";
+            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n" +
+            $"{input.Hint(GameAction.Wait)}: wait at a healing message\n\nAI and rounds advance automatically.";
     }
 
     public override void _EnterTree() => GetViewport().SizeChanged += Arrange;

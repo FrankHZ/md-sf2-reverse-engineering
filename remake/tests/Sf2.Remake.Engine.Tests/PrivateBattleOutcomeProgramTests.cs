@@ -297,10 +297,9 @@ public sealed class PrivateBattleOutcomeProgramTests
 
     private static void Settle(GameSession session, List<SessionObservation> observations)
     {
-        while (session.Current.BattleScene is { } scene)
+        if (session.Current.BattleScene is not null)
         {
-            var step = Accept(session, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
-                new CompletePresentation(scene.Token, scene.CompletionKind));
+            var step = FinishBattleScenes(session, new(session.Current, [], session.Current.StopReason));
             observations.AddRange(step.Observations);
         }
         if (session.Current.StopReason == SessionStopReason.PlayerInput) return;
