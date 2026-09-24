@@ -3,8 +3,56 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
+internal sealed record FieldMoveOutcome(bool Moved, bool DoorOpened, ExplorationEvent? Event);
+
 internal static class MapEventDispatcher
 {
+    internal static (ExplorationState World, FieldMoveOutcome Outcome) Move(ExplorationState world,
+        ExplorationDirection direction, IReadOnlyList<int> flags)
+    {
+        var player = world.PlayerEntity;
+        byte facing = direction switch
+        { ExplorationDirection.East => 0, ExplorationDirection.North => 1, ExplorationDirection.West => 2, _ => 3 };
+        world = world.WithEntity(player with { Motion = player.Motion with { Facing = facing } });
+        player = world.PlayerEntity;
+        var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, direction);
+        var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible).ToArray();
+        // PR559: obstruction precedes the door copy and the marker, even for an
+        // otherwise non-passable candidate. A blocked traversal returns the origin.
+        if (world.Population is not null && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
+            EntityMotion.FieldObstructed(candidate.X * 384, candidate.Y * 384, others.Select(entity => entity.Motion)))
+            return (world, new(false, false, null));
+        bool opened = false;
+        ExplorationEvent? reached = null;
+        if (candidate is not null && world.Definition.Traversal.IsWithinActiveArea(candidate))
+        {
+            var before = world;
+            world = OpenDoor(world, candidate);
+            opened = !ReferenceEquals(before, world);
+            reached = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
+                Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], flags));
+        }
+        var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, direction);
+        bool occupied = world.Population is null && others.Any(entity =>
+            entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
+        var motion = traversal.Outcome == OriginalMapTraversalOutcome.Moved && !occupied
+            ? EntityMotion.Start(player.Motion, (short)(traversal.Position.X * 384), (short)(traversal.Position.Y * 384),
+                others.Select(entity => entity.Motion), world.Population is not null) : null;
+        if (motion is not null)
+        {
+            world = world.WithEntity(player with { Motion = motion,
+                Actions = new EntityActionProgram([new StopEntityActions()]), ActionCursor = 0, WaitingForMotion = true });
+            reached ??= world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
+                Matches(entry, traversal.Position, world.Layout[traversal.Position.X, traversal.Position.Y], flags));
+        }
+        return (world, new(motion is not null, opened, reached));
+    }
+
+    private static bool Matches(ExplorationEvent entry, MapPosition position, ushort word, IReadOnlyList<int> flags) =>
+        (entry.X is null || entry.X == position.X) && (entry.Y is null || entry.Y == position.Y) &&
+        (entry.RequiredMarker is null || (word & 0x3C00) == entry.RequiredMarker) &&
+        (entry.RequiredFlag is null || flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue);
+
     internal static SessionSnapshot Interact(SessionSnapshot current, ExplorationEvent entry, EntityRef entity,
         List<SessionObservation> observations)
     {

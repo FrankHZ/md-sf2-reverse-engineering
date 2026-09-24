@@ -10,6 +10,254 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class ExplorationSessionTests
 {
     [Theory]
+    [InlineData(true, 0, 0x12341234u, 0xECAB1234u, 5, 6)]
+    [InlineData(true, 2, 0x12341234u, 0x12341234u, 5, 5)]
+    [InlineData(true, 0, 0xC632A55Au, 0x1091A55Au, 6, 5)]
+    [InlineData(false, 0, 0x12341234u, 0xECAB1234u, 5, 6)]
+    public void WarpConsumesOldPopulationBeforePreserveOrRebuild(bool preserve, byte delay, uint seed,
+        uint expectedSeed, int npcX, int npcY)
+    {
+        var npc = new ExplorationEntity(new("walker"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(delay), new RandomWalkEntity(new(5, 5), 1), new StopEntityActions()]), Slot: 1);
+        var idle = new ExplorationEntity(new("idle"), EntityMotionState.At(new(8, 8), 0, 32), true, Slot: 2);
+        var (definition, before) = WarpWorld([npc, idle], preserve, seed);
+        var pending = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Null(pending.Failure);
+        Assert.Equal(seed, pending.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(before.Exploration!.PlayerEntity, pending.Snapshot.Exploration.PlayerEntity);
+        var token = Assert.IsType<EntityWait>(pending.Snapshot.Story.Wait).Token;
+        var result = ExplorationDispatcher.Submit(definition, pending.Snapshot, new AdvanceSimulation(token, 600));
+        Assert.Null(result.Failure);
+        var world = result.Snapshot.Exploration!;
+        Assert.Equal(expectedSeed, world.Party.MainSeed);
+        Assert.Equal(1, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
+        Assert.Equal(new MapPosition(9, 9), world.PlayerEntity.Position);
+        if (preserve)
+        {
+            Assert.Equal((npcX * 384, npcY * 384), ((int)world.Entities[npc.Entity].Motion.XDestination, (int)world.Entities[npc.Entity].Motion.YDestination));
+            Assert.Equal(delay == 0 ? 0 : 1, world.Entities[npc.Entity].Motion.WaitTimer);
+            Assert.Equal(idle, world.Entities[idle.Entity]);
+        }
+        else
+        {
+            // Destination actors have not taken a turn in the old scene's pass.
+            Assert.DoesNotContain(npc.Entity, world.Entities.Keys);
+            Assert.Equal(0, world.Entities[new("destination")].Motion.WaitTimer);
+            Assert.Contains(99, result.Snapshot.Story.Flags);
+        }
+        var stale = ExplorationDispatcher.Submit(definition, result.Snapshot, new AdvanceSimulation(token));
+        Assert.Equal("stale-or-wrong-wait", stale.Failure!.Code);
+        Assert.Same(result.Snapshot, stale.Snapshot);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LaterSlotSeesPlayerTravelReservationBeforeWarpRelocation(bool blockedMarker)
+    {
+        var npc = new ExplorationEntity(new("walker"),
+            EntityMotionState.At(new(2, 2), 0, 32) with { FlagsA = 0x20 }, true,
+            new([new MoveEntityAbsolute(new(2, 1)), new StopEntityActions()]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], true, 123, blockedMarker);
+        var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Equal(new MapPosition(9, 9), result.Snapshot.Exploration!.PlayerEntity.Position);
+        var after = result.Snapshot.Exploration.Entities[npc.Entity];
+        Assert.Equal((blockedMarker ? 1 : 2) * 384, after.Motion.YDestination);
+        Assert.Equal(blockedMarker ? 1 : 0, after.ActionCursor);
+    }
+
+    [Fact]
+    public void EarlierSlotCanObstructPendingWarpAndRemainingSlotsStillRun()
+    {
+        var npc = new ExplorationEntity(new("walker"),
+            EntityMotionState.At(new(2, 2), 0, 32) with { FlagsA = 0x80 }, true,
+            new([new MoveEntityAbsolute(new(2, 1)), new StopEntityActions()]), Slot: 1);
+        var timer = new ExplorationEntity(new("timer"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(10)]), Slot: 3);
+        var (definition, before) = WarpWorld([npc, timer], true, 123, playerSlot: 2);
+        var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Equal(ExplorationDirection.East, Assert.IsType<EntityWait>(queued.Snapshot.Story.Wait).PendingMove);
+        var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token, 600));
+        Assert.Null(result.Failure);
+        Assert.Null(result.Snapshot.Story.Wait);
+        Assert.Equal(1, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(new MapPosition(1, 1), result.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(1, result.Snapshot.Exploration.Entities[timer.Entity].Motion.WaitTimer);
+        Assert.Equal(new[] { "simulation-tick", "movement-blocked" }, result.Observations.Select(row => row.Kind));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InvalidWarpDestinationDoesNotConsumeExpiringNpcAction(bool preserve)
+    {
+        var npc = new ExplorationEntity(new("walker"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(0), new RandomWalkEntity(new(5, 5), 1)]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], preserve, 123, destinationX: 63);
+        var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Equal("map-entry-position", result.Failure!.Code);
+        Assert.Equal(SessionStopReason.Faulted, result.StopReason);
+        Assert.Same(before.Active, result.Snapshot.Active);
+        Assert.Same(before.Story, result.Snapshot.Story);
+        Assert.Equal(before.Revision, result.Snapshot.Revision);
+        Assert.Equal(before.ObservationSequence, result.Snapshot.ObservationSequence);
+        Assert.Empty(result.Observations);
+    }
+
+    [Fact]
+    public void WarpBatchStopsAtSameTransferBoundaryAsOneOpportunity()
+    {
+        var npc = new ExplorationEntity(new("timer"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(10)]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], true, 123);
+        var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        var token = queued.Snapshot.Story.Wait!.Token;
+        var single = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(token));
+        var batch = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(token, 600));
+        Assert.Null(single.Failure);
+        Assert.Null(batch.Failure);
+        Assert.Equal(single.Observations, batch.Observations);
+        Assert.Equal(single.Snapshot.Story.SimulationTick, batch.Snapshot.Story.SimulationTick);
+        Assert.Equal(single.Snapshot.Exploration!.AllEntities, batch.Snapshot.Exploration!.AllEntities);
+        Assert.Equal(single.Snapshot.Exploration.Party.MainSeed, batch.Snapshot.Exploration.Party.MainSeed);
+        Assert.Null(batch.Snapshot.Story.Wait);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScriptedTransferAndOnLoadOnlyConsumeFieldPassWhenReachedByFieldAction(bool fieldAction)
+    {
+        var npc = new ExplorationEntity(new("walker"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new RandomWalkEntity(new(5, 5), 1)]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], false, 0x12341234u, warpProgram: true);
+        var running = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
+            before.Active, before.Story.Copy(new("script", 0)), SessionStopReason.SimulationWait);
+        SessionResult result;
+        if (fieldAction)
+        {
+            var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+            result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token, 600));
+        }
+        else result = ProgramRunner.Run(definition, running, []);
+        Assert.Null(result.Failure);
+        Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
+        Assert.Equal(fieldAction ? 1 : 0, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(fieldAction ? 0xECAB1234u : 0x12341234u, result.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(0, result.Snapshot.Exploration.Entities[new("destination")].Motion.WaitTimer);
+        Assert.Equal(new[] { 98, 99 }, result.Snapshot.Story.Flags);
+        Assert.Equal(fieldAction ? 1 : 0, result.Observations.Count(row => row.Kind == "simulation-tick"));
+        Assert.DoesNotContain(result.Observations, row => row.Kind == "warp-started");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WarpKeepsOldWorldCollisionAndPhysicalSlotOrder(bool reverse)
+    {
+        ExplorationEntity Mover(string id, int x, int slot) => new(new(id),
+            EntityMotionState.At(new(x, 5), 0, 32) with { FlagsA = 0x20 }, true,
+            new([new MoveEntityAbsolute(new(5, 5)), new StopEntityActions()]), Slot: slot);
+        var west = Mover("west", 4, reverse ? 2 : 1);
+        var east = Mover("east", 6, reverse ? 1 : 2);
+        var (definition, before) = WarpWorld([east, west], true, 123);
+        var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token));
+        Assert.Null(result.Failure);
+        var winner = result.Snapshot.Exploration!.Entities[new(reverse ? "east" : "west")];
+        var loser = result.Snapshot.Exploration.Entities[new(reverse ? "west" : "east")];
+        Assert.Equal(5 * 384, winner.Motion.XDestination);
+        Assert.Equal((reverse ? 4 : 6) * 384, loser.Motion.XDestination);
+        Assert.Equal(0, loser.ActionCursor);
+        Assert.Equal(123u, result.Snapshot.Exploration.Party.MainSeed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WarpMarkerPrecedesTravelButEntityObstructionPrecedesMarker(bool obstructed)
+    {
+        var blocker = new ExplorationEntity(new("blocker"),
+            EntityMotionState.At(new(2, 1), 0, 32) with { FlagsA = 0x80 }, true, Slot: 1);
+        var npc = new ExplorationEntity(new("timer"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(10)]), Slot: 2);
+        var (definition, before) = WarpWorld(obstructed ? [blocker, npc] : [npc], true, 123, blockedMarker: true);
+        var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Null(queued.Failure);
+        if (obstructed)
+        {
+            Assert.Null(queued.Snapshot.Story.Wait);
+            Assert.Equal("movement-blocked", Assert.Single(queued.Observations).Kind);
+            Assert.Equal(0, queued.Snapshot.Story.SimulationTick);
+            Assert.Equal(0, queued.Snapshot.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+            return;
+        }
+        var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Equal(new MapPosition(9, 9), result.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(1, result.Snapshot.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.Equal(0, result.Snapshot.Exploration.PlayerEntity.Motion.XTravel);
+    }
+
+    [Fact]
+    public void PendingFieldMoveRejectsCancellationReplacementAndStaleDelivery()
+    {
+        var session = Start("harbor-arrival");
+        var pending = Accept(session, new Move(ExplorationDirection.South)).Snapshot;
+        var token = Assert.IsType<EntityWait>(pending.Story.Wait).Token;
+        Assert.Equal(ExplorationDirection.South, Assert.IsType<EntityWait>(pending.Story.Wait).PendingMove);
+        foreach (var command in new SessionCommand[] { new Cancel(), new Move(ExplorationDirection.West),
+            new Acknowledge(token), new CompletePresentation(token, PresentationCueKind.FadeOut),
+            new AdvanceSimulation(new(token.Value + 1)), new WaitAtInput() })
+        {
+            Assert.NotNull(Send(session, command).Failure);
+            Assert.Same(pending, session.Current);
+        }
+        Assert.Equal("stale-input", session.Submit(new(pending.SessionId, pending.Revision - 1, null,
+            new AdvanceSimulation(token))).Failure!.Code);
+        var first = Accept(session, new AdvanceSimulation(token));
+        Assert.Equal(1, session.Current.Story.SimulationTick);
+        Assert.Single(first.Observations, row => row.Kind == "movement-started");
+        Assert.Null(Assert.IsType<EntityWait>(session.Current.Story.Wait).PendingMove);
+        var arrived = Accept(session, new AdvanceSimulation(token, 600));
+        Assert.DoesNotContain(arrived.Observations, row => row.Kind == "movement-started");
+        Assert.Equal(new MapPosition(1, 2), session.Current.Exploration!.PlayerEntity.Position);
+        var stopped = session.Current;
+        Assert.NotNull(Send(session, new AdvanceSimulation(token)).Failure);
+        Assert.Same(stopped, session.Current);
+    }
+
+    private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) WarpWorld(
+        ExplorationEntity[] npcs, bool preserve, uint seed, bool blockedMarker = false, int playerSlot = 0,
+        int destinationX = 9, bool warpProgram = false)
+    {
+        var source = Start("harbor-arrival");
+        var words = new ushort[WorkingMapLayout.WordCount];
+        words[66] = blockedMarker ? (ushort)0xD000 : (ushort)0x1000;
+        var layout = new WorkingMapLayout(words);
+        var map = new ExplorationMapDefinition(new("origin"), layout, new OriginalMapTraversal([new(0, 0, 12, 12)]), [],
+            [new(ExplorationEventKind.Warp, 2, 1, null, warpProgram ? new("script", 0) : null, new(preserve ? "origin" : "destination"), new(destinationX, 9),
+                RequiredMarker: 0x1000, LoadMode: preserve ? MapLoadMode.Preserve : MapLoadMode.Rebuild)],
+            population: new(30, 128, 0, []));
+        var destination = new ExplorationMapDefinition(new("destination"), layout, map.Traversal,
+            [new(new("destination"), new(5, 5), 0, 32, Actions: new([new WaitEntityTicks(10)]))], [],
+            onLoad: new("arrive", 0));
+        var player = source.Current.Exploration!.PlayerEntity with
+        { Motion = EntityMotionState.At(new(1, 1), 0, 32) with { FlagsA = 0xA0 }, Slot = playerSlot };
+        var party = source.Current.Exploration.Party;
+        var world = new ExplorationState(map, layout, player.Entity, new[] { player }.Concat(npcs),
+            new(party.Encounter, party.Actors, seed, party.ThinkingSeed, party.Gold, party.NewBattle));
+        var definition = new ScenarioDefinition("warp", source.Definition.Encounters.Values,
+            exploration: new([map, destination], [new StoryProgram("arrive", [new WriteFlag(99, true), new EndProgram()]),
+                new StoryProgram("script", [new TransferToMap(new("destination"), new(9, 9), 0, MapLoadMode.Rebuild),
+                    new WriteFlag(98, true), new EndProgram()])]));
+        return (definition, new(Guid.NewGuid(), 1, 1, new ActiveExploration(world), new StoryState([], null), SessionStopReason.PlayerInput));
+    }
+
+    [Theory]
     [InlineData("clear", 2, 2, false)]
     [InlineData("current", 2, 2, true)]
     [InlineData("reserved", 4, 3, true)]
@@ -58,9 +306,16 @@ public sealed class ExplorationSessionTests
         var before = new SessionSnapshot(Guid.NewGuid(), 1, 1, new ActiveExploration(world), new StoryState([], null), SessionStopReason.PlayerInput);
         var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
         Assert.Null(result.Failure);
+        if (!blocked)
+        {
+            var pending = Assert.IsType<EntityWait>(result.Snapshot.Story.Wait);
+            Assert.Same(layout, result.Snapshot.Exploration!.Layout);
+            result = ExplorationDispatcher.Submit(definition, result.Snapshot, new AdvanceSimulation(pending.Token));
+            Assert.Null(result.Failure);
+        }
         Assert.Equal((byte)0, result.Snapshot.Exploration!.PlayerEntity.Motion.Facing);
         Assert.Equal(original.Party.MainSeed, result.Snapshot.Exploration.Party.MainSeed);
-        Assert.Equal(before.Story.SimulationTick, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(before.Story.SimulationTick + (blocked ? 0 : 1), result.Snapshot.Story.SimulationTick);
         if (blocked)
         {
             Assert.Equal("movement-blocked", Assert.Single(result.Observations).Kind);
@@ -71,16 +326,17 @@ public sealed class ExplorationSessionTests
         }
         else
         {
-            Assert.Equal(door ? new[] { "door-opened", "movement-started" } : new[] { "movement-started" }, result.Observations.Select(row => row.Kind));
+            Assert.Equal(door ? new[] { "simulation-tick", "door-opened", "movement-started" } : new[] { "simulation-tick", "movement-started" }, result.Observations.Select(row => row.Kind));
             Assert.Equal(0, result.Snapshot.Exploration.Layout[x, y]);
             Assert.Equal(afterStep, Assert.IsType<EntityWait>(result.Snapshot.Story.Wait).AfterMotion);
-            Assert.Equal(new(x, y), Assert.IsType<MoveEntityAbsolute>(result.Snapshot.Exploration.PlayerEntity.Actions!.Actions[0]).Position);
+            Assert.Equal((x * 384, y * 384), ((int)result.Snapshot.Exploration.PlayerEntity.Motion.XDestination,
+                (int)result.Snapshot.Exploration.PlayerEntity.Motion.YDestination));
             // Return to the same approach in the now-open layout: no second door event.
             var repeat = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
                 new ActiveExploration(result.Snapshot.Exploration.WithEntity(player)), before.Story, before.StopReason);
             var again = ExplorationDispatcher.Submit(definition, repeat, new Move(ExplorationDirection.East));
             Assert.Null(again.Failure);
-            Assert.Equal("movement-started", Assert.Single(again.Observations).Kind);
+            Assert.Equal("movement-requested", Assert.Single(again.Observations).Kind);
         }
     }
 
@@ -369,7 +625,7 @@ public sealed class ExplorationSessionTests
         }
         Accept(session, new WaitAtInput());
         var moving = Accept(session, new Move(ExplorationDirection.East));
-        Assert.Contains(moving.Observations, row => row.Kind == "movement-started");
+        Assert.Contains(moving.Observations, row => row.Kind == "movement-requested");
         var pending = session.Current;
         Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
         Assert.Same(pending, session.Current);
@@ -480,8 +736,11 @@ public sealed class ExplorationSessionTests
         if (accepted)
         {
             Assert.Null(result.Failure);
+            Assert.Equal(before.Exploration!.PlayerEntity.Position, session.Current.Exploration!.PlayerEntity.Position);
+            result = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 600));
             Assert.Equal(new MapPosition(destinationX, 2), session.Current.Exploration!.PlayerEntity.Position);
-            Assert.Equal(new[] { "warp-started", "map-transferred" }, result.Observations.Take(2).Select(row => row.Kind));
+            Assert.Equal(1, session.Current.Story.SimulationTick);
+            Assert.Equal(new[] { "simulation-tick", "warp-started", "map-transferred" }, result.Observations.Take(3).Select(row => row.Kind));
         }
         else
         {

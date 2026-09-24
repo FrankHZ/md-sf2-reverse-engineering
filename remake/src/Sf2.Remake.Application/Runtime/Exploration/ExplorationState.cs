@@ -12,7 +12,8 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
-public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null) : ProgramWait(Token);
+public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null,
+    ExplorationDirection? PendingMove = null) : ProgramWait(Token);
 public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
 public sealed record EntitySetSpriteWait(WaitToken Token) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);

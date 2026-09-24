@@ -105,6 +105,51 @@ second-layer rectangle. This mutates the preserved working layout as
 roof/presentation state; it is not the mechanism that changes the player's
 coordinate or area.
 
+## Entity service before the warp caller
+
+**Confirmed (static source):** at the pinned revision above,
+`disasm/code/common/scripting/entity/entityscriptengine_2.asm:VInt_UpdateEntities`
+calls `UpdateEntityData` before dispatching that physical slot's action script.
+`esc02_controlCharacter` checks other entities' current/reserved positions before
+door handling and `WarpIfSetAtPoint`. A reached warp writes the event before
+candidate passability is checked. If travel is allowed, the same action installs
+velocity/travel/destination; otherwise the event can still be reached without
+travel. Its tail calls `UpdateEntitySprite` and `esc_goToNextEntity`. The remaining
+old-map slots therefore finish their motion/action work before this VInt returns.
+A warp does not replace that population halfway through the producing pass.
+
+`disasm/code/gameflow/exploration/explorationfunctions_2.asm:WaitForEvent`
+checks `MAP_EVENT_TYPE` before A/C input. `ProcessMapEvent` clears the event and
+dispatches `ProcessMapEventType1_Warp`; the type-zero path calls `MakeEntityIdle`
+and unwinds to the main loop. `MakeEntityIdle` in
+`disasm/code/common/scripting/entity/entityfunctions_2.asm` changes the action
+pointer, without clearing velocity/travel. These are caller and service-order
+facts, not a count of every enabled interrupt through the later transition.
+
+Reproduce the source readback from the verified pinned SF2DISASM checkout:
+
+```powershell
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/scripting/entity/entityscriptengine_2.asm
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/exploration/explorationfunctions_2.asm
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/scripting/entity/entityfunctions_2.asm
+```
+
+The existing `map-content-static-v1.json` owns the `VInt_UpdateEntities` identity;
+`map3-battle01-natural-route-v1.json` binds `esc02_controlCharacter` and
+`WaitForEvent` within its retained observation. No new runtime observation is
+claimed for the service-order readback.
+
+**Unknown:** the complete ordinary-transition opportunity schedule still includes
+fade-out with the old population, gated display/map loading, base VInt service
+re-enablement, map init and conditional fade-in/control return. Their source
+owners are `ExplorationLoop`, `FadeOutToBlackAll` and `WaitForFadeToFinish` in the
+exploration file above, `mapload.asm:LoadMap`, `displayinit.asm:InitializeDisplay`,
+`battlevints.asm:SetBaseVIntFunctions`, and `fadingcommands.asm:ExecuteFading`.
+Interruptions between those CPU phases are not enumerated by the explicit waits.
+The producing pass alone cannot establish a fixed transition tick budget or the
+post-warp seed. The [remake verification owner](../../remake/docs/development-and-verification.md#ordinary-field-action-and-warp-service)
+separates the implemented pass from that remaining gap.
+
 ## Required bridge through area 1
 
 The accepted natural route supplies the bridge between the two warps:

@@ -79,6 +79,59 @@ or native Godot. These commands launch the selected executable from `remake/`, h
 and the protected environment. Neither needs private inputs. `Sf2.Remake.sln` contains the four
 production projects and Engine.Tests; the legacy test projects and reference host were retired at M5. Use formatting only for affected product projects when needed.
 
+## Ordinary field action and warp service
+
+An admitted field `Move` records its pending direction in the existing `EntityWait`
+and emits `movement-requested`. The next `AdvanceSimulation` consumes it at the
+player's physical slot in `EntityActionRunner`, after that slot's motion update.
+It rechecks current/reserved entity obstruction, opens any reached door, resolves
+the warp marker before passability, and installs allowed travel. Remaining slots
+use that old scene and the player's new reservation. A reached warp is dispatched
+only after the complete pass; it does not add a second entity update.
+The [source owner](../../docs/research/map3-controlled-start-egress-transition.md#entity-service-before-the-warp-caller)
+records the original caller order separately from this engine implementation.
+
+Destination admission reuses the pure `MapTransfer.Apply` construction before
+queueing a direct warp, including the candidate door/layout state. Invalid
+destinations preserve the original active world/story/RNG and publish no partial
+movement or warp observations; the existing failure contract stops the session.
+Preserve retains the updated old population. Rebuild carries its resulting party
+seed into the destination population, whose actors have not yet received a pass.
+Destination onLoad and existing scripted `TransferToMap` keep their program order.
+A transfer instruction itself contributes no field pass; a field-triggered warp
+program follows the producing pass before executing that instruction.
+
+Pending moves reject cancellation, replacement and unrelated acknowledgements.
+The current revision and wait token guard delivery; consuming the direction clears
+it while ordinary travel retains the same entity-wait token until arrival. A warp,
+a newly obstructed action or arrival stops the current simulation batch at its
+control boundary. Repeated/stale tokens cannot start the action again. A move
+already obstructed at submission retains the existing immediate blocked response
+without an entity opportunity. This admission policy does not claim the original
+idle-input clock.
+
+**Confirmed (engine behavior):** `ExplorationSessionTests` varies NPC wait expiry,
+draw/no-draw/idle state, seeds, physical slots, collision reservations, blocked
+marker travel, invalid destinations, Preserve/Rebuild, batch size, pending/stale
+delivery and scripted/onLoad callers. Existing `MapEntityLifecycleTests` and
+`CommandsetContinuationTests` cover consumers of the reused entity wait.
+From `remake/`, after the protected environment above, the affected selection is:
+
+```powershell
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  -p:RestoreLockedMode=true `
+  --filter 'FullyQualifiedName~ExplorationSessionTests|FullyQualifiedName~MapEntityLifecycleTests|FullyQualifiedName~CommandsetContinuationTests'
+```
+
+**Unknown:** fade/load/re-enable logical work and CPU interruption phase remain
+unimplemented at this ordinary transition. This bounded correction selects no
+fixed 24/49-tick quota, expected seed or reseed, and establishes no host timing or
+H4 closure. The retained first-warp `75DA` versus `C632`, completed JOIN timeout,
+next-actor/order and index29 occupancy failures, H4 5,340 PASS / 2 FAIL / 40
+Unavailable, and HEAL recovery opportunity gap remain in their owners below.
+Use affected engine checks, adapter compilation and the committed scope plan;
+this seam does not authorize a native/full-route or normal/full research rerun.
+
 ## Explicit field-input gameplay Wait
 
 `WaitAtInput` is an engine command for one deliberate opportunity at a settled field-input
