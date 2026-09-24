@@ -1718,6 +1718,92 @@ At Map19, cumulative accounting was **12 actual starts / 3424.7338451000396 char
 resource frames / 411 advancing batches**, with 10030 logical frames on the successful branch. The
 royal/guard continuation and final-segment failure below supersede this continuation point.
 
+### Natural JOIN audio and input boundary
+
+**Confirmed (existing-record readback, 2026-09-23):** `prepared-13` above records the natural
+JOIN request through input-helper entry and return. It uses the same accepted `22728bbf` execution
+sources, runner/observer identities and ROM/source baseline as the early native chain; no new
+acquisition is involved. The [music first-channel derivation](./sound-data-inventory.md#join-first-channel-logical-end)
+owns the conditional 505-driver-update result and controlled #517 comparison. Those counts do not
+date natural channel completion or provide an entity-update budget.
+
+CP below is the one-based row in `prepared-13/runtime/checkpoints.jsonl`; frame/order are retained
+observer coordinates, not driver updates or entity-service counts.
+
+| CP | Frame / order | Recorded boundary |
+| --- | --- | --- |
+| 1885–1886 | 7534 / 17936–17937 | command 19 request with disabled=0, then DisplayText 447 entry; RNG bytes `2A E0 00 00`. |
+| 1887–1888 | 7535 / 17940–17941 | command 19 consumer dispatch, then Z80 mailbox write. |
+| 1915–1917 | 7656 / 18212–18214 | DisplayText 447 return, then F0 and FB requests, both disabled=0; RNG `FF EA 00 00`. |
+| 1918–1919 | 8117 / 19145–19146 | previous-command dispatch/write of 8, previous=19; RNG `7F B6 00 00`. |
+| 1920 | 8118 / 19149 | WaitForPlayerInput entry, target5494 (`0x1576`), input=0; RNG `7F B6 00 00`. |
+| 1921 | 8349 / 19616 | WaitForPlayerInput return, input=32/C, d0=3; RNG `4A C7 00 00`. |
+
+**Confirmed source order:** pinned `disasm/code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce`
+clears speech SFX and waits for view scroll before requesting music, then performs membership/name
+work and DisplayText 447 on this selector. `textfunctions_1.asm:DisplayText` and
+`textfunctions_2.asm:CreateDialogueWindow/HandleDialogueTypewriting/HandleBlinkingDialogueCursor`
+in `disasm/code/common/scripting/text/` perform window/layout/DMA and per-glyph VInt waits; additional
+delay depends on MESSAGE_SPEED, mouth/input state and control tokens. Music can progress during
+this mandatory work. All 123 `kind=frame` input receipts from 7534 through 7656 are neutral.
+
+`disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm:FadeOut_WaitForP1Input` calls
+`disasm/code/common/tech/sound/music.asm:PlayMusicAfterCurrentOne` with FB, then WaitForPlayerInput.
+The music helper enqueues F0 then FB and always executes Sleep(3) before testing WAIT_FOR_MUSIC_END;
+it repeats while set. `disasm/code/common/tech/interrupts/trap0_soundcommand.asm` inserts into a
+four-word queue, replacing the last slot if full. The adjacent `applyfadingeffectandz80busupdate.asm`
+first checks an already-set wait flag against first-channel inactive; while active it defers the
+queue but still updates input. F0 arms that flag without rescanning it in the same invocation.
+When inactive clears the gate, FB can reissue the previous command in that invocation. The helper
+still finishes its current Sleep(3) and flag test before returning. JOIN later closes text and sleeps 10.
+
+**Inferred:** this source chain places the first-channel predicate/gate clearance before previous
+dispatch and the music helper's return before input entry. The raw records timestamp neither that
+helper's own return nor first-channel completion/F0 arming. They do confirm WaitForPlayerInput
+entry for this particular natural route; this does not generalize to unobserved routes.
+
+**Unknown:** raw fields omit Z80 counter/inactive and timer phase, queue occupancy, WAIT_FOR_MUSIC_END,
+Sleep residual, MESSAGE_SPEED/mouth gate, VInt enabled mask/function slots and complete entity
+action/timer state. Portrait 31 is CURRENT_PORTRAIT identity, not PORTRAIT_WINDOW_INDEX; aggregate
+windowState and the explanatory `readiness` string cannot establish Closed. The 462 observer frames
+from F0 request to input entry do not prove 154 Sleep iterations. Between frames 8117 and 8118 the
+retained rawTime frame/secondsFrames advance by two, illustrating the distinct callback boundaries.
+
+The pinned interrupt `vint.asm` services the sound queue before enabled contextual slots; entity
+updates additionally require the active VInt branch, enabled VInt_UpdateEntities slot and live entity
+state. `mapsetupsfunctions_1.asm:RunMapSetupZoneEvent` does not suppress that service for this
+Map3_ZoneEvent8 / cs_5149A caller; `RunMapSetupEntityEvent` does, so its suppression cannot be copied
+here. Source slot/gate order is **Confirmed**; actual per-entity RNG attribution and cross-clock
+entry phase remain **Unknown**. A single joint trajectory would not itself define a universal clock
+across different CPU work or entry phases.
+
+For direct offline readback, use the retained candidate located by the [early-chain handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752640589)
+and validated pair above. Its config/input SHA-256 are
+`DE5B9E35F4FE2B2338CEE65A7BCD000FC522562CA8EB321CB2A5EFCB7851A1D4` /
+`05562B5546BEBE81C0EA462E2285268CA6CB943091F7B5A01536CD6D94C4AA95`.
+Set `$joinRuntime` to that candidate's `runtime` directory. This reads existing logs only:
+
+```powershell
+$joinRows = Get-Content -LiteralPath (Join-Path $joinRuntime 'checkpoints.jsonl') -Encoding utf8
+foreach ($cp in @(1885,1886,1887,1888,1915,1916,1917,1918,1919,1920,1921)) {
+    $r = $joinRows[$cp - 1] | ConvertFrom-Json
+    [pscustomobject]@{
+        cp=$cp; kind=$r.kind; frame=$r.frame; order=$r.order
+        command=$r.facts.command; previous=$r.facts.previous; target=$r.facts.target
+        disabled=$r.facts.disabled; d0=$r.facts.d0; input=$r.state.input
+        rng=$r.state.rngBytes; portrait=$r.state.portrait; rawTime=$r.state.rawTime
+    } | ConvertTo-Json -Compress -Depth 3
+}
+Get-Content -LiteralPath (Join-Path $joinRuntime 'actual-inputs.jsonl') -Encoding utf8 |
+    ForEach-Object { $_ | ConvertFrom-Json } |
+    Where-Object { $_.kind -eq 'frame' -and $_.frame -ge 7534 -and $_.frame -le 7656 } |
+    Group-Object button | Select-Object Name,Count
+```
+
+This bounded fact does not close the [retained H4 failures](../../remake/docs/development-and-verification.md#continuous-h4-comparison):
+the first-warp seed mismatch precedes JOIN. Completed JOIN timeout, next-actor/order and index 29
+occupancy failures, and the separate HEAL opportunity gap retain their original outcomes.
+
 ### Royal and guard saves; BattleLoop return-stack failure
 
 **Confirmed:** independent reviews accepted the [royal segment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/485#issuecomment-5752906075)

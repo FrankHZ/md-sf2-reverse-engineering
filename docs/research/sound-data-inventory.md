@@ -225,6 +225,130 @@ at frames 1/10/30. Music 33's pending sample byte changes from `0xFE` to zero be
 other three cases retain `0xFE` throughout this bounded window. These are deterministic emulator
 state facts, not a conversion from video frames to YM2612 timer frequency or PCM sample rate.
 
+## JOIN first-channel logical end
+
+**Confirmed (bounded static derivation, 2026-09-23):** command 19 (`MUSIC_JOIN`) reaches the
+first-channel inactive predicate on driver update **505**, with initialized state numbered 0.
+This claim requires the complete music load initialization and uninterrupted progression of that
+generation: no replacement, stop, fade termination or external state edit. It is not 505 entity
+updates, video frames or PCM samples. The [natural JOIN caller evidence](./map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
+owns request/text/queue/input ordering and the missing cross-clock phase.
+
+The pinned `disasm/data/sound/musicbank0/music19.asm` and canonical ROM bank 0 agree on header
+`ECAA`, Timer B `C0` and channel 0 start `ECC2`. Predicate-relevant consumers are in
+`disasm/code/common/tech/sound/sounddriver.asm`:
+
+| Source section | Rule used in the derivation |
+| --- | --- |
+| `Load_Music_Channels` | Initialize cursor, counter at offset 2=0, inactive at 3=0, release at 6=0 and sustain at 8=0. Offset 7's prior length is not cleared; the first explicit length 48 replaces it before any inherited token. |
+| `YM1_ParseData:loc_586/loc_5A2` | Inactive returns; positive counter skips parsing. Release/key-off handling does not change this cursor/countdown progression. |
+| `loc_68E/Command_F0/loc_69D` | Bit 7 selects explicit next-byte length; otherwise reuse offset 7. Store the next cursor and re-enter `loc_586`. Zero length therefore consumes the next token in the same update. |
+| `loc_6AA` | Decrement a positive counter once, including the update that loaded it. |
+| `loc_5D7` | `FF 0000` sets inactive=1 without advancing the stored cursor beyond the terminal at `ED02`. |
+
+The channel has 21 note/rest tokens, including a zero length consumed during update 49; positive
+and inherited lengths sum to 504. Two-byte `FA/FB/FC/FD/FE` controls set stereo, release,
+vibrato/slide, volume and instrument without consuming another update. There is no loop/redirect
+in this channel and no `ymTimer` in the whole music19 source. `Main_Loop` checks YM status bit 1;
+`UpdateSound` reloads Timer B through register `27`/value `3A` and services music YM1 slots 0–2 before
+YM2/DAC, PSG and SFX. This defines driver order, not a ratio to 68K VInt or entity service.
+
+**Confirmed (existing controlled readback):** #517 `join-pilot-02/channels.csv` has 643 pointer/inactive
+rows compatible with a nondecreasing path through the derived states. SHA-256:
+`946AEC4491438529357237810DA1C8513EED093686B5009446AF797923C405E6`.
+The capture dispatched 19 at frame 181; slot 0 is initialized at 182, first inactive at 763, and all
+channels inactive at 764, with a 60-frame tail and no reactivation. It recorded no channel counters:
+for example `ECCE/active` admits updates 1–48 and `ED02/active` admits 481–504. Compatibility does
+not establish a measured driver step per row. Its observer directly writes the Z80 mailbox and
+disables/clears the ordinary 68K queue, so it is not natural F0/FB evidence.
+
+Capture provenance is retained in private asset commit `7219d9c6ac2e72d86b3d62b2042e153e4dbba34f`,
+`source/audio/join-observer.lua` and `manifests/audio-town-join-provenance.json` (captureRun
+`join-pilot-02`), with the original `result-audit.json` and channel CSV retained under #517.
+It used BizHawk 2.11.1 / Genplus-gx `bdddf4a58aa1a022afb11dc73294a81a5aa7bbd5`, pinned source
+above and USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+The [private audio owner](../../remake/docs/presentation-and-assets.md) retains separate PCM
+provenance/delivery acceptance. Neither its duration nor the captured 582/583 frame offsets defines
+an entity budget. Wall-clock timing and the natural channel state at SoundWait entry remain **Unknown**.
+
+### Direct offline derivation
+
+This bounded readback consumes the verified ROM, prints only summary facts, and needs no generated
+bank, emulator or ignored derivation script. Review the named pinned consumer sections above before
+using its specialized rules; it deliberately rejects other flow/control families. Set `$joinChannels`
+to the retained #517 `join-pilot-02/channels.csv` for the optional compatibility check; an empty string
+runs only the ROM derivation. Load [private selections](../operations/local-private-inputs.md) first.
+
+```powershell
+. ./local/private-inputs.ps1
+$joinChannels = ''
+@'
+import csv, hashlib, sys
+from pathlib import Path
+from sf2tool.h2.sound_data import BANK_ROM_OFFSETS, BANK_ORIGIN
+from sf2tool.private_inputs import private_input_path
+from sf2tool.rom import verify_rom
+rom = private_input_path("roms/sf2-us.bin")
+verify_rom(rom)
+offset = BANK_ROM_OFFSETS["bank0"]
+bank = rom.read_bytes()[offset:offset + 0x8000]
+byte = lambda p: bank[p - BANK_ORIGIN]
+word = lambda p: byte(p) | (byte(p + 1) << 8)
+header = word(BANK_ORIGIN + 2 * (19 - 1))
+cursor = word(header + 4)
+assert (header, byte(header + 3), cursor) == (0xECAA, 0xC0, 0xECC2)
+remaining, length, inactive, total, tokens = 0, None, 0, 0, 0
+states = [(cursor, inactive)]
+zero_updates = []
+for update in range(1, 1025):
+    while remaining == 0:
+        opcode = byte(cursor)
+        if opcode == 0xFF:
+            assert word(cursor + 1) == 0, "redirect/queued operation outside scope"
+            inactive = 1
+            break
+        if opcode >= 0xF8:
+            assert opcode in (0xFA, 0xFB, 0xFC, 0xFD, 0xFE), "control outside scope"
+            cursor += 2
+            continue
+        cursor += 1
+        if opcode & 0x80:
+            length = byte(cursor)
+            cursor += 1
+        assert length is not None, "uninitialized inherited length"
+        remaining = length
+        total += length
+        tokens += 1
+        if length == 0:
+            zero_updates.append(update)
+    if not inactive:
+        remaining -= 1
+    states.append((cursor, inactive))
+    if inactive:
+        break
+else:
+    raise ValueError("bounded channel did not terminate")
+assert (tokens, total, update, cursor, zero_updates) == (21, 504, 505, 0xED02, [49])
+print(dict(tokens=tokens, lengthSum=total, endUpdate=update, zeroUpdates=zero_updates))
+if len(sys.argv) > 1 and sys.argv[1]:
+    capture = Path(sys.argv[1])
+    assert hashlib.sha256(capture.read_bytes()).hexdigest().upper() == \
+        "946AEC4491438529357237810DA1C8513EED093686B5009446AF797923C405E6"
+    lower, matched = 0, 0
+    with capture.open(encoding="utf-8") as stream:
+        for row in csv.reader(stream):
+            if row[0] != "channels":
+                continue
+            pair = tuple(map(int, row[2].split(";")[0].split(":")))
+            possible = [i for i, state in enumerate(states) if state == pair and i >= lower]
+            assert possible, f"incompatible pointer/inactive at frame {row[1]}"
+            lower = min(possible)
+            matched += 1
+    assert matched == 643
+    print(dict(compatibleRows=matched, boundary="not driver-step measurements"))
+'@ | uv run python -X utf8 - $joinChannels
+```
+
 ## Complete Data-ASM Discovery
 
 With this directory closed, every one of the pinned checkout's 1,690 `disasm/data` ASM files belongs
