@@ -789,7 +789,7 @@ public sealed class ExplorationSessionTests
     [InlineData("reserved", 4, 3, true)]
     [InlineData("near-current", 4, 3, true)]
     [InlineData("axis-boundary", 2, 2, false)]
-    [InlineData("mover-ignores", 4, 3, false)]
+    [InlineData("control-restores-collision", 4, 3, true)]
     [InlineData("nonblocking", 2, 2, false)]
     [InlineData("hidden", 4, 3, false)]
     [InlineData("retired", 2, 2, false)]
@@ -812,7 +812,7 @@ public sealed class ExplorationSessionTests
         var player = original.PlayerEntity with
         {
             Motion = EntityMotionState.At(new(x - 1, y), 3, 32) with
-                { FlagsA = shape == "mover-ignores" ? (byte)0x80 : (byte)0xA0 },
+                { FlagsA = shape == "control-restores-collision" ? (byte)0x80 : (byte)0xA0 },
         };
         var motion = EntityMotionState.At(new(x, y), 0, 32) with { FlagsA = 0x80 };
         motion = shape switch
@@ -846,6 +846,7 @@ public sealed class ExplorationSessionTests
         {
             Assert.Equal("movement-blocked", Assert.Single(result.Observations).Kind);
             Assert.Same(layout, result.Snapshot.Exploration.Layout);
+            Assert.Equal(player.Motion with { Facing = 0 }, result.Snapshot.Exploration.PlayerEntity.Motion);
             Assert.Equal(player.Position, result.Snapshot.Exploration.PlayerEntity.Position);
             Assert.False(result.Snapshot.Exploration.PlayerEntity.Busy);
             Assert.Null(result.Snapshot.Story.Wait);

@@ -338,6 +338,15 @@ the owning five-case method passes. Both TRX results are retained under
 `local/issue534/field-control-handoff/{behavior-01,behavior-correction}/`; the completed
 failure is not relabeled as interrupted or erased by a full rerun.
 
+The committed planner's dedicated engine gate completed657 PASS /1 FAIL /30 SKIP.
+The failed node was `SourceDoorChecksEntityObstructionBeforeCopyAndTraversal` with
+`shape: "mover-ignores", x: 4, y: 3, blocked: False`: that old ordinary-control
+expectation retained script-specific collision disabling. The source-controlled rule
+requires obstruction after handoff, so the case now expects blockage and also asserts
+that preview leaves Motion unchanged except facing. The corrected eleven-case method
+passes in `door-correction/`; `engine.log` retains the completed aggregate failure.
+The correction changes tests/documentation only and does not invalidate the native run.
+
 Adapter Release and actual Debug builds pass. One authorized normal first-warp run
 passes with exit0, no failures/unavailable, using the existing project, assets,
 private inputs and PR564 binding. No instance was available before startup; the probe
