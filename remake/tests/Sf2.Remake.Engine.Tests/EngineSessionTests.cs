@@ -35,15 +35,28 @@ public sealed class EngineSessionTests
         Accept(session, new SelectSpell(spell));
         Accept(session, new SelectTarget(actor));
         Assert.Same(before.Battle, session.Current.Battle);
-        var result = Accept(session, new Confirm());
+        var prepared = Accept(session, new Confirm());
+        Assert.Equal(afterSeed, prepared.Snapshot.Battle.MainSeed); // Original two award draws.
+        Assert.Equal(2, prepared.Observations.Count(row => row.RandomRange is not null));
+        Assert.Equal(before.Battle.GetActor(actor).Hp, prepared.Snapshot.Battle.GetActor(actor).Hp);
+        Assert.Equal(before.Battle.GetActor(actor).Mp, prepared.Snapshot.Battle.GetActor(actor).Mp);
+        Assert.Equal(before.Battle.GetActor(actor).Exp, prepared.Snapshot.Battle.GetActor(actor).Exp);
+        var result = FinishBattleScenes(session, prepared);
         var healed = result.Snapshot.Battle.GetActor(actor);
         Assert.Equal((hp, mp, exp), ((int)healed.Hp, (int)healed.Mp, (int)healed.Exp!.Value));
-        Assert.Equal(afterSeed, result.Snapshot.Battle.MainSeed);
+        uint liveSeed = beforeSeed;
+        foreach (var roll in result.Observations.Where(row => row.RandomRange is not null))
+        {
+            Assert.Equal((long)liveSeed, roll.Before);
+            liveSeed = ((uint)unchecked((ushort)((liveSeed >> 16) * 13 + 7)) << 16) | (liveSeed & 0xFFFF);
+            Assert.Equal((long)liveSeed, roll.After);
+            Assert.Equal((ushort)(((liveSeed >> 16) * roll.RandomRange!.Value) >> 16), roll.RandomValue);
+        }
+        Assert.Equal(liveSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
-        Assert.Equal(new[] { "mp", "hp", "exp", "after-turn", "action-rng", "action-committed" },
-            result.Observations.Take(6).Select(o => o.Kind));
-        Assert.Equal(((long)beforeSeed, (long)afterSeed),
-            (result.Observations[4].Before!.Value, result.Observations[4].After!.Value));
+        Assert.Equal(new[] { "mp", "hp", "exp", "after-turn" },
+            result.Observations.Where(o => o.Kind is "mp" or "hp" or "exp" or "after-turn").Select(o => o.Kind));
+        Assert.Null(result.Snapshot.BattleScene);
         Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
         Assert.NotEqual(actor, result.Snapshot.Selection!.Actor);
         Assert.Equal(Enumerable.Range(1, result.Observations.Count).Select(i => result.Observations[0].Sequence - 1 + i),

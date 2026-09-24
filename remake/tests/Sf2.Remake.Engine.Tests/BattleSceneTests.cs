@@ -82,6 +82,46 @@ public sealed class BattleSceneTests
         Assert.Same(stepped, session.Current);
     }
     [Fact]
+    public void HealingGrowthStartsFromTheSeedCarriedThroughFairyRetirement()
+    {
+        var admitted = Admitted(); var definition = admitted.Definition.Encounters.Values.Single();
+        var actor = definition.Deployments[0].Actor;
+        var growth = new BattleGrowthDefinition(0, 0,
+            Enumerable.Repeat(new StatGrowth(1, 31, Enumerable.Repeat(new StatGrowthFraction(128, 16), 30).ToArray()), 5).ToArray(),
+            [], new Dictionary<byte, SpellRef>());
+        var encounter = new BattleDefinition(definition.Encounter, definition.Map, definition.Width, definition.Height, definition.Terrain,
+            definition.Deployments.Select(row => row.Actor == actor ? row with { Definition = row.Definition.WithGrowth(growth) } : row),
+            definition.Spells.Values, definition.Rewards);
+        var input = admitted.Start;
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(new ScenarioDefinition("healing-growth", [encounter]),
+            new BattleStartInput(input.Encounter, input.Actors.Select(row => row.Actor == actor ? row with { Exp = 99 } : row),
+                input.MainSeed, input.ThinkingSeed, input.Gold))).Session;
+        Accept(session, new Confirm()); Accept(session, new SelectSpell(new("mend", 1)));
+        Accept(session, new SelectTarget(actor)); var prepared = Accept(session, new Confirm());
+        while (session.Current.BattleScene!.Phase != BattleScenePhase.RewardMessage) Step(session);
+        Assert.Equal(0, session.Current.BattleScene.Healing!.Fairy!.ActiveCount);
+        Assert.False(session.Current.BattleScene.Healing.Fairy.CleanupPending);
+        uint seed = session.Current.Battle.MainSeed;
+        Assert.NotEqual(prepared.Snapshot.Battle.MainSeed, seed);
+        byte level = session.Current.Battle.GetActor(actor).Level;
+        var grown = Step(session);
+        var rolls = grown.Observations.Where(row => row.Kind.StartsWith("rng-growth-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(10, rolls.Length);
+        foreach (var roll in rolls)
+        {
+            Assert.Equal((long)seed, roll.Before);
+            seed = ((uint)unchecked((ushort)((seed >> 16) * 13 + 7)) << 16) | (seed & 0xFFFF);
+            Assert.Equal((long)seed, roll.After);
+        }
+        Assert.Equal(seed, session.Current.Battle.MainSeed);
+        Assert.Equal(level + 1, session.Current.Battle.GetActor(actor).Level);
+        Assert.False(session.Current.HasBattleControl);
+        var ended = FinishBattleScenes(session, grown);
+        Assert.Null(ended.Snapshot.BattleScene);
+        Assert.Single(ended.Observations, row => row.Kind == "after-turn" && row.Actor == actor);
+    }
+
+    [Fact]
     public void ExperienceTextPrecedesGrowthRngAndAllLevelMessagesRetainControl()
     {
         var admitted = Admitted("stone-court");

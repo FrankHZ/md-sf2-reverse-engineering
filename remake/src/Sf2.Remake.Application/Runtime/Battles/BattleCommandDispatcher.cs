@@ -105,10 +105,11 @@ internal static class BattleCommandDispatcher
         IReadOnlyList<BattleEffect> effects = [];
         if (selection.Action == SessionAction.Heal && selection.Spell is { } spell && selection.Target is { } target)
         {
+            var action = PlayerHealing.Prepare(current.Battle,
+                selection.Actor, selection.Preview.Destination, spell, target);
             if (requireSceneContent && sceneContent is null)
                 throw new BattleRuleException("healing-scene-content", "battleScenes.healing", true);
-            return BattleSceneContinuation.Begin(current, PlayerHealing.Prepare(current.Battle,
-                selection.Actor, selection.Preview.Destination, spell, target), [], sceneContent: sceneContent);
+            return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         }
         else if (selection.Action == SessionAction.Item && selection.ItemSlot is { } slot && selection.Target is { } itemTarget)
             return BattleSceneContinuation.Begin(current, PlayerItemUse.Prepare(current.Battle,

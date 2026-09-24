@@ -25,6 +25,9 @@ public sealed record Cancel : SessionCommand;
 public sealed record WaitAtInput : SessionCommand;
 // One zero-input iteration of the input-first helper; accepting input adds no tick.
 public sealed record WaitForText(WaitToken Wait) : SessionCommand;
+// A live healing-scene token advances one admitted source opportunity. Its cursor
+// distinguishes mandatory work from an explicit neutral timed-input poll. Ordinary
+// battle progression remains tokenless; field/plain-text eligibility is separate.
 public sealed record AdvanceSimulation(WaitToken? Wait = null, int Ticks = 1) : SessionCommand;
 public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;

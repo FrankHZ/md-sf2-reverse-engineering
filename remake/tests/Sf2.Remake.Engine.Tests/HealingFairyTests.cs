@@ -35,11 +35,16 @@ public sealed class HealingFairyTests
         var early = cursor with { Delivered = true };
         var late = cursor;
         uint earlySeed = seed, lateSeed = seed;
-        for (int opportunity = 0; opportunity < 13; opportunity++)
+        Assert.Equal("bsc05:idle-frame-before-dma", cursor.Caller);
+        var callers = new List<string>();
+        while (!early.LogicalComplete)
         {
+            callers.Add(early.Caller!);
             early = early.Advance(earlySeed, Actor, 1, [], out earlySeed);
             late = late.Advance(lateSeed, Actor, 1, [], out lateSeed);
         }
+        Assert.Equal("bsc05:idle-frame-after-dma", callers[^1]);
+        Assert.Equal(13, callers.Count(caller => caller == "bsc05:ally-idle-sleep"));
         Assert.True(early.LogicalComplete); Assert.True(late.LogicalComplete);
         Assert.Equal(earlySeed, lateSeed);
         Assert.Equal(early.Fairy!.Fairies, late.Fairy!.Fairies);

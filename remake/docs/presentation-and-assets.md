@@ -784,7 +784,7 @@ rapid bounded replacement, full/disjoint groups and disposal.
 
 **Incomplete:** Original command 253 fade semantics and complete reached field/UI cue bindings remain
 incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
-music/SFX and input-release subset; HEAL spell/fairy consumption remains unfinished. The existing modern
+music/SFX and input-release subset; the bounded HEAL consumer is described below. The existing modern
 half-second `SoundFade` service is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 JOIN still lacks the source logical audio-end/interleaving binding required in addition to actual
@@ -909,7 +909,7 @@ The switch projection uses `bscWait $1E`, `bsc07_switchAllies` coordinates and
 `SwitchAllyBattlesprite`'s capped16 steps through the existing presentation timing mechanism.
 DMA/VInt/input/audio alignment remains **Unknown**. Neither those durations nor recovery sound
 playback add invented shared-RNG opportunities. No fairy or24 recoil draws means only those two
-branches are absent, not that the whole scene has zero RNG. HEAL/fairy and the pending waiting-policy
+branches are absent, not that the whole scene has zero RNG. HEAL continuous-opportunity parity and the pending waiting-policy
 decision remain separate; no original timing/pixel/H4 acceptance or asset-library promotion follows.
 
 For the affected engine behavior, select `MedicalHerbTests|BattleSceneTests` with the locked SDK's
@@ -940,30 +940,96 @@ by their new initialization token and the preceding scene-ended event, without r
 frame between scenes. These modes use the same fresh-output/error
 contract and no screenshots, original emulator, runtime state setters or fixed comparison seeds.
 
-**Unfinished healing work:** HEAL spells still use the scalar command path; no healing scene or
-fairy RNG is consumed, and #523 remains open. The research owner's
-[retained HEAL consumer evidence](../../docs/research/map3-messenger-acceptance.md#retained-heal-consumer-evidence)
-binds original self/other-target recovery, actual setup/update RNG callers, saved settings02/00
-and the reached timed battle-text branch. The source audit binds scene VInt clear/install/removal
-and graphics-before-windows order. Those are available premises, not new runtime-acquisition gaps.
+## HEAL spell scenes
 
-The consumer must preserve MP-before-cast, setup enable after its flash/load/draws, live fairy
-updates across target switching/recovery text, the ordinary make-idle wait, and stop-drain before
-return-to-actor/reward. The reached `bsc10` timed input loop is distinct from W1/W2: neither text
-reveal nor every acknowledgement warrants a range256 draw. `bsc0D` requests stop and waits for the
-active toggle; `bsc0C` force-cleans. The dispatcher decrements the lifetime word before updating;
-initial `FFFF` is not an immutable sentinel. X-boundary ranges28/32 and periodic dust range12 can
-occur in the same update. Last draw, construction-time `Script_End`, animation completion and
-runtime spell termination are different boundaries.
+The bounded HEAL1–3 consumer prepares two award draws, then retains scene/turn ownership through
+MP cost, casting, optional ally switch, HP recovery, recovery text, ordinary idle, fairy retirement,
+cleanup, actor restoration, EXP/growth and input release. Full HP still casts and awards the healing
+minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
+through the scene, not the construction seed. Private scenes require admitted PRST cast content,
+idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
+Other spell effects and HEAL4 remain unsupported. #523 and #437 remain open; this is not 9A/H4 closure.
 
-**Unknown:** the remaining natural admission of individual logical opportunities, no-draw fairy
-states/live gates, actual timed-input reads and stop/cleanup instants. Exact speed2 across every
-command is still **Inferred**, as the research owner specifies. The accepted
-[Option A contract](../../docs/decisions/0010-map3-battle01-product-acceptance.md) separates mandatory
-logical work, explicit gameplay Wait and host delivery; a settled field-Wait consumer does not
-establish these battle opportunities. Implement from the named source state/caller rules without
-renderer-frame RNG, fixed fairy duration/draw totals or seed padding. This evidence does not make
-HEAL playable or close 9A/H4; a partial kernel alone cannot do so.
+`HealingFairy` implements source integer word arithmetic, signed motion residuals, wing/dust state,
+level-dependent one/one/two instances, setup ranges32/30/12 and conditional update draws. Lifetime
+FFFF decrements before update. X-boundary ranges28/32 and periodic dust12 can co-occur; phase3
+retirement under control2, clear-before-cleanup-wait and later restoration remain separate boundaries.
+The existing private scene extractor supplies source body/wing/dust rasters and PRST cast sequence
+without promoting assets. Godot projects that state and plays source SFX77 at cast setup and113 at
+recovery. Reduced flash and text reveal alter delivery only.
+
+The scene-local `HealingSceneCursor` separates mandatory operations, explicit neutral timed-input
+reads and host delivery. Its logical message setting is speed2/no-messages0, independent of modern
+text settings. `bsc10` tests acknowledgement before the next VInt opportunity; a neutral read advances
+one opportunity. Neither reveal nor acknowledgement injects W2/range256 draws. Ordinary field
+`WaitAtInput` and plain-dialogue `WaitForText` retain their own eligibility guards. Scene commands
+require the current session, revision and scene token, with exactly one logical step per command.
+Completion delivery may arrive early or late, but cannot add steps after logical completion.
+
+Source owners are pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`battlescenes/animation/healingfairy.asm`, `animation/update/healingfairy.asm`, `battlesceneengine_0.asm`
+(`bsc01`, `bsc05`, `bsc0B`, `bsc0D`, `bsc10`), `battlesceneengine_1.asm`, `common/tech/graphics/graphics_1.asm`
+(`sub_179C/table_1840`) and the window/text helpers identified in the
+[retained HEAL evidence](../../docs/research/map3-messenger-acceptance.md#retained-heal-consumer-evidence).
+Paths start below `disasm/code/gameflow/battle/` except the common helpers. PR550's accepted
+prepared-04 instrumentation uses execution `3e69c2d49c8105c0e485dcbea70c688b57a86902` and its explicitly
+rebound Issue515 prepared-11 parent. It does not reinterpret the incompatible older parent.
+
+### Separate comparison boundaries
+
+**Confirmed — function comparison:** `local/issue523/heal-scene/comparison/Compare.csproj` calls the
+production kernel with HEAL1 and the externally observed post-award seed5C0D0000. Setup produces
+seed00920000 and the observed properties. It then supplies exactly one update per recorded
+`heal:fairy:after` and requests control2 from the trace's stop/control events. All244 returns match
+property words, lifetime/control/toggle, dust age/frame/clock and carried seed, including29 conditional
+update draws. Counts are comparison outcomes, not production budgets. This proves the update function
+for that externally supplied opportunity/control schedule; it does not prove that the application
+admits the original schedule, sprite coordinates/pixels, or every possible entry state.
+
+**Confirmed — completed continuous-cursor comparison failure:**
+`local/issue523/heal-scene/cursor-comparison/Compare.csproj` runs the production cursor from the same
+external post-award seed, admitted PRST cast/idle content, recovery text `Sarah recovered\n6 hit points.`
+and neutral timed reads. Subsequent opportunities and control2 come from the cursor, not trace events.
+The first named divergence is recovery `bsc0B`, prepared-04 CP2059–2091 (one-based checkpoint lines),
+observer frames32364–32367. Entry has actor/target1, HEAL1; the source action supplies HP+6, MP+0,
+status0, reaction mode2. At CP2059, a6=FF0022, seed00920000, control1, lifetimeFFFE, toggle1,
+fairy age2/phase7/delay23/dustClock1. Source `OpenAllyBattlesceneMiniStatusWindow` contains an explicit
+move/VInt and a movement-end wait. The current cursor ends recovery after two opportunities with
+lifetimeFFFC, age4, delay21. The observed caller returns after three, with lifetimeFFFB, age5,
+delay20 (CP2084/2091). Neither has drawn yet, so both seeds are00920000 at this first divergence.
+
+At recovery text return, the cursor has seed43EE0000/lifetimeFF80; original CP3458/3459 has
+D8800000/FF7F. This is an actual intermediate RNG divergence, not a waived display difference.
+At make-idle exit the cursor has seedECE20000/lifetimeFF6A, while CP3727 has ECE20000/FF65;
+the equal seed does not restore the missing state/opportunity correspondence. At final stop return,
+both reach seed8E2D0000/control0; this particular capped recovery and construction-time award remain
+HP5→11, MP10→7, EXP+13. That endpoint coincidence does not establish general result equality:
+other seeds, content or stop phases may alter conditional draws and later gameplay/growth.
+
+The PRST idle header is20. `bsc05` performs a real frame load on each side of Sleep; each ends in
+`WaitForDmaQueueProcessing`, whose helper unconditionally branches to `WaitForVInt`. The cursor
+therefore retains those two operations around the content-provided sleep. Weapon queue enable and
+`sub_1942` do not themselves wait. The observed26-frame bsc05 interval is not a source sleep value.
+An earlier hand-calculated153-versus154 estimate incorrectly used that observed interval; it is
+superseded by direct cursor execution:149 active opportunities before stop versus154 observed.
+No149/153/154/26 budget or seed padding is used in production.
+
+**Unknown — gameplay-opportunity admission:** the additional recovery opportunity and the remaining
+idle interval are unresolved. `bsc0B`'s `byte_FFB588` busy wait, asynchronous window completion and
+interrupts during decompression are candidate boundaries, not established explanations.
+`WaitForBattlesceneGraphicsUpdate` is conditional; the admitted ally-only cursor does not invent an
+unconditional opportunity for it. The smallest follow-up is a static/readback audit of those live
+state gates against the retained checkpoints. Wider content/gate coverage and full continuous scene
+conformance remain open jointly with #534/H4; this is not an audio/hardware-timing waiver.
+
+**Confirmed — separate native settings comparison:** actual Godot inputs in the existing scene
+observer exercise full-HP HEAL3, wounded other-target HEAL1 and wounded self-target HEAL2, alongside
+physical scenes. Each completes real fairy retirement/cleanup and releases input, with actual77/113
+audio and live projected nodes. Normal/instant versus reduced-flash/adjustable text uses the same
+semantic inputs; final `native-normal-02` / `native-reduced-02` records match all2159 ordered
+semantic events, RNG and final resource/turn state (delivery metadata excluded). This proves bounded settings conformance, not original neutral-input conformance.
+The reproduction and completed failure records belong to the
+[verification owner](./development-and-verification.md#heal-scene-verification).
 
 ## Public Synthetic and Test Fixtures
 

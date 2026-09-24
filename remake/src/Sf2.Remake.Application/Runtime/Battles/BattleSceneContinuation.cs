@@ -95,7 +95,9 @@ public sealed record HealingSceneCursor
                 {
                     if (Cast.Frames[frame].Frame != 15)
                     {
-                        Wait(1, "WaitForBattlesceneGraphicsUpdate", frame);
+                        // The admitted ally-only HEAL path does not schedule an
+                        // enemy-layout graphics request. The source's conditional
+                        // WaitForBattlesceneGraphicsUpdate is not an unconditional tick.
                         Wait(1, "LoadAllyBattlespriteFrame:dma", frame);
                     }
                     if (frame + 1 == Cast.Trigger) Setup(frame);
@@ -106,7 +108,14 @@ public sealed record HealingSceneCursor
             case BattleScenePhase.TargetEnter: Wait((136 + 376 + 15) / 16, "SwitchAlly:enter"); break;
             case BattleScenePhase.ActorExit: Wait(30, "SwitchActor:wait"); Wait((136 + 112 + 15) / 16, "SwitchActor:exit"); break;
             case BattleScenePhase.ActorEnter: Wait((136 - 8 + 15) / 16, "SwitchActor:enter"); break;
-            case BattleScenePhase.MakeIdle: Wait(TargetIdleTicks, "bsc05:ally-idle-sleep"); break;
+            case BattleScenePhase.MakeIdle:
+                // bsc05 calls sub_1938C on both sides of Sleep. Each actual idle
+                // frame load ends in WaitForDmaQueueProcessing; weapon DMA merely
+                // enables the queue and sub_1942 itself does not wait.
+                Wait(1, "bsc05:idle-frame-before-dma");
+                Wait(TargetIdleTicks, "bsc05:ally-idle-sleep");
+                Wait(1, "bsc05:idle-frame-after-dma");
+                break;
             case BattleScenePhase.SpellStop:
                 work.Add(new(HealingWorkKind.Stop, 0, "bsc0D:control2"));
                 work.Add(new(HealingWorkKind.Drain, 0, "bsc0D:toggle-drain"));
