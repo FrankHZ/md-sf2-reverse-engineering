@@ -25,8 +25,9 @@ internal static class BattleCommandDispatcher
             switch (command)
             {
                 case Cancel:
-                    return Selected(current, new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!),
-                        BattleSelectionStage.Movement), "selection-cancelled");
+                    return BattleMovementContinuation.BeginPlayer(current,
+                        new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),
+                        BattleMovement.ReturnPath(battle, selection.Actor, selection.Preview.Destination), BattleMovementPurpose.Return, "selection-cancelled");
                 case Move move when selection.Stage == BattleSelectionStage.Movement:
                     var delta = move.Direction switch
                     {
@@ -37,8 +38,9 @@ internal static class BattleCommandDispatcher
                     int x = selection.Preview.Destination.X + delta.Item1, y = selection.Preview.Destination.Y + delta.Item2;
                     if (x < 0 || y < 0 || x >= battle.Definition.Width || y >= battle.Definition.Height)
                         return Reject(current, "movement-range", "destination");
-                    return Selected(current, new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, new(x, y)),
-                        BattleSelectionStage.Movement), "movement-preview");
+                    return BattleMovementContinuation.BeginPlayer(current,
+                        new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, new(x, y)), BattleSelectionStage.Movement),
+                        Array.AsReadOnly<MapPosition>([selection.Preview.Destination, new(x, y)]), BattleMovementPurpose.Player, "movement-preview");
                 case Confirm when selection.Stage == BattleSelectionStage.Movement:
                     BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");

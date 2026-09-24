@@ -34,6 +34,9 @@ var partial_audio := OS.get_environment("SF2_BATTLE_SCENE_PARTIAL_AUDIO") == "1"
 var selection_audio := OS.get_environment("SF2_AUDIO_SELECTION") == "1"
 var selection_cases: Array = []
 var field_death_mode := OS.get_environment("SF2_BATTLE_SCENE_FIELD_DEATH") == "1"
+var movement_mode := OS.get_environment("SF2_BATTLE_MOVEMENT") == "1"
+var movement_cases: Array = []
+var movement_tokens: Dictionary = {}
 var heal_mode := OS.get_environment("SF2_BATTLE_SCENE_HEAL") == "1"
 var heal_cases: Array = []
 var heal_wait_tokens: Dictionary = {}
@@ -63,11 +66,12 @@ func _read() -> Dictionary:
         state["inventories"] = board.inventories
         state["maximumHp"] = board.actors.map(func(actor): return {"actor":actor.id, "maxHp":actor.maxHp})
     var scene: Dictionary = state.scene
-    var key := str([state.revision, scene.frameIndex, scene.reactionState, scene.visibleCharacters, scene.backgroundX, scene.allyX, scene.enemyX])
+    var key := str([state.revision, scene.frameIndex, scene.reactionState, scene.visibleCharacters, scene.backgroundX, scene.allyX, scene.enemyX, state.movement])
     if key != last_projection:
         last_projection = key
         projections.append(state)
     _audio()
+    if movement_mode and state.movement != null: _observe_movement(state)
     return state
 
 func _audio() -> void:
@@ -254,6 +258,9 @@ func _settle() -> Dictionary:
         if state.failure != null:
             _check(false, "host failure: " + str(state.failure))
             return state
+        if state.movement != null:
+            await process_frame
+            continue
         if state.scene.visible or state.scene.fieldDeath != null:
             if not in_scene or (state.scene.phase == "Initialize" and int(state.scene.waitToken) != scene_start_token):
                 if in_scene:
@@ -292,7 +299,7 @@ func _settle() -> Dictionary:
         else:
             if in_scene:
                 in_scene = false
-                if not herb_mode:
+                if not herb_mode and not movement_mode:
                     _check(int(state.mainSeed) != initial_seed, "source scene RNG changes the shared main image")
                 return state
             if state.actor != null:
@@ -372,6 +379,7 @@ func _field_counter(state: Dictionary) -> void:
     if not failures.is_empty(): return
     for direction in route:
         await _press({Vector2i.UP:KEY_W, Vector2i.RIGHT:KEY_D, Vector2i.DOWN:KEY_S, Vector2i.LEFT:KEY_A}[direction])
+        await _settle()
         board = JSON.parse_string(view.call("ReadObservationJson"))
         _check(board.failure == null, "each controlled approach move is admitted")
         if not failures.is_empty(): return
@@ -402,7 +410,7 @@ func _chester_physical(state: Dictionary) -> Dictionary:
                     var next_x: int = int(formation.previewX) + (0 if north else 1)
                     var next_y: int = int(formation.previewY) - (1 if north else 0)
                     if formation.actors.any(func(actor): return actor.hp > 0 and actor.x == next_x and actor.y == next_y): break
-                    await _press(KEY_W if north else KEY_D)
+                    await _movement_step(KEY_W if north else KEY_D)
             state = await _stay()
             continue
         var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
@@ -416,9 +424,9 @@ func _chester_physical(state: Dictionary) -> Dictionary:
             target = enemies[0]
             if abs(target.x-x)+abs(target.y-y) <= 1: break
             # The admitted Tower entrance route goes through column11, as in the physical observer.
-            if y == 18: await _press(KEY_W)
-            elif y >= 15 and x < 11: await _press(KEY_D)
-            else: await _press(KEY_W if y > target.y else KEY_S if y < target.y else KEY_D if x < target.x else KEY_A)
+            if y == 18: await _movement_step(KEY_W)
+            elif y >= 15 and x < 11: await _movement_step(KEY_D)
+            else: await _movement_step(KEY_W if y > target.y else KEY_S if y < target.y else KEY_D if x < target.x else KEY_A)
         board = JSON.parse_string(view.call("ReadObservationJson"))
         if abs(target.x-board.previewX)+abs(target.y-board.previewY) > 1:
             state = await _stay()
@@ -571,11 +579,146 @@ func _run_heals(state: Dictionary, requests: Array) -> Dictionary:
         heal_cases.append({"request":request, "before":before, "after":state, "sceneEnd":ending, "events":action_events})
     return state
 
+func _observe_movement(state: Dictionary) -> void:
+    var move: Dictionary = state.movement
+    var token := str(int(move.token))
+    var actor: Dictionary = state.fieldActors.filter(func(a): return a.id == move.actor)[0]
+    var invariant := str([state.mainSeed, state.thinkingSeed, state.cursor, state.actors, actor.x, actor.y])
+    if not movement_tokens.has(token):
+        movement_tokens[token] = {"invariant":invariant, "intermediate":false, "walking":false, "move":move}
+    var sample: Dictionary = movement_tokens[token]
+    _check(sample.invariant == invariant, "delivery does not change gameplay/RNG within token " + token)
+    _check(not state.hasBattleControl and not state.scene.visible, "movement holds input before action scene")
+    _check(actor.sprite != null and actor.sprite.visible, "movement uses an actual visible sprite")
+    if actor.sprite == null: return
+    var expected := Vector2(float(move.from.X), float(move.from.Y)).lerp(Vector2(float(move.to.X), float(move.to.Y)), float(move.progress))*40.0 + Vector2(20,20)
+    _check(Vector2(actor.sprite.x, actor.sprite.y).distance_to(expected) < 0.01, "real node interpolates only the admitted segment")
+    _check(int(actor.sprite.facing) == int(move.facing), "real walking sprite faces segment direction")
+    if move.progress > 0.0 and move.progress < 1.0: sample.intermediate = true
+    if int(actor.sprite.walkingFrame) == 1: sample.walking = true
+
+func _movement_step(key: Key) -> void:
+    await _press(key)
+    await _settle()
+
+func _movement_route(board: Dictionary) -> Array:
+    var origin := Vector2i(int(board.previewX), int(board.previewY))
+    var enemies: Array = board.actors.filter(func(a): return str(a.id).begins_with("enemy-") and a.hp > 0)
+    var occupied := {}
+    for actor in board.actors:
+        if actor.hp > 0 and actor.id != board.actor: occupied[Vector2i(int(actor.x), int(actor.y))] = true
+    var queue: Array[Vector2i] = [origin]
+    var paths := {origin: []}
+    while not queue.is_empty():
+        var cell: Vector2i = queue.pop_front()
+        if enemies.any(func(enemy): return abs(cell.x-int(enemy.x))+abs(cell.y-int(enemy.y)) == 1): return paths[cell]
+        for direction in [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]:
+            var next: Vector2i = cell + direction
+            if next.x < 0 or next.y < 0 or next.x >= int(board.mapWidth) or next.y >= int(board.mapHeight): continue
+            if paths.has(next) or occupied.has(next) or board.terrain[next.y*48+next.x] in ["Barrier", "Impassable"]: continue
+            paths[next] = paths[cell] + [direction]
+            queue.append(next)
+    return []
+
+func _ai_movement_outcomes() -> Dictionary:
+    var outcomes := {"stay":false, "attack":false}
+    for index in range(events.size()):
+        var event: Dictionary = events[index]
+        if event.Kind != "battle-movement-finished" or event.Detail != "Automatic": continue
+        var multistep := movement_tokens.values().any(func(s): return s.move.actor == event.Actor.Value and s.move.path.size() > 2 and s.move.path[0] == event.From and s.move.path[-1] == event.To)
+        for later in events.slice(index+1):
+            if later.Kind == "scene-prepared":
+                outcomes.attack = true
+                break
+            if later.Kind == "action-committed":
+                if multistep: outcomes.stay = true
+                break
+    return outcomes
+
+func _run_movement() -> void:
+    var before := _read()
+    _check(before.actor == "ally-2", "controlled Chester reaches first ordinary input")
+    if not failures.is_empty(): return
+    var begin := events.size()
+    await _press(KEY_ESCAPE) # Origin Cancel has no route.
+    _check(not events.slice(begin).any(func(e): return e.Kind == "battle-movement-segment-started"), "origin Cancel starts no movement")
+    await _press(KEY_W)
+    var pending := _read()
+    _check(pending.movement != null, "ordinary input starts a finite movement")
+    if pending.movement == null: return
+    # Three unrelated physical inputs in the same frame cannot acknowledge arrival.
+    for key in [KEY_ENTER, KEY_ESCAPE, KEY_D]:
+        var input := InputEventKey.new()
+        input.keycode = key; input.pressed = true; Input.parse_input_event(input)
+        input = InputEventKey.new(); input.keycode = key; Input.parse_input_event(input)
+    view.queue_redraw()
+    await process_frame
+    var busy := _read()
+    _check(busy.revision == pending.revision and busy.movement.token == pending.movement.token, "busy input and redraw preserve movement token")
+    await _settle()
+    await _movement_step(KEY_D) # A real corner, independent of the cost-preview path.
+    await _movement_step(KEY_ESCAPE)
+    var returned := _read()
+    var return_actor: Dictionary = returned.fieldActors.filter(func(a): return a.id == returned.actor)[0]
+    _check(return_actor.sprite.walkingFrame == 0, "arrival restores the idle frame")
+    var last_return: Dictionary = events.filter(func(e): return e.Kind == "battle-movement-segment-arrived")[-1]
+    var facing := 0 if last_return.To.X > last_return.From.X else 1 if last_return.To.Y < last_return.From.Y else 2 if last_return.To.X < last_return.From.X else 3
+    _check(int(return_actor.sprite.facing) == facing, "arrival retains the last travel facing")
+    _check(str(before.actors) == str(returned.actors) and before.mainSeed == returned.mainSeed and before.thinkingSeed == returned.thinkingSeed,
+        "ordinary step, corner and Cancel preserve committed resources and RNG")
+    movement_cases.append({"case":"ordinary-bend-cancel", "before":before, "after":returned})
+    # Continue ordinary north input until terrain or the movement budget rejects it.
+    var blocked := false
+    for step in range(16):
+        begin = events.size()
+        var audio_begin := receipts.size()
+        await _press(KEY_W)
+        var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        if board.failure != null:
+            blocked = true
+            _check(not events.slice(begin).any(func(e): return e.Kind == "battle-movement-segment-started"), "blocked input has no segment")
+            _check(not receipts.slice(audio_begin).any(func(r): return r.Operation == "started" and r.Command == 79), "blocked input has no79")
+            movement_cases.append({"case":"blocked", "failure":board.failure, "state":board})
+            break
+        await _settle()
+    _check(blocked, "ordinary route reaches a blocked destination")
+    await _movement_step(KEY_ESCAPE)
+    # Advance with actual legal UI commands. Routes are selected from the live
+    # board; no route, state or RNG image is injected into the running session.
+    for turn in range(30):
+        if not failures.is_empty(): break
+        var outcomes := _ai_movement_outcomes()
+        if outcomes.stay and outcomes.attack: break
+        var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        if board.actor == "ally-2":
+            var route := _movement_route(board)
+            for direction in route.slice(0, 4):
+                await _movement_step({Vector2i.UP:KEY_W, Vector2i.RIGHT:KEY_D, Vector2i.DOWN:KEY_S, Vector2i.LEFT:KEY_A}[direction])
+                if not failures.is_empty(): break
+        if not failures.is_empty(): break
+        await _stay()
+    var starts := events.filter(func(e): return e.Kind == "battle-movement-segment-started")
+    var arrivals := events.filter(func(e): return e.Kind == "battle-movement-segment-arrived")
+    var cues := receipts.filter(func(r): return r.Operation == "started" and r.Command == 79)
+    _check(starts.size() == arrivals.size(), "every real segment arrives once")
+    _check(movement_tokens.size() == starts.size(), "all real tokens have native pose observations")
+    _check(cues.size() == starts.size(), "79 starts exactly once per real segment")
+    _check(cues.all(func(r): return r.TimerB == 189 and r.Playing), "walking uses actual79BD PCM")
+    for index in range(mini(starts.size(), cues.size())):
+        _check(starts[index].Revision == cues[index].Revision, "79 belongs to the segment's revision")
+    _check(movement_tokens.values().all(func(s): return s.intermediate and s.walking), "each observed token has intermediate pose and walking half")
+    var automatic := movement_tokens.values().filter(func(s): return s.move.purpose == "Automatic")
+    _check(automatic.any(func(s): return s.move.path.size() > 2), "AI has a real multistep path")
+    var outcomes := _ai_movement_outcomes()
+    _check(outcomes.stay, "AI multistep Stay is reached through ordinary turns")
+    _check(outcomes.attack, "AI move then attack is reached")
+    movement_cases.append({"case":"final", "state":JSON.parse_string(view.call("ReadObservationJson"))})
+
 func _run() -> void:
     if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
-    if disjoint_audio or menu_audio or partial_audio or field_death_mode or selection_audio: process_frame.connect(_audio)
+    if disjoint_audio or menu_audio or partial_audio or field_death_mode or selection_audio or movement_mode: process_frame.connect(_audio)
     await process_frame
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
@@ -590,6 +733,10 @@ func _run() -> void:
             return
     var state := await _settle()
     if state.failure != null:
+        _finish()
+        return
+    if movement_mode:
+        await _run_movement()
         _finish()
         return
     if selection_audio:
@@ -651,10 +798,10 @@ func _run() -> void:
         if state.actor == "ally-0":
             bowie_turns += 1
             if bowie_turns == 1:
-                await _press(KEY_W)
+                await _movement_step(KEY_W)
             elif bowie_turns == 2:
-                for step in range(3): await _press(KEY_D)
-                for step in range(2): await _press(KEY_W)
+                for step in range(3): await _movement_step(KEY_D)
+                for step in range(2): await _movement_step(KEY_W)
         state = await _stay()
     _check(scenes > 0 and not in_scene, "one actual physical scene completes")
     if OS.get_environment("SF2_BATTLE_SCENE_REWARD") == "1":
@@ -689,7 +836,7 @@ func _run() -> void:
 
 func _finish() -> void:
     if menu_audio and process_frame.is_connected(_audio): process_frame.disconnect(_audio)
-    if disjoint_audio or partial_audio or field_death_mode:
+    if disjoint_audio or partial_audio or field_death_mode or movement_mode:
         # Input is already released. Observe the remaining playback tail without
         # adding a product wait or submitting further gameplay input.
         var before_tail: String = view.call("ReadObservationJson") if is_instance_valid(view) else ""
@@ -701,6 +848,8 @@ func _finish() -> void:
         if is_instance_valid(view):
             _check(str(view.call("ReadObservationJson")) == before_tail, "playback tail adds no gameplay work after input release")
         _audio()
+    if movement_mode:
+        _check(receipts.any(func(r): return r.Command == 79 and r.Operation == "finished"), "walking PCM reaches actual finite completion")
     if partial_audio:
         var partials := audio_overlaps.filter(func(sample):
             return sample.sounds.any(func(sound): return sound.command == 113) and sample.sounds.any(func(sound): return sound.command == 65))
@@ -757,8 +906,9 @@ func _finish() -> void:
         var end_state: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
         _check(end_state.stage != null or not is_instance_valid(view), "batch returns to usable input or outcome")
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
+        "movementCases": movement_cases, "movementTokens": movement_tokens,
         "audioSelectionCases": selection_cases,
-        "scope": "controlled-audio-selection" if selection_audio else "controlled-field-death-no-original-interrupt-parity" if field_death_mode else "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
+        "scope": "controlled-field-movement-no-original-interrupt-parity" if movement_mode else "controlled-audio-selection" if selection_audio else "controlled-field-death-no-original-interrupt-parity" if field_death_mode else "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps, "menuAudioCases": menu_cases,
         "audioDriver": AudioServer.get_driver_name()}

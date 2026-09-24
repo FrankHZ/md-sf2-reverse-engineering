@@ -8,7 +8,7 @@ internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Ac
     bool Critical = false, int Amount = 0);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
-    MapPosition Destination, BattleActionResolution? Scene = null);
+    MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null);
 
 // Construction and replay are separate source boundaries. Prepared state contains movement,
 // construction RNG, gold and inventory; reactions and giveExp have not run yet.

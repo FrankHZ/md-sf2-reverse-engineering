@@ -2,6 +2,7 @@ using System.Text.Json;
 using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Input;
@@ -153,6 +154,11 @@ public sealed partial class BattleSessionView : Control
     public override void _Process(double delta)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleMovement is not null)
+        {
+            if (_map.ConsumeMovement(delta, _input.Settings.ReducedFlash) is { } completion) Send(completion);
+            return;
+        }
         if (_session?.Current.BattleScene is not null)
         {
             try { if (_scene.Consume(delta) is { } completion) Send(completion); }
@@ -165,6 +171,7 @@ public sealed partial class BattleSessionView : Control
     internal void HandleAction(GameAction action)
     {
         if (_startupFailure is not null || !IsVisibleInTree()) return;
+        if (_session?.Current.BattleMovement is not null) return;
         if (_session?.Current.BattleScene is not null)
         { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.HasBattleControl != true) return;
@@ -241,8 +248,16 @@ public sealed partial class BattleSessionView : Control
         Present();
     }
 
+    private WaitToken? _movementSoundToken;
     private void Present()
     {
+        if (_session!.Current.BattleMovement is { } movement)
+        {
+            if (_session.Definition.PrivateDefinitions is not null && _session.Definition.BattleScenes?.FieldDeath is null)
+            { FailStartup(new(SessionFailureKind.AdapterError, "field-movement-content-required", "battleScenes.fieldDeath", "Movement sprite content is unavailable.")); return; }
+            if (_movementSoundToken != movement.Token)
+            { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }
+        }
         var projection = BattleSnapshotProjection.Project(_result!, _targetCandidate, _session!.Definition.Origin);
         _title.Text = projection.Title;
         _status.Text = projection.Status;
@@ -294,7 +309,7 @@ public sealed partial class BattleSessionView : Control
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
             failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(),
-            hasBattleControl = current?.HasBattleControl, fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
+            hasBattleControl = current?.HasBattleControl, movement = _map.ObserveMovement(), fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
                 mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
         });

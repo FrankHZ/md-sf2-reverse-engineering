@@ -47,10 +47,15 @@ internal static class EnemyPhysicalDecision
         var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking,
             actors: current.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
-        var action = PhysicalBattleAction.Prepare(prepared, actorRef, selected.Position, selected.Target.Actor);
-        return new(action.Prepared, Array.AsReadOnly<BattleEffect>([
+        // Pure admission preview preserves the existing all-or-nothing Unsupported
+        // boundary (including random-dependent reward/growth capability). Discard it:
+        // no construction seed, damage or reward becomes live before movement ends.
+        _ = PhysicalBattleAction.Prepare(prepared, actorRef, selected.Position, selected.Target.Actor);
+        var path = BattleMovement.Route(actor.Position!, AiMovementRules.MoveString(grid, actor.Position!,
+            selected.Position, current.Definition.Width, current.Definition.Height));
+        return new(prepared, Array.AsReadOnly<BattleEffect>([
             .. decisions,
-            new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor),
-            .. action.ConstructionEffects]), selected.Position, action);
+            new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor)]),
+            selected.Position, path, selected.Target.Actor);
     }
 }

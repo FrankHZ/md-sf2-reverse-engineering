@@ -77,19 +77,19 @@ public sealed class PrivateBattleScenarioTests
         Assert.All(battle.Actors.Skip(3), a => Assert.Equal(BattleMover.Hovering, a.Definition.Mover));
         Assert.Equal(2304, source.Encounter.Terrain.Count);
         var original = session.Current.Battle; var selected = session.Current.Selection.Actor;
-        var moved = Accept(session, new Move(ExplorationDirection.North));
+        var moved = FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         Assert.Equal(new MapPosition(9, 17), moved.Snapshot.Selection!.Preview.Destination); Assert.Same(original, moved.Snapshot.Battle);
-        Accept(session, new Confirm()); var cancelled = Accept(session, new Cancel());
+        Accept(session, new Confirm()); var cancelled = FinishMovement(session, Accept(session, new Cancel()));
         Assert.Equal(new MapPosition(9, 18), cancelled.Snapshot.Selection!.Preview.Destination); Assert.Same(original, cancelled.Snapshot.Battle);
         Accept(session, new Confirm()); Accept(session, new SelectSpell(new("heal", 1))); Accept(session, new SelectTarget(selected));
         var before = session.Current; var rejected = Send(session, new Confirm());
         Assert.Equal("unspecified-exp", rejected.Failure!.Code); Assert.Same(before, session.Current);
-        Accept(session, new Cancel());
+        FinishMovement(session, Accept(session, new Cancel()));
         Stay(session); // Actual next entry is the Centaur ally; no per-character controller.
         Assert.Equal(new ActorRef("ally-2"), session.Current.Selection!.Actor);
-        Accept(session, new Move(ExplorationDirection.North)); Accept(session, new Cancel());
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.North))); FinishMovement(session, Accept(session, new Cancel()));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
-        var beforeEnemy = session.Current.Battle; var reached = Send(session, new Confirm());
+        var beforeEnemy = session.Current.Battle; var reached = FinishMovement(session, Send(session, new Confirm()));
         Assert.Null(reached.Failure); Assert.Equal(SessionStopReason.PlayerInput, reached.StopReason);
         Assert.Equal(8, reached.Snapshot.Battle.Cursor); Assert.Equal(new ActorRef("ally-0"), reached.Snapshot.Selection!.Actor);
         Assert.Equal(beforeEnemy.MainSeed, reached.Snapshot.Battle.MainSeed); Assert.Equal(0x01340000u, reached.Snapshot.Battle.ThinkingSeed);

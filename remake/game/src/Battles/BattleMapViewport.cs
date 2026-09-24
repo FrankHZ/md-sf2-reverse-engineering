@@ -1,5 +1,7 @@
 using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -12,7 +14,11 @@ internal sealed partial class BattleMapViewport : Control
     private readonly Dictionary<ActorRef, Label> _markers = [];
     private readonly Dictionary<ActorRef, Sprite2D> _sprites = [];
     private readonly Dictionary<ActorRef, int> _spriteIds = [];
-    private readonly Dictionary<(int Sprite, int Direction), ImageTexture> _textures = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Frame), ImageTexture> _textures = [];
+    private BattleMovementState? _movement;
+    private double _movementElapsed;
+    private double _movementProgress;
+    private bool _movementDelivered;
     private ExplorationVisuals? _visuals;
     private BattleSceneDefinition? _sceneContent;
     private readonly List<ColorRect> _preview = [];
@@ -64,6 +70,9 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection)
     {
+        if (_movement?.Token != projection.Movement?.Token)
+        { _movementElapsed = _movementProgress = 0; _movementDelivered = false; }
+        _movement = projection.Movement;
         foreach (var marker in _markers.Values) marker.Visible = false;
         foreach (var sprite in _sprites.Values) sprite.Hide();
         foreach (var actor in projection.Markers)
@@ -78,11 +87,12 @@ internal sealed partial class BattleMapViewport : Control
                 node.Hide(); sprite.Show();
                 sprite.Position = new((actor.Position.X + 0.5f) * CellSize, (actor.Position.Y + 0.5f) * CellSize);
                 int id = actor.DeathEffect ? 63 : _spriteIds[actor.Actor];
-                int direction = actor.Facing switch { 1 => 0, 3 => 2, _ => 1 };
+                int facing = actor.Facing ?? (int)sprite.GetMeta("facing", 3);
+                int direction = facing switch { 1 => 0, 3 => 2, _ => 1 };
                 sprite.Texture = Texture(id, direction);
-                sprite.FlipH = actor.Facing == 0;
+                sprite.FlipH = facing == 0;
                 sprite.Modulate = actor.Selected ? Colors.Gold : Colors.White;
-                sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", actor.Facing);
+                sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", 0);
             }
         }
         foreach (var node in _preview) { _board.RemoveChild(node); node.QueueFree(); }
@@ -96,11 +106,49 @@ internal sealed partial class BattleMapViewport : Control
         }
         _focus = projection.Focus;
         Frame();
+        ProjectMovement();
     }
 
-    private ImageTexture Texture(int sprite, int direction)
+    internal CompletePresentation? ConsumeMovement(double delta, bool reduced)
     {
-        var key = (sprite, direction);
+        if (_movement is not { } movement || _movementDelivered) return null;
+        _movementElapsed += delta;
+        // Delivery duration is modern presentation, not a VInt/RNG opportunity count.
+        _movementProgress = Math.Min(1, _movementElapsed / (reduced ? 0.10 : 0.20));
+        ProjectMovement();
+        if (_movementProgress < 1) return null;
+        _movementDelivered = true;
+        return new(movement.Token, movement.CompletionKind);
+    }
+
+    private void ProjectMovement()
+    {
+        if (_movement is not { } movement) return;
+        var from = new Vector2(movement.From.X, movement.From.Y);
+        var to = new Vector2(movement.To.X, movement.To.Y);
+        var position = from.Lerp(to, (float)_movementProgress) * CellSize;
+        _markers[movement.Actor].Position = position + new Vector2(2, 4);
+        if (_sprites.TryGetValue(movement.Actor, out var sprite))
+        {
+            int direction = movement.Facing switch { 1 => 0, 3 => 2, _ => 1 };
+            int frame = _movementProgress is > 0 and < 1 ? (int)(_movementProgress * 4) % 2 : 0;
+            sprite.Position = position + Vector2.One * (CellSize / 2f);
+            sprite.Texture = Texture(_spriteIds[movement.Actor], direction, frame);
+            sprite.FlipH = movement.Facing == 0;
+            sprite.SetMeta("facing", movement.Facing); sprite.SetMeta("walkingFrame", frame);
+        }
+    }
+
+    internal object? ObserveMovement() => _movement is not { } movement ? null : new
+    {
+        actor = movement.Actor.Value, purpose = movement.Purpose.ToString(), token = movement.Token.Value,
+        segment = movement.Segment, from = movement.From, to = movement.To, facing = movement.Facing,
+        progress = _movementProgress, delivered = _movementDelivered, path = movement.Path,
+    };
+
+    private ImageTexture Texture(int sprite, int direction, int walkingFrame = 0)
+    {
+        var key = (sprite, direction, walkingFrame);
         if (_textures.TryGetValue(key, out var texture)) return texture;
         var raster = sprite == 63 ? _sceneContent!.Rasters[_sceneContent.FieldDeath!.ExitFrames[direction]]
             : _visuals!.Sprites[sprite].Directions[direction];
@@ -108,8 +156,8 @@ internal sealed partial class BattleMapViewport : Control
             ? Image.CreateFromData(raster.Width, raster.Height, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
         if (raster.Format == "png" && sheet.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok)
             throw new InvalidOperationException("field-sprite-image");
-        // ProcessKilledCombatants freezes ANIMCOUNTER at -1: first 24x24 half.
-        using var frame = sheet.GetRegion(new Rect2I(0, 0, 24, 24));
+        // Death and idle poses use frame0; movement consumes both admitted halves.
+        using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
         _textures[key] = texture = ImageTexture.CreateFromImage(frame);
         return texture;
     }
@@ -159,7 +207,7 @@ internal sealed partial class BattleMapViewport : Control
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
             nodeX = node.Position.X, nodeY = node.Position.Y, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
             sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
-                facing = (int)sprite.GetMeta("facing", -1), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
+                facing = (int)sprite.GetMeta("facing", -1), walkingFrame = (int)sprite.GetMeta("walkingFrame", 0), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
                 width = sprite.Texture?.GetWidth(), height = sprite.Texture?.GetHeight() } : null,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
     });

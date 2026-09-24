@@ -51,7 +51,8 @@ public sealed class BattleSelection
 }
 
 public abstract record ActiveSessionState;
-public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null) : ActiveSessionState;
+public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
+    BattleMovementState? Movement = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -71,8 +72,9 @@ public sealed class SessionSnapshot
     public ActiveSessionState Active { get; }
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
-    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null;
+    public bool HasBattleControl => Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null;
     public BattleSceneState? BattleScene => (Active as ActiveBattle)?.Scene;
+    public BattleMovementState? BattleMovement => (Active as ActiveBattle)?.Movement;
     public EngineBattleState Battle => Active is ActiveBattle battle ? battle.Battle :
         throw new InvalidOperationException("The active mode is exploration.");
     public ExplorationState? Exploration => (Active as ActiveExploration)?.World;

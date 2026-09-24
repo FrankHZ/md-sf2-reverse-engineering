@@ -35,10 +35,10 @@ internal static class SourceEnemyAi
                 effects.Add(new("thinking-rng", actorRef, Image(roll.Before), Image(roll.After), roll.Range, roll.Value));
             effects.Add(new("ai-memory", actorRef, actor.AiMemory, decision.MemoryAfter));
             effects.Add(new("source-standby", actorRef));
-            var moved = BattleMovement.Commit(prepared, actorRef, decision.Destination, decision.Grid);
-            moved = moved.With(thinkingSeed: Image(decision.SeedAfter), actors: moved.Actors.Select(
+            BattleMovement.RequireStop(prepared, actorRef, decision.Destination, decision.Grid);
+            prepared = prepared.With(thinkingSeed: Image(decision.SeedAfter), actors: prepared.Actors.Select(
                 unit => unit.Actor == actorRef ? unit.With(aiMemory: decision.MemoryAfter) : unit));
-            return new(moved, effects.AsReadOnly(), decision.Destination);
+            return new(prepared, effects.AsReadOnly(), decision.Destination, BattleMovement.Route(actor.Position, decision.MoveString));
         }
 
         int commandset = (word >> 4) & 15;
@@ -65,7 +65,8 @@ internal static class SourceEnemyAi
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost, Target: targetRef));
         effects.Add(new(pursuit.Destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: targetRef));
         effects.Add(new("ai-command-move1", actorRef, After: 0));
-        return new(BattleMovement.Commit(prepared, actorRef, pursuit.Destination, legal), effects.AsReadOnly(), pursuit.Destination);
+        BattleMovement.RequireStop(prepared, actorRef, pursuit.Destination, legal);
+        return new(prepared, effects.AsReadOnly(), pursuit.Destination, BattleMovement.Route(actor.Position, pursuit.MoveString));
 
         sbyte[] Costs() => current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         uint Image(ushort seed) => ((uint)seed << 16) | (current.ThinkingSeed & 65535);

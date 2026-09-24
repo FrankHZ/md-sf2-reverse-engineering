@@ -133,7 +133,7 @@ public sealed class MedicalHerbTests
         Assert.Null(session.Current.Selection!.Target); Assert.Equal(1, session.Current.Selection.ItemSlot);
         Assert.Same(before.Battle, session.Current.Battle);
         Accept(session, new SelectTarget(new("guard-a"))); // changed content admits distance 2
-        Accept(session, new Cancel());
+        FinishMovement(session, Accept(session, new Cancel()));
         Assert.Null(session.Current.Selection!.ItemSlot); Assert.Null(session.Current.Selection.Target);
         Assert.Same(before.Battle, session.Current.Battle);
     }
@@ -264,7 +264,7 @@ public sealed class MedicalHerbTests
         FinishBattleScenes(session, committed);
         Assert.Equal(5, session.Current.Battle.GetActor(new("guard-a")).Hp);
         session = Session(document); user = session.Current.Selection!.Actor;
-        Accept(session, new Move(ExplorationDirection.South));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Assert.Equal(new MapPosition(3, 3), session.Current.Battle.GetActor(user).Position);
         Use(session, 0, new("guard-a"));
         Assert.Equal(new MapPosition(3, 4), session.Current.Battle.GetActor(user).Position);

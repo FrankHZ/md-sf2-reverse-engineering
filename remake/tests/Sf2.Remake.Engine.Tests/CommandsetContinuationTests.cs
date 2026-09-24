@@ -19,7 +19,7 @@ public sealed class CommandsetContinuationTests
         var enemy = before.Actors[2].Actor;
         var ally = before.Actors[0].Actor;
         Assert.Equal(0xDC7F1234u, before.MainSeed);
-        var moved = Stay(session);
+        var moved = FinishMovement(session, Stay(session));
         Assert.Equal(new MapPosition(5, y), moved.Snapshot.Battle.GetActor(enemy).Position);
         Assert.Equal(before.MainSeed, moved.Snapshot.Battle.MainSeed);
         Assert.Equal(before.ThinkingSeed, moved.Snapshot.Battle.ThinkingSeed);
@@ -42,10 +42,10 @@ public sealed class CommandsetContinuationTests
         Assert.Single(moved.Observations, o => o.Kind == "action-committed" && o.Actor == enemy);
         Assert.DoesNotContain(moved.Observations, o => o.Kind.StartsWith("rng-", StringComparison.Ordinal) || o.Kind == "physical-first");
 
-        var round = Stay(session);
+        var round = FinishMovement(session, Stay(session));
         Assert.Equal(2, round.Snapshot.Battle.Round);
         Assert.Equal(0xEE281234u, round.Snapshot.Battle.MainSeed);
-        var attacked = Stay(session);
+        var attacked = FinishMovement(session, Stay(session));
         Assert.Equal(500, attacked.Snapshot.Battle.GetActor(ally).Hp);
         Assert.Equal(0xDAA61234u, attacked.Snapshot.Battle.MainSeed);
         attacked = FinishBattleScenes(session, attacked);
@@ -70,6 +70,8 @@ public sealed class CommandsetContinuationTests
         document["actors"]![2]!["agility"] = 60;
         var started = Assert.IsType<SessionStarted>(GameSession.Start(Reader(document)));
         Assert.Null(started.Result.Failure);
+        Assert.NotNull(started.Session.Current.BattleMovement);
+        started = started with { Result = FinishMovement(started.Session, started.Result) };
         Assert.Equal(new MapPosition(5, 3), started.Session.Current.Battle.GetActor(new("raider")).Position);
         Assert.Equal(new ActorRef("swordsman"), started.Session.Current.Selection!.Actor);
         Assert.Equal(1, started.Session.Current.Battle.Cursor);
@@ -94,7 +96,7 @@ public sealed class CommandsetContinuationTests
             }
         });
         var before = session.Current.Battle;
-        var result = Stay(session);
+        var result = FinishMovement(session, Stay(session));
         Assert.Equal(new ActorRef(expected), Assert.Single(result.Observations, o => o.Kind == "ai-move-target").Target);
         Assert.Equal(new MapPosition(5, 3), result.Snapshot.Battle.GetActor(new("raider")).Position);
         Assert.Equal(before.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
@@ -115,7 +117,7 @@ public sealed class CommandsetContinuationTests
             }
         });
         var before = session.Current.Battle;
-        var result = Stay(session);
+        var result = FinishMovement(session, Stay(session));
         Assert.Equal(new MapPosition(x, 3), result.Snapshot.Battle.GetActor(new("raider")).Position);
         Assert.Equal(before.MainSeed, result.Snapshot.Battle.MainSeed);
         Assert.Equal(before.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
@@ -138,7 +140,7 @@ public sealed class CommandsetContinuationTests
             d["terrains"]![0]!["rows"]![2] = "#ppppppd#";
             p[3]!["x"] = 2; p[3]!["y"] = 5;
         });
-        var result = Stay(session);
+        var result = FinishMovement(session, Stay(session));
         var target = Assert.Single(result.Observations, o => o.Kind == "ai-move-target");
         Assert.Equal(new ActorRef("swordsman"), target.Target); Assert.Equal(6, target.Before);
         Assert.Equal(new MapPosition(6, 3), result.Snapshot.Battle.GetActor(new("raider")).Position);
@@ -152,7 +154,7 @@ public sealed class CommandsetContinuationTests
             Configure(d, 3);
             for (int y = 1; y <= 5; y++) d["terrains"]![0]!["rows"]![y] = "#pp#pppp#";
         });
-        Accept(session, new Move(ExplorationDirection.South));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var before = session.Current;
         var result = Send(session, new Confirm());
@@ -176,9 +178,9 @@ public sealed class CommandsetContinuationTests
         {
             Configure(d, 3); d["encounters"]![0]!.AsObject().Remove("rewards");
         });
-        Stay(session);
+        FinishMovement(session, Stay(session));
         Assert.Equal(new MapPosition(5, 3), session.Current.Battle.GetActor(new("raider")).Position);
-        Stay(session);
+        FinishMovement(session, Stay(session));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var before = session.Current.Battle;
         var result = Send(session, new Confirm());

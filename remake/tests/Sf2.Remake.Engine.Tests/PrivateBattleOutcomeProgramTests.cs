@@ -280,8 +280,8 @@ public sealed class PrivateBattleOutcomeProgramTests
             for (int i = 1; i < path.Count; i++)
             {
                 var delta = (path[i].X - path[i - 1].X, path[i].Y - path[i - 1].Y);
-                observations.AddRange(Accept(session, new Move(delta switch { (1, 0) => ExplorationDirection.East, (-1, 0) => ExplorationDirection.West,
-                    (0, 1) => ExplorationDirection.South, _ => ExplorationDirection.North })).Observations);
+                observations.AddRange(FinishMovement(session, Accept(session, new Move(delta switch { (1, 0) => ExplorationDirection.East, (-1, 0) => ExplorationDirection.West,
+                    (0, 1) => ExplorationDirection.South, _ => ExplorationDirection.North }))).Observations);
             }
             observations.AddRange(Accept(session, new Confirm()).Observations);
             observations.AddRange(Accept(session, spell is { } chosen ? new SelectSpell(chosen) : new ChooseAction(target is null ? SessionAction.Stay : SessionAction.PhysicalAttack)).Observations);
@@ -297,7 +297,7 @@ public sealed class PrivateBattleOutcomeProgramTests
 
     private static void Settle(GameSession session, List<SessionObservation> observations)
     {
-        if (session.Current.BattleScene is not null)
+        if (session.Current.BattleScene is not null || session.Current.BattleMovement is not null)
         {
             var step = FinishBattleScenes(session, new(session.Current, [], session.Current.StopReason));
             observations.AddRange(step.Observations);

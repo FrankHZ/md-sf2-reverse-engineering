@@ -1,12 +1,14 @@
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text, int Facing = 3, bool DeathEffect = false);
+internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text, int? Facing = null, bool DeathEffect = false);
 internal sealed record BattlePresentation(string Title, string Status, string Roster,
-    IReadOnlyList<BattleActorMarker> Markers, IReadOnlyList<MapPosition> Preview, IReadOnlyList<MapPosition> Focus);
+    IReadOnlyList<BattleActorMarker> Markers, IReadOnlyList<MapPosition> Preview, IReadOnlyList<MapPosition> Focus,
+    BattleMovementState? Movement);
 
 internal static class BattleSnapshotProjection
 {
@@ -24,9 +26,10 @@ internal static class BattleSnapshotProjection
             status += $" · tried {attempted.Value} · selected target {selection?.Target?.Value ?? "none"}";
         var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
         var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(
-            a.Actor, a.Position!, a.IsAlly, a.Actor == selection?.Actor,
+            a.Actor, snapshot.BattleMovement?.Actor == a.Actor ? snapshot.BattleMovement.From :
+                selection?.Actor == a.Actor ? selection.Preview.Destination : a.Position!, a.IsAlly, a.Actor == selection?.Actor,
             $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}",
-            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : 3,
+            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : null,
             death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit)).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
             $"{a.Actor.Value}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
@@ -36,8 +39,9 @@ internal static class BattleSnapshotProjection
         if (death is not null)
             foreach (var id in death.DeadActors)
                 if (battle.GetActor(id).Position is { } position) focus.Add(position);
+        if (snapshot.BattleMovement is { } movement) { focus.Add(movement.From); focus.Add(movement.To); }
         string title = origin == "private-local-controlled-start" ? "PRIVATE CONTROLLED BATTLE" : "AUTHORED BATTLE";
         return new($"{title} · {battle.Definition.Map.Value} · round {battle.Round} · gold {battle.Gold?.ToString() ?? "Unknown"}", status,
-            roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly());
+            roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly(), snapshot.BattleMovement);
     }
 }

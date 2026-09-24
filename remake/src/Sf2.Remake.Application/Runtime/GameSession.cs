@@ -69,7 +69,8 @@ public sealed class GameSession
         if (envelope.Command is not AdvanceSimulation && envelope.Actor != current.Selection?.Actor)
             return BattleCommandDispatcher.Reject(current, "wrong-actor", "actor");
         bool sceneActive = current.BattleScene is not null;
-        bool programActive = !sceneActive && !current.HasBattleControl;
+        bool movementActive = current.BattleMovement is not null;
+        bool programActive = !sceneActive && !movementActive && !current.HasBattleControl;
         if (envelope.Command is WaitAtInput && (!programActive || current.Exploration is null))
             return BattleCommandDispatcher.Reject(current, "field-input-unavailable", "command");
         if (envelope.Command is WaitForText && (!programActive || current.Exploration is null))
@@ -78,7 +79,8 @@ public sealed class GameSession
             (tick.Ticks != 1 || (current.BattleScene is { Healing: not null } healingScene
                 ? tick.Wait != healingScene.Token : tick.Wait is not null)))
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
-        var result = sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command)
+        var result = movementActive ? BattleMovementContinuation.Submit(current, envelope.Command)
+            : sceneActive ? BattleSceneContinuation.Submit(current, envelope.Command)
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command)
             : BattleCommandDispatcher.Submit(current, envelope.Command, Definition.BattleScenes, Definition.PrivateDefinitions is not null);
         if (!programActive && !ReferenceEquals(result.Snapshot, current))

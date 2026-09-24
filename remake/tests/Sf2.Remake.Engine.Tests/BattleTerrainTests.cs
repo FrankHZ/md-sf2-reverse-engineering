@@ -30,9 +30,10 @@ public sealed class BattleTerrainTests
         Assert.Equal(new MapPosition(4, 3), session.Current.Selection.Preview.Destination);
         Assert.Same(before.Battle, session.Current.Battle);
         Assert.Equal(TerrainProtection.Heavy, before.Battle.Definition.Terrain[3 * 48 + 4].Protection);
-        Accept(session, new Cancel());
+        FinishMovement(session, move);
+        FinishMovement(session, Accept(session, new Cancel()));
         Assert.Equal(new MapPosition(3, 3), session.Current.Selection!.Preview.Destination);
-        Accept(session, new Move(ExplorationDirection.East));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var committed = Accept(session, new Confirm());
         Assert.Equal(new MapPosition(4, 3), committed.Snapshot.Battle.GetActor(new("medic-a")).Position);

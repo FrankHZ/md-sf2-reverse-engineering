@@ -41,7 +41,10 @@ public sealed class SourceEnemyAiTests
     {
         var before = State(); string frozen = JsonSerializer.Serialize(before);
         var decision = SourceEnemyAi.Resolve(before, Enemy); var actor = decision.Battle.GetActor(Enemy);
-        Assert.Equal(new MapPosition(4, 5), actor.Position); Assert.Equal(new MapPosition(5, 5), actor.Deployment.Position);
+        Assert.Equal(before.GetActor(Enemy).Position, actor.Position);
+        Assert.Equal(new MapPosition(4, 5), decision.Destination);
+        Assert.Equal(new[] { new MapPosition(5, 5), new MapPosition(4, 5) }, decision.Path);
+        Assert.Equal(new MapPosition(5, 5), actor.Deployment.Position);
         Assert.Equal((byte)0x14, actor.AiMemory); Assert.Equal(0x39340042u, decision.Battle.ThinkingSeed);
         Assert.Equal(0xCAFE5678u, decision.Battle.MainSeed); Assert.Equal((ushort)0, decision.Battle.Regions!.Tested);
         Assert.Equal(before.Regions!.Flags, decision.Battle.Regions.Flags); Assert.Equal(new ActorRef("remembered-target"), actor.LastTarget);

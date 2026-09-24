@@ -21,7 +21,7 @@ internal static class BattleAdvancer
 
     internal static SessionResult Advance(SessionSnapshot current, List<SessionObservation> observations)
     {
-        if (current.BattleScene is not null)
+        if (current.BattleScene is not null || current.BattleMovement is not null)
             return new(current, observations.AsReadOnly(), SessionStopReason.PresentationWait);
         var battle = current.Battle;
         long revision = current.Revision, sequence = current.ObservationSequence;
@@ -81,10 +81,9 @@ internal static class BattleAdvancer
                     BattleAiStrategy.AttackThenApproach => AttackThenApproachAi.Resolve(battle, actor.Actor),
                     _ => throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true),
                 };
-                if (action.Scene is { } scene)
-                    return BattleSceneContinuation.Begin(beforeAction.WithStory(current.Story), scene, observations, action.Effects);
-                var committed = BattleActionCommitter.Publish(beforeAction, action.Battle, actor.Actor,
-                    action.Destination, action.Effects, observations);
+                var delivery = BattleMovementContinuation.BeginAutomatic(beforeAction.WithStory(current.Story), actor.Actor, action, observations);
+                if (delivery.Snapshot.BattleMovement is not null || delivery.Snapshot.BattleScene is not null) return delivery;
+                var committed = delivery.Snapshot;
                 battle = committed.Battle; revision = committed.Revision; sequence = committed.ObservationSequence;
             }
             catch (BattleRuleException error)
