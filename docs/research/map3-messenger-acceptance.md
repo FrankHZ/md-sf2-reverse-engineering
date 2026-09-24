@@ -577,6 +577,83 @@ Additional instrumentation would need an independently accepted compatibility bo
 remains forbidden as a resume parent. No new fixture, collector change or original acquisition is
 required merely to reproduce the facts documented here.
 
+### First-warp field-return diagnostic method (Issue #534)
+
+**Confirmed (source/offline only):** the maintained acquisition accepts the explicit
+`WARP_FIELD_RETURN_DIAGNOSTIC` (`warp-field-return-diagnostic`) kind through
+`prepare_map3_observation_candidate` / `run_map3_observation_candidate`, with
+`interactive=True`, `continuation=VICTORY_CONTINUATION`, fresh `segment=1` and no parent.
+No named accepted pre-warp R1 parent exists; the resumable house and later checkpoints
+have already crossed this boundary. This method neither restores those states nor uses
+the disabled replay. Native first-return state and cleanup are **Unknown** until a
+separately admitted observation; this source method does not close #534, #437 or H4.
+
+The question and retained boundary mismatch belong to the
+[egress owner](map3-controlled-start-egress-transition.md#first-return-comparison-boundary).
+The unchanged controlled R1 bootstrap restores services/scratch before ordinary input.
+The diagnostic requires the reviewed observer/emulator epochs355/354 and completed
+hello355; a different entry fails before the first input. The operator supplies one
+`["step",30,"Left"]` followed by120 sequential `["step",1,"neutral"]` requests, reading
+each reply before the next. No Right or later route is delivered. Frame150 relative
+to R1 (completed frame505 for this entry) is an experimental endpoint, not a gameplay
+wait count. Diagnostic containment is505 total attempt frames including bootstrap,
+121 advancing batches and180 active seconds; existing bridge startup/exchange, idle,
+process and cleanup containment remains. These bounds do not create a permanent quota.
+
+The first original warp handler and its matched init return arm a passive observation
+at `loc_2593C` (`WaitForEvent-action`). The **first** subsequent poll with
+`FADING_SETTING=0` is recorded before the ordinary per-frame poll deduplication and
+before extra closure guards. Its raw state, callback order/PC/clocks, physical entity
+records and entity-index bytes remain private. Unexpected destination, unsettled player,
+nonneutral input, event/caller/program/audio/menu/text/window state is retained and fails
+admission; the collector cannot skip it and choose a later successful poll. Stale
+pre-warp/pre-init or still-fading polls cannot qualify. Callback state remains separate
+from that frame's later completed state and the final endpoint.
+
+At the last completed neutral frame, the leaf requires the first-return record, records
+the endpoint and uses existing `c.stop` → completed-frame snapshot → restoration →
+callback cleanup → final observation/status handling. No additional input/frame or
+forged save waypoint is needed. The named result is
+`WARP-FIELD-RETURN-DIAGNOSTIC-COMPLETE-UNREVIEWED`; no save, pair or descendant is allowed.
+Python reconciles ordered commands, applying/completed-frame rows and replies, source
+boundaries, raw admission fields, physical-record widths and fresh-bootstrap restoration.
+Callback/restoration/status errors remain failures. Ordinary forward acquisition, the
+HEAL parent's identity rules and the old failing `abort` operation retain their meanings.
+
+Prepare with current private-input selections, registered tools and pinned source/H1:
+
+```python
+from pathlib import Path
+from sf2tool.h3 import map3_messenger_acceptance as m
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+
+m.prepare_map3_observation_candidate(
+    private_input_path(ROM_INPUT_IDENTITY), m.UPSTREAM,
+    output_directory=Path("local/issue534/warp-field-return-source/prepared-final"),
+    proposed_timeout_seconds=7200, interactive=True,
+    continuation=m.VICTORY_CONTINUATION, segment=1,
+    diagnostic_kind=m.WARP_FIELD_RETURN_DIAGNOSTIC,
+    reviewed_prior_starts=137, reviewed_prior_active_seconds=15568.554376200133,
+    reviewed_prior_delivered_frames=429120, reviewed_prior_advancing_batches=16211,
+)
+```
+
+Use the same explicit kind/mode/segment with `run_map3_observation_candidate` only
+after independent source/preparation admission. An existing candidate is immutable:
+reprepare in a fresh directory when execution bytes change, never edit metadata/hashes
+to promote the earlier ordinary candidate. The shown inherited totals retain the
+accepted #546 accounting below; later tooling/source-gate costs remain separately
+owned. Old21/41/61/67 cleanup Unknowns and all completed failures remain unchanged.
+
+Direct offline reproduction uses the ignored
+`uv run python -X utf8 local/issue534/warp-field-return-source/check-offline.py <fresh-name>`
+driver with current production Lua/Python and the existing fake-emulator glue. It checks
+first-poll-before-dedup, retained admission failure, stale/missing first return, final
+completed-frame stop, actual-input reconciliation, save/descendant rejection and
+callback/restoration/status failure, plus existing ordinary/HEAL selection. This is
+collector verification, not original observation; no collector tests or public fixtures
+were added. Native entity/CPU phase agreement remains **Unknown**, even if seeds agree.
+
 ### Instrumented HEAL diagnostic method (Issue #546)
 
 This capability extends the existing Map3 acquisition rail for the remaining dynamic fields in

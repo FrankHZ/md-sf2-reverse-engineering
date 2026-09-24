@@ -970,6 +970,19 @@ SEGMENT_IDENTITIES = (
 HEAL_DIAGNOSTIC = "heal1-consumer-diagnostic"
 HEAL_DIAGNOSTIC_STATUS = "HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED"
 HEAL_DIAGNOSTIC_LIMITS = {"frames": 2400, "batches": 256, "activeSeconds": 180}
+WARP_FIELD_RETURN_DIAGNOSTIC = "warp-field-return-diagnostic"
+WARP_FIELD_RETURN_STATUS = "WARP-FIELD-RETURN-DIAGNOSTIC-COMPLETE-UNREVIEWED"
+
+
+def _warp_field_return_configuration() -> dict[str, Any]:
+    return {
+        "kind": WARP_FIELD_RETURN_DIAGNOSTIC,
+        "inputPolicy": "left30-neutral120",
+        "r1Epoch": 355,
+        "r1EmulatorEpoch": 354,
+        "endpointInputFrame": 150,
+        "limits": {"frames": 505, "batches": 121, "activeSeconds": 180},
+    }
 
 
 def _segment_ancestry(directory: Path) -> list[dict[str, Any]]:
@@ -1227,6 +1240,194 @@ def _assert_heal_diagnostic_output(runtime: Path, report: dict[str, Any]) -> Non
         or tuple(status[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
     ):
         raise ValueError("HEAL diagnostic callback/exit status mismatch")
+
+
+def _assert_warp_field_return_output(runtime: Path, report: dict[str, Any]) -> None:
+    """Reconcile the named leaf's original records, never a desired seed or wait count."""
+    observed = load_json(runtime / "observer.observed.json")
+    summary = observed["diagnostic"]
+    config = load_json(runtime.parent / "config.json")
+    selection = report["Diagnostic"]
+    if selection != _warp_field_return_configuration():
+        raise ValueError("warp field-return diagnostic configuration drift")
+    restoration = observed["restoration"]
+    required_restoration = (
+        "scopeArmed",
+        "gameFlags",
+        "combatantAllyRecords",
+        "mapAndBattleState",
+        "playerEntity",
+        "forceAndParty",
+        "followerState",
+        "touchedEntities",
+        "dialogueAndInput",
+        "cameraState",
+        "bootstrapFrame",
+        "gold",
+        "generatedRam",
+        "sessionCartPatches",
+        "sessionStateRestored",
+        "callbacksCleared",
+    )
+    if (
+        observed["stopReason"] != "warp-field-return-diagnostic-complete"
+        or summary["kind"] != WARP_FIELD_RETURN_DIAGNOSTIC
+        or any(restoration.get(key) is not True for key in required_restoration)
+        or restoration.get("kind") == "loaded-segment-entry"
+        or any(
+            (runtime / name).exists()
+            for name in ("segment-pair.json", "segment.State", "continuation.json")
+        )
+        or any(runtime.glob("resumed-by*.json"))
+    ):
+        raise ValueError("warp field-return cleanup/nonresumable boundary mismatch")
+    rows = [
+        json.loads(line)
+        for line in (runtime / "actual-inputs.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    checkpoints = [
+        json.loads(line)
+        for line in (runtime / "checkpoints.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    orders = [row["order"] for row in rows + checkpoints]
+    if len(orders) != len(set(orders)) or any(
+        a["order"] >= b["order"]
+        for stream in (rows, checkpoints)
+        for a, b in zip(stream, stream[1:], strict=False)
+    ):
+        raise ValueError("warp field-return record order mismatch")
+
+    def one(kind: str) -> dict[str, Any]:
+        found = [row for row in checkpoints if row["kind"] == kind]
+        if len(found) != 1:
+            raise ValueError(f"warp field-return requires exactly one {kind}")
+        return found[0]
+
+    warp, init = one("warp:original-handler"), one("natural:init:return")
+    first, endpoint = one("warp-field:first-return"), one("warp-field:endpoint")
+    stop = one("stop:warp-field-return-diagnostic-complete")
+    entry = summary["entry"]
+    epoch, end = selection["r1Epoch"], selection["r1Epoch"] + selection["endpointInputFrame"]
+    if (
+        entry
+        != {
+            "frame": epoch,
+            "emulatorFrame": epoch,
+            "r1Epoch": epoch,
+            "r1EmulatorEpoch": selection["r1EmulatorEpoch"],
+        }
+        or summary["warp"] != {"frame": warp["frame"], "order": warp["order"]}
+        or summary["initReturn"]
+        != {"frame": init["frame"], "order": init["order"], "target": init["facts"]["target"]}
+        or summary["firstReturn"] != first["facts"]
+        or summary["endpoint"] != endpoint["facts"]
+        or not warp["order"] < init["order"] < first["order"] < endpoint["order"] < stop["order"]
+        or first["boundary"] != "callback-time"
+        or endpoint["boundary"] != "host-loop"
+        or first["pc"] != config["candidate"]["functions"]["loc_2593C"]
+        or first["frame"] > end
+        or endpoint["frame"] != end
+        or stop["frame"] != end
+        or observed["terminal"]["stop"]["order"] != stop["order"]
+        or observed["terminal"]["stop"]["boundary"] != "host-loop"
+        or observed["completedFrame"]["frame"] != end
+        or observed["completedFrame"]["emulatorFrame"] != end
+    ):
+        raise ValueError("warp field-return provenance/endpoint mismatch")
+    for row in (first, endpoint):
+        facts, raw = row["facts"], row["facts"]["raw"]
+        player, state = raw["player"], facts["state"]
+        if (
+            facts["unmetReasons"]
+            or facts["order"] != row["order"]
+            or facts["frame"] != row["frame"]
+            or facts["pc"] != row["pc"]
+            or facts["emulatorFrame"] != row["emulatorFrame"]
+            or state != row["state"]
+            or (raw["map"], state["x"], state["y"], state["facing"]) != (3, 3, 3, 0)
+            or player != {"x": 1152, "y": 1152, "destinationX": 1152, "destinationY": 1152}
+            or raw["appliedButton"] != "neutral"
+            or any(
+                raw[key] != 0
+                for key in (
+                    "fading",
+                    "currentPlayerInput",
+                    "player1Input",
+                    "mapEventWord",
+                    "pendingReturns",
+                    "programDepth",
+                    "typewriting",
+                    "dialogueWindow",
+                    "portraitWindow",
+                )
+            )
+            or any(raw[key] for key in ("audioPending", "fieldMenu"))
+            or any(raw["activeConsumers"].values())
+            or len(facts["entities"]) != config["ram"]["ENTITIES_COUNTER"]
+            or len(facts["entityIndexBytes"]) != 64
+        ):
+            raise ValueError("first warp field admission/raw state mismatch")
+        for slot, entity in enumerate(facts["entities"]):
+            size = config["ram"]["ENTITYDEF_SIZE"]
+            if (
+                entity["physical"] != slot
+                or entity["widthBytes"] != size
+                or entity["address"] != config["ram"]["ENTITY_DATA"] + slot * size
+                or len(entity["bytes"]) != size
+            ):
+                raise ValueError("warp field-return physical entity readback mismatch")
+    frames = [row for row in rows if row["kind"] == "frame"]
+    applying = [row for row in rows if row["kind"] == "applying"]
+    delivered = [row for row in frames if not row["bootstrap"]]
+    steps = [row for row in rows if row["kind"] == "command" and row["fields"][1] == "step"]
+    expected = [["step", "30", "Left"]] + [["step", "1", "neutral"]] * 120
+    if (
+        len(frames) != end
+        or len(applying) != len(frames)
+        or len(delivered) != 150
+        or [row["fields"][1:] for row in steps] != expected
+        or any(
+            row["frame"] != i or row["afterFrame"] != i or row["beforeFrame"] != i - 1
+            for i, row in enumerate(frames, 1)
+        )
+        or any(
+            row["frame"] != epoch + i
+            or row["inputFrame"] != i
+            or row["button"] != ("Left" if i <= 30 else "neutral")
+            for i, row in enumerate(delivered, 1)
+        )
+        or any(
+            row["kind"] == "command" and row["fields"][1] not in ("step", "state", "ping")
+            for row in rows
+        )
+    ):
+        raise ValueError("warp field-return actual input sequence mismatch")
+    for request, frame in zip(applying, frames, strict=True):
+        if (request["order"] >= frame["order"]
+            or any(request[key] != frame[key] for key in
+                   ("id", "button", "beforeFrame", "bootstrap"))):
+            raise ValueError("warp field-return applying/completed-frame mismatch")
+    if one("r1:controlled-admission-ended")["order"] >= steps[0]["order"]:
+        raise ValueError("warp field-return input preceded R1 restoration")
+    for index, request in enumerate(steps):
+        batch = [row for row in delivered if row["id"] == request["id"]]
+        replies = [row for row in rows if row["kind"] == "result" and row["id"] == request["id"]]
+        if (
+            len(batch) != (30 if index == 0 else 1)
+            or len(replies) != 1
+            or not request["order"] < batch[0]["order"] < replies[0]["order"]
+            or not replies[0]["ok"]
+            or replies[0]["result"]["advanced"] != len(batch)
+            or replies[0]["result"]["state"]["frame"] != batch[-1]["frame"]
+            or replies[0]["result"]["terminal"] != (index == 120)
+        ):
+            raise ValueError("warp field-return input/result reconciliation mismatch")
+    tail = (runtime / "observer.status.txt").read_text(encoding="utf-8").splitlines()
+    if (
+        any(line.startswith("failure:") for line in tail)
+        or tuple(tail[-len(SUCCESS_STATUS_TAIL) :]) != SUCCESS_STATUS_TAIL
+    ):
+        raise ValueError("warp field-return callback/exit status mismatch")
 
 
 def _read_segment(
@@ -2382,11 +2583,19 @@ def prepare_map3_observation_candidate(
     if continuation == VICTORY_CONTINUATION and segment is None:
         raise ValueError("victory continuation requires explicit savestate-linked accounting")
     parent_pair, parent_metadata = None, None
-    if diagnostic_kind is not None and (
-        diagnostic_kind != HEAL_DIAGNOSTIC or continuation != VICTORY_CONTINUATION
-        or not interactive or segment != 10 or resume_directory is None
-    ):
-        raise ValueError("HEAL diagnostic requires its explicit nonterminal parent and segment 10")
+    if diagnostic_kind is not None:
+        if diagnostic_kind not in (HEAL_DIAGNOSTIC, WARP_FIELD_RETURN_DIAGNOSTIC):
+            raise ValueError("unknown acquisition diagnostic")
+        if continuation != VICTORY_CONTINUATION or not interactive:
+            raise ValueError("diagnostic requires the explicit interactive victory rail")
+        if diagnostic_kind == HEAL_DIAGNOSTIC and (segment != 10 or resume_directory is None):
+            raise ValueError(
+                "HEAL diagnostic requires its explicit nonterminal parent and segment 10"
+            )
+        if diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC and (
+            segment != 1 or resume_directory is not None
+        ):
+            raise ValueError("warp field-return diagnostic requires fresh R1 segment 1, no parent")
     if segment is not None:
         if (
             type(segment) is not int
@@ -2725,10 +2934,12 @@ def prepare_map3_observation_candidate(
         }
         # Historical consumption is observational; never shorten a new bootstrap
         # watchdog or forge acquired frame/R1 clocks to carry that consumption.
-    if diagnostic_kind:
+    if diagnostic_kind == HEAL_DIAGNOSTIC:
         config["candidate"]["diagnostic"] = _heal_diagnostic_configuration(
             upstream_path, addresses, listing, rom
         )
+    elif diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC:
+        config["candidate"]["diagnostic"] = _warp_field_return_configuration()
     config["outputPath"] = (output / "observed.json").as_posix()
     config["statusPath"] = (output / "status.txt").as_posix()
     config_bytes = (json.dumps(config, indent=2) + "\n").encode("utf-8")
@@ -2841,12 +3052,24 @@ def prepare_map3_observation_candidate(
                 "first natural player-ready",
             )[segment - 1],
         )
-    if diagnostic_kind:
+    if diagnostic_kind == HEAL_DIAGNOSTIC:
         report.update(
             RuntimeAuthorization="NONE; independent source/preparation review before native",
             Terminal="self HEAL1 matched EndBattlescene return; complete current frame only",
             RemainingUnknowns=[
-                "instrumented native restore compatibility", "reached HEAL consumer fields"
+                "instrumented native restore compatibility",
+                "reached HEAL consumer fields",
+            ],
+        )
+    elif diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC:
+        report.update(
+            Diagnostic=config["candidate"]["diagnostic"],
+            RuntimeAuthorization="NONE; independent source/preparation review before native",
+            Terminal="first-warp diagnostic; completed neutral frame R1+150, no save or descendant",
+            RemainingUnknowns=[
+                "first original post-fade field return",
+                "native entity/CPU phase agreement",
+                "fresh diagnostic completion and bootstrap restoration",
             ],
         )
     # All validation precedes materialization; no shared launch helper is invoked.
@@ -2948,10 +3171,22 @@ def run_map3_observation_candidate(
     try:
         report = load_json(directory / "candidate.json")
         diagnostic["reviewedMaterial"] = report
-        if (report.get("Diagnostic", {}).get("kind") != diagnostic_kind
-            or diagnostic_kind not in (None, HEAL_DIAGNOSTIC)):
+        if report.get("Diagnostic", {}).get("kind") != diagnostic_kind or diagnostic_kind not in (
+            None,
+            HEAL_DIAGNOSTIC,
+            WARP_FIELD_RETURN_DIAGNOSTIC,
+        ):
             raise ValueError("execution diagnostic must explicitly match preparation")
         selection = report.get("Segment")
+        if diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC and (
+            report["Diagnostic"] != _warp_field_return_configuration()
+            or not interactive
+            or continuation != VICTORY_CONTINUATION
+            or segment != 1
+            or selection is None
+            or selection["parentDirectory"] is not None
+        ):
+            raise ValueError("warp field-return diagnostic fresh-entry/configuration mismatch")
         if continuation == VICTORY_CONTINUATION and selection is None:
             raise ValueError("victory execution requires reviewed segmented accounting")
         if (selection is None) != (segment is None) or (
@@ -3181,10 +3416,14 @@ def run_map3_observation_candidate(
         ):
             raise ValueError("candidate cleanup did not complete")
         diagnostic["status"] = "OBSERVATION-COMPLETE-UNREVIEWED"
-        if diagnostic_kind:
+        if diagnostic_kind == HEAL_DIAGNOSTIC:
             _assert_heal_diagnostic_output(runtime, report)
             diagnostic["stopReason"] = observed["stopReason"]
             diagnostic["status"] = HEAL_DIAGNOSTIC_STATUS
+        elif diagnostic_kind == WARP_FIELD_RETURN_DIAGNOSTIC:
+            _assert_warp_field_return_output(runtime, report)
+            diagnostic["stopReason"] = observed["stopReason"]
+            diagnostic["status"] = WARP_FIELD_RETURN_STATUS
         elif continuation:
             reason = observed.get("stopReason")
             diagnostic["stopReason"] = reason
