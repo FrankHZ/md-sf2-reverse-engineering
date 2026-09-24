@@ -4,8 +4,8 @@
 
 This owner closes the transition gap between the controlled Map 3 start at
 `(56,3)` and the already accepted natural-route interaction with entity 142.
-It joins existing source/H1/ROM and bounded H3 evidence; it does not add a new
-runtime observation.
+It joins source/H1/ROM and bounded H3 evidence. The first-return comparison below
+also records the separately admitted native diagnostic; the two-warp route is unchanged.
 
 - Canonical private input: US ROM SHA-256
   `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
@@ -44,20 +44,49 @@ and stops at visible return, followed by one explicit Wait. Thus its endpoint an
 the historical frame506 comparison are different input/consumer boundaries. Equal
 init seeds alone do not establish equal NPC action/motion/timer or CPU phase.
 
-**Inferred:** omitted explicit player waiting contributes to the retained comparison
-gap. **Unknown:** the first original post-fade field state, subsequent eligible entity
-service count and any earlier input/transition interruption difference. The interval
-from init to Right is not a mandatory-warp budget. No historical seed, tick65,
-neutral120 count or inverted RNG sequence is an engine rule or replacement golden.
+**Confirmed (admitted first-return observation):** the
+[native result and reproducible readback](map3-messenger-acceptance.md#first-warp-field-return-native-result-issue-534)
+now retain the first original post-warp/init fade-clear poll at observer432 /
+emulator431, PC `0x2593C`, order980, seedF01B. Completed432 still hasF01B; the
+later completed505 endpoint has75DA. The R1 source state and complete inherited
+entity/status/index record matched prepared68 before input. The seed difference at
+the historical later boundary can therefore occur during subsequent neutral field
+waiting; the new first-return seed equals the accepted remake visible-return seed.
+This does not establish equality of entity or CPU phase.
 
-The [bounded first-return method](map3-messenger-acceptance.md#first-warp-field-return-diagnostic-method-issue-534)
-records the first post-warp/init fade-clear poll before per-frame deduplication,
-retains failed admission instead of selecting a later poll, and separates its callback
-state from completed-frame neutral observations. It is currently **Confirmed only at
-the source/offline boundary**; native capture is not yet run. This distinguishes an
-already-different return seed from changes during subsequent neutral field service.
-Full phase equality and an explicit `WaitAtInput` mapping need their own evidence;
-this method supplies neither a120-Wait rule nor whole-route/H4 acceptance.
+Comparing original first-return physical slots0..19 with accepted `warpRecords[82]`
+at tick65, the source-equivalent fields `x`, `y`, `targetX`, `targetY`, facing low
+two bits, sprite, speedX, flagsA and flagsB differ only as follows:
+
+| Physical slot | Field | Original first callback | Remake visible return |
+| --- | --- | --- | --- |
+| 0 (player) | flagsA | `EF` | `E0` |
+| 5 | Y fixed-point | 5397 | 5386 |
+| 8 | Y fixed-point | 3117 | 3100 |
+
+These are raw differences; flagsA is not masked away. Other listed fields match
+across those20 slots. This comparison is limited to fields actually present in
+both observations. Source `disasm/sf2enums.asm:1200..1233` at the pinned revision
+owns the32-byte record: signed16 X/Y at0/2, velocities4/6, travel8/10,
+destinations12/14, facing16, sprite19, action pointer20..23, acceleration24/25,
+speed26/27, flags28/29, animation counter30 and script wait31.
+The original slot5 has velocity(0,6), travel(0,384), action pointer `0xFF5628`,
+animation6/wait0; slot8 has(0,9), (0,384), `0xFF568C`, animation9/wait0.
+All48 original records and64 index bytes are retained at first callback and endpoint.
+The remake receipt omits velocities/travel, speedY, animation and wait counters;
+its action cursor is an instruction index, not an original action address.
+
+**Unknown:** why the available NPC positions and player flags differ, full
+motion/action/timer/CPU phase agreement, subsequent eligible entity-service count,
+and any earlier input/transition interruption difference. The73 later completed
+frames from432 to505 are not evidence of73 or74 entity services, and callback432
+is distinct from completed432. No per-VInt entity-service count was captured.
+The120 neutral frames include transition work and later field waiting; they do not
+establish120 `WaitAtInput` operations. No historical seed, tick65, neutral count or
+inverted RNG sequence is an engine rule or replacement golden. No production rule
+is changed by this result. Full phase comparison needs the missing remake phase
+fields and a separately reviewed equivalent observation boundary; this slice stops
+for independent result review with #534/#437 and whole-route/H4 acceptance open.
 
 ## Stable records and area relation
 

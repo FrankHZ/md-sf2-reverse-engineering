@@ -585,8 +585,9 @@ required merely to reproduce the facts documented here.
 `interactive=True`, `continuation=VICTORY_CONTINUATION`, fresh `segment=1` and no parent.
 No named accepted pre-warp R1 parent exists; the resumable house and later checkpoints
 have already crossed this boundary. This method neither restores those states nor uses
-the disabled replay. Native first-return state and cleanup are **Unknown** until a
-separately admitted observation; this source method does not close #534, #437 or H4.
+the disabled replay. The separately admitted [native result](#first-warp-field-return-native-result-issue-534)
+now establishes its named first-return state and cleanup. The method and result do not
+close #534, #437 or H4.
 
 The question and retained boundary mismatch belong to the
 [egress owner](map3-controlled-start-egress-transition.md#first-return-comparison-boundary).
@@ -629,7 +630,7 @@ from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 
 m.prepare_map3_observation_candidate(
     private_input_path(ROM_INPUT_IDENTITY), m.UPSTREAM,
-    output_directory=Path("local/issue534/warp-field-return-source/prepared-final"),
+    output_directory=Path("local/issue534/warp-field-return-source/<fresh-name>"),
     proposed_timeout_seconds=7200, interactive=True,
     continuation=m.VICTORY_CONTINUATION, segment=1,
     diagnostic_kind=m.WARP_FIELD_RETURN_DIAGNOSTIC,
@@ -653,6 +654,114 @@ completed-frame stop, actual-input reconciliation, save/descendant rejection and
 callback/restoration/status failure, plus existing ordinary/HEAL selection. This is
 collector verification, not original observation; no collector tests or public fixtures
 were added. Native entity/CPU phase agreement remains **Unknown**, even if seeds agree.
+
+### First-warp field-return native result (Issue #534)
+
+**Confirmed (one admitted observation, pending independent result review):** accepted
+source commit is `764d3e3f4bec643c3aa6c3cc0d6f33f30d9c7bcf`, tree
+`6a2643d798be149408664cc1b354b173235bbfcc`. The unchanged candidate
+`local/issue534/warp-field-return-source/prepared-review` ran with BizHawk2.11.1 /
+Genplus-gx and the canonical US ROM/pinned SF2DISASM identities listed in the
+[egress owner](map3-controlled-start-egress-transition.md#scope-and-result).
+No new preparation, source change or descendant was needed. Candidate identity is:
+
+| Member | SHA-256 |
+| --- | --- |
+| Observer | `D32DA811BDCDCD527A9FBC41BD724176D9CC8FF3DEAB6340FC2B20EC6CE245F4` |
+| Runner | `55330C3164F44A89ACC22383EDE5459F5F2B17AB1FE87CE646B1023759409F35` |
+| Config | `3E3AA888F06C3E19D213BEA6CB87BE9C504CDA0AF05904C3DC5A0A7E2441D3DA` |
+| Input | `05562B5546BEBE81C0EA462E2285268CA6CB943091F7B5A01536CD6D94C4AA95` |
+
+The pre/post audit matched these bytes and all seven execution helpers to accepted
+source, verified the registered ROM and450 release members, and matched R1 source
+state plus the entire inherited ally-status/48-entity/index record to prepared68.
+Hello was observer/emulator355/355, with R1 epochs355/354. One Left30 request then120
+sequential neutral1 requests completed through frame505. No Right, save, abort or
+extra frame was submitted. All121 replies were read in order.
+
+Private raw evidence is under that candidate's `runtime/`: `checkpoints.jsonl`,
+`actual-inputs.jsonl`, `observer.observed.json`, `observer.status.txt`,
+`host-status.json` and `bridge/receipt.jsonl` / `receipt.json`. Line numbers below
+are one-based; RNG values abbreviate the high word of the captured four bytes
+(the trailing two bytes are00 throughout these named records).
+
+| Boundary | Checkpoint line / order | Observer / emulator frame | Callback PC / return target | RNG |
+| --- | --- | --- | --- | --- |
+| Original warp handler | 11 /747 | 368 /367 | `0x25978` | C632 |
+| Matched init return | 20 /870 | 405 /404 | `0x47514` / target `0x51382` | 1091 |
+| First fade-clear field callback | 22 /980 | 432 /431 | `0x2593C` | F01B |
+| Completed-frame endpoint | 23 /1274 | 505 /505 | `0x25940` | 75DA |
+| Normal diagnostic stop | 24 /1275 | 505 /505 | completed-frame host loop | 75DA |
+
+The first callback passed every closure guard and retains48 physical32-byte entity
+records and64 index bytes. It is separate from the completed432 reply at
+`actual-inputs.jsonl:960` (order982, emulator432). That reply still hasF01B; later
+completed replies show8235 at446 (line1016),9CB8 at481 (1156),F55F at484 (1168),
+and75DA at504/505 (1248/1252). The final reply retains the pre-restoration frame505
+snapshot; its outer log emulator clock is214 after restoration and is not the endpoint
+clock. The native result therefore establishes seed evolution after the first field
+return. It does not count entity services or map120 neutral frames to120 gameplay Waits.
+
+**Confirmed cleanup:** the maintained leaf validator passes;
+`WARP-FIELD-RETURN-DIAGNOSTIC-COMPLETE-UNREVIEWED`, host exit0, normal terminated
+process, no timeout/forced termination, all armed scope restoration flags true and
+callbacks cleared. There is no save, segment pair, continuation or descendant. The
+session ROM was deleted and canonical ROM unchanged. Shared-installation inventory
+has no added/removed/changed files; retained settings/user bytes and450 release
+members match. Post-run process inventory has no EmuHawk survivor. Journal reconstruction
+matches `receipt.json` exactly. `outputRemoved=false` retains diagnostic evidence.
+
+This attempt consumes **1 start /15.125799499917775 active seconds /505 resource
+frames /121 advancing batches**. Added to inherited137 /15568.554376200133 /429120 /
+16211, acquisition totals are **138 /15583.68017570005 /429625 /16332**. The505 includes
+355 bootstrap frames; wrapper17.05253200000152 seconds is auxiliary, not active cost.
+No new native failure/retry occurred. Separate tooling/source gates retain their own
+accounting. Old21/41/61/67 cleanup Unknowns, H4's5340PASS/2FAIL/40Unavailable,
+JOIN timeout/correction, next-actor discrepancy and #558 HEAL recovery remain intact.
+
+The [bounded entity comparison](map3-controlled-start-egress-transition.md#first-return-comparison-boundary)
+finds equal return seed but two differing NPC positions and an unmasked player flags
+byte. **Unknown:** full motion/action/timer/CPU phase equivalence, subsequent eligible
+service count and an explicit `WaitAtInput` mapping. This observation grants no remake
+parity, whole-route/H4 acceptance, #534/#437 closure or additional native run.
+
+#### Native result readback
+
+After loading current ignored private/tool selections, execute the following with
+`uv run --no-sync python -X utf8` from this worktree (a here-string or ignored script).
+It only reads the frozen result and accepted finite-warp receipt. The existing local
+`local/issue534/warp-field-return-result/readback.py` additionally writes decoded48-slot
+first/endpoint phases and line-indexed replies to ignored `comparison.json`;
+`audit.py` / `audit.json` retain the identity, cleanup, inventory and exact cost check.
+
+```python
+import json
+from pathlib import Path
+from sf2tool.h3 import map3_messenger_acceptance as m
+from sf2tool.bizhawk_debug_bridge import read_receipt
+
+load = lambda p: json.loads(p.read_text(encoding="utf-8"))
+p = Path("local/issue534/warp-field-return-source/prepared-review")
+r = p / "runtime"
+m._assert_warp_field_return_output(r, load(p / "candidate.json"))
+assert read_receipt(r / "bridge") == load(r / "bridge/receipt.json")
+d = load(r / "observer.observed.json")["diagnostic"]
+n = load(Path("local/issue534/warp-transition/final-private/observation.json"))
+n = n["warpRecords"][82]["state"]
+for key in ("firstReturn", "endpoint"):
+    v = d[key]
+    print(key, v["frame"], v["emulatorFrame"], v["order"], v["state"]["rngBytes"])
+for e in n["entities"]:
+    slot = int(e["slot"])
+    b = d["firstReturn"]["entities"][slot]["bytes"]
+    word = lambda o: int.from_bytes(bytes(b[o:o+2]), "big", signed=True)
+    source = dict(x=word(0), y=word(2), targetX=word(12), targetY=word(14),
+                  facing=b[16] & 3, sprite=b[19], speedX=b[26],
+                  flagsA=b[28], flagsB=b[29])
+    for field, value in source.items():
+        if value != e[field]:
+            print(slot, field, value, e[field])
+```
 
 ### Instrumented HEAL diagnostic method (Issue #546)
 
