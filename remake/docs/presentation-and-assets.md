@@ -1400,7 +1400,8 @@ audio policy; modern segment duration need not equal PCM duration.
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, beneath `disasm/`:
 
 - `code/gameflow/battle/battlefunctions/battlefunctions_0.asm` supplies
-  `MoveBattleEntityByMoveString` (`0x23078`), segment sound before travel, destination waiting and
+  `MoveBattleEntityByMoveString`, whose sound-command call site `0x23078` starts each segment's sound
+  before travel, along with destination waiting and
   control/temporary land-effect coordinate updates; `battlefield/buildmovestringfunctions.asm`
   supplies `BuildCancelMoveString`, and `battlefunctions/executeindividualturn.asm` selects the
   control boundary. `battlefunctions/setmovesfx.asm:SetMoveSfx` (`0x25790..0x257C0`) selects79 in battle, except an
