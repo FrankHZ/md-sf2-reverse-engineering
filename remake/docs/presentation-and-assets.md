@@ -1020,13 +1020,31 @@ An earlier hand-calculated153-versus154 estimate incorrectly used that observed 
 superseded by direct cursor execution:149 active opportunities before stop versus154 observed.
 No149/153/154/26 budget or seed padding is used in production.
 
-**Unknown — gameplay-opportunity admission:** the additional recovery opportunity and the remaining
-idle interval are unresolved. `bsc0B`'s `byte_FFB588` busy wait, asynchronous window completion and
-interrupts during decompression are candidate boundaries, not established explanations.
-`WaitForBattlesceneGraphicsUpdate` is conditional; the admitted ally-only cursor does not invent an
-unconditional opportunity for it. The smallest follow-up is a static/readback audit of those live
-state gates against the retained checkpoints. Wider content/gate coverage and full continuous scene
-conformance remain open jointly with #534/H4; this is not an audio/hardware-timing waiver.
+**Confirmed — bounded opportunity readback:** the
+[research attribution](../../docs/research/map3-messenger-acceptance.md#recovery-and-make-idle-opportunity-attribution)
+records three top-level recovery VInts: the first has A6=`FFFFDE80` (the source number buffer), the
+next two have restored script A6=`00FF0028`. Source numeric conversion has no waits; window movement
+has an explicit VInt followed by a wait that repeats conditionally until movement ends. Make-idle
+has26 top-level VInts: four with stack A6 in two pairs, two with restored script A6/d0=`$900`, and20
+with the Sleep counter19…0. The source performs two decompressions and DMA waits around Sleep(20).
+
+**Inferred:** recovery's extra opportunity interrupts numeric window construction; make-idle's four
+extra opportunities interrupt the two decompressions. These are CPU-work interruptions outside the
+explicit waits, not evidence for fixed +1/+4 waits. The pinned source/register mapping and exact
+readback command belong to the research owner. The audited `HealingSceneCursor` opportunity rules
+are unchanged between the retained comparison at8e6881ea and accepted PR557 main
+`bfcb819fe61cf6b7f2a3a45822f6de51e411e559`; its neutral timeout correction changes completion handling,
+not these opportunity rules. The completed continuous-cursor **FAIL** remains.
+
+**Unknown — gameplay-opportunity admission:** exact interrupted PCs, live busy/window/graphics gates,
+cross-state/content timing, and a general semantic treatment remain unproven. Conditional window
+completion alone does not account for interruptions during CPU work. Wider content/gate coverage
+and full continuous scene conformance remain open jointly with #534/H4.
+[ADR0010 Option A/8D](../../docs/decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)
+still controls shared RNG and selected gameplay results. This attribution does not waive the
+intermediate RNG difference or establish that hardware simulation is necessary. A next proposal
+must identify concrete gameplay effects and feasible semantic handling under that policy; the
+observed counts alone supply neither a new product decision nor permission for new capture.
 
 **Confirmed — separate native settings comparison:** actual Godot inputs in the existing scene
 observer exercise full-HP HEAL3, wounded other-target HEAL1 and wounded self-target HEAL2, alongside

@@ -764,6 +764,108 @@ or HEAL coverage, and hidden-state equivalence to other parents. This one accept
 does not establish general hardware equivalence, remaining8D/H4 or #437 completion, and grants no
 new execution. Static premises and historical outcomes retain their existing owners.
 
+#### Recovery and make-idle opportunity attribution
+
+This readback uses the accepted `prepared-04` records and the pinned source above; it adds no
+execution or broader gameplay admission. All CP numbers are one-based checkpoint lines. Frames
+below are observer `frame`, not `emulatorFrame`. A VInt activation is an interrupt, not proof of a
+`WaitForVInt` call. The [remake comparison](../../remake/docs/presentation-and-assets.md#separate-comparison-boundaries)
+retains the separate continuous-cursor failure.
+
+**Confirmed (recovery):** CP2059–2091 spans `bsc0B_executeAllyReaction`, frames32364–32367,
+orders85004–85042. A6 progresses from `00FF0022` at entry to `00FF002A` at return. Its three VInts
+245–247 are each parent0/depth1, each with one graphics service, window service and fairy update.
+Lifetime changes `FFFE→FFFB`; seed remains `00920000`, control/toggle1. VInt entries CP2060/2070/2080
+have A6=`FFFFDE80`/`00FF0028`/`00FF0028`; the matching returns preserve those register values.
+The preceding `CloseDialogueWindow` returns before bsc0B without an intervening VInt.
+
+**Confirmed (source):** paths in this table are relative to pinned `disasm/`.
+
+| Owner / symbols | Relevant source behavior |
+| --- | --- |
+| `code/gameflow/battle/battlescenes/battlesceneengine_0.asm`: `bsc0B_executeAllyReaction` | The `byte_FFB588` busy spin precedes argument consumption, while A6 is still the entry script cursor. HP/MP/status consume three words before the mini-window call; mode consumes one afterward. Healing mode2 skips the damage-specific sleeps. |
+| `code/common/menus/ministatuswindow.asm`: `OpenAllyBattlesceneMiniStatusWindow`, `BuildMiniStatusWindow`, `WriteStatValue` | Numeric window construction precedes `MoveWindow` with length1, explicit `WaitForVInt`, bar-tile DMA enqueue, then `WaitForWindowMovementEnd`. Bar-tile enqueue does not wait. |
+| `code/common/menus/menuenginecommon.asm`: `WriteTilesFromNumber`; `code/common/scripting/text/asciinumber.asm`: `WriteAsciiNumber`; `sf2const.asm`: `LOADED_NUMBER` | Number rendering calls ASCII conversion, which saves A6, uses `LOADED_NUMBER=$FFDE80` as A6, then restores it. Conversion has no subroutine or wait calls. |
+| `code/common/windows/windowengine.asm`: `MoveWindow`, `WaitForWindowMovementEnd`, `VInt_UpdateWindows` | Movement-end waits at least once, then repeats while `MOVING_WINDOWS_BITFIELD` is nonzero. The service clears/recomputes that field before advancing animation counters: a length1 move can be marked moving on its destination-reaching service, then cleared on the next. |
+
+**Inferred:** VInt245 interrupts numeric conversion during window construction, before the two
+explicit window waits; VInts246/247 serve those waits after script A6 restoration. This fits the
+temporary number-buffer A6 and the complete source path. The busy spin's entry A6 does not explain
+the observed `FFFFDE80` activation. A shorter busy interval is not excluded, and the movement-end
+helper is conditional, not a universal fixed-one-opportunity operation. No missing unconditional
+third wait is identified. Exact interrupted PCs and helper boundaries are not recorded.
+
+**Confirmed (make-idle):** CP3460–3727 spans `bsc05_makeAllyIdle`, frames32491–32517,
+orders86661–86980. It contains26 top-level VInts372–397 and26 fairy updates, all parent0/depth1.
+Lifetime changes `FF7F→FF65`; seed changes `D8800000→ECE20000`. Register groups are:
+
+| VInts | Entry CPs | A6 | D0 signature | Source attribution (**Inferred**) |
+| --- | --- | --- | --- | --- |
+| 372–373 | 3461,3471 | `FFFFFF78` | `3200`, `0` | first stack decompression |
+| 374 | 3481 | `00FF0038` | `0900` | first DMA wait |
+| 375–394 | 3491…3687 | `00FF0038` | low word19…0 | `Sleep(20)` |
+| 395–396 | 3697,3707 | `FFFFFF78` | `0080`, `0004` | second stack decompression |
+| 397 | 3717 | `00FF0038` | `0900` | second DMA wait |
+
+**Confirmed (source):** `battlesceneengine_0.asm` calls `sub_1938C` on each side of the idle
+`Sleep`; for a real frame it calls `sub_1942C`, which conditionally waits for pending graphics and
+calls `battlesceneengine_1.asm:LoadAllyBattlespriteFrameAndWaitForDma`. That loader sets d0=`$900`
+and calls `code/common/tech/interrupts/vintengine_3.asm:ApplyVIntVramDmaOnCompressedTiles` →
+`DecompressTilesForVramDma` → `code/common/tech/graphics/decompression.asm:LoadStackCompressedData`.
+The decoder links/restores A6 and performs local work without subroutine/wait calls. The DMA wrapper
+restores d0, queues DMA, and the loader tail-calls `WaitForDmaQueueProcessing`.
+`code/common/tech/interrupts/enabledmaqueueprocessing.asm` distinguishes queue enable (request bit
+only) from queue wait (request then `WaitForVInt`). `vintengine_1.asm:Sleep` subtracts one and loops
+`WaitForVInt` via DBF;20 iterations match the observed low-word19…0 sequence. Weapon queue enable
+is not another wait; `WaitForBattlesceneGraphicsUpdate` is conditional, not an unconditional tick.
+
+**Inferred:** four make-idle opportunities interrupt its two decompressions. Recovery and make-idle
+thus share the broad distinction between interruptible CPU work and explicit waits, with different
+source operations. Neither the observed3 nor26 is a general duration or a production correction
+budget. These intervals have no nested VInts; the later nested cleanup remains a separate seam.
+
+**Unknown:** the saved interrupt PC/SR/call stack, exact numeric field/instruction, live busy/window/
+graphics-gate values, and opportunity counts for changed entry timing or content. Observer
+`interruptedService` is a logical service label, not the saved CPU return PC. The register patterns
+support the attribution but do not establish exact instructions or a universal CPU-work tick cost.
+If stronger attribution is needed, the missing evidence is saved interrupt context and the disputed
+helper/gate boundaries at these named activations; this statement authorizes no new acquisition.
+The gameplay/RNG consequences and feasible semantic handling remain a separate unresolved question
+under [ADR0010 Option A/8D](../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a).
+The counts alone neither require hardware simulation nor waive result differences.
+
+To reproduce this bounded readback without execution, set `$researchWorktree` to the evidence owner
+and `$pinnedUpstream` to its existing pinned source checkout. The output contains only the named
+register/count facts, not private state payloads:
+
+```powershell
+$records = Join-Path $researchWorktree 'local/issue546/prepared-04/runtime/checkpoints.jsonl'
+. ./local/private-inputs.ps1
+@'
+import json, sys
+from collections import Counter
+from pathlib import Path
+rows = [json.loads(s) for s in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()]
+for start, end in ((2059, 2091), (3460, 3727)):
+    part = rows[start - 1:end]
+    print(start, end, dict(Counter(r["kind"] for r in part)))
+    for cp, r in enumerate(part, start):
+        if r["kind"] not in ("heal:bsc:before", "heal:bsc:after", "heal:vint", "heal:vint-return"):
+            continue
+        f = r["facts"]
+        print(cp, r["kind"], r["frame"], r["order"],
+              f'{f["a6"]:08X}', f'{f["d0"]:08X}',
+              f["vint"], f["vintParent"], f["vintDepth"],
+              f'{f["lifetime"]:04X}', bytes(r["state"]["rngBytes"]).hex().upper())
+'@ | uv run python -X utf8 - $records
+git -C $pinnedUpstream rev-parse HEAD
+git -C $pinnedUpstream show 'c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/scripting/text/asciinumber.asm'
+git -C $pinnedUpstream show 'c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/tech/interrupts/vintengine_3.asm'
+```
+
+Inspect the other named symbols from the same exact Git object; later source or remake changes
+cannot substitute for that pinned original evidence.
+
 #### Read back the accepted diagnostic without execution
 
 Run from the evidence-owning worktree with `$researchWorktree` naming it. The production readers
