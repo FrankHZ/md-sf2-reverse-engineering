@@ -67,6 +67,31 @@ and is separately retained; a later account-limit interruption did not interrupt
 No old seal or source/settings compatibility was changed. Host unreviewed status still requires
 independent result acceptance; this evidence does not itself close RA-12, remaining 8D, H4 or #437.
 
+### Bounded instrumented HEAL diagnostic (Issue #546)
+
+The [HEAL diagnostic method](../research/map3-messenger-acceptance.md#instrumented-heal-diagnostic-method-issue-546)
+may reuse the explicitly named, accepted Issue515 nonterminal parent through the existing acquisition
+rail. Its measurement provenance is distinct from the immutable parent's observer/runner identity;
+ordinary exact-identity continuation remains unchanged. Only the reviewed observer/runner addition
+and separately bound HEAL source observations may differ. ROM, core/tool/settings, existing source
+bindings, execution helpers, sealed ancestry and load-before-input checks remain binding. Exposed
+RAM/register/frame equality with an older parent does not prove full native-state equivalence.
+
+The output is a nonresumable diagnostic leaf, never an ordinary forward segment or a replay/H4 pass.
+It has no save or descendant and stops after the selected scene return and current completed frame.
+Typed append-only claims retain the original lineage and all completed costs/failures. Finite
+per-attempt containment does not introduce a permanent attempt quota, reset a historical budget or
+reinstate retired cumulative ceilings. The user's stabilization authorization and existing failure
+accounting continue to control bounded corrections after an explicit native dispatch.
+
+Source implementation and offline preparation do not authorize restore or native observation.
+Main-gate independently reviews frozen source/candidate before dispatch; missing coverage, incompatible
+load or failed cleanup remains Failed/Unknown. This amendment neither reopens the disabled original
+replay nor grants a new replay launch budget. The
+[accepted neutral self-HEAL1 diagnostic](../research/map3-messenger-acceptance.md#accepted-neutral-self-heal1-diagnostic)
+confirms its named parent restore and live consumer boundary. Compatibility beyond that instance,
+other settings/targets, input shortening and broader native-state equivalence remain **Unknown**.
+
 ### Distinguish interactive acquisition, frozen replay, and remake H4
 
 **Interactive original acquisition** is Research-owned observation in which an operator or host

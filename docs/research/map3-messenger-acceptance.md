@@ -471,8 +471,9 @@ original interrupt. Paths in this table are relative to `disasm/code/`.
 The audit excludes unrelated full-screen/map-script transitions and the invalid-combatant fatal
 branch in `combatantstats_3.asm`, which deactivates callbacks and never returns. Valid actor/target
 records and completed scene returns bind the selected ordinary path. Static slot allocation is
-therefore no longer an unconstrained service-inventory question; its live enable state and exact
-interrupt opportunities are still not directly recorded.
+therefore no longer an unconstrained service-inventory question. These ordinary traces do not record
+its live enable state or exact interrupt opportunities; the separately admitted diagnostic below
+records them for one neutral self-HEAL1 scene.
 
 The ordinary HEAL script and dispatcher impose this further **Confirmed source order**:
 
@@ -507,13 +508,13 @@ The ordinary HEAL script and dispatcher impose this further **Confirmed source o
    before that reward, but the last draw does not identify either the stop request or toggle-clear
    instant. No fixed fairy lifetime follows from this external bound.
 
-**Unknown (remaining dynamic boundary):** individual bsc runtime command instants, no-draw fairy
-updates/properties, live enable gates, and the stop request/last-active cleanup timing within that
-source order. The observer records ordinary target input and delivered neutral frames, but does
-not hook the actual `loc_1921A` input read. Its stale W1/W2 `lastConsumerPoll` is not such a hook.
-The self-heal's scene input is entirely neutral; an alternative explicit Wait/input stream at the
-timed consumer is not observed. These gaps concern opportunity admission and state transitions,
-not missing setup/RNG callers or an unbound choice between W2 and timed battle text.
+The retained ordinary observer lacks individual bsc instants, no-draw fairy updates/properties,
+live enable gates, stop/cleanup timing and the actual `loc_1921A` input read. Its stale W1/W2
+`lastConsumerPoll` is not that read. The [accepted diagnostic](#accepted-neutral-self-heal1-diagnostic)
+supplies these fields for its one neutral self-HEAL1 scene. **Unknown:** other settings/targets and
+an alternative explicit Wait/input stream at the timed consumer. These limits concern opportunity
+admission and state transitions, not missing setup/RNG callers or an unbound choice between W2 and
+timed battle text.
 
 #### Rechecking the retained HEAL facts
 
@@ -575,6 +576,266 @@ These are retained save genealogies, not permission to restore them with a chang
 Additional instrumentation would need an independently accepted compatibility boundary; terminal86
 remains forbidden as a resume parent. No new fixture, collector change or original acquisition is
 required merely to reproduce the facts documented here.
+
+### Instrumented HEAL diagnostic method (Issue #546)
+
+This capability extends the existing Map3 acquisition rail for the remaining dynamic fields in
+[retained HEAL consumer evidence](#retained-heal-consumer-evidence). It grants no native launch or
+new evidence acceptance. The first supported diagnostic observes one Sarah self-targeted HEAL1
+with neutral scene input. An input-shortening comparison remains unimplemented and **Unknown**.
+Static scene slot installation/order, existing RNG callers and historical outcomes retain their
+original owners; they are not collected again to manufacture additional coverage.
+
+The explicit `diagnostic_kind="heal1-consumer-diagnostic"` prepare/run selection requires the
+accepted Issue515 `prepared-11` nonterminal parent: ordinal9, neutral completed frame32013,
+battle-player-movement rank54. Its own child12 records a successful historical load before input.
+That parent's exposed 68K RAM/registers/emulatorFrame/core match Issue496 parent77, but this does
+not compare Z80/VDP/audio or all serialized core state. Admission uses Issue515's own lineage and
+native evidence. Old parent77's raw-settings migration is outside this method; terminal86 and
+Issue515 terminal20 remain forbidden parents.
+
+Ordinary preparation, launch and ordinary lineage edges retain all `SEGMENT_IDENTITIES` equality
+checks. The diagnostic records its immutable parent identities, sealed ancestry and settings identity
+separately from its current observer/runner and additive source/PC/ROM bindings. All old source
+bindings, helpers, fixtures, ROM, H1, tools and continuation remain exact. It requires the existing
+`bizhawk-local-path-roles-v1` configuration mechanism, which replaces only verified local path roles
+while preserving all other settings and the raw config digest. It does not convert a legacy parent,
+whitelist changed hashes or claim that code identity proves native state compatibility. Preparation
+freezes current source/configuration/input material; any later code edit invalidates that candidate.
+
+New passive callbacks retain named bsc entry/return with A6 and the preceding stream word, actual
+timed-text reads/end, command-time message settings, VInt gates/slots/service context, setup enable,
+update entry/return including zero draws and fairy properties, runtime stop/control and cleanup clear.
+Existing RNG and global order logs are reused. Measurement returns have their own dispatch storage;
+they do not change ordinary pending/consumer state or saved continuation keys. The resolved action
+must be Sarah's HEAL1 targeting herself. Only neutral input is admitted after construction starts;
+this does not pretend that the old W1/W2 poll admits a timed-text shortening input.
+
+The diagnostic's `vintCount` is the monotonic observed interrupt count; `vint` is the current
+activation ID (zero outside VInt), with `vintParent` and `vintDepth` identifying nesting. A VInt
+entry records the interrupted service separately as `interruptedService` and begins with
+`service=false`; its return restores the interrupted activation and service. Service returns restore
+their prior service, including LIFO tail calls sharing one return PC/stack. This is necessary because
+pinned `VInt`'s `andi #$F800,sr` clears the interrupt mask despite its misleading source comment.
+Graphics can call `UpdateSpellanimation`, tail-dispatch HealingFairy, branch to
+`ReinitializeSceneAfterSpell`, and tail-call `WaitForVInt` while the outer graphics service remains
+active. The source owners are `code/common/tech/interrupts/vint.asm` and
+`code/gameflow/battle/battlescenes/{updatespellanimation.asm,animation/update/healingfairy.asm}`
+at pinned revision `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+
+**Confirmed (offline observer behavior only):** direct current Lua execution with mocked host APIs
+reproduces outer graphics/update/fairy/cleanup, nested VInt graphics/windows, then outer
+cleanup/fairy/update/graphics returns. Every record retains its activation/parent/depth/service;
+the inner entry does not inherit outer graphics, and the outer return retains its original ID while
+the count remains increased. Shared-slot service tail returns also restore in LIFO order. Ordinary
+observer state is unchanged except checkpoint/order output; measurement returns and VInt contexts
+finish empty. Reproduce in a fresh ignored output with same-process private configuration and
+`uv run --locked python -X utf8 local/issue546/check-context.py <fresh-output-name>`.
+The retained pre-correction run records the completed outer-cleanup attribution failure; neither
+that failure nor the corrected mock execution is native HEAL reach evidence.
+
+The terminal is the matched `EndBattlescene` return followed by completion of its current emulator
+frame. No subsequent host step is admitted. Callback-time facts and completed-frame facts remain
+separate: this is not an instruction-exact CPU stop and does not prove an absence of same-frame
+downstream effects. The result is `HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED` only with the required
+observations, empty measurement-return/VInt contexts, no active service, neutral scene frames and
+clean callback/entry-state/process/ROM cleanup. Save commands,
+segment-pair publication and diagnostic descendants are prohibited. Missing coverage or failed
+cleanup remains failure/Unknown, with raw logs retained.
+
+An authorized native invocation appends a typed diagnostic leaf through the existing exclusive
+`resumed-by*.json` claims. Sealed parents, metadata and prior claims remain unchanged. Full lineage
+reconciliation charges successful and failed diagnostic receipts alongside ordinary attempts; missing
+or incomplete process/input/cleanup receipts block continuation. Historical totals through Issue515
+remain 136 starts / 15540.144989400113 seconds / 428408 frames / 16188 batches, carrying the earlier
+115→117 history. Source-admission H3 gates and later tooling costs remain separately recorded.
+
+The prepared per-attempt containment is **2400 delivered frames, 256 advancing batches and 180
+active seconds**, measured above inherited totals. These are finite attempt bounds, not a permanent
+launch quota, renewed cumulative budget or restoration of retired stabilization ceilings. Existing
+60-second startup/exchange, 120-second idle/disconnected and 3+3-second teardown containment remains.
+The natural bridge's 7200 setting is not a whole-run hard wall timer. Lua checks diagnostic active
+time at command/frame boundaries and bounds socket idle waits; bridge exchange containment covers
+an unresponsive emulator. Cleanup time is still charged in the completed receipt.
+
+Offline preparation uses the existing API with `interactive=True`, `continuation=VICTORY_CONTINUATION`,
+`segment=10`, the explicit parent directory, `diagnostic_kind=HEAL_DIAGNOSTIC` and
+`proposed_timeout_seconds=7200`; it takes no prior-cost overrides. Use a fresh worktree-local ignored
+output and freeze source first. Preparation creates no runtime claim and starts no emulator.
+Source/configuration guards and direct Lua execution with mocked host APIs establish only offline
+behavior. Each native use requires separate admission, exclusive registered-installation ownership
+and independent result review. The accepted instance below establishes only its named restore and
+observation boundary. Other restores and broader native compatibility remain **Unknown**; the old
+frozen replay remains disabled.
+
+#### Accepted neutral self-HEAL1 diagnostic
+
+**Confirmed (bounded native observation, independently reviewed):** private
+`local/issue546/prepared-04` ran once from its own accepted Issue515 `prepared-11` parent under
+source commit `3e69c2d49c8105c0e485dcbea70c688b57a86902`. It used the USA retail ROM
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, the pinned
+SF2DISASM revision named above, BizHawk2.11.1/Genplus-gx and the registered installation. Its frozen
+`candidate.json` binds all ten ancestry pairs, seven execution helpers, tool identities, settings
+and the additive eight-source/35-PC observations. Raw execution identities are:
+
+| Material | SHA256 |
+| --- | --- |
+| Observer | `688C67CAD7FDEA3B8B27FFF3EC184FEE3ED4934E21B534D791BD0D59875DE483` |
+| Runner | `8BDB8303CCE6FDDA516D3B5193DA1DC5BC4503D452A3F889C0F878EDE53EE9C4` |
+| Configuration | `F2DABDE77E1CBC9CFA92D34496125CDF7C129545724990325F47D46C39F7A360` |
+| Input | `05562B5546BEBE81C0EA462E2285268CA6CB943091F7B5A01536CD6D94C4AA95` |
+
+Prepared01/02/03 remain invalidated and unexecuted. The update onto777dc709 changed raw observer/runner
+bytes on checkout despite identical Git content, and the preserved pre-native identity check rejected
+prepared03 before any claim/process; fresh04 bound the executed bytes. Later documentation commits
+or rebased heads are not new execution identities. Neither raw evidence nor the parent was migrated.
+
+The production host records `HEAL-DIAGNOSTIC-COMPLETE-UNREVIEWED`; independent review accepted its
+named boundary without rewriting that original status. Under `prepared-04/runtime/`, the raw owners
+are `checkpoints.jsonl`, `actual-inputs.jsonl`, `observer.observed.json`, `observer.status.txt`,
+`host-status.json` and `bridge/{receipt.json,receipt.jsonl,lua-status.json}`. CP below means a one-based
+line in this checkpoint file, not a line in any older trace. All18 own-child12 prefix states (hello
+plus17 replies) matched frame/original-state/accounting readbacks before the diagnostic scene.
+
+| Seam | CP | Frame / global order | Observed boundary |
+| --- | --- | --- | --- |
+| loaded before input | 1 | 32013 / 82206 | parent9, child10; no input before load/readback |
+| construction / resolved target | 76 / 83 | 32112 / 82513; 32113 / 82522 | actor1/action1/spell0; sole target1 |
+| playback | 452 | 32177 / 83019 | bsc runtime begins, distinct from construction |
+| setup enabled | 2042 | 32363 / 84985 | toggle1/control1/lifetime65535; cumulative draws5 |
+| first zero-draw / draw-bearing fairy return | 2048 / 2297 | 32364 / 84993; 32387 / 85288 | graphics service; drawCount0 / 1 |
+| stop request / control write | 3729 / 3730 | 32517 / 86982; 32517 / 86983 | control1→2; toggle1/lifetime65381 |
+| cleanup entry / cleared | 4664 / 4665 | 32607 / 88099; 32607 / 88100 | activation487/graphics; control2→0, toggle/lifetime0 |
+| nested VInt | 4666 | 32608 / 88103 | current488/parent487/depth2; service false, interrupted graphics |
+| outer cleanup / fairy return | 4674 / 4675 | 32608 / 88111; 32608 / 88112 | count488/current487/depth1/graphics restored |
+| stop handler return | 4689 | 32609 / 88128 | outside VInt/service, toggle/control/lifetime0 |
+| matched `EndBattlescene` return | 5650 | 32725 / 89323 | scene seam; no subsequent host step |
+
+All5373 HEAL records reconcile activation/parent/depth/service context. Entries/returns balance for
+605 VInts (one nested activation),576 graphics/controller updates,601 windows services and244 fairy
+updates. Fairy draw counts are0 for217 calls,1 for25 and2 for2:27 draw-bearing updates,29 draws inside
+those updates. The existing scoped `GenerateRandomNumber` records total34, distinct from the fairy
+count; observed cumulative draws are2 at setup entry,5 at setup enable and34 after cleanup. These
+are observed counts and deltas, never fixed gameplay durations, callback quotas or production rules.
+
+The live graphics slot is0 with vector `[126508,18824,0,0,0,0,0,0]`. Its observed tuples
+`(VINT_PARAMETERS,VINT_ENABLED,enabledSlots)` are `(0,128,3)` and `(8,128,3)`. Windows observes that
+scene vector at slot1 and the field vector at slot5; enabledSlots3/127 remains tied to each recorded
+phase. This confirms live opportunities for this run, not a second discovery of static installation.
+`properties`, `fairy`, `toggle`, `control` and `lifetime` accompany the named update records;28 property
+byte offsets vary across fairy entry/return snapshots, as do fairy offsets3/5/7/9/11. CP4654 is the
+last draw-bearing fairy return (frame32606/order88087, drawCount2); CP4675 is a later zero-draw
+return spanning the nested cleanup. The full byte snapshots remain private, with raw locators here.
+
+All observed message settings are speed2/noMessages0. All130 actual timed-input reads observe0:
+first CP859/frame32226/order83524, last CP3441/frame32490/order86640. Timed-input ends are
+CP1444/frame32291/order84241 and CP3458/frame32491/order86659. The12 named bsc entry/return pairs
+retain A6/preceding opcode alongside these live fields. Neutral input is confirmed from construction
+through the final frame; no shortening input was tested.
+
+The final delivered frame is32725, input order89326, emulator beforeFrame32724/afterFrame32725.
+CP5652/order89325 retains a same-frame `after-stop:callback` at PC153104, role
+`candidate:battle-lifecycle`. Thus the accepted endpoint is the scene return plus completion of its
+current frame, not an instruction-exact stop or absence of downstream same-frame callbacks.
+
+Typed parent claim `resumed-by-0002.json` charges1 start/28.409386800020002 active seconds/712
+frames/23 batches. The reconciled acquisition total is137/15568.554376200133/429120/16211 in the
+same units. Operator wall44.7686604000628 seconds is auxiliary; the separately passed source-admission
+H3 gates cost2 starts/187.82799699995667 command wall seconds and are not acquisition active time.
+All prior costs/failures and21/41/61/67 cleanup Unknowns remain retained.
+
+Native exit0, no timeout/forced termination, receipt/journal equality, callbacks cleared and
+`sessionStateRestored=true` establish the **loaded-segment-entry** restoration mode. The legacy
+individual-bootstrap restoration flags remain false in this mode; it does not claim the ordinary
+H3 fifteen-field profile. The session ROM was deleted, canonical identity unchanged and no owned
+process survived. Measurement returns/VInt contexts are0, service false; no save/pair/descendant
+exists. Shared file metadata, settings/user bytes and450 release members remained unchanged.
+
+The first offline post-run audit failed by applying the strict launch-time validator to the expanded
+exit config; its log/script remain `local/issue546/diagnostic-04-audit-failure-01.txt` and
+`audit-diagnostic-04-before-postrun-fix.py`. BizHawk exit serialization normalized separators and
+expanded20 path roles to284 with unused-platform/recent-ROM defaults. Read-only examination verifies
+all20 selected GEN/Global resolved roles still equal their exact local launch destinations; the
+shared installation is unchanged. The launch receipt's settings digest is not the rewritten exit
+file's digest. No launch guard, raw artifact or source was changed to pass, and no native retry ran.
+
+**Unknown:** other message settings/targets/spells, input-shortening behavior, broader natural-route
+or HEAL coverage, and hidden-state equivalence to other parents. This one accepted restore/scene
+does not establish general hardware equivalence, remaining8D/H4 or #437 completion, and grants no
+new execution. Static premises and historical outcomes retain their existing owners.
+
+#### Read back the accepted diagnostic without execution
+
+Run from the evidence-owning worktree with `$researchWorktree` naming it. The production readers
+below have the executed Python/Lua Git content; inspect commit3e69c2d4 if those owners later change.
+The recipe reads raw evidence only: it never prepares, restores, advances or launches. The final
+current-ledger print can include later append-only attempts; the asserted137 total is reconstructed
+from this candidate's frozen prior costs and its own completed receipt.
+
+```powershell
+$records = Join-Path $researchWorktree 'local/issue546/prepared-04'
+. ./local/private-inputs.ps1
+@'
+import json, sys
+from collections import Counter
+from pathlib import Path
+from sf2tool.bizhawk_debug_bridge import read_receipt
+from sf2tool.h3 import map3_messenger_acceptance as m
+p = Path(sys.argv[1]); r = p / "runtime"
+read = lambda path: json.loads(path.read_text(encoding="utf-8"))
+prepared = read(p / "candidate.json")
+for key in ("ObserverSha256", "RunnerSha256", "ConfigurationSha256", "InputSha256"):
+    print(key, prepared[key])
+receipt = read_receipt(r / "bridge")
+assert receipt == read(r / "bridge/receipt.json")
+m._assert_heal_diagnostic_output(r, prepared)
+parent = Path(prepared["Segment"]["parentDirectory"])
+pair, metadata = m._read_segment(parent)
+m._assert_heal_diagnostic_parent(prepared, parent, pair, metadata)
+rows = [json.loads(s) for s in (r / "checkpoints.jsonl").read_text().splitlines()]
+heal = [x for x in rows if x["kind"].startswith("heal:")]
+assert len(heal) == 5373
+count = 0; context = (0, 0, False); interrupts = []; services = {}
+for row in heal:
+    kind, f = row["kind"][5:], row["facts"]
+    if kind == "vint":
+        assert f["interruptedService"] == context[2]
+        interrupts.append(context); count += 1
+        context = (count, context[0], False)
+    if kind in ("graphics:before", "windows:before"):
+        services.setdefault(context[0], []).append(context[2])
+        context = (*context[:2], kind.split(":")[0])
+    assert (f["vint"], f["vintParent"], f["service"]) == context
+    assert (f["vintCount"], f["vintDepth"], f["inVint"]) == (count, len(interrupts), bool(interrupts))
+    if kind in ("graphics:after", "windows:after"):
+        assert context[2] == kind.split(":")[0]
+        context = (*context[:2], services[context[0]].pop())
+    if kind == "vint-return":
+        assert context[2] is False
+        context = interrupts.pop()
+assert count == 605 and context == (0, 0, False) and not interrupts
+assert not any(services.values())
+fairy = [x["facts"]["drawCount"] for x in heal if x["kind"] == "heal:fairy:after"]
+assert Counter(fairy) == {0: 217, 1: 25, 2: 2}
+timed = [x for x in heal if x["kind"] == "heal:timed-input-read"]
+assert len(timed) == 130 and all(x["facts"]["input"] == 0 for x in timed)
+for line in (1, 76, 83, 2042, 3729, 3730, 4664, 4665, 4666, 4674, 4675, 4689, 5650, 5652):
+    x = rows[line - 1]
+    print(line, x["kind"], x["frame"], x["order"])
+frames = [json.loads(s) for s in (r / "actual-inputs.jsonl").read_text().splitlines()]
+frames = [x for x in frames if x["kind"] == "frame"]
+assert len(frames) == 712 and len({x["id"] for x in frames}) == 23
+assert (frames[-1]["frame"], frames[-1]["order"]) == (32725, 89326)
+assert (prepared["HistoricalControlledStarts"] + 1,
+        prepared["Segment"]["priorActiveSeconds"] + receipt["elapsedSeconds"],
+        prepared["Segment"]["priorFrames"] + len(frames),
+        prepared["Segment"]["priorBatches"] + 23) == (137, 15568.554376200133, 429120, 16211)
+assert not (r / "segment.State").exists() and not (r / "segment-pair.json").exists()
+assert not list(r.glob("resumed-by*.json"))
+print("current reconciled ledger", m._resume_accounting(parent)[0])
+print("PASS: bounded artifact readback; no native execution")
+'@ | uv run --locked python -X utf8 - $records
+```
 
 ### Post-victory ordinary-input preparation (Issue #515)
 
