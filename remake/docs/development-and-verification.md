@@ -112,7 +112,7 @@ Each result rechecks eligibility. Release, another action, loss of window focus,
 tree pause/unpause, failure or departure from this consumer disarms the hold. Returning requires a
 mapped release/neutral event and a fresh press. Reveal-only Confirm does not supply a field Wait.
 This is not a global pause action: presentation delivery continues. Existing autonomous updates at
-dialogue, audio and other non-field consumers remain unreconciled legacy behavior, not newly proven
+ordinary dialogue, audio and other non-field consumers remain unreconciled legacy behavior, not newly proven
 mandatory work or whole-host Option A conformance. The first-warp, JOIN logical-audio-end and HEAL
 natural-order evidence gaps remain Unknown; preserve the [H4 diagnostic](#continuous-h4-comparison)
 results. This input does not normalize the old 260-step trace.
@@ -139,7 +139,7 @@ and writes/flushes/checks/closes the generated inputs before instantiating Main.
 with the names of this run's newly created files; a partial fresh file may remain as failed-run
 evidence. Existing destinations are rejected. Only this run's created package can be
 rewritten for the later presentation scenario. Final output also flushes/checks/closes before exit.
-This guard is specific to the new field-wait entry; legacy observer cases retain their prior lifecycle.
+This guard covers the field-wait and text-wait entries; legacy observer cases retain their prior lifecycle.
 
 ```powershell
 $run = Join-Path (Get-Location) 'local/field-wait-keyboard'
@@ -152,6 +152,91 @@ $env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
 & $godotBinary --path remake/game --script res://probes/engine_input_accessibility_observation.gd -- `
   --authored-package (Join-Path $run 'package.json') --input-settings (Join-Path $run 'settings.json')
 ```
+
+## Plain text-input gameplay Wait
+
+The [portrait/input contract](./exploration-programs.md#portrait-lifecycle-and-plain-current-input-wait)
+defines the admitted source producer and engine boundary. `SessionSnapshot.CanWaitForText` is the
+shared eligibility query; `WaitForText(token)` uses the current session/revision and exact plain
+consumer token. It contributes one zero-input helper iteration, while Ack contributes none.
+This follows `input.asm:WaitForPlayerInput` (input test before WaitForVInt), reached by
+`battlefunctions_0.asm:FadeOut_WaitForP1Input` after previous-music handling. It does not apply the
+different W1/W2 RNG preamble to JOIN.
+
+At this consumer the host reuses the field Wait binding, monotonic repeat and cancellation rules.
+Delivery time always produces zero gameplay opportunities, including incomplete reveal. Wait during
+reveal is discarded and disarmed; reveal-only Confirm changes display only. A fresh press after
+reveal can Wait. Entry/exit clears elapsed tick debt, and a changed consumer token disarms a held
+Wait. Actual acknowledgement may reach mandatory subsequent work; that work is separate from an
+accepting input poll. Ordinary ShowText, choice, audio and active/unknown portrait consumers are
+outside this admission and retain their explicit unresolved legacy behavior.
+
+**Confirmed:** `ExplorationSessionTests` exercises immediate Ack, enabled/disabled NPC service,
+different seeds/wait phases, real close tails, calls/branches, absent/missing/skipped portrait
+lookups, active portrait preservation, stale envelopes/tokens, rejected consumer types and retained
+entity failures. The existing input observer's `text-wait-*` cases load real compiler-produced
+single-text instructions and a small subset of existing private visual assets. They observe actual
+portrait draw identity/flags across raw text and close, the source close/sleep tail, default instant
+keyboard versus adjustable/remapped gamepad, reveal-only no-update, matching tick/RNG/entities after
+the same four semantic Waits, pause mid-motion and consumer-change rearm. Remapped keyboard with
+competing destinations exercises a changed legal state. No screenshots or original emulator runs.
+
+For direct producer reproduction, select the registered canonical import, existing prepared private
+world and pinned read-only upstream through `SF2_PRIVATE_CANONICAL_MAP_IMPORT`,
+`SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PORTRAIT_WAIT_SOURCE`. Choose a fresh ignored file in
+`SF2_PORTRAIT_WAIT_INPUT`. Run this Python body with `uv run --locked python -X utf8` after loading
+the owning environment. It writes only the lowered programs and the small native observation input;
+it does not copy a world or regenerate/promote an asset library.
+
+```python
+import json, os, subprocess
+from pathlib import Path
+from sf2tool.remake_exploration_content import OriginalPrograms
+upstream = Path(os.environ["SF2_PORTRAIT_WAIT_SOURCE"])
+canonical = json.loads(Path(os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"]).read_bytes())
+assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=upstream, text=True).strip() == canonical["upstream"]["commit"]
+compiler = OriginalPrograms(canonical, upstream)
+for path in sorted((upstream / "disasm/data/maps/entries/map03/mapsetups").glob("*.asm")):
+    compiler.register_file(path.relative_to(upstream).as_posix())
+compiler.compile("cs_51614")
+for symbol, row in list(compiler.raw.items()):
+    if row["path"].startswith("data/maps/entries/map03/mapsetups/") and any(
+        op["opcode"] in ("closeTxt", "clsTxt") for op in row["operations"]):
+        compiler.compile(symbol)
+target = Path(os.environ["SF2_PORTRAIT_WAIT_INPUT"])
+assert target.resolve().is_relative_to((Path.cwd() / "local").resolve())
+with target.with_suffix(".programs.json").open("x", encoding="utf-8") as stream:
+    json.dump(list(compiler.programs.values()), stream, indent=2)
+world = json.loads(Path(os.environ["SF2_PRIVATE_EXPLORATION_CONTENT"]).read_bytes())["world"]
+source = compiler.programs["cs_51614"]
+end = next(n for n, op in enumerate(source["instructions"]) if op["op"] == "wait-ticks") + 1
+visuals = world["presentation"]
+sprites = [s for s in visuals["sprites"] if s["sprite"] in (2, 30)]
+data = {"sourceProgram": {"id": "source-single-text", "entitiesRunning": source["entitiesRunning"],
+        "instructions": source["instructions"][:end] + [{"op": "end"}]},
+    "sourceText": next(t for t in world["texts"] if t["id"] == 535),
+    "presentation": {"maps": [next(m for m in visuals["maps"] if m["map"] == "map-3")],
+        "sprites": sprites, "portraits": [p for p in visuals["portraits"]
+            if p["portrait"] in {s["portrait"] for s in sprites}]}}
+with target.open("x", encoding="utf-8") as stream:
+    json.dump(data, stream)
+```
+
+Inspect the direct producer output: each acknowledged single-text operation is followed by
+`close-portrait`, `close-text`, `wait-ticks(10)`; raw text has no such tail; raw `clsTxt` preserves
+portrait; JOIN has SoundWait/PreviousMusic followed by plain input and text-only close. These
+selected source names are observation fixtures; production admission contains none of them.
+
+Build the current Debug adapter with the protected locked SDK workflow, then use the same native
+command and fresh destination guard shown above with `SF2_INPUT_CASE=text-wait-keyboard`,
+`text-wait-remapped-gamepad`, or `text-wait-remapped-keyboard` (last with
+`SF2_INPUT_VARIANT=collision`). Leave `SF2_PORTRAIT_WAIT_INPUT` pointing to the generated input.
+Startup settings differ between these bounded runs; reuse the owned project and installation.
+
+**Unknown / retained failures:** natural post-JOIN entry, logical audio end, live VInt service gates
+and H4 chronology are not established by this source/engine/host observation. Earlier completed
+#531/#549 failures, #534 H4 5340 PASS / 2 FAIL / 40 Unavailable, index29 occupancy mismatch and the
+first-control timeout/next-actor failure remain evidence. The old 260-step plan is not a Wait stream.
 
 Require zero exit, `passed:true`, empty failures/unavailable and no native errors. Product assertion
 failure exits1; an unavailable OS-focus observation exits2 with an explicit `unavailable` entry and

@@ -241,11 +241,16 @@ internal sealed class ExplorationPresentation : IDisposable
             }
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
             if (overlay.X != 0 || overlay.Y != 0) DrawLayer(world, visual, overlay, true);
-            EntityRef? speaker = story.TextWindow is OpenTextWindow text ? text.Speaker : null;
-            if (speaker is { } speaking && world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite &&
-                _visuals.Sprites[sprite].Portrait is { } portrait)
+            int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
+            byte flags = (story.PortraitWindow as OpenPortraitWindow)?.Flags ?? 0;
+            // Preserve old content's display hint without admitting its unknown service gate.
+            if (story.PortraitWindow is UnknownPortraitWindow { LegacySpeaker: { } speaking } legacy &&
+                world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite)
+            { portraitId = _visuals.Sprites[sprite].Portrait; flags = legacy.LegacyFlags; }
+            _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
+                { ["id"] = portraitId is { } drawn ? drawn : -1, ["flags"] = flags });
+            if (portraitId is { } portrait)
             {
-                byte flags = ((OpenTextWindow)story.TextWindow).SpeakerFlags;
                 var key = (portrait, (flags & 0x40) != 0);
                 if (!_portraits.TryGetValue(key, out var texture))
                 {

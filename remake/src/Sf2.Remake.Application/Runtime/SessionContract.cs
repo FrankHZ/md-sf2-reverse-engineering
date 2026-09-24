@@ -23,6 +23,8 @@ public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
 // One deliberate gameplay opportunity at an eligible settled field-input boundary.
 public sealed record WaitAtInput : SessionCommand;
+// One zero-input iteration of the input-first helper; accepting input adds no tick.
+public sealed record WaitForText(WaitToken Wait) : SessionCommand;
 public sealed record AdvanceSimulation(WaitToken? Wait = null, int Ticks = 1) : SessionCommand;
 public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;
@@ -78,6 +80,11 @@ public sealed class SessionSnapshot
         Story.Continuation == ProgramContinuation.FieldInput && Story.EnteringBattle is null &&
         Story.EntityEvent is null && Story.TextWindow is ClosedTextWindow &&
         !field.World.PlayerEntity.Busy && !field.World.PlayerEntity.WaitingForSprite;
+    public bool CanWaitForText => Active is ActiveExploration field && StopReason == SessionStopReason.PresentationWait &&
+        Story.Cursor is not null && Story.Wait is DialogueWait { InputFirstEntityService: not null } &&
+        Story.PortraitWindow is ClosedPortraitWindow && Story.TextWindow is OpenTextWindow &&
+        Story.EnteringBattle is null && Story.Continuation == ProgramContinuation.FieldInput &&
+        !field.World.PlayerEntity.Busy && !field.World.AllEntities.Any(entity => entity.WaitingForSprite);
     internal SessionSnapshot WithStory(StoryState story) => new(SessionId, Revision, ObservationSequence, Active, story, StopReason);
 }
 

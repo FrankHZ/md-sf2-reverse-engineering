@@ -19,6 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
+var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -72,7 +73,7 @@ func physical(code: int, pressed: bool) -> void:
         event.pressed = pressed
         Input.parse_input_event(event)
 
-    if "field-wait" in input_case: Input.flush_buffered_events()
+    if guarded_wait_case: Input.flush_buffered_events()
 
 func key(code: int) -> void:
     physical(code, true)
@@ -177,13 +178,16 @@ func write_settings(path: String) -> bool:
             settings.bindings[action] = {"keys":[keys[action]],"buttons":[buttons[action]],"axes":axes.get(action, [])}
     if wait_axis: settings.bindings.wait.axes = ["LeftX+"]
     if not field_paths.is_empty(): return write_field_file("settings", JSON.stringify(settings))
-    # Legacy cases retain their existing lifecycle; the admission below is field-wait only.
+    # Legacy cases retain their existing lifecycle; Wait cases use the fresh-path guard.
     var file := FileAccess.open(path, FileAccess.WRITE)
     file.store_string(JSON.stringify(settings))
     file.close()
     return true
 
 func run() -> void:
+    if "text-wait" in input_case:
+        await run_text_wait()
+        return
     if "field-wait" in input_case:
         await run_field_wait()
         return
@@ -614,11 +618,143 @@ func run_field_wait() -> void:
     await tap_wait()
     finish_public()
 
+func run_text_wait() -> void:
+    if not admit_field_paths(): return
+    # Read the small producer output plus existing private asset subset; never rewrite it.
+    var source_path := OS.get_environment("SF2_PORTRAIT_WAIT_INPUT")
+    if not FileAccess.file_exists(source_path):
+        field_io_failure("missing producer/portrait observation input")
+        return
+    var source: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(source_path))
+    var package: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    var collision := OS.get_environment("SF2_INPUT_VARIANT") == "collision"
+    package.battle.start.mainSeed = 0xC632A55A
+    package.start.program = {"program":"portrait-input","instruction":0}
+    var visuals: Dictionary = source.presentation
+    var map_visual: Dictionary = visuals.maps[0]
+    visuals.maps = []
+    for map in package.world.maps:
+        var visual: Dictionary = map_visual.duplicate(true)
+        visual.map = map.id
+        visual.erase("music")
+        visuals.maps.append(visual)
+        for entity in map.entities: entity.sprite = 30
+    package.world.presentation = visuals
+    package.world.texts.append(source.sourceText)
+    package.world.texts.append({"id":900,"text":"Plain input: delivery and reveal must leave this world unchanged."})
+    package.world.texts.append({"id":901,"text":"The next input consumer requires a fresh Wait press."})
+    package.world.maps[0].entities.append({"id":"entity-1","position":{"x":3,"y":2},"facing":2,
+        "speed":96,"visible":true,"obstruction":true,"sprite":2})
+    var actions := [{"op":"wait","ticks":2},{"op":"random-walk","x":2,"y":1,"radius":1}]
+    if collision:
+        actions = [{"op":"move","x":1,"y":0}]
+        package.world.maps[0].entities.append({"id":"other","position":{"x":4,"y":1},"facing":2,
+            "speed":96,"visible":true,"obstruction":true,"sprite":30})
+    var instructions := [
+        {"op":"sprite","entity":"traveler","sprite":30},
+        {"op":"close-portrait"},{"op":"open-portrait","entity":"ferryman","flags":192},
+        {"op":"text-cursor","text":100},
+        {"op":"show-text","mode":"continued","speaker":"ferryman","explicitWindows":true},
+        {"op":"close-text"},{"op":"open-portrait","entity":null,"flags":0},
+        {"op":"text-cursor","text":900},
+        {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+        {"op":"wait-text-input"},
+        {"op":"close-portrait"},{"op":"close-text"},
+        {"op":"call","target":{"program":source.sourceProgram.id,"instruction":0}},
+        {"op":"motion","entity":"ferryman","wait":false,"actions":actions}]
+    if collision:
+        instructions.append({"op":"motion","entity":"other","wait":false,"actions":[{"op":"move","x":-1,"y":0}]})
+    instructions.append_array([
+        {"op":"text-cursor","text":900},
+        {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+        {"op":"wait-text-input"},{"op":"close-text"},{"op":"text-cursor","text":901},
+        {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+        {"op":"wait-text-input"},{"op":"close-text"},{"op":"end"}])
+    package.world.programs.append({"id":"portrait-input","entitiesRunning":true,"instructions":instructions})
+    package.world.programs.append(source.sourceProgram)
+    if not write_field_file("package", JSON.stringify(integer_numbers(package))): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 30 if remapped else 120
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await settle_authored()
+    root.grab_focus()
+    await create_timer(0.15).timeout
+    var initial := read_sample("portrait-open")
+    if not initial.focused: field_unavailable.append("Initial OS focus unavailable on this display")
+    if not initial.focused or initial.failure != null:
+        finish_public()
+        return
+    view.connect("SessionResultObserved", observe_wait)
+    check(initial.portraitId == 13 and initial.portraitFlags == 192 and initial.portraitProjection.id == 13,
+        "Actual draw projects the persistent portrait and flags")
+    await acknowledge()
+    var preserved := read_sample("raw-text-preserves-portrait")
+    check(preserved.portraitId == 13 and preserved.portraitProjection.id == 13 and not preserved.canWaitForText,
+        "Text-only close, skipped open and speakerless raw text preserve portrait and reject Wait")
+    physical(KEY_V, true)
+    physical(KEY_V, false)
+    await assert_field_paused("active-portrait-no-wait")
+    await acknowledge()
+    var single := read_sample("producer-single-text")
+    check(single.portraitId == 1 and single.portraitProjection.id == 1 and not single.canWaitForText,
+        "Real producer single-text caller opens its own portrait after explicit close")
+    await acknowledge()
+    var deadline := Time.get_ticks_msec() + 3000
+    while not state().canWaitForText and Time.get_ticks_msec() < deadline: await process_frame
+    var input := read_sample("plain-input-before-reveal")
+    check(input.canWaitForText and input.portraitWindow == "ClosedPortraitWindow" and input.portraitProjection.id == -1,
+        "Real producer close tail and mandatory sleep reach proven-Closed plain input")
+    check(input.simulationTick == 10 and input.mainSeed == 0xC632A55A,
+        "Source sleep ran exactly ten opportunities before NPC actions began")
+    await assert_field_paused("plain-delivery-idle")
+    if input.textMode != "instant":
+        physical(KEY_V, true)
+        await process_frame
+        check(wait_receipts.is_empty(), "Wait during incomplete reveal is discarded")
+        var before := state()
+        await key(KEY_ENTER)
+        var revealed := read_sample("plain-reveal-only")
+        check(field_signature(revealed) == field_signature(before) and revealed.token == before.token,
+            "Actual reveal Confirm adds no command, tick, RNG or entity update")
+        physical(KEY_V, true)
+        await assert_field_paused("reveal-return-disarmed")
+        physical(KEY_V, false)
+    await tap_wait()
+    await assert_field_paused("plain-one-wait")
+    release_at = 4
+    physical(KEY_V, true)
+    deadline = Time.get_ticks_msec() + 2000
+    while wait_receipts.size() < 4 and Time.get_ticks_msec() < deadline: await process_frame
+    physical(KEY_V, false)
+    var four := read_sample("plain-four-waits")
+    check(wait_receipts.size() == 4 and four.simulationTick == 14, "Exactly four semantic Waits at the same consumer")
+    check(four.mainSeed == (0xC632A55A if collision else 0x1091A55A), "Only actual enabled NPC rules advance the shared RNG")
+    await assert_field_paused("plain-motion-paused")
+    var before_ack := state()
+    await key(KEY_ENTER)
+    var next := read_sample("next-plain-consumer")
+    check(next.canWaitForText and next.token != before_ack.token and next.simulationTick == before_ack.simulationTick and
+        next.mainSeed == before_ack.mainSeed and next.entities == before_ack.entities,
+        "Input-first Ack adds no accepting poll or entity update")
+    if next.visibleCharacters >= 0 and next.visibleCharacters < next.totalCharacters: await key(KEY_ENTER)
+    physical(KEY_V, true)
+    release_at = 6
+    await key(KEY_ENTER)
+    var returned := read_sample("plain-to-field-disarmed")
+    check(returned.canWaitAtInput and not returned.waitingAtInput, "Consumer departure disarms the held Wait")
+    physical(KEY_V, true)
+    await assert_field_paused("field-return-no-held-debt")
+    physical(KEY_V, false)
+    finish_public()
+
 func finish_public() -> void:
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts}, "  ")
-    if "field-wait" in input_case:
+    if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
         var error := field_output.get_error()

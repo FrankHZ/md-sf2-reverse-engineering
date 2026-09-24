@@ -7,7 +7,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public readonly record struct WaitToken(long Value);
 public abstract record ProgramWait(WaitToken Token);
-public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : ProgramWait(Token);
+public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0,
+    bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
@@ -20,6 +21,11 @@ public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, b
 public abstract record TextWindow;
 public sealed record ClosedTextWindow : TextWindow;
 public sealed record OpenTextWindow(int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : TextWindow;
+public abstract record PortraitWindow;
+// Old content supplies a display hint, never evidence of the source service gate.
+public sealed record UnknownPortraitWindow(EntityRef? LegacySpeaker = null, byte LegacyFlags = 0) : PortraitWindow;
+public sealed record ClosedPortraitWindow : PortraitWindow;
+public sealed record OpenPortraitWindow(int Portrait, byte Flags) : PortraitWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
 public enum ProgramContinuation { FieldInput, MapLoaded, BeforeBattleFinished, BattleLoadFinished, BattleStartFinished, VictoryProgramFinished, DefeatProgramFinished, OutcomeMapLoaded }
 
@@ -30,13 +36,14 @@ public sealed class StoryState
         ProgramContinuation continuation = ProgramContinuation.FieldInput,
         ExplorationBattleRoute? enteringBattle = null, FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long simulationTick = 0,
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
-        int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null)
+        int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
         TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EntityEvent = entityEvent;
         Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot; OutcomeReturn = outcomeReturn;
+        PortraitWindow = portraitWindow ?? new UnknownPortraitWindow();
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -48,6 +55,7 @@ public sealed class StoryState
     public FieldReturnAnchor? ReturnAnchor { get; }
     public FieldReturnAnchor? OutcomeReturn { get; }
     public TextWindow TextWindow { get; }
+    public PortraitWindow PortraitWindow { get; }
     public long SimulationTick { get; }
     public MapPartyLists? PartyLists { get; }
     public EntityEventContext? EntityEvent { get; }
@@ -60,12 +68,12 @@ public sealed class StoryState
         FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long? simulationTick = null, MapPartyLists? partyLists = null,
         EntityEventContext? entityEvent = null, bool clearEntityEvent = false, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false,
-        FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false) =>
+        FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
             clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
-            clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn);
+            clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

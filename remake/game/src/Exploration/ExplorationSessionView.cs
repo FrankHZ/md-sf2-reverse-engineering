@@ -87,8 +87,12 @@ public sealed partial class ExplorationSessionView : Control
     {
         _lastWaitFrame = Engine.GetProcessFrames();
         _nextWaitMicros = Time.GetTicksUsec() + 16667;
-        Send(new WaitAtInput());
+        Send(_session!.Current.CanWaitForText ? new WaitForText(_session.Current.Story.Wait!.Token) : new WaitAtInput());
     }
+
+    private bool TextRevealed => _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
+    private bool CanSubmitWait => _session is { } session &&
+        (session.Current.CanWaitAtInput || session.Current.CanWaitForText && TextRevealed);
 
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
@@ -130,11 +134,11 @@ public sealed partial class ExplorationSessionView : Control
             QueueRedraw();
             if (presentation.Error is not null) { Present(); return; }
         }
-        if (_session.Current.CanWaitAtInput)
+        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText)
         {
             // Idle field time is explicitly paused. Presentation time never becomes field debt.
             _tickTime = 0;
-            if (!GetWindow().HasFocus() || !IsVisibleInTree() || !_input.WaitHeld || PresentationFailure is not null)
+            if (!CanSubmitWait || !GetWindow().HasFocus() || !IsVisibleInTree() || !_input.WaitHeld || PresentationFailure is not null)
                 CancelFieldWait();
             else if (_waitingAtInput && Engine.GetProcessFrames() != _lastWaitFrame && Time.GetTicksUsec() >= _nextWaitMicros)
                 SubmitFieldWait(); // No batch or catch-up for missed repeat deadlines.
@@ -154,7 +158,7 @@ public sealed partial class ExplorationSessionView : Control
                 // The engine may yield before consuming the batch. Retain its unused time
                 // for automatic continuation, but never carry paused input time into a new wait.
                 _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
-                if (_handedOff || _session.Current.CanWaitAtInput || !NeedsTicks(_session.Current)) _tickTime = 0;
+                if (_handedOff || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
         else _tickTime = 0;
@@ -171,7 +175,7 @@ public sealed partial class ExplorationSessionView : Control
         var current = _session.Current;
         if (action == GameAction.Wait)
         {
-            if (!current.CanWaitAtInput || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return; }
+            if (!CanSubmitWait || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return; }
             _waitingAtInput = true;
             SubmitFieldWait();
             return;
@@ -236,7 +240,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
-        if (!_session.Current.CanWaitAtInput || _result.Failure is not null) CancelFieldWait();
+        if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
         else _tickTime = 0;
         PublishResult("submit");
         _audio?.Observe(_result);
@@ -262,8 +266,11 @@ public sealed partial class ExplorationSessionView : Control
         if (!_battleMounted) _lastWorld = current.Exploration ?? _lastWorld;
         var size = GetViewportRect().Size;
         _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
-        bool portrait = _session.Definition.Exploration?.Visuals is not null && current.Story.TextWindow is OpenTextWindow { Speaker: not null };
-        bool rightPortrait = current.Story.TextWindow is OpenTextWindow { SpeakerFlags: var speakerFlags } && (speakerFlags & 0x80) != 0;
+        bool portrait = _session.Definition.Exploration?.Visuals is not null &&
+            current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
+        byte portraitFlags = current.Story.PortraitWindow switch
+        { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => 0 };
+        bool rightPortrait = (portraitFlags & 0x80) != 0;
         _dialogue.Position = new(portrait && !rightPortrait ? 110 : 20, Mathf.Max(80, size.Y - 175));
         _dialogue.Size = new(Mathf.Max(1, size.X - _dialogue.Position.X - (portrait && rightPortrait ? 110 : 20)), 75);
         _help.Position = new(20, Mathf.Max(130, size.Y - 90));
@@ -290,7 +297,7 @@ public sealed partial class ExplorationSessionView : Control
             EntityWait or TickWait or PresentationWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
-        if (current.CanWaitAtInput)
+        if (current.CanWaitAtInput || current.CanWaitForText)
             _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
@@ -337,6 +344,12 @@ public sealed partial class ExplorationSessionView : Control
         {
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
+            canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
+            portraitWindow = current?.Story.PortraitWindow.GetType().Name,
+            portraitId = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Portrait,
+            portraitFlags = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Flags,
+            portraitProjection = HasMeta("portrait_projection") ? GetMeta("portrait_projection").AsGodotDictionary()
+                .ToDictionary(pair => pair.Key.AsString(), pair => pair.Value.AsInt32()) : null,
             waitHeld = _input.WaitHeld, focused = GetWindow().HasFocus(),
             viewport = Battles.BattleMapViewport.Rectangle(GetViewportRect()),
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,

@@ -123,6 +123,8 @@ class OriginalPrograms:
                 "disasm/sf2cutscenemacros.asm",
                 "disasm/code/common/scripting/map/mapscriptengine_1.asm",
                 "disasm/code/common/scripting/map/mapscriptengine_2.asm",
+                "disasm/code/common/menus/portraitwindow.asm",
+                "disasm/code/common/tech/interrupts/trap5_textbox.asm",
                 "disasm/code/common/scripting/entity/entityscriptengine_1.asm",
                 "disasm/code/common/scripting/entity/entityscriptengine_2.asm",
                 "disasm/code/common/scripting/entity/entityfunctions_1.asm",
@@ -505,6 +507,13 @@ class OriginalPrograms:
                 speaker = self.entity(str(registers["d0"]))
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
                 result.append({"op": "speaker", "entity": speaker})
+                result.append(
+                    {"op": "open-portrait", "entity": speaker, "flags": 0}
+                    if speaker is not None
+                    else self.native(op, source)
+                )
+            elif op == "jsr" and args == ["j_ClosePortraitWindow"]:
+                result.append({"op": "close-portrait"})
             elif op == "jsr" and args == ["(WaitForViewScrollEnd).l"]:
                 result.append(
                     {
@@ -545,6 +554,7 @@ class OriginalPrograms:
                             "mode": "single",
                             "speaker": speaker,
                             "useEventSpeaker": speaker is None,
+                            "explicitWindows": True,
                         },
                     ]
                 )
@@ -571,13 +581,47 @@ class OriginalPrograms:
             elif op == "textCursor":
                 result.append({"op": "text-cursor", "text": self.number(args[0])})
             elif op in ("nextText", "nextSingleText"):
+                flags, selector = self.number(args[0]) & 255, self.number(args[1]) & 255
+                # FFFF skips portrait lookup; it does not close an existing window.
+                entity = None if (flags, selector) == (255, 255) else self.entity(args[1])
+                result.append({"op": "open-portrait", "entity": entity, "flags": flags})
                 result.append(
                     {
                         "op": "show-text",
                         "mode": "single" if op == "nextSingleText" else "continued",
-                        "speaker": self.entity(args[1]),
-                        "speakerFlags": self.number(args[0]),
+                        "speaker": entity,
+                        "speakerFlags": flags,
+                        "explicitWindows": True,
                     }
+                )
+                if op == "nextSingleText":
+                    result.extend(
+                        [
+                            {"op": "close-portrait"},
+                            {"op": "close-text"},
+                            {"op": "wait-ticks", "ticks": 10},
+                        ]
+                    )
+            elif op == "showPortrait":
+                result.append(
+                    {
+                        "op": "open-portrait",
+                        "entity": self.entity(args[1]),
+                        "flags": self.number(args[0]) & 255,
+                    }
+                )
+            elif op == "hidePortrait":
+                result.extend(
+                    [
+                        {
+                            "op": "present",
+                            "kind": "CameraWait",
+                            "entity": None,
+                            "position": None,
+                            "resource": None,
+                        },
+                        {"op": "close-portrait"},
+                    ]
                 )
             elif op == "hide":
                 result.append({"op": "hide", "entity": self.entity(args[0]), "removeAliases": True})
@@ -635,6 +679,7 @@ class OriginalPrograms:
                             "mode": "single",
                             "speaker": None,
                             "waitForAcknowledgement": False,
+                            "explicitWindows": True,
                         },
                         {
                             "op": "present",
@@ -745,6 +790,8 @@ class OriginalPrograms:
                     }
                 )
             elif op == "closeTxt":
+                result.extend([{"op": "close-portrait"}, {"op": "close-text"}])
+            elif op == "clsTxt":
                 result.append({"op": "close-text"})
             elif op == "yesNo":
                 result.append({"op": "yes-no", "flag": 89})
