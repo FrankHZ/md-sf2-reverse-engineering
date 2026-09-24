@@ -697,6 +697,36 @@ buffer and possible adaptive resampling prevent claiming exact hardware sample p
 requires the retained private capture/configuration, candidate manifest and ordinary-input host
 observation; neither the loop interval nor a waveform seam metric alone proves the host result.
 
+### Ordinary door obstruction and audio
+
+For source-populated exploration, entity obstruction is checked at the resolved candidate position
+before door copying, ordinary warp dispatch or movement. The mover's `FlagsA` bit5 enables the
+check; other host-visible entities obstruct only with bit7 set and either their current or reserved
+position within strictly 256 fixed-point units on both axes. The existing `EntityMotion` predicate
+owns that geometry. A rejected move updates facing but leaves the door layout unchanged and emits
+no `door-opened`, so it cannot request sound92. A clear approach still copies the door before map
+traversal, then selects any step event from the copied layout. Non-populated authored maps retain
+their existing occupancy/warp policy.
+
+**Confirmed source structure:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/entity/entityscriptengine_2.asm:esc02_controlCharacter`,
+`loc_51A8` through `loc_5218` checks mover bit5, other bit7, current and reserved positions before
+`loc_5278` calls `OpenDoor` for marker `0x0400`. `code/gameflow/exploration/exploration.asm:OpenDoor`
+applies the matching copy before requesting92. The source scan itself uses flags and coordinates;
+host `Visible` filtering remains the existing engine abstraction, not a claim of a separate original
+visibility predicate. Removed entities are off-map; natural reach of a particular obstructed doorway
+remains **Unknown**, while changed valid engine states are covered directly.
+
+**Confirmed bounded consumer:** `engine_private_exploration_observation.gd` case `map3-door`
+uses a controlled ordinary approach from Map3 `(4,7)` to the existing door at `(4,8)`, the unchanged
+private audio pack and real key input. It observes one `door-opened`, one playing92 at inherited
+TimerB `0xCB`, natural `Finished`, post-copy traversal/input availability and no replay on redraw,
+repeated projection or revisiting the opened doorway. It does not run the full Map3-to-battle route
+or establish original timing. Engine cases vary positions, current/reserved obstruction, the strict
+distance threshold, disabled flags, hidden/retired entities, non-doors and repeat-open behavior;
+blocked attempts preserve layout, gameplay time and RNG. SessionAudio's existing event consumer is
+unchanged. This slice does not close other cue bindings, JOIN or gameplay-opportunity differences.
+
 ### Action-choice menu audio
 
 A successful battle submit that enters or leaves `BattleSelectionStage.ActionChoice` plays command

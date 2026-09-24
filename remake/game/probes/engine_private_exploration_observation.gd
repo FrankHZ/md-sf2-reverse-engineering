@@ -5,6 +5,59 @@ var failures: Array = []
 var host: Node
 var view: Node
 var case_name := OS.get_environment("SF2_PRIVATE_EXPLORATION_CASE")
+var door_events: Array = []
+
+func _door_result(payload: String) -> void:
+    var result: Dictionary = JSON.parse_string(payload)
+    door_events.append_array(result.observations)
+
+func _door_settle() -> Dictionary:
+    for tick in range(600):
+        var state := _state()
+        if state.failure != null:
+            _check(false, "ordinary door consumer has no host failure")
+            return state
+        var player := _entity(state, "entity-0")
+        if state.stop == "PlayerInput" and not player.busy and not player.moving: return state
+        if state.wait == "DialogueWait": await _press(KEY_ENTER)
+        else: await process_frame
+    _check(false, "ordinary door input returns within bounded observation")
+    return _state()
+
+func _door_case() -> void:
+    view.connect("SessionResultObserved", _door_result)
+    var initial := await _door_settle()
+    var player := _entity(initial, "entity-0")
+    _check(initial.map == "map-3" and player.x == 4 * 384 and player.y == 7 * 384, "controlled approach to existing Map3 door")
+    await _press(KEY_DOWN)
+    var opened := _read("door-input")
+    var starts: Array = opened.audio.receipts.filter(func(receipt): return receipt.Command == 92 and receipt.Operation == "started")
+    _check(starts.size() == 1, "ordinary door starts exactly one 92")
+    if not starts.is_empty():
+        _check(starts[0].TimerB == 203 and starts[0].Playing, "92 actually starts in inherited CB context")
+    _check(opened.audio.sounds.any(func(sound): return sound.command == 92 and sound.playing), "92 has an actual playing voice")
+    var settled := await _door_settle()
+    player = _entity(settled, "entity-0")
+    _check(player.x == 4 * 384 and player.y == 8 * 384 and settled.canWaitAtInput, "post-copy traversal reaches door cell and releases input")
+    var stable_revision = settled.revision
+    var stable_seed = settled.mainSeed
+    for tick in range(120):
+        view.queue_redraw()
+        var projected := _state()
+        _check(projected.revision == stable_revision and projected.mainSeed == stable_seed, "repeated projection and audio delivery add no gameplay work")
+        if projected.audio.sounds.is_empty(): break
+        await process_frame
+    await _press(KEY_UP)
+    await _door_settle()
+    await _press(KEY_DOWN)
+    var repeated := await _door_settle()
+    _read("revisited-open-door")
+    _check(door_events.filter(func(event): return event.Kind == "door-opened").size() == 1, "already opened door emits no duplicate event")
+    _check(repeated.audio.receipts.filter(func(receipt): return receipt.Command == 92 and receipt.Operation == "started").size() == 1, "repeated projection and traversal do not replay 92")
+    _check(repeated.audio.receipts.any(func(receipt): return receipt.Command == 92 and receipt.Operation == "finished"), "door voice reaches actual Finished")
+    _check(repeated.failure == null and repeated.audio.error == null and repeated.canWaitAtInput, "ordinary input remains available")
+    samples.append({"label":"door-events", "events":door_events})
+    view.disconnect("SessionResultObserved", _door_result)
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -53,6 +106,10 @@ func _run() -> void:
         _finish()
         return
     var identity: String = initial.sessionId
+    if case_name == "map3-door":
+        await _door_case()
+        _finish()
+        return
     if case_name == "authored-presentation":
         await _press(KEY_ENTER)
         var pending := _read("unavailable-presentation")
