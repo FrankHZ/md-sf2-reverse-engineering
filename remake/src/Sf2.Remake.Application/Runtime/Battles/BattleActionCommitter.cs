@@ -7,16 +7,16 @@ internal static class BattleActionCommitter
 {
     // Called only after an entire player or enemy ACTION has resolved on temporary state.
     internal static SessionSnapshot Publish(SessionSnapshot current, EngineBattleState battle,
-        ActorRef actor, MapPosition destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations)
+        ActorRef actor, MapPosition destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations, bool defeatedHookHandled = false)
     {
         long revision = checked(current.Revision + 1), sequence = current.ObservationSequence;
         var origin = current.Battle.GetActor(actor).Position;
-        if (origin != destination)
+        if (!defeatedHookHandled && origin != destination)
             observations.Add(new(++sequence, revision, "movement", actor, From: origin, To: destination));
         foreach (var effect in effects.Where(effect => effect.Kind is not ("death-cleanup" or "kills" or "defeats")))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After,
                 RandomRange: effect.RandomRange, RandomValue: effect.RandomValue, Target: effect.Target));
-        if (BattleOutcomeRules.DefeatedHook(battle))
+        if (!defeatedHookHandled && BattleOutcomeRules.DefeatedHook(battle))
             observations.Add(new(++sequence, revision, "enemy-defeated-program-none"));
         foreach (var effect in effects.Where(effect => effect.Kind is "death-cleanup" or "kills" or "defeats"))
             observations.Add(new(++sequence, revision, effect.Kind, effect.Actor, effect.Before, effect.After));

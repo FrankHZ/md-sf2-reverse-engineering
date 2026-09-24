@@ -24,7 +24,7 @@ internal static class BattleSceneContentReader
             "scene-content-unavailable", "battleScenes", "Battle scene content cannot be read.")); }
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 16 });
         var root = document.RootElement;
-        Object(root, "battleScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing");
+        Object(root, "battleScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing", "fieldDeath");
         _ = Number(root, "version", 1, 1);
         Require(Text(root, "encounter") == "battle-" + definitions.Encounter.Battle.Id, "scene-encounter", "battleScenes.encounter");
         var rasters = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
@@ -113,10 +113,41 @@ internal static class BattleSceneContentReader
                 "scene-healing-cast", "battleScenes.healing");
             healing = new(System.Array.AsReadOnly(bodies), System.Array.AsReadOnly(wings), System.Array.AsReadOnly(dust));
         }
+        FieldDeathVisual? fieldDeath = null;
+        if (root.TryGetProperty("fieldDeath", out var field))
+        {
+            Object(field, "fieldDeath", "allies", "enemies", "exitFrames");
+            var allySprites = new Dictionary<int, int>();
+            foreach (var row in Array(field, "allies"))
+            {
+                Object(row, "fieldAlly", "character", "sprite");
+                Require(allySprites.TryAdd(Number(row, "character", 0, 2), Number(row, "sprite", 0, 236)),
+                    "field-ally-binding", "fieldDeath.allies");
+            }
+            Require(allySprites.Count == 3, "field-ally-binding", "fieldDeath.allies");
+            var species = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var row in Array(field, "enemies"))
+            {
+                Object(row, "fieldEnemy", "code", "sprite");
+                Require(species.TryAdd(Text(row, "code"), Number(row, "sprite", 0, 236)), "field-enemy-binding", "fieldDeath.enemies");
+            }
+            var enemySprites = new Dictionary<ActorRef, int>();
+            int ordinal = 0;
+            foreach (var placement in definitions.Encounter.Placements.Where(value => value.Kind == EncounterEntityKind.Enemy))
+            {
+                Require(species.TryGetValue(placement.IdentityExpression, out int sprite), "field-enemy-binding", "fieldDeath.enemies");
+                enemySprites.Add(new("enemy-" + ordinal++), sprite);
+            }
+            var frames = Strings(field, "exitFrames");
+            Require(frames.Length == 3 && frames.All(key => rasters.TryGetValue(key, out var raster) &&
+                raster.Width == 48 && raster.Height == 24), "field-exit-resource", "fieldDeath.exitFrames");
+            fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
+                System.Array.AsReadOnly(frames));
+        }
         return new(Text(root, "encounter"), background, ground, new ReadOnlyDictionary<string, ExplorationRaster>(rasters),
             new ReadOnlyDictionary<BattleClassRule, BattleSceneActorVisual>(allies), new ReadOnlyDictionary<ActorRef, BattleSceneActorVisual>(enemies),
             new ReadOnlyDictionary<int, string>(texts),
-            System.Array.AsReadOnly(names), healing);
+            System.Array.AsReadOnly(names), healing, fieldDeath);
     }
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>

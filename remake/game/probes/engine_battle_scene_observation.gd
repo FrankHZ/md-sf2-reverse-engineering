@@ -31,6 +31,9 @@ var overlap_keys: Dictionary = {}
 var menu_audio := OS.get_environment("SF2_BATTLE_SCENE_MENU_AUDIO") == "1"
 var menu_cases: Array = []
 var partial_audio := OS.get_environment("SF2_BATTLE_SCENE_PARTIAL_AUDIO") == "1"
+var selection_audio := OS.get_environment("SF2_AUDIO_SELECTION") == "1"
+var selection_cases: Array = []
+var field_death_mode := OS.get_environment("SF2_BATTLE_SCENE_FIELD_DEATH") == "1"
 var heal_mode := OS.get_environment("SF2_BATTLE_SCENE_HEAL") == "1"
 var heal_cases: Array = []
 var heal_wait_tokens: Dictionary = {}
@@ -78,7 +81,7 @@ func _audio() -> void:
             last_receipt = int(receipt.Sequence)
             receipts.append(receipt)
         _check(audio.error == null, "audio remains available")
-        if disjoint_audio or partial_audio:
+        if disjoint_audio or partial_audio or field_death_mode:
             var playing: Array = audio.sounds.filter(func(sound): return sound.playing)
             if playing.size() > 1:
                 var key := str(playing.map(func(sound): return sound.startSequence))
@@ -251,7 +254,7 @@ func _settle() -> Dictionary:
         if state.failure != null:
             _check(false, "host failure: " + str(state.failure))
             return state
-        if state.scene.visible:
+        if state.scene.visible or state.scene.fieldDeath != null:
             if not in_scene or (state.scene.phase == "Initialize" and int(state.scene.waitToken) != scene_start_token):
                 if in_scene:
                     _check(events.slice(scene_event_index).any(func(event): return event.Kind == "scene-ended"), "a chained scene follows the prior scene end")
@@ -303,6 +306,85 @@ func _stay() -> Dictionary:
     await _press(KEY_SPACE)
     await _press(KEY_ENTER)
     return await _settle()
+
+func _audio_selection() -> void:
+    var before: String = view.call("ReadObservationJson")
+    view.call("PlayAudioObservation", 34, "")
+    var exact: Dictionary = JSON.parse_string(view.call("PlayAudioObservation", 65, ""))
+    _check(exact.failure == null, "exact timer SFX selects successfully")
+    var receipt: Dictionary = exact.audio.receipts[-1]
+    _check(receipt.Command == 65 and receipt.TimerB == 189 and receipt.RequestedTimerB == 189 and receipt.Playing, "exact match wins among three same-command resources")
+    selection_cases.append({"case":"exact", "result":exact})
+    view.call("PlayAudioObservation", 2, "")
+    var unique: Dictionary = JSON.parse_string(view.call("PlayAudioObservation", 81, ""))
+    _check(unique.failure == null, "unique finite same-command fallback selects successfully")
+    receipt = unique.audio.receipts[-1]
+    _check(receipt.Command == 81 and receipt.TimerB == 204 and receipt.RequestedTimerB == 198 and receipt.Playing, "original81CC PCM actually plays under C6 without relabeling")
+    selection_cases.append({"case":"unique", "result":unique})
+    var cue: String = receipt.Cue
+    for tick in range(120):
+        _audio()
+        if receipts.any(func(r): return r.Command == 81 and r.Operation == "finished"): break
+        await process_frame
+    _check(receipts.any(func(r): return r.Command == 81 and r.Operation == "finished" and r.RequestedTimerB == 198), "fallback stream reaches actual Finished with original request context")
+    var named: Dictionary = JSON.parse_string(view.call("PlayAudioObservation", 0, cue))
+    _check(named.failure == null, "named finite resource uses the same reuse policy")
+    selection_cases.append({"case":"named-unique", "result":named})
+    for command in [80, 65]:
+        var rejected: Dictionary = JSON.parse_string(view.call("PlayAudioObservation", command, ""))
+        _check(rejected.failure == ("audio-command-unavailable" if command == 80 else "audio-command-ambiguous"), "missing and ambiguous commands remain explicit")
+        selection_cases.append({"case":"missing" if command == 80 else "ambiguous", "result":rejected})
+    _check(str(view.call("ReadObservationJson")) == before, "audio selection/playback changes no gameplay or RNG")
+    view.call("PlayAudioObservation", 34, "")
+
+func _field_counter(state: Dictionary) -> void:
+    for turn in range(12):
+        if state.actor == "ally-2" or not failures.is_empty(): break
+        state = await _stay()
+    _check(state.actor == "ally-2", "controlled counter actor reaches ordinary input")
+    if not failures.is_empty(): return
+    var board: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+    var origin := Vector2i(int(board.previewX), int(board.previewY))
+    var enemies: Array = board.actors.filter(func(a): return str(a.id).begins_with("enemy-") and a.hp > 0)
+    var occupied := {}
+    for a in board.actors:
+        if a.hp > 0 and a.id != state.actor: occupied[Vector2i(int(a.x), int(a.y))] = true
+    var queue: Array[Vector2i] = [origin]
+    var paths := {origin: []}
+    var target := ""
+    var route: Array = []
+    # Read-only bounded route selection; every move is still ordinary host input.
+    while not queue.is_empty():
+        var cell: Vector2i = queue.pop_front()
+        for enemy in enemies:
+            if abs(cell.x-int(enemy.x))+abs(cell.y-int(enemy.y)) == 1:
+                target = enemy.id
+                route = paths[cell]
+                break
+        if not target.is_empty(): break
+        for direction in [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]:
+            var next: Vector2i = cell + direction
+            if next.x < 0 or next.y < 0 or next.x >= int(board.mapWidth) or next.y >= int(board.mapHeight): continue
+            if paths.has(next) or occupied.has(next) or board.terrain[next.y*48+next.x] in ["Barrier", "Impassable"]: continue
+            paths[next] = paths[cell] + [direction]
+            queue.append(next)
+    _check(not target.is_empty(), "admitted terrain has an ordinary route to a live target")
+    if not failures.is_empty(): return
+    for direction in route:
+        await _press({Vector2i.UP:KEY_W, Vector2i.RIGHT:KEY_D, Vector2i.DOWN:KEY_S, Vector2i.LEFT:KEY_A}[direction])
+        board = JSON.parse_string(view.call("ReadObservationJson"))
+        _check(board.failure == null, "each controlled approach move is admitted")
+        if not failures.is_empty(): return
+    await _press(KEY_ENTER)
+    await _press(KEY_F)
+    for choice in range(7):
+        board = JSON.parse_string(view.call("ReadObservationJson"))
+        if board.target == target and board.failure == null: break
+        await _press(KEY_TAB)
+    _check(board.target == target and board.failure == null, "live adjacent enemy selected")
+    if not failures.is_empty(): return
+    await _press(KEY_ENTER)
+    await _settle()
 
 func _chester_physical(state: Dictionary) -> Dictionary:
     # Narrow regression for the source starting Wooden Stick resource/ordinary
@@ -493,7 +575,7 @@ func _run() -> void:
     if not _open_output(): return
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
-    if disjoint_audio or menu_audio or partial_audio: process_frame.connect(_audio)
+    if disjoint_audio or menu_audio or partial_audio or field_death_mode or selection_audio: process_frame.connect(_audio)
     await process_frame
     view = host.get_node_or_null("BattleSessionView")
     if view == null:
@@ -510,8 +592,16 @@ func _run() -> void:
     if state.failure != null:
         _finish()
         return
+    if selection_audio:
+        await _audio_selection()
+        _finish()
+        return
     if menu_audio:
         await _run_menu_audio()
+        _finish()
+        return
+    if field_death_mode and OS.get_environment("SF2_FIELD_DEATH_COUNTER") == "1":
+        await _field_counter(state)
         _finish()
         return
     if heal_mode:
@@ -599,7 +689,7 @@ func _run() -> void:
 
 func _finish() -> void:
     if menu_audio and process_frame.is_connected(_audio): process_frame.disconnect(_audio)
-    if disjoint_audio or partial_audio:
+    if disjoint_audio or partial_audio or field_death_mode:
         # Input is already released. Observe the remaining playback tail without
         # adding a product wait or submitting further gameplay input.
         var before_tail: String = view.call("ReadObservationJson") if is_instance_valid(view) else ""
@@ -631,8 +721,44 @@ func _finish() -> void:
         _check(overlaps.any(func(sample): return _overlap_finished(sample, pair)), "both instances of a concurrent disjoint pair reach actual Finished: " + str(pair))
         _check(not receipts.any(func(receipt): return receipt.Command == pair[0] and receipt.Operation == "stopped"), "independent reaction effect is not truncated by UI input")
         if process_frame.is_connected(_audio): process_frame.disconnect(_audio)
+    if field_death_mode:
+        var starts := events.filter(func(event): return event.Kind == "field-death-started")
+        var cues := receipts.filter(func(receipt): return receipt.Command == 116 and receipt.Operation == "started")
+        _check(not starts.is_empty(), "a real nonempty death batch is reached")
+        _check(cues.size() == starts.size(), "116 starts once per whole nonempty batch")
+        _check(cues.all(func(receipt): return receipt.TimerB == 189 and receipt.Playing), "116BD has a live playing audio consumer")
+        var fields := projections.filter(func(sample): return sample.scene.fieldDeath != null)
+        _check(not fields.is_empty(), "field consumer projects actual batch state")
+        var phases := {}
+        for sample in fields:
+            var field: Dictionary = sample.scene.fieldDeath
+            _check(not sample.scene.visible and not sample.hasBattleControl, "field death hides close-up and blocks gameplay control")
+            phases[str([sample.scene.phase, int(field.step)])] = true
+            for id in field.actors:
+                var actor: Dictionary = sample.fieldActors.filter(func(a): return a.id == id)[0]
+                _check(actor.hp == 0, "batch member is already dead")
+                if sample.scene.phase == "FieldSettle":
+                    _check(actor.x == null and actor.y == null and not actor.visible, "cleanup removes battlefield placement and sprite")
+                else:
+                    _check(actor.x != null and actor.sprite != null and actor.sprite.visible, "pending corpse retains a real map sprite and cell")
+                    _check(actor.sprite.width == 24 and actor.sprite.height == 24, "admitted map-sprite raster is consumed")
+                    _check(actor.sprite.facing == field.facing, "actual map sprite consumes whole-batch facing")
+                    _check(actor.sprite.resource == 63 if sample.scene.phase == "FieldExit" else actor.sprite.resource != 63, "exit uses source effect63 only after spins")
+        for step in range(12): _check(phases.has(str(["FieldSpin", step])), "spin step observed: " + str(step))
+        for step in range(3): _check(phases.has(str(["FieldExit", step])), "exit step observed: " + str(step))
+        _check(events.filter(func(event): return event.Kind == "field-death-ended").size() == starts.size(), "all batches finish before control resumes")
+        _check(receipts.any(func(receipt): return receipt.Command == 116 and receipt.Operation == "finished"), "116 whole PCM finishes independently")
+        if OS.get_environment("SF2_FIELD_DEATH_COUNTER") == "1":
+            _check(events.any(func(event): return event.Kind == "physical-counter" and str(event.Target.Value).begins_with("ally-")), "actual enemy counter targets an ally")
+            _check(events.any(func(event): return event.Kind == "defeats"), "ally death is accounted")
+            _check(receipts.any(func(receipt): return receipt.Command == 81 and receipt.Operation == "started" and receipt.TimerB == 204 and receipt.RequestedTimerB == 198), "counter plays original81CC PCM in requested C6 context")
+        else:
+            _check(events.any(func(event): return event.Kind == "kills"), "enemy death is accounted")
+        var end_state: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
+        _check(end_state.stage != null or not is_instance_valid(view), "batch returns to usable input or outcome")
     var result := {"passed": failures.is_empty(), "failures": failures, "elapsedMs": Time.get_ticks_msec()-started,
-        "scope": "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
+        "audioSelectionCases": selection_cases,
+        "scope": "controlled-audio-selection" if selection_audio else "controlled-field-death-no-original-interrupt-parity" if field_death_mode else "controlled-heal-scene-no-original-timing-parity" if heal_mode else "controlled-action-menu-audio-no-original-window-parity" if menu_audio else "controlled-herb-source-assets-no-original-runtime-parity" if herb_mode else "controlled-physical-source-assets-no-original-runtime-parity", "herbCases":herb_cases, "healCases":heal_cases, "healTimeoutCases":heal_timeout_cases, "scenes": scenes,
         "events": events, "projections": projections, "audioReceipts": receipts,
         "worldBoundaries": world_boundaries, "audioOverlaps": audio_overlaps, "menuAudioCases": menu_cases,
         "audioDriver": AudioServer.get_driver_name()}

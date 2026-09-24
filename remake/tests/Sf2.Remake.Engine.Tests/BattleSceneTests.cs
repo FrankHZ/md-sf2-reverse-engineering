@@ -12,6 +12,128 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleSceneTests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(9998)]
+    [InlineData(9999)]
+    public void FieldBatchBlocksControlUntilOneOrderedCleanup(int kills)
+    {
+        var session = Start("stone-court", document => document["start"]!["actors"]![0]!["kills"] = kills);
+        var victim = new ActorRef("raider");
+        SelectAttack(session, victim); Accept(session, new Confirm());
+        while (session.Current.BattleScene!.Phase != BattleScenePhase.FieldSpin) Step(session);
+        var actor = session.Current.BattleScene!.Action.Actor;
+        var position = session.Current.Battle.GetActor(victim).Position;
+        int cursor = session.Current.Battle.Cursor;
+        uint seed = session.Current.Battle.MainSeed, thinking = session.Current.Battle.ThinkingSeed;
+        List<SessionObservation> events = [];
+        for (int i = 0; i < 12; i++)
+        {
+            var scene = session.Current.BattleScene!;
+            Assert.Equal(BattleScenePhase.FieldSpin, scene.Phase);
+            Assert.Equal((11 - i) & 3, scene.FieldFacing);
+            Assert.Equal(victim, Assert.Single(scene.DeadActors));
+            Assert.False(session.Current.HasBattleControl);
+            Assert.Equal(position, session.Current.Battle.GetActor(victim).Position);
+            Assert.Equal(kills, session.Current.Battle.GetActor(actor).Kills!.Value);
+            Assert.NotNull(Send(session, new Confirm()).Failure);
+            var command = new CompletePresentation(scene.Token, scene.CompletionKind);
+            events.AddRange(Accept(session, command).Observations);
+            Assert.NotNull(Send(session, command).Failure);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            var scene = session.Current.BattleScene!;
+            Assert.Equal(BattleScenePhase.FieldExit, scene.Phase);
+            Assert.Equal(i + 1, scene.FieldFacing);
+            Assert.Equal(position, session.Current.Battle.GetActor(victim).Position);
+            events.AddRange(Step(session).Observations);
+        }
+        Assert.Equal(BattleScenePhase.FieldSettle, session.Current.BattleScene!.Phase);
+        Assert.False(session.Current.HasBattleControl);
+        Assert.Equal(cursor, session.Current.Battle.Cursor);
+        Assert.Null(session.Current.Battle.GetActor(victim).Position);
+        Assert.Equal(Math.Min(9999, kills + 1), session.Current.Battle.GetActor(actor).Kills!.Value);
+        Assert.Equal(seed, session.Current.Battle.MainSeed);
+        Assert.Equal(thinking, session.Current.Battle.ThinkingSeed);
+        Assert.Single(events, e => e.Kind == "field-death-sound" && e.After == 116);
+        Assert.Single(events, e => e.Kind == "death-cleanup");
+        Assert.DoesNotContain(events, e => e.Kind is "after-turn" or "battle-outcome" or "action-committed");
+        Assert.Contains(Step(session).Observations, e => e.Kind == "action-committed");
+    }
+
+    [Theory]
+    [InlineData(false, "Victory")]
+    [InlineData(true, "Defeat")]
+    public void OutcomeAndDefeatedHookRespectTheFieldBatchBoundary(bool counterDeath, string expected)
+    {
+        var session = Start("stone-court", d =>
+        {
+            if (!counterDeath) return;
+            d["start"]!["mainSeed"] = (55u << 16) | 0x1234u;
+            d["start"]!["actors"]![0]!["hp"] = 1;
+            d["start"]!["actors"]![2]!["hp"] = 500;
+            d["actors"]![2]!["maxHp"] = 500;
+            d["actors"]![2]!["attack"] = 18;
+        });
+        var before = session.Current;
+        var original = before.Battle;
+        var actor = new ActorRef("swordsman"); var target = new ActorRef("raider");
+        var d = original.Definition;
+        var definition = new BattleDefinition(d.Encounter, d.Map, d.Width, d.Height, d.Terrain, d.Deployments,
+            d.Spells.Values, d.Rewards, d.Initialization, new(actor, target), d.HealingItems.Values);
+        var actors = original.Actors.Select(a => !counterDeath && !a.IsAlly && a.Actor != target
+            ? a.With(hp: 0, clearPosition: true) : a);
+        var battle = new EngineBattleState(definition, actors, original.MainSeed, original.ThinkingSeed,
+            original.Round, original.Queue, original.Cursor, original.Gold);
+        var current = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
+            new ActiveBattle(battle, before.Selection), before.Story, before.StopReason);
+        var action = PhysicalBattleAction.Prepare(battle, actor, battle.GetActor(actor).Position!, target);
+        var result = BattleSceneContinuation.Begin(current, action, []);
+        var events = result.Observations.ToList();
+        while (result.Snapshot.BattleScene is { } scene)
+        {
+            Assert.DoesNotContain(events, e => e.Kind is "battle-outcome" or "action-committed");
+            Assert.False(result.Snapshot.HasBattleControl);
+            result = BattleSceneContinuation.Submit(result.Snapshot, scene.RequiresAcknowledgement
+                ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.Null(result.Failure);
+            events.AddRange(result.Observations);
+        }
+        Assert.Equal(expected, Assert.Single(events, e => e.Kind == "battle-outcome").Detail);
+        Assert.DoesNotContain(events, e => e.Kind == "after-turn");
+        Assert.True(events.FindIndex(e => e.Kind == "field-death-ended") < events.FindIndex(e => e.Kind == "battle-outcome"));
+        if (counterDeath) Assert.DoesNotContain(events, e => e.Kind == "enemy-defeated-program-none");
+        else
+        {
+            Assert.Single(events, e => e.Kind == "enemy-defeated-program-none");
+            Assert.True(events.FindIndex(e => e.Kind == "enemy-defeated-program-none") < events.FindIndex(e => e.Kind == "field-death-started"));
+        }
+    }
+
+    [Fact]
+    public void MultipleDeathsAccumulateCreditsAndNeverReprocessRemovedActors()
+    {
+        var battle = Start("stone-court").Current.Battle;
+        var firstAlly = battle.Actors.First(a => a.IsAlly).Actor;
+        var ids = battle.Actors.Where(a => !a.IsAlly).Select(a => a.Actor).Take(2).Append(firstAlly).ToArray();
+        var batch = BattleDeathBatch.Empty;
+        foreach (var id in ids)
+        {
+            var before = battle.GetActor(id);
+            var after = before.With(hp: 0);
+            batch = batch.Append(before, after).Append(after, after);
+            battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? after : a));
+        }
+        Assert.Equal(ids, batch.Actors);
+        var cleaned = batch.Clean(battle, firstAlly);
+        Assert.Equal(2, cleaned.Battle.GetActor(firstAlly).Kills!.Value);
+        Assert.Equal(1, cleaned.Battle.GetActor(firstAlly).Defeats!.Value);
+        Assert.Equal(ids, cleaned.Effects.Where(e => e.Kind == "death-cleanup").Select(e => e.Actor));
+        Assert.All(ids, id => Assert.Null(cleaned.Battle.GetActor(id).Position));
+        Assert.Empty(batch.Clean(cleaned.Battle, firstAlly).Effects);
+    }
+
+    [Theory]
     [InlineData(1, false)]
     [InlineData(2, true)]
     [InlineData(3, false)]
@@ -259,6 +381,7 @@ public sealed class BattleSceneTests
             hpWrites += result.Observations.Count(row => row.Kind == "hp");
             draws += result.Observations.Count(row => row.Kind.StartsWith("rng-reaction-", StringComparison.Ordinal));
         }
+        Assert.DoesNotContain(phases, phase => phase is BattleScenePhase.FieldSpin or BattleScenePhase.FieldExit or BattleScenePhase.FieldSettle);
         Assert.Equal(expected.Split(','), order);
         Assert.Equal(order.Count, hpWrites);
         Assert.Equal(order.Count * 24, draws);
@@ -315,7 +438,12 @@ public sealed class BattleSceneTests
         Step(session); // gold message acknowledged, scene end still blocks
         Assert.Equal(BattleScenePhase.End, session.Current.BattleScene!.Phase);
         Assert.False(session.Current.HasBattleControl);
-        var complete = Step(session);
+        var field = Step(session);
+        Assert.Equal(BattleScenePhase.FieldSpin, session.Current.BattleScene!.Phase);
+        Assert.Equal(0, session.Current.Battle.GetActor(actor).Kills!.Value);
+        Assert.NotNull(session.Current.Battle.GetActor(victim).Position);
+        Assert.Contains(field.Observations, row => row.Kind == "scene-ended");
+        var complete = FinishBattleScenes(session, field);
         Assert.Null(session.Current.BattleScene);
         Assert.Equal(new ActorRef("lookout"), session.Current.Selection!.Actor);
         Assert.Equal(1, session.Current.Battle.GetActor(actor).Kills!.Value);

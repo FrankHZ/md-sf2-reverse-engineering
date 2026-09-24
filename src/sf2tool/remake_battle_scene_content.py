@@ -336,11 +336,16 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
     for offset, color in enumerate((9, 13, 14)):
         healing_palette[color] = md_palette_color(word(healing_base + 2 + offset * 2) & 0x0EEE)
     healing_tiles = decode(healing_base + 8, word(healing_base))
+
     # healingfairy.asm table_LightFairy_offsets: two 4x4 bodies, two 4x2 wings,
     # then the dust tile decrements once per six updates, through five frames.
     def healing_raster(name, tile, columns, rows):
         return raster(
-            "healing/" + name, healing_tiles, healing_palette, columns * 8, rows * 8,
+            "healing/" + name,
+            healing_tiles,
+            healing_palette,
+            columns * 8,
+            rows * 8,
             [tile + x * rows + y for y in range(rows) for x in range(columns)],
         )
 
@@ -442,10 +447,126 @@ def build(rom_path: Path, upstream: Path, output: Path) -> dict:
     return report
 
 
+def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Path) -> dict:
+    """Add only field selectors and effect63 to an existing selected scene document."""
+    from sf2tool.compression import decode_basic_compressed
+    from sf2tool.remake_asset_build import (
+        PLAYER_PALETTE_ADDRESS,
+        PLAYER_POINTER_TABLE_ADDRESS,
+        _combine_player_halves,
+        _render_player_frame,
+    )
+    from sf2tool.remake_exploration_content import OriginalPrograms
+
+    root = repo_path("")
+    output = output.resolve()
+    if not output.is_relative_to(root / "local") or output.exists():
+        raise ValueError("output must be a new worktree-local ignored directory")
+    subprocess.run(["git", "check-ignore", "--quiet", str(output)], cwd=root, check=True)
+    commit = subprocess.check_output(
+        ["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True
+    ).strip()
+    rom = rom_path.read_bytes()
+    if (
+        commit != ACCEPTED_UPSTREAM_COMMIT
+        or len(rom) != ACCEPTED_ROM_SIZE
+        or digest(rom) != ACCEPTED_ROM_SHA256
+    ):
+        raise ValueError("canonical input identity drift")
+    previous = json.loads(
+        (scene_path.parent / "source/battle-scenes/selection.json").read_text(encoding="utf-8")
+    )
+    if previous["upstreamCommit"] != commit or previous["romSha256"] != ACCEPTED_ROM_SHA256:
+        raise ValueError("selected scene provenance drift")
+    scene = json.loads(scene_path.read_text(encoding="utf-8"))
+    if scene["version"] != 1 or scene["encounter"] != "battle-1" or "fieldDeath" in scene:
+        raise ValueError("selected scene field boundary")
+    compiler = OriginalPrograms(
+        {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream
+    )
+    allies = [
+        {"character": r["character"], "sprite": r["sprite"]}
+        for r in compiler.initial_ally_sprites()[:3]
+    ]
+    enemy_table = json.loads(
+        repo_path("tests/fixtures/h2/enemy-map-sprites-static-v1.json").read_text(encoding="utf-8")
+    )["table"]["table_EnemyMapsprites"]
+    enemy_id = compiler.equates["ENEMY_GIZMO"]
+    enemy_sprite = rom[enemy_table + enemy_id]
+    if enemy_sprite != compiler.equates["MAPSPRITE_GIZMO"]:
+        raise ValueError("Gizmo field assignment drift")
+    palette = [
+        md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
+        for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
+    ]
+    effect = compiler.equates["MAPSPRITE_EFFECT1"]
+    frames, spans = [], []
+    for direction in range(3):
+        entry = PLAYER_POINTER_TABLE_ADDRESS + (effect * 3 + direction) * 4
+        address = int.from_bytes(rom[entry : entry + 4], "big")
+        decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576)
+        pixels = bytes(
+            _combine_player_halves(
+                _render_player_frame(decoded.output[:288], palette),
+                _render_player_frame(decoded.output[288:], palette),
+            )
+        )
+        name = f"field-death-{direction}"
+        scene["rasters"][name] = dict(
+            width=48,
+            height=24,
+            format="rgba8",
+            data=base64.b64encode(pixels).decode("ascii"),
+            sha256=digest(pixels),
+        )
+        frames.append(name)
+        spans.append(
+            dict(pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed)
+        )
+    scene["fieldDeath"] = dict(
+        allies=allies, enemies=[dict(code="GIZMO", sprite=enemy_sprite)], exitFrames=frames
+    )
+    output.mkdir(parents=True)
+    write_json(output / "battle-scenes.json", scene)
+    report = dict(
+        status="private-local-candidate",
+        upstreamCommit=commit,
+        romSha256=ACCEPTED_ROM_SHA256,
+        effectSprite=effect,
+        spans=spans,
+        allyAssignments=allies,
+        enemyTableAddress=enemy_table,
+        enemyId=enemy_id,
+        enemySprite=enemy_sprite,
+        paletteAddress=PLAYER_PALETTE_ADDRESS,
+        sceneContentBytes=(output / "battle-scenes.json").stat().st_size,
+        sources=sorted(
+            compiler.sources
+            | {
+                "disasm/data/stats/enemies/enemymapsprites.asm",
+                "disasm/code/gameflow/battle/battleloop/processkilledcombatants.asm",
+                "disasm/code/common/scripting/entity/entityscriptengine_2.asm",
+            }
+        ),
+    )
+    write_json(output / "field-death-provenance.json", report)
+    return report
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--field-death-base",
+        type=Path,
+        help="Existing selected scene document; add field selectors/effect63 only",
+    )
     args = parser.parse_args()
-    print(json.dumps(build(args.rom, args.upstream, args.output)))
+    result = (
+        add_field_death(args.rom, args.upstream, args.output, args.field_death_base)
+        if args.field_death_base
+        else build(args.rom, args.upstream, args.output)
+    )
+    print(json.dumps(result))

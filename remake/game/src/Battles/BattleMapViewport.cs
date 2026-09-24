@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -9,6 +10,11 @@ internal sealed partial class BattleMapViewport : Control
     private const int CellSize = 40;
     private readonly Control _board = new() { Name = "Board", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Dictionary<ActorRef, Label> _markers = [];
+    private readonly Dictionary<ActorRef, Sprite2D> _sprites = [];
+    private readonly Dictionary<ActorRef, int> _spriteIds = [];
+    private readonly Dictionary<(int Sprite, int Direction), ImageTexture> _textures = [];
+    private ExplorationVisuals? _visuals;
+    private BattleSceneDefinition? _sceneContent;
     private readonly List<ColorRect> _preview = [];
     private IReadOnlyList<MapPosition> _focus = [];
     private Vector2 _mapSize;
@@ -21,8 +27,10 @@ internal sealed partial class BattleMapViewport : Control
         Resized += Frame;
     }
 
-    internal void Build(BattleDefinition definition)
+    internal void Build(BattleDefinition definition, ScenarioDefinition content)
     {
+        _visuals = content.Exploration?.Visuals;
+        _sceneContent = content.BattleScenes;
         _mapSize = new(definition.Width * CellSize, definition.Height * CellSize);
         _board.Size = _mapSize;
         for (int y = 0; y < definition.Height; y++)
@@ -40,12 +48,24 @@ internal sealed partial class BattleMapViewport : Control
             marker.AddThemeFontSizeOverride("font_size", 10);
             _board.AddChild(marker);
             _markers.Add(actor.Actor, marker);
+            if (_sceneContent?.FieldDeath is { } field && _visuals is not null)
+            {
+                int sprite = actor.Faction == BattleFaction.Ally
+                    ? field.AllySprites[actor.Initialization?.AllyPartyMember ?? actor.ProcessingOrder]
+                    : field.EnemySprites[actor.Actor];
+                if (!_visuals.Sprites.ContainsKey(sprite)) throw new InvalidOperationException("field-actor-resource-unavailable");
+                _spriteIds.Add(actor.Actor, sprite);
+                var image = new Sprite2D { Name = "MapSprite_" + actor.Actor.Value, TextureFilter = TextureFilterEnum.Nearest,
+                    Scale = Vector2.One * (CellSize / 24f) };
+                _board.AddChild(image); _sprites.Add(actor.Actor, image);
+            }
         }
     }
 
     internal void Present(BattlePresentation projection)
     {
         foreach (var marker in _markers.Values) marker.Visible = false;
+        foreach (var sprite in _sprites.Values) sprite.Hide();
         foreach (var actor in projection.Markers)
         {
             var node = _markers[actor.Actor];
@@ -53,6 +73,17 @@ internal sealed partial class BattleMapViewport : Control
             node.Position = new(actor.Position.X * CellSize + 2, actor.Position.Y * CellSize + 4);
             node.Text = actor.Text;
             node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
+            if (_sprites.TryGetValue(actor.Actor, out var sprite))
+            {
+                node.Hide(); sprite.Show();
+                sprite.Position = new((actor.Position.X + 0.5f) * CellSize, (actor.Position.Y + 0.5f) * CellSize);
+                int id = actor.DeathEffect ? 63 : _spriteIds[actor.Actor];
+                int direction = actor.Facing switch { 1 => 0, 3 => 2, _ => 1 };
+                sprite.Texture = Texture(id, direction);
+                sprite.FlipH = actor.Facing == 0;
+                sprite.Modulate = actor.Selected ? Colors.Gold : Colors.White;
+                sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", actor.Facing);
+            }
         }
         foreach (var node in _preview) { _board.RemoveChild(node); node.QueueFree(); }
         _preview.Clear();
@@ -66,6 +97,25 @@ internal sealed partial class BattleMapViewport : Control
         _focus = projection.Focus;
         Frame();
     }
+
+    private ImageTexture Texture(int sprite, int direction)
+    {
+        var key = (sprite, direction);
+        if (_textures.TryGetValue(key, out var texture)) return texture;
+        var raster = sprite == 63 ? _sceneContent!.Rasters[_sceneContent.FieldDeath!.ExitFrames[direction]]
+            : _visuals!.Sprites[sprite].Directions[direction];
+        using var sheet = raster.Format == "rgba8"
+            ? Image.CreateFromData(raster.Width, raster.Height, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
+        if (raster.Format == "png" && sheet.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok)
+            throw new InvalidOperationException("field-sprite-image");
+        // ProcessKilledCombatants freezes ANIMCOUNTER at -1: first 24x24 half.
+        using var frame = sheet.GetRegion(new Rect2I(0, 0, 24, 24));
+        _textures[key] = texture = ImageTexture.CreateFromImage(frame);
+        return texture;
+    }
+
+    // The view is reparented during exploration/battle handoff. Cached resources
+    // must outlive ExitTree; ref-counted textures are released with this owner.
 
     private void Frame()
     {
@@ -107,7 +157,10 @@ internal sealed partial class BattleMapViewport : Control
             primaryOrder = a.Deployment.Initialization?.PrimaryOrder, secondaryOrder = a.Deployment.Initialization?.SecondaryOrder,
             commandset = a.Deployment.Initialization?.AiCommandset,
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
-            nodeX = node.Position.X, nodeY = node.Position.Y, visible = node.Visible, text = node.Text,
+            nodeX = node.Position.X, nodeY = node.Position.Y, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
+            sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
+                facing = (int)sprite.GetMeta("facing", -1), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
+                width = sprite.Texture?.GetWidth(), height = sprite.Texture?.GetHeight() } : null,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
     });
     internal static object Rectangle(Rect2 rect) => new

@@ -52,13 +52,6 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         return (current.With(mainSeed: seed, actors: current.Actors.Select(row => row.Actor == actor.Actor ? actor : row)), effects.AsReadOnly());
     }
 
-    internal EngineBattleState Complete(EngineBattleState current)
-    {
-        foreach (var effect in CompletionEffects)
-            if (effect.Kind is "kills" or "defeats")
-                current = current.With(actors: current.Actors.Select(actor => actor.Actor != effect.Actor ? actor :
-                    effect.Kind == "kills" ? actor.With(kills: checked((ushort)effect.After!.Value)) :
-                    actor.With(defeats: checked((ushort)effect.After!.Value))));
-        return current;
-    }
+    internal ActorRef FirstAlly => Prepared.GetActor(Reactions[0].Actor).IsAlly
+        ? Reactions[0].Actor : Reactions[0].Target;
 }
