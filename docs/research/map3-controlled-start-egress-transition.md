@@ -54,9 +54,9 @@ the historical later boundary can therefore occur during subsequent neutral fiel
 waiting; the new first-return seed equals the accepted remake visible-return seed.
 This does not establish equality of entity or CPU phase.
 
-Comparing original first-return physical slots0..19 with accepted `warpRecords[82]`
-at tick65, the source-equivalent fields `x`, `y`, `targetX`, `targetY`, facing low
-two bits, sprite, speedX, flagsA and flagsB differ only as follows:
+In the historical comparison of original first-return physical slots0..19 with
+PR564 `warpRecords[82]` at tick65, the source-equivalent fields `x`, `y`, `targetX`,
+`targetY`, facing low two bits, sprite, speedX, flagsA and flagsB differ only as follows:
 
 | Physical slot | Field | Original first callback | Remake visible return |
 | --- | --- | --- | --- |
@@ -150,7 +150,7 @@ adding two entity services or converting original frames into engine ticks.
 
 ### Idle, controlled-character and motion ordering audit
 
-**Confirmed (pinned source and current engine structure):**
+**Confirmed (pinned source and the PR568 engine structure):**
 
 - `entityfunctions_2.asm:MakeEntityIdle` (`0x44BEC`) only writes action pointer
   `eas_Idle` (`0x451FC`). It changes no flags, velocity, travel or timer.
@@ -183,6 +183,56 @@ mandatory warp service. **Unknown:** the complete interruption schedule, walking
 slot divergence point, and equivalence of raw action pointers to engine continuations.
 Production correction requires its own scope and behavior acceptance; no seed,
 coordinate, timer, flags or original input was repaired in this observation slice.
+
+### Ordinary source-population control handoff
+
+**Confirmed (pinned source):** `disasm/code/gameflow/exploration/explorationfunctions_2.asm:WaitForEvent`
+calls `SetControlledEntityActScript` only when no map event remains, before the field
+input poll at `0x2593C`. In `disasm/code/common/scripting/entity/entityfunctions_2.asm`,
+that setter installs `eas_ControlledCharacter` for ordinary on-foot control. Its
+prelude in `disasm/data/scripting/entity/eas_main.asm` sets speed32/32, acceleration0/0,
+entity/map collision and both acceleration/deceleration axes. The corresponding
+`esc12`/`esc13` and `esc18`/`esc19`/`esc1A` setters in `entityscriptengine_2.asm`
+establish flagsA `(prior & 0x10) | 0xEF` and clear the script timer. The pointer
+handoff itself does not integrate or clear physical motion.
+
+The remake applies this rule to source populations at successful ordinary field
+return: player Actions, Follower and WaitingForMotion are superseded, while Motion
+is retained. The next existing player service integrates movement, establishes the
+controlled settings, then handles input before later physical slots. Neutral field
+services maintain the same idempotent settings. Supported field-owned continuations
+do not independently author them; program/dialogue/init/load/fade ownership excludes
+this setup. Authored populations retain their configured behavior. This is a logical
+control invariant, not a claim that the original reruns the prelude every VInt.
+
+Move preview uses the same controlled collision policy without publishing settings
+or advancing time. A blocked move commits only facing; a pending move or rejected
+warp binding preserves Motion until the actual service. The behavior tests and
+[verification receipt](../../remake/docs/development-and-verification.md#ordinary-source-population-control-handoff)
+cover custom player slots, nondefault settings, retained travel, ordered NPC/RNG work,
+player-only retirement, other owners and preview admission.
+
+**Confirmed (one actual normal first-warp observation):** compared with PR568,
+the initial sample is unchanged. At first-move completion, visible return and next
+explicit Wait, the only entity-field change is player flagsA E0 to EF. Ordered
+gameplay events, ticks, RNG and other selected state match; raw sprite-ready delivery
+and receipt grouping differ and remain retained. Visible return is still tick65/F01B.
+The original first-return comparison now has24 differing slot/field pairs: the
+historical table above loses only player flagsA. NPC Y/velocity/timer differences,
+player/slot3 animation, idle timers and the partial initial binding remain unresolved.
+No new original observation or entity service is added.
+
+**Confirmed separate gaps, excluded from this correction:** direct `MakeEntityIdle`
+and `SetWalkingActscript` preserve the incoming timer, while `esc34_jump` clears it
+before entering idle and the `eas_Walking` prelude begins with wait30. Map3 Zone6's
+`cs_5145C` ends with init then `MakeEntityWalk`, so idle timer carryover can affect
+that leading wait. `mapscriptengine_1.asm` callers `csc2D`/`csc14`/`csc15` initialize
+the timer from the resolved physical slot; `csc2D` also clears flagsA bits5/6. The
+current common StartEntityMotion path does not distinguish these caller semantics.
+Simply adding a literal idle loop would keep the current engine entity busy and
+block field input. These need a separate coherent idle/caller change. **Unknown:**
+the active-NPC divergence point and full CPU/service phase agreement remain as above;
+this control correction does not close JOIN, HEAL, H4 or the whole route.
 
 ## Stable records and area relation
 

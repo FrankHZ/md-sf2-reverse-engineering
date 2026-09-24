@@ -9,6 +9,216 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    private static readonly EntityRef ControlledPlayer = new("entity-17");
+
+    private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) ControlWorld(
+        bool source = true, int playerSlot = 2, StoryInstruction[]? script = null,
+        EntityMotionState? motion = null, ExplorationEntity[]? npcs = null)
+    {
+        var authored = Start("harbor-arrival");
+        var layout = new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]);
+        var map = new ExplorationMapDefinition(new("control"), layout,
+            new OriginalMapTraversal([new(0, 0, 12, 12)]), [], [],
+            population: source ? new(30, 128, 0, []) : null);
+        var player = new ExplorationEntity(ControlledPlayer, motion ??
+            EntityMotionState.At(new(4, 4), 1, 8) with
+            { XAcceleration = 2, YAcceleration = 2, FlagsA = 0x10, FlagsB = 0x40, AnimationCounter = 13, WaitTimer = 7 },
+            true, Slot: playerSlot);
+        var oldParty = authored.Current.Exploration!.Party;
+        var world = new ExplorationState(map, layout, player.Entity, new[] { player }.Concat(npcs ?? []),
+            new(oldParty.Encounter, oldParty.Actors, 0x12341234, oldParty.ThinkingSeed, oldParty.Gold, oldParty.NewBattle));
+        var definition = new ScenarioDefinition("control-handoff", authored.Definition.Encounters.Values,
+            exploration: new([map], [new StoryProgram("control", script ?? [new EndProgram()])]));
+        return (definition, new(Guid.NewGuid(), 1, 1, new ActiveExploration(world),
+            new StoryState(cursor: script is null ? null : new("control", 0)),
+            script is null ? SessionStopReason.PlayerInput : SessionStopReason.SimulationWait));
+    }
+
+    [Theory]
+    [InlineData(true, 0)]
+    [InlineData(true, 7)]
+    [InlineData(false, 2)]
+    public void ControlledSetupAfterScriptReturnPreservesAuthoredConfiguration(bool source, int playerSlot)
+    {
+        var (definition, before) = ControlWorld(source, playerSlot, script:
+            [new StartEntityMotion(ControlledPlayer, new([new SetEntitySpeed(8, 8),
+                new SetEntityAcceleration(2, 2), new ChangeEntityFlags(false, 0xFF, 0x10), new StopEntityActions()]), true),
+             new EndProgram()]);
+        var waiting = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.IsType<EntityWait>(waiting.Story.Wait);
+        var ready = Step(definition, waiting, new AdvanceSimulation(waiting.Story.Wait!.Token)).Snapshot;
+        Assert.True(ready.CanWaitAtInput);
+        var entryMotion = ready.Exploration!.PlayerEntity.Motion;
+        Assert.Equal(8, entryMotion.XSpeed);
+        Assert.Equal(2, entryMotion.XAcceleration);
+        var queued = Step(definition, ready, new Move(ExplorationDirection.East)).Snapshot;
+        Assert.Equal(entryMotion, queued.Exploration!.PlayerEntity.Motion);
+        Assert.Equal(ready.Story.SimulationTick, queued.Story.SimulationTick);
+        var moved = Step(definition, queued, new AdvanceSimulation(queued.Story.Wait!.Token)).Snapshot;
+        var motion = moved.Exploration!.PlayerEntity.Motion;
+        Assert.Equal(source ? 32 : 8, motion.XVelocity);
+        Assert.Equal(source ? 0 : 2, motion.XAcceleration);
+        Assert.Equal(source ? 0xFF : 0x10, motion.FlagsA);
+        Assert.Equal(5 * 384, motion.XDestination);
+        Assert.Equal(4 * 384, motion.X);
+        Assert.Equal(ready.Story.SimulationTick + 1, moved.Story.SimulationTick);
+        Assert.Equal(ready.Exploration.Party.MainSeed, moved.Exploration.Party.MainSeed);
+    }
+
+    [Fact]
+    public void ControlledSetupOnNeutralServiceIsIdempotentAndKeepsOneOrderedPass()
+    {
+        var walker = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(8, 8), 0, 32), true,
+            new([new RandomWalkEntity(new(8, 8), 1), new StopEntityActions()]), Slot: 0);
+        var timer = new ExplorationEntity(new("entity-129"), EntityMotionState.At(new(9, 9), 0, 32), true,
+            new([new WaitEntityTicks(10)]), Slot: 4);
+        var (definition, before) = ControlWorld(npcs: [walker, timer]);
+        var first = Step(definition, before, new WaitAtInput()).Snapshot;
+        Assert.Equal(1, first.Story.SimulationTick);
+        Assert.Equal(0xECAB1234u, first.Exploration!.Party.MainSeed);
+        Assert.Equal(9 * 384, first.Exploration.Entities[walker.Entity].Motion.YDestination);
+        Assert.Equal(1, first.Exploration.Entities[timer.Entity].Motion.WaitTimer);
+        var motion = first.Exploration.PlayerEntity.Motion;
+        Assert.Equal((32, 32, 0, 0, 0xFF, 0),
+            ((int)motion.XSpeed, (int)motion.YSpeed, (int)motion.XAcceleration, (int)motion.YAcceleration, (int)motion.FlagsA, (int)motion.WaitTimer));
+        Assert.Equal(before.Exploration!.PlayerEntity.Motion.AnimationCounter, motion.AnimationCounter);
+        Assert.Equal(before.Exploration.PlayerEntity.Motion.FlagsB, motion.FlagsB);
+        var second = Step(definition, first, new WaitAtInput()).Snapshot;
+        Assert.Equal(motion, second.Exploration!.PlayerEntity.Motion);
+        Assert.Equal(first.Exploration.Party.MainSeed, second.Exploration.Party.MainSeed);
+        Assert.Equal(2, second.Exploration.Entities[timer.Entity].Motion.WaitTimer);
+    }
+
+    [Fact]
+    public void ControlledSetupFollowsMovementAndRetainsReservation()
+    {
+        var moving = EntityMotionState.At(new(4, 4), 0, 8) with
+        { XDestination = 5 * 384, XTravel = 384, XVelocity = 8, XAcceleration = 2, FlagsA = 1, WaitTimer = 7 };
+        var (definition, before) = ControlWorld(motion: moving);
+        var result = Step(definition, before, new AdvanceSimulation()).Snapshot;
+        var motion = result.Exploration!.PlayerEntity.Motion;
+        Assert.Equal(4 * 384 + 10, motion.X); // Old factor2 integrates before control's factor0.
+        Assert.Equal(10, motion.XVelocity);
+        Assert.Equal(5 * 384, motion.XDestination);
+        Assert.Equal(384, motion.XTravel);
+        Assert.Equal(0, motion.XAcceleration);
+        Assert.Equal(32, motion.XSpeed);
+        Assert.Equal(1, result.Story.SimulationTick);
+        Assert.False(result.CanWaitAtInput);
+        Assert.Equal(before.Exploration!.Party.MainSeed, result.Exploration.Party.MainSeed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ControlledHandoffRetiresOnlyPlayerContinuationAndPreservesMotion(bool follower)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(4, 4), 0, 32), true,
+            new([new WaitEntityTicks(200)]), Slot: 0);
+        StoryInstruction install = follower ? new FollowEntity(ControlledPlayer, npc.Entity, 0, 0) :
+            new StartEntityMotion(ControlledPlayer, new([new WaitEntityTicks(200)]), false);
+        var (definition, before) = ControlWorld(script: [install, new WaitProgramTicks(1), new EndProgram()], npcs: [npc]);
+        var waiting = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.IsType<TickWait>(waiting.Story.Wait);
+        var installed = waiting.Exploration!.PlayerEntity;
+        Assert.True(follower ? installed.Follower is not null : installed.Actions is not null);
+        var ready = Step(definition, waiting, new AdvanceSimulation(waiting.Story.Wait!.Token)).Snapshot;
+        var player = ready.Exploration!.PlayerEntity;
+        Assert.Null(player.Actions);
+        Assert.Null(player.Follower);
+        Assert.False(player.WaitingForMotion);
+        Assert.Equal(installed.Motion with { WaitTimer = follower ? installed.Motion.WaitTimer : (byte)(installed.Motion.WaitTimer + 1) }, player.Motion);
+        Assert.NotNull(ready.Exploration.Entities[npc.Entity].Actions);
+        Assert.Equal(1, ready.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.True(ready.CanWaitAtInput);
+    }
+
+    [Theory]
+    [InlineData("script")]
+    [InlineData("dialogue")]
+    [InlineData("init")]
+    [InlineData("fade")]
+    [InlineData("load")]
+    public void ControlledSetupDoesNotRunDuringOtherOwners(string owner)
+    {
+        var (definition, before) = ControlWorld();
+        ProgramWait wait = owner switch
+        {
+            "dialogue" => new DialogueWait(new(10), 1, TextDisplayMode.Single, null, InputFirstEntityService: true),
+            "fade" => new FullFadeWait(new(10), PresentationCueKind.FadeOut, FullFadePurpose.WarpOut, 3, 3),
+            "load" => new WarpLoadWait(new(10)),
+            _ => new TickWait(new(10), 3),
+        };
+        var story = new StoryState(cursor: new("control", 0), wait: wait,
+            continuation: owner == "init" ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
+            textWindow: owner == "dialogue" ? new OpenTextWindow(1, TextDisplayMode.Single, null, 0) : null,
+            portraitWindow: owner == "dialogue" ? new ClosedPortraitWindow() : null,
+            display: new(3, new(0xEEE, 0x888), new(0xEEE, 0x888), FullFadeVisibility.BaseRestored),
+            warp: owner is "fade" or "load" ? new(new("control"), new(4, 4), 0, MapLoadMode.Preserve) : null);
+        before = new(before.SessionId, before.Revision, before.ObservationSequence, before.Active, story,
+            owner == "dialogue" ? SessionStopReason.PresentationWait : SessionStopReason.SimulationWait);
+        SessionCommand command = owner == "dialogue" ? new WaitForText(wait.Token) : new AdvanceSimulation(wait.Token);
+        var result = Step(definition, before, command).Snapshot;
+        Assert.Equal(before.Exploration!.PlayerEntity.Motion, result.Exploration!.PlayerEntity.Motion);
+        Assert.NotNull(result.Story.Wait);
+    }
+
+    [Fact]
+    public void ControlledHandoffWaitsForScriptCompletionAndDoesNotRetireOnFailure()
+    {
+        var (definition, before) = ControlWorld(script:
+            [new StartEntityMotion(ControlledPlayer, new([new WaitEntityTicks(2), new StopEntityActions()]), true), new EndProgram()]);
+        var waiting = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.IsType<EntityWait>(waiting.Story.Wait);
+        Assert.NotNull(waiting.Exploration!.PlayerEntity.Actions);
+        var (badDefinition, bad) = ControlWorld(script:
+            [new StartEntityMotion(ControlledPlayer, new([new WaitEntityTicks(2)]), false), new UnsupportedInstruction("unbound", "test")]);
+        var failed = ProgramRunner.Run(badDefinition, bad, []);
+        Assert.NotNull(failed.Failure);
+        Assert.NotNull(failed.Snapshot.Exploration!.PlayerEntity.Actions);
+        Assert.Equal(bad.Exploration!.PlayerEntity.Motion, failed.Snapshot.Exploration.PlayerEntity.Motion);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public void ControlledPreviewUsesCollisionPolicyWithoutCommittingSetup(bool obstructed, bool missingBinding)
+    {
+        var blocker = new ExplorationEntity(new("blocker"), EntityMotionState.At(new(2, 1), 0, 32) with { FlagsA = 0x80 }, true, Slot: 1);
+        var (definition, before) = WarpWorld(obstructed ? [blocker] : [], true, 123);
+        var world = before.Exploration!;
+        var motion = world.PlayerEntity.Motion with { FlagsA = 0, XSpeed = 8, YSpeed = 8, XAcceleration = 2, Facing = 1, WaitTimer = 9 };
+        before = new(before.SessionId, before.Revision, before.ObservationSequence,
+            new ActiveExploration(world.WithEntity(world.PlayerEntity with { Motion = motion })),
+            missingBinding || obstructed ? new StoryState() : before.Story, before.StopReason);
+        var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Equal(0, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(123u, result.Snapshot.Exploration!.Party.MainSeed);
+        if (obstructed)
+        {
+            Assert.Null(result.Failure); // The blocked marker must not validate its absent binding.
+            Assert.Null(result.Snapshot.Story.Wait);
+            Assert.Equal("movement-blocked", Assert.Single(result.Observations).Kind);
+            Assert.Equal(motion with { Facing = 0 }, result.Snapshot.Exploration.PlayerEntity.Motion);
+        }
+        else
+        {
+            Assert.Equal(missingBinding, result.Failure is not null);
+            Assert.Equal(motion, result.Snapshot.Exploration.PlayerEntity.Motion);
+            if (!missingBinding)
+            {
+                Assert.IsType<EntityWait>(result.Snapshot.Story.Wait);
+                var serviced = Step(definition, result.Snapshot, new AdvanceSimulation(result.Snapshot.Story.Wait!.Token)).Snapshot;
+                Assert.IsType<FullFadeWait>(serviced.Story.Wait);
+                Assert.Equal(32, serviced.Exploration!.PlayerEntity.Motion.XVelocity);
+                Assert.Equal(0xEF, serviced.Exploration.PlayerEntity.Motion.FlagsA);
+                Assert.Equal(1, serviced.Story.SimulationTick);
+            }
+        }
+    }
+
+
     private static SessionResult Step(ScenarioDefinition definition, SessionSnapshot snapshot, SessionCommand command)
     {
         var result = ExplorationDispatcher.Submit(definition, snapshot, command);

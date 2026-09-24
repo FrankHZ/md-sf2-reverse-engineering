@@ -145,7 +145,10 @@ internal static class ExplorationDispatcher
                         bool entityUpdates = current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
                                 definition.Exploration!.Programs[location.Program].EntitiesRunning;
-                        EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world ? EntityActionRunner.Tick(world, (current.Story.Wait as EntityWait)?.PendingMove, current.Story.Flags) : null;
+                        var pendingMove = (current.Story.Wait as EntityWait)?.PendingMove;
+                        EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
+                            ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
+                                fieldControl: existingFieldInput || pendingMove is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = current.Story;
                         if (tickResult?.Failure is { } failure)
@@ -218,14 +221,19 @@ internal static class ExplorationDispatcher
         var world = current.Exploration!;
         var player = world.PlayerEntity;
         if (player.Busy) return Reject(current, "entity-busy", "player");
-        var preview = MapEventDispatcher.Move(world, move.Direction, current.Story.Flags);
+        // Admission sees the same control policy as the later player service, without
+        // publishing setup or advancing motion/entities before that service.
+        var controlled = world.Population is null ? world : world.WithEntity(player with
+            { Motion = EntityActionRunner.ControlledMotion(player.Motion) });
+        var preview = MapEventDispatcher.Move(controlled, move.Direction, current.Story.Flags);
         if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp);
         }
         else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
-                new ActiveExploration(preview.World), current.Story, observations, "movement-blocked"),
+                new ActiveExploration(world.WithEntity(player with { Motion = player.Motion with
+                    { Facing = preview.World.PlayerEntity.Motion.Facing } })), current.Story, observations, "movement-blocked"),
                 SessionStopReason.PlayerInput), observations);
         var wait = new EntityWait(new(current.ObservationSequence + 1), world.Player, PendingMove: move.Direction);
         return ProgramRunner.Result(ProgramRunner.Commit(current, current.Active, current.Story.Copy(null, wait),
