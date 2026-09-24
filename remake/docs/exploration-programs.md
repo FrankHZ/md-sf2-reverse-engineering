@@ -47,15 +47,67 @@ Known unimplemented operations retain a source-attributed stop instruction.
 
 A blocking instruction keeps its PC until its own wait completes. A stale token/revision cannot
 release it. Continued text remains visible after acknowledgement until close or replacement;
-single text closes on acknowledgement. Original dialogue speaker flag bytes remain in the typed
-request/window; they are not silently discarded or treated as proof of original portrait rendering. Real ticks advance background actions even while text is
-open, and increment `SimulationTick` only when executed. A tick batch stops at a newly reached
+legacy single text closes on acknowledgement. Source-produced text uses explicit window operations
+described below. Speaker flag bytes remain available for speech/display, separately from the
+persistent portrait gate. Real ticks advance background actions at legacy open-text consumers,
+and increment `SimulationTick` only when executed. The admitted plain input-first consumer instead
+requires explicit player Wait; delivery/reveal supplies none. A tick batch stops at a newly reached
 wait boundary. The host batches elapsed 60 Hz ticks and subtracts only ticks the engine executed.
 Unused time remains available for automatic continuation on the next frame; reaching paused input
 clears the accumulator. Lower frame rates therefore retain elapsed ticks without draining a newly
 reached dialogue or choosing an answer automatically. Existing field input does not truncate a
 background action batch; completing a foreground wait still yields at the newly reached input or
 program boundary before further ticks are submitted.
+
+### Portrait lifecycle and plain current-input wait
+
+`StoryState.PortraitWindow` is persistent Unknown, Closed or Open (portrait identity and packed
+flags). `open-portrait` takes an entity and flags: an existing Open or Unknown gate is retained;
+a null entity represents a skipped lookup and also preserves the gate. From Closed, the resolved
+entity's current sprite metadata supplies the portrait, or a known absent portrait keeps Closed.
+Missing metadata becomes Unknown. Only executed `close-portrait` establishes Closed. Text-only
+close, raw text and JOIN preserve it; calls, returns and branches carry it. The Godot portrait
+projection consumes this state independently of the text window and retains an opened identity
+even if later text has another speaker. Close is an atomic engine lifecycle operation; it does
+not claim original window-movement timing or its VInt work.
+
+The real producer emits `explicitWindows: true` on `show-text`; its acknowledgement never closes
+either window implicitly. `nextSingleText` lowers to portrait lookup, DisplayText acknowledgement,
+portrait close, text close and mandatory Sleep(10). `nextText` has no close tail. Packed FFFF skips
+the portrait lookup without closing an existing portrait. Raw `txt` only displays text; raw `clsTxt`
+only closes text. `closeTxt` closes portrait then text. JOIN's existing SoundWait → PreviousMusic →
+`wait-text-input` → text close → Sleep(10) retains the incoming portrait gate. These rules are
+implemented by the existing compiler/typed reader, with no selected-script eligibility exception.
+Fresh output is required to gain these distinctions; old generated content cannot reconstruct them.
+
+**Confirmed source:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`mapscriptengine_2.asm:csc00_displaySingleTextbox`, `csc02_displayTextbox`,
+`csc08_joinForce`, `csc09_hideDialogueAndPortraitWindows`; `mapscriptengine_1.asm:csc1D_showPortrait`;
+`trap5_textbox.asm`, `portraitwindow.asm:ClosePortraitWindow` and
+`mapsetupsfunctions_1.asm:DisplayCurrentPortrait`. A source-wide cutscene text-skip mode is not
+implemented; unsupported native operations remain stops. The FFFF lookup skip is distinct from it.
+
+Initial/restored portrait provenance is Unknown. An initial source open cannot resolve a possibly
+existing window, so it stays Unknown until a real close executes; no asset absence proves Closed.
+Legacy `show-text` without explicit window operations retains its old display hint inside Unknown
+state and its old single-text auto-close policy. That hint never admits the plain consumer. Thus
+legacy content remains readable but cannot claim the new source lifecycle or natural initial portrait.
+
+`WaitForTextInput` records the input-first consumer and its current program's established
+`EntitiesRunning` setting. `WaitForText(token)` is admitted only in exploration presentation wait,
+with an open text window, proven Closed portrait, field continuation, no pending battle entry,
+no busy player and no pending entity sprite readiness. Calls may remain on the stack. One Wait
+executes the existing entity service once when enabled, retaining physical-slot order and shared
+RNG rules; a disabled service produces no entity draw. `Acknowledge` returns immediately with no
+accepting-poll tick, then executes subsequent explicit operations. Generic `AdvanceSimulation`
+is rejected at this admitted consumer. The [host contract and reproduction](./development-and-verification.md#plain-text-input-gameplay-wait)
+cover reveal, delivery and input rearm.
+
+**Unknown:** the selected natural post-JOIN helper entry, logical audio end, complete enabled VInt
+table and portrait counter chronology remain unobserved. The current program's entity setting is
+the admitted engine service state, not a sampled original service table. W1/W2 draw-before-input
+polls, active/unknown portrait consumers and preceding audio delivery retain their separate legacy
+boundaries. This implementation does not establish whole-host Option A, 9A or H4 conformance.
 
 Movement uses the existing `OriginalMapTraversal` area, collision and stair rules. The extracted
 entity core uses 384 fixed units per tile, source signed-word arithmetic, acceleration/deceleration,

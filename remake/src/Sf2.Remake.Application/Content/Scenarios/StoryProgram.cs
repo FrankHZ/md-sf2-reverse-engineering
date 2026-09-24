@@ -21,7 +21,9 @@ public sealed record RetiredMap3EntityScratch : StoryInstruction;
 public sealed record WriteFlag(int Flag, bool Value) : StoryInstruction;
 public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
-    bool WaitForAcknowledgement = true) : StoryInstruction;
+    bool WaitForAcknowledgement = true, bool ExplicitWindows = false) : StoryInstruction;
+public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInstruction;
+public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;

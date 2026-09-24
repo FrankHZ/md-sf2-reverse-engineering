@@ -112,18 +112,37 @@ internal static class ProgramRunner
                     case LoadSceneEntities load:
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
+                    case OpenPortrait portrait:
+                        // A skipped lookup or an existing window preserves the gate. Missing
+                        // metadata cannot prove absence; an unknown incoming window stays unknown.
+                        if (portrait.Entity is null || story.PortraitWindow is not ClosedPortraitWindow) break;
+                        var portraitEntity = Entity(current, portrait.Entity.Value);
+                        if (portraitEntity.Sprite is not { } portraitSprite || definition.Exploration!.Visuals is not { } visuals ||
+                            !visuals.Sprites.TryGetValue(portraitSprite, out var portraitVisual))
+                            story = story.Copy(story.Cursor, portraitWindow: new UnknownPortraitWindow());
+                        else if (portraitVisual.Portrait is { } portraitId)
+                            story = story.Copy(story.Cursor, portraitWindow: new OpenPortraitWindow(portraitId, portrait.Flags));
+                        break;
+                    case ClosePortrait:
+                        story = story.Copy(story.Cursor, portraitWindow: new ClosedPortraitWindow()); break;
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
                         story = current.Story.Copy(text.WaitForAcknowledgement ? cursor : Next(cursor),
-                            text.WaitForAcknowledgement ? new DialogueWait(token, current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags) : null,
+                            text.WaitForAcknowledgement ? new DialogueWait(token, current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags,
+                                CloseOnAcknowledgement: !text.ExplicitWindows) : null,
                             textCursor: checked(current.Story.TextCursor + 1),
+                            portraitWindow: text.ExplicitWindows ? current.Story.PortraitWindow : new UnknownPortraitWindow(
+                                text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags),
                             textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags)); break;
                     case WaitForTextInput:
                         if (current.Story.TextWindow is not OpenTextWindow open)
                             throw new BattleRuleException("text-input-without-window", "program.text");
-                        story = current.Story.Copy(cursor, new DialogueWait(token, open.Text, open.Mode, open.Speaker, open.SpeakerFlags)); break;
-                    case CloseText: story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow()); break;
+                        story = current.Story.Copy(cursor, new DialogueWait(token, open.Text, open.Mode, open.Speaker, open.SpeakerFlags,
+                            CloseOnAcknowledgement: false, InputFirstEntityService: program.EntitiesRunning)); break;
+                    case CloseText:
+                        story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow(),
+                            portraitWindow: story.PortraitWindow is UnknownPortraitWindow ? new UnknownPortraitWindow() : story.PortraitWindow); break;
                     case ChooseYesNo choice:
                         story = current.Story.Copy(cursor, new ChoiceWait(token, choice.ResultFlag)); break;
                     case WaitProgramTicks ticks when ticks.Ticks > 0:

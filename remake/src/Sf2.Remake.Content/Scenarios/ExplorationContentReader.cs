@@ -340,6 +340,7 @@ internal static class ExplorationContentReader
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
                 ObjectOptional(row, opcode, "speakerFlags", ["op", "mode", "speaker",
+                    .. row.TryGetProperty("explicitWindows", out _) ? new[] { "explicitWindows" } : System.Array.Empty<string>(),
                     .. row.TryGetProperty("waitForAcknowledgement", out _) ? new[] { "waitForAcknowledgement" } : System.Array.Empty<string>(),
                     .. row.TryGetProperty("useEventSpeaker", out _) ? new[] { "useEventSpeaker" } : System.Array.Empty<string>()]);
                 string mode = Text(row, "mode"); Require(mode is "single" or "continued", "text-mode", "program.mode");
@@ -347,7 +348,13 @@ internal static class ExplorationContentReader
                     row.GetProperty("speaker").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "speaker")),
                     row.TryGetProperty("speakerFlags", out _) ? (byte)Number(row, "speakerFlags", 0, 255) : (byte)0,
                     row.TryGetProperty("useEventSpeaker", out _) && Boolean(row, "useEventSpeaker"),
-                    !row.TryGetProperty("waitForAcknowledgement", out _) || Boolean(row, "waitForAcknowledgement"));
+                    !row.TryGetProperty("waitForAcknowledgement", out _) || Boolean(row, "waitForAcknowledgement"),
+                    row.TryGetProperty("explicitWindows", out _) && Boolean(row, "explicitWindows"));
+            case "open-portrait":
+                Object(row, opcode, "op", "entity", "flags");
+                return new OpenPortrait(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
+                    (byte)Number(row, "flags", 0, 255));
+            case "close-portrait": Object(row, opcode, "op"); return new ClosePortrait();
             case "wait-text-input": Object(row, opcode, "op"); return new WaitForTextInput();
             case "close-text": Object(row, opcode, "op"); return new CloseText();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));

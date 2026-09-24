@@ -48,13 +48,19 @@ internal static class ExplorationDispatcher
         List<SessionObservation> observations = [];
         try
         {
-            bool playerWait = command is WaitAtInput;
-            if (playerWait)
+            bool playerWait = command is WaitAtInput or WaitForText;
+            if (command is WaitAtInput)
             {
                 if (!current.CanWaitAtInput)
                     return Reject(current, "field-input-unavailable", "command");
                 // A deliberate input owns exactly one opportunity; use the existing update path.
                 command = new AdvanceSimulation();
+            }
+            else if (command is WaitForText textWait)
+            {
+                if (!current.CanWaitForText) return Reject(current, "text-input-unavailable", "command");
+                if (textWait.Wait != current.Story.Wait!.Token) return Reject(current, "stale-or-wrong-wait", "wait");
+                command = new AdvanceSimulation(textWait.Wait);
             }
             switch (command)
             {
@@ -102,14 +108,17 @@ internal static class ExplorationDispatcher
                         "dialogue-chosen", choice.Yes ? "yes" : "no");
                     break;
                 case AdvanceSimulation advance:
+                    if (current.CanWaitForText && !playerWait)
+                        return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
-                        bool entityUpdates = current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
-                            definition.Exploration!.Programs[location.Program].EntitiesRunning;
+                        bool entityUpdates = current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
+                            ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
+                                definition.Exploration!.Programs[location.Program].EntitiesRunning;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world ? EntityActionRunner.Tick(world) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = current.Story;
@@ -230,8 +239,12 @@ internal static class ExplorationDispatcher
         (entry.RequiredMarker is null || (word & 0x3C00) == entry.RequiredMarker) &&
         (entry.RequiredFlag is null || story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue);
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;
-    private static StoryState FinishWait(StoryState story) => story.Copy(NextCursor(story),
-        textWindow: story.Wait is DialogueWait { Mode: TextDisplayMode.Single } ? new ClosedTextWindow() : story.TextWindow);
+    private static StoryState FinishWait(StoryState story)
+    {
+        bool legacyClose = story.Wait is DialogueWait { Mode: TextDisplayMode.Single, CloseOnAcknowledgement: true };
+        return story.Copy(NextCursor(story), textWindow: legacyClose ? new ClosedTextWindow() : story.TextWindow,
+            portraitWindow: legacyClose ? new UnknownPortraitWindow() : story.PortraitWindow);
+    }
     private static byte Facing(ExplorationDirection direction) => direction switch
     { ExplorationDirection.East => 0, ExplorationDirection.North => 1, ExplorationDirection.West => 2, _ => 3 };
     private static SessionResult Reject(SessionSnapshot current, string code, string field) => BattleCommandDispatcher.Reject(current, code, field);

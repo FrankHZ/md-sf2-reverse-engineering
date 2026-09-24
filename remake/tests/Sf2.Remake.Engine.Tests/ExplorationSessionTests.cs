@@ -9,6 +9,194 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    [Fact]
+    public void ImmediatePlainAcknowledgementPreservesNpcPhaseAndOpenTextUntilExplicitClose()
+    {
+        var session = StartProgram("""
+            [{"op":"close-portrait"},
+             {"op":"motion","entity":"ferryman","wait":false,"actions":[{"op":"random-walk","x":2,"y":1,"radius":1}]},
+             {"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"wait-text-input"},{"op":"end"}]
+            """);
+        var before = session.Current;
+        Assert.True(before.CanWaitForText);
+        var result = Accept(session, new Acknowledge(before.Story.Wait!.Token));
+        Assert.Same(before.Exploration, session.Current.Exploration);
+        Assert.Same(before.Story.TextWindow, session.Current.Story.TextWindow);
+        Assert.Equal(0, session.Current.Story.SimulationTick);
+        Assert.DoesNotContain(result.Observations, row => row.Kind is "simulation-tick" or "gameplay-wait");
+    }
+
+    [Theory]
+    [InlineData(true, 0x12341234u, 0, 0xECAB1234u, 2, 2)]
+    [InlineData(true, 0xC632A55Au, 2, 0x1091A55Au, 3, 1)]
+    [InlineData(false, 0xC632A55Au, 2, 0xC632A55Au, 2, 1)]
+    public void PlainInputWaitRunsOnlyEnabledEntityServiceAndAcceptingInputAddsNoPoll(
+        bool enabled, uint seed, int delay, uint expectedSeed, int targetX, int targetY)
+    {
+        var session = StartProgram("""
+            [{"op":"close-portrait"},{"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"wait-text-input"},{"op":"close-text"},{"op":"wait-ticks","ticks":10},{"op":"end"}]
+            """, document =>
+        {
+            document["world"]!["programs"]![0]!["entitiesRunning"] = enabled;
+            document["battle"]!["start"]!["mainSeed"] = seed;
+            document["world"]!["maps"]![0]!["entities"]![0]!["actions"] = System.Text.Json.Nodes.JsonNode.Parse($$"""
+                [{"op":"wait","ticks":{{delay}}},{"op":"random-walk","x":2,"y":1,"radius":1}]
+                """);
+        });
+        var initial = session.Current;
+        var token = initial.Story.Wait!.Token;
+        Assert.True(initial.CanWaitForText);
+        Assert.Equal("explicit-text-wait-required", Send(session, new AdvanceSimulation(token, 60)).Failure!.Code);
+        Assert.Equal("stale-or-wrong-wait", Send(session, new WaitForText(new(token.Value + 1))).Failure!.Code);
+        Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
+        Assert.Same(initial, session.Current);
+        for (int tick = 0; tick <= delay; tick++)
+        {
+            var waited = Accept(session, new WaitForText(token));
+            Assert.Equal("gameplay-wait", Assert.Single(waited.Observations).Kind);
+            Assert.Equal(initial.Revision + tick + 1, session.Current.Revision);
+            Assert.Equal(token, session.Current.Story.Wait!.Token);
+        }
+        var beforeAck = session.Current;
+        Assert.Equal(expectedSeed, beforeAck.Exploration!.Party.MainSeed);
+        var npc = beforeAck.Exploration.Entities[new("ferryman")];
+        Assert.Equal((targetX * 384, targetY * 384), ((int)npc.Motion.XDestination, (int)npc.Motion.YDestination));
+        var ack = Accept(session, new Acknowledge(token));
+        Assert.Equal(beforeAck.Story.SimulationTick, session.Current.Story.SimulationTick);
+        Assert.Equal(beforeAck.Exploration, session.Current.Exploration);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.Equal(10, Assert.IsType<TickWait>(session.Current.Story.Wait).Remaining);
+        Assert.DoesNotContain(ack.Observations, row => row.Kind is "simulation-tick" or "gameplay-wait");
+        Assert.False(session.Current.CanWaitForText);
+        // Subsequent sleep remains mandatory and separate from the input-first accepting poll.
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 10));
+        Assert.Equal(beforeAck.Story.SimulationTick + 10, session.Current.Story.SimulationTick);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BranchAndCallCarryRealPortraitCloseRatherThanInferringItFromText(bool executeClose)
+    {
+        var session = StartProgram("""
+            [{"op":"call","target":{"program":"portrait-tail","instruction":0}},
+             {"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"close-text"},{"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"wait-text-input"},{"op":"end"}]
+            """, document =>
+        {
+            if (executeClose) document["start"]!["flags"]!.AsArray().Add(9);
+            document["world"]!["programs"]!.AsArray().Add(System.Text.Json.Nodes.JsonNode.Parse("""
+                {"id":"portrait-tail","instructions":[
+                 {"op":"branch-flag","flag":9,"whenSet":false,"target":{"program":"portrait-tail","instruction":2}},
+                 {"op":"close-portrait"},{"op":"end"}]}
+                """));
+        });
+        Assert.Equal(executeClose, session.Current.CanWaitForText);
+        Assert.Empty(session.Current.Story.Callers);
+        if (executeClose) Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        else
+        {
+            Assert.IsType<UnknownPortraitWindow>(session.Current.Story.PortraitWindow);
+            var before = session.Current;
+            Assert.Equal("text-input-unavailable", Send(session, new WaitForText(before.Story.Wait!.Token)).Failure!.Code);
+            Assert.Same(before, session.Current);
+        }
+    }
+
+    [Theory]
+    [InlineData("unknown")]
+    [InlineData("skip")]
+    [InlineData("missing")]
+    [InlineData("absent")]
+    [InlineData("open")]
+    public void PortraitLookupSkipAndTextOnlyClosePreserveTheirActualGate(string mode)
+    {
+        string prefix = mode == "unknown" ? "" : """{"op":"close-portrait"},""";
+        string entity = mode == "skip" ? "null" : "\"ferryman\"";
+        string secondEntity = mode == "open" ? "\"ferryman\"" : "null";
+        var session = StartProgram("[" + prefix + $$"""
+             {"op":"open-portrait","entity":{{entity}},"flags":192},
+             {"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"close-text"},
+             {"op":"open-portrait","entity":{{secondEntity}},"flags":0},
+             {"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"wait-text-input"},{"op":"end"}]
+            """, document => { if (mode != "missing") AddPortraitVisuals(document, mode == "absent" ? null : 7); });
+        Assert.Equal(mode is "skip" or "absent", session.Current.CanWaitForText);
+        if (mode == "open") Assert.Equal(new OpenPortraitWindow(7, 192), session.Current.Story.PortraitWindow);
+        if (mode is "unknown" or "missing") Assert.IsType<UnknownPortraitWindow>(session.Current.Story.PortraitWindow);
+    }
+
+    [Fact]
+    public void SingleTextAcknowledgementRunsItsExplicitCloseTailBeforeMandatorySleep()
+    {
+        var session = StartProgram("""
+            [{"op":"close-portrait"},{"op":"open-portrait","entity":"ferryman","flags":128},
+             {"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+             {"op":"close-portrait"},{"op":"close-text"},{"op":"wait-ticks","ticks":10},{"op":"end"}]
+            """, document => AddPortraitVisuals(document, 7));
+        Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.False(session.Current.CanWaitForText);
+        var result = Accept(session, new Acknowledge(session.Current.Story.Wait!.Token));
+        Assert.Equal(new[] { "ClosePortrait", "CloseText", "WaitProgramTicks" },
+            result.Observations.Where(row => row.Kind == "program-instruction").Select(row => row.Detail));
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.Equal(0, session.Current.Story.SimulationTick);
+        Assert.Equal(10, Assert.IsType<TickWait>(session.Current.Story.Wait).Remaining);
+    }
+
+    [Fact]
+    public void PlainWaitKeepsEntityFailureAndRejectsStaleEnvelopes()
+    {
+        var session = StartProgram("""
+            [{"op":"close-portrait"},
+             {"op":"motion","entity":"ferryman","wait":false,"actions":[{"op":"native-call","symbol":"missing","source":"authored"}]},
+             {"op":"text-cursor","text":100},
+             {"op":"show-text","mode":"single","speaker":null,"explicitWindows":true,"waitForAcknowledgement":false},
+             {"op":"wait-text-input"},{"op":"end"}]
+            """);
+        var before = session.Current;
+        var envelope = new CommandEnvelope(before.SessionId, before.Revision, null, new WaitForText(before.Story.Wait!.Token));
+        Assert.Equal("stale-input", session.Submit(envelope with { ExpectedRevision = before.Revision - 1 }).Failure!.Code);
+        Assert.Equal("wrong-actor", session.Submit(envelope with { Actor = new("outsider") }).Failure!.Code);
+        Assert.Same(before, session.Current);
+        var failed = session.Submit(envelope);
+        Assert.Equal(SessionStopReason.Unsupported, failed.StopReason);
+        Assert.Equal("entity-action-stopped", Assert.Single(failed.Observations).Kind);
+        Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
+        Assert.Equal(before.Exploration!.Party.MainSeed, session.Current.Exploration!.Party.MainSeed);
+        Assert.Equal("session-stopped", Send(session, envelope.Command).Failure!.Code);
+    }
+
+    private static void AddPortraitVisuals(System.Text.Json.Nodes.JsonNode document, int? portrait)
+    {
+        object Raster(int width, int height)
+        {
+            byte[] data = new byte[width * height * 4];
+            return new { width, height, format = "rgba8", data = Convert.ToBase64String(data),
+                sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data)) };
+        }
+        document["world"]!["maps"]![0]!["entities"]![0]!["sprite"] = 30;
+        document["world"]!["presentation"] = System.Text.Json.JsonSerializer.SerializeToNode(new
+        {
+            maps = document["world"]!["maps"]!.AsArray().Select(map => new
+            { map = map!["id"]!.GetValue<string>(), atlas = Raster(128, 320), scale = 1,
+                blocks = Enumerable.Range(0, 1024).Select(_ => new int[9]).ToArray() }).ToArray(),
+            sprites = new[] { new { sprite = 30, directions = Enumerable.Range(0, 3).Select(_ => Raster(48, 24)).ToArray(), portrait, speech = 0 } },
+            portraits = new[] { new { portrait = 7, raster = Raster(64, 64) } },
+        });
+    }
+
     [Theory]
     [InlineData(0x12341234u, 0, 0xECAB1234u, 2, 2)]
     [InlineData(0xC632A55Au, 2, 0x1091A55Au, 3, 1)]
@@ -139,6 +327,7 @@ public sealed class ExplorationSessionTests
         var before = session.Current;
         var result = Send(session, new WaitAtInput());
         Assert.Equal("field-input-unavailable", result.Failure!.Code);
+        Assert.Equal("text-input-unavailable", Send(session, new WaitForText(before.Story.Wait?.Token ?? new(1))).Failure!.Code);
         Assert.Empty(result.Observations);
         Assert.Same(before, session.Current);
     }
@@ -150,12 +339,14 @@ public sealed class ExplorationSessionTests
         var battle = session.Current;
         Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
         Assert.Same(battle, session.Current);
+        Assert.Equal("text-input-unavailable", Send(session, new WaitForText(new(1))).Failure!.Code);
         Accept(session, new Confirm());
         Accept(session, new ChooseAction(SessionAction.PhysicalAttack));
         Accept(session, new SelectTarget(new("raider")));
         Accept(session, new Confirm());
         var scene = session.Current;
         Assert.NotNull(scene.BattleScene);
+        Assert.Equal("text-input-unavailable", Send(session, new WaitForText(scene.BattleScene!.Token)).Failure!.Code);
         Assert.Equal("field-input-unavailable", Send(session, new WaitAtInput()).Failure!.Code);
         Assert.Equal("invalid-battle-tick", Send(session, new AdvanceSimulation(scene.BattleScene!.Token)).Failure!.Code);
         Assert.Same(scene, session.Current);
@@ -641,12 +832,13 @@ public sealed class ExplorationSessionTests
         Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
     }
 
-    private static GameSession StartProgram(string instructions) => Start("harbor-arrival", document =>
+    private static GameSession StartProgram(string instructions, Action<System.Text.Json.Nodes.JsonNode>? change = null) => Start("harbor-arrival", document =>
     {
         document["world"]!["programs"]![0]!["instructions"] = System.Text.Json.Nodes.JsonNode.Parse(instructions);
         document["start"]!["program"] = System.Text.Json.Nodes.JsonNode.Parse("""
             {"program":"invitation","instruction":0}
             """);
+        change?.Invoke(document);
     });
 
     [Fact]
