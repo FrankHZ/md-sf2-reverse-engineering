@@ -4,9 +4,14 @@ local acquisition = candidate and config.candidate.interactive
 local natural = candidate and config.candidate.natural
 local segment = candidate and config.candidate.segment
 if candidate then candidate.diagnostic = config.candidate.diagnostic end
-assert(not candidate or not candidate.diagnostic or (acquisition and natural and segment and segment.resume
-    and candidate.diagnostic.kind == "heal1-consumer-diagnostic" and candidate.diagnostic.inputPolicy == "neutral-scene"),
-    "HEAL diagnostic requires an explicit loaded parent and neutral scene")
+if candidate then
+    candidate.healDiagnostic = candidate.diagnostic and candidate.diagnostic.kind == "heal1-consumer-diagnostic"
+    candidate.warpDiagnostic = candidate.diagnostic and candidate.diagnostic.kind == "warp-field-return-diagnostic"
+end
+assert(not candidate or not candidate.diagnostic or (acquisition and natural and segment and
+    ((candidate.healDiagnostic and segment.resume and candidate.diagnostic.inputPolicy == "neutral-scene")
+    or (candidate.warpDiagnostic and segment.ordinal == 1 and not segment.resume
+        and candidate.diagnostic.inputPolicy == "left30-neutral120"))), "invalid acquisition diagnostic entry")
 assert(not candidate or not config.extension, "candidate cannot use the R2d bridge")
 local extension_enabled = config.extension ~= nil
 local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
@@ -2230,6 +2235,8 @@ local function install_candidate()
     c.order, c.consumers = 0, {}
     local function poll(kind, pc)
         if not acquisition or not c.epoch then return end
+        -- The first qualifying source poll must survive the ordinary per-frame dedup.
+        if c.warp_poll then c.warp_poll(kind, pc) end
         if c.consumerPoll and c.consumerPoll.kind == kind and c.consumerPoll.frame == frame_count then return end
         c.consumerPoll = {kind=kind, frame=frame_count, emulatorFrame=emu.framecount(), pc=pc}
         if kind == "WaitForEvent-action" and c.fieldMenu and c.fieldMenu.stage == "returned" then
@@ -2334,6 +2341,15 @@ local function install_candidate()
         camera.effectiveScrollingPlanes = scrolling
         return camera
     end
+    local function live_entities()
+        local entities = {}
+        for physical = 0, ram.ENTITIES_COUNTER - 1 do
+            local base = ram.ENTITY_DATA + physical * ram.ENTITYDEF_SIZE
+            entities[#entities + 1] = {physical=physical, address=base, widthBytes=ram.ENTITYDEF_SIZE,
+                bytes=read_span(base, ram.ENTITYDEF_SIZE)}
+        end
+        return entities, read_span(ram.ENTITY_INDEX_LIST, 64)
+    end
     if natural then
         local nf, completed = natural.functions, {}
         c.completed, c.programs, c.nextWarp = completed, {}, 1
@@ -2349,6 +2365,52 @@ local function install_candidate()
             c.terminal.stop = {reason=reason, facts=facts or {}, boundary=callback_active and "callback-time" or "host-loop",
                 pc=reg("PC") & 0xFFFFFF, frame=frame_count, emulatorFrame=emu.framecount(), order=c.order}
             finish_pending = true
+        end
+        if candidate.warpDiagnostic then
+            c.warpReturn = {}
+            function c.warp_snapshot(pc)
+                local state, consumers = sample(), {}
+                for kind, count in pairs(c.consumers) do consumers[kind] = count end
+                state.activeConsumers = consumers
+                local raw = {fading=byte("FADING_SETTING"), map=state.map,
+                    player={x=state.rawX, y=state.rawY},
+                    appliedButton=c.appliedButton, currentPlayerInput=byte("CURRENT_PLAYER_INPUT"),
+                    player1Input=byte("PLAYER_1_INPUT"), mapEventWord=state.mapEventWord,
+                    pendingReturns=c.pending, programDepth=#c.programs, activeConsumers=consumers,
+                    audioPending=not not c.audioPending, fieldMenu=not not c.fieldMenu,
+                    typewriting=state.typewriting, dialogueWindow=word("DIALOGUE_WINDOW_INDEX"),
+                    portraitWindow=word("PORTRAIT_WINDOW_INDEX"), camera=camera_state()}
+                raw.player.destinationX = memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_XDEST, "M68K BUS")
+                raw.player.destinationY = memory.read_u16_be(ram.ENTITY_DATA + ram.ENTITYDEF_OFFSET_YDEST, "M68K BUS")
+                local unmet = {}
+                local function need(value, reason) if not value then unmet[#unmet+1]=reason end end
+                need(raw.map == 3 and state.x == 3 and state.y == 3 and state.facing == 0, "unexpected-destination")
+                need(raw.player.x == raw.player.destinationX and raw.player.y == raw.player.destinationY, "player-unsettled")
+                need(raw.appliedButton == "neutral" and raw.currentPlayerInput == 0 and raw.player1Input == 0, "input-not-neutral")
+                need(raw.fading == 0 and raw.mapEventWord == 0, "fade-or-event")
+                need(raw.pendingReturns == 0 and raw.programDepth == 0, "pending-caller-or-program")
+                for _, count in pairs(consumers) do need(count == 0, "active-consumer") end
+                need(not raw.audioPending and not raw.fieldMenu, "audio-or-menu")
+                need(raw.typewriting == 0 and raw.dialogueWindow == 0 and raw.portraitWindow == 0, "text-or-window")
+                local entities, indexes = live_entities()
+                return {frame=frame_count, emulatorFrame=emu.framecount(), pc=pc,
+                    state=state, raw=raw, unmetReasons=unmet, entities=entities, entityIndexBytes=indexes}
+            end
+            function c.warp_poll(kind, pc)
+                local d = c.warpReturn
+                if kind ~= "WaitForEvent-action" or not d.initReturn or d.firstReturn or byte("FADING_SETTING") ~= 0 then return end
+                -- Capture first, then reject. Never search for a later, more convenient poll.
+                local first = c.warp_snapshot(pc)
+                first.order = c.order + 1
+                d.firstReturn = first
+                c.record("warp-field:first-return", first)
+                assert(#first.unmetReasons == 0, "first post-fade field poll admission failed")
+            end
+            function c.warp_summary()
+                return {kind=candidate.diagnostic.kind, entry=c.warpReturn.entry,
+                    warp=c.warpReturn.warp, initReturn=c.warpReturn.initReturn,
+                    firstReturn=c.warpReturn.firstReturn, endpoint=c.warpReturn.endpoint}
+            end
         end
         function c.accounting()
             local allies, joined, active, party, combatants, order, regions = {}, {}, {}, {}, {}, {}, {}
@@ -2542,7 +2604,7 @@ local function install_candidate()
                 end
                 return true
             end
-            if candidate.diagnostic then
+            if candidate.healDiagnostic then
                 -- Measurement locals are never serialized, and never alter the ordinary
                 -- pending/consumer/continuation state. A fixed return dispatcher avoids
                 -- accumulating one callback closure for every interrupt/update.
@@ -2885,6 +2947,10 @@ local function install_candidate()
             add_callback(target, "candidate:init-entry", function()
                 if not c.epoch or (reg("A0") & 0xFFFFFF) ~= target then return end
                 returned("natural:init", target, function()
+                    if c.warpReturn and c.warpReturn.warp then
+                        assert(not c.warpReturn.initReturn, "warp diagnostic reached another init")
+                        c.warpReturn.initReturn = {frame=frame_count, order=c.order, target=target}
+                    end
                     if target == nf.ms_map20_InitFunction and completed.royalScript and not completed.royal then
                         assert(flag_is_set(605), "royal caller returned before F605")
                         c.checkpoint("royal")
@@ -3204,14 +3270,9 @@ local function install_candidate()
                 assert(memory.read_u8(base + ram.COMBATANT_OFFSET_SPELLS + index, "M68K BUS") == expected.spells[index + 1], "R1 spell drift")
             end
         end
-        local npcs = {}
-        for physical = 0, ram.ENTITIES_COUNTER - 1 do
-            local base = ram.ENTITY_DATA + physical * ram.ENTITYDEF_SIZE
-            npcs[#npcs + 1] = { physical = physical, address = base, widthBytes = ram.ENTITYDEF_SIZE,
-                bytes = read_span(base, ram.ENTITYDEF_SIZE) }
-        end
+        local npcs, indexes = live_entities()
         c.record("r1:inherited-status-and-live-entities", { allies = allies, entities = npcs,
-            entityIndexBytes = read_span(ram.ENTITY_INDEX_LIST, 64), rawTimeNormalized = false })
+            entityIndexBytes = indexes, rawTimeNormalized = false })
         for _, patch in ipairs(config.r1.sessionPatches) do
             local ok, mismatch = restore_cart(patch)
             assert(ok, "admission service restoration mismatch: " .. patch.purpose)
@@ -3350,6 +3411,14 @@ local function install_candidate()
         c.record("warp:original-handler", { operands = operands, currentMap = map,
             effectiveDestinationMap = effective, source = { x = x, y = y },
             target = { x = target_x, y = target_y } })
+        if c.warpReturn then
+            assert(not c.warpReturn.warp and map == 3 and x == 55 and y == 3
+                and target_x == 54 and target_y == 3 and effective == 3
+                and operands[1] == 0 and operands[2] == config.candidate.currentMapOperand
+                and operands[3] == 3 and operands[4] == 3 and operands[5] == 0,
+                "warp diagnostic first warp mismatch")
+            c.warpReturn.warp = {frame=frame_count, order=c.order}
+        end
         if natural and c.gates.warp then
             local warp = natural.warps[c.nextWarp]
             assert(c.map19Captured and warp and map == warp.fromMap
@@ -3545,7 +3614,7 @@ local function install_candidate()
             end
             local poll = c.consumerPoll
             local fresh = poll and frame_count - poll.frame <= 1
-            if candidate.diagnostic and c.heal.active and button ~= "neutral" then
+            if candidate.healDiagnostic and c.heal.active and button ~= "neutral" then
                 result.consumer="heal-diagnostic-neutral-scene"
                 need(false, "HEAL-diagnostic-scene-input-not-admitted")
                 return result
@@ -3644,11 +3713,11 @@ local function install_candidate()
             local now = elapsed()
             if candidate.diagnostic then
                 assert(now - segment.priorActiveSeconds < candidate.diagnostic.limits.activeSeconds,
-                    "HEAL diagnostic attempt active-time limit")
+                    "diagnostic attempt active-time limit")
                 assert(delivered_frames() - segment.priorFrames <= candidate.diagnostic.limits.frames,
-                    "HEAL diagnostic attempt frame limit")
+                    "diagnostic attempt frame limit")
                 assert(batches - segment.priorBatches <= candidate.diagnostic.limits.batches,
-                    "HEAL diagnostic attempt batch limit")
+                    "diagnostic attempt batch limit")
             end
             if c.stopReason then return end
             if idle_since and now - idle_since >= acquisition.idleSeconds then c.stop("operator-idle-limit") end
@@ -3819,7 +3888,7 @@ local function install_candidate()
             return result
         end
         function c.save_segment(terminal)
-            assert(not candidate.diagnostic, "HEAL diagnostic cannot save a segment")
+            assert(not candidate.diagnostic, "diagnostic cannot save a segment")
             assert(segment and not callback_active and client.ispaused(), "segment save outside host pause")
             local readiness
             if not terminal then
@@ -3874,7 +3943,7 @@ local function install_candidate()
             saved_state = memorysavestate.savecorestate()
             assert(saved_state ~= nil, "resume cleanup snapshot failed")
             c.record("segment:loaded-before-input", {ordinal=segment.ordinal, parent=restored.ordinal})
-            if candidate.diagnostic then
+            if candidate.healDiagnostic then
                 for _, binding in pairs(candidate.diagnostic.sourceBindings.instructions) do
                     assert(memory.read_u16_be(binding.pc, "M68K BUS") == tonumber(binding.hex, 16),
                         "HEAL diagnostic loaded instruction mismatch")
@@ -3910,6 +3979,14 @@ local function install_candidate()
             budget()
             if finish_pending then return end
             if c.epoch then
+                if c.warpReturn and not c.warpReturn.entry then
+                    local d = candidate.diagnostic
+                    assert(c.epoch == d.r1Epoch and c.emulatorEpoch == d.r1EmulatorEpoch
+                        and frame_count == c.epoch and emu.framecount() == c.epoch,
+                        "warp diagnostic reviewed R1 epoch mismatch")
+                    c.warpReturn.entry = {frame=frame_count, emulatorFrame=emu.framecount(),
+                        r1Epoch=c.epoch, r1EmulatorEpoch=c.emulatorEpoch}
+                end
                 if not connected then
                     c.frameEnd = snapshot()
                     bridge.connect((natural and acquisition.idleSeconds or acquisition.wallSeconds) * 1000, c.frameEnd)
@@ -3944,7 +4021,7 @@ local function install_candidate()
                         if natural then c.failureReason = "operator-abort" end
                         error("operator aborted interactive acquisition")
                     elseif op == "save" then
-                        assert(not candidate.diagnostic, "HEAL diagnostic save is prohibited")
+                        assert(not candidate.diagnostic, "diagnostic save is prohibited")
                         assert(#command == 2 and segment and (segment.ordinal < 4 or victory), "save requires a resumable segment")
                         c.failureReason = "segment-save-failure"
                         local outcome = c.save_segment(false)
@@ -3954,6 +4031,12 @@ local function install_candidate()
                         else return end
                     elseif op == "step" then
                         local count, button = bridge.step_arguments(command)
+                        if c.warpReturn then
+                            local used = batches - segment.priorBatches
+                            assert((used == 0 and count == 30 and button == "Left" and frame_count == c.epoch)
+                                or (used >= 1 and used <= 120 and count == 1 and button == "neutral"
+                                    and frame_count == c.epoch + 29 + used), "warp diagnostic input sequence mismatch")
+                        end
                         c.failureReason = nil
                         local readiness = natural and c.input_readiness(button) or {ready=true}
                         if victory and c.completed.admission and button ~= "neutral" and count ~= 1 then
@@ -3967,9 +4050,9 @@ local function install_candidate()
                         else
                             if candidate.diagnostic then
                                 assert(batches-segment.priorBatches < candidate.diagnostic.limits.batches,
-                                    "HEAL diagnostic attempt batch limit")
+                                    "diagnostic attempt batch limit")
                                 assert(count <= candidate.diagnostic.limits.frames-delivered_frames()+segment.priorFrames,
-                                    "HEAL diagnostic attempt frame limit")
+                                    "diagnostic attempt frame limit")
                             end
                             if not natural then
                                 assert(batches < acquisition.maxBatches, "input batch budget exhausted")
@@ -4013,6 +4096,17 @@ local function install_candidate()
             assert(after == c.beforeFrame + 1, "interactive frame advance drift")
             assert(natural or delivered_frames() < acquisition.totalFrames or finish_pending,
                 "total frame budget exhausted before terminal")
+            if c.warpReturn and c.epoch and frame_count - c.epoch == candidate.diagnostic.endpointInputFrame then
+                local d = c.warpReturn
+                assert(d.firstReturn and #d.firstReturn.unmetReasons == 0, "warp diagnostic first return missing")
+                d.endpoint = c.warp_snapshot(reg("PC") & 0xFFFFFF)
+                d.endpoint.order = c.order + 1
+                c.record("warp-field:endpoint", d.endpoint)
+                assert(#d.endpoint.unmetReasons == 0 and batch.applied == 1
+                    and batches - segment.priorBatches == 121, "warp diagnostic final frame mismatch")
+                c.stop("warp-field-return-diagnostic-complete", {diagnostic=candidate.diagnostic.kind})
+                c.frameEnd = snapshot()
+            end
         end
     end
 end
@@ -4025,7 +4119,7 @@ local function write_observation(restoration)
             mode = acquisition and "interactive-acquisition" or nil,
             continuation = natural and natural.selection or nil,
             stopReason = natural and candidate.stopReason or nil,
-            diagnostic = candidate.diagnostic and candidate.heal_summary() or nil,
+            diagnostic = candidate.healDiagnostic and candidate.heal_summary() or (candidate.warpDiagnostic and candidate.warp_summary() or nil),
             completedFrame = natural and candidate.frameEnd or nil,
             inputIdentityMeaning = acquisition and "mode declaration; actual inputs in actual-inputs.jsonl" or nil })
         file:write("\n"); file:close()

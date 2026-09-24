@@ -92,6 +92,26 @@ replay nor grants a new replay launch budget. The
 confirms its named parent restore and live consumer boundary. Compatibility beyond that instance,
 other settings/targets, input shortening and broader native-state equivalence remain **Unknown**.
 
+### Bounded first-warp field-return diagnostic (Issue #534)
+
+The [named method](../research/map3-messenger-acceptance.md#first-warp-field-return-diagnostic-method-issue-534)
+reuses fresh controlled R1 acquisition to distinguish first post-FadeIn field return
+from subsequent neutral player waiting. No accepted pre-warp R1 parent is available.
+The leaf retains the first source poll after warp/init with fade clear before ordinary
+per-frame deduplication; failed closure is evidence and cannot be skipped for a later
+poll. Its declared Left30/neutral120 suffix ends automatically at the last completed
+neutral frame through existing snapshot/restoration/callback/status handling. No Right,
+later route, save, sealed pair or descendant is admitted. Ordinary forward, HEAL
+parent compatibility and abort failure semantics remain unchanged.
+
+Source/offline verification and preparation authorize no native launch or restore.
+Independent main-gate review of frozen source and concrete preparation precedes any
+native dispatch under the existing stabilization authorization. Inherited137 starts /
+15568.554376200133 active seconds /429120 resource frames /16211 batches, separate
+tooling/gate costs and21/41/61/67 cleanup Unknowns remain retained. Per-attempt bounds
+are containment, not gameplay timing or a new permanent quota. A completed method
+does not establish original state, a desired seed/Wait count, #534/#437 or H4 acceptance.
+
 ### Distinguish interactive acquisition, frozen replay, and remake H4
 
 **Interactive original acquisition** is Research-owned observation in which an operator or host

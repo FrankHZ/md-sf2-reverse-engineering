@@ -26,6 +26,39 @@ accepted route through the house and school, the second moves the player from
 area ordinal 1 into area ordinal 3, which contains the entity 142 interaction
 position. Neither warp selects a different Map 3 setup variant.
 
+## First-return comparison boundary
+
+**Confirmed (existing-record readback):** original
+`local/issue496/prepared-68/runtime/actual-inputs.jsonl` lines711/773/1015 request
+Left30, neutral120, then Right2. Checkpoints line20 records map init return at
+frame405/order832 with seed1091; lines22/23 record the later Right read/acceptance
+at frame506 with75DA. The final neutral reply at actual-inputs line1014 is frame505
+with fading0 and the latest field poll at505. The original collector retained no
+first post-fade field poll within that batch.
+
+The accepted remake finite-warp observation
+`local/issue534/warp-transition/final-private/observation.json` records init/FadeIn
+entry at `warpRecords[56]` (zero-based), tick40/1091, and first logical+actual visible
+field return at record82, tick65/F01B. That probe submits two separate Left moves
+and stops at visible return, followed by one explicit Wait. Thus its endpoint and
+the historical frame506 comparison are different input/consumer boundaries. Equal
+init seeds alone do not establish equal NPC action/motion/timer or CPU phase.
+
+**Inferred:** omitted explicit player waiting contributes to the retained comparison
+gap. **Unknown:** the first original post-fade field state, subsequent eligible entity
+service count and any earlier input/transition interruption difference. The interval
+from init to Right is not a mandatory-warp budget. No historical seed, tick65,
+neutral120 count or inverted RNG sequence is an engine rule or replacement golden.
+
+The [bounded first-return method](map3-messenger-acceptance.md#first-warp-field-return-diagnostic-method-issue-534)
+records the first post-warp/init fade-clear poll before per-frame deduplication,
+retains failed admission instead of selecting a later poll, and separates its callback
+state from completed-frame neutral observations. It is currently **Confirmed only at
+the source/offline boundary**; native capture is not yet run. This distinguishes an
+already-different return seed from changes during subsequent neutral field service.
+Full phase equality and an explicit `WaitAtInput` mapping need their own evidence;
+this method supplies neither a120-Wait rule nor whole-route/H4 acceptance.
+
 ## Stable records and area relation
 
 Map 3's warp table is `data/maps/entries/map03/6-warp-events.asm`, ROM
