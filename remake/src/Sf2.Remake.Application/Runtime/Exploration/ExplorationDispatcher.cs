@@ -34,9 +34,11 @@ internal static class ExplorationDispatcher
         }
         if (start.EntryProgram is { } entry && (entry.Instruction != 0 || !definition.Exploration.Programs.ContainsKey(entry.Program)))
             throw new BattleRuleException("program-entry", "start.program");
+        if (start.Display is not null) MapTransfer.ValidateDisplay(start.Display);
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
-            partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null);
+            partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
+            display: start.Display);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), []);
     }
@@ -70,6 +72,16 @@ internal static class ExplorationDispatcher
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, "presentation-acknowledged");
                     break;
                 case CompletePresentation completion:
+                    if (current.Story.Wait is FullFadeWait fade)
+                    {
+                        if (fade.Token != completion.Wait || fade.Kind != completion.Kind || fade.ActualDone)
+                            return Reject(current, "stale-or-wrong-presentation", "presentation");
+                        current = ProgramRunner.Commit(current, current.Active,
+                            current.Story.Copy(current.Story.Cursor, fade with { ActualDone = true }), observations,
+                            "presentation-completed", completion.Kind.ToString());
+                        current = MapTransfer.FinishFade(current, observations);
+                        break;
+                    }
                     if (current.Story.Wait is not PresentationWait presenting || presenting.Token != completion.Wait || presenting.Cue.Kind != completion.Kind)
                         return Reject(current, "stale-or-wrong-presentation", "presentation");
                     var completedActive = current.Active;
@@ -112,10 +124,24 @@ internal static class ExplorationDispatcher
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
+                    if (current.Story.Wait is FullFadeWait { LogicalDone: true })
+                        return Reject(current, "fade-awaiting-presentation", "wait");
                     bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is FullFadeWait or WarpLoadWait)
+                        {
+                            var token = current.Story.Wait.Token;
+                            current = current.Story.Wait is FullFadeWait
+                                ? MapTransfer.FadeTick(definition, current, observations)
+                                : MapTransfer.LoadTick(definition, current, observations);
+                            if (current.Story.Wait?.Token != token)
+                                return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait is FullFadeWait { LogicalDone: true })
+                                return ProgramRunner.Result(current, observations);
+                            continue;
+                        }
                         bool entityUpdates = current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
                                 definition.Exploration!.Programs[location.Program].EntitiesRunning;
@@ -143,8 +169,7 @@ internal static class ExplorationDispatcher
                                 else
                                 {
                                     current = ProgramRunner.Commit(current, active, story, observations, "warp-started");
-                                    current = MapTransfer.Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                                        warp.LoadMode, story, observations);
+                                    current = MapTransfer.BeginWarp(definition, current, warp, observations);
                                 }
                                 return ProgramRunner.Run(definition, current, observations);
                             }
@@ -183,6 +208,7 @@ internal static class ExplorationDispatcher
             }
             return ProgramRunner.Run(definition, current, observations);
         }
+        catch (MapTransfer.FadeServiceFailure error) { return ProgramRunner.Failure(error.Snapshot, observations, error.Failure); }
         catch (BattleRuleException error) { return ProgramRunner.Failure(current, observations, error); }
     }
 

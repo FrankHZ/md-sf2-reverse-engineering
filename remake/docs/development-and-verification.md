@@ -123,14 +123,110 @@ From `remake/`, after the protected environment above, the affected selection is
   --filter 'FullyQualifiedName~ExplorationSessionTests|FullyQualifiedName~MapEntityLifecycleTests|FullyQualifiedName~CommandsetContinuationTests'
 ```
 
-**Unknown:** fade/load/re-enable logical work and CPU interruption phase remain
-unimplemented at this ordinary transition. This bounded correction selects no
-fixed 24/49-tick quota, expected seed or reseed, and establishes no host timing or
-H4 closure. The retained first-warp `75DA` versus `C632`, completed JOIN timeout,
-next-actor/order and index29 occupancy failures, H4 5,340 PASS / 2 FAIL / 40
-Unavailable, and HEAL recovery opportunity gap remain in their owners below.
-Use affected engine checks, adapter compilation and the committed scope plan;
-this seam does not authorize a native/full-route or normal/full research rerun.
+## Ordinary warp visible return
+
+A direct ordinary warp now keeps its old scene through finite full-black FadeOut.
+It idles the player's action script without clearing travel. Each enabled fade
+service runs before the physical entity slots, including the terminator. Logical
+completion and actual black delivery join before the two explicit disabled-context
+load waits and Preserve/Rebuild transfer. The new scene is mounted black; existing
+onLoad programs run before the BASE/CURRENT colors 2+3 comparison selects FadeIn.
+That helper includes ExecuteFading's extra service. Field control requires both
+logical and actual visible completion. These services implement the
+[source helper contract](../../docs/research/map3-controlled-start-egress-transition.md#finite-full-black-helpers-and-visible-return),
+not a fixed total interrupt quota.
+
+`FullFadeWait` records period/countdown/table entry, the helper's extra service,
+and separate logical/actual completion. Early actual receipts cannot skip work;
+late receipts add no entity/RNG work. Duplicate, wrong-kind and stale tokens are
+rejected. A batch stops at each new token/phase. The host clears unused time at
+those boundaries and after hide, tree pause or real focus loss. Ordinary WarpOut
+has no extra service; script full-black helpers and WarpIn do. Temporary periods
+restore after the extra service. The logical pair is derived from live BASE;
+Preserve retains BASE and Rebuild loads the target map's bound BASE.
+
+Inputs explicitly supply `start.display` (`period`, `base`, `current`,
+`visibility`), with pairs shaped as `{color2, color3}` and visibility `black` or
+`base-restored`. Period must be 1..255 and words use supported CRAM bits. Missing
+state does not default to period 3. Authored maps may embed `basePalette`.
+For a retained private world, the small start may instead contain
+`mapPalettes: [{map, base}]`; the reader normalizes this once into the same typed
+map definitions. Duplicate/unknown entries and any embedded-plus-start binding
+are rejected, even when equal. There is no runtime overlay lookup or reference
+checkpoint dependency. Bind only maps required by the supported entry.
+
+The selected R1 input has a separately proven explicit period 3, restored initial
+pair and visibility; see the source owner's bounded retained-RAM/writer join and
+initialization-prefix proof. `selected_map_palette_bindings` in the existing
+compiler reads only two palette words and adds its source paths to existing
+provenance. It exports no textures/audio and does not copy the private world.
+Direct reproduction after selecting the clean pinned source as `upstream`:
+
+```python
+from sf2tool.remake_exploration_content import OriginalPrograms, selected_map_palette_bindings
+compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream)
+map_palettes = selected_map_palette_bindings(compiler, [3])
+# A real source producer exercising normal and temporary-period forms:
+compiler.register_file("disasm/data/maps/entries/map07/mapsetups/s6_initfunction.asm")
+compiler.compile("cs_55832")
+full_black = [row for row in compiler.programs["cs_55832"]["instructions"] if "fullBlack" in row]
+assert [row["fullBlack"]["period"] for row in full_black] == [6, None]
+```
+
+The compiler retains `fadeInB`, `fadeOutB`, `slowFadeInB`, `slowFadeOutB` as explicit
+synchronous full-black cues, with current or temporary 6 period. Generic visual
+cues do not imply logical palette effects. With bound display state, white,
+partial/tint/restoration cues without this binding are Unsupported; asynchronous
+scene-load composition inside ordinary onLoad is also Unsupported. Known static
+missing transition bindings fail before the producing move. A reached dynamic
+failure preserves consumed ticks, map, flags, cursor and pending transition state;
+a separate unfaded CanvasLayer keeps its explanation readable. Equal-but-black
+return is Unsupported. An onLoad full FadeIn may establish equal-and-restored and
+skip a duplicate helper. Explicit transfer/battle callers keep their own path;
+onLoad replacement retires the abandoned ordinary continuation and token.
+
+**Confirmed (engine and actual host):** the affected tests cover periods 1/3/6,
+NPC phases/slots and terminal RNG draws, Preserve/Rebuild, color-3-only inequality,
+equal-black rejection, init waits, temporary-period restore, replacement,
+retained failures and early/late/duplicate/stale/batched delivery. The bounded
+`warp-transition*` cases in the existing input observer drive real Main/input and
+read live state/projection. Cases include normal/reduced private R1 first warp,
+authored rebuild, period-1 late actual receipt, period-6 early receipt, an onLoad
+restoration with no duplicate fade, black failure text, and hide/tree-pause/real
+native-window focus transfer plus a delayed callback. No screenshots, original
+emulator run or full-route claim is involved. Private normal/reduced runs have
+identical ordered observations, entities, flags, party/resources and RNG at visible
+return. An authored package never substitutes for private acceptance.
+
+After loading the owning private/tool environment, Debug-build the existing
+adapter and run in its owned project. Each run needs a fresh ignored directory.
+`SF2_WARP_BINDING` selects the small `{display,mapPalettes}` JSON produced from the
+source/R1 proof above; existing `SF2_PRIVATE_*` selections still point to the
+accepted private content and party inputs. The observer writes a fresh start from
+the accepted controlled R1 input plus this binding, without modifying either.
+
+```powershell
+$env:SF2_INPUT_CASE = 'warp-transition-private' # Also warp-transition-private-reduced.
+$env:SF2_WARP_PERIOD = '3' # Authored variation only; private consumes its explicit binding.
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $run 'observation.json'
+& $godotBinary --path remake/game --script res://probes/engine_input_accessibility_observation.gd -- `
+  --private-exploration-start (Join-Path $run 'start.json') --input-settings (Join-Path $run 'settings.json')
+```
+
+Use `--authored-package` and cases `warp-transition` (period 1),
+`warp-transition-pause` (6), `warp-transition-restored` (3), or
+`warp-transition-failure` (3) for the other bounded observations. All probe
+outputs/settings/generated starts remain fresh and worktree-local.
+
+**Unknown:** CPU interruption phases around helpers, tileset/sprite load,
+re-enablement and init remain unenumerated. This implementation neither selects
+an expected seed nor reseeds. The retained first-warp `75DA` versus `C632`,
+completed JOIN timeout, next-actor/order and index29 occupancy failures,
+H4 5,340 PASS / 2 FAIL / 40 Unavailable and HEAL recovery gap remain discovery
+records in their owners below; this bounded change does not close H4. Use affected
+engine checks, adapter compilation, direct compiler/source checks, the bounded
+actual host observation and the committed scope plan, without an automatic full
+research suite or full-route replay.
 
 ## Explicit field-input gameplay Wait
 

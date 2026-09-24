@@ -9,12 +9,337 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    private static SessionResult Step(ScenarioDefinition definition, SessionSnapshot snapshot, SessionCommand command)
+    {
+        var result = ExplorationDispatcher.Submit(definition, snapshot, command);
+        Assert.Null(result.Failure);
+        return result;
+    }
+
+    private static SessionSnapshot ReachFade(ScenarioDefinition definition, SessionSnapshot snapshot)
+    {
+        snapshot = Step(definition, snapshot, new Move(ExplorationDirection.East)).Snapshot;
+        return Step(definition, snapshot, new AdvanceSimulation(snapshot.Story.Wait!.Token, 600)).Snapshot;
+    }
+
+    private static SessionSnapshot DrainFade(ScenarioDefinition definition, SessionSnapshot snapshot, bool early)
+    {
+        var fade = Assert.IsType<FullFadeWait>(snapshot.Story.Wait);
+        if (early) snapshot = Step(definition, snapshot, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        snapshot = Step(definition, snapshot, new AdvanceSimulation(fade.Token, 600)).Snapshot;
+        if (!early) snapshot = Step(definition, snapshot, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        return snapshot;
+    }
+
+    [Theory]
+    [InlineData(1, true, true)]
+    [InlineData(3, true, false)]
+    [InlineData(6, true, true)]
+    [InlineData(1, false, false)]
+    [InlineData(3, false, true)]
+    [InlineData(6, false, false)]
+    public void OrdinaryWarpJoinsFiniteServicesAndActualVisibility(byte period, bool preserve, bool early)
+    {
+        var npc = new ExplorationEntity(new("timer"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(200)]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], preserve, 123, period: period);
+        var current = ReachFade(definition, before);
+        var fade = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        Assert.Equal(FullFadePurpose.WarpOut, fade.Purpose);
+        Assert.Equal(1, current.Story.SimulationTick);
+        Assert.Null(current.Exploration!.PlayerEntity.Actions);
+        Assert.Equal(384, current.Exploration.PlayerEntity.Motion.XTravel);
+        current = Step(definition, current, new AdvanceSimulation(fade.Token, 8 * period - 1)).Snapshot;
+        Assert.False(Assert.IsType<FullFadeWait>(current.Story.Wait).LogicalDone);
+        Assert.Equal(8 * period, current.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+        if (early) current = Step(definition, current, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        current = Step(definition, current, new AdvanceSimulation(fade.Token, 600)).Snapshot;
+        Assert.Equal(1 + 8 * period, current.Story.SimulationTick);
+        Assert.Equal(1 + 8 * period, current.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.Equal("origin", current.Exploration.Map.Value);
+        if (!early)
+        {
+            Assert.True(Assert.IsType<FullFadeWait>(current.Story.Wait).LogicalDone);
+            var stopped = ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(fade.Token, 600));
+            Assert.Equal("fade-awaiting-presentation", stopped.Failure!.Code);
+            Assert.Same(current, stopped.Snapshot);
+            current = Step(definition, current, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        }
+        Assert.IsType<WarpLoadWait>(current.Story.Wait);
+        Assert.Equal(new PalettePair(0, 0), current.Story.Display!.Current);
+        var oldActors = current.Exploration!.AllEntities;
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token)).Snapshot;
+        Assert.Equal(oldActors, current.Exploration!.AllEntities);
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+        var fadeIn = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        Assert.Equal(FullFadePurpose.WarpIn, fadeIn.Purpose);
+        Assert.Equal(preserve ? "origin" : "destination", current.Exploration!.Map.Value);
+        Assert.Equal(new MapPosition(9, 9), current.Exploration.PlayerEntity.Position);
+        Assert.Equal(3 + 8 * period, current.Story.SimulationTick);
+        if (!preserve)
+        {
+            Assert.Equal(0, current.Exploration.Entities[new("destination")].Motion.WaitTimer);
+            Assert.Contains(80, current.Story.Flags); Assert.Contains(99, current.Story.Flags);
+        }
+        current = DrainFade(definition, current, !early);
+        Assert.Equal(4 + 16 * period, current.Story.SimulationTick); // Sum of the explicit helper services in this fixture only.
+        Assert.Equal(SessionStopReason.PlayerInput, current.StopReason);
+        Assert.Null(current.Story.Warp);
+        Assert.Equal(FullFadeVisibility.BaseRestored, current.Story.Display!.Visibility);
+        Assert.Equal(current.Story.Display.Base, current.Story.Display.Current);
+        Assert.Equal(period, current.Story.Display.Period);
+        Assert.Equal(123u, current.Exploration!.Party.MainSeed);
+        var stale = ExplorationDispatcher.Submit(definition, current, new CompletePresentation(fadeIn.Token, fadeIn.Kind));
+        Assert.Same(current, stale.Snapshot); Assert.NotNull(stale.Failure);
+    }
+
+    [Fact]
+    public void FadeDeliveryCannotReplaceLogicalWorkOrRepeatOrUseOldToken()
+    {
+        var (definition, before) = WarpWorld([], true, 123);
+        var current = ReachFade(definition, before);
+        var fade = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        current = Step(definition, current, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        Assert.False(Assert.IsType<FullFadeWait>(current.Story.Wait).LogicalDone);
+        foreach (var command in new SessionCommand[] { new Move(ExplorationDirection.East), new Cancel(), new WaitAtInput(),
+            new Acknowledge(fade.Token), new CompletePresentation(fade.Token, fade.Kind),
+            new CompletePresentation(fade.Token, PresentationCueKind.FadeIn), new AdvanceSimulation(new(fade.Token.Value - 1)) })
+        {
+            var reject = ExplorationDispatcher.Submit(definition, current, command);
+            Assert.NotNull(reject.Failure); Assert.Same(current, reject.Snapshot);
+        }
+        var single = current;
+        for (int index = 0; index < 24; index++) single = Step(definition, single, new AdvanceSimulation(fade.Token)).Snapshot;
+        var batch = Step(definition, current, new AdvanceSimulation(fade.Token, 600)).Snapshot;
+        Assert.Equal(single.Story.SimulationTick, batch.Story.SimulationTick);
+        Assert.Equal(single.Story.Wait, batch.Story.Wait);
+        Assert.Equal(single.Exploration!.AllEntities, batch.Exploration!.AllEntities);
+        Assert.IsType<WarpLoadWait>(batch.Story.Wait);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BothPaletteWordsSelectReturnAndEqualBlackIsUnsupported(bool color3Nonzero)
+    {
+        var (definition, before) = WarpWorld([], false, 123, palette: new(0, color3Nonzero ? (ushort)0xE : (ushort)0));
+        var current = DrainFade(definition, ReachFade(definition, before), false);
+        var result = ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600));
+        if (color3Nonzero) Assert.Equal(PresentationCueKind.FadeIn, Assert.IsType<FullFadeWait>(result.Snapshot.Story.Wait).Kind);
+        else
+        {
+            Assert.Equal("equal-palette-still-black", result.Failure!.Code);
+            Assert.Equal("destination", result.Snapshot.Exploration!.Map.Value);
+            Assert.Equal(27, result.Snapshot.Story.SimulationTick);
+            Assert.NotNull(result.Snapshot.Story.Warp);
+            Assert.Equal(FullFadeVisibility.Black, result.Snapshot.Story.Display!.Visibility);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OnLoadWaitAndFullFadeRestoreTemporaryPeriodAndSkipDuplicateReturn(bool entitiesRunning)
+    {
+        var (definition, before) = WarpWorld([], false, 123, onLoad:
+            [new WaitProgramTicks(2), new PresentCue(PresentationCueKind.FadeIn, "black", FullBlack: new(6)), new WriteFlag(602, true), new EndProgram()]);
+        var programs = definition.Exploration!.Programs.Values.Select(program => program.Id == "arrive"
+            ? new StoryProgram(program.Id, program.Instructions, entitiesRunning: entitiesRunning) : program);
+        definition = new("warp", definition.Encounters.Values, exploration: new(definition.Exploration.Maps.Values, programs));
+        var current = DrainFade(definition, ReachFade(definition, before), true);
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+        Assert.IsType<TickWait>(current.Story.Wait);
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+        var fade = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        Assert.Equal(FullFadePurpose.Script, fade.Purpose);
+        Assert.Equal(6, current.Story.Display!.Period);
+        current = Step(definition, current, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+        current = Step(definition, current, new AdvanceSimulation(fade.Token, 48)).Snapshot;
+        Assert.Equal(6, current.Story.Display!.Period);
+        Assert.False(Assert.IsType<FullFadeWait>(current.Story.Wait).LogicalDone);
+        var result = Step(definition, current, new AdvanceSimulation(fade.Token, 600));
+        Assert.Equal(3, result.Snapshot.Story.Display!.Period);
+        Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
+        Assert.Contains(602, result.Snapshot.Story.Flags);
+        Assert.DoesNotContain(result.Observations, row => row.Kind == "full-fade-started");
+        Assert.Contains(result.Observations, row => row.Kind == "warp-visible");
+    }
+
+    [Theory]
+    [InlineData("period")]
+    [InlineData("palette")]
+    [InlineData("white")]
+    [InlineData("unbound")]
+    public void UnsupportedStaticBindingsRejectBeforeMovement(string shape)
+    {
+        var (definition, before) = WarpWorld([], false, 123, period: shape == "period" ? (byte)0 : (byte)3,
+            onLoad: shape is "white" or "unbound" ? [new PresentCue(PresentationCueKind.FadeIn, shape == "white" ? "white" : "black"), new EndProgram()] : null);
+        if (shape == "palette")
+        {
+            var target = definition.Exploration!.Maps[new("destination")];
+            var missing = new ExplorationMapDefinition(target.Map, target.Layout, target.Traversal, target.Entities, target.Events);
+            definition = new("warp", definition.Encounters.Values,
+                exploration: new([definition.Exploration.Maps[new("origin")], missing], definition.Exploration.Programs.Values));
+        }
+        var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+        Assert.Same(before.Active, result.Snapshot.Active); Assert.Same(before.Story, result.Snapshot.Story);
+        Assert.Empty(result.Observations);
+    }
+
+    [Fact]
+    public void DynamicOnLoadFailureKeepsMapConsumedWorkAndCursor()
+    {
+        var (definition, before) = WarpWorld([], false, 123, onLoad:
+            [new WriteFlag(603, true), new UnsupportedInstruction("unbound-effect", "authored"), new EndProgram()]);
+        var current = DrainFade(definition, ReachFade(definition, before), true);
+        var result = ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600));
+        Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+        Assert.Equal("destination", result.Snapshot.Exploration!.Map.Value);
+        Assert.Equal(new ProgramLocation("arrive", 1), result.Snapshot.Story.Cursor);
+        Assert.Contains(603, result.Snapshot.Story.Flags);
+        Assert.Equal(27, result.Snapshot.Story.SimulationTick);
+        Assert.NotNull(result.Snapshot.Story.Warp);
+        Assert.Equal(FullFadeVisibility.Black, result.Snapshot.Story.Display!.Visibility);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TerminalFadeServiceConsumesOldSlotRandomActionBeforeRebuild(bool fail)
+    {
+        var npc = new ExplorationEntity(new("walker"), EntityMotionState.At(new(5, 5), 0, 32), true,
+            new([new WaitEntityTicks(8), fail ? new UnsupportedEntityAction("unbound", "authored") :
+                new RandomWalkEntity(new(5, 5), 1), new StopEntityActions()]), Slot: 1);
+        var (definition, before) = WarpWorld([npc], false, 0x12341234u, period: 1);
+        var current = ReachFade(definition, before);
+        var fade = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        current = Step(definition, current, new AdvanceSimulation(fade.Token, 7)).Snapshot;
+        Assert.Equal(0x12341234u, current.Exploration!.Party.MainSeed);
+        var terminal = ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(fade.Token, 600));
+        Assert.Equal(9, terminal.Snapshot.Story.SimulationTick);
+        Assert.True(Assert.IsType<FullFadeWait>(terminal.Snapshot.Story.Wait).LogicalDone);
+        Assert.Equal(FullFadeVisibility.Black, terminal.Snapshot.Story.Display!.Visibility);
+        Assert.Equal("origin", terminal.Snapshot.Exploration!.Map.Value);
+        if (fail)
+        {
+            Assert.Equal(SessionStopReason.Unsupported, terminal.StopReason);
+            Assert.NotNull(terminal.Snapshot.Story.Warp);
+            Assert.Equal(1, terminal.Snapshot.Exploration.Entities[npc.Entity].ActionCursor);
+        }
+        else
+        {
+            Assert.Null(terminal.Failure);
+            Assert.Equal(0xECAB1234u, terminal.Snapshot.Exploration.Party.MainSeed);
+            current = Step(definition, terminal.Snapshot, new CompletePresentation(fade.Token, fade.Kind)).Snapshot;
+            current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+            Assert.Equal(0xECAB1234u, current.Exploration!.Party.MainSeed);
+            Assert.DoesNotContain(npc.Entity, current.Exploration.Entities.Keys);
+        }
+    }
+
+    [Fact]
+    public void OnLoadReplacementRetiresOrdinaryContinuationAndRestoresThroughItsOwnHelper()
+    {
+        var (definition, before) = WarpWorld([], false, 123, onLoad:
+            [new TransferToMap(new("origin"), new(4, 4), 1, MapLoadMode.Preserve),
+                new PresentCue(PresentationCueKind.FadeIn, "black", FullBlack: new()), new EndProgram()]);
+        // Replace into the current destination without recursively entering its onLoad.
+        var replacement = new ExplorationMapDefinition(new("replacement"), before.Exploration!.Layout,
+            before.Exploration.Definition.Traversal, [], [], basePalette: new(0xEEE, 0x888));
+        var instructions = new StoryInstruction[] { new TransferToMap(replacement.Map, new(4, 4), 1, MapLoadMode.Rebuild),
+            new PresentCue(PresentationCueKind.FadeIn, "black", FullBlack: new()), new EndProgram() };
+        definition = new("warp", definition.Encounters.Values, exploration: new(definition.Exploration!.Maps.Values.Append(replacement),
+            [new StoryProgram("arrive", instructions), definition.Exploration.Programs["script"]]));
+        var current = DrainFade(definition, ReachFade(definition, before), false);
+        var abandoned = current.Story.Wait!.Token;
+        current = Step(definition, current, new AdvanceSimulation(abandoned, 600)).Snapshot;
+        Assert.Null(current.Story.Warp);
+        Assert.Equal("replacement", current.Exploration!.Map.Value);
+        Assert.Equal(FullFadePurpose.Script, Assert.IsType<FullFadeWait>(current.Story.Wait).Purpose);
+        Assert.NotNull(ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(abandoned)).Failure);
+        current = DrainFade(definition, current, true);
+        Assert.Equal(SessionStopReason.PlayerInput, current.StopReason);
+        Assert.Equal(new MapPosition(4, 4), current.Exploration!.PlayerEntity.Position);
+    }
+
+    [Theory]
+    [InlineData("duplicate")]
+    [InlineData("unknown")]
+    [InlineData("embedded")]
+    [InlineData("zero-period")]
+    [InlineData("invalid-word")]
+    public void DisplayContentRejectsAmbiguousOrInvalidBindings(string shape)
+    {
+        var document = Document("harbor-arrival");
+        document["start"]!["display"] = System.Text.Json.Nodes.JsonNode.Parse("""{"period":3,"base":{"color2":14,"color3":0},"current":{"color2":14,"color3":0},"visibility":"base-restored"}""");
+        document["start"]!["mapPalettes"] = System.Text.Json.Nodes.JsonNode.Parse("""[{"map":"quay","base":{"color2":14,"color3":0}}]""");
+        var bindings = document["start"]!["mapPalettes"]!.AsArray();
+        if (shape == "duplicate") bindings.Add(bindings[0]!.DeepClone());
+        if (shape == "unknown") bindings[0]!["map"] = "absent";
+        if (shape == "embedded") document["world"]!["maps"]![0]!["basePalette"] = bindings[0]!["base"]!.DeepClone();
+        if (shape == "zero-period") document["start"]!["display"]!["period"] = 0;
+        if (shape == "invalid-word") bindings[0]!["base"]!["color3"] = 1;
+        Assert.IsNotType<SessionStarted>(GameSession.Start(Reader(document)));
+    }
+
+    [Theory]
+    [InlineData(1, 4, true)]
+    [InlineData(602, 3, true)]
+    [InlineData(603, 5, false)]
+    public void OnLoadUsesActualFlagsAndEntityEffectsBeforeReturn(int flag, int x, bool visible)
+    {
+        var (definition, before) = WarpWorld([], false, 123, onLoad:
+            [new BranchFlag(1, true, new("arrive", 4)), new BranchFlag(602, true, new("arrive", 6)),
+             new BranchFlag(603, true, new("arrive", 8)), new EndProgram(),
+             new SetEntityPosition(new("destination"), new(4, 4), 1), new EndProgram(),
+             new SetEntityPosition(new("destination"), new(3, 3), 1), new EndProgram(),
+             new SetEntityVisibility(new("destination"), false), new EndProgram()]);
+        before = before.WithStory(before.Story.Copy(null, flags: [flag]));
+        var current = DrainFade(definition, ReachFade(definition, before), true);
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+        Assert.Equal(FullFadePurpose.WarpIn, Assert.IsType<FullFadeWait>(current.Story.Wait).Purpose);
+        Assert.Equal(x, current.Exploration!.Entities[new("destination")].Position.X);
+        Assert.Equal(visible, current.Exploration.Entities[new("destination")].Visible);
+    }
+
+    [Fact]
+    public void MissingDisplayBindingCannotDefaultTheWarpPeriod()
+    {
+        var (definition, before) = WarpWorld([], true, 123);
+        before = before.WithStory(new StoryState());
+        var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Equal("full-fade-state", result.Failure!.Code);
+        Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+        Assert.Same(before.Active, result.Snapshot.Active); Assert.Empty(result.Observations);
+    }
+
+    [Fact]
+    public void BattleSelectedWarpKeepsItsExistingCallerWithoutOrdinaryFadeBinding()
+    {
+        var (definition, before) = WarpWorld([], false, 123);
+        var target = definition.Exploration!.Maps[new("destination")];
+        var battleMap = new ExplorationMapDefinition(target.Map, target.Layout, target.Traversal, target.Entities, [],
+            battle: new(before.Exploration!.Party.Encounter, null, null, null, new("battle-selected", 0), null));
+        definition = new("warp", definition.Encounters.Values, exploration: new(
+            [definition.Exploration.Maps[new("origin")], battleMap],
+            [new StoryProgram("battle-selected", [new WaitProgramTicks(2), new EndProgram()])]));
+        before = before.WithStory(new StoryState());
+        var queued = Step(definition, before, new Move(ExplorationDirection.East));
+        var result = Step(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token, 600));
+        Assert.IsType<TickWait>(result.Snapshot.Story.Wait);
+        Assert.Equal(1, result.Snapshot.Story.SimulationTick);
+        Assert.Contains(result.Observations, row => row.Kind == "battle-selected");
+        Assert.DoesNotContain(result.Observations, row => row.Kind == "full-fade-started");
+        Assert.Null(result.Snapshot.Story.Warp);
+    }
+
     [Theory]
     [InlineData(true, 0, 0x12341234u, 0xECAB1234u, 5, 6)]
     [InlineData(true, 2, 0x12341234u, 0x12341234u, 5, 5)]
     [InlineData(true, 0, 0xC632A55Au, 0x1091A55Au, 6, 5)]
     [InlineData(false, 0, 0x12341234u, 0xECAB1234u, 5, 6)]
-    public void WarpConsumesOldPopulationBeforePreserveOrRebuild(bool preserve, byte delay, uint seed,
+    public void WarpProducingPassRetainsOldPopulationBeforeFade(bool preserve, byte delay, uint seed,
         uint expectedSeed, int npcX, int npcY)
     {
         var npc = new ExplorationEntity(new("walker"), EntityMotionState.At(new(5, 5), 0, 32), true,
@@ -31,21 +356,11 @@ public sealed class ExplorationSessionTests
         var world = result.Snapshot.Exploration!;
         Assert.Equal(expectedSeed, world.Party.MainSeed);
         Assert.Equal(1, result.Snapshot.Story.SimulationTick);
-        Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
-        Assert.Equal(new MapPosition(9, 9), world.PlayerEntity.Position);
-        if (preserve)
-        {
-            Assert.Equal((npcX * 384, npcY * 384), ((int)world.Entities[npc.Entity].Motion.XDestination, (int)world.Entities[npc.Entity].Motion.YDestination));
-            Assert.Equal(delay == 0 ? 0 : 1, world.Entities[npc.Entity].Motion.WaitTimer);
-            Assert.Equal(idle, world.Entities[idle.Entity]);
-        }
-        else
-        {
-            // Destination actors have not taken a turn in the old scene's pass.
-            Assert.DoesNotContain(npc.Entity, world.Entities.Keys);
-            Assert.Equal(0, world.Entities[new("destination")].Motion.WaitTimer);
-            Assert.Contains(99, result.Snapshot.Story.Flags);
-        }
+        Assert.IsType<FullFadeWait>(result.Snapshot.Story.Wait);
+        Assert.Equal(new MapPosition(1, 1), world.PlayerEntity.Position);
+        Assert.Equal((npcX * 384, npcY * 384), ((int)world.Entities[npc.Entity].Motion.XDestination, (int)world.Entities[npc.Entity].Motion.YDestination));
+        Assert.Equal(delay == 0 ? 0 : 1, world.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.Equal(idle, world.Entities[idle.Entity]);
         var stale = ExplorationDispatcher.Submit(definition, result.Snapshot, new AdvanceSimulation(token));
         Assert.Equal("stale-or-wrong-wait", stale.Failure!.Code);
         Assert.Same(result.Snapshot, stale.Snapshot);
@@ -63,7 +378,7 @@ public sealed class ExplorationSessionTests
         var queued = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
         var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token));
         Assert.Null(result.Failure);
-        Assert.Equal(new MapPosition(9, 9), result.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(new MapPosition(1, 1), result.Snapshot.Exploration!.PlayerEntity.Position);
         var after = result.Snapshot.Exploration.Entities[npc.Entity];
         Assert.Equal((blockedMarker ? 1 : 2) * 384, after.Motion.YDestination);
         Assert.Equal(blockedMarker ? 1 : 0, after.ActionCursor);
@@ -123,7 +438,7 @@ public sealed class ExplorationSessionTests
         Assert.Equal(single.Snapshot.Story.SimulationTick, batch.Snapshot.Story.SimulationTick);
         Assert.Equal(single.Snapshot.Exploration!.AllEntities, batch.Snapshot.Exploration!.AllEntities);
         Assert.Equal(single.Snapshot.Exploration.Party.MainSeed, batch.Snapshot.Exploration.Party.MainSeed);
-        Assert.Null(batch.Snapshot.Story.Wait);
+        Assert.IsType<FullFadeWait>(batch.Snapshot.Story.Wait);
     }
 
     [Theory]
@@ -148,7 +463,7 @@ public sealed class ExplorationSessionTests
         Assert.Equal(fieldAction ? 1 : 0, result.Snapshot.Story.SimulationTick);
         Assert.Equal(fieldAction ? 0xECAB1234u : 0x12341234u, result.Snapshot.Exploration!.Party.MainSeed);
         Assert.Equal(0, result.Snapshot.Exploration.Entities[new("destination")].Motion.WaitTimer);
-        Assert.Equal(new[] { 98, 99 }, result.Snapshot.Story.Flags);
+        Assert.Equal(new[] { 80, 98, 99 }, result.Snapshot.Story.Flags);
         Assert.Equal(fieldAction ? 1 : 0, result.Observations.Count(row => row.Kind == "simulation-tick"));
         Assert.DoesNotContain(result.Observations, row => row.Kind == "warp-started");
     }
@@ -197,7 +512,7 @@ public sealed class ExplorationSessionTests
         }
         var result = ExplorationDispatcher.Submit(definition, queued.Snapshot, new AdvanceSimulation(queued.Snapshot.Story.Wait!.Token));
         Assert.Null(result.Failure);
-        Assert.Equal(new MapPosition(9, 9), result.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(new MapPosition(1, 1), result.Snapshot.Exploration!.PlayerEntity.Position);
         Assert.Equal(1, result.Snapshot.Exploration.Entities[npc.Entity].Motion.WaitTimer);
         Assert.Equal(0, result.Snapshot.Exploration.PlayerEntity.Motion.XTravel);
     }
@@ -232,7 +547,8 @@ public sealed class ExplorationSessionTests
 
     private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) WarpWorld(
         ExplorationEntity[] npcs, bool preserve, uint seed, bool blockedMarker = false, int playerSlot = 0,
-        int destinationX = 9, bool warpProgram = false)
+        int destinationX = 9, bool warpProgram = false, byte period = 3,
+        PalettePair? palette = null, StoryInstruction[]? onLoad = null)
     {
         var source = Start("harbor-arrival");
         var words = new ushort[WorkingMapLayout.WordCount];
@@ -243,18 +559,18 @@ public sealed class ExplorationSessionTests
                 RequiredMarker: 0x1000, LoadMode: preserve ? MapLoadMode.Preserve : MapLoadMode.Rebuild)],
             population: new(30, 128, 0, []));
         var destination = new ExplorationMapDefinition(new("destination"), layout, map.Traversal,
-            [new(new("destination"), new(5, 5), 0, 32, Actions: new([new WaitEntityTicks(10)]))], [],
-            onLoad: new("arrive", 0));
+            [new(new("destination"), new(5, 5), 0, 32, Actions: new([new WaitEntityTicks(10), new StopEntityActions()]))], [],
+            onLoad: new("arrive", 0), basePalette: palette ?? new(0xEEE, 0x888), entryFlags: [new(80, true)]);
         var player = source.Current.Exploration!.PlayerEntity with
         { Motion = EntityMotionState.At(new(1, 1), 0, 32) with { FlagsA = 0xA0 }, Slot = playerSlot };
         var party = source.Current.Exploration.Party;
         var world = new ExplorationState(map, layout, player.Entity, new[] { player }.Concat(npcs),
             new(party.Encounter, party.Actors, seed, party.ThinkingSeed, party.Gold, party.NewBattle));
         var definition = new ScenarioDefinition("warp", source.Definition.Encounters.Values,
-            exploration: new([map, destination], [new StoryProgram("arrive", [new WriteFlag(99, true), new EndProgram()]),
+            exploration: new([map, destination], [new StoryProgram("arrive", onLoad ?? [new WriteFlag(99, true), new EndProgram()]),
                 new StoryProgram("script", [new TransferToMap(new("destination"), new(9, 9), 0, MapLoadMode.Rebuild),
                     new WriteFlag(98, true), new EndProgram()])]));
-        return (definition, new(Guid.NewGuid(), 1, 1, new ActiveExploration(world), new StoryState([], null), SessionStopReason.PlayerInput));
+        return (definition, new(Guid.NewGuid(), 1, 1, new ActiveExploration(world), new StoryState([], null, display: new(period, palette ?? new(0xEEE, 0x888), palette ?? new(0xEEE, 0x888), FullFadeVisibility.BaseRestored)), SessionStopReason.PlayerInput));
     }
 
     [Theory]
@@ -726,6 +1042,9 @@ public sealed class ExplorationSessionTests
     {
         var session = Start("harbor-arrival", document =>
         {
+            document["start"]!["display"] = System.Text.Json.Nodes.JsonNode.Parse("""{"period":3,"base":{"color2":3822,"color3":2184},"current":{"color2":3822,"color3":2184},"visibility":"base-restored"}""");
+            foreach (var map in document["world"]!["maps"]!.AsArray())
+                map!["basePalette"] = System.Text.Json.Nodes.JsonNode.Parse("""{"color2":3822,"color3":2184}""");
             document["world"]!["maps"]![0]!["events"]!.AsArray().Add(System.Text.Json.Nodes.JsonNode.Parse($$"""
                 {"kind":"warp","x":2,"y":1,"map":"quay","position":{"x":{{destinationX}},"y":2},
                  "facing":3,"marker":null,"requiredFlag":null,"requiredValue":true}
@@ -738,9 +1057,10 @@ public sealed class ExplorationSessionTests
             Assert.Null(result.Failure);
             Assert.Equal(before.Exploration!.PlayerEntity.Position, session.Current.Exploration!.PlayerEntity.Position);
             result = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 600));
-            Assert.Equal(new MapPosition(destinationX, 2), session.Current.Exploration!.PlayerEntity.Position);
+            Assert.Equal(before.Exploration!.PlayerEntity.Position, session.Current.Exploration!.PlayerEntity.Position);
+            Assert.IsType<FullFadeWait>(session.Current.Story.Wait);
             Assert.Equal(1, session.Current.Story.SimulationTick);
-            Assert.Equal(new[] { "simulation-tick", "warp-started", "map-transferred" }, result.Observations.Take(3).Select(row => row.Kind));
+            Assert.Equal(new[] { "simulation-tick", "warp-started", "full-fade-started" }, result.Observations.Take(3).Select(row => row.Kind));
         }
         else
         {

@@ -53,16 +53,32 @@ internal static class ExplorationContentReader
             programs.Add(new(id, instructions, row.TryGetProperty("source", out _) ? Text(row, "source") : null,
                 !row.TryGetProperty("entitiesRunning", out _) || Boolean(row, "entitiesRunning")));
         }
+        var paletteBindings = new Dictionary<MapId, PalettePair>();
+        if (start.TryGetProperty("mapPalettes", out _))
+            foreach (var binding in Array(start, "mapPalettes"))
+            {
+                Object(binding, "mapPalette", "map", "base");
+                Require(paletteBindings.TryAdd(new(Id(binding, "map")), ReadPair(binding.GetProperty("base"))),
+                    "duplicate-map-palette", "start.mapPalettes");
+            }
         var maps = new List<ExplorationMapDefinition>();
         var mapIds = new HashSet<MapId>();
         foreach (var row in Array(world, "maps"))
         {
             ObjectOptional(row, "map", "input", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup",
+                .. row.TryGetProperty("basePalette", out _) ? new[] { "basePalette" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("population", out _) ? new[] { "population" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("entryFlags", out _) ? new[] { "entryFlags" } : System.Array.Empty<string>(),
                 .. row.TryGetProperty("layoutEvents", out _) ? new[] { "layoutEvents" } : System.Array.Empty<string>()]);
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
+            PalettePair? palette = null;
+            if (row.TryGetProperty("basePalette", out var embedded)) palette = ReadPair(embedded);
+            if (paletteBindings.TryGetValue(id, out var bound))
+            {
+                Require(palette is null, "duplicate-map-palette", "map.basePalette");
+                palette = bound;
+            }
             var rows = Array(row, "layout").ToArray();
             Require(rows.Length is >= 1 and <= 64, "layout-height", "map.layout");
             Require(rows.All(line => line.ValueKind == JsonValueKind.Array), "layout-row", "map.layout");
@@ -125,8 +141,9 @@ internal static class ExplorationContentReader
                 {
                     Object(flag, "entryFlag", "flag", "value");
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
-                }) : null));
+                }) : null, palette));
         }
+        Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation) : null,
@@ -137,6 +154,8 @@ internal static class ExplorationContentReader
             }) : null);
         Link(definition);
         Object(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags",
+            .. start.TryGetProperty("display", out _) ? new[] { "display" } : System.Array.Empty<string>(),
+            .. start.TryGetProperty("mapPalettes", out _) ? new[] { "mapPalettes" } : System.Array.Empty<string>(),
             .. start.TryGetProperty("program", out _) ? new[] { "program" } : System.Array.Empty<string>(),
             .. start.TryGetProperty("entityPhases", out _) ? new[] { "entityPhases" } : System.Array.Empty<string>()]);
         var selectedMap = new MapId(Id(start, "map"));
@@ -181,7 +200,28 @@ internal static class ExplorationContentReader
         }
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
-                (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases));
+                (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
+                start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null));
+    }
+
+    private static PalettePair ReadPair(JsonElement row)
+    {
+        Object(row, "palettePair", "color2", "color3");
+        var pair = new PalettePair((ushort)Number(row, "color2", 0, 0xEEE), (ushort)Number(row, "color3", 0, 0xEEE));
+        Require(pair.Valid, "palette-word", "palettePair");
+        return pair;
+    }
+
+    private static ExplorationDisplay ReadDisplay(JsonElement row)
+    {
+        Object(row, "display", "period", "base", "current", "visibility");
+        string visibility = Text(row, "visibility");
+        Require(visibility is "black" or "base-restored", "display-visibility", "start.display");
+        var display = new ExplorationDisplay((byte)Number(row, "period", 1, 255), ReadPair(row.GetProperty("base")),
+            ReadPair(row.GetProperty("current")), visibility == "black" ? FullFadeVisibility.Black : FullFadeVisibility.BaseRestored);
+        Require(display.Visibility == FullFadeVisibility.Black ? display.Current.Black : display.Current == display.Base,
+            "display-palette-state", "start.display");
+        return display;
     }
 
     private static EntityMotionState ReadStartMotion(JsonElement row)
@@ -391,11 +431,19 @@ internal static class ExplorationContentReader
             case "wait-entity": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Id(row, "entity")));
             case "wait-ticks": Object(row, opcode, "op", "ticks"); return new WaitProgramTicks(Number(row, "ticks", 0, 65535));
             case "present":
-                Object(row, opcode, "op", "kind", "resource", "entity", "position");
+                ObjectOptional(row, opcode, "fullBlack", "op", "kind", "resource", "entity", "position");
                 Require(Enum.GetNames<PresentationCueKind>().Contains(Text(row, "kind")), "presentation-cue", "program.kind", true);
+                FullBlackFade? fullBlack = null;
+                if (row.TryGetProperty("fullBlack", out var full))
+                {
+                    Object(full, "fullBlack", "period");
+                    Require(Text(row, "kind") is "FadeIn" or "FadeOut" && Text(row, "resource") == "black",
+                        "full-black-fade-binding", "program.fullBlack", true);
+                    fullBlack = new(full.GetProperty("period").ValueKind == JsonValueKind.Null ? null : (byte)Number(full, "period", 1, 255));
+                }
                 return new PresentCue(Enum.Parse<PresentationCueKind>(Text(row, "kind")), row.GetProperty("resource").ValueKind == JsonValueKind.Null ? null : Text(row, "resource"),
                     row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
-                    row.GetProperty("position").ValueKind == JsonValueKind.Null ? null : Position(row.GetProperty("position")));
+                    row.GetProperty("position").ValueKind == JsonValueKind.Null ? null : Position(row.GetProperty("position")), fullBlack);
             case "transfer":
                 Object(row, opcode, "op", "map", "position", "facing", "loadMode");
                 string loadMode = Text(row, "loadMode"); Require(loadMode is "rebuild" or "preserve", "map-load-mode", "program.loadMode", true);
