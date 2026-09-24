@@ -119,7 +119,7 @@ internal static class ExplorationDispatcher
                         bool entityUpdates = current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
                                 definition.Exploration!.Programs[location.Program].EntitiesRunning;
-                        EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world ? EntityActionRunner.Tick(world) : null;
+                        EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world ? EntityActionRunner.Tick(world, (current.Story.Wait as EntityWait)?.PendingMove, current.Story.Flags) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
                         var story = current.Story;
                         if (tickResult?.Failure is { } failure)
@@ -127,6 +127,31 @@ internal static class ExplorationDispatcher
                             story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "entity-action-stopped", failure.Field);
                             return ProgramRunner.Failure(current, observations, failure);
+                        }
+                        if (story.Wait is EntityWait { PendingMove: not null } fieldMove && tickResult?.FieldMove is { } field)
+                        {
+                            story = story.Copy(null, field.Moved && field.Event?.Kind != ExplorationEventKind.Warp
+                                ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
+                                simulationTick: checked(story.SimulationTick + 1));
+                            current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.DoorOpened)
+                                current = ProgramRunner.Commit(current, active, story, observations, "door-opened");
+                            if (field.Event is { Kind: ExplorationEventKind.Warp } warp)
+                            {
+                                if (warp.Program is { } frontier)
+                                    current = ProgramRunner.Commit(current, active, story.Copy(frontier), observations, "warp-program");
+                                else
+                                {
+                                    current = ProgramRunner.Commit(current, active, story, observations, "warp-started");
+                                    current = MapTransfer.Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
+                                        warp.LoadMode, story, observations);
+                                }
+                                return ProgramRunner.Run(definition, current, observations);
+                            }
+                            current = ProgramRunner.Commit(current, active, story, observations,
+                                field.Moved ? "movement-started" : "movement-blocked");
+                            if (!field.Moved) return ProgramRunner.Run(definition, current, observations);
+                            continue;
                         }
                         if (story.Wait is EntityEventFacingWait)
                         { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor); }
@@ -167,58 +192,18 @@ internal static class ExplorationDispatcher
         var world = current.Exploration!;
         var player = world.PlayerEntity;
         if (player.Busy) return Reject(current, "entity-busy", "player");
-        byte facing = Facing(move.Direction);
-        var faced = player with { Motion = player.Motion with { Facing = facing } };
-        var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, move.Direction);
-        var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible);
-        // esc02 checks the intended position before door copies and warp/step dispatch.
-        // A closed door's failed traversal would instead report the player's origin.
-        if (world.Population is not null && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
-            EntityMotion.FieldObstructed(candidate.X * 384, candidate.Y * 384, others.Select(entity => entity.Motion)))
-            return Blocked();
-        if (candidate is not null && world.Definition.Traversal.IsWithinActiveArea(candidate))
+        var preview = MapEventDispatcher.Move(world, move.Direction, current.Story.Flags);
+        if (preview.Outcome.Event is { Kind: ExplorationEventKind.Warp } warp)
         {
-            var opened = MapEventDispatcher.OpenDoor(world, candidate);
-            if (!ReferenceEquals(opened, world))
-            {
-                world = opened;
-                current = ProgramRunner.Commit(current, new ActiveExploration(world), current.Story, observations, "door-opened");
-            }
-            var warp = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
-                Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], current.Story));
-            if (warp is not null)
-            {
-                if (warp.Program is { } frontier)
-                {
-                    current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(frontier), observations, "warp-program");
-                    return ProgramRunner.Run(definition, current, observations);
-                }
-                // Publish an ordinary warp's origin only if its transfer is admitted. Scripted
-                // transfers do not pass this seam and do not inherit the source warp sound.
-                List<SessionObservation> warpObservations = [];
-                var started = ProgramRunner.Commit(current, current.Active, current.Story, warpObservations, "warp-started");
-                var transferred = MapTransfer.Apply(definition, started, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                    warp.LoadMode, current.Story, warpObservations);
-                observations.AddRange(warpObservations);
-                return ProgramRunner.Run(definition, transferred, observations);
-            }
+            if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp);
         }
-        var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, move.Direction);
-        bool occupied = world.Population is null &&
-            others.Any(entity => entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
-        if (traversal.Outcome != OriginalMapTraversalOutcome.Moved || occupied)
-            return Blocked();
-        var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position, world.Population is not null), new StopEntityActions()]);
-        var moved = world.WithEntity(faced with { Actions = actions, ActionCursor = 0 });
-        var step = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
-            Matches(entry, traversal.Position, world.Layout[traversal.Position.X, traversal.Position.Y], current.Story));
-        var wait = new EntityWait(new(current.ObservationSequence + 1), world.Player, step?.Program);
-        current = ProgramRunner.Commit(current, new ActiveExploration(moved), current.Story.Copy(null, wait), observations, "movement-started");
-        return ProgramRunner.Result(current, observations);
-
-        SessionResult Blocked() => ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
-            new ActiveExploration(world.WithEntity(faced)), current.Story, observations, "movement-blocked"),
-            SessionStopReason.PlayerInput), observations);
+        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened)
+            return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
+                new ActiveExploration(preview.World), current.Story, observations, "movement-blocked"),
+                SessionStopReason.PlayerInput), observations);
+        var wait = new EntityWait(new(current.ObservationSequence + 1), world.Player, PendingMove: move.Direction);
+        return ProgramRunner.Result(ProgramRunner.Commit(current, current.Active, current.Story.Copy(null, wait),
+            observations, "movement-requested"), observations);
     }
 
     private static SessionResult Interact(ScenarioDefinition definition, SessionSnapshot current, Interact command,
@@ -240,10 +225,6 @@ internal static class ExplorationDispatcher
         return ProgramRunner.Run(definition, current, observations);
     }
 
-    private static bool Matches(ExplorationEvent entry, MapPosition position, ushort word, StoryState story) =>
-        (entry.X is null || entry.X == position.X) && (entry.Y is null || entry.Y == position.Y) &&
-        (entry.RequiredMarker is null || (word & 0x3C00) == entry.RequiredMarker) &&
-        (entry.RequiredFlag is null || story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue);
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;
     private static StoryState FinishWait(StoryState story)
     {
@@ -251,8 +232,6 @@ internal static class ExplorationDispatcher
         return story.Copy(NextCursor(story), textWindow: legacyClose ? new ClosedTextWindow() : story.TextWindow,
             portraitWindow: legacyClose ? new UnknownPortraitWindow() : story.PortraitWindow);
     }
-    private static byte Facing(ExplorationDirection direction) => direction switch
-    { ExplorationDirection.East => 0, ExplorationDirection.North => 1, ExplorationDirection.West => 2, _ => 3 };
     private static SessionResult Reject(SessionSnapshot current, string code, string field) => BattleCommandDispatcher.Reject(current, code, field);
 
 }

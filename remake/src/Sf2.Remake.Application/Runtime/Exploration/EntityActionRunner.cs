@@ -4,15 +4,18 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-internal sealed record EntityActionTickResult(ExplorationState World, BattleRuleException? Failure = null);
+internal sealed record EntityActionTickResult(ExplorationState World, BattleRuleException? Failure = null,
+    FieldMoveOutcome? FieldMove = null);
 
 internal static class EntityActionRunner
 {
-    internal static EntityActionTickResult Tick(ExplorationState world)
+    internal static EntityActionTickResult Tick(ExplorationState world, ExplorationDirection? fieldMove = null,
+        IReadOnlyList<int>? storyFlags = null)
     {
         var entities = world.AllEntities.ToDictionary(entity => entity.Slot);
         ushort spriteSize = world.SpriteSize;
         uint seed = world.Party.MainSeed;
+        FieldMoveOutcome? fieldOutcome = null;
         ExplorationState Publish() => world.WithEntities(entities.Values, spriteSize).WithParty(
             new(world.Party.Encounter, world.Party.Actors, seed, world.Party.ThinkingSeed, world.Party.Gold, world.Party.NewBattle));
         // Source order: movement for this entity, then its script, then the next entity.
@@ -25,6 +28,15 @@ internal static class EntityActionRunner
                 ? world.Layout[destinationX, destinationY] : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
             entities[entity.Slot] = entity;
+            if (fieldMove is not null && entity.Slot == world.PlayerEntity.Slot)
+            {
+                var resolved = MapEventDispatcher.Move(Publish(), fieldMove.Value, storyFlags!);
+                world = resolved.World;
+                fieldOutcome = resolved.Outcome;
+                entities[entity.Slot] = world.PlayerEntity;
+                // esc02 yields to the next slot even after setting MAP_EVENT_TYPE.
+                continue;
+            }
             if (entity.WaitingForMotion && entity.Motion.IsMoving) continue;
             entity = FollowerMotion.Tick(entity with { WaitingForMotion = false }, entities, world.Layout);
             for (int budget = 0; budget < 1024 && entity.Actions is { } program; budget++)
@@ -115,6 +127,6 @@ internal static class EntityActionRunner
             }
             entities[entity.Slot] = entity;
         }
-        return new(Publish());
+        return new(Publish(), FieldMove: fieldOutcome);
     }
 }

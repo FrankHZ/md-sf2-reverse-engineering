@@ -6,6 +6,17 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class MapTransfer
 {
+    // Apply is a pure snapshot construction. Reuse its full admission before consuming a
+    // field action; publish again after the old-world pass with its resulting party seed.
+    internal static void Validate(ScenarioDefinition definition, SessionSnapshot current, ExplorationState candidate,
+        ExplorationEvent warp)
+    {
+        var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
+            new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
+        _ = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
+            warp.LoadMode, current.Story, []);
+    }
+
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
         byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null)
     {
