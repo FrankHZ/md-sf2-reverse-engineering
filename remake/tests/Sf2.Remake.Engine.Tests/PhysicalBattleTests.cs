@@ -56,11 +56,11 @@ public sealed class PhysicalBattleTests
         // Both defeated cells are now legal destinations; occupancy reads persistent cleanup.
         Stay(session);
         var origin = session.Current.Battle.GetActor(attacker).Position!;
-        Accept(session, new Move(ExplorationDirection.West));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.West)));
         Assert.Equal(new MapPosition(origin.X - 1, origin.Y), session.Current.Selection!.Preview.Destination);
         Assert.Equal(origin, session.Current.Battle.GetActor(attacker).Position);
-        Accept(session, new Cancel());
-        Accept(session, new Move(ExplorationDirection.East));
+        FinishMovement(session, Accept(session, new Cancel()));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Accept(session, new Confirm());
         Accept(session, new ChooseAction(SessionAction.Stay));
         Accept(session, new Confirm());
@@ -225,7 +225,7 @@ public sealed class PhysicalBattleTests
             d["terrains"]![0]!["legend"]!["b"] = new JsonObject { ["surface"] = "brush", ["protection"] = "heavy" };
             d["terrains"]![0]!["rows"]![2] = "#ppbpppp#";
         });
-        Accept(session, new Move(ExplorationDirection.North));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         var result = Attack(session, "raider");
         var actor = session.Current.Battle.GetActor(new("swordsman"));
         Assert.Equal(new MapPosition(3, 2), actor.Position);
@@ -247,7 +247,7 @@ public sealed class PhysicalBattleTests
             if (boundary == "leader") d["actors"]![0]!["physical"]!["leader"] = true;
             if (boundary == "last-ally") d["start"]!["actors"]![1]!["hp"] = 0;
         });
-        Accept(session, new Move(ExplorationDirection.North));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         Select(session, "raider");
         var before = session.Current;
         var result = Send(session, new Confirm());
@@ -298,7 +298,7 @@ public sealed class PhysicalBattleTests
             d["encounters"]![0]!["placements"]![2]!["x"] = 2;
             d["encounters"]![0]!["placements"]![2]!["y"] = 2;
         });
-        Accept(session, new Move(ExplorationDirection.North));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         Select(session, "raider");
         var before = session.Current;
         var result = Send(session, new Confirm());

@@ -1335,7 +1335,7 @@ have no presentation or sound. Old corpses are never rediscovered by an HP-zero 
 The private board binds original map sprites through source ally/enemy assignments, using the
 selected world's `ExplorationVisuals.Sprites`. The selected scene document supplies only the missing
 63 direction sheets and field selectors. These are mapsprites, distinct from close-up battlesprites.
-Live units use a static field pose in the diagnostic board; full battlefield composition, terrain
+Settled units use a static field pose in the diagnostic board; full battlefield composition, terrain
 art and ordinary idle animation remain outside this consumer. The field phase freezes each dead
 sprite's first walking frame, while whole-batch direction changes select up/side/down sheets and
 right-facing mirroring. Existing whole-PCM116/BD playback may outlast modern visual delivery; its
@@ -1374,3 +1374,61 @@ pack's unique81/CC recording plays unchanged. The original missing81/C6 failure 
 modern PCM reuse resolves host delivery, not hardware-exact counter audio. Direct adapter observations
 cover exact preference, unique reuse, named playback, missing/ambiguous rejection and actual finite
 completion without gameplay changes. The world/audio pack and #517's116 recording remain unchanged.
+
+## Battlefield movement and walking audio
+
+Application owns a finite route and one completion token per adjacent segment. Player steps change
+the provisional destination; committed cells and resources remain unchanged until the action.
+Friendly cells may be traversed but cannot be selected as a final stop. Cancel walks the source
+decreasing-cost return route to the committed origin, rather than reversing the input history.
+AI retains its chosen route, thinking stream and memory from one decision. A pure, discarded action
+preflight preserves atomic Unsupported admission, including random-dependent reward capability;
+actual action construction publishes main RNG only after arrival. Damage, rewards and turn advance
+retain their existing action continuation. No future battle snapshot is retained alongside live state.
+
+Godot interpolates only the current legal segment, selects direction and both halves of the admitted
+map-sprite sheet, and delivers that segment's token once. Display durations are modern 0.20 seconds,
+or 0.10 with reduced animation; delta, redraw, audio completion and arrival add no gameplay RNG.
+Busy gameplay input cannot acknowledge movement. Each new segment requests79 once. Blocked input,
+origin Cancel, origin Stay and repeated projection have no walking cue. The private consumer reuses
+the selected world's finite `SFX_WALKING_TIMER_BD`, command79/timer189, 44,100 Hz, 30,006 frames,
+SHA256 `181C8EDDCD877D9AB031366B88F926A44F97684CDAB44697307FEFAAE8014F9B`.
+No new extraction, resource copy or promotion is needed. Whole-PCM replacement remains the accepted
+audio policy; modern segment duration need not equal PCM duration.
+
+**Confirmed static source boundary:** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, beneath `disasm/`:
+
+- `code/gameflow/battle/battlefunctions/battlefunctions_0.asm` supplies
+  `MoveBattleEntityByMoveString` (`0x23078`), segment sound before travel, destination waiting and
+  control/temporary land-effect coordinate updates; `battlefield/buildmovestringfunctions.asm`
+  supplies `BuildCancelMoveString`, and `battlefunctions/executeindividualturn.asm` selects the
+  control boundary. `battlefunctions/setmovesfx.asm:SetMoveSfx` (`0x25790..0x257C0`) selects79 in battle, except an
+  equipped Chirrup Sandals ring (`0x7E`) selects99. Existing private ATT-only weapon admission
+  excludes rings; arbitrary loadouts and99 are outside this consumer.
+- `code/gameflow/battle/battleloop_1.asm` clears `PLAYER_TYPE`; `SetControlledEntityActScript` in
+  `code/common/scripting/entity/entityfunctions_2.asm` therefore selects the ordinary controlled
+  character script. `data/scripting/entity/eas_main.asm` runs `ac_checkMapBlockCopy`,
+  `esc02_controlCharacter`, destination wait and branch. Neither a vehicle nor random walk is
+  selected. The AI movement-string path also waits on ordinary entity displacement.
+- `CreatePulsatingBlocksForGrid` in `battlefunctions_0.asm` sets nonzero
+  `FADING_SETTING=PULSATING_1` before movement. In
+  `code/common/scripting/entity/entityscriptengine_2.asm`, `esc40_checkMapBlockCopy` checks that
+  setting first and skips copying while the battle grid pulsates. This contextual guard matters:
+  roof copying can mutate layout in other contexts. Map57's roof/step tables contain only `endWord`.
+- `esc02` vehicle branches and `OpenDoor` have battle guards. Warp/zone branches may still write
+  `MAP_EVENT_TYPE/PARAM` scratch; battle control consumes button/destination state and `BattleLoop`
+  has no map-event dispatcher. Victory writes its return parameters from combatants. This is not
+  a claim that every interrupt has no side effects.
+- `LoadBattle` restores `SetBaseVIntFunctions`: map planes, entity scripts, view, scroll, sprites,
+  windows and map animations. The admitted movement update and controlled/standing/idle scripts
+  do not draw RNG. Battle01's other combatants and neutral entities use those stationary scripts;
+  close-up reaction/fairy and random entity scripts are not active in this boundary.
+
+Reproduce the audit with `git -C $pinnedUpstream show '<commit>:disasm/<path>'` for the named
+symbols and `rg -n 'Random|RANDOM|SEED'` over the reached bodies, checking each caller's guards.
+Absence of a random call alone does not prove natural reach or interrupt parity.
+**Unknown:** exact VInt opportunities, sprite-load queue stalls, acceleration, held-input cadence,
+broader scratch effects and hardware audio. Normal/reduced native equality establishes only the
+bounded modern consumer. Option A, the retained HEAL CP2059–2091 recovery mismatch and 8D/H4 remain
+open. No logical padding, reseeding or fitting to retained79 receipt counts is part of movement.

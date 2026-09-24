@@ -39,6 +39,19 @@ internal static class EngineTestContent
         return Accept(session, new Confirm());
     }
 
+    // Explicit delivery only: Accept/Start retain their observable pending boundary.
+    internal static SessionResult FinishMovement(GameSession session, SessionResult result)
+    {
+        var observations = result.Observations.ToList();
+        while (session.Current.BattleMovement is { } movement)
+        {
+            Assert.False(session.Current.HasBattleControl);
+            result = Accept(session, new CompletePresentation(movement.Token, movement.CompletionKind));
+            observations.AddRange(result.Observations);
+        }
+        return result with { Observations = observations.AsReadOnly() };
+    }
+
     // Explicitly cross the real scene commands when a test owns a completed-action
     // boundary. Stage timing itself is asserted in BattleSceneTests; ordinary
     // Accept/Start never silently consume a presentation or acknowledgement.
@@ -47,8 +60,15 @@ internal static class EngineTestContent
     internal static SessionResult FinishBattleScenes(GameSession session, SessionResult result, bool neutralHealingWait = false)
     {
         var observations = result.Observations.ToList();
-        while (session.Current.BattleScene is { } scene)
+        while (session.Current.BattleScene is not null || session.Current.BattleMovement is not null)
         {
+            if (session.Current.BattleMovement is not null)
+            {
+                result = FinishMovement(session, result with { Observations = [] });
+                observations.AddRange(result.Observations);
+                continue;
+            }
+            var scene = session.Current.BattleScene!;
             Assert.False(session.Current.HasBattleControl);
             result = Accept(session, scene.Healing is { LogicalComplete: false } healing &&
                 (!healing.AtTimedInput || neutralHealingWait) ? new AdvanceSimulation(scene.Token) :

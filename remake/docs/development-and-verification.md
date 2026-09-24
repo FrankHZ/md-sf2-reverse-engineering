@@ -1709,3 +1709,34 @@ exact65/BD preference among variants, unique81/CC reuse in music2/C6, consistent
 playback, missing80 and ambiguous65/C6 rejection, actual Started/Finished receipts and unchanged
 gameplay state. This is a direct consumer observation, not a unit test of the probe. The normal and
 reduced counter pair also confirms exact83/C6 and116/BD selections.
+
+## Battlefield movement consumer
+
+`BattleMovementTests` exercises per-segment completion, wrong/duplicate tokens, busy commands,
+provisional placement, friendly traversal and decreasing-cost return distinct from input reversal.
+`EnemyActionTests` checks one thinking decision, unchanged main RNG/resources during delivery and
+construction only after arrival. Source/commandset tests retain target, memory, legal-stop and
+Unsupported boundaries. Callers that need completed movement explicitly use `FinishMovement`;
+`Accept` and `Start` never drain it implicitly. Use the affected engine files and adapter compilation
+under the locked environment. Preserve completed failing runs and rerun only failed files after
+call-site migration; touching an outcome helper does not require its long complete-route observation.
+
+For actual host acceptance, reuse the selected world containing79/BD and the existing field-selector
+scene, with `SF2_PRIVATE_EXPLORATION_CONTENT` and `SF2_PRIVATE_BATTLE_SCENE_CONTENT`. The
+`engine_battle_scene_observation.gd` mode `SF2_BATTLE_MOVEMENT=1`, together with
+`SF2_BATTLE_SCENE_WORLD=1`, drives ordinary movement, bend, Cancel, blocked input and live-board
+approach/Stay inputs through AI movement and attack. Other scene-specific modes must be disabled.
+Use the existing ordinary world start and a declared external controlled party: HP/maxHP100,
+DEF40, ATT5 and EXP0 for allies, Chester AGI99/MOV6, initial mainSeed2568421376. These initial inputs
+make a bounded survivable observation; they do not establish a natural original route.
+
+The observer records actual intermediate node position/facing/walking frames, stable gameplay
+within each token, busy-input rejection, segment start/arrival and actual79/BD AudioStreamPlayer
+receipts. Check one cue per segment revision, no cue on blocked/origin operations, retained AI
+multistep Stay and move-then-attack, and finite PCM completion/replacement. Run normal60FPS and
+reduced30FPS from the same declared inputs; compare complete ordered semantic events excluding
+delivery revision/sequence, and final gameplay state including positions, resources, memory, turn
+and both seeds. Probes and launch wrappers are observations, not engine behavior to unit-test.
+No screenshots, injected paths, runtime seed changes, original runtime, new assets or resource
+copies are required. The [source audit and limits](./presentation-and-assets.md#battlefield-movement-and-walking-audio)
+remain separate from native-consumer claims.

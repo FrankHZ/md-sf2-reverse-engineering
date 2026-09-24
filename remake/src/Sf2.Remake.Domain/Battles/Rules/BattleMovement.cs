@@ -13,6 +13,31 @@ public sealed class BattleMovementPreview
 
 internal static class BattleMovement
 {
+    internal static IReadOnlyList<MapPosition> Route(MapPosition origin, IReadOnlyList<byte> directions)
+    {
+        var path = new List<MapPosition> { origin };
+        foreach (byte direction in directions.TakeWhile(value => value != 255))
+        {
+            var previous = path[^1];
+            path.Add(direction switch
+            {
+                0 => new(previous.X + 1, previous.Y), 1 => new(previous.X, previous.Y - 1),
+                2 => new(previous.X - 1, previous.Y), 3 => new(previous.X, previous.Y + 1),
+                _ => throw new BattleRuleException("movement-direction", "movement.path", true),
+            });
+        }
+        return path.AsReadOnly();
+    }
+
+    internal static IReadOnlyList<MapPosition> ReturnPath(EngineBattleState battle, ActorRef actor, MapPosition from)
+    {
+        var (destination, directions) = AiMovementRules.Walk(Grid(battle, actor), from, 0,
+            battle.Definition.Width, battle.Definition.Height);
+        if (destination != battle.GetActor(actor).Position)
+            throw new BattleRuleException("movement-return", "movement.path", true);
+        return Route(from, directions);
+    }
+
     internal static BattleMovementPreview Preview(EngineBattleState battle, ActorRef actorRef, MapPosition destination)
     {
         var actor = battle.GetActor(actorRef);

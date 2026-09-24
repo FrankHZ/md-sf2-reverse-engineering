@@ -9,6 +9,49 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class EnemyActionTests
 {
+    [Fact]
+    public void AiMovementRetainsOneDecisionAndDefersConstructionUntilArrival()
+    {
+        var session = Start("stone-court", d =>
+        {
+            Configure(d, 55);
+            d["encounters"]![0]!["placements"]![2]!["x"] = 7;
+            d["actors"]![2]!["move"] = 3;
+            d["encounters"]![0]!["placements"]![3]!["x"] = 6;
+            d["encounters"]![0]!["placements"]![3]!["y"] = 5;
+        });
+        var before = session.Current.Battle;
+        var result = Stay(session);
+        var movement = session.Current.BattleMovement!;
+        Assert.NotNull(movement);
+        Assert.Equal(new MapPosition(7, 3), movement.From);
+        Assert.Equal(new MapPosition(4, 3), movement.Path[^1]);
+        Assert.Equal(before.MainSeed, session.Current.Battle.MainSeed);
+        uint thinking = session.Current.Battle.ThinkingSeed;
+        Assert.Contains(result.Observations, e => e.Kind == "thinking-rng");
+        Assert.DoesNotContain(result.Observations, e => e.Kind == "scene-prepared" || e.Kind.StartsWith("rng-", StringComparison.Ordinal));
+        int cursor = session.Current.Battle.Cursor;
+        while (session.Current.BattleMovement is { } step)
+        {
+            Assert.False(session.Current.HasBattleControl);
+            Assert.Null(session.Current.BattleScene);
+            Assert.Equal(cursor, session.Current.Battle.Cursor);
+            Assert.Equal(new MapPosition(7, 3), session.Current.Battle.GetActor(step.Actor).Position);
+            Assert.Equal(before.MainSeed, session.Current.Battle.MainSeed);
+            Assert.Equal(thinking, session.Current.Battle.ThinkingSeed);
+            result = Accept(session, new CompletePresentation(step.Token, step.CompletionKind));
+            Assert.DoesNotContain(result.Observations, e => e.Kind == "thinking-rng");
+        }
+        Assert.NotNull(session.Current.BattleScene);
+        Assert.Equal(cursor, session.Current.Battle.Cursor);
+        Assert.Equal(new MapPosition(4, 3), session.Current.Battle.GetActor(new("raider")).Position);
+        Assert.Contains(result.Observations, e => e.Kind == "scene-prepared");
+        Assert.Contains(result.Observations, e => e.Kind == "rng-dodge");
+        var completed = FinishBattleScenes(session, result);
+        Assert.Single(completed.Observations, e => e.Kind == "physical-first");
+        Assert.Single(completed.Observations, e => e.Kind == "action-committed" && e.Actor == new ActorRef("raider"));
+    }
+
     [Theory]
     [InlineData("stone-court", 2, 456, 500, 0, 0xFD831234u, 12)]
     [InlineData("river-post", 2, 456, 500, 0, 0xFD831234u, 12)]
@@ -85,6 +128,7 @@ public sealed class EnemyActionTests
             }
         });
         var result = Stay(session);
+        result = FinishMovement(session, result);
         var decision = Assert.Single(result.Observations, o => o.Kind == "ai-target");
         Assert.Equal(new ActorRef(target), decision.Target);
         var move = Assert.Single(result.Observations, o => o.Kind == "movement");
@@ -110,7 +154,7 @@ public sealed class EnemyActionTests
                 d["start"]!["actors"]![0]!["hp"] = 1; d["actors"]![0]!["physical"]!["leader"] = true;
             }
         });
-        Accept(session, new Move(ExplorationDirection.South));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Accept(session, new Confirm()); Accept(session, new ChooseAction(SessionAction.Stay));
         var before = session.Current;
         var result = Send(session, new Confirm());

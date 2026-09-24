@@ -66,6 +66,6 @@ public sealed class SpellSelectionTests
         Accept(session, new SelectSpell(new("restore", 2)));
         Assert.Equal(BattleSelectionStage.TargetChoice, session.Current.Selection!.Stage);
         Assert.Null(session.Current.Selection.Target); Assert.Same(before.Battle, session.Current.Battle);
-        Accept(session, new Cancel()); Assert.Null(session.Current.Selection!.Spell);
+        FinishMovement(session, Accept(session, new Cancel())); Assert.Null(session.Current.Selection!.Spell);
     }
 }

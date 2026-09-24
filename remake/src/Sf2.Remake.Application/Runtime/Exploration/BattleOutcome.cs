@@ -9,7 +9,8 @@ internal static class BattleOutcome
     internal static SessionResult Begin(ScenarioDefinition definition, SessionResult result)
     {
         var current = result.Snapshot;
-        if (current.Mode != SessionMode.Battle || current.BattleScene is not null || BattleOutcomeRules.Check(current.Battle) is not { } kind) return result;
+        if (current.Mode != SessionMode.Battle || current.BattleScene is not null || current.BattleMovement is not null ||
+            BattleOutcomeRules.Check(current.Battle) is not { } kind) return result;
         var observations = result.Observations.ToList();
         try
         {

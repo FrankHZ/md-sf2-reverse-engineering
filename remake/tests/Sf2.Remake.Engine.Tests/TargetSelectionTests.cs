@@ -118,7 +118,7 @@ public sealed class TargetSelectionTests
         placements[1]!["x"] = 1; placements[1]!["y"] = 4;
         placements[2]!["x"] = 7; placements[2]!["y"] = 3;
         var session = Assert.IsType<SessionStarted>(GameSession.Start(Reader(doc))).Session;
-        var result = Stay(session);
+        var result = FinishMovement(session, Stay(session));
         var candidates = result.Observations.Where(o => o.Kind == "ai-candidate").ToArray();
         Assert.Equal(new long?[] { 12, 14 }, candidates.Select(o => o.Before));
         Assert.Equal(new long?[] { 1, 1 }, candidates.Select(o => o.After));

@@ -20,14 +20,14 @@ internal static class AttackThenApproachAi
             legal, actor.Position!, targets.Select(target => target.Position!).ToArray(),
             position => current.Actors.Any(a => a.Hp > 0 && a.Position == position), current.Definition.Width, current.Definition.Height);
         var target = targets[decision.TargetIndex]; var destination = decision.Destination;
-        var battle = BattleMovement.Commit(current, actorRef, destination, legal);
-        return new(battle, Array.AsReadOnly<BattleEffect>([
+        BattleMovement.RequireStop(current, actorRef, destination, legal);
+        return new(current, Array.AsReadOnly<BattleEffect>([
             new("ai-command-attack1", actorRef, After: -1),
             new("ai-command-heal1", actorRef, After: -1),
             new("ai-command-support", actorRef, After: -1),
             new("ai-move-target", actorRef, decision.TargetCosts[decision.TargetIndex], decision.Cost, Target: target.Actor),
             new(destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: target.Actor),
-            new("ai-command-move1", actorRef, After: 0)]), destination);
+            new("ai-command-move1", actorRef, After: 0)]), destination, BattleMovement.Route(actor.Position!, decision.MoveString));
 
     }
 }

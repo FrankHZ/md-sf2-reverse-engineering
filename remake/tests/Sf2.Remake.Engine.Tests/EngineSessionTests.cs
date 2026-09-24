@@ -72,12 +72,12 @@ public sealed class EngineSessionTests
         var session = Start(package);
         var before = session.Current;
         var actor = before.Selection!.Actor;
-        Accept(session, new Move(ExplorationDirection.East));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Assert.NotEqual(before.Battle.GetActor(actor).Position, session.Current.Selection!.Preview.Destination);
         Accept(session, new Confirm());
         Accept(session, new SelectSpell(before.Battle.GetActor(actor).Definition.Spells.Single()));
         Accept(session, new SelectTarget(actor));
-        var result = Accept(session, new Cancel());
+        var result = FinishMovement(session, Accept(session, new Cancel()));
         Assert.Same(before.Battle, result.Snapshot.Battle);
         Assert.Equal(before.Battle.GetActor(actor).Position, result.Snapshot.Selection!.Preview.Destination);
         Assert.Equal(BattleSelectionStage.Movement, result.Snapshot.Selection.Stage);
@@ -91,7 +91,7 @@ public sealed class EngineSessionTests
         var session = Start();
         var before = session.Current;
         var actor = before.Selection!.Actor;
-        Accept(session, new Move(ExplorationDirection.East));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Accept(session, new Confirm());
         Assert.Same(before.Battle, session.Current.Battle);
         Accept(session, new ChooseAction(SessionAction.Stay));
@@ -141,7 +141,7 @@ public sealed class EngineSessionTests
     public void UnsupportedLevelUpRollsBackMovementCostHealingExperienceAndSeeds()
     {
         var session = Start(change: document => document["start"]!["actors"]![0]!["exp"] = 99);
-        Accept(session, new Move(ExplorationDirection.East));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         Accept(session, new Confirm());
         Accept(session, new SelectSpell(new("mend", 1)));
         Accept(session, new SelectTarget(new("medic-a")));

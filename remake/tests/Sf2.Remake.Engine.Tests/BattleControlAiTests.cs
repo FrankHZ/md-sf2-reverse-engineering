@@ -70,7 +70,7 @@ public sealed class BattleControlAiTests
         Assert.Equal(before.MainSeed, controlled.Snapshot.Battle.MainSeed);
         Assert.DoesNotContain(controlled.Observations, o => o.Kind.StartsWith("ai-", StringComparison.Ordinal));
         var selected = playerSession.Current;
-        Accept(playerSession, new Confirm()); Accept(playerSession, new Cancel());
+        Accept(playerSession, new Confirm()); FinishMovement(playerSession, Accept(playerSession, new Cancel()));
         Assert.Same(selected.Battle, playerSession.Current.Battle);
         Assert.Equal(raider, playerSession.Current.Selection!.Actor);
         Assert.Same(stayed.Snapshot, staySession.Current);

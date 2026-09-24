@@ -49,9 +49,9 @@ public sealed class PrivateBattleInitializationTests
         Assert.True(state.Regions.Flags[6]); Assert.Single(state.Regions.Flags, flag => flag);
         Assert.Null(player.Exp); Assert.Null(state.Gold); Assert.Equal((ushort)0, player.ActivationWord);
         Assert.Equal(0xBEEF4321u, state.ThinkingSeed); Assert.Equal(0x5678u, state.MainSeed & 65535);
-        var preview = Accept(first.Session, new Move(ExplorationDirection.East));
+        var preview = FinishMovement(first.Session, Accept(first.Session, new Move(ExplorationDirection.East)));
         Assert.Equal(cost, preview.Snapshot.Selection!.Preview.Cost); Assert.Same(state, preview.Snapshot.Battle);
-        Accept(first.Session, new Confirm()); var cancelled = Accept(first.Session, new Cancel());
+        Accept(first.Session, new Confirm()); var cancelled = FinishMovement(first.Session, Accept(first.Session, new Cancel()));
         Assert.Equal(new MapPosition(2, 2), cancelled.Snapshot.Selection!.Preview.Destination); Assert.Same(state, cancelled.Snapshot.Battle);
         Assert.Equal(before, JsonSerializer.Serialize(input)); Assert.NotSame(state, second.Session.Current.Battle);
     }
@@ -96,7 +96,7 @@ public sealed class PrivateBattleInitializationTests
         Accept(session, new SelectSpell(new("heal", 1))); Accept(session, new SelectTarget(new("different-player")));
         before = session.Current;
         Assert.Equal("unspecified-exp", Send(session, new Confirm()).Failure!.Code); Assert.Same(before, session.Current);
-        Accept(session, new Cancel()); Accept(session, new Confirm());
+        FinishMovement(session, Accept(session, new Cancel())); Accept(session, new Confirm());
         Assert.Equal("physical-definition", Send(session, new ChooseAction(SessionAction.PhysicalAttack)).Failure!.Code);
     }
 
