@@ -25,6 +25,8 @@ internal sealed class SessionAudio : IDisposable
     private long? _waitToken;
     private string? _battlefieldMusic;
     private int _sceneMusic;
+    private bool _fading;
+    private double _fadeProgress;
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
@@ -52,21 +54,22 @@ internal sealed class SessionAudio : IDisposable
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
         musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished,
         musicPosition = MusicPosition, timerB = TimerB,
+        musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
         soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
         soundPosition = _sounds.LastOrDefault()?.Player.GetPlaybackPosition() ?? 0,
         sounds = _sounds.Select(voice => new
         {
             cue = voice.Cue, command = _assets[voice.Cue].Command, slots = voice.Slots.ToString(), startSequence = voice.StartSequence,
-            playing = voice.Player.Playing, position = voice.Player.GetPlaybackPosition(),
+            playing = voice.Player.Playing, position = voice.Player.GetPlaybackPosition(), volumeDb = voice.Player.VolumeDb,
         }).ToArray(),
         receipts = _receipts.ToArray(),
     };
 
-    private void Record(string operation, AudioStreamPlayer player, string cue, int? command = null)
+    private void Record(string operation, AudioStreamPlayer player, string? cue, int? command = null)
     {
-        var asset = _assets[cue];
-        _receipts.Add(new(++_sequence, operation, cue, command ?? asset.Command, asset.TimerB, asset.PcmSha256,
-            asset.SampleRate, asset.Channels, asset.SampleFrames, asset.LoopBegin, asset.LoopEnd,
+        var asset = cue is null ? null : _assets[cue];
+        _receipts.Add(new(++_sequence, operation, cue, command ?? asset!.Command, asset?.TimerB, asset?.PcmSha256,
+            asset?.SampleRate, asset?.Channels, asset?.SampleFrames, asset?.LoopBegin, asset?.LoopEnd,
             player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken,
             _sounds.FirstOrDefault(voice => voice.Player == player)?.RequestedTimerB));
         // Existing inspectors poll live state. Sequence makes a missed bounded window explicit.
@@ -180,7 +183,12 @@ internal sealed class SessionAudio : IDisposable
             _sounds.Add(voice);
         }
         var player = voice?.Player ?? _music;
-        if (music) Stop(player, MusicCue);
+        if (music)
+        {
+            if (_fading) StopSharedEffects();
+            _fading = false; _fadeProgress = 0;
+            Stop(player, MusicCue);
+        }
         var previous = player.Stream; player.Stream = null; previous?.Dispose();
         player.Stream = new AudioStreamWav
         {
@@ -199,7 +207,7 @@ internal sealed class SessionAudio : IDisposable
             }
         }
         else _soundCue = resource;
-        player.VolumeDb = 0;
+        player.VolumeDb = _fading && voice?.Slots == Slots.PsgNoise ? (float)(-60 * _fadeProgress) : 0;
         player.Play();
         if (!player.Playing) throw new InvalidOperationException("audio-stream-did-not-start");
         Starts++;
@@ -224,8 +232,28 @@ internal sealed class SessionAudio : IDisposable
 
     internal void FadeOut(double progress)
     {
-        _music.VolumeDb = (float)(-60 * Math.Clamp(progress, 0, 1));
-        if (progress >= 1) Stop(_music, MusicCue);
+        if (!_fading) return;
+        _fadeProgress = Math.Max(_fadeProgress, Math.Clamp(progress, 0, 1));
+        float volume = (float)(-60 * _fadeProgress);
+        _music.VolumeDb = Math.Min(_music.VolumeDb, volume);
+        foreach (var voice in _sounds.Where(voice => voice.Slots == Slots.PsgNoise && voice.Player.Playing))
+            voice.Player.VolumeDb = Math.Min(voice.Player.VolumeDb, volume);
+        if (_fadeProgress < 1) return;
+        Stop(_music, MusicCue);
+        StopSharedEffects();
+        _fading = false;
+    }
+
+    private void StopSharedEffects()
+    {
+        // The admitted shared PSG effects end with StopMusic; extra type-2 voices survive.
+        // Already-ended players retain their queued natural Finished callback.
+        foreach (var voice in _sounds.Where(voice => voice.Player.Playing &&
+            (voice.Slots & (Slots.PsgTone3 | Slots.PsgNoise)) != 0).ToArray())
+        {
+            Stop(voice.Player, voice.Cue);
+            Release(voice);
+        }
     }
 
     internal void BeginBattleScene(int music)
@@ -236,7 +264,10 @@ internal sealed class SessionAudio : IDisposable
     }
     internal void BeginSceneEnd()
     {
-        if (MusicCue is { } cue) Record("fade-command", _music, cue, 253);
+        if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
+        if (!_fading) _fadeProgress = 0;
+        _fading = true;
+        Record("fade-command", _music, _music.Playing ? MusicCue : null, 253);
     }
     internal void StartBattleSceneMusic() { if (_assets.Count > 0) Play(_sceneMusic); }
     internal void RestoreBattlefieldMusic()
@@ -249,6 +280,7 @@ internal sealed class SessionAudio : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _fading = false;
         _music.Finished -= _musicFinished;
         foreach (var voice in _sounds.ToArray()) Release(voice);
         ReleasePlayer(_music);
@@ -296,6 +328,6 @@ internal sealed class SessionAudio : IDisposable
     }
 }
 
-internal sealed record AudioPlaybackReceipt(long Sequence, string Operation, string Cue, int Command,
-    int TimerB, string PcmSha256, int SampleRate, int Channels, int SampleFrames, int? LoopBegin,
+internal sealed record AudioPlaybackReceipt(long Sequence, string Operation, string? Cue, int Command,
+    int? TimerB, string? PcmSha256, int? SampleRate, int? Channels, int? SampleFrames, int? LoopBegin,
     int? LoopEnd, bool Playing, double PlaybackPosition, ulong Microseconds, long Revision, long? WaitToken, int? RequestedTimerB);

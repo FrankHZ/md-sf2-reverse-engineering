@@ -820,10 +820,48 @@ investigation was abandoned as unnecessary under this policy, not delivered.
 unchanged gameplay during tail collection. Independent adapter observations cover partial overlap,
 rapid bounded replacement, full/disjoint groups and disposal.
 
-**Incomplete:** Original command 253 fade semantics and complete reached field/UI cue bindings remain
-incomplete. The [physical scene consumer](#physical-battle-scenes) implements a bounded battle-action
-music/SFX and input-release subset; the bounded HEAL consumer is described below. The existing modern
-half-second `SoundFade` service is not source-timing evidence. Neither successful resource
+### Sound-fade request and effect lifetime
+
+**Confirmed source structure:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm:ApplyZ80BusUpdates/@IsFadeOut`
+forwards command253 asynchronously; the F0 `WAIT_FOR_MUSIC_END` gate is separate.
+`disasm/code/common/tech/sound/sounddriver.asm:Fade_Out`, `UpdateSound` and `StopMusic` distinguish
+shared music/type-1 records from the extra type-2 records. `PSG_ParseToneData:loc_DF2` excludes tone3
+from incremental attenuation; `PSG_ParseNoiseData:loc_F88` attenuates noise. Type-2 YM/DAC paths bypass
+fade attenuation and survive StopMusic. `Load_Music` stops shared records and resets fade state;
+`Load_SFX` does not. Same-music suppression can prevent that reload. These named source seams establish
+structure, not natural caller reach, original fade duration or a reproduced audible defect.
+
+**Implemented bounded modern policy:** the existing half-second service ramps whole music/noise PCM,
+leaves tone3 gain unchanged until terminal stop, and preserves type-2 lifetime. Admitted tone3 commands
+are66/67/70/72/73/74/79/102, noise89, and type-2 commands65/77/81/83/92/113/116. New noise inherits active
+fade gain. Repeated requests/progress cannot brighten playback; each actual begin records253 even
+without playing music (asset metadata is then null). Actual new music cancels the old fade and stops
+shared effects; suppressed same-music requests preserve it. Later canceled progress cannot stop the
+replacement. Terminal stops do not manufacture `Finished`; already-ended players retain queued actual
+callbacks. Existing whole-clip replacement and disposal rules remain in force.
+
+The generic `SoundFade` presentation issues one begin per token and retains its existing completion
+and input ownership. Battle entry/end retain their own existing service boundaries. Neither wait is
+proof that original253 waits: `InitializeBattlescene` requests253 then performs background/palette
+work, while `EndBattlescene` requests253 and closes windows. No asynchronous source-script mapping or
+logical clock/RNG policy is added here.
+
+**Confirmed bounded actual consumption:** independent Godot/WASAPI players with unchanged admitted
+assets cover gain/terminal stop, effects started during fade, surviving type-2 natural completion,
+no-music/already-ended cases, repeated begin, suppressed same music, replacement interruption, bounded
+rapid replacement and disposal. The tracked `engine_private_exploration_observation.gd` case
+`SF2_PRIVATE_EXPLORATION_CASE=sound-fade` takes an explicitly authored host resource through
+`SF2_FADE_FIXTURE_HOST`: pending SoundFade, early ordinary input blocked, actual gain/stop, one completion
+and one253 despite redraw. Its host reuses admitted content in memory with PresentCue(SoundFade),
+WriteFlag(7,true), EndProgram. The existing host continues simulation ticks during presentation;
+those observations remain explicit, and RNG is unchanged. This is authored service coverage;
+no naturally reached generic SoundFade instruction was established in the admitted source world.
+
+**Incomplete:** complete reached field/UI cue bindings remain open. The
+[physical scene consumer](#physical-battle-scenes) implements a bounded battle-action music/SFX and
+input-release subset; the bounded HEAL consumer is described below. The modern half-second service
+is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
 JOIN still lacks the source logical audio-end/interleaving binding required in addition to actual
 PCM completion by accepted Option A. Field-Wait eligibility does not supply it; PCM duration cannot

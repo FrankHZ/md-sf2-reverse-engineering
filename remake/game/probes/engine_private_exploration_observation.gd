@@ -6,6 +6,40 @@ var host: Node
 var view: Node
 var case_name := OS.get_environment("SF2_PRIVATE_EXPLORATION_CASE")
 var door_events: Array = []
+var fade_events: Array = []
+
+func _fade_result(payload: String) -> void:
+    fade_events.append_array(JSON.parse_string(payload).observations)
+
+func _fade_case() -> void:
+    view.connect("SessionResultObserved", _fade_result)
+    var initial := _read("authored-sound-fade-pending")
+    var token = initial.token
+    _check(initial.wait == "PresentationWait" and not 7.0 in initial.flags, "authored SoundFade owns a pending token")
+    await _press(KEY_ENTER)
+    var early := _read("early-input")
+    _check(early.token == token and early.wait == "PresentationWait" and not 7.0 in early.flags, "early input cannot complete the fade")
+    var gained := false
+    for tick in range(120):
+        var state := _state()
+        _check(state.failure == null and state.audio.error == null, "fade consumer remains available")
+        if state.audio.fading and state.audio.musicVolumeDb < 0: gained = true
+        if state.stop == "PlayerInput": break
+        view.queue_redraw()
+        await process_frame
+    var completed := _read("authored-sound-fade-complete")
+    _check(gained and not completed.audio.musicPlaying and not completed.audio.fading, "actual music gain and stop precede service completion")
+    _check(completed.stop == "PlayerInput" and 7.0 in completed.flags, "authored continuation runs after completion")
+    _check(completed.mainSeed == initial.mainSeed, "authored fade consumes no RNG")
+    _check(completed.simulationTick - initial.simulationTick == fade_events.filter(func(event): return event.Kind == "simulation-tick").size(), "existing host ticks remain explicitly observed")
+    _check(fade_events.filter(func(event): return event.Kind == "presentation-completed").size() == 1, "one completion for the token")
+    for tick in range(8):
+        view.queue_redraw()
+        await process_frame
+    var repeated := _read("fade-repeated-projection")
+    _check(repeated.revision == completed.revision and repeated.audio.receipts.filter(func(receipt): return receipt.Command == 253).size() == 1, "projection cannot restart or replay253")
+    samples.append({"label":"fade-events", "events":fade_events})
+    view.disconnect("SessionResultObserved", _fade_result)
 
 func _door_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
@@ -97,7 +131,11 @@ func _press(key: Key) -> void:
     await process_frame
 
 func _run() -> void:
-    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    if case_name == "sound-fade":
+        # An explicitly supplied authored host reuses admitted PCM; no natural-route claim.
+        host = load(OS.get_environment("SF2_FADE_FIXTURE_HOST")).new()
+    else:
+        host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     await process_frame
     var initial := _read("controlled-source-start")
@@ -106,6 +144,10 @@ func _run() -> void:
         _finish()
         return
     var identity: String = initial.sessionId
+    if case_name == "sound-fade":
+        await _fade_case()
+        _finish()
+        return
     if case_name == "map3-door":
         await _door_case()
         _finish()
