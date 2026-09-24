@@ -60,18 +60,29 @@ public sealed record ExplorationOutcomeRoute(ProgramLocation AfterProgram, int J
     ProgramLocation DefeatedProgram, ProgramLocation DefeatProgram, ProgramLocation ReturnProgram, MapId BattleMap, byte VictoryFacing,
     MapId EgressMap, MapPosition EgressPosition, byte EgressFacing);
 
+// The source compares the LONG containing palette colors 2 and 3. These are
+// logical CRAM words, independent of the host's rendered brightness.
+public sealed record PalettePair(ushort Color2, ushort Color3)
+{
+    public bool Valid => (Color2 & ~0xEEE) == 0 && (Color3 & ~0xEEE) == 0;
+    public bool Black => Color2 == 0 && Color3 == 0;
+}
+public enum FullFadeVisibility { Black, BaseRestored, Transitioning }
+public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility);
+
 public sealed class ExplorationMapDefinition
 {
     internal ExplorationMapDefinition(MapId map, WorkingMapLayout layout, OriginalMapTraversal traversal,
         IEnumerable<ExplorationEntityDefinition> entities, IEnumerable<ExplorationEvent> events,
         ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
         ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
-        IEnumerable<WriteFlag>? entryFlags = null)
+        IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null)
     {
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup; Population = population; LayoutEvents = layoutEvents;
         OverlayOffsets = Array.AsReadOnly((overlays ?? traversal.ActiveAreas.Select(_ => new MapOverlayOffset(0, 0))).ToArray());
         EntryFlags = Array.AsReadOnly((entryFlags ?? []).ToArray());
+        BasePalette = basePalette;
     }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
@@ -86,6 +97,7 @@ public sealed class ExplorationMapDefinition
     public IReadOnlyList<MapOverlayOffset> OverlayOffsets { get; }
     public ExplorationBattleRoute? Battle { get; }
     public IReadOnlyList<WriteFlag> EntryFlags { get; }
+    public PalettePair? BasePalette { get; }
 }
 
 public sealed class ExplorationProvenance
@@ -124,10 +136,10 @@ public sealed class ExplorationStartInput
 {
     public ExplorationStartInput(MapId map, EntityRef player, MapPosition position, byte facing, ushort speed,
         IEnumerable<int> flags, BattleStartInput party, ProgramLocation? entryProgram = null,
-        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null)
+        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null, ExplorationDisplay? display = null)
     { Map = map; Player = player; Position = position; Facing = facing; Speed = speed;
         Flags = Array.AsReadOnly(flags.ToArray()); Party = party; EntryProgram = entryProgram;
-        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); }
+        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); Display = display; }
     public MapId Map { get; }
     public EntityRef Player { get; }
     public MapPosition Position { get; }
@@ -137,6 +149,7 @@ public sealed class ExplorationStartInput
     public BattleStartInput Party { get; }
     public ProgramLocation? EntryProgram { get; }
     public IReadOnlyList<ExplorationEntityStartPhase> EntityPhases { get; }
+    public ExplorationDisplay? Display { get; }
 }
 public sealed record ExplorationEntityStartPhase(EntityRef Entity, int Slot, int ActionCursor, byte NextWaitTicks,
     bool WaitingForMotion, EntityMotionState Motion);

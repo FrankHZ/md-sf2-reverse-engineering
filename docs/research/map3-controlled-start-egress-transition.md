@@ -148,7 +148,110 @@ exploration file above, `mapload.asm:LoadMap`, `displayinit.asm:InitializeDispla
 Interruptions between those CPU phases are not enumerated by the explicit waits.
 The producing pass alone cannot establish a fixed transition tick budget or the
 post-warp seed. The [remake verification owner](../../remake/docs/development-and-verification.md#ordinary-field-action-and-warp-service)
-separates the implemented pass from that remaining gap.
+separates implemented finite services from that remaining CPU-phase gap.
+
+## Finite full-black helpers and visible return
+
+**Confirmed (pinned source):** `ExplorationLoop` calls `FadeOutToBlackAll`,
+waits for that fade, takes the Preserve/Rebuild load branch, installs
+`SetBaseVIntFunctions`, runs the selected map init, then compares the **LONG**
+at `PALETTE_1_BASE_02` (`FFD084`) with `PALETTE_1_CURRENT_02` (`FFD004`).
+The comparison includes palette 1 colors **2 and 3**. Inequality calls
+`PlayMapMusic` and synchronous `FadeInFromBlack`; equality skips both.
+This is not an unconditional fade-in or a comparison of only color 2.
+
+`FadeOutToBlackAll` resets the pointer, timer and full palette mask and copies
+live `FADING_COUNTER_MAX` (`FFDEF2`) into the countdown. It deactivates scrolling,
+not the entity service. `WaitForFadeToFinish` adds no final service after the
+setting becomes zero. `fadingcommands.asm:ExecuteFading` performs the same
+initialization but waits **one additional VInt** after fade termination.
+`applyfadingeffectandz80busupdate.asm:ApplyFadingEffect` decrements the countdown;
+at zero it reloads the period and consumes a table entry. The full-black tables
+in `data/tech/fadingdata.asm` contain seven color entries and an `80` terminator:
+`FA FB FC FD FE FF 00 80` for in and `FF FE FD FC FB FA F9 80` for out.
+`ApplyCurrentColorFadingValue` derives each channel from BASE plus twice the
+signed entry, clamped to the channel range. The terminator changes no color.
+
+For a stable positive byte period `p`, the fade therefore consumes `8*p`
+**enabled fade services**; ExecuteFading adds its separate final service.
+`vint.asm` orders fade before context slots, including the terminal cycle.
+Period zero wraps the byte countdown to 256; the bounded remake explicitly
+rejects it. This finite helper rule does not count interruptions during CPU work.
+
+`displayinit.asm:InitializeDisplay` deactivates context slots before its VInt
+wait. `mapload.asm:LoadMap` also waits after enabling the display, before the
+caller reinstalls base context functions. Those two explicit gated services
+update no entities. Preserve retains live BASE and the old physical population;
+Rebuild selects the map palette for BASE and initializes entities, clears its
+specified temporary flags and sets flag 80. CURRENT remains black until a
+supported palette operation changes it. The source has additional CPU phases
+before/after these operations whose interruption counts are **Unknown**.
+
+### Selected R1 period and initial display binding
+
+**Confirmed (bounded source plus retained RAM join):** the selected R1 ancestry
+uses period **3** at the first warp. The retained research-worktree record
+`local/issue496/prepared-68/runtime/continuation.json` contains
+`original.ramHex`, a 65,536-byte 68K RAM readback. Offset `DEF2` is 3;
+`DEF0` is 0; `F711` is map 3. It is neutral completed emulator frame 8605,
+checkpoint `map3-zone-messenger`, ordinal 1, with no active script/helper.
+It is a later saved observation, **not a direct first-warp sample**.
+The 2,626 retained checkpoints begin at `r1:first-wait-before-restoration`,
+include the first warp at frame 368 and end at segment save; their maps remain 3.
+
+The writer audit at the pinned commit is bounded and reproducible:
+
+| Source below `disasm/code/` | Period write |
+| --- | --- |
+| `gameflow/start/systeminit.asm`, `gameflow/start/gameintro.asm`, `specialscreens/witchend/witchend.asm` | Set 3 in reset/intro/end contexts |
+| `common/menus/endingkiss.asm` | Set 5 in ending context |
+| `gameflow/battle/battlescenes/battlesceneengine_0.asm` | Temporary 1, restore predecessor |
+| `common/scripting/map/mapscriptengine_1.asm:csc3B/csc3C` | Temporary 6, restore predecessor |
+| Same file, `LaunchFading` | Supplied temporary period, restore predecessor |
+
+The selected R1-to-messenger suffix enters none of the permanent writer contexts.
+Its ordinary fades and default Map 3 init do not write the period; synchronous
+map helpers restore temporary changes. Numeric `FFDEF2` aliases and wider fading
+stores add no writer (`FADING_TIMER_WORD` is `FFDFAA`, not the period).
+`tools/bizhawk/map3_messenger_acceptance_observer.lua:original_state` reads every
+68K RAM offset in order, and `save_segment` writes the record before stop/cleanup.
+R1 patch/scratch/time restoration does not touch DEF2, and this segment was not
+resumed. Thus the later byte and intervening writer invariant join back to R1
+and the first warp. **Inferred:** cold boot is its likely origin. **Unknown:**
+arbitrary other starts. Production consumes an explicit period; it reads no
+checkpoint and has no default 3.
+
+The initial palette/visibility has a separate proof. Map 3 `00-tilesets.asm`
+selects palette 0; `mappalette00.bin` words at byte offsets 4 and 6 are nonzero.
+The admitted R1 prefix reaches `ExplorationLoop`'s first `WaitForEvent` after
+full FadeOut, new-map BASE load, default init (flags 1/602/603 only hide/position
+entities), and the conditional synchronous FadeIn. CURRENT zero cannot equal
+this nonzero BASE, so that prefix returns with BASE restored. The later saved
+RAM's BASE/CURRENT pair equality corroborates this state; it does not substitute
+for the initial-prefix proof. This binds the selected visible R1 entry only.
+
+Read-only reproduction after selecting the retained record in `$continuationPath`
+and the clean pinned source checkout in `$upstream`:
+
+```powershell
+$record = Get-Content -LiteralPath $continuationPath -Raw | ConvertFrom-Json
+$record.original.ramHex.Length / 2 # 65536
+[Convert]::ToInt32($record.original.ramHex.Substring(0xDEF2 * 2, 2), 16) # 3
+$record.checkpoint.name # map3-zone-messenger
+& rg -n 'FADING_COUNTER_MAX|FFDEF2|FADING_TIMER_WORD' (Join-Path $upstream 'disasm')
+& git -C $upstream show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/tech/interrupts/fadingcommands.asm
+```
+
+**Confirmed (bounded implementation contract):** logical palette state and actual
+host delivery are separate. The source pair comparison selects the helper;
+pair equality alone cannot establish RGBA host visibility. The supported equal
+branch is an onLoad synchronous full-black FadeIn that has completed both its
+logical services and actual visible delivery. Equal-but-black returns are
+explicitly Unsupported. White, partial, tint and asynchronous map-load composition
+remain Unsupported in this transition context. No implicit white restore is
+licensed by this source evidence. The [verification owner](../../remake/docs/development-and-verification.md#ordinary-warp-visible-return)
+records engine and real host acceptance without claiming hardware timing or H4
+closure. Original-emulator evidence was read, not recaptured.
 
 ## Required bridge through area 1
 

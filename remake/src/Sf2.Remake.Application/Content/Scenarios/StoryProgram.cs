@@ -45,7 +45,10 @@ public sealed record JoinPartyMember(int Member) : StoryInstruction;
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
-    EntityRef? Entity = null, MapPosition? Position = null) : StoryInstruction;
+    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null) : StoryInstruction;
+// ExecuteFading is synchronous, full-mask black, with one final VInt service.
+// A supplied period is temporary; null consumes the live period.
+public sealed record FullBlackFade(byte? Period = null);
 public sealed record TransferToMap(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode) : StoryInstruction;
 public sealed record UnsupportedInstruction(string Opcode, string Source) : StoryInstruction;
 

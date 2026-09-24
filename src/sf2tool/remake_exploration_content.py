@@ -39,6 +39,41 @@ def _location(program: str, instruction: int = 0) -> dict[str, Any]:
     return {"program": program.lower().replace("_", "-"), "instruction": instruction}
 
 
+def selected_map_palette_bindings(
+    compiler: OriginalPrograms, maps: list[int]
+) -> list[dict[str, Any]]:
+    """Read only the two logical words used by ExplorationLoop's return comparison.
+
+    The caller supplies the already verified pinned compiler source. This small
+    metadata entry does not export assets, select a period, or read a checkpoint.
+    Sources join the compiler's existing provenance collection.
+    """
+    if len(set(maps)) != len(maps) or any(not 0 <= map_id <= 255 for map_id in maps):
+        raise ValueError("unique supported map ids required")
+    result = []
+    for map_id in maps:
+        source = f"disasm/data/maps/entries/map{map_id:02d}/00-tilesets.asm"
+        palette_ids = _arguments(
+            (compiler.upstream / source).read_text(encoding="utf-8"), "mapPalette"
+        )
+        if len(palette_ids) != 1:
+            raise ValueError("map palette selection must be singular")
+        palette_id = compiler.number(palette_ids[0])
+        palette = f"disasm/data/graphics/maps/mappalettes/mappalette{palette_id:02d}.bin"
+        data = (compiler.upstream / palette).read_bytes()
+        if len(data) != 32:
+            raise ValueError("map palette must contain 16 words")
+        pair = {
+            "color2": int.from_bytes(data[4:6], "big"),
+            "color3": int.from_bytes(data[6:8], "big"),
+        }
+        if any(value & ~0xEEE for value in pair.values()):
+            raise ValueError("unsupported map CRAM word")
+        compiler.sources.update((source, palette))
+        result.append({"map": f"map-{map_id}", "base": pair})
+    return result
+
+
 def _selected_growth(
     compiler: OriginalPrograms, selections: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -818,14 +853,15 @@ class OriginalPrograms:
                         "value": self.number(args[1]) != 0,
                     }
                 )
-            elif op == "fadeInB":
+            elif op in ("fadeInB", "fadeOutB", "slowFadeInB", "slowFadeOutB"):
                 result.append(
                     {
                         "op": "present",
-                        "kind": "FadeIn",
+                        "kind": "FadeIn" if "In" in op else "FadeOut",
                         "resource": "black",
                         "entity": None,
                         "position": None,
+                        "fullBlack": {"period": 6 if op.startswith("slow") else None},
                     }
                 )
             elif op == "setPos":

@@ -22,6 +22,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private int _spriteMounts;
     private WaitToken? _cue;
     private double _cueAge;
+    private float _fadeStart;
     private EntityRef? _gesture;
     private bool _nodding;
     private bool _shivering;
@@ -98,8 +99,15 @@ internal sealed class ExplorationPresentation : IDisposable
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
                 }
             }
-            if (current.Story.Wait is not PresentationWait wait)
+            var wait = current.Story.Wait switch
+            {
+                FullFadeWait fade => new PresentationWait(fade.Token, new(fade.Kind, "black")),
+                PresentationWait presenting => presenting,
+                _ => null,
+            };
+            if (wait is null)
             { _cue = null; _gesture = null; _mosaic = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
+            if (CompletedCueToken == wait.Token.Value) return completions;
             if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.EntityEffect)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
@@ -109,7 +117,11 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (wait.Cue.Kind is PresentationCueKind.FadeIn or PresentationCueKind.FadeOut)
                 {
                     if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
-                    if (wait.Cue.Resource == "black") _owner.Modulate = wait.Cue.Kind == PresentationCueKind.FadeIn ? Colors.Black : Colors.White;
+                    if (wait.Cue.Resource == "black")
+                    {
+                        if (wait.Cue.Kind == PresentationCueKind.FadeIn) _owner.Modulate = Colors.Black;
+                        _fadeStart = _owner.Modulate.R;
+                    }
                     else
                     {
                         _white.Color = new Color(1, 1, 1, !_reducedFlash && wait.Cue.Kind == PresentationCueKind.FadeIn ? 1 : 0);
@@ -156,7 +168,11 @@ internal sealed class ExplorationPresentation : IDisposable
                     float opacity = (float)Math.Clamp(_cueAge / 0.5, 0, 1);
                     if (wait.Cue.Kind == PresentationCueKind.FadeIn) opacity = 1 - opacity;
                     if (wait.Cue.Resource == "white") _white.Color = new Color(1, 1, 1, _reducedFlash ? 0 : opacity);
-                    else _owner.Modulate = new Color(1 - opacity, 1 - opacity, 1 - opacity);
+                    else
+                    {
+                        float brightness = (1 - opacity) * (wait.Cue.Kind == PresentationCueKind.FadeOut ? _fadeStart : 1);
+                        _owner.Modulate = new Color(brightness, brightness, brightness);
+                    }
                     complete = _cueAge >= 0.5;
                     if (complete) PaletteFades++;
                     break;

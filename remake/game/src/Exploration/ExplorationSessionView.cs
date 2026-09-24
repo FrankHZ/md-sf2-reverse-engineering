@@ -35,11 +35,13 @@ public sealed partial class ExplorationSessionView : Control
     private Label _title = null!;
     private Label _dialogue = null!;
     private Label _help = null!;
+    private Label _failureLabel = null!;
     private GameInput _input = null!;
     private TextWindow? _textWindow;
     private double _revealed;
     private bool _speechSoundToggle;
     private double _tickTime;
+    private bool _resumeAutomatic;
     private bool _waitingAtInput;
     private ulong _nextWaitMicros;
     private ulong _lastWaitFrame;
@@ -59,23 +61,29 @@ public sealed partial class ExplorationSessionView : Control
         _dialogue = new Label { Name = "Dialogue", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _help = new Label { Name = "Help", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_title); AddChild(_dialogue); AddChild(_help);
+        // Failure text must remain readable when the world is correctly held black.
+        var failureLayer = new CanvasLayer { Layer = 101 };
+        _failureLabel = new Label { Name = "TransitionFailure", Position = new(20, 20), Visible = false };
+        AddChild(failureLayer); failureLayer.AddChild(_failureLabel);
         GetViewport().SizeChanged += Present;
-        GetWindow().FocusExited += CancelFieldWait;
-        VisibilityChanged += CancelFieldWait;
+        GetWindow().FocusExited += SuspendClock;
+        VisibilityChanged += SuspendClock;
     }
     public override void _ExitTree()
     {
         CancelFieldWait();
         GetViewport().SizeChanged -= Present;
-        GetWindow().FocusExited -= CancelFieldWait;
-        VisibilityChanged -= CancelFieldWait;
+        GetWindow().FocusExited -= SuspendClock;
+        VisibilityChanged -= SuspendClock;
         _presentation?.Dispose();
     }
 
     public override void _Notification(int what)
     {
-        if (what == NotificationPaused || what == NotificationUnpaused) CancelFieldWait();
+        if (what == NotificationPaused || what == NotificationUnpaused) SuspendClock();
     }
+
+    private void SuspendClock() { CancelFieldWait(); _tickTime = 0; _resumeAutomatic = true; }
 
     private void CancelFieldWait()
     {
@@ -98,6 +106,8 @@ public sealed partial class ExplorationSessionView : Control
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle;
+        if (session.Current.Story.Display?.Visibility == Sf2.Remake.Application.Content.Scenarios.FullFadeVisibility.Black)
+            Modulate = Colors.Black;
         PublishResult("attach");
         _audio = audio; audio.Observe(result);
         _releaseBattle = releaseBattle;
@@ -117,6 +127,9 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait) &&
+            (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
+        if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
         {
             int before = _dialogue.VisibleCharacters;
@@ -126,6 +139,7 @@ public sealed partial class ExplorationSessionView : Control
         }
         if (_presentation is { } presentation)
         {
+            var beforePresentation = _session.Current.Story.Wait?.Token;
             foreach (var completion in presentation.Update(delta, _session.Current))
             {
                 Send(completion);
@@ -133,6 +147,7 @@ public sealed partial class ExplorationSessionView : Control
             }
             QueueRedraw();
             if (presentation.Error is not null) { Present(); return; }
+            if (beforePresentation != _session.Current.Story.Wait?.Token) { _tickTime = 0; return; }
         }
         if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText)
         {
@@ -153,20 +168,22 @@ public sealed partial class ExplorationSessionView : Control
             if (ticks > 0)
             {
                 long before = _session.Current.Story.SimulationTick;
+                var token = _session.Current.Story.Wait?.Token;
                 Send(new AdvanceSimulation(_session.Current.Story.Wait?.Token, ticks));
                 long executed = _session.Current.Story.SimulationTick - before;
                 // The engine may yield before consuming the batch. Retain its unused time
                 // for automatic continuation, but never carry paused input time into a new wait.
                 _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
-                if (_handedOff || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || !NeedsTicks(_session.Current)) _tickTime = 0;
+                if (_handedOff || token != _session.Current.Story.Wait?.Token || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
         else _tickTime = 0;
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
-        current.StopReason == SessionStopReason.SimulationWait ||
-        current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
+        current.Story.Wait is FullFadeWait fade ? !fade.LogicalDone :
+            current.StopReason == SessionStopReason.SimulationWait ||
+            current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
 
     internal void HandleAction(GameAction action)
     {
@@ -240,6 +257,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         var current = _session!.Current;
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
+        if (current.Story.Wait?.Token != _session.Current.Story.Wait?.Token) _tickTime = 0;
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
         else _tickTime = 0;
         PublishResult("submit");
@@ -294,13 +312,15 @@ public sealed partial class ExplorationSessionView : Control
         {
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
             DialogueWait => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
-            EntityWait or TickWait or PresentationWait => "",
+            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (current.CanWaitAtInput || current.CanWaitForText)
             _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
+        _failureLabel.Visible = PresentationFailure is not null;
+        _failureLabel.Text = PresentationFailure is { } visibleFailure ? $"{visibleFailure.Message} ({visibleFailure.Code})" : "";
         // A sound wait can become an input wait on the same already-visible text window.
         // Restart reveal only for changed text or a newly opened window, not that wait handoff.
         if (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow))
@@ -357,6 +377,9 @@ public sealed partial class ExplorationSessionView : Control
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
+            display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
+            warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
+            tickDebt = _tickTime, failureVisible = _failureLabel.Visible,
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,
             dialogue = _dialogue.Text, help = _help.Text, visibleCharacters = _dialogue.VisibleCharacters,
             totalCharacters = _dialogue.GetTotalCharacterCount(), textMode = _input.Settings.TextMode,

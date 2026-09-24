@@ -19,7 +19,8 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case
+var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case
+var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -167,6 +168,7 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
+    if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
     if OS.get_environment("SF2_INPUT_RATE") != "": settings.charactersPerSecond = int(OS.get_environment("SF2_INPUT_RATE"))
     if remapped:
         var keys := {"up":"I","right":"L","down":"K","left":"J","confirm":"Q","cancel":"E",
@@ -185,6 +187,9 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
+    if "warp-transition" in input_case:
+        await run_warp_transition()
+        return
     if "text-wait" in input_case:
         await run_text_wait()
         return
@@ -363,13 +368,14 @@ func admit_field_paths() -> bool:
     # Same fresh/local boundary as the scene and H4 probes, applied to all three destinations
     # before touching any of them. Only this entry owns generated input rewrites.
     var args := OS.get_cmdline_user_args()
-    if args.size() != 4 or args.count("--authored-package") != 1 or args.count("--input-settings") != 1:
+    var entry := "--private-exploration-start" if "warp-transition" in input_case and private_route else "--authored-package"
+    if args.size() != 4 or args.count(entry) != 1 or args.count("--input-settings") != 1:
         return field_io_failure("required unique startup arguments")
     var destinations := {"output":OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT")}
     for index in [0, 2]:
-        if args[index] not in ["--authored-package", "--input-settings"]:
+        if args[index] not in [entry, "--input-settings"]:
             return field_io_failure("invalid startup argument order")
-        destinations["package" if args[index] == "--authored-package" else "settings"] = args[index + 1]
+        destinations["package" if args[index] == entry else "settings"] = args[index + 1]
     var local_root := ProjectSettings.globalize_path("res://../../local/").replace("\\", "/").simplify_path().trim_suffix("/")
     var identities: Array[String] = []
     for name in destinations:
@@ -753,7 +759,8 @@ func run_text_wait() -> void:
 func finish_public() -> void:
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
-        "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts}, "  ")
+        "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
+        "warpRecords":warp_records}, "  ")
     if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
@@ -770,3 +777,153 @@ func finish_public() -> void:
     file.store_string(contents)
     file.close()
     quit(0 if failures.is_empty() else 1)
+
+
+func record_warp_result(payload: String) -> void:
+    var result: Dictionary = JSON.parse_string(payload)
+    warp_records.append({"result":result, "state":state()})
+
+func run_warp_transition() -> void:
+    if not admit_field_paths(): return
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 120
+    var period := int(OS.get_environment("SF2_WARP_PERIOD"))
+    var package: Dictionary
+    if private_route:
+        package = JSON.parse_string(FileAccess.get_file_as_string("res://../reference/inputs/map3-opening-start.json"))
+        var binding: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_WARP_BINDING")))
+        package.start.display = binding.display
+        package.start.mapPalettes = binding.mapPalettes
+        package.controlledBoundary += " Explicit selected R1 logical display binding; source and retained-record join documented by the egress-transition owner."
+    else:
+        package = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+        var pair := {"color2":0,"color3":14}
+        package.start.display = {"period":period,"base":pair,"current":pair,"visibility":"base-restored"}
+        for map in package.world.maps:
+            map.basePalette = pair
+            map.battle = null
+            map.onLoad = null
+            map.events = []
+        package.world.maps[0].entities[0].position = {"x":4,"y":4}
+        package.world.maps[0].entities[0].actions = [{"op":"wait","ticks":200}]
+        package.world.maps[0].events = [{"kind":"warp","x":2,"y":1,"map":"yard-map","position":{"x":2,"y":2},
+            "facing":0,"marker":null,"requiredFlag":null,"requiredValue":true}]
+        package.world.maps[1].onLoad = {"program":"warp-init","instruction":0}
+        var instructions: Array = [{"op":"wait-ticks","ticks":2},{"op":"set-flag","flag":602,"value":true}]
+        if "restored" in input_case:
+            instructions.append({"op":"present","kind":"FadeIn","resource":"black","entity":null,"position":null,"fullBlack":{"period":6}})
+        if "failure" in input_case: instructions.append({"op":"native-call","symbol":"unbound-effect","source":"authored"})
+        instructions.append({"op":"end"})
+        package.world.programs.append({"id":"warp-init","instructions":instructions})
+    if not write_field_file("package", JSON.stringify(integer_numbers(package))): return
+    if not write_settings(field_paths.settings): return
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await create_timer(0.3).timeout
+    var initial := read_sample("warp-initial")
+    if not initial.get("focused", false): field_unavailable.append("OS focus required for the actual transition observation")
+    if initial.failure != null or not initial.get("canWaitAtInput", false) or not field_unavailable.is_empty():
+        check(initial.get("canWaitAtInput", false), "Real entry has field control")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    if "failure" not in input_case: view.connect("SessionResultObserved", observe_wait)
+    if private_route:
+        check(initial.mapViewport != null and initial.mapViewport.width > 0 and initial.presentation.error == null and initial.entities.any(func(e): return e.sprite != null),
+            "Private R1 uses real map and sprite resources")
+        await key(KEY_LEFT)
+        for frame in range(120):
+            await process_frame
+            if state().canWaitAtInput: break
+        check(state().canWaitAtInput, "Private first step finishes without waiting for ambient NPC motion")
+        read_sample("private-before-first-warp")
+    await key(KEY_LEFT if private_route else KEY_RIGHT)
+    var paused_once := false
+    var saw_out := false
+    var saw_black := false
+    var saw_destination_black := false
+    var saw_in := false
+    var returned := false
+    for frame in range(1000):
+        await process_frame
+        var s := state()
+        if s.failure != null:
+            samples.append({"label":"warp-failure","state":s})
+            check("failure" in input_case and s.failureVisible and s.presentation.paletteBrightness == 0 and not s.canWaitAtInput,
+                "Reached failure remains readable over the black world with control held")
+            returned = "failure" in input_case
+            break
+        if s.wait == "FullFadeWait":
+            if s.fade.Kind == 1: # FadeOut enum
+                saw_out = true
+                check(s.map == initial.map, "Old scene stays mounted through FadeOut delivery")
+                if s.presentation.paletteBrightness == 0: saw_black = true
+            else:
+                saw_in = true
+                if s.presentation.paletteBrightness == 0: saw_destination_black = true
+            check(not s.canWaitAtInput, "Finite fade retains control")
+            if not paused_once and "pause" in input_case:
+                paused_once = true
+                view.hide()
+                var held := state()
+                await create_timer(0.1).timeout
+                check(state().simulationTick == held.simulationTick and state().presentation.paletteBrightness == held.presentation.paletteBrightness,
+                    "Hidden transition consumes no logical or actual time")
+                view.show()
+                paused = true
+                held = state()
+                await create_timer(0.1, true).timeout
+                check(state().simulationTick == held.simulationTick, "Tree pause consumes no transition service")
+                paused = false
+                await process_frame
+                check(state().tickDebt < 1.0 / 60.0, "Resume carries no paused time debt")
+                var other := Window.new()
+                other.hide()
+                other.force_native = true
+                other.transient = true
+                other.title = "Warp transition focus observation"
+                other.size = Vector2i(240, 100)
+                root.add_child(other)
+                other.show()
+                other.grab_focus()
+                await create_timer(0.1).timeout
+                if not other.has_focus() or root.has_focus():
+                    field_unavailable.append("Native transition focus did not transfer")
+                    finish_public()
+                    return
+                held = state()
+                await create_timer(0.1).timeout
+                check(state().simulationTick == held.simulationTick and state().presentation.paletteBrightness == held.presentation.paletteBrightness,
+                    "Real focus loss pauses logical and actual transition time")
+                other.hide()
+                root.grab_focus()
+                await process_frame
+                other.queue_free()
+                if not root.has_focus():
+                    field_unavailable.append("Native transition focus did not return")
+                    finish_public()
+                    return
+                check(state().tickDebt < 1.0 / 60.0, "Focus return carries no elapsed debt")
+                OS.delay_msec(120) # Delayed real callback, never fabricated completion.
+        if s.wait == "WarpLoadWait":
+            saw_black = saw_black or s.presentation.paletteBrightness == 0
+            check(s.presentation.paletteBrightness == 0 and not s.canWaitAtInput, "Load gate is actually black")
+        if s.canWaitAtInput:
+            returned = true
+            samples.append({"label":"warp-visible-return","state":s})
+            check(s.presentation.paletteBrightness == 1 and s.display.Visibility == 1 and s.display.Base == s.display.Current,
+                "Field control follows real and logical visible return")
+            check(s.tickDebt == 0, "Visible return clears unused batch time")
+            await assert_field_paused("warp-ready-no-debt")
+            await tap_wait()
+            read_sample("warp-next-input")
+            break
+        if frame % 4 == 0: samples.append({"label":"warp-progress","state":s})
+    check(returned and saw_out and saw_black, "Bounded transition reaches its complete outcome through old-scene black")
+    if "failure" not in input_case:
+        check(saw_in and saw_destination_black, "Destination is mounted black and actually faded visible")
+        check(state().presentation.paletteFades == 2, "Exactly one FadeOut and one FadeIn, including onLoad restoration")
+    finish_public()

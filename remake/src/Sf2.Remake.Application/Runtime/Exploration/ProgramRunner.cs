@@ -18,6 +18,11 @@ internal static class ProgramRunner
                 if (current.Story.Wait is not null) return Result(current, observations);
                 if (current.Story.Cursor is not { } cursor)
                 {
+                    if (current.Story.Warp is not null)
+                    {
+                        current = MapTransfer.ReturnVisible(current, observations);
+                        continue;
+                    }
                     if (current.Story.Continuation is ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished)
                     {
                         current = BattleOutcome.Continue(definition, current, observations);
@@ -38,6 +43,9 @@ internal static class ProgramRunner
                             continuation: ProgramContinuation.FieldInput)) };
                     }
                     current = MapEventDispatcher.Finish(current, observations);
+                    if (current.Story.Display is { } display &&
+                        (display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
+                        throw new BattleRuleException("field-display-not-visible", "story.display", true);
                     return Result(Stop(current, SessionStopReason.PlayerInput), observations);
                 }
                 if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||
@@ -55,6 +63,7 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithParty(BattleOutcome.Heal(definition, current.Exploration.Party, all: true)));
                         break;
                     case ReturnBattleMap:
+                        story = story.Copy(story.Cursor, clearWarp: true);
                         var returning = current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn");
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
                             MapLoadMode.Rebuild, story, observations);
@@ -107,6 +116,8 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:
+                        if (story.Warp is not null)
+                            throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
                         active = new ActiveExploration(MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load));
                         story = story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true); break;
                     case LoadSceneEntities load:
@@ -149,6 +160,13 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
                     case PresentCue cue:
+                        if (cue.FullBlack is not null || current.Story.Display is not null && MapTransfer.IsPalette(cue))
+                        {
+                            MapTransfer.ValidateCue(cue);
+                            current = MapTransfer.BeginFade(current, current.Story, cue.Kind,
+                                FullFadePurpose.Script, cue.FullBlack!.Period, observations);
+                            continue;
+                        }
                         if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };
                         GestureRestore? restore = null;
                         if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
@@ -205,6 +223,7 @@ internal static class ProgramRunner
                         if (Entity(current, wait.Entity).Busy) story = current.Story.Copy(cursor, new EntityWait(token, wait.Entity));
                         break;
                     case TransferToMap transfer:
+                        story = story.Copy(story.Cursor, clearWarp: true);
                         current = MapTransfer.Apply(definition, current, transfer.Map, transfer.Position, transfer.Facing,
                             transfer.Mode, story, observations);
                         continue;
@@ -236,6 +255,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
+            FullFadeWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             DialogueWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
