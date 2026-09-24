@@ -68,11 +68,19 @@ internal sealed partial class BattleSceneView : Control
     {
         var state = _session.Current.BattleScene;
         if (state is null) { Hide(); _state = null; return; }
-        Show();
+        if (state.IsFieldDeath) Hide(); else Show();
         if (_state?.Token == state.Token) { _state = state; ProjectHealing(state); return; }
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
+            if (state.IsFieldDeath)
+            {
+                Hide();
+                if (_session.Definition.PrivateDefinitions is not null && Content?.FieldDeath is null)
+                    throw new InvalidOperationException("field-death-content-required");
+                if (state.Phase == BattleScenePhase.FieldExit && state.FieldStep == 0) _audio?.PlayEffect(116);
+                return;
+            }
             if (_session.Definition.PrivateDefinitions is not null && Content is null)
                 throw new InvalidOperationException("battle-scene-content-required");
             var battle = _session.Current.Battle;
@@ -122,6 +130,15 @@ internal sealed partial class BattleSceneView : Control
     internal SessionCommand? Consume(double delta)
     {
         if (_state is not { } state || Error is not null || _completed) return null;
+        if (state.IsFieldDeath)
+        {
+            _elapsed += delta;
+            // Modern delivery speed never adds RNG or selects a new death list.
+            double fieldDuration = state.FieldDelay / (_settings.ReducedFlash ? 120.0 : 60.0);
+            if (_elapsed < fieldDuration) return null;
+            _completed = true;
+            return new CompletePresentation(state.Token, state.CompletionKind);
+        }
         var viewport = GetViewportRect().Size;
         float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
@@ -346,6 +363,8 @@ internal sealed partial class BattleSceneView : Control
     internal object Observe() => new
     {
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
+        fieldDeath = _state is { IsFieldDeath: true } field ? new { actors = field.DeadActors.Select(a => a.Value),
+            step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,

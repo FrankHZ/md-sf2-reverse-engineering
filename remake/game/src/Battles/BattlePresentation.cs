@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text);
+internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text, int Facing = 3, bool DeathEffect = false);
 internal sealed record BattlePresentation(string Title, string Status, string Roster,
     IReadOnlyList<BattleActorMarker> Markers, IReadOnlyList<MapPosition> Preview, IReadOnlyList<MapPosition> Focus);
 
@@ -22,14 +22,20 @@ internal static class BattleSnapshotProjection
                 (selection.Target is { } target ? $" · target {target.Value}" : "");
         if (result.Failure is not null && candidate is { } attempted)
             status += $" · tried {attempted.Value} · selected target {selection?.Target?.Value ?? "none"}";
-        var markers = battle.Actors.Where(a => a.Hp > 0).Select(a => new BattleActorMarker(
+        var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
+        var markers = battle.Actors.Where(a => a.Position is not null).Select(a => new BattleActorMarker(
             a.Actor, a.Position!, a.IsAlly, a.Actor == selection?.Actor,
-            $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}")).ToArray();
+            $"{a.Actor.Value}\n{a.Hp}/{a.MaxHp}",
+            death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : 3,
+            death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit)).ToArray();
         string roster = string.Join("\n", battle.Actors.Select(a =>
             $"{a.Actor.Value}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}"));
         var focus = selection?.Preview.Path.ToList() ?? [];
         foreach (var actor in battle.Actors.Where(a => a.Hp > 0 && (a.Actor == selection?.Actor ||
             a.Actor == selection?.Target || a.Actor == candidate))) focus.Add(actor.Position!);
+        if (death is not null)
+            foreach (var id in death.DeadActors)
+                if (battle.GetActor(id).Position is { } position) focus.Add(position);
         string title = origin == "private-local-controlled-start" ? "PRIVATE CONTROLLED BATTLE" : "AUTHORED BATTLE";
         return new($"{title} · {battle.Definition.Map.Value} · round {battle.Round} · gold {battle.Gold?.ToString() ?? "Unknown"}", status,
             roster, Array.AsReadOnly(markers), selection?.Preview.Path ?? [], focus.AsReadOnly());

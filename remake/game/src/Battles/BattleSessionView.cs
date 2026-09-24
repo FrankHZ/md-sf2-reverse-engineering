@@ -138,7 +138,7 @@ public sealed partial class BattleSessionView : Control
         PublishResult("attach");
         ObserveResult?.Invoke(result);
         if (_startupFailure is not null) return;
-        if (first) _map.Build(result.Snapshot.Battle.Definition);
+        if (first) _map.Build(result.Snapshot.Battle.Definition, session.Definition);
         Show();
         Present();
     }
@@ -271,6 +271,19 @@ public sealed partial class BattleSessionView : Control
         return label;
     }
 
+    // Explicit adapter observation input; never a gameplay command or logical Wait.
+    public string PlayAudioObservation(int command, string resource = "")
+    {
+        string? failure = null;
+        try
+        {
+            if (Audio is null) throw new InvalidOperationException("audio-observer-unavailable");
+            if (resource.Length == 0) Audio.Play(command); else Audio.Play(resource);
+        }
+        catch (InvalidOperationException error) { failure = error.Message; }
+        return JsonSerializer.Serialize(new { failure, audio = Audio?.ObservePlayback() });
+    }
+
     // Read-only native observation of the same semantic result and actual projected nodes.
     public string ReadSceneObservationJson()
     {
@@ -281,6 +294,7 @@ public sealed partial class BattleSessionView : Control
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
             failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(),
+            hasBattleControl = current?.HasBattleControl, fieldActors = current is null ? null : _map.ObserveActors(current.Battle.Actors),
             actors = current?.Battle.Actors.Select(actor => new { actor = actor.Actor.Value, hp = actor.Hp,
                 mp = actor.Mp, exp = actor.Exp, kills = actor.Kills, defeats = actor.Defeats }),
         });

@@ -67,7 +67,8 @@ internal sealed class SessionAudio : IDisposable
         var asset = _assets[cue];
         _receipts.Add(new(++_sequence, operation, cue, command ?? asset.Command, asset.TimerB, asset.PcmSha256,
             asset.SampleRate, asset.Channels, asset.SampleFrames, asset.LoopBegin, asset.LoopEnd,
-            player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken));
+            player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken,
+            _sounds.FirstOrDefault(voice => voice.Player == player)?.RequestedTimerB));
         // Existing inspectors poll live state. Sequence makes a missed bounded window explicit.
         if (_receipts.Count > 64) _receipts.RemoveAt(0);
     }
@@ -113,12 +114,28 @@ internal sealed class SessionAudio : IDisposable
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
+    private string Select(int command)
+    {
+        var candidates = _assets.Where(pair => pair.Value.Command == command).ToArray();
+        if (command < 65)
+            return candidates.FirstOrDefault().Key ?? throw new InvalidOperationException("audio-command-unavailable");
+        var exact = candidates.Where(pair => pair.Value.TimerB == TimerB).ToArray();
+        if (exact.Length == 1) return exact[0].Key;
+        if (exact.Length > 1) throw new InvalidOperationException("audio-command-ambiguous");
+        // Modern finite PCM reuse: never relabel the recording's hardware timer,
+        // infer a pitch, choose by enumeration order, or borrow another command.
+        var finite = candidates.Where(pair => pair.Value.LoopBegin is null).ToArray();
+        return finite.Length switch
+        {
+            1 => finite[0].Key,
+            0 => throw new InvalidOperationException("audio-command-unavailable"),
+            _ => throw new InvalidOperationException("audio-command-ambiguous"),
+        };
+    }
+
     internal void Play(int command)
     {
-        if (command == 0) return;
-        string? cue = _assets.FirstOrDefault(pair => pair.Value.Command == command &&
-            (command < 65 || pair.Value.TimerB == TimerB)).Key;
-        Play(cue ?? throw new InvalidOperationException("audio-command-unavailable"));
+        if (command != 0) Play(Select(command));
     }
 
     internal void PlayEffect(int command)
@@ -135,7 +152,8 @@ internal sealed class SessionAudio : IDisposable
         bool music = audio.Command < 65;
         // The source suppresses identical music requests even when the finite track already ended.
         if (music && remember && MusicCue == resource) return;
-        if (!music && audio.TimerB != TimerB) throw new InvalidOperationException("sfx-timer-context-unavailable");
+        if (!music && audio.TimerB != TimerB && Select(audio.Command) != resource)
+            throw new InvalidOperationException("sfx-timer-context-unavailable");
         SoundVoice? voice = null;
         if (!music)
         {
@@ -151,7 +169,7 @@ internal sealed class SessionAudio : IDisposable
             }
             var effect = new AudioStreamPlayer { Name = "SessionSound" };
             _owner.AddChild(effect);
-            voice = new SoundVoice(effect, resource, slots);
+            voice = new SoundVoice(effect, resource, slots, TimerB);
             var startedVoice = voice;
             voice.Finished = () =>
             {
@@ -267,10 +285,11 @@ internal sealed class SessionAudio : IDisposable
         _ => throw new InvalidOperationException("sfx-slots-unavailable"),
     };
 
-    private sealed class SoundVoice(AudioStreamPlayer player, string cue, Slots slots)
+    private sealed class SoundVoice(AudioStreamPlayer player, string cue, Slots slots, int? requestedTimerB)
     {
         internal AudioStreamPlayer Player { get; } = player;
         internal string Cue { get; } = cue;
+        internal int? RequestedTimerB { get; } = requestedTimerB;
         internal Slots Slots { get; } = slots;
         internal long StartSequence { get; set; }
         internal Action Finished { get; set; } = null!;
@@ -279,4 +298,4 @@ internal sealed class SessionAudio : IDisposable
 
 internal sealed record AudioPlaybackReceipt(long Sequence, string Operation, string Cue, int Command,
     int TimerB, string PcmSha256, int SampleRate, int Channels, int SampleFrames, int? LoopBegin,
-    int? LoopEnd, bool Playing, double PlaybackPosition, ulong Microseconds, long Revision, long? WaitToken);
+    int? LoopEnd, bool Playing, double PlaybackPosition, ulong Microseconds, long Revision, long? WaitToken, int? RequestedTimerB);

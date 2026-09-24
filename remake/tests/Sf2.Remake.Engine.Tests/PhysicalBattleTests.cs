@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -184,7 +185,20 @@ public sealed class PhysicalBattleTests
             d["start"]!["actors"]![0]!["exp"] = 99;
             d["start"]!["actors"]![0]!["defeats"] = defeats;
         });
-        var result = Attack(session, "raider");
+        Select(session, "raider");
+        var result = Accept(session, new Confirm());
+        var observations = result.Observations.ToList();
+        while (session.Current.BattleScene is { IsFieldDeath: false } scene)
+        {
+            result = Accept(session, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            observations.AddRange(result.Observations);
+        }
+        Assert.Equal(BattleScenePhase.FieldSpin, session.Current.BattleScene!.Phase);
+        Assert.Equal(new ActorRef("swordsman"), Assert.Single(session.Current.BattleScene.DeadActors));
+        Assert.NotNull(session.Current.Battle.GetActor(new("swordsman")).Position);
+        Assert.Equal(defeats, session.Current.Battle.GetActor(new("swordsman")).Defeats!.Value);
+        result = FinishBattleScenes(session, result with { Observations = observations });
         var dead = session.Current.Battle.GetActor(new("swordsman"));
         Assert.Equal(0, dead.Hp);
         Assert.Null(dead.Position);

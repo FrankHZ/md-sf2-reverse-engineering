@@ -85,21 +85,16 @@ internal static class PhysicalBattleAction
         if (enemyDead)
         {
             effects.Add(new("gold", ally.Actor, current.Gold, gold));
-            effects.Add(new("kills", ally.Actor, ally.Kills, BattleRewards.Kills(ally.Kills ?? throw new BattleRuleException("unspecified-kills", "actor.kills", true))));
-            effects.Add(new("death-cleanup", enemy.Actor, 1, 0));
+            if (ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
         }
-        if (allyDead)
-        {
-            effects.Add(new("defeats", ally.Actor, ally.Defeats, BattleRewards.Defeats(ally.Defeats ?? throw new BattleRuleException("unspecified-defeats", "actor.defeats", true))));
-            effects.Add(new("death-cleanup", ally.Actor, 1, 0));
-        }
+        if (allyDead && ally.Defeats is null)
+            throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
         // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
         // the second faction check therefore has the same continuing result as the first.
         var prepared = current.With(actors: current.Actors.Select(a => a.Actor == actorRef
             ? a.With(position: destination) : a), mainSeed: seed, gold: gold);
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
-            Array.AsReadOnly(effects.Where(effect => effect.Kind is not ("kills" or "defeats" or "death-cleanup")).ToArray()),
-            Array.AsReadOnly(effects.Where(effect => effect.Kind is "kills" or "defeats" or "death-cleanup").ToArray()));
+            effects.AsReadOnly(), []);
 
         PhysicalStrike Hit(string kind, bool counter)
         {
@@ -167,10 +162,17 @@ internal static class PhysicalBattleAction
     {
         var action = Prepare(current, actor, destination, target);
         var battle = action.Prepared;
-        foreach (var reaction in action.Reactions) battle = action.ApplyReaction(battle, reaction);
+        var deaths = BattleDeathBatch.Empty;
+        foreach (var reaction in action.Reactions)
+        {
+            var before = battle.GetActor(reaction.Target);
+            battle = action.ApplyReaction(battle, reaction);
+            deaths = deaths.Append(before, battle.GetActor(reaction.Target));
+        }
         var reward = action.ApplyReward(battle);
-        return (action.Complete(reward.Battle), Array.AsReadOnly<BattleEffect>([
-            .. action.ConstructionEffects, .. reward.Effects, .. action.CompletionEffects]));
+        var cleaned = deaths.Clean(reward.Battle, action.FirstAlly);
+        return (cleaned.Battle, Array.AsReadOnly<BattleEffect>([
+            .. action.ConstructionEffects, .. reward.Effects, .. cleaned.Effects]));
     }
 
 }

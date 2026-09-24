@@ -755,7 +755,8 @@ The observer checks exact per-input starts, the actual 65/BD player, natural `Fi
 same-slot replacement and no redraw replay or gameplay work during playback-tail collection.
 Normal/reduced-flash runs preserve the same semantic inputs and ordered session observations;
 this bounded check does not establish the separate instant/adjustable text or full host Option A
-requirements. Missing content or timer support remains an explicit error.
+requirements. Missing or ambiguous SFX content remains an explicit error under the finite selection
+policy below.
 
 ### Finite SFX overlap
 
@@ -764,8 +765,15 @@ groups continue playing together; equal or fully covered groups replace the old 
 overlap preserves the old whole clip and starts the new one, so a Herb tail cannot block ordinary
 menu input. Repeated requests replace their previous group instead of accumulating voices.
 An admitted command without a
-reviewed slot classification fails with `sfx-slots-unavailable`. Existing content/timer errors remain
+reviewed slot classification fails with `sfx-slots-unavailable`. Missing or ambiguous content remains
 explicit. No extra action wait or gameplay tick is introduced for a cosmetic effect's tail.
+
+Finite SFX selection prefers the exact command/current-music Timer B pair. If that pair is absent,
+the host may reuse the unique admitted finite PCM for the same command. Zero candidates fail as
+unavailable; multiple candidates fail as ambiguous. Named resource playback follows the same rule
+when its timer differs. This accepted modern approximation changes neither music selection nor PCM,
+cue identity, recorded Timer B, sample rate or pitch. Playback receipts retain the asset's `TimerB`
+and separately record `RequestedTimerB`. It does not change the original `Load_SFX` inheritance fact.
 
 **Confirmed source structure:** pinned `sounddriver.asm:Load_SFX` initializes only non-FF channel
 entries, and its type-2 effects have separate temporary YM records. `StopMusic` preserves these
@@ -1313,3 +1321,56 @@ Node/input observations cannot establish original pixel, palette, audio, hardwar
 Those accepted 8C/H4 gaps remain open. Private assets and completed captures remain local and grant no
 distribution permission. This documentation change does not implement a new observer, alter the
 current game/probe, or authorize engine migration.
+
+
+## Battlefield death batches
+
+The common action continuation retains newly defeated combatants on their battlefield cells until
+its field exit completes. The close-up panel hides after `scene-ended`; the same action still blocks
+input, automatic advancement and outcome programs. The defeated hook runs before the batch, then
+all members turn twelve times, one sound116 request starts the three effect63 directions, and only
+then are positions/status and kills/defeats cleaned. A final settle releases the action. Empty batches
+have no presentation or sound. Old corpses are never rediscovered by an HP-zero roster scan.
+
+The private board binds original map sprites through source ally/enemy assignments, using the
+selected world's `ExplorationVisuals.Sprites`. The selected scene document supplies only the missing
+63 direction sheets and field selectors. These are mapsprites, distinct from close-up battlesprites.
+Live units use a static field pose in the diagnostic board; full battlefield composition, terrain
+art and ordinary idle animation remain outside this consumer. The field phase freezes each dead
+sprite's first walking frame, while whole-batch direction changes select up/side/down sheets and
+right-facing mirroring. Existing whole-PCM116/BD playback may outlast modern visual delivery; its
+sample count does not control gameplay or RNG. Reduced animation may shorten display duration.
+
+**Confirmed static source boundary:** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/gameflow/battle/battleloop/processkilledcombatants.asm` (`0x24518..0x24642`, sound caller
+`0x24574`) supplies the list traversal, facing sequence, effect63, and cleanup ordering.
+`sf2enums.asm` defines twelve turns/Sleep3, effect direction1/2/3 with Sleep8 and final Sleep10.
+`entityscriptengine_1.asm:VInt_UpdateSprites` uses signed ANIMCOUNTER=-1 to freeze frame1;
+`entityscriptengine_2.asm:ChangeEntityMapsprite` supplies direction-sheet loading. The host explicitly
+models those presentation stages, not an asserted universal seventy-VInt timeline.
+
+The bounded RNG argument follows `executeindividualturn.asm` -> `LoadBattle` ->
+`PositionBattleEntities` -> `eas_Standing/eas_Idle`: ordinary combatants are stationary and execute
+speed/flags setup followed by wait/branch without random operations. Battle01's neutral Mist Demon
+and Astral also select `eas_Standing` in `data/battles/global/battleneutralentities.asm`.
+`SetBaseVIntFunctions` restores battlefield entity/map/view/scroll/sprite/window/map-animation
+services, not the close-up reaction/fairy RNG callbacks. Death animation itself changes entity
+facing/graphics with zero travel and frozen animation counters; it does not start random-walk or
+random-branch scripts. No gameplay RNG call is added at a field delivery completion.
+
+**Unknown:** exact interrupt opportunities, initial sprite-load queue occupancy, asynchronous service
+interleavings and hardware timing. The source can add waits when queued sprite loads reach seven;
+those are not an unconditional frame allowance. Source timing, natural multi-death, special entity32,
+random scripted battlefield entities and after-turn status deaths are not established by this
+bounded consumer. Current physical actions produce at most one casualty; multi-member domain cleanup
+is separately exercised without pretending those producers exist. Option A, 8D/H4 and the retained
+HEAL recovery opportunity mismatch remain open; no padding, trace-count fitting or reseeding is used.
+
+Actual enemy-death and ally-counter-death normal/reduced consumers exercise sprite63,116BD and
+cleanup/control release with equal ordered semantic events and final gameplay state within each
+pair. The counter uses the finite selection policy above: music2 requests timerC6 and the selected
+pack's unique81/CC recording plays unchanged. The original missing81/C6 failure remains retained;
+modern PCM reuse resolves host delivery, not hardware-exact counter audio. Direct adapter observations
+cover exact preference, unique reuse, named playback, missing/ambiguous rejection and actual finite
+completion without gameplay changes. The world/audio pack and #517's116 recording remain unchanged.

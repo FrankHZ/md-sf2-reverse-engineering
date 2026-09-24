@@ -1657,3 +1657,55 @@ helper test's obsolete sleep-only drain. Each received a narrow correction/rerun
 review also found that neutral timeout incorrectly required an extra Ack; that completed review
 failure remains retained even after the focused engine/host correction. The earlier
 completed slow-suite failure record remains unchanged; this work neither reruns nor relabels it.
+
+
+## Battlefield death consumer
+
+The field-death scope is status-free, ATT-only post-action processing. `BattleSceneTests` checks the
+persistent HP/position/stat boundaries, twelve/three whole-batch stages, token rejection, empty
+paths, capped ordered cleanup and victory/defeat release; `PhysicalBattleTests` also checks lethal
+counter continuation. Use the locked environment above and the narrow filter
+`FullyQualifiedName~BattleSceneTests|FullyQualifiedName~PhysicalBattleTests`, then the affected
+engine and adapter entries. Do not run the retired aggregate or full H4 merely for this consumer.
+
+A selected scene without `fieldDeath` still admits its existing close-up resources, but private
+field-death delivery rejects missing content explicitly. Prepare only the bounded addition from a
+previous selected scene with its adjacent `source/battle-scenes/selection.json` provenance:
+
+```powershell
+uv run python -m sf2tool.remake_battle_scene_content --rom $selectedRom --upstream $pinnedSource `
+  --field-death-base $selectedScene --output local/issue523/field-death/candidate-new
+```
+
+The output must be a fresh ignored worktree-local directory. The producer checks retail ROM and
+pinned source identity and previous scene provenance; it reuses the established Basic decoder,
+palette and map-sprite raster composer. It writes a selected scene document with three63 sheets,
+source ally/Gizmo selectors and a bounded provenance report. It does not copy/alter the selected
+world/audio package, promote a material library or raise the scene reader's four-MiB limit.
+Select its `battle-scenes.json` through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`; keep
+`SF2_PRIVATE_EXPLORATION_CONTENT` on the existing world with116/BD.
+
+The actual `res://probes/engine_battle_scene_observation.gd` has a bounded
+`SF2_BATTLE_SCENE_FIELD_DEATH=1` observation mode. Retain the existing ordinary world start and
+`SF2_BATTLE_SCENE_WORLD=1`; the ordinary reward case (`SF2_BATTLE_SCENE_REWARD=1`) exercises enemy
+death. `SF2_FIELD_DEATH_COUNTER=1` selects a live adjacent enemy from observed terrain and submits
+ordinary approach/target/attack inputs. A declared controlled Chester HP/maxHP1, ATT3, DEF0, AGI99,
+MOVE63 and initial mainSeed1048576 reaches an actual enemy counter against him; these are input
+conditions, not runtime overrides or a natural original-route claim. The retained missing81/C6
+failure is resolved by the accepted modern finite-PCM selection policy: actual receipts show81/CC
+with requestedC6, followed by116/BD. PCM identities and the selected world/audio pack are unchanged.
+
+Observe actual nodes/resources/facing/cells and hidden close-up, input/turn blocking, the single
+116/BD AudioStreamPlayer start and finite completion, cleanup and subsequent usable input/outcome.
+Normal60FPS and reduced30FPS enemy-death and counter-death observations must agree on complete ordered semantic events
+(excluding delivery revision/sequence) and gameplay state. No screenshots, injected death lists,
+mid-session seed changes, extra logical ticks or original-emulator launches are part of this gate.
+Natural multi-death and after-turn death have no admitted producer and cannot be claimed from the
+multi-member domain test. The [timing and asset boundary](./presentation-and-assets.md#battlefield-death-batches)
+retains the unresolved dependencies and prior HEAL/H4 failures.
+
+With `SF2_AUDIO_SELECTION=1` and field-death mode disabled, the same actual adapter probe checks
+exact65/BD preference among variants, unique81/CC reuse in music2/C6, consistent named-resource
+playback, missing80 and ambiguous65/C6 rejection, actual Started/Finished receipts and unchanged
+gameplay state. This is a direct consumer observation, not a unit test of the probe. The normal and
+reduced counter pair also confirms exact83/C6 and116/BD selections.
