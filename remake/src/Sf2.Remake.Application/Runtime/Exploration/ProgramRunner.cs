@@ -46,6 +46,15 @@ internal static class ProgramRunner
                     if (current.Story.Display is { } display &&
                         (display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
                         throw new BattleRuleException("field-display-not-visible", "story.display", true);
+                    // WaitForEvent replaces the player's script on successful control return.
+                    // Setup belongs to its next entity service; physical motion survives here.
+                    if (current.Exploration is { Population: not null } world &&
+                        world.PlayerEntity is { } player &&
+                        (player.Actions is not null || player.Follower is not null || player.WaitingForMotion))
+                        current = new(current.SessionId, current.Revision, current.ObservationSequence,
+                            new ActiveExploration(world.WithEntity(player with
+                                { Actions = null, ActionCursor = 0, Follower = null, WaitingForMotion = false })),
+                            current.Story, current.StopReason);
                     return Result(Stop(current, SessionStopReason.PlayerInput), observations);
                 }
                 if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||

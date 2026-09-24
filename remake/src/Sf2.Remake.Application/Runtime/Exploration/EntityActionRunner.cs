@@ -9,8 +9,16 @@ internal sealed record EntityActionTickResult(ExplorationState World, BattleRule
 
 internal static class EntityActionRunner
 {
+    // eas_ControlledCharacter establishes these settings when ordinary control owns the slot.
+    // Keep physical travel and unrelated flags/counters; callers choose the control boundary.
+    internal static EntityMotionState ControlledMotion(EntityMotionState motion) => motion with
+    {
+        XSpeed = 32, YSpeed = 32, XAcceleration = 0, YAcceleration = 0,
+        FlagsA = (byte)((motion.FlagsA & 0x10) | 0xEF), WaitTimer = 0,
+    };
+
     internal static EntityActionTickResult Tick(ExplorationState world, ExplorationDirection? fieldMove = null,
-        IReadOnlyList<int>? storyFlags = null)
+        IReadOnlyList<int>? storyFlags = null, bool fieldControl = false)
     {
         var entities = world.AllEntities.ToDictionary(entity => entity.Slot);
         ushort spriteSize = world.SpriteSize;
@@ -27,6 +35,8 @@ internal static class EntityActionRunner
             ushort? word = destinationX is >= 0 and < 64 && destinationY is >= 0 and < 64
                 ? world.Layout[destinationX, destinationY] : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
+            if (fieldControl && world.Population is not null && entity.Slot == world.PlayerEntity.Slot)
+                entity = entity with { Motion = ControlledMotion(entity.Motion) };
             entities[entity.Slot] = entity;
             if (fieldMove is not null && entity.Slot == world.PlayerEntity.Slot)
             {

@@ -308,7 +308,78 @@ Original costs remain138 starts /15583.68017570005 active seconds /429625 frames
 16332 batches; no original runtime cost is added. Preserve prior public aggregate /
 h3-witch nonruns, H4 5340 PASS /2 FAIL /40 Unavailable, HEAL recovery2vs3 and later
 RNG FAIL, JOIN coupling Unknown, and old21/41/61/67 cleanup Unknowns. #534/#437 remain
-open. Production scope is unchanged; independent review owns the next slice.
+open. That observation-only slice leaves production behavior unchanged; the bounded
+control correction below uses its retained comparison.
+
+### Ordinary source-population control handoff
+
+`ProgramRunner` supersedes the source-population player's action/follower/motion-wait
+continuation only on successful ordinary field return, preserving Motion. The next
+existing `EntityActionRunner` service integrates movement, establishes speed32/32,
+acceleration0/0, flagsA `(prior & 0x10) | 0xEF` and wait0, then handles field input.
+Physical travel, velocity, facing, flagsB and animation survive setup. Authored
+configuration and NPC services are unaffected. Program/dialogue/init/load/fade or
+failed returns do not acquire this control. `ExplorationDispatcher` uses the same
+collision policy for preview, without committing setup early; blocked moves retain
+only their normal facing change. See the [source and remaining gaps](../../docs/research/map3-controlled-start-egress-transition.md#ordinary-source-population-control-handoff).
+
+The affected `ExplorationSessionTests` names start with `ControlledSetup`,
+`ControlledHandoff` and `ControlledPreview`. They exercise actual reducers under
+changed slots, speed/acceleration/collision settings, neutral service, existing travel,
+NPC order/RNG, action/follower retirement, ownership exclusions and warp validation.
+The initial selected run also includes `WarpProducingPassRetainsOldPopulationBeforeFade`,
+`LaterSlotSeesPlayerTravelReservationBeforeWarpRelocation`,
+`OrdinaryWarpJoinsFiniteServicesAndActualVisibility`,
+`WarpMarkerPrecedesTravelButEntityObstructionPrecedesMarker` and
+`EarlierSlotCanObstructPendingWarp`. It completed30 PASS /1 FAIL; the dialogue case of
+`ControlledSetupDoesNotRunDuringOtherOwners` lacked its required ClosedPortraitWindow
+fixture state and returned `text-input-unavailable`. After fixing that precondition,
+the owning five-case method passes. Both TRX results are retained under
+`local/issue534/field-control-handoff/{behavior-01,behavior-correction}/`; the completed
+failure is not relabeled as interrupted or erased by a full rerun.
+
+The committed planner's dedicated engine gate completed657 PASS /1 FAIL /30 SKIP.
+The failed node was `SourceDoorChecksEntityObstructionBeforeCopyAndTraversal` with
+`shape: "mover-ignores", x: 4, y: 3, blocked: False`: that old ordinary-control
+expectation retained script-specific collision disabling. The source-controlled rule
+requires obstruction after handoff, so the case now expects blockage and also asserts
+that preview leaves Motion unchanged except facing. The corrected eleven-case method
+passes in `door-correction/`; `engine.log` retains the completed aggregate failure.
+The correction changes tests/documentation only and does not invalidate the native run.
+
+Adapter Release and actual Debug builds pass. One authorized normal first-warp run
+passes with exit0, no failures/unavailable, using the existing project, assets,
+private inputs and PR564 binding. No instance was available before startup; the probe
+exits normally and leaves no owned Godot process. No original emulator, asset
+regeneration, world copy, reduced rerun or whole-route run is involved. PR568's paired
+settings evidence remains applicable because no presentation/settings behavior changes.
+After loading `local/private-inputs.ps1` and forcing the shared .NET environment's
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, the retained launcher supports fresh outputs:
+
+```powershell
+uv run --no-sync python -X utf8 local/issue534/field-control-handoff/run.py test behavior-new 'FullyQualifiedName~ControlledSetup|FullyQualifiedName~ControlledHandoff|FullyQualifiedName~ControlledPreview|FullyQualifiedName~WarpProducingPassRetainsOldPopulationBeforeFade|FullyQualifiedName~LaterSlotSeesPlayerTravelReservationBeforeWarpRelocation|FullyQualifiedName~OrdinaryWarpJoinsFiniteServicesAndActualVisibility|FullyQualifiedName~WarpMarkerPrecedesTravelButEntityObstructionPrecedesMarker|FullyQualifiedName~EarlierSlotCanObstructPendingWarp'
+uv run --no-sync sf2 verify adapter
+uv run --no-sync python -X utf8 local/issue534/field-control-handoff/run.py build debug-build-new
+uv run --no-sync python -X utf8 local/issue534/field-control-handoff/run.py host normal-new warp-transition-private 3
+uv run --no-sync python -X utf8 local/issue534/field-control-handoff/readback.py
+```
+
+`normal/observation.json`, `comparison.json` and `readback.log` retain the actual run
+and comparison in that output root; select a fresh receipt explicitly when rereading
+a rerun. There are97 raw events and84 result records. Against PR568 normal, ordered
+gameplay events match after excluding only `entity-sprite-ready` and sequence/revision
+metadata; raw event histories are retained and are not equal. At entry, first-move
+completion, visible return and next explicit Wait, every entity field and selected
+flags/party/resources/RNG/tick/control/map field matches except the intended player
+flagsA E0 to EF at the three postservice samples. The initial state remains unchanged.
+Visible return is tick65/F01B. The same19-field/20-slot original readback above now
+reports24 differences, removing only the player flagsA gap; all NPC and other phase
+gaps remain. This is not an NPC timing repair or an inferred service quota.
+
+Original costs and all preserved failures/nonruns/Unknowns immediately above remain
+unchanged. Idle-to-walk timer carryover and caller-specific script timer initialization
+are separate excluded gaps. Committed planner output, exact CI and the frozen Draft
+PR belong to the slice handoff; this result does not grant integration or H4 acceptance.
 
 ## Explicit field-input gameplay Wait
 
