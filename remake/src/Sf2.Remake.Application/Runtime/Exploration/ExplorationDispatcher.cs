@@ -170,6 +170,12 @@ internal static class ExplorationDispatcher
         byte facing = Facing(move.Direction);
         var faced = player with { Motion = player.Motion with { Facing = facing } };
         var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, move.Direction);
+        var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible);
+        // esc02 checks the intended position before door copies and warp/step dispatch.
+        // A closed door's failed traversal would instead report the player's origin.
+        if (world.Population is not null && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
+            EntityMotion.FieldObstructed(candidate.X * 384, candidate.Y * 384, others.Select(entity => entity.Motion)))
+            return Blocked();
         if (candidate is not null && world.Definition.Traversal.IsWithinActiveArea(candidate))
         {
             var opened = MapEventDispatcher.OpenDoor(world, candidate);
@@ -198,14 +204,10 @@ internal static class ExplorationDispatcher
             }
         }
         var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, move.Direction);
-        var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && entity.Visible);
-        bool occupied = world.Population is not null
-            ? EntityMotion.FieldObstructed(traversal.Position.X * 384, traversal.Position.Y * 384, others.Select(entity => entity.Motion))
-            : others.Any(entity => entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
+        bool occupied = world.Population is null &&
+            others.Any(entity => entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
         if (traversal.Outcome != OriginalMapTraversalOutcome.Moved || occupied)
-            return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
-                new ActiveExploration(world.WithEntity(faced)), current.Story, observations, "movement-blocked"),
-                SessionStopReason.PlayerInput), observations);
+            return Blocked();
         var actions = new EntityActionProgram([new MoveEntityAbsolute(traversal.Position, world.Population is not null), new StopEntityActions()]);
         var moved = world.WithEntity(faced with { Actions = actions, ActionCursor = 0 });
         var step = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
@@ -213,6 +215,10 @@ internal static class ExplorationDispatcher
         var wait = new EntityWait(new(current.ObservationSequence + 1), world.Player, step?.Program);
         current = ProgramRunner.Commit(current, new ActiveExploration(moved), current.Story.Copy(null, wait), observations, "movement-started");
         return ProgramRunner.Result(current, observations);
+
+        SessionResult Blocked() => ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
+            new ActiveExploration(world.WithEntity(faced)), current.Story, observations, "movement-blocked"),
+            SessionStopReason.PlayerInput), observations);
     }
 
     private static SessionResult Interact(ScenarioDefinition definition, SessionSnapshot current, Interact command,

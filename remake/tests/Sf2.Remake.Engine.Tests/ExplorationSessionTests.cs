@@ -9,6 +9,81 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class ExplorationSessionTests
 {
+    [Theory]
+    [InlineData("clear", 2, 2, false)]
+    [InlineData("current", 2, 2, true)]
+    [InlineData("reserved", 4, 3, true)]
+    [InlineData("near-current", 4, 3, true)]
+    [InlineData("axis-boundary", 2, 2, false)]
+    [InlineData("mover-ignores", 4, 3, false)]
+    [InlineData("nonblocking", 2, 2, false)]
+    [InlineData("hidden", 4, 3, false)]
+    [InlineData("retired", 2, 2, false)]
+    [InlineData("non-door", 4, 3, false)]
+    [InlineData("non-door-current", 2, 2, true)]
+    public void SourceDoorChecksEntityObstructionBeforeCopyAndTraversal(string shape, int x, int y, bool blocked)
+    {
+        var source = Start("harbor-arrival");
+        var original = source.Current.Exploration!;
+        var words = new ushort[WorkingMapLayout.WordCount];
+        bool door = !shape.StartsWith("non-door", StringComparison.Ordinal);
+        words[y * 64 + x] = door ? (ushort)0xC400 : (ushort)0; // Closed traversal would return the origin.
+        var layout = new WorkingMapLayout(words);
+        var afterStep = new ProgramLocation("after-step", 0);
+        var map = new ExplorationMapDefinition(new("door-yard"), layout,
+            new OriginalMapTraversal([new(0, 0, 7, 7)]), [],
+            [new(ExplorationEventKind.Step, x, y, null, afterStep, RequiredMarker: 0)],
+            population: new(30, 128, 0, []),
+            layoutEvents: new([new(new(x, y), new(0, 0, x, y, 1, 1))], [], new([])));
+        var player = original.PlayerEntity with
+        {
+            Motion = EntityMotionState.At(new(x - 1, y), 3, 32) with
+                { FlagsA = shape == "mover-ignores" ? (byte)0x80 : (byte)0xA0 },
+        };
+        var motion = EntityMotionState.At(new(x, y), 0, 32) with { FlagsA = 0x80 };
+        motion = shape switch
+        {
+            "clear" or "retired" or "non-door" => motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 },
+            "current" => motion with { XDestination = 0, YDestination = 0 },
+            "reserved" => motion with { X = 0, Y = 0 },
+            "near-current" => motion with { X = (short)(x * 384 + 255), Y = (short)(y * 384 - 255), XDestination = 0, YDestination = 0 },
+            "axis-boundary" => motion with { X = (short)(x * 384 + 256), XDestination = 0, YDestination = 0 },
+            "nonblocking" => motion with { FlagsA = 0x20 },
+            _ => motion,
+        };
+        var other = new ExplorationEntity(new("blocker"), motion, shape != "hidden", Slot: player.Slot + 1);
+        var world = new ExplorationState(map, layout, player.Entity, shape == "clear" ? [player] : [player, other], original.Party);
+        var definition = new ScenarioDefinition("door-yard", source.Definition.Encounters.Values,
+            exploration: new([map], [new StoryProgram("after-step", [new EndProgram()])]));
+        var before = new SessionSnapshot(Guid.NewGuid(), 1, 1, new ActiveExploration(world), new StoryState([], null), SessionStopReason.PlayerInput);
+        var result = ExplorationDispatcher.Submit(definition, before, new Move(ExplorationDirection.East));
+        Assert.Null(result.Failure);
+        Assert.Equal((byte)0, result.Snapshot.Exploration!.PlayerEntity.Motion.Facing);
+        Assert.Equal(original.Party.MainSeed, result.Snapshot.Exploration.Party.MainSeed);
+        Assert.Equal(before.Story.SimulationTick, result.Snapshot.Story.SimulationTick);
+        if (blocked)
+        {
+            Assert.Equal("movement-blocked", Assert.Single(result.Observations).Kind);
+            Assert.Same(layout, result.Snapshot.Exploration.Layout);
+            Assert.Equal(player.Position, result.Snapshot.Exploration.PlayerEntity.Position);
+            Assert.False(result.Snapshot.Exploration.PlayerEntity.Busy);
+            Assert.Null(result.Snapshot.Story.Wait);
+        }
+        else
+        {
+            Assert.Equal(door ? new[] { "door-opened", "movement-started" } : new[] { "movement-started" }, result.Observations.Select(row => row.Kind));
+            Assert.Equal(0, result.Snapshot.Exploration.Layout[x, y]);
+            Assert.Equal(afterStep, Assert.IsType<EntityWait>(result.Snapshot.Story.Wait).AfterMotion);
+            Assert.Equal(new(x, y), Assert.IsType<MoveEntityAbsolute>(result.Snapshot.Exploration.PlayerEntity.Actions!.Actions[0]).Position);
+            // Return to the same approach in the now-open layout: no second door event.
+            var repeat = new SessionSnapshot(before.SessionId, before.Revision, before.ObservationSequence,
+                new ActiveExploration(result.Snapshot.Exploration.WithEntity(player)), before.Story, before.StopReason);
+            var again = ExplorationDispatcher.Submit(definition, repeat, new Move(ExplorationDirection.East));
+            Assert.Null(again.Failure);
+            Assert.Equal("movement-started", Assert.Single(again.Observations).Kind);
+        }
+    }
+
     [Fact]
     public void ImmediatePlainAcknowledgementPreservesNpcPhaseAndOpenTextUntilExplicitClose()
     {
