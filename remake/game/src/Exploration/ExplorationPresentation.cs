@@ -158,6 +158,10 @@ internal sealed class ExplorationPresentation : IDisposable
                 {
                     _audio.PlayPrevious();
                 }
+                else if (wait.Cue.Kind == PresentationCueKind.SoundFade)
+                {
+                    _audio.BeginSceneEnd();
+                }
             }
             _cueAge += delta;
             bool complete;
