@@ -62,14 +62,35 @@ internal static class ExplorationDispatcher
             {
                 if (!current.CanWaitForText) return Reject(current, "text-input-unavailable", "command");
                 if (textWait.Wait != current.Story.Wait!.Token) return Reject(current, "stale-or-wrong-wait", "wait");
+                if (current.Story.Wait is W1TextWait)
+                    return ProgramRunner.Result(PollW1(current, observations, false), observations);
                 command = new AdvanceSimulation(textWait.Wait);
             }
             switch (command)
             {
                 case Acknowledge ack:
+                    if (current.Story.Wait is W1TextWait w1)
+                    {
+                        if (w1.Token != ack.Wait) return Reject(current, "stale-or-wrong-wait", "wait");
+                        if (!current.CanWaitForText) return Reject(current, "text-input-unavailable", "command");
+                        current = PollW1(current, observations, true);
+                        var tokens = definition.Exploration!.TextTokens[w1.Text];
+                        var next = w1.EndToken + 1;
+                        current = ProgramRunner.Commit(current, current.Active, next == tokens.Count ? FinishWait(current.Story) :
+                            current.Story.Copy(current.Story.Cursor, ProgramRunner.TextSpan(tokens,
+                                new(current.ObservationSequence + 1), w1.Text, next)), observations, "text-w1-accepted");
+                        break;
+                    }
                     if (current.Story.Wait is not DialogueWait || current.Story.Wait.Token != ack.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, "presentation-acknowledged");
+                    break;
+                case CompleteTextReveal reveal:
+                    if (current.Story.Wait is not W1TextWait delivering || delivering.Token != reveal.Wait || delivering.Revealed)
+                        return Reject(current, "stale-or-wrong-text-delivery", "wait");
+                    current = ProgramRunner.Commit(current, current.Active, delivering.AtInput ?
+                        current.Story.Copy(current.Story.Cursor, delivering with { Revealed = true }) : FinishWait(current.Story),
+                        observations, "text-revealed");
                     break;
                 case CompletePresentation completion:
                     if (current.Story.Wait is FullFadeWait fade)
@@ -120,7 +141,7 @@ internal static class ExplorationDispatcher
                         "dialogue-chosen", choice.Yes ? "yes" : "no");
                     break;
                 case AdvanceSimulation advance:
-                    if (current.CanWaitForText && !playerWait)
+                    if (current.Story.Wait is W1TextWait || current.CanWaitForText && !playerWait)
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
@@ -262,6 +283,25 @@ internal static class ExplorationDispatcher
     }
 
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;
+    private static SessionSnapshot PollW1(SessionSnapshot current, List<SessionObservation> observations, bool accepting)
+    {
+        var world = current.Exploration!;
+        var party = world.Party;
+        var draw = BattleRandom.NextMain(party.MainSeed, 256);
+        current = ProgramRunner.Commit(current, new ActiveExploration(world.WithParty(
+            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))),
+            current.Story, observations, "rng-text-w1");
+        observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
+        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            randomSeedCopy: (byte)draw.Value), observations, "text-seed-copy");
+        observations[^1] = observations[^1] with { After = draw.Value };
+        // The admitted caller suppresses entity services and has a closed portrait.
+        // This is the logical WaitForVInt opportunity preceding the input decision.
+        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            simulationTick: checked(current.Story.SimulationTick + 1)), observations, "text-w1-wait");
+        return ProgramRunner.Commit(current, current.Active, current.Story, observations, "text-w1-input", accepting ? "accept" : "none");
+    }
+
     private static StoryState FinishWait(StoryState story)
     {
         bool legacyClose = story.Wait is DialogueWait { Mode: TextDisplayMode.Single, CloseOnAcknowledgement: true };

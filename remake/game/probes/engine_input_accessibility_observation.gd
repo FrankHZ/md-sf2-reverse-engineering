@@ -19,7 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case
+var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case
 var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
@@ -168,6 +168,9 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
+    if "w1-private" in input_case:
+        settings.textMode = "instant" if "instant" in input_case else "adjustable"
+        settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
     if OS.get_environment("SF2_INPUT_RATE") != "": settings.charactersPerSecond = int(OS.get_environment("SF2_INPUT_RATE"))
     if remapped:
@@ -187,6 +190,9 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
+    if "w1-private" in input_case:
+        await run_w1_interaction()
+        return
     if "warp-transition" in input_case:
         await run_warp_transition()
         return
@@ -368,7 +374,8 @@ func admit_field_paths() -> bool:
     # Same fresh/local boundary as the scene and H4 probes, applied to all three destinations
     # before touching any of them. Only this entry owns generated input rewrites.
     var args := OS.get_cmdline_user_args()
-    var entry := "--private-exploration-start" if "warp-transition" in input_case and private_route else "--authored-package"
+    var retained_start := "w1-private" in input_case
+    var entry := "--private-exploration-start" if private_route and ("warp-transition" in input_case or retained_start) else "--authored-package"
     if args.size() != 4 or args.count(entry) != 1 or args.count("--input-settings") != 1:
         return field_io_failure("required unique startup arguments")
     var destinations := {"output":OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT")}
@@ -385,7 +392,9 @@ func admit_field_paths() -> bool:
         for component in path.substr(local_root.length() + 1).split("/"):
             if not component.is_valid_filename() or component.ends_with(".") or component.ends_with(" "):
                 return field_io_failure(name + " has an invalid path component")
-        if identities.has(path.to_lower()) or FileAccess.file_exists(path) or DirAccess.dir_exists_absolute(path):
+        var read_only: bool = retained_start and name == "package"
+        if read_only and not FileAccess.file_exists(path): return field_io_failure("retained start must exist")
+        if identities.has(path.to_lower()) or (FileAccess.file_exists(path) and not read_only) or DirAccess.dir_exists_absolute(path):
             return field_io_failure(name + " must be fresh and distinct")
         identities.append(path.to_lower())
         var parent := path.get_base_dir()
@@ -782,6 +791,128 @@ func finish_public() -> void:
 func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
     warp_records.append({"result":result, "state":state()})
+
+func w1_settle_legacy() -> bool:
+    # Only the already accepted three-input opening setup; its text is not W1 evidence.
+    for frame in range(2000):
+        await process_frame
+        var s := state()
+        if s.failure != null: return false
+        if s.get("canWaitAtInput", false): return true
+        if s.wait == "DialogueWait":
+            # This legacy prefix still services entities during display. Preserve its
+            # receipts rather than applying the admitted W1 no-service assertion.
+            if s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
+                await key(KEY_ENTER)
+            await key(KEY_ENTER)
+    return false
+
+func w1_poll_signature(s: Dictionary) -> Array:
+    return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities]
+
+func run_w1_interaction() -> void:
+    if not admit_field_paths(): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("legacy-setup-entry")
+    if not initial.get("focused", false): field_unavailable.append("OS focus required for W1 input observation")
+    if initial.failure != null or not initial.get("canWaitAtInput", false) or not field_unavailable.is_empty():
+        check(initial.get("canWaitAtInput", false), "Existing retained start has field control")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    for direction in [KEY_LEFT, KEY_LEFT, KEY_RIGHT]:
+        await key(direction)
+        if not await w1_settle_legacy():
+            check(false, "Legacy three-input setup did not settle")
+            finish_public()
+            return
+        read_sample("legacy-setup-step")
+    var before_interaction := read_sample("ordinary-interaction-entry")
+    check(before_interaction.portraitWindow == "ClosedPortraitWindow" and 602 not in before_interaction.flags,
+        "Ordinary callback entry has the existing close and F602 clear")
+    # Follow only this live nearby actor; no additional story route or injected state.
+    var adjacent := false
+    for frame in range(120):
+        var s := state()
+        var player: Dictionary = s.entities.filter(func(e): return e.id == "entity-0")[0]
+        var actor: Dictionary = s.entities.filter(func(e): return e.id == "entity-128")[0]
+        var dx := int(actor.x / 384) - int(player.x / 384)
+        var dy := int(actor.y / 384) - int(player.y / 384)
+        if absi(dx) + absi(dy) > 3 or s.map != "map-3": break
+        var direction := KEY_RIGHT if dx > 0 else (KEY_LEFT if dx < 0 else (KEY_DOWN if dy > 0 else KEY_UP))
+        await key(direction)
+        if not await w1_settle_legacy(): break
+        if absi(dx) + absi(dy) == 1:
+            adjacent = true
+            break
+    if not adjacent:
+        check(false, "Existing nearby entity could not be faced within this interaction")
+        finish_public()
+        return
+    await key(KEY_ENTER)
+    for frame in range(120):
+        if state().wait == "W1TextWait" or state().failure != null: break
+        await process_frame
+    var entry := read_sample("w1-entry")
+    check(entry.wait == "W1TextWait" and entry.textId == 483 and entry.entityEvent.Entity.Value == "entity-128" and
+        entry.entitiesRunning == false and entry.portraitWindow == "ClosedPortraitWindow",
+        "Ordinary Map3 entity event reaches admitted raw text483 with suppressed services and closed portrait")
+    if entry.wait != "W1TextWait" or entry.failure != null:
+        finish_public()
+        return
+    var before_reveal := state()
+    # The optional early Wait is rejected during reveal, but avoid injecting it after instant delivery.
+    if before_reveal.visibleCharacters >= 0 and before_reveal.visibleCharacters < before_reveal.totalCharacters:
+        physical(KEY_V, true)
+        physical(KEY_V, false)
+        check(w1_poll_signature(state()) == w1_poll_signature(before_reveal), "Incomplete delivery rejects Wait")
+        if OS.get_environment("SF2_W1_REVEAL") != "natural":
+            await key(KEY_ENTER)
+            check(w1_poll_signature(state()) == w1_poll_signature(before_reveal) and state().token == before_reveal.token,
+                "Reveal-only Confirm consumes no W1 poll")
+    for frame in range(2000):
+        if state().canWaitForText: break
+        await process_frame
+    var revealed := read_sample("w1-revealed")
+    check(revealed.canWaitForText and revealed.tickDebt == 0, "Actual text delivery enables the poll without debt")
+    check(w1_poll_signature(revealed) == w1_poll_signature(entry), "Full natural or reveal-all delivery preserves admitted gameplay state")
+    var paused := state()
+    await create_timer(0.12).timeout
+    check(w1_poll_signature(state()) == w1_poll_signature(paused) and state().tickDebt == 0,
+        "Display time adds no W1 polls or debt")
+    var polls := int(OS.get_environment("SF2_W1_POLLS"))
+    for index in range(polls):
+        var before := state()
+        physical(KEY_V, true)
+        # Leave the final press held across Ack to exercise the existing rearm boundary.
+        if index != polls - 1:
+            physical(KEY_V, false)
+            await process_frame
+        var after := read_sample("w1-optional-poll-" + str(index))
+        check(after.simulationTick == before.simulationTick + 1 and after.entities == before.entities,
+            "One optional poll advances one suppressed-service opportunity")
+    var before_ack := read_sample("w1-before-ack")
+    await key(KEY_ENTER)
+    var returned := read_sample("w1-returned")
+    check(returned.canWaitAtInput and returned.simulationTick == before_ack.simulationTick + 1,
+        "Actual Ack consumes the mandatory poll and returns ordinary control")
+    check(not returned.waitingAtInput and returned.tickDebt == 0, "Departure disarms held input without debt")
+    check(not returned.audio.receipts.any(func(r): return r.Sequence > before_ack.audio.sequence and r.Command == 67 and r.Operation == "started"),
+        "W1 acceptance adds no validation effect")
+    if polls > 0:
+        physical(KEY_V, true)
+        await create_timer(0.12).timeout
+        check(w1_poll_signature(state()) == w1_poll_signature(returned), "Held Wait cannot propagate into returned field control")
+        physical(KEY_V, false)
+    finish_public()
 
 func run_warp_transition() -> void:
     if not admit_field_paths(): return

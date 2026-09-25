@@ -9,6 +9,8 @@ public readonly record struct WaitToken(long Value);
 public abstract record ProgramWait(WaitToken Token);
 public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0,
     bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
+// EndToken excludes the next W1, or equals the stream length for trailing delivery.
+public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
@@ -45,7 +47,7 @@ public sealed class StoryState
         ExplorationBattleRoute? enteringBattle = null, FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long simulationTick = 0,
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
-        ExplorationDisplay? display = null, OrdinaryWarp? warp = null)
+        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -53,7 +55,7 @@ public sealed class StoryState
         TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EntityEvent = entityEvent;
         Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot; OutcomeReturn = outcomeReturn;
         PortraitWindow = portraitWindow ?? new UnknownPortraitWindow();
-        Display = display; Warp = warp;
+        Display = display; Warp = warp; RandomSeedCopy = randomSeedCopy;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -74,6 +76,8 @@ public sealed class StoryState
     public int? CameraEntitySlot { get; }
     public ExplorationDisplay? Display { get; }
     public OrdinaryWarp? Warp { get; }
+    // The source byte written by text polling; unknown until an admitted write.
+    public byte? RandomSeedCopy { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
@@ -81,13 +85,13 @@ public sealed class StoryState
         EntityEventContext? entityEvent = null, bool clearEntityEvent = false, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false,
         FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null,
-        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false) =>
+        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
             clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
-            display ?? Display, clearWarp ? null : warp ?? Warp);
+            display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
