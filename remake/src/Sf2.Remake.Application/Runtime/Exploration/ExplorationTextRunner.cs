@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
@@ -48,14 +49,22 @@ internal static class ExplorationTextRunner
         if (definition.TextFont is not { } font || !definition.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens))
             throw new BattleRuleException("field-text-font", "world.textFont", true);
         var units = new List<FieldTextUnit>();
+        var partyLists = current.Story.PartyLists;
         foreach (var part in tokens)
         {
             if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "")); continue; }
+            int? member = part.Member;
+            if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
+            {
+                // symbol_leader calls UpdateForce before choosing the first active member.
+                partyLists = MapPartyMembership.Rebuild(current.Story.Flags, partyFlags);
+                member = partyLists.Active.Count > 0 ? partyLists.Active[0] : null;
+            }
             string value = part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
-                ExplorationTextTokenKind.MemberName when part.Member is >= 0 && part.Member < definition.MemberNames.Count => definition.MemberNames[part.Member.Value],
+                ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => definition.MemberNames[member.Value],
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
             foreach (char character in value)
@@ -68,7 +77,7 @@ internal static class ExplorationTextRunner
         }
         var wait = Span(token, current.Story.TextCursor, units.AsReadOnly(), 0,
             current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst);
-        var story = current.Story.Copy(current.Story.Cursor, wait, textCursor: checked(current.Story.TextCursor + 1),
+        var story = current.Story.Copy(current.Story.Cursor, wait, textCursor: checked(current.Story.TextCursor + 1), partyLists: partyLists,
             textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags));
         return Normalize(story);
     }

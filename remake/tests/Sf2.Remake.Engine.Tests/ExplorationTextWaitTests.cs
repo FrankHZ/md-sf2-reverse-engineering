@@ -405,6 +405,16 @@ public sealed class ExplorationTextWaitTests
         Assert.Single(all, row => row.Kind == "interaction-finished");
     }
 
+    [Fact]
+    public void LeaderNameComesFromCurrentActiveMembershipRatherThanMemberZero()
+    {
+        var session = StartFieldText("{LEADER}{W1}", alternateLeader: true);
+        DrainTextWork(session);
+        Assert.Equal("Name", Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Projection);
+        Assert.Equal(18, session.Current.Story.SimulationTick);
+        Assert.Equal(new[] { 1 }, session.Current.Story.PartyLists!.Active);
+    }
+
     private static void DrainTextWork(GameSession session)
     {
         for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)
@@ -413,7 +423,7 @@ public sealed class ExplorationTextWaitTests
     }
 
     private static GameSession StartFieldText(string text, int speed = 2, bool enabled = false,
-        bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false)
+        bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false, bool alternateLeader = false)
     {
         var session = Start("harbor-arrival", document =>
         {
@@ -421,6 +431,11 @@ public sealed class ExplorationTextWaitTests
             world["texts"]![0]!["text"] = text;
             world["texts"]![1]!["text"] = second ?? "B{W1}";
             world["memberNames"] = new JsonArray("Leader", name);
+            if (alternateLeader)
+            {
+                world["partyFlags"] = JsonNode.Parse("""{"memberCount":2,"joinedStart":10,"activeStart":20,"capacity":1}""");
+                document["start"]!["flags"] = new JsonArray(11, 21);
+            }
             world["textFont"] = JsonSerializer.SerializeToNode(new { asciiToSymbol = Enumerable.Repeat(1, 256), advances = Enumerable.Repeat(width, 80) });
             foreach (var map in world["maps"]!.AsArray())
             {

@@ -225,7 +225,8 @@ normal symbol range1–80; other control/font families remain unsupported.
 `FieldTextWait` separates the ordered glyph/control cursor, mandatory phase and actual delivery.
 It preserves the current span and the first-regular-glyph bit across W1/W2 occurrences. DisplayText
 resets that bit (source DIALOGUE_REGULAR_TILE_TOGGLE) and selects regular font1, while a reused
-window retains X/Y/row. Names are substituted as literal glyphs, never reparsed as controls.
+window retains X/Y/row. Names are substituted as literal glyphs, never reparsed as controls. LEADER uses the first active
+member after rebuilding the source party flags; authored content without those flags names member0.
 A fresh window performs two clear/DMA opportunities, creates the source29×8 window at(2,29),
 and services its eight-step move to(2,19). Every glyph applies the first-glyph/automatic newline
 rule, advances X by its symbol width, performs one cursor/DMA opportunity and then the source
