@@ -25,7 +25,9 @@ from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.h2.map_import import MANIFEST, _canonical_bytes
 from sf2tool.h2.portraits import _read_animation_entries
+from sf2tool.h2.variable_width_font import _parse_ascii_map, build_variable_width_font_contract
 from sf2tool.jsonio import load_json
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 from sf2tool.remake_asset_build import (
     PLAYER_PALETTE_ADDRESS,
     PLAYER_POINTER_TABLE_ADDRESS,
@@ -625,6 +627,7 @@ class OriginalPrograms:
                 # FFFF skips portrait lookup; it does not close an existing window.
                 entity = None if (flags, selector) == (255, 255) else self.entity(args[1])
                 result.append({"op": "open-portrait", "entity": entity, "flags": flags})
+                result.append({"op": "wait-view"})
                 result.append(
                     {
                         "op": "show-text",
@@ -1617,6 +1620,29 @@ def prepare(
                         "minY": a["mainLayerStart"]["y"],
                         "maxX": a["mainLayerEnd"]["x"],
                         "maxY": a["mainLayerEnd"]["y"],
+                        "view": {
+                            "foregroundX": a["secondLayerForegroundStart"]["x"],
+                            "foregroundY": a["secondLayerForegroundStart"]["y"],
+                            "backgroundX": a["secondLayerBackgroundStart"]["x"],
+                            "backgroundY": a["secondLayerBackgroundStart"]["y"],
+                            **{
+                                f"parallax{plane}{axis.upper()}": a[key][axis]
+                                for plane, key in (
+                                    ("A", "mainLayerParallax"),
+                                    ("B", "secondLayerParallax"),
+                                )
+                                for axis in ("x", "y")
+                            },
+                            **{
+                                f"autoscroll{plane}{axis.upper()}": a[key][axis]
+                                for plane, key in (
+                                    ("A", "mainLayerAutoscroll"),
+                                    ("B", "secondLayerAutoscroll"),
+                                )
+                                for axis in ("x", "y")
+                            },
+                            "layer": a["mainLayerType"],
+                        },
                         "overlay": {
                             axis: a["secondLayerForegroundStart"][axis]
                             - a["secondLayerBackgroundStart"][axis]
@@ -1720,7 +1746,30 @@ def prepare(
             selection["presentationAtlases"],
         )
     growth = _selected_growth(compiler, selection.get("growthClasses", []))
-    sources = []
+    font_path = "disasm/data/graphics/tech/fonts/variablewidthfont.bin"
+    ascii_path = "disasm/data/scripting/text/asciitotextsymbolmap.asm"
+    compiler.sources.update(
+        (
+            ascii_path,
+            "disasm/data/graphics/tech/fonts/variablewidthfont.txt",
+            "disasm/code/common/tech/incbins/s06_incbins_graphics.asm",
+            "disasm/code/common/tech/pointers/s06_pointers.asm",
+            "disasm/code/common/maps/camerafunctions.asm",
+            "disasm/code/common/maps/animations.asm",
+            "disasm/code/common/scripting/text/textfunctions_1.asm",
+            "disasm/code/common/scripting/text/textfunctions_2.asm",
+        )
+    )
+    # The split binary is private, not an upstream Git blob. Reuse the existing
+    # source/ROM reader (including pointer and ASCII parity); emit only advances.
+    font = build_variable_width_font_contract(
+        rom_path or private_input_path(ROM_INPUT_IDENTITY), upstream
+    )
+    text_font = {
+        "asciiToSymbol": _parse_ascii_map((upstream / ascii_path).read_text(encoding="utf-8")),
+        "advances": [row["advancePixels"] for row in font["glyphs"]],
+    }
+    sources = [{"path": font_path, "sha256": font["font"]["sha256"]}]
     for relative in sorted(compiler.sources):
         raw = (upstream / relative).read_bytes()
         committed = subprocess.run(
@@ -1747,6 +1796,7 @@ def prepare(
             "programs": list(compiler.programs.values()),
             "texts": texts,
             "memberNames": member_names,
+            "textFont": text_font,
             **({"growth": growth} if growth else {}),
             **({"presentation": visuals} if visuals else {}),
             **(

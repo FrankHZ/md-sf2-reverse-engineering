@@ -125,6 +125,7 @@ internal static class MapTransfer
         bool entities = wait.Purpose != FullFadePurpose.Script || story.Cursor is not { } cursor ||
             definition.Exploration!.Programs[cursor.Program].EntitiesRunning;
         var tick = entities ? EntityActionRunner.Tick(current.Exploration!, storyFlags: story.Flags) : null;
+        story = ExplorationTextRunner.AfterEntities(tick?.World ?? current.Exploration!, story);
         current = ProgramRunner.Commit(current, tick is null ? current.Active : new ActiveExploration(MapEventDispatcher.Roof(tick.World)),
             story, observations, "fade-service", wait.Entry.ToString(System.Globalization.CultureInfo.InvariantCulture));
         if (tick?.Failure is { } failure) throw new FadeServiceFailure(current, failure);
@@ -239,6 +240,7 @@ internal static class MapTransfer
             textWindow: new ClosedTextWindow(),
             continuation: continuation.EnteringBattle is null ? ProgramContinuation.MapLoaded : continuation.Continuation,
             returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null);
+        story = ExplorationTextRunner.Initialize(next, story);
         if (story.Display is not null && mode == MapLoadMode.Rebuild)
         {
             if (target.BasePalette is not { Valid: true })

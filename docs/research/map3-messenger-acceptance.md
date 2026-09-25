@@ -3136,11 +3136,64 @@ Reproduce without a launch: read the named pinned `gamescript.txt` entries (hex 
 candidate's `checkpoints.jsonl` from the [completed result](#corrected-candidate-single-run-result).
 Observer frames 1031/1144/1147 correspond to the table's input ordinals 677/790/793. Retain
 entry/return target and stack association; later `text:wait1` cursor values alone cannot select
-the text. The [dialogue contract](../design/contracts/dialogue-system.md#reached-w1-consumer-binding)
-owns the logical-input rule and current implementation gap. Text 446/447's separate plain
-[JOIN helper](#natural-join-audio-and-input-boundary) remains input-first, without W1's accepting
-preamble. Complete portrait/entity service gates and mandatory text-work interleaving remain
-**Unknown**; neither this readback nor the handler-local dialogue fixture supplies them.
+the text. The [dialogue contract](../design/contracts/dialogue-system.md#logical-input-ownership-and-implementation-gap)
+owns logical input and the bounded remake consumers; its former generic-only implementation
+paragraph is superseded. Text446/447's plain [JOIN helper](#natural-join-audio-and-input-boundary)
+remains input-first. The completed remake finite-JOIN diagnostic has5,313 simulation results and
+572 minimal LCG-equivalent advances, not an established original entity-service budget. Its
+5,000-frame timeout and corrected completed run are retained by the
+[verification owner](../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
+Complete original portrait/entity timing and audio interleaving remain **Unknown**.
+
+### Opening field-text settings and view binding
+
+**Confirmed (source and existing saved bytes):** the selected USA ROM remains the tracked
+`manifests/roms/sf2-us.json` identity and SF2DISASM commit remains
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. Existing numbered continuation prepared-06 is the
+earliest full-RAM saved owner; prepared-68 agrees at the named map3-zone-messenger neutral
+completed frame8605/ordinal1. Selected big-endian fields are MESSAGE_SPEED `FFF717.b=2`,
+MOUTH_CONTROL_TOGGLE `FFB198.b=0`, SPRITE_00_VDPTILE `FFDC84.w=C77C`, with portrait/dialogue/timer
+indices, view target, active mask, override and follow counter zero. This is a **later** save,
+not an opening text capture. MOVING_WINDOWS_BITFIELD at FFA900 is a byte. Later A=(14592,14592)
+and B=(14592,2304) positions must not initialize the opening camera.
+
+**Confirmed (source):** NewGame→InitializeGameSettings writes speed2; the observed selected R1
+contains this path. Other named writers are battlefield settings and the Map25 demonstration.
+SaveGame copies out; this selected path does not LoadGame. StartWitchScreen clears mouth control;
+Introend setsFF before Witchclear; the admitted Map3 prefix has no new writer. LoadMap's
+InitializeDisplay installs sprite_Masks (sprite0C77C); SetBaseVIntFunctions/InitializeWindowProperties
+clears eight window entries and portrait/dialogue/timer indices. Settings and mouth are inherited,
+not reset by every map load. Map3 default init with flags1/602/603 clear opens no portrait;
+actor128 resolves sprite195 with PORTRAIT_NONE. The source font reader's ROM/source parity covers
+2,820 bytes (font, pointer and ASCII map); output contains80 glyph advances and256 mapping entries.
+
+**Inferred (opening ancestry):** public R1 chronology begins at CheckSram, so the preceding reset
+and StartWitchScreen history is not fully observed. Mouth0 and view override0 are admitted through
+this source ancestry with later agreeing RAM, not claimed as measured at the text entry. The
+controlled start explicitly states these bindings. General authored starts receive no silent defaults.
+Quake0 follows the existing intro-clear/no-reached-setter argument; it is not a new quake observation.
+
+**Confirmed (source view construction):** the first same-map stairs54,3→3,3 reload uses area0
+bounds(0,0)..(50,31), foreground offset(0,32), background offset0, unity parallax and no autoscroll.
+LoadMap centers with the source lower/upper clamps and128-unit quantization, producing
+B=(0,0), A=(0,12288), active mask0. It does not reset inactive destination words; leave them
+unconsumed. **Inferred:** the short approach to(4,4) remains at or below the1536-unit lower
+deadband, so this opening view is stationary. This does not justify a stationary-only helper:
+WaitForViewScrollEnd must recheck after its first service and honor newly started scrolling.
+The [engine owner](../../remake/docs/exploration-programs.md#bound-field-text-work) records the
+finite state-driven rule and source symbols independently of this example route.
+
+Reproduce without an original launch: use the retained selected continuations and
+`local/issue534/opening-text-binding/read-bindings.py` to read the named RAM fields; inspect the
+pinned source symbols above and the source paths in the engine owner. Load private configuration
+and run `uv run sf2 rom verify` and `uv run sf2 h2 variable-width-font --upstream $upstream
+--output-path local/<fresh>/font.json` for identity/font parity. The executable reader is
+`src/sf2tool/h2/variable_width_font.py`; its fixture is evidence, never remake runtime input.
+The actual remake settings comparison is recorded in the
+[verification owner](../../remake/docs/development-and-verification.md#bound-opening-field-text-observation).
+No original run/capture was added. The eight first-warp scalar gaps, H4 5340PASS/2FAIL/40Unavailable,
+HEAL2vs3/later RNG failures, JOIN cross-clock Unknowns, index29/next-actor discrepancy,
+public aggregate/h3-witch nonruns and attempts21/41/61/67 cleanup Unknowns remain.
 
 ### Later blocks: complete source, no later runtime claim
 

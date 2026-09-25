@@ -16,6 +16,7 @@ internal static class ExplorationContentReader
             string value = match.Value;
             if (value == "{N}") tokens.Add(new(ExplorationTextTokenKind.Newline, value));
             else if (value == "{W1}") tokens.Add(new(ExplorationTextTokenKind.Wait1, value));
+            else if (value == "{W2}") tokens.Add(new(ExplorationTextTokenKind.Wait2, value));
             else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
             else if (value.StartsWith("{NAME;", StringComparison.Ordinal) && value.EndsWith('}') &&
                 int.TryParse(value.AsSpan(6, value.Length - 7), System.Globalization.NumberStyles.None,
@@ -38,6 +39,7 @@ internal static class ExplorationContentReader
     internal static ExplorationReadAccepted Read(string package, JsonElement world, JsonElement start, ScenarioReadAccepted battle, ExplorationProvenance? provenance = null)
     {
         ObjectOptional(world, "world", "partyFlags", ["maps", "programs", "texts",
+            .. world.TryGetProperty("textFont", out _) ? new[] { "textFont" } : System.Array.Empty<string>(),
             .. world.TryGetProperty("growth", out _) ? new[] { "growth" } : System.Array.Empty<string>(),
             .. world.TryGetProperty("memberNames", out _) ? new[] { "memberNames" } : System.Array.Empty<string>(),
             .. world.TryGetProperty("presentation", out _) ? new[] { "presentation" } : System.Array.Empty<string>()]);
@@ -113,7 +115,8 @@ internal static class ExplorationContentReader
                 }
             var areas = Array(row, "areas").Select(area =>
             {
-                ObjectOptional(area, "area", "overlay", "minX", "minY", "maxX", "maxY");
+                ObjectOptional(area, "area", "overlay", ["minX", "minY", "maxX", "maxY",
+                    .. area.TryGetProperty("view", out _) ? new[] { "view" } : System.Array.Empty<string>()]);
                 int minX = Number(area, "minX", 0, width - 1), minY = Number(area, "minY", 0, rows.Length - 1);
                 return new OriginalMapTraversalArea(minX, minY, Number(area, "maxX", minX, width - 1), Number(area, "maxY", minY, rows.Length - 1));
             }).ToArray();
@@ -160,7 +163,7 @@ internal static class ExplorationContentReader
                 {
                     Object(flag, "entryFlag", "flag", "value");
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
-                }) : null, palette));
+                }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea)));
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
@@ -170,9 +173,11 @@ internal static class ExplorationContentReader
             {
                 Require(name.ValueKind == JsonValueKind.String && name.GetString()!.Length is > 0 and <= 32, "member-name", "world.memberNames");
                 return name.GetString()!;
-            }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ReadTextTokens(pair.Value))));
+            }) : null, texts.Select(pair => new KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>(pair.Key, ReadTextTokens(pair.Value))),
+            world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null);
         Link(definition);
         Object(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags",
+            .. start.TryGetProperty("textSettings", out _) ? new[] { "textSettings" } : System.Array.Empty<string>(),
             .. start.TryGetProperty("display", out _) ? new[] { "display" } : System.Array.Empty<string>(),
             .. start.TryGetProperty("mapPalettes", out _) ? new[] { "mapPalettes" } : System.Array.Empty<string>(),
             .. start.TryGetProperty("program", out _) ? new[] { "program" } : System.Array.Empty<string>(),
@@ -220,7 +225,43 @@ internal static class ExplorationContentReader
         return new(new(package, encounters, battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes),
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
-                start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null));
+                start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null,
+                start.TryGetProperty("textSettings", out var settings) ? ReadTextSettings(settings) : null));
+    }
+
+    private static ExplorationTextFont ReadFont(JsonElement row)
+    {
+        Object(row, "textFont", "asciiToSymbol", "advances");
+        byte[] Bytes(string key, int length, int minimum, int maximum)
+        {
+            var values = Array(row, key).ToArray();
+            Require(values.Length == length, "text-font-length", key);
+            return values.Select(value =>
+            {
+                Require(value.TryGetInt32(out int n) && n >= minimum && n <= maximum, "text-font-value", key);
+                return (byte)value.GetInt32();
+            }).ToArray();
+        }
+        return new(System.Array.AsReadOnly(Bytes("asciiToSymbol", 256, 1, 80)), System.Array.AsReadOnly(Bytes("advances", 80, 0, 16)));
+    }
+
+    private static ExplorationTextSettings ReadTextSettings(JsonElement row)
+    {
+        Object(row, "textSettings", "messageSpeed", "mouthControl", "viewSpeed");
+        return new((byte)Number(row, "messageSpeed", 0, 3), (byte)Number(row, "mouthControl", 0, 255),
+            (ushort)Number(row, "viewSpeed", 0, 65535));
+    }
+
+    private static ExplorationViewArea ReadViewArea(JsonElement area)
+    {
+        var row = area.GetProperty("view");
+        Object(row, "view", "foregroundX", "foregroundY", "backgroundX", "backgroundY", "parallaxAX", "parallaxAY",
+            "parallaxBX", "parallaxBY", "autoscrollAX", "autoscrollAY", "autoscrollBX", "autoscrollBY", "layer");
+        return new(Number(area, "minX", 0, 63), Number(area, "minY", 0, 63), Number(area, "maxX", 0, 63), Number(area, "maxY", 0, 63),
+            Number(row, "foregroundX", 0, 63), Number(row, "foregroundY", 0, 63), Number(row, "backgroundX", 0, 63), Number(row, "backgroundY", 0, 63),
+            Number(row, "parallaxAX", 0, 65535), Number(row, "parallaxAY", 0, 65535), Number(row, "parallaxBX", 0, 65535), Number(row, "parallaxBY", 0, 65535),
+            Number(row, "autoscrollAX", -128, 255), Number(row, "autoscrollAY", -128, 255), Number(row, "autoscrollBX", -128, 255), Number(row, "autoscrollBY", -128, 255),
+            Number(row, "layer", 0, 255));
     }
 
     private static PalettePair ReadPair(JsonElement row)
@@ -416,6 +457,7 @@ internal static class ExplorationContentReader
             case "close-portrait": Object(row, opcode, "op"); return new ClosePortrait();
             case "wait-text-input": Object(row, opcode, "op"); return new WaitForTextInput();
             case "close-text": Object(row, opcode, "op"); return new CloseText();
+            case "wait-view": Object(row, opcode, "op"); return new WaitForView();
             case "yes-no": Object(row, opcode, "op", "flag"); return new ChooseYesNo(Number(row, "flag", 0, 65535));
             case "sprite":
                 Object(row, opcode, "op", "entity", "sprite");

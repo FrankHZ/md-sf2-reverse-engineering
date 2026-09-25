@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Xunit;
@@ -170,6 +171,287 @@ public sealed class ExplorationTextWaitTests
         Accept(session, new Acknowledge(wait.Token));
         Assert.Equal(npc.Motion.Facing, session.Current.Exploration.Entities[new("ferryman")].Motion.Facing);
         Assert.True(session.Current.CanWaitAtInput);
+    }
+
+    [Theory]
+    [InlineData(0, 20)]
+    [InlineData(1, 16)]
+    [InlineData(2, 14)]
+    [InlineData(3, 12)]
+    public void FreshWindowGlyphWorkAndCloseDoNotDependOnDelivery(int speed, int mandatory)
+    {
+        foreach (bool early in new[] { false, true })
+        {
+            var session = StartFieldText("AB{W2}", speed: speed);
+            var wait = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+            if (early) Accept(session, new CompleteTextReveal(wait.Token));
+            DrainTextWork(session);
+            Assert.Equal(mandatory, session.Current.Story.SimulationTick);
+            Assert.Equal(14, session.Current.Story.LogicalText!.X);
+            Assert.Equal(0, session.Current.Story.LogicalText.Y);
+            Assert.Equal(early, session.Current.CanWaitForText);
+            if (!early) Accept(session, new CompleteTextReveal(wait.Token));
+            var poll = Accept(session, new Acknowledge(wait.Token));
+            Assert.Contains(poll.Observations, row => row.Kind == "text-w2-accepted");
+            Assert.IsType<TextCloseWait>(session.Current.Story.Wait);
+            Assert.False(session.Current.Story.LogicalText.IndicatorVisible);
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 8));
+            Assert.IsType<TextCloseWait>(session.Current.Story.Wait);
+            Assert.True(session.Current.Story.LogicalText.Moving);
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            Assert.True(session.Current.CanWaitAtInput);
+            Assert.Equal(mandatory + 10, session.Current.Story.SimulationTick);
+            Assert.False(session.Current.Story.LogicalText.Open);
+        }
+    }
+
+    [Fact]
+    public void NamesWidthsWrapScrollAndReusedWindowConsumeActualWork()
+    {
+        var session = StartFieldText("{NAME;1}{NAME;1}{NAME;1}{W2}{W1}tail", name: new string('W', 14), width: 16, second: "Z{W1}");
+        DrainTextWork(session);
+        var first = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.Equal(new string('W', 42), first.Projection);
+        // Four lines, with one two-row scroll. Width rather than character count controls wrap.
+        Assert.Equal(10 + 42 * 2 + 3, session.Current.Story.SimulationTick);
+        Assert.Equal(50, session.Current.Story.LogicalText!.X);
+        Assert.Equal(32, session.Current.Story.LogicalText.Y);
+        Assert.Equal(2, session.Current.Story.LogicalText.Row);
+        Accept(session, new CompleteTextReveal(first.Token));
+        Accept(session, new Acknowledge(first.Token));
+        var consecutive = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.True(consecutive.LogicalDone);
+        Assert.False(consecutive.Wait2);
+        Assert.NotEqual(first.Token, consecutive.Token);
+        Assert.Equal("stale-or-wrong-text-delivery", Send(session, new CompleteTextReveal(first.Token)).Failure!.Code);
+        Assert.Equal("stale-or-wrong-wait", Send(session, new Acknowledge(first.Token)).Failure!.Code);
+        Accept(session, new CompleteTextReveal(consecutive.Token));
+        var revision = session.Current.Revision;
+        Accept(session, new WaitForText(consecutive.Token));
+        Assert.Equal("stale-input", session.Submit(new(session.Current.SessionId, revision, null, new Acknowledge(consecutive.Token))).Failure!.Code);
+        Accept(session, new Acknowledge(consecutive.Token));
+        var tail = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.False(tail.LogicalDone);
+        DrainTextWork(session);
+        long beforeReuse = session.Current.Story.SimulationTick;
+        Accept(session, new CompleteTextReveal(tail.Token));
+        var reused = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.Equal(101, reused.Text);
+        Assert.Equal(FieldTextPhase.Scroll, reused.Phase); // A new display starts a new line.
+        DrainTextWork(session);
+        Assert.Equal(beforeReuse + 3 + 2, session.Current.Story.SimulationTick);
+        Assert.Equal(18, session.Current.Story.LogicalText.X);
+        Assert.Equal(32, session.Current.Story.LogicalText.Y);
+        Assert.Equal(4, session.Current.Story.LogicalText.Row);
+        Assert.Equal(102, session.Current.Story.TextCursor);
+    }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(false, 3)]
+    [InlineData(true, 1)]
+    [InlineData(true, 4)]
+    public void PollCopiesBeforeEnabledNpcDrawAndKeepsSuppressedServices(bool enabled, int optional)
+    {
+        var session = StartFieldText("{W2}", enabled: enabled, npcRandom: true);
+        DrainTextWork(session);
+        var wait = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Accept(session, new CompleteTextReveal(wait.Token));
+        var entry = session.Current;
+        for (int i = 0; i <= optional; i++)
+        {
+            var before = session.Current;
+            var result = Accept(session, i == optional ? new Acknowledge(wait.Token) : new WaitForText(wait.Token));
+            Assert.Equal(new[] { "rng-text-w2", "text-seed-copy", "text-w2-wait", "text-w2-input" }, result.Observations.Take(4).Select(row => row.Kind));
+            var draw = result.Observations[0];
+            Assert.Equal(before.Exploration!.Party.MainSeed, draw.Before);
+            Assert.Equal((byte)draw.RandomValue!.Value, session.Current.Story.RandomSeedCopy);
+            Assert.Equal(before.Story.SimulationTick + 1, session.Current.Story.SimulationTick);
+            if (enabled) Assert.NotEqual(draw.After, session.Current.Exploration!.Party.MainSeed);
+            else Assert.Equal(draw.After, session.Current.Exploration!.Party.MainSeed);
+        }
+        if (!enabled) Assert.Equal(entry.Exploration!.AllEntities, session.Current.Exploration!.AllEntities);
+    }
+
+    [Theory]
+    [InlineData(0, 4)]
+    [InlineData(1, 2)]
+    [InlineData(2, 1)]
+    [InlineData(3, 0)]
+    public void NeutralGlyphWorkIgnoresRevealAndSourceShorteningRequiresItsOwnInput(int speed, int delay)
+    {
+        Assert.Equal(delay, ExplorationTextRunner.TypewriteDelay(new((byte)speed, 0, 0), 0));
+        Assert.Equal(0, ExplorationTextRunner.TypewriteDelay(new((byte)speed, 0, 0), 1));
+        Assert.Equal(delay, ExplorationTextRunner.TypewriteDelay(new((byte)speed, 255, 0), 1));
+        var session = StartFieldText("A{W1}", speed: speed);
+        var entry = session.Current;
+        Accept(session, new CompleteTextReveal(entry.Story.Wait!.Token));
+        Assert.Equal(entry.Story.SimulationTick, session.Current.Story.SimulationTick);
+        Assert.Equal(entry.Exploration!.Party, session.Current.Exploration!.Party);
+        Assert.Equal("text-input-unavailable", Send(session, new Acknowledge(entry.Story.Wait.Token)).Failure!.Code);
+        DrainTextWork(session);
+        Assert.Equal(11 + delay, session.Current.Story.SimulationTick);
+    }
+
+    [Fact]
+    public void ViewHelperRechecksWhenItsFirstServiceStartsScrolling()
+    {
+        var session = StartFieldText("A{W1}", viewWait: true);
+        var world = session.Current.Exploration!;
+        var view = session.Current.Story.LogicalView!;
+        var player = world.PlayerEntity;
+        world = world.WithEntity(player with { Motion = player.Motion with { X = 2305 } });
+        var story = session.Current.Story;
+        Assert.IsType<ViewWait>(story.Wait);
+        story = ExplorationTextRunner.AfterService(ExplorationTextRunner.AfterEntities(world, story));
+        Assert.IsType<ViewWait>(story.Wait);
+        Assert.True(story.LogicalView!.Scrolling);
+        Assert.False(((ViewWait)story.Wait!).FinalService);
+        int services = 1;
+        while (story.Wait is ViewWait && services < 30)
+        {
+            story = ExplorationTextRunner.AfterService(ExplorationTextRunner.AfterEntities(world, story));
+            services++;
+        }
+        Assert.Null(story.Wait);
+        Assert.Equal(18, services); // 16 scroll passes, then settled recheck and final wait.
+        Assert.Equal(384, story.LogicalView!.BX.Position);
+        Assert.Null(story.LogicalView.BX.Destination);
+        Assert.Equal(view.AY.Position, story.LogicalView.AY.Position);
+    }
+
+    [Fact]
+    public void ViewDeadbandsClampsCounterAndIndependentAxesAreStateDriven()
+    {
+        var session = StartFieldText("A{W1}");
+        var world = session.Current.Exploration!;
+        var view = session.Current.Story.LogicalView!;
+        var player = world.PlayerEntity;
+        LogicalView TickAt(int x, int y, LogicalView current) => ExplorationViewRunner.Tick(
+            world.WithEntity(player with { Motion = player.Motion with { X = (short)x, Y = (short)y } }), current, new(2, 0, 0));
+        Assert.False(TickAt(2304, 1536, view).Scrolling);
+        Assert.False(TickAt(0, 0, view).Scrolling);
+        var moving = TickAt(2305, 2305, view with { FollowCounter = 6 });
+        Assert.Equal(32, moving.BX.Position);
+        Assert.Equal(7, moving.FollowCounter);
+        Assert.Equal(24, TickAt(2305, 1536, view with { FollowCounter = 32767 }).BX.Speed);
+        Assert.Equal(384, moving.AX.Destination);
+        Assert.Equal(384 + 32 * 384, moving.AY.Destination);
+        var finishing = moving with { AX = new(380, 384, 32), BX = new(360, 384, 24), AY = new(32 * 384 + 300, 32 * 384 + 384, 24), BY = new(300, 384, 24) };
+        var next = TickAt(0, 0, finishing);
+        Assert.False(next.AX.Active);
+        Assert.False(next.BX.Active);
+        Assert.True(next.AY.Active);
+        Assert.Equal(324, next.BY.Position);
+        Assert.True(next.HideWindows);
+        var upper = view with { AX = new(20 * 384), BX = new(20 * 384), AY = new(21 * 384 + 32 * 384), BY = new(21 * 384) };
+        Assert.False(TickAt(30 * 384, 30 * 384, upper).Scrolling);
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 128 } }, new(2, 0, 0)));
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { TargetSlot = 63 }, new(2, 0, 0)));
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view, new(2, 0, 1)));
+    }
+
+    [Fact]
+    public void W2IndicatorBlinksWhileW1AndUnknownPortraitDoNotGainItsBehavior()
+    {
+        var session = StartFieldText("{W2}{W1}");
+        var token = session.Current.Story.Wait!.Token;
+        DrainTextWork(session);
+        Accept(session, new CompleteTextReveal(token));
+        for (int i = 0; i < 20; i++)
+        {
+            Accept(session, new WaitForText(token));
+            Assert.Equal(i < 14, session.Current.Story.LogicalText!.IndicatorVisible);
+        }
+        Assert.Equal(20, session.Current.Story.LogicalText!.Indicator);
+        Accept(session, new Acknowledge(token));
+        var next = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.False(next.Wait2);
+        Accept(session, new CompleteTextReveal(next.Token));
+        var result = Accept(session, new Acknowledge(next.Token));
+        Assert.DoesNotContain(result.Observations, row => row.Kind == "text-w2-accepted");
+        var current = session.Current;
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationTextRunner.ValidateContext(
+            current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait, portraitWindow: new UnknownPortraitWindow()))));
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationTextRunner.ValidateContext(
+            current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait, continuation: ProgramContinuation.BeforeBattleFinished))));
+    }
+
+    [Fact]
+    public void EntityWrapperRestoresFacingThenClosesWithSuppressedServicesExactlyOnce()
+    {
+        var session = StartFieldText("{W1}", interaction: true);
+        DrainTextWork(session);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        var result = Accept(session, new Acknowledge(token));
+        var closing = session.Current;
+        Assert.True(Assert.IsType<TextCloseWait>(closing.Story.Wait).EntityEventReturn);
+        Assert.NotNull(closing.Story.EntityEvent);
+        Assert.True(closing.Story.LogicalText!.Open);
+        Assert.IsType<OpenTextWindow>(closing.Story.TextWindow);
+        Assert.False(closing.CanWaitAtInput);
+        Assert.Single(result.Observations, row => row.Kind == "interaction-closing");
+        var all = new List<SessionObservation>();
+        for (int i = 0; i < 9; i++) all.AddRange(Accept(session, new AdvanceSimulation(closing.Story.Wait!.Token)).Observations);
+        Assert.Equal(closing.Exploration!.AllEntities, session.Current.Exploration!.AllEntities);
+        Assert.Equal(closing.Exploration.Party.MainSeed, session.Current.Exploration.Party.MainSeed);
+        Assert.Equal(closing.Story.SimulationTick + 9, session.Current.Story.SimulationTick);
+        Assert.Null(session.Current.Story.EntityEvent);
+        Assert.Null(session.Current.Story.Cursor);
+        Assert.False(session.Current.Story.LogicalText!.Open);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.Single(all, row => row.Kind == "interaction-finished");
+    }
+
+    private static void DrainTextWork(GameSession session)
+    {
+        for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+        Assert.True(Assert.IsType<FieldTextWait>(session.Current.Story.Wait).LogicalDone);
+    }
+
+    private static GameSession StartFieldText(string text, int speed = 2, bool enabled = false,
+        bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false)
+    {
+        var session = Start("harbor-arrival", document =>
+        {
+            var world = document["world"]!;
+            world["texts"]![0]!["text"] = text;
+            world["texts"]![1]!["text"] = second ?? "B{W1}";
+            world["memberNames"] = new JsonArray("Leader", name);
+            world["textFont"] = JsonSerializer.SerializeToNode(new { asciiToSymbol = Enumerable.Repeat(1, 256), advances = Enumerable.Repeat(width, 80) });
+            foreach (var map in world["maps"]!.AsArray())
+            {
+                map!["layout"] = JsonSerializer.SerializeToNode(Enumerable.Range(0, 31).Select(_ => new int[31]));
+                map["areas"] = JsonNode.Parse("""[{"minX":0,"minY":0,"maxX":30,"maxY":30,"view":{"foregroundX":0,"foregroundY":32,"backgroundX":0,"backgroundY":0,"parallaxAX":256,"parallaxAY":256,"parallaxBX":256,"parallaxBY":256,"autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":0}}]""");
+            }
+            var program = world["programs"]![0]!;
+            program["entitiesRunning"] = enabled;
+            var instructions = JsonNode.Parse("""[{"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},{"op":"close-text"},{"op":"end"}]""")!.AsArray();
+            if (second is not null) instructions.Insert(2, instructions[1]!.DeepClone());
+            if (viewWait) instructions.Insert(1, JsonNode.Parse("""{"op":"wait-view"}"""));
+            if (interaction) instructions.RemoveAt(instructions.Count - 2);
+            program["instructions"] = instructions;
+            var npc = world["maps"]![0]!["entities"]![0]!;
+            npc["sprite"] = 30;
+            if (npcRandom) npc["actions"] = JsonNode.Parse("""[{"op":"random-walk","x":2,"y":1,"radius":0},{"op":"jump","instruction":0}]""");
+            document["start"]!["textSettings"] = JsonSerializer.SerializeToNode(new { messageSpeed = speed, mouthControl = 0, viewSpeed = 0 });
+            document["start"]!["program"] = JsonNode.Parse("""{"program":"invitation","instruction":0}""");
+            if (interaction)
+            {
+                document["start"]!.AsObject().Remove("program");
+                world["maps"]![0]!["events"]![0]!["entityFlags"] = 3;
+            }
+            AddVisuals(document, null);
+        });
+        if (interaction)
+        {
+            Accept(session, new Interact(new("ferryman")));
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        }
+        return session;
     }
 
     private static GameSession StartText(string text, uint seed = 0x12341234, int phase = 1, string? exclusion = null, bool face = false)

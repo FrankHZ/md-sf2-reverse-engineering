@@ -119,8 +119,8 @@ or unavailable name excludes the entire text from this capability. W2 cannot bec
 `ShowText` admits this stream only with explicit source windows, a live `EntityEventContext`,
 field continuation without battle entry, an established Closed portrait, resolved event-actor
 sprite metadata explicitly declaring no portrait, and `EntitiesRunning=false` on the executing
-program. No map, text, actor, seed or expected endpoint identity participates in admission. Other
-consumers retain their legacy display/acknowledgement and cannot claim this W1 contract.
+program. No map, text, actor, seed or expected endpoint identity participates in admission. Without explicit bound field-text settings, other
+consumers retain legacy display/acknowledgement and cannot claim this W1 contract.
 
 `W1TextWait` keeps the displayed text ID, exclusive token endpoint, delivery state and whether
 the endpoint is a W1 or the final trailing span. Every optional `WaitForText` and the accepting
@@ -200,6 +200,81 @@ policy is produced only after Application completes that routing. External stand
 require the existing explicit controlled skip. Battle region state and its activation rules retain
 their existing Domain owner; general story access to battle-region flag aliases is outside the
 selected private programs described below.
+
+## Bound field text work
+
+The explicit `start.textSettings` profile (`messageSpeed`, `mouthControl`, `viewSpeed`) enables
+source text work for field programs. It requires a Closed portrait, a resolved speaker whose
+sprite explicitly has no portrait, regular font metadata, and a supported logical view. Names,
+text/actor IDs, seeds, routes and receipt counts never select this capability. A start without
+this profile retains its existing plain/W1/legacy consumer. An unsupported bound context stops;
+it cannot silently use display latency as gameplay work. Battle continuation, portrait work,
+scene camera changes, cursor targets, scrolling overrides, autoscroll and non-unity parallax
+are outside this profile. Quake and pulsating fade variants have no admitted implementation.
+
+`world.textFont` contains the existing source reader's 256 ASCII-to-symbol entries and 80 glyph
+advances. The private producer reuses `build_variable_width_font_contract`: it checks the registered
+USA ROM, existing H1 symbol listing, split-font bytes, font pointer and ASCII table parity. The
+split font is a private binary, not a pinned Git blob. Only widths/mapping enter Content; no bitmap,
+comparison fixture or runtime reference dependency is added. Area `view` metadata carries bounds,
+foreground/background offsets, per-plane parallax/autoscroll and layer. The selected profile is
+layer0, zero background offset, unity parallax and zero autoscroll. Authored width/name/area changes
+execute through the same rules. Source IDs7C/7D bypass typewriting, but cannot occur in the admitted
+normal symbol range1–80; other control/font families remain unsupported.
+
+`FieldTextWait` separates the ordered glyph/control cursor, mandatory phase and actual delivery.
+It preserves the current span and the first-regular-glyph bit across W1/W2 occurrences. DisplayText
+resets that bit (source DIALOGUE_REGULAR_TILE_TOGGLE) and selects regular font1, while a reused
+window retains X/Y/row. Names are substituted as literal glyphs, never reparsed as controls.
+A fresh window performs two clear/DMA opportunities, creates the source29×8 window at(2,29),
+and services its eight-step move to(2,19). Every glyph applies the first-glyph/automatic newline
+rule, advances X by its symbol width, performs one cursor/DMA opportunity and then the source
+speed0/1/2/3 delay of4/2/1/0 opportunities. X>204 wraps before the next glyph; a newline adds16
+and Y>=48 performs two row-scroll waits plus a final wait before subtracting16. Row offset wraps
+modulo6 for this bound event/black-bar style. Close services eight movement steps and the final
+moving-bit clear observation. Reopening starts a fresh layout.
+
+Neutral mandatory work supplies logical input0. Source nonzero input shortens the extra glyph
+delay only when mouth control is0; the engine tests that rule, but exposes no new shortening
+player action. Reveal-only Confirm and actual delivery neither supply this input nor consume
+work. They cannot skip outstanding work; logical completion without delivery also cannot poll.
+Each optional Wait and accepting Ack draws main RNG256, copies its byte, updates the W2 indicator
+if applicable, services once, then decides input. Enabled NPC draws may change the main image
+in that service; they cannot overwrite the copy. W2's20-step indicator is visible at counter>=7,
+is hidden by view scrolling, and acceptance hides it and requests validation67. W1 adds no67.
+Plain JOIN remains input-first with no accepting-poll preamble.
+
+The shared field service executes the existing entity reducer before logical view/scroll/window
+work and increments one simulation opportunity. Suppressed entity events still service view and
+window work. Their wrapper restores facing first, retains context and suppression throughout
+`TextCloseWait`, then closes logical/projected windows together before clearing context and
+returning control. The no-window and unbound legacy paths keep their own lifecycle.
+
+`wait-view` represents the source helper before nextText/nextSingleText. It checks active axes,
+services until settled, services and rechecks (that service can start scrolling), then performs
+the final service. It is not a fixed two-tick delay. `LogicalView` carries both plane positions,
+active-axis destinations/speeds, target slot and follow counter. Inactive destinations remain
+absent/don't-care. LoadMap clamps/quantizes origins in source order. View data reads the target
+**after** entity service, uses strict1536/2304 deadbands and area bounds, retargets by384, then
+scrolls each active axis and clears it on completion. Speed is24 or32 when the signed follow
+counter exceeds6; active scrolling preserves its speeds. Godot interpolation supplies no readiness.
+
+**Confirmed (source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, beneath
+`disasm/`: `code/common/scripting/text/textfunctions_1.asm` (DisplayText, ApplyAutomaticNewline,
+@line, symbol_wait1, @wait2/sub_64A8); `textfunctions_2.asm` (CreateDialogueWindow,
+HandleDialogueTypewriting, HandleBlinkingDialogueCursor, sub_6AD2/sub_6AE0, CloseDialogueWindow);
+`code/common/windows/windowengine.asm` (VInt_UpdateWindows, WaitForWindowMovementEnd);
+`code/common/maps/camerafunctions.asm` (VInt_UpdateViewData, WaitForViewScrollEnd),
+`animations.asm` (VInt_UpdateScrollingData); and `code/common/scripting/map/mapsetupsfunctions_1.asm`
+(RunMapSetupEntityEvent/loc_476A8–loc_476D6). The base VInt order is map planes, entities, view,
+scrolling, sprites, windows, map animations. Only the admitted gameplay effects are modeled;
+no additional interrupt RNG or CPU-time padding is invented.
+
+The [binding evidence](../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)
+separates source facts, later saved bytes and inferred opening ancestry. The
+[verification owner](./development-and-verification.md#bound-opening-field-text-observation)
+records actual settings comparisons and unresolved boundaries. Pending #517 speech policy remains;
+this consumer retains existing actual speech projection and grants no policy waiver.
 
 ## Original Map 3 opening
 

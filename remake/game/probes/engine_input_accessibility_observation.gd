@@ -19,7 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case
+var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
@@ -168,7 +168,7 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
-    if "w1-private" in input_case:
+    if "w1-private" in input_case or "opening-private" in input_case:
         settings.textMode = "instant" if "instant" in input_case else "adjustable"
         settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
@@ -190,7 +190,10 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
-    if "w1-private" in input_case:
+    if "opening-private" in input_case:
+        await run_opening_text()
+        return
+    if "w1-private" in input_case or "opening-private" in input_case:
         await run_w1_interaction()
         return
     if "warp-transition" in input_case:
@@ -374,7 +377,7 @@ func admit_field_paths() -> bool:
     # Same fresh/local boundary as the scene and H4 probes, applied to all three destinations
     # before touching any of them. Only this entry owns generated input rewrites.
     var args := OS.get_cmdline_user_args()
-    var retained_start := "w1-private" in input_case
+    var retained_start := "w1-private" in input_case or "opening-private" in input_case
     var entry := "--private-exploration-start" if private_route and ("warp-transition" in input_case or retained_start) else "--authored-package"
     if args.size() != 4 or args.count(entry) != 1 or args.count("--input-settings") != 1:
         return field_io_failure("required unique startup arguments")
@@ -809,6 +812,108 @@ func w1_settle_legacy() -> bool:
 
 func w1_poll_signature(s: Dictionary) -> Array:
     return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities]
+
+# The route ends at ordinary opening caller return, selected from actual state.
+# The loop bounds only report a timeout; they never stand in for completion.
+func opening_semantic(s: Dictionary) -> Array:
+    return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView]
+
+func opening_settle() -> bool:
+    var seen: Dictionary = {}
+    for frame in range(5000):
+        var s := state()
+        if s.failure != null: return false
+        if s.get("canWaitAtInput", false): return true
+        if s.wait == "FieldTextWait":
+            var token := str(s.token)
+            if not seen.has(token):
+                seen[token] = true
+                read_sample("opening-text-entry-" + str(s.textId))
+            if "reveal" in input_case and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
+                var before := opening_semantic(s)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                check(opening_semantic(state()) == before, "Reveal-only input does not service text or entities")
+                read_sample("opening-reveal-" + str(s.textId))
+            if s.get("canWaitForText", false):
+                var ready := read_sample("opening-ready-" + str(s.textId))
+                var before := opening_semantic(ready)
+                for idle_frame in range(5): await process_frame
+                check(opening_semantic(state()) == before and state().tickDebt == 0, "Input boundary has no wall-clock debt")
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                var polled := read_sample("opening-poll-" + str(s.textId))
+                check(polled.simulationTick == ready.simulationTick + 1, "One explicit Wait owns one service opportunity")
+                check((polled.entities != ready.entities) if ready.entitiesRunning else (polled.entities == ready.entities),
+                    "A poll follows the current enabled or suppressed entity service")
+                var audio_sequence: int = polled.audio.sequence
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                var accepted := read_sample("opening-accepted-" + str(s.textId))
+                var validation: bool = accepted.audio.receipts.any(func(r): return r.Sequence > audio_sequence and r.Command == 67 and r.Operation == "started")
+                check(validation == bool(ready.fieldText.Wait2), "Only accepted W2 requests validation67")
+        await process_frame
+    return false
+
+func run_opening_text() -> void:
+    if not admit_field_paths(): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("opening-initial")
+    if initial.failure != null or not initial.get("canWaitAtInput", false):
+        check(false, "Bound start must reach ordinary control")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    for direction in [KEY_LEFT, KEY_LEFT, KEY_RIGHT]:
+        await key(direction)
+        if not await opening_settle():
+            read_sample("opening-stopped")
+            check(false, "Ordinary opening failed to settle")
+            finish_public()
+            return
+        read_sample("opening-field-return")
+    var returned := read_sample("opening-returned")
+    check(601.0 in returned.flags and returned.textWindow == "ClosedTextWindow" and returned.portraitWindow == "ClosedPortraitWindow",
+        "Opening closes windows and completes the ordinary zone caller once")
+    check(not returned.logicalText.Open and returned.canWaitAtInput, "Logical close joins actual field control")
+    if "suppressed" in input_case:
+        var adjacent := false
+        for step in range(12):
+            var s := state()
+            var player: Dictionary = s.entities.filter(func(e): return e.id == "entity-0")[0]
+            var actor: Dictionary = s.entities.filter(func(e): return e.id == "entity-128")[0]
+            var dx := int(actor.x / 384) - int(player.x / 384)
+            var dy := int(actor.y / 384) - int(player.y / 384)
+            if absi(dx) + absi(dy) > 3: break
+            await key(KEY_RIGHT if dx > 0 else (KEY_LEFT if dx < 0 else (KEY_DOWN if dy > 0 else KEY_UP)))
+            if not await opening_settle(): break
+            if absi(dx) + absi(dy) == 1:
+                adjacent = true
+                break
+        check(adjacent, "Ordinary input faces the nearby actor")
+        if adjacent:
+            await key(KEY_ENTER)
+            var saw_suppressed := false
+            for frame in range(120):
+                if state().wait == "FieldTextWait":
+                    var entry := read_sample("suppressed-entry")
+                    saw_suppressed = entry.entitiesRunning == false and entry.textId == 483 and entry.entityEvent != null
+                    break
+                await process_frame
+            check(saw_suppressed, "Ordinary interaction admits the suppressed field-text consumer")
+            check(await opening_settle(), "Suppressed interaction returns ordinary control")
+            var closed := read_sample("suppressed-returned")
+            check(not closed.logicalText.Open and closed.textWindow == "ClosedTextWindow" and closed.entityEvent == null,
+                "Suppressed wrapper completes logical/projected close before returning control")
+    finish_public()
 
 func run_w1_interaction() -> void:
     if not admit_field_paths(): return

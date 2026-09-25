@@ -38,7 +38,8 @@ internal static class ExplorationDispatcher
         var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
-            display: start.Display);
+            display: start.Display, textSettings: start.TextSettings);
+        story = ExplorationTextRunner.Initialize(world, story);
         return ProgramRunner.Run(definition, new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story,
             SessionStopReason.SimulationWait), []);
     }
@@ -62,6 +63,8 @@ internal static class ExplorationDispatcher
             {
                 if (!current.CanWaitForText) return Reject(current, "text-input-unavailable", "command");
                 if (textWait.Wait != current.Story.Wait!.Token) return Reject(current, "stale-or-wrong-wait", "wait");
+                if (current.Story.Wait is FieldTextWait)
+                    return ProgramRunner.Result(PollFieldText(definition, current, observations, false), observations);
                 if (current.Story.Wait is W1TextWait)
                     return ProgramRunner.Result(PollW1(current, observations, false), observations);
                 command = new AdvanceSimulation(textWait.Wait);
@@ -69,6 +72,16 @@ internal static class ExplorationDispatcher
             switch (command)
             {
                 case Acknowledge ack:
+                    if (current.Story.Wait is FieldTextWait fieldText)
+                    {
+                        if (fieldText.Token != ack.Wait) return Reject(current, "stale-or-wrong-wait", "wait");
+                        if (!current.CanWaitForText) return Reject(current, "text-input-unavailable", "command");
+                        current = PollFieldText(definition, current, observations, true);
+                        current = ProgramRunner.Commit(current, current.Active,
+                            ExplorationTextRunner.Accepted(current.Story, new(current.ObservationSequence + 1)), observations,
+                            fieldText.Wait2 ? "text-w2-accepted" : "text-w1-accepted");
+                        break;
+                    }
                     if (current.Story.Wait is W1TextWait w1)
                     {
                         if (w1.Token != ack.Wait) return Reject(current, "stale-or-wrong-wait", "wait");
@@ -86,6 +99,14 @@ internal static class ExplorationDispatcher
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, "presentation-acknowledged");
                     break;
                 case CompleteTextReveal reveal:
+                    if (current.Story.Wait is FieldTextWait fieldDelivery)
+                    {
+                        if (fieldDelivery.Token != reveal.Wait || fieldDelivery.Revealed)
+                            return Reject(current, "stale-or-wrong-text-delivery", "wait");
+                        current = ProgramRunner.Commit(current, current.Active, ExplorationTextRunner.FinishDelivery(
+                            current.Story.Copy(current.Story.Cursor, fieldDelivery with { Revealed = true })), observations, "text-revealed");
+                        break;
+                    }
                     if (current.Story.Wait is not W1TextWait delivering || delivering.Token != reveal.Wait || delivering.Revealed)
                         return Reject(current, "stale-or-wrong-text-delivery", "wait");
                     current = ProgramRunner.Commit(current, current.Active, delivering.AtInput ?
@@ -141,7 +162,7 @@ internal static class ExplorationDispatcher
                         "dialogue-chosen", choice.Yes ? "yes" : "no");
                     break;
                 case AdvanceSimulation advance:
-                    if (current.Story.Wait is W1TextWait || current.CanWaitForText && !playerWait)
+                    if (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait)
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
@@ -151,6 +172,19 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is FieldTextWait or ViewWait or TextCloseWait)
+                        {
+                            var token = current.Story.Wait.Token;
+                            current = current.WithStory(ExplorationTextRunner.BeforeService(current.Story));
+                            current = Service(definition, current, observations, "text-mandatory-service");
+                            var servicedStory = ExplorationTextRunner.AfterService(current.Story);
+                            bool returnedEvent = current.Story.Wait is TextCloseWait { EntityEventReturn: true } && servicedStory.Wait is null;
+                            current = ProgramRunner.Commit(current, current.Active, servicedStory,
+                                observations, returnedEvent ? "interaction-finished" : "text-work-advanced");
+                            if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait is FieldTextWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
+                            continue;
+                        }
                         if (current.Story.Wait is FullFadeWait or WarpLoadWait)
                         {
                             var token = current.Story.Wait.Token;
@@ -171,7 +205,7 @@ internal static class ExplorationDispatcher
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
                                 fieldControl: existingFieldInput || pendingMove is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
-                        var story = current.Story;
+                        var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
                         if (tickResult?.Failure is { } failure)
                         {
                             story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
@@ -283,6 +317,43 @@ internal static class ExplorationDispatcher
     }
 
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;
+    internal static SessionSnapshot Service(ScenarioDefinition definition, SessionSnapshot current,
+        List<SessionObservation> observations, string kind)
+    {
+        bool enabled = current.Story.Wait is not TextCloseWait { EntityEventReturn: true } &&
+            (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning);
+        var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
+        var world = tick is null ? current.Exploration! : MapEventDispatcher.Roof(tick.World);
+        var story = ExplorationTextRunner.AfterEntities(world, current.Story);
+        story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
+        current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations, kind);
+        if (tick?.Failure is { } failure) throw new MapTransfer.FadeServiceFailure(current, failure);
+        return current;
+    }
+
+    private static SessionSnapshot PollFieldText(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, bool accepting)
+    {
+        var wait = (FieldTextWait)current.Story.Wait!;
+        var party = current.Exploration!.Party;
+        var draw = BattleRandom.NextMain(party.MainSeed, 256);
+        string kind = wait.Wait2 ? "w2" : "w1";
+        current = ProgramRunner.Commit(current, new ActiveExploration(current.Exploration.WithParty(
+            new(party.Encounter, party.Actors, draw.After, party.ThinkingSeed, party.Gold, party.NewBattle))), current.Story,
+            observations, "rng-text-" + kind);
+        observations[^1] = observations[^1] with { Before = draw.Before, After = draw.After, RandomRange = draw.Range, RandomValue = draw.Value };
+        var window = current.Story.LogicalText!;
+        if (wait.Wait2)
+        {
+            int indicator = current.Story.LogicalView!.HideWindows ? 1 : window.Indicator;
+            window = window with { IndicatorVisible = indicator >= 7, Indicator = indicator <= 1 ? 20 : indicator - 1 };
+        }
+        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, wait,
+            randomSeedCopy: (byte)draw.Value, logicalText: window), observations, "text-seed-copy");
+        observations[^1] = observations[^1] with { After = draw.Value };
+        current = Service(definition, current, observations, "text-" + kind + "-wait");
+        return ProgramRunner.Commit(current, current.Active, current.Story, observations, "text-" + kind + "-input", accepting ? "accept" : "none");
+    }
+
     private static SessionSnapshot PollW1(SessionSnapshot current, List<SessionObservation> observations, bool accepting)
     {
         var world = current.Exploration!;
