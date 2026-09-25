@@ -19,7 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
+var guarded_wait_case := "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
@@ -168,7 +168,7 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
-    if "w1-private" in input_case or "opening-private" in input_case:
+    if "field-projection" in input_case or "w1-private" in input_case or "opening-private" in input_case:
         settings.textMode = "instant" if "instant" in input_case else "adjustable"
         settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
@@ -190,6 +190,9 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
+    if "field-projection" in input_case:
+        await run_field_projection()
+        return
     if "opening-private" in input_case:
         await run_opening_text()
         return
@@ -634,6 +637,128 @@ func run_field_wait() -> void:
     other.queue_free()
     physical(KEY_V, false)
     await tap_wait()
+    finish_public()
+
+func projection_digest(bytes: PackedByteArray) -> String:
+    var digest := HashingContext.new()
+    digest.start(HashingContext.HASH_SHA256)
+    digest.update(bytes)
+    return digest.finish().hex_encode()
+
+func projection_raster(width: int, height: int) -> Dictionary:
+    var bytes := PackedByteArray()
+    bytes.resize(width * height * 4)
+    return {"width":width,"height":height,"format":"rgba8","data":Marshalls.raw_to_base64(bytes),
+        "sha256":projection_digest(bytes)}
+
+func projection_speech_count(s: Dictionary) -> int:
+    return s.audio.receipts.filter(func(r): return r.Command == 65 and r.Operation == "started").size()
+
+func projection_retained(s: Dictionary, delivered: Dictionary) -> bool:
+    return s.dialogue == delivered.dialogue and s.visibleCharacters == delivered.visibleCharacters and \
+        projection_speech_count(s) == projection_speech_count(delivered)
+
+func run_field_projection() -> void:
+    if not admit_field_paths(): return
+    # Entirely authored input: no original graphics/audio or private comparison input.
+    var package: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    package.world.memberNames = ["Wrong", "Name{W2}", "Tail"]
+    package.world.partyFlags = {"memberCount":3,"joinedStart":10,"activeStart":20,"capacity":1}
+    package.start.flags = [11,21]
+    package.start.textSettings = {"messageSpeed":2,"mouthControl":0,"viewSpeed":0}
+    package.start.program = {"program":"projection","instruction":0}
+    var mapping: Array = []
+    mapping.resize(256)
+    mapping.fill(1)
+    var advances: Array = []
+    advances.resize(80)
+    advances.fill(6)
+    package.world.textFont = {"asciiToSymbol":mapping,"advances":advances}
+    package.world.texts[0].text = "{LEADER}{W1}"
+    package.world.texts[1].text = "{LEADER}!{W1}"
+    var maps: Array = []
+    for map in package.world.maps:
+        var layout: Array = []
+        for row in range(31):
+            var cells: Array = []
+            cells.resize(31)
+            cells.fill(0)
+            layout.append(cells)
+        map.layout = layout
+        map.areas = [{"minX":0,"minY":0,"maxX":30,"maxY":30,"view":{"foregroundX":0,"foregroundY":0,
+            "backgroundX":0,"backgroundY":0,"parallaxAX":256,"parallaxAY":256,"parallaxBX":256,"parallaxBY":256,
+            "autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":0}}]
+        for entity in map.entities: entity.sprite = 30
+        maps.append({"map":map.id,"atlas":projection_raster(128,320),"scale":1,"blocks":[[0,0,0,0,0,0,0,0,0]],
+            "music":[{"field":1,"battle":1}]})
+    var pcm := PackedByteArray()
+    pcm.resize(1600)
+    for sample in range(800): pcm.encode_s16(sample * 2, 200 if sample % 20 < 10 else -200)
+    package.world.presentation = {"maps":maps,"portraits":[],"sprites":[{"sprite":30,"portrait":null,"speech":65,
+        "directions":[projection_raster(48,24),projection_raster(48,24),projection_raster(48,24)]}],
+        "audio":[{"cue":"authored-speech","command":65,"timerB":0,"sampleRate":8000,"channels":1,"sampleFrames":800,
+            "pcm16":Marshalls.raw_to_base64(pcm),"sha256":projection_digest(pcm),
+            "loopBegin":null,"loopEnd":null}]}
+    var music: Dictionary = package.world.presentation.audio[0].duplicate(true)
+    music.cue = "authored-music"
+    music.command = 1
+    package.world.presentation.audio.append(music)
+    package.world.programs.append({"id":"projection","entitiesRunning":false,"instructions":[
+        {"op":"sprite","entity":"traveler","sprite":30},
+        {"op":"text-cursor","text":100},
+        {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+        {"op":"wait-view"},{"op":"wait-ticks","ticks":6},
+        {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+        {"op":"close-text"},{"op":"end"}]})
+    if not write_field_file("package", JSON.stringify(integer_numbers(package))): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960,640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("projection-initial")
+    if initial.failure != null:
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    for occurrence in range(2):
+        for frame in range(1000):
+            if state().canWaitForText or state().failure != null: break
+            await process_frame
+        var delivered := read_sample("projection-ready-" + str(occurrence))
+        if not delivered.canWaitForText:
+            check(false, "Authored text must reach actual delivery and logical input")
+            finish_public()
+            return
+        check(delivered.dialogue == ("Name{W2}" if occurrence == 0 else "Name{W2}!"),
+            "Active leader and source-looking name characters are projected literally")
+        if "instant" not in input_case:
+            check(projection_speech_count(delivered) > 0, "Natural authored reveal starts actual speech audio")
+        physical(KEY_ENTER, true)
+        physical(KEY_ENTER, false)
+        var transition := read_sample("projection-transition-" + str(occurrence))
+        check(transition.wait == ("ViewWait" if occurrence == 0 else "TextCloseWait"), "Ack enters the owning pending transition")
+        var preserved := projection_retained(transition, delivered)
+        var arrived := false
+        for frame in range(120):
+            await process_frame
+            var s := read_sample("projection-continuation-" + str(occurrence) + "-" + str(frame))
+            if (occurrence == 0 and s.textId == 101) or (occurrence == 1 and s.canWaitAtInput):
+                arrived = true
+                break
+            preserved = preserved and projection_retained(s, delivered)
+        check(arrived, "Transition finishes by its actual new text or field-input state")
+        check(preserved, "Same open window preserves text, visible characters and speech starts throughout continuation")
+        var next := read_sample("projection-transition-finished-" + str(occurrence))
+        if occurrence == 0:
+            check(next.dialogue == "Name{W2}!" and next.textWindow == "OpenTextWindow", "New display replaces the retained projection")
+            if "instant" not in input_case: check(next.visibleCharacters < next.totalCharacters, "New display begins its own reveal")
+        else:
+            check(next.textWindow == "ClosedTextWindow" and next.dialogue == "", "Actual close releases the retained projection")
     finish_public()
 
 func run_text_wait() -> void:

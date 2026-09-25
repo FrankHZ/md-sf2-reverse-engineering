@@ -39,6 +39,7 @@ public sealed partial class ExplorationSessionView : Control
     private Label _failureLabel = null!;
     private GameInput _input = null!;
     private TextWindow? _textWindow;
+    private bool _fieldTextProjection;
     private double _revealed;
     private WaitToken? _textDeliveryToken;
     private ulong _textDeliveryFrame;
@@ -336,7 +337,11 @@ public sealed partial class ExplorationSessionView : Control
             _ => current.Story.TextWindow is OpenTextWindow open ? _session.Definition.Exploration!.Texts.GetValueOrDefault(open.Text) ?? "" : "",
         };
         var names = _session.Definition.Exploration!.MemberNames;
+        // The resolved field projection belongs to this open window through program waits and close animation.
+        _fieldTextProjection = current.Story.Wait is FieldTextWait ||
+            (_fieldTextProjection && current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow));
         if (current.Story.Wait is FieldTextWait fieldSpan) _dialogue.Text = fieldSpan.Projection;
+        else if (_fieldTextProjection) _dialogue.Text = previousText;
         else if (current.Story.Wait is W1TextWait span)
             _dialogue.Text = string.Concat(_session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
             {

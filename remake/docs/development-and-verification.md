@@ -713,6 +713,31 @@ no-service behavior still passes. Earlier compile/assertion/preparation failures
 slice handoff: no result was replaced or described as interrupted. The old raw-byte private font
 Git check failed before world output; the source-ROM reader corrected its provenance.
 
+For the host projection lifetime, use the same probe with `field-projection-adjusted` or
+`field-projection-instant`. It writes an entirely authored package (transparent graphics and
+generated PCM) to the fresh ignored destination; no private content is needed. After building
+the Debug adapter and loading the locked runtime environment, set a fresh `$run` and execute:
+
+```powershell
+$env:SF2_INPUT_CASE = 'field-projection-adjusted'
+$env:SF2_INPUT_RATE = '20'
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = [IO.Path]::GetFullPath("$run/actual.json")
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_input_accessibility_observation.gd -- `
+  --authored-package "$run/package.json" --input-settings "$run/settings.json" `
+  *> "$run/godot.log"
+```
+
+**Confirmed (authored host observation):** active member1 resolves `{LEADER}` to the literal
+name `Name{W2}`. Ack retains that projection, visible characters and speech-start count across
+`ViewWait`/`TickWait`; the next display starts its own reveal. Its Ack retains `Name{W2}!`
+through `TextCloseWait`, then actual closure clears the text. The host uses the existing open
+window identity for this lifetime. Both delivery settings pass in
+`local/issue534/opening-implementation/projection-after-01/02`; natural delivery starts actual
+authored speech audio, with no additional speech starts during either continuation. The
+pre-correction `projection-before-06` records the name reverting to member0 and reveal resetting.
+The natural run's ObjectDB cleanup warning remains recorded; it is not a clean-exit claim.
+
 **Unknown:** these runs do not establish OS focus-loss behavior, exact original hardware text
 or view timing, portrait/quake schedules, whole-route9A/H4 or pending#517 speech policy. Existing
 speech projection is preserved. Prior cleanup warnings/failures remain attempt-specific;
