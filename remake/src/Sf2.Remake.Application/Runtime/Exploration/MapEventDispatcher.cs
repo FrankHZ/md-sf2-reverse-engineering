@@ -53,14 +53,28 @@ internal static class MapEventDispatcher
         (entry.RequiredMarker is null || (word & 0x3C00) == entry.RequiredMarker) &&
         (entry.RequiredFlag is null || flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue);
 
-    internal static SessionSnapshot Interact(SessionSnapshot current, ExplorationEvent entry, EntityRef entity,
+    internal static SessionSnapshot Interact(ScenarioDefinition definition, SessionSnapshot current, ExplorationEvent entry, EntityRef entity,
         List<SessionObservation> observations)
     {
         var story = current.Story.Copy(entry.Program);
         if (entry.EntityFlags is { } flags)
             story = story.Copy(story.Cursor, (flags & 1) != 0 ? new EntityEventFacingWait(new(current.ObservationSequence + 1)) : null,
                 entityEvent: new(entity, ProgramRunner.Entity(current, entity).Motion.Facing, flags));
-        return ProgramRunner.Commit(current, current.Active, story, observations, "interaction-started", entity.Value);
+        current = ProgramRunner.Commit(current, current.Active, story, observations, "interaction-started", entity.Value);
+        if (story.TextSettings is null || story.EntityEvent is null) return current;
+        // The source portrait opens before the facing wait and before entity suppression.
+        current = current.WithStory(story.Copy(story.Cursor, entityServices: true));
+        current = ExplorationPortraitRunner.Open(definition, current, entity, 0, observations, true);
+        return current.Story.Wait is PortraitMovementWait ? current : EnterBody(current, observations);
+    }
+
+    internal static SessionSnapshot EnterBody(SessionSnapshot current, List<SessionObservation> observations)
+    {
+        var context = current.Story.EntityEvent!;
+        bool face = (context.Flags & 1) != 0;
+        return ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor,
+            face ? new EntityEventFacingWait(new(current.ObservationSequence + 1)) : null,
+            entityServices: face), observations, "interaction-portrait-ready");
     }
 
     internal static ActiveSessionState Face(SessionSnapshot current, ActiveSessionState active)
@@ -76,12 +90,19 @@ internal static class MapEventDispatcher
     {
         if (current.Story.EntityEvent is not { } context) return current;
         var world = current.Exploration!;
-        if ((context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
+        if (!context.Returning && (context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
             world = world.WithEntity(entity with { Motion = entity.Motion with { Facing = context.OriginalFacing } });
+        if (current.Story.TextSettings is not null && !context.Returning)
+        {
+            current = ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(null,
+                entityEvent: context with { Returning = true }), observations, "interaction-facing-restored");
+            current = ExplorationPortraitRunner.Close(current, observations, true);
+            if (current.Story.Wait is PortraitMovementWait) return current;
+        }
         if (current.Story.LogicalText is { Open: true } window)
         {
             ExplorationTextRunner.ValidateContext(current);
-            // loc_476C4 closes while the event still owns the suppressed entity slot.
+            // loc_476C4 closes with the event's live service flag (Trap6 may have enabled it).
             // Restore facing once above; the close continuation clears the context.
             return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(null,
                 new TextCloseWait(new(current.ObservationSequence + 1), EntityEventReturn: true),
@@ -89,7 +110,8 @@ internal static class MapEventDispatcher
                 observations, "interaction-closing", context.Entity.Value);
         }
         return ProgramRunner.Commit(current, new ActiveExploration(world),
-            current.Story.Copy(null, textWindow: new ClosedTextWindow(), clearEntityEvent: true), observations, "interaction-finished", context.Entity.Value);
+            current.Story.Copy(null, textWindow: new ClosedTextWindow(), clearEntityEvent: true,
+                entityServices: current.Story.TextSettings is not null ? true : null), observations, "interaction-finished", context.Entity.Value);
     }
 
     internal static ExplorationState OpenDoor(ExplorationState world, MapPosition candidate)

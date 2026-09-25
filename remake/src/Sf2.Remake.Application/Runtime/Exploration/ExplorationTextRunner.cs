@@ -12,7 +12,7 @@ internal static class ExplorationTextRunner
         if (settings.MessageSpeed > 3 || settings.ViewSpeed != 0)
             throw new BattleRuleException("field-text-settings", "start.textSettings", true);
         return story.Copy(story.Cursor, story.Wait, portraitWindow: new ClosedPortraitWindow(),
-            logicalText: new(), logicalView: ExplorationViewRunner.Initialize(world));
+            logicalText: new(), logicalView: ExplorationViewRunner.Initialize(world), clearEntityServices: true, typewriting: false);
     }
 
     internal static StoryState AfterEntities(ExplorationState world, StoryState story)
@@ -35,7 +35,8 @@ internal static class ExplorationTextRunner
     internal static void ValidateContext(SessionSnapshot current)
     {
         if (current.Story is not { TextSettings: not null, LogicalText: not null, LogicalView: not null,
-                PortraitWindow: ClosedPortraitWindow, EnteringBattle: null, Continuation: ProgramContinuation.FieldInput } || current.Exploration is null)
+                EnteringBattle: null, Continuation: ProgramContinuation.FieldInput } || current.Exploration is null ||
+            !ExplorationPortraitRunner.Admitted(current.Story))
             throw new BattleRuleException("field-text-context", "story.text", true);
     }
 
@@ -44,7 +45,8 @@ internal static class ExplorationTextRunner
         ValidateContext(current);
         var speaker = text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker;
         if (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
-            definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) || visual.Portrait is not null)
+            definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) ||
+            visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null })
             throw new BattleRuleException("field-text-speaker", "program.text", true);
         if (definition.TextFont is not { } font || !definition.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens))
             throw new BattleRuleException("field-text-font", "world.textFont", true);
@@ -118,7 +120,11 @@ internal static class ExplorationTextRunner
             window = window with { X = unchecked((byte)(window.X + unit.Advance)) };
             wait = wait with { Index = wait.Index + 1, Phase = FieldTextPhase.GlyphCursor };
         }
-        story = story.Copy(story.Cursor, wait, logicalText: window);
+        // DisplayText sets CURRENTLY_TYPEWRITING only after CreateDialogueWindow returns.
+        // Its creation waits preserve the incoming byte while portrait service remains active.
+        story = story.Copy(story.Cursor, wait, logicalText: window,
+            typewriting: wait.Phase is FieldTextPhase.ClearFirst or FieldTextPhase.ClearSecond or FieldTextPhase.Opening
+                ? story.Typewriting : wait.Phase is not (FieldTextPhase.Input or FieldTextPhase.End));
         return FinishDelivery(story);
     }
 
@@ -136,7 +142,7 @@ internal static class ExplorationTextRunner
     {
         if (story.Wait is ViewWait view)
         {
-            if (view.FinalService) return story.Copy(ProgramRunner.Next(story.Cursor!.Value));
+            if (view.FinalService) return view.ScriptReturn ? ProgramRunner.ReturnFromScript(story) : story.Copy(ProgramRunner.Next(story.Cursor!.Value));
             return story.Copy(story.Cursor, view.Recheck
                 ? view with { FinalService = !story.LogicalView!.Scrolling, Recheck = false }
                 : view with { Recheck = !story.LogicalView!.Scrolling });
@@ -144,7 +150,8 @@ internal static class ExplorationTextRunner
         if (story.Wait is TextCloseWait close)
             return story.LogicalText!.Moving ? story : story.Copy(story.Cursor is { } closeCursor ? ProgramRunner.Next(closeCursor) : null,
                 clearEntityEvent: close.EntityEventReturn,
-                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText with { Open = false, Indicator = 0, IndicatorVisible = false });
+                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText with { Open = false, Indicator = 0, IndicatorVisible = false },
+                entityServices: close.EntityEventReturn ? true : null);
         var wait = (FieldTextWait)story.Wait!;
         var window = story.LogicalText!;
         switch (wait.Phase)
@@ -172,8 +179,8 @@ internal static class ExplorationTextRunner
     {
         var wait = (FieldTextWait)story.Wait!;
         int next = wait.End + 1;
-        story = story.Copy(story.Cursor, logicalText: story.LogicalText! with { Indicator = 0, IndicatorVisible = false });
-        if (next == wait.Units.Count) return story.Copy(ProgramRunner.Next(story.Cursor!.Value));
+        story = story.Copy(story.Cursor, logicalText: story.LogicalText! with { Indicator = 0, IndicatorVisible = false }, typewriting: true);
+        if (next == wait.Units.Count) return story.Copy(ProgramRunner.Next(story.Cursor!.Value), typewriting: false);
         return Normalize(story.Copy(story.Cursor, Span(nextToken, wait.Text, wait.Units, next, FieldTextPhase.Tokens, wait.FirstGlyph)));
     }
 }

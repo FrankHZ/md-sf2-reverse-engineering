@@ -415,6 +415,337 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(new[] { 1 }, session.Current.Story.PartyLists!.Active);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PortraitEventCarriesTextTailAndScriptActivationThroughRealReturn(bool script)
+    {
+        var session = StartFieldText("A{W2}", interaction: true, startEvent: false, configure: document =>
+        {
+            AddVisuals(document, 7);
+            var world = document["world"]!;
+            world["texts"]![1]!["text"] = "B";
+            world["texts"]!.AsArray().Add(JsonNode.Parse("""{"id":900,"text":"C{W1}"}"""));
+            var instructions = world["programs"]![0]!["instructions"]!.AsArray();
+            instructions.Insert(2, instructions[1]!.DeepClone());
+            instructions.Insert(3, JsonNode.Parse("""{"op":"text-cursor","text":900}"""));
+            instructions.Insert(4, instructions[1]!.DeepClone());
+            if (script)
+            {
+                instructions.Insert(5, JsonNode.Parse("""{"op":"call","activateEntities":true,"target":{"program":"walk-return","instruction":0}}"""));
+                world["programs"]!.AsArray().Add(JsonNode.Parse("""{"id":"walk-return","instructions":[{"op":"wait-ticks","ticks":1},{"op":"end-map-script"}]}"""));
+            }
+        });
+        var entry = Accept(session, new Interact(new("ferryman")));
+        Assert.Single(entry.Observations, row => row.Kind == "portrait-window-moving");
+        Assert.True(session.Current.Story.EntityServices);
+        Assert.Equal(new PortraitWork(), Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work);
+        for (int i = 0; i < 5; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.IsType<EntityEventFacingWait>(session.Current.Story.Wait);
+        var opened = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.True(opened.Work!.Registered);
+        Assert.Equal(20, opened.Work.Blink);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.False(session.Current.Story.EntityServices);
+        Assert.Equal(19, Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!.Blink);
+        int acknowledgements = 0;
+        for (int display = 0; display < 3; display++)
+        {
+            var text = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+            DrainTextWork(session);
+            Assert.False(session.Current.Story.Typewriting);
+            Accept(session, new CompleteTextReveal(text.Token));
+            if (display == 1)
+            {
+                Assert.Equal(900, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Text);
+                continue; // The no-W trailing display finished without an invented Ack.
+            }
+            Assert.True(session.Current.CanWaitForText);
+            Accept(session, new WaitForText(text.Token));
+            Accept(session, new Acknowledge(text.Token));
+            acknowledgements++;
+        }
+        Assert.Equal(2, acknowledgements);
+        if (script)
+        {
+            Assert.True(session.Current.Story.EntityServices);
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            Assert.True(Assert.IsType<ViewWait>(session.Current.Story.Wait).ScriptReturn);
+            while (session.Current.Story.Wait is ViewWait)
+                Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+        }
+        Assert.True(Assert.IsType<PortraitMovementWait>(session.Current.Story.Wait).Closing);
+        var closing = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+        Assert.False(closing.Registered);
+        Assert.Equal(script, session.Current.Story.EntityServices);
+        for (int i = 0; i < 5; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.True(Assert.IsType<TextCloseWait>(session.Current.Story.Wait).EntityEventReturn);
+        Assert.Equal(script, session.Current.Story.EntityServices);
+        for (int i = 0; i < 9; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.True(session.Current.Story.EntityServices);
+        Assert.Null(session.Current.Story.EntityEvent);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+    }
+
+    [Theory]
+    [InlineData(false, 1, 0, 0x04B61234u, 140, 10, false, false)]
+    [InlineData(true, 1, 1, 0x04B61234u, 140, 10, false, false)]
+    [InlineData(false, 4, 6, 0x12341234u, 3, 6, true, false)]
+    [InlineData(true, 20, 6, 0x12341234u, 19, 5, false, true)]
+    [InlineData(false, 20, 5, 0xECAB1234u, 19, 14, false, false)]
+    public void PortraitCountersUseSourceTypewritingAndOrderedIndependentRng(bool typing, short blink, short mouth,
+        uint seed, short expectedBlink, short expectedMouth, bool eyes, bool lips)
+    {
+        var session = StartFieldText("A{W1}", configure: doc => doc["battle"]!["start"]!["mainSeed"] = 0x12341234u);
+        var current = session.Current;
+        var state = current.Story.Copy(current.Story.Cursor, current.Story.Wait, typewriting: typing,
+            randomSeedCopy: 123, portraitWindow: new OpenPortraitWindow(7, 0,
+                new(Blink: blink, Mouth: mouth, Registered: true, Movement: 4, Moving: false)));
+        var observations = new List<SessionObservation>();
+        var next = ExplorationPortraitRunner.Service(current.WithStory(state), observations);
+        var work = Assert.IsType<OpenPortraitWindow>(next.Story.PortraitWindow).Work!;
+        Assert.Equal((expectedBlink, expectedMouth, eyes, lips), (work.Blink, work.Mouth, work.EyesClosed, work.MouthOpen));
+        Assert.Equal(seed, next.Exploration!.Party.MainSeed);
+        Assert.Equal((byte)123, next.Story.RandomSeedCopy);
+        if (blink == 1) Assert.Equal(new ushort?[] { 120, 5 }, observations.Select(row => row.RandomRange));
+    }
+
+    [Fact]
+    public void ExistingPortraitIsRetainedAndUnknownCannotBeSilentlyOpened()
+    {
+        var session = StartFieldText("A{W1}", interaction: true);
+        var current = session.Current;
+        var portrait = new OpenPortraitWindow(7, 192, new(Blink: 7, Mouth: 11, Registered: true, Movement: 4, Moving: false));
+        current = current.WithStory(current.Story.Copy(current.Story.Cursor, portraitWindow: portrait));
+        var kept = ExplorationPortraitRunner.Open(session.Definition, current, new("ferryman"), 0, [], false);
+        Assert.Same(portrait, kept.Story.PortraitWindow);
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationPortraitRunner.Open(session.Definition,
+            current.WithStory(current.Story.Copy(current.Story.Cursor, portraitWindow: new UnknownPortraitWindow())), new("ferryman"), 0, [], false));
+    }
+
+    [Theory]
+    [InlineData(0, 7)]
+    [InlineData(3, 12)]
+    public void PortraitAdmissionUsesLiveSpeakerAndRepeatedFlagBranch(int flags, int portraitId)
+    {
+        var session = StartFieldText("{W1}", interaction: true, startEvent: false, configure: document =>
+        {
+            AddVisuals(document, portraitId);
+            var world = document["world"]!;
+            world["presentation"]!["sprites"]![0]!["sprite"] = 40 + portraitId;
+            world["maps"]![0]!["entities"]![0]!["sprite"] = 40 + portraitId;
+            world["presentation"]!["portraits"]![0]!["portrait"] = portraitId;
+            world["maps"]![0]!["events"]![0]!["entityFlags"] = flags;
+            world["texts"]![1]!["text"] = "{W2}";
+            world["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"branch-flag","flag":777,"whenSet":true,"target":{"program":"invitation","instruction":5}},
+                 {"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+                 {"op":"set-flag","flag":777,"value":true},{"op":"end"},
+                 {"op":"text-cursor","text":101},{"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},{"op":"end"}]
+                """);
+        });
+        for (int visit = 0; visit < 2; visit++)
+        {
+            byte originalFacing = session.Current.Exploration!.Entities[new("ferryman")].Motion.Facing;
+            Accept(session, new Interact(new("ferryman")));
+            Assert.Equal(portraitId, Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Portrait);
+            for (int step = 0; step < 5; step++)
+            {
+                Assert.False(Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!.Registered);
+                Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            }
+            if ((flags & 1) != 0) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            Assert.Equal(100 + visit, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Text);
+            DrainTextWork(session);
+            var token = session.Current.Story.Wait!.Token;
+            Accept(session, new CompleteTextReveal(token));
+            Accept(session, new Acknowledge(token));
+            Assert.Equal(originalFacing, session.Current.Exploration!.Entities[new("ferryman")].Motion.Facing);
+            var removed = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+            for (int step = 0; step < 5; step++)
+            {
+                Assert.False(session.Current.CanWaitAtInput);
+                var work = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+                Assert.False(work.Registered);
+                Assert.Equal((removed.Blink, removed.Mouth), (work.Blink, work.Mouth));
+                Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            }
+            while (session.Current.Story.Wait is TextCloseWait)
+                Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+            Assert.True(session.Current.CanWaitAtInput);
+            Assert.Contains(777, session.Current.Story.Flags);
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(64)]
+    [InlineData(128)]
+    [InlineData(192)]
+    public void FreshPortraitRetainsRequestedPlacementAndMirrorFlags(byte flags)
+    {
+        var session = StartFieldText("{W1}", interaction: true, startEvent: false,
+            configure: document => AddVisuals(document, 7));
+        var current = session.Current.WithStory(session.Current.Story.Copy(null, entityEvent: new(new("ferryman"), 1, 0)));
+        var opened = ExplorationPortraitRunner.Open(session.Definition, current, new("ferryman"), flags, [], false);
+        var portrait = Assert.IsType<OpenPortraitWindow>(opened.Story.PortraitWindow);
+        Assert.Equal(flags, portrait.Flags);
+        Assert.Equal(new PortraitWork(), portrait.Work);
+    }
+
+    [Fact]
+    public void PollCopySurvivesNpcThenBlinkAndMouthDraws()
+    {
+        var session = StartFieldText("{W2}", enabled: true, npcRandom: true);
+        DrainTextWork(session);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        var entry = session.Current;
+        var world = entry.Exploration!;
+        var party = world.Party;
+        world = world.WithParty(new(party.Encounter, party.Actors, 0x12341234u, party.ThinkingSeed, party.Gold, party.NewBattle));
+        var story = entry.Story.Copy(entry.Story.Cursor, entry.Story.Wait, entityServices: true,
+            entityEvent: new(new("ferryman"), 1, 0),
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
+        var snapshot = new SessionSnapshot(entry.SessionId, entry.Revision, entry.ObservationSequence,
+            new ActiveExploration(world), story, entry.StopReason);
+        var result = ExplorationDispatcher.Submit(session.Definition, snapshot, new WaitForText(token));
+        Assert.Null(result.Failure);
+        Assert.Equal(new[] { "rng-text-w2", "text-seed-copy", "text-w2-wait", "rng-portrait-blink", "rng-portrait-mouth", "text-w2-input" },
+            result.Observations.Select(row => row.Kind));
+        // Independent LCG sequence: one poll, four radius-zero rejected NPC candidates, blink, mouth.
+        Assert.Equal(0xECAB1234L, result.Observations[0].After);
+        Assert.Equal((byte)236, result.Snapshot.Story.RandomSeedCopy);
+        Assert.Equal(0x72EF1234L, result.Observations[3].Before);
+        Assert.Equal(0xE0291234u, result.Snapshot.Exploration!.Party.MainSeed);
+    }
+
+    [Fact]
+    public void SourceScriptEndWithoutDialogueClearsViewOverrideWithoutWaiting()
+    {
+        var session = StartFieldText("{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"end-map-script"}]""");
+        });
+        var current = session.Current;
+        var result = ProgramRunner.Run(session.Definition, current.WithStory(current.Story.Copy(new("invitation", 0),
+            textSettings: current.Story.TextSettings! with { ViewSpeed = 1 })), []);
+        Assert.Null(result.Failure);
+        Assert.True(result.Snapshot.CanWaitAtInput);
+        Assert.Equal(0, result.Snapshot.Story.TextSettings!.ViewSpeed);
+        Assert.Equal(0, result.Snapshot.Story.SimulationTick);
+    }
+
+    [Fact]
+    public void FreshDialogueEnablesTypewritingAfterFinalCreationServiceBeforeFirstGlyphService()
+    {
+        var session = StartFieldText("A{W1}B{W1}", second: "C{W1}", interaction: true, startEvent: false,
+            configure: document => AddVisuals(document, 7));
+        Accept(session, new Interact(new("ferryman")));
+        for (int i = 0; i < 6; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.Equal(FieldTextPhase.ClearFirst, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.False(session.Current.Story.Typewriting);
+            var result = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            var work = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+            Assert.Equal(18 - i, work.Blink);
+            Assert.Equal(6, work.Mouth);
+            Assert.False(work.MouthOpen);
+            Assert.Equal(seed, session.Current.Exploration!.Party.MainSeed);
+            Assert.DoesNotContain(result.Observations, row => row.Kind.StartsWith("rng-portrait-"));
+        }
+        Assert.True(session.Current.Story.Typewriting);
+        Assert.Equal(FieldTextPhase.GlyphCursor, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var firstGlyph = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+        Assert.Equal(5, firstGlyph.Mouth);
+        Assert.True(firstGlyph.MouthOpen);
+        DrainTextWork(session);
+        Assert.False(session.Current.Story.Typewriting);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        Accept(session, new Acknowledge(token));
+        Assert.True(session.Current.Story.Typewriting); // W continuation restores typing for B.
+        Assert.Equal(FieldTextPhase.GlyphCursor, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        DrainTextWork(session);
+        token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        long beforeReuse = session.Current.Story.SimulationTick;
+        Accept(session, new Acknowledge(token));
+        Assert.Equal(beforeReuse + 1, session.Current.Story.SimulationTick); // Accepting poll only.
+        Assert.True(session.Current.Story.Typewriting);
+        var reused = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.Equal(101, reused.Text);
+        Assert.Equal(FieldTextPhase.GlyphCursor, reused.Phase); // Already-open window returns immediately.
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("{W1}")]
+    [InlineData("{W2}")]
+    public void EmptyOrWaitOnlyDialogueDoesNotExposeTypingToPortraitService(string text)
+    {
+        var session = StartFieldText(text.Length == 0 ? "{W1}" : text, interaction: true, startEvent: false,
+            configure: document => AddVisuals(document, 7));
+        Accept(session, new Interact(new("ferryman")));
+        for (int i = 0; i < 6; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var current = session.Current;
+        // The authored reader requires a nonempty text string; exercise an empty engine token stream directly.
+        if (text.Length == 0)
+        {
+            var wait = Assert.IsType<FieldTextWait>(current.Story.Wait);
+            current = current.WithStory(current.Story.Copy(current.Story.Cursor,
+                wait with { Units = [], End = 0, Projection = "" }));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.False(current.Story.Typewriting);
+            var result = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(current.Story.Wait!.Token));
+            Assert.Null(result.Failure);
+            current = result.Snapshot;
+        }
+        Assert.False(current.Story.Typewriting);
+        Assert.Equal(text.Length == 0 ? FieldTextPhase.End : FieldTextPhase.Input,
+            Assert.IsType<FieldTextWait>(current.Story.Wait).Phase);
+        var work = Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!;
+        Assert.Equal(9, work.Blink);
+        Assert.Equal(6, work.Mouth);
+        Assert.False(work.MouthOpen);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DialogueCreationPreservesIncomingTypingAndKeepsPortraitService(bool incoming)
+    {
+        var session = StartFieldText("A{W1}");
+        var entry = session.Current;
+        var current = entry.WithStory(entry.Story.Copy(entry.Story.Cursor, textCursor: 100, typewriting: incoming,
+            entityServices: false, entityEvent: new(new("ferryman"), 1, 0),
+            portraitWindow: new OpenPortraitWindow(7, 0,
+                new(Blink: 4, Mouth: 5, MouthOpen: true, Registered: true, Movement: 4, Moving: false))));
+        var story = ExplorationTextRunner.Begin(session.Definition.Exploration!, current,
+            new(TextDisplayMode.Single, new("ferryman")), new(999));
+        Assert.Equal(incoming, story.Typewriting);
+        var result = ExplorationDispatcher.Submit(session.Definition, current.WithStory(story), new AdvanceSimulation(story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Equal(incoming, result.Snapshot.Story.Typewriting);
+        var work = Assert.IsType<OpenPortraitWindow>(result.Snapshot.Story.PortraitWindow).Work!;
+        Assert.Equal(3, work.Blink);
+        Assert.True(work.EyesClosed);
+        Assert.Equal(incoming, work.MouthOpen);
+        if (incoming) Assert.Equal(4, work.Mouth);
+        else
+        {
+            Assert.InRange(work.Mouth, (short)10, (short)14);
+            Assert.Single(result.Observations, row => row.Kind == "rng-portrait-mouth");
+        }
+    }
+
     private static void DrainTextWork(GameSession session)
     {
         for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)
@@ -423,7 +754,8 @@ public sealed class ExplorationTextWaitTests
     }
 
     private static GameSession StartFieldText(string text, int speed = 2, bool enabled = false,
-        bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false, bool alternateLeader = false)
+        bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false, bool alternateLeader = false,
+        Action<JsonNode>? configure = null, bool startEvent = true)
     {
         var session = Start("harbor-arrival", document =>
         {
@@ -460,8 +792,9 @@ public sealed class ExplorationTextWaitTests
                 world["maps"]![0]!["events"]![0]!["entityFlags"] = 3;
             }
             AddVisuals(document, null);
+            configure?.Invoke(document);
         });
-        if (interaction)
+        if (interaction && startEvent)
         {
             Accept(session, new Interact(new("ferryman")));
             Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
@@ -517,7 +850,7 @@ public sealed class ExplorationTextWaitTests
             { map = map!["id"]!.GetValue<string>(), atlas = Raster(128, 320), scale = 1,
                 blocks = Enumerable.Range(0, 1024).Select(_ => new int[9]).ToArray() }),
             sprites = new[] { new { sprite = 30, directions = Enumerable.Range(0, 3).Select(_ => Raster(48, 24)).ToArray(), portrait, speech = 0 } },
-            portraits = new[] { new { portrait = 7, raster = Raster(64, 64) } },
+            portraits = new[] { new { portrait = 7, raster = Raster(64, 64), eyes = new[] { new[] { 1, 1, 6, 7 } }, mouth = new[] { new[] { 1, 3, 7, 7 } } } },
         });
     }
 }

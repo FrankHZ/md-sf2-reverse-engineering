@@ -161,6 +161,10 @@ class OriginalPrograms:
                 "disasm/code/common/scripting/map/mapscriptengine_1.asm",
                 "disasm/code/common/scripting/map/mapscriptengine_2.asm",
                 "disasm/code/common/menus/portraitwindow.asm",
+                "disasm/code/common/menus/portraitfunctions.asm",
+                "disasm/code/common/tech/interrupts/trap6_mapscript.asm",
+                "disasm/code/common/tech/interrupts/trap9_contextualfunctions.asm",
+                "disasm/code/common/tech/interrupts/vint.asm",
                 "disasm/code/common/tech/interrupts/trap5_textbox.asm",
                 "disasm/code/common/scripting/entity/entityscriptengine_1.asm",
                 "disasm/code/common/scripting/entity/entityscriptengine_2.asm",
@@ -488,7 +492,7 @@ class OriginalPrograms:
             source = f"{relative}:{symbol}[{row['index']}]"
             index += 1
             if op in ("csc_end", "rts") or (op == "dc.w" and args == ["$FFFF"]):
-                result.append({"op": "end"})
+                result.append({"op": "end" if op == "rts" else "end-map-script"})
             elif (
                 op == "chkFlg"
                 and index < len(rows)
@@ -529,7 +533,13 @@ class OriginalPrograms:
                     }
                 )
             elif op == "script":
-                result.append({"op": "call", "target": _location(self.compile(args[0]))})
+                result.append(
+                    {
+                        "op": "call",
+                        "target": _location(self.compile(args[0])),
+                        "activateEntities": True,
+                    }
+                )
             elif (
                 op in ("moveq", "move.w")
                 and len(args) == 2
@@ -941,7 +951,13 @@ class OriginalPrograms:
                 # Presentation/native services are not acknowledged by this compiler. The
                 # native owner must implement the service before this instruction can finish.
                 result.append(self.native(op, source))
-        if not result or result[-1]["op"] not in ("end", "return", "jump", "native-call"):
+        if not result or result[-1]["op"] not in (
+            "end",
+            "end-map-script",
+            "return",
+            "jump",
+            "native-call",
+        ):
             source_text = (self.upstream / relative).read_text(encoding="utf-8")
             labels = list(re.finditer(r"^([A-Za-z_]\w*):", source_text, re.MULTILINE))
             label_index = next(i for i, match in enumerate(labels) if match.group(1) == symbol)
@@ -1135,8 +1151,8 @@ def prepare_visuals(
         entry = 0x1C8004 + portrait * 4
         address = int.from_bytes(rom[entry : entry + 4], "big")
         data = rom[address:]
-        _, offset = _read_animation_entries(data, 0, "eye")
-        _, offset = _read_animation_entries(data, offset, "mouth")
+        eyes, offset = _read_animation_entries(data, 0, "eye")
+        mouth, offset = _read_animation_entries(data, offset, "mouth")
         palette = [
             md_palette_color(int.from_bytes(data[index : index + 2], "big"))
             for index in range(offset, offset + 32, 2)
@@ -1151,7 +1167,9 @@ def prepare_visuals(
                     pixels[target : target + 4] = bytes(
                         palette_index_rgba(palette, tile[y * 8 + x])
                     )
-        portrait_visuals.append({"portrait": portrait, "raster": raster(64, 64, pixels)})
+        portrait_visuals.append(
+            {"portrait": portrait, "raster": raster(64, 64, pixels), "eyes": eyes, "mouth": mouth}
+        )
     audio = []
     for asset in manifest["assets"]:
         if asset["kind"] != "audio":

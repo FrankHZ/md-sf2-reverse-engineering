@@ -151,7 +151,8 @@ StartWitchScreen/reset ancestry is inferred. See the
 [binding evidence](../../research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
 **Unknown:** complete original portrait/service timing outside that profile, hardware presentation
 and whole-route9A/H4 remain open. A speaker hint, portrait identity or cleared typewriting byte
-cannot admit an active or unknown portrait. Remake tests/native observations prove the consumer,
+alone cannot admit an active or unknown portrait. The source-bound entity-event rules below
+admit a registered portrait explicitly. Remake tests/native observations prove the consumer,
 not additional original runtime observations.
 
 Later behavior acceptance must use an admitted source-driven consumer and check different seeds
@@ -160,6 +161,40 @@ mandatory accepting poll, stale tokens/revisions, and multiple wait tokens in on
 identical semantic Wait/ack streams under instant/adjustable reveal and reveal-only Confirm;
 state/RNG must agree while actual presentation conditions still hold. Keep W2 and plain input
 cases distinct. No existing failure, golden or unresolved first-warp timing field is waived here.
+
+## Entity-event portrait service
+
+**Confirmed (static source):** at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`portraitwindow.asm` opens before the entity wrapper's facing wait; registration follows movement
+completion and removal precedes closing movement. An already-open portrait is retained. Fresh
+counters are blink20/mouth6. `portraitfunctions.asm:VInt_PerformPortraitBlinking` updates eyes at
+blink3/0 and draws main RNG120+30 at0. Typewriting advances mouth, selecting alternate tiles at5
+and resetting normal tiles with RNG5+10 at0; without typewriting, mouth<=5 resets immediately.
+Blink precedes mouth. Typewriting and mouth-control input shortening are independent gates.
+`textfunctions_1.asm:DisplayText` sets typewriting only after `CreateDialogueWindow` returns.
+Fresh-window clear/move waits MUST preserve the incoming value, while blink and the existing
+non-typing mouth<=5 reset remain active. A reused window returns immediately; empty/W-only text
+can set then clear typewriting without an intervening service.
+The [research binding](../../research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+owns exact symbols, source order and the reached example.
+
+An admitted implementation MUST preserve the single live portrait identity, packed placement and
+mirror flags, eye/mouth tile mappings, registration lifetime and shared RNG effects. Unknown
+portrait state cannot become Closed or a static face as a fallback. W1/W2 copy the poll result
+before enabled NPC/portrait services; later draws MUST NOT overwrite that copy. Opening/closing
+movement requests the existing menu-switch65 cue. This establishes no new speech policy.
+
+The live entity-enable flag changes at wrapper entry/suppression and Trap6 activation; it MUST
+survive a script return. Source map-script end conditionally waits for view while dialogue exists,
+then clears the override; native subroutine returns remain distinct. Wrapper return restores
+facing, removes/closes portrait, closes dialogue, and finally releases control with entities enabled.
+If no script activated entities, suppression persists through the close tail.
+
+**Confirmed (bounded remake):** the [entity-event consumer](../../../remake/docs/exploration-programs.md#bound-entity-event-portrait)
+uses those rules for supported live state/content and reaches Sarah's first classroom caller
+return under equal semantic inputs across three display settings. **Unknown:** later zone portrait,
+camera, JOIN and battle consumer service schedules, original DMA/presentation timing and the
+existing whole-route acceptance gaps. This admission adds no original runtime observation.
 
 ## Remake Boundary
 

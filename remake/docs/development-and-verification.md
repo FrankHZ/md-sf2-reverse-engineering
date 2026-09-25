@@ -743,6 +743,98 @@ or view timing, portrait/quake schedules, whole-route9A/H4 or pending#517 speech
 speech projection is preserved. Prior cleanup warnings/failures remain attempt-specific;
 original acquisition totals and original-run delta0 are unchanged.
 
+## Bound portrait entity-event observation
+
+The [portrait consumer](exploration-programs.md#bound-entity-event-portrait) extends the bound
+field-text profile through an actual entity wrapper return. Its
+[source owner](../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+separates static rules from original runtime evidence. Engine behavior tests in
+`ExplorationTextWaitTests` cover legal changed speakers/flags and first/repeat branches, absent,
+fresh, retained and Unknown portraits, register/remove boundaries, source counters, no-W tails,
+fresh/reused dialogue creation versus first-glyph service, incoming typing preservation,
+empty/W-only text and W continuation, script versus native returns, enabled versus suppressed closing and poll-copy preservation across
+NPC then blink/mouth draws. For seed12341234 the independent poll/four rejected NPC candidates/
+blink/mouth sequence endsE0291234 while copyEC remains. Use `uv run sf2 verify engine` and
+`uv run sf2 verify adapter`; native settings runs below exercise actual projection/input/audio.
+
+Prepare one fresh nonvisual world and add only eye/mouth mapping metadata from the registered ROM,
+reusing accepted rasters/audio and the retained bound start read-only. The private preparation at
+`local/issue534/portrait-event/prepare.py` and `candidate/comparison.json` verify25 source script ends,
+25 activating calls and36 portrait mappings plus named new source provenance; every other world
+section, raster/audio payload and shared provenance is unchanged. No asset/H1/ROM rebuild is needed.
+The maintained source producer/reader are `remake_exploration_content.py` and
+`ExplorationAssetReader`; raw source/ROM content stays ignored.
+
+Use the existing protected environment and owned Godot project, with no other owned process running:
+
+```powershell
+$env:SF2_INPUT_CASE = 'portrait-event-private-adjusted'
+$env:SF2_INPUT_RATE = '20'
+$env:SF2_PRIVATE_EXPLORATION_PLAN = (Resolve-Path 'tests/fixtures/h3/map3-battle01-natural-route-v1.json').Path
+# Select existing private battle/party inputs, the fresh candidate world, and fresh output/settings.
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_input_accessibility_observation.gd -- `
+  --private-exploration-start $retainedBoundStart --input-settings $freshSettings
+```
+
+Select `portrait-event-private-instant` or `portrait-event-private-adjusted-reveal` (rate40) for
+the other settings. The probe consumes accepted spatial waypoints with live position/occupancy,
+one explicit Wait then Ack per reached W boundary, and no optional mother repeat or frozen C quota.
+It stops after Sarah's movement/flag/window work returns actual control, before stairs/Astral.
+The existing instance had exited; startup was needed to observe the changed adapter, using the
+retained installation/project. No screenshot or original launch/capture is part of this command.
+
+**Confirmed (remake observation):** private `native-06/07/08` each exit0 with empty failures and
+Unavailable arrays. `native-corrected-comparison.json` compares17 common input/entry/return boundaries and
+all1423 settled logical states (tick0 through1422) across complete entities, flags, party, main RNG,
+copied byte, cursor, text/view/portrait state, settings and display. At return the main seed is
+EDCD0000, copy95, Sarah is(41,7), F256 is set, facing restored, windows closed and entities enabled.
+The only reached input texts are510/511/483/512/481;480 completes automatically.
+
+Actual rendering metadata is compared only with its recorded simulation tick:40/41/43 samples
+match source eye/mouth tile selection, identity/flags and movement geometry. A signal callback can
+precede the frame's draw. Audio receipts retain real started PCM playback:65 open,67 W2 validation,
+65 close, at gameplay revisions1697/1836/2136 for all settings. Natural speech creates additional
+existing delivery receipts; collect receipts across samples because the host keeps a bounded ring.
+No adapter/audio/process error was reported in these three completed runs. Speech policy#517 remains
+pending. Host geometry is the existing presentation scale, not an original hardware pixel claim.
+
+`creation-source-check.json` independently checks the source creation boundary in all three runs:
+tick1205 enters ClearFirst with typewriting=false, blink19/mouth6; through the ten creation services
+mouth stays6 and blink advances to9. At tick1215 creation returns and typing becomes true without
+another portrait opportunity; tick1216's first glyph service opens mouth at5. The first mouth
+draw is1221,749B0000→EBE60000/range5/value4, checked with the source16-bit LCG formula. Blink closes
+eyes at3 on that same opportunity. Same-tick creation projection samples show closed mouths.
+
+Pre-correction `native-03/04/05` and `native-comparison.json` remain completed settings-equality
+evidence, not source-correct creation results. Independent review found typing enabled at1205,
+mouth5 at1206 and an early draw at1211. The six focused behavior cases preserve creation's incoming
+typing value and verify the transition, continued blink and non-typing mouth reset. The initial
+`review-correction-red.log` has three lifecycle failures plus an empty-string reader rejection;
+the empty-token case now directly exercises engine state after admitted startup. The corrected
+affected text/session selection passes195 in `review-correction-tests.log`; Debug and Release
+adapter builds pass in `review-correction-debug.log` and `review-correction-adapter.log`. These runs
+reuse the unchanged candidate/start and semantic input stream; the changed copy/RNG history was
+not fitted to the old endpoint. No asset preparation or original runtime work was repeated.
+
+Preserve completed diagnostic failures: native01 failed GDScript type inference; native02 rejected
+the new case's startup argument classification before Main started. Both probe errors were corrected
+before native03. `engine-behavior-02.log` completed45PASS/1FAIL because the new closed-window script
+test attempted a prohibited nonzero start override; the corrected test changes live state after
+admitted startup, and `engine-correction-01.log` passes that node. `engine-gate.log` then passes
+724 with30 private skips. The first frame-sampling comparison remains in
+`frame-sampling-comparison-failure.json`: two480 sample labels selected different moments around
+actual delivery. Raw service callbacks also expose the legitimate delivery join at tick1351;
+comparing each tick's final actual callback after delivery and before the next opportunity gives
+equal state without injected services or altered evidence. Input boundaries are compared directly.
+
+The prior completed `opening-implementation/normal-verify-01.log` remains exit1 at missing
+worktree-local research provenance after148 passing Python checks; its accepted applicability
+decision is retained. Recheck dependencies changed here, not the prior passing aggregate. Original
+cost delta is0. Opening ancestry remains Inferred, and the eight warp gaps, H4/HEAL/JOIN/next-actor,
+nonrun/cleanup boundaries retain their existing owners. This stops at the portrait entity-event
+return and grants no admission to later zone/camera/JOIN/battle consumers.
+
 ## W1 entity-event input
 
 The [execution owner](./exploration-programs.md#w1-in-a-suppressed-entity-event) defines the

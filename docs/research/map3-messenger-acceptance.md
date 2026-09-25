@@ -3145,6 +3145,53 @@ remains input-first. The completed remake finite-JOIN diagnostic has5,313 simula
 [verification owner](../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
 Complete original portrait/entity timing and audio interleaving remain **Unknown**.
 
+### Classroom portrait entity-event binding
+
+**Confirmed (static source):** the selected USA identity and pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` bind the accepted school approach to the adjacent
+Sarah caller `RunMapSetupEntityEvent → Map3_EntityEvent0`. With F602/F603/F256 clear it displays
+512/W2, 480/no W token, 481/W1, runs `cs_513D6`, sets F256 and returns through the entity wrapper.
+This is the first required portrait consumer of the selected spatial route, not every possible
+route. The later flag-dependent interaction is separate; text480 requires no invented Ack.
+
+Under `disasm/`, `code/common/scripting/map/mapsetupsfunctions_1.asm:loc_4765E` resolves the live
+sprite's portrait/speech and opens it before the enabled facing wait. `loc_476A8` suppresses entities
+before the native handler. `code/common/tech/interrupts/trap6_mapscript.asm` explicitly activates
+entities; its return does not undo activation. `mapscriptengine_2.asm:loc_47234` waits for view only
+when dialogue exists, then clears VIEW_SCROLLING_SPEED. `loc_476C4` restores the wrapper's close
+order: portrait, dialogue, entity activation and return, after conditional facing restoration.
+Sarah's script therefore leaves service enabled during closing; a no-script mother handler does not.
+
+`code/common/menus/portraitwindow.asm` initializes blink20/mouth6 and moves the window from(2,-10)
+to(2,1), or X+21 on the right, length4 via MoveWindowWithSfx. The existing window helper includes
+the final moving-bit-clear observation; only then is the portrait service registered. Close removes
+it before the reverse movement and deletion. LoadPortrait queues DMA without an explicit wait.
+`portraitfunctions.asm:VInt_PerformPortraitBlinking` decrements blink, closes eyes at3 and restores
+them at0 with main RNG120+30. With CURRENTLY_TYPEWRITING set it decrements mouth, opens it at5
+and resets at0 using RNG5+10; with it clear, mouth<=5 resets immediately. Blink draws precede mouth.
+`code/common/scripting/text/textfunctions_1.asm:DisplayText` calls CreateDialogueWindow before
+setting CURRENTLY_TYPEWRITING. `textfunctions_2.asm:CreateDialogueWindow` leaves that byte unchanged
+through its clear/movement waits. Thus a fresh portrait's mouth6 holds during creation with an
+incoming zero byte, while blink still runs. Existing mouth<=5 non-typing reset remains applicable;
+this is not a portrait-service suppression. Reused windows return immediately. Empty/W-only text
+can set and clear the byte before any further service opportunity.
+`UpdatePortrait` applies the stored four-byte source/alternate tile coordinates and mirroring;
+`LoadPortrait` reads those mappings before the existing palette/raster. ROM portrait pointers begin
+at1C8004. `vint.asm:SetBaseVIntFunctions` and `trap9_contextualfunctions.asm` place the added service
+after the admitted base services. MoveWindowWithSfx requests menu-switch65.
+
+Reproduce the static binding by inspecting these symbols in the pinned checkout and the selected
+spatial edges in `tests/fixtures/h3/map3-battle01-natural-route-v1.json`; use its positions/waypoints,
+not historical acknowledgement quotas. The maintained producer records source provenance and
+retains portrait mappings. `uv run sf2 rom verify` owns private input identity. The
+[verification owner](../../remake/docs/development-and-verification.md#bound-portrait-entity-event-observation)
+records the metadata comparison and actual remake observations through caller return.
+
+**Inferred:** the inherited speed2/mouth0/view0 ancestry remains the opening binding below;
+later saved bytes are not a classroom capture. **Unknown:** complete original interrupt/CPU/DMA
+chronology and later consumer schedules. No original launch/capture was added. The prior eight
+warp gaps, H4/HEAL/JOIN/next-actor/nonrun/cleanup limits remain with their existing owners.
+
 ### Opening field-text settings and view binding
 
 **Confirmed (source and existing saved bytes):** the selected USA ROM remains the tracked

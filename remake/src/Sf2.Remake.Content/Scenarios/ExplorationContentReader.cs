@@ -423,12 +423,16 @@ internal static class ExplorationContentReader
         switch (opcode)
         {
             case "end": Object(row, opcode, "op"); return new EndProgram();
+            case "end-map-script": Object(row, opcode, "op"); return new EndProgram(true);
             case "return": Object(row, opcode, "op"); return new ReturnProgram();
             case "reset-party-battle-stats": Object(row, opcode, "op"); return new ResetPartyBattleStats();
             case "battle-return-map": Object(row, opcode, "op"); return new ReturnBattleMap();
             case "retired-map3-entity-scratch": Object(row, opcode, "op"); return new RetiredMap3EntityScratch();
             case "jump": Object(row, opcode, "op", "target"); return new JumpProgram(RequiredLocation(row.GetProperty("target")));
-            case "call": Object(row, opcode, "op", "target"); return new CallProgram(RequiredLocation(row.GetProperty("target")));
+            case "call":
+                ObjectOptional(row, opcode, "activateEntities", ["op", "target"]);
+                return new CallProgram(RequiredLocation(row.GetProperty("target")),
+                    row.TryGetProperty("activateEntities", out _) && Boolean(row, "activateEntities"));
             case "branch-flag":
                 Object(row, opcode, "op", "flag", "whenSet", "target");
                 return new BranchFlag(Number(row, "flag", 0, 65535), Boolean(row, "whenSet"), RequiredLocation(row.GetProperty("target")));

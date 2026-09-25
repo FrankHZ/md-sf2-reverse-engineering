@@ -131,7 +131,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
@@ -297,6 +297,9 @@ public sealed partial class ExplorationSessionView : Control
         if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && (current.Story.Wait is not (W1TextWait or FieldTextWait) ||
                 _result.Observations.Any(row => row.Kind == "text-w2-accepted"))))
             _audio?.PlayEffect(67);
+        if (_result.Failure is null)
+            foreach (var window in _result.Observations.Where(row => row.Kind == "portrait-window-moving"))
+                _audio?.PlayEffect(65);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
         {
@@ -365,7 +368,7 @@ public sealed partial class ExplorationSessionView : Control
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
             DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
-            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait => "",
+            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
@@ -424,13 +427,21 @@ public sealed partial class ExplorationSessionView : Control
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
-            entitiesRunning = current?.Story.Cursor is { } location ? _session!.Definition.Exploration!.Programs[location.Program].EntitiesRunning : (bool?)null,
+            entitiesRunning = current?.Story.EntityServices ?? (current?.Story.Cursor is { } location ? _session!.Definition.Exploration!.Programs[location.Program].EntitiesRunning : (bool?)null),
+            typewriting = current?.Story.Typewriting,
             textWindow = current?.Story.TextWindow.GetType().Name,
             portraitWindow = current?.Story.PortraitWindow.GetType().Name,
             portraitId = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Portrait,
             portraitFlags = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Flags,
+            portraitWork = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Work,
             portraitProjection = HasMeta("portrait_projection") ? GetMeta("portrait_projection").AsGodotDictionary()
-                .ToDictionary(pair => pair.Key.AsString(), pair => pair.Value.AsInt32()) : null,
+                .ToDictionary(pair => pair.Key.AsString(), pair => pair.Value.VariantType switch
+                {
+                    Variant.Type.Array => (object)pair.Value.AsGodotArray().Select(value => value.AsInt32()).ToArray(),
+                    Variant.Type.Bool => pair.Value.AsBool(),
+                    Variant.Type.Float => pair.Value.AsDouble(),
+                    _ => pair.Value.AsInt32(),
+                }) : null,
             waitHeld = _input.WaitHeld, focused = GetWindow().HasFocus(),
             viewport = Battles.BattleMapViewport.Rectangle(GetViewportRect()),
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,

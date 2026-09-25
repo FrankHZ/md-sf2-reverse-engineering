@@ -102,9 +102,16 @@ internal static class ProgramRunner
                         // windows; the first later window is rebuilt before publication. The real
                         // preceding hide/FF tombstone stays; these four stores affect inactive scratch.
                         break;
+                    case EndProgram { SourceMapScript: true } when current.Story.TextSettings is not null:
+                        if (current.Story.TextWindow is OpenTextWindow)
+                        {
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = current.Story.Copy(cursor, new ViewWait(token, !current.Story.LogicalView!.Scrolling, ScriptReturn: true));
+                        }
+                        else story = ReturnFromScript(current.Story);
+                        break;
                     case EndProgram or ReturnProgram:
-                        story = current.Story.Callers.Count == 0 ? current.Story.Copy(null) :
-                            current.Story.Copy(current.Story.Callers[^1], callers: current.Story.Callers.SkipLast(1));
+                        story = Return(current.Story);
                         break;
                     case JumpProgram jump: story = story.Copy(jump.Target); break;
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
@@ -116,7 +123,8 @@ internal static class ProgramRunner
                             story = story.Copy(branch.Target);
                         break;
                     case CallProgram call:
-                        story = story.Copy(call.Target, callers: current.Story.Callers.Append(Next(cursor))); break;
+                        story = story.Copy(call.Target, callers: current.Story.Callers.Append(Next(cursor)),
+                            entityServices: call.ActivateEntities && story.TextSettings is not null ? true : null); break;
                     case WriteFlag flag:
                         story = story.Copy(story.Cursor, flags: Flags(current.Story, flag.Flag, flag.Value)); break;
                     case JoinPartyMember join:
@@ -145,6 +153,12 @@ internal static class ProgramRunner
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:
+                        if (story.TextSettings is not null && story.EntityEvent is not null && portrait.Entity is { } boundActor)
+                        {
+                            current = ExplorationPortraitRunner.Open(definition, current, boundActor, portrait.Flags, observations, false);
+                            story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
+                            break;
+                        }
                         // A skipped lookup or an existing window preserves the gate. Missing
                         // metadata cannot prove absence; an unknown incoming window stays unknown.
                         if (portrait.Entity is null || story.PortraitWindow is not ClosedPortraitWindow) break;
@@ -156,6 +170,12 @@ internal static class ProgramRunner
                             story = story.Copy(story.Cursor, portraitWindow: new OpenPortraitWindow(portraitId, portrait.Flags));
                         break;
                     case ClosePortrait:
+                        if (story.TextSettings is not null && story.EntityEvent is not null)
+                        {
+                            current = ExplorationPortraitRunner.Close(current, observations, false);
+                            story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
+                            break;
+                        }
                         story = story.Copy(story.Cursor, portraitWindow: new ClosedPortraitWindow()); break;
                     case WaitForView:
                         if (current.Story.TextSettings is null)
@@ -301,6 +321,13 @@ internal static class ProgramRunner
         }
         return Result(Stop(current, SessionStopReason.SimulationWait), observations);
     }
+
+    private static StoryState Return(StoryState story) => story.Callers.Count == 0 ? story.Copy(null) :
+        story.Copy(story.Callers[^1], callers: story.Callers.SkipLast(1));
+
+    internal static StoryState ReturnFromScript(StoryState story) =>
+        Return(story).Copy(story.Callers.Count == 0 ? null : story.Callers[^1],
+            textSettings: story.TextSettings! with { ViewSpeed = 0 });
 
     internal static IEnumerable<int> Flags(StoryState story, int flag, bool value) =>
         value ? story.Flags.Append(flag) : story.Flags.Where(existing => existing != flag);
