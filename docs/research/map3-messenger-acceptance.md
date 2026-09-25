@@ -3119,6 +3119,29 @@ promote the plausible explanation that the NPC moved out of interaction range to
 The confirmed repeated text and menu callbacks already establish that these extra pulses were
 not harmless opening-dialogue acknowledgements.
 
+#### Reached text-wait source binding
+
+**Confirmed (bounded source/readback):** bind the W1 occurrence to the paired `DisplayText`
+target 483, including its ordered preceding source tokens, rather than the unrelated later cursor
+484. In pinned `textfunctions_1.asm:symbol_wait1`, `loc_659C` calls
+`GenerateRandomNumber(256)`, writes the result byte to `RANDOM_SEED_COPY`, then calls
+`WaitForVInt` before `loc_65B4` tests directional/A/B/C input. The accepting iteration includes
+that preamble. Nonzero input restores the saved typewriting byte and resumes text parsing.
+`@wait2/loc_6472` has a similar draw/copy preamble but also calls `sub_64A8`; its accepting tail
+requests `SFX_VALIDATION` and clears that indicator through `sub_64A8`. These static W2 facts
+do not turn the observed text 510/511 returns into observations of their internal accepting reads.
+
+Reproduce without a launch: read the named pinned `gamescript.txt` entries (hex IDs `01E3`,
+`01FE`, `01FF`) in full token order and the two source handlers; then inspect the retained
+candidate's `checkpoints.jsonl` from the [completed result](#corrected-candidate-single-run-result).
+Observer frames 1031/1144/1147 correspond to the table's input ordinals 677/790/793. Retain
+entry/return target and stack association; later `text:wait1` cursor values alone cannot select
+the text. The [dialogue contract](../design/contracts/dialogue-system.md#reached-w1-consumer-binding)
+owns the logical-input rule and current implementation gap. Text 446/447's separate plain
+[JOIN helper](#natural-join-audio-and-input-boundary) remains input-first, without W1's accepting
+preamble. Complete portrait/entity service gates and mandatory text-work interleaving remain
+**Unknown**; neither this readback nor the handler-local dialogue fixture supplies them.
+
 ### Later blocks: complete source, no later runtime claim
 
 **Confirmed construction/source; Unknown reach and timing:** direct expansion of the documented
