@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Godot;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Input;
@@ -39,6 +40,8 @@ public sealed partial class ExplorationSessionView : Control
     private GameInput _input = null!;
     private TextWindow? _textWindow;
     private double _revealed;
+    private WaitToken? _textDeliveryToken;
+    private ulong _textDeliveryFrame;
     private bool _speechSoundToggle;
     private double _tickTime;
     private bool _resumeAutomatic;
@@ -127,7 +130,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
@@ -149,7 +152,18 @@ public sealed partial class ExplorationSessionView : Control
             if (presentation.Error is not null) { Present(); return; }
             if (beforePresentation != _session.Current.Story.Wait?.Token) { _tickTime = 0; return; }
         }
-        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText)
+        if (_session.Current.Story.Wait is W1TextWait { Revealed: false } delivery && TextRevealed)
+        {
+            _tickTime = 0;
+            // Leave the completed projection mounted for a frame before a tail can close it.
+            // This is delivery latency only, never a simulation opportunity.
+            if (_textDeliveryToken != delivery.Token)
+            { _textDeliveryToken = delivery.Token; _textDeliveryFrame = Engine.GetProcessFrames(); }
+            else if (Engine.GetProcessFrames() > _textDeliveryFrame)
+                Send(new CompleteTextReveal(delivery.Token));
+            return;
+        }
+        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.Story.Wait is W1TextWait)
         {
             // Idle field time is explicitly paused. Presentation time never becomes field debt.
             _tickTime = 0;
@@ -202,6 +216,11 @@ public sealed partial class ExplorationSessionView : Control
         {
             if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
             command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+        }
+        else if (current.Story.Wait is W1TextWait w1)
+        {
+            if (action == GameAction.Confirm && !RevealText() && w1 is { AtInput: true, Revealed: true })
+                command = new Acknowledge(w1.Token);
         }
         else if (current.Story.Wait is DialogueWait)
         {
@@ -262,7 +281,8 @@ public sealed partial class ExplorationSessionView : Control
         else _tickTime = 0;
         PublishResult("submit");
         _audio?.Observe(_result);
-        if (_result.Failure is null && command is Acknowledge or ChooseDialogue) _audio?.PlayEffect(67);
+        if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && current.Story.Wait is not W1TextWait))
+            _audio?.PlayEffect(67);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
         {
@@ -294,6 +314,7 @@ public sealed partial class ExplorationSessionView : Control
         _help.Position = new(20, Mathf.Max(130, size.Y - 90));
         _help.Size = new(Mathf.Max(1, size.X - 40), 80);
         string previousText = _dialogue.Text;
+        int previouslyVisible = _dialogue.VisibleCharacters < 0 ? _dialogue.GetTotalCharacterCount() : _dialogue.VisibleCharacters;
         _dialogue.Text = current.Story.Wait switch
         {
             DialogueWait text => _session.Definition.Exploration!.Texts.GetValueOrDefault(text.Text) ?? "",
@@ -302,16 +323,29 @@ public sealed partial class ExplorationSessionView : Control
             _ => current.Story.TextWindow is OpenTextWindow open ? _session.Definition.Exploration!.Texts.GetValueOrDefault(open.Text) ?? "" : "",
         };
         var names = _session.Definition.Exploration!.MemberNames;
-        _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n"), @"\{W[0-9]+\}", "");
-        _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME;([0-9]+))\}", match =>
+        if (current.Story.Wait is W1TextWait span)
+            _dialogue.Text = string.Concat(_session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
+            {
+                ExplorationTextTokenKind.Literal => part.Value,
+                ExplorationTextTokenKind.Newline => "\n",
+                ExplorationTextTokenKind.MemberName => names[part.Member!.Value],
+                _ => "",
+            }));
+        else
         {
-            int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
-            return member < names.Count ? names[member] : match.Value;
-        });
+            // Compatibility display for consumers outside the admitted W1 contract.
+            _dialogue.Text = Regex.Replace(_dialogue.Text.Replace("{N}", "\n"), @"\{W[0-9]+\}", "");
+            _dialogue.Text = Regex.Replace(_dialogue.Text, @"\{(?:LEADER|NAME;([0-9]+))\}", match =>
+            {
+                int member = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
+                return member < names.Count ? names[member] : match.Value;
+            });
+        }
         _help.Text = current.Story.Wait switch
         {
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
-            DialogueWait => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
+            DialogueWait or W1TextWait { AtInput: true } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
+            W1TextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
             EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
@@ -325,8 +359,10 @@ public sealed partial class ExplorationSessionView : Control
         // Restart reveal only for changed text or a newly opened window, not that wait handoff.
         if (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow))
         {
-            _revealed = 0;
-            _dialogue.VisibleCharacters = _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : 0;
+            bool continuingSpan = current.Story.Wait is W1TextWait && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
+                _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
+            _revealed = continuingSpan ? previouslyVisible : 0;
+            _dialogue.VisibleCharacters = _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : (int)_revealed;
         }
         _textWindow = current.Story.TextWindow;
         QueueRedraw();
@@ -365,6 +401,9 @@ public sealed partial class ExplorationSessionView : Control
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
+            w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
+            entityEvent = current?.Story.EntityEvent,
+            entitiesRunning = current?.Story.Cursor is { } location ? _session!.Definition.Exploration!.Programs[location.Program].EntitiesRunning : (bool?)null,
             portraitWindow = current?.Story.PortraitWindow.GetType().Name,
             portraitId = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Portrait,
             portraitFlags = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Flags,
@@ -384,9 +423,9 @@ public sealed partial class ExplorationSessionView : Control
             dialogue = _dialogue.Text, help = _help.Text, visibleCharacters = _dialogue.VisibleCharacters,
             totalCharacters = _dialogue.GetTotalCharacterCount(), textMode = _input.Settings.TextMode,
             reducedFlash = _input.Settings.ReducedFlash,
-            textId = (current?.Story.Wait as DialogueWait)?.Text,
-            speaker = (current?.Story.Wait as DialogueWait)?.Speaker?.Value,
-            speakerFlags = (current?.Story.Wait as DialogueWait)?.SpeakerFlags,
+            textId = (current?.Story.TextWindow as OpenTextWindow)?.Text,
+            speaker = (current?.Story.TextWindow as OpenTextWindow)?.Speaker?.Value,
+            speakerFlags = (current?.Story.TextWindow as OpenTextWindow)?.SpeakerFlags,
             partyLists = current?.Story.PartyLists, mainSeed = current?.Exploration?.Party.MainSeed,
             presentation = new { spriteMounts = _presentation?.SpriteMounts, gestureDraws = _presentation?.GestureDraws,
                 nodDraws = _presentation?.NodDraws, restoredGestureDraws = _presentation?.RestoredGestureDraws,

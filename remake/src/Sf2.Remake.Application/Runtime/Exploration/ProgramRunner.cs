@@ -9,6 +9,13 @@ internal static class ProgramRunner
 {
     internal static ProgramLocation Next(ProgramLocation location) => location with { Instruction = checked(location.Instruction + 1) };
 
+    internal static W1TextWait TextSpan(IReadOnlyList<ExplorationTextToken> tokens, WaitToken token, int text, int start)
+    {
+        int end = start;
+        while (end < tokens.Count && tokens[end].Kind != ExplorationTextTokenKind.Wait1) end++;
+        return new(token, text, end, end < tokens.Count);
+    }
+
     internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
     {
         for (int budget = 0; budget < 256; budget++)
@@ -148,6 +155,23 @@ internal static class ProgramRunner
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
+                        if (text.ExplicitWindows && !program.EntitiesRunning &&
+                            current.Story is { EntityEvent: { } context, PortraitWindow: ClosedPortraitWindow,
+                                Continuation: ProgramContinuation.FieldInput, EnteringBattle: null } &&
+                            current.Exploration!.TryResolveEntity(context.Entity, out var eventActor) &&
+                            eventActor.Sprite is { } eventSprite && definition.Exploration.Visuals is { } eventVisuals &&
+                            eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
+                            definition.Exploration.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens) &&
+                            tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
+                            tokens.All(part => part.Kind != ExplorationTextTokenKind.Unsupported &&
+                                (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
+                        {
+                            story = current.Story.Copy(cursor, TextSpan(tokens, token, current.Story.TextCursor, 0),
+                                textCursor: checked(current.Story.TextCursor + 1),
+                                textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode,
+                                    text.UseEventSpeaker ? context.Entity : text.Speaker, text.SpeakerFlags));
+                            break;
+                        }
                         story = current.Story.Copy(text.WaitForAcknowledgement ? cursor : Next(cursor),
                             text.WaitForAcknowledgement ? new DialogueWait(token, current.Story.TextCursor, text.Mode, text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker, text.SpeakerFlags,
                                 CloseOnAcknowledgement: !text.ExplicitWindows) : null,
@@ -272,7 +296,7 @@ internal static class ProgramRunner
         var reason = story.Wait switch
         {
             FullFadeWait { LogicalDone: true } => SessionStopReason.PresentationWait,
-            DialogueWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

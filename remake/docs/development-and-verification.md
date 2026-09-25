@@ -651,6 +651,88 @@ $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 For subsequent corrections, select the changed test methods rather than repeating a completed
 broader run. This engine-only boundary does not require adapter, Godot or original-emulator work.
 
+## W1 entity-event input
+
+The [execution owner](./exploration-programs.md#w1-in-a-suppressed-entity-event) defines the
+admitted gates, token continuation and copy-byte authority. This consumer shares `CanWaitForText`
+and the real Wait binding/repeat/rearm/focus gate with plain input. Its accepting poll is distinct
+from JOIN. Delivery and reveal add no logical tick debt; changing a W1 occurrence disarms Wait.
+
+Run the affected engine behaviors from `remake/` with the protected SDK environment:
+
+```powershell
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+  -p:RestoreLockedMode=true `
+  --filter 'FullyQualifiedName~ExplorationTextWaitTests|FullyQualifiedName~ExplorationSessionTests|FullyQualifiedName~MapEntityLifecycleTests|FullyQualifiedName~CommandsetContinuationTests'
+```
+
+`ExplorationTextWaitTests` uses authored text/actors and real session commands, varied seeds and
+NPC wait phases, multiple/consecutive W1s, names/newlines/trailing literals, delivery delay,
+stale revisions/tokens, wrong callers, Open/Unknown/missing portrait gates, enabled entities and
+unsupported controls. The companion classes retain plain input/JOIN, ordinary control, follower,
+idle and commandset coverage. For adapter changes run `uv run sf2 verify adapter`; refresh the
+Debug DLL for the retained Godot project before native observation. No original emulator or
+research/full-route suite is selected by this bounded capability.
+
+The owned `engine_input_accessibility_observation.gd` has `w1-private-instant`,
+`w1-private-normal` and `w1-private-adjusted` cases. Reuse the accepted current world/assets,
+controlled party and **existing** display-bound R1 start; do not generate or copy inputs. Select
+the usual private environment from [exploration reproduction](./exploration-programs.md#reproduction),
+then run from the repository root with a fresh ignored output directory `$run`:
+
+```powershell
+$env:SF2_INPUT_CASE = 'w1-private-adjusted'
+$env:SF2_INPUT_RATE = '20'
+$env:SF2_W1_POLLS = '3'
+$env:SF2_W1_REVEAL = 'natural' # omit/use confirm to exercise reveal-all input
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = [IO.Path]::GetFullPath("$run/actual.json")
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_input_accessibility_observation.gd -- `
+  --private-exploration-start $selectedR1Start --input-settings "$run/settings.json" `
+  *> "$run/godot.log"
+$hostExit = $LASTEXITCODE
+```
+
+The start is read-only; settings/output must be fresh worktree-local paths. The observer uses only
+the existing Left/Left/Right opening setup, then faces and interacts with the live nearby actor128.
+That legacy prefix is unadmitted setup, retained with its receipts. The observed W1 must have
+text483, F602 clear, entity-event context, Closed portrait and disabled entity service. Read the
+actual program/sprite metadata too: sprite195 explicitly has no portrait. The output retains every
+command result in `warpRecords` (the observer's existing result collection), state samples and
+audio receipts. Check each `rng-text-w1` → `text-seed-copy` → `text-w1-wait` → `text-w1-input`
+sequence against its own entry seed; the last input must be `accept`. Require unchanged entities,
+one tick per poll, zero delivery debt, no accepting SFX67 and usable ordinary return. Nonzero-Wait
+cases hold the final press across Ack and verify it cannot advance the returned field.
+
+**Confirmed (actual input/state/audio):** the retained `local/issue534/w1-implementation/`
+launcher/readback and native-10 through native-16 outputs pass these checks with native exit0 and
+no application/adapter/script error. Instant and naturally revealed 20-character/second cases cover 0/1/3 optional
+polls. The 40-character/second case uses reveal-only Confirm; natural delivery and reveal-all
+preserve the admitted state before polling. Each enters at main image `75DA0000`, with copy byte initially unknown; return images are
+`FC190000`, `CD4C0000`, `878E0000`, and copy bytes `FC`, `CD`, `87`, respectively. The 20 versus
+40-character/second three-Wait cases have equal gameplay entry and return state, including full
+entity fields, flags, party resources, seed/copy, windows, PC, tick and event context. They use
+the same ordinary startup and semantic inputs without state injection or normalization.
+
+**Unknown:** instant versus adjustable whole-route equivalence remains unproven. Their legacy
+prefixes enter W1 at tick142 versus145; entity130 Y, entity131 Y/velocityY and entity133 X/velocityX
+differ despite equal seeds. Per-entry poll correctness cannot make those entries equal. The
+20/40 comparison is the bounded equal-entry observation. Headless runs do not establish OS
+focus-loss behavior or close original W2/typewrite timing, portrait/quake service, 9A or H4.
+The pending #517 speech policy is unchanged; this work grants no speech waiver.
+
+Preserved failures: engine-01 stopped at compile errors in new assertions; engine-02 completed
+with 183 pass/4 fail (three assertions selected the player instead of the serviced NPC; one
+compared separately loaded action-program references). Corrected engine-03 reran only the new
+owner, 16 pass; the other 171 behaviors already passed. Native-01 stopped at a probe type-inference
+parse error. Native-05 completed with three inapplicable legacy reveal/revision assertions and a
+zero-Wait probe that accidentally issued a fresh field Wait; native-06 corrects those observer
+errors without changing legacy gameplay. Readback also corrected a compiled program-ID lookup
+to the actual cursor. Native-03/05/06/10/13/14/15 retain a warning for six ObjectDB instances
+at exit; cleanup cause is **Unknown**, not a passed lifecycle gate. No original launch/capture
+was added; original totals, the eight first-warp differences, H4 5340/2/40, HEAL/JOIN and retained
+nonrun/cleanup boundaries remain unchanged.
+
 ## Ordinary Host Startup
 
 After loading the retained worktree SDK/Godot environment, ordinary play uses:

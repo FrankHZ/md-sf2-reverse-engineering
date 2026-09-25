@@ -113,17 +113,24 @@ public sealed class ExplorationProvenance
     public string ControlledBoundary { get; }
 }
 
+public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Unsupported }
+public sealed record ExplorationTextToken(ExplorationTextTokenKind Kind, string Value, int? Member = null);
+
 public sealed class ExplorationDefinition
 {
-    internal ExplorationDefinition(IEnumerable<ExplorationMapDefinition> maps, IEnumerable<StoryProgram> programs, IEnumerable<KeyValuePair<int, string>>? texts = null, ExplorationProvenance? provenance = null, MapPartyFlagLayout? partyFlags = null, ExplorationVisuals? visuals = null, IEnumerable<string>? memberNames = null)
+    internal ExplorationDefinition(IEnumerable<ExplorationMapDefinition> maps, IEnumerable<StoryProgram> programs, IEnumerable<KeyValuePair<int, string>>? texts = null, ExplorationProvenance? provenance = null, MapPartyFlagLayout? partyFlags = null, ExplorationVisuals? visuals = null, IEnumerable<string>? memberNames = null,
+        IEnumerable<KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>>? textTokens = null)
     {
         Provenance = provenance; PartyFlags = partyFlags; Visuals = visuals;
         MemberNames = Array.AsReadOnly((memberNames ?? []).ToArray());
         Texts = new ReadOnlyDictionary<int, string>((texts ?? []).ToDictionary(pair => pair.Key, pair => pair.Value));
+        TextTokens = new ReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>>((textTokens ?? [])
+            .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<ExplorationTextToken>)Array.AsReadOnly(pair.Value.ToArray())));
         Maps = new ReadOnlyDictionary<MapId, ExplorationMapDefinition>(maps.ToDictionary(map => map.Map));
         Programs = new ReadOnlyDictionary<string, StoryProgram>(programs.ToDictionary(program => program.Id, StringComparer.Ordinal));
     }
     public IReadOnlyDictionary<int, string> Texts { get; }
+    public IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>> TextTokens { get; }
     public IReadOnlyList<string> MemberNames { get; }
     public ExplorationProvenance? Provenance { get; }
     public MapPartyFlagLayout? PartyFlags { get; }

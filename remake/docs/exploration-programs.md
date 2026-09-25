@@ -9,7 +9,7 @@ runs entity actions, a call/return and a timer, transfers maps, executes map ini
 hooks, initializes the encounter and reaches first player control. Declining returns field input.
 Neither package identity nor an expected route/receipt admits a command.
 
-Exploration and return consume the same [logical input/settings owner](./development-and-verification.md#logical-input-and-accessibility-adr-0010-9a) as battle. Confirm talks/acknowledges/accepts and Cancel declines. Text reveal stays in the adapter; completing reveal does not release an Application wait. Reduced-flash suppresses the reached white overlay while completing its real token/kind through the existing presentation service, an intentional 9A deviation.
+Exploration and return consume the same [logical input/settings owner](./development-and-verification.md#logical-input-and-accessibility-adr-0010-9a) as battle. Confirm talks/acknowledges/accepts and Cancel declines. Text reveal stays in the adapter; W1 delivery reports its completion separately from player acknowledgement, including automatic completion of a trailing span. Reduced-flash suppresses the reached white overlay while completing its real token/kind through the existing presentation service, an intentional 9A deviation.
 
 `GameSession` remains the sole snapshot publisher. `ExplorationDispatcher`, `ProgramRunner`,
 `EntityActionRunner`, `SceneEntities`, `MapTransfer`, `BattleEntry` and `BattleOutcome` compute immutable results. The active payload is either
@@ -105,9 +105,57 @@ cover reveal, delivery and input rearm.
 
 **Unknown:** the selected natural post-JOIN helper entry, logical audio end, complete enabled VInt
 table and portrait counter chronology remain unobserved. The current program's entity setting is
-the admitted engine service state, not a sampled original service table. W1/W2 draw-before-input
-polls, active/unknown portrait consumers and preceding audio delivery retain their separate legacy
-boundaries. This implementation does not establish whole-host Option A, 9A or H4 conformance.
+the admitted engine service state, not a sampled original service table. W2, active/unknown portrait
+consumers and preceding audio delivery retain their separate legacy boundaries. The bounded W1
+consumer below does not establish whole-host Option A, 9A or H4 conformance.
+
+### W1 in a suppressed entity event
+
+The reader retains raw text for compatibility and an ordered token stream for execution: literal
+spans, `{N}`, `{LEADER}`, `{NAME;n}` and each `{W1}` occurrence. Names are substituted as literal
+data; their contents are never parsed again as controls. Any unsupported control, malformed brace
+or unavailable name excludes the entire text from this capability. W2 cannot become W1.
+
+`ShowText` admits this stream only with explicit source windows, a live `EntityEventContext`,
+field continuation without battle entry, an established Closed portrait, resolved event-actor
+sprite metadata explicitly declaring no portrait, and `EntitiesRunning=false` on the executing
+program. No map, text, actor, seed or expected endpoint identity participates in admission. Other
+consumers retain their legacy display/acknowledgement and cannot claim this W1 contract.
+
+`W1TextWait` keeps the displayed text ID, exclusive token endpoint, delivery state and whether
+the endpoint is a W1 or the final trailing span. Every optional `WaitForText` and the accepting
+`Acknowledge` executes the same ordered preamble: main-seed draw256, source copy-byte write, one
+logical suppressed-service wait, then input decision. Observations expose those four stages.
+`StoryState.RandomSeedCopy` is nullable until an admitted write and survives ordinary copies;
+it does not replace the separate `ThinkingSeed` image. Entity actions/motion/followers and portrait
+RNG receive no service in this admitted wait. The source wrapper's existing pre-facing service
+still happens before admission; ordinary return/control and other programs keep their own rules.
+
+`CompleteTextReveal` is an actual host-delivery receipt, consumes no tick/RNG, and cannot accept
+a W1. Wait and Ack reject incomplete delivery. Each accepted W1 creates a fresh token for the
+next span; the host retains already shown characters and reveals only up to that next endpoint.
+The full projection remains mounted for at least one host frame before the delivery receipt.
+A trailing span then completes automatically, with no invented manual Ack or logical tick.
+Generic elapsed `AdvanceSimulation` is rejected for all W1 delivery/input states. Confirm can
+reveal text without polling; accepting W1 does not play generic SFX67. Plain JOIN and choice
+semantics remain with their separate owners.
+
+**Confirmed (source):** the [reached W1 contract](../../docs/design/contracts/dialogue-system.md#reached-w1-consumer-binding)
+owns `textfunctions_1.asm:symbol_wait1/loc_659C/loc_65B4` and the distinct W2 tail at pinned
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. The bounded ordinary caller is
+`mapsetupsfunctions_1.asm:RunMapSetupEntityEvent` → `map03/mapsetups/s2_entityevents.asm:Map3_EntityEvent2`,
+F602 clear → raw text483. Its actor128 uses sprite195/WOMAN with `PORTRAIT_NONE` in
+`spritedialogproperties.asm`; the wrapper faces before suppressing entities, then closes/reactivates
+after return. `WaitForVInt` includes its enable/handshake. Closed portrait excludes blink/mouth
+service. Quake consumes RNG only for nonzero `QUAKE_AMPLITUDE`: the intro clears it and csc33 is
+the source setter; this reached Map3 path contains no setter. The later retained prepared-68
+`FFA80C=0` supports that ancestry, not a direct text483 service sample. No quake capability is added.
+
+**Confirmed (remake):** ordinary physical facing/Interact after the existing three-step opening
+setup reaches this caller and the required gates, then 0/1/3 optional Waits plus actual Ack give
+1/2/4 polls. [Verification and limits](./development-and-verification.md#w1-entity-event-input)
+record the actual settings comparison and preserved failures. **Unknown:** original opening
+W2/typewrite/entity timing, general portrait/service tables and whole-route 9A/H4 remain open.
 
 Movement uses the existing `OriginalMapTraversal` area, collision and stair rules. The extracted
 entity core uses 384 fixed units per tile, source signed-word arithmetic, acceleration/deceleration,
