@@ -50,6 +50,7 @@ internal static class ProgramRunner
                             continuation: ProgramContinuation.FieldInput)) };
                     }
                     current = MapEventDispatcher.Finish(current, observations);
+                    if (current.Story.Wait is not null) continue;
                     if (current.Story.Display is { } display &&
                         (display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
                         throw new BattleRuleException("field-display-not-visible", "story.display", true);
@@ -127,11 +128,15 @@ internal static class ProgramRunner
                         active = EditEntity(current, follow.Entity, entity => FollowerMotion.Install(entity, leaderSlot, follow.OffsetX, follow.OffsetY)); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
-                    case SetCameraTarget target: story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true); break;
+                    case SetCameraTarget target:
+                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
+                        story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true); break;
                     case SetCameraEntity target:
+                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:
+                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-scene-map", "program.map", true);
                         if (story.Warp is not null)
                             throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
                         active = new ActiveExploration(MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load));
@@ -152,9 +157,23 @@ internal static class ProgramRunner
                         break;
                     case ClosePortrait:
                         story = story.Copy(story.Cursor, portraitWindow: new ClosedPortraitWindow()); break;
+                    case WaitForView:
+                        if (current.Story.TextSettings is null)
+                            story = current.Story.Copy(cursor, new PresentationWait(token, new(PresentationCueKind.CameraWait)));
+                        else
+                        {
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = current.Story.Copy(cursor, new ViewWait(token, !current.Story.LogicalView!.Scrolling));
+                        }
+                        break;
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
+                        if (text.ExplicitWindows && text.WaitForAcknowledgement && current.Story.TextSettings is not null)
+                        {
+                            story = ExplorationTextRunner.Begin(definition.Exploration, current, text, token);
+                            break;
+                        }
                         if (text.ExplicitWindows && !program.EntitiesRunning &&
                             current.Story is { EntityEvent: { } context, PortraitWindow: ClosedPortraitWindow,
                                 Continuation: ProgramContinuation.FieldInput, EnteringBattle: null } &&
@@ -163,7 +182,7 @@ internal static class ProgramRunner
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
                             definition.Exploration.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
-                            tokens.All(part => part.Kind != ExplorationTextTokenKind.Unsupported &&
+                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2) &&
                                 (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
                         {
                             story = current.Story.Copy(cursor, TextSpan(tokens, token, current.Story.TextCursor, 0),
@@ -185,6 +204,13 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new DialogueWait(token, open.Text, open.Mode, open.Speaker, open.SpeakerFlags,
                             CloseOnAcknowledgement: false, InputFirstEntityService: program.EntitiesRunning)); break;
                     case CloseText:
+                        if (current.Story.LogicalText is { Open: true } logicalWindow)
+                        {
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = current.Story.Copy(cursor, new TextCloseWait(token), logicalText:
+                                logicalWindow with { AnimationCounter = 0, AnimationLength = 8, Moving = true });
+                            break;
+                        }
                         story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow(),
                             portraitWindow: story.PortraitWindow is UnknownPortraitWindow ? new UnknownPortraitWindow() : story.PortraitWindow); break;
                     case ChooseYesNo choice:
@@ -295,7 +321,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            FullFadeWait { LogicalDone: true } => SessionStopReason.PresentationWait,
+            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,

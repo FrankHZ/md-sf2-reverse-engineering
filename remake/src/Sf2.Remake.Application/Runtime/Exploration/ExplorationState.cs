@@ -11,6 +11,29 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
     bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
 // EndToken excludes the next W1, or equals the stream length for trailing delivery.
 public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
+public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End }
+public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0);
+public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<FieldTextUnit> Units,
+    int Index, int End, string Projection, FieldTextPhase Phase, int Remaining = 0,
+    bool FirstGlyph = true, bool Revealed = false) : ProgramWait(Token)
+{
+    public bool LogicalDone => Phase is FieldTextPhase.Input or FieldTextPhase.End;
+    public bool Wait2 => End < Units.Count && Units[End].Kind == ExplorationTextTokenKind.Wait2;
+}
+public sealed record ViewWait(WaitToken Token, bool Recheck, bool FinalService = false) : ProgramWait(Token);
+public sealed record TextCloseWait(WaitToken Token, bool EntityEventReturn = false) : ProgramWait(Token);
+public sealed record LogicalTextWindow(bool Open = false, byte X = 2, byte Y = 0, int Row = 0,
+    int AnimationLength = 0, int AnimationCounter = 0, bool Moving = false, int Indicator = 0, bool IndicatorVisible = false);
+public sealed record LogicalViewAxis(int Position, int? Destination = null, int Speed = 0)
+{
+    public bool Active => Destination is not null;
+}
+public sealed record LogicalView(ExplorationViewArea Area, int TargetSlot,
+    LogicalViewAxis AX, LogicalViewAxis AY, LogicalViewAxis BX, LogicalViewAxis BY,
+    int FollowCounter = 0, bool HideWindows = false)
+{
+    public bool Scrolling => AX.Active || AY.Active || BX.Active || BY.Active;
+}
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
@@ -47,7 +70,7 @@ public sealed class StoryState
         ExplorationBattleRoute? enteringBattle = null, FieldReturnAnchor? returnAnchor = null, TextWindow? textWindow = null, long simulationTick = 0,
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
-        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null)
+        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -56,6 +79,7 @@ public sealed class StoryState
         Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot; OutcomeReturn = outcomeReturn;
         PortraitWindow = portraitWindow ?? new UnknownPortraitWindow();
         Display = display; Warp = warp; RandomSeedCopy = randomSeedCopy;
+        TextSettings = textSettings; LogicalText = logicalText; LogicalView = logicalView;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -78,6 +102,9 @@ public sealed class StoryState
     public OrdinaryWarp? Warp { get; }
     // The source byte written by text polling; unknown until an admitted write.
     public byte? RandomSeedCopy { get; }
+    public ExplorationTextSettings? TextSettings { get; }
+    public LogicalTextWindow? LogicalText { get; }
+    public LogicalView? LogicalView { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
@@ -85,13 +112,13 @@ public sealed class StoryState
         EntityEventContext? entityEvent = null, bool clearEntityEvent = false, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false,
         FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null,
-        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null) =>
+        ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
             clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
-            display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy);
+            display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

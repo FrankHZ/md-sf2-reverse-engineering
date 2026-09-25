@@ -25,6 +25,13 @@ public sealed class ExplorationRaster
     public byte[] CopyBytes() => [.. _bytes];
 }
 public sealed record MapOverlayOffset(int X, int Y);
+public sealed record ExplorationViewArea(int MinX, int MinY, int MaxX, int MaxY,
+    int ForegroundX, int ForegroundY, int BackgroundX, int BackgroundY,
+    int ParallaxAX, int ParallaxAY, int ParallaxBX, int ParallaxBY,
+    int AutoscrollAX, int AutoscrollAY, int AutoscrollBX, int AutoscrollBY, int Layer);
+// Explicit logical settings inherited from the declared start, never host display preferences.
+public sealed record ExplorationTextSettings(byte MessageSpeed, byte MouthControl, ushort ViewSpeed);
+public sealed record ExplorationTextFont(IReadOnlyList<byte> AsciiToSymbol, IReadOnlyList<byte> Advances);
 public sealed record ExplorationMapMusic(int Field, int Battle);
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
     IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music);
@@ -76,13 +83,13 @@ public sealed class ExplorationMapDefinition
         IEnumerable<ExplorationEntityDefinition> entities, IEnumerable<ExplorationEvent> events,
         ProgramLocation? onLoad = null, ExplorationBattleRoute? battle = null, ProgramLocation? inputProgram = null, MapSetupRoute? setup = null,
         ExplorationPopulation? population = null, ExplorationLayoutEvents? layoutEvents = null, IEnumerable<MapOverlayOffset>? overlays = null,
-        IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null)
+        IEnumerable<WriteFlag>? entryFlags = null, PalettePair? basePalette = null, IEnumerable<ExplorationViewArea>? viewAreas = null)
     {
         Map = map; Layout = layout; Traversal = traversal; Entities = Array.AsReadOnly(entities.ToArray());
         Events = Array.AsReadOnly(events.ToArray()); OnLoad = onLoad; Battle = battle; InputProgram = inputProgram; Setup = setup; Population = population; LayoutEvents = layoutEvents;
         OverlayOffsets = Array.AsReadOnly((overlays ?? traversal.ActiveAreas.Select(_ => new MapOverlayOffset(0, 0))).ToArray());
         EntryFlags = Array.AsReadOnly((entryFlags ?? []).ToArray());
-        BasePalette = basePalette;
+        BasePalette = basePalette; ViewAreas = Array.AsReadOnly((viewAreas ?? []).ToArray());
     }
     public MapId Map { get; }
     public WorkingMapLayout Layout { get; }
@@ -98,6 +105,7 @@ public sealed class ExplorationMapDefinition
     public ExplorationBattleRoute? Battle { get; }
     public IReadOnlyList<WriteFlag> EntryFlags { get; }
     public PalettePair? BasePalette { get; }
+    public IReadOnlyList<ExplorationViewArea> ViewAreas { get; }
 }
 
 public sealed class ExplorationProvenance
@@ -113,15 +121,15 @@ public sealed class ExplorationProvenance
     public string ControlledBoundary { get; }
 }
 
-public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Unsupported }
+public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported }
 public sealed record ExplorationTextToken(ExplorationTextTokenKind Kind, string Value, int? Member = null);
 
 public sealed class ExplorationDefinition
 {
     internal ExplorationDefinition(IEnumerable<ExplorationMapDefinition> maps, IEnumerable<StoryProgram> programs, IEnumerable<KeyValuePair<int, string>>? texts = null, ExplorationProvenance? provenance = null, MapPartyFlagLayout? partyFlags = null, ExplorationVisuals? visuals = null, IEnumerable<string>? memberNames = null,
-        IEnumerable<KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>>? textTokens = null)
+        IEnumerable<KeyValuePair<int, IReadOnlyList<ExplorationTextToken>>>? textTokens = null, ExplorationTextFont? textFont = null)
     {
-        Provenance = provenance; PartyFlags = partyFlags; Visuals = visuals;
+        Provenance = provenance; PartyFlags = partyFlags; Visuals = visuals; TextFont = textFont;
         MemberNames = Array.AsReadOnly((memberNames ?? []).ToArray());
         Texts = new ReadOnlyDictionary<int, string>((texts ?? []).ToDictionary(pair => pair.Key, pair => pair.Value));
         TextTokens = new ReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>>((textTokens ?? [])
@@ -129,6 +137,7 @@ public sealed class ExplorationDefinition
         Maps = new ReadOnlyDictionary<MapId, ExplorationMapDefinition>(maps.ToDictionary(map => map.Map));
         Programs = new ReadOnlyDictionary<string, StoryProgram>(programs.ToDictionary(program => program.Id, StringComparer.Ordinal));
     }
+    public ExplorationTextFont? TextFont { get; }
     public IReadOnlyDictionary<int, string> Texts { get; }
     public IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>> TextTokens { get; }
     public IReadOnlyList<string> MemberNames { get; }
@@ -143,10 +152,10 @@ public sealed class ExplorationStartInput
 {
     public ExplorationStartInput(MapId map, EntityRef player, MapPosition position, byte facing, ushort speed,
         IEnumerable<int> flags, BattleStartInput party, ProgramLocation? entryProgram = null,
-        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null, ExplorationDisplay? display = null)
+        IEnumerable<ExplorationEntityStartPhase>? entityPhases = null, ExplorationDisplay? display = null, ExplorationTextSettings? textSettings = null)
     { Map = map; Player = player; Position = position; Facing = facing; Speed = speed;
         Flags = Array.AsReadOnly(flags.ToArray()); Party = party; EntryProgram = entryProgram;
-        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); Display = display; }
+        EntityPhases = Array.AsReadOnly((entityPhases ?? []).ToArray()); Display = display; TextSettings = textSettings; }
     public MapId Map { get; }
     public EntityRef Player { get; }
     public MapPosition Position { get; }
@@ -157,6 +166,7 @@ public sealed class ExplorationStartInput
     public ProgramLocation? EntryProgram { get; }
     public IReadOnlyList<ExplorationEntityStartPhase> EntityPhases { get; }
     public ExplorationDisplay? Display { get; }
+    public ExplorationTextSettings? TextSettings { get; }
 }
 public sealed record ExplorationEntityStartPhase(EntityRef Entity, int Slot, int ActionCursor, byte NextWaitTicks,
     bool WaitingForMotion, EntityMotionState Motion);

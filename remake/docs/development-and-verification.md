@@ -651,6 +651,98 @@ $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 For subsequent corrections, select the changed test methods rather than repeating a completed
 broader run. This engine-only boundary does not require adapter, Godot or original-emulator work.
 
+## Bound opening field-text observation
+
+Use the [execution profile](./exploration-programs.md#bound-field-text-work) and its
+[source/settings provenance](../../docs/research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
+`ExplorationTextWaitTests` exercises actual glyph/window/view reducers and session commands:
+fresh/reused windows, changed widths and names, scroll/wrap, repeated W1/W2 and tails, source
+speed/mouth/input versus reveal, optional/accepting polls with NPC RNG, indicator phases,
+first-service-started view scrolling, threshold/clamp/axis completion, signed counter,
+window completion pass, suppressed wrapper return and unsupported/stale contexts. The normal
+engine unit gate also covers plain input/JOIN and ordinary field/control/warp behavior.
+Run `uv run sf2 verify engine` and `uv run sf2 verify adapter` with the locked environment.
+A skipped private battle fact remains unavailable, not a passed private comparison.
+
+The producer change owns new consumed source metadata and helper encoding. Run the direct
+metadata preparation and compare all other sections with the retained accepted world; use its
+existing presentation without rebuilding assets. With private configuration loaded, run
+`uv run sf2 h2 variable-width-font --upstream $upstream --output-path local/<fresh>/font.json`.
+Run the committed default planner and its direct research-public source/document checks;
+this change does not invalidate original H3 or request the slow research/full aggregate.
+The admitted font comparison is metadata/source-ROM verification, not a new parser test.
+
+The existing `engine_input_accessibility_observation.gd` accepts `opening-private-instant`,
+`opening-private-adjusted`, `opening-private-adjusted-reveal` and
+`opening-private-instant-suppressed`. Select the usual private battle/party inputs, candidate
+world via `SF2_PRIVATE_EXPLORATION_CONTENT`, and a fresh controlled-start file carrying the
+explicit text settings. Keep the retained inputs read-only. Set a fresh ignored `$run`, then:
+
+```powershell
+$env:SF2_INPUT_CASE = 'opening-private-adjusted'
+$env:SF2_INPUT_RATE = '20'
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = [IO.Path]::GetFullPath("$run/actual.json")
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_input_accessibility_observation.gd -- `
+  --private-exploration-start $boundStart --input-settings "$run/settings.json" `
+  *> "$run/godot.log"
+```
+
+The probe performs ordinary Left/Left/Right opening input, one explicit nonaccepting Wait per
+occurrence followed by Ack, and stops at actual caller return. Natural adjustable never sends
+reveal-only Confirm; the reveal variant sends it while characters remain. Loop limits report
+failure rather than complete a state. The suppressed variant additionally faces/interacts with
+the nearby live actor through ordinary input. State/result/audio readback checks enabled NPC
+work, pure reveal, zero input-boundary debt, W2 validation67, W1 absence of67, and actual close.
+No screenshots, reseed, checkpoint injection or receipt-count endpoint is used.
+
+**Confirmed (remake native state/input/audio):** retained
+`local/issue534/opening-implementation/native-05/06/07` have exit0, empty failures/unavailable
+and no application/adapter/script errors. `read-native.py` compares17 common entry/input/return
+boundaries across instant, natural20-character/second and reveal-only40-character/second runs:
+map, flags, program cursor/wait, every exposed entity, RNG/copy, ticks, view/window/settings and
+control eligibility agree. Ready ticks are233/292/409; the ordinary close/Sleep10/zone return
+finishes at432 with F601 and main imageC0BF0000/copyD2. These are results of the supplied semantic
+inputs, not runtime admission constants. In the text511 nonaccepting poll, draw/copy produces
+C6290000/C6 and subsequent enabled NPC work leavesA2DE0000 while copy remainsC6.
+
+`native-09` retains event context through the suppressed close at549→558, with unchanged
+entities/seed and both window authorities closed before return. The existing unbound W1
+regression is retained at `local/issue534/w1-implementation/opening-regression-01`; its accepted
+no-service behavior still passes. Earlier compile/assertion/preparation failures remain in the
+slice handoff: no result was replaced or described as interrupted. The old raw-byte private font
+Git check failed before world output; the source-ROM reader corrected its provenance.
+
+For the host projection lifetime, use the same probe with `field-projection-adjusted` or
+`field-projection-instant`. It writes an entirely authored package (transparent graphics and
+generated PCM) to the fresh ignored destination; no private content is needed. After building
+the Debug adapter and loading the locked runtime environment, set a fresh `$run` and execute:
+
+```powershell
+$env:SF2_INPUT_CASE = 'field-projection-adjusted'
+$env:SF2_INPUT_RATE = '20'
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = [IO.Path]::GetFullPath("$run/actual.json")
+& $env:GODOT_BIN --headless --path remake/game --fixed-fps 60 `
+  --script res://probes/engine_input_accessibility_observation.gd -- `
+  --authored-package "$run/package.json" --input-settings "$run/settings.json" `
+  *> "$run/godot.log"
+```
+
+**Confirmed (authored host observation):** active member1 resolves `{LEADER}` to the literal
+name `Name{W2}`. Ack retains that projection, visible characters and speech-start count across
+`ViewWait`/`TickWait`; the next display starts its own reveal. Its Ack retains `Name{W2}!`
+through `TextCloseWait`, then actual closure clears the text. The host uses the existing open
+window identity for this lifetime. Both delivery settings pass in
+`local/issue534/opening-implementation/projection-after-01/02`; natural delivery starts actual
+authored speech audio, with no additional speech starts during either continuation. The
+pre-correction `projection-before-06` records the name reverting to member0 and reveal resetting.
+The natural run's ObjectDB cleanup warning remains recorded; it is not a clean-exit claim.
+
+**Unknown:** these runs do not establish OS focus-loss behavior, exact original hardware text
+or view timing, portrait/quake schedules, whole-route9A/H4 or pending#517 speech policy. Existing
+speech projection is preserved. Prior cleanup warnings/failures remain attempt-specific;
+original acquisition totals and original-run delta0 are unchanged.
+
 ## W1 entity-event input
 
 The [execution owner](./exploration-programs.md#w1-in-a-suppressed-entity-event) defines the
@@ -1086,6 +1178,8 @@ failure is the first-round scored turn order; the actual first actor remains
 ally 2 and the first STAY at `(9,16)` is consumed, but the next actor is ally 1
 versus original ally 0. This reaches only the existing diagnostic boundary,
 not the full battle or an H4 milestone pass.
+
+### Retained first-control opportunity alignment
 
 **Confirmed (retained first-control opportunity alignment):** the 260 paired field
 `before` boundaries in that completed run match map/tile and the checked logical input-idle

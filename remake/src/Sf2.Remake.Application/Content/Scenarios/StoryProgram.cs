@@ -26,6 +26,7 @@ public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0) : StoryInst
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
+public sealed record WaitForView : StoryInstruction;
 public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
 public sealed record SetEntitySprite(EntityRef Entity, int Sprite) : StoryInstruction;

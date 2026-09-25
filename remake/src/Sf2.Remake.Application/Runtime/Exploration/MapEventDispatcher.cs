@@ -78,6 +78,16 @@ internal static class MapEventDispatcher
         var world = current.Exploration!;
         if ((context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
             world = world.WithEntity(entity with { Motion = entity.Motion with { Facing = context.OriginalFacing } });
+        if (current.Story.LogicalText is { Open: true } window)
+        {
+            ExplorationTextRunner.ValidateContext(current);
+            // loc_476C4 closes while the event still owns the suppressed entity slot.
+            // Restore facing once above; the close continuation clears the context.
+            return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(null,
+                new TextCloseWait(new(current.ObservationSequence + 1), EntityEventReturn: true),
+                logicalText: window with { AnimationCounter = 0, AnimationLength = 8, Moving = true }),
+                observations, "interaction-closing", context.Entity.Value);
+        }
         return ProgramRunner.Commit(current, new ActiveExploration(world),
             current.Story.Copy(null, textWindow: new ClosedTextWindow(), clearEntityEvent: true), observations, "interaction-finished", context.Entity.Value);
     }

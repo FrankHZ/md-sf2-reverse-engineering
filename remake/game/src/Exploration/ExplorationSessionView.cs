@@ -39,6 +39,7 @@ public sealed partial class ExplorationSessionView : Control
     private Label _failureLabel = null!;
     private GameInput _input = null!;
     private TextWindow? _textWindow;
+    private bool _fieldTextProjection;
     private double _revealed;
     private WaitToken? _textDeliveryToken;
     private ulong _textDeliveryFrame;
@@ -130,7 +131,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
@@ -152,18 +153,24 @@ public sealed partial class ExplorationSessionView : Control
             if (presentation.Error is not null) { Present(); return; }
             if (beforePresentation != _session.Current.Story.Wait?.Token) { _tickTime = 0; return; }
         }
-        if (_session.Current.Story.Wait is W1TextWait { Revealed: false } delivery && TextRevealed)
+        WaitToken? deliveryToken = _session.Current.Story.Wait switch
+        {
+            W1TextWait { Revealed: false } delivery => delivery.Token,
+            FieldTextWait { Revealed: false } delivery => delivery.Token,
+            _ => null,
+        };
+        if (deliveryToken is { } deliveredToken && TextRevealed)
         {
             _tickTime = 0;
             // Leave the completed projection mounted for a frame before a tail can close it.
             // This is delivery latency only, never a simulation opportunity.
-            if (_textDeliveryToken != delivery.Token)
-            { _textDeliveryToken = delivery.Token; _textDeliveryFrame = Engine.GetProcessFrames(); }
+            if (_textDeliveryToken != deliveredToken)
+            { _textDeliveryToken = deliveredToken; _textDeliveryFrame = Engine.GetProcessFrames(); }
             else if (Engine.GetProcessFrames() > _textDeliveryFrame)
-                Send(new CompleteTextReveal(delivery.Token));
+                Send(new CompleteTextReveal(deliveredToken));
             return;
         }
-        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.Story.Wait is W1TextWait)
+        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
             // Idle field time is explicitly paused. Presentation time never becomes field debt.
             _tickTime = 0;
@@ -195,6 +202,7 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
+        current.Story.Wait is FieldTextWait text ? !text.LogicalDone :
         current.Story.Wait is FullFadeWait fade ? !fade.LogicalDone :
             current.StopReason == SessionStopReason.SimulationWait ||
             current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
@@ -216,6 +224,11 @@ public sealed partial class ExplorationSessionView : Control
         {
             if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
             command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+        }
+        else if (current.Story.Wait is FieldTextWait fieldText)
+        {
+            if (action == GameAction.Confirm && !RevealText() && current.CanWaitForText)
+                command = new Acknowledge(fieldText.Token);
         }
         else if (current.Story.Wait is W1TextWait w1)
         {
@@ -281,7 +294,8 @@ public sealed partial class ExplorationSessionView : Control
         else _tickTime = 0;
         PublishResult("submit");
         _audio?.Observe(_result);
-        if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && current.Story.Wait is not W1TextWait))
+        if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && (current.Story.Wait is not (W1TextWait or FieldTextWait) ||
+                _result.Observations.Any(row => row.Kind == "text-w2-accepted"))))
             _audio?.PlayEffect(67);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
             row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
@@ -323,7 +337,12 @@ public sealed partial class ExplorationSessionView : Control
             _ => current.Story.TextWindow is OpenTextWindow open ? _session.Definition.Exploration!.Texts.GetValueOrDefault(open.Text) ?? "" : "",
         };
         var names = _session.Definition.Exploration!.MemberNames;
-        if (current.Story.Wait is W1TextWait span)
+        // The resolved field projection belongs to this open window through program waits and close animation.
+        _fieldTextProjection = current.Story.Wait is FieldTextWait ||
+            (_fieldTextProjection && current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow));
+        if (current.Story.Wait is FieldTextWait fieldSpan) _dialogue.Text = fieldSpan.Projection;
+        else if (_fieldTextProjection) _dialogue.Text = previousText;
+        else if (current.Story.Wait is W1TextWait span)
             _dialogue.Text = string.Concat(_session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
@@ -344,11 +363,12 @@ public sealed partial class ExplorationSessionView : Control
         _help.Text = current.Story.Wait switch
         {
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
-            DialogueWait or W1TextWait { AtInput: true } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
-            W1TextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
-            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait => "",
+            DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
+            W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
+            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
+        if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
         if (current.CanWaitAtInput || current.CanWaitForText)
             _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
         if (PresentationFailure is { } failure)
@@ -359,7 +379,7 @@ public sealed partial class ExplorationSessionView : Control
         // Restart reveal only for changed text or a newly opened window, not that wait handoff.
         if (_dialogue.Text != previousText || !ReferenceEquals(current.Story.TextWindow, _textWindow))
         {
-            bool continuingSpan = current.Story.Wait is W1TextWait && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
+            bool continuingSpan = current.Story.Wait is (W1TextWait or FieldTextWait) && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
                 _dialogue.Text.StartsWith(previousText, StringComparison.Ordinal);
             _revealed = continuingSpan ? previouslyVisible : 0;
             _dialogue.VisibleCharacters = _input.Settings.TextMode == "instant" || PresentationFailure is not null ? -1 : (int)_revealed;
@@ -401,9 +421,11 @@ public sealed partial class ExplorationSessionView : Control
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
-            w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
+            fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
+            textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
             entitiesRunning = current?.Story.Cursor is { } location ? _session!.Definition.Exploration!.Programs[location.Program].EntitiesRunning : (bool?)null,
+            textWindow = current?.Story.TextWindow.GetType().Name,
             portraitWindow = current?.Story.PortraitWindow.GetType().Name,
             portraitId = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Portrait,
             portraitFlags = (current?.Story.PortraitWindow as OpenPortraitWindow)?.Flags,

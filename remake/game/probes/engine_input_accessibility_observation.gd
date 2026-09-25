@@ -19,7 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case
+var guarded_wait_case := "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
@@ -168,7 +168,7 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
-    if "w1-private" in input_case:
+    if "field-projection" in input_case or "w1-private" in input_case or "opening-private" in input_case:
         settings.textMode = "instant" if "instant" in input_case else "adjustable"
         settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
@@ -190,7 +190,13 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
-    if "w1-private" in input_case:
+    if "field-projection" in input_case:
+        await run_field_projection()
+        return
+    if "opening-private" in input_case:
+        await run_opening_text()
+        return
+    if "w1-private" in input_case or "opening-private" in input_case:
         await run_w1_interaction()
         return
     if "warp-transition" in input_case:
@@ -374,7 +380,7 @@ func admit_field_paths() -> bool:
     # Same fresh/local boundary as the scene and H4 probes, applied to all three destinations
     # before touching any of them. Only this entry owns generated input rewrites.
     var args := OS.get_cmdline_user_args()
-    var retained_start := "w1-private" in input_case
+    var retained_start := "w1-private" in input_case or "opening-private" in input_case
     var entry := "--private-exploration-start" if private_route and ("warp-transition" in input_case or retained_start) else "--authored-package"
     if args.size() != 4 or args.count(entry) != 1 or args.count("--input-settings") != 1:
         return field_io_failure("required unique startup arguments")
@@ -633,6 +639,128 @@ func run_field_wait() -> void:
     await tap_wait()
     finish_public()
 
+func projection_digest(bytes: PackedByteArray) -> String:
+    var digest := HashingContext.new()
+    digest.start(HashingContext.HASH_SHA256)
+    digest.update(bytes)
+    return digest.finish().hex_encode()
+
+func projection_raster(width: int, height: int) -> Dictionary:
+    var bytes := PackedByteArray()
+    bytes.resize(width * height * 4)
+    return {"width":width,"height":height,"format":"rgba8","data":Marshalls.raw_to_base64(bytes),
+        "sha256":projection_digest(bytes)}
+
+func projection_speech_count(s: Dictionary) -> int:
+    return s.audio.receipts.filter(func(r): return r.Command == 65 and r.Operation == "started").size()
+
+func projection_retained(s: Dictionary, delivered: Dictionary) -> bool:
+    return s.dialogue == delivered.dialogue and s.visibleCharacters == delivered.visibleCharacters and \
+        projection_speech_count(s) == projection_speech_count(delivered)
+
+func run_field_projection() -> void:
+    if not admit_field_paths(): return
+    # Entirely authored input: no original graphics/audio or private comparison input.
+    var package: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    package.world.memberNames = ["Wrong", "Name{W2}", "Tail"]
+    package.world.partyFlags = {"memberCount":3,"joinedStart":10,"activeStart":20,"capacity":1}
+    package.start.flags = [11,21]
+    package.start.textSettings = {"messageSpeed":2,"mouthControl":0,"viewSpeed":0}
+    package.start.program = {"program":"projection","instruction":0}
+    var mapping: Array = []
+    mapping.resize(256)
+    mapping.fill(1)
+    var advances: Array = []
+    advances.resize(80)
+    advances.fill(6)
+    package.world.textFont = {"asciiToSymbol":mapping,"advances":advances}
+    package.world.texts[0].text = "{LEADER}{W1}"
+    package.world.texts[1].text = "{LEADER}!{W1}"
+    var maps: Array = []
+    for map in package.world.maps:
+        var layout: Array = []
+        for row in range(31):
+            var cells: Array = []
+            cells.resize(31)
+            cells.fill(0)
+            layout.append(cells)
+        map.layout = layout
+        map.areas = [{"minX":0,"minY":0,"maxX":30,"maxY":30,"view":{"foregroundX":0,"foregroundY":0,
+            "backgroundX":0,"backgroundY":0,"parallaxAX":256,"parallaxAY":256,"parallaxBX":256,"parallaxBY":256,
+            "autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":0}}]
+        for entity in map.entities: entity.sprite = 30
+        maps.append({"map":map.id,"atlas":projection_raster(128,320),"scale":1,"blocks":[[0,0,0,0,0,0,0,0,0]],
+            "music":[{"field":1,"battle":1}]})
+    var pcm := PackedByteArray()
+    pcm.resize(1600)
+    for sample in range(800): pcm.encode_s16(sample * 2, 200 if sample % 20 < 10 else -200)
+    package.world.presentation = {"maps":maps,"portraits":[],"sprites":[{"sprite":30,"portrait":null,"speech":65,
+        "directions":[projection_raster(48,24),projection_raster(48,24),projection_raster(48,24)]}],
+        "audio":[{"cue":"authored-speech","command":65,"timerB":0,"sampleRate":8000,"channels":1,"sampleFrames":800,
+            "pcm16":Marshalls.raw_to_base64(pcm),"sha256":projection_digest(pcm),
+            "loopBegin":null,"loopEnd":null}]}
+    var music: Dictionary = package.world.presentation.audio[0].duplicate(true)
+    music.cue = "authored-music"
+    music.command = 1
+    package.world.presentation.audio.append(music)
+    package.world.programs.append({"id":"projection","entitiesRunning":false,"instructions":[
+        {"op":"sprite","entity":"traveler","sprite":30},
+        {"op":"text-cursor","text":100},
+        {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+        {"op":"wait-view"},{"op":"wait-ticks","ticks":6},
+        {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+        {"op":"close-text"},{"op":"end"}]})
+    if not write_field_file("package", JSON.stringify(integer_numbers(package))): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960,640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("projection-initial")
+    if initial.failure != null:
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    for occurrence in range(2):
+        for frame in range(1000):
+            if state().canWaitForText or state().failure != null: break
+            await process_frame
+        var delivered := read_sample("projection-ready-" + str(occurrence))
+        if not delivered.canWaitForText:
+            check(false, "Authored text must reach actual delivery and logical input")
+            finish_public()
+            return
+        check(delivered.dialogue == ("Name{W2}" if occurrence == 0 else "Name{W2}!"),
+            "Active leader and source-looking name characters are projected literally")
+        if "instant" not in input_case:
+            check(projection_speech_count(delivered) > 0, "Natural authored reveal starts actual speech audio")
+        physical(KEY_ENTER, true)
+        physical(KEY_ENTER, false)
+        var transition := read_sample("projection-transition-" + str(occurrence))
+        check(transition.wait == ("ViewWait" if occurrence == 0 else "TextCloseWait"), "Ack enters the owning pending transition")
+        var preserved := projection_retained(transition, delivered)
+        var arrived := false
+        for frame in range(120):
+            await process_frame
+            var s := read_sample("projection-continuation-" + str(occurrence) + "-" + str(frame))
+            if (occurrence == 0 and s.textId == 101) or (occurrence == 1 and s.canWaitAtInput):
+                arrived = true
+                break
+            preserved = preserved and projection_retained(s, delivered)
+        check(arrived, "Transition finishes by its actual new text or field-input state")
+        check(preserved, "Same open window preserves text, visible characters and speech starts throughout continuation")
+        var next := read_sample("projection-transition-finished-" + str(occurrence))
+        if occurrence == 0:
+            check(next.dialogue == "Name{W2}!" and next.textWindow == "OpenTextWindow", "New display replaces the retained projection")
+            if "instant" not in input_case: check(next.visibleCharacters < next.totalCharacters, "New display begins its own reveal")
+        else:
+            check(next.textWindow == "ClosedTextWindow" and next.dialogue == "", "Actual close releases the retained projection")
+    finish_public()
+
 func run_text_wait() -> void:
     if not admit_field_paths(): return
     # Read the small producer output plus existing private asset subset; never rewrite it.
@@ -809,6 +937,108 @@ func w1_settle_legacy() -> bool:
 
 func w1_poll_signature(s: Dictionary) -> Array:
     return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities]
+
+# The route ends at ordinary opening caller return, selected from actual state.
+# The loop bounds only report a timeout; they never stand in for completion.
+func opening_semantic(s: Dictionary) -> Array:
+    return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView]
+
+func opening_settle() -> bool:
+    var seen: Dictionary = {}
+    for frame in range(5000):
+        var s := state()
+        if s.failure != null: return false
+        if s.get("canWaitAtInput", false): return true
+        if s.wait == "FieldTextWait":
+            var token := str(s.token)
+            if not seen.has(token):
+                seen[token] = true
+                read_sample("opening-text-entry-" + str(s.textId))
+            if "reveal" in input_case and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
+                var before := opening_semantic(s)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                check(opening_semantic(state()) == before, "Reveal-only input does not service text or entities")
+                read_sample("opening-reveal-" + str(s.textId))
+            if s.get("canWaitForText", false):
+                var ready := read_sample("opening-ready-" + str(s.textId))
+                var before := opening_semantic(ready)
+                for idle_frame in range(5): await process_frame
+                check(opening_semantic(state()) == before and state().tickDebt == 0, "Input boundary has no wall-clock debt")
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                var polled := read_sample("opening-poll-" + str(s.textId))
+                check(polled.simulationTick == ready.simulationTick + 1, "One explicit Wait owns one service opportunity")
+                check((polled.entities != ready.entities) if ready.entitiesRunning else (polled.entities == ready.entities),
+                    "A poll follows the current enabled or suppressed entity service")
+                var audio_sequence: int = polled.audio.sequence
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                var accepted := read_sample("opening-accepted-" + str(s.textId))
+                var validation: bool = accepted.audio.receipts.any(func(r): return r.Sequence > audio_sequence and r.Command == 67 and r.Operation == "started")
+                check(validation == bool(ready.fieldText.Wait2), "Only accepted W2 requests validation67")
+        await process_frame
+    return false
+
+func run_opening_text() -> void:
+    if not admit_field_paths(): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960, 640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("opening-initial")
+    if initial.failure != null or not initial.get("canWaitAtInput", false):
+        check(false, "Bound start must reach ordinary control")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    for direction in [KEY_LEFT, KEY_LEFT, KEY_RIGHT]:
+        await key(direction)
+        if not await opening_settle():
+            read_sample("opening-stopped")
+            check(false, "Ordinary opening failed to settle")
+            finish_public()
+            return
+        read_sample("opening-field-return")
+    var returned := read_sample("opening-returned")
+    check(601.0 in returned.flags and returned.textWindow == "ClosedTextWindow" and returned.portraitWindow == "ClosedPortraitWindow",
+        "Opening closes windows and completes the ordinary zone caller once")
+    check(not returned.logicalText.Open and returned.canWaitAtInput, "Logical close joins actual field control")
+    if "suppressed" in input_case:
+        var adjacent := false
+        for step in range(12):
+            var s := state()
+            var player: Dictionary = s.entities.filter(func(e): return e.id == "entity-0")[0]
+            var actor: Dictionary = s.entities.filter(func(e): return e.id == "entity-128")[0]
+            var dx := int(actor.x / 384) - int(player.x / 384)
+            var dy := int(actor.y / 384) - int(player.y / 384)
+            if absi(dx) + absi(dy) > 3: break
+            await key(KEY_RIGHT if dx > 0 else (KEY_LEFT if dx < 0 else (KEY_DOWN if dy > 0 else KEY_UP)))
+            if not await opening_settle(): break
+            if absi(dx) + absi(dy) == 1:
+                adjacent = true
+                break
+        check(adjacent, "Ordinary input faces the nearby actor")
+        if adjacent:
+            await key(KEY_ENTER)
+            var saw_suppressed := false
+            for frame in range(120):
+                if state().wait == "FieldTextWait":
+                    var entry := read_sample("suppressed-entry")
+                    saw_suppressed = entry.entitiesRunning == false and entry.textId == 483 and entry.entityEvent != null
+                    break
+                await process_frame
+            check(saw_suppressed, "Ordinary interaction admits the suppressed field-text consumer")
+            check(await opening_settle(), "Suppressed interaction returns ordinary control")
+            var closed := read_sample("suppressed-returned")
+            check(not closed.logicalText.Open and closed.textWindow == "ClosedTextWindow" and closed.entityEvent == null,
+                "Suppressed wrapper completes logical/projected close before returning control")
+    finish_public()
 
 func run_w1_interaction() -> void:
     if not admit_field_paths(): return

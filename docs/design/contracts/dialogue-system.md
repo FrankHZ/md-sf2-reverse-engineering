@@ -4,7 +4,7 @@
   state writes, source-labelled modifier bits, close/clear call order, and the bounded
   entity-to-map-sprite dialogue-property seam below; and the separately evidenced W1 polling
   rule and reached text 483 binding described below.
-- **Inferred original behavior:** none promoted here.
+- **Inferred original behavior:** the explicitly bounded opening ancestry described below.
 - **Unknown original behavior:** reachability outside the named observations, complete enabled-service
   and portrait state at the reached wait, rendered timing, and broader completion/repeat/persistence.
 - Evidence dates: 2026-07-31 (command matrix); 2026-09-24 (existing reached-wait evidence binding).
@@ -133,22 +133,26 @@ an optional nonaccepting Wait are distinct events. Delivery latency supplies no 
 tick debt and cannot erase mandatory work. These rules specify no wall-clock rate or historical
 poll quota; they preserve shared RNG and all selected gameplay assertions.
 
-**Confirmed (current implementation gap):** `src/sf2tool/remake_exploration_content.py` retains
-source tags in text strings, but general `show-text` does not bind individual W1/W2 occurrences.
-`ExplorationContentReader` reads its acknowledgement flag, and `ProgramRunner` creates a generic
-`DialogueWait`; `ExplorationDispatcher.Acknowledge` releases it without the W1 preamble.
-JOIN already emits `waitForAcknowledgement: false` for its displayed text and a later
-`wait-text-input`. Preserve that separation and the bounded
-[plain input-first consumer](../../../remake/docs/exploration-programs.md#portrait-lifecycle-and-plain-current-input-wait).
-Neither generic `ShowText` nor that plain consumer is an implementation of W1.
+**Confirmed (bounded remake implementation):** ordered W1 spans in the suppressed entity-event
+consumer and the explicit [bound field-text profile](../../../remake/docs/exploration-programs.md#bound-field-text-work)
+now own their accepting draw/copy/service/input sequence. The latter also executes regular glyph,
+window, view-helper and W2 work, independently of actual display delivery. Generic unbound
+`ShowText` still uses `DialogueWait`; it does not establish original timing. JOIN emits
+`waitForAcknowledgement: false` and later `wait-text-input`; its input-first helper remains
+separate. The completed finite-JOIN diagnostic recorded5,313 service results and572 minimal
+LCG-equivalent advances during audio delivery, with per-entity attribution and a universal
+cross-clock schedule still **Unknown**; preserve the
+[diagnostic owner](../../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
+The earlier5,000-frame timeout is a completed failure, not an interrupted run to restart.
 
-**Unknown / implementation admission boundary:** a complete reached W1 service schedule still
-needs the ordered token occurrence, mandatory text work before/after it, portrait window/counters,
-active VInt branch and enabled function slots, relevant entity action/timer state, and ordering
-with other active services. A speaker hint, portrait identity or cleared typewriting byte cannot
-substitute for these gates. An active or unknown portrait cannot be silently omitted. The retained
-accepting read and static preamble permit this binding contract, not a whole-consumer scheduler,
-a production kernel with no admitted caller, or a complete natural Wait/9A/H4 conformance claim.
+**Inferred (opening binding):** explicit speed2/mouth0/view override0 admission uses named source
+writers and later agreeing saved bytes. Public R1 chronology starts at CheckSram; preceding
+StartWitchScreen/reset ancestry is inferred. See the
+[binding evidence](../../research/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding).
+**Unknown:** complete original portrait/service timing outside that profile, hardware presentation
+and whole-route9A/H4 remain open. A speaker hint, portrait identity or cleared typewriting byte
+cannot admit an active or unknown portrait. Remake tests/native observations prove the consumer,
+not additional original runtime observations.
 
 Later behavior acceptance must use an admitted source-driven consumer and check different seeds
 and actor phases, enabled/disabled services, zero/one/multiple additional Waits followed by the

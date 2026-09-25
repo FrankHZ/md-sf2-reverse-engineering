@@ -88,10 +88,10 @@ public sealed class SessionSnapshot
         Story.EntityEvent is null && Story.TextWindow is ClosedTextWindow &&
         !field.World.PlayerEntity.Busy && !field.World.PlayerEntity.WaitingForSprite;
     public bool CanWaitForText => Active is ActiveExploration field && StopReason == SessionStopReason.PresentationWait &&
-        Story.Cursor is not null && Story.Wait is (DialogueWait { InputFirstEntityService: not null } or W1TextWait { AtInput: true, Revealed: true }) &&
+        Story.Cursor is not null && Story.Wait is (DialogueWait { InputFirstEntityService: not null } or W1TextWait { AtInput: true, Revealed: true } or FieldTextWait { Phase: FieldTextPhase.Input, Revealed: true }) &&
         Story.PortraitWindow is ClosedPortraitWindow && Story.TextWindow is OpenTextWindow &&
         Story.EnteringBattle is null && Story.Continuation == ProgramContinuation.FieldInput &&
-        (Story.Wait is W1TextWait || !field.World.PlayerEntity.Busy && !field.World.AllEntities.Any(entity => entity.WaitingForSprite));
+        (Story.Wait is W1TextWait or FieldTextWait || !field.World.PlayerEntity.Busy && !field.World.AllEntities.Any(entity => entity.WaitingForSprite));
     internal SessionSnapshot WithStory(StoryState story) => new(SessionId, Revision, ObservationSequence, Active, story, StopReason);
 }
 
