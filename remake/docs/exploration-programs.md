@@ -296,6 +296,9 @@ publishes actual tile/layout metadata. Raster/audio extraction is independent of
 After the admitted entity/view/window services, the registered portrait decrements blink;
 at3 it selects alternate eyes, at0 normal eyes and main RNG120+30. Typewriting independently
 gates mouth decrement; at5 it selects alternate mouth, at0 normal mouth and main RNG5+10.
+DisplayText preserves incoming typewriting throughout fresh dialogue clear/open work and sets it
+only after CreateDialogueWindow returns, before token processing. A reused window returns without
+creation work. Empty/W-only text sets then clears it without exposing a typing service opportunity.
 When typewriting is clear, mouth<=5 resets/draws immediately, otherwise it holds. Blink draws
 precede mouth draws. W tokens clear typewriting and acceptance restores it for subsequent glyphs;
 mouth-control shortening remains separate. NPC and portrait draws after a poll never replace

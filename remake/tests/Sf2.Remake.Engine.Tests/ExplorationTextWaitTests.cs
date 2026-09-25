@@ -638,6 +638,114 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(0, result.Snapshot.Story.SimulationTick);
     }
 
+    [Fact]
+    public void FreshDialogueEnablesTypewritingAfterFinalCreationServiceBeforeFirstGlyphService()
+    {
+        var session = StartFieldText("A{W1}B{W1}", second: "C{W1}", interaction: true, startEvent: false,
+            configure: document => AddVisuals(document, 7));
+        Accept(session, new Interact(new("ferryman")));
+        for (int i = 0; i < 6; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.Equal(FieldTextPhase.ClearFirst, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.False(session.Current.Story.Typewriting);
+            var result = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            var work = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+            Assert.Equal(18 - i, work.Blink);
+            Assert.Equal(6, work.Mouth);
+            Assert.False(work.MouthOpen);
+            Assert.Equal(seed, session.Current.Exploration!.Party.MainSeed);
+            Assert.DoesNotContain(result.Observations, row => row.Kind.StartsWith("rng-portrait-"));
+        }
+        Assert.True(session.Current.Story.Typewriting);
+        Assert.Equal(FieldTextPhase.GlyphCursor, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var firstGlyph = Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!;
+        Assert.Equal(5, firstGlyph.Mouth);
+        Assert.True(firstGlyph.MouthOpen);
+        DrainTextWork(session);
+        Assert.False(session.Current.Story.Typewriting);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        Accept(session, new Acknowledge(token));
+        Assert.True(session.Current.Story.Typewriting); // W continuation restores typing for B.
+        Assert.Equal(FieldTextPhase.GlyphCursor, Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Phase);
+        DrainTextWork(session);
+        token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        long beforeReuse = session.Current.Story.SimulationTick;
+        Accept(session, new Acknowledge(token));
+        Assert.Equal(beforeReuse + 1, session.Current.Story.SimulationTick); // Accepting poll only.
+        Assert.True(session.Current.Story.Typewriting);
+        var reused = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.Equal(101, reused.Text);
+        Assert.Equal(FieldTextPhase.GlyphCursor, reused.Phase); // Already-open window returns immediately.
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("{W1}")]
+    [InlineData("{W2}")]
+    public void EmptyOrWaitOnlyDialogueDoesNotExposeTypingToPortraitService(string text)
+    {
+        var session = StartFieldText(text.Length == 0 ? "{W1}" : text, interaction: true, startEvent: false,
+            configure: document => AddVisuals(document, 7));
+        Accept(session, new Interact(new("ferryman")));
+        for (int i = 0; i < 6; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var current = session.Current;
+        // The authored reader requires a nonempty text string; exercise an empty engine token stream directly.
+        if (text.Length == 0)
+        {
+            var wait = Assert.IsType<FieldTextWait>(current.Story.Wait);
+            current = current.WithStory(current.Story.Copy(current.Story.Cursor,
+                wait with { Units = [], End = 0, Projection = "" }));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.False(current.Story.Typewriting);
+            var result = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(current.Story.Wait!.Token));
+            Assert.Null(result.Failure);
+            current = result.Snapshot;
+        }
+        Assert.False(current.Story.Typewriting);
+        Assert.Equal(text.Length == 0 ? FieldTextPhase.End : FieldTextPhase.Input,
+            Assert.IsType<FieldTextWait>(current.Story.Wait).Phase);
+        var work = Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!;
+        Assert.Equal(9, work.Blink);
+        Assert.Equal(6, work.Mouth);
+        Assert.False(work.MouthOpen);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DialogueCreationPreservesIncomingTypingAndKeepsPortraitService(bool incoming)
+    {
+        var session = StartFieldText("A{W1}");
+        var entry = session.Current;
+        var current = entry.WithStory(entry.Story.Copy(entry.Story.Cursor, textCursor: 100, typewriting: incoming,
+            entityServices: false, entityEvent: new(new("ferryman"), 1, 0),
+            portraitWindow: new OpenPortraitWindow(7, 0,
+                new(Blink: 4, Mouth: 5, MouthOpen: true, Registered: true, Movement: 4, Moving: false))));
+        var story = ExplorationTextRunner.Begin(session.Definition.Exploration!, current,
+            new(TextDisplayMode.Single, new("ferryman")), new(999));
+        Assert.Equal(incoming, story.Typewriting);
+        var result = ExplorationDispatcher.Submit(session.Definition, current.WithStory(story), new AdvanceSimulation(story.Wait!.Token));
+        Assert.Null(result.Failure);
+        Assert.Equal(incoming, result.Snapshot.Story.Typewriting);
+        var work = Assert.IsType<OpenPortraitWindow>(result.Snapshot.Story.PortraitWindow).Work!;
+        Assert.Equal(3, work.Blink);
+        Assert.True(work.EyesClosed);
+        Assert.Equal(incoming, work.MouthOpen);
+        if (incoming) Assert.Equal(4, work.Mouth);
+        else
+        {
+            Assert.InRange(work.Mouth, (short)10, (short)14);
+            Assert.Single(result.Observations, row => row.Kind == "rng-portrait-mouth");
+        }
+    }
+
     private static void DrainTextWork(GameSession session)
     {
         for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)

@@ -171,6 +171,10 @@ counters are blink20/mouth6. `portraitfunctions.asm:VInt_PerformPortraitBlinking
 blink3/0 and draws main RNG120+30 at0. Typewriting advances mouth, selecting alternate tiles at5
 and resetting normal tiles with RNG5+10 at0; without typewriting, mouth<=5 resets immediately.
 Blink precedes mouth. Typewriting and mouth-control input shortening are independent gates.
+`textfunctions_1.asm:DisplayText` sets typewriting only after `CreateDialogueWindow` returns.
+Fresh-window clear/move waits MUST preserve the incoming value, while blink and the existing
+non-typing mouth<=5 reset remain active. A reused window returns immediately; empty/W-only text
+can set then clear typewriting without an intervening service.
 The [research binding](../../research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
 owns exact symbols, source order and the reached example.
 

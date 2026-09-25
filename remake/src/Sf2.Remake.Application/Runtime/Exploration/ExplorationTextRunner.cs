@@ -80,7 +80,7 @@ internal static class ExplorationTextRunner
         var wait = Span(token, current.Story.TextCursor, units.AsReadOnly(), 0,
             current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst);
         var story = current.Story.Copy(current.Story.Cursor, wait, textCursor: checked(current.Story.TextCursor + 1), partyLists: partyLists,
-            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags), typewriting: true);
+            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags));
         return Normalize(story);
     }
 
@@ -120,8 +120,11 @@ internal static class ExplorationTextRunner
             window = window with { X = unchecked((byte)(window.X + unit.Advance)) };
             wait = wait with { Index = wait.Index + 1, Phase = FieldTextPhase.GlyphCursor };
         }
+        // DisplayText sets CURRENTLY_TYPEWRITING only after CreateDialogueWindow returns.
+        // Its creation waits preserve the incoming byte while portrait service remains active.
         story = story.Copy(story.Cursor, wait, logicalText: window,
-            typewriting: wait.Phase is not (FieldTextPhase.Input or FieldTextPhase.End));
+            typewriting: wait.Phase is FieldTextPhase.ClearFirst or FieldTextPhase.ClearSecond or FieldTextPhase.Opening
+                ? story.Typewriting : wait.Phase is not (FieldTextPhase.Input or FieldTextPhase.End));
         return FinishDelivery(story);
     }
 

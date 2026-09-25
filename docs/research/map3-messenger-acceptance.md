@@ -3169,6 +3169,12 @@ it before the reverse movement and deletion. LoadPortrait queues DMA without an 
 `portraitfunctions.asm:VInt_PerformPortraitBlinking` decrements blink, closes eyes at3 and restores
 them at0 with main RNG120+30. With CURRENTLY_TYPEWRITING set it decrements mouth, opens it at5
 and resets at0 using RNG5+10; with it clear, mouth<=5 resets immediately. Blink draws precede mouth.
+`code/common/scripting/text/textfunctions_1.asm:DisplayText` calls CreateDialogueWindow before
+setting CURRENTLY_TYPEWRITING. `textfunctions_2.asm:CreateDialogueWindow` leaves that byte unchanged
+through its clear/movement waits. Thus a fresh portrait's mouth6 holds during creation with an
+incoming zero byte, while blink still runs. Existing mouth<=5 non-typing reset remains applicable;
+this is not a portrait-service suppression. Reused windows return immediately. Empty/W-only text
+can set and clear the byte before any further service opportunity.
 `UpdatePortrait` applies the stored four-byte source/alternate tile coordinates and mirroring;
 `LoadPortrait` reads those mappings before the existing palette/raster. ROM portrait pointers begin
 at1C8004. `vint.asm:SetBaseVIntFunctions` and `trap9_contextualfunctions.asm` place the added service
