@@ -186,7 +186,9 @@ internal static class ExplorationDispatcher
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
-                            explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) && !awaitedEntity.Busy)
+                            explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
+                            (entityWait.Completion == EntityWaitCompletion.ScriptIdle
+                                ? awaitedEntity.IsScriptIdle : !awaitedEntity.Busy))
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                         current = ProgramRunner.Commit(current, active, story, observations, playerWait ? "gameplay-wait" : "simulation-tick");

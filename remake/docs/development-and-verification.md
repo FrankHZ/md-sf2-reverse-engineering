@@ -381,6 +381,84 @@ unchanged. Idle-to-walk timer carryover and caller-specific script timer initial
 are separate excluded gaps. Committed planner output, exact CI and the frozen Draft
 PR belong to the slice handoff; this result does not grant integration or H4 acceptance.
 
+### Source idle and caller verification
+
+The [source/caller owner](../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
+and [content contract](./exploration-programs.md#definitions-and-execution) define the current
+installation policies, terminal idle and script-completion boundary. Engine behaviors in
+`ExplorationSessionTests` named `SourceIdle*` and `SourceScriptInstallation*` exercise timer7
+preservation before service, jump-to-idle timer1, leading-wait/RNG causality, slots3/7 and aliases,
+distinct collision policy, resetting first actions, residual physical travel, sprite/Unsupported/
+authored-Stop noncompletion, actual Content-driven execution and control/follower/NPC separation.
+The existing `ControlledSetup*`, `ControlledHandoff*`, `ControlledPreview*` and affected warp
+service checks retain the accepted ordinary-control boundary.
+
+Fresh retained output root is `local/issue534/idle-callers/`. The initial selected run completed
+42 PASS /2 FAIL: `SourceIdleCompletionReleasesTheScriptWhilePreservingPhysicalTravelForItsNextCaller`
+incorrectly expected animation1 for ten fixed units of movement, and
+`SourceIdleContentCompletesARealScriptAndLeavesTheNpcAvailable` used `flag` instead of the
+existing `set-flag` JSON opcode. Corrected expectations pass both failed methods; a further
+repeated-idle/control assertion passes its owning method. `behavior-01`, `behavior-correction`
+and `idle-repeat` retain their TRX/logs. Adapter Release and actual Debug builds pass with
+zero warnings/errors. Completed failures are retained rather than relabeled as interrupted.
+
+The changed compiler directly prepares one nonvisual world from the registered canonical
+import, pinned upstream and `remake/reference/inputs/map3-programs.json`, without ROM/visual
+arguments. It produces6 maps/158 programs/118 source entries. The first comparison against
+retained `local/issue534/inputs/private-world-audio-accepted.json` fails because that old
+input also predates accepted producer changes. The explicitly authorized additional baseline
+uses exact compiler source from accepted `8095ce6b634038a094be4fa663e084b431345b4a` and the
+same inputs, without checkout, source rebuild or asset generation.
+
+`three-way.py` / `three-way-comparison.json` prove candidate versus accepted baseline equality
+after removing only96 motion installation properties and137 exact jump/idle tails. Walking
+streams and their cursor indices are unchanged. Compared with the older retained world,
+75 programs also carry already accepted changes from PR556 (`f8238978`: explicit portrait/text
+window lifecycle) and PR564 (`2f24f28b`: finite black-fade bindings and entities-running context).
+Maps, texts, memberNames, growth and partyFlags compare equal. The additional accepted source
+entries are portraitwindow.asm and trap5_textbox.asm. The7 old source entries used by the reused
+presentation are retained in the final provenance union; common entries compare exactly.
+The accepted presentation block compares equal, with no atlas/audio export or world-tree copy.
+`world-with-accepted-presentation.json` is the sole candidate native input. The initial comparison
+FAIL is retained, as is the first three-way readback's assumption that all new source entries
+were already listed by the old input. The corrected readback reuses the same generated JSONs.
+
+After loading `local/private-inputs.ps1`, forcing `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and
+using existing shared tools/worktree-local writable state, the narrow commands are:
+
+```powershell
+uv run --no-sync python -X utf8 local/issue534/idle-callers/run.py test behavior-new 'FullyQualifiedName~SourceIdle|FullyQualifiedName~SourceScriptInstallation|FullyQualifiedName~ControlledSetup|FullyQualifiedName~ControlledHandoff|FullyQualifiedName~ControlledPreview'
+uv run --no-sync sf2 verify adapter
+uv run --no-sync python -X utf8 local/issue534/idle-callers/run.py build debug-build-new
+uv run --no-sync python -X utf8 local/issue534/idle-callers/read-native.py
+```
+
+The direct producer command is `uv run --no-sync python -X utf8 -m sf2tool.remake_exploration_content`
+with `--canonical`, `--upstream`, the selection above and a fresh ignored `--output`, omitting
+`--rom-path`/`--presentation-root`. The local three-way helper retains exact accepted compiler
+source and private selections; it adds only the existing presentation block and its provenance.
+Do not overwrite prior receipts when reproducing: select fresh output names in the local helper.
+
+One authorized actual `engine_h4_observation.gd` run uses the first3 unchanged Left/Left/Right
+steps of the retained ordinary prefix, real dialogue confirmations, existing project/assets and
+the accepted R1 start with PR564 display binding. No instance remained before authorized startup.
+`native-01/actual.jsonl`, `godot.log` and `process.json` retain exit0,169 result signals,205 events,
+six actual inputs and no session/Godot failures; the probe exits normally. The readback requires
+one session, flag601 false after step2 and true after step3, player(4,4), usable control/flagsAEF,
+and entity128/slot3 at(5,4), walking cursor0/wait30/timer1 with Y velocity-32/travel0 retained.
+Tick142/seed75DA are reported observations, not original goldens. A local readback initially used
+the JSON numeric cursor directly as a Python list index; integer conversion corrected that helper
+and the same receipt passes. No native rerun was needed.
+
+This probe has no Wait-key mapping. It stops after step3 and does not establish the later random
+draw schedule, JOIN, school/castle/battle or H4. Exact leading-wait/draw causality belongs to the
+small engine behaviors. No screenshot, original capture, original frame/service conversion,
+source/H1 rebuild or asset export occurs. High-bit wait fidelity and unimplemented native/waitIdle
+producers remain explicit boundaries. All earlier failures/nonruns/cleanup Unknowns and original
+totals138 /15583.68017570005s /429625 frames /16332 batches remain unchanged. Committed planner,
+producer identity and exact CI belong to the frozen slice handoff; this is not a claim that the
+earlier first-warp NPC phase gap has been fixed.
+
 ## Explicit field-input gameplay Wait
 
 `WaitAtInput` is an engine command for one deliberate opportunity at a settled field-input

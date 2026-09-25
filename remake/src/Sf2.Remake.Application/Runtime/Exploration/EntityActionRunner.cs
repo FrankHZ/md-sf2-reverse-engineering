@@ -117,6 +117,12 @@ internal static class EntityActionRunner
                         else entity = entity with { WaitingForSprite = false };
                         break;
                     case JumpEntityAction jump: next = jump.Instruction; motion = motion with { WaitTimer = 0 }; break;
+                    case IdleEntityAction:
+                        // eas_Idle's wait1/branch is quiescent ownership, with one existing
+                        // slot service. A direct installation has not reset the incoming timer.
+                        motion = motion with { WaitTimer = (sbyte)motion.WaitTimer < 1
+                            ? unchecked((byte)(motion.WaitTimer + 1)) : (byte)1 };
+                        next--; yield = true; break;
                     case UnsupportedEntityAction unsupported:
                         throw new BattleRuleException("entity-action", unsupported.Source + ":" + unsupported.Opcode, true);
                     case StopEntityActions:
