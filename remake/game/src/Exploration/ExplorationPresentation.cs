@@ -14,7 +14,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<MapId, Image> _atlases = [];
     private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
-    private readonly Dictionary<(int Portrait, bool Mirror), ImageTexture> _portraits = [];
+    private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
@@ -271,15 +271,35 @@ internal sealed class ExplorationPresentation : IDisposable
                 { ["id"] = portraitId is { } drawn ? drawn : -1, ["flags"] = flags });
             if (portraitId is { } portrait)
             {
-                var key = (portrait, (flags & 0x40) != 0);
+                var work = (story.PortraitWindow as OpenPortraitWindow)?.Work;
+                var visualPortrait = _visuals.Portraits[portrait];
+                var tiles = Enumerable.Range(0, 64).ToArray();
+                foreach (var change in work?.EyesClosed == true ? visualPortrait.Eyes! : [])
+                    tiles[change.Y * 8 + change.X] = change.AlternateY * 8 + change.AlternateX;
+                foreach (var change in work?.MouthOpen == true ? visualPortrait.Mouth! : [])
+                    tiles[change.Y * 8 + change.X] = change.AlternateY * 8 + change.AlternateX;
+                var key = (portrait, (flags & 0x40) != 0, work?.EyesClosed == true, work?.MouthOpen == true);
                 if (!_portraits.TryGetValue(key, out var texture))
                 {
-                    using var raster = Image(_visuals.Portraits[portrait].Raster);
-                    using var crop = raster.GetRegion(new(0, 0, 48, 56));
+                    using var raster = Image(visualPortrait.Raster);
+                    using var composed = raster.GetRegion(new(0, 0, 64, 64));
+                    for (int tile = 0; tile < tiles.Length; tile++)
+                        if (tiles[tile] != tile)
+                            composed.BlitRect(raster, new(tiles[tile] % 8 * 8, tiles[tile] / 8 * 8, 8, 8), new(tile % 8 * 8, tile / 8 * 8));
+                    using var crop = composed.GetRegion(new(0, 0, 48, 56));
                     if (key.Item2) crop.FlipX();
                     _portraits[key] = texture = ImageTexture.CreateFromImage(crop);
                 }
-                var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 92 : 20, viewport.Y - 150, 72, 84);
+                var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 92 : 20,
+                    work is null ? viewport.Y - 150 : 52 + work.Y * 12, 72, 84);
+                _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
+                {
+                    ["id"] = portrait, ["flags"] = flags, ["eyesClosed"] = key.Item3, ["mouthOpen"] = key.Item4,
+                    ["tiles"] = new Godot.Collections.Array<int>(tiles), ["mirrored"] = key.Item2,
+                    ["x"] = destination.Position.X, ["y"] = destination.Position.Y,
+                    ["width"] = destination.Size.X, ["height"] = destination.Size.Y,
+                    ["simulationTick"] = story.SimulationTick,
+                });
                 _owner.DrawRect(destination.Grow(3), new Color(0.06f, 0.07f, 0.12f));
                 _owner.DrawTextureRect(texture, destination, false);
             }

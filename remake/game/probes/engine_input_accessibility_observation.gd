@@ -19,7 +19,7 @@ var field_created: Dictionary = {}
 var field_main_started := false
 var field_output: FileAccess
 var field_unavailable: Array[String] = []
-var guarded_wait_case := "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
+var guarded_wait_case := "portrait-event" in input_case or "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
 
 func check(ok: bool, message: String) -> void:
@@ -168,7 +168,7 @@ func write_settings(path: String) -> bool:
     if private_route:
         settings.textMode = "instant"
         settings.reducedFlash = false
-    if "field-projection" in input_case or "w1-private" in input_case or "opening-private" in input_case:
+    if "portrait-event" in input_case or "field-projection" in input_case or "w1-private" in input_case or "opening-private" in input_case:
         settings.textMode = "instant" if "instant" in input_case else "adjustable"
         settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
@@ -190,6 +190,9 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
+    if "portrait-event" in input_case:
+        await run_portrait_event()
+        return
     if "field-projection" in input_case:
         await run_field_projection()
         return
@@ -380,7 +383,7 @@ func admit_field_paths() -> bool:
     # Same fresh/local boundary as the scene and H4 probes, applied to all three destinations
     # before touching any of them. Only this entry owns generated input rewrites.
     var args := OS.get_cmdline_user_args()
-    var retained_start := "w1-private" in input_case or "opening-private" in input_case
+    var retained_start := "portrait-event" in input_case or "w1-private" in input_case or "opening-private" in input_case
     var entry := "--private-exploration-start" if private_route and ("warp-transition" in input_case or retained_start) else "--authored-package"
     if args.size() != 4 or args.count(entry) != 1 or args.count("--input-settings") != 1:
         return field_io_failure("required unique startup arguments")
@@ -941,14 +944,24 @@ func w1_poll_signature(s: Dictionary) -> Array:
 # The route ends at ordinary opening caller return, selected from actual state.
 # The loop bounds only report a timeout; they never stand in for completion.
 func opening_semantic(s: Dictionary) -> Array:
-    return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView]
+    return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView,
+        s.portraitWork, s.typewriting, s.entitiesRunning]
 
 func opening_settle() -> bool:
     var seen: Dictionary = {}
+    var phases: Dictionary = {}
     for frame in range(5000):
         var s := state()
         if s.failure != null: return false
         if s.get("canWaitAtInput", false): return true
+        if "portrait-event" in input_case and s.entityEvent != null:
+            var phase := str(s.wait) + ":" + str(s.textId) + ":" + str(s.fieldText.Phase if s.fieldText != null else "")
+            if s.portraitWork != null:
+                phase += ":" + str([s.portraitWork.Registered, s.portraitWork.Moving, s.portraitWork.Closing,
+                    s.portraitWork.Movement, s.portraitWork.EyesClosed, s.portraitWork.MouthOpen])
+            if not phases.has(phase):
+                phases[phase] = true
+                read_sample("portrait-phase-" + phase)
         if s.wait == "FieldTextWait":
             var token := str(s.token)
             if not seen.has(token):
@@ -979,6 +992,70 @@ func opening_settle() -> bool:
                 check(validation == bool(ready.fieldText.Wait2), "Only accepted W2 requests validation67")
         await process_frame
     return false
+
+func run_portrait_event() -> void:
+    if not admit_field_paths(): return
+    if not write_settings(field_paths.settings): return
+    root.size = Vector2i(960,640)
+    Engine.max_fps = 60
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    await process_frame
+    var initial := read_sample("portrait-route-initial")
+    if initial.failure != null or not initial.canWaitAtInput:
+        check(false, "Retained bound start has actual field control")
+        finish_public()
+        return
+    view.connect("SessionResultObserved", record_warp_result)
+    var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))
+    # Existing accepted spatial edges only, never its historical frame/acknowledgement counts.
+    var navigation: Array = fixture.expectedObservation.records[0].logicalInputTrace
+    for edge in navigation:
+        var before := state()
+        var player: Dictionary = before.entities.filter(func(e): return e.id == "entity-0")[0]
+        if before.map != "map-" + str(int(edge.map)) or player.x != edge.x * 384 or player.y != edge.y * 384:
+            read_sample("portrait-route-position-discrepancy")
+            check(false, "Live position differs from accepted spatial edge; no entry normalization")
+            finish_public()
+            return
+        var interaction: bool = edge.waypoint == "map3-sarah-classroom" and edge.input == "C"
+        if edge.input == "C" and not interaction:
+            check(false, "Only the mandatory classroom interaction is selected")
+            finish_public()
+            return
+        var actor_before: Dictionary = {}
+        if interaction:
+            actor_before = before.entities.filter(func(e): return e.id == "entity-1")[0]
+            check(absi(int(actor_before.x - player.x)) + absi(int(actor_before.y - player.y)) == 384,
+                "Live Sarah occupancy is adjacent before the ordinary interaction")
+            read_sample("portrait-event-entry")
+        await key({"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_ENTER}[edge.input])
+        if not await opening_settle():
+            read_sample("portrait-route-stopped")
+            check(false, "Bound route or portrait event stopped before actual caller return")
+            finish_public()
+            return
+        if interaction:
+            await process_frame
+            var returned := read_sample("portrait-event-return")
+            var actor: Dictionary = returned.entities.filter(func(e): return e.id == "entity-1")[0]
+            check(returned.canWaitAtInput and returned.entityEvent == null and returned.textWindow == "ClosedTextWindow" and
+                returned.portraitWindow == "ClosedPortraitWindow" and not returned.logicalText.Open,
+                "Actual wrapper return closes both windows and releases control")
+            check(256.0 in returned.flags and actor.x == 41 * 384 and actor.y == 7 * 384 and actor.facing == actor_before.facing,
+                "Source movement, flag and facing restoration finish before control returns")
+            check(returned.entitiesRunning == true, "Trap6 activation survives the script and close tail")
+            var ready_ids: Array = samples.filter(func(r): return r.label.begins_with("opening-ready-")).map(func(r): return int(r.state.textId))
+            check(ready_ids == [510,511,483,512,481], "Only reached W controls receive one Wait and Ack; trailing480 auto-completes")
+            check(returned.audio.error == null, "Actual window/audio playback has no adapter error")
+            finish_public()
+            return
+        read_sample("portrait-navigation-" + str(edge.waypoint) + "-" + str(int(edge.x)) + "-" + str(int(edge.y)))
+    check(false, "Spatial route ended before the classroom event")
+    finish_public()
 
 func run_opening_text() -> void:
     if not admit_field_paths(): return

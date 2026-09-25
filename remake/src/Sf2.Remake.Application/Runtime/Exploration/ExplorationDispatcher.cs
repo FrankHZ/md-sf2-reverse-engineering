@@ -172,6 +172,13 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is PortraitMovementWait portraitWait)
+                        {
+                            current = Service(definition, current, observations, "portrait-window-service");
+                            current = ExplorationPortraitRunner.Advance(current, observations);
+                            if (current.Story.Wait?.Token != portraitWait.Token) return ProgramRunner.Run(definition, current, observations);
+                            continue;
+                        }
                         if (current.Story.Wait is FieldTextWait or ViewWait or TextCloseWait)
                         {
                             var token = current.Story.Wait.Token;
@@ -197,9 +204,9 @@ internal static class ExplorationDispatcher
                                 return ProgramRunner.Result(current, observations);
                             continue;
                         }
-                        bool entityUpdates = current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
+                        bool entityUpdates = current.Story.EntityServices ?? (current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
-                                definition.Exploration!.Programs[location.Program].EntitiesRunning;
+                                definition.Exploration!.Programs[location.Program].EntitiesRunning);
                         var pendingMove = (current.Story.Wait as EntityWait)?.PendingMove;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
@@ -237,7 +244,8 @@ internal static class ExplorationDispatcher
                             continue;
                         }
                         if (story.Wait is EntityEventFacingWait)
-                        { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor); }
+                        { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor,
+                            entityServices: story.TextSettings is not null ? false : null); }
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is EntityWait entityWait && active is ActiveExploration explored &&
@@ -247,6 +255,7 @@ internal static class ExplorationDispatcher
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                         current = ProgramRunner.Commit(current, active, story, observations, playerWait ? "gameplay-wait" : "simulation-tick");
+                        current = ExplorationPortraitRunner.Service(current, observations);
                         // Existing field input does not interrupt background ticks. Completing a
                         // wait or resuming a program still yields at its next control boundary.
                         if (story.Wait is null && !existingFieldInput)
@@ -312,7 +321,7 @@ internal static class ExplorationDispatcher
             (entry.Entity is null || entry.Entity == command.Entity) && (entry.RequiredFlag is null ||
                 current.Story.Flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue));
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
-        current = MapEventDispatcher.Interact(current, entry, command.Entity, observations);
+        current = MapEventDispatcher.Interact(definition, current, entry, command.Entity, observations);
         return ProgramRunner.Run(definition, current, observations);
     }
 
@@ -320,15 +329,15 @@ internal static class ExplorationDispatcher
     internal static SessionSnapshot Service(ScenarioDefinition definition, SessionSnapshot current,
         List<SessionObservation> observations, string kind)
     {
-        bool enabled = current.Story.Wait is not TextCloseWait { EntityEventReturn: true } &&
-            (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning);
+        bool enabled = current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { EntityEventReturn: true } &&
+            (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
         var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
         var world = tick is null ? current.Exploration! : MapEventDispatcher.Roof(tick.World);
         var story = ExplorationTextRunner.AfterEntities(world, current.Story);
         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
         current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations, kind);
         if (tick?.Failure is { } failure) throw new MapTransfer.FadeServiceFailure(current, failure);
-        return current;
+        return ExplorationPortraitRunner.Service(current, observations);
     }
 
     private static SessionSnapshot PollFieldText(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations, bool accepting)

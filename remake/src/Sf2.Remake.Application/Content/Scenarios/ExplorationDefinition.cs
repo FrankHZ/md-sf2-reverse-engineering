@@ -36,7 +36,9 @@ public sealed record ExplorationMapMusic(int Field, int Battle);
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
     IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech);
-public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster);
+public sealed record PortraitTileChange(byte X, byte Y, byte AlternateX, byte AlternateY);
+public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster,
+    IReadOnlyList<PortraitTileChange>? Eyes = null, IReadOnlyList<PortraitTileChange>? Mouth = null);
 public sealed class ExplorationAudio
 {
     private readonly byte[] _pcm;

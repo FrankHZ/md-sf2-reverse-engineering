@@ -204,11 +204,12 @@ selected private programs described below.
 ## Bound field text work
 
 The explicit `start.textSettings` profile (`messageSpeed`, `mouthControl`, `viewSpeed`) enables
-source text work for field programs. It requires a Closed portrait, a resolved speaker whose
-sprite explicitly has no portrait, regular font metadata, and a supported logical view. Names,
+source text work for field programs. It requires a known Closed portrait with an explicitly
+portrait-less speaker, or the registered entity-event portrait described below, regular font
+metadata, and a supported logical view. Names,
 text/actor IDs, seeds, routes and receipt counts never select this capability. A start without
 this profile retains its existing plain/W1/legacy consumer. An unsupported bound context stops;
-it cannot silently use display latency as gameplay work. Battle continuation, portrait work,
+it cannot silently use display latency as gameplay work. Battle continuation, zone-event portraits,
 scene camera changes, cursor targets, scrolling overrides, autoscroll and non-unity parallax
 are outside this profile. Quake and pulsating fade variants have no admitted implementation.
 
@@ -247,8 +248,8 @@ Plain JOIN remains input-first with no accepting-poll preamble.
 
 The shared field service executes the existing entity reducer before logical view/scroll/window
 work and increments one simulation opportunity. Suppressed entity events still service view and
-window work. Their wrapper restores facing first, retains context and suppression throughout
-`TextCloseWait`, then closes logical/projected windows together before clearing context and
+window work. Their wrapper restores facing first, retains context and the live entity-service flag
+through portrait and `TextCloseWait`, then closes logical/projected windows together before clearing context and
 returning control. The no-window and unbound legacy paths keep their own lifecycle.
 
 `wait-view` represents the source helper before nextText/nextSingleText. It checks active axes,
@@ -276,6 +277,47 @@ separates source facts, later saved bytes and inferred opening ancestry. The
 [verification owner](./development-and-verification.md#bound-opening-field-text-observation)
 records actual settings comparisons and unresolved boundaries. Pending #517 speech policy remains;
 this consumer retains existing actual speech projection and grants no policy waiver.
+
+### Bound entity-event portrait
+
+The bound wrapper opens the live actor's portrait before its enabled facing service, then
+suppresses entity service before the handler. Known absent portraits retain the closed path;
+missing metadata, Unknown state and an unregistered open portrait stop admission. A supported
+existing open portrait retains its identity, flags and counters. No actor, text, flag or route
+identity selects this capability.
+
+`OpenPortraitWindow.Work` owns movement, registration, blink and mouth state. A fresh open starts
+blink20/mouth6, moves from source Y=-10 to1 in four steps and observes the final moving-bit clear
+before registering. Close removes the service first, performs the reverse move and deletes the
+window. Both movement requests deliver existing SFX65. Packed right/mirror flags and ROM eye/mouth
+tile mappings select the existing64×64 raster; the host crops/mirrors the composed face and
+publishes actual tile/layout metadata. Raster/audio extraction is independent of this metadata.
+
+After the admitted entity/view/window services, the registered portrait decrements blink;
+at3 it selects alternate eyes, at0 normal eyes and main RNG120+30. Typewriting independently
+gates mouth decrement; at5 it selects alternate mouth, at0 normal mouth and main RNG5+10.
+When typewriting is clear, mouth<=5 resets/draws immediately, otherwise it holds. Blink draws
+precede mouth draws. W tokens clear typewriting and acceptance restores it for subsequent glyphs;
+mouth-control shortening remains separate. NPC and portrait draws after a poll never replace
+that poll's copied byte. Delivery frames supply no portrait opportunities or RNG.
+
+`call.activateEntities` expresses Trap6's live activation, which survives its return.
+`end-map-script` distinguishes the source script end from native RTS: an open dialogue window
+requires the existing view helper before returning; then view override clears. A closed window
+returns without that wait. The wrapper restores facing, closes portrait then dialogue and
+finally returns control with entities enabled. A no-script suppressed event remains suppressed
+during its close; a Trap6 caller retains activation through its close.
+
+**Confirmed (static source):** the pinned revision above, `code/common/menus/portraitwindow.asm`,
+`portraitfunctions.asm:VInt_PerformPortraitBlinking/UpdatePortrait/LoadPortrait`,
+`code/common/tech/interrupts/trap6_mapscript.asm`, `trap9_contextualfunctions.asm`, `vint.asm`,
+and `code/common/scripting/map/mapscriptengine_2.asm:loc_47234` support this bounded service order.
+The wrapper binds `mapsetupsfunctions_1.asm:loc_4765E/loc_476A8/loc_476C4`.
+Trap9 appends the portrait after the installed base services; no global interrupt scheduler is
+introduced. The [research binding](../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
+and [native observation](development-and-verification.md#bound-portrait-entity-event-observation)
+retain provenance and the actual caller-return boundary. Later zone/camera/JOIN/battle consumers
+and original hardware/DMA timing remain outside this admission.
 
 ## Original Map 3 opening
 
@@ -386,7 +428,8 @@ the active state has become a battle with no exploration world. Camera and gestu
 current exploration world; without it they report `AdapterError` and retain their wait instead of
 using stale map state. Camera smoothing, portrait crop,
 text layout/full-line display, nod pixel transformation and cue duration are bounded presentation
-choices. Original VRAM/DMA timing, portrait blink/mouth/typewriter RNG, speech SFX, door/warp music
+choices. Outside the admitted field-text/entity-event profile, portrait blink/mouth/typewriter
+RNG remains unbound. Original VRAM/DMA timing, speech SFX, door/warp music
 and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknown or Unsupported**.
 They are not silently reported as performed original services. An unbound explicit presentation cue
 reports `AdapterError` and retains its wait.

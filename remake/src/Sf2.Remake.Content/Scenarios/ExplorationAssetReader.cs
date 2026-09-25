@@ -51,11 +51,15 @@ internal static class ExplorationAssetReader
         var portraits = new Dictionary<int, ExplorationPortraitVisual>();
         foreach (var portrait in Array(row, "portraits"))
         {
-            Object(portrait, "portraitVisual", "portrait", "raster");
+            ObjectOptional(portrait, "portraitVisual", "eyes", ["portrait", "raster",
+                .. portrait.TryGetProperty("mouth", out _) ? new[] { "mouth" } : System.Array.Empty<string>()]);
             int id = Number(portrait, "portrait", 0, 55);
             var raster = Raster(portrait.GetProperty("raster"));
             Require(raster.Width == 64 && raster.Height == 64, "portrait-shape", "presentation.portraits");
-            Require(portraits.TryAdd(id, new(id, raster)), "duplicate-portrait", "presentation.portraits");
+            var eyes = PortraitChanges(portrait, "eyes");
+            var mouth = PortraitChanges(portrait, "mouth");
+            Require((eyes is null) == (mouth is null), "portrait-animation-binding", "presentation.portraits");
+            Require(portraits.TryAdd(id, new(id, raster, eyes, mouth)), "duplicate-portrait", "presentation.portraits");
         }
         Require(sprites.Values.All(sprite => sprite.Portrait is null || portraits.ContainsKey(sprite.Portrait.Value)), "missing-portrait", "presentation.sprites");
         var audio = new Dictionary<string, ExplorationAudio>(StringComparer.Ordinal);
@@ -85,6 +89,18 @@ internal static class ExplorationAssetReader
             }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio));
+    }
+
+    private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)
+    {
+        if (!portrait.TryGetProperty(key, out _)) return null;
+        return System.Array.AsReadOnly(Array(portrait, key).Select(row =>
+        {
+            Require(row.ValueKind == JsonValueKind.Array && row.GetArrayLength() == 4, "portrait-tile-change", key);
+            var values = row.EnumerateArray().Select(value => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int n) && n is >= 0 and <= 7 ? n : -1).ToArray();
+            Require(values.All(value => value >= 0), "portrait-tile-coordinate", key);
+            return new PortraitTileChange((byte)values[0], (byte)values[1], (byte)values[2], (byte)values[3]);
+        }).ToArray());
     }
 
     internal static ExplorationRaster Raster(JsonElement row)
