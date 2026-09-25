@@ -422,8 +422,15 @@ internal static class ExplorationContentReader
                     (byte)Number(row, "facing", 0, 3), System.Array.AsReadOnly(entities));
             case "visibility": Object(row, opcode, "op", "entity", "visible"); return new SetEntityVisibility(new(Id(row, "entity")), Boolean(row, "visible"));
             case "motion":
-                Object(row, opcode, "op", "entity", "actions", "wait");
-                return new StartEntityMotion(new(Id(row, "entity")), Actions(row), Boolean(row, "wait"));
+                ObjectOptional(row, opcode, "installation", "op", "entity", "actions", "wait");
+                var installation = EntityScriptInstallation.Preserve;
+                if (row.TryGetProperty("installation", out _))
+                {
+                    Require(Enum.GetNames<EntityScriptInstallation>().Contains(Text(row, "installation")),
+                        "entity-script-installation", "program.installation");
+                    installation = Enum.Parse<EntityScriptInstallation>(Text(row, "installation"));
+                }
+                return new StartEntityMotion(new(Id(row, "entity")), Actions(row), Boolean(row, "wait"), installation);
             case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255));
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
@@ -480,6 +487,7 @@ internal static class ExplorationContentReader
                 case "sprite-size": Object(action, opcode, "op", "size"); actions.Add(new SetGlobalSpriteSize((ushort)Number(action, "size", 0, 65535))); break;
                 case "refresh-sprite": Object(action, opcode, "op", "source"); actions.Add(new RefreshEntitySprite(Text(action, "source"))); break;
                 case "jump": Object(action, opcode, "op", "instruction"); actions.Add(new JumpEntityAction(Number(action, "instruction", 0, 4096))); break;
+                case "idle": Object(action, opcode, "op"); actions.Add(new IdleEntityAction()); break;
                 case "native-call": Object(action, opcode, "op", "symbol", "source"); actions.Add(new UnsupportedEntityAction(Text(action, "symbol"), Text(action, "source"))); break;
                 default: Require(false, "entity-action", "program.actions.op", true); break;
             }

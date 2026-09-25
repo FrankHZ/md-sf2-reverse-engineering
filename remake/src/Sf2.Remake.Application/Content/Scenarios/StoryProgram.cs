@@ -39,7 +39,9 @@ public sealed record SetCameraEntity(EntityRef? Entity) : StoryInstruction;
 public sealed record LoadSceneMap(MapId Map, MapPosition Camera) : StoryInstruction;
 public sealed record LoadSceneEntities(ExplorationPopulation Population, MapPosition PlayerPosition, byte Facing,
     IReadOnlyList<ExplorationEntityDefinition> Entities) : StoryInstruction;
-public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait) : StoryInstruction;
+public enum EntityScriptInstallation { Preserve, SlotTimer, SlotTimerClearCollision }
+public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait,
+    EntityScriptInstallation Installation = EntityScriptInstallation.Preserve) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
@@ -59,6 +61,7 @@ public sealed record RandomWalkEntity(MapPosition Origin, int Radius) : EntityAc
 public sealed record FaceEntity(byte Facing) : EntityAction;
 public sealed record WaitEntityTicks(byte Ticks) : EntityAction;
 public sealed record StopEntityActions : EntityAction;
+public sealed record IdleEntityAction : EntityAction;
 public sealed record SetEntitySpeed(ushort X, ushort Y) : EntityAction;
 public sealed record SetEntityAcceleration(byte X, byte Y) : EntityAction;
 public sealed record ChangeEntityFlags(bool FlagsB, byte Mask, byte Value) : EntityAction;

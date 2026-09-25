@@ -224,9 +224,16 @@ internal static class ProgramRunner
                     case StartEntityMotion motion:
                         active = EditEntity(current, motion.Entity, entity =>
                         {
-                            return entity with { Actions = motion.Actions, ActionCursor = 0, WaitingForMotion = false, Follower = null };
+                            var configured = motion.Installation == EntityScriptInstallation.Preserve ? entity.Motion :
+                                entity.Motion with { WaitTimer = checked((byte)entity.Slot),
+                                    FlagsA = motion.Installation == EntityScriptInstallation.SlotTimerClearCollision
+                                        ? (byte)(entity.Motion.FlagsA & 0x9F) : entity.Motion.FlagsA };
+                            return entity with { Motion = configured, Actions = motion.Actions, ActionCursor = 0,
+                                WaitingForMotion = false, Follower = null };
                         });
-                        if (motion.Wait) story = current.Story.Copy(cursor, new EntityWait(token, motion.Entity));
+                        if (motion.Wait) story = current.Story.Copy(cursor, new EntityWait(token, motion.Entity,
+                            Completion: motion.Installation == EntityScriptInstallation.Preserve
+                                ? EntityWaitCompletion.NotBusy : EntityWaitCompletion.ScriptIdle));
                         break;
                     case WaitForEntity wait:
                         if (Entity(current, wait.Entity).Busy) story = current.Story.Copy(cursor, new EntityWait(token, wait.Entity));

@@ -222,17 +222,70 @@ historical table above loses only player flagsA. NPC Y/velocity/timer difference
 player/slot3 animation, idle timers and the partial initial binding remain unresolved.
 No new original observation or entity service is added.
 
-**Confirmed separate gaps, excluded from this correction:** direct `MakeEntityIdle`
+**Confirmed separate gaps excluded from the control-handoff correction:** direct `MakeEntityIdle`
 and `SetWalkingActscript` preserve the incoming timer, while `esc34_jump` clears it
 before entering idle and the `eas_Walking` prelude begins with wait30. Map3 Zone6's
 `cs_5145C` ends with init then `MakeEntityWalk`, so idle timer carryover can affect
 that leading wait. `mapscriptengine_1.asm` callers `csc2D`/`csc14`/`csc15` initialize
 the timer from the resolved physical slot; `csc2D` also clears flagsA bits5/6. The
-current common StartEntityMotion path does not distinguish these caller semantics.
-Simply adding a literal idle loop would keep the current engine entity busy and
-block field input. These need a separate coherent idle/caller change. **Unknown:**
+common StartEntityMotion path at that boundary did not distinguish these caller semantics.
+Simply adding a literal idle loop would keep an active action owner busy and
+block field input. The bounded idle/caller correction below addresses this consumer.
+**Unknown:**
 the active-NPC divergence point and full CPU/service phase agreement remain as above;
 this control correction does not close JOIN, HEAL, H4 or the whole route.
+
+### Source idle completion and caller installation
+
+**Confirmed (pinned source):** `GetEntityAddressFromCharacter` in
+`code/common/scripting/map/mapscriptengine_1.asm` resolves the logical selector through
+the identity table and returns the physical slot in d0. `csc2D_entityActionSequence`
+writes that slot to the wait timer and applies flagsA `& 0x9F`; `csc14_setEntityActscriptManual`
+and `csc15_setEntityActscript` write the same slot timer without that flags change.
+Their synchronous waits compare the script pointer with `eas_Idle`, not the physical
+destination. `eas_Init` has no wait-destination or motion-cancellation operation, so
+script-idle completion can precede physical arrival. The aliases are defined in
+`sf2cutscenemacros.asm:csc14/csc15/csc2D`.
+
+`esc34_jump` clears the timer through `esc_clearTimerGoToNextCommand` and dispatches
+the idle wait in the same entity service. `eas_Idle` is wait1/branch; for ordinary
+nonnegative timer values one service leaves timer1. Direct `MakeEntityIdle` and
+`SetWalkingActscript` installations preserve the incoming timer until service.
+These are distinct transitions, not a universal timer0/1 normalization. The source
+wait uses signed byte comparison; full high-bit wait fidelity remains outside this
+bounded leading-wait consumer claim.
+
+The source-backed content now distinguishes Preserve, SlotTimer and
+SlotTimerClearCollision installation. Source jump-to-idle and csc2D's implicit tail
+use a jump followed by a terminal idle action; authored Stop, Unsupported and plain
+stream exhaustion do not become source idle. The terminal uses the existing action
+cursor and wait timer, yields in the existing service and contributes no busy action
+ownership. Physical movement still contributes Busy. A source cutscene wait explicitly
+requires script idle; ordinary field movement still requires arrival. The accepted
+ordinary-control setup supersedes the player's terminal action and remains unchanged.
+
+The real consumer is `Map3_ZoneEvent6` → `cs_5145C` → final `eas_Init` →
+`MakeEntityWalk(128,5,6,1)` → leading wait30. Other valid callers include
+`cs_5149A`'s custom speed48 script followed by entityActions, and the leading eaWait
+sequences in Map19 `scripts.asm:147` and Map20 `scripts_1.asm:96`. Those latter source
+blocks demonstrate slot-dependent waits; they are not claimed naturally reached by
+the selected observation. Slot3/7 and alias variations are exercised by engine behavior
+tests rather than baking selector128 or one route's timing into execution.
+
+**Confirmed (bounded actual remake observation):** the existing ordinary-input probe
+executes only Left/Left/Right and three real dialogue confirmations. At Zone6 field
+return, flag601 is set, the player is at(4,4) with usable control and flagsAEF, and
+entity128/slot3 is at(5,4) in walking cursor0/wait30 with timer1. Its Y velocity-32 and
+zero remaining Y travel are retained. The run exits0 without session failures or
+Godot errors; tick142/seed75DA are observed receipt values, not expected quotas or
+an original-phase equivalence claim. The [verification owner](../../remake/docs/development-and-verification.md#source-idle-and-caller-verification)
+records the fresh content, three-way producer comparison and exact readback.
+
+**Unknown:** this does not identify the earlier first-warp active-NPC divergence point,
+repair the partial initial binding or establish CPU interruption/service equivalence.
+Direct warp-player idle counters without a later timer consumer, raw pointer equality,
+unimplemented native/waitIdle producers and idle animation parity are not added scope.
+All prior failures, nonruns and original acquisition totals remain unchanged.
 
 ## Stable records and area relation
 

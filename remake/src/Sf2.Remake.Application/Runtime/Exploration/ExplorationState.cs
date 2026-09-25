@@ -18,8 +18,9 @@ public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, Ful
     bool ActualDone = false, byte? RestorePeriod = null) : ProgramWait(Token);
 public sealed record WarpLoadWait(WaitToken Token, int Remaining = 2) : ProgramWait(Token);
 public sealed record OrdinaryWarp(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode);
+public enum EntityWaitCompletion { NotBusy, ScriptIdle }
 public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocation? AfterMotion = null,
-    ExplorationDirection? PendingMove = null) : ProgramWait(Token);
+    ExplorationDirection? PendingMove = null, EntityWaitCompletion Completion = EntityWaitCompletion.NotBusy) : ProgramWait(Token);
 public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
 public sealed record EntitySetSpriteWait(WaitToken Token) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
@@ -95,7 +96,9 @@ public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motio
     long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false)
 {
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
-    public bool Busy => Motion.IsMoving || Actions is not null;
+    public bool IsScriptIdle => Actions is { } program && ActionCursor >= 0 &&
+        ActionCursor < program.Actions.Count && program.Actions[ActionCursor] is IdleEntityAction;
+    public bool Busy => Motion.IsMoving || (Actions is not null && !IsScriptIdle);
 }
 public sealed record EntityFollower(int LeaderSlot, int OffsetX, int OffsetY);
 

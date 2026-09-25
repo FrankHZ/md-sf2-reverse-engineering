@@ -13,7 +13,8 @@ public sealed class ExplorationSessionTests
 
     private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) ControlWorld(
         bool source = true, int playerSlot = 2, StoryInstruction[]? script = null,
-        EntityMotionState? motion = null, ExplorationEntity[]? npcs = null)
+        EntityMotionState? motion = null, ExplorationEntity[]? npcs = null,
+        IReadOnlyDictionary<EntityRef, int>? aliases = null)
     {
         var authored = Start("harbor-arrival");
         var layout = new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]);
@@ -26,7 +27,7 @@ public sealed class ExplorationSessionTests
             true, Slot: playerSlot);
         var oldParty = authored.Current.Exploration!.Party;
         var world = new ExplorationState(map, layout, player.Entity, new[] { player }.Concat(npcs ?? []),
-            new(oldParty.Encounter, oldParty.Actors, 0x12341234, oldParty.ThinkingSeed, oldParty.Gold, oldParty.NewBattle));
+            new(oldParty.Encounter, oldParty.Actors, 0x12341234, oldParty.ThinkingSeed, oldParty.Gold, oldParty.NewBattle), aliases: aliases);
         var definition = new ScenarioDefinition("control-handoff", authored.Definition.Encounters.Values,
             exploration: new([map], [new StoryProgram("control", script ?? [new EndProgram()])]));
         return (definition, new(Guid.NewGuid(), 1, 1, new ActiveExploration(world),
@@ -218,6 +219,197 @@ public sealed class ExplorationSessionTests
         }
     }
 
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceIdlePreservesInstallationUntilAServiceAndFeedsTheLeadingWalkingWait(bool serviceIdle)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(5, 5), 0, 32) with { WaitTimer = 7 }, true, Slot: 3);
+        List<StoryInstruction> script = [new StartEntityMotion(npc.Entity, new([new IdleEntityAction()]), false)];
+        if (serviceIdle) script.Add(new WaitProgramTicks(1));
+        script.Add(new StartEntityMotion(npc.Entity, new([new WaitEntityTicks(30),
+            new RandomWalkEntity(new(5, 5), 1), new JumpEntityAction(3), new IdleEntityAction()]), false));
+        script.Add(new EndProgram());
+        var (definition, before) = ControlWorld(script: script.ToArray(), npcs: [npc]);
+        var installed = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.Equal(7, installed.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.Equal(0, installed.Story.SimulationTick);
+        if (serviceIdle)
+        {
+            Assert.True(installed.Exploration.Entities[npc.Entity].IsScriptIdle);
+            Assert.False(installed.Exploration.Entities[npc.Entity].Busy);
+            installed = Step(definition, installed, new AdvanceSimulation(installed.Story.Wait!.Token)).Snapshot;
+        }
+        int inherited = serviceIdle ? 1 : 7;
+        Assert.Equal(inherited, installed.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+        var seed = installed.Exploration.Party.MainSeed;
+        long startTick = installed.Story.SimulationTick;
+        for (int timer = inherited; timer < 30; timer++)
+        {
+            installed = Step(definition, installed, new WaitAtInput()).Snapshot;
+            Assert.Equal(seed, installed.Exploration!.Party.MainSeed);
+            Assert.False(installed.Exploration.Entities[npc.Entity].Motion.IsMoving);
+            Assert.Equal(timer + 1, installed.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+        }
+        var drawn = Step(definition, installed, new WaitAtInput()).Snapshot;
+        Assert.Equal(startTick + 30 - inherited + 1, drawn.Story.SimulationTick);
+        Assert.Equal(0xECAB1234u, drawn.Exploration!.Party.MainSeed);
+        Assert.Equal(6 * 384, drawn.Exploration.Entities[npc.Entity].Motion.YDestination);
+        Assert.Equal(0, drawn.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+    }
+
+    [Theory]
+    [InlineData(3, EntityScriptInstallation.Preserve)]
+    [InlineData(7, EntityScriptInstallation.Preserve)]
+    [InlineData(3, EntityScriptInstallation.SlotTimer)]
+    [InlineData(7, EntityScriptInstallation.SlotTimer)]
+    [InlineData(3, EntityScriptInstallation.SlotTimerClearCollision)]
+    [InlineData(7, EntityScriptInstallation.SlotTimerClearCollision)]
+    public void SourceScriptInstallationUsesResolvedSlotsAndDistinctCollisionPolicy(int slot, EntityScriptInstallation policy)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(5, 5), 0, 32) with
+            { WaitTimer = 9, FlagsA = 0xFF, FlagsB = 0x40, AnimationCounter = 12 }, true, Slot: slot);
+        var blocker = new ExplorationEntity(new("entity-130"), EntityMotionState.At(new(6, 5), 0, 32), true, Slot: 10);
+        var alias = new EntityRef("entity-129");
+        var (definition, before) = ControlWorld(script: [new StartEntityMotion(alias,
+            new([new WaitEntityTicks(10), new MoveEntityRelative(1, 0), new JumpEntityAction(3), new IdleEntityAction()]), true, policy),
+            new EndProgram()], npcs: [npc, blocker], aliases: new Dictionary<EntityRef, int>
+            { [ControlledPlayer] = 2, [npc.Entity] = slot, [alias] = slot, [blocker.Entity] = 10 });
+        var current = ProgramRunner.Run(definition, before, []).Snapshot;
+        int timer = policy == EntityScriptInstallation.Preserve ? 9 : slot;
+        byte flags = policy == EntityScriptInstallation.SlotTimerClearCollision ? (byte)0x9F : (byte)0xFF;
+        Assert.Equal(npc.Motion with { WaitTimer = (byte)timer, FlagsA = flags }, current.Exploration!.Entities[alias].Motion);
+        Assert.Equal(0, current.Story.SimulationTick);
+        for (int i = timer; i <= 10; i++)
+            current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token)).Snapshot;
+        var motion = current.Exploration!.Entities[alias].Motion;
+        bool allowed = policy == EntityScriptInstallation.SlotTimerClearCollision;
+        Assert.Equal(allowed, motion.IsMoving);
+        Assert.Equal((allowed ? 6 : 5) * 384, motion.XDestination);
+        Assert.Equal(before.Exploration!.Party.MainSeed, current.Exploration.Party.MainSeed);
+        Assert.NotNull(current.Story.Wait);
+    }
+
+    [Theory]
+    [InlineData(EntityScriptInstallation.SlotTimer)]
+    [InlineData(EntityScriptInstallation.SlotTimerClearCollision)]
+    public void SourceScriptInstallationLetsAResettingActionOwnTheFollowingWait(EntityScriptInstallation policy)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(5, 5), 0, 8) with { WaitTimer = 9 }, true, Slot: 7);
+        var (definition, before) = ControlWorld(script: [new StartEntityMotion(npc.Entity,
+            new([new SetEntitySpeed(32, 32), new WaitEntityTicks(4), new JumpEntityAction(3), new IdleEntityAction()]), true, policy),
+            new EndProgram()], npcs: [npc]);
+        var installed = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.Equal(7, installed.Exploration!.Entities[npc.Entity].Motion.WaitTimer);
+        var serviced = Step(definition, installed, new AdvanceSimulation(installed.Story.Wait!.Token)).Snapshot;
+        Assert.Equal(32, serviced.Exploration!.Entities[npc.Entity].Motion.XSpeed);
+        Assert.Equal(1, serviced.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+        Assert.NotNull(serviced.Story.Wait);
+    }
+
+    [Fact]
+    public void SourceIdleCompletionReleasesTheScriptWhilePreservingPhysicalTravelForItsNextCaller()
+    {
+        var motion = EntityMotionState.At(new(5, 5), 0, 8) with
+            { XDestination = 6 * 384, XTravel = 384, XVelocity = 8, XAcceleration = 2, FlagsA = 1, WaitTimer = 9 };
+        var npc = new ExplorationEntity(new("entity-128"), motion, true, Slot: 3);
+        var (definition, before) = ControlWorld(script: [new StartEntityMotion(npc.Entity,
+            new([new SetEntitySpeed(32, 32), new JumpEntityAction(2), new IdleEntityAction()]), true, EntityScriptInstallation.SlotTimer),
+            new StartEntityMotion(npc.Entity, new([new WaitEntityTicks(30), new StopEntityActions()]), false), new EndProgram()], npcs: [npc]);
+        var installed = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.Equal(EntityWaitCompletion.ScriptIdle, Assert.IsType<EntityWait>(installed.Story.Wait).Completion);
+        var returned = Step(definition, installed, new AdvanceSimulation(installed.Story.Wait!.Token)).Snapshot;
+        var entity = returned.Exploration!.Entities[npc.Entity];
+        Assert.Null(returned.Story.Wait);
+        Assert.True(returned.CanWaitAtInput);
+        Assert.Equal(1, returned.Story.SimulationTick);
+        Assert.Equal(motion with { X = (short)(motion.X + 10), XVelocity = 10,
+            XSpeed = 32, YSpeed = 32, WaitTimer = 1 }, entity.Motion);
+        Assert.True(entity.Busy); // The following walking wait owns the still-moving NPC.
+        Assert.Equal(0, entity.ActionCursor);
+        Assert.IsType<WaitEntityTicks>(entity.Actions!.Actions[0]);
+        Assert.Equal(before.Exploration!.Party.MainSeed, returned.Exploration.Party.MainSeed);
+    }
+
+    [Theory]
+    [InlineData("sprite")]
+    [InlineData("unsupported")]
+    [InlineData("stop")]
+    public void SourceIdleWaitDoesNotCompleteForSpriteUnsupportedOrAnAuthoredStop(string boundary)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(5, 5), 0, 32), true, Slot: 3);
+        EntityAction action = boundary switch
+        {
+            "sprite" => new RefreshEntitySprite("test"),
+            "unsupported" => new UnsupportedEntityAction("unbound", "test"),
+            _ => new StopEntityActions(),
+        };
+        var (definition, before) = ControlWorld(script: [new StartEntityMotion(npc.Entity,
+            new([action, new JumpEntityAction(2), new IdleEntityAction()]), true, EntityScriptInstallation.SlotTimer),
+            new WriteFlag(14, true), new EndProgram()], npcs: [npc]);
+        var installed = ProgramRunner.Run(definition, before, []).Snapshot;
+        var result = ExplorationDispatcher.Submit(definition, installed, new AdvanceSimulation(installed.Story.Wait!.Token));
+        Assert.Equal(boundary == "unsupported", result.Failure is not null);
+        Assert.False(result.Snapshot.Exploration!.Entities[npc.Entity].IsScriptIdle);
+        Assert.DoesNotContain(14, result.Snapshot.Story.Flags);
+        Assert.IsType<EntityWait>(result.Snapshot.Story.Wait);
+        if (boundary == "sprite")
+        {
+            var entity = result.Snapshot.Exploration.Entities[npc.Entity];
+            var mounted = Step(definition, result.Snapshot, new EntitySpriteReady(entity.Slot, entity.SpriteRequest)).Snapshot;
+            var completed = Step(definition, mounted, new AdvanceSimulation(mounted.Story.Wait!.Token)).Snapshot;
+            Assert.True(completed.Exploration!.Entities[npc.Entity].IsScriptIdle);
+            Assert.False(completed.Exploration.Entities[npc.Entity].Busy);
+            Assert.Equal(1, completed.Exploration.Entities[npc.Entity].Motion.WaitTimer);
+            Assert.Contains(14, completed.Story.Flags);
+        }
+    }
+
+    [Fact]
+    public void SourceIdleServiceKeepsControlFollowerAndRandomWalkerOwnershipSeparate()
+    {
+        var idle = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(7, 7), 0, 32) with { WaitTimer = 7 },
+            true, new([new IdleEntityAction()]), Slot: 0);
+        var walker = new ExplorationEntity(new("entity-129"), EntityMotionState.At(new(8, 8), 0, 32), true,
+            new([new RandomWalkEntity(new(8, 8), 1), new StopEntityActions()]), Slot: 1);
+        var follower = FollowerMotion.Install(new(new("entity-130"), EntityMotionState.At(new(9, 9), 0, 32), true, Slot: 4), 2, -24, 0);
+        var (definition, before) = ControlWorld(npcs: [idle, walker, follower]);
+        var serviced = Step(definition, before, new WaitAtInput()).Snapshot;
+        Assert.Equal(1, serviced.Story.SimulationTick);
+        Assert.Equal(0xECAB1234u, serviced.Exploration!.Party.MainSeed);
+        Assert.True(serviced.Exploration.Entities[idle.Entity].IsScriptIdle);
+        Assert.False(serviced.Exploration.Entities[idle.Entity].Busy);
+        Assert.Equal(1, serviced.Exploration.Entities[idle.Entity].Motion.WaitTimer);
+        Assert.Equal(0, serviced.Exploration.PlayerEntity.Motion.WaitTimer);
+        Assert.Equal(0xFF, serviced.Exploration.PlayerEntity.Motion.FlagsA);
+        Assert.Null(serviced.Exploration.PlayerEntity.Actions);
+        Assert.Null(serviced.Exploration.Entities[follower.Entity].Actions);
+        Assert.NotNull(serviced.Exploration.Entities[follower.Entity].Follower);
+        Assert.True(serviced.Exploration.Entities[follower.Entity].Motion.IsMoving);
+        var second = Step(definition, serviced, new WaitAtInput()).Snapshot;
+        Assert.Equal(2, second.Story.SimulationTick);
+        Assert.Equal(serviced.Exploration.Party.MainSeed, second.Exploration!.Party.MainSeed);
+        Assert.Equal(1, second.Exploration.Entities[idle.Entity].Motion.WaitTimer);
+        Assert.Equal(0, second.Exploration.PlayerEntity.Motion.WaitTimer);
+    }
+
+    [Fact]
+    public void SourceIdleContentCompletesARealScriptAndLeavesTheNpcAvailable()
+    {
+        var session = StartProgram("""
+            [{"op":"motion","entity":"ferryman","wait":true,"installation":"SlotTimer",
+              "actions":[{"op":"wait","ticks":1},{"op":"jump","instruction":2},{"op":"idle"}]},
+             {"op":"set-flag","flag":14,"value":true},{"op":"end"}]
+            """);
+        var waiting = Assert.IsType<EntityWait>(session.Current.Story.Wait);
+        Assert.Equal(EntityWaitCompletion.ScriptIdle, waiting.Completion);
+        Accept(session, new AdvanceSimulation(waiting.Token, 10));
+        Assert.Contains(14, session.Current.Story.Flags);
+        Assert.True(session.Current.Exploration!.Entities[new("ferryman")].IsScriptIdle);
+        Assert.False(session.Current.Exploration.Entities[new("ferryman")].Busy);
+        Assert.True(session.Current.CanWaitAtInput);
+    }
 
     private static SessionResult Step(ScenarioDefinition definition, SessionSnapshot snapshot, SessionCommand command)
     {

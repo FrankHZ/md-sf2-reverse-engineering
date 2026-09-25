@@ -120,6 +120,29 @@ changes position, destination and facing without resetting unrelated speed/flags
 `SPRITE_SIZE` is global. A later failing action preserves completed configuration and movement in
 that tick and retains the failing action cursor. No destination assignment replaces a motion path.
 
+Source motion installation has an optional `installation` field: `Preserve` (the authored
+default and native MakeEntityWalk), `SlotTimer` (custom/named cutscene scripts), or
+`SlotTimerClearCollision` (entityActions sequences). The latter two use the resolved physical
+slot as the wait timer; only the last also clears flagsA bits5/6. Existing source aliases
+determine the slot at runtime. No timer value is baked into compiled content.
+
+A true source jump-to-idle compiles to `jump` plus terminal `idle`; entityActions gets its
+implicit source idle tail. Inline bytes after an unconditional idle jump are consumed through
+the delimiter without becoming executable. Plain authored Stop/exhaustion or Unsupported
+does not imply idle. The terminal stays in the existing Actions/cursor, services wait1/branch
+once per existing slot service, and contributes no active-script Busy. Direct installation
+preserves its timer; the preceding source jump clears it before idle runs in that same service.
+Source cutscene motion waits require script idle, so a following caller may run while physical
+travel remains; ordinary field movement and authored default waits retain their physical/busy
+completion rule. No active infinite idle loop or second state authority is involved.
+
+The [idle/caller source owner](../../docs/research/map3-controlled-start-egress-transition.md#source-idle-completion-and-caller-installation)
+records the Zone6 leading-wait consumer and the boundaries. Ordinary player control still
+supersedes its old action/follower continuation and establishes controlled motion settings after
+movement at the next existing service. Follower installation clears Actions; source phase
+startup still binds real walking wait cursors. General high-bit source wait fidelity and the
+unimplemented waitIdle/native producers remain outside this bounded correction.
+
 Source `MainLoop` selects an unlocked, uncompleted battle before `ExplorationLoop` initializes its map.
 The before-battle program retains the previous field scene until its own load/entity calls.
 Authored map-init routing remains explicit in its definitions. Entry runs

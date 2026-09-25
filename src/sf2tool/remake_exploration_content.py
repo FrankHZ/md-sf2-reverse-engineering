@@ -345,6 +345,11 @@ class OriginalPrograms:
             "entities": entities,
         }
 
+    @staticmethod
+    def finish_in_idle(actions: list[dict[str, Any]]) -> None:
+        # Source esc34 clears the timer before entering eas_Idle in the same service.
+        actions.extend([{"op": "jump", "instruction": len(actions) + 1}, {"op": "idle"}])
+
     def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         if symbol in self.actions:
             return self.actions[symbol]
@@ -356,8 +361,7 @@ class OriginalPrograms:
             op, args = row["opcode"], _tokens(row["operandText"])
             source = f"{path}:{symbol}[{row['index']}]"
             if op == "ac_jump" and args == ["eas_Idle"]:
-                # Stop action ownership at the source idle service boundary. Its autonomous
-                # sprite/animation work is outside this controlled action projection.
+                self.finish_in_idle(result)
                 break
             result.extend(self.action(op, args, source))
             if op in ("ac_end", "ac_jump"):
@@ -565,6 +569,7 @@ class OriginalPrograms:
                         "op": "motion",
                         "entity": self.entity(str(registers["d0"])),
                         "wait": False,
+                        "installation": "Preserve",
                         "actions": self.walking(registers["d1"], registers["d2"], registers["d3"]),
                     }
                 )
@@ -880,11 +885,19 @@ class OriginalPrograms:
                 "customActscriptWait",
             ):
                 actions = []
+                entered_idle = False
                 while index < len(rows) and rows[index]["opcode"] not in ("endActions", "ac_end"):
                     action = rows[index]
+                    if entered_idle:
+                        # Consume inline bytes through the delimiter, without making code
+                        # after an unconditional idle jump executable.
+                        index += 1
+                        continue
                     if action["opcode"] == "ac_jump" and _tokens(action["operandText"]) == [
                         "eas_Idle"
                     ]:
+                        self.finish_in_idle(actions)
+                        entered_idle = True
                         index += 1
                         continue
                     actions.extend(
@@ -898,11 +911,15 @@ class OriginalPrograms:
                 if index == len(rows):
                     raise ValueError("unterminated entity action: " + symbol)
                 index += 1
+                sequence = op.startswith("entityActions")
+                if sequence and not entered_idle:
+                    self.finish_in_idle(actions)
                 result.append(
                     {
                         "op": "motion",
                         "entity": self.entity(args[0]),
                         "wait": op.endswith("Wait"),
+                        "installation": "SlotTimerClearCollision" if sequence else "SlotTimer",
                         "actions": actions,
                     }
                 )
@@ -913,6 +930,7 @@ class OriginalPrograms:
                         "op": "motion",
                         "entity": self.entity(args[0]),
                         "wait": op.endswith("Wait"),
+                        "installation": "SlotTimer",
                         "actions": actions,
                     }
                 )
