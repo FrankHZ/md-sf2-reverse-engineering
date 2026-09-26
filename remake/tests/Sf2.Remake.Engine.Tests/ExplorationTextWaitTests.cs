@@ -11,6 +11,42 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class ExplorationTextWaitTests
 {
     [Theory]
+    [InlineData(false, 0x12341234u)]
+    [InlineData(true, 0xC632A55Au)]
+    public void NodServicesLiveEntitiesThenWindowAndPortraitWithoutOverwritingPollCopy(bool enabled, uint seed)
+    {
+        var session = StartFieldText("A{W1}", npcRandom: true, configure: doc => doc["battle"]!["start"]!["mainSeed"] = seed);
+        var entry = session.Current;
+        var story = entry.Story.Copy(entry.Story.Cursor, new NodWait(new(999), new("ferryman")),
+            entityServices: enabled, eventCaller: new ZoneEventContext(), randomSeedCopy: 0xA9,
+            logicalText: new(Open: true, AnimationLength: 5),
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
+        var current = entry.WithStory(story);
+        var first = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(new(999)));
+        Assert.Null(first.Failure);
+        var entitySeed = enabled ? EntityActionRunner.Tick(entry.Exploration!, storyFlags: story.Flags).World.Party.MainSeed : seed;
+        var blink = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(entitySeed, 120);
+        var mouth = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(blink.After, 5);
+        Assert.Equal(new[] { "nod-service", "rng-portrait-blink", "rng-portrait-mouth", "nod-progress" }, first.Observations.Select(row => row.Kind));
+        Assert.Equal(entitySeed, first.Observations[1].Before);
+        Assert.Equal(mouth.After, first.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(1, first.Snapshot.Story.LogicalText!.AnimationCounter);
+        var portrait = Assert.IsType<OpenPortraitWindow>(first.Snapshot.Story.PortraitWindow).Work!;
+        Assert.Equal(blink.Value + 30, portrait.Blink);
+        Assert.Equal(mouth.Value + 10, portrait.Mouth);
+        Assert.Equal((byte)0xA9, first.Snapshot.Story.RandomSeedCopy);
+        var rest = ExplorationDispatcher.Submit(session.Definition, first.Snapshot, new AdvanceSimulation(new(999), 600));
+        Assert.Null(rest.Failure);
+        Assert.Equal(40, rest.Snapshot.Story.SimulationTick - entry.Story.SimulationTick);
+        Assert.True(Assert.IsType<NodWait>(rest.Snapshot.Story.Wait).LogicalDone);
+        Assert.Equal(5, rest.Snapshot.Story.LogicalText!.AnimationCounter);
+        Assert.False(rest.Snapshot.Story.LogicalText.Moving);
+        Assert.Equal((byte)0xA9, rest.Snapshot.Story.RandomSeedCopy);
+        if (!enabled) Assert.Equal(entry.Exploration!.AllEntities, rest.Snapshot.Exploration!.AllEntities);
+        else Assert.NotEqual(entry.Exploration!.Party.MainSeed, rest.Snapshot.Exploration!.Party.MainSeed);
+    }
+
+    [Theory]
     [InlineData(0x12341234u, 0, 1, 0xECAB1234u, 236)]
     [InlineData(0xC632A55Au, 1, 16, 0xD764A55Au, 215)]
     [InlineData(0xFFFFBEEFu, 4, 7, 0xA3AEBEEFu, 163)]

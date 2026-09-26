@@ -439,11 +439,29 @@ ignored private output. No ROM, extracted asset, dialogue prose or private absol
 
 Godot draws the working block layout and source sprite frames, mounts requested entity sprites,
 shows source portraits and resolves `{LEADER}`/`{NAME;n}` from configured source names. It scrolls
-the camera to the requested destination and waits for arrival. Nod presentation freezes the entity
-animation counter and uses a 40/60-second timeline, with the altered head band from 10/60 to 30/60
-seconds and the restored sprite afterward. Completion follows elapsed time independently of viewport
-culling or missed render phases. Actual visible nod and restored-sprite draws are counted separately;
-an off-camera actor or a frame that skips a phase does not fabricate a draw or hold the story forever.
+the camera to the requested destination and waits for arrival.
+
+### Source-bound nod
+
+With explicit field text/view settings, a nod validates the admitted field context and creates
+`NodWait` for the resolved physical entity. AnimationFF precedes ten common services; elapsed10
+selects the transformed sprite, elapsed30 restores normal selection, and elapsed40 waits for actual
+completion before animation0 and caller continuation. Services retain the current entity flag and
+entity→view/window→portrait order, shared RNG and prior poll copy. Adjacent nods retain their own
+40 opportunities. This implements the [bounded source contract](../../docs/design/contracts/map-exploration.md#bound-field-nod-lifecycle),
+not a natural hardware-frame count.
+
+The adapter mounts the existing normal/transformed sprite resources and draws the semantic phase,
+without a wall-clock gesture timer or per-frame acknowledgement. The existing token/kind completion
+joins logical completion; an early receipt cannot skip services and a late one cannot add them.
+Focus loss or hidden view suspends automatic work and clears debt. `nodProjection` records the
+actual actor, slot, sprite, facing, phase, texture selection, dimensions and viewport visibility.
+The [native observation](development-and-verification.md#source-bound-nod-observation) reaches both
+Messenger nods from the unchanged start and stops at text521 W1 before Ack with the zone still active.
+
+Unbound nods retain their 40/60-second presentation timeline, altered band from10/60 to30/60,
+and elapsed-time completion independent of culling. A culled actor or missed render phase does not
+fabricate a draw; aggregate gesture counts alone are not visible-phase evidence.
 `CompletePresentation` validates both wait token and kind; `EntitySpriteReady` validates slot and
 request generation. Enter acknowledges dialogue only and cannot complete an unperformed service.
 
@@ -454,8 +472,8 @@ while the common story owns control, including after
 the active state has become a battle with no exploration world. Camera and gesture cues require a
 current exploration world; without it they report `AdapterError` and retain their wait instead of
 using stale map state. Camera smoothing, portrait crop,
-text layout/full-line display, nod pixel transformation and cue duration are bounded presentation
-choices. Outside the admitted field-text/entity-event profile, portrait blink/mouth/typewriter
+text layout/full-line display and unbound cue duration remain bounded presentation choices.
+The nod transform reuses the inspected source band mapping; original raster/DMA timing remains unproven. Outside the admitted field-text/entity-event profile, portrait blink/mouth/typewriter
 RNG remains unbound. Original VRAM/DMA timing, speech SFX, door/warp music
 and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknown or Unsupported**.
 They are not silently reported as performed original services. An unbound explicit presentation cue

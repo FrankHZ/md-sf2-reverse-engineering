@@ -21,6 +21,7 @@ var field_output: FileAccess
 var field_unavailable: Array[String] = []
 var guarded_wait_case := "portrait-event" in input_case or "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
+var nod_pause_checked := false
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -954,6 +955,57 @@ func opening_settle() -> bool:
         var s := state()
         if s.failure != null: return false
         if s.get("canWaitAtInput", false): return true
+        if "zone-nod" in input_case and s.wait == "NodWait":
+            read_sample("nod-phase-" + str(s.token) + "-" + str(s.nod.Elapsed))
+            if not nod_pause_checked and s.nod.Elapsed >= 12:
+                nod_pause_checked = true
+                var before_pause := opening_semantic(s)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                check(opening_semantic(state()) == before_pause, "Nod rejects field Wait and Ack input")
+                view.hide()
+                for hidden_frame in range(6): await process_frame
+                check(opening_semantic(state()) == before_pause and state().tickDebt == 0, "Hidden nod has no service or clock debt")
+                view.show()
+                if OS.get_environment("SF2_NOD_FOCUS") == "1":
+                    var other := Window.new()
+                    other.hide()
+                    other.force_native = true
+                    other.transient = true
+                    other.title = "Nod focus observation"
+                    other.size = Vector2i(240, 100)
+                    root.add_child(other)
+                    other.show()
+                    other.grab_focus()
+                    await create_timer(0.15).timeout
+                    if not other.has_focus() or root.has_focus():
+                        field_unavailable.append("Nod OS focus transfer unavailable")
+                        return false
+                    var unfocused := opening_semantic(state())
+                    for focus_frame in range(6): await process_frame
+                    check(opening_semantic(state()) == unfocused and state().tickDebt == 0, "Unfocused nod adds no logical work")
+                    read_sample("nod-unfocused")
+                    other.hide()
+                    root.grab_focus()
+                    var deadline := Time.get_ticks_msec() + 2000
+                    while not root.has_focus() and Time.get_ticks_msec() < deadline: await process_frame
+                    if not root.has_focus():
+                        field_unavailable.append("Nod OS focus return unavailable")
+                        return false
+                    other.queue_free()
+                read_sample("nod-resumed")
+        if "zone-nod" in input_case and s.textId == 521 and s.get("canWaitForText", false):
+            var endpoint := read_sample("nod-text521-input")
+            var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "nod-returned"))
+            check(returns.size() == 2, "Both nods returned before the genuine text521 W1 input")
+            check(not endpoint.fieldText.Wait2 and not endpoint.canWaitAtInput and endpoint.eventCaller == "ZoneEventContext" and
+                endpoint.cursor != null and not 603.0 in endpoint.flags, "Text521 input retains the Messenger zone/script caller")
+            var held := opening_semantic(endpoint)
+            for idle_frame in range(5): await process_frame
+            check(opening_semantic(state()) == held and state().tickDebt == 0, "Text521 stops before any Wait or Ack")
+            return true
         if "portrait-event" in input_case and s.eventCaller != null:
             var phase := str(s.wait) + ":" + str(s.textId) + ":" + str(s.fieldText.Phase if s.fieldText != null else "")
             if s.portraitWork != null:
@@ -1022,8 +1074,9 @@ func run_portrait_event() -> void:
             finish_public()
             return
         var interaction: bool = edge.waypoint == "map3-sarah-classroom" and edge.input == "C"
-        if edge.input == "C" and not interaction:
-            check(false, "Only the mandatory classroom interaction is selected")
+        var astral: bool = "zone-nod" in input_case and edge.waypoint == "map3-entity142" and edge.input == "C"
+        if edge.input == "C" and not interaction and not astral:
+            check(false, "Only the selected classroom and entity142 interactions are admitted")
             finish_public()
             return
         var actor_before: Dictionary = {}
@@ -1036,6 +1089,19 @@ func run_portrait_event() -> void:
         if not await opening_settle():
             read_sample("portrait-route-stopped")
             check(false, "Bound route or portrait event stopped before actual caller return")
+            finish_public()
+            return
+        if astral:
+            var returned := read_sample("entity142-return")
+            check(returned.canWaitAtInput and returned.eventCaller == null and 602.0 in returned.flags and 261.0 in returned.flags,
+                "Entity142 caller returns after setting flags261/602")
+        if "zone-nod" in input_case and edge.waypoint == "map3-astral-zone" and edge.x == 57 and edge.y == 13:
+            var returned := read_sample("second-zone7-return")
+            check(returned.canWaitAtInput and returned.eventCaller == null and 260.0 in returned.flags and not 603.0 in returned.flags,
+                "Second Zone7 returns before Messenger")
+        if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
+            read_sample("nod-stair-reload-return")
+        if "zone-nod" in input_case and state().textId == 521 and state().canWaitForText:
             finish_public()
             return
         if interaction:
@@ -1071,8 +1137,9 @@ func run_portrait_event() -> void:
                 var mover: Dictionary = introduction.entities.filter(func(e): return e.id == "entity-0")[0]
                 check(mover.moving and mover.actionCursor == 0 and introduction.eventCaller == "ZoneEventContext" and
                     introduction.entitiesRunning, "Zone handler enters with preserved player movement and pending init actions")
-            finish_public()
-            return
+            if "zone-nod" not in input_case:
+                finish_public()
+                return
         read_sample("portrait-navigation-" + str(edge.waypoint) + "-" + str(int(edge.x)) + "-" + str(int(edge.y)))
     check(false, "Spatial route ended before the classroom event")
     finish_public()

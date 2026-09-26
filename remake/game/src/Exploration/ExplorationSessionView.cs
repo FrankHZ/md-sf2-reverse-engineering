@@ -131,7 +131,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
@@ -202,6 +202,7 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
+        current.Story.Wait is NodWait nod ? !nod.LogicalDone :
         current.Story.Wait is FieldTextWait text ? !text.LogicalDone :
         current.Story.Wait is FullFadeWait fade ? !fade.LogicalDone :
             current.StopReason == SessionStopReason.SimulationWait ||
@@ -368,7 +369,7 @@ public sealed partial class ExplorationSessionView : Control
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
             DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
-            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait => "",
+            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
@@ -425,6 +426,7 @@ public sealed partial class ExplorationSessionView : Control
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
+            nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
             eventCaller = current?.Story.EventCaller?.GetType().Name,

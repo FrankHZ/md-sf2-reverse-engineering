@@ -11,6 +11,113 @@ public sealed class ExplorationSessionTests
 {
     private static readonly EntityRef ControlledPlayer = new("entity-17");
 
+    [Theory]
+    [InlineData(false, false, false, 8, 0x12341234u)]
+    [InlineData(true, false, true, 16, 0xFFFFBEEFu)]
+    [InlineData(false, true, true, 24, 0xC632A55Au)]
+    [InlineData(true, true, false, 32, 0xFEDC4321u)]
+    public void BoundNodsOwnFortyServicesAndResetBeforeTheNextCommand(bool early, bool enabled, bool busy, int speed, uint seed)
+    {
+        var actor = new EntityRef(busy ? "entity-128" : "entity-129");
+        var npc = new ExplorationEntity(actor, EntityMotionState.At(new(7, 7), 2, (ushort)speed), true,
+            new(busy ? [new WaitEntityTicks(200)] : [new IdleEntityAction()]), Slot: 8);
+        if (busy) npc = npc with { Motion = npc.Motion with
+            { XDestination = 8 * 384, XTravel = 384, XVelocity = (short)speed } };
+        var (definition, before) = ControlWorld(npcs: [npc], script:
+            [new PresentCue(PresentationCueKind.Gesture, "nod", actor),
+             new PresentCue(PresentationCueKind.Gesture, "nod", ControlledPlayer), new WriteFlag(91, true), new EndProgram()]);
+        var world = before.Exploration!;
+        var party = world.Party;
+        world = world.WithParty(new(party.Encounter, party.Actors, seed, party.ThinkingSeed, party.Gold, party.NewBattle));
+        var story = before.Story.Copy(before.Story.Cursor, textSettings: new(2, 0, 0), randomSeedCopy: 0x57,
+            portraitWindow: new ClosedPortraitWindow(), logicalText: new(),
+            logicalView: new(new(0, 0, 12, 12, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0),
+                world.PlayerEntity.Slot, new(0), new(0), new(0), new(0)));
+        before = new(before.SessionId, before.Revision, before.ObservationSequence, new ActiveExploration(world),
+            story.Copy(story.Cursor, entityServices: enabled), before.StopReason);
+        var started = ProgramRunner.Run(definition, before, []);
+        Assert.Null(started.Failure);
+        var current = started.Snapshot;
+        WaitToken? previous = null;
+        foreach (var expectedActor in new[] { actor, ControlledPlayer })
+        {
+            var nod = Assert.IsType<NodWait>(current.Story.Wait);
+            Assert.Equal(expectedActor, nod.Entity);
+            Assert.Equal(0, nod.Elapsed);
+            Assert.Equal(255, current.Exploration!.Entities[expectedActor].Motion.AnimationCounter);
+            Assert.False(current.CanWaitAtInput);
+            Assert.False(current.CanWaitForText);
+            foreach (var command in new SessionCommand[] { new WaitAtInput(), new Acknowledge(nod.Token),
+                new Move(ExplorationDirection.South), new CompletePresentation(new(nod.Token.Value + 1), PresentationCueKind.Gesture),
+                new CompletePresentation(nod.Token, PresentationCueKind.FadeOut) })
+                Assert.NotNull(ExplorationDispatcher.Submit(definition, current, command).Failure);
+            if (previous is { } stale)
+                Assert.NotNull(ExplorationDispatcher.Submit(definition, current, new CompletePresentation(stale, PresentationCueKind.Gesture)).Failure);
+            long start = current.Story.SimulationTick;
+            if (early)
+            {
+                current = Step(definition, current, new CompletePresentation(nod.Token, PresentationCueKind.Gesture)).Snapshot;
+                Assert.NotNull(ExplorationDispatcher.Submit(definition, current, new CompletePresentation(nod.Token, PresentationCueKind.Gesture)).Failure);
+            }
+            var kinds = new List<SessionObservation>();
+            for (int elapsed = 1; elapsed <= 40; elapsed++)
+            {
+                var result = Step(definition, current, new AdvanceSimulation(nod.Token));
+                kinds.AddRange(result.Observations);
+                current = result.Snapshot;
+                Assert.Equal(start + elapsed, current.Story.SimulationTick);
+                Assert.Equal(seed, current.Exploration!.Party.MainSeed);
+                Assert.Equal((byte)0x57, current.Story.RandomSeedCopy);
+                Assert.Equal(7 * 384 + (busy && enabled ? Math.Min(384, (int)current.Story.SimulationTick * speed) : 0),
+                    current.Exploration.Entities[actor].Motion.X);
+                if (elapsed < 40 || !early)
+                {
+                    var progress = Assert.IsType<NodWait>(current.Story.Wait);
+                    Assert.Equal(elapsed, progress.Elapsed);
+                    Assert.Equal(elapsed is >= 10 and < 30, progress.Lowered);
+                    Assert.Equal(255, current.Exploration.Entities[expectedActor].Motion.AnimationCounter);
+                }
+            }
+            Assert.Equal(40, kinds.Count(row => row.Kind == "nod-service"));
+            Assert.Single(kinds, row => row.Kind == "nod-lowered");
+            Assert.Single(kinds, row => row.Kind == "nod-restored");
+            if (!early)
+            {
+                var held = current;
+                Assert.Equal("nod-awaiting-presentation", ExplorationDispatcher.Submit(definition, held, new AdvanceSimulation(nod.Token, 600)).Failure!.Code);
+                var result = Step(definition, held, new CompletePresentation(nod.Token, PresentationCueKind.Gesture));
+                kinds.AddRange(result.Observations);
+                current = result.Snapshot;
+                Assert.Equal(held.Story.SimulationTick, current.Story.SimulationTick);
+            }
+            var returned = Assert.Single(kinds, row => row.Kind == "nod-returned");
+            Assert.Equal(expectedActor, returned.Entity);
+            Assert.Equal(0u, returned.After);
+            previous = nod.Token;
+        }
+        Assert.Equal(80, current.Story.SimulationTick);
+        Assert.Contains(91, current.Story.Flags);
+        Assert.True(current.CanWaitAtInput);
+        Assert.Equal(0, current.Exploration!.Entities[actor].Motion.AnimationCounter);
+        Assert.Equal(0, current.Exploration.PlayerEntity.Motion.AnimationCounter);
+        Assert.Equal(enabled ? busy ? 80 : 1 : 0, current.Exploration.Entities[actor].Motion.WaitTimer);
+    }
+
+    [Fact]
+    public void UnboundNodKeepsLegacyPresentationCompletion()
+    {
+        var (definition, before) = ControlWorld(script:
+            [new PresentCue(PresentationCueKind.Gesture, "nod", ControlledPlayer), new EndProgram()]);
+        var result = ProgramRunner.Run(definition, before, []);
+        Assert.Null(result.Failure);
+        var wait = Assert.IsType<PresentationWait>(result.Snapshot.Story.Wait);
+        Assert.Equal(255, result.Snapshot.Exploration!.PlayerEntity.Motion.AnimationCounter);
+        var returned = Step(definition, result.Snapshot, new CompletePresentation(wait.Token, PresentationCueKind.Gesture)).Snapshot;
+        Assert.True(returned.CanWaitAtInput);
+        Assert.Equal(0, returned.Story.SimulationTick);
+        Assert.Equal(0, returned.Exploration!.PlayerEntity.Motion.AnimationCounter);
+    }
+
     private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) ControlWorld(
         bool source = true, int playerSlot = 2, StoryInstruction[]? script = null,
         EntityMotionState? motion = null, ExplorationEntity[]? npcs = null,
