@@ -210,7 +210,7 @@ metadata, and a supported logical view. Names,
 text/actor IDs, seeds, routes and receipt counts never select this capability. A start without
 this profile retains its existing plain/W1/legacy consumer. An unsupported bound context stops;
 it cannot silently use display latency as gameplay work. Battle continuation, unadmitted caller portraits,
-scene camera changes, cursor targets, scrolling overrides, autoscroll and non-unity parallax
+scene camera entity changes, cursor targets, scrolling overrides, autoscroll and non-unity parallax
 are outside this profile. Quake and pulsating fade variants have no admitted implementation.
 
 `world.textFont` contains the existing source reader's 256 ASCII-to-symbol entries and 80 glyph
@@ -438,8 +438,50 @@ and portraits through maintained decoders. The generated world and all game text
 ignored private output. No ROM, extracted asset, dialogue prose or private absolute path is tracked.
 
 Godot draws the working block layout and source sprite frames, mounts requested entity sprites,
-shows source portraits and resolves `{LEADER}`/`{NAME;n}` from configured source names. It scrolls
-the camera to the requested destination and waits for arrival.
+shows source portraits and resolves `{LEADER}`/`{NAME;n}` from configured source names.
+The bound camera consumes logical view state as described below; unbound cues retain their
+presentation-driven arrival wait.
+
+### Source-bound camera
+
+With explicit field settings, `SetCameraTarget` validates the admitted field context and installs
+four destinations in `LogicalView`; nullable `TargetSlot` represents source FF/no-follow.
+Positions and follow counter survive target changes. An equal active axis remains active until
+scroll service; an equal inactive axis stays inactive. `CameraWait` uses the existing `ViewWait`
+clear/recheck/final-service lifecycle. It needs no asset acknowledgement, wall-clock duration or
+second camera state. Field Wait/Ack/movement and `CompletePresentation` cannot release it.
+
+`ExplorationViewRunner` prepares24/32 speed from the inherited signed counter every no-follow
+service, scrolls each axis independently and evaluates window hiding before scrolling. Existing
+entity→view/window→portrait service carries the live entity flag, shared RNG and poll-copy byte.
+Dialogue and nested returns retain the held camera. Actual ordinary field-control return restores
+the player's physical slot without clearing pending scrolling, positions or counter. The
+[source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+and [static provenance](../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle)
+own these rules and their source limits.
+
+All bound draws use B logical positions/16 for base and layer0 actors, and A positions/16 for
+foreground. A already includes its layout offset, so bound layer sampling adds no second offset.
+Each8px tile is drawn using its retained priority bit. Base composition is low B, low A,
+high B, high A, retaining alpha. Sprites keep their existing mutual order; entity layer versus
+live window count determines display priority independently of `SetEntityPriority`. After a low
+sprite, high B/A regions are restored only under that sprite's nontransparent ink. A high sprite
+requires no repair. This preserves mixed-priority sprite order and transparent holes; no character,
+text or room selects the rule. The existing sprite resource cache retains its row ink spans for
+this mask (mosaic draws use their sampled block coverage), and all map regions reuse the existing block texture. Actual draw passes and masked
+8px overlaps are included in `cameraProjection.occlusionDraws`.
+The adapter applies no player-centering, viewport clamp or MoveToward to this profile. Modern
+320×192 viewport/layout and existing textures remain. `cameraProjection` records actual draw
+tick/token, plane origins/source offsets, first clipped tile/count and actor rectangles/resources/
+culling; observation compares only matching source-state draws. Focus/visibility suspension reuses
+the common clock with no accumulated debt. Unbound centering, clamping, smoothing and completion
+remain unchanged.
+
+[Native acceptance](development-and-verification.md#source-bound-camera-observation) covers the
+whole accepted prefix and both Messenger destinations, stopping at text531 W1 before Wait/Ack.
+The camera stays held; zone/script return and F603 remain pending. Bound csc24/entity tracking,
+explicit speed, cursor/pulsating overrides, non-unity parallax/autoscroll and word-wrap destinations
+remain unsupported; no hardware timing claim follows.
 
 ### Source-bound nod
 
@@ -471,7 +513,7 @@ fade and stop. This is a modern cue, **not original audio parity**. Sound and fa
 while the common story owns control, including after
 the active state has become a battle with no exploration world. Camera and gesture cues require a
 current exploration world; without it they report `AdapterError` and retain their wait instead of
-using stale map state. Camera smoothing, portrait crop,
+using stale map state. Unbound camera smoothing, portrait crop,
 text layout/full-line display and unbound cue duration remain bounded presentation choices.
 The nod transform reuses the inspected source band mapping; original raster/DMA timing remains unproven. Outside the admitted field-text/entity-event profile, portrait blink/mouth/typewriter
 RNG remains unbound. Original VRAM/DMA timing, speech SFX, door/warp music

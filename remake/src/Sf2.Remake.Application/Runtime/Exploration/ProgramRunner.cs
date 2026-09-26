@@ -63,6 +63,9 @@ internal static class ProgramRunner
                             new ActiveExploration(world.WithEntity(player with
                                 { Actions = null, ActionCursor = 0, Follower = null, WaitingForMotion = false })),
                             current.Story, current.StopReason);
+                    if (current.Story.LogicalView is { } view && current.Exploration is { } field)
+                        current = current.WithStory(current.Story.Copy(null,
+                            logicalView: view with { TargetSlot = field.PlayerEntity.Slot }));
                     return Result(Stop(current, SessionStopReason.PlayerInput), observations);
                 }
                 if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||
@@ -137,8 +140,13 @@ internal static class ProgramRunner
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
                     case SetCameraTarget target:
-                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
-                        story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true); break;
+                        if (story.TextSettings is not null)
+                        {
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.SetDestination(story.LogicalView!, target.Position));
+                        }
+                        else story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true);
+                        break;
                     case SetCameraEntity target:
                         if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
@@ -238,6 +246,10 @@ internal static class ProgramRunner
                     case WaitProgramTicks ticks when ticks.Ticks > 0:
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
+                    case PresentCue { Kind: PresentationCueKind.CameraWait } when current.Story.TextSettings is not null:
+                        ExplorationTextRunner.ValidateContext(current);
+                        story = current.Story.Copy(cursor, new ViewWait(token, !current.Story.LogicalView!.Scrolling));
+                        break;
                     case PresentCue cue:
                         if (cue.FullBlack is not null || current.Story.Display is not null && MapTransfer.IsPalette(cue))
                         {

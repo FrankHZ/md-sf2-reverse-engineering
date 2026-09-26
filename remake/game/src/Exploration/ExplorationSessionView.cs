@@ -427,6 +427,7 @@ public sealed partial class ExplorationSessionView : Control
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
+            cameraProjection = _presentation?.CameraProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
             eventCaller = current?.Story.EventCaller?.GetType().Name,
