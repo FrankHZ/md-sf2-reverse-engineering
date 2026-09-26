@@ -3662,3 +3662,35 @@ schedule, gold/debug domain and later JOIN coupling. Modern release zero-service
 product boundary. Engine/native observations consume this source; they do not become original
 observations. See [execution](../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle)
 and [verification](../../remake/docs/development-and-verification.md#source-bound-choice-observation).
+
+## Raw display and unbound music progress
+
+**Confirmed (static source):** baseline USA identity
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. Reproduce each row using
+`git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>` in the registered source checkout.
+Paths below are relative to `disasm/`; these are static facts, not new original runtime captures.
+
+| Source owner | Boundary |
+| --- | --- |
+| `code/common/scripting/text/textfunctions_1.asm:DisplayText`, lines10–71 | Create dialogue, enable Typewriting, process glyphs/controls/typewriter work, clear Typewriting at end. The raw wrapper does not erase actual W tokens. |
+| `code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce`, lines366–401 | Speech0, view wait, music, membership/name work, raw DisplayText, music/input helper, text close and Sleep10. Selector128 joins1/2 and displays447. Incoming portrait registration is independent of speech0. |
+| `data/maps/entries/map03/mapsetups/scripts_1.asm:cs_51614`, lines162–173 | Finish536, set600/66, join128, then follower/position work and script return. `s3_zoneevents.asm:Map3_ZoneEvent8` sets603 after that return. |
+| `code/gameflow/battle/battlefunctions/battlefunctions_0.asm:FadeOut_WaitForP1Input`, lines1135–1142; `code/common/tech/sound/music.asm:PlayMusicAfterCurrentOne`, lines10–21 | Music helper precedes input; F0/FB requests precede mandatory Sleep3 and gate test, repeated while set. Even an already-cleared gate has the first three waits. |
+| `code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm`, lines17–71; `vint.asm`, lines22/34 | An already-armed gate tests first-channel inactive. F0 arms without rescanning that invocation; FB reissues previous music after clearance. Sound/input precedes contextual services. |
+| `code/common/tech/input.asm:WaitForPlayerInput`, lines58–66; `code/common/tech/interrupts/vintengine_1.asm:Sleep`, lines162–174 | Plain input tests first and waits only on zero; Sleep performs the requested WaitForVInt handshakes. |
+
+The [natural JOIN records](#natural-join-audio-and-input-boundary) confirm their request/text-return/
+helper boundaries. **Unknown:** sound-driver phase and interleaving during preceding raw text,
+F0 arm/clearance sampling and residual Sleep on the current admitted route. The initialized,
+uninterrupted music19 result of505 driver updates does not establish an entity-service quota, a
+wall-clock duration or a fresh counter at SoundWait. Full logical/actual JOIN coupling remains open.
+Single-member446/CLASS and sad-music progression retain separate capability/evidence boundaries.
+
+**Confirmed (bounded remake behavior):** general bound raw text consumes existing FieldText work,
+actual W1/W2 and reveal completion. Speakerless raw display retains admitted common services and
+does not invent an acknowledgement. Bound SoundWait then preserves completed state and reports
+`field-music-progress-unbound` before callback-driven continuation. Engine cases and direct native
+readback reproduce this implementation boundary under the [verification owner](../../remake/docs/development-and-verification.md#raw-field-text-observation);
+they do not prove original reach, music timing or complete JOIN. No original runtime delta is added;
+earlier H4, warp, HEAL, JOIN timeout/cross-clock, next-actor/index and cleanup gaps remain open.

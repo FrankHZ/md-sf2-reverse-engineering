@@ -893,3 +893,28 @@ Yes path; a remake No run is not an original No observation. See
 [provenance](../../research/map3-messenger-acceptance.md#source-bound-choice-lifecycle),
 [execution](../../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle) and
 [verification](../../../remake/docs/development-and-verification.md#source-bound-choice-observation).
+
+## Raw field text and the music boundary
+
+**Confirmed (static source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/text/textfunctions_1.asm:DisplayText` creates the dialogue window, executes
+its glyph/control/typewriter work and clears Typewriting at the end. A wrapper without an implicit
+acknowledgement MUST still execute actual W1/W2 tokens. With no such token at the final boundary,
+the bound consumer MUST complete mandatory work and actual reveal before advancing automatically.
+It MUST NOT add an accepting input poll, RNG draw, copied-byte write or synthetic delay.
+
+An explicitly speakerless raw display is silent. It MUST retain any admitted registered portrait
+and the existing entity → view/scroll/windows → portrait service order and live enablement.
+An unresolved event speaker or invalid explicit speaker MUST remain an error. This rule is general
+to the admitted field-text profile, independent of text ID, program, name, width, seed or route.
+
+`code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce` starts music and membership work
+before raw text, then calls the music/input helper. That later helper has a separate logical clock
+obligation: `code/common/tech/sound/music.asm:PlayMusicAfterCurrentOne` always sleeps three VInts
+before testing `WAIT_FOR_MUSIC_END`, repeating as needed. **Unknown:** the admitted deterministic
+mapping of music-driver progress, preceding text services, gate sampling and residual polling.
+Neither actual PCM completion nor the known505 initialized driver updates supplies that mapping.
+Until it is bound, a bound SoundWait MUST stop explicitly as Unsupported with completed raw text and
+reached state preserved, before previous-music, input or caller return. This boundary does not claim
+complete JOIN acceptance. See [provenance](../../research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+and [execution](../../../remake/docs/exploration-programs.md#raw-field-display).

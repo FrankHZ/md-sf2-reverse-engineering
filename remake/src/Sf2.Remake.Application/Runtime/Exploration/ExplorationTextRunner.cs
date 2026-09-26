@@ -67,9 +67,12 @@ internal static class ExplorationTextRunner
     {
         ValidateContext(current);
         var speaker = text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker;
-        if (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
+        // Raw DisplayText can intentionally have no speaker. A failed event lookup or
+        // an explicitly supplied invalid speaker must still fail ordinary validation.
+        bool speakerless = !text.WaitForAcknowledgement && !text.UseEventSpeaker && text.Speaker is null;
+        if (!speakerless && (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
             definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) ||
-            visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null })
+            visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null }))
             throw new BattleRuleException("field-text-speaker", "program.text", true);
         if (definition.TextFont is not { } font || !definition.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens))
             throw new BattleRuleException("field-text-font", "world.textFont", true);

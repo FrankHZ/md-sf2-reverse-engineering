@@ -197,7 +197,7 @@ internal static class ProgramRunner
                     case ShowText text:
                         if (!definition.Exploration!.Texts.ContainsKey(current.Story.TextCursor))
                             throw new BattleRuleException("missing-dialogue-text", "program.text", true);
-                        if (text.ExplicitWindows && text.WaitForAcknowledgement && current.Story.TextSettings is not null)
+                        if (text.ExplicitWindows && current.Story.TextSettings is not null)
                         {
                             story = ExplorationTextRunner.Begin(definition.Exploration, current, text, token);
                             break;
@@ -252,6 +252,8 @@ internal static class ProgramRunner
                         ExplorationTextRunner.ValidateContext(current);
                         story = current.Story.Copy(cursor, new ViewWait(token, !current.Story.LogicalView!.Scrolling));
                         break;
+                    case PresentCue { Kind: PresentationCueKind.SoundWait } when story.TextSettings is not null:
+                        throw new BattleRuleException("field-music-progress-unbound", "program.presentation", true);
                     case PresentCue cue:
                         if (cue.FullBlack is not null || current.Story.Display is not null && MapTransfer.IsPalette(cue))
                         {
