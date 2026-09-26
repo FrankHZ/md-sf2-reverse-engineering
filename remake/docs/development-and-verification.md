@@ -2659,8 +2659,9 @@ semantic input with separately captured mapped held release. Test actual engine 
 `ExplorationTextWaitTests` and retain the companion legacy choice behaviors in
 `ExplorationSessionTests`. Affected classes are `ExplorationTextWaitTests`, `ExplorationSessionTests`,
 `MapEntityLifecycleTests` and `CommandsetContinuationTests`; use their existing dotnet filter with
-the locked SDK/private environment. Run `uv run sf2 verify engine`, `uv run sf2 verify adapter` and
-refresh Debug before actual adapter observations. No tests of probes/reports and no blanket
+the locked SDK/private environment. Run the affected behavior classes, `uv run sf2 verify adapter`
+and refresh Debug before actual adapter observations. Required CI covers the committed engine tree;
+a review correction does not require repeating a completed full local engine suite. No tests of probes/reports and no blanket
 normal/full/H3 rerun are required by this bounded source binding. The prior completed normal-verify
 provenance failure after148passes is retained under the existing applicability decision.
 
@@ -2672,8 +2673,11 @@ fresh ignored output/settings destinations. `gamepad` and `remapped` suffixes ex
 installed input bindings, including swapped Confirm/Cancel. These cases must not generate candidate
 content, inject the old text531 endpoint, use historical frame/C quotas or capture the original.
 
-Run both answers across all three text settings continuously. Recheck the accepted5096-state prefix
-and actual camera/wall projection. At531 hold Ack through opening; verify release across mapped
+Maintain continuous evidence for both answers across all three text settings. Recheck the accepted
+prefix and actual camera/wall projection with explicit field applicability when a source correction
+changes the model. Start with one continuous representative run, measure service/RNG/continuation and
+projection differences, then rerun affected settings/answers only when the observed dependency needs it.
+New refresh counters must be explained, not removed to claim full state equality. At531 hold Ack through opening; verify release across mapped
 Confirm plus a mapped stick, then hidden/focus rearm, one neutral Wait and Right→Left→Right→Left.
 Confirm returnsYes; Cancel returnsNo. Record actual menu Control geometry/visibility/selection/color
 at matching logical tick/token, full source65/66 requests/playback, no additional67, deletion,
@@ -2688,15 +2692,50 @@ return, F89 clear/F603 set/caller cleared, with no extra input or join/party wri
 never gate production engine legality. These observations do not establish original naturalNo,
 fullYes Messenger/H4 or JOIN audio/input/live-service coupling.
 
-**Confirmed (bounded remake):** both answers passed continuous instant/natural20/reveal40
-observations from the unchanged bound start. Each retained5096-state prefix matches the accepted
-camera run. Within each answer, all25 selected fields match across5325 Yes or5386 No settled states.
+**Confirmed (bounded remake):** the six observations at initial choice head `2b7a7542` cover both
+answers continuously under instant/natural20/reveal40 from the unchanged bound start. Their retained
+5096-state prefixes match the prior camera build; within each answer, all25 selected fields match
+across5325 Yes or5386 No settled states. The shared-window correction below changes refresh state
+and counters, so these records retain their named initial-build applicability rather than becoming
+raw state records for the corrected build.
 Choice enters at5097, opens through5102, performs the declared five polls through5107, deletes at5112
 and returns at5122 after ten post services. These are measured boundaries, not engine quotas.
 Yes stops at536/W1 tick5324/main55350000/copyEF; No returns first field control at5385/main61880000/copy14.
 Actual menu phases/geometry/labels/variants and non-speech audio agree; natural-only speech remains
 under#517. Six actual camera/alpha checks retain362 opaque teacher pixels covered and214 transparent
 pixels unpainted. FullYes Messenger/JOIN and original naturalNo remain unproven.
+
+The shared-window review reproduced four failing actual engine cases:
+`ChoiceWindowWaitIncludesPostScrollFixAfterItsFourthMovementPass` (open/close × portrait absent/present).
+The corrected cases pass with the sixth-service boundary. Companion behavior cases cover geometric
+settlement versus unfinished stationary counters, genuinely displaced windows, pending fix across
+empty passes/map initialization/repeated scrolling, later registered RNG, and global text/portrait
+close waits. Run these in `ExplorationTextWaitTests`; its completed affected-class run retained one
+new fixture failure (missing event context at the next instruction), corrected by the owning two-case
+method. No completed failure was relabeled interrupted or erased.
+
+One corrected continuous Yes/instant observation, `local/issue534/choice-lifecycle/window-fix-review/
+native-yes-instant`, completed at the same5325 states. `representative-equivalence.json` compares all71
+prior state fields and the new pending readback; `full-field-differences.json` and
+`leaf-differences.json` enumerate changes. Dialogue gains explicit geometry without changes to its
+prior fields. Pending is true on1189–1193: portrait creation at1188 occurs after that tick's window
+stage, so a final-state hidden/window scan alone overcounts one serviced pass. At1194 the portrait
+resets to stationary length1/counter0;1195 has counter1/busytrue;1196 clears busy. Counter1 persists
+until close at1397, which reinstalls the normal geometry. Its Y, blink/mouth and all service/RNG/
+input/choice/continuation fields remain equal. Actual portrait projection is equal; camera/nod
+projection differs only in per-process texture identities. The other delivery differences are
+session identity, PCM playback clocks and completion/preemption receipts. All50 ordered sound-start
+requests/revisions/PCM facts match. Actual5302 camera/72 menu draws and teacher362 opaque/214
+transparent pixels pass the existing geometric/alpha checks with explicitly expected model changes.
+
+The retained No route has the same sole1194 fix and none in its later continuation; previous
+within-answer setting equivalence remains independently checked. Therefore the initial six records
+continue to support both answer returns, all three settings, mapped controls and effective projection;
+only the corrected representative supplies new refresh-state readbacks. Neither answer's later
+choice has a fix transition. No gameplay/RNG/service-timing difference was observed to invalidate
+and repeat the remaining five native observations. This is bounded reuse, not six corrected-build
+runs or original-runtime evidence. The corrected source predicate is verified under changed legal
+states by the engine cases above.
 
 Preserved completed observation failures: an initial Yes run exhausted its observer guard at text524,
 tick3828, focusedfalse/debt0 and no application error. A later No/natural run passed its logical

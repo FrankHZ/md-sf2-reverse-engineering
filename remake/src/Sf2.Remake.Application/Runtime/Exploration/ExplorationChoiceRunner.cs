@@ -58,6 +58,13 @@ internal static class ExplorationChoiceRunner
         return story.Copy(story.Cursor, wait with { Work = work });
     }
 
+    internal static StoryState FixPosition(StoryState story)
+    {
+        if (story.Wait is not ChoiceWait { Work: { Visible: true } work } wait || work.X != work.DestinationX) return story;
+        return story.Copy(story.Cursor, wait with { Work = work with
+        { OriginX = work.X, DestinationX = work.X, Length = 1, Movement = 0 } });
+    }
+
     internal static SessionSnapshot Advance(SessionSnapshot current, List<SessionObservation> observations)
     {
         var wait = (ChoiceWait)current.Story.Wait!;
@@ -69,8 +76,7 @@ internal static class ExplorationChoiceRunner
             return ProgramRunner.Commit(current, current.Active, current.Story.Copy(ProgramRunner.Next(current.Story.Cursor!.Value)),
                 observations, "choice-returned", work.Yes ? "yes" : "no");
         }
-        if (work.Moving || current.Story.LogicalText is { Open: true, Moving: true } ||
-            current.Story.PortraitWindow is OpenPortraitWindow { Work.Moving: true })
+        if (ExplorationTextRunner.WindowsMoving(current.Story))
             return current;
         if (work.Phase == ChoicePhase.Opening)
             return Save(current, work with { Phase = work.EntryHeld ? ChoicePhase.Release : ChoicePhase.Input }, observations, "choice-open-completed");
@@ -92,8 +98,8 @@ internal static class ExplorationChoiceRunner
 
     private static StoryState RefreshDialogue(StoryState story, int length, bool settledOnly)
     {
-        if (story.LogicalText is not { Open: true } window || settledOnly && window.AnimationCounter != window.AnimationLength) return story;
-        return story.Copy(story.Cursor, story.Wait, logicalText: window with { AnimationLength = length, AnimationCounter = 0 });
+        if (story.LogicalText is not { Open: true } window || settledOnly && window.WindowY != window.DestinationY) return story;
+        return story.Copy(story.Cursor, story.Wait, logicalText: ExplorationTextRunner.Refresh(window, length));
     }
 
     private static SessionSnapshot Save(SessionSnapshot current, ChoiceWork work, List<SessionObservation> observations, string kind, string? detail = null) =>

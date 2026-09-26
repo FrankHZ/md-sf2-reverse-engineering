@@ -483,6 +483,7 @@ public sealed partial class ExplorationSessionView : Control
                 yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == Colors.Gold, noAlternate = _choiceNo.Modulate == Colors.Gold },
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
+            windowFixPending = current?.Story.WindowFixPending,
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             cameraProjection = _presentation?.CameraProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,

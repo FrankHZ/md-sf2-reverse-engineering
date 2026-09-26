@@ -6,7 +6,7 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class ExplorationPortraitRunner
 {
     internal static bool Admitted(StoryState story) => story.PortraitWindow is ClosedPortraitWindow ||
-        story.EventCaller is not null && story.PortraitWindow is OpenPortraitWindow { Work: { Moving: false, Registered: true } };
+        story.EventCaller is not null && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;
 
     internal static SessionSnapshot Open(ScenarioDefinition definition, SessionSnapshot current, EntityRef actor, byte flags,
         List<SessionObservation> observations, bool entry)
@@ -15,7 +15,7 @@ internal static class ExplorationPortraitRunner
             throw new BattleRuleException("field-portrait-context", "story.portrait", true);
         if (current.Story.PortraitWindow is OpenPortraitWindow existing)
         {
-            if (existing.Work is not { Moving: false, Registered: true })
+            if (existing.Work is not { Registered: true } existingWork || existingWork.Y != existingWork.DestinationY)
                 throw new BattleRuleException("field-portrait-state", "story.portrait", true);
             return current; // OpenPortraitWindow does not replace an existing window or counters.
         }
@@ -40,16 +40,29 @@ internal static class ExplorationPortraitRunner
         // Source removes the service before starting the close movement.
         return ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor,
             new PortraitMovementWait(new(current.ObservationSequence + 1), true, returning),
-            portraitWindow: portrait with { Work = work with { Registered = false, Movement = 0, Moving = true, Closing = true } }),
+            portraitWindow: portrait with { Work = work with { Registered = false, OriginY = work.Y, DestinationY = -10, Length = 4, Movement = 0, Moving = true, Closing = true } }),
             observations, "portrait-window-moving", "close");
+    }
+
+    internal static StoryState Windows(StoryState story)
+    {
+        if (story.PortraitWindow is not OpenPortraitWindow { Work: { } work } portrait) return story;
+        bool moving = work.Movement < work.Length;
+        return story.Copy(story.Cursor, story.Wait, portraitWindow: portrait with
+        { Work = work with { Moving = moving, Movement = moving ? work.Movement + 1 : work.Movement } });
+    }
+
+    internal static StoryState FixPosition(StoryState story)
+    {
+        if (story.PortraitWindow is not OpenPortraitWindow { Work: { } work } portrait || work.Y != work.DestinationY) return story;
+        return story.Copy(story.Cursor, story.Wait, portraitWindow: portrait with
+        { Work = work with { OriginY = work.Y, DestinationY = work.Y, Length = 1, Movement = 0 } });
     }
 
     // Runs after the admitted entity/view/scroll/window services, in the source's added slot.
     internal static SessionSnapshot Service(SessionSnapshot current, List<SessionObservation> observations)
     {
         if (current.Story.PortraitWindow is not OpenPortraitWindow { Work: { } work } portrait) return current;
-        if (work.Moving)
-            work = work with { Moving = work.Movement < 4, Movement = Math.Min(4, work.Movement + 1) };
         if (work.Registered)
         {
             work = work with { Blink = unchecked((short)(work.Blink - 1)) };
@@ -83,9 +96,9 @@ internal static class ExplorationPortraitRunner
     {
         var wait = (PortraitMovementWait)current.Story.Wait!;
         var portrait = (OpenPortraitWindow)current.Story.PortraitWindow;
-        if (portrait.Work!.Moving) return current;
+        if (ExplorationTextRunner.WindowsMoving(current.Story)) return current;
         var story = current.Story.Copy(current.Story.Cursor, portraitWindow: wait.Closing
-            ? new ClosedPortraitWindow() : portrait with { Work = portrait.Work with { Registered = true } });
+            ? new ClosedPortraitWindow() : portrait with { Work = portrait.Work! with { Registered = true } });
         current = ProgramRunner.Commit(current, current.Active, story, observations,
             wait.Closing ? "portrait-closed" : "portrait-service-registered");
         if (wait.CallerBoundary)

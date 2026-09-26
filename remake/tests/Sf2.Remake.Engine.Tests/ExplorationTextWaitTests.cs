@@ -1072,6 +1072,151 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(ChoicePhase.ReturnDelay, Assert.IsType<ChoiceWait>(deleting.Snapshot.Story.Wait).Work!.Phase);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ChoiceWindowWaitIncludesPostScrollFixAfterItsFourthMovementPass(bool closing, bool portrait)
+    {
+        var session = StartChoice(307);
+        var current = session.Current;
+        var token = current.Story.Wait!.Token;
+        var story = current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            logicalText: new(Open: true), eventCaller: new ZoneEventContext(),
+            portraitWindow: portrait ? new OpenPortraitWindow(7, 0,
+                new(Blink: 100, Mouth: 100, Registered: true, Movement: 4, Moving: false)) : new ClosedPortraitWindow());
+        current = ExplorationDispatcher.Submit(session.Definition, current.WithStory(story), new ChoiceHeldInput(token, false)).Snapshot;
+        if (closing)
+        {
+            current = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(token, 5)).Snapshot;
+            current = ExplorationDispatcher.Submit(session.Definition, current, new PollChoice(token, ChoiceInput.Cancel)).Snapshot;
+        }
+        var view = current.Story.LogicalView!;
+        // A valid held tile destination with three 24-unit scroll passes left.
+        // Hide is true on passes1..3, then false on4, when own movement reaches its destination.
+        view = view with { TargetSlot = null, FollowCounter = 0,
+            AX = view.AX with { Position = view.AX.Position + 312, Destination = view.AX.Position + 384 },
+            BX = view.BX with { Position = view.BX.Position + 312, Destination = view.BX.Position + 384 } };
+        current = current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait, logicalView: view));
+        long entryTick = current.Story.SimulationTick;
+        var fifth = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(token, 5));
+        Assert.Null(fifth.Failure);
+        Assert.Equal(closing ? ChoicePhase.Closing : ChoicePhase.Opening,
+            Assert.IsType<ChoiceWait>(fifth.Snapshot.Story.Wait).Work!.Phase);
+        Assert.Equal(entryTick + 5, fifth.Snapshot.Story.SimulationTick);
+        var sixth = ExplorationDispatcher.Submit(session.Definition, fifth.Snapshot, new AdvanceSimulation(token));
+        Assert.Null(sixth.Failure);
+        Assert.Equal(closing ? ChoicePhase.ReturnDelay : ChoicePhase.Input,
+            Assert.IsType<ChoiceWait>(sixth.Snapshot.Story.Wait).Work!.Phase);
+        Assert.Equal(entryTick + 6, sixth.Snapshot.Story.SimulationTick);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PostScrollFixUsesGeometryAndRetainsPrepassBusyBeforePortraitRng(bool displaced)
+    {
+        var session = StartChoice(307);
+        var entry = session.Current;
+        var wait = (ChoiceWait)entry.Story.Wait!;
+        var view = entry.Story.LogicalView! with { TargetSlot = null };
+        var story = entry.Story.Copy(entry.Story.Cursor, wait with { Work = new(Phase: ChoicePhase.Input,
+                OriginX: displaced ? 32 : 12, DestinationX: 12, Movement: 2, Length: 9) },
+            windowFixPending: true, logicalView: view, typewriting: true, entityServices: false,
+            logicalText: new(Open: true, AnimationLength: 9, AnimationCounter: 2, OriginY: displaced ? 29 : 19),
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 1, Registered: true,
+                Movement: 2, Length: 9, OriginY: displaced ? -10 : 1)));
+        var observations = new List<SessionObservation>();
+        var current = ExplorationDispatcher.Service(session.Definition, entry.WithStory(story), observations, "window-service");
+        var work = Assert.IsType<ChoiceWait>(current.Story.Wait).Work!;
+        var portrait = Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!;
+        Assert.False(current.Story.WindowFixPending);
+        Assert.True(work.Moving);
+        Assert.True(portrait.Moving);
+        Assert.True(current.Story.LogicalText!.Moving);
+        Assert.Equal(displaced ? 3 : 0, work.Movement);
+        Assert.Equal(displaced ? 3 : 0, portrait.Movement);
+        Assert.Equal(displaced ? 3 : 0, current.Story.LogicalText.AnimationCounter);
+        Assert.Equal(displaced ? 9 : 1, work.Length);
+        Assert.Equal(displaced ? 9 : 1, portrait.Length);
+        Assert.Equal(displaced ? 9 : 1, current.Story.LogicalText.AnimationLength);
+        var blink = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(entry.Exploration!.Party.MainSeed, 120);
+        var mouth = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(blink.After, 5);
+        Assert.Equal(new[] { "window-service", "rng-portrait-blink", "rng-portrait-mouth" }, observations.Select(row => row.Kind));
+        Assert.Equal(mouth.After, current.Exploration!.Party.MainSeed);
+        Assert.Equal(blink.Value + 30, portrait.Blink);
+        Assert.Equal(mouth.Value + 10, portrait.Mouth);
+        if (displaced) return;
+        current = ExplorationDispatcher.Service(session.Definition, current, observations, "window-service");
+        Assert.True(ExplorationTextRunner.WindowsMoving(current.Story));
+        Assert.Equal(1, Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!.Movement);
+        current = ExplorationDispatcher.Service(session.Definition, current, observations, "window-service");
+        Assert.False(ExplorationTextRunner.WindowsMoving(current.Story));
+    }
+
+    [Fact]
+    public void PendingWindowFixSurvivesEmptyPassAndMapInitializationAndRepeatedScrolls()
+    {
+        var session = StartChoice(307);
+        var current = session.Current;
+        var token = current.Story.Wait!.Token;
+        var story = current.Story.Copy(current.Story.Cursor, new TickWait(token, 100), windowFixPending: true);
+        story = ExplorationTextRunner.Initialize(current.Exploration!, story);
+        Assert.True(story.WindowFixPending);
+        var observations = new List<SessionObservation>();
+        current = ExplorationDispatcher.Service(session.Definition, current.WithStory(story), observations, "window-service");
+        Assert.True(current.Story.WindowFixPending);
+        story = current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            logicalText: new(Open: true), logicalView: current.Story.LogicalView! with { TargetSlot = null });
+        current = ExplorationDispatcher.Service(session.Definition, current.WithStory(story), observations, "window-service");
+        Assert.False(current.Story.WindowFixPending);
+        Assert.False(current.Story.LogicalText!.Moving); // postpass does not invent a busy bit
+        Assert.Equal(0, current.Story.LogicalText.AnimationCounter);
+        Assert.Equal(1, current.Story.LogicalText.AnimationLength);
+        for (int cycle = 0; cycle < 2; cycle++)
+        {
+            var view = current.Story.LogicalView!;
+            view = view with { AX = view.AX with { Destination = view.AX.Position + 24 } };
+            current = current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait, logicalView: view));
+            current = ExplorationDispatcher.Service(session.Definition, current, observations, "window-service");
+            Assert.True(current.Story.WindowFixPending);
+            Assert.True(current.Story.LogicalView!.HideWindows);
+            current = ExplorationDispatcher.Service(session.Definition, current, observations, "window-service");
+            Assert.False(current.Story.WindowFixPending);
+            Assert.False(current.Story.LogicalView!.HideWindows);
+            Assert.Equal(0, current.Story.LogicalText!.AnimationCounter);
+            Assert.Equal(19, current.Story.LogicalText.WindowY);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TextAndPortraitCloseWaitForAllRepresentedWindows(bool portraitClose)
+    {
+        var session = StartChoice(307);
+        var current = session.Current;
+        var token = current.Story.Wait!.Token;
+        var story = current.Story.Copy(current.Story.Cursor,
+            portraitClose ? new PortraitMovementWait(token, true, false) : new TextCloseWait(token), eventCaller: new ZoneEventContext(),
+            logicalView: current.Story.LogicalView! with { TargetSlot = null },
+            logicalText: portraitClose ? new(Open: true, AnimationLength: 12) : ExplorationTextRunner.Close(new(Open: true)),
+            portraitWindow: new OpenPortraitWindow(7, 0, portraitClose
+                ? new(Registered: false, Closing: true, OriginY: 1, DestinationY: -10)
+                : new(Registered: true, Blink: 100, Mouth: 100, OriginY: 1, Length: 12)));
+        current = current.WithStory(story);
+        var busy = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(token, 12));
+        Assert.Null(busy.Failure);
+        Assert.Equal(token, busy.Snapshot.Story.Wait!.Token);
+        var done = ExplorationDispatcher.Submit(session.Definition, busy.Snapshot, new AdvanceSimulation(token));
+        Assert.Null(done.Failure);
+        Assert.NotEqual(token, done.Snapshot.Story.Wait!.Token);
+        Assert.Equal(current.Story.SimulationTick + 13, done.Snapshot.Story.SimulationTick);
+        if (portraitClose) Assert.IsType<ClosedPortraitWindow>(done.Snapshot.Story.PortraitWindow);
+        else Assert.False(done.Snapshot.Story.LogicalText!.Open);
+    }
+
     private static GameSession StartChoice(int flag, bool enabled = false, uint seed = 0x12341234) =>
         StartFieldText("{W1}", enabled: enabled, npcRandom: true, configure: document =>
         {

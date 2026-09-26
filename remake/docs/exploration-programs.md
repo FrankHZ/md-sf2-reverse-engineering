@@ -836,6 +836,22 @@ dialogue window for4; selection refreshes it for1 only when settled. Delete the 
 writing the result flag, then run exactly ten common services before advancing the instruction.
 The choice does not close the dialogue/portrait or increment dialogue/portrait presence.
 
+`StoryState.WindowFixPending` carries the source post-scroll flag through waits, empty-window passes
+and map initialization. At the common window stage, dialogue, portrait and choice advance their own
+geometry/counters and record incoming busy status. A hidden pass sets the pending flag. An unhidden
+pass consumes it only when a represented window exists, refreshing every geometrically settled window
+to length1/counter0 while preserving the pass's busy result. Stationary animation can still be busy;
+its counters cannot stand in for geometric equality. A four-step own move arriving on the first
+unhidden pass after three hidden passes therefore completes on service6, not the usual5. No fixed pad
+is applied. Dialogue tracks window coordinates separately from its glyph cursor; every close entry
+uses its actual current position. Portrait geometry runs here once, with registered blink/mouth RNG
+remaining later. Dialogue and portrait close helpers also wait for every represented moving window.
+
+The fresh remake session admits a clear pending flag. **Confirmed (static source):** full system
+initialization clears its RAM byte. **Inferred:** the retained controlled opening start has that value;
+it does not capture the byte or establish natural cold-boot ancestry. Ordinary initialization does
+not reset it. See the named initialization and postpass bodies in the source owner.
+
 Common entity→view/scroll/window→registered portrait service uses live enablement, counters,
 Typewriting, held/follow camera and RNG. There is no direct choice RNG draw or poll-copy write.
 The animation begins at15, wraps1→20, uses the alternate variant at values>=10, and navigation

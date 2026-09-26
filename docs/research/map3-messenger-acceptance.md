@@ -3614,10 +3614,28 @@ No new original run accompanies this binding.
   RNG draw, RANDOM_SEED_COPY write, entity toggle, portrait unregister or Typewriting clear occurs.
 - `windowengine.asm:CreateWindow`42, SetWindowDestination98, MoveWindow205, DeleteWindow234,
   WaitForWindowMovementEnd279 and VInt_UpdateWindows292 establish current-position sentinel8080,
-  conditional settled refresh, pre-pass moving bits and post-pass interpolation. Length4 normally
+  conditional settled refresh, pre-pass moving bits, interpolation and post-pass position repair. Length4 normally
   needs a fifth busy-clear pass; other moving windows matter. Debug turbo overrides length to1.
   Create/DeleteWindow do not themselves increment/decrement WINDOW_IS_PRESENT. Window hide affects
-  projection, not counter advancement; fix-position work remains distinct from geometric motion.
+  projection, not counter advancement. At387–401 hide sets FIX_WINDOWS_POSITIONS_TOGGLE; the first
+  unhidden pass with that flag calls FixWindowsPositions128–139 **after** interpolation. It refreshes
+  every geometrically settled slot to length1/counter0 via SetWindowDestination105–115, even when a
+  zero-displacement animation has unfinished counters. It preserves that pass's precomputed moving
+  bits. With a length4 move and three remaining hidden scroll passes, unhide on pass4 resets the
+  just-arrived window; busy remains on pass5 and clears on6. This applies to both opening and close.
+- `windowengine.asm:InitializeWindowProperties`8–31 clears32 longwords from FFA87E throughFFA8FD,
+  excluding FIX_WINDOWS_POSITIONS_TOGGLE atFFA8FE and UPDATE_WINDOWS_TOGGLE atFFA8FF. An empty
+  VInt_UpdateWindows returns at295–297 without clearing the fix flag. Map/window initialization and
+  periods with no windows therefore retain pending refresh. `code/gameflow/start/systeminit.asm:
+  InitializeVdp`21–28 clears RAM fromFF0000 throughFFFFFB, including the flag, on full system
+  initialization. **Inferred:** the admitted controlled field start uses the clear initial value;
+  that input does not record this byte and is not an observed cold-boot ancestry. Arbitrary resumed
+  original states with unknown incoming fix flags are outside this start admission.
+- `code/common/scripting/text/textfunctions_2.asm:CreateDialogueWindow`26–39 gives the admitted
+  field dialogue origin(2,29), destination(2,19), length8 and Sleep8. CloseDialogueWindow329–355
+  moves it back to(2,29), then waits on the common moving bitfield before deletion. Glyph cursor
+  X/Y are separate from these window coordinates. The existing portrait open/close coordinates
+  remain(-10→1)/(1→-10) on Y; a stationary refresh does not move that geometry.
 - `yesnoprompt.asm:sub_15422/sub_1542A/sub_1544A/LoadYesNoPromptLayout`189–267 selects variants at
   counter>=10, queues0x90-word graphics toB800/B920 and refreshes the selected label. The full
   `code/common/tech/interrupts/vintengine_2.asm:ApplyVIntVramDma`87–139 queues under an interrupt

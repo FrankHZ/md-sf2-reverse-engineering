@@ -24,7 +24,12 @@ public sealed record ViewWait(WaitToken Token, bool Recheck, bool FinalService =
 public sealed record TextCloseWait(WaitToken Token, bool CallerReturn = false) : ProgramWait(Token);
 public sealed record PortraitMovementWait(WaitToken Token, bool Closing, bool CallerBoundary) : ProgramWait(Token);
 public sealed record LogicalTextWindow(bool Open = false, byte X = 2, byte Y = 0, int Row = 0,
-    int AnimationLength = 0, int AnimationCounter = 0, bool Moving = false, int Indicator = 0, bool IndicatorVisible = false);
+    int AnimationLength = 0, int AnimationCounter = 0, bool Moving = false, int Indicator = 0, bool IndicatorVisible = false,
+    int OriginY = 19, int DestinationY = 19)
+{
+    // X/Y above belong to the glyph cursor; these coordinates belong to the window.
+    public int WindowY => AnimationLength == 0 ? DestinationY : OriginY + (DestinationY - OriginY) * AnimationCounter / AnimationLength;
+}
 public sealed record LogicalViewAxis(int Position, int? Destination = null, int Speed = 0)
 {
     public bool Active => Destination is not null;
@@ -77,9 +82,10 @@ public abstract record PortraitWindow;
 public sealed record UnknownPortraitWindow(EntityRef? LegacySpeaker = null, byte LegacyFlags = 0) : PortraitWindow;
 public sealed record ClosedPortraitWindow : PortraitWindow;
 public sealed record PortraitWork(short Blink = 20, short Mouth = 6, bool EyesClosed = false, bool MouthOpen = false,
-    bool Registered = false, int Movement = 0, bool Moving = true, bool Closing = false)
+    bool Registered = false, int Movement = 0, bool Moving = true, bool Closing = false,
+    int OriginY = -10, int DestinationY = 1, int Length = 4)
 {
-    public int Y => Closing ? 1 + -11 * Movement / 4 : -10 + 11 * Movement / 4;
+    public int Y => OriginY + (DestinationY - OriginY) * Movement / Length;
 }
 public sealed record OpenPortraitWindow(int Portrait, byte Flags, PortraitWork? Work = null) : PortraitWindow;
 public sealed record FieldReturnAnchor(MapId Map, MapPosition Position, byte Facing);
@@ -94,7 +100,7 @@ public sealed class StoryState
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
-        bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null)
+        bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -104,7 +110,7 @@ public sealed class StoryState
         PortraitWindow = portraitWindow ?? new UnknownPortraitWindow();
         Display = display; Warp = warp; RandomSeedCopy = randomSeedCopy;
         TextSettings = textSettings; LogicalText = logicalText; LogicalView = logicalView;
-        EntityServices = entityServices; Typewriting = typewriting;
+        EntityServices = entityServices; Typewriting = typewriting; WindowFixPending = windowFixPending;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -135,6 +141,8 @@ public sealed class StoryState
     // Unbound legacy/authored programs retain their existing program selection.
     public bool? EntityServices { get; }
     public bool Typewriting { get; }
+    // VInt_UpdateWindows retains this across empty-window passes and map initialization.
+    public bool WindowFixPending { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
@@ -144,7 +152,7 @@ public sealed class StoryState
         FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
-        FieldEventContext? eventCaller = null, bool clearEventCaller = false) =>
+        FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -152,7 +160,7 @@ public sealed class StoryState
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
             display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView,
             clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
-            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller);
+            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

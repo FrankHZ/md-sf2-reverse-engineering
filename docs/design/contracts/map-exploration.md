@@ -869,7 +869,13 @@ A boolean flag mutation does not represent this consumer. Left/Right precede B/C
 input boundary; B cancels toNo and C/A confirm the selected value. Reselection remains an action.
 Neutral/navigation have one explicit loop-tail wait; confirmation/cancel bypasses that tail.
 Window movement completion reads the global represented moving predicate after each service, not
-an elapsed frame quota. Own window deletion precedes flag mutation and ten subsequent services.
+an elapsed frame quota. Window hiding MUST retain a pending position fix. On the first unhidden
+service with represented windows, advance geometry, then refresh each geometrically settled window
+with length1/counter0 without changing the moving result already computed for that service. Geometric
+settlement MUST remain distinct from counter completion, including stationary refreshes. Empty-window
+services and ordinary map initialization MUST preserve pending fix state. Choice, dialogue and portrait
+waits MUST all consume the common represented moving result; portrait RNG remains in its later callback.
+Own window deletion precedes flag mutation and ten subsequent services.
 
 The accepted ADR0010 semantic boundary uses deliberate fresh conditioned input and explicit Wait.
 Mapped held-state release is a separate gate. Its zero semantic-service transition is a modern

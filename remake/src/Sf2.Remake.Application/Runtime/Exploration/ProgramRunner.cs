@@ -236,7 +236,7 @@ internal static class ProgramRunner
                         {
                             ExplorationTextRunner.ValidateContext(current);
                             story = current.Story.Copy(cursor, new TextCloseWait(token), logicalText:
-                                logicalWindow with { AnimationCounter = 0, AnimationLength = 8, Moving = true });
+                                ExplorationTextRunner.Close(logicalWindow));
                             break;
                         }
                         story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow(),
