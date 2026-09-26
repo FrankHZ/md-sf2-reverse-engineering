@@ -153,7 +153,7 @@ internal static class ProgramRunner
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:
-                        if (story.TextSettings is not null && story.EntityEvent is not null && portrait.Entity is { } boundActor)
+                        if (story.TextSettings is not null && story.EventCaller is not null && portrait.Entity is { } boundActor)
                         {
                             current = ExplorationPortraitRunner.Open(definition, current, boundActor, portrait.Flags, observations, false);
                             story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
@@ -170,7 +170,7 @@ internal static class ProgramRunner
                             story = story.Copy(story.Cursor, portraitWindow: new OpenPortraitWindow(portraitId, portrait.Flags));
                         break;
                     case ClosePortrait:
-                        if (story.TextSettings is not null && story.EntityEvent is not null)
+                        if (story.TextSettings is not null && story.EventCaller is not null)
                         {
                             current = ExplorationPortraitRunner.Close(current, observations, false);
                             story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;

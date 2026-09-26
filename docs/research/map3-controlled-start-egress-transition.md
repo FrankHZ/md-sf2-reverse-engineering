@@ -26,6 +26,28 @@ accepted route through the house and school, the second moves the player from
 area ordinal 1 into area ordinal 3, which contains the entity 142 interaction
 position. Neither warp selects a different Map 3 setup variant.
 
+## Source zone request order
+
+**Confirmed (static source):** at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/entity/entityscriptengine_2.asm:loc_5294` stores the zone event and
+destination parameters before map collision at `loc_52C0`; entity obstruction precedes both.
+The successful-movement branch alone cannot own this request. The producing entity pass finishes,
+then `code/gameflow/exploration/explorationfunctions_2.asm:ProcessMapEventType6_ZoneEvent`
+installs `eas_Init` and calls the selected handler. `entityfunctions_2.asm:ApplyInitActscript`
+changes the pointer without cancelling physical travel or clearing its timer.
+
+The accepted spatial fixture after Sarah is Up twice and Right four times from(42,9), stair
+warp(46,7)→(59,12), then Left to(58,13). The existing right-stair topology adds63 to the linear
+position; (58,12) is blocked. Marker0x1400 at the actual destination selects `Map3_ZoneEvent7`.
+Default map init with F1/F602/F603 clear introduces no intermediate text or view override.
+
+**Confirmed (bounded remake):** source-zone metadata now preserves this order, with engine
+cases for a legal slope, map-blocked marker, entity-blocked target and unchanged authored step.
+The [caller owner](map3-messenger-acceptance.md#first-introduction-source-zone-caller) records its
+complete return. The same rule affects earlier Zone6, so its current actual observation starts
+from the retained initial bound state and records the new prefix rather than grafting an old
+Sarah endpoint. Existing warp/phase Unknowns below remain open; this is not a new original capture.
+
 ## First-return comparison boundary
 
 **Confirmed (existing-record readback):** original

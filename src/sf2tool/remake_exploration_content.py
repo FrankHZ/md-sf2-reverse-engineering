@@ -1546,7 +1546,8 @@ def prepare(
                     else:
                         events.append(
                             {
-                                "kind": "step",
+                                "kind": "source-zone",
+                                "actions": compiler.action_stream("eas_Init"),
                                 **common,
                                 "marker": 0x1400,
                                 "x": None

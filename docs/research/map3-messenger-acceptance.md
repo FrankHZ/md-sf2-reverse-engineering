@@ -3145,7 +3145,40 @@ remains input-first. The completed remake finite-JOIN diagnostic has5,313 simula
 [verification owner](../../remake/docs/development-and-verification.md#retained-first-control-opportunity-alignment).
 Complete original portrait/entity timing and audio interleaving remain **Unknown**.
 
-### Classroom portrait entity-event binding
+### First introduction source zone caller
+
+**Confirmed (static source):** baseline USA ROM identity remains the registered
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`; source is SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The next accepted spatial consumer after Sarah
+is `data/maps/entries/map03/mapsetups/s3_zoneevents.asm:Map3_ZoneEvent7` at(58,13), with
+F602/F603 clear. It saves the speech SFX, selects entity142 (sprite209/portrait31/speech74),
+displays text513 with N,N,W1, then reaches `return_50ED0`. This branch has no choice, JOIN,
+pre-text view wait, movement script or flag write. The later F602 branch and entity142
+interaction are distinct consumers.
+
+`code/gameflow/exploration/explorationfunctions_2.asm:ProcessMapEventType6_ZoneEvent` calls
+`ApplyInitActscript` before entering the handler. `data/scripting/entity/eas_actions.asm:eas_Init`
+sets acceleration/speed/flags/orientation/size, refreshes the sprite and jumps to idle; its
+installation preserves motion/timer/destination. The [request owner](map3-controlled-start-egress-transition.md#source-zone-request-order)
+retains collision order and the staircase edge.
+
+`code/common/scripting/map/mapsetupsfunctions_1.asm:loc_4756A` calls the handler, closes portrait
+and closes text. `loc_47576` then performs an unconditional `WaitForVInt` before calling
+`code/common/scripting/entity/entityfunctions_2.asm:WaitForEntityToStopMoving`. Its `loc_44DAE`
+loop compares X/Y to destination and waits/rechecks only while unequal. No extra conditional
+wait occurs after equality. The wrapper neither suppresses entity services nor adds interaction
+facing/restoration. Native program metadata cannot substitute for the live service flag.
+
+**Confirmed (bounded remake):** the [implementation](../../remake/docs/exploration-programs.md#source-zone-caller)
+and [reproduction](../../remake/docs/development-and-verification.md#source-zone-caller-observation)
+consume this lifecycle through the first introduction return. Metadata comparison reuses all
+previous rasters/audio/mappings, with only source-zone/init metadata changed. Three actual runs
+start at the retained opening state and include generic Zone6 and Sarah; no endpoint/seed splice
+or historical C quota is used. Static source and remake observations remain separate evidence.
+**Unknown:** original natural timing at this new boundary and later camera/choice/JOIN/battle
+schedules. Original runtime delta0; prior warp/H4/HEAL/JOIN/next-actor and cleanup gaps remain open.
+
+## Classroom portrait entity-event binding
 
 **Confirmed (static source):** the selected USA identity and pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6` bind the accepted school approach to the adjacent

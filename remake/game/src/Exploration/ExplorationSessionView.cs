@@ -131,7 +131,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (_dialogue.VisibleCharacters >= 0)
@@ -368,7 +368,7 @@ public sealed partial class ExplorationSessionView : Control
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
             DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
-            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait => "",
+            EntityWait or TickWait or PresentationWait or FullFadeWait or WarpLoadWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait => "",
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
@@ -427,6 +427,8 @@ public sealed partial class ExplorationSessionView : Control
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
+            eventCaller = current?.Story.EventCaller?.GetType().Name,
+            callerReturning = current?.Story.EventCaller?.Returning,
             entitiesRunning = current?.Story.EntityServices ?? (current?.Story.Cursor is { } location ? _session!.Definition.Exploration!.Programs[location.Program].EntitiesRunning : (bool?)null),
             typewriting = current?.Story.Typewriting,
             textWindow = current?.Story.TextWindow.GetType().Name,

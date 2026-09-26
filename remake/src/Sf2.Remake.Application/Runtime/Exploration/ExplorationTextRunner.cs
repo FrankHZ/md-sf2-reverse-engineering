@@ -147,11 +147,9 @@ internal static class ExplorationTextRunner
                 ? view with { FinalService = !story.LogicalView!.Scrolling, Recheck = false }
                 : view with { Recheck = !story.LogicalView!.Scrolling });
         }
-        if (story.Wait is TextCloseWait close)
+        if (story.Wait is TextCloseWait)
             return story.LogicalText!.Moving ? story : story.Copy(story.Cursor is { } closeCursor ? ProgramRunner.Next(closeCursor) : null,
-                clearEntityEvent: close.EntityEventReturn,
-                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText with { Open = false, Indicator = 0, IndicatorVisible = false },
-                entityServices: close.EntityEventReturn ? true : null);
+                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText with { Open = false, Indicator = 0, IndicatorVisible = false });
         var wait = (FieldTextWait)story.Wait!;
         var window = story.LogicalText!;
         switch (wait.Phase)

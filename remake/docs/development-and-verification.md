@@ -835,6 +835,63 @@ cost delta is0. Opening ancestry remains Inferred, and the eight warp gaps, H4/H
 nonrun/cleanup boundaries retain their existing owners. This stops at the portrait entity-event
 return and grants no admission to later zone/camera/JOIN/battle consumers.
 
+## Source zone caller observation
+
+The [source-zone consumer](exploration-programs.md#source-zone-caller) includes generic opening
+Zone6, Sarah and the first Astral introduction through caller return. Its
+[source owner](../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
+separates static source order from actual remake evidence. Engine cases cover legal slopes,
+map-blocked markers versus entity obstruction, producing-pass completion, preserved motion/timer,
+live service flags, empty/skipped handlers, registered/absent/Unknown portraits, changed speakers,
+seeds and flags, typing creation and NPC→portrait RNG/copy order, unconditional return service,
+physical arrival independent of Busy/script idle, stale/control gating and authored steps.
+
+After loading `local/private-inputs.ps1`, using the protected SDK environment above, run the
+affected `ExplorationSessionTests|ExplorationTextWaitTests` filter and `uv run sf2 verify adapter`.
+Prepare one fresh nonvisual world with `local/issue534/zone-caller/prepare.py`; its
+`candidate/comparison.json` verifies14 source-zone/init records as the only content difference,
+unchanged shared provenance and all previous rasters/audio/mappings. No ROM/asset/H1 extraction
+or environment copy is part of this preparation. Preserve the retained bound start unchanged.
+
+Actual Godot startup is needed to observe the changed adapter; use the existing owned
+installation/project and no simultaneous owned process. With the same private selections as the
+portrait observation, the maintained probe cases are `portrait-event-zone-private-instant`,
+`portrait-event-zone-private-adjusted` (rate20), and
+`portrait-event-zone-private-adjusted-reveal` (rate40). Each consumes spatial edges with live
+occupancy and one Wait then Ack per reached W boundary. No historical frame/C count is used.
+
+```powershell
+# After private selections and a current Debug adapter build, choose a fresh run name.
+uv run --locked python -X utf8 local/issue534/zone-caller/run-native.py native-new instant 1 40
+# Repeat in fresh outputs for adjusted 1 20 and adjusted-reveal 1 40.
+```
+
+**Confirmed (remake observation):** retained `native-01/02/03` each exit0/PASS with empty failures
+and Unavailable arrays and no adapter/audio/process errors. `compare-native.py` reproduces21
+common semantic boundaries and1,674 settled logical states across complete selected entities,
+flags/party, RNG/copy, view, caller, windows, typing, settings and display. Its191 same-tick
+portrait projection samples match identity, placement and mapped tiles. Window/validation audio
+from Sarah entry through introduction return is65→67→65→65→65 with real started PCM receipts.
+The old results remain evidence of their own implementation; the current prefix is not fitted
+to them. Current Sarah return is tick1411/6BA00000/copy93; introduction returns at
+1673/A9240000/copyA9 with flags[0,32,256,601] and ordinary control at(58,13).
+
+`check-lifecycle.py` reproduces the two source-zone entries and actual lifecycle boundaries in
+all three runs. Introduction entry at1529 preserves moving player and pending init cursor0;
+portrait31 registers at1534 while the player still moves. W1 acceptance starts return at1658,
+portrait closes at1663, dialogue closes at1672, then the mandatory return service completes at
+1673 with physical arrival. These are observations, not runtime admission conditions. The stop
+is before Down from(58,13), later entity142 text500/501, F602 and subsequent zone branches.
+
+`behavior-01.log` completed205PASS/2FAIL: both failures in
+`ZoneReturnAlwaysWaitsOnceThenChecksPhysicalArrivalRegardlessOfScript` omitted nonzero travel in
+the test motion. The corrected four cases pass in `behavior-correction-01.log`; the owning
+behavior files pass212 in `behavior-final.log`. Debug/Release adapter builds pass with zero
+warnings/errors. Preserve these completed failures. No helper tests or blanket full/H4 rerun
+was added. The prior completed normal-verify provenance failure after148passes retains its
+accepted applicability. Original runtime delta0; all eight warp gaps, H4/HEAL/JOIN/next-actor,
+publicaggregate/h3-witch NONRUN, cleanup21/41/61/67 and speech-policy#517 remain open.
+
 ## W1 entity-event input
 
 The [execution owner](./exploration-programs.md#w1-in-a-suppressed-entity-event) defines the

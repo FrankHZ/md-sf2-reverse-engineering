@@ -36,6 +36,107 @@ public sealed class ExplorationSessionTests
     }
 
     [Theory]
+    [InlineData("legal", true, true)]
+    [InlineData("slope", true, true)]
+    [InlineData("map-blocked", false, true)]
+    [InlineData("entity-blocked", false, false)]
+    [InlineData("authored-step", true, false)]
+    public void SourceZoneRequestPrecedesMapCollisionButFollowsEntityObstruction(string shape, bool moving, bool zone)
+    {
+        var (definition, before) = ControlWorld(npcs:
+            [new(new("entity-128"), EntityMotionState.At(new(9, 9), 0, 32), true,
+                new([new WaitEntityTicks(20)]), Slot: 4)]);
+        var original = before.Exploration!;
+        var target = shape == "slope" ? new MapPosition(3, 5) : new(5, 4);
+        var words = new ushort[WorkingMapLayout.WordCount];
+        words[target.Y * 64 + target.X] = (ushort)(shape == "map-blocked" ? 0xD400 : 0x1400);
+        if (shape == "slope") { words[4 * 64 + 4] = 0x90DF; words[5 * 64 + 3] = 0x94EC; }
+        var layout = new WorkingMapLayout(words);
+        var init = new EntityActionProgram([new SetEntitySpeed(32, 32), new FaceEntity(1), new IdleEntityAction()]);
+        var kind = shape == "authored-step" ? ExplorationEventKind.Step : ExplorationEventKind.SourceZone;
+        var map = new ExplorationMapDefinition(original.Map, layout, original.Definition.Traversal, [],
+            [new(kind, target.X, target.Y, null, new("zone", 0), RequiredMarker: 0x1400, SourceInit: init)],
+            population: original.Population);
+        var entities = original.AllEntities.ToList();
+        if (shape == "entity-blocked") entities.Add(new(new("blocker"),
+            EntityMotionState.At(target, 0, 32) with { FlagsA = 0x80 }, true, Slot: 5));
+        var world = new ExplorationState(map, layout, original.Player, entities, original.Party);
+        definition = new("zone", definition.Encounters.Values, exploration: new([map],
+            [new("zone", [new WaitProgramTicks(2), new EndProgram()], entitiesRunning: false)]));
+        before = new(before.SessionId, before.Revision, before.ObservationSequence, new ActiveExploration(world), before.Story, before.StopReason);
+        var requested = Step(definition, before, new Move(shape == "slope" ? ExplorationDirection.West : ExplorationDirection.East));
+        Assert.Equal(0, requested.Snapshot.Story.SimulationTick);
+        Assert.Null(requested.Snapshot.Story.EventCaller);
+        if (shape == "entity-blocked")
+        {
+            Assert.Null(requested.Snapshot.Story.Wait);
+            Assert.Contains(requested.Observations, x => x.Kind == "movement-blocked");
+            return;
+        }
+        var entered = Step(definition, requested.Snapshot, new AdvanceSimulation(requested.Snapshot.Story.Wait!.Token));
+        var state = entered.Snapshot;
+        Assert.Equal(1, state.Story.SimulationTick);
+        Assert.Equal(moving, state.Exploration!.PlayerEntity.Motion.IsMoving);
+        Assert.Equal(new MapPosition(4, 4), state.Exploration.PlayerEntity.Position);
+        Assert.Equal(1, state.Exploration.Entities[new("entity-128")].Motion.WaitTimer);
+        if (!zone)
+        {
+            Assert.Null(state.Story.EventCaller);
+            Assert.IsType<EntityWait>(state.Story.Wait);
+            Assert.Null(state.Story.Cursor);
+            return;
+        }
+        Assert.IsType<ZoneEventContext>(state.Story.EventCaller);
+        Assert.Null(state.Story.EntityEvent);
+        Assert.True(state.Story.EntityServices);
+        Assert.Same(init, state.Exploration.PlayerEntity.Actions);
+        Assert.Equal(0, state.Exploration.PlayerEntity.ActionCursor);
+        Assert.False(state.Exploration.PlayerEntity.WaitingForMotion);
+        Assert.IsType<TickWait>(state.Story.Wait);
+        Assert.Contains(entered.Observations, x => x.Kind == "zone-entered");
+        Assert.False(state.CanWaitAtInput);
+        var next = Step(definition, state, new AdvanceSimulation(state.Story.Wait!.Token)).Snapshot;
+        Assert.Equal(2, next.Exploration!.Entities[new("entity-128")].Motion.WaitTimer);
+        Assert.Equal(1, next.Exploration.PlayerEntity.Motion.Facing);
+        Assert.Equal(moving, next.Exploration.PlayerEntity.Motion.IsMoving);
+    }
+
+    [Theory]
+    [InlineData(false, false, 8)]
+    [InlineData(false, true, 64)]
+    [InlineData(true, true, 32)]
+    [InlineData(true, false, 8)]
+    public void ZoneReturnAlwaysWaitsOnceThenChecksPhysicalArrivalRegardlessOfScript(bool arrived, bool idle, int speed)
+    {
+        var (definition, before) = ControlWorld(source: false);
+        var world = before.Exploration!;
+        var motion = world.PlayerEntity.Motion with { XAcceleration = 0, YAcceleration = 0, XSpeed = (ushort)speed,
+            XVelocity = (short)speed, XTravel = (ushort)(arrived ? 0 : speed * 2), XDestination = (short)(world.PlayerEntity.Motion.X + (arrived ? 0 : speed * 2)),
+            FlagsA = 0, WaitTimer = 11 };
+        world = world.WithEntity(world.PlayerEntity with { Motion = motion,
+            Actions = new(idle ? [new IdleEntityAction()] : [new WaitEntityTicks(200)]) });
+        before = new(before.SessionId, before.Revision, before.ObservationSequence, new ActiveExploration(world),
+            before.Story.Copy(null, eventCaller: new ZoneEventContext(), entityServices: true), before.StopReason);
+        var tail = ProgramRunner.Run(definition, before, []).Snapshot;
+        Assert.IsType<ZoneArrivalWait>(tail.Story.Wait);
+        Assert.Equal(before.Story.SimulationTick, tail.Story.SimulationTick);
+        Assert.False(tail.CanWaitAtInput);
+        Assert.Equal("program-owns-control", ExplorationDispatcher.Submit(definition, tail, new Move(ExplorationDirection.North)).Failure!.Code);
+        var first = Step(definition, tail, new AdvanceSimulation(tail.Story.Wait!.Token)).Snapshot;
+        if (!arrived)
+        {
+            Assert.IsType<ZoneArrivalWait>(first.Story.Wait);
+            first = Step(definition, first, new AdvanceSimulation(first.Story.Wait!.Token)).Snapshot;
+        }
+        Assert.Null(first.Story.EventCaller);
+        Assert.Null(first.Story.Wait);
+        Assert.Equal(arrived ? 1 : 2, first.Story.SimulationTick);
+        Assert.Equal(SessionStopReason.PlayerInput, first.StopReason);
+        Assert.Equal(first.Exploration!.PlayerEntity.Motion.XDestination, first.Exploration.PlayerEntity.Motion.X);
+        Assert.True(first.Story.EntityServices);
+    }
+
+    [Theory]
     [InlineData(true, 0)]
     [InlineData(true, 7)]
     [InlineData(false, 2)]
