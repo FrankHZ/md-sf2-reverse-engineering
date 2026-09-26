@@ -25,7 +25,7 @@ internal static class ExplorationTextRunner
             bool moving = window.AnimationCounter < window.AnimationLength;
             window = window with { Moving = moving, AnimationCounter = moving ? window.AnimationCounter + 1 : window.AnimationCounter };
         }
-        return story.Copy(story.Cursor, story.Wait, logicalText: window, logicalView: view);
+        return ExplorationChoiceRunner.Windows(story.Copy(story.Cursor, story.Wait, logicalText: window, logicalView: view));
     }
 
     internal static int TypewriteDelay(ExplorationTextSettings settings, byte logicalInput) =>

@@ -3587,3 +3587,60 @@ timeout/cleanup failure, missing genuine receipts, ordinal-3 prerequisites and r
 launch prohibitions remain separate and unchanged. This Issue, new identity, preparation PASS or
 independent PR review grants no third controlled start or frozen acceptance. Stop at the Draft PR
 for independent main-gate review; there is no launch, merge or cleanup authorization.
+
+## Source-bound choice lifecycle
+
+**Confirmed (static source):** USA SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`; SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. Reproduce named bodies with
+`git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>` in the registered read-only source.
+No new original run accompanies this binding.
+
+- `code/common/menus/yesnoprompt.asm:YesNoPrompt`8–177 /0x15284 captures PLAYER_1_INPUT;
+  `alt_YesNoPrompt`22 instead starts with zero. Ordinary csc11 uses the first entry through
+  `code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm:j_YesNoPrompt`308.
+- Own14×3 window begins(32,17), selection0/Yes, both initial variants at counter0. It moves to
+  (12,17), length4; existing dialogue/gold receive MoveWindowWithSfx8080,length4. After the global
+  movement wait, nonzero captured entry input gates on PLAYER_1_INPUT becoming zero. The spin
+  `loc_1530C` has no explicit WaitForVInt; this does not prove hardware interrupts are absent.
+- `loc_15314` checks CURRENT_PLAYER_INPUT Left→Right→B→C→A. Left/Right set0/-1 and emit selection
+  SFX even on reselection. B closes withNo; C/A close with the current choice. Navigation redraws
+  old variant0, installs selection/layout, refreshes settled own/dialogue via SetWindowDestination,
+  optionally moves gold, then sets counter19. Neutral/navigation draw the chosen variant, decrement,
+  wrap0→20 and WaitForVInt once. Initial poll counter is15. Accept/cancel bypasses this tail.
+- `loc_153D6` moves own window to signed(-16,17), refreshes dialogue/gold, waits for global movement,
+  deletes only own window, then returns sign-extended0/-1. `mapscriptengine_2.asm:csc11`562–581
+  writes flag89 after that return, performs Sleep10, then returns to ExecuteMapScript. No direct
+  RNG draw, RANDOM_SEED_COPY write, entity toggle, portrait unregister or Typewriting clear occurs.
+- `windowengine.asm:CreateWindow`42, SetWindowDestination98, MoveWindow205, DeleteWindow234,
+  WaitForWindowMovementEnd279 and VInt_UpdateWindows292 establish current-position sentinel8080,
+  conditional settled refresh, pre-pass moving bits and post-pass interpolation. Length4 normally
+  needs a fifth busy-clear pass; other moving windows matter. Debug turbo overrides length to1.
+  Create/DeleteWindow do not themselves increment/decrement WINDOW_IS_PRESENT. Window hide affects
+  projection, not counter advancement; fix-position work remains distinct from geometric motion.
+- `yesnoprompt.asm:sub_15422/sub_1542A/sub_1544A/LoadYesNoPromptLayout`189–267 selects variants at
+  counter>=10, queues0x90-word graphics toB800/B920 and refreshes the selected label. The full
+  `code/common/tech/interrupts/vintengine_2.asm:ApplyVIntVramDma`87–139 queues under an interrupt
+  mask and returns; it adds no explicit logical wait or RNG draw.
+- `applyfadingeffectandz80busupdate.asm:ApplyZ80BusUpdates`124–202 reads controllers, applies
+  walking-direction conditioning and LAST_PLAYER_INPUT/repeat suppression (24 threshold, subtract6
+  on repeat). PLAYER_1_INPUT and CURRENT_PLAYER_INPUT are not interchangeable. The current remake
+  admission consumes fresh semantic conditioned input; global raw repeat ancestry is not bound.
+- `vintengine_1.asm:WaitForVInt/Sleep`144/162 and `battlevints.asm:SetBaseVIntFunctions`8 plus
+  `vint.asm:CallContextualFunctions`64 own the common opportunities/order. Registered portrait
+  remains active after entities/view/scroll/windows. Only actual services consume their RNG draws;
+  `randomnumbergenerator.asm:GenerateRandomNumber`10 does not write the text poll-copy byte.
+
+The retained candidate already represents `cs-5149a[128]` yes-no(flag89) and its branch129.
+Yes selects `cs-51614`, text535/W1 then536/W1; No continues532/W2 then533/W1, Sarah movement,
+Chester facing and csc_end. ZoneEvent8 writes F603 only after the script returns. Text536 input is
+before its acknowledgement/close and F600/F66/JOIN. `csc08_joinForce`366–401 retains its separate
+view/music/member/plain-text/FadeOut_WaitForP1Input/close/Sleep lifecycle; it is not bound by choice.
+Indices identify retained metadata, never engine admission conditions.
+
+Historical original Messenger entry7267/fresh poll7291/C7292/return7297 proves its named Yes seam;
+it supplies no portable frame quota. **Unknown:** original natural No path, full raw-repeat/CPU/DMA
+schedule, gold/debug domain and later JOIN coupling. Modern release zero-service is an explicit
+product boundary. Engine/native observations consume this source; they do not become original
+observations. See [execution](../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle)
+and [verification](../../remake/docs/development-and-verification.md#source-bound-choice-observation).

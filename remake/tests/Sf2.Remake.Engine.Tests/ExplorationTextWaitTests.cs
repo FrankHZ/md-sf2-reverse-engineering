@@ -928,6 +928,159 @@ public sealed class ExplorationTextWaitTests
             Assert.True(kinds.IndexOf("portrait-closed") < kinds.IndexOf("zone-arrival-wait"));
     }
 
+    [Theory]
+    [InlineData(false, ChoiceInput.ConfirmC, true, 89)]
+    [InlineData(true, ChoiceInput.ConfirmA, true, 731)]
+    [InlineData(false, ChoiceInput.Cancel, false, 19)]
+    [InlineData(true, ChoiceInput.Cancel | ChoiceInput.ConfirmA, false, 65000)]
+    public void BoundChoiceDeletesThenWritesGenericFlagThenReturnsAfterTenServices(bool held, ChoiceInput input, bool yes, int flag)
+    {
+        var session = StartChoice(flag);
+        var entry = session.Current;
+        var token = entry.Story.Wait!.Token;
+        Assert.NotNull(Send(session, new ChooseDialogue(token, true)).Failure);
+        Accept(session, new ChoiceHeldInput(token, held));
+        Accept(session, new AdvanceSimulation(token, 600));
+        Assert.Equal(5, session.Current.Story.SimulationTick - entry.Story.SimulationTick);
+        if (held)
+        {
+            Assert.Equal(ChoicePhase.Release, Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!.Phase);
+            Assert.NotNull(Send(session, new PollChoice(token, input)).Failure);
+            Assert.NotNull(Send(session, new AdvanceSimulation(token)).Failure);
+            Accept(session, new ChoiceHeldInput(token, true));
+            Accept(session, new ChoiceHeldInput(token, false));
+        }
+        Assert.True(session.Current.CanWaitForChoice);
+        Assert.NotNull(Send(session, new PollChoice(new(token.Value + 1))).Failure);
+        Assert.NotNull(Send(session, new WaitAtInput()).Failure);
+        var before = session.Current;
+        var accepted = Accept(session, new PollChoice(token, input));
+        Assert.Equal(before.Story.SimulationTick, session.Current.Story.SimulationTick);
+        Assert.DoesNotContain(accepted.Observations, row => row.Kind is "choice-poll-service" or "choice-result-flag");
+        Accept(session, new AdvanceSimulation(token, 4));
+        Assert.DoesNotContain(flag, session.Current.Story.Flags);
+        Assert.True(Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!.Visible);
+        var deleted = Accept(session, new AdvanceSimulation(token));
+        Assert.Equal(new[] { "choice-mandatory-service", "choice-deleted", "choice-result-flag" }, deleted.Observations.Select(row => row.Kind));
+        Assert.Equal(yes, session.Current.Story.Flags.Contains(flag));
+        Assert.False(Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!.Visible);
+        Accept(session, new AdvanceSimulation(token, 9));
+        Assert.Equal(token, session.Current.Story.Wait!.Token);
+        var returned = Accept(session, new AdvanceSimulation(token, 600));
+        Assert.Contains(returned.Observations, row => row.Kind == "choice-returned");
+        Assert.Equal(20, session.Current.Story.SimulationTick - entry.Story.SimulationTick);
+        Assert.NotEqual(token, session.Current.Story.Wait!.Token);
+        Assert.Equal(ChoicePhase.Entry, Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!.Phase);
+        Assert.NotNull(Send(session, new PollChoice(token, ChoiceInput.Cancel)).Failure);
+    }
+
+    [Theory]
+    [InlineData(ChoiceInput.Right | ChoiceInput.Cancel, false)]
+    [InlineData(ChoiceInput.Left | ChoiceInput.Right | ChoiceInput.ConfirmC, true)]
+    [InlineData(ChoiceInput.Up | ChoiceInput.Down, true)]
+    public void ChoicePollUsesConditionedPrecedenceReselectionAndOneTail(ChoiceInput mask, bool selected)
+    {
+        var session = StartChoice(421);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new ChoiceHeldInput(token, false));
+        Accept(session, new AdvanceSimulation(token, 5));
+        long tick = session.Current.Story.SimulationTick;
+        var poll = Accept(session, new PollChoice(token, mask));
+        var work = Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!;
+        Assert.Equal(selected, work.Yes);
+        Assert.Equal(ChoicePhase.Input, work.Phase);
+        Assert.Equal(tick + 1, session.Current.Story.SimulationTick);
+        Assert.Single(poll.Observations, row => row.Kind == "choice-poll-service");
+        if ((mask & (ChoiceInput.Left | ChoiceInput.Right)) != 0)
+        {
+            Assert.Equal(18, work.Counter);
+            Assert.Single(poll.Observations, row => row.Kind == "choice-sound" && row.Detail == "66");
+            var again = Accept(session, new PollChoice(token, selected ? ChoiceInput.Left : ChoiceInput.Right));
+            Assert.Single(again.Observations, row => row.Kind == "choice-sound" && row.Detail == "66");
+        }
+        else Assert.Equal(14, work.Counter);
+        var accepted = Accept(session, new PollChoice(token, ChoiceInput.ConfirmA));
+        Assert.Equal(selected, Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!.Yes);
+        Assert.DoesNotContain(accepted.Observations, row => row.Kind == "choice-poll-service");
+    }
+
+    [Theory]
+    [InlineData(false, 0xC632A55Au)]
+    [InlineData(true, 0x1234BEEFu)]
+    public void ChoiceServicesPreserveLiveEntityPortraitViewTypewritingAndCopy(bool enabled, uint seed)
+    {
+        var session = StartChoice(99, enabled, seed);
+        var entry = session.Current;
+        var token = entry.Story.Wait!.Token;
+        var story = entry.Story.Copy(entry.Story.Cursor, entry.Story.Wait, entityServices: enabled,
+            eventCaller: new ZoneEventContext(), randomSeedCopy: 0xA9, typewriting: true,
+            logicalView: ExplorationViewRunner.SetDestination(entry.Story.LogicalView!, new(5, 6)),
+            logicalText: new(Open: true, AnimationLength: 9),
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 1, Registered: true, Movement: 0, Moving: true)));
+        var opened = ExplorationDispatcher.Submit(session.Definition, entry.WithStory(story), new ChoiceHeldInput(token, false));
+        Assert.Null(opened.Failure);
+        Assert.Equal(2, opened.Observations.Count(row => row.Kind == "choice-sound" && row.Detail == "65"));
+        // A longer represented dialogue movement remains part of the global predicate.
+        var longer = opened.Snapshot.Story.Copy(opened.Snapshot.Story.Cursor, opened.Snapshot.Story.Wait,
+            logicalText: new(Open: true, AnimationLength: 8));
+        var first = ExplorationDispatcher.Submit(session.Definition, opened.Snapshot.WithStory(longer), new AdvanceSimulation(token));
+        Assert.Null(first.Failure);
+        var entitySeed = enabled ? EntityActionRunner.Tick(entry.Exploration!, storyFlags: story.Flags).World.Party.MainSeed : seed;
+        var blink = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(entitySeed, 120);
+        var mouth = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(blink.After, 5);
+        Assert.Equal(mouth.After, first.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal((byte)0xA9, first.Snapshot.Story.RandomSeedCopy);
+        Assert.True(first.Snapshot.Story.Typewriting);
+        Assert.True(first.Snapshot.Story.LogicalView!.HideWindows);
+        Assert.Null(first.Snapshot.Story.LogicalView.TargetSlot);
+        var fifth = ExplorationDispatcher.Submit(session.Definition, first.Snapshot, new AdvanceSimulation(token, 4));
+        Assert.Equal(ChoicePhase.Opening, Assert.IsType<ChoiceWait>(fifth.Snapshot.Story.Wait).Work!.Phase);
+        var finish = ExplorationDispatcher.Submit(session.Definition, fifth.Snapshot, new AdvanceSimulation(token, 600));
+        Assert.Equal(ChoicePhase.Input, Assert.IsType<ChoiceWait>(finish.Snapshot.Story.Wait).Work!.Phase);
+        Assert.Equal(9, finish.Snapshot.Story.SimulationTick - entry.Story.SimulationTick);
+        Assert.Equal((byte)0xA9, finish.Snapshot.Story.RandomSeedCopy);
+        Assert.Equal(enabled, finish.Snapshot.Story.EntityServices);
+    }
+
+    [Fact]
+    public void ChoiceAnimationFollowsLogicalPollsAndCancelClearsAnExistingFlag()
+    {
+        var session = StartChoice(307);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new ChoiceHeldInput(token, false));
+        Accept(session, new AdvanceSimulation(token, 5));
+        var seed = session.Current.Exploration!.Party.MainSeed;
+        foreach (int counter in Enumerable.Range(1, 15).Reverse())
+        {
+            Accept(session, new PollChoice(token));
+            var work = Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!;
+            Assert.Equal(counter >= 10, work.YesAlternate);
+            Assert.False(work.NoAlternate);
+            Assert.Equal(counter == 1 ? 20 : counter - 1, work.Counter);
+        }
+        Assert.Equal(seed, session.Current.Exploration!.Party.MainSeed);
+        Accept(session, new PollChoice(token, ChoiceInput.Right));
+        var selected = Assert.IsType<ChoiceWait>(session.Current.Story.Wait).Work!;
+        Assert.False(selected.YesAlternate);
+        Assert.True(selected.NoAlternate);
+        var entry = session.Current;
+        var flagged = entry.WithStory(entry.Story.Copy(entry.Story.Cursor, entry.Story.Wait, flags: [307]));
+        var closing = ExplorationDispatcher.Submit(session.Definition, flagged, new PollChoice(token, ChoiceInput.Cancel));
+        Assert.Contains(307, closing.Snapshot.Story.Flags);
+        var deleting = ExplorationDispatcher.Submit(session.Definition, closing.Snapshot, new AdvanceSimulation(token, 5));
+        Assert.DoesNotContain(307, deleting.Snapshot.Story.Flags);
+        Assert.Equal(ChoicePhase.ReturnDelay, Assert.IsType<ChoiceWait>(deleting.Snapshot.Story.Wait).Work!.Phase);
+    }
+
+    private static GameSession StartChoice(int flag, bool enabled = false, uint seed = 0x12341234) =>
+        StartFieldText("{W1}", enabled: enabled, npcRandom: true, configure: document =>
+        {
+            document["battle"]!["start"]!["mainSeed"] = seed;
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse($$"""
+                [{"op":"yes-no","flag":{{flag}}},{"op":"yes-no","flag":{{flag + 1}}},{"op":"end"}]
+                """);
+        });
+
     private static void DrainTextWork(GameSession session)
     {
         for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)

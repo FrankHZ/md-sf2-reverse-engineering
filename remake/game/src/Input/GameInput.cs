@@ -8,10 +8,14 @@ internal sealed class GameInput
 {
     private readonly Dictionary<GameAction, List<InputEvent>> _bindings = [];
     private readonly Dictionary<(int Device, JoyAxis Axis), int> _axes = [];
+    private readonly HashSet<(int Device, JoyButton Button)> _pressedButtons = [];
     internal InputSettings Settings { get; }
     internal bool WaitHeld { get; private set; }
     private bool _waitRequiresRelease;
     internal void DisarmWait() => _waitRequiresRelease |= WaitHeld;
+    // Godot's installed actions aggregate all mapped keys, pad buttons and axes.
+    // This is held-state admission only, never a conditioned/repeating choice poll.
+    internal bool GameplayHeld => _bindings.Keys.Any(action => action != GameAction.Wait && Godot.Input.IsActionPressed(MapName(action)));
 
     internal GameInput(InputSettings settings)
     {
@@ -107,6 +111,12 @@ internal sealed class GameInput
             input is InputEventJoypadMotion neutral && Math.Abs(neutral.AxisValue) < 0.5f &&
             _bindings[GameAction.Wait].Any(binding => binding is InputEventJoypadMotion axis && axis.Axis == neutral.Axis)))
             _waitRequiresRelease = false;
+        if (input is InputEventJoypadButton button)
+        {
+            var identity = (button.Device, button.ButtonIndex);
+            if (!button.Pressed) { _pressedButtons.Remove(identity); return null; }
+            if (!_pressedButtons.Add(identity)) return null;
+        }
         if (input is InputEventJoypadMotion motion)
         {
             int direction = Math.Abs(motion.AxisValue) < 0.5f ? 0 : Math.Sign(motion.AxisValue);

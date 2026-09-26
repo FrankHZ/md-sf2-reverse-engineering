@@ -242,7 +242,9 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow(),
                             portraitWindow: story.PortraitWindow is UnknownPortraitWindow ? new UnknownPortraitWindow() : story.PortraitWindow); break;
                     case ChooseYesNo choice:
-                        story = current.Story.Copy(cursor, new ChoiceWait(token, choice.ResultFlag)); break;
+                        if (current.Story.TextSettings is not null) ExplorationTextRunner.ValidateContext(current);
+                        story = current.Story.Copy(cursor, new ChoiceWait(token, choice.ResultFlag,
+                            current.Story.TextSettings is null ? null : new ChoiceWork())); break;
                     case WaitProgramTicks ticks when ticks.Ticks > 0:
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
@@ -364,6 +366,7 @@ internal static class ProgramRunner
         var reason = story.Wait switch
         {
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } => SessionStopReason.PresentationWait,
+            ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
             DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,

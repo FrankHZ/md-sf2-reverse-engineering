@@ -163,14 +163,26 @@ internal static class ExplorationDispatcher
                         observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case ChooseDialogue choice:
-                    if (current.Story.Wait is not ChoiceWait waiting || waiting.Token != choice.Wait)
+                    if (current.Story.Wait is not ChoiceWait { Work: null } waiting || waiting.Token != choice.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active,
                         FinishWait(current.Story).Copy(NextCursor(current.Story),
                             flags: ProgramRunner.Flags(current.Story, waiting.ResultFlag, choice.Yes)), observations,
                         "dialogue-chosen", choice.Yes ? "yes" : "no");
                     break;
+                case ChoiceHeldInput held:
+                    if (current.Story.Wait is not ChoiceWait { Work.Phase: ChoicePhase.Entry or ChoicePhase.Release } heldWait || heldWait.Token != held.Wait)
+                        return Reject(current, "choice-held-unavailable", "wait");
+                    current = ExplorationChoiceRunner.Held(current, held.Held, observations);
+                    break;
+                case PollChoice poll:
+                    if (!current.CanWaitForChoice || current.Story.Wait!.Token != poll.Wait || ((int)poll.Input & ~127) != 0)
+                        return Reject(current, "choice-input-unavailable", "wait");
+                    current = ExplorationChoiceRunner.Poll(definition, current, poll.Input, observations);
+                    break;
                 case AdvanceSimulation advance:
+                    if (current.Story.Wait is ChoiceWait { Work: { Automatic: false } })
+                        return Reject(current, "explicit-choice-input-required", "command");
                     if (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait)
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
@@ -183,6 +195,14 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is ChoiceWait { Work: { Automatic: true } } boundChoice)
+                        {
+                            current = Service(definition, current, observations, "choice-mandatory-service");
+                            current = ExplorationChoiceRunner.Advance(current, observations);
+                            if (current.Story.Wait?.Token != boundChoice.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait is ChoiceWait { Work.Automatic: false }) return ProgramRunner.Result(current, observations);
+                            continue;
+                        }
                         if (current.Story.Wait is NodWait nod)
                         {
                             current = Service(definition, current, observations, "nod-service");

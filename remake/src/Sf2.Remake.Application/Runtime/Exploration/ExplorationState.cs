@@ -35,7 +35,16 @@ public sealed record LogicalView(ExplorationViewArea Area, int? TargetSlot,
 {
     public bool Scrolling => AX.Active || AY.Active || BX.Active || BY.Active;
 }
-public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
+public enum ChoicePhase { Entry, Opening, Release, Input, Closing, ReturnDelay }
+public sealed record ChoiceWork(ChoicePhase Phase = ChoicePhase.Entry, bool Yes = true, bool EntryHeld = false,
+    int Counter = 15, bool YesAlternate = false, bool NoAlternate = false,
+    int OriginX = 32, int DestinationX = 12, int Movement = 0, int Length = 4, bool Moving = true, int Remaining = 0)
+{
+    public int X => OriginX + (DestinationX - OriginX) * Movement / Length;
+    public bool Visible => Phase is not (ChoicePhase.Entry or ChoicePhase.ReturnDelay);
+    public bool Automatic => Phase is ChoicePhase.Opening or ChoicePhase.Closing or ChoicePhase.ReturnDelay;
+}
+public sealed record ChoiceWait(WaitToken Token, int ResultFlag, ChoiceWork? Work = null) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0, bool ActualDone = false) : ProgramWait(Token)
 {

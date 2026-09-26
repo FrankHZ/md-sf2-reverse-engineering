@@ -2651,3 +2651,60 @@ and both seeds. Probes and launch wrappers are observations, not engine behavior
 No screenshots, injected paths, runtime seed changes, original runtime, new assets or resource
 copies are required. The [source audit and limits](./presentation-and-assets.md#battlefield-movement-and-walking-audio)
 remain separate from native-consumer claims.
+
+## Source-bound choice observation
+
+The [execution owner](./exploration-programs.md#source-bound-yesno-lifecycle) admits fresh conditioned
+semantic input with separately captured mapped held release. Test actual engine behavior in
+`ExplorationTextWaitTests` and retain the companion legacy choice behaviors in
+`ExplorationSessionTests`. Affected classes are `ExplorationTextWaitTests`, `ExplorationSessionTests`,
+`MapEntityLifecycleTests` and `CommandsetContinuationTests`; use their existing dotnet filter with
+the locked SDK/private environment. Run `uv run sf2 verify engine`, `uv run sf2 verify adapter` and
+refresh Debug before actual adapter observations. No tests of probes/reports and no blanket
+normal/full/H3 rerun are required by this bounded source binding. The prior completed normal-verify
+provenance failure after148passes is retained under the existing applicability decision.
+
+The maintained input observer selects
+`portrait-event-zone-nod-camera-choice-yes-private-instant` (or `choice-no`, `natural`, `reveal`).
+Set `SF2_INPUT_RATE` to20 for natural or40 for reveal, and retain the same world, controlled party,
+spatial fixture and unchanged bound opening start used by the camera observation above. Select
+fresh ignored output/settings destinations. `gamepad` and `remapped` suffixes exercise actual
+installed input bindings, including swapped Confirm/Cancel. These cases must not generate candidate
+content, inject the old text531 endpoint, use historical frame/C quotas or capture the original.
+
+Run both answers across all three text settings continuously. Recheck the accepted5096-state prefix
+and actual camera/wall projection. At531 hold Ack through opening; verify release across mapped
+Confirm plus a mapped stick, then hidden/focus rearm, one neutral Wait and Right→Left→Right→Left.
+Confirm returnsYes; Cancel returnsNo. Record actual menu Control geometry/visibility/selection/color
+at matching logical tick/token, full source65/66 requests/playback, no additional67, deletion,
+flag write, ten services and instruction return. Keep actual speech differences under unanswered#517.
+A focus-loss recovery in the observer records the loss and restoration and adds no semantic input;
+unavailable OS focus restoration is an observation failure, never a passed gate.
+
+Record first following genuine text input (Yes535/W1 or No532/W2) with choice deleted, correct flag,
+full return delay and active zone caller/F603 clear. Continue supported content. Yes stops at536/W1
+before Wait/Ack/F600/F66/JOIN. No completes decline and stops at the first ordinary field-control
+return, F89 clear/F603 set/caller cleared, with no extra input or join/party writes. Probe endpoints
+never gate production engine legality. These observations do not establish original naturalNo,
+fullYes Messenger/H4 or JOIN audio/input/live-service coupling.
+
+**Confirmed (bounded remake):** both answers passed continuous instant/natural20/reveal40
+observations from the unchanged bound start. Each retained5096-state prefix matches the accepted
+camera run. Within each answer, all25 selected fields match across5325 Yes or5386 No settled states.
+Choice enters at5097, opens through5102, performs the declared five polls through5107, deletes at5112
+and returns at5122 after ten post services. These are measured boundaries, not engine quotas.
+Yes stops at536/W1 tick5324/main55350000/copyEF; No returns first field control at5385/main61880000/copy14.
+Actual menu phases/geometry/labels/variants and non-speech audio agree; natural-only speech remains
+under#517. Six actual camera/alpha checks retain362 opaque teacher pixels covered and214 transparent
+pixels unpainted. FullYes Messenger/JOIN and original naturalNo remain unproven.
+
+Preserved completed observation failures: an initial Yes run exhausted its observer guard at text524,
+tick3828, focusedfalse/debt0 and no application error. A later No/natural run passed its logical
+probe but lacked menu draw callbacks, so offline projection acceptance failed. Its correction
+retains all5386 states/25fields and50 non-speech receipts, and passes complete menu/camera/alpha checks.
+The observer now rejects missing phase draws itself. Other passing runs and the completed failing
+aggregate were retained; only the affected native observation and comparisons were repeated.
+
+Local results and exact CI are retained in the Issue handoff; original-runtime delta0. Preserve
+completed native/gate failures, eight warp differences, H4/HEAL/JOIN/next-actor and cleanupUnknowns.
+#517 remains unanswered, #523 stopped and investigator user-exclusive.
