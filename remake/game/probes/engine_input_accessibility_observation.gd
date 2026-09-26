@@ -954,7 +954,7 @@ func opening_settle() -> bool:
         var s := state()
         if s.failure != null: return false
         if s.get("canWaitAtInput", false): return true
-        if "portrait-event" in input_case and s.entityEvent != null:
+        if "portrait-event" in input_case and s.eventCaller != null:
             var phase := str(s.wait) + ":" + str(s.textId) + ":" + str(s.fieldText.Phase if s.fieldText != null else "")
             if s.portraitWork != null:
                 phase += ":" + str([s.portraitWork.Registered, s.portraitWork.Moving, s.portraitWork.Closing,
@@ -1051,6 +1051,26 @@ func run_portrait_event() -> void:
             var ready_ids: Array = samples.filter(func(r): return r.label.begins_with("opening-ready-")).map(func(r): return int(r.state.textId))
             check(ready_ids == [510,511,483,512,481], "Only reached W controls receive one Wait and Ack; trailing480 auto-completes")
             check(returned.audio.error == null, "Actual window/audio playback has no adapter error")
+            if "zone" not in input_case:
+                finish_public()
+                return
+        if "zone" in input_case and edge.waypoint == "map3-astral-zone-introduction":
+            await process_frame
+            var returned := read_sample("zone-introduction-return")
+            check(returned.canWaitAtInput and returned.eventCaller == null and returned.textWindow == "ClosedTextWindow" and
+                returned.portraitWindow == "ClosedPortraitWindow" and not returned.logicalText.Open,
+                "Zone caller closes both windows and releases ordinary control")
+            var ready_ids: Array = samples.filter(func(r): return r.label.begins_with("opening-ready-")).map(func(r): return int(r.state.textId))
+            check(ready_ids == [510,511,483,512,481,513], "Spatial route reaches the first introduction through actual W controls")
+            check(returned.entitiesRunning == true and returned.audio.error == null, "Zone service and actual audio remain admitted")
+            check(not 602.0 in returned.flags and not 603.0 in returned.flags, "Stop before later Astral interactions and story flags")
+            var zone_entries: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "zone-entered"))
+            check(zone_entries.size() >= 2, "Opening zone and introduction both use the generic source caller")
+            var introduction: Dictionary = zone_entries.back().state if not zone_entries.is_empty() else {}
+            if not introduction.is_empty():
+                var mover: Dictionary = introduction.entities.filter(func(e): return e.id == "entity-0")[0]
+                check(mover.moving and mover.actionCursor == 0 and introduction.eventCaller == "ZoneEventContext" and
+                    introduction.entitiesRunning, "Zone handler enters with preserved player movement and pending init actions")
             finish_public()
             return
         read_sample("portrait-navigation-" + str(edge.waypoint) + "-" + str(int(edge.x)) + "-" + str(int(edge.y)))

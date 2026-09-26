@@ -172,6 +172,18 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is ZoneArrivalWait)
+                        {
+                            current = Service(definition, current, observations, "zone-return-service");
+                            var motion = current.Exploration!.PlayerEntity.Motion;
+                            if (motion.X == motion.XDestination && motion.Y == motion.YDestination)
+                            {
+                                current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
+                                    clearEventCaller: true), observations, "zone-finished");
+                                return ProgramRunner.Run(definition, current, observations);
+                            }
+                            continue;
+                        }
                         if (current.Story.Wait is PortraitMovementWait portraitWait)
                         {
                             current = Service(definition, current, observations, "portrait-window-service");
@@ -185,9 +197,8 @@ internal static class ExplorationDispatcher
                             current = current.WithStory(ExplorationTextRunner.BeforeService(current.Story));
                             current = Service(definition, current, observations, "text-mandatory-service");
                             var servicedStory = ExplorationTextRunner.AfterService(current.Story);
-                            bool returnedEvent = current.Story.Wait is TextCloseWait { EntityEventReturn: true } && servicedStory.Wait is null;
                             current = ProgramRunner.Commit(current, current.Active, servicedStory,
-                                observations, returnedEvent ? "interaction-finished" : "text-work-advanced");
+                                observations, "text-work-advanced");
                             if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations);
                             if (current.Story.Wait is FieldTextWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
                             continue;
@@ -240,6 +251,11 @@ internal static class ExplorationDispatcher
                             }
                             current = ProgramRunner.Commit(current, active, story, observations,
                                 field.Moved ? "movement-started" : "movement-blocked");
+                            if (field.Event is { Kind: ExplorationEventKind.SourceZone } zone)
+                            {
+                                current = MapEventDispatcher.EnterZone(current, zone, entityUpdates, observations);
+                                return ProgramRunner.Run(definition, current, observations);
+                            }
                             if (!field.Moved) return ProgramRunner.Run(definition, current, observations);
                             continue;
                         }
@@ -296,7 +312,7 @@ internal static class ExplorationDispatcher
         {
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp);
         }
-        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened)
+        else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
             return ProgramRunner.Result(ProgramRunner.Stop(ProgramRunner.Commit(current,
                 new ActiveExploration(world.WithEntity(player with { Motion = player.Motion with
                     { Facing = preview.World.PlayerEntity.Motion.Facing } })), current.Story, observations, "movement-blocked"),
@@ -329,7 +345,7 @@ internal static class ExplorationDispatcher
     internal static SessionSnapshot Service(ScenarioDefinition definition, SessionSnapshot current,
         List<SessionObservation> observations, string kind)
     {
-        bool enabled = current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { EntityEventReturn: true } &&
+        bool enabled = current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
             (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
         var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
         var world = tick is null ? current.Exploration! : MapEventDispatcher.Roof(tick.World);

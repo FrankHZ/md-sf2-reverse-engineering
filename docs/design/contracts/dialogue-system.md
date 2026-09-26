@@ -192,9 +192,38 @@ If no script activated entities, suppression persists through the close tail.
 
 **Confirmed (bounded remake):** the [entity-event consumer](../../../remake/docs/exploration-programs.md#bound-entity-event-portrait)
 uses those rules for supported live state/content and reaches Sarah's first classroom caller
-return under equal semantic inputs across three display settings. **Unknown:** later zone portrait,
+return under equal semantic inputs across three display settings. The source-zone section below
+admits the first introduction separately. **Unknown:** subsequent zone portrait,
 camera, JOIN and battle consumer service schedules, original DMA/presentation timing and the
 existing whole-route acceptance gaps. This admission adds no original runtime observation.
+
+## Source zone caller through return
+
+**Confirmed (static source):** the pinned `ProcessMapEventType6_ZoneEvent` installs player
+`eas_Init` and immediately calls `RunMapSetupZoneEvent`. The request is produced during the
+player entity service; the remaining entities complete their pass before the handler runs.
+Entity obstruction precedes the request; map passability follows it. A blocked map marker can
+therefore call its handler while an entity-obstructed target cannot. Init installation MUST
+preserve current position, destination, velocity and timer; its actions execute on later services.
+The [spatial owner](../../research/map3-controlled-start-egress-transition.md#source-zone-request-order)
+records the source symbols and legal staircase example.
+
+The zone caller MUST remain distinct from entity interaction: no interaction facing/suppression
+or facing restoration is implied. Carry the actual live entity-enable flag through native code
+and script calls. Reuse the admitted portrait/text/view work, including incoming typewriting,
+registered portrait retention, Unknown rejection and poll-copy preservation.
+
+After the handler returns, close/remove portrait, then close dialogue, then perform one
+unconditional VInt opportunity. Only afterward compare the player's physical X/Y with its
+X/Y destination; repeat VInt/recheck while unequal. Script-idle and aggregate Busy MUST NOT
+replace that predicate. An empty/skipped handler or already-arrived player still owns the
+unconditional opportunity. Ordinary field control resumes only after this caller tail completes.
+
+**Confirmed (bounded remake):** the [source-zone consumer](../../../remake/docs/exploration-programs.md#source-zone-caller)
+uses one live caller authority and reaches the first Astral introduction return from the retained
+bound start across three display settings. This includes the earlier opening zone's same rule.
+**Unknown:** later zone/camera/choice/JOIN/battle consumer schedules and original hardware timing.
+No new original runtime observation is implied.
 
 ## Remake Boundary
 

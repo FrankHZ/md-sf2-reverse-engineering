@@ -399,13 +399,15 @@ internal static class ExplorationContentReader
                 RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"),
                 EntityFlags: row.TryGetProperty("entityFlags", out _) ? (byte)Number(row, "entityFlags", 0, 255) : null);
         }
-        if (kind is "step" or "warp-frontier")
+        if (kind is "step" or "warp-frontier" or "source-zone")
         {
-            Object(row, "event", "kind", "x", "y", "program", "marker", "requiredFlag", "requiredValue");
-            return new(kind == "step" ? ExplorationEventKind.Step : ExplorationEventKind.Warp,
+            Object(row, "event", ["kind", "x", "y", "program", "marker", "requiredFlag", "requiredValue",
+                .. kind == "source-zone" ? new[] { "actions" } : System.Array.Empty<string>()]);
+            return new(kind == "source-zone" ? ExplorationEventKind.SourceZone : kind == "step" ? ExplorationEventKind.Step : ExplorationEventKind.Warp,
                 NullableNumber(row, "x", 63), NullableNumber(row, "y", 63), null,
                 RequiredLocation(row.GetProperty("program")), RequiredMarker: (ushort?)NullableNumber(row, "marker", 0x3C00),
-                RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"));
+                RequiredFlag: NullableNumber(row, "requiredFlag", 65535), RequiredFlagValue: Boolean(row, "requiredValue"),
+                SourceInit: kind == "source-zone" ? Actions(row) : null);
         }
         Require(kind == "warp", "event-kind", "event.kind", true);
         ObjectOptional(row, "event", "loadMode", "kind", "x", "y", "map", "position", "facing", "marker", "requiredFlag", "requiredValue");

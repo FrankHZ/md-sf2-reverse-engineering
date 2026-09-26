@@ -85,7 +85,7 @@ public sealed class SessionSnapshot
     public bool CanWaitAtInput => Active is ActiveExploration field && StopReason == SessionStopReason.PlayerInput &&
         Story.Cursor is null && Story.Wait is null && Story.Callers.Count == 0 &&
         Story.Continuation == ProgramContinuation.FieldInput && Story.EnteringBattle is null &&
-        Story.EntityEvent is null && Story.TextWindow is ClosedTextWindow &&
+        Story.EventCaller is null && Story.TextWindow is ClosedTextWindow &&
         !field.World.PlayerEntity.Busy && !field.World.PlayerEntity.WaitingForSprite;
     public bool CanWaitForText => Active is ActiveExploration field && StopReason == SessionStopReason.PresentationWait &&
         Story.Cursor is not null && Story.Wait is (DialogueWait { InputFirstEntityService: not null } or W1TextWait { AtInput: true, Revealed: true } or FieldTextWait { Phase: FieldTextPhase.Input, Revealed: true }) &&

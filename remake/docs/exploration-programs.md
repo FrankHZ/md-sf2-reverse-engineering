@@ -205,11 +205,11 @@ selected private programs described below.
 
 The explicit `start.textSettings` profile (`messageSpeed`, `mouthControl`, `viewSpeed`) enables
 source text work for field programs. It requires a known Closed portrait with an explicitly
-portrait-less speaker, or the registered entity-event portrait described below, regular font
+portrait-less speaker, or the registered entity/zone caller portrait described below, regular font
 metadata, and a supported logical view. Names,
 text/actor IDs, seeds, routes and receipt counts never select this capability. A start without
 this profile retains its existing plain/W1/legacy consumer. An unsupported bound context stops;
-it cannot silently use display latency as gameplay work. Battle continuation, zone-event portraits,
+it cannot silently use display latency as gameplay work. Battle continuation, unadmitted caller portraits,
 scene camera changes, cursor targets, scrolling overrides, autoscroll and non-unity parallax
 are outside this profile. Quake and pulsating fade variants have no admitted implementation.
 
@@ -319,8 +319,32 @@ The wrapper binds `mapsetupsfunctions_1.asm:loc_4765E/loc_476A8/loc_476C4`.
 Trap9 appends the portrait after the installed base services; no global interrupt scheduler is
 introduced. The [research binding](../../docs/research/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)
 and [native observation](development-and-verification.md#bound-portrait-entity-event-observation)
-retain provenance and the actual caller-return boundary. Later zone/camera/JOIN/battle consumers
+retain provenance and the actual caller-return boundary. The source-zone section below admits the first introduction; later camera/JOIN/battle consumers
 and original hardware/DMA timing remain outside this admission.
+
+### Source zone caller
+
+Source-produced `source-zone` events carry validated init actions compiled from `eas_Init`.
+Authored `step` events retain arrival-before-program behavior. For a source zone, the marker
+request follows entity obstruction and precedes map passability. The complete producing entity
+pass runs before installation of the init stream and immediate handler entry. Physical travel,
+its timer and destination survive; subsequent enabled services execute init and the existing
+sprite handshake.
+
+`StoryState.EventCaller` is the sole live caller authority: `EntityEventContext` and
+`ZoneEventContext` select their own entry/return rules. `EntityEvent` is an entity-specific
+projection. A zone uses the existing registered portrait/text/view reducers and the carried
+live entity-service flag, regardless of native program defaults. It does not impersonate an
+entity interaction. Its return removes/closes portrait, closes dialogue, then owns one mandatory
+`ZoneArrivalWait` opportunity followed by physical-coordinate equality checks. Control stays
+with the caller until arrival; script-idle/Busy are not the return condition.
+
+The current actual admission is the first Astral introduction at(58,13), including affected
+opening Zone6 and Sarah from the original bound start. No route, text, speaker, flag value or
+seed selects this runtime mechanism. The [source binding](../../docs/research/map3-messenger-acceptance.md#first-introduction-source-zone-caller)
+and [actual observation](development-and-verification.md#source-zone-caller-observation)
+record its limits. Later text500/501/F602, the second zone branch, camera, choice, JOIN and battle
+consumers remain separate. This extends no original runtime or distribution claim.
 
 ## Original Map 3 opening
 

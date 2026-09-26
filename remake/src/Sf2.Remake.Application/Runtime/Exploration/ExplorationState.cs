@@ -21,8 +21,8 @@ public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<Fiel
     public bool Wait2 => End < Units.Count && Units[End].Kind == ExplorationTextTokenKind.Wait2;
 }
 public sealed record ViewWait(WaitToken Token, bool Recheck, bool FinalService = false, bool ScriptReturn = false) : ProgramWait(Token);
-public sealed record TextCloseWait(WaitToken Token, bool EntityEventReturn = false) : ProgramWait(Token);
-public sealed record PortraitMovementWait(WaitToken Token, bool Closing, bool EntityEventBoundary) : ProgramWait(Token);
+public sealed record TextCloseWait(WaitToken Token, bool CallerReturn = false) : ProgramWait(Token);
+public sealed record PortraitMovementWait(WaitToken Token, bool Closing, bool CallerBoundary) : ProgramWait(Token);
 public sealed record LogicalTextWindow(bool Open = false, byte X = 2, byte Y = 0, int Row = 0,
     int AnimationLength = 0, int AnimationCounter = 0, bool Moving = false, int Indicator = 0, bool IndicatorVisible = false);
 public sealed record LogicalViewAxis(int Position, int? Destination = null, int Speed = 0)
@@ -51,7 +51,10 @@ public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) :
 public sealed record EntitySetSpriteWait(WaitToken Token) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
-public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false);
+public abstract record FieldEventContext(bool Returning);
+public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false) : FieldEventContext(Returning);
+public sealed record ZoneEventContext(bool Returning = false) : FieldEventContext(Returning);
+public sealed record ZoneArrivalWait(WaitToken Token) : ProgramWait(Token);
 public abstract record TextWindow;
 public sealed record ClosedTextWindow : TextWindow;
 public sealed record OpenTextWindow(int Text, TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0) : TextWindow;
@@ -77,12 +80,12 @@ public sealed class StoryState
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
-        bool? entityServices = null, bool typewriting = false)
+        bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
         Continuation = continuation; EnteringBattle = enteringBattle; ReturnAnchor = returnAnchor;
-        TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EntityEvent = entityEvent;
+        TextWindow = textWindow ?? new ClosedTextWindow(); SimulationTick = simulationTick; PartyLists = partyLists; EventCaller = eventCaller ?? entityEvent;
         Speaker = speaker; CameraTarget = cameraTarget; CameraEntitySlot = cameraEntitySlot; OutcomeReturn = outcomeReturn;
         PortraitWindow = portraitWindow ?? new UnknownPortraitWindow();
         Display = display; Warp = warp; RandomSeedCopy = randomSeedCopy;
@@ -102,7 +105,8 @@ public sealed class StoryState
     public PortraitWindow PortraitWindow { get; }
     public long SimulationTick { get; }
     public MapPartyLists? PartyLists { get; }
-    public EntityEventContext? EntityEvent { get; }
+    public FieldEventContext? EventCaller { get; }
+    public EntityEventContext? EntityEvent => EventCaller as EntityEventContext;
     public EntityRef? Speaker { get; }
     public MapPosition? CameraTarget { get; }
     public int? CameraEntitySlot { get; }
@@ -125,14 +129,16 @@ public sealed class StoryState
         bool clearSpeaker = false, bool clearCameraTarget = false, int? cameraEntitySlot = null, bool clearCameraEntity = false,
         FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
-        bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null) =>
+        bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
+        FieldEventContext? eventCaller = null, bool clearEventCaller = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
-            textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, clearEntityEvent ? null : entityEvent ?? EntityEvent,
+            textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
             clearSpeaker ? null : speaker ?? Speaker, clearCameraTarget ? null : cameraTarget ?? CameraTarget,
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
             display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView,
-            clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting);
+            clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
+            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

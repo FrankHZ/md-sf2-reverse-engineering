@@ -29,7 +29,7 @@ internal static class MapEventDispatcher
             var before = world;
             world = OpenDoor(world, candidate);
             opened = !ReferenceEquals(before, world);
-            reached = world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
+            reached = world.Definition.Events.FirstOrDefault(entry => entry.Kind is ExplorationEventKind.Warp or ExplorationEventKind.SourceZone &&
                 Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], flags));
         }
         var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, direction);
@@ -88,6 +88,7 @@ internal static class MapEventDispatcher
 
     internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations)
     {
+        if (current.Story.EventCaller is ZoneEventContext zone) return FinishZone(current, zone, observations);
         if (current.Story.EntityEvent is not { } context) return current;
         var world = current.Exploration!;
         if (!context.Returning && (context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
@@ -105,13 +106,54 @@ internal static class MapEventDispatcher
             // loc_476C4 closes with the event's live service flag (Trap6 may have enabled it).
             // Restore facing once above; the close continuation clears the context.
             return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(null,
-                new TextCloseWait(new(current.ObservationSequence + 1), EntityEventReturn: true),
+                new TextCloseWait(new(current.ObservationSequence + 1), CallerReturn: true),
                 logicalText: window with { AnimationCounter = 0, AnimationLength = 8, Moving = true }),
                 observations, "interaction-closing", context.Entity.Value);
         }
         return ProgramRunner.Commit(current, new ActiveExploration(world),
             current.Story.Copy(null, textWindow: new ClosedTextWindow(), clearEntityEvent: true,
                 entityServices: current.Story.TextSettings is not null ? true : null), observations, "interaction-finished", context.Entity.Value);
+    }
+
+    internal static SessionSnapshot EnterZone(SessionSnapshot current, ExplorationEvent entry,
+        bool entityServices, List<SessionObservation> observations)
+    {
+        var world = current.Exploration!;
+        var actions = entry.SourceInit ?? throw new Sf2.Remake.Domain.Battles.BattleRuleException("zone-init", "event.actions", true);
+        // ApplyInitActscript writes the script pointer after the producing pass. Preserve
+        // physical motion and its timer; the init stream runs in subsequent entity service.
+        world = world.WithEntity(world.PlayerEntity with { Actions = actions, ActionCursor = 0,
+            WaitingForMotion = false, Follower = null });
+        return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(entry.Program,
+            eventCaller: new ZoneEventContext(), entityServices: entityServices), observations, "zone-entered");
+    }
+
+    private static SessionSnapshot FinishZone(SessionSnapshot current, ZoneEventContext context,
+        List<SessionObservation> observations)
+    {
+        if (!context.Returning)
+        {
+            current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
+                eventCaller: context with { Returning = true }), observations, "zone-returning");
+            if (current.Story.TextSettings is not null)
+            {
+                current = ExplorationPortraitRunner.Close(current, observations, true);
+                if (current.Story.Wait is not null) return current;
+            }
+        }
+        if (current.Story.LogicalText is { Open: true } window)
+        {
+            ExplorationTextRunner.ValidateContext(current);
+            return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
+                new TextCloseWait(new(current.ObservationSequence + 1), CallerReturn: true),
+                logicalText: window with { AnimationCounter = 0, AnimationLength = 8, Moving = true }),
+                observations, "zone-closing");
+        }
+        // loc_47576 always WaitForVInt before checking physical arrival, including
+        // an empty/skipped handler or a map-blocked marker whose player never moved.
+        return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
+            new ZoneArrivalWait(new(current.ObservationSequence + 1)), textWindow: new ClosedTextWindow()),
+            observations, "zone-arrival-wait");
     }
 
     internal static ExplorationState OpenDoor(ExplorationState world, MapPosition candidate)

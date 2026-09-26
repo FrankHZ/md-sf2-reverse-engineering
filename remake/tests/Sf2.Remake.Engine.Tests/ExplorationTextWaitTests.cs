@@ -386,7 +386,7 @@ public sealed class ExplorationTextWaitTests
         Accept(session, new CompleteTextReveal(token));
         var result = Accept(session, new Acknowledge(token));
         var closing = session.Current;
-        Assert.True(Assert.IsType<TextCloseWait>(closing.Story.Wait).EntityEventReturn);
+        Assert.True(Assert.IsType<TextCloseWait>(closing.Story.Wait).CallerReturn);
         Assert.NotNull(closing.Story.EntityEvent);
         Assert.True(closing.Story.LogicalText!.Open);
         Assert.IsType<OpenTextWindow>(closing.Story.TextWindow);
@@ -480,7 +480,7 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(script, session.Current.Story.EntityServices);
         for (int i = 0; i < 5; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
         Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
-        Assert.True(Assert.IsType<TextCloseWait>(session.Current.Story.Wait).EntityEventReturn);
+        Assert.True(Assert.IsType<TextCloseWait>(session.Current.Story.Wait).CallerReturn);
         Assert.Equal(script, session.Current.Story.EntityServices);
         for (int i = 0; i < 9; i++) Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
         Assert.True(session.Current.CanWaitAtInput);
@@ -595,8 +595,10 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(new PortraitWork(), portrait.Work);
     }
 
-    [Fact]
-    public void PollCopySurvivesNpcThenBlinkAndMouthDraws()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PollCopySurvivesNpcThenBlinkAndMouthDraws(bool zone)
     {
         var session = StartFieldText("{W2}", enabled: true, npcRandom: true);
         DrainTextWork(session);
@@ -607,7 +609,7 @@ public sealed class ExplorationTextWaitTests
         var party = world.Party;
         world = world.WithParty(new(party.Encounter, party.Actors, 0x12341234u, party.ThinkingSeed, party.Gold, party.NewBattle));
         var story = entry.Story.Copy(entry.Story.Cursor, entry.Story.Wait, entityServices: true,
-            entityEvent: new(new("ferryman"), 1, 0),
+            eventCaller: zone ? new ZoneEventContext() : new EntityEventContext(new("ferryman"), 1, 0),
             portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
         var snapshot = new SessionSnapshot(entry.SessionId, entry.Revision, entry.ObservationSequence,
             new ActiveExploration(world), story, entry.StopReason);
@@ -718,14 +720,16 @@ public sealed class ExplorationTextWaitTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void DialogueCreationPreservesIncomingTypingAndKeepsPortraitService(bool incoming)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void DialogueCreationPreservesIncomingTypingAndKeepsPortraitService(bool incoming, bool zone)
     {
         var session = StartFieldText("A{W1}");
         var entry = session.Current;
         var current = entry.WithStory(entry.Story.Copy(entry.Story.Cursor, textCursor: 100, typewriting: incoming,
-            entityServices: false, entityEvent: new(new("ferryman"), 1, 0),
+            entityServices: zone, eventCaller: zone ? new ZoneEventContext() : new EntityEventContext(new("ferryman"), 1, 0),
             portraitWindow: new OpenPortraitWindow(7, 0,
                 new(Blink: 4, Mouth: 5, MouthOpen: true, Registered: true, Movement: 4, Moving: false))));
         var story = ExplorationTextRunner.Begin(session.Definition.Exploration!, current,
@@ -744,6 +748,92 @@ public sealed class ExplorationTextWaitTests
             Assert.InRange(work.Mouth, (short)10, (short)14);
             Assert.Single(result.Observations, row => row.Kind == "rng-portrait-mouth");
         }
+    }
+
+    [Fact]
+    public void ZoneInitPreservesPendingMotionAndTimerAndRetainsOrRejectsIncomingPortrait()
+    {
+        var session = StartFieldText("A{W1}");
+        var entry = session.Current;
+        var world = entry.Exploration!;
+        var player = world.PlayerEntity;
+        var motion = player.Motion with { XDestination = (short)(player.Motion.X + 384), XTravel = 384,
+            XVelocity = 8, XSpeed = 8, WaitTimer = 19 };
+        world = world.WithEntity(player with { Motion = motion });
+        var retained = new OpenPortraitWindow(7, 192, new(Blink: 3, Mouth: 12, Registered: true, Movement: 4, Moving: false));
+        var before = new SessionSnapshot(entry.SessionId, entry.Revision, entry.ObservationSequence, new ActiveExploration(world),
+            entry.Story.Copy(null, portraitWindow: retained), entry.StopReason);
+        var init = new EntityActionProgram([new SetEntitySpeed(32, 32), new IdleEntityAction()]);
+        var next = MapEventDispatcher.EnterZone(before, new(ExplorationEventKind.SourceZone, null, null, null,
+            new("invitation", 0), SourceInit: init), false, []);
+        Assert.Equal(motion, next.Exploration!.PlayerEntity.Motion);
+        Assert.Same(init, next.Exploration.PlayerEntity.Actions);
+        Assert.False(next.Story.EntityServices);
+        var kept = ExplorationPortraitRunner.Open(session.Definition, next, new("ferryman"), 0, [], false);
+        Assert.Same(retained, kept.Story.PortraitWindow);
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationPortraitRunner.Open(session.Definition,
+            next.WithStory(next.Story.Copy(next.Story.Cursor, portraitWindow: new UnknownPortraitWindow())), new("ferryman"), 0, [], false));
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationPortraitRunner.Close(
+            next.WithStory(next.Story.Copy(next.Story.Cursor, portraitWindow: new UnknownPortraitWindow())), [], true));
+    }
+
+    [Theory]
+    [InlineData(7, false, 0x12341234u)]
+    [InlineData(9, false, 0xFEDC4321u)]
+    [InlineData(null, false, 0xC632A55Au)]
+    [InlineData(7, true, 0xFFFFBEEFu)]
+    public void ZoneDialogueUsesLivePortraitServicesAndCompleteCallerTail(int? portrait, bool skip, uint seed)
+    {
+        var session = StartFieldText("Z{W1}", interaction: true, startEvent: false, configure: document =>
+        {
+            document["battle"]!["start"]!["mainSeed"] = seed;
+            var world = document["world"]!;
+            AddVisuals(document, portrait);
+            if (portrait is not null) world["presentation"]!["portraits"]![0]!["portrait"] = portrait;
+            var map = world["maps"]![0]!;
+            map["layout"]![2]![1] = 0x1400;
+            map["events"] = JsonNode.Parse("""[{"kind":"source-zone","x":1,"y":2,"marker":5120,"requiredFlag":null,"requiredValue":true,"program":{"program":"invitation","instruction":0},"actions":[{"op":"idle"}]}]""");
+            var program = world["programs"]![0]!;
+            program["instructions"] = JsonNode.Parse("""[{"op":"branch-flag","flag":73,"whenSet":true,"target":{"program":"zone-end","instruction":0}},{"op":"open-portrait","entity":"ferryman","flags":0},{"op":"text-cursor","text":100},{"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},{"op":"end"}]""");
+            world["programs"]!.AsArray().Add(JsonNode.Parse("""{"id":"zone-end","entitiesRunning":false,"instructions":[{"op":"end"}]}"""));
+            if (skip) document["start"]!["flags"] = new JsonArray(73);
+        });
+        var facing = session.Current.Exploration!.Entities[new("ferryman")].Motion.Facing;
+        Accept(session, new Move(Sf2.Remake.Domain.Maps.ExplorationDirection.South));
+        var entry = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.IsType<ZoneEventContext>(session.Current.Story.EventCaller);
+        Assert.True(session.Current.Story.EntityServices);
+        Assert.Null(session.Current.Story.EntityEvent);
+        Assert.True(session.Current.Exploration!.PlayerEntity.Motion.IsMoving);
+        if (!skip)
+        {
+            while (session.Current.Story.Wait is PortraitMovementWait)
+                Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+            DrainTextWork(session);
+            if (portrait is not null) Assert.Equal(portrait, Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Portrait);
+            Accept(session, new CompleteTextReveal(session.Current.Story.Wait!.Token));
+            var before = session.Current;
+            var poll = Accept(session, new WaitForText(before.Story.Wait!.Token));
+            Assert.Equal(before.Story.SimulationTick + 1, poll.Snapshot.Story.SimulationTick);
+            Assert.NotNull(poll.Snapshot.Story.RandomSeedCopy);
+            Accept(session, new Acknowledge(session.Current.Story.Wait!.Token));
+        }
+        var kinds = new List<string>();
+        for (int i = 0; session.Current.Story.Wait is not null && i < 100; i++)
+        {
+            var result = Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+            kinds.AddRange(result.Observations.Select(x => x.Kind));
+        }
+        Assert.Null(session.Current.Story.EventCaller);
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.Equal(facing, session.Current.Exploration!.Entities[new("ferryman")].Motion.Facing);
+        Assert.True(session.Current.Story.EntityServices);
+        Assert.Contains("zone-return-service", kinds);
+        Assert.Contains("zone-finished", kinds);
+        if (portrait is not null && !skip)
+            Assert.True(kinds.IndexOf("portrait-closed") < kinds.IndexOf("zone-arrival-wait"));
     }
 
     private static void DrainTextWork(GameSession session)
