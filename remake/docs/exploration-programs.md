@@ -75,8 +75,9 @@ The real producer emits `explicitWindows: true` on `show-text`; its acknowledgem
 either window implicitly. `nextSingleText` lowers to portrait lookup, DisplayText acknowledgement,
 portrait close, text close and mandatory Sleep(10). `nextText` has no close tail. Packed FFFF skips
 the portrait lookup without closing an existing portrait. Raw `txt` only displays text; raw `clsTxt`
-only closes text. `closeTxt` closes portrait then text. JOIN's existing SoundWait → PreviousMusic →
-`wait-text-input` → text close → Sleep(10) retains the incoming portrait gate. These rules are
+only closes text. `closeTxt` closes portrait then text. JOIN's emitted SoundWait → PreviousMusic →
+`wait-text-input` → text close → Sleep(10) retains the incoming portrait gate. Bound execution stops
+at SoundWait until logical music progress is admitted; see [raw field display](#raw-field-display). These rules are
 implemented by the existing compiler/typed reader, with no selected-script eligibility exception.
 Fresh output is required to gain these distinctions; old generated content cannot reconstruct them.
 
@@ -103,8 +104,9 @@ accepting-poll tick, then executes subsequent explicit operations. Generic `Adva
 is rejected at this admitted consumer. The [host contract and reproduction](./development-and-verification.md#plain-text-input-gameplay-wait)
 cover reveal, delivery and input rearm.
 
-**Unknown:** the selected natural post-JOIN helper entry, logical audio end, complete enabled VInt
-table and portrait counter chronology remain unobserved. The current program's entity setting is
+The [natural JOIN observation](../../docs/research/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)
+confirms its named helper entry/return. **Unknown:** joint logical audio/service progress, the complete
+enabled VInt table and portrait counter chronology. The current program's entity setting is
 the admitted engine service state, not a sampled original service table. W2, active/unknown portrait
 consumers and preceding audio delivery retain their separate legacy boundaries. The bounded W1
 consumer below does not establish whole-host Option A, 9A or H4 conformance.
@@ -873,3 +875,29 @@ JOIN's audio/input/live-service coupling remains separate. See the
 [source contract](../../docs/design/contracts/map-exploration.md#source-bound-choice-consumer),
 [original provenance](../../docs/research/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
 and [observation owner](./development-and-verification.md#source-bound-choice-observation).
+
+## Raw field display
+
+Bound explicit-window `ShowText` uses `FieldTextWait` even when `WaitForAcknowledgement=false`.
+The existing token stream, substituted names/font advances, window/glyph/scroll work and
+`FinishDelivery` own completion. Actual W1/W2 retain their input consumers and ordered poll/RNG
+semantics. A final no-W span returns only after logical End and actual reveal; it neither invents
+an Ack nor closes the window. Early reveal cannot skip mandatory work; late reveal adds no service
+or clock debt. Unbound legacy execution is unchanged.
+
+Only raw text with no explicit speaker and no event-speaker lookup admits intentional absence.
+Missing event context and invalid explicit speakers still report `field-text-speaker`. Speakerless
+host delivery uses the existing silent path, while an admitted registered portrait keeps its own
+blink/mouth service and RNG. This does not decide ordinary speech delivery policy under#517.
+
+Bound `PresentCue(SoundWait)` reports `field-music-progress-unbound` at `program.presentation`,
+kind `UnsupportedCapability`, stop `Unsupported`. Completed text/window/entity/party/flag state
+remains at that instruction. No PresentationWait is created and actual finite-audio completion
+cannot release gameplay through previous-music, plain input or script return. Existing PCM playback
+and unbound presentation observations retain their previous applicability.
+
+The [source contract](../../docs/design/contracts/map-exploration.md#raw-field-text-and-the-music-boundary)
+and [provenance](../../docs/research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+separate this supported raw-text rule from the unknown sound-to-service clock. The known505 driver
+updates are not a duration in entity services. See [verification](./development-and-verification.md#raw-field-text-observation)
+for behavior and native expected-boundary acceptance.

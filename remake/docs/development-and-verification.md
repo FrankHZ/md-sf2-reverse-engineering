@@ -2747,3 +2747,49 @@ aggregate were retained; only the affected native observation and comparisons we
 Local results and exact CI are retained in the Issue handoff; original-runtime delta0. Preserve
 completed native/gate failures, eight warp differences, H4/HEAL/JOIN/next-actor and cleanupUnknowns.
 #517 remains unanswered, #523 stopped and investigator user-exclusive.
+
+## Raw field text observation
+
+For the [raw display capability](./exploration-programs.md#raw-field-display), run affected
+`ExplorationTextWaitTests` and `ExplorationSessionTests`, `uv run sf2 verify adapter`, and Debug
+before the direct native observation. Engine cases vary text/name/font width/message speed,
+speaker presence, W1/W2, early/late reveal and batching. They check live entity/portrait services,
+global window refresh, no implicit Ack/copy, invalid speaker rejection, and completed state retained
+at Unsupported. No tests of the observer or blanket normal/full/H3 rerun are required.
+
+Use the existing observer with `SF2_INPUT_CASE=portrait-event-zone-nod-camera-choice-yes-private-instant-raw-text`
+and a companion `portrait-event-zone-nod-camera-choice-yes-private-reveal-raw-text` at
+`SF2_INPUT_RATE=20`. Reuse the same unchanged bound opening start, world/resources, controlled party
+and spatial fixture as the choice observation. Only fresh ignored settings/output destinations are
+created. The companion uses reveal input before raw text, then lets raw text reveal naturally to
+observe logical End waiting for actual delivery. Startup may retain EntityWait for another frame;
+the observer waits for actual field control without navigation input or state replacement.
+
+Both routes continue536's real W1 through close/delay, flags, view wait, actual music start and
+membership to raw447. Record the accepted prefix, every common service, live entity/RNG/copy,
+window/portrait/caller/party state, and actual Label visibility/text/reveal/geometry after draw.
+Require silent raw display, no raw Ack/Wait, and no logical work during late reveal. Compare semantic
+states across settings separately from reveal flags, speech policy and audio playback clocks.
+The endpoint must be `field-music-progress-unbound`, `UnsupportedCapability`, visible Unsupported
+at `cs-51614[22]`, with raw text retained and603 clear. Extra host input and wall time cannot advance
+it. Only this named failure is expected; all other errors still fail the observation.
+
+`rawTextBoundary.expectedUnsupported` names that result and `fullJoinComplete=false` explicitly
+limits it. `passed=true` means this expected-boundary observation passed, never full JOIN/H4.
+The actual AudioStreamPlayer start/PCM facts establish playback consumption only; later completion
+does not establish logical music progress. Do not add a checkpoint, source capture, screenshot,
+driver/service quota, host callback continuation or extra music/input policy to pass this gate.
+
+**Confirmed (bounded remake):** instant and late-reveal native observations retain the accepted
+5325-state prefix and agree across5475 logical states in the selected engine fields, excluding the
+delivery receipt flag. Raw text starts at5352 and finishes at5474; these are observed results, not
+quotas. Both draw the fully revealed Label before Unsupported. The late-reveal run holds the same
+End tick/entity/RNG/window state until delivery. Camera/menu geometry checks use actual draw
+callbacks; a SessionResult readback may still name an older draw. Compare those projections at
+their recorded draw tick, rather than assuming callback and rendering are synchronous.
+
+Local run identities, comparison results, preserved failures and exact CI belong in the Issue
+handoff. The prior263-case affected run had one new out-of-range font-width fixture failure;
+after changing32 to the admitted16, its owning three-case theory passes. Preserve that completed
+result. Native development also retained a GDScript parse failure and an initial startup-readiness
+failure; corrected observations do not erase them. All prior failure/Unknown applicability remains.

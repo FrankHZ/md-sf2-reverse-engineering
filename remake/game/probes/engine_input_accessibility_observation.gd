@@ -31,10 +31,20 @@ var choice_prefix := false
 var choice_exercised := false
 var choice_following := false
 var choice_draws: Array = []
+var raw_text_case := "raw-text" in input_case
+var raw_entry: Dictionary = {}
+var raw_late_end: Dictionary = {}
+var raw_boundary: Dictionary = {}
+var raw_draws: Array = []
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
     var s := state()
+    if raw_text_case and s.textId == 447:
+        var dialogue := view.get_node("Dialogue") as Label
+        raw_draws.append({"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
+            "text":dialogue.text,"characters":dialogue.visible_characters,"total":dialogue.get_total_character_count(),
+            "position":str(dialogue.global_position),"size":str(dialogue.size)})
     if choice_case and s.get("choice") != null:
         choice_draws.append({"tick":s.simulationTick,"token":s.token,"choice":s.choice,
             "projection":s.choiceProjection,"hideWindows":s.logicalView.HideWindows})
@@ -927,7 +937,8 @@ func finish_public() -> void:
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
-        "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws}, "  ")
+        "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,
+        "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws}, "  ")
     if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
@@ -973,6 +984,31 @@ func w1_poll_signature(s: Dictionary) -> Array:
 func opening_semantic(s: Dictionary) -> Array:
     return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView,
         s.portraitWork, s.typewriting, s.entitiesRunning]
+
+func observe_raw_boundary(s: Dictionary) -> bool:
+    if not raw_text_case or raw_entry.is_empty() or s.failure != "field-music-progress-unbound": return false
+    samples.append({"label":"raw-text-expected-unsupported", "state":s})
+    check(s.stop == "Unsupported" and s.failureKind == "UnsupportedCapability" and
+        s.failureField == "program.presentation" and s.failureVisible, "Named music boundary is visibly Unsupported")
+    check(s.textId == 447 and s.speaker == null and s.fieldText == null and s.wait == null and
+        s.logicalText.Open and not s.typewriting and s.cursor.Program == "cs-51614" and s.cursor.Instruction == 22,
+        "Completed raw display is retained at SoundWait before any later instruction")
+    check(s.eventCaller == "ZoneEventContext" and not s.canWaitAtInput and not s.canWaitForText and
+        600.0 in s.flags and 66.0 in s.flags and not 603.0 in s.flags, "JOIN prefix preserves caller and stops before return")
+    check(s.randomSeedCopy == raw_entry.randomSeedCopy and s.portraitWindow == raw_entry.portraitWindow,
+        "No implicit acknowledgement poll or portrait replacement")
+    var unexpected_sound: bool = s.audio.receipts.any(func(r): return r.Sequence > raw_entry.audio.sequence and r.Operation == "started" and r.Command in [67,70,72,73,74])
+    check(s.audio.error == null and not unexpected_sound, "Speakerless raw display has no speech or validation sound")
+    check(raw_draws.any(func(d): return d.token != null and d.visible and d.text != "" and (d.characters < 0 or d.characters >= d.total)),
+        "Actual raw Label is drawn fully revealed before the stop")
+    if "instant" not in input_case:
+        check(not raw_late_end.is_empty(), "Logical End is observed waiting for actual late reveal")
+        if not raw_late_end.is_empty():
+            check(s.simulationTick == raw_late_end.simulationTick and s.mainSeed == raw_late_end.mainSeed and
+                s.entities == raw_late_end.entities and s.logicalText == raw_late_end.logicalText,
+                "Late reveal completion adds no logical work")
+    raw_boundary = {"expectedUnsupported":s.failure,"fullJoinComplete":false,"entry":raw_entry,"lateEnd":raw_late_end}
+    return true
 
 func exercise_bound_choice() -> void:
     var held := read_sample("choice-entry-held")
@@ -1050,7 +1086,7 @@ func opening_settle() -> bool:
     var phases: Dictionary = {}
     for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
-        if s.failure != null: return false
+        if s.failure != null: return observe_raw_boundary(s)
         if choice_case and not s.focused:
             # Recover an observed external focus loss without servicing or replacing state.
             read_sample("choice-route-focus-lost")
@@ -1078,7 +1114,7 @@ func opening_settle() -> bool:
                 var endpoint := read_sample("choice-yes-text536-input")
                 check(choice_following and not endpoint.fieldText.Wait2 and not 600.0 in endpoint.flags and not 66.0 in endpoint.flags and
                     not 603.0 in endpoint.flags and endpoint.eventCaller == "ZoneEventContext", "Yes stops before Wait/Ack and JOIN")
-                return true
+                if not raw_text_case: return true
         if "zone-nod" in input_case and s.wait == "NodWait":
             read_sample("nod-phase-" + str(s.token) + "-" + str(s.nod.Elapsed))
             if not nod_pause_checked and s.nod.Elapsed >= 12:
@@ -1191,11 +1227,19 @@ func opening_settle() -> bool:
                 phases[phase] = true
                 read_sample("portrait-phase-" + phase)
         if s.wait == "FieldTextWait":
+            if raw_text_case and s.textId == 447:
+                if raw_entry.is_empty():
+                    raw_entry = read_sample("raw-text-entry")
+                    check(s.speaker == null and s.presentation.musicCue == "MUSIC_JOIN" and s.presentation.musicPlaying,
+                        "Ordinary JOIN prefix starts actual music then speakerless raw display")
+                check(not s.canWaitForText, "This raw text has no W token or implicit Ack consumer")
+                if s.fieldText.Phase == 8 and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters and raw_late_end.is_empty():
+                    raw_late_end = read_sample("raw-text-end-awaiting-reveal")
             var token := str(s.token)
             if not seen.has(token):
                 seen[token] = true
                 read_sample("opening-text-entry-" + str(s.textId))
-            if "reveal" in input_case and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
+            if "reveal" in input_case and not (raw_text_case and s.textId == 447) and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
                 var before := opening_semantic(s)
                 physical(KEY_ENTER, true)
                 physical(KEY_ENTER, false)
@@ -1232,6 +1276,12 @@ func run_portrait_event() -> void:
     await process_frame
     root.grab_focus()
     await process_frame
+    # Startup's pending EntityWait may outlive the first rendered frame.
+    # Observe its ordinary completion before sending any navigation input.
+    if raw_text_case:
+        for startup_frame in range(60):
+            if state().failure != null or state().canWaitAtInput: break
+            await process_frame
     var initial := read_sample("portrait-route-initial")
     if initial.failure != null or not initial.canWaitAtInput:
         check(false, "Retained bound start has actual field control")
@@ -1279,6 +1329,18 @@ func run_portrait_event() -> void:
         if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
             read_sample("nod-stair-reload-return")
         if choice_case and choice_exercised:
+            if raw_text_case:
+                check(not raw_boundary.is_empty(), "Raw route reaches only its named expected boundary")
+                var stopped := opening_semantic(state())
+                for idle_frame in range(5): await process_frame
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                check(opening_semantic(state()) == stopped and state().failure == "field-music-progress-unbound",
+                    "Stopped music boundary rejects further host input and wall-clock continuation")
+                finish_public()
+                return
             var endpoint := read_sample("choice-final")
             if not choice_yes:
                 check(choice_following and endpoint.canWaitAtInput and endpoint.eventCaller == null and endpoint.choice == null and

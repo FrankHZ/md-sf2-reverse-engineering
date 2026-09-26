@@ -1217,6 +1217,161 @@ public sealed class ExplorationTextWaitTests
         else Assert.False(done.Snapshot.Story.LogicalText!.Open);
     }
 
+    [Theory]
+    [InlineData("A{NAME;1}B", 0, 6, "N", false, false)]
+    [InlineData("A{N}{NAME;1}{N}BC{N}D", 3, 16, "Long name", true, false)]
+    [InlineData("{NAME;1} AB", 1, 8, "Other", true, true)]
+    public void RawFieldTextCompletesMandatoryWorkAndRevealWithoutImplicitAcknowledgement(
+        string text, int speed, int width, string name, bool enabled, bool speaker)
+    {
+        var early = Raw();
+        var late = Raw();
+        var token = early.Current.Story.Wait!.Token;
+        Accept(early, new CompleteTextReveal(token));
+        Assert.IsType<FieldTextWait>(early.Current.Story.Wait);
+        Accept(early, new AdvanceSimulation(token, 600));
+        Assert.IsType<ChoiceWait>(early.Current.Story.Wait);
+        DrainTextWork(late);
+        var completed = late.Current;
+        var end = Assert.IsType<FieldTextWait>(completed.Story.Wait);
+        Assert.Equal(FieldTextPhase.End, end.Phase);
+        Assert.False(completed.CanWaitForText);
+        Assert.False(completed.Story.Typewriting);
+        Assert.Equal(text.Replace("{NAME;1}", name).Replace("{N}", "\n"), end.Projection);
+        foreach (var command in new SessionCommand[] { new Acknowledge(end.Token), new WaitForText(end.Token), new AdvanceSimulation(end.Token) })
+        {
+            Assert.NotNull(Send(late, command).Failure);
+            Assert.Same(completed, late.Current);
+        }
+        var returned = Accept(late, new CompleteTextReveal(end.Token));
+        Assert.IsType<ChoiceWait>(late.Current.Story.Wait);
+        Assert.Equal(completed.Story.SimulationTick, late.Current.Story.SimulationTick);
+        Assert.Equal(completed.Exploration!.Party.MainSeed, late.Current.Exploration!.Party.MainSeed);
+        Assert.Null(late.Current.Story.RandomSeedCopy);
+        Assert.True(late.Current.Story.LogicalText!.Open);
+        Assert.Equal(speaker ? new EntityRef("ferryman") : (EntityRef?)null,
+            Assert.IsType<OpenTextWindow>(late.Current.Story.TextWindow).Speaker);
+        Assert.DoesNotContain(returned.Observations, row => row.Kind.StartsWith("rng-"));
+        Assert.Equal(early.Current.Story.SimulationTick, late.Current.Story.SimulationTick);
+        Assert.Equal(early.Current.Exploration!.Party.MainSeed, late.Current.Exploration.Party.MainSeed);
+        Assert.Equal(JsonSerializer.Serialize(early.Current.Exploration.AllEntities), JsonSerializer.Serialize(late.Current.Exploration.AllEntities));
+        Assert.Equal(early.Current.Story.LogicalText, late.Current.Story.LogicalText);
+
+        GameSession Raw() => StartFieldText(text, speed: speed, width: width, name: name, enabled: enabled, npcRandom: true,
+            configure: document => RawInstructions(document, speaker));
+    }
+
+    [Fact]
+    public void RawWrapperRetainsItsActualW1AndW2Consumers()
+    {
+        var session = StartFieldText("A{W1}B{W2}C", configure: document => RawInstructions(document, false));
+        foreach (bool wait2 in new[] { false, true })
+        {
+            DrainTextWork(session);
+            var wait = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+            Assert.Equal(FieldTextPhase.Input, wait.Phase);
+            Assert.Equal(wait2, wait.Wait2);
+            Assert.NotNull(Send(session, new Acknowledge(wait.Token)).Failure);
+            Accept(session, new CompleteTextReveal(wait.Token));
+            Assert.True(session.Current.CanWaitForText);
+            long before = session.Current.Story.SimulationTick;
+            var polled = Accept(session, new WaitForText(wait.Token));
+            Assert.Equal(before + 1, session.Current.Story.SimulationTick);
+            Assert.Single(polled.Observations, row => row.Kind == (wait2 ? "rng-text-w2" : "rng-text-w1"));
+            var accepted = Accept(session, new Acknowledge(wait.Token));
+            Assert.Single(accepted.Observations, row => row.Kind == (wait2 ? "rng-text-w2" : "rng-text-w1"));
+            Assert.DoesNotContain(accepted.Observations, row => row.Kind == (wait2 ? "rng-text-w1" : "rng-text-w2"));
+        }
+        DrainTextWork(session);
+        var tail = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.Equal(FieldTextPhase.End, tail.Phase);
+        var beforeReturn = session.Current;
+        Accept(session, new CompleteTextReveal(tail.Token));
+        Assert.IsType<ChoiceWait>(session.Current.Story.Wait);
+        Assert.Equal(beforeReturn.Story.SimulationTick, session.Current.Story.SimulationTick);
+        Assert.Equal(beforeReturn.Story.RandomSeedCopy, session.Current.Story.RandomSeedCopy);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void RawSpeakerAbsenceDoesNotHideAnInvalidSpeaker(bool eventSpeaker, bool explicitInvalid)
+    {
+        var session = StartFieldText("A");
+        var show = new ShowText(TextDisplayMode.Single, explicitInvalid ? new("absent") : null,
+            UseEventSpeaker: eventSpeaker, WaitForAcknowledgement: !eventSpeaker && !explicitInvalid, ExplicitWindows: true);
+        var error = Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() =>
+            ExplorationTextRunner.Begin(session.Definition.Exploration!, session.Current, show, new(998)));
+        Assert.Equal("field-text-speaker", error.Code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SpeakerlessRawTextRetainsRegisteredPortraitAndLiveServices(bool enabled)
+    {
+        var session = StartFieldText("ABC", enabled: enabled, npcRandom: true, configure: document => RawInstructions(document, false));
+        var current = session.Current;
+        var story = current.Story.Copy(current.Story.Cursor, current.Story.Wait, eventCaller: new ZoneEventContext(),
+            entityServices: enabled, windowFixPending: true,
+            logicalView: current.Story.LogicalView! with { TargetSlot = null }, randomSeedCopy: 0xA9,
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
+        var result = ExplorationDispatcher.Submit(session.Definition, current.WithStory(story), new AdvanceSimulation(story.Wait!.Token));
+        Assert.Null(result.Failure);
+        var portrait = Assert.IsType<OpenPortraitWindow>(result.Snapshot.Story.PortraitWindow).Work!;
+        Assert.True(portrait.Registered);
+        Assert.Equal(0, portrait.Movement);
+        Assert.Equal(1, portrait.Length);
+        Assert.Equal(1, portrait.Y);
+        Assert.False(result.Snapshot.Story.WindowFixPending);
+        Assert.Equal((byte)0xA9, result.Snapshot.Story.RandomSeedCopy);
+        uint entitySeed = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: story.Flags).World.Party.MainSeed : current.Exploration!.Party.MainSeed;
+        var blink = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(entitySeed, 120);
+        var mouth = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(blink.After, 5);
+        Assert.Equal(mouth.After, result.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(new[] { "text-mandatory-service", "rng-portrait-blink", "rng-portrait-mouth", "text-work-advanced" }, result.Observations.Select(row => row.Kind));
+        Assert.Null(Assert.IsType<OpenTextWindow>(result.Snapshot.Story.TextWindow).Speaker);
+    }
+
+    [Fact]
+    public void BoundMusicWaitStopsWithTheCompletedRawDisplayPreserved()
+    {
+        var session = StartFieldText("AB", enabled: true, npcRandom: true, configure: document =>
+        {
+            RawInstructions(document, false);
+            document["world"]!["programs"]![0]!["instructions"]![2] = JsonNode.Parse("""
+                {"op":"present","kind":"SoundWait","resource":null,"entity":null,"position":null}
+                """);
+        });
+        DrainTextWork(session);
+        var done = session.Current;
+        var result = Send(session, new CompleteTextReveal(done.Story.Wait!.Token));
+        Assert.Equal("field-music-progress-unbound", result.Failure!.Code);
+        Assert.Equal(SessionFailureKind.UnsupportedCapability, result.Failure.Kind);
+        Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+        Assert.Null(result.Snapshot.Story.Wait);
+        Assert.Equal(2, result.Snapshot.Story.Cursor!.Value.Instruction);
+        Assert.Equal(done.Story.TextWindow, result.Snapshot.Story.TextWindow);
+        Assert.Equal(done.Story.LogicalText, result.Snapshot.Story.LogicalText);
+        Assert.Equal(done.Story.TextCursor, result.Snapshot.Story.TextCursor);
+        Assert.Equal(done.Story.SimulationTick, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(done.Exploration!.Party.MainSeed, result.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(done.Story.RandomSeedCopy, result.Snapshot.Story.RandomSeedCopy);
+        Assert.DoesNotContain(result.Observations, row => row.Detail == nameof(PresentationCueKind.PreviousMusic));
+        var after = ExplorationDispatcher.Submit(session.Definition, result.Snapshot, new AdvanceSimulation());
+        Assert.Equal("session-stopped", after.Failure!.Code);
+        Assert.Equal(result.Snapshot.Story.SimulationTick, after.Snapshot.Story.SimulationTick);
+    }
+
+    private static void RawInstructions(JsonNode document, bool speaker)
+    {
+        var instructions = document["world"]!["programs"]![0]!["instructions"]!;
+        instructions[1]!["speaker"] = speaker ? "ferryman" : null;
+        instructions[1]!["waitForAcknowledgement"] = false;
+        instructions[2] = JsonNode.Parse("""{"op":"yes-no","flag":307}""");
+    }
+
     private static GameSession StartChoice(int flag, bool enabled = false, uint seed = 0x12341234) =>
         StartFieldText("{W1}", enabled: enabled, npcRandom: true, configure: document =>
         {
