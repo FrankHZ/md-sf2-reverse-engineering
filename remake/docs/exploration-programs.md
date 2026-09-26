@@ -811,3 +811,65 @@ entry program heals the party; a separate controlled battle start covers wounded
 item legality/changed-content assertions remain in `MedicalHerbTests`. The older scalar item observer
 is not the scene acceptance command. Preserve failed and successful outputs separately. No original
 emulator, screenshot or continuous H4 comparison is implied.
+
+## Source-bound yes/no lifecycle
+
+With the explicit field text/view profile, `ChooseYesNo` retains a `ChoiceWait` through entry,
+opening, raw held release, conditioned input, closing and the caller's return delay. Legacy
+unbound `ChooseDialogue(bool)` remains separate and cannot release a bound choice. The flag operand
+is generic; no text, route, instruction index or seed selects legality.
+
+`ChoiceHeldInput` captures mapped held state at entry. If held, opening must finish and genuine
+release must occur before polling. Release adds zero semantic service under the admitted modern
+input boundary; this does not assert zero original hardware interrupts. `PollChoice` accepts a
+fresh conditioned semantic mask. Left, Right, Cancel, ConfirmC, ConfirmA have source precedence.
+Left/Right select Yes/No even when reselecting; Cancel returns No; either Confirm accepts the
+current selection. Up/Down alone are neutral polls. Initial selection is Yes. A neutral explicit
+Wait or directional poll draws/decrements the logical animation counter and runs one common service;
+confirmation/cancel starts closing without that loop tail. Host idle/reveal/focus latency does not
+create opportunities or debt. Raw held bytes are never silently treated as conditioned input.
+
+The own14×3 window opens from(32,17) to(12,17), closes to(-16,17), and advances at the common window
+stage. Source length4 has four movement passes followed by busy clearing; completion reads every
+represented moving window, including dialogue and portrait. Opening/closing refresh an existing
+dialogue window for4; selection refreshes it for1 only when settled. Delete the own window before
+writing the result flag, then run exactly ten common services before advancing the instruction.
+The choice does not close the dialogue/portrait or increment dialogue/portrait presence.
+
+`StoryState.WindowFixPending` carries the source post-scroll flag through waits, empty-window passes
+and map initialization. At the common window stage, dialogue, portrait and choice advance their own
+geometry/counters and record incoming busy status. A hidden pass sets the pending flag. An unhidden
+pass consumes it only when a represented window exists, refreshing every geometrically settled window
+to length1/counter0 while preserving the pass's busy result. Stationary animation can still be busy;
+its counters cannot stand in for geometric equality. A four-step own move arriving on the first
+unhidden pass after three hidden passes therefore completes on service6, not the usual5. No fixed pad
+is applied. Dialogue tracks window coordinates separately from its glyph cursor; every close entry
+uses its actual current position. Portrait geometry runs here once, with registered blink/mouth RNG
+remaining later. Dialogue and portrait close helpers also wait for every represented moving window.
+
+The fresh remake session admits a clear pending flag. **Confirmed (static source):** full system
+initialization clears its RAM byte. **Inferred:** the retained controlled opening start has that value;
+it does not capture the byte or establish natural cold-boot ancestry. Ordinary initialization does
+not reset it. See the named initialization and postpass bodies in the source owner.
+
+Common entity→view/scroll/window→registered portrait service uses live enablement, counters,
+Typewriting, held/follow camera and RNG. There is no direct choice RNG draw or poll-copy write.
+The animation begins at15, wraps1→20, uses the alternate variant at values>=10, and navigation
+resets the old variant then draws the new choice at19. Actual Godot labels/selected color and panel
+position consume this logical state; original menu tile rasters are not extracted. Remapped keys,
+pad buttons/axes and swapped Confirm/Cancel use the installed input actions; entry release includes
+all mapped gameplay actions except the separate modern Wait. Duplicate held pad packets and axis
+values do not become fresh edges. Focus/hide requires a fresh release and resets clock debt.
+
+Source callsite audio emits65 per move-window request (own and existing dialogue),66 per selection,
+including reselection. Bound confirmation emits no generic67. Existing whole-PCM playback and
+preemption remain authoritative for actual sound delivery; no sound duration controls entity ticks.
+
+Admission is normal movement, gold absent, field continuation with logical text/view and Closed or
+admitted EventCaller portrait. **Unknown:** incoming original global24/6 repeat/direction ancestry,
+release-spin CPU interrupts, debug turbo, gold-window lifecycle, exact menu raster and hardware
+DMA timing. These exclusions do not prevent both answers in the declared fresh semantic stream.
+JOIN's audio/input/live-service coupling remains separate. See the
+[source contract](../../docs/design/contracts/map-exploration.md#source-bound-choice-consumer),
+[original provenance](../../docs/research/map3-messenger-acceptance.md#source-bound-choice-lifecycle)
+and [observation owner](./development-and-verification.md#source-bound-choice-observation).

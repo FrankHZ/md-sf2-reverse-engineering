@@ -107,7 +107,7 @@ internal static class MapEventDispatcher
             // Restore facing once above; the close continuation clears the context.
             return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(null,
                 new TextCloseWait(new(current.ObservationSequence + 1), CallerReturn: true),
-                logicalText: window with { AnimationCounter = 0, AnimationLength = 8, Moving = true }),
+                logicalText: ExplorationTextRunner.Close(window)),
                 observations, "interaction-closing", context.Entity.Value);
         }
         return ProgramRunner.Commit(current, new ActiveExploration(world),
@@ -146,7 +146,7 @@ internal static class MapEventDispatcher
             ExplorationTextRunner.ValidateContext(current);
             return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
                 new TextCloseWait(new(current.ObservationSequence + 1), CallerReturn: true),
-                logicalText: window with { AnimationCounter = 0, AnimationLength = 8, Moving = true }),
+                logicalText: ExplorationTextRunner.Close(window)),
                 observations, "zone-closing");
         }
         // loc_47576 always WaitForVInt before checking physical arrival, including

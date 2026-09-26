@@ -36,6 +36,11 @@ public sealed record Acknowledge(WaitToken Wait) : SessionCommand;
 public sealed record CompletePresentation(WaitToken Wait, PresentationCueKind Kind) : SessionCommand;
 public sealed record EntitySpriteReady(int Slot, long Request) : SessionCommand;
 public sealed record ChooseDialogue(WaitToken Wait, bool Yes) : SessionCommand;
+// Held state gates entry/release only. PollChoice receives a fresh conditioned semantic mask.
+public sealed record ChoiceHeldInput(WaitToken Wait, bool Held) : SessionCommand;
+[Flags]
+public enum ChoiceInput { None = 0, Up = 1, Down = 2, Left = 4, Right = 8, Cancel = 16, ConfirmC = 32, ConfirmA = 64 }
+public sealed record PollChoice(WaitToken Wait, ChoiceInput Input = ChoiceInput.None) : SessionCommand;
 public sealed record CommandEnvelope(Guid SessionId, long ExpectedRevision, ActorRef? Actor, SessionCommand Command);
 
 public sealed class BattleSelection
@@ -92,6 +97,7 @@ public sealed class SessionSnapshot
         (Story.PortraitWindow is ClosedPortraitWindow || Story.Wait is FieldTextWait && ExplorationPortraitRunner.Admitted(Story)) && Story.TextWindow is OpenTextWindow &&
         Story.EnteringBattle is null && Story.Continuation == ProgramContinuation.FieldInput &&
         (Story.Wait is W1TextWait or FieldTextWait || !field.World.PlayerEntity.Busy && !field.World.AllEntities.Any(entity => entity.WaitingForSprite));
+    public bool CanWaitForChoice => Active is ActiveExploration && Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Input };
     internal SessionSnapshot WithStory(StoryState story) => new(SessionId, Revision, ObservationSequence, Active, story, StopReason);
 }
 

@@ -25,8 +25,31 @@ internal static class ExplorationTextRunner
             bool moving = window.AnimationCounter < window.AnimationLength;
             window = window with { Moving = moving, AnimationCounter = moving ? window.AnimationCounter + 1 : window.AnimationCounter };
         }
-        return story.Copy(story.Cursor, story.Wait, logicalText: window, logicalView: view);
+        story = ExplorationChoiceRunner.Windows(story.Copy(story.Cursor, story.Wait, logicalText: window, logicalView: view));
+        story = ExplorationPortraitRunner.Windows(story);
+        bool present = window is { Open: true } || story.PortraitWindow is OpenPortraitWindow { Work: not null } ||
+            story.Wait is ChoiceWait { Work.Visible: true };
+        if (!present) return story;
+        if (view is { HideWindows: true })
+            return story.Copy(story.Cursor, story.Wait, windowFixPending: true);
+        if (!story.WindowFixPending) return story;
+        // Source fixes settled geometry after computing this pass's moving bits.
+        // Reset counters without recomputing Moving, including zero-displacement refreshes.
+        if (window is { Open: true } && window.WindowY == window.DestinationY)
+            story = story.Copy(story.Cursor, story.Wait, logicalText: Refresh(window, 1));
+        story = ExplorationChoiceRunner.FixPosition(story);
+        story = ExplorationPortraitRunner.FixPosition(story);
+        return story.Copy(story.Cursor, story.Wait, windowFixPending: false);
     }
+
+    internal static bool WindowsMoving(StoryState story) => story.LogicalText is { Open: true, Moving: true } ||
+        story.PortraitWindow is OpenPortraitWindow { Work.Moving: true } || story.Wait is ChoiceWait { Work: { Visible: true, Moving: true } };
+
+    internal static LogicalTextWindow Refresh(LogicalTextWindow window, int length) => window with
+    { OriginY = window.WindowY, DestinationY = window.WindowY, AnimationLength = length, AnimationCounter = 0 };
+
+    internal static LogicalTextWindow Close(LogicalTextWindow window) => window with
+    { OriginY = window.WindowY, DestinationY = 29, AnimationLength = 8, AnimationCounter = 0, Moving = true };
 
     internal static int TypewriteDelay(ExplorationTextSettings settings, byte logicalInput) =>
         settings.MouthControl == 0 && logicalInput != 0 ? 0 : settings.MessageSpeed switch
@@ -148,15 +171,15 @@ internal static class ExplorationTextRunner
                 : view with { Recheck = !story.LogicalView!.Scrolling });
         }
         if (story.Wait is TextCloseWait)
-            return story.LogicalText!.Moving ? story : story.Copy(story.Cursor is { } closeCursor ? ProgramRunner.Next(closeCursor) : null,
-                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText with { Open = false, Indicator = 0, IndicatorVisible = false });
+            return WindowsMoving(story) ? story : story.Copy(story.Cursor is { } closeCursor ? ProgramRunner.Next(closeCursor) : null,
+                textWindow: new ClosedTextWindow(), logicalText: story.LogicalText! with { Open = false, Indicator = 0, IndicatorVisible = false });
         var wait = (FieldTextWait)story.Wait!;
         var window = story.LogicalText!;
         switch (wait.Phase)
         {
             case FieldTextPhase.ClearFirst: wait = wait with { Phase = FieldTextPhase.ClearSecond }; break;
             case FieldTextPhase.ClearSecond:
-                window = new(Open: true, AnimationLength: 8);
+                window = new(Open: true, AnimationLength: 8, OriginY: 29, DestinationY: 19);
                 wait = wait with { Phase = FieldTextPhase.Opening, Remaining = 8 }; break;
             case FieldTextPhase.Opening:
                 wait = wait with { Remaining = wait.Remaining - 1, Phase = wait.Remaining == 1 ? FieldTextPhase.Tokens : wait.Phase }; break;

@@ -25,10 +25,19 @@ var nod_pause_checked := false
 var camera_pause_checked := false
 var camera_draws: Array = []
 var camera_draw_seen: Dictionary = {}
+var choice_case := "choice" in input_case
+var choice_yes := "choice-yes" in input_case
+var choice_prefix := false
+var choice_exercised := false
+var choice_following := false
+var choice_draws: Array = []
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
     var s := state()
+    if choice_case and s.get("choice") != null:
+        choice_draws.append({"tick":s.simulationTick,"token":s.token,"choice":s.choice,
+            "projection":s.choiceProjection,"hideWindows":s.logicalView.HideWindows})
     var p = s.get("cameraProjection")
     if p == null or s.logicalView == null or p.simulationTick != s.simulationTick or p.token != s.token: return
     var identity := str([s.simulationTick, s.token])
@@ -911,10 +920,14 @@ func run_text_wait() -> void:
     finish_public()
 
 func finish_public() -> void:
+    if choice_case and choice_exercised:
+        for phase in [1,2,3,4,5]:
+            check(choice_draws.any(func(d): return d.choice.Work.Phase == phase),
+                "Actual menu draw observed for phase " + str(phase))
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
-        "warpRecords":warp_records,"cameraDraws":camera_draws}, "  ")
+        "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws}, "  ")
     if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
@@ -961,13 +974,111 @@ func opening_semantic(s: Dictionary) -> Array:
     return [s.simulationTick, s.mainSeed, s.randomSeedCopy, s.entities, s.flags, s.cursor, s.logicalText, s.logicalView,
         s.portraitWork, s.typewriting, s.entitiesRunning]
 
+func exercise_bound_choice() -> void:
+    var held := read_sample("choice-entry-held")
+    check(held.choice.Work.Phase == 2 and held.gameplayHeld and not held.canWaitForChoice,
+        "Entry Confirm remains held through opening and blocks choice input")
+    var before := opening_semantic(held)
+    for frame in range(5): await process_frame
+    check(opening_semantic(state()) == before, "Held entry has no semantic service or accidental acceptance")
+    var held_axis := JOY_AXIS_RIGHT_X if remapped else JOY_AXIS_LEFT_X
+    await axis(held_axis, 0.8)
+    physical(KEY_ENTER, false)
+    for frame in range(4): await process_frame
+    check(state().choice.Work.Phase == 2 and opening_semantic(state()) == before, "Mapped held axis keeps the raw release gate")
+    await axis(held_axis, 0.0)
+    var ready := read_sample("choice-released")
+    check(ready.canWaitForChoice and ready.choice.Work.Yes and opening_semantic(ready) == before,
+        "Genuine release enters default Yes without logical services")
+    view.hide()
+    physical(KEY_ENTER, true)
+    for frame in range(4): await process_frame
+    view.show()
+    for frame in range(4): await process_frame
+    check(opening_semantic(state()) == before and state().choiceRequiresRelease and state().tickDebt == 0,
+        "Hidden/resumed choice cannot consume held input or wall-clock debt")
+    physical(KEY_ENTER, false)
+    await process_frame
+    if OS.get_environment("SF2_NOD_FOCUS") == "1":
+        var other := Window.new()
+        other.hide(); other.force_native = true; other.transient = true
+        other.title = "Choice focus observation"; other.size = Vector2i(240,100)
+        root.add_child(other); other.show(); other.grab_focus()
+        await create_timer(0.15).timeout
+        if not other.has_focus() or root.has_focus():
+            field_unavailable.append("Choice OS focus transfer unavailable")
+        else:
+            for frame in range(5): await process_frame
+            check(opening_semantic(state()) == before and state().tickDebt == 0, "Unfocused choice has no gameplay debt")
+            read_sample("choice-unfocused")
+        other.hide(); root.grab_focus()
+        var deadline := Time.get_ticks_msec() + 2000
+        while not root.has_focus() and Time.get_ticks_msec() < deadline: await process_frame
+        if not root.has_focus(): field_unavailable.append("Choice OS focus return unavailable")
+        other.queue_free()
+        await process_frame
+    physical(KEY_V, true); physical(KEY_V, false)
+    var polled := read_sample("choice-neutral-poll")
+    check(polled.simulationTick == ready.simulationTick + 1 and polled.randomSeedCopy == ready.randomSeedCopy,
+        "Neutral choice Wait owns one tail and preserves copy")
+    for code in [KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_LEFT]:
+        var previous := state()
+        physical(code, true)
+        var selected := read_sample("choice-selection-" + str(code))
+        check(selected.choice.Work.Yes == (code == KEY_LEFT) and selected.simulationTick == previous.simulationTick + 1,
+            "Directional selection owns one tail")
+        if use_pad:
+            physical(code, true)
+            check(state().revision == selected.revision, "Duplicate held pad packet is not a fresh choice edge")
+        for frame in range(3): await process_frame
+        check(opening_semantic(state()) == opening_semantic(selected), "Held selection adds no repeat opportunities")
+        physical(code, false)
+        await process_frame
+    var accepting := state()
+    var sequence: int = accepting.audio.sequence
+    physical(KEY_ENTER if choice_yes else KEY_ESCAPE, true)
+    physical(KEY_ENTER if choice_yes else KEY_ESCAPE, false)
+    var closing := read_sample("choice-closing")
+    check(closing.choice.Work.Phase == 4 and closing.choice.Work.Yes == choice_yes and closing.simulationTick == accepting.simulationTick,
+        "Confirm/cancel starts closing without a neutral accepting tail")
+    check(not closing.audio.receipts.any(func(r): return r.Sequence > sequence and r.Command == 67 and r.Operation == "started"),
+        "Bound choice acceptance has no extra validation67")
+    choice_exercised = true
+
 func opening_settle() -> bool:
     var seen: Dictionary = {}
     var phases: Dictionary = {}
     for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
         if s.failure != null: return false
+        if choice_case and not s.focused:
+            # Recover an observed external focus loss without servicing or replacing state.
+            read_sample("choice-route-focus-lost")
+            root.grab_focus()
+            var focus_deadline := Time.get_ticks_msec() + 2000
+            while not root.has_focus() and Time.get_ticks_msec() < focus_deadline: await process_frame
+            if not root.has_focus():
+                field_unavailable.append("Choice route OS focus restoration unavailable")
+                return false
+            read_sample("choice-route-focus-restored")
+            continue
         if s.get("canWaitAtInput", false): return true
+        if choice_case and s.get("choice") != null and s.choice.Work.Phase == 2 and not choice_exercised:
+            await exercise_bound_choice()
+            continue
+        if choice_case and choice_exercised and s.get("canWaitForText", false):
+            if s.textId == (535 if choice_yes else 532) and not choice_following:
+                var following := read_sample("choice-following-text-input")
+                var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "choice-returned"))
+                check(returns.size() == 1 and following.choice == null and not following.choiceProjection.visible and
+                    (89.0 in following.flags) == choice_yes and not 603.0 in following.flags and following.eventCaller == "ZoneEventContext",
+                    "Complete choice returns to the selected text with its zone caller retained")
+                choice_following = true
+            if choice_yes and s.textId == 536:
+                var endpoint := read_sample("choice-yes-text536-input")
+                check(choice_following and not endpoint.fieldText.Wait2 and not 600.0 in endpoint.flags and not 66.0 in endpoint.flags and
+                    not 603.0 in endpoint.flags and endpoint.eventCaller == "ZoneEventContext", "Yes stops before Wait/Ack and JOIN")
+                return true
         if "zone-nod" in input_case and s.wait == "NodWait":
             read_sample("nod-phase-" + str(s.token) + "-" + str(s.nod.Elapsed))
             if not nod_pause_checked and s.nod.Elapsed >= 12:
@@ -1050,7 +1161,7 @@ func opening_settle() -> bool:
                         return false
                     other.queue_free()
                 read_sample("camera-resumed")
-        if "camera" in input_case and s.textId == 531 and s.get("canWaitForText", false):
+        if "camera" in input_case and s.textId == 531 and s.get("canWaitForText", false) and not choice_prefix:
             var endpoint := read_sample("camera-text531-input")
             check(not endpoint.fieldText.Wait2 and not endpoint.canWaitAtInput and endpoint.eventCaller == "ZoneEventContext" and
                 endpoint.cursor != null and endpoint.cursor.Instruction == 127 and not 603.0 in endpoint.flags,
@@ -1059,7 +1170,8 @@ func opening_settle() -> bool:
             var held := opening_semantic(endpoint)
             for idle_frame in range(5): await process_frame
             check(opening_semantic(state()) == held and state().tickDebt == 0, "Text531 stops before any Wait or Ack")
-            return true
+            if not choice_case: return true
+            choice_prefix = true
         if "zone-nod" in input_case and "camera" not in input_case and s.textId == 521 and s.get("canWaitForText", false):
             var endpoint := read_sample("nod-text521-input")
             var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "nod-returned"))
@@ -1102,7 +1214,7 @@ func opening_settle() -> bool:
                     "A poll follows the current enabled or suppressed entity service")
                 var audio_sequence: int = polled.audio.sequence
                 physical(KEY_ENTER, true)
-                physical(KEY_ENTER, false)
+                if not (choice_case and s.textId == 531): physical(KEY_ENTER, false)
                 var accepted := read_sample("opening-accepted-" + str(s.textId))
                 var validation: bool = accepted.audio.receipts.any(func(r): return r.Sequence > audio_sequence and r.Command == 67 and r.Operation == "started")
                 check(validation == bool(ready.fieldText.Wait2), "Only accepted W2 requests validation67")
@@ -1166,7 +1278,15 @@ func run_portrait_event() -> void:
                 "Second Zone7 returns before Messenger")
         if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
             read_sample("nod-stair-reload-return")
-        if "zone-nod" in input_case and state().textId == (531 if "camera" in input_case else 521) and state().canWaitForText:
+        if choice_case and choice_exercised:
+            var endpoint := read_sample("choice-final")
+            if not choice_yes:
+                check(choice_following and endpoint.canWaitAtInput and endpoint.eventCaller == null and endpoint.choice == null and
+                    not 89.0 in endpoint.flags and 603.0 in endpoint.flags and not 600.0 in endpoint.flags and not 66.0 in endpoint.flags,
+                    "Decline returns ordinary field control without join/party writes or another input")
+            finish_public()
+            return
+        if not choice_case and "zone-nod" in input_case and state().textId == (531 if "camera" in input_case else 521) and state().canWaitForText:
             finish_public()
             return
         if interaction:

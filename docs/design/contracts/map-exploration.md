@@ -854,3 +854,42 @@ The first remake map slice is acceptable when it can:
 Future H4 tests should reuse compact cases derived from the H2 fixtures above. Rendered screenshots
 or extracted map dumps are not golden fixtures; small indices, state transitions, hashes over
 user-local generated output, and placeholder-asset renders are the permitted parity surfaces.
+
+## Source-bound choice consumer
+
+**Confirmed (static source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/map/mapscriptengine_2.asm:csc11_promptYesNoForStoryFlow`0x47490 calls
+`YesNoPrompt`0x15284 through its ordinary entry. It sets flag89 for return0/Yes, clears it for
+return-1/No, then Sleep10 and returns. The retained implementation-neutral command's flag parameter
+is reusable; the source script happens to select89.
+
+The complete capability includes creation/opening, entry-held release, defaultYes, conditioned
+selection/neutral loops, confirmation/cancel, closing/deletion, result write and full delay/return.
+A boolean flag mutation does not represent this consumer. Left/Right precede B/C/A at the conditioned
+input boundary; B cancels toNo and C/A confirm the selected value. Reselection remains an action.
+Neutral/navigation have one explicit loop-tail wait; confirmation/cancel bypasses that tail.
+Window movement completion reads the global represented moving predicate after each service, not
+an elapsed frame quota. Window hiding MUST retain a pending position fix. On the first unhidden
+service with represented windows, advance geometry, then refresh each geometrically settled window
+with length1/counter0 without changing the moving result already computed for that service. Geometric
+settlement MUST remain distinct from counter completion, including stationary refreshes. Empty-window
+services and ordinary map initialization MUST preserve pending fix state. Choice, dialogue and portrait
+waits MUST all consume the common represented moving result; portrait RNG remains in its later callback.
+Own window deletion precedes flag mutation and ten subsequent services.
+
+The accepted ADR0010 semantic boundary uses deliberate fresh conditioned input and explicit Wait.
+Mapped held-state release is a separate gate. Its zero semantic-service transition is a modern
+admission, not proof that the original spin had no VInts. Incoming original repeat/direction
+ancestry is not reconstructed from host key repeat. Focus/display/audio delivery must not add work,
+reseed, rewrite the poll-copy byte or replace live entity/portrait state. Common service order and
+live enablement apply throughout opening, polls, close and delay. The prompt keeps its caller until
+the full return; an instruction return is distinct from zone or ordinary field-control return.
+
+Current binding admits normal movement and no gold window within the existing field/portrait/view
+profile. Gold/debug/raw-controller repeat, exact original menu rasters and hardware timing remain
+**Unknown** at this remake boundary. Source-callsite65/66 requests reuse existing PCM policy; no
+extra67 is implied by confirmation. Original runtime evidence remains bounded to its observed
+Yes path; a remake No run is not an original No observation. See
+[provenance](../../research/map3-messenger-acceptance.md#source-bound-choice-lifecycle),
+[execution](../../../remake/docs/exploration-programs.md#source-bound-yesno-lifecycle) and
+[verification](../../../remake/docs/development-and-verification.md#source-bound-choice-observation).

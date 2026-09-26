@@ -36,6 +36,10 @@ public sealed partial class ExplorationSessionView : Control
     private Label _title = null!;
     private Label _dialogue = null!;
     private Label _help = null!;
+    private PanelContainer _choice = null!;
+    private Label _choiceYes = null!;
+    private Label _choiceNo = null!;
+    private bool _choiceRequiresRelease;
     private Label _failureLabel = null!;
     private GameInput _input = null!;
     private TextWindow? _textWindow;
@@ -65,6 +69,11 @@ public sealed partial class ExplorationSessionView : Control
         _dialogue = new Label { Name = "Dialogue", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _help = new Label { Name = "Help", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_title); AddChild(_dialogue); AddChild(_help);
+        _choice = new PanelContainer { Name = "Choice", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
+        var choices = new HBoxContainer();
+        _choiceYes = new Label { Name = "Yes", Text = "Yes", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
+        _choiceNo = new Label { Name = "No", Text = "No", SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Center };
+        choices.AddChild(_choiceYes); choices.AddChild(_choiceNo); _choice.AddChild(choices); AddChild(_choice);
         // Failure text must remain readable when the world is correctly held black.
         var failureLayer = new CanvasLayer { Layer = 101 };
         _failureLabel = new Label { Name = "TransitionFailure", Position = new(20, 20), Visible = false };
@@ -87,7 +96,7 @@ public sealed partial class ExplorationSessionView : Control
         if (what == NotificationPaused || what == NotificationUnpaused) SuspendClock();
     }
 
-    private void SuspendClock() { CancelFieldWait(); _tickTime = 0; _resumeAutomatic = true; }
+    private void SuspendClock() { CancelFieldWait(); _tickTime = 0; _resumeAutomatic = true; _choiceRequiresRelease = true; }
 
     private void CancelFieldWait()
     {
@@ -99,12 +108,13 @@ public sealed partial class ExplorationSessionView : Control
     {
         _lastWaitFrame = Engine.GetProcessFrames();
         _nextWaitMicros = Time.GetTicksUsec() + 16667;
-        Send(_session!.Current.CanWaitForText ? new WaitForText(_session.Current.Story.Wait!.Token) : new WaitAtInput());
+        Send(_session!.Current.CanWaitForChoice ? new PollChoice(_session.Current.Story.Wait!.Token) :
+            _session.Current.CanWaitForText ? new WaitForText(_session.Current.Story.Wait!.Token) : new WaitAtInput());
     }
 
     private bool TextRevealed => _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
     private bool CanSubmitWait => _session is { } session &&
-        (session.Current.CanWaitAtInput || session.Current.CanWaitForText && TextRevealed);
+        (session.Current.CanWaitAtInput || session.Current.CanWaitForText && TextRevealed || session.Current.CanWaitForChoice && !_choiceRequiresRelease);
 
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
         Action<SessionResult> prepareBattle, Action? releaseBattle = null)
@@ -131,9 +141,18 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or ChoiceWait { Work: not null }) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
+        if (!_input.GameplayHeld) _choiceRequiresRelease = false;
+        if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
+        { Send(new ChoiceHeldInput(entry.Token, _input.GameplayHeld)); return; }
+        if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Release } release)
+        {
+            _tickTime = 0;
+            if (!_input.GameplayHeld) Send(new ChoiceHeldInput(release.Token, false));
+            return;
+        }
         if (_dialogue.VisibleCharacters >= 0)
         {
             int before = _dialogue.VisibleCharacters;
@@ -170,7 +189,7 @@ public sealed partial class ExplorationSessionView : Control
                 Send(new CompleteTextReveal(deliveredToken));
             return;
         }
-        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
+        if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
             // Idle field time is explicitly paused. Presentation time never becomes field debt.
             _tickTime = 0;
@@ -195,13 +214,14 @@ public sealed partial class ExplorationSessionView : Control
                 // The engine may yield before consuming the batch. Retain its unused time
                 // for automatic continuation, but never carry paused input time into a new wait.
                 _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
-                if (_handedOff || token != _session.Current.Story.Wait?.Token || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || !NeedsTicks(_session.Current)) _tickTime = 0;
+                if (_handedOff || token != _session.Current.Story.Wait?.Token || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
         else _tickTime = 0;
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
+        current.Story.Wait is ChoiceWait { Work: { } choice } ? choice.Automatic :
         current.Story.Wait is NodWait nod ? !nod.LogicalDone :
         current.Story.Wait is FieldTextWait text ? !text.LogicalDone :
         current.Story.Wait is FullFadeWait fade ? !fade.LogicalDone :
@@ -223,8 +243,23 @@ public sealed partial class ExplorationSessionView : Control
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
         {
-            if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
-            command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+            if (choice.Work is not null)
+            {
+                if (!current.CanWaitForChoice || _choiceRequiresRelease || !GetWindow().HasFocus() || !CanProcess()) return;
+                ChoiceInput? input = action switch
+                {
+                    GameAction.Left => ChoiceInput.Left, GameAction.Right => ChoiceInput.Right,
+                    GameAction.Up => ChoiceInput.Up, GameAction.Down => ChoiceInput.Down,
+                    GameAction.Confirm => ChoiceInput.ConfirmC, GameAction.Cancel => ChoiceInput.Cancel, _ => null,
+                };
+                if (input is null) return;
+                command = new PollChoice(choice.Token, input.Value);
+            }
+            else
+            {
+                if (action is not (GameAction.Confirm or GameAction.Cancel) || RevealText()) return;
+                command = new ChooseDialogue(choice.Token, action == GameAction.Confirm);
+            }
         }
         else if (current.Story.Wait is FieldTextWait fieldText)
         {
@@ -299,6 +334,9 @@ public sealed partial class ExplorationSessionView : Control
                 _result.Observations.Any(row => row.Kind == "text-w2-accepted"))))
             _audio?.PlayEffect(67);
         if (_result.Failure is null)
+            foreach (var sound in _result.Observations.Where(row => row.Kind == "choice-sound"))
+                _audio?.PlayEffect(int.Parse(sound.Detail!, System.Globalization.CultureInfo.InvariantCulture));
+        if (_result.Failure is null)
             foreach (var window in _result.Observations.Where(row => row.Kind == "portrait-window-moving"))
                 _audio?.PlayEffect(65);
         if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
@@ -313,6 +351,8 @@ public sealed partial class ExplorationSessionView : Control
             return;
         }
         Present();
+        if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
+            Send(new ChoiceHeldInput(entry.Token, _input.GameplayHeld));
     }
 
     private void Present()
@@ -321,6 +361,17 @@ public sealed partial class ExplorationSessionView : Control
         var current = _session.Current;
         if (!_battleMounted) _lastWorld = current.Exploration ?? _lastWorld;
         var size = GetViewportRect().Size;
+        var choice = (current.Story.Wait as ChoiceWait)?.Work;
+        _choice.Visible = choice is { Visible: true } && current.Story.LogicalView?.HideWindows != true;
+        if (choice is not null)
+        {
+            _choice.Position = new(choice.X * size.X / 40, 17 * size.Y / 28);
+            _choice.Size = new(14 * size.X / 40, 3 * size.Y / 28);
+            _choiceYes.Text = choice.Yes ? "▸ Yes" : "Yes";
+            _choiceNo.Text = choice.Yes ? "No" : "▸ No";
+            _choiceYes.Modulate = choice.YesAlternate ? Colors.Gold : Colors.White;
+            _choiceNo.Modulate = choice.NoAlternate ? Colors.Gold : Colors.White;
+        }
         _title.Text = _session.Definition.Package.Replace('-', ' ').ToUpperInvariant();
         bool portrait = _session.Definition.Exploration?.Visuals is not null &&
             current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
@@ -366,6 +417,7 @@ public sealed partial class ExplorationSessionView : Control
         }
         _help.Text = current.Story.Wait switch
         {
+            ChoiceWait { Work: not null } => $"{_input.Hint(GameAction.Left)} / {_input.Hint(GameAction.Right)}: Select     {_input.Hint(GameAction.Confirm)}: Confirm     {_input.Hint(GameAction.Cancel)}: No",
             ChoiceWait => $"{_input.Hint(GameAction.Confirm)}: Yes     {_input.Hint(GameAction.Cancel)}: No",
             DialogueWait or W1TextWait { AtInput: true } or FieldTextWait { Phase: FieldTextPhase.Input } => $"{_input.Hint(GameAction.Confirm)}: Reveal / Continue",
             W1TextWait or FieldTextWait => $"{_input.Hint(GameAction.Confirm)}: Reveal",
@@ -373,7 +425,7 @@ public sealed partial class ExplorationSessionView : Control
             _ => $"{_input.MovementHint}\n{_input.Hint(GameAction.Confirm)}: Talk",
         };
         if (current.Story.LogicalText is { IndicatorVisible: true }) _help.Text += " ▾";
-        if (current.CanWaitAtInput || current.CanWaitForText)
+        if (current.CanWaitAtInput || current.CanWaitForText || current.CanWaitForChoice)
             _help.Text += $"\nHold {_input.Hint(GameAction.Wait)} to wait; release to pause field time (including NPCs).";
         if (PresentationFailure is { } failure)
             _dialogue.Text = $"{failure.Message} ({failure.Code})";
@@ -424,8 +476,14 @@ public sealed partial class ExplorationSessionView : Control
         {
             sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
+            canWaitForChoice = current?.CanWaitForChoice, choice = current?.Story.Wait as ChoiceWait,
+            gameplayHeld = _input.GameplayHeld, choiceRequiresRelease = _choiceRequiresRelease,
+            choiceProjection = new { tick = current?.Story.SimulationTick, token = (current?.Story.Wait as ChoiceWait)?.Token.Value,
+                visible = _choice.Visible, x = _choice.Position.X, y = _choice.Position.Y, width = _choice.Size.X, height = _choice.Size.Y,
+                yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == Colors.Gold, noAlternate = _choiceNo.Modulate == Colors.Gold },
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
+            windowFixPending = current?.Story.WindowFixPending,
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             cameraProjection = _presentation?.CameraProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
