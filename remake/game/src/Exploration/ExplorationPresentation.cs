@@ -47,6 +47,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private string? _error;
     internal string? Error { get => _error ?? _audio.Error; private set => _error = value; }
     internal int SpriteMounts => _spriteMounts;
+    internal object? NodProjection { get; private set; }
     internal int GestureDraws { get; private set; }
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
@@ -98,6 +99,21 @@ internal sealed class ExplorationPresentation : IDisposable
                     _spriteMounts++;
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
                 }
+            }
+            if (current.Story.Wait is NodWait nod)
+            {
+                _cue = nod.Token; _gesture = nod.Entity; _shivering = false; _mosaic = null;
+                _nodding = nod.Lowered; ActiveCue = "Gesture";
+                var actor = current.Exploration!.Entities[nod.Entity];
+                // Mount the existing transformed/normal resources. Rendering never decides
+                // source service progress, and no per-frame acknowledgement is needed.
+                _ = Sprite(actor, true); _ = Sprite(actor, false);
+                if (nod.LogicalDone && !nod.ActualDone && CompletedCueToken != nod.Token.Value)
+                {
+                    completions.Add(new CompletePresentation(nod.Token, PresentationCueKind.Gesture));
+                    CompletedCueToken = nod.Token.Value; CompletedCueKind = "Gesture";
+                }
+                return completions;
             }
             var wait = current.Story.Wait switch
             {
@@ -223,15 +239,26 @@ internal sealed class ExplorationPresentation : IDisposable
             _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
             DrawLayer(world, visual, new(0, 0), false);
+            var sourceNod = story.Wait as NodWait;
+            NodProjection = null;
             foreach (var entity in world.AllEntities.Where(entity => entity.Visible).OrderBy(entity => entity.Priority)
                 .ThenBy(entity => entity.Motion.Y).ThenBy(entity => entity.Slot))
             {
-                bool gesture = _gesture == entity.Entity;
-                var texture = Sprite(entity, gesture && _nodding);
+                bool gesture = sourceNod is not null ? sourceNod.Entity == entity.Entity : _gesture == entity.Entity;
+                bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
+                var texture = Sprite(entity, lowered);
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
-                if (gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
+                if (sourceNod is null && gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
                 var destination = new Rect2(_screen.Position + (point - _camera) * _scale, new Vector2(24, 24) * _scale);
-                if (!_screen.Intersects(destination)) continue;
+                bool visible = _screen.Intersects(destination);
+                if (gesture && sourceNod is not null)
+                    NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
+                        entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
+                        facing = entity.Motion.Facing, animationCounter = entity.Motion.AnimationCounter,
+                        elapsed = sourceNod.Elapsed, lowered, visible,
+                        texture = texture.GetInstanceId(), normalTexture = Sprite(entity, false).GetInstanceId(),
+                        width = texture.GetWidth(), height = texture.GetHeight() };
+                if (!visible) continue;
                 bool mirror = entity.Motion.Facing is 0 or 4 or 7;
                 if (_mosaic == entity.Entity)
                 {
@@ -255,8 +282,8 @@ internal sealed class ExplorationPresentation : IDisposable
                 {
                     GestureDraws++;
                     if (_shivering) ShiverDraws++;
-                    if (_nodding) NodDraws++;
-                    else if (_cueAge >= 30.0 / 60) RestoredGestureDraws++;
+                    if (lowered) NodDraws++;
+                    else if (sourceNod is not null ? sourceNod.Elapsed >= 30 : _cueAge >= 30.0 / 60) RestoredGestureDraws++;
                 }
             }
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];

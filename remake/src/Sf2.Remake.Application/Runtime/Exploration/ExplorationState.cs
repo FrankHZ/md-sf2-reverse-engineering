@@ -37,6 +37,11 @@ public sealed record LogicalView(ExplorationViewArea Area, int TargetSlot,
 }
 public sealed record ChoiceWait(WaitToken Token, int ResultFlag) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
+public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0, bool ActualDone = false) : ProgramWait(Token)
+{
+    public bool LogicalDone => Elapsed == 40;
+    public bool Lowered => Elapsed is >= 10 and < 30;
+}
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
 public enum FullFadePurpose { WarpOut, WarpIn, Script }
 public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, FullFadePurpose Purpose,

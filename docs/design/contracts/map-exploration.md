@@ -373,6 +373,7 @@ The remaining original questions are exactly
 `map-script-entity-gesture-relationship-motion/normal-story-reachability`,
 `map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects`, and
 `map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence`.
+
 Map-script imports MUST separately retain the twelve source-named forms `setQuake`, `fadeInB`,
 `fadeOutB`, `slowFadeInB`, `slowFadeOutB`, `tintMap`, `flickerOnce`, `mapFadeOutToWhite`,
 `mapFadeInFromWhite`, `flashScreenWhite`, `fadeInFromBlackHalf`, and `fadeOutToBlackHalf` in
@@ -783,6 +784,27 @@ entry transfers are 1-48 tiles, and complete logical cycles are 40, 44, or 80 en
 
 Camera interpolation, plane composition, palette application, window interaction, and VDP-visible
 output are presentation adapters over this contract. They do not own map content or event state.
+
+### Bound field nod lifecycle
+
+**Confirmed (static binding):** the admitted field profile with explicit logical text/view settings
+MAY consume the independently inspected `csc26_entityNodHead` chain described by the
+[nod source owner](../../research/map3-messenger-acceptance.md#source-bound-nod-lifecycle).
+This separate binding does not enlarge the structural import or controlled H3 claims above.
+The resolved entity's animation counter MUST become FF before ten common services. Its selected
+sprite MUST then use the nod transform for twenty services, restore its normal selection for ten,
+and set the counter to zero before returning. Each service uses the carried entity-service flag,
+then view/window work and registered portrait work in their existing order. Shared RNG is live;
+the previous input-poll copy byte is not rewritten by these services. Adjacent nod commands each
+own their full sequence and a distinct completion token.
+
+Logical work and actual presentation completion MUST both finish before return. Early completion
+cannot skip work; late completion, culling and render delay cannot add work. Wrong-kind, duplicate
+and stale completion cannot advance the caller. Field Wait/Ack/movement remain unavailable while
+the nod owns control. The host projects the semantic phase using the resolved actor's current
+sprite/facing and existing transformed/normal resources. Unbound presentation retains its prior
+contract. **Unknown:** forty explicit `WaitForVInt` opportunities do not establish exactly forty
+natural hardware frames, hidden DMA/interrupt latency, or whole-Messenger acceptance.
 
 ## Remake Acceptance
 

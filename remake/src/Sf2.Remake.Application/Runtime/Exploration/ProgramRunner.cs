@@ -247,6 +247,9 @@ internal static class ProgramRunner
                             continue;
                         }
                         if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };
+                        bool boundNod = cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: not null } &&
+                            current.Story.TextSettings is not null;
+                        if (boundNod) ExplorationTextRunner.ValidateContext(current);
                         GestureRestore? restore = null;
                         if (cue is { Kind: PresentationCueKind.Gesture, Resource: "nod", Entity: { } nodding })
                             active = EditEntity(current, nodding, entity => entity with { Motion = entity.Motion with { AnimationCounter = 255 } });
@@ -258,7 +261,7 @@ internal static class ProgramRunner
                             active = new ActiveExploration(world.WithEntities(world.AllEntities.Select(row => row.Slot == entity.Slot
                                 ? row with { Motion = row.Motion with { AnimationCounter = 255 } } : row), spriteSize: 21));
                         }
-                        story = current.Story.Copy(cursor, new PresentationWait(token, cue, restore)); break;
+                        story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore)); break;
                     case SetEntitySprite sprite:
                         var changedSprite = Entity(current, sprite.Entity);
                         changedSprite = changedSprite with { Sprite = sprite.Sprite,
@@ -315,7 +318,7 @@ internal static class ProgramRunner
                         continue;
                     default: throw new BattleRuleException("program-instruction", "program", true);
                 }
-                current = Commit(current, active, story, observations, "program-instruction", instruction.GetType().Name, cursor);
+                current = Commit(current, active, story, observations, story.Wait is NodWait ? "nod-started" : "program-instruction", instruction.GetType().Name, cursor);
             }
             catch (BattleRuleException error) { return Failure(current, observations, error); }
         }
@@ -348,7 +351,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } => SessionStopReason.PresentationWait,
+            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,

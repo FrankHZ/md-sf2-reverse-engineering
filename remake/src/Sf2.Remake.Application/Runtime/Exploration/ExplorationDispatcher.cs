@@ -114,6 +114,15 @@ internal static class ExplorationDispatcher
                         observations, "text-revealed");
                     break;
                 case CompletePresentation completion:
+                    if (current.Story.Wait is NodWait nodCompletion)
+                    {
+                        if (nodCompletion.Token != completion.Wait || completion.Kind != PresentationCueKind.Gesture || nodCompletion.ActualDone)
+                            return Reject(current, "stale-or-wrong-presentation", "presentation");
+                        current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor,
+                            nodCompletion with { ActualDone = true }), observations, "nod-presentation-completed");
+                        current = FinishNod(current, observations);
+                        break;
+                    }
                     if (current.Story.Wait is FullFadeWait fade)
                     {
                         if (fade.Token != completion.Wait || fade.Kind != completion.Kind || fade.ActualDone)
@@ -166,12 +175,25 @@ internal static class ExplorationDispatcher
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
+                    if (current.Story.Wait is NodWait { LogicalDone: true })
+                        return Reject(current, "nod-awaiting-presentation", "wait");
                     if (current.Story.Wait is FullFadeWait { LogicalDone: true })
                         return Reject(current, "fade-awaiting-presentation", "wait");
                     bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is NodWait nod)
+                        {
+                            current = Service(definition, current, observations, "nod-service");
+                            var progressed = nod with { Elapsed = nod.Elapsed + 1 };
+                            current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, progressed),
+                                observations, progressed.Elapsed == 10 ? "nod-lowered" : progressed.Elapsed == 30 ? "nod-restored" : "nod-progress");
+                            current = FinishNod(current, observations);
+                            if (current.Story.Wait?.Token != nod.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (progressed.LogicalDone) return ProgramRunner.Result(current, observations);
+                            continue;
+                        }
                         if (current.Story.Wait is ZoneArrivalWait)
                         {
                             current = Service(definition, current, observations, "zone-return-service");
@@ -339,6 +361,16 @@ internal static class ExplorationDispatcher
         if (entry?.Program is not { } program) return Reject(current, "no-interaction", "entity");
         current = MapEventDispatcher.Interact(definition, current, entry, command.Entity, observations);
         return ProgramRunner.Run(definition, current, observations);
+    }
+
+    private static SessionSnapshot FinishNod(SessionSnapshot current, List<SessionObservation> observations)
+    {
+        if (current.Story.Wait is not NodWait { LogicalDone: true, ActualDone: true } nod) return current;
+        var entity = ProgramRunner.Entity(current, nod.Entity);
+        var world = current.Exploration!.WithEntity(entity with { Motion = entity.Motion with { AnimationCounter = 0 } });
+        current = ProgramRunner.Commit(current, new ActiveExploration(world), FinishWait(current.Story), observations, "nod-returned", nod.Entity.Value);
+        observations[^1] = observations[^1] with { Entity = nod.Entity, Before = entity.Motion.AnimationCounter, After = 0 };
+        return current;
     }
 
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;

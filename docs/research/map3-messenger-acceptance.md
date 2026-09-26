@@ -3178,6 +3178,51 @@ or historical C quota is used. Static source and remake observations remain sepa
 **Unknown:** original natural timing at this new boundary and later camera/choice/JOIN/battle
 schedules. Original runtime delta0; prior warp/H4/HEAL/JOIN/next-actor and cleanup gaps remain open.
 
+## Source-bound nod lifecycle
+
+**Confirmed (static source):** use the registered USA identity and pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` named above. Under `disasm/`,
+`code/common/scripting/map/mapscriptengine_1.asm:csc26_entityNodHead` (46C70) resolves the actor,
+writes animationFF, calls `Sleep(10)`, loads/transforms/queues its sprite, calls `Sleep(20)`,
+restores with `UpdateEntitySprite_0`, calls `Sleep(10)`, writes animation0 and returns. Its selected
+loop counter is zero; these are forty explicit `WaitForVInt` opportunities through
+`code/common/tech/interrupts/vintengine_1.asm:Sleep`.
+
+`code/common/scripting/entity/entityfunctions_4.asm:sub_45D70` shifts the selected head band
+(x7..16, y0..11) down one pixel and clears the top row. `LoadMapsprite` selects the current
+sprite/facing; `DmaMapsprite` queues the transformed data. Restoration reaches
+`code/common/scripting/entity/entityscriptengine_2.asm:ChangeEntityMapsprite` through
+`UpdateEntitySprite_0`. Both use `ApplyVIntVramDma`/`EnableDmaQueueProcessing` without another
+explicit `WaitForVInt`; enabling the queue is distinct from waiting for queue processing.
+Reproduce by `git -C <registered-source> show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`
+and inspect those symbols, `code/common/tech/interrupts/vintengine_2.asm:ApplyVIntVramDma`, and
+`code/common/tech/interrupts/enabledmaqueueprocessing.asm`. Read the named Git objects, never a
+floating branch or regenerated asset as evidence.
+
+The selected route consumes existing `Map3_EntityEvent15` text500/W2 and501/W1, flags261/602,
+then Zone7's F602 branch: text514/W2,515/W2,516/W1 and `cs_5148C`, followed by flag260 and caller
+return. The staircase reload selects `cs_513A0`. Zone8 with F602 set/F603 clear enters
+`cs_5149A`: text517/W2,518/W2,519/W1,520/W1 and two adjacent nods for entity143 precede text521/W1.
+The current generated instruction indices are38/39 and42. These indices identify the consumed
+program; they are not engine legality guards. Text521's input is inside the active zone/script;
+F603 is set only after its later return. Camera targets at indices75/88 and later choice/JOIN
+are outside this binding.
+
+**Confirmed (bounded remake):** [NodWait and projection](../../remake/docs/exploration-programs.md#source-bound-nod)
+consume the ten/twenty/ten service sequence with live service flags and RNG. The
+[verification owner](../../remake/docs/development-and-verification.md#source-bound-nod-observation)
+records behavior checks and three actual Godot routes from the unchanged bound start, through
+both nods to genuine text521 W1 before Wait/Ack. These are remake observations, not original
+natural-run evidence. Original-runtime delta remains zero.
+
+**Unknown:** exact natural hardware elapsed frames, hidden DMA/interrupt timing and broader
+presentation/collision/persistence. The earlier `sf2-map-entity-gesture-relationship-motion-runtime-v1`
+H3 seam still proves only its named controlled callbacks/counter observation; it does not prove
+these natural phases. Preserve the eight first-warp scalar gaps, H4 5340PASS/2FAIL/40Unavailable,
+HEAL2vs3/later RNG, JOIN timing/cross-clock and next-actor1vs0/index29, normal-verify provenance
+failure, publicaggregate/h3-witch NONRUN, and cleanup21/41/61/67. This binding does not resolve
+speech-policy#517 or resume stopped#523, accept full Messenger/H4, or authorize an original run.
+
 ## Classroom portrait entity-event binding
 
 **Confirmed (static source):** the selected USA identity and pinned SF2DISASM

@@ -892,6 +892,84 @@ was added. The prior completed normal-verify provenance failure after148passes r
 accepted applicability. Original runtime delta0; all eight warp gaps, H4/HEAL/JOIN/next-actor,
 publicaggregate/h3-witch NONRUN, cleanup21/41/61/67 and speech-policy#517 remain open.
 
+## Source-bound nod observation
+
+The [source owner](../../docs/research/map3-messenger-acceptance.md#source-bound-nod-lifecycle) and
+[consumer](exploration-programs.md#source-bound-nod) bind forty explicit services, independently
+of presentation latency. `BoundNodsOwnFortyServicesAndResetBeforeTheNextCommand` covers actor
+selection, changed seeds/speeds, idle and physically moving actors, enabled/suppressed services,
+ten/twenty/ten phases, consecutive commands, reset, early/late/duplicate/stale/wrong completions
+and control gating. `NodServicesLiveEntitiesThenWindowAndPortraitWithoutOverwritingPollCopy`
+checks live entity→window→portrait/RNG order, moving-window completion and poll-copy retention;
+`UnboundNodKeepsLegacyPresentationCompletion` protects the previous profile.
+
+Reuse the retained `local/issue534/zone-caller/candidate/world.json` and unchanged
+`local/issue534/opening-implementation/start.json`; no producer, asset, source or environment
+copy is needed. The maintained input probe selects `portrait-event-zone-nod-private-*`, follows
+the existing spatial trace with real keys and live occupancy, and retains the blocked Left facing
+entity142. One explicit Wait then Ack consumes each reached W boundary until text521. At genuine
+text521 W1 it stops **before Wait/Ack**, after both nods, with `cs-5149a` instruction42 and
+`ZoneEventContext` still active. It does not claim ordinary field return or full Messenger.
+
+After current private selections and protected SDK setup, run the two affected behavior files,
+`uv run sf2 verify engine`, `uv run sf2 verify adapter`, and a Debug adapter build for native use.
+The retained launcher reads the existing private input selections and starts the owned Godot
+installation/project with `--fixed-fps 60 --script res://probes/engine_input_accessibility_observation.gd`,
+existing `--private-exploration-start`, fresh `--input-settings`, `SF2_EXPLORATION_OBSERVATION_OUTPUT`,
+and the current content/party/spatial-plan selections. It sets `SF2_INPUT_CASE` to the case above,
+`SF2_INPUT_RATE` to20 or40 and `SF2_NOD_FOCUS=1` for the instant run's actual native sibling-window
+focus transfer. No screenshot or injected gameplay state is used.
+
+```powershell
+uv run --locked python -X utf8 local/issue534/nod-lifecycle/run-native.py native-new instant 1 20
+# Fresh outputs for natural 1 20 and adjusted-reveal 1 40; keep the same content/start.
+uv run --locked python -X utf8 local/issue534/nod-lifecycle/compare-native.py
+```
+
+**Confirmed (remake):** retained `native-01/02/03` each exit0/PASS, with empty failures and
+Unavailable arrays and clean Godot/audio logs. Direct comparison matches52 semantic boundaries
+and3,485 settled tick states across24 fields, including complete selected entities, flags/party,
+RNG/copy, logical view/text/portrait, live service flag, caller and nod state. Actual resource
+readbacks include elapsed0/9/10/29/30/39/40 for both tokens, entity143/slot18/sprite206/facing1,
+animationFF and visible24×24 sprites; lowered textures differ from normal, restored textures
+match normal. Hidden-view and real OS focus pauses retain state and zero debt; Wait/Ack during
+nod has no effect. Each `nod-returned` observation records counter0, including the transient
+reset before the next adjacent nod writes FF.
+
+| Boundary | Logical tick | Main seed / poll copy |
+| --- | --- | --- |
+| First introduction return | 1673 | A9240000 / A9 |
+| Entity142 return | 1979 | DA180000 / DA |
+| Second Zone7 return | 2421 | EA7E0000 / AF |
+| Stair reload return | 2473 | 9B5B0000 / AF |
+| First nod start / lowered / restored / return | 3294 / 3304 / 3324 / 3334 | Live state retained in each receipt |
+| Second nod start / lowered / restored / return | 3334 / 3344 / 3364 / 3374 | Live state retained in each receipt |
+| Text521 W1 before input | 3484 | 92610000 / 56 |
+
+The endpoint retains flags[0,32,256,260,261,601,602], actor animation0 and active caller; F603 is
+clear. All started PCM receipts have real sample frames/playback and no audio error. Non-speech
+command/revision order matches across settings. The initial comparison wrongly required every
+audio receipt to match: natural20 alone emits speech70/72/73/74 under unresolved policy#517
+(332 started speech receipts). `comparison-failure.json` and `comparison-inspection.log` retain
+that completed assertion failure; `native-comparison.json` retains **all** receipts. The corrected
+comparison separates this known display-policy difference from semantic state and non-speech
+receipts. No runtime was repeated or policy changed to hide it.
+
+`behavior-01.log` completed212PASS/6FAIL: four nod cases lacked a logical view in their test state,
+and two portrait expectations used +64 instead of the accepted +30. `behavior-02.log` then
+completed2PASS/4FAIL because the source-population test used authored actor names; `behavior-03.log`
+completed3PASS/1FAIL because it expected enabled idle WaitTimer0 instead of the source idle1.
+The corrected cases pass in `behavior-04.log`; final affected files pass219 in `behavior-final.log`,
+including varied physical motion. `engine-01.log` passes754 with30 private-input skips; the final
+motion assertion refinement is covered by the narrow final run and exact PR CI. Debug/Release
+adapter builds have zero warnings/errors. Preserve these completed test-setup failures.
+
+Run the clean committed planner and report exact remote CI. Documentation/source binding adds no
+research runner/fixture change and does not authorize a blanket normal/full/H3 repeat. The prior
+normal-verify provenance failure after148passes retains its accepted applicability. Original-runtime
+delta0; hardware-frame/DMA timing, original natural continuity, later camera/choice/JOIN and all
+preserved warp/H4/HEAL/next-actor/cleanup gaps remain open.
+
 ## W1 entity-event input
 
 The [execution owner](./exploration-programs.md#w1-in-a-suppressed-entity-event) defines the
