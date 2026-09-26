@@ -22,6 +22,19 @@ var field_unavailable: Array[String] = []
 var guarded_wait_case := "portrait-event" in input_case or "field-projection" in input_case or "field-wait" in input_case or "text-wait" in input_case or "warp-transition" in input_case or "w1-private" in input_case or "opening-private" in input_case
 var warp_records: Array = []
 var nod_pause_checked := false
+var camera_pause_checked := false
+var camera_draws: Array = []
+var camera_draw_seen: Dictionary = {}
+
+func record_camera_draw() -> void:
+    if not is_instance_valid(view): return
+    var s := state()
+    var p = s.get("cameraProjection")
+    if p == null or s.logicalView == null or p.simulationTick != s.simulationTick or p.token != s.token: return
+    var identity := str([s.simulationTick, s.token])
+    if camera_draw_seen.has(identity): return
+    camera_draw_seen[identity] = true
+    camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities})
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -901,7 +914,7 @@ func finish_public() -> void:
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
-        "warpRecords":warp_records}, "  ")
+        "warpRecords":warp_records,"cameraDraws":camera_draws}, "  ")
     if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
@@ -951,7 +964,7 @@ func opening_semantic(s: Dictionary) -> Array:
 func opening_settle() -> bool:
     var seen: Dictionary = {}
     var phases: Dictionary = {}
-    for frame in range(5000):
+    for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
         if s.failure != null: return false
         if s.get("canWaitAtInput", false): return true
@@ -996,7 +1009,58 @@ func opening_settle() -> bool:
                         return false
                     other.queue_free()
                 read_sample("nod-resumed")
-        if "zone-nod" in input_case and s.textId == 521 and s.get("canWaitForText", false):
+        if "camera" in input_case and s.wait == "ViewWait" and s.logicalView.TargetSlot == null:
+            read_sample("camera-wait-" + str(s.token))
+            if not camera_pause_checked and s.logicalView.Scrolling:
+                camera_pause_checked = true
+                var before_pause := opening_semantic(s)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                check(opening_semantic(state()) == before_pause, "Camera wait rejects field Wait and Ack")
+                view.hide()
+                for hidden_frame in range(6): await process_frame
+                check(opening_semantic(state()) == before_pause and state().tickDebt == 0, "Hidden camera has no service or clock debt")
+                view.show()
+                if OS.get_environment("SF2_NOD_FOCUS") == "1":
+                    var other := Window.new()
+                    other.hide()
+                    other.force_native = true
+                    other.transient = true
+                    other.title = "Camera focus observation"
+                    other.size = Vector2i(240, 100)
+                    root.add_child(other)
+                    other.show()
+                    other.grab_focus()
+                    await create_timer(0.15).timeout
+                    if not other.has_focus() or root.has_focus():
+                        field_unavailable.append("Camera OS focus transfer unavailable")
+                        return false
+                    var unfocused := opening_semantic(state())
+                    for focus_frame in range(6): await process_frame
+                    check(opening_semantic(state()) == unfocused and state().tickDebt == 0, "Unfocused camera adds no logical work")
+                    read_sample("camera-unfocused")
+                    other.hide()
+                    root.grab_focus()
+                    var deadline := Time.get_ticks_msec() + 2000
+                    while not root.has_focus() and Time.get_ticks_msec() < deadline: await process_frame
+                    if not root.has_focus():
+                        field_unavailable.append("Camera OS focus return unavailable")
+                        return false
+                    other.queue_free()
+                read_sample("camera-resumed")
+        if "camera" in input_case and s.textId == 531 and s.get("canWaitForText", false):
+            var endpoint := read_sample("camera-text531-input")
+            check(not endpoint.fieldText.Wait2 and not endpoint.canWaitAtInput and endpoint.eventCaller == "ZoneEventContext" and
+                endpoint.cursor != null and endpoint.cursor.Instruction == 127 and not 603.0 in endpoint.flags,
+                "Text531 input retains the Messenger zone/script caller before yes-no")
+            check(endpoint.logicalView.TargetSlot == null and not endpoint.logicalView.Scrolling, "Camera remains held after both waits")
+            var held := opening_semantic(endpoint)
+            for idle_frame in range(5): await process_frame
+            check(opening_semantic(state()) == held and state().tickDebt == 0, "Text531 stops before any Wait or Ack")
+            return true
+        if "zone-nod" in input_case and "camera" not in input_case and s.textId == 521 and s.get("canWaitForText", false):
             var endpoint := read_sample("nod-text521-input")
             var returns: Array = warp_records.filter(func(r): return r.result.observations.any(func(o): return o.Kind == "nod-returned"))
             check(returns.size() == 2, "Both nods returned before the genuine text521 W1 input")
@@ -1062,6 +1126,7 @@ func run_portrait_event() -> void:
         finish_public()
         return
     view.connect("SessionResultObserved", record_warp_result)
+    if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))
     # Existing accepted spatial edges only, never its historical frame/acknowledgement counts.
     var navigation: Array = fixture.expectedObservation.records[0].logicalInputTrace
@@ -1101,7 +1166,7 @@ func run_portrait_event() -> void:
                 "Second Zone7 returns before Messenger")
         if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
             read_sample("nod-stair-reload-return")
-        if "zone-nod" in input_case and state().textId == 521 and state().canWaitForText:
+        if "zone-nod" in input_case and state().textId == (531 if "camera" in input_case else 521) and state().canWaitForText:
             finish_public()
             return
         if interaction:

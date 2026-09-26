@@ -806,6 +806,40 @@ sprite/facing and existing transformed/normal resources. Unbound presentation re
 contract. **Unknown:** forty explicit `WaitForVInt` opportunities do not establish exactly forty
 natural hardware frames, hidden DMA/interrupt latency, or whole-Messenger acceptance.
 
+### Bound field camera lifecycle
+
+**Confirmed (static binding):** the explicit field view profile MAY consume the separately
+inspected [destination/scroll/wait chain](../../research/map3-messenger-acceptance.md#source-bound-camera-lifecycle).
+A tile destination MUST disable following, multiply each coordinate by384 logical units, and
+install four destinations with the admitted foreground/background offsets. It MUST preserve current
+positions, inherited follow counter and an already active axis whose new destination equals its
+position. An equal inactive axis remains inactive. This profile admits unity parallax, zero
+autoscroll, layer0, background origin0 and nonnegative signed-word destinations only.
+
+Each common service MUST preserve the current entity-service flag and order entity work before
+view/scroll/window and registered portrait work. No-follow mode prepares speed24, or32 when the
+inherited counter interpreted as a signed word exceeds6, on every service including active scrolls.
+Axes advance independently and snap/clear when reaching or crossing their destination. Window
+hiding uses the A-axis active bits before that scroll pass. Shared RNG and the previous poll-copy
+byte retain their existing service ownership.
+
+The camera wait MUST finish scrolling, wait once, recheck and restart if active, then wait once
+more before returning. Render time, field input and presentation acknowledgements cannot discharge
+this logical wait. Settled camera positions remain held through dialogue and nested returns. Only
+actual ordinary field-control return restores player following, without resetting positions,
+pending destinations or the counter. The next service applies the normal follow rules.
+
+The whole bound renderer MUST project the authoritative B origin for this profile's actors/base
+and A origin for its foreground, without a second center/clamp/smoothing authority or duplicate
+foreground offset. Modern viewport/layout and existing raster resources remain presentation choices.
+Per-cell tile priority and alpha MUST determine occlusion, rather than a whole-block or whole-plane
+priority lift. Plane display priority MUST remain distinct from sprite-to-sprite ordering; high
+priority map pixels cover low priority sprite ink, while transparent pixels reveal the next surface.
+See the [source/data binding](../../research/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion).
+Unbound presentation retains its prior contract. **Unknown:** natural interrupt/VDP/DMA timing,
+word-wrap destinations, explicit speed, cursor/pulsating overrides, other layer/parallax/autoscroll
+profiles and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+
 ## Remake Acceptance
 
 The first remake map slice is acceptable when it can:

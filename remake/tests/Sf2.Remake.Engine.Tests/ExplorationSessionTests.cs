@@ -118,6 +118,153 @@ public sealed class ExplorationSessionTests
         Assert.Equal(0, returned.Exploration!.PlayerEntity.Motion.AnimationCounter);
     }
 
+    [Theory]
+    [InlineData(0, 24, 2, 8)]
+    [InlineData(6, 24, 8, 2)]
+    [InlineData(7, 32, 7, 9)]
+    [InlineData(65535, 24, 1, 1)]
+    public void CameraDestinationUsesIndependentAxesAndPreservesCounter(int counter, int speed, int x, int y)
+    {
+        var (_, state) = ControlWorld();
+        var area = new ExplorationViewArea(0, 0, 12, 12, 1, 2, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        var view = new LogicalView(area, 2, new(4 * 384), new(5 * 384), new(3 * 384), new(3 * 384), counter);
+        var destination = ExplorationViewRunner.SetDestination(view, new(x, y));
+        Assert.Null(destination.TargetSlot);
+        Assert.Equal(counter, destination.FollowCounter);
+        Assert.Equal((x + 1) * 384, destination.AX.Destination);
+        Assert.Equal((y + 2) * 384, destination.AY.Destination);
+        Assert.Equal(x * 384, destination.BX.Destination);
+        Assert.Equal(y * 384, destination.BY.Destination);
+        var tick = ExplorationViewRunner.Tick(state.Exploration!, destination, new(2, 0, 0));
+        Assert.Equal(counter, tick.FollowCounter);
+        foreach (var pair in new[] { (destination.AX, tick.AX), (destination.AY, tick.AY), (destination.BX, tick.BX), (destination.BY, tick.BY) })
+        {
+            Assert.Equal(speed, pair.Item2.Speed);
+            Assert.Equal(pair.Item1.Position + Math.Sign(pair.Item1.Destination!.Value - pair.Item1.Position) * speed, pair.Item2.Position);
+        }
+        Assert.True(tick.HideWindows);
+        var movedPlayer = state.Exploration!.WithEntity(state.Exploration.PlayerEntity with
+            { Motion = state.Exploration.PlayerEntity.Motion with { X = 11 * 384, Y = 10 * 384 } });
+        var retarget = ExplorationViewRunner.SetDestination(tick, new(3, 3));
+        while (retarget.Scrolling) retarget = ExplorationViewRunner.Tick(movedPlayer, retarget, new(2, 0, 0));
+        var held = ExplorationViewRunner.Tick(movedPlayer, retarget, new(2, 0, 0));
+        Assert.Equal(4 * 384, held.AX.Position);
+        Assert.Equal(5 * 384, held.AY.Position);
+        Assert.Equal(3 * 384, held.BX.Position);
+        Assert.Equal(3 * 384, held.BY.Position);
+        Assert.False(held.Scrolling);
+        Assert.False(held.HideWindows);
+        Assert.Equal(counter, held.FollowCounter);
+    }
+
+    [Fact]
+    public void EqualCameraTargetsPreserveActiveBitsAndAxesSnapIndependently()
+    {
+        var (_, state) = ControlWorld();
+        var area = new ExplorationViewArea(0, 0, 12, 12, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        var view = new LogicalView(area, 2, new(768, 1200, 3), new(768), new(757, 900, 4), new(803, 300, 5), 7);
+        var set = ExplorationViewRunner.SetDestination(view, new(2, 2));
+        Assert.Equal(768, set.AX.Destination);
+        Assert.Null(set.AY.Destination);
+        var first = ExplorationViewRunner.Tick(state.Exploration!, set, new(2, 0, 0));
+        Assert.Equal(new LogicalViewAxis(768, null, 32), first.AX);
+        Assert.Equal(new LogicalViewAxis(768, null, 32), first.BX);
+        Assert.Equal(new LogicalViewAxis(771, 768, 32), first.BY);
+        Assert.True(first.HideWindows);
+        var second = ExplorationViewRunner.Tick(state.Exploration!, first with { FollowCounter = 6 }, new(2, 0, 0));
+        Assert.Equal(new LogicalViewAxis(768, null, 24), second.BY);
+        Assert.False(second.HideWindows); // B alone never hides the windows.
+        Assert.False(second.Scrolling);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CameraWaitHoldsAcrossNestedReturnsAndRestoresOnlyAtFieldControl(bool equal)
+    {
+        var (definition, before) = ControlWorld(script:
+            [new CallProgram(new("camera", 0)), new WaitProgramTicks(1), new EndProgram()]);
+        definition = new("camera", definition.Encounters.Values, exploration: new([before.Exploration!.Definition],
+            [definition.Exploration!.Programs["control"], new StoryProgram("camera",
+                [new SetCameraTarget(new(3, 3)), new PresentCue(PresentationCueKind.CameraWait),
+                 new SetCameraTarget(new(3, 3)), new PresentCue(PresentationCueKind.CameraWait), new EndProgram()])]));
+        var area = new ExplorationViewArea(0, 0, 12, 12, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        int position = equal ? 3 * 384 : 3 * 384 - 35;
+        before = before.WithStory(before.Story.Copy(before.Story.Cursor, textSettings: new(2, 0, 0),
+            portraitWindow: new ClosedPortraitWindow(), logicalText: new(), logicalView: new(area, 2,
+                new(position), new(1152), new(position), new(1152), 7)));
+        var started = ProgramRunner.Run(definition, before, []);
+        Assert.Null(started.Failure);
+        var current = started.Snapshot;
+        var first = Assert.IsType<ViewWait>(current.Story.Wait);
+        Assert.False(current.CanWaitAtInput);
+        Assert.False(current.CanWaitForText);
+        foreach (var command in new SessionCommand[] { new WaitAtInput(), new Acknowledge(first.Token),
+            new Move(ExplorationDirection.East), new CompletePresentation(first.Token, PresentationCueKind.CameraWait) })
+            Assert.NotNull(ExplorationDispatcher.Submit(definition, current, command).Failure);
+        current = Step(definition, current, new AdvanceSimulation(first.Token, 600)).Snapshot;
+        var second = Assert.IsType<ViewWait>(current.Story.Wait);
+        Assert.NotEqual(first.Token, second.Token);
+        Assert.Equal(equal ? 2 : 4, current.Story.SimulationTick);
+        Assert.Null(current.Story.LogicalView!.TargetSlot);
+        Assert.NotNull(ExplorationDispatcher.Submit(definition, current, new AdvanceSimulation(first.Token)).Failure);
+        current = Step(definition, current, new AdvanceSimulation(second.Token, 600)).Snapshot;
+        Assert.Equal("control", current.Story.Cursor!.Value.Program);
+        Assert.Null(current.Story.LogicalView!.TargetSlot);
+        Assert.Equal(equal ? 4 : 6, current.Story.SimulationTick);
+        // Returning control changes only the target, even if another axis is still active.
+        var pending = current.Story.LogicalView with { BX = new(1100, 1152, 32) };
+        current = current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait, logicalView: pending));
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token)).Snapshot;
+        Assert.True(current.CanWaitAtInput);
+        Assert.Equal(2, current.Story.LogicalView!.TargetSlot);
+        Assert.Equal(1132, current.Story.LogicalView.BX.Position);
+        Assert.Equal(1152, current.Story.LogicalView.BX.Destination);
+        Assert.Equal(7, current.Story.LogicalView.FollowCounter);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CameraWaitCarriesEntityServiceForBusyAndIdleActors(bool enabled, bool busy)
+    {
+        var npc = new ExplorationEntity(new("entity-128"), EntityMotionState.At(new(7, 7), 2, 32), true,
+            new(busy ? [new WaitEntityTicks(200)] : [new IdleEntityAction()]), Slot: 8);
+        if (busy) npc = npc with { Motion = npc.Motion with { XDestination = 3072, XTravel = 384, XVelocity = 32 } };
+        var (definition, before) = ControlWorld(npcs: [npc], script:
+            [new SetCameraTarget(new(3, 3)), new PresentCue(PresentationCueKind.CameraWait), new WaitProgramTicks(1), new EndProgram()]);
+        var area = new ExplorationViewArea(0, 0, 12, 12, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        before = before.WithStory(before.Story.Copy(before.Story.Cursor, textSettings: new(2, 0, 0), entityServices: enabled,
+            portraitWindow: new ClosedPortraitWindow(), logicalText: new(),
+            logicalView: new(area, 2, new(1152), new(1152), new(1152), new(1152))));
+        var started = ProgramRunner.Run(definition, before, []);
+        Assert.Null(started.Failure);
+        var current = Step(definition, started.Snapshot, new AdvanceSimulation(started.Snapshot.Story.Wait!.Token, 600)).Snapshot;
+        Assert.Equal(2, current.Story.SimulationTick);
+        var actor = current.Exploration!.Entities[npc.Entity];
+        Assert.Equal(2688 + (busy && enabled ? 64 : 0), actor.Motion.X);
+        Assert.Equal(enabled ? busy ? 2 : 1 : 0, actor.Motion.WaitTimer);
+        Assert.Equal(enabled, current.Story.EntityServices);
+        Assert.Null(current.Story.LogicalView!.TargetSlot);
+    }
+
+    [Fact]
+    public void UnboundCameraKeepsPresentationCompletion()
+    {
+        var (definition, before) = ControlWorld(script: [new SetCameraTarget(new(9, 7)),
+            new PresentCue(PresentationCueKind.CameraWait), new EndProgram()]);
+        var started = ProgramRunner.Run(definition, before, []);
+        Assert.Null(started.Failure);
+        Assert.Equal(new MapPosition(9, 7), started.Snapshot.Story.CameraTarget);
+        var wait = Assert.IsType<PresentationWait>(started.Snapshot.Story.Wait);
+        var returned = Step(definition, started.Snapshot, new CompletePresentation(wait.Token, PresentationCueKind.CameraWait)).Snapshot;
+        Assert.True(returned.CanWaitAtInput);
+        Assert.Null(returned.Story.LogicalView);
+        Assert.Equal(0, returned.Story.SimulationTick);
+    }
+
     private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) ControlWorld(
         bool source = true, int playerSlot = 2, StoryInstruction[]? script = null,
         EntityMotionState? motion = null, ExplorationEntity[]? npcs = null,

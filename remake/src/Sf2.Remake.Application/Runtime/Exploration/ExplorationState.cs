@@ -29,7 +29,7 @@ public sealed record LogicalViewAxis(int Position, int? Destination = null, int 
 {
     public bool Active => Destination is not null;
 }
-public sealed record LogicalView(ExplorationViewArea Area, int TargetSlot,
+public sealed record LogicalView(ExplorationViewArea Area, int? TargetSlot,
     LogicalViewAxis AX, LogicalViewAxis AY, LogicalViewAxis BX, LogicalViewAxis BY,
     int FollowCounter = 0, bool HideWindows = false)
 {

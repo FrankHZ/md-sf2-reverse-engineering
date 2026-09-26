@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
@@ -35,15 +36,40 @@ internal static class ExplorationViewRunner
             throw new BattleRuleException("field-view-profile", "map.view", true);
     }
 
+    internal static LogicalView SetDestination(LogicalView view, MapPosition position)
+    {
+        Validate(view.Area);
+        LogicalViewAxis Set(LogicalViewAxis axis, int destination)
+        {
+            // This profile does not generalize the source word-wrap domain.
+            if (destination is < 0 or > short.MaxValue)
+                throw new BattleRuleException("field-view-destination", "program.camera", true);
+            // SetViewDestination only sets unequal-axis bits; equality does not
+            // clear an already active axis. Scroll clears that bit on its next pass.
+            return axis with { Destination = axis.Active || axis.Position != destination ? destination : null };
+        }
+        int x = position.X * 384, y = position.Y * 384;
+        return view with { TargetSlot = null,
+            AX = Set(view.AX, x + view.Area.ForegroundX * 384), AY = Set(view.AY, y + view.Area.ForegroundY * 384),
+            BX = Set(view.BX, x + view.Area.BackgroundX * 384), BY = Set(view.BY, y + view.Area.BackgroundY * 384) };
+    }
+
     internal static LogicalView Tick(ExplorationState world, LogicalView view, ExplorationTextSettings settings)
     {
         Validate(view.Area);
         if (settings.ViewSpeed != 0) throw new BattleRuleException("field-view-speed", "story.textSettings", true);
-        var target = world.AllEntities.FirstOrDefault(entity => entity.Slot == view.TargetSlot);
-        if (target is null || target.Slot == 63)
+        var target = view.TargetSlot is null ? null : world.AllEntities.FirstOrDefault(entity => entity.Slot == view.TargetSlot);
+        if (view.TargetSlot is not null && (target is null || target.Slot == 63))
             throw new BattleRuleException("field-view-target", "story.view", true);
-        // View data runs before scrolling. An active mask leaves its existing speeds intact.
-        if (!view.Scrolling)
+        if (target is null)
+        {
+            // The FF branch bypasses following but prepares speed even during a scroll.
+            int speed = unchecked((short)view.FollowCounter) > 6 ? 32 : 24;
+            view = view with { AX = view.AX with { Speed = speed }, AY = view.AY with { Speed = speed },
+                BX = view.BX with { Speed = speed }, BY = view.BY with { Speed = speed } };
+        }
+        // A followed entity with an active mask retains its existing speeds.
+        else if (!view.Scrolling)
         {
             var area = view.Area;
             int x = area.Layer == 0 ? view.BX.Position : view.AX.Position;

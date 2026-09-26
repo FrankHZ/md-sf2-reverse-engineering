@@ -892,6 +892,134 @@ was added. The prior completed normal-verify provenance failure after148passes r
 accepted applicability. Original runtime delta0; all eight warp gaps, H4/HEAL/JOIN/next-actor,
 publicaggregate/h3-witch NONRUN, cleanup21/41/61/67 and speech-policy#517 remain open.
 
+## Source-bound camera observation
+
+The [static source/data owner](../../docs/research/map3-messenger-acceptance.md#source-bound-camera-lifecycle),
+[contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle) and
+[consumer](exploration-programs.md#source-bound-camera) bind destination/scroll/wait/hold and
+ordinary-control restoration. Existing producer target/wait pairs and common services are reused;
+no Content/schema/input reconstruction is required. Logical B/A origins drive the whole bound
+renderer. Tile priority and alpha provide teacher/wall occlusion through the retained textures.
+
+### Reproduce and inspect
+
+Load current `local/private-inputs.ps1` in the launching process and use the locked .NET workflow
+above. Reuse `local/issue534/zone-caller/candidate/world.json`,
+`local/issue534/opening-implementation/start.json`, the owned installation/project and maintained
+`game/probes/engine_input_accessibility_observation.gd`. The case is
+`portrait-event-zone-nod-camera-private-*`; follow the route fixture's spatial edges and actual
+Wait/Ack boundaries, without historical frame/C quotas or an injected text521 snapshot.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+uv run sf2 verify engine
+uv run sf2 verify adapter
+uv run --locked python -X utf8 local/issue534/camera-lifecycle/run-dotnet.py debug-new.log build game/Sf2.Remake.Godot.csproj --no-restore --configuration Debug
+uv run --locked python -X utf8 local/issue534/camera-lifecycle/run-native.py native-new instant 1 40
+# Separate fresh destinations: natural 1 20; adjusted-reveal 1 40.
+uv run --locked python -X utf8 local/issue534/camera-lifecycle/compare-native.py
+uv run --locked python -X utf8 local/issue534/camera-lifecycle/check-teacher.py
+```
+
+The ignored wrappers select the existing shared SDK environment, retained inputs and a fresh output;
+they do not install/copy assets or environments. The native wrapper uses fixed-fps60 and the visible
+window, a180-second process bound, and the probe has an8000-render-iteration guard for this longer
+case. Neither bound defines successful completion. Success requires genuine text531 W1 at
+`cs-5149a[127]`, **before Wait/Ack**, with both cameras returned, no-follow still held, F603 clear
+and the zone/script caller active. Yes/no128, choice/JOIN and full Messenger remain outside this slice.
+
+### Observed result and projection boundary
+
+**Confirmed (remake only):** `local/issue534/camera-lifecycle/final-native-01/02/03` are
+instant/natural20/reveal40, all exit0/PASS with empty failure/unavailable lists and no adapter/audio
+or Godot log error. They retain722/725/750 samples and every audio receipt. Comparison covers82
+semantic boundaries and5096 settled ticks across24 gameplay fields. For each setting, all3485
+prior nod-run settled states match exactly through text521, including entities, RNG/copy, flags,
+logical view/windows/portrait and caller/service state. Only projection changes: source origins
+replace host centering/clamp/smoothing, and tile priority changes visible occlusion.
+
+| Boundary | Logical service tick / result |
+| --- | --- |
+| First destination installed / helper return | 3983 /4033; inherited counter0, speed24;48 scroll services plus recheck/final2 |
+| First settled origin | B `(912,168)` and A `(912,936)` pixels |
+| Second destination installed / helper return | 4250 /4268; counter0, speed24;16 scroll services plus recheck/final2 |
+| Second settled origin | B `(912,144)` and A `(912,912)` pixels |
+| Final text531 W1 input | 5095, main`6CF70000`, copy`BB`; flags`0,32,256,260,261,601,602`; active ZoneEventContext |
+
+These durations are observations of distance/speed and the helper state machine, not prescribed
+route quotas. Earlier introduction1673/A924, entity142 return1979/DA18, second Zone7 return2421/EA7E,
+stair reload2473/9B5B and nod3294→3334→3374 remain unchanged. Field control restore is covered by
+engine behavior tests; this native endpoint intentionally does not return field control.
+
+`cameraDraws` records5077/5074/5073 actual post-draw states, including3475/3472/3471 prefix draws.
+Only equal tick/token projections are admitted. Readback verifies both plane origins, zero duplicate
+source offsets,8px source/clip transforms, actor rectangles, float32 viewport culling,44 resource
+selection keys and unchanged mutual sprite order. Actual `DrawTextureRectRegion` calls expose their
+pass number, priority word, source cell/tile, resource and sprite-ink intersection. Focus loss and
+hide/show during both nod and camera work preserve state and zero clock debt; physical Wait/Ack
+cannot discharge either consumer.
+
+At genuine text525 input tick4150/token6829, teacher entity142/slot17/sprite209 is `(42,12)`,
+layer0/low display priority, facing1, with projected rectangle `(333.3333,327,55,55)` in the
+960×640 observation window. His sprite draws at pass21; wall block120 at source `(42,12)` draws
+75 masked8px fragments at pass22, with priority words`8272,8275,8A66,9272`.
+Decoding the referenced existing resource alpha confirms all362 nontransparent sprite pixels are
+covered by opaque wall pixels;214 transparent sprite pixels cause no repair draw. This specific
+wall overlap has zero transparent wall pixels. General map alpha is preserved by the same texture
+region draws, not a solid rectangle. The three settings reproduce these facts. The final review also retains mosaic sample coverage in the same ink mask; the three continuous
+routes execute normal/nod sprites and do not claim a mosaic observation. High display priority
+sprites were not reached in this route: their no-repair path and independence from relative sprite
+ordering are code-reviewed behavior, not an additional natural observation. Hardware sprite-link
+ordering, shadow/highlight, raster/DMA/interrupt timing and full VDP fidelity remain **Unknown**.
+
+All started PCM receipts have sample frames and active playback. Non-speech command/revision order
+matches; natural20 has574 speech starts (`70:114,72:59,73:136,74:265`) while instant/reveal40 have0.
+This retains the unanswered #517 display/speech policy distinction; it does not normalize audio
+receipt sequences or change gameplay RNG.
+
+### Checks and preserved discoveries
+
+Owning behavior files pass234 cases; `uv run sf2 verify engine` passes769 with30 explicit private
+skips. The actual adapter Release gate and required Debug build pass. Engine behavior covers varied
+coordinates/directions/axes, equality with active bits, retargeting, inherited0/6/7/negative-word
+counters,24/32 speed, overshoot, held camera, repeated/nested commands, helper restart/tail,
+ordinary-control restoration, enabled/suppressed busy/idle entities, live portrait/window/RNG/copy
+order and invalid completions/controls. Dispatcher/TextRunner remain unchanged.
+
+Preserve these completed local discoveries in `local/issue534/camera-lifecycle/`:
+
+- `behavior-01.log`:227PASS. `behavior-02.log`: compilation failed because a new test omitted the
+  required ViewWait Recheck argument; `behavior-03.log` passes its three corrected cases and
+  `behavior-final.log` passes234. No production rule was weakened.
+- `native-02`: exit1 at tick4965/instruction126, application failure null, because the original
+  5000-render guard was insufficient for the extended observation. `native-02-correction`: exit1
+  at tick397/text483, `focused=false`, zero debt and no application error. Preserve the distinction
+  between probe budget and lost native focus. Final runs use the actual focus-controlled window.
+- Initial projection runs `native-01` and `priority-native-01` reached531 successfully; the latter
+  preceded the correction that keeps sprite-to-sprite order independent of display priority.
+  Their outputs remain, and final three runs load the corrected adapter.
+- `comparison-failure.json`/`culling-inspection.log`: twelve offline culling discrepancies (four per
+  run) at exact viewport-edge contact. Recompute the recorded Godot rectangles with float32 adds;
+  double-precision reconstruction from logical coordinates was the report error. Exact float32
+  comparison passes without tolerance or runtime changes; independent geometry checks remain.
+- The initial teacher checker incorrectly demanded a transparent wall pixel in this particular
+  overlap. Direct alpha readback yields362 opaque/0 transparent wall-over-sprite pixels and214
+  transparent sprite pixels. The corrected checker asserts the actual asset/coverage facts.
+
+Document scope uses direct links/fences/ownership/private-boundary review, `sf2 design-contracts test`
+and `sf2 research-index test`. On clean committed HEAD, obtain `sf2 verify plan --base origin/main
+--head HEAD`; record its selection and exact remote CI in the Draft PR/handoff. Source-only prose
+adds no new research execution dependency; the prior normal verification completed with missing
+local provenance after148 passes and is neither interrupted nor passed. No blanket normal/full/H3
+rerun follows from this slice. Preserve all earlier completed failures in their named sections.
+
+No original runtime was added:138 starts /15583.68017570005 seconds /429625 frames /16332 batches,
+delta0. Eight first-warp gaps, H4 5340PASS/2FAIL/40Unavailable, HEAL2vs3/later RNG, JOIN's completed
+5000 timeout then5313services/572minimal advances and cross-clock Unknown, next-actor1vs0/index29,
+public aggregate/h3-witch NONRUN and cleanup21/41/61/67 Unknowns remain. #534/#437 stay open;
+#523 stays stopped and investigator ownership remains user-exclusive. No cleanup/archive is implied.
+
 ## Source-bound nod observation
 
 The [source owner](../../docs/research/map3-messenger-acceptance.md#source-bound-nod-lifecycle) and

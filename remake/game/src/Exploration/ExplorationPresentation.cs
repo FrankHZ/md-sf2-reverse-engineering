@@ -15,6 +15,7 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
+    private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
@@ -48,6 +49,7 @@ internal sealed class ExplorationPresentation : IDisposable
     internal string? Error { get => _error ?? _audio.Error; private set => _error = value; }
     internal int SpriteMounts => _spriteMounts;
     internal object? NodProjection { get; private set; }
+    internal object? CameraProjection { get; private set; }
     internal int GestureDraws { get; private set; }
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
@@ -82,17 +84,22 @@ internal sealed class ExplorationPresentation : IDisposable
             var target = _camera;
             if (current.Exploration is { } world)
             {
-                var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
-                var tracked = current.Story.CameraEntitySlot is { } slot
-                    ? world.AllEntities.Single(entity => entity.Slot == slot) : world.PlayerEntity;
-                target = current.Story.CameraEntitySlot is null && current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
-                    ? new Vector2(destination.X * 24, destination.Y * 24)
-                    : new Vector2(tracked.Motion.X / 16f - ViewWidth / 2f + 12,
-                        tracked.Motion.Y / 16f - ViewHeight / 2f + 12);
-                target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
-                target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
-                if (_map != world.Map) { _map = world.Map; _camera = target; }
-                else _camera = _camera.MoveToward(target, (float)(delta * 180));
+                if (current.Story.LogicalView is { } view)
+                    _camera = target = new Vector2(view.BX.Position / 16f, view.BY.Position / 16f);
+                else
+                {
+                    var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
+                    var tracked = current.Story.CameraEntitySlot is { } slot
+                        ? world.AllEntities.Single(entity => entity.Slot == slot) : world.PlayerEntity;
+                    target = current.Story.CameraEntitySlot is null && current.Story.Cursor is not null && current.Story.CameraTarget is { } destination
+                        ? new Vector2(destination.X * 24, destination.Y * 24)
+                        : new Vector2(tracked.Motion.X / 16f - ViewWidth / 2f + 12,
+                            tracked.Motion.Y / 16f - ViewHeight / 2f + 12);
+                    target.X = Mathf.Clamp(target.X, area.MinimumX * 24, Math.Max(area.MinimumX * 24, (area.MaximumX + 1) * 24 - ViewWidth));
+                    target.Y = Mathf.Clamp(target.Y, area.MinimumY * 24, Math.Max(area.MinimumY * 24, (area.MaximumY + 1) * 24 - ViewHeight));
+                    if (_map != world.Map) { _map = world.Map; _camera = target; }
+                    else _camera = _camera.MoveToward(target, (float)(delta * 180));
+                }
                 foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest))
                 {
                     _ = Sprite(entity, false);
@@ -238,12 +245,33 @@ internal sealed class ExplorationPresentation : IDisposable
             _screen = new(new Vector2((viewport.X - ViewWidth * _scale) / 2, 52), new Vector2(ViewWidth, ViewHeight) * _scale);
             _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
             var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
-            DrawLayer(world, visual, new(0, 0), false);
+            var view = story.LogicalView;
+            if (view is not null) _camera = new(view.BX.Position / 16f, view.BY.Position / 16f);
+            var foreground = view is null ? _camera : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
+            var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
+            bool hasForeground = view is null ? overlay.X != 0 || overlay.Y != 0 :
+                view.Area.ForegroundX != view.Area.BackgroundX || view.Area.ForegroundY != view.Area.BackgroundY;
+            var offset = view is null ? overlay : new MapOverlayOffset(0, 0);
+            var backgroundDraw = DrawLayer(world, visual, _camera, new(0, 0), false, view is null ? null : false, 0);
+            object? foregroundDraw = view is not null && hasForeground
+                ? DrawLayer(world, visual, foreground, offset, true, false, 1) : null;
+            List<object> actors = [];
+            List<object> occlusionDraws = [];
+            object? backgroundHigh = view is null ? null : DrawLayer(world, visual, _camera, new(0, 0), false, true, 2);
+            object? foregroundHigh = view is not null && hasForeground
+                ? DrawLayer(world, visual, foreground, offset, true, true, 3) : null;
+            int pass = 4;
             var sourceNod = story.Wait as NodWait;
             NodProjection = null;
+            int windows = (story.TextWindow is OpenTextWindow ? 1 : 0) + (story.PortraitWindow is OpenPortraitWindow ? 1 : 0);
+            // VDP sprite priority comes from the layer/window comparison. The separate
+            // script Priority flag only orders sprites relative to one another.
+            bool High(ExplorationEntity entity) => (sbyte)entity.Motion.Layer > windows;
             foreach (var entity in world.AllEntities.Where(entity => entity.Visible).OrderBy(entity => entity.Priority)
                 .ThenBy(entity => entity.Motion.Y).ThenBy(entity => entity.Slot))
             {
+                bool? highPriority = view is null ? null : High(entity);
+                int actorPass = pass++;
                 bool gesture = sourceNod is not null ? sourceNod.Entity == entity.Entity : _gesture == entity.Entity;
                 bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
                 var texture = Sprite(entity, lowered);
@@ -251,6 +279,11 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (sourceNod is null && gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
                 var destination = new Rect2(_screen.Position + (point - _camera) * _scale, new Vector2(24, 24) * _scale);
                 bool visible = _screen.Intersects(destination);
+                actors.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
+                    facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
+                    x = destination.Position.X, y = destination.Position.Y,
+                    width = destination.Size.X, height = destination.Size.Y, visible,
+                    texture = texture.GetInstanceId().ToString() });
                 if (gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
                         entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
@@ -259,16 +292,23 @@ internal sealed class ExplorationPresentation : IDisposable
                         texture = texture.GetInstanceId(), normalTexture = Sprite(entity, false).GetInstanceId(),
                         width = texture.GetWidth(), height = texture.GetHeight() };
                 if (!visible) continue;
+                var bounds = destination;
                 bool mirror = entity.Motion.Facing is 0 or 4 or 7;
+                IReadOnlyList<Rect2> inkRuns = _spriteInk[texture];
                 if (_mosaic == entity.Entity)
                 {
+                    List<Rect2> sampledInk = [];
                     double age = _mosaicOut ? 0.5 - _cueAge : _cueAge;
                     int block = age < 0.1 ? 8 : age < 0.2 ? 6 : age < 0.3 ? 4 : age < 0.4 ? 2 : 1;
                     for (int y = 0; y < 24; y += block)
                         for (int x = 0; x < 24; x += block)
+                        {
                             _owner.DrawTextureRectRegion(texture,
                                 new(destination.Position + new Vector2(mirror ? 24 - x - block : x, y) * _scale,
                                     Vector2.One * block * _scale), new(x, y, 1, 1));
+                            if (inkRuns.Any(run => run.HasPoint(new(x, y)))) sampledInk.Add(new(x, y, block, block));
+                        }
+                    inkRuns = sampledInk;
                     MosaicDraws++;
                     if (_mosaicOut) MosaicOutDraws++;
                 }
@@ -278,6 +318,18 @@ internal sealed class ExplorationPresentation : IDisposable
                     if (mirror) destination.Size = new(-destination.Size.X, destination.Size.Y);
                     _owner.DrawTextureRect(texture, destination, false);
                 }
+                if (highPriority == false)
+                {
+                    // Keep sprite-to-sprite order independent of display priority.
+                    // Restore high-priority map pixels only under this sprite's ink;
+                    // transparent sprite pixels must not erase an earlier high sprite.
+                    var ink = inkRuns.Select(run => new Rect2(bounds.Position +
+                        new Vector2(mirror ? 24 - run.End.X : run.Position.X, run.Position.Y) * _scale,
+                        run.Size * _scale)).ToArray();
+                    var actor = (entity.Entity, bounds, (IReadOnlyList<Rect2>)ink);
+                    occlusionDraws.Add(DrawLayer(world, visual, _camera, new(0, 0), false, true, pass++, actor));
+                    if (hasForeground) occlusionDraws.Add(DrawLayer(world, visual, foreground, offset, true, true, pass++, actor));
+                }
                 if (gesture)
                 {
                     GestureDraws++;
@@ -286,8 +338,12 @@ internal sealed class ExplorationPresentation : IDisposable
                     else if (sourceNod is not null ? sourceNod.Elapsed >= 30 : _cueAge >= 30.0 / 60) RestoredGestureDraws++;
                 }
             }
-            var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
-            if (overlay.X != 0 || overlay.Y != 0) DrawLayer(world, visual, overlay, true);
+            // The bound A origin already includes the foreground layout offset.
+            if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foreground, offset, true, null, pass++);
+            CameraProjection = new { simulationTick = story.SimulationTick, token = story.Wait?.Token.Value,
+                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
+                x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
+                scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             byte flags = (story.PortraitWindow as OpenPortraitWindow)?.Flags ?? 0;
             // Preserve old content's display hint without admitting its unknown service gate.
@@ -336,9 +392,13 @@ internal sealed class ExplorationPresentation : IDisposable
         { Error = error.Message; return true; }
     }
 
-    private void DrawLayer(ExplorationState world, ExplorationMapVisual visual, MapOverlayOffset offset, bool overlay)
+    private object DrawLayer(ExplorationState world, ExplorationMapVisual visual, Vector2 origin, MapOverlayOffset offset,
+        bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null)
     {
-        int left = (int)Math.Floor(_camera.X / 24), top = (int)Math.Floor(_camera.Y / 24);
+        int left = (int)Math.Floor(origin.X / 24), top = (int)Math.Floor(origin.Y / 24);
+        int draws = 0;
+        object? first = null;
+        List<object> overlaps = [];
         for (int y = top; y <= top + ViewHeight / 24; y++)
             for (int x = left; x <= left + ViewWidth / 24 + 1; x++)
             {
@@ -346,12 +406,38 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (sourceX is < 0 or > 63 || sourceY is < 0 or > 63) continue;
                 int block = world.Layout[sourceX, sourceY] & 0x3FF;
                 if (overlay && block == 0) continue;
-                var rectangle = new Rect2(_screen.Position + (new Vector2(x * 24, y * 24) - _camera) * _scale, new Vector2(24, 24) * _scale);
-                var clipped = rectangle.Intersection(_screen);
-                if (clipped.Size.X <= 0 || clipped.Size.Y <= 0) continue;
-                _owner.DrawTextureRectRegion(Block(visual, block), clipped,
-                    new((clipped.Position - rectangle.Position) / _scale, clipped.Size / _scale));
+                var rectangle = new Rect2(_screen.Position + (new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
+                if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
+                var texture = Block(visual, block);
+                // Reuse the existing block resource; split its nine tile regions by the
+                // retained VDP priority bit instead of lifting an entire plane above actors.
+                int count = highPriority is null ? 1 : 9;
+                for (int tile = 0; tile < count; tile++)
+                {
+                    int word = visual.Blocks[block][tile];
+                    if (highPriority is { } high && ((word & 0x8000) != 0) != high) continue;
+                    var tileOffset = highPriority is null ? Vector2.Zero : new Vector2(tile % 3 * 8, tile / 3 * 8);
+                    var region = new Rect2(rectangle.Position + tileOffset * _scale,
+                        Vector2.One * (highPriority is null ? 24 : 8) * _scale);
+                    var clipped = region.Intersection(_screen);
+                    if (clipped.Size.X <= 0 || clipped.Size.Y <= 0) continue;
+                    foreach (var mask in actor?.Ink ?? [_screen])
+                    {
+                        if (!clipped.Intersects(mask)) continue;
+                        var covered = clipped.Intersection(mask);
+                        _owner.DrawTextureRectRegion(texture, covered,
+                            new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale));
+                        draws++;
+                        first ??= new { sourceX, sourceY, block, tile, word, x = covered.Position.X, y = covered.Position.Y,
+                            width = covered.Size.X, height = covered.Size.Y };
+                        if (actor is { } painted)
+                            overlaps.Add(new { entity = painted.Entity.Value, sourceX, sourceY, block, tile, word,
+                                texture = texture.GetInstanceId().ToString(), x = covered.Position.X, y = covered.Position.Y,
+                                width = covered.Size.X, height = covered.Size.Y });
+                    }
+                }
             }
+        return new { x = origin.X, y = origin.Y, offsetX = offset.X, offsetY = offset.Y, highPriority, pass, draws, first, overlaps };
     }
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)
@@ -395,6 +481,16 @@ internal sealed class ExplorationPresentation : IDisposable
             for (int x = 0; x < 24; x++) image.SetPixel(x, 0, Colors.Transparent);
         }
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
+        List<Rect2> ink = [];
+        for (int y = 0; y < 24; y++)
+            for (int x = 0; x < 24;)
+            {
+                if (image.GetPixel(x, y).A == 0) { x++; continue; }
+                int start = x++;
+                while (x < 24 && image.GetPixel(x, y).A != 0) x++;
+                ink.Add(new(start, y, x - start, 1));
+            }
+        _spriteInk[texture] = ink;
         return texture;
     }
 

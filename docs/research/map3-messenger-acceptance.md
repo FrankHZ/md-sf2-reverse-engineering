@@ -3178,6 +3178,86 @@ or historical C quota is used. Static source and remake observations remain sepa
 **Unknown:** original natural timing at this new boundary and later camera/choice/JOIN/battle
 schedules. Original runtime delta0; prior warp/H4/HEAL/JOIN/next-actor and cleanup gaps remain open.
 
+## Source-bound camera lifecycle
+
+**Confirmed (static source):** USA SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` and pinned
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` identify this binding. Paths below
+are relative to its `disasm/` tree. Reproduce by reading these symbols at that exact Git object;
+`local/issue534/post-nod-camera/read-source.py` records source blobs/lines and
+`read-bindings.py` reads the retained generated instruction/text-control metadata without engine work.
+No new original runtime was launched.
+
+| Source owner | Binding |
+| --- | --- |
+| `code/common/scripting/map/mapscriptengine_1.asm`, `csc32_setCameraDestInTiles` (`0x46506`) | Writes target FF, reads coordinate words, calls destination service at `0x46512`, waits at `0x46518`, returns without restoring following. |
+| `code/common/tech/jumpinterfaces/s05_jumpinterface.asm`, `j_SetCameraDestination`; `code/gameflow/battle/battlefunctions/battlefunctions_0.asm`, `SetCameraDestination` (`0x2348E`) | Unsigned coordinate multiplication by384 passes low words to `SetViewDestination` (`0x36AA`); no viewport centering/clamp. |
+| `code/common/tech/graphics/display.asm`, `SetViewDestination`/`loc_36BE`; `code/common/maps/mapload.asm`, `LoadMapArea` | Four destinations use plane factors/origins; admitted unity factors and layout block offsets give tile coordinate×384 plus plane origin×384. |
+| `code/gameflow/exploration/exploration.asm`, `sub_3758`/`sub_37B2`/`sub_380C`/`sub_3866` | Unequal positions set active bits. Equality does not clear an already active bit. |
+| `code/common/maps/camerafunctions.asm`, `VInt_UpdateViewData` (`0x45C2`)/`loc_468C` | Negative target bypasses entity follow/counter updates and prepares speed on every pass:24 unless signed counter>6, then32. Normal followed active scrolling retains prior speeds. |
+| `code/gameflow/exploration/exploration.asm`, `VInt_UpdateScrollingData` | A active bits hide windows before scrolling; each axis advances independently, snaps at/crossing destination and clears its bit. |
+| `code/common/maps/animations.asm`, `IsMapScrollingToViewTarget`; `camerafunctions.asm`, `WaitForViewScrollEnd` (`0x4708`) | Wait while active; clear→wait→recheck/restart→final wait→return. No fixed duration. |
+| `code/gameflow/battle/battlevints.asm`, `SetBaseVIntFunctions`; `code/common/tech/interrupts/vint.asm`, `CallContextualFunctions` | Contextual list orders entities, view, scrolling, sprites and windows; registered portrait work remains later. |
+| `code/common/tech/interrupts/trap6_mapscript.asm`; `code/common/scripting/map/mapscriptengine_2.asm`, `loc_47234` | Trap6 enables entities; csc32 carries the flag. Script return can wait/close dialogue and clear explicit speed, but does not restore target. |
+| `code/gameflow/exploration/explorationfunctions_2.asm`, `WaitForEvent` | Actual ordinary-control boundary sets target0; current admitted player occupies slot0. It does not reset positions/counter/active destinations. |
+
+The accepted existing `tests/fixtures/h3/map-camera-control-v1.json` seven Map Test0 observations
+confirm bounded handler/call/operand seams only. They do not prove natural story trajectory or
+visible hardware timing. The separate [contract](../design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+and [remake consumer](../../remake/docs/exploration-programs.md#source-bound-camera) express the new
+static binding without broadening that H3 claim.
+
+**Confirmed (source content):** `data/maps/entries/map03/mapsetups/scripts_1.asm:cs_5149A`
+has destinations `(38,7)` and `(38,6)`, lowered by the existing producer to target/wait pairs at
+75/76 and88/89. The selected area has foreground `(0,32)`, background `(0,0)`, unity factors,
+zero autoscroll and layer0. Thus B pixel destinations are `(912,168)` then `(912,144)`;
+A destinations are `(912,936)` then `(912,912)`. These are transforms, not time quotas.
+After text521, supported motion/text reaches text531 W1 at instruction127. The next instruction128
+is csc11 yes/no; `mapscriptengine_2.asm:csc11_promptYesNoForStoryFlow` calls the real
+`code/common/menus/yesnoprompt.asm:YesNoPrompt`, writes flag89 and waits10.
+`map03/mapsetups/s3_zoneevents.asm:Map3_ZoneEvent8` sets F603 only after the whole script returns.
+Choice/JOIN semantics are outside this camera allocation.
+
+**Confirmed (bounded remake):** the [native observation](../../remake/docs/development-and-verification.md#source-bound-camera-observation)
+uses the unchanged bound start and content, preserves the accepted prefix's gameplay, observes
+both cameras and stops at genuine text531 W1 **before Wait/Ack** with held camera and active
+zone/script caller. It does not complete F603, #534, #437 or whole-Messenger/H4 acceptance.
+
+### Bound tile priority and teacher occlusion
+
+**Confirmed (static source/data):** retained map visuals already contain each block's nine16-bit
+tile words. Bit15 is the tile priority; it must not be discarded by flattening a24px block.
+The [SEGA Genesis Technical Overview, §11](https://wiki.megacatstudios.com/wp-content/uploads/2020/04/sega2f.pdf)
+priority table places high-priority A above high B, low sprites, low A and low B;
+a high-priority sprite is above either plane. The
+[Genesis Software Manual, rev.02/20/92, pp.58/62](https://nemesis.hacking-cult.org/MegaDrive/Documentation/GenesisSoftwareManual.pdf)
+separately defines sprite link ordering and transparent color0. These are pixel composition rules,
+not interrupt timing evidence.
+
+At the pinned SF2DISASM object, `code/common/scripting/entity/entityscriptengine_1.asm:loc_4DB0`
+sets the VDP sprite bit only when the signed entity layer exceeds `WINDOW_IS_PRESENT`.
+Its `loc_4E4C`/`loc_4E68` instead use `byte_FFAFB0` for sprite-link ordering; csc53's
+`SetEntityPriority` is not the VDP bit. `code/common/scripting/text/textfunctions_2.asm` and
+`code/common/menus/portraitwindow.asm` increment/decrement the window count. The admitted
+renderer derives this count from its live text/portrait windows; its existing relative sprite
+ordering is retained, without claiming full original sprite-link or shadow/highlight emulation.
+
+**Confirmed (bounded remake):** text525 places teacher entity142/slot17/sprite209 at `(42,12)`.
+Working block120 there contains high-priority tile words, while the teacher's layer0 gives low
+VDP priority. The [same-state native readback](../../remake/docs/development-and-verification.md#source-bound-camera-observation)
+records actual8px-region drawing over his sprite ink. The renderer uses existing tile/sprite
+textures and alpha; it neither raises the entire plane nor selects a character/dialogue-specific
+exception. High-map repair is limited to the current low sprite's nontransparent pixels so mixed
+sprite display priorities cannot reorder overlapping sprites or erase through transparent pixels.
+
+**Unknown:** natural CPU/interrupt/VDP/DMA timing, signed-word overflow/wrap domains, cursor and
+pulsating overrides, explicit speeds, non-unity parallax/autoscroll, other layers and bound csc24
+entity targeting remain unadmitted. Original cumulative cost remains138 starts /
+15583.68017570005 seconds /429625 frames /16332 batches, delta0. Preserve the eight warp gaps,
+H4 5340PASS/2FAIL/40Unavailable, HEAL2vs3/later RNG, JOIN completed timeout and cross-clock
+Unknown, next-actor1vs0/index29, public aggregate/h3-witch NONRUN and cleanup21/41/61/67 Unknowns.
+#517 is unanswered; #523 remains stopped and investigator assignment remains user-exclusive.
+
 ## Source-bound nod lifecycle
 
 **Confirmed (static source):** use the registered USA identity and pinned SF2DISASM

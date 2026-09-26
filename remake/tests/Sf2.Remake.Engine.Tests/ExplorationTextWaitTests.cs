@@ -47,6 +47,62 @@ public sealed class ExplorationTextWaitTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HeldCameraUsesCommonLiveEntityWindowPortraitAndRandomService(bool enabled)
+    {
+        const uint seed = 0xC632A55A;
+        var session = StartFieldText("A{W1}", npcRandom: true, configure: doc => doc["battle"]!["start"]!["mainSeed"] = seed);
+        var entry = session.Current;
+        var view = ExplorationViewRunner.SetDestination(entry.Story.LogicalView!, new(5, 6));
+        var story = entry.Story.Copy(entry.Story.Cursor, new ViewWait(new(999), Recheck: false),
+            logicalView: view, entityServices: enabled, eventCaller: new ZoneEventContext(), randomSeedCopy: 0xA9,
+            logicalText: new(Open: true, AnimationLength: 5),
+            portraitWindow: new OpenPortraitWindow(7, 0, new(Blink: 1, Mouth: 0, Registered: true, Movement: 4, Moving: false)));
+        var result = ExplorationDispatcher.Submit(session.Definition, entry.WithStory(story), new AdvanceSimulation(new(999)));
+        Assert.Null(result.Failure);
+        var entitySeed = enabled ? EntityActionRunner.Tick(entry.Exploration!, storyFlags: story.Flags).World.Party.MainSeed : seed;
+        var blink = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(entitySeed, 120);
+        var mouth = Sf2.Remake.Domain.Battles.BattleRandom.NextMain(blink.After, 5);
+        Assert.Equal(new[] { "text-mandatory-service", "rng-portrait-blink", "rng-portrait-mouth", "text-work-advanced" },
+            result.Observations.Select(row => row.Kind));
+        Assert.Equal(entitySeed, result.Observations[1].Before);
+        Assert.Equal(mouth.After, result.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal((byte)0xA9, result.Snapshot.Story.RandomSeedCopy);
+        Assert.Equal(1, result.Snapshot.Story.LogicalText!.AnimationCounter);
+        Assert.True(result.Snapshot.Story.LogicalView!.HideWindows);
+        Assert.Null(result.Snapshot.Story.LogicalView.TargetSlot);
+        Assert.Equal(enabled, result.Snapshot.Story.EntityServices);
+        var portrait = Assert.IsType<OpenPortraitWindow>(result.Snapshot.Story.PortraitWindow).Work!;
+        Assert.Equal(blink.Value + 30, portrait.Blink);
+        Assert.Equal(mouth.Value + 10, portrait.Mouth);
+        if (!enabled) Assert.Equal(entry.Exploration!.AllEntities, result.Snapshot.Exploration.AllEntities);
+    }
+
+    [Fact]
+    public void CameraHelperRestartsWhenRetargetedDuringSettledRecheck()
+    {
+        var session = StartFieldText("A{W1}", viewWait: true);
+        var world = session.Current.Exploration!;
+        var view = ExplorationViewRunner.SetDestination(session.Current.Story.LogicalView!, new(0, 0));
+        var story = session.Current.Story.Copy(session.Current.Story.Cursor, new ViewWait(new(999), Recheck: true), logicalView: view);
+        story = story.Copy(story.Cursor, story.Wait, logicalView: ExplorationViewRunner.SetDestination(view, new(1, 0)));
+        story = ExplorationTextRunner.AfterService(ExplorationTextRunner.AfterEntities(world, story));
+        Assert.False(Assert.IsType<ViewWait>(story.Wait).Recheck);
+        Assert.False(Assert.IsType<ViewWait>(story.Wait).FinalService);
+        int services = 1;
+        while (story.Wait is ViewWait && services < 30)
+        {
+            story = ExplorationTextRunner.AfterService(ExplorationTextRunner.AfterEntities(world, story));
+            services++;
+        }
+        Assert.Null(story.Wait);
+        Assert.Equal(18, services);
+        Assert.Equal(384, story.LogicalView!.BX.Position);
+        Assert.Null(story.LogicalView.TargetSlot);
+    }
+
+    [Theory]
     [InlineData(0x12341234u, 0, 1, 0xECAB1234u, 236)]
     [InlineData(0xC632A55Au, 1, 16, 0xD764A55Au, 215)]
     [InlineData(0xFFFFBEEFu, 4, 7, 0xA3AEBEEFu, 163)]
