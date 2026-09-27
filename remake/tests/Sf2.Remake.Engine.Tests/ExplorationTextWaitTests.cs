@@ -1381,14 +1381,14 @@ public sealed class ExplorationTextWaitTests
                 """);
         });
 
-    private static void DrainTextWork(GameSession session)
+    internal static void DrainTextWork(GameSession session)
     {
         for (int i = 0; session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && i < 1000; i++)
             Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
         Assert.True(Assert.IsType<FieldTextWait>(session.Current.Story.Wait).LogicalDone);
     }
 
-    private static GameSession StartFieldText(string text, int speed = 2, bool enabled = false,
+    internal static GameSession StartFieldText(string text, int speed = 2, bool enabled = false,
         bool npcRandom = false, string name = "Name", int width = 6, string? second = null, bool viewWait = false, bool interaction = false, bool alternateLeader = false,
         Action<JsonNode>? configure = null, bool startEvent = true)
     {

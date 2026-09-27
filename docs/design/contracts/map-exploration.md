@@ -911,10 +911,13 @@ to the admitted field-text profile, independent of text ID, program, name, width
 `code/common/scripting/map/mapscriptengine_2.asm:csc08_joinForce` starts music and membership work
 before raw text, then calls the music/input helper. That later helper has a separate logical clock
 obligation: `code/common/tech/sound/music.asm:PlayMusicAfterCurrentOne` always sleeps three VInts
-before testing `WAIT_FOR_MUSIC_END`, repeating as needed. **Unknown:** the admitted deterministic
-mapping of music-driver progress, preceding text services, gate sampling and residual polling.
-Neither actual PCM completion nor the known505 initialized driver updates supplies that mapping.
-Until it is bound, a bound SoundWait MUST stop explicitly as Unsupported with completed raw text and
-reached state preserved, before previous-music, input or caller return. This boundary does not claim
-complete JOIN acceptance. See [provenance](../../research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+before testing `WAIT_FOR_MUSIC_END`, repeating as needed. **Unknown:** the original mapping of
+music-driver progress, preceding text services, gate sampling and residual polling. The
+[accepted modern finite-music policy](music-wait-service.md#accepted-modern-finite-music-policy)
+now supplies a deterministic profile: semantic-request generation0, one step per common service,
+arm then sample, whole groups of3 and a separate actual finite completion gate. JOIN endpoint505
+is a modern choice, not505 original VInts or a PCM conversion. Unprofiled waits MUST preserve
+completed state and stop as Unsupported. Profiled JOIN continues through previous playback,
+plain input, close/Sleep10 and existing follower/position/Zone return rules. This bounded
+implementation does not establish continuous H4. See [provenance](../../research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
 and [execution](../../../remake/docs/exploration-programs.md#raw-field-display).

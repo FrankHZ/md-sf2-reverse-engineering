@@ -67,7 +67,7 @@ internal static class ExplorationAssetReader
         if (row.TryGetProperty("audio", out _))
             foreach (var sound in Array(row, "audio"))
             {
-                Object(sound, "audio", "cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", "pcm16", "sha256", "loopBegin", "loopEnd");
+                ObjectOptional(sound, "audio", "modernEndStep", ["cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", "pcm16", "sha256", "loopBegin", "loopEnd"]);
                 string cue = Text(sound, "cue");
                 int command = Number(sound, "command", 1, 120);
                 int timerB = Number(sound, "timerB", 0, 255);
@@ -84,7 +84,9 @@ internal static class ExplorationAssetReader
                 int? begin = sound.GetProperty("loopBegin").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopBegin", 0, frames - 1);
                 int? end = sound.GetProperty("loopEnd").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopEnd", 1, frames);
                 Require(begin.HasValue == end.HasValue && (begin is null || begin < end), "audio-loop", "presentation.audio");
-                Require(audio.TryAdd(cue, new(command, timerB, Number(sound, "sampleRate", 8000, 192000), channels, pcm, digest, begin, end)),
+                int? modernEnd = sound.TryGetProperty("modernEndStep", out _) ? Number(sound, "modernEndStep", 1, 1000000) : null;
+                Require(modernEnd is null || command < 65 && begin is null, "finite-music-profile", "presentation.audio");
+                Require(audio.TryAdd(cue, new(command, timerB, Number(sound, "sampleRate", 8000, 192000), channels, pcm, digest, begin, end, modernEnd)),
                     "duplicate-audio-cue", "presentation.audio");
             }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),

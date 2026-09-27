@@ -12,6 +12,28 @@
 
 ## Evidence and result rules
 
+### Modern-clock applicability
+
+The [accepted modern finite-music amendment](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
+controls the original comparisons below. Original records, projector values and completed results
+remain immutable evidence. An affected original whole-history comparison is a historical diagnostic
+with a declared clock deviation, not a newly passing assertion or an unchanged modern golden.
+Report applicability before executing a comparison; the existing projector does not automatically
+implement this policy cutover. A modern continuous winning trace remains pending independent review.
+
+| Layer | Requirement under the modern clock |
+| --- | --- |
+| 1 | Retain controlled admission, provenance and initial state; no live reseed. |
+| 2–3 | Preserve mandatory spatial route, choices, story/caller effects and valid movement. Timing-dependent NPC phase and selected navigation history may differ. |
+| 4–5 | Preserve natural encounter and local initialization/battle/RNG rules at matched state. Original seed0x6DC1, actor2, selected score arrays, rounds/orders/103-turn winning history are historical comparisons, not required modern outcomes. |
+| 6–7 | Preserve natural victory, complete after-program, flags, return and stable usable field control. History-dependent rewards, levels, stats, items, RNG and gold420 are original facts, not unconditional modern endpoint requirements. |
+| 8–9 | Retain 7C assets, real consumption/completion and identical modern semantic input across9A settings. Finite music follows the accepted logical clock plus actual completion. |
+| 10 | Explicitly report the modern clock and affected downstream differences; no blanket waiver of other defects. |
+
+Matched-state arithmetic and source-specific rules remain independently comparable. Old HEAL,
+next-actor and other FAILs retain their outcomes and unresolved causes. Controlled original seed
+injection, if separately admitted, is a comparison technique and cannot prove natural continuity.
+
 Original expected values come from the [admission contract](map3-controlled-admission.md),
 [Research field audit](../../research/map3-battle01-audit.md#accepted-evidence-and-exact-field-mapping)
 and [accepted final acquisition](../../research/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness).
@@ -48,7 +70,8 @@ is required; gameplay-affecting timing, causal order and input blocking remain i
 
 [ADR 0010's accepted Option A](../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)
 admits evidenced player waiting into the external logical input stream. It retains the shared main
-RNG, exact selected turn scores/order and all subsequent gameplay assertions. This section defines
+RNG and matched-state rule comparisons; selected whole-history assertions follow the applicability
+table above. This section defines
 policy; original schedule bindings and implementation conformance remain OPEN.
 
 Every admitted Wait must identify an eligible input consumer/occurrence, source caller or service,
@@ -82,7 +105,7 @@ still-required spell service updates; release follows the evidenced logical term
 | Field movement | Consumed movement advances source movement and eligible entity services to the next input/event boundary, preserving collision/retry and action phases. A held input can consume multiple moves; deliberate eligible waiting is separate. | Exact original publication/poll phase and early per-draw caller attribution are Unknown. |
 | Warp | Preserve the reached warp branch, transition enable/disable phases, entity retain/reset rules and event-before-action priority; release after destination initialization and required presentation return to the field consumer. | The selected transition's complete service schedule is Unknown; an equal destination or frame delta does not establish it. |
 | Dialogue | Preserve admitted text/control-token work, wait-poll RNG/copy and gated portrait counters. Reveal-only Confirm completes reveal without consuming an acknowledgement or adding a gameplay poll. Release after required reveal/ack/choice. | Natural reveal, wait and portrait interleaving is not established by shimmed text returns or IDs. |
-| Finite audio | Advance required logical work to an evidenced source audio end, and require actual finite-player completion for the matching cue/token before release. Earlier actual completion cannot skip logical work; later delivery cannot add gameplay ticks. | Source command/timer/end-predicate phase and its service interleaving remain Unknown. PCM duration is not a logical tick budget. |
+| Finite audio | Apply the [accepted modern clock](music-wait-service.md#accepted-modern-finite-music-policy) and require actual finite-player completion for the matching cue/generation before release. Earlier actual completion cannot skip logical work; later delivery cannot add gameplay ticks. | Source command/timer/end-predicate phase and interleaving remain Unknown; the modern mapping is a declared deviation. PCM duration is not a logical tick budget. |
 | Battle reaction | Preserve the reached operand-dependent branch and source loop counters, draws and interleaved services through consumed effects and required scene completion. Reduced flash changes projection, not logical work. | Static loop shape does not prove natural branch reach or a whole-scene draw total. |
 | Healing fairy | Derive instances and updates from admitted payload/state; retain phase, position, conditional and periodic RNG calls, update gates and termination/cleanup order before release. | Natural caller writes and ordering of termination controls require precise binding; host animation duration is not a source lifetime. |
 
@@ -112,7 +135,7 @@ time is not raw time. Obtain the winning lineage's inherited status, complete eq
 and relevant NPC phase from accepted private readback. Do not assume reset POISON=0, use R2d's seeded
 actor/order, or impose `0x1234` as the natural seed. The offline bindings below now expose the selected status, four full item words, NPC records and RNG bytes. Other missing readback remains OPEN.
 
-The selected order is:
+The original selected reference order is (modern applicability is defined above):
 
 1. Controlled Map3 opening → real messenger/prompt acceptance → follower-ready closure/F603 →
    gate `cs_51652`/F604 → north warp and Map19 init return.
@@ -141,7 +164,8 @@ uninterrupted wall time or a natural New/load flow.
 ## Ten H4 comparison layers
 
 Inputs to every row are the declared admission, selected successful logical input stream and that
-row's accepted original records. Equality applies to semantic values, not object layout or PCs.
+row's accepted original records. Apply the modern-clock applicability table before requiring
+whole-history equality. Comparable equality uses semantic values, not object layout or PCs.
 The mappings in the next section identify actual existing surfaces and missing coverage.
 
 | Layer | Fields and original expected source | Required assertion against actual remake observations |
@@ -149,8 +173,8 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 1 — admission | R1 projection plus selected lineage readback: map, player position/facing, party/joined/active lists, flags, gold, each actor's level/HP/MP/stats/status/items/spells, RNG and relevant continuation phase; ROM/source/configuration/parent identities | Exact logical start equality before first user command; validate provenance and complete slots/status separately. Report controlled construction as 1A. Fixed seed must be the accepted lineage seed; unmapped RNG/time dependencies are OPEN. |
 | 2 — input/route | Ordered successful input records: checkpoint, logical action, actor, direction, target, choice, accept/reject and resulting movement/transition | Same logical decisions and causal handoffs in the route above. Compare accepted destination/trigger and cancel/reselect effects, not held frame counts. Confirm/Cancel must be user-operable on every ally turn. Missing logical decoding of a physical request is OPEN, never guessed. |
 | 3 — world/story | R2/R2a and selected lineage: map/setup selection, program/operation entry-return, dialogue ID/speaker/choice, entity position/facing/visibility, roster/followers, flag before/after | Equal reached state mutations and relative causal order; map load, entity motion and dialogue must finish at their required waits. Compare selected operations, including branches; static corpus membership alone is insufficient. Real YesNoPrompt return is evidence, shimmed DisplayText consumption is not. |
-| 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control; compare actual actor 2 and exact selected initialized values. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
-| 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | Match every reached decision and consumed effect in order, including resource costs and RNG-driven results. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
+| 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control. Compare local initialization rules; actor2 and history-dependent selected values remain original diagnostics under the modern clock. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
+| 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | At matched state/input, compare each reached rule and consumed effect, including costs and RNG. The original whole winning history is diagnostic under the modern clock. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
 | 6 — victory/return | Selected final segment plus R4a: winning condition, eligible-party healing, reached after-program operations/effects, joins, F401/F501, controller result, transfer/setup selection | Require natural victory and full reached operation entry/return pairing, shared tail before enclosing return, then clear/set flags, D4=1 equivalent and exploration handoff. `ms_Void` at source `0x477E8` is Map57's exact fallback selection. One completed return cannot replace after-program consumption. |
 | 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied, while actual comparison remains open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. The actual run does not reach this boundary; this assertion and full 5B remain OPEN. |
 | 8 — save/7C | 6A restart rule; private asset inventory and ROM/source/extraction provenance for every reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity and binding | No user save/load/suspend/checkpoint surface; restart reconstructs layer 1. Every consumed original scene resource resolves to admitted original private content. Missing private input is Unavailable; an authored substitute for required original scene content fails 7C when observed. MUSIC_JOIN/MUSIC_SAD_JOIN chord loops and host mute do not satisfy original audio. Public distribution remains outside scope. |
@@ -261,7 +285,8 @@ and text duration are not equality fields. Observe actual host settings/input/pr
 direct SessionCommand injection. Existing authored paired observations do not stand in for continuous
 variant execution.
 
-Layer 10 separately reports: controlled construction (1A/layers1–2); excluded optional interactions
+Layer 10 separately reports the modern finite-music clock and affected history (layers2–5/7/9),
+controlled construction (1A/layers1–2); excluded optional interactions
 with mandatory route retained (2A/layers2–3); fixed evidenced seed/logical trace with manual agency
 and no live reseeding (4A/layers1,2,5,7); absent save surfaces and restart equivalence (6A/layers1,8);
 all 9A variants and their acknowledgement/state equivalence (layers2,3,5,7,9); and each explicitly

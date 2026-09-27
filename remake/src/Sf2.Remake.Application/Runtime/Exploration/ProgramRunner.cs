@@ -253,7 +253,8 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, new ViewWait(token, !current.Story.LogicalView!.Scrolling));
                         break;
                     case PresentCue { Kind: PresentationCueKind.SoundWait } when story.TextSettings is not null:
-                        throw new BattleRuleException("field-music-progress-unbound", "program.presentation", true);
+                        story = current.Story.Copy(cursor, ExplorationMusicRunner.Begin(current, token));
+                        break;
                     case PresentCue cue:
                         if (cue.FullBlack is not null || current.Story.Display is not null && MapTransfer.IsPalette(cue))
                         {
@@ -277,7 +278,17 @@ internal static class ProgramRunner
                             active = new ActiveExploration(world.WithEntities(world.AllEntities.Select(row => row.Slot == entity.Slot
                                 ? row with { Motion = row.Motion with { AnimationCounter = 255 } } : row), spriteSize: 21));
                         }
-                        story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore)); break;
+                        var music = current.Story.Music;
+                        if (current.Story.TextSettings is not null)
+                        {
+                            if (cue.Kind == PresentationCueKind.Sound)
+                                music = ExplorationMusicRunner.Request(definition.Exploration!, current, cue.Resource, token);
+                            else if (cue.Kind == PresentationCueKind.PreviousMusic && music?.EndStep is not null)
+                                music = ExplorationMusicRunner.Previous(definition.Exploration!, current, token);
+                            else if (cue.Kind == PresentationCueKind.SoundFade && music is not null)
+                                music = music with { EndStep = null, ActualDone = false, PreviousEligible = false };
+                        }
+                        story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore), music: music); break;
                     case SetEntitySprite sprite:
                         var changedSprite = Entity(current, sprite.Entity);
                         changedSprite = changedSprite with { Sprite = sprite.Sprite,
@@ -367,7 +378,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } => SessionStopReason.PresentationWait,
+            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
             DialogueWait or W1TextWait or ChoiceWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or TickWait => SessionStopReason.SimulationWait,

@@ -2750,6 +2750,10 @@ completed native/gate failures, eight warp differences, H4/HEAL/JOIN/next-actor 
 
 ## Raw field text observation
 
+This retained expected-Unsupported gate uses content without `modernEndStep`. For the admitted
+modern profile and complete JOIN return, use the [modern finite-music observation](#modern-finite-music-observation).
+
+
 For the [raw display capability](./exploration-programs.md#raw-field-display), run affected
 `ExplorationTextWaitTests` and `ExplorationSessionTests`, `uv run sf2 verify adapter`, and Debug
 before the direct native observation. Engine cases vary text/name/font width/message speed,
@@ -2793,3 +2797,43 @@ handoff. The prior263-case affected run had one new out-of-range font-width fixt
 after changing32 to the admitted16, its owning three-case theory passes. Preserve that completed
 result. Native development also retained a GDScript parse failure and an initial startup-readiness
 failure; corrected observations do not erase them. All prior failure/Unknown applicability remains.
+
+
+## Modern Finite-Music Observation
+
+The [accepted clock](../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+changes the affected historical trajectory comparisons under
+[ADR0010](../../docs/decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock).
+Preserve original expected values and completed failures. The existing H4 projector/comparator has
+not been cut over to a newly reviewed modern continuous winning trace; do not report that gate as
+passed or run the old aggregate merely to replace its red result.
+
+After loading the current private configuration and locked SDK environment, run the actual behavior
+classes `ExplorationMusicTests|ExplorationTextWaitTests|ExplorationSessionTests` using the existing
+`dotnet test` filter, plus `uv run sf2 verify adapter`. The music cases exercise endpoint phases,
+three-service grouping, preceding varied text, enabled/suppressed entities and portrait RNG,
+batching, early/late/stale completion, duplicate/replacement generations and plain input/close/return.
+No tests of the reader, observer or comparison scripts are required. Run direct design-contract and
+research-index document checks and inspect the committed dependency plan under this engine scope.
+
+For native acceptance, reuse the owned Godot project/installation and retained bound opening,
+party, world and Yes spatial route. Use a fresh ignored output. Add only `modernEndStep:505` to
+command19's finite audio row through the metadata preparation; directly compare the entire world
+with that one field removed, including every unchanged PCM/content field. No extraction or source
+capture is needed. Start the existing `engine_input_accessibility_observation.gd` with
+`SF2_INPUT_CASE=portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music`, then use
+`adjustable-modern-music` and `adjustable-modern-music-reveal` for natural/reveal delivery. Set the
+same semantic Wait/choice stream and existing startup input arguments. Each probe exits; the next
+startup is necessary to compare settings from the unchanged opening, not a new environment.
+
+The observer records actual generation/cue, helper state, playback start/Finished/previous restart,
+raw Label draws, plain Wait/Ack and first field return in `musicLogicalEnd`, `musicPlainInput` and
+`joinReturn`. Require no errors; F600/F66/F603, joined[0,1,2]/active[0,1]/reserve[2], source followers
+and positions, closed windows, no cursor/wait/caller and ordinary input. Stop before additional field
+input. The bounded late-completion hold checks zero service/RNG/debt after logical end. Compare
+accepted prefix and new semantic per-service states across settings, excluding delivery receipt flags
+and host clocks/resource identities. Actual playback must start once, finish, then restart the prior
+cue with the same logical identity; counters alone are insufficient. Compare projections at their
+own draw tick when a result callback precedes redraw. Screenshots and live state/RNG injection are
+prohibited. Measured counts/seeds are results, never production quotas. This is bounded JOIN
+acceptance; full #437/H4, original clock mapping and unrelated recorded failures remain open.

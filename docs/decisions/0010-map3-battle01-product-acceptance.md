@@ -121,17 +121,18 @@ requirement. Concrete gameplay ambiguities still use the existing evidence/admis
 
 The accepted H4 reference-path policy uses one declared fixed seed and one recorded sequence of **logical**
 inputs and action choices. That policy makes acceptance reproducible; it does not require interactive
-players to follow the script or prevent other playthroughs from diverging. The viable seed, RNG draws and gameplay effects, reached player/AI/navigation/action/resolution/status
-branches, and complete winning trace remain `Research-owned exact value required`. Physical device
+players to follow the script or prevent other playthroughs from diverging. Original viable seed, RNG
+draws/effects, reached branches and winning trace remain `Research-owned exact value required`.
+The modern trace follows the finite-music amendment and requires its own independent review. Physical device
 events, frame-exact repeat and original clock alignment are not comparison requirements. Timing that
 changes a gameplay result still requires an explicit behavioral contract; it cannot be waived as a
 rendering difference.
 
 #### Evidenced gameplay waits (accepted Option A)
 
-The user selected evidenced gameplay Wait semantics for 4A/9A. The shared main RNG and existing
-exact selected score/order and subsequent gameplay assertions remain required. The logical input
-stream may include genuine player waiting at an eligible consumer only when original evidence
+The user selected evidenced gameplay Wait semantics for 4A/9A. The shared main RNG and matched-state
+rule comparisons remain required; whole-history equality is scoped by the modern music amendment
+below. The logical input stream may include genuine player waiting at an eligible consumer only when original evidence
 identifies its caller/service, enable state, phase and ordering against other active services.
 Neutral controller frames, audio sample duration and a desired seed do not by themselves establish
 a Wait. Do not infer a count by working backwards from the expected RNG state.
@@ -144,7 +145,7 @@ Distinguish three kinds of progression:
   selecting an action. Interactive players may choose different waits and obtain different results.
 - Host display/audio delivery latency adds no logical opportunity or accumulated tick debt. It must
   not erase required source logical work during playback. Finite audio releases its dependent wait
-  only after both the source-grounded logical end and actual player completion are satisfied.
+  only after both the admitted logical end and actual player completion are satisfied.
 
 Service order is established per mode and caller, not by a universal global ordering. Under 9A,
 compare the same semantic Wait/acknowledgement stream across settings. A reveal-only Confirm and
@@ -157,6 +158,30 @@ reach. Missing caller/phase/audio-end bindings remain Unknown. The existing 260-
 automatically a conforming Wait trace, and this decision neither promises seed `0x6DC1` nor changes
 an observed FAIL into PASS. No split RNG, reseed, outcome waiver or production reference replay is
 authorized by this policy.
+
+#### Accepted modern finite-music clock
+
+The user selected a modern deterministic clock for finite music. The binding
+[music-wait policy](../design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+starts generation progress at the semantic music request and advances one step per existing bound
+common logical service, independent of entity enablement. Sound progress precedes gate/context
+service; the first helper service arms without rescanning, and the helper completes whole groups
+of three. The initial private MUSIC_JOIN19 profile ends at modern step505. Actual matching finite
+playback completion is a second gate: early delivery skips no work, late delivery adds no work/debt.
+The existing whole-PCM completion followed by previous-track restart remains the playback policy.
+This explicitly replaces the requirement for an original sound-to-VInt clock binding on this profile.
+It establishes no original elapsed time, timer ratio, driver phase or natural service count.
+
+This intentional deviation can change NPC states, shared RNG history, encounter scores/order,
+subsequent decisions and final battle resources. The old original whole-history seed/order/winning
+trace is retained as a historical diagnostic, not an unchanged golden required of this modern clock.
+Matched-state RNG arithmetic, local battle rules, mandatory route/story effects, manual agency,
+actual private content consumption and 9A equivalence remain required. A new modern continuous
+winning trace needs independent review; this decision is neither that acceptance nor an H4 PASS.
+Preserve completed failures and Unknowns, including HEAL and next-actor discrepancies without
+attributing them to this clock absent causal evidence. No production reseed is authorized.
+Controlled original seed injection is a separate comparison technique, never natural-continuity
+evidence or a production behavior; its feasibility does not authorize a new capture here.
 
 ### 5. Observable completion endpoint
 
@@ -300,7 +325,8 @@ The accepted initial deviation inventory includes:
 - optional Map 3 interactions and menus excluded unless the accepted route requires them;
 - modern remappable logical input and the accessibility configuration surface;
 - no user-facing save/load/checkpoint/suspend in the milestone;
-- fixed H4 seed and logical reference trace while interactive play may diverge; and
+- fixed H4 seed and logical reference trace while interactive play may diverge;
+- the modern finite-music clock and declared downstream history differences (4A/9A, layers2–5/7/9/10); and
 - engine-native safe behavior outside admitted fixture domains, never mislabeled as original behavior.
 
 Each accepted deviation must appear in the future continuous H4 report even when its expected result

@@ -3684,13 +3684,23 @@ The [natural JOIN records](#natural-join-audio-and-input-boundary) confirm their
 helper boundaries. **Unknown:** sound-driver phase and interleaving during preceding raw text,
 F0 arm/clearance sampling and residual Sleep on the current admitted route. The initialized,
 uninterrupted music19 result of505 driver updates does not establish an entity-service quota, a
-wall-clock duration or a fresh counter at SoundWait. Full logical/actual JOIN coupling remains open.
+wall-clock duration or a fresh counter at SoundWait. Original logical/actual JOIN timing remains open.
 Single-member446/CLASS and sad-music progression retain separate capability/evidence boundaries.
 
 **Confirmed (bounded remake behavior):** general bound raw text consumes existing FieldText work,
 actual W1/W2 and reveal completion. Speakerless raw display retains admitted common services and
-does not invent an acknowledgement. Bound SoundWait then preserves completed state and reports
+does not invent an acknowledgement. Without finite metadata, bound SoundWait preserves completed state and reports
 `field-music-progress-unbound` before callback-driven continuation. Engine cases and direct native
 readback reproduce this implementation boundary under the [verification owner](../../remake/docs/development-and-verification.md#raw-field-text-observation);
 they do not prove original reach, music timing or complete JOIN. No original runtime delta is added;
 earlier H4, warp, HEAL, JOIN timeout/cross-clock, next-actor/index and cleanup gaps remain open.
+
+The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
+now chooses one progress step per existing common service from semantic request, arm-before-sample
+and complete three-service helper groups. The optional finite profile19/505 and actual playback
+completion permit bounded remake JOIN continuation. This is a product policy and implementation
+observation, not a new original capture or a conclusion about YM timer phase, VInt cadence or
+natural RNG history. The known505 ordinal is not reclassified as original elapsed time. Original
+whole-history outputs remain historical diagnostics where affected; matched-state RNG/battle rules
+and unaffected source behaviors retain their comparison obligations. New continuous winning-trace
+acceptance stays open; neither controlled seed injection nor this bounded JOIN substitutes for it.

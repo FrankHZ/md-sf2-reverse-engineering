@@ -42,8 +42,8 @@ public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster R
 public sealed class ExplorationAudio
 {
     private readonly byte[] _pcm;
-    internal ExplorationAudio(int command, int timerB, int sampleRate, int channels, byte[] pcm, string pcmSha256, int? loopBegin, int? loopEnd)
-    { Command = command; TimerB = timerB; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; PcmSha256 = pcmSha256; LoopBegin = loopBegin; LoopEnd = loopEnd; }
+    internal ExplorationAudio(int command, int timerB, int sampleRate, int channels, byte[] pcm, string pcmSha256, int? loopBegin, int? loopEnd, int? modernEndStep = null)
+    { Command = command; TimerB = timerB; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; PcmSha256 = pcmSha256; LoopBegin = loopBegin; LoopEnd = loopEnd; ModernEndStep = modernEndStep; }
     public int Command { get; }
     public int TimerB { get; }
     public string PcmSha256 { get; }
@@ -52,6 +52,8 @@ public sealed class ExplorationAudio
     public int SampleFrames => _pcm.Length / (Channels * 2);
     public int? LoopBegin { get; }
     public int? LoopEnd { get; }
+    // Normalized logical services, never PCM samples, seconds or original VInts.
+    public int? ModernEndStep { get; }
     public byte[] CopyPcm() => [.. _pcm];
 }
 public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMapVisual> Maps,

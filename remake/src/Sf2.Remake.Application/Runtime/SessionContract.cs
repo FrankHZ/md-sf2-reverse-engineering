@@ -34,6 +34,7 @@ public sealed record AdvanceSimulation(WaitToken? Wait = null, int Ticks = 1) : 
 public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;
 public sealed record CompletePresentation(WaitToken Wait, PresentationCueKind Kind) : SessionCommand;
+public sealed record CompleteMusic(long Generation, string Cue) : SessionCommand;
 public sealed record EntitySpriteReady(int Slot, long Request) : SessionCommand;
 public sealed record ChooseDialogue(WaitToken Wait, bool Yes) : SessionCommand;
 // Held state gates entry/release only. PollChoice receives a fresh conditioned semantic mask.
