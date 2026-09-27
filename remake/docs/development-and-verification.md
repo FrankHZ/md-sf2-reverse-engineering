@@ -2813,6 +2813,9 @@ classes `ExplorationMusicTests|ExplorationTextWaitTests|ExplorationSessionTests`
 `dotnet test` filter, plus `uv run sf2 verify adapter`. The music cases exercise endpoint phases,
 three-service grouping, preceding varied text, enabled/suppressed entities and portrait RNG,
 batching, early/late/stale completion, duplicate/replacement generations and plain input/close/return.
+Changed valid programs also cover ordinary finite and looping replacement → previous → duplicate →
+profiled request/helper, plus map/area round trips that invalidate old history and require explicit
+requests to establish a new known stack. These execute ordinary program/presentation commands.
 No tests of the reader, observer or comparison scripts are required. Run direct design-contract and
 research-index document checks and inspect the committed dependency plan under this engine scope.
 

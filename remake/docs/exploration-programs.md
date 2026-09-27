@@ -909,6 +909,9 @@ uses optional finite audio metadata `modernEndStep`; the private lowerer emits50
 The reader permits a positive endpoint only on non-looping music. Ordinary playback needs no profile.
 `MusicProgress` retains cue, semantic generation, previous stack, map/area, progress, actual completion
 and logical previous eligibility. Duplicate current cues preserve it; earlier replacements start at0.
+Ordinary unprofiled/looping `PreviousMusic` also pops this history and changes the semantic generation;
+it does not require a finite helper. Restoring a profiled cue starts its progress at0, matching the
+player restart. Unknown/empty history remains Unsupported.
 `ExplorationMusicRunner` advances this state before each existing bound common service, regardless
 of entity enablement. It never adds a second entity service or uses PCM duration.
 
@@ -916,8 +919,16 @@ of entity enablement. It never adds a second entity service or uses PCM duration
 of3 services plus matching `CompleteMusic(generation,cue)`. Early receipts latch; late receipts
 cause no tick/RNG/debt. The host observes actual finite completion and then the existing actual
 previous-track restart. Wrong/stale/duplicate receipts reject; active-helper interference or a
-changed bound map/area reports Unsupported, and changed host playback reports an explicit adapter error.
+changed bound map/area/battle-selection reports Unsupported, and changed host playback reports an explicit adapter error.
 Missing profiles retain the raw-text boundary above. Looping/other unbound playback remains supported.
+
+The common commit boundary invalidates history and finite phase on context changes outside a helper,
+including an intermediate map/area change followed by a return. `HistoryBound` prevents that old
+stack from becoming valid again merely because the final map matches. The first subsequent explicit
+request establishes only its current cue with empty history/no finite profile; a later different
+request can use that known cue as previous and admit finite progress. This avoids assuming that
+SessionAudio consumed every intermediate map selection within one application result. No host
+history or timing is copied back into gameplay; context changes add no extra service.
 
 Plain input after the helper keeps the raw window without revealing it anew. A genuine Wait uses
 the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack is silent; only

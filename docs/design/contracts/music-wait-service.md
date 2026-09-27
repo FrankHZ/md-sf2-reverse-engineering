@@ -32,11 +32,21 @@ retain their own scope; this section is a product decision, not an original timi
    then restart policy; logical eligibility does not start the player early.
 5. A duplicate current cue preserves generation/progress. A legal earlier replacement starts a
    new generation at0 and preserves previous-track history. Stale/wrong/duplicate completion is
-   rejected. Active-helper replacement, fade/stop, timer/control interference and changing its
-   bound map/area context are unsupported; they must not silently satisfy or hang the helper.
+   rejected. Ordinary unprofiled/looping previous-track requests pop the same known logical history
+   and create the restored cue's generation without requiring a finite helper. Profiled finite
+   restoration still requires both helper gates. Active-helper replacement, fade/stop, timer/control
+   interference and changing its map/area/battle-selection context are unsupported.
 6. Only after both gates and actual previous-track restart may the program reach plain input,
    text close/Sleep10, follower/position work and caller return. Gameplay legality never depends
    on a text ID, source program name, seed or retained route's final count.
+
+Outside an active helper, map/area/battle-selection changes invalidate the tracked history and
+finite phase. Returning to the former context cannot revive them. Several changes may occur before
+the host observes a result, so a current map selection cannot reconstruct its actual previous stack.
+The first explicit music request after invalidation establishes only the current cue, with no
+previous stack or finite profile; a subsequent different request can bind a known previous cue and
+finite profile again. A previous request without known history stays Unsupported. This boundary
+preserves ordinary playback while excluding unknown history, rather than guessing a saved track.
 
 The original first-channel ordinal505 is reused as an explicitly chosen modern step endpoint.
 It is not505 VInts, entity updates or a PCM-derived duration. Original timer reload/poll phase,

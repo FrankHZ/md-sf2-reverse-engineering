@@ -171,8 +171,116 @@ public sealed class ExplorationMusicTests
         Assert.Equal("stale-or-wrong-music", reject.Failure!.Code);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OrdinaryPreviousRestoresHistoryBeforeDuplicateAndFiniteRequest(bool looping)
+    {
+        var session = StartMusic(0, edit: doc =>
+        {
+            var audio = doc["world"]!["presentation"]!["audio"]!.AsArray();
+            var ordinary = audio[0]!.DeepClone();
+            ordinary["cue"] = "ordinary"; ordinary["command"] = 9;
+            if (looping) { ordinary["loopBegin"] = 0; ordinary["loopEnd"] = 2; }
+            audio.Add(ordinary);
+            var instructions = doc["world"]!["programs"]![0]!["instructions"]!.AsArray();
+            instructions.Insert(1, Cue("Sound", "ordinary"));
+            instructions.Insert(2, Cue("PreviousMusic"));
+            instructions.Insert(3, Cue("Sound", "town"));
+        });
+        var previous = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Assert.Equal(PresentationCueKind.PreviousMusic, previous.Cue.Kind);
+        var restored = session.Current.Story.Music!;
+        Assert.Equal("town", restored.Cue);
+        Assert.Empty(restored.Previous);
+        Assert.Equal(previous.Token.Value, restored.Generation);
+        Assert.Null(restored.EndStep);
+        long tick = session.Current.Story.SimulationTick;
+        Accept(session, new CompletePresentation(previous.Token, previous.Cue.Kind));
+        var duplicate = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Assert.Equal("town", duplicate.Cue.Resource);
+        Assert.Same(restored, session.Current.Story.Music);
+        Accept(session, new CompletePresentation(duplicate.Token, duplicate.Cue.Kind));
+        var sound = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        var finite = session.Current.Story.Music!;
+        Assert.Equal("join", finite.Cue);
+        Assert.Equal(new[] { "town" }, finite.Previous);
+        Assert.Equal(0, finite.Step);
+        Accept(session, new CompletePresentation(sound.Token, sound.Cue.Kind));
+        Accept(session, new CompleteMusic(finite.Generation, finite.Cue));
+        Assert.IsType<MusicWait>(session.Current.Story.Wait);
+        Assert.Equal(tick, session.Current.Story.SimulationTick);
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token, 600));
+        Assert.Equal(tick + 507, session.Current.Story.SimulationTick);
+        Assert.Equal("town", session.Current.Story.Music!.Cue);
+        Assert.Empty(session.Current.Story.Music!.Previous);
+        Assert.Equal(PresentationCueKind.PreviousMusic, Assert.IsType<PresentationWait>(session.Current.Story.Wait).Cue.Kind);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ContextRoundTripInvalidatesHistoryUntilANewRequest(bool areaOnly, bool requestAgain)
+    {
+        var session = StartMusic(0, edit: doc =>
+        {
+            var world = doc["world"]!;
+            var audio = world["presentation"]!["audio"]!.AsArray();
+            var ordinary = audio[0]!.DeepClone();
+            ordinary["cue"] = "ordinary"; ordinary["command"] = 9;
+            ordinary["loopBegin"] = 0; ordinary["loopEnd"] = 2; audio.Add(ordinary);
+            string origin = world["maps"]![0]!["id"]!.GetValue<string>();
+            string target = areaOnly ? origin : world["maps"]![1]!["id"]!.GetValue<string>();
+            foreach (var map in world["maps"]!.AsArray()) { map!["onLoad"] = null; map["battle"] = null; }
+            if (areaOnly)
+            {
+                var areas = world["maps"]![0]!["areas"]!.AsArray();
+                var second = areas[0]!.DeepClone(); second["minX"] = 16;
+                areas[0]!["maxX"] = 15; areas.Add(second);
+            }
+            foreach (var visual in world["presentation"]!["maps"]!.AsArray())
+                visual!["music"] = JsonNode.Parse("""[{"field":8,"battle":8},{"field":8,"battle":8}]""");
+            JsonNode Transfer(string map, int x) => JsonSerializer.SerializeToNode(new
+                { op = "transfer", map, position = new { x, y = 1 }, facing = 1, loadMode = "rebuild" })!;
+            var instructions = new JsonArray(Cue("Sound", "town"), Cue("Sound", "ordinary"),
+                JsonNode.Parse("""{"op":"wait-ticks","ticks":1}"""),
+                Transfer(target, areaOnly ? 20 : 1), Transfer(origin, 1));
+            if (requestAgain) { instructions.Add(Cue("Sound", "town")); instructions.Add(Cue("Sound", "join")); }
+            else instructions.Add(Cue("PreviousMusic"));
+            instructions.Add(JsonNode.Parse("""{"op":"end"}"""));
+            world["programs"]![0]!["instructions"] = instructions;
+        });
+        var result = Send(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.Equal(2, result.Observations.Count(o => o.Kind == "map-transferred"));
+        if (!requestAgain)
+        {
+            Assert.Equal("music-context-replaced", result.Failure!.Code);
+            Assert.False(session.Current.Story.Music!.HistoryBound);
+            return;
+        }
+        Assert.Null(result.Failure);
+        var reset = session.Current.Story.Music!;
+        Assert.True(reset.HistoryBound);
+        Assert.Equal("town", reset.Cue);
+        Assert.Empty(reset.Previous);
+        Assert.Null(reset.EndStep);
+        var establish = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Accept(session, new CompletePresentation(establish.Token, establish.Cue.Kind));
+        var music = session.Current.Story.Music!;
+        Assert.True(music.HistoryBound);
+        Assert.Equal("join", music.Cue);
+        Assert.Equal(new[] { "town" }, music.Previous);
+        Assert.Equal(0, music.Step);
+        var sound = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Accept(session, new CompletePresentation(sound.Token, sound.Cue.Kind));
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.Same(music, session.Current.Story.Music);
+    }
+
     private static GameSession StartMusic(int ticks, string? text = null, int speed = 2, int width = 6,
-        string name = "Name", bool enabled = false, int command = 19, int end = 505)
+        string name = "Name", bool enabled = false, int command = 19, int end = 505, Action<JsonNode>? edit = null)
     {
         var session = StartFieldText(text ?? "A", speed: speed, width: width, name: name, enabled: enabled, npcRandom: true, configure: doc =>
         {
@@ -196,6 +304,7 @@ public sealed class ExplorationMusicTests
             instructions.Add(JsonNode.Parse("""{"op":"wait-ticks","ticks":10}"""));
             instructions.Add(JsonNode.Parse("""{"op":"end"}"""));
             doc["world"]!["programs"]![0]!["instructions"] = instructions;
+            edit?.Invoke(doc);
         });
         for (int i = 0; i < 2; i++)
         {

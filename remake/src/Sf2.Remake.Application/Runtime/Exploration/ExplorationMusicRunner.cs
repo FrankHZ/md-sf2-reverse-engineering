@@ -17,12 +17,20 @@ internal static class ExplorationMusicRunner
             return current.Story.Music;
         int area = Area(current);
         var old = current.Story.Music;
-        if (old is not null && old.Map == current.Exploration!.Map && old.Area == area)
+        bool battle = current.Story.EnteringBattle is not null;
+        if (old is { HistoryBound: true } && old.Map == current.Exploration!.Map && old.Area == area && old.Battle == battle)
         {
             if (old.Cue == cue) return old;
             return new(token.Value, cue, Array.AsReadOnly(new[] { old.Cue }.Concat(old.Previous).Take(9).ToArray()),
-                old.Map, area, audio.ModernEndStep);
+                old.Map, area, audio.ModernEndStep, Battle: battle);
         }
+        if (old is not null)
+            // Several context changes can occur before the host observes a result. Do not
+            // infer that its map selection replaced the player, or revive an older stack.
+            // This request establishes only the current cue; a later replacement can bind
+            // finite progress and a known previous cue again.
+            return new(token.Value, cue, Array.AsReadOnly(System.Array.Empty<string>()),
+                current.Exploration!.Map, area, null, Battle: battle);
         // The ordinary map music selection is typed content, also consumed by SessionAudio.
         string? previous = null;
         if (definition.Visuals!.Maps.TryGetValue(current.Exploration!.Map, out var map) && area < map.Music.Count)
@@ -31,7 +39,21 @@ internal static class ExplorationMusicRunner
             previous = definition.Visuals.Audio.FirstOrDefault(pair => pair.Value.Command == command).Key;
         }
         return new(token.Value, cue, Array.AsReadOnly(previous is null || previous == cue ? [] : new[] { previous }),
-            current.Exploration.Map, area, audio.ModernEndStep);
+            current.Exploration.Map, area, audio.ModernEndStep, Battle: battle);
+    }
+
+    // SessionAudio selects map/area/battle music at these context changes. Its older stack
+    // is not admitted by Application; even a return to the same map cannot revive it.
+    internal static StoryState InvalidateContext(ActiveSessionState active, StoryState story)
+    {
+        if (story.Music is not { HistoryBound: true } music) return story;
+        if (active is ActiveExploration exploration && music.Map == exploration.World.Map &&
+            music.Area == exploration.World.Definition.Traversal.SelectActiveArea(exploration.World.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1 &&
+            music.Battle == (story.EnteringBattle is not null)) return story;
+        if (story.Wait is MusicWait)
+            throw new BattleRuleException("music-context-replaced", "story.music", true);
+        return story.Copy(story.Cursor, story.Wait,
+            music: music with { HistoryBound = false, EndStep = null, ActualDone = false, PreviousEligible = false });
     }
 
     internal static MusicWait Begin(SessionSnapshot current, WaitToken token)
@@ -46,7 +68,8 @@ internal static class ExplorationMusicRunner
 
     private static void ValidateContext(SessionSnapshot current, MusicProgress music)
     {
-        if (music.Map != current.Exploration!.Map || music.Area != Area(current))
+        if (!music.HistoryBound || music.Map != current.Exploration!.Map || music.Area != Area(current) ||
+            music.Battle != (current.Story.EnteringBattle is not null))
             throw new BattleRuleException("music-context-replaced", "story.music", true);
     }
 
@@ -83,10 +106,12 @@ internal static class ExplorationMusicRunner
     internal static MusicProgress Previous(ExplorationDefinition definition, SessionSnapshot current, WaitToken token)
     {
         var music = current.Story.Music;
-        if (music is not { PreviousEligible: true, ActualDone: true } || music.Previous.Count == 0)
+        if (music is null || music.Previous.Count == 0 ||
+            music.EndStep is not null && !(music.PreviousEligible && music.ActualDone))
             throw new BattleRuleException("music-previous-unavailable", "program.music", true);
+        ValidateContext(current, music);
         string cue = music.Previous[0];
         return new(token.Value, cue, Array.AsReadOnly(music.Previous.Skip(1).ToArray()), music.Map, music.Area,
-            definition.Visuals!.Audio[cue].ModernEndStep);
+            definition.Visuals!.Audio[cue].ModernEndStep, Battle: music.Battle);
     }
 }

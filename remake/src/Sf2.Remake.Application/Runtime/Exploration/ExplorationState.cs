@@ -58,7 +58,8 @@ public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0,
 }
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
 public sealed record MusicProgress(long Generation, string Cue, IReadOnlyList<string> Previous,
-    MapId Map, int Area, int? EndStep, int Step = 0, bool ActualDone = false, bool PreviousEligible = false);
+    MapId Map, int Area, int? EndStep, int Step = 0, bool ActualDone = false, bool PreviousEligible = false,
+    bool Battle = false, bool HistoryBound = true);
 public sealed record MusicWait(WaitToken Token, long Generation, int Elapsed = 0,
     bool Armed = false, bool Cleared = false, bool LogicalDone = false) : ProgramWait(Token);
 public enum FullFadePurpose { WarpOut, WarpIn, Script }

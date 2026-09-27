@@ -283,7 +283,7 @@ internal static class ProgramRunner
                         {
                             if (cue.Kind == PresentationCueKind.Sound)
                                 music = ExplorationMusicRunner.Request(definition.Exploration!, current, cue.Resource, token);
-                            else if (cue.Kind == PresentationCueKind.PreviousMusic && music?.EndStep is not null)
+                            else if (cue.Kind == PresentationCueKind.PreviousMusic)
                                 music = ExplorationMusicRunner.Previous(definition.Exploration!, current, token);
                             else if (cue.Kind == PresentationCueKind.SoundFade && music is not null)
                                 music = music with { EndStep = null, ActualDone = false, PreviousEligible = false };
@@ -374,6 +374,7 @@ internal static class ProgramRunner
     internal static SessionSnapshot Commit(SessionSnapshot current, ActiveSessionState active, StoryState story,
         List<SessionObservation> observations, string kind, string? detail = null, ProgramLocation? program = null)
     {
+        story = ExplorationMusicRunner.InvalidateContext(active, story);
         long revision = checked(current.Revision + 1), sequence = checked(current.ObservationSequence + 1);
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
