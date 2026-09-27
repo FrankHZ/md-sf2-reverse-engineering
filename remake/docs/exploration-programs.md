@@ -77,7 +77,7 @@ portrait close, text close and mandatory Sleep(10). `nextText` has no close tail
 the portrait lookup without closing an existing portrait. Raw `txt` only displays text; raw `clsTxt`
 only closes text. `closeTxt` closes portrait then text. JOIN's emitted SoundWait → PreviousMusic →
 `wait-text-input` → text close → Sleep(10) retains the incoming portrait gate. Bound execution stops
-at SoundWait until logical music progress is admitted; see [raw field display](#raw-field-display). These rules are
+at SoundWait without a finite profile; see [modern finite music](#modern-finite-music). These rules are
 implemented by the existing compiler/typed reader, with no selected-script eligibility exception.
 Fresh output is required to gain these distinctions; old generated content cannot reconstruct them.
 
@@ -890,7 +890,7 @@ Missing event context and invalid explicit speakers still report `field-text-spe
 host delivery uses the existing silent path, while an admitted registered portrait keeps its own
 blink/mouth service and RNG. This does not decide ordinary speech delivery policy under#517.
 
-Bound `PresentCue(SoundWait)` reports `field-music-progress-unbound` at `program.presentation`,
+Bound `PresentCue(SoundWait)` without a finite profile reports `field-music-progress-unbound` at `program.presentation`,
 kind `UnsupportedCapability`, stop `Unsupported`. Completed text/window/entity/party/flag state
 remains at that instruction. No PresentationWait is created and actual finite-audio completion
 cannot release gameplay through previous-music, plain input or script return. Existing PCM playback
@@ -901,3 +901,38 @@ and [provenance](../../docs/research/map3-messenger-acceptance.md#raw-display-an
 separate this supported raw-text rule from the unknown sound-to-service clock. The known505 driver
 updates are not a duration in entity services. See [verification](./development-and-verification.md#raw-field-text-observation)
 for behavior and native expected-boundary acceptance.
+
+## Modern Finite Music
+
+The [accepted modern policy](../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+uses optional finite audio metadata `modernEndStep`; the private lowerer emits505 for command19.
+The reader permits a positive endpoint only on non-looping music. Ordinary playback needs no profile.
+`MusicProgress` retains cue, semantic generation, previous stack, map/area, progress, actual completion
+and logical previous eligibility. Duplicate current cues preserve it; earlier replacements start at0.
+Ordinary unprofiled/looping `PreviousMusic` also pops this history and changes the semantic generation;
+it does not require a finite helper. Restoring a profiled cue starts its progress at0, matching the
+player restart. Unknown/empty history remains Unsupported.
+`ExplorationMusicRunner` advances this state before each existing bound common service, regardless
+of entity enablement. It never adds a second entity service or uses PCM duration.
+
+`MusicWait` first arms, subsequently samples logical end, and returns only after a complete group
+of3 services plus matching `CompleteMusic(generation,cue)`. Early receipts latch; late receipts
+cause no tick/RNG/debt. The host observes actual finite completion and then the existing actual
+previous-track restart. Wrong/stale/duplicate receipts reject; active-helper interference or a
+changed bound map/area/battle-selection reports Unsupported, and changed host playback reports an explicit adapter error.
+Missing profiles retain the raw-text boundary above. Looping/other unbound playback remains supported.
+
+The common commit boundary invalidates history and finite phase on context changes outside a helper,
+including an intermediate map/area change followed by a return. `HistoryBound` prevents that old
+stack from becoming valid again merely because the final map matches. The first subsequent explicit
+request establishes only its current cue with empty history/no finite profile; a later different
+request can use that known cue as previous and admit finite progress. This avoids assuming that
+SessionAudio consumed every intermediate map selection within one application result. No host
+history or timing is copied back into gameplay; context changes add no extra service.
+
+Plain input after the helper keeps the raw window without revealing it anew. A genuine Wait uses
+the existing one-service input-first rule without a W1/W2 copy. Bound plain Ack is silent; only
+accepted W2 requests validation67. Ack, close/Sleep10, follower/position
+instructions and script/Zone return reuse their owners. No production rule names text447, cs-51614
+or a selected seed. [Verification](./development-and-verification.md#modern-finite-music-observation)
+owns behavior cases and the full bounded native JOIN return; full continuous victory/H4 stays open.

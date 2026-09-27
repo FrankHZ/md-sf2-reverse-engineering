@@ -113,6 +113,14 @@ internal static class ExplorationDispatcher
                         current.Story.Copy(current.Story.Cursor, delivering with { Revealed = true }) : FinishWait(current.Story),
                         observations, "text-revealed");
                     break;
+                case CompleteMusic completedMusic:
+                    if (current.Story.Music is not { EndStep: not null, ActualDone: false } playing ||
+                        playing.Generation != completedMusic.Generation || playing.Cue != completedMusic.Cue)
+                        return Reject(current, "stale-or-wrong-music", "music");
+                    current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+                        music: playing with { ActualDone = true }), observations, "music-actual-completed", playing.Cue);
+                    current = ExplorationMusicRunner.Finish(current, observations);
+                    break;
                 case CompletePresentation completion:
                     if (current.Story.Wait is NodWait nodCompletion)
                     {
@@ -191,10 +199,23 @@ internal static class ExplorationDispatcher
                         return Reject(current, "nod-awaiting-presentation", "wait");
                     if (current.Story.Wait is FullFadeWait { LogicalDone: true })
                         return Reject(current, "fade-awaiting-presentation", "wait");
+                    if (current.Story.Wait is MusicWait { LogicalDone: true })
+                        return Reject(current, "music-awaiting-presentation", "wait");
+                    if (current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
+                        { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade })
+                        return Reject(current, "audio-delivery-only", "wait");
                     bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is MusicWait helper)
+                        {
+                            current = Service(definition, current, observations, "music-helper-service");
+                            current = ExplorationMusicRunner.Finish(current, observations);
+                            if (current.Story.Wait?.Token != helper.Token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait is MusicWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
+                            continue;
+                        }
                         if (current.Story.Wait is ChoiceWait { Work: { Automatic: true } } boundChoice)
                         {
                             current = Service(definition, current, observations, "choice-mandatory-service");
@@ -248,6 +269,7 @@ internal static class ExplorationDispatcher
                         if (current.Story.Wait is FullFadeWait or WarpLoadWait)
                         {
                             var token = current.Story.Wait.Token;
+                            current = ExplorationMusicRunner.BeforeService(current, observations);
                             current = current.Story.Wait is FullFadeWait
                                 ? MapTransfer.FadeTick(definition, current, observations)
                                 : MapTransfer.LoadTick(definition, current, observations);
@@ -257,6 +279,7 @@ internal static class ExplorationDispatcher
                                 return ProgramRunner.Result(current, observations);
                             continue;
                         }
+                        current = ExplorationMusicRunner.BeforeService(current, observations);
                         bool entityUpdates = current.Story.EntityServices ?? (current.Story.Wait is DialogueWait { InputFirstEntityService: { } enabled }
                             ? enabled : current.Story.Wait is EntityEventFacingWait || current.Story.Cursor is not { } location ||
                                 definition.Exploration!.Programs[location.Program].EntitiesRunning);
@@ -397,6 +420,7 @@ internal static class ExplorationDispatcher
     internal static SessionSnapshot Service(ScenarioDefinition definition, SessionSnapshot current,
         List<SessionObservation> observations, string kind)
     {
+        current = ExplorationMusicRunner.BeforeService(current, observations);
         bool enabled = current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
             (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
         var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;

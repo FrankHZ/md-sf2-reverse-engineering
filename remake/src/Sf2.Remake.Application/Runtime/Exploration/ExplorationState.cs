@@ -57,6 +57,11 @@ public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0,
     public bool Lowered => Elapsed is >= 10 and < 30;
 }
 public sealed record PresentationWait(WaitToken Token, PresentCue Cue, GestureRestore? Restore = null) : ProgramWait(Token);
+public sealed record MusicProgress(long Generation, string Cue, IReadOnlyList<string> Previous,
+    MapId Map, int Area, int? EndStep, int Step = 0, bool ActualDone = false, bool PreviousEligible = false,
+    bool Battle = false, bool HistoryBound = true);
+public sealed record MusicWait(WaitToken Token, long Generation, int Elapsed = 0,
+    bool Armed = false, bool Cleared = false, bool LogicalDone = false) : ProgramWait(Token);
 public enum FullFadePurpose { WarpOut, WarpIn, Script }
 public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, FullFadePurpose Purpose,
     byte Period, byte Countdown, int Entry = 0, int ExtraServices = 0, bool LogicalDone = false,
@@ -100,7 +105,8 @@ public sealed class StoryState
         MapPartyLists? partyLists = null, EntityEventContext? entityEvent = null, EntityRef? speaker = null, MapPosition? cameraTarget = null,
         int? cameraEntitySlot = null, FieldReturnAnchor? outcomeReturn = null, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
-        bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false)
+        bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
+        MusicProgress? music = null)
     {
         Flags = Array.AsReadOnly((flags ?? []).Distinct().Order().ToArray()); Cursor = cursor;
         Callers = Array.AsReadOnly((callers ?? []).ToArray()); Wait = wait; TextCursor = textCursor;
@@ -111,6 +117,7 @@ public sealed class StoryState
         Display = display; Warp = warp; RandomSeedCopy = randomSeedCopy;
         TextSettings = textSettings; LogicalText = logicalText; LogicalView = logicalView;
         EntityServices = entityServices; Typewriting = typewriting; WindowFixPending = windowFixPending;
+        Music = music;
     }
     public IReadOnlyList<int> Flags { get; }
     public ProgramLocation? Cursor { get; }
@@ -143,6 +150,7 @@ public sealed class StoryState
     public bool Typewriting { get; }
     // VInt_UpdateWindows retains this across empty-window passes and map initialization.
     public bool WindowFixPending { get; }
+    public MusicProgress? Music { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
@@ -152,7 +160,8 @@ public sealed class StoryState
         FieldReturnAnchor? outcomeReturn = null, bool clearEnteringBattle = false, PortraitWindow? portraitWindow = null,
         ExplorationDisplay? display = null, OrdinaryWarp? warp = null, bool clearWarp = false, byte? randomSeedCopy = null, ExplorationTextSettings? textSettings = null, LogicalTextWindow? logicalText = null, LogicalView? logicalView = null,
         bool? entityServices = null, bool clearEntityServices = false, bool? typewriting = null,
-        FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null) =>
+        FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
+        MusicProgress? music = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -160,7 +169,7 @@ public sealed class StoryState
             clearCameraEntity ? null : cameraEntitySlot ?? CameraEntitySlot, outcomeReturn ?? OutcomeReturn, portraitWindow ?? PortraitWindow,
             display ?? Display, clearWarp ? null : warp ?? Warp, randomSeedCopy ?? RandomSeedCopy, textSettings ?? TextSettings, logicalText ?? LogicalText, logicalView ?? LogicalView,
             clearEntityServices ? null : entityServices ?? EntityServices, typewriting ?? Typewriting,
-            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending);
+            clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

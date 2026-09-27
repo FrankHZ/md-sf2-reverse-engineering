@@ -8,13 +8,20 @@
 - **Unknown original behavior:** wall-clock tempo, PCM sample rate, exact YM2612/PSG output,
   audible waveform parity, player-facing command meaning, complete loop/fade/resume semantics, and
   SFX priority/interruption.
-- Remake status: implementation-neutral Phase 3 contract; no audio middleware, asset format,
-  replacement soundtrack, mixing policy, or hardware-fidelity target has been selected.
+- Remake status: implementation-neutral original contract, supplemented by the accepted modern
+  finite-music policy below and the separately owned private PCM consumer.
 - Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 ## Contract Boundary
+
+The remake's [modern finite-music policy](music-wait-service.md#accepted-modern-finite-music-policy)
+is an accepted product deviation under ADR0010. It owns semantic generations, explicit logical
+endpoints and the dual logical/actual completion gate. MUSIC_JOIN19/end505 is not a claim about
+original VInts, PCM duration, timer phase or hardware completion. The original facts and Unknowns
+below retain their scope; whole-PCM finish then previous-track restart is the current bounded
+playback policy. Missing profiles cannot establish a deterministic gameplay wait.
 
 This contract defines the accepted identity and state boundary between gameplay sound commands and
 an audio implementation. It owns:

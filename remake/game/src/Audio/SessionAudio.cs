@@ -27,6 +27,7 @@ internal sealed class SessionAudio : IDisposable
     private int _sceneMusic;
     private bool _fading;
     private double _fadeProgress;
+    internal long? MusicGeneration { get; private set; }
     internal SessionAudio(Node owner, ExplorationDefinition definition)
     {
         _assets = definition.Visuals?.Audio ?? new Dictionary<string, ExplorationAudio>();
@@ -34,7 +35,7 @@ internal sealed class SessionAudio : IDisposable
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
         _owner = owner;
         owner.AddChild(_music);
-        _musicFinished = () => { MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
+        _musicFinished = () => { if (_music.Playing) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
         _music.Finished += _musicFinished;
         if (definition.Provenance is not null && _assets.Count == 0) Error = "private-audio-required";
     }
@@ -52,7 +53,7 @@ internal sealed class SessionAudio : IDisposable
     internal object ObservePlayback() => new
     {
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
-        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished,
+        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
         musicPosition = MusicPosition, timerB = TimerB,
         musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
         soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
@@ -199,6 +200,7 @@ internal sealed class SessionAudio : IDisposable
         };
         if (music)
         {
+            MusicGeneration = null;
             MusicCue = resource; MusicFinished = false; TimerB = audio.TimerB;
             if (remember)
             {
@@ -220,6 +222,20 @@ internal sealed class SessionAudio : IDisposable
         if (MusicCue is null || _assets[MusicCue].LoopBegin is not null)
             throw new InvalidOperationException("finite-music-required");
         return MusicFinished;
+    }
+
+    internal void BindMusic(long generation, string cue)
+    {
+        if (MusicCue != cue || MusicGeneration is { } old && old != generation)
+            throw new InvalidOperationException("music-generation-mismatch");
+        MusicGeneration = generation;
+    }
+
+    internal bool FiniteMusicFinished(long generation, string cue)
+    {
+        if (MusicGeneration != generation || MusicCue != cue)
+            throw new InvalidOperationException("music-generation-replaced");
+        return FiniteMusicFinished();
     }
 
     internal void PlayPrevious()

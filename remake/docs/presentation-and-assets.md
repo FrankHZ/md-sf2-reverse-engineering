@@ -863,9 +863,14 @@ no naturally reached generic SoundFade instruction was established in the admitt
 input-release subset; the bounded HEAL consumer is described below. The modern half-second service
 is not source-timing evidence. Neither successful resource
 requests, counters nor a build proves actual audible consumption or continuous 7C/8D/H4 acceptance.
-JOIN still lacks the source logical audio-end/interleaving binding required in addition to actual
-PCM completion by accepted Option A. Field-Wait eligibility does not supply it; PCM duration cannot
-be converted into logical work or RNG opportunities. The instant/reveal-all speech difference above
+JOIN uses the [accepted modern finite-music clock](../../docs/design/contracts/music-wait-service.md#accepted-modern-finite-music-policy)
+in addition to actual PCM completion. Explicit `modernEndStep` metadata belongs to Application
+content; SessionAudio binds actual playback to its semantic generation and cue. The host's finite
+completion receipt never creates logical work. Previous music becomes logically eligible at the
+gate sample but actually restarts after both the complete helper group and whole-PCM finish.
+Duplicate current requests preserve playback/generation; changed active-helper playback reports an
+error. No source clock claim follows from the profile or actual callback. Field-Wait eligibility and
+PCM duration cannot supply an original clock binding. The instant/reveal-all speech difference above
 still requires its own 10A disposition and same-semantic-Wait/acknowledgement comparison.
 
 ## Physical Battle Scenes

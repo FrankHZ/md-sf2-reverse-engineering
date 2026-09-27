@@ -1208,6 +1208,8 @@ def prepare_visuals(
                 "loopEnd": runtime["loopEnd"],
                 "pcm16": base64.b64encode(pcm).decode("ascii"),
                 "sha256": hashlib.sha256(pcm).hexdigest().upper(),
+                # Accepted modern step clock; this is not a PCM/VInt conversion.
+                **({"modernEndStep": 505} if asset["command"] == 19 else {}),
             }
         )
     if not audio:

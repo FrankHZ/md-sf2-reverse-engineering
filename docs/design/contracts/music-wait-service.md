@@ -1,6 +1,6 @@
 # Music-Wait Service Contract
 
-- Status: **Draft evidence-bound contract**
+- Status: **Draft original evidence-bound contract; accepted bounded modern policy**
 - Original fidelity: **Confirmed static** for the bounded entry identity, ordered source macro
   operands, and post-sleep predicate loop described below
 - Modernization: **Allowed** for engine-native asynchronous completion, events, futures, or
@@ -8,7 +8,55 @@
 - Unknown: caller admission, command transport and acceptance, sound-side flag lifecycle, audible
   completion, transition behavior, scheduling, elapsed time, failure handling, and presentation
 
-## Purpose
+## Accepted Modern Finite-Music Policy
+
+[ADR0010](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
+accepts this bounded modern execution policy. The original static evidence and Unknowns below
+retain their own scope; this section is a product decision, not an original timing claim.
+
+1. A semantic music request creates a cue/generation with progress0. Actual player start time is
+   independent. Optional typed content `modernEndStep` is a positive finite-music endpoint; absence
+   admits ordinary playback but no dependent deterministic wait. The initial original-backed
+   admission is uninterrupted MUSIC_JOIN19/end505. Other authored finite profiles use the same rule.
+2. Each existing bound common service advances progress once, capped at the endpoint, even with
+   entity service disabled. This adds no entity tick. Music advances before gate sampling and the
+   existing entity/view/window/portrait context services, including preceding raw text work.
+3. The helper's first service arms the wait gate without a same-service rescan. A later service
+   samples logical end and makes previous music logically eligible. Always complete a group of
+   three services before testing the helper return. An already-ended track therefore takes3;
+   entry progress501/end505 takes6. For an empty admitted command queue the count is
+   `3 * ceil(max(2, end - entryProgress) / 3)`.
+4. Matching actual finite completion, identified by cue and generation, is a second gate. It may
+   arrive before the helper. Early completion never skips logical work; late completion adds no
+   services, RNG or accumulated host debt. Previous playback uses the existing whole-PCM finish
+   then restart policy; logical eligibility does not start the player early.
+5. A duplicate current cue preserves generation/progress. A legal earlier replacement starts a
+   new generation at0 and preserves previous-track history. Stale/wrong/duplicate completion is
+   rejected. Ordinary unprofiled/looping previous-track requests pop the same known logical history
+   and create the restored cue's generation without requiring a finite helper. Profiled finite
+   restoration still requires both helper gates. Active-helper replacement, fade/stop, timer/control
+   interference and changing its map/area/battle-selection context are unsupported.
+6. Only after both gates and actual previous-track restart may the program reach plain input,
+   text close/Sleep10, follower/position work and caller return. Gameplay legality never depends
+   on a text ID, source program name, seed or retained route's final count.
+
+Outside an active helper, map/area/battle-selection changes invalidate the tracked history and
+finite phase. Returning to the former context cannot revive them. Several changes may occur before
+the host observes a result, so a current map selection cannot reconstruct its actual previous stack.
+The first explicit music request after invalidation establishes only the current cue, with no
+previous stack or finite profile; a subsequent different request can bind a known previous cue and
+finite profile again. A previous request without known history stays Unsupported. This boundary
+preserves ordinary playback while excluding unknown history, rather than guessing a saved track.
+
+The original first-channel ordinal505 is reused as an explicitly chosen modern step endpoint.
+It is not505 VInts, entity updates or a PCM-derived duration. Original timer reload/poll phase,
+queue transport and interrupt alignment remain Unknown. Missing finite profiles retain explicit
+`field-music-progress-unbound` Unsupported. Looping music and existing unbound playback retain
+their separate scope. [Execution](../../../remake/docs/exploration-programs.md#modern-finite-music)
+and [verification](../../../remake/docs/development-and-verification.md#modern-finite-music-observation)
+own the implementation and actual host evidence.
+
+## Original Static Purpose
 
 This contract defines the smallest implementation-neutral service shape supported by the accepted
 static evidence for `PlayMusicAfterCurrentOne`. It preserves the original source order and retry

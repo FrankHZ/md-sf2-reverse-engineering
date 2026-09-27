@@ -31,7 +31,11 @@ var choice_prefix := false
 var choice_exercised := false
 var choice_following := false
 var choice_draws: Array = []
-var raw_text_case := "raw-text" in input_case
+var modern_music_case := "modern-music" in input_case
+var raw_text_case := "raw-text" in input_case or modern_music_case
+var music_logical_end: Dictionary = {}
+var music_plain_input: Dictionary = {}
+var join_return: Dictionary = {}
 var raw_entry: Dictionary = {}
 var raw_late_end: Dictionary = {}
 var raw_boundary: Dictionary = {}
@@ -938,7 +942,8 @@ func finish_public() -> void:
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
         "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,
-        "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws}, "  ")
+        "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
+        "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}, "  ")
     if guarded_wait_case:
         field_output.store_string(contents)
         field_output.flush()
@@ -1099,6 +1104,41 @@ func opening_settle() -> bool:
             read_sample("choice-route-focus-restored")
             continue
         if s.get("canWaitAtInput", false): return true
+        if modern_music_case and s.wait == "MusicWait":
+            check(not s.canWaitForText and not s.canWaitAtInput and s.music.Generation == s.musicWait.Generation and
+                s.audio.musicGeneration == s.music.Generation, "Music helper owns a matching logical/playback generation")
+            if s.musicWait.LogicalDone and music_logical_end.is_empty():
+                music_logical_end = read_sample("music-logical-end")
+                check(s.music.PreviousEligible and int(s.musicWait.Elapsed) % 3 == 0, "Helper finishes a complete three-service group")
+                var held := opening_semantic(s)
+                physical(KEY_V, true)
+                physical(KEY_V, false)
+                physical(KEY_ENTER, true)
+                physical(KEY_ENTER, false)
+                check(opening_semantic(state()) == held, "Music helper rejects player Wait and Ack")
+                for idle_frame in range(5): await process_frame
+                check(opening_semantic(state()) == held and state().tickDebt == 0, "Late actual music completion adds no services or debt")
+            await process_frame
+            continue
+        if modern_music_case and s.wait == "DialogueWait" and s.textId == 447:
+            music_plain_input = read_sample("music-plain-input")
+            check(s.canWaitForText and not s.canWaitAtInput and s.music.Cue == s.audio.musicCue and
+                s.audio.musicPlaying and s.audio.musicCue != "MUSIC_JOIN", "Both music gates return through actual previous-track restart to plain input")
+            check(raw_draws.any(func(d): return d.visible and (d.characters < 0 or d.characters >= d.total)),
+                "Full raw text was actually drawn before plain input")
+            var held := opening_semantic(s)
+            for idle_frame in range(5): await process_frame
+            check(opening_semantic(state()) == held and state().tickDebt == 0, "Plain input has no delivery debt")
+            physical(KEY_V, true)
+            physical(KEY_V, false)
+            var polled := read_sample("music-plain-poll")
+            check(polled.simulationTick == s.simulationTick + 1 and polled.randomSeedCopy == s.randomSeedCopy,
+                "Plain explicit Wait services once without W-token RNG copy")
+            physical(KEY_ENTER, true)
+            physical(KEY_ENTER, false)
+            read_sample("music-plain-accepted")
+            await process_frame
+            continue
         if choice_case and s.get("choice") != null and s.choice.Work.Phase == 2 and not choice_exercised:
             await exercise_bound_choice()
             continue
@@ -1329,6 +1369,17 @@ func run_portrait_event() -> void:
         if "zone-nod" in input_case and edge.waypoint == "map3-school-stairs-up":
             read_sample("nod-stair-reload-return")
         if choice_case and choice_exercised:
+            if modern_music_case:
+                join_return = read_sample("join-field-return")
+                check(not music_plain_input.is_empty() and join_return.canWaitAtInput and join_return.eventCaller == null and
+                    join_return.cursor == null and join_return.wait == null and join_return.textWindow == "ClosedTextWindow" and
+                    join_return.portraitWindow == "ClosedPortraitWindow" and 600.0 in join_return.flags and
+                    66.0 in join_return.flags and 603.0 in join_return.flags,
+                    "Complete JOIN returns first ordinary field control with flags, caller and windows settled")
+                check(join_return.partyLists == {"Joined":[0.0,1.0,2.0],"Active":[0.0,1.0],"Reserve":[2.0]},
+                    "Complete JOIN retains joined, active and reserve membership")
+                finish_public()
+                return
             if raw_text_case:
                 check(not raw_boundary.is_empty(), "Raw route reaches only its named expected boundary")
                 var stopped := opening_semantic(state())

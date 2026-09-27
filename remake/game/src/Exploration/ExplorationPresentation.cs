@@ -81,6 +81,12 @@ internal sealed class ExplorationPresentation : IDisposable
         if (Error is not null) return completions;
         try
         {
+            if (current.Story.Wait is MusicWait helper &&
+                (_audio.MusicGeneration != helper.Generation || _audio.MusicCue != current.Story.Music?.Cue))
+                throw new InvalidOperationException("music-helper-playback-replaced");
+            if (current.Story.Music is { EndStep: not null, ActualDone: false } music && _audio.MusicGeneration == music.Generation &&
+                _audio.FiniteMusicFinished(music.Generation, music.Cue))
+                completions.Add(new CompleteMusic(music.Generation, music.Cue));
             var target = _camera;
             if (current.Exploration is { } world)
             {
@@ -176,10 +182,17 @@ internal sealed class ExplorationPresentation : IDisposable
                 else if (wait.Cue.Kind == PresentationCueKind.Sound)
                 {
                     _audio.Play(wait.Cue.Resource ?? throw new InvalidOperationException("sound-binding"));
+                    if (current.Story.Music is { EndStep: not null } requested && requested.Cue == wait.Cue.Resource)
+                        _audio.BindMusic(requested.Generation, requested.Cue);
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.PreviousMusic)
                 {
                     _audio.PlayPrevious();
+                    if (current.Story.TextSettings is not null && current.Story.Music is { } restored &&
+                        _audio.MusicCue != restored.Cue)
+                        throw new InvalidOperationException("music-previous-binding");
+                    if (current.Story.Music is { EndStep: not null } previous)
+                        _audio.BindMusic(previous.Generation, previous.Cue);
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.SoundFade)
                 {

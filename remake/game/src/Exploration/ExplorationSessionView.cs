@@ -141,7 +141,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Process(double delta)
     {
         if (_handedOff || _session is null || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or ChoiceWait { Work: not null }) &&
+        if ((_session.Current.Story.Warp is not null || _session.Current.Story.Wait is FullFadeWait or W1TextWait or FieldTextWait or ViewWait or TextCloseWait or PortraitMovementWait or ZoneArrivalWait or NodWait or MusicWait or ChoiceWait { Work: not null }) &&
             (!IsVisibleInTree() || !GetWindow().HasFocus())) { SuspendClock(); return; }
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
         if (!_input.GameplayHeld) _choiceRequiresRelease = false;
@@ -221,6 +221,9 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
+        current.Story.Wait is MusicWait music ? !music.LogicalDone :
+        current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
+            { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade } ? false :
         current.Story.Wait is ChoiceWait { Work: { } choice } ? choice.Automatic :
         current.Story.Wait is NodWait nod ? !nod.LogicalDone :
         current.Story.Wait is FieldTextWait text ? !text.LogicalDone :
@@ -330,7 +333,7 @@ public sealed partial class ExplorationSessionView : Control
         else _tickTime = 0;
         PublishResult("submit");
         _audio?.Observe(_result);
-        if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && (current.Story.Wait is not (W1TextWait or FieldTextWait) ||
+        if (_result.Failure is null && (command is ChooseDialogue || command is Acknowledge && (current.Story.TextSettings is null && current.Story.Wait is not (W1TextWait or FieldTextWait) ||
                 _result.Observations.Any(row => row.Kind == "text-w2-accepted"))))
             _audio?.PlayEffect(67);
         if (_result.Failure is null)
@@ -483,6 +486,7 @@ public sealed partial class ExplorationSessionView : Control
                 yes = _choiceYes.Text, no = _choiceNo.Text, yesAlternate = _choiceYes.Modulate == Colors.Gold, noAlternate = _choiceNo.Modulate == Colors.Gold },
             canWaitForText = current?.CanWaitForText, inputFirstEntityService = (current?.Story.Wait as DialogueWait)?.InputFirstEntityService,
             fieldText = current?.Story.Wait as FieldTextWait, logicalText = current?.Story.LogicalText, logicalView = current?.Story.LogicalView,
+            music = current?.Story.Music, musicWait = current?.Story.Wait as MusicWait,
             windowFixPending = current?.Story.WindowFixPending,
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             cameraProjection = _presentation?.CameraProjection,
