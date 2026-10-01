@@ -418,16 +418,16 @@ internal static class ExplorationDispatcher
 
     private static ProgramLocation? NextCursor(StoryState story) => story.Cursor is { } cursor ? ProgramRunner.Next(cursor) : null;
     internal static SessionSnapshot Service(ScenarioDefinition definition, SessionSnapshot current,
-        List<SessionObservation> observations, string kind)
+        List<SessionObservation> observations, string kind, bool musicServiced = false, bool? entityEnabled = null, string? detail = null)
     {
-        current = ExplorationMusicRunner.BeforeService(current, observations);
-        bool enabled = current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
+        if (!musicServiced) current = ExplorationMusicRunner.BeforeService(current, observations);
+        bool enabled = entityEnabled ?? current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
             (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
         var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
         var world = tick is null ? current.Exploration! : MapEventDispatcher.Roof(tick.World);
         var story = ExplorationTextRunner.AfterEntities(world, current.Story);
         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
-        current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations, kind);
+        current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations, kind, detail);
         if (tick?.Failure is { } failure) throw new MapTransfer.FadeServiceFailure(current, failure);
         return ExplorationPortraitRunner.Service(current, observations);
     }

@@ -175,8 +175,8 @@ assert [row["fullBlack"]["period"] for row in full_black] == [6, None]
 
 The compiler retains `fadeInB`, `fadeOutB`, `slowFadeInB`, `slowFadeOutB` as explicit
 synchronous full-black cues, with current or temporary 6 period. Generic visual
-cues do not imply logical palette effects. With bound display state, white,
-partial/tint/restoration cues without this binding are Unsupported; asynchronous
+cues do not imply logical palette effects. Bound white FadeIn/FadeOut uses its finite map-white
+profile below; partial/tint/restoration cues remain Unsupported; asynchronous
 scene-load composition inside ordinary onLoad is also Unsupported. Known static
 missing transition bindings fail before the producing move. A reached dynamic
 failure preserves consumed ticks, map, flags, cursor and pending transition state;
@@ -2920,7 +2920,7 @@ Earlier opening/palace/tower/parallax steps are setup for this same session. Con
 player-ready fixture Up; inspect actual scene/palette/entity readiness/main camera/portrait/text,
 real BeforeBattleFinished/EnteringBattle/callers, ordinary W2 confirm and next W1 readiness.
 Stop observation at that genuine input wait. No forced PC, injected seed/party/capture or screenshots.
-That observation ends before target tracking; white palette/later entry stay Unsupported. Record committed default planner and actual CI;
+That observation ends before target tracking; later bounded tracking/white observations have separate owners. Record committed default planner and actual CI;
 shared contract prose alone does not require local normal/full/H3. Preserve completed failures.
 
 **Confirmed (remake observation of prior detach ordering):** the retained `native-03` representative instant run exits0/PASS
@@ -2986,7 +2986,7 @@ no service/debt. Confirm2296 and observe the first still-unadmitted white FadeOu
 An earlier failure is discovery evidence, never bypassed. Operand labels identify observation only;
 no production endpoint or injected state/seed/capture is permitted. Compare the accepted approach
 and old2293 boundary, reporting newly measured consequences; no paired settings run or screenshots.
-White palette/effects/complete before-body/battle load/first input and original cadence remain open.
+Bound white has the observation below; later effects/complete before-body/battle load/first input and original cadence remain open.
 
 
 **Confirmed (bounded semantic readback):** the ordinary native01 continuation reaches real physical
@@ -3003,3 +3003,37 @@ correction provenance are retained. Main-gate approved this semantic acceptance 
 ordinary route solely to turn its report green. The corrected observer was not executed. See the
 ignored owning handoff for commands, measured states and complete failures; no original timing claim
 or full before-body/battle-entry admission follows.
+
+### Bound white palette observation
+
+Focused `BattleEntryProgramTests.BoundWhiteFade*` engine behaviors cover independent channel extremes,
+base-derived offsets from black/restored/white, zero-base visibility, forced1/prior-period restore,
+terminator/extra service, early/late/stale/wrong-kind receipts, single/batch equivalence, opposite
+program/entity overrides, moving tracked slot and registered portrait/window service. Affected black
+scene/warp and camera behaviors remain necessary. Run the focused behavior filter with the configured
+absolute SDK through `shared_dotnet_environment`; run `uv run sf2 verify adapter`, the controlled
+Debug adapter build and `uv run sf2 design-contracts test`. On clean committed HEAD review
+`uv run sf2 verify plan --base origin/main --head HEAD` under current engine scope; record actual CI.
+No original/H3 or normal/full legacy aggregate is implied.
+
+The existing native input probe case `portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-before-battle-white`
+uses unchanged retained world-post-load/start, normal60FPS and the established one optional W1 poll.
+It takes the ordinary route through existing approach/W1 checkpoints, six finite white services and
+intervening waits to Chester2297 W1, observing actual positive white delivery, matching completion,
+base/period restoration, continued entity/view/portrait projection and no battle publication.
+The endpoint is an observation, not a production legality rule. Compare accepted approach/2293
+and subsequent pre-white W1 gameplay checkpoints directly; legitimate new services may change later
+clock/RNG. Read state/input/projection/errors, never screenshots or injected state/seeds.
+
+A separate narrow authored startup case `palette-mixed-warp-transition` and its `remapped-reduced`
+variant uses the same Main, project and installation, covering black→white→black and repeated white
+from settled black/restored/white. It reads the actual ColorRect/parent properties, complete tokens,
+normal positive opacity, reduced opacity0 and final input with base/period restored. Newly published
+waits can precede their first actual projection by one host frame; assertions read the delivered
+projection after that initial handoff. No source export or second clock is involved.
+
+Keep every native output variant, command, process exit and exact failure in fresh ignored
+`local/issue534/bound-white-palette/`; a green report on a different branch of the route is not this
+acceptance. The older tracking native01 raw FAIL/semantic readback PASS/corrected observer NOT RUN
+remains unchanged. Later genuine blocker, bound mosaic/shiver, full entry/winning and executable H4
+applicability remain open; persistent source-fidelity failures and Unknowns are not waived.

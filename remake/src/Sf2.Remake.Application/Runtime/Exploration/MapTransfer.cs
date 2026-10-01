@@ -49,7 +49,12 @@ internal static class MapTransfer
         if (display is not { Period: > 0, Base.Valid: true, Current.Valid: true } ||
             !Enum.IsDefined(display.Visibility) ||
             display.Visibility == FullFadeVisibility.Transitioning ||
-            (display.Visibility == FullFadeVisibility.Black ? !display.Current.Black : display.Current != display.Base))
+            (display.Visibility switch
+            {
+                FullFadeVisibility.Black => !display.Current.Black,
+                FullFadeVisibility.White => !display.Current.White,
+                _ => display.Current != display.Base,
+            }))
             throw new BattleRuleException("full-fade-state", "story.display", true);
     }
 
@@ -58,7 +63,8 @@ internal static class MapTransfer
 
     internal static void ValidateCue(PresentCue cue)
     {
-        if (cue.Resource != "black" ||
+        if (cue.Resource is not ("black" or "white") ||
+            cue.Resource == "white" && cue.FullBlack is not null ||
             cue.Kind is not (PresentationCueKind.FadeIn or PresentationCueKind.FadeOut) || cue.FullBlack?.Period == 0)
             throw new BattleRuleException("full-black-fade-binding", "program.presentation", true);
     }
@@ -78,15 +84,18 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot BeginFade(SessionSnapshot current, StoryState story, PresentationCueKind kind,
-        FullFadePurpose purpose, byte? temporaryPeriod, List<SessionObservation> observations)
+        FullFadePurpose purpose, byte? temporaryPeriod, List<SessionObservation> observations, FullFadeColor color = FullFadeColor.Black)
     {
         ValidateDisplay(story.Display);
         if (temporaryPeriod == 0) throw new BattleRuleException("full-fade-period", "program.period", true);
         var display = story.Display!;
+        if (!Enum.IsDefined(color) || color == FullFadeColor.White && (purpose != FullFadePurpose.Script || temporaryPeriod is not null))
+            throw new BattleRuleException("full-fade-color", "program.presentation", true);
+        if (color == FullFadeColor.White) temporaryPeriod = 1;
         byte period = temporaryPeriod ?? display.Period;
         var wait = new FullFadeWait(new(current.ObservationSequence + 1), kind, purpose, period, period,
             ExtraServices: purpose == FullFadePurpose.WarpOut ? 0 : 1,
-            RestorePeriod: temporaryPeriod is null ? null : display.Period);
+            RestorePeriod: temporaryPeriod is null ? null : display.Period, Color: color);
         return ProgramRunner.Commit(current, current.Active, story.Copy(story.Cursor, wait,
             display: display with { Period = period, Visibility = FullFadeVisibility.Transitioning }), observations, "full-fade-started", kind.ToString());
     }
@@ -106,7 +115,10 @@ internal static class MapTransfer
             int entry = wait.Entry;
             if (entry < 7)
             {
-                int offset = wait.Kind == PresentationCueKind.FadeIn ? entry - 6 : -entry - 1;
+                // Source saturation at nibble15 has effective CRAM value14; retain even words.
+                int offset = wait.Color == FullFadeColor.White
+                    ? wait.Kind == PresentationCueKind.FadeIn ? 6 - entry : entry + 1
+                    : wait.Kind == PresentationCueKind.FadeIn ? entry - 6 : -entry - 1;
                 ushort Color(ushort value) => (ushort)(Math.Clamp((value & 14) + 2 * offset, 0, 14) |
                     (Math.Clamp(((value >> 4) & 14) + 2 * offset, 0, 14) << 4) |
                     (Math.Clamp(((value >> 8) & 14) + 2 * offset, 0, 14) << 8));
@@ -116,19 +128,16 @@ internal static class MapTransfer
                 LogicalDone = entry == 7 && wait.ExtraServices == 0 };
         }
         if (wait.LogicalDone)
-            display = display with { Visibility = wait.Kind == PresentationCueKind.FadeOut ? FullFadeVisibility.Black : FullFadeVisibility.BaseRestored,
+            display = display with { Visibility = wait.Kind == PresentationCueKind.FadeOut
+                ? wait.Color == FullFadeColor.White ? FullFadeVisibility.White : FullFadeVisibility.Black
+                : FullFadeVisibility.BaseRestored,
                 Period = wait.RestorePeriod ?? display.Period };
-        var story = current.Story.Copy(current.Story.Cursor, wait, display: display,
-            simulationTick: checked(current.Story.SimulationTick + 1));
-        // ExecuteFading honors the current program's enabled entity context; ordinary
-        // ExplorationLoop has the field context installed for both fades.
-        bool entities = wait.Purpose != FullFadePurpose.Script || story.Cursor is not { } cursor ||
-            definition.Exploration!.Programs[cursor.Program].EntitiesRunning;
-        var tick = entities ? EntityActionRunner.Tick(current.Exploration!, storyFlags: story.Flags) : null;
-        story = ExplorationTextRunner.AfterEntities(tick?.World ?? current.Exploration!, story);
-        current = ProgramRunner.Commit(current, tick is null ? current.Active : new ActiveExploration(MapEventDispatcher.Roof(tick.World)),
-            story, observations, "fade-service", wait.Entry.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        if (tick?.Failure is { } failure) throw new FadeServiceFailure(current, failure);
+        current = current.WithStory(current.Story.Copy(current.Story.Cursor, wait, display: display));
+        // Dispatcher already admitted music. Warp fades retain the installed field entity
+        // context; script fades use the current explicit override/program enablement.
+        current = ExplorationDispatcher.Service(definition, current, observations, "fade-service",
+            musicServiced: true, entityEnabled: wait.Purpose == FullFadePurpose.Script ? null : true,
+            detail: wait.Entry.ToString(System.Globalization.CultureInfo.InvariantCulture));
         return FinishFade(current, observations);
     }
 

@@ -605,8 +605,8 @@ area covers the retained player. Player-area and legacy overlay lookup apply onl
 **Confirmed (bounded remake observation):** the representative ordinary native run continues the existing same-session route from Map40 approach
 through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and
 Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify observation only.
-No tick/seed, route endpoint or instruction index controls production legality. White palette services
-and later effects/battle-load/first-battle-input consumers remain unadmitted for bound settings.
+No tick/seed, route endpoint or instruction index controls production legality. Bound white palette
+services follow the rule below; later effects/battle-load/first-battle-input acceptance remains open.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
 and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
 
@@ -629,8 +629,8 @@ identity removal. No new reducer, render smoothing, resource, clock or content l
 
 Ordinary W1 Ack, portrait unregister/close, text close and source Sleep10 precede subsequent target
 installation/motion. Later portrait/text opening and input retain the real before continuation and
-route. Idle input presentation performs no camera service. The next white palette service remains
-`full-black-fade-binding` Unsupported before new palette/helper publication; complete before-body,
+route. Idle input presentation performs no camera service. Bound white palette uses the finite
+service below; complete before-body,
 later effects and battle admission are separate. [Observation](development-and-verification.md#bound-physical-camera-tracking-observation)
 and [contract](../../docs/design/contracts/map-exploration.md#bound-physical-camera-target) own this boundary.
 Independent ordinary native readback reaches tracked motion and three later W1s before the white
@@ -1050,3 +1050,28 @@ accepted W2 requests validation67. Ack, close/Sleep10, follower/position
 instructions and script/Zone return reuse their owners. No production rule names text447, cs-51614
 or a selected seed. [Verification](./development-and-verification.md#modern-finite-music-observation)
 owns behavior cases and the full bounded native JOIN return; full continuous victory/H4 stays open.
+
+### Bound white palette
+
+With validated Display, typed `present` FadeOut/FadeIn resource `white` selects the source map-white
+profile; existing lowering already supplies this cue. `FullFadeWait.Color` distinguishes black and
+white, retaining token, countdown, entry, extra service and logical/actual completion. White uses
+period1, seven base-derived positive offsets, terminator and one extra service, then restores the
+stored period. Base is unchanged; White/BaseRestored/Black visibility is explicit even for endpoint
+color equality. Black temporary overrides remain black-only; FlashWhite/RestorePalette and conflicting
+FullBlack+white remain Unsupported. Starting from settled black/restored/white is valid; invalid or
+transitioning state rejects. Startup JSON still admits only black/base-restored states.
+
+Fade ticks reuse common service with current script EntityServices override, then program default;
+ordinary warp deliberately retains enabled field entities. Existing music runs exactly once, followed
+by entity, view/window and registered portrait. Logical completion suspends service while actual
+delivery finishes; early delivery still waits for all logical work. Late/stale/duplicate receipts add
+no opportunities. Renderer clears inherited black modulation before white and stale white before
+black, preserving the half-second modern delivery and reduced-flash alpha0 policy. Its viewport
+coverage is not source map-only palette pixel equivalence.
+
+The bounded ordinary observation ends at Chester2297 W1 after all six white helpers and their
+intervening source waits. It does not establish the following bound mosaic/shiver, complete before
+body, battle load/input or winning trace. Static consumers exist for those effects; the next genuine
+Unsupported blocker is **Unknown** until observed. See [verification](development-and-verification.md#bound-white-palette-observation)
+and [source/semantic rule](../../docs/design/contracts/map-exploration.md#bound-map-white-finite-service).

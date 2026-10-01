@@ -33,7 +33,9 @@ var choice_following := false
 var choice_draws: Array = []
 var modern_music_case := "modern-music" in input_case
 var before_battle_case := "before-battle" in input_case
-var tracking_case := "before-battle-tracking" in input_case
+var white_palette_completed := false
+var white_palette_case := "before-battle-white" in input_case
+var tracking_case := "before-battle-tracking" in input_case or white_palette_case
 var parallax_case := "field-parallax" in input_case or before_battle_case
 var map_init_case := "map-init" in input_case or parallax_case
 var raw_text_case := "raw-text" in input_case or modern_music_case
@@ -66,6 +68,8 @@ func record_camera_draw() -> void:
             "projection":s.choiceProjection,"hideWindows":s.logicalView.HideWindows})
     var p = s.get("cameraProjection")
     if p == null or s.logicalView == null or p.simulationTick != s.simulationTick or p.token != s.token: return
+    # The white slice retains delivered helper/input projections, not redundant earlier-route draw traces.
+    if white_palette_case and s.fade == null and not s.canWaitForText: return
     var identity := str([s.simulationTick, s.token])
     if camera_draw_seen.has(identity): return
     camera_draw_seen[identity] = true
@@ -249,6 +253,9 @@ func write_settings(path: String) -> bool:
     return true
 
 func run() -> void:
+    if "palette-mixed" in input_case:
+        await run_mixed_palette()
+        return
     if "portrait-event" in input_case:
         await run_portrait_event()
         return
@@ -956,6 +963,7 @@ func run_text_wait() -> void:
     finish_public()
 
 func finish_public() -> void:
+    if white_palette_case: check(white_palette_completed, "Declared white palette route reached Chester W1")
     if choice_case and choice_exercised:
         for phase in [1,2,3,4,5]:
             check(choice_draws.any(func(d): return d.choice.Work.Phase == phase),
@@ -1202,9 +1210,15 @@ func before_battle_tracking(entry: Dictionary) -> void:
     var moved := false
     var scrolled := false
     var closed := false
-    for frame in range(2500):
+    var fades: Dictionary = {}
+    var receipts: Dictionary = {}
+    var positive_white := false
+    for frame in range(4000 if white_palette_case else 2500):
         var s := state()
         if s.failure != null:
+            if white_palette_case:
+                read_sample("white-unexpected-failure")
+                return
             samples.append({"label":"tracking-white-boundary", "state":s})
             check(s.failure == "full-black-fade-binding" and s.failureKind == "UnsupportedCapability" and
                 s.display == entry.display and s.fade == null and s.presentation.whiteOpacity == 0,
@@ -1217,6 +1231,28 @@ func before_battle_tracking(entry: Dictionary) -> void:
             physical(KEY_ENTER, false)
             check(opening_semantic(state()) == held, "Unsupported boundary stays stopped under idle and input")
             return
+        if white_palette_case:
+            if s.fade != null and s.fade.Color == 1:
+                fades[s.token] = s.fade.Kind
+                check(s.fade.Period == 1 and s.display.Base == entry.display.Base and not s.canWaitAtInput,
+                    "White helper retains base and source temporary period with control held")
+                positive_white = positive_white or s.presentation.whiteOpacity > 0.05
+                check(s.presentation.paletteBrightness == 1, "White overlay is not suppressed by parent modulation")
+            if s.presentation.completedCueToken != null and fades.has(s.presentation.completedCueToken):
+                receipts[s.presentation.completedCueToken] = s.presentation.completedCueKind
+            if s.canWaitForText and int(s.textId) == 2297:
+                white_palette_completed = true
+                read_sample("white-chester2297-input")
+                check(inputs == [2294,2295,2296] and fades.size() == 6 and receipts.size() == 6 and positive_white,
+                    "Ordinary route delivered and completed six white helpers before Chester W1")
+                check(s.display.Current == s.display.Base and s.display.Period == entry.display.Period and
+                    s.presentation.whiteOpacity == 0 and s.presentation.paletteBrightness == 1 and
+                    s.portraitWork.Registered and s.cameraProjection.actors.size() > 0 and
+                    not s.battleMounted and not s.flags.has(451.0), "White restoration precedes real Chester portrait/input without early battle")
+                var held := opening_semantic(s)
+                for idle_frame in range(3): await process_frame
+                check(opening_semantic(state()) == held and state().tickDebt == 0, "Chester input remains held without debt")
+                return
         check(s.continuation == entry.continuation and s.enteringBattle == entry.enteringBattle and
             s.callers == entry.callers and s.eventCaller == null and not s.canWaitAtInput,
             "Tracked before body retains real route/callers and excludes field control")
@@ -1940,4 +1976,74 @@ func run_warp_transition() -> void:
     if "failure" not in input_case:
         check(saw_in and saw_destination_black, "Destination is mounted black and actually faded visible")
         check(state().presentation.paletteFades == 2, "Exactly one FadeOut and one FadeIn, including onLoad restoration")
+    finish_public()
+
+
+# Authored startup content, ordinary Main admission; no live-state injection.
+func run_mixed_palette() -> void:
+    if not admit_field_paths(): return
+    root.size = Vector2i(960, 640)
+    var package: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    var pair := {"color2":3616,"color3":590}
+    package.start.display = {"period":3,"base":pair,"current":pair,"visibility":"base-restored"}
+    package.start.program = {"program":"palette-mixed","instruction":0}
+    var sequence := [["FadeOut","black"],["FadeIn","white"],["FadeOut","black"],
+        ["FadeOut","white"],["FadeOut","white"],["FadeIn","white"],
+        ["FadeIn","black"],["FadeOut","white"],["FadeOut","black"],["FadeIn","white"],["FadeOut","black"],["FadeIn","black"]]
+    var instructions: Array = []
+    for cue in sequence:
+        instructions.append({"op":"present","kind":cue[0],"resource":cue[1],"entity":null,"position":null})
+        instructions.append({"op":"wait-ticks","ticks":2})
+    instructions.append({"op":"end"})
+    package.world.programs.append({"id":"palette-mixed","entitiesRunning":true,"instructions":instructions})
+    for map in package.world.maps:
+        map.battle = null
+        map.onLoad = null
+        map.events = []
+    if not write_field_file("package", JSON.stringify(integer_numbers(package))): return
+    if not write_settings(field_paths.settings): return
+    field_main_started = true
+    host = (load("res://Main.tscn") as PackedScene).instantiate()
+    root.add_child(host)
+    await process_frame
+    root.grab_focus()
+    var seen: Dictionary = {}
+    var completed: Dictionary = {}
+    var previous: Dictionary = {}
+    var white_delivery := false
+    var black_delivery := false
+    for frame in range(1800):
+        await process_frame
+        var s := state()
+        if s.failure != null:
+            read_sample("mixed-failure")
+            finish_public()
+            return
+        if s.fade != null:
+            seen[s.token] = s.fade.Color
+            var overlay := view.get_node("WhiteFade") as ColorRect
+            check(is_equal_approx(overlay.modulate.a, 1) and is_equal_approx(overlay.get_parent().modulate.r, s.presentation.paletteBrightness),
+                "Actual overlay and parent agree with projection readback")
+            if s.fade.Color == 1:
+                if previous.get("token") == s.token: check(s.presentation.paletteBrightness == 1, "White clears inherited parent black")
+                if remapped: check(s.presentation.whiteOpacity == 0, "Reduced flash suppresses white alpha")
+                else: white_delivery = white_delivery or s.presentation.whiteOpacity > 0.1
+            else:
+                if previous.get("token") == s.token: check(s.presentation.whiteOpacity == 0, "Black clears stale white overlay")
+                black_delivery = black_delivery or s.presentation.paletteBrightness == 0
+            if previous.get("token") != s.token:
+                read_sample("mixed-cue-start-" + str(seen.size()))
+        if s.presentation.completedCueToken != null and seen.has(s.presentation.completedCueToken):
+            completed[s.presentation.completedCueToken] = true
+        if s.canWaitAtInput:
+            read_sample("mixed-final-input")
+            check(seen.size() == sequence.size() and completed.size() == sequence.size() and black_delivery and (remapped or white_delivery),
+                "Every mixed palette token delivers and completes before actual input")
+            check(s.presentation.whiteOpacity == 0 and s.presentation.paletteBrightness == 1 and
+                s.display.Current == s.display.Base and s.display.Period == 3,
+                "Mixed palette final restoration retains period and clears both overlays")
+            finish_public()
+            return
+        previous = s
+    check(false, "Mixed palette observation reached its bounded input")
     finish_public()

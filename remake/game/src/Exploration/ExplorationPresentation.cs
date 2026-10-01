@@ -132,7 +132,7 @@ internal sealed class ExplorationPresentation : IDisposable
             }
             var wait = current.Story.Wait switch
             {
-                FullFadeWait fade => new PresentationWait(fade.Token, new(fade.Kind, "black")),
+                FullFadeWait fade => new PresentationWait(fade.Token, new(fade.Kind, fade.Color == FullFadeColor.White ? "white" : "black")),
                 PresentationWait presenting => presenting,
                 _ => null,
             };
@@ -150,11 +150,15 @@ internal sealed class ExplorationPresentation : IDisposable
                     if (wait.Cue.Resource is not ("black" or "white")) throw new InvalidOperationException("fade-binding");
                     if (wait.Cue.Resource == "black")
                     {
+                        _white.Color = new Color(1, 1, 1, 0);
                         if (wait.Cue.Kind == PresentationCueKind.FadeIn) _owner.Modulate = Colors.Black;
                         _fadeStart = _owner.Modulate.R;
                     }
                     else
                     {
+                        // White is an independent modern overlay. Clear inherited black modulation
+                        // so both white directions can deliver and restore from a settled black state.
+                        _owner.Modulate = Colors.White;
                         _white.Color = new Color(1, 1, 1, !_reducedFlash && wait.Cue.Kind == PresentationCueKind.FadeIn ? 1 : 0);
                         if (_reducedFlash) SuppressedWhiteCues++;
                     }
