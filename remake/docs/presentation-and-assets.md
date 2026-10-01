@@ -1491,3 +1491,14 @@ Absence of a random call alone does not prove natural reach or interrupt parity.
 broader scratch effects and hardware audio. Normal/reduced native equality establishes only the
 bounded modern consumer. Option A, the retained HEAL CP2059–2091 recovery mismatch and 8D/H4 remain
 open. No logical padding, reseeding or fitting to retained79 receipt counts is part of movement.
+
+## Bound before-battle scene presentation
+
+Closed-window bound scene loading admits the settled black fade/load/fade domain. It replaces the
+map's logical base pair and retains black Current until actual fade service restores colors.
+Map57 uses the existing map atlas/blocks and source135 sprite209/portrait31 bindings; the narrow
+palette producer supplies its missing base pair in a fresh private start. Other start/world/party/
+asset/music inputs remain unchanged. Explicit scene origin selects the area's main-plane camera;
+entity replacement does not re-center. Actual text/portrait projection and input delivery use the
+ordinary adapter. Camera-entity and later full bound battle presentation remain outside admission.
+[Behavior/limits](exploration-programs.md#bound-before-battle-scene-and-windows).

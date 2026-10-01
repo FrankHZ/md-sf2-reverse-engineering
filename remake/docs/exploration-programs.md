@@ -456,8 +456,8 @@ without a duplicate foreground. The field profile also admits main-plane unity/o
 per-axis128/256 parallax, offsets0–63 and zero autoscroll within nonnegative signed-word positions.
 Initialization quantizes before scaling/offset; destination and speed transforms preserve independent
 axes. Ordinary actors subtract the area main plane; entity Layer still controls window priority.
-Foreground presence includes parallax differences. Other profiles, before-battle/outcome
-bound windows, camera-entity and scene-map commands retain their explicit limits.
+Foreground presence includes parallax differences. Other view profiles, outcome windows and camera-entity retain their explicit limits.
+Before-battle scene/windows use the separate bounded lifecycle below.
 [Source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
 
 Actual engine cases cover nested camera and open/closed text returns, portrait registration/close,
@@ -569,6 +569,36 @@ RNG remains unbound. Original VRAM/DMA timing, speech SFX, door/warp music
 and fade fidelity, waveform/tempo and hardware frame equivalence remain **Unknown or Unsupported**.
 They are not silently reported as performed original services. An unbound explicit presentation cue
 reports `AdapterError` and retains its wait.
+
+### Bound before-battle scene and windows
+
+A real `BeforeBattleFinished`/`EnteringBattle` program with bound text/view state, no event caller
+and a live cursor can use ordinary explicit portrait/text/view services. This retains actual
+nested callers, route and source text cursor; text Wait/Ack requires logical input and completed
+delivery, while field movement remains closed. Nested `end-map-script` retains the real
+continuation rather than manufacturing field input. Legacy and outcome contexts gain no admission.
+
+Explicit black FadeOut/FadeIn cues without a period override use validated Display.Period;
+supplied nonzero overrides restore the prior period after completion. csc37 and ordinary black
+helpers share the existing finite fade service, without a new clock or input rewrite.
+
+Bound `scene-map` requires settled closed windows, no ordinary warp, a valid target base palette,
+a settled black current display and the accepted view profile. Its explicit camera origin selects
+the target area and independently transforms A/B; following and scroll speeds/mask clear, but the
+source follow counter and entity service policy remain. Window state clears without resetting
+party/RNG/music/callers or invoking OnLoad. Base changes while black Current remains unchanged;
+only the later real fade restores new colors. Visible/transitioning/open-window/missing-palette
+loads reject before any replacement. This restriction is a remake representation boundary,
+not a statement about original visible csc48 behavior. Separate `scene-entities` replaces physical
+aliases and mounts sprites without re-centering or reattaching the camera.
+
+**Confirmed (bounded remake observation):** the representative ordinary native run continues the existing same-session route from Map40 approach
+through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and
+Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify observation only.
+No tick/seed, route endpoint or instruction index controls production legality. Camera-entity135
+and later before-body/battle-load/first-battle-input consumers remain unadmitted for bound settings.
+The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
+and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
 
 ## Battle01 admission and first input
 

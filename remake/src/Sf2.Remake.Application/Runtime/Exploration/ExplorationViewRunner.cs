@@ -43,6 +43,21 @@ internal static class ExplorationViewRunner
             throw new BattleRuleException("field-view-profile", "map.view", true);
     }
 
+    internal static LogicalView LoadScene(ExplorationState world, MapPosition origin, LogicalView previous)
+    {
+        // csc48 passes an explicit origin in eight-pixel units to LoadMap. Area
+        // selection uses that origin, independently of the retained player slot.
+        int x = origin.X * 384, y = origin.Y * 384;
+        var area = world.Definition.ViewAreas.FirstOrDefault(area =>
+            x >= area.MinX * 384 && x <= area.MaxX * 384 && y >= area.MinY * 384 && y <= area.MaxY * 384)
+            ?? throw new BattleRuleException("field-view-area", "program.map", true);
+        Validate(area);
+        // LoadMap clears speeds and scrolling bits, not word_FFA828. Destination
+        // words are unconsumed after their bits clear; csc48 has detached following.
+        return new(area, null, new(Plane(x, area.ParallaxAX, area.ForegroundX)), new(Plane(y, area.ParallaxAY, area.ForegroundY)),
+            new(Plane(x, area.ParallaxBX, area.BackgroundX)), new(Plane(y, area.ParallaxBY, area.BackgroundY)), previous.FollowCounter);
+    }
+
     // Source uses unsigned multiply, shift, then the independent layer origin.
     // Keep the admitted domain below signed-word wrap for both current and destination axes.
     private static int Plane(int position, int parallax, int offset)

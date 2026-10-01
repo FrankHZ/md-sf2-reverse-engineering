@@ -2898,3 +2898,31 @@ window priority; verify stable input and carried party/RNG. Engine cases belong 
 Scene-map, camera-entity and bound before-battle windows remain outside this acceptance. Record the
 committed default planner and any engine-scope refusal; the shared contract alone does not authorize
 local normal/full/H3. Preserve completed failure records and obtain independent main-gate review.
+
+## Bound before-battle windows observation
+
+Load current private/tool selections and the locked SDK environment. Reuse the accepted private
+world, party, assets, music, owned installation/project and existing observer/navigation. Produce
+only Map57 palette metadata with `selected_map_palette_bindings` into a fresh ignored start;
+removing that one binding must leave the accepted field-parallax start directly equal. Verify
+existing Map57 atlas, sprite209/portrait31 and texts2292/2293; no general export is needed.
+
+Run affected `BattleEntryProgramTests` and `ExplorationTextWaitTests`, `uv run sf2 verify adapter`,
+a controlled Debug host build and `uv run sf2 design-contracts test`. One representative ordinary case
+is `portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-before-battle`.
+The retained wrapper is `local/issue534/before-battle-windows/run-native.py native-new instant 1 40 yes modern-music-before-battle`.
+Earlier opening/palace/tower/parallax steps are setup for this same session. Continue the final
+player-ready fixture Up; inspect actual scene/palette/entity readiness/main camera/portrait/text,
+real BeforeBattleFinished/EnteringBattle/callers, ordinary W2 confirm and next W1 readiness.
+Stop observation at that genuine input wait. No forced PC, injected seed/party/capture or screenshots.
+Camera-entity/later entry stay Unsupported. Record committed default planner and actual CI;
+shared contract prose alone does not require local normal/full/H3. Preserve completed failures.
+
+**Confirmed (remake observation):** the retained `native-03` representative instant run exits0/PASS
+with empty failure/Unavailable lists and1,552 samples. Actual Main input crosses2292 W2 confirmation
+to2293 W1 readiness in the original opening session; Map57 tiles/actors, explicit main camera,
+restored base/current palette, real135 sprite/portrait and BeforeBattleFinished/route/callers are
+read from the running adapter. The observer stops at ordinary input without reaching camera-entity.
+The preceding failed/default-fade and incorrect-case runs, cursor-replay behavior failure, fixture
+construction and readback inspector failures remain in the ignored owning handoff. Older acceptance
+and original/H4/HEAL/provenance/warp/cleanup Unknowns are retained; original runtime delta0.
