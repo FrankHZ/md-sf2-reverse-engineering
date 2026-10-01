@@ -1505,8 +1505,8 @@ Actual text/portrait projection and input delivery use the
 ordinary adapter. Bound physical target installation reuses this projection and the existing common
 service; no player recentering or render smoothing is added. Valid invisible allocated targets remain
 physical camera targets. Actual target movement precedes view/window/portrait service; idle input
-presentation performs no such service. Bound white uses the finite helper projection below; later
-full bound battle presentation remains outside acceptance. [Tracking rule](exploration-programs.md#bound-physical-camera-tracking).
+presentation performs no such service. Bound white uses the finite helper projection below;
+bound effects/first-input acceptance is described below. Later battle/return families remain open. [Tracking rule](exploration-programs.md#bound-physical-camera-tracking).
 [Behavior/limits](exploration-programs.md#bound-before-battle-scene-and-windows).
 
 ### Bound white palette projection
@@ -1526,3 +1526,18 @@ remain Unknown. Bound fade opportunities now use the existing live entity→view
 portrait service with explicit script enablement and one modern music admission; renderer duration
 never supplies another service. [Behavior](exploration-programs.md#bound-white-palette),
 [verification](development-and-verification.md#bound-white-palette-observation).
+
+### Bound generic effects and battle-loader facade
+
+The existing mosaic/shiver renderer consumes the same effect tokens and restores engine fields on
+actual completion. Bound generic presentation waits suspend logical services and actual delivery
+while hidden/unfocused; the host clears debt and resumes with zero delta. The retained profile also
+suspends the battle loader's modern delivery-only fades. No extra presentation clock is introduced.
+
+Field palette helpers require an active exploration world. After initialization, retained field
+Display and frozen LogicalView serve the old-scene facade without driving field services. Existing
+black out → BattleLoad mount → black in remains a modern delivery-only sequence; matching completion
+precedes start/first input. It does not claim original LoadBattle callback opportunities or hardware
+palette pixels. Asset bindings, source null detach/post-load wait, viewport approximation and inputs
+remain unchanged. [Execution](exploration-programs.md#bound-before-body-and-battle-entry),
+[observation](development-and-verification.md#bound-before-body-and-battle-entry-observation).

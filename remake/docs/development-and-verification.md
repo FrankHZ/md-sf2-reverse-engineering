@@ -3035,5 +3035,49 @@ projection after that initial handoff. No source export or second clock is invol
 Keep every native output variant, command, process exit and exact failure in fresh ignored
 `local/issue534/bound-white-palette/`; a green report on a different branch of the route is not this
 acceptance. The older tracking native01 raw FAIL/semantic readback PASS/corrected observer NOT RUN
-remains unchanged. Later genuine blocker, bound mosaic/shiver, full entry/winning and executable H4
+remains unchanged. The bound mosaic/shiver and first-input continuation is described below; winning and executable H4
 applicability remain open; persistent source-fidelity failures and Unknowns are not waived.
+
+## Bound before-body and battle-entry observation
+
+Run focused `BattleEntryProgramTests` through the protected SDK environment, affected
+`uv run sf2 verify adapter`, a controlled Debug adapter build and `uv run sf2 design-contracts test`.
+Engine cases cover genuine before-context completion, bound/unbound profiles, varied valid palette
+words/periods/seeds/accounting/flags, all loader receipts and first Confirm/Cancel. Wrong/stale receipts
+and explicit field-only FullBlack outside exploration reject without partial publication. Existing
+field helper behaviors remain selected. Review the default planner on clean committed HEAD and actual
+CI under current engine scope; no normal/full/H3 or legacy aggregate follows from this slice.
+
+The existing native case adds suffix `modern-music-before-battle-white-entry` to the ordinary
+portrait/event/zone/nod/camera/choice-yes private instant route. Load the same ignored environment and
+use `local/issue534/bound-battle-entry/run-native.py native-new instant 1 40 yes modern-music-before-battle-white-entry`.
+It uses unchanged retained world-post-load/start and normal60 FPS, real inputs through accepted
+Chester W1, remaining windows, physical mosaic, five shivers, joins and script return, then the real
+battle load/start and first Movement → Confirm/ActionChoice → Cancel/Movement. Stop without committing
+an action or turn. During a generic effect hide/show the owned view once and read state/RNG/token,
+actual delivery and debt to establish pause/resume. Read existing state/input/projection/errors,
+never screenshots or injected/reseeded checkpoints. Retain only bounded generic-token projections
+plus delivery/input/mount states to avoid the preserved oversized-output failure.
+
+Keep exact tested probe/wrapper, logs, process result and actual JSON in fresh ignored
+`local/issue534/bound-battle-entry/`. Compare prior accepted checkpoints directly; later RNG is a new
+observation, not an invented original target. A genuine missing capability stops for allocation.
+PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
+is zero. Full combat/winning, executable H4 policy cutover and later bound return families remain open.
+
+**Confirmed (bounded remake):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
+script/process errors. It delivers one mosaic and five shiver tokens, restores sprite-size24 and
+physical128's animation counter, projects remaining text2298..2304, six positioned/scripted entities,
+and black out/mount/in through first actual Movement/Confirm/Cancel. One hidden mosaic interval
+retains tick14931/main3361406976/token and zero debt, then resumes without catch-up. The loader keeps
+logical tick15929 and the frozen field facade; first round selects ally2 with main1151074304 and
+gold60 under existing initialization/queue rules. These are observations, never legality constants
+or claimed original targets. Six prior accepted checkpoints, including Chester, are unchanged;
+the old2293 inspector omitted derived PalettePair.White metadata, so comparison normalizes only that
+previously omitted derived field. The owning handoff retains exact token/draw/party readbacks.
+
+`ordinary-normal-01` reached the same semantic endpoint with report PASS/exit0 but six script errors
+in two old draw hooks after mode handoff; it is not clean native acceptance. Guards now stop field
+hooks on a battle observation. The original log/report and first inspector's derived-metadata
+comparison failure are preserved, as are initial test CS1501, two test-setup NullReference failures and nullable-assertion CS1503.
+Focused corrected engine selection passes51; those corrections did not broaden the verification scope.

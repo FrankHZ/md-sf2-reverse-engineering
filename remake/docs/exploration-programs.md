@@ -606,7 +606,7 @@ area covers the retained player. Player-area and legacy overlay lookup apply onl
 through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and
 Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify observation only.
 No tick/seed, route endpoint or instruction index controls production legality. Bound white palette
-services follow the rule below; later effects/battle-load/first-battle-input acceptance remains open.
+services follow the rule below; the bound before-body/first-input acceptance is described below.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
 and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
 
@@ -1070,8 +1070,24 @@ no opportunities. Renderer clears inherited black modulation before white and st
 black, preserving the half-second modern delivery and reduced-flash alpha0 policy. Its viewport
 coverage is not source map-only palette pixel equivalence.
 
-The bounded ordinary observation ends at Chester2297 W1 after all six white helpers and their
+The white-helper observation ends at Chester2297 W1 after all six white helpers and their
 intervening source waits. It does not establish the following bound mosaic/shiver, complete before
-body, battle load/input or winning trace. Static consumers exist for those effects; the next genuine
+body, battle load/input or winning trace. The bound continuation is described below; the next genuine
 Unsupported blocker is **Unknown** until observed. See [verification](development-and-verification.md#bound-white-palette-observation)
 and [source/semantic rule](../../docs/design/contracts/map-exploration.md#bound-map-white-finite-service).
+
+### Bound before-body and battle entry
+
+Field palette routing checks `ActiveExploration`, not merely retained Display. After the genuine
+before-context completes, BattleEntry initializes `ActiveBattle`; its unprofiled black loader cues
+use the existing `PresentationWait` modern delivery lifetime. Matching receipts keep the battle state
+and frozen field Display/view/settings; they add no field opportunity. Explicit FullBlack in a
+non-field context rejects as `full-fade-context` before helper publication. The old scene facade
+remains available until the existing mount and handoff. Load/start/intro ordering and first queue
+remain owned by BattleEntry and BattleTurnFlow.
+
+Bound generic `PresentationWait`, including mosaic/shiver and retained-profile loader delivery,
+now uses the existing visibility/focus suspension and zero-debt resume. Effect completion/restoration
+and unbound/music policy are unchanged. The [contract](../../docs/design/contracts/map-exploration.md#bound-before-body-and-battle-loader-ownership)
+distinguishes this modern loader policy from original LoadBattle opportunities. **Confirmed (bounded remake):** the ordinary full bound
+before-body and first-input observation passes through the [verification route](development-and-verification.md#bound-before-body-and-battle-entry-observation).

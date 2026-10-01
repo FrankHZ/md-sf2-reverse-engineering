@@ -1063,3 +1063,26 @@ and reduced-flash policies. Its parent modulation and stale opposite overlay MUS
 entering each color service. Whole-viewport coverage is an intentional approximation to source
 map-palette-only selection; sprite/window palette pixels and original VDP composition are unclaimed.
 No scenario, text ID, tick/seed or instruction endpoint determines gameplay legality.
+
+### Bound before-body and battle-loader ownership
+
+**Confirmed (static original structure):** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, `code/gameflow/battle/battleloop_1.asm`, runs
+`ExecuteBeforeBattleCutscene` before initialization and `LoadBattle`. `loadBattle.asm` starts
+`FadeOutToBlackAll`, detaches the view target, waits for completion, replaces contextual VInts and
+loads the battle scene. `explorationfunctions_2.asm:FadeOutToBlackAll` disables scrolling-data service;
+`WaitForFadeToFinish` waits on the fade setting. This is distinct from the script `ExecuteFading`
+extra-service profile. Original callback opportunities and presentation cadence remain **Unknown**.
+
+**Accepted remake policy:** logical field palette helpers MUST require an active exploration world.
+Retained field Display/settings/view alone MUST NOT select field services after battle initialization.
+Unprofiled battle-loader black out/in use the existing modern delivery-only presentation service;
+matching receipts preserve battle actors/resources/RNG and do not publish an exploration world or
+perform field entity/view/window/portrait services. Explicit field-only FullBlack outside exploration
+MUST reject before helper publication. Persistent field settings and frozen old-view projection remain
+available to the loader facade and future return; no second mutable field world or palette clock is
+required. Load/start/intro and first input retain their existing ordering owners.
+
+Bound generic presentation effects and loader deliveries MUST suspend with the existing host
+focus/visibility rule, discard paused debt and resume without catch-up. Unbound and music policies
+retain their existing owners. Mosaic/shiver continue through their actual delivery and restoration;
+this does not establish source DMA/pixels, original opportunities or full winning/H4 acceptance.
