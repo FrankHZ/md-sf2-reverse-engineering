@@ -190,14 +190,16 @@ public sealed class BattleEntryProgramTests
     }
 
     [Fact]
-    public void BoundCameraTrackingRetainsWhiteFadeRejectionBeforePalettePublication()
+    public void BoundCameraTrackingRejectsUnadmittedPaletteAndConflictingWhiteProfileBeforePublication()
     {
-        var session = CameraSession("ferryman", whiteFade: true);
+        var session = CameraSession("ferryman", unsupportedPalette: true);
         var entry = session.Current;
         var display = new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored);
         var bound = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("tracking", 0), display: display)), []);
         Assert.Null(bound.Failure);
         var before = bound.Snapshot;
+        // Validate the conflicting command directly: published camera/timer state is retained.
+        Assert.Throws<BattleRuleException>(() => MapTransfer.ValidateCue(new(PresentationCueKind.FadeOut, "white", FullBlack: new(1))));
         var result = ExplorationDispatcher.Submit(session.Definition, before, new AdvanceSimulation(before.Story.Wait!.Token));
         Assert.Equal("full-black-fade-binding", result.Failure!.Code);
         Assert.IsNotType<FullFadeWait>(result.Snapshot.Story.Wait);
@@ -205,12 +207,167 @@ public sealed class BattleEntryProgramTests
         Assert.Equal(entry.Exploration!.Entities[new("ferryman")].Slot, result.Snapshot.Story.LogicalView!.TargetSlot);
     }
 
-    private static GameSession CameraSession(string? target, bool whiteFade = false) => ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+
+    private static (GameSession Session, SessionSnapshot Started) WhiteStart(PresentationCueKind kind,
+        PalettePair basis, FullFadeVisibility visibility = FullFadeVisibility.BaseRestored, byte period = 3,
+        bool programEnabled = false, bool? entityOverride = null)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", enabled: programEnabled, npcRandom: true,
+            configure: document => document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse(
+                """[{"op":"present","kind":"FadeOut","resource":"white","entity":null,"position":null},{"op":"wait-ticks","ticks":1},{"op":"end"}]"""));
+        var current = visibility == FullFadeVisibility.Black ? new PalettePair(0, 0) :
+            visibility == FullFadeVisibility.White ? new PalettePair(0xEEE, 0xEEE) : basis;
+        var entry = session.Current;
+        var story = entry.Story.Copy(new("invitation", 0), display: new(period, basis, current, visibility),
+            entityServices: entityOverride);
+        var started = MapTransfer.BeginFade(entry, story, kind, FullFadePurpose.Script, null, [], FullFadeColor.White);
+        return (session, started);
+    }
+
+    [Theory]
+    [InlineData(PresentationCueKind.FadeOut, FullFadeVisibility.Black, 0, 14)]
+    [InlineData(PresentationCueKind.FadeOut, FullFadeVisibility.BaseRestored, 0xE20, 0x24E)]
+    [InlineData(PresentationCueKind.FadeOut, FullFadeVisibility.BaseRestored, 0xEEE, 0xEEE)]
+    [InlineData(PresentationCueKind.FadeIn, FullFadeVisibility.White, 0xE20, 0x24E)]
+    [InlineData(PresentationCueKind.FadeIn, FullFadeVisibility.Black, 0, 0)]
+    [InlineData(PresentationCueKind.FadeOut, FullFadeVisibility.White, 0, 0)]
+    public void BoundWhiteFadeUsesBaseOffsetsTerminatorExtraServiceAndPeriodRestoration(
+        PresentationCueKind kind, FullFadeVisibility visibility, int a, int b)
+    {
+        var basis = new PalettePair((ushort)a, (ushort)b);
+        var (session, current) = WhiteStart(kind, basis, visibility, 17);
+        var wait = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        Assert.Equal(FullFadeColor.White, wait.Color);
+        Assert.Equal(1, wait.Period);
+        Assert.Equal(FullFadeVisibility.Transitioning, current.Story.Display!.Visibility);
+        ushort Color(ushort word, int offset) => (ushort)(Math.Clamp((word & 14) + offset * 2, 0, 14) |
+            Math.Clamp(((word >> 4) & 14) + offset * 2, 0, 14) << 4 |
+            Math.Clamp(((word >> 8) & 14) + offset * 2, 0, 14) << 8);
+        long tick = current.Story.SimulationTick;
+        for (int entry = 0; entry < 9; entry++)
+        {
+            var result = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(wait.Token));
+            Assert.Null(result.Failure); current = result.Snapshot;
+            wait = Assert.IsType<FullFadeWait>(current.Story.Wait);
+            Assert.Same(basis, current.Story.Display!.Base);
+            if (entry < 7)
+            {
+                int offset = kind == PresentationCueKind.FadeIn ? 6 - entry : entry + 1;
+                Assert.Equal(new PalettePair(Color(basis.Color2, offset), Color(basis.Color3, offset)), current.Story.Display.Current);
+            }
+            Assert.Equal(entry == 8, wait.LogicalDone);
+            Assert.Equal(entry == 8 ? 17 : 1, current.Story.Display.Period);
+            Assert.Equal(tick + entry + 1, current.Story.SimulationTick);
+        }
+        Assert.Equal(kind == PresentationCueKind.FadeOut ? FullFadeVisibility.White : FullFadeVisibility.BaseRestored,
+            current.Story.Display!.Visibility);
+        var held = current;
+        var rejected = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(wait.Token));
+        Assert.Equal("fade-awaiting-presentation", rejected.Failure!.Code);
+        Assert.Equal(held.Story, rejected.Snapshot.Story);
+        var completed = ExplorationDispatcher.Submit(session.Definition, current, new CompletePresentation(wait.Token, kind));
+        Assert.Null(completed.Failure);
+        Assert.Equal(held.Story.SimulationTick, completed.Snapshot.Story.SimulationTick);
+        Assert.Equal(held.Exploration!.Party, completed.Snapshot.Exploration!.Party);
+        Assert.IsType<TickWait>(completed.Snapshot.Story.Wait);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BoundWhiteFadeEarlyReceiptAndBatchHaveIdenticalServices(bool early)
+    {
+        var (session, start) = WhiteStart(PresentationCueKind.FadeOut, new(0xE20, 0x24E));
+        var wait = (FullFadeWait)start.Story.Wait!;
+        if (early) start = ExplorationDispatcher.Submit(session.Definition, start,
+            new CompletePresentation(wait.Token, wait.Kind)).Snapshot;
+        var batched = ExplorationDispatcher.Submit(session.Definition, start, new AdvanceSimulation(wait.Token, 600));
+        Assert.Null(batched.Failure);
+        var single = start;
+        for (int i = 0; i < 9; i++) single = ExplorationDispatcher.Submit(session.Definition, single,
+            new AdvanceSimulation(wait.Token)).Snapshot;
+        Assert.Equal(single.Story.SimulationTick, batched.Snapshot.Story.SimulationTick);
+        Assert.Equal(single.Story.Display, batched.Snapshot.Story.Display);
+        Assert.Equal(single.Exploration!.Party, batched.Snapshot.Exploration!.Party);
+        Assert.Equal(single.Story.Wait, batched.Snapshot.Story.Wait);
+        var stale = ExplorationDispatcher.Submit(session.Definition, start,
+            new CompletePresentation(new(wait.Token.Value + 100), wait.Kind));
+        Assert.Equal("stale-or-wrong-presentation", stale.Failure!.Code);
+        Assert.Equal(start.Story, stale.Snapshot.Story);
+        var wrong = ExplorationDispatcher.Submit(session.Definition, start,
+            new CompletePresentation(wait.Token, PresentationCueKind.FadeIn));
+        Assert.Equal("stale-or-wrong-presentation", wrong.Failure!.Code);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void BoundWhiteFadeHonorsEntityOverrideAndRegisteredPortrait(bool programEnabled, bool enabled)
+    {
+        var (session, current) = WhiteStart(PresentationCueKind.FadeOut, new(0, 14),
+            programEnabled: programEnabled, entityOverride: enabled);
+        var work = new PortraitWork(Blink: 4, Registered: true, Moving: true, Movement: 0);
+        current = current.WithStory(current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            portraitWindow: new OpenPortraitWindow(1, 0, work),
+            logicalText: current.Story.LogicalText! with { Open = true, Moving = true, AnimationLength = 4, AnimationCounter = 0 }));
+        var before = current;
+        var result = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(current.Story.Wait!.Token));
+        Assert.Null(result.Failure); current = result.Snapshot;
+        var serviced = Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!;
+        Assert.Equal(3, serviced.Blink);
+        Assert.True(serviced.EyesClosed);
+        Assert.True(serviced.Movement > work.Movement);
+        Assert.True(current.Story.LogicalText!.AnimationCounter > 0);
+        Assert.Equal(enabled, current.Exploration!.Party.MainSeed != before.Exploration!.Party.MainSeed);
+        Assert.Equal(before.Story.SimulationTick + 1, current.Story.SimulationTick);
+    }
+
+    [Fact]
+    public void BoundWhiteFadeTracksLiveMotionThroughTheCommonViewService()
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", enabled: true, configure: document =>
+        {
+            document["world"]!["maps"]![0]!["entities"]![0]!["actions"] = JsonNode.Parse(
+                """[{"op":"move","x":0,"y":4,"wait":true},{"op":"idle"}]""");
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse(
+                """[{"op":"camera-entity","entity":"ferryman"},{"op":"present","kind":"FadeOut","resource":"white","entity":null,"position":null},{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+        });
+        var entry = session.Current;
+        var start = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("invitation", 0),
+            display: new(3, new(0, 14), new(0, 14), FullFadeVisibility.BaseRestored),
+            logicalView: entry.Story.LogicalView! with { AY = new(16128, null, 24), BY = new(3840, null, 24) })), []);
+        Assert.Null(start.Failure);
+        var current = start.Snapshot;
+        var actor = current.Exploration!.Entities[new("ferryman")];
+        Assert.Equal(actor.Slot, current.Story.LogicalView!.TargetSlot);
+        var view = current.Story.LogicalView;
+        var wait = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        var result = ExplorationDispatcher.Submit(session.Definition, current, new AdvanceSimulation(wait.Token, 9));
+        Assert.Null(result.Failure);
+        current = result.Snapshot;
+        Assert.NotEqual(actor.Motion.Y, current.Exploration!.Entities[new("ferryman")].Motion.Y);
+        Assert.NotEqual(view.AY.Position, current.Story.LogicalView!.AY.Position);
+        Assert.Equal(actor.Slot, current.Story.LogicalView.TargetSlot);
+        Assert.Equal(9, current.Story.SimulationTick - start.Snapshot.Story.SimulationTick);
+    }
+
+    [Fact]
+    public void BoundWhiteFadeRejectsInvalidStateWithoutPublication()
+    {
+        var (session, start) = WhiteStart(PresentationCueKind.FadeOut, new(0, 14));
+        Assert.Throws<BattleRuleException>(() => MapTransfer.BeginFade(start, start.Story,
+            PresentationCueKind.FadeIn, FullFadePurpose.Script, null, [], FullFadeColor.White));
+        foreach (var cue in new[] { new PresentCue(PresentationCueKind.FadeIn, "white", FullBlack: new(1)),
+            new PresentCue(PresentationCueKind.FlashWhite, "white"), new PresentCue(PresentationCueKind.RestorePalette, "white") })
+            Assert.Throws<BattleRuleException>(() => MapTransfer.ValidateCue(cue));
+    }
+
+    private static GameSession CameraSession(string? target, bool unsupportedPalette = false) => ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
     {
         document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
         var program = JsonNode.Parse("""{"id":"tracking","instructions":[{"op":"camera-entity","entity":null},{"op":"wait-ticks","ticks":1},{"op":"end"}]}""")!;
         program["instructions"]![0]!["entity"] = target;
-        if (whiteFade) program["instructions"]!.AsArray().Insert(2, JsonNode.Parse("""{"op":"present","kind":"FadeOut","resource":"white","entity":null,"position":null}"""));
+        if (unsupportedPalette) program["instructions"]!.AsArray().Insert(2, JsonNode.Parse("""{"op":"present","kind":"FadeOut","resource":"blue","entity":null,"position":null}"""));
         document["world"]!["programs"]!.AsArray().Add(program);
     });
 

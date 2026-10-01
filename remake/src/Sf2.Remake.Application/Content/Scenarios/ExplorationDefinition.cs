@@ -78,8 +78,9 @@ public sealed record PalettePair(ushort Color2, ushort Color3)
 {
     public bool Valid => (Color2 & ~0xEEE) == 0 && (Color3 & ~0xEEE) == 0;
     public bool Black => Color2 == 0 && Color3 == 0;
+    public bool White => Color2 == 0xEEE && Color3 == 0xEEE;
 }
-public enum FullFadeVisibility { Black, BaseRestored, Transitioning }
+public enum FullFadeVisibility { Black, BaseRestored, Transitioning, White }
 public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility);
 
 public sealed class ExplorationMapDefinition

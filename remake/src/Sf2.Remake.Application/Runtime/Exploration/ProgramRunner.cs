@@ -271,7 +271,8 @@ internal static class ProgramRunner
                         {
                             MapTransfer.ValidateCue(cue);
                             current = MapTransfer.BeginFade(current, current.Story, cue.Kind,
-                                FullFadePurpose.Script, cue.FullBlack?.Period, observations);
+                                FullFadePurpose.Script, cue.FullBlack?.Period, observations,
+                                cue.Resource == "white" ? FullFadeColor.White : FullFadeColor.Black);
                             continue;
                         }
                         if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };

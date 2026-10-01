@@ -949,8 +949,8 @@ MUST retain the active mask and prepared speeds until that scroll completes. Nul
 destinations retain their existing rules and clear stale compatibility camera metadata.
 
 Ordinary W1 input and window closure remain existing services; installation MUST NOT bypass them.
-The first white palette cue remains Unsupported before palette/helper publication in this black-only
-display domain. Later before-body/effects/battle initialization/load stay outside this admission.
+Bound white palette cues use the finite service rule below. Later before-body/effects/battle
+initialization/load stay outside this admission.
 Remake observations establish only their named input/service/projection boundary; natural original
 cadence/pixels remain **Unknown**.
 ## Remake Acceptance
@@ -1034,3 +1034,32 @@ completed state and stop as Unsupported. Profiled JOIN continues through previou
 plain input, close/Sleep10 and existing follower/position/Zone return rules. This bounded
 implementation does not establish continuous H4. See [provenance](../../research/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
 and [execution](../../../remake/docs/exploration-programs.md#raw-field-display).
+
+### Bound map-white finite service
+
+**Confirmed (static source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`mapscriptengine_1.asm:csc3F/csc40/LaunchFading`, `ApplyFadingEffect`,
+`fadingcommands.asm:ApplyCurrentColorFadingValue` and `data/tech/fadingdata.asm` define blocking
+map-palette white helpers: palette bitfield1, temporary period1, white-out offsets1..7 or
+white-in6..0, period-governed terminator, one extra VInt, previous period restoration and mask1111
+restoration. `vint.asm` applies fading before contextual functions. These are source structure facts;
+natural original cadence, caller phase and pixels remain **Unknown**. Existing H3 service-entry shims
+are not evidence of the complete original service.
+
+The bound remake MUST derive each effective current color from retained base, retain one palette
+state authority, and join logical completion with the matching actual token before advancing the
+program. Effective CRAM stores even channel values0..14 (`0xEEE` mask); original raw saturation at
+nibble15 is represented by its effective14, not raw RAM equality. Settled White remains distinct
+from BaseRestored even when base is itself white; zero-base Black remains distinct as well.
+Source map-white forces temporary1 and restores the prior period after the extra service.
+It MUST honor current script entity enablement and service entity→view/window→registered portrait
+once per existing opportunity, after fading and the accepted modern music service. Warp fades retain
+their installed field entity context. No receipt or presentation latency adds a service/RNG draw.
+Contradictory black profile on white, invalid/transitioning display and other unadmitted palette
+commands reject before helper publication. Black scene/warp rules are unchanged.
+
+Actual white delivery uses the existing modern half-second viewport overlay, with explicit normal
+and reduced-flash policies. Its parent modulation and stale opposite overlay MUST be reset when
+entering each color service. Whole-viewport coverage is an intentional approximation to source
+map-palette-only selection; sprite/window palette pixels and original VDP composition are unclaimed.
+No scenario, text ID, tick/seed or instruction endpoint determines gameplay legality.

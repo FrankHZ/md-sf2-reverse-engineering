@@ -1505,6 +1505,24 @@ Actual text/portrait projection and input delivery use the
 ordinary adapter. Bound physical target installation reuses this projection and the existing common
 service; no player recentering or render smoothing is added. Valid invisible allocated targets remain
 physical camera targets. Actual target movement precedes view/window/portrait service; idle input
-presentation performs no such service. White palette cues and later full bound battle presentation
-remain outside admission. [Tracking rule](exploration-programs.md#bound-physical-camera-tracking).
+presentation performs no such service. Bound white uses the finite helper projection below; later
+full bound battle presentation remains outside acceptance. [Tracking rule](exploration-programs.md#bound-physical-camera-tracking).
 [Behavior/limits](exploration-programs.md#bound-before-battle-scene-and-windows).
+
+### Bound white palette projection
+
+`FullFadeWait.Color` drives the existing half-second fade delivery; logical service and the matching
+actual token must both complete before script release. White resets parent Modulate to white so a
+previous black endpoint cannot suppress the child ColorRect or leave fade-in black. Black clears
+white alpha before delivery so an earlier white endpoint cannot cover it. Endpoints persist across
+ordinary waits; reduced-flash suppresses only white opacity while retaining completion and gameplay.
+The ordinary six-white/W1 boundary and authored mixed normal/reduced observations read actual nodes,
+state, projection, input and errors. A newly published logical wait can precede its first projection
+by one host frame; that delivery latency is not an extra logical opportunity.
+
+The overlay covers the viewport as an accepted modern approximation. Logical PalettePair concerns
+the source map palette; source-selected sprite/window colors, CRAM/VDP pixels and natural cadence
+remain Unknown. Bound fade opportunities now use the existing live entity→view/window→registered
+portrait service with explicit script enablement and one modern music admission; renderer duration
+never supplies another service. [Behavior](exploration-programs.md#bound-white-palette),
+[verification](development-and-verification.md#bound-white-palette-observation).

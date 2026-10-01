@@ -62,10 +62,11 @@ public sealed record MusicProgress(long Generation, string Cue, IReadOnlyList<st
     bool Battle = false, bool HistoryBound = true);
 public sealed record MusicWait(WaitToken Token, long Generation, int Elapsed = 0,
     bool Armed = false, bool Cleared = false, bool LogicalDone = false) : ProgramWait(Token);
+public enum FullFadeColor { Black, White }
 public enum FullFadePurpose { WarpOut, WarpIn, Script }
 public sealed record FullFadeWait(WaitToken Token, PresentationCueKind Kind, FullFadePurpose Purpose,
     byte Period, byte Countdown, int Entry = 0, int ExtraServices = 0, bool LogicalDone = false,
-    bool ActualDone = false, byte? RestorePeriod = null) : ProgramWait(Token);
+    bool ActualDone = false, byte? RestorePeriod = null, FullFadeColor Color = FullFadeColor.Black) : ProgramWait(Token);
 public sealed record WarpLoadWait(WaitToken Token, int Remaining = 2) : ProgramWait(Token);
 public sealed record OrdinaryWarp(MapId Map, MapPosition Position, byte Facing, MapLoadMode Mode);
 public enum EntityWaitCompletion { NotBusy, ScriptIdle }
