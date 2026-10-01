@@ -148,7 +148,13 @@ internal static class ProgramRunner
                         else story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true);
                         break;
                     case SetCameraEntity target:
-                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
+                        if (story.TextSettings is not null)
+                        {
+                            if (target.Entity is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = story.Copy(story.Cursor, logicalView: story.LogicalView! with { TargetSlot = null }, clearCameraEntity: true);
+                            break;
+                        }
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:

@@ -15,6 +15,51 @@ public sealed class BattleEntryProgramTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void ExplicitDetachPrecedesFadeServicesWithoutChangingAxesCounterOrRng(bool detach)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            var program = JsonNode.Parse("""
+                {"id":"fade-test","instructions":[{"op":"present","kind":"FadeOut","resource":"black","entity":null,"position":null},
+                {"op":"scene-map","map":"yard-map","camera":{"x":3,"y":7}},{"op":"end"}]}
+                """)!;
+            if (detach) program["instructions"]!.AsArray().Insert(0, JsonNode.Parse("""{"op":"camera-entity","entity":null}"""));
+            document["world"]!["programs"]!.AsArray().Add(program);
+        });
+        var entry = session.Current;
+        var oldView = entry.Story.LogicalView! with { FollowCounter = 9 };
+        var moving = entry.Exploration!.WithEntity(entry.Exploration.PlayerEntity with
+            { Motion = entry.Exploration.PlayerEntity.Motion with { X = 10 * 384 } });
+        var story = entry.Story.Copy(new("fade-test", 0), logicalView: oldView,
+            display: new(3, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored));
+        SessionSnapshot Snapshot(StoryState state) => new(entry.SessionId, entry.Revision, entry.ObservationSequence,
+            new ActiveExploration(moving), state, entry.StopReason);
+        var activeAxes = oldView with { AX = oldView.AX with { Destination = 4000, Speed = 32 },
+            BY = oldView.BY with { Destination = 3000, Speed = 24 } };
+        var immediate = ProgramRunner.Run(session.Definition, Snapshot(story.Copy(story.Cursor, logicalView: activeAxes)), []);
+        Assert.Null(immediate.Failure);
+        Assert.Equal(activeAxes with { TargetSlot = detach ? null : activeAxes.TargetSlot }, immediate.Snapshot.Story.LogicalView);
+        Assert.Equal(entry.Story.SimulationTick, immediate.Snapshot.Story.SimulationTick);
+        Assert.Same(entry.Exploration.Party, immediate.Snapshot.Exploration!.Party);
+        var started = ProgramRunner.Run(session.Definition, Snapshot(story), []);
+        Assert.Null(started.Failure);
+        var fade = Assert.IsType<FullFadeWait>(started.Snapshot.Story.Wait);
+        var first = ExplorationDispatcher.Submit(session.Definition, started.Snapshot, new AdvanceSimulation(fade.Token));
+        Assert.Null(first.Failure);
+        Assert.Equal(detach ? 9 : 10, first.Snapshot.Story.LogicalView!.FollowCounter);
+        Assert.Equal(detach ? null : oldView.TargetSlot, first.Snapshot.Story.LogicalView.TargetSlot);
+        Assert.Equal(entry.Story.SimulationTick + 1, first.Snapshot.Story.SimulationTick);
+        Assert.Equal(entry.Exploration.Party.MainSeed, first.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(entry.Exploration.Party.ThinkingSeed, first.Snapshot.Exploration.Party.ThinkingSeed);
+        Assert.Equal(entry.Exploration.Party.Actors, first.Snapshot.Exploration.Party.Actors);
+        Assert.Equal(entry.Exploration.Party.Gold, first.Snapshot.Exploration.Party.Gold);
+        Assert.Equal(entry.Story.EntityServices, first.Snapshot.Story.EntityServices);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void BoundSceneFadeLoadFadeUsesNewBaseAndKeepsCameraEntityUnsupported(bool overridePeriod)
     {
         var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>

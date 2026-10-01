@@ -580,7 +580,12 @@ continuation rather than manufacturing field input. Legacy and outcome contexts 
 
 Explicit black FadeOut/FadeIn cues without a period override use validated Display.Period;
 supplied nonzero overrides restore the prior period after completion. csc37 and ordinary black
-helpers share the existing finite fade service, without a new clock or input rewrite.
+helpers share the existing finite fade service, without a new clock.
+The source loadMapFadeIn lowering now explicitly emits camera-entity:null before that helper.
+Bound null detach validates the same caller context, clears only logical tracking and preserves
+axes/destinations/counter/services/RNG with no time advance. This represents the source FF store
+before its first enabled fade wait, without claiming CPU-cycle ordering of fade-setting writes.
+Standalone black fades retain following; production never infers composition from the next opcode.
 
 Bound `scene-map` requires settled closed windows, no ordinary warp, a valid target base palette,
 a settled black current display and the accepted view profile. Its explicit camera origin selects
@@ -595,7 +600,7 @@ aliases and mounts sprites without re-centering or reattaching the camera.
 **Confirmed (bounded remake observation):** the representative ordinary native run continues the existing same-session route from Map40 approach
 through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and
 Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify observation only.
-No tick/seed, route endpoint or instruction index controls production legality. Camera-entity135
+No tick/seed, route endpoint or instruction index controls production legality. Non-null camera-entity135
 and later before-body/battle-load/first-battle-input consumers remain unadmitted for bound settings.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
 and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).

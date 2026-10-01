@@ -916,7 +916,12 @@ Real `BeforeBattleFinished` plus `EnteringBattle`, a live cursor, no event calle
 text/view state MAY use the existing explicit window/input services. The real caller stack and
 route MUST survive W1/W2 input and nested script returns; field actions remain unavailable.
 Outcome and incomplete before-battle contexts stay excluded. No map, program, text or PC operand
-selects legality. Camera-entity tracking remains Unsupported. Natural original cadence/pixels
+selects legality. Bound null camera detach MUST clear only the target, preserve axes/destinations/counter/service
+policy/RNG and consume no semantic time. Source loadMapFadeIn lowering emits that explicit detach
+before the finite fade helper, representing FF before its first enabled service. Source sets the
+fade setting before detaching; this atomic helper boundary is not CPU-cycle parity. Ordinary
+standalone fades MUST retain following; no neighboring-opcode inference is permitted. Non-null
+camera-entity tracking remains Unsupported. Natural original cadence/pixels
 remain **Unknown**. [Execution boundary](../../../remake/docs/exploration-programs.md#bound-before-battle-scene-and-windows).
 ## Remake Acceptance
 

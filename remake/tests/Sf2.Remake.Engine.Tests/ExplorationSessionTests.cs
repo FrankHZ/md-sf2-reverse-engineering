@@ -926,11 +926,12 @@ public sealed class ExplorationSessionTests
     [InlineData("period")]
     [InlineData("palette")]
     [InlineData("white")]
-    [InlineData("unbound")]
+    [InlineData("zero-period")]
     public void UnsupportedStaticBindingsRejectBeforeMovement(string shape)
     {
         var (definition, before) = WarpWorld([], false, 123, period: shape == "period" ? (byte)0 : (byte)3,
-            onLoad: shape is "white" or "unbound" ? [new PresentCue(PresentationCueKind.FadeIn, shape == "white" ? "white" : "black"), new EndProgram()] : null);
+            onLoad: shape is "white" or "zero-period" ? [new PresentCue(PresentationCueKind.FadeIn,
+                shape == "white" ? "white" : "black", FullBlack: shape == "zero-period" ? new(0) : null), new EndProgram()] : null);
         if (shape == "palette")
         {
             var target = definition.Exploration!.Maps[new("destination")];

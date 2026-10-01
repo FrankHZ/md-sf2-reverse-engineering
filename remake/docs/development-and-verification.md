@@ -2902,7 +2902,11 @@ local normal/full/H3. Preserve completed failure records and obtain independent 
 ## Bound before-battle windows observation
 
 Load current private/tool selections and the locked SDK environment. Reuse the accepted private
-world, party, assets, music, owned installation/project and existing observer/navigation. Produce
+party/assets/music, owned installation/project and existing observer/navigation. Recompile only
+bbcs_01 using OriginalPrograms from the pinned source into a fresh ignored world. Its graph is
+only bbcs_01, adding explicit null detach before the black fade; removing that instruction
+reproduces the old row. All other world/provenance/asset/audio fields must compare directly equal.
+No handwritten PC edit, full world/asset export or post-load patch is part of preparation. Produce
 only Map57 palette metadata with `selected_map_palette_bindings` into a fresh ignored start;
 removing that one binding must leave the accepted field-parallax start directly equal. Verify
 existing Map57 atlas, sprite209/portrait31 and texts2292/2293; no general export is needed.
@@ -2910,19 +2914,29 @@ existing Map57 atlas, sprite209/portrait31 and texts2292/2293; no general export
 Run affected `BattleEntryProgramTests` and `ExplorationTextWaitTests`, `uv run sf2 verify adapter`,
 a controlled Debug host build and `uv run sf2 design-contracts test`. One representative ordinary case
 is `portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-before-battle`.
-The retained wrapper is `local/issue534/before-battle-windows/run-native.py native-new instant 1 40 yes modern-music-before-battle`.
+The retained wrapper is `local/issue534/before-battle-windows/run-native-detach.py native-new instant 1 40 yes modern-music-before-battle`.
 Earlier opening/palace/tower/parallax steps are setup for this same session. Continue the final
 player-ready fixture Up; inspect actual scene/palette/entity readiness/main camera/portrait/text,
 real BeforeBattleFinished/EnteringBattle/callers, ordinary W2 confirm and next W1 readiness.
 Stop observation at that genuine input wait. No forced PC, injected seed/party/capture or screenshots.
-Camera-entity/later entry stay Unsupported. Record committed default planner and actual CI;
+Non-null camera-entity/later entry stay Unsupported. Record committed default planner and actual CI;
 shared contract prose alone does not require local normal/full/H3. Preserve completed failures.
 
-**Confirmed (remake observation):** the retained `native-03` representative instant run exits0/PASS
+**Confirmed (remake observation of prior detach ordering):** the retained `native-03` representative instant run exits0/PASS
 with empty failure/Unavailable lists and1,552 samples. Actual Main input crosses2292 W2 confirmation
 to2293 W1 readiness in the original opening session; Map57 tiles/actors, explicit main camera,
 restored base/current palette, real135 sprite/portrait and BeforeBattleFinished/route/callers are
-read from the running adapter. The observer stops at ordinary input without reaching camera-entity.
+read from the running adapter. The observer stops at ordinary input without reaching non-null camera-entity. That run predates
+the explicit source detach lowering and does not accept its enabled-service ordering.
 The preceding failed/default-fade and incorrect-case runs, cursor-replay behavior failure, fixture
 construction and readback inspector failures remain in the ignored owning handoff. Older acceptance
 and original/H4/HEAL/provenance/warp/cleanup Unknowns are retained; original runtime delta0.
+**Confirmed (current source service boundary, remake observation):** `native-04` uses the narrowly
+recompiled explicit-detach world and current adapter, exits0/PASS with empty failure/Unavailable
+lists and1,552 samples. It reaches the same ordinary2292 W2→2293 W1 boundary with actual scene,
+text/portrait/camera and route/caller readback. Detach ordering is accepted at the finite helper's
+first-service boundary; source CPU cycles, hardware cadence and full battle entry remain Unknown.
+The initial CI848PASS/1FAIL/30SKIP is retained: the obsolete missing-FullBlack rejection now has an
+explicit zero-period fixture. Its four theory cases pass; moving/counter detach and standalone fade
+cases pass after correcting a party-instance assertion to compare actual party values. No local
+aggregate rerun replaces that completed red result.
