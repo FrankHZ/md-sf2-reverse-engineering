@@ -874,7 +874,8 @@ priority map pixels cover low priority sprite ink, while transparent pixels reve
 See the [source/data binding](../../research/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion).
 Unbound presentation retains its prior contract. **Unknown:** natural interrupt/VDP/DMA timing,
 word-wrap destinations, explicit speed, cursor/pulsating overrides, other layer/parallax/autoscroll
-profiles outside the stated main/secondary numeric domain and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+profiles outside the stated main/secondary numeric domain remain excluded. The older seven-case H3
+seam does not establish physical target tracking; its current remake admission is specified below.
 
 ### Bound map-initialization windows
 
@@ -923,9 +924,35 @@ fade setting before detaching; this atomic helper boundary is not CPU-cycle pari
 standalone fades MUST retain following; no neighboring-opcode inference is permitted.
 Source lowering MUST retain the post-load one-service wait before subsequent entity replacement;
 the pre-load fade wait does not cover that boundary. Bound drawing MUST use the selected view area
-even when the retained player lies outside every new map area, without moving that player. Non-null
-camera-entity tracking remains Unsupported. Natural original cadence/pixels
+even when the retained player lies outside every new map area, without moving that player.
+Natural original cadence/pixels
 remain **Unknown**. [Execution boundary](../../../remake/docs/exploration-programs.md#bound-before-battle-scene-and-windows).
+
+### Bound physical camera target
+
+**Confirmed (static source):** the pinned csc24_setCameraTargetEntity resolves its nonnegative
+selector through ENTITY_INDEX_LIST, stores the physical VIEW_TARGET_ENTITY byte and returns without
+a wait. Its negative-word path preserves a negative target byte. VInt_UpdateViewData reads the
+physical record even when its sprite is invisible. Active scroll bypasses following and speed/counter
+preparation; settled following uses the selected main plane, existing deadbands/clamps and24/32
+speeds before independent plane scrolling. The accepted numeric profile excludes cursor speed64,
+pulsating overrides, nonzero explicit speed/autoscroll and word-wrap generalization.
+
+An admitted bound field, map-initialization or real before-battle caller MAY install a valid physical
+target through the existing identity resolver. Installation MUST consume no semantic time or RNG,
+preserve area/axes/destinations/speeds/follow counter/windows/service policy/party/callers and use
+LogicalView.TargetSlot as sole authority. Missing, removed/out-of-table aliases, reserved cursor and
+incomplete/outcome contexts MUST reject before publication. A valid default alias to slot0 remains
+valid; sprite invisibility alone MUST NOT imply a removed alias. Subsequent services MUST follow
+the live physical slot rather than resolve the logical selector anew. Retargeting during scrolling
+MUST retain the active mask and prepared speeds until that scroll completes. Null detach and explicit
+destinations retain their existing rules and clear stale compatibility camera metadata.
+
+Ordinary W1 input and window closure remain existing services; installation MUST NOT bypass them.
+The first white palette cue remains Unsupported before palette/helper publication in this black-only
+display domain. Later before-body/effects/battle initialization/load stay outside this admission.
+Remake observations establish only their named input/service/projection boundary; natural original
+cadence/pixels remain **Unknown**.
 ## Remake Acceptance
 
 The first remake map slice is acceptable when it can:

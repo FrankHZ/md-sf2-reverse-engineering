@@ -13,6 +13,216 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleEntryProgramTests
 {
     [Theory]
+    [InlineData(ProgramContinuation.FieldInput, false)]
+    [InlineData(ProgramContinuation.MapLoaded, true)]
+    [InlineData(ProgramContinuation.BeforeBattleFinished, false)]
+    [InlineData(ProgramContinuation.BeforeBattleFinished, true)]
+    public void BoundCameraTrackingResolvesPhysicalAliasesWithoutAnInstallService(ProgramContinuation continuation, bool follower)
+    {
+        var session = CameraSession("entity-135");
+        var entry = session.Current;
+        var world = CameraPopulation(entry.Exploration!, follower);
+        var target = world.Entities[new("entity-135")];
+        world = world.WithEntity(target with { Visible = false }); // Invisible is still allocated.
+        var oldView = entry.Story.LogicalView! with { FollowCounter = 7, AX = new(0, 384, 12), BX = new(0, 384, 24) };
+        var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
+        var story = entry.Story.Copy(new("tracking", 0), continuation: continuation,
+            enteringBattle: continuation == ProgramContinuation.BeforeBattleFinished ? route : null,
+            logicalView: oldView, callers: [new("invitation", 1)], entityServices: false,
+            cameraEntitySlot: 1, cameraTarget: new(4, 5), randomSeedCopy: 0xA9);
+        var result = ProgramRunner.Run(session.Definition, CameraSnapshot(entry, world, story), []);
+        Assert.Null(result.Failure);
+        Assert.Equal(8 + (follower ? 1 : 0), result.Snapshot.Story.LogicalView!.TargetSlot);
+        Assert.Equal(oldView with { TargetSlot = target.Slot }, result.Snapshot.Story.LogicalView);
+        Assert.Null(result.Snapshot.Story.CameraEntitySlot);
+        Assert.Null(result.Snapshot.Story.CameraTarget);
+        Assert.Same(world, result.Snapshot.Exploration);
+        Assert.Same(world.Party, result.Snapshot.Exploration!.Party);
+        Assert.Equal(story.SimulationTick, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(story.RandomSeedCopy, result.Snapshot.Story.RandomSeedCopy);
+        Assert.Equal(story.Callers, result.Snapshot.Story.Callers);
+        Assert.Equal(story.Continuation, result.Snapshot.Story.Continuation);
+        Assert.Equal(story.EnteringBattle, result.Snapshot.Story.EnteringBattle);
+        Assert.Equal(story.LogicalText, result.Snapshot.Story.LogicalText);
+        Assert.Equal(story.PortraitWindow, result.Snapshot.Story.PortraitWindow);
+        Assert.False(result.Snapshot.Story.EntityServices);
+    }
+
+    [Theory]
+    [InlineData("entity-159", false)]
+    [InlineData("entity-135", true)]
+    public void BoundCameraTrackingRetainsSlotZeroAliasesAndNullDetach(string selector, bool detach)
+    {
+        var session = CameraSession(detach ? null : selector);
+        var entry = session.Current;
+        var world = CameraPopulation(entry.Exploration!, false);
+        var view = entry.Story.LogicalView! with { TargetSlot = 8, FollowCounter = 9, BY = new(0, 384, 32) };
+        var result = ProgramRunner.Run(session.Definition, CameraSnapshot(entry, world,
+            entry.Story.Copy(new("tracking", 0), logicalView: view)), []);
+        Assert.Null(result.Failure);
+        Assert.Equal(view with { TargetSlot = detach ? null : 0 }, result.Snapshot.Story.LogicalView);
+        Assert.Equal(entry.Story.SimulationTick, result.Snapshot.Story.SimulationTick);
+    }
+
+    [Theory]
+    [InlineData("removed", "program-entity")]
+    [InlineData("out-of-table", "program-entity")]
+    [InlineData("missing", "program-entity")]
+    [InlineData("cursor", "field-view-target")]
+    [InlineData("incomplete", "field-text-context")]
+    [InlineData("outcome", "field-text-context")]
+    public void BoundCameraTrackingRejectsInvalidTargetsAndContextsBeforePublication(string condition, string code)
+    {
+        var session = CameraSession(condition == "out-of-table" ? "entity-255" : condition == "missing" ? "missing" : "entity-135");
+        var entry = session.Current;
+        var world = CameraPopulation(entry.Exploration!, false);
+        if (condition == "removed") world = world.Hide(world.Entities[new("entity-135")], removeAliases: true);
+        if (condition == "cursor") world = new(entry.Exploration!.Definition, entry.Exploration.Layout, entry.Exploration.Player,
+            entry.Exploration.AllEntities.Append(new(new("entity-135"), world.PlayerEntity.Motion, true, Slot: 63)), entry.Exploration.Party);
+        var story = entry.Story.Copy(new("tracking", 0),
+            continuation: condition == "incomplete" ? ProgramContinuation.BeforeBattleFinished :
+                condition == "outcome" ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.FieldInput);
+        var input = CameraSnapshot(entry, world, story);
+        var result = ProgramRunner.Run(session.Definition, input, []);
+        Assert.Equal(code, result.Failure!.Code);
+        Assert.Same(world, result.Snapshot.Exploration);
+        Assert.Equal(story.LogicalView, result.Snapshot.Story.LogicalView);
+        Assert.Equal(story.SimulationTick, result.Snapshot.Story.SimulationTick);
+        Assert.Equal(story.Cursor, result.Snapshot.Story.Cursor);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void BoundCameraTrackingPreservesActiveScrollThenFollowsTheLiveMainPlane(int layer)
+    {
+        var session = CameraSession("ferryman");
+        var entry = session.Current;
+        var world = entry.Exploration!;
+        var entity = world.Entities[new("ferryman")];
+        var area = entry.Story.LogicalView!.Area with { ForegroundY = 0, Layer = layer,
+            ParallaxAX = layer == 0 ? 128 : 256, ParallaxBX = layer == 0 ? 256 : 128 };
+        var view = entry.Story.LogicalView with { Area = area, FollowCounter = 6,
+            AX = new(380, 384, layer == 0 ? 12 : 24), BX = new(layer == 0 ? 360 : 380, 384, layer == 0 ? 24 : 12), AY = new(0), BY = new(0) };
+        var bound = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("tracking", 0), logicalView: view)), []);
+        Assert.Null(bound.Failure);
+        Assert.Equal(view with { TargetSlot = entity.Slot }, bound.Snapshot.Story.LogicalView);
+        var live = world.WithEntity(entity with { Motion = entity.Motion with { X = 384 + 2305, Y = 1536 } });
+        var finishing = ExplorationViewRunner.Tick(live, bound.Snapshot.Story.LogicalView!, new(2, 0, 0));
+        Assert.Equal(384, finishing.AX.Position);
+        Assert.Equal(384, finishing.BX.Position);
+        Assert.Equal(layer == 0 ? 12 : 24, finishing.AX.Speed);
+        Assert.Equal(6, finishing.FollowCounter);
+        var following = ExplorationViewRunner.Tick(live, finishing, new(2, 0, 0));
+        Assert.Equal(7, following.FollowCounter);
+        Assert.Equal(layer == 0 ? 16 : 32, following.AX.Speed);
+        Assert.Equal(layer == 0 ? 32 : 16, following.BX.Speed);
+        Assert.Equal(layer == 0 ? 384 : 768, following.AX.Destination ?? following.AX.Position);
+        Assert.Equal(layer == 0 ? 768 : 384, following.BX.Destination ?? following.BX.Position);
+        var clamped = following with { AX = new(0), BX = new(0), AY = new(0), BY = new(0) };
+        var inside = live.WithEntity(entity with { Motion = entity.Motion with { X = 1536, Y = 2304 } });
+        var stable = ExplorationViewRunner.Tick(inside, clamped, new(2, 0, 0));
+        Assert.Equal(0, stable.FollowCounter);
+        Assert.False(stable.Scrolling);
+        var upper = clamped with { AX = new(30 * 384 - 3840), BX = new(30 * 384 - 3840),
+            AY = new(30 * 384 - 3456), BY = new(30 * 384 - 3456) };
+        var beyond = live.WithEntity(entity with { Motion = entity.Motion with { X = 30 * 384, Y = 30 * 384 } });
+        Assert.False(ExplorationViewRunner.Tick(beyond, upper, new(2, 0, 0)).Scrolling);
+        var destination = ExplorationViewRunner.SetDestination(following, new(2, 3));
+        Assert.Null(destination.TargetSlot);
+        Assert.Equal(following.FollowCounter, destination.FollowCounter);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoundCameraTrackingClosesRealW1WindowsBeforeMotionAndNextInput(bool enabled)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", second: "B{W1}", speed: 3, enabled: enabled, configure: document =>
+        {
+            document["world"]!["presentation"]!["sprites"]![0]!["portrait"] = 7;
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"wait-ticks","ticks":1},{"op":"text-cursor","text":100},{"op":"open-portrait","entity":"ferryman","flags":0},
+                {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+                {"op":"close-portrait"},{"op":"close-text"},{"op":"wait-ticks","ticks":10},
+                {"op":"camera-entity","entity":"ferryman"},
+                {"op":"motion","entity":"ferryman","wait":false,"actions":[{"op":"move","x":0,"y":7,"wait":true},{"op":"idle"}]},
+                {"op":"wait-ticks","ticks":20},{"op":"wait-view"},
+                {"op":"open-portrait","entity":"ferryman","flags":0},
+                {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},{"op":"end"}]
+                """);
+        });
+        var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
+        var start = session.Current;
+        var current = start.WithStory(start.Story.Copy(start.Story.Cursor, start.Story.Wait,
+            continuation: ProgramContinuation.BeforeBattleFinished, enteringBattle: route, callers: [new("invitation", 3)], entityServices: enabled));
+        SessionResult Submit(SessionCommand command)
+        {
+            var result = ExplorationDispatcher.Submit(session.Definition, current, command);
+            Assert.Null(result.Failure); current = result.Snapshot; return result;
+        }
+        for (int i = 0; !current.CanWaitForText && i < 200; i++)
+        {
+            if (current.Story.Wait is FieldTextWait { LogicalDone: true, Revealed: false }) Submit(new CompleteTextReveal(current.Story.Wait.Token));
+            else Submit(new AdvanceSimulation(current.Story.Wait!.Token));
+        }
+        Assert.True(current.CanWaitForText);
+        Submit(new Acknowledge(current.Story.Wait!.Token));
+        Assert.IsType<PortraitMovementWait>(current.Story.Wait);
+        Assert.False(Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!.Registered);
+        bool closed = false, tracked = false;
+        for (int i = 0; !current.CanWaitForText && i < 300; i++)
+        {
+            if (current.Story.Wait is TickWait { Remaining: 10 })
+            { closed = true; Assert.IsType<ClosedPortraitWindow>(current.Story.PortraitWindow); Assert.IsType<ClosedTextWindow>(current.Story.TextWindow); }
+            tracked |= current.Story.LogicalView!.TargetSlot == current.Exploration!.Entities[new("ferryman")].Slot;
+            if (current.Story.Wait is FieldTextWait { LogicalDone: true, Revealed: false }) Submit(new CompleteTextReveal(current.Story.Wait.Token));
+            else Submit(new AdvanceSimulation(current.Story.Wait!.Token));
+        }
+        Assert.True(closed && tracked && current.CanWaitForText);
+        Assert.Equal(101, current.Story.TextCursor - 1);
+        Assert.Same(route, current.Story.EnteringBattle);
+        Assert.Equal(start.Story.Callers.Count + 1, current.Story.Callers.Count);
+        Assert.False(current.CanWaitAtInput);
+        Assert.Equal(enabled, current.Exploration!.Entities[new("ferryman")].Motion.Y != start.Exploration!.Entities[new("ferryman")].Motion.Y);
+        Assert.Equal(current.Exploration.Entities[new("ferryman")].Slot, current.Story.LogicalView!.TargetSlot);
+        Assert.Equal(enabled, current.Story.LogicalView.AY.Position != start.Story.LogicalView!.AY.Position);
+    }
+
+    [Fact]
+    public void BoundCameraTrackingRetainsWhiteFadeRejectionBeforePalettePublication()
+    {
+        var session = CameraSession("ferryman", whiteFade: true);
+        var entry = session.Current;
+        var display = new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored);
+        var bound = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("tracking", 0), display: display)), []);
+        Assert.Null(bound.Failure);
+        var before = bound.Snapshot;
+        var result = ExplorationDispatcher.Submit(session.Definition, before, new AdvanceSimulation(before.Story.Wait!.Token));
+        Assert.Equal("full-black-fade-binding", result.Failure!.Code);
+        Assert.IsNotType<FullFadeWait>(result.Snapshot.Story.Wait);
+        Assert.Same(display, result.Snapshot.Story.Display);
+        Assert.Equal(entry.Exploration!.Entities[new("ferryman")].Slot, result.Snapshot.Story.LogicalView!.TargetSlot);
+    }
+
+    private static GameSession CameraSession(string? target, bool whiteFade = false) => ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+    {
+        document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+        var program = JsonNode.Parse("""{"id":"tracking","instructions":[{"op":"camera-entity","entity":null},{"op":"wait-ticks","ticks":1},{"op":"end"}]}""")!;
+        program["instructions"]![0]!["entity"] = target;
+        if (whiteFade) program["instructions"]!.AsArray().Insert(2, JsonNode.Parse("""{"op":"present","kind":"FadeOut","resource":"white","entity":null,"position":null}"""));
+        document["world"]!["programs"]!.AsArray().Add(program);
+    });
+
+    private static ExplorationState CameraPopulation(ExplorationState world, bool follower) => SceneEntities.Build(
+        world.Definition, world.Layout, new("entity-0"), new(1, 1), 1, 32, world.Party, follower ? [41] : [],
+        new(30, 128, 30, [new(41, 2, 30)]),
+        Enumerable.Range(0, 8).Select(index => new ExplorationEntityDefinition(new("entity-" + (128 + index)), new(7, 9), 3, 32, Sprite: 30)).ToArray());
+
+    private static SessionSnapshot CameraSnapshot(SessionSnapshot basis, ExplorationState world, StoryState story) =>
+        new(basis.SessionId, basis.Revision, basis.ObservationSequence, new ActiveExploration(world), story, basis.StopReason);
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void PostLoadWaitServicesRetainedEntitiesBeforeSeparateReplacement(bool enabled)
@@ -101,7 +311,7 @@ public sealed class BattleEntryProgramTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void BoundSceneFadeLoadFadeUsesNewBaseAndKeepsCameraEntityUnsupported(bool overridePeriod)
+    public void BoundSceneFadeLoadFadeUsesNewBaseAndCanTrackTheRetainedPlayer(bool overridePeriod)
     {
         var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
         {
@@ -136,8 +346,8 @@ public sealed class BattleEntryProgramTests
         Assert.Equal(3, session.Current.Story.Display.Period);
         Assert.False(session.Current.CanWaitAtInput);
         var result = Send(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
-        Assert.Equal("field-view-camera-command", result.Failure!.Code);
-        Assert.Null(session.Current.Story.LogicalView.TargetSlot);
+        Assert.Null(result.Failure);
+        Assert.Equal(session.Current.Exploration!.PlayerEntity.Slot, session.Current.Story.LogicalView.TargetSlot);
     }
 
     [Theory]

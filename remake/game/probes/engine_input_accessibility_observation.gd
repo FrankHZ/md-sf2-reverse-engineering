@@ -33,6 +33,7 @@ var choice_following := false
 var choice_draws: Array = []
 var modern_music_case := "modern-music" in input_case
 var before_battle_case := "before-battle" in input_case
+var tracking_case := "before-battle-tracking" in input_case
 var parallax_case := "field-parallax" in input_case or before_battle_case
 var map_init_case := "map-init" in input_case or parallax_case
 var raw_text_case := "raw-text" in input_case or modern_music_case
@@ -1185,9 +1186,69 @@ func before_battle_windows(approach: Dictionary) -> void:
                     var held := opening_semantic(ready)
                     for idle_frame in range(3): await process_frame
                     check(opening_semantic(state()) == held and state().tickDebt == 0, "Ordinary W1 endpoint holds without injected state or further input")
+                    if tracking_case: await before_battle_tracking(ready)
                     return
         await process_frame
     check(false, "Before-battle windows did not reach the ordinary W1 input boundary")
+
+func before_battle_tracking(entry: Dictionary) -> void:
+    physical(KEY_ENTER, true)
+    physical(KEY_ENTER, false)
+    var closing := read_sample("tracking-w1-confirmed")
+    check(closing.wait == "PortraitMovementWait" and not closing.portraitWork.Registered,
+        "W1 acknowledgement unregisters the portrait before closing")
+    var inputs: Array = []
+    var bound := false
+    var moved := false
+    var scrolled := false
+    var closed := false
+    for frame in range(2500):
+        var s := state()
+        if s.failure != null:
+            samples.append({"label":"tracking-white-boundary", "state":s})
+            check(s.failure == "full-black-fade-binding" and s.failureKind == "UnsupportedCapability" and
+                s.display == entry.display and s.fade == null and s.presentation.whiteOpacity == 0,
+                "White palette service remains Unsupported before palette/helper publication")
+            check(inputs == [2294,2295,2296] and bound and moved and scrolled and closed,
+                "Ordinary tracking, movement and three W1 inputs precede the white capability boundary")
+            var held := opening_semantic(s)
+            for idle_frame in range(3): await process_frame
+            physical(KEY_ENTER, true)
+            physical(KEY_ENTER, false)
+            check(opening_semantic(state()) == held, "Unsupported boundary stays stopped under idle and input")
+            return
+        check(s.continuation == entry.continuation and s.enteringBattle == entry.enteringBattle and
+            s.callers == entry.callers and s.eventCaller == null and not s.canWaitAtInput,
+            "Tracked before body retains real route/callers and excludes field control")
+        var target: Dictionary = {}
+        for entity in s.entities:
+            if entity.id == "entity-135": target = entity
+        if s.logicalView.TargetSlot != null:
+            check(s.logicalView.TargetSlot == target.slot, "Camera follows the actual resolved physical slot")
+            bound = true
+            moved = moved or target.y != entry.entities.filter(func(e): return e.id == "entity-135")[0].y
+            scrolled = scrolled or s.logicalView.AY.Position != entry.logicalView.AY.Position
+        if not s.logicalText.Open and s.portraitWork == null: closed = true
+        if s.canWaitForText:
+            read_sample("tracking-text" + str(int(s.textId)) + "-input")
+            inputs.append(int(s.textId))
+            var p: Dictionary = s.cameraProjection
+            var dialogue := view.get_node("Dialogue") as Label
+            check(not s.fieldText.Wait2 and s.portraitWork.Registered and not s.logicalView.Scrolling and
+                p.bound and p.map == s.map and p.actors.size() > 0 and p.background.draws > 0 and
+                is_equal_approx(s.presentation.cameraX, s.logicalView.AX.Position / 16.0) and
+                is_equal_approx(s.presentation.cameraY, s.logicalView.AY.Position / 16.0) and
+                dialogue.is_visible_in_tree() and dialogue.text == s.dialogue and
+                (dialogue.visible_characters < 0 or dialogue.visible_characters >= dialogue.get_total_character_count()),
+                "Tracked W1 has actual settled camera, tiles, actors, portrait and delivered text")
+            var held := opening_semantic(s)
+            for idle_frame in range(3): await process_frame
+            check(opening_semantic(state()) == held and state().tickDebt == 0,
+                "Idle input presentation adds no camera service or tick debt")
+            physical(KEY_ENTER, true)
+            physical(KEY_ENTER, false)
+        await process_frame
+    check(false, "Tracking continuation did not reach its next unadmitted capability")
 
 func opening_settle(castle_yes: bool = true) -> bool:
     var seen: Dictionary = {}
