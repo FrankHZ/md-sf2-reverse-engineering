@@ -516,6 +516,7 @@ public sealed partial class ExplorationSessionView : Control
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
+            continuation = current?.Story.Continuation.ToString(), enteringBattle = current?.Story.EnteringBattle, callers = current?.Story.Callers,
             display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
             warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
             tickDebt = _tickTime, failureVisible = _failureLabel.Visible,

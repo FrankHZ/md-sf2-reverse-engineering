@@ -5,7 +5,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class ExplorationPortraitRunner
 {
-    internal static bool HasCaller(StoryState story) => story.EventCaller is not null || ExplorationTextRunner.MapInitialization(story);
+    internal static bool HasCaller(StoryState story) => story.EventCaller is not null || ExplorationTextRunner.MapInitialization(story) ||
+        ExplorationTextRunner.BeforeBattle(story);
 
     internal static bool Admitted(StoryState story) => story.PortraitWindow is ClosedPortraitWindow ||
         HasCaller(story) && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;

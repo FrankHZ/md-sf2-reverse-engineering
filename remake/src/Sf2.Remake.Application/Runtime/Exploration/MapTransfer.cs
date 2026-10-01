@@ -58,8 +58,8 @@ internal static class MapTransfer
 
     internal static void ValidateCue(PresentCue cue)
     {
-        if (cue.FullBlack is null || cue.Resource != "black" ||
-            cue.Kind is not (PresentationCueKind.FadeIn or PresentationCueKind.FadeOut) || cue.FullBlack.Period == 0)
+        if (cue.Resource != "black" ||
+            cue.Kind is not (PresentationCueKind.FadeIn or PresentationCueKind.FadeOut) || cue.FullBlack?.Period == 0)
             throw new BattleRuleException("full-black-fade-binding", "program.presentation", true);
     }
 
@@ -198,6 +198,28 @@ internal static class MapTransfer
         // are separate calls. Keep the running program, party and physical entities intact here.
         return new(map, map.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population);
+    }
+
+    internal static StoryState BindScene(SessionSnapshot current, ExplorationState next, LoadSceneMap load)
+    {
+        ExplorationTextRunner.ValidateContext(current);
+        var story = current.Story;
+        if (story.Warp is not null)
+            throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
+        if (story.TextWindow is not ClosedTextWindow || story.PortraitWindow is not ClosedPortraitWindow ||
+            story.LogicalText is not { Open: false } || story.Wait is not null)
+            throw new BattleRuleException("scene-load-windows", "story.windows", true);
+        ValidateDisplay(story.Display);
+        // The source replaces PALETTE_1_BASE without copying it into current CRAM.
+        // A settled black load is representable; visible base/current divergence is
+        // outside this admission. Validate everything before publishing the scene.
+        if (story.Display!.Visibility != FullFadeVisibility.Black)
+            throw new BattleRuleException("scene-load-black", "story.display", true);
+        if (next.Definition.BasePalette is not { Valid: true } palette)
+            throw new BattleRuleException("scene-load-palette-binding", "map.basePalette", true);
+        return story.Copy(story.Cursor, logicalView: ExplorationViewRunner.LoadScene(next, load.Camera, story.LogicalView!),
+            logicalText: new(),
+            display: story.Display with { Base = palette }, clearCameraEntity: true, clearCameraTarget: true);
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,

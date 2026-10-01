@@ -12,6 +12,225 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleEntryProgramTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PostLoadWaitServicesRetainedEntitiesBeforeSeparateReplacement(bool enabled)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", enabled: enabled, npcRandom: true, configure: document =>
+        {
+            document["start"]!["player"] = "entity-0";
+            document["world"]!["maps"]![1]!["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""
+                {"id":"post-load","instructions":[{"op":"scene-map","map":"yard-map","camera":{"x":3,"y":7}},
+                {"op":"wait-ticks","ticks":1},{"op":"scene-entities","population":{"allyCount":1,"nonAllyStart":128,"playerSprite":30,"followers":[]},
+                "position":{"x":8,"y":9},"facing":1,"entities":[]},{"op":"end"}]}
+                """));
+        });
+        var entry = session.Current;
+        var story = entry.Story.Copy(new("post-load", 0), entityServices: enabled,
+            display: new(1, new(0xEEE, 0xAAA), new(0, 0), FullFadeVisibility.Black));
+        var loaded = ProgramRunner.Run(session.Definition, entry.WithStory(story), []);
+        Assert.Null(loaded.Failure);
+        var wait = Assert.IsType<TickWait>(loaded.Snapshot.Story.Wait);
+        Assert.Equal(1, wait.Remaining);
+        Assert.Equal(entry.Exploration!.AllEntities, loaded.Snapshot.Exploration!.AllEntities);
+        Assert.Equal(entry.Story.SimulationTick, loaded.Snapshot.Story.SimulationTick);
+        Assert.Equal(entry.Exploration.Party.MainSeed, loaded.Snapshot.Exploration.Party.MainSeed);
+        var serviced = ExplorationDispatcher.Submit(session.Definition, loaded.Snapshot, new AdvanceSimulation(wait.Token));
+        Assert.Null(serviced.Failure);
+        Assert.IsType<EntitySetSpriteWait>(serviced.Snapshot.Story.Wait);
+        Assert.Equal(entry.Story.SimulationTick + 1, serviced.Snapshot.Story.SimulationTick);
+        Assert.Equal(new MapPosition(8, 9), serviced.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(enabled, entry.Exploration.Party.MainSeed != serviced.Snapshot.Exploration.Party.MainSeed);
+        Assert.Equal(enabled, serviced.Snapshot.Story.EntityServices);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView!.Area, serviced.Snapshot.Story.LogicalView!.Area);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView.BX.Position, serviced.Snapshot.Story.LogicalView.BX.Position);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView.BY.Position, serviced.Snapshot.Story.LogicalView.BY.Position);
+        Assert.Equal(24, serviced.Snapshot.Story.LogicalView.BX.Speed);
+        Assert.False(serviced.Snapshot.Story.LogicalView.Scrolling);
+        Assert.Null(serviced.Snapshot.Story.LogicalView!.TargetSlot);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitDetachPrecedesFadeServicesWithoutChangingAxesCounterOrRng(bool detach)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            var program = JsonNode.Parse("""
+                {"id":"fade-test","instructions":[{"op":"present","kind":"FadeOut","resource":"black","entity":null,"position":null},
+                {"op":"scene-map","map":"yard-map","camera":{"x":3,"y":7}},{"op":"end"}]}
+                """)!;
+            if (detach) program["instructions"]!.AsArray().Insert(0, JsonNode.Parse("""{"op":"camera-entity","entity":null}"""));
+            document["world"]!["programs"]!.AsArray().Add(program);
+        });
+        var entry = session.Current;
+        var oldView = entry.Story.LogicalView! with { FollowCounter = 9 };
+        var moving = entry.Exploration!.WithEntity(entry.Exploration.PlayerEntity with
+            { Motion = entry.Exploration.PlayerEntity.Motion with { X = 10 * 384 } });
+        var story = entry.Story.Copy(new("fade-test", 0), logicalView: oldView,
+            display: new(3, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored));
+        SessionSnapshot Snapshot(StoryState state) => new(entry.SessionId, entry.Revision, entry.ObservationSequence,
+            new ActiveExploration(moving), state, entry.StopReason);
+        var activeAxes = oldView with { AX = oldView.AX with { Destination = 4000, Speed = 32 },
+            BY = oldView.BY with { Destination = 3000, Speed = 24 } };
+        var immediate = ProgramRunner.Run(session.Definition, Snapshot(story.Copy(story.Cursor, logicalView: activeAxes)), []);
+        Assert.Null(immediate.Failure);
+        Assert.Equal(activeAxes with { TargetSlot = detach ? null : activeAxes.TargetSlot }, immediate.Snapshot.Story.LogicalView);
+        Assert.Equal(entry.Story.SimulationTick, immediate.Snapshot.Story.SimulationTick);
+        Assert.Same(entry.Exploration.Party, immediate.Snapshot.Exploration!.Party);
+        var started = ProgramRunner.Run(session.Definition, Snapshot(story), []);
+        Assert.Null(started.Failure);
+        var fade = Assert.IsType<FullFadeWait>(started.Snapshot.Story.Wait);
+        var first = ExplorationDispatcher.Submit(session.Definition, started.Snapshot, new AdvanceSimulation(fade.Token));
+        Assert.Null(first.Failure);
+        Assert.Equal(detach ? 9 : 10, first.Snapshot.Story.LogicalView!.FollowCounter);
+        Assert.Equal(detach ? null : oldView.TargetSlot, first.Snapshot.Story.LogicalView.TargetSlot);
+        Assert.Equal(entry.Story.SimulationTick + 1, first.Snapshot.Story.SimulationTick);
+        Assert.Equal(entry.Exploration.Party.MainSeed, first.Snapshot.Exploration!.Party.MainSeed);
+        Assert.Equal(entry.Exploration.Party.ThinkingSeed, first.Snapshot.Exploration.Party.ThinkingSeed);
+        Assert.Equal(entry.Exploration.Party.Actors, first.Snapshot.Exploration.Party.Actors);
+        Assert.Equal(entry.Exploration.Party.Gold, first.Snapshot.Exploration.Party.Gold);
+        Assert.Equal(entry.Story.EntityServices, first.Snapshot.Story.EntityServices);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoundSceneFadeLoadFadeUsesNewBaseAndKeepsCameraEntityUnsupported(bool overridePeriod)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["maps"]![1]!["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            document["start"]!["display"] = JsonNode.Parse("""{"period":3,"base":{"color2":3822,"color3":2730},"current":{"color2":3822,"color3":2730},"visibility":"base-restored"}""");
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"present","kind":"FadeOut","resource":"black","entity":null,"position":null,"fullBlack":{"period":1}},
+                {"op":"scene-map","map":"yard-map","camera":{"x":3,"y":7}},
+                {"op":"present","kind":"FadeIn","resource":"black","entity":null,"position":null,"fullBlack":{"period":1}},
+                {"op":"wait-ticks","ticks":1},{"op":"camera-entity","entity":"traveler"},{"op":"end"}]
+                """);
+            if (!overridePeriod)
+                foreach (var instruction in document["world"]!["programs"]![0]!["instructions"]!.AsArray())
+                    instruction!.AsObject().Remove("fullBlack");
+        });
+        var fade = Assert.IsType<FullFadeWait>(session.Current.Story.Wait);
+        Assert.Equal(overridePeriod ? 1 : 3, fade.Period);
+        Accept(session, new AdvanceSimulation(fade.Token, 600));
+        Assert.Equal("quay", session.Current.Exploration!.Map.Value);
+        Assert.Equal(new PalettePair(0, 0), session.Current.Story.Display!.Current);
+        Accept(session, new CompletePresentation(fade.Token, fade.Kind));
+        Assert.Equal("yard-map", session.Current.Exploration!.Map.Value);
+        var second = Assert.IsType<FullFadeWait>(session.Current.Story.Wait);
+        Assert.Equal(new PalettePair(0x222, 0x444), session.Current.Story.Display!.Base);
+        Assert.Equal(new PalettePair(0, 0), session.Current.Story.Display.Current);
+        Assert.Null(session.Current.Story.EntityServices);
+        Assert.Equal(3 * 384, session.Current.Story.LogicalView!.BX.Position);
+        Accept(session, new AdvanceSimulation(second.Token, 600));
+        Assert.Equal(session.Current.Story.Display.Base, session.Current.Story.Display.Current);
+        Assert.Equal(FullFadeVisibility.BaseRestored, session.Current.Story.Display.Visibility);
+        Accept(session, new CompletePresentation(second.Token, second.Kind));
+        Assert.Equal(3, session.Current.Story.Display.Period);
+        Assert.False(session.Current.CanWaitAtInput);
+        var result = Send(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.Equal("field-view-camera-command", result.Failure!.Code);
+        Assert.Null(session.Current.Story.LogicalView.TargetSlot);
+    }
+
+    [Theory]
+    [InlineData(0, 3, 7)]
+    [InlineData(255, 11, 4)]
+    public void BoundBlackSceneUsesExplicitAreaOriginAndPreservesCallerPartyAndCounter(int layer, int x, int y)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            document["start"]!["player"] = "entity-0";
+            var stage = document["world"]!["maps"]![1]!;
+            stage["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            stage["onLoad"] = JsonNode.Parse("""{"program":"forbidden-init","instruction":0}""");
+            stage["areas"]![0]!["view"] = JsonNode.Parse(layer == 0
+                ? """{"foregroundX":2,"foregroundY":3,"backgroundX":0,"backgroundY":0,"parallaxAX":128,"parallaxAY":256,"parallaxBX":256,"parallaxBY":256,"autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":0}"""
+                : """{"foregroundX":0,"foregroundY":0,"backgroundX":4,"backgroundY":5,"parallaxAX":256,"parallaxAY":256,"parallaxBX":128,"parallaxBY":128,"autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":255}""");
+            stage["areas"]![0]!["minX"] = 3;
+            stage["areas"]![0]!["minY"] = 3;
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""{"id":"forbidden-init","instructions":[{"op":"set-flag","flag":909,"value":true},{"op":"end"}]}"""));
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse($$$"""{"id":"scene-test","instructions":[{"op":"scene-map","map":"yard-map","camera":{"x":{{{x}}},"y":{{{y}}}}},{"op":"wait-ticks","ticks":1},{"op":"end"}]}"""));
+        });
+        var entry = session.Current;
+        var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
+        var old = entry.Story.LogicalView!;
+        var story = entry.Story.Copy(new("scene-test", 0), continuation: ProgramContinuation.BeforeBattleFinished,
+            enteringBattle: route, callers: [new("invitation", 1)], entityServices: true, windowFixPending: true,
+            display: new(1, new(0xEEE, 0xAAA), new(0, 0), FullFadeVisibility.Black),
+            logicalView: old with { FollowCounter = 9, AX = old.AX with { Destination = 3000, Speed = 32 } });
+        var result = ProgramRunner.Run(session.Definition, entry.WithStory(story), []);
+        Assert.Null(result.Failure);
+        var current = result.Snapshot;
+        Assert.Equal("yard-map", current.Exploration!.Map.Value);
+        Assert.Same(entry.Exploration!.Party, current.Exploration.Party);
+        Assert.Equal(entry.Exploration.AllEntities, current.Exploration.AllEntities);
+        Assert.Null(current.Exploration.Definition.Traversal.SelectActiveArea(current.Exploration.PlayerEntity.Position));
+        Assert.Equal(entry.Story.Flags, current.Story.Flags);
+        Assert.DoesNotContain(909, current.Story.Flags);
+        Assert.Equal(story.Callers, current.Story.Callers);
+        Assert.Same(route, current.Story.EnteringBattle);
+        Assert.True(current.Story.EntityServices);
+        Assert.True(current.Story.WindowFixPending);
+        Assert.IsType<TickWait>(current.Story.Wait);
+        Assert.Equal(new PalettePair(0x222, 0x444), current.Story.Display!.Base);
+        Assert.Equal(new PalettePair(0, 0), current.Story.Display.Current);
+        var view = current.Story.LogicalView!;
+        Assert.Equal(3, view.Area.MinX);
+        Assert.Null(view.TargetSlot);
+        Assert.False(view.Scrolling);
+        Assert.Equal(9, view.FollowCounter);
+        Assert.Equal(0, view.AX.Speed);
+        Assert.Equal(layer == 0 ? x * 192 + 768 : x * 384, view.AX.Position);
+        Assert.Equal(layer == 0 ? y * 384 + 1152 : y * 384, view.AY.Position);
+        Assert.Equal(layer == 0 ? x * 384 : x * 192 + 1536, view.BX.Position);
+        Assert.Equal(layer == 0 ? y * 384 : y * 192 + 1920, view.BY.Position);
+        var replacement = SceneEntities.Reload(current.Exploration, new(new(30, 128, 0, []), new(20, 20), 1,
+            Enumerable.Range(0, 8).Select(index => new ExplorationEntityDefinition(new("entity-" + (128 + index)), new(7, 9), 3, 32, Sprite: 30)).ToArray()), current.Story.Flags, 999);
+        Assert.Equal(view, current.Story.LogicalView);
+        Assert.Equal(20, replacement.PlayerEntity.Position.X);
+        Assert.NotSame(replacement.PlayerEntity, replacement.Entities[new("entity-135")]);
+        // Entity replacement is a separate instruction; it cannot implicitly re-center the scene.
+        var tick = ExplorationTextRunner.AfterEntities(replacement, current.Story);
+        Assert.Equal(view.AX.Position, tick.LogicalView!.AX.Position);
+        Assert.Null(tick.LogicalView.TargetSlot);
+    }
+
+    [Theory]
+    [InlineData("visible", "scene-load-black")]
+    [InlineData("transitioning", "full-fade-state")]
+    [InlineData("palette", "scene-load-palette-binding")]
+    [InlineData("window", "scene-load-windows")]
+    [InlineData("warp", "ordinary-warp-scene-load")]
+    public void BoundSceneRejectsUnsupportedStatesBeforePublishingReplacement(string condition, string failure)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            if (condition != "palette") document["world"]!["maps"]![1]!["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""{"id":"scene-test","instructions":[{"op":"scene-map","map":"yard-map","camera":{"x":3,"y":4}},{"op":"end"}]}"""));
+        });
+        var entry = session.Current;
+        var display = condition == "visible" ? new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored) :
+            new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0, 0), condition == "transitioning" ? FullFadeVisibility.Transitioning : FullFadeVisibility.Black);
+        var story = entry.Story.Copy(new("scene-test", 0), display: display,
+            textWindow: condition == "window" ? new OpenTextWindow(100, TextDisplayMode.Single, null, 0) : null,
+            warp: condition == "warp" ? new(new("yard-map"), new(1, 1), 1, MapLoadMode.Rebuild) : null);
+        var result = ProgramRunner.Run(session.Definition, entry.WithStory(story), []);
+        Assert.Equal(failure, result.Failure!.Code);
+        Assert.Same(entry.Active, result.Snapshot.Active);
+        Assert.Same(display, result.Snapshot.Story.Display);
+        Assert.Equal(story.Cursor, result.Snapshot.Story.Cursor);
+    }
+
     [Fact]
     public void SceneReplacementWaitsForEveryPhysicalSpriteAndCameraAndGestureUseTheNewAlias()
     {

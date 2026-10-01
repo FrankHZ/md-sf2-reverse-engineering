@@ -11,6 +11,69 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class ExplorationTextWaitTests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    public void BeforeBattleExplicitWindowsKeepTheirRealContinuationAcrossInputAndNestedReturn(int speed)
+    {
+        var session = StartFieldText("A{W2}", second: "B{W1}", speed: speed, enabled: true, configure: document =>
+        {
+            document["world"]!["presentation"]!["sprites"]![0]!["portrait"] = 7;
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""
+                {"id":"before-test","entitiesRunning":true,"instructions":[{"op":"text-cursor","text":100},
+                {"op":"open-portrait","entity":"ferryman","flags":0},{"op":"wait-view"},
+                {"op":"show-text","mode":"continued","speaker":"ferryman","explicitWindows":true},
+                {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+                {"op":"close-portrait"},{"op":"close-text"},{"op":"set-flag","flag":906,"value":true},{"op":"end-map-script"}]}
+                """));
+        });
+        var entry = session.Current;
+        var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
+        var result = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("before-test", 0),
+            continuation: ProgramContinuation.BeforeBattleFinished, enteringBattle: route, callers: [new("invitation", 1)])), []);
+        Assert.Null(result.Failure);
+        var current = result.Snapshot;
+        int inputs = 0;
+        for (int i = 0; i < 200 && !current.Story.Flags.Contains(906); i++)
+        {
+            Assert.Same(route, current.Story.EnteringBattle);
+            Assert.Equal(ProgramContinuation.BeforeBattleFinished, current.Story.Continuation);
+            Assert.Null(current.Story.EventCaller);
+            Assert.False(current.CanWaitAtInput);
+            Assert.Single(current.Story.Callers);
+            SessionCommand command;
+            if (current.CanWaitForText)
+            {
+                var text = Assert.IsType<FieldTextWait>(current.Story.Wait);
+                Assert.Equal(inputs == 0, text.Wait2);
+                Assert.Equal(100 + inputs, current.Story.TextWindow is OpenTextWindow window ? window.Text : -1);
+                Assert.True(Assert.IsType<OpenPortraitWindow>(current.Story.PortraitWindow).Work!.Registered);
+                var polled = ExplorationDispatcher.Submit(session.Definition, current, new WaitForText(text.Token));
+                Assert.Null(polled.Failure);
+                current = polled.Snapshot;
+                command = new Acknowledge(text.Token);
+                inputs++;
+            }
+            else if (current.Story.Wait is FieldTextWait { LogicalDone: true, Revealed: false } text)
+                command = new CompleteTextReveal(text.Token);
+            else command = new AdvanceSimulation(current.Story.Wait!.Token);
+            result = ExplorationDispatcher.Submit(session.Definition, current, command);
+            Assert.Null(result.Failure);
+            current = result.Snapshot;
+        }
+        Assert.Equal(2, inputs);
+        Assert.Contains(906, current.Story.Flags);
+        Assert.Empty(current.Story.Callers);
+        Assert.Equal(new ProgramLocation("invitation", 1), current.Story.Cursor);
+        Assert.Same(route, current.Story.EnteringBattle);
+        Assert.Equal(ProgramContinuation.BeforeBattleFinished, current.Story.Continuation);
+        Assert.IsType<ClosedPortraitWindow>(current.Story.PortraitWindow);
+        Assert.IsType<ClosedTextWindow>(current.Story.TextWindow);
+        Assert.False(current.Story.LogicalText!.Open);
+        Assert.False(current.CanWaitAtInput || current.CanWaitForText);
+    }
+
+    [Theory]
     [InlineData(false, 0x12341234u)]
     [InlineData(true, 0xC632A55Au)]
     public void NodServicesLiveEntitiesThenWindowAndPortraitWithoutOverwritingPollCopy(bool enabled, uint seed)

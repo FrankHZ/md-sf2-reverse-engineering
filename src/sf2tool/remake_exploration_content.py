@@ -791,8 +791,11 @@ class OriginalPrograms:
             ):
                 # csc37 starts out-to-black and falls through csc48. The source's later fadeInB
                 # is a separate operation; loading a scene does not execute map init/population.
+                # csc48 detaches before its first enabled fade wait. With the finite blocking
+                # helper, express that service boundary explicitly before entering the fade.
                 result.extend(
                     [
+                        {"op": "camera-entity", "entity": None},
                         {
                             "op": "present",
                             "kind": "FadeOut",
@@ -805,6 +808,8 @@ class OriginalPrograms:
                             "map": "map-" + str(self.number(args[0])),
                             "camera": {"x": self.number(args[1]), "y": self.number(args[2])},
                         },
+                        # csc48 reactivates installed services, waits once, then returns.
+                        {"op": "wait-ticks", "ticks": 1},
                     ]
                 )
             elif op == "loadMapEntities":

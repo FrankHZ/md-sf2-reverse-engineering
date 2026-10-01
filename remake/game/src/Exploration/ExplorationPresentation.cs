@@ -259,7 +259,6 @@ internal sealed class ExplorationPresentation : IDisposable
             _scale = Math.Max(1, Math.Min((viewport.X - 40) / ViewWidth, (viewport.Y - 200) / ViewHeight));
             _screen = new(new Vector2((viewport.X - ViewWidth * _scale) / 2, 52), new Vector2(ViewWidth, ViewHeight) * _scale);
             _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
-            var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
             var view = story.LogicalView;
             var background = view is null ? _camera : new Vector2(view.BX.Position / 16f, view.BY.Position / 16f);
             var foreground = view is null ? _camera : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
@@ -267,7 +266,12 @@ internal sealed class ExplorationPresentation : IDisposable
             // VInt_UpdateSprites selects the area's main plane once before its entity loop.
             // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
             var actorOrigin = _camera;
-            var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
+            var overlay = new MapOverlayOffset(0, 0);
+            if (view is null)
+            {
+                var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
+                overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
+            }
             bool hasForeground = view is null ? overlay.X != 0 || overlay.Y != 0 :
                 view.Area.ForegroundX != view.Area.BackgroundX || view.Area.ForegroundY != view.Area.BackgroundY ||
                 view.Area.ParallaxAX != view.Area.ParallaxBX || view.Area.ParallaxAY != view.Area.ParallaxBY;

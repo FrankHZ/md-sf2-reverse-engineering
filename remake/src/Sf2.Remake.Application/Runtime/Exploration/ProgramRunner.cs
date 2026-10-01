@@ -148,15 +148,22 @@ internal static class ProgramRunner
                         else story = story.Copy(story.Cursor, cameraTarget: target.Position, clearCameraEntity: true);
                         break;
                     case SetCameraEntity target:
-                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
+                        if (story.TextSettings is not null)
+                        {
+                            if (target.Entity is not null) throw new BattleRuleException("field-view-camera-command", "program.camera", true);
+                            ExplorationTextRunner.ValidateContext(current);
+                            story = story.Copy(story.Cursor, logicalView: story.LogicalView! with { TargetSlot = null }, clearCameraEntity: true);
+                            break;
+                        }
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:
-                        if (story.TextSettings is not null) throw new BattleRuleException("field-view-scene-map", "program.map", true);
                         if (story.Warp is not null)
                             throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
-                        active = new ActiveExploration(MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load));
-                        story = story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true); break;
+                        var scene = MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load);
+                        story = story.TextSettings is not null ? MapTransfer.BindScene(current, scene, load).Copy(story.Cursor) :
+                            story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);
+                        active = new ActiveExploration(scene); break;
                     case LoadSceneEntities load:
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
@@ -260,7 +267,7 @@ internal static class ProgramRunner
                         {
                             MapTransfer.ValidateCue(cue);
                             current = MapTransfer.BeginFade(current, current.Story, cue.Kind,
-                                FullFadePurpose.Script, cue.FullBlack!.Period, observations);
+                                FullFadePurpose.Script, cue.FullBlack?.Period, observations);
                             continue;
                         }
                         if (cue.Entity is { } reference) cue = cue with { Entity = Entity(current, reference).Entity };

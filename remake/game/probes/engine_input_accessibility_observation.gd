@@ -32,7 +32,8 @@ var choice_exercised := false
 var choice_following := false
 var choice_draws: Array = []
 var modern_music_case := "modern-music" in input_case
-var parallax_case := "field-parallax" in input_case
+var before_battle_case := "before-battle" in input_case
+var parallax_case := "field-parallax" in input_case or before_battle_case
 var map_init_case := "map-init" in input_case or parallax_case
 var raw_text_case := "raw-text" in input_case or modern_music_case
 var music_logical_end: Dictionary = {}
@@ -1130,6 +1131,63 @@ func post_palace_route(s: Dictionary) -> void:
         "Unequal plane approach stops at Map40 field control before natural battle selection")
     read_sample("parallax-field-return")
     check(camera_exposure_checks > 0, "Actual unequal-plane draws expose consistent camera before and after")
+    if before_battle_case: await before_battle_windows(s)
+
+func before_battle_windows(approach: Dictionary) -> void:
+    var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../../tests/fixtures/h3/map3-battle01-player-ready-v1.json"))
+    await key(input_code(fixture.static.inputPlan[-1].input))
+    var confirmed := false
+    var scene_seen := false
+    for frame in range(5000):
+        var s := state()
+        if s.failure != null:
+            read_sample("before-battle-failure")
+            check(false, "Before-battle scene and windows remain supported: " + str(s.failure))
+            return
+        check(s.sessionId == approach.sessionId and s.party == approach.party and s.gold == approach.gold,
+            "Before-battle retains the actual session, party and gold")
+        if s.map == "map-57":
+            check(s.continuation == "BeforeBattleFinished" and s.enteringBattle.Encounter == "battle-1" and
+                s.callers.is_empty() and s.eventCaller == null and not s.canWaitAtInput and not s.flags.has(451.0),
+                "Before-battle keeps its actual route and continuation without field input or early intro flag")
+            if not scene_seen:
+                scene_seen = true
+                read_sample("before-battle-scene-loaded")
+                check(s.display.Base.Color2 == 3240 and s.display.Base.Color3 == 34 and
+                    s.logicalView.TargetSlot == null, "Scene installs Map57 palette and detaches player following")
+            if s.canWaitForText:
+                var ready := read_sample("before-battle-text" + str(int(s.textId)) + "-input")
+                check(s.display.Visibility == 1 and s.presentation.paletteBrightness == 1 and
+                    s.display.Base == s.display.Current and not s.logicalView.Scrolling and
+                    s.logicalView.AX.Position == 2 * 384 and s.logicalView.AY.Position == 8 * 384,
+                    "Before-battle text follows the real fade and explicit destination")
+                check(s.speaker == "entity-135" and s.portraitWork.Registered and s.portraitWork.Y == s.portraitWork.DestinationY and
+                    s.portraitProjection.id == s.portraitId and not s.entities.any(func(e): return e.waitingForSprite),
+                    "Real Astral alias, sprites and settled registered portrait precede input")
+                var dialogue := view.get_node("Dialogue") as Label
+                check(dialogue.is_visible_in_tree() and dialogue.text == s.dialogue and
+                    (dialogue.visible_characters < 0 or dialogue.visible_characters >= dialogue.get_total_character_count()),
+                    "Actual before-battle text projection is visible and fully delivered")
+                var camera: Dictionary = s.cameraProjection
+                check(camera.map == "map-57" and camera.bound and camera.actors.size() > 0 and
+                    camera.background != null and is_equal_approx(s.presentation.cameraX, 48) and
+                    is_equal_approx(s.presentation.cameraY, 192), "Actual Map57 tiles and actors use the explicit main camera")
+                if not confirmed:
+                    check(s.textId == 2292 and s.fieldText.Wait2, "First before-battle input is the real W2")
+                    physical(KEY_V, true)
+                    physical(KEY_V, false)
+                    physical(KEY_ENTER, true)
+                    physical(KEY_ENTER, false)
+                    read_sample("before-battle-w2-confirmed")
+                    confirmed = true
+                else:
+                    check(s.textId == 2293 and not s.fieldText.Wait2, "Actual W2 acknowledgement reaches the next W1 input")
+                    var held := opening_semantic(ready)
+                    for idle_frame in range(3): await process_frame
+                    check(opening_semantic(state()) == held and state().tickDebt == 0, "Ordinary W1 endpoint holds without injected state or further input")
+                    return
+        await process_frame
+    check(false, "Before-battle windows did not reach the ordinary W1 input boundary")
 
 func opening_settle(castle_yes: bool = true) -> bool:
     var seen: Dictionary = {}

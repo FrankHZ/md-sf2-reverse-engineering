@@ -889,6 +889,43 @@ Before-battle and outcome continuations, unknown/unregistered portraits and unbo
 are not admitted by this extension. The [engine owner](../../../remake/docs/exploration-programs.md#bound-map-initialization-lifecycle)
 records its bounded execution and acceptance; original presentation cadence remains **Unknown**.
 
+### Bound black scene replacement and before-battle windows
+
+**Confirmed (static source):** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/map/mapscriptengine_1.asm:csc37/csc48/csc42`,
+`code/common/maps/mapload.asm:LoadMap`, `code/common/windows/windowengine.asm:InitializeWindowProperties`
+and `code/gameflow/battle/battlevints.asm:SetBaseVIntFunctions` separate fade, scene loading,
+entity allocation and enabled services. csc37 starts black fade; csc48 detaches following before
+waiting for it, temporarily deactivates installed VInt services, loads the map with its explicit
+origin, reactivates services and waits once before returning. LoadMap selects the area from that origin, transforms both planes,
+clears scroll speeds/mask and window records, replaces PALETTE_1_BASE, and retains word_FFA828
+(follow counter). Deactivation is not VINTS_CLEAR. Current palette words are not copied from
+new base words by this load. csc42 separately replaces physical entities and mounts sprites.
+
+The remake MAY admit closed-window scene replacement with a settled **black** current display,
+valid target palette and existing numeric view profile. Explicit black cues without an override
+use the validated current fade period; nonzero temporary overrides restore that period. It MUST preserve black current colors
+while replacing the base pair, clear following/active scroll/speeds, preserve follow counter,
+select the explicit origin independently of player location and retain installed entity service
+policy. It MUST NOT call ordinary field initialization, implicitly allocate entities, invoke
+OnLoad, reselect battle, reset party/RNG or copy the new base into current colors. Open windows,
+visible/transitioning loads and an active ordinary warp MUST fail before publishing a new scene.
+This limited remake domain does not claim the original cannot load a visible scene.
+
+Real `BeforeBattleFinished` plus `EnteringBattle`, a live cursor, no event caller and bound
+text/view state MAY use the existing explicit window/input services. The real caller stack and
+route MUST survive W1/W2 input and nested script returns; field actions remain unavailable.
+Outcome and incomplete before-battle contexts stay excluded. No map, program, text or PC operand
+selects legality. Bound null camera detach MUST clear only the target, preserve axes/destinations/counter/service
+policy/RNG and consume no semantic time. Source loadMapFadeIn lowering emits that explicit detach
+before the finite fade helper, representing FF before its first enabled service. Source sets the
+fade setting before detaching; this atomic helper boundary is not CPU-cycle parity. Ordinary
+standalone fades MUST retain following; no neighboring-opcode inference is permitted.
+Source lowering MUST retain the post-load one-service wait before subsequent entity replacement;
+the pre-load fade wait does not cover that boundary. Bound drawing MUST use the selected view area
+even when the retained player lies outside every new map area, without moving that player. Non-null
+camera-entity tracking remains Unsupported. Natural original cadence/pixels
+remain **Unknown**. [Execution boundary](../../../remake/docs/exploration-programs.md#bound-before-battle-scene-and-windows).
 ## Remake Acceptance
 
 The first remake map slice is acceptable when it can:
