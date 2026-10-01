@@ -15,6 +15,47 @@ public sealed class BattleEntryProgramTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void PostLoadWaitServicesRetainedEntitiesBeforeSeparateReplacement(bool enabled)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", enabled: enabled, npcRandom: true, configure: document =>
+        {
+            document["start"]!["player"] = "entity-0";
+            document["world"]!["maps"]![1]!["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""
+                {"id":"post-load","instructions":[{"op":"scene-map","map":"yard-map","camera":{"x":3,"y":7}},
+                {"op":"wait-ticks","ticks":1},{"op":"scene-entities","population":{"allyCount":1,"nonAllyStart":128,"playerSprite":30,"followers":[]},
+                "position":{"x":8,"y":9},"facing":1,"entities":[]},{"op":"end"}]}
+                """));
+        });
+        var entry = session.Current;
+        var story = entry.Story.Copy(new("post-load", 0), entityServices: enabled,
+            display: new(1, new(0xEEE, 0xAAA), new(0, 0), FullFadeVisibility.Black));
+        var loaded = ProgramRunner.Run(session.Definition, entry.WithStory(story), []);
+        Assert.Null(loaded.Failure);
+        var wait = Assert.IsType<TickWait>(loaded.Snapshot.Story.Wait);
+        Assert.Equal(1, wait.Remaining);
+        Assert.Equal(entry.Exploration!.AllEntities, loaded.Snapshot.Exploration!.AllEntities);
+        Assert.Equal(entry.Story.SimulationTick, loaded.Snapshot.Story.SimulationTick);
+        Assert.Equal(entry.Exploration.Party.MainSeed, loaded.Snapshot.Exploration.Party.MainSeed);
+        var serviced = ExplorationDispatcher.Submit(session.Definition, loaded.Snapshot, new AdvanceSimulation(wait.Token));
+        Assert.Null(serviced.Failure);
+        Assert.IsType<EntitySetSpriteWait>(serviced.Snapshot.Story.Wait);
+        Assert.Equal(entry.Story.SimulationTick + 1, serviced.Snapshot.Story.SimulationTick);
+        Assert.Equal(new MapPosition(8, 9), serviced.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Equal(enabled, entry.Exploration.Party.MainSeed != serviced.Snapshot.Exploration.Party.MainSeed);
+        Assert.Equal(enabled, serviced.Snapshot.Story.EntityServices);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView!.Area, serviced.Snapshot.Story.LogicalView!.Area);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView.BX.Position, serviced.Snapshot.Story.LogicalView.BX.Position);
+        Assert.Equal(loaded.Snapshot.Story.LogicalView.BY.Position, serviced.Snapshot.Story.LogicalView.BY.Position);
+        Assert.Equal(24, serviced.Snapshot.Story.LogicalView.BX.Speed);
+        Assert.False(serviced.Snapshot.Story.LogicalView.Scrolling);
+        Assert.Null(serviced.Snapshot.Story.LogicalView!.TargetSlot);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void ExplicitDetachPrecedesFadeServicesWithoutChangingAxesCounterOrRng(bool detach)
     {
         var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
@@ -114,12 +155,8 @@ public sealed class BattleEntryProgramTests
             stage["areas"]![0]!["view"] = JsonNode.Parse(layer == 0
                 ? """{"foregroundX":2,"foregroundY":3,"backgroundX":0,"backgroundY":0,"parallaxAX":128,"parallaxAY":256,"parallaxBX":256,"parallaxBY":256,"autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":0}"""
                 : """{"foregroundX":0,"foregroundY":0,"backgroundX":4,"backgroundY":5,"parallaxAX":256,"parallaxAY":256,"parallaxBX":128,"parallaxBY":128,"autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":255}""");
-            var retainedPlayerArea = stage["areas"]![0]!.DeepClone();
-            retainedPlayerArea["maxX"] = 2;
-            retainedPlayerArea["maxY"] = 2;
             stage["areas"]![0]!["minX"] = 3;
             stage["areas"]![0]!["minY"] = 3;
-            stage["areas"]!.AsArray().Insert(0, retainedPlayerArea);
             document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""{"id":"forbidden-init","instructions":[{"op":"set-flag","flag":909,"value":true},{"op":"end"}]}"""));
             document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse($$$"""{"id":"scene-test","instructions":[{"op":"scene-map","map":"yard-map","camera":{"x":{{{x}}},"y":{{{y}}}}},{"op":"wait-ticks","ticks":1},{"op":"end"}]}"""));
         });
@@ -136,6 +173,7 @@ public sealed class BattleEntryProgramTests
         Assert.Equal("yard-map", current.Exploration!.Map.Value);
         Assert.Same(entry.Exploration!.Party, current.Exploration.Party);
         Assert.Equal(entry.Exploration.AllEntities, current.Exploration.AllEntities);
+        Assert.Null(current.Exploration.Definition.Traversal.SelectActiveArea(current.Exploration.PlayerEntity.Position));
         Assert.Equal(entry.Story.Flags, current.Story.Flags);
         Assert.DoesNotContain(909, current.Story.Flags);
         Assert.Equal(story.Callers, current.Story.Callers);

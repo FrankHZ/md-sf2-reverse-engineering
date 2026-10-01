@@ -895,9 +895,9 @@ records its bounded execution and acceptance; original presentation cadence rema
 `code/common/scripting/map/mapscriptengine_1.asm:csc37/csc48/csc42`,
 `code/common/maps/mapload.asm:LoadMap`, `code/common/windows/windowengine.asm:InitializeWindowProperties`
 and `code/gameflow/battle/battlevints.asm:SetBaseVIntFunctions` separate fade, scene loading,
-entity allocation and enabled services. csc37 starts black fade; csc48 waits for it, detaches
-following, temporarily deactivates then reactivates installed VInt services, and loads the map
-with its explicit origin. LoadMap selects the area from that origin, transforms both planes,
+entity allocation and enabled services. csc37 starts black fade; csc48 detaches following before
+waiting for it, temporarily deactivates installed VInt services, loads the map with its explicit
+origin, reactivates services and waits once before returning. LoadMap selects the area from that origin, transforms both planes,
 clears scroll speeds/mask and window records, replaces PALETTE_1_BASE, and retains word_FFA828
 (follow counter). Deactivation is not VINTS_CLEAR. Current palette words are not copied from
 new base words by this load. csc42 separately replaces physical entities and mounts sprites.
@@ -920,7 +920,10 @@ selects legality. Bound null camera detach MUST clear only the target, preserve 
 policy/RNG and consume no semantic time. Source loadMapFadeIn lowering emits that explicit detach
 before the finite fade helper, representing FF before its first enabled service. Source sets the
 fade setting before detaching; this atomic helper boundary is not CPU-cycle parity. Ordinary
-standalone fades MUST retain following; no neighboring-opcode inference is permitted. Non-null
+standalone fades MUST retain following; no neighboring-opcode inference is permitted.
+Source lowering MUST retain the post-load one-service wait before subsequent entity replacement;
+the pre-load fade wait does not cover that boundary. Bound drawing MUST use the selected view area
+even when the retained player lies outside every new map area, without moving that player. Non-null
 camera-entity tracking remains Unsupported. Natural original cadence/pixels
 remain **Unknown**. [Execution boundary](../../../remake/docs/exploration-programs.md#bound-before-battle-scene-and-windows).
 ## Remake Acceptance

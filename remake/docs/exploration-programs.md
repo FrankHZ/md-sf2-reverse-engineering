@@ -586,6 +586,9 @@ Bound null detach validates the same caller context, clears only logical trackin
 axes/destinations/counter/services/RNG with no time advance. This represents the source FF store
 before its first enabled fade wait, without claiming CPU-cycle ordering of fade-setting writes.
 Standalone black fades retain following; production never infers composition from the next opcode.
+After scene loading, source lowering emits one explicit `wait-ticks` service before returning to
+subsequent instructions. This services retained entities under the existing enablement policy;
+it is separate from pre-load fade services and precedes any `scene-entities` replacement.
 
 Bound `scene-map` requires settled closed windows, no ordinary warp, a valid target base palette,
 a settled black current display and the accepted view profile. Its explicit camera origin selects
@@ -596,6 +599,8 @@ only the later real fade restores new colors. Visible/transitioning/open-window/
 loads reject before any replacement. This restriction is a remake representation boundary,
 not a statement about original visible csc48 behavior. Separate `scene-entities` replaces physical
 aliases and mounts sprites without re-centering or reattaching the camera.
+Bound rendering uses the selected logical area and both plane origins even when no target-map
+area covers the retained player. Player-area and legacy overlay lookup apply only to unbound drawing.
 
 **Confirmed (bounded remake observation):** the representative ordinary native run continues the existing same-session route from Map40 approach
 through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and

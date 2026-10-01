@@ -808,6 +808,8 @@ class OriginalPrograms:
                             "map": "map-" + str(self.number(args[0])),
                             "camera": {"x": self.number(args[1]), "y": self.number(args[2])},
                         },
+                        # csc48 reactivates installed services, waits once, then returns.
+                        {"op": "wait-ticks", "ticks": 1},
                     ]
                 )
             elif op == "loadMapEntities":

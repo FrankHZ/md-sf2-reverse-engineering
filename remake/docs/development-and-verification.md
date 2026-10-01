@@ -2904,7 +2904,8 @@ local normal/full/H3. Preserve completed failure records and obtain independent 
 Load current private/tool selections and the locked SDK environment. Reuse the accepted private
 party/assets/music, owned installation/project and existing observer/navigation. Recompile only
 bbcs_01 using OriginalPrograms from the pinned source into a fresh ignored world. Its graph is
-only bbcs_01, adding explicit null detach before the black fade; removing that instruction
+only bbcs_01, adding explicit null detach before the black fade and `wait-ticks:1` after scene-map;
+removing those two instructions
 reproduces the old row. All other world/provenance/asset/audio fields must compare directly equal.
 No handwritten PC edit, full world/asset export or post-load patch is part of preparation. Produce
 only Map57 palette metadata with `selected_map_palette_bindings` into a fresh ignored start;
@@ -2914,7 +2915,7 @@ existing Map57 atlas, sprite209/portrait31 and texts2292/2293; no general export
 Run affected `BattleEntryProgramTests` and `ExplorationTextWaitTests`, `uv run sf2 verify adapter`,
 a controlled Debug host build and `uv run sf2 design-contracts test`. One representative ordinary case
 is `portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-before-battle`.
-The retained wrapper is `local/issue534/before-battle-windows/run-native-detach.py native-new instant 1 40 yes modern-music-before-battle`.
+The retained current wrapper is `local/issue534/before-battle-windows/run-native-post-load.py native-new instant 1 40 yes modern-music-before-battle`.
 Earlier opening/palace/tower/parallax steps are setup for this same session. Continue the final
 player-ready fixture Up; inspect actual scene/palette/entity readiness/main camera/portrait/text,
 real BeforeBattleFinished/EnteringBattle/callers, ordinary W2 confirm and next W1 readiness.
@@ -2931,8 +2932,8 @@ the explicit source detach lowering and does not accept its enabled-service orde
 The preceding failed/default-fade and incorrect-case runs, cursor-replay behavior failure, fixture
 construction and readback inspector failures remain in the ignored owning handoff. Older acceptance
 and original/H4/HEAL/provenance/warp/cleanup Unknowns are retained; original runtime delta0.
-**Confirmed (current source service boundary, remake observation):** `native-04` uses the narrowly
-recompiled explicit-detach world and current adapter, exits0/PASS with empty failure/Unavailable
+**Confirmed (detach boundary, prior post-load ordering, remake observation):** `native-04` uses the narrowly
+recompiled explicit-detach world and then-current adapter, exits0/PASS with empty failure/Unavailable
 lists and1,552 samples. It reaches the same ordinary2292 W2→2293 W1 boundary with actual scene,
 text/portrait/camera and route/caller readback. Detach ordering is accepted at the finite helper's
 first-service boundary; source CPU cycles, hardware cadence and full battle entry remain Unknown.
@@ -2940,3 +2941,24 @@ The initial CI848PASS/1FAIL/30SKIP is retained: the obsolete missing-FullBlack r
 explicit zero-period fixture. Its four theory cases pass; moving/counter detach and standalone fade
 cases pass after correcting a party-instance assertion to compare actual party values. No local
 aggregate rerun replaces that completed red result.
+
+For a retained-player renderer correction, run a minimal authored startup package through actual
+Main with a valid explicit target origin and no target area containing the retained player. Observe
+both layer0 and layer255 profiles, independent A/B draw origins, actual tile/actor passes and the
+unchanged player position; never constrain/recenter the player to make drawing legal. The retained
+`run-authored-scene.py authored-new 0` (or `255`) uses the owned project/installation, authored raster
+bindings and `observe-authored-scene.gd`; its inputs and readback remain ignored. The source post-load
+wait also needs the current ordinary route because it services old entities before replacement,
+potentially advancing RNG. Compare the accepted approach and report new measured ticks/seeds as
+results, preserving prior-order observations. No full engine aggregate or paired settings campaign
+is needed for these corrections.
+
+**Confirmed (current remake observation):** `native-05` uses the fresh source lowering with explicit
+detach and post-load wait, and the corrected adapter. It exits0/PASS with empty failures/Unavailable,
+reaches ordinary2292 W2 confirmation then2293 W1 readiness, and preserves the accepted Map40 approach.
+Readback observes TickWait at13096 with three old entities, then EntitySetSpriteWait at13097 with
+eleven replacement entities. Subsequent input checkpoints advance by one tick relative to native04;
+this representative's measured main/copy seeds remain unchanged. These are results, not targets.
+The two authored layer profiles also draw actual A/B tiles and actors while retaining a player
+outside every new area. Enabled/disabled random old-entity behavior separately verifies the general
+post-load RNG rule. Original cadence/pixels and later full battle admission remain open.

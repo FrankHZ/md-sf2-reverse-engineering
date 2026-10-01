@@ -1497,8 +1497,10 @@ open. No logical padding, reseeding or fitting to retained79 receipt counts is p
 Closed-window bound scene loading admits the settled black fade/load/fade domain. It replaces the
 map's logical base pair and retains black Current until actual fade service restores colors.
 Map57 uses the existing map atlas/blocks and source135 sprite209/portrait31 bindings; the narrow
-palette producer supplies its missing base pair in a fresh private start. The narrowly recompiled bbcs_01 row adds explicit null detach before the finite fade; other
+palette producer supplies its missing base pair in a fresh private start. The narrowly recompiled bbcs_01 row adds explicit null detach before the finite fade and one enabled common service after loading; other
 start/world/party/asset/music inputs remain unchanged. Explicit scene origin selects the area's main-plane camera;
-entity replacement does not re-center. Actual text/portrait projection and input delivery use the
+entity replacement does not re-center. Bound A/B drawing retains that origin even when the old
+player is outside every new area; only unbound drawing selects legacy overlays by player location.
+Actual text/portrait projection and input delivery use the
 ordinary adapter. Non-null camera-entity and later full bound battle presentation remain outside admission.
 [Behavior/limits](exploration-programs.md#bound-before-battle-scene-and-windows).
