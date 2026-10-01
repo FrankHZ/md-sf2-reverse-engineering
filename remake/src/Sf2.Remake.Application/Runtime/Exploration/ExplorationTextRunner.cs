@@ -55,10 +55,18 @@ internal static class ExplorationTextRunner
         settings.MouthControl == 0 && logicalInput != 0 ? 0 : settings.MessageSpeed switch
         { 0 => 4, 1 => 2, 2 => 1, 3 => 0, _ => throw new BattleRuleException("field-text-speed", "story.textSettings", true) };
 
+    // Map initialization retains its real continuation and call stack until OnLoad
+    // returns. Its explicit windows share the field services without an event wrapper.
+    internal static bool MapInitialization(StoryState story) => story is
+        { Continuation: ProgramContinuation.MapLoaded, EnteringBattle: null, EventCaller: null, Cursor: not null,
+            TextSettings: not null, LogicalText: not null, LogicalView: not null };
+
     internal static void ValidateContext(SessionSnapshot current)
     {
         if (current.Story is not { TextSettings: not null, LogicalText: not null, LogicalView: not null,
-                EnteringBattle: null, Continuation: ProgramContinuation.FieldInput } || current.Exploration is null ||
+                EnteringBattle: null } ||
+            current.Story.Continuation != ProgramContinuation.FieldInput && !MapInitialization(current.Story) ||
+            current.Exploration is null ||
             !ExplorationPortraitRunner.Admitted(current.Story))
             throw new BattleRuleException("field-text-context", "story.text", true);
     }
@@ -67,9 +75,10 @@ internal static class ExplorationTextRunner
     {
         ValidateContext(current);
         var speaker = text.UseEventSpeaker ? current.Story.EntityEvent?.Entity : text.Speaker;
-        // Raw DisplayText can intentionally have no speaker. A failed event lookup or
+        // Raw DisplayText and explicit source FF lookup-skip can have no speaker. A failed event lookup or
         // an explicitly supplied invalid speaker must still fail ordinary validation.
-        bool speakerless = !text.WaitForAcknowledgement && !text.UseEventSpeaker && text.Speaker is null;
+        bool speakerless = !text.UseEventSpeaker && text.Speaker is null &&
+            (!text.WaitForAcknowledgement || text.SpeakerFlags == 255);
         if (!speakerless && (speaker is not { } actor || !current.Exploration!.TryResolveEntity(actor, out var entity) || entity.Sprite is not { } sprite ||
             definition.Visuals is not { } visuals || !visuals.Sprites.TryGetValue(sprite, out var visual) ||
             visual.Portrait is not null && current.Story.PortraitWindow is not OpenPortraitWindow { Work: not null }))
@@ -80,7 +89,7 @@ internal static class ExplorationTextRunner
         var partyLists = current.Story.PartyLists;
         foreach (var part in tokens)
         {
-            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline)
+            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "")); continue; }
             int? member = part.Member;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
@@ -106,7 +115,8 @@ internal static class ExplorationTextRunner
         var wait = Span(token, current.Story.TextCursor, units.AsReadOnly(), 0,
             current.Story.LogicalText!.Open ? FieldTextPhase.Tokens : FieldTextPhase.ClearFirst);
         var story = current.Story.Copy(current.Story.Cursor, wait, textCursor: checked(current.Story.TextCursor + 1), partyLists: partyLists,
-            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags));
+            textWindow: new OpenTextWindow(current.Story.TextCursor, text.Mode, speaker, text.SpeakerFlags),
+            typewriting: current.Story.LogicalText.Open ? true : null);
         return Normalize(story);
     }
 
@@ -132,6 +142,15 @@ internal static class ExplorationTextRunner
                 break;
             }
             var unit = wait.Units[wait.Index];
+            if (unit.Kind == ExplorationTextTokenKind.Delay1)
+            {
+                wait = wait with { Index = wait.Index + 1 };
+                if (story.TextSettings!.MouthControl != 0) continue;
+                // symbol_delay1 saves the live byte, clears it, then performs DBF21.
+                wait = wait with { Phase = FieldTextPhase.TextPause, Remaining = 22, SavedTypewriting = story.Typewriting };
+                story = story.Copy(story.Cursor, wait, typewriting: false);
+                break;
+            }
             bool newline = unit.Kind == ExplorationTextTokenKind.Newline;
             bool wrap = newline || window.X > 204 || wait.FirstGlyph && window.X != 2;
             if (!newline) wait = wait with { FirstGlyph = false };
@@ -149,8 +168,7 @@ internal static class ExplorationTextRunner
         // DisplayText sets CURRENTLY_TYPEWRITING only after CreateDialogueWindow returns.
         // Its creation waits preserve the incoming byte while portrait service remains active.
         story = story.Copy(story.Cursor, wait, logicalText: window,
-            typewriting: wait.Phase is FieldTextPhase.ClearFirst or FieldTextPhase.ClearSecond or FieldTextPhase.Opening
-                ? story.Typewriting : wait.Phase is not (FieldTextPhase.Input or FieldTextPhase.End));
+            typewriting: wait.Phase is FieldTextPhase.Input or FieldTextPhase.End ? false : story.Typewriting);
         return FinishDelivery(story);
     }
 
@@ -185,6 +203,10 @@ internal static class ExplorationTextRunner
                 window = new(Open: true, AnimationLength: 8, OriginY: 29, DestinationY: 19);
                 wait = wait with { Phase = FieldTextPhase.Opening, Remaining = 8 }; break;
             case FieldTextPhase.Opening:
+                if (wait.Remaining == 1) story = story.Copy(story.Cursor, story.Wait, typewriting: true);
+                wait = wait with { Remaining = wait.Remaining - 1, Phase = wait.Remaining == 1 ? FieldTextPhase.Tokens : wait.Phase }; break;
+            case FieldTextPhase.TextPause:
+                if (wait.Remaining == 1) story = story.Copy(story.Cursor, story.Wait, typewriting: wait.SavedTypewriting);
                 wait = wait with { Remaining = wait.Remaining - 1, Phase = wait.Remaining == 1 ? FieldTextPhase.Tokens : wait.Phase }; break;
             case FieldTextPhase.GlyphCursor:
                 int delay = TypewriteDelay(story.TextSettings!, 0);

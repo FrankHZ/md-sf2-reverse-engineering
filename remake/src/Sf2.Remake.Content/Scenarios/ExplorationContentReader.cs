@@ -17,6 +17,7 @@ internal static class ExplorationContentReader
             if (value == "{N}") tokens.Add(new(ExplorationTextTokenKind.Newline, value));
             else if (value == "{W1}") tokens.Add(new(ExplorationTextTokenKind.Wait1, value));
             else if (value == "{W2}") tokens.Add(new(ExplorationTextTokenKind.Wait2, value));
+            else if (value == "{D1}") tokens.Add(new(ExplorationTextTokenKind.Delay1, value));
             else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
             else if (value.StartsWith("{NAME;", StringComparison.Ordinal) && value.EndsWith('}') &&
                 int.TryParse(value.AsSpan(6, value.Length - 7), System.Globalization.NumberStyles.None,

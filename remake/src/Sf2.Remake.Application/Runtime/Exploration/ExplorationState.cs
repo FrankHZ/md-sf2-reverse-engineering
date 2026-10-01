@@ -11,11 +11,11 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
     bool CloseOnAcknowledgement = true, bool? InputFirstEntityService = null) : ProgramWait(Token);
 // EndToken excludes the next W1, or equals the stream length for trailing delivery.
 public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
-public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End }
+public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End, TextPause }
 public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0);
 public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<FieldTextUnit> Units,
     int Index, int End, string Projection, FieldTextPhase Phase, int Remaining = 0,
-    bool FirstGlyph = true, bool Revealed = false) : ProgramWait(Token)
+    bool FirstGlyph = true, bool Revealed = false, bool SavedTypewriting = false) : ProgramWait(Token)
 {
     public bool LogicalDone => Phase is FieldTextPhase.Input or FieldTextPhase.End;
     public bool Wait2 => End < Units.Count && Units[End].Kind == ExplorationTextTokenKind.Wait2;

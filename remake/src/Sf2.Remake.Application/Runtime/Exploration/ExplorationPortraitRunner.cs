@@ -5,13 +5,15 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class ExplorationPortraitRunner
 {
+    internal static bool HasCaller(StoryState story) => story.EventCaller is not null || ExplorationTextRunner.MapInitialization(story);
+
     internal static bool Admitted(StoryState story) => story.PortraitWindow is ClosedPortraitWindow ||
-        story.EventCaller is not null && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;
+        HasCaller(story) && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;
 
     internal static SessionSnapshot Open(ScenarioDefinition definition, SessionSnapshot current, EntityRef actor, byte flags,
         List<SessionObservation> observations, bool entry)
     {
-        if (current.Story.EventCaller is null || current.Story.PortraitWindow is UnknownPortraitWindow)
+        if (!HasCaller(current.Story) || current.Story.PortraitWindow is UnknownPortraitWindow)
             throw new BattleRuleException("field-portrait-context", "story.portrait", true);
         if (current.Story.PortraitWindow is OpenPortraitWindow existing)
         {
@@ -35,7 +37,7 @@ internal static class ExplorationPortraitRunner
     internal static SessionSnapshot Close(SessionSnapshot current, List<SessionObservation> observations, bool returning)
     {
         if (current.Story.PortraitWindow is ClosedPortraitWindow) return current;
-        if (current.Story.EventCaller is null || current.Story.PortraitWindow is not OpenPortraitWindow { Work: { } work } portrait)
+        if (!HasCaller(current.Story) || current.Story.PortraitWindow is not OpenPortraitWindow { Work: { } work } portrait)
             throw new BattleRuleException("field-portrait-context", "story.portrait", true);
         // Source removes the service before starting the close movement.
         return ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor,

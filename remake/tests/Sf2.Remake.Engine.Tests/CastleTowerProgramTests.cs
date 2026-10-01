@@ -137,6 +137,42 @@ public sealed class CastleTowerProgramTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoundMapInitializationUsesLiveFlagsToSelectFirstOrRepeatVisit(bool seen)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["start"]!["flags"] = seen ? new JsonArray(605) : new JsonArray();
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"transfer","map":"quay","position":{"x":1,"y":1},"facing":0,"loadMode":"rebuild"},{"op":"end"}]
+                """);
+            document["world"]!["maps"]![0]!["onLoad"] = JsonNode.Parse("""{"program":"initialize","instruction":0}""");
+            var programs = document["world"]!["programs"]!.AsArray();
+            programs.Add(JsonNode.Parse("""
+                {"id":"initialize","instructions":[{"op":"branch-flag","flag":605,"whenSet":true,"target":{"program":"repeat","instruction":0}},
+                {"op":"call","target":{"program":"first","instruction":0},"activateEntities":true},
+                {"op":"set-flag","flag":605,"value":true},{"op":"end"}]}
+                """));
+            programs.Add(JsonNode.Parse("""
+                {"id":"first","instructions":[{"op":"camera-target","position":{"x":3,"y":3}},
+                {"op":"wait-view"},{"op":"set-flag","flag":604,"value":true},{"op":"end-map-script"}]}
+                """));
+            programs.Add(JsonNode.Parse("""{"id":"repeat","instructions":[{"op":"end"}]}"""));
+        });
+        Assert.Equal(seen ? SessionStopReason.PlayerInput : SessionStopReason.SimulationWait, session.Current.StopReason);
+        for (int i = 0; session.Current.Story.Wait is ViewWait && i < 100; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+        Assert.Equal(!seen, session.Current.Story.Flags.Contains(604));
+        Assert.Contains(605, session.Current.Story.Flags);
+        Assert.Empty(session.Current.Story.Callers);
+        Assert.Null(session.Current.Story.Cursor);
+        Assert.Null(session.Current.Story.EventCaller);
+        Assert.True(session.Current.CanWaitAtInput);
+    }
+
     private static GameSession StartProgram(string instructions) => Start("harbor-arrival", document =>
     {
         document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse(instructions);

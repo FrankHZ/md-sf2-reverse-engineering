@@ -528,6 +528,17 @@ retains the measured 112-by-24 geometry, five-layer border, and translucent blue
 the R&D text and embedded original icon. The R&D repository is lineage and comparison material, not a
 runtime dependency or authority.
 
+### Bound map-init foreground projection
+
+The bound camera additionally admits source layer255 only with zero A/B origins, unity parallax
+and zero autoscroll. [Source/behavior contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+owns provenance and the A-follow selection. Equal initialized A/B positions, destinations and
+speeds are preserved by the existing service; the base/actor projection at B therefore coincides
+with main-plane A and suppresses duplicate foreground. Tile alpha/priority and sprite ordering
+retain their existing owners. Actual readback must compare projection and logical origins at the
+same draw tick; equality on one entry sample does not prove the lifecycle. Different offsets,
+layer types, source interrupt timing and final hardware pixels remain outside this admission.
+
 ## SVG HUD Source
 
 HUD SVG tracked in the local asset repository's `masters/` is restricted to a deterministic,

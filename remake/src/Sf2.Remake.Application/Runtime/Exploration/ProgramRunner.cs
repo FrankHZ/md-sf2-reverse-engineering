@@ -161,7 +161,7 @@ internal static class ProgramRunner
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:
-                        if (story.TextSettings is not null && story.EventCaller is not null && portrait.Entity is { } boundActor)
+                        if (story.TextSettings is not null && ExplorationPortraitRunner.HasCaller(story) && portrait.Entity is { } boundActor)
                         {
                             current = ExplorationPortraitRunner.Open(definition, current, boundActor, portrait.Flags, observations, false);
                             story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
@@ -178,7 +178,7 @@ internal static class ProgramRunner
                             story = story.Copy(story.Cursor, portraitWindow: new OpenPortraitWindow(portraitId, portrait.Flags));
                         break;
                     case ClosePortrait:
-                        if (story.TextSettings is not null && story.EventCaller is not null)
+                        if (story.TextSettings is not null && ExplorationPortraitRunner.HasCaller(story))
                         {
                             current = ExplorationPortraitRunner.Close(current, observations, false);
                             story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story;
@@ -210,7 +210,7 @@ internal static class ProgramRunner
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
                             definition.Exploration.TextTokens.TryGetValue(current.Story.TextCursor, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
-                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2) &&
+                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1) &&
                                 (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
                         {
                             story = current.Story.Copy(cursor, TextSpan(tokens, token, current.Story.TextCursor, 0),
