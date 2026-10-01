@@ -864,16 +864,17 @@ this logical wait. Settled camera positions remain held through dialogue and nes
 actual ordinary field-control return restores player following, without resetting positions,
 pending destinations or the counter. The next service applies the normal follow rules.
 
-The whole bound renderer MUST project the authoritative B origin for this profile's actors/base
-and A origin for its foreground, without a second center/clamp/smoothing authority or duplicate
-foreground offset. Modern viewport/layout and existing raster resources remain presentation choices.
+The whole bound renderer MUST project B for background tiles and A for foreground tiles.
+Actors and exposed camera state MUST use the area's authoritative main origin (B for layer0,
+A for255), consistently across update and draw callbacks, without a second center/clamp/smoothing
+authority or duplicate foreground offset. Modern viewport/layout and existing raster resources remain presentation choices.
 Per-cell tile priority and alpha MUST determine occlusion, rather than a whole-block or whole-plane
 priority lift. Plane display priority MUST remain distinct from sprite-to-sprite ordering; high
 priority map pixels cover low priority sprite ink, while transparent pixels reveal the next surface.
 See the [source/data binding](../../research/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion).
 Unbound presentation retains its prior contract. **Unknown:** natural interrupt/VDP/DMA timing,
 word-wrap destinations, explicit speed, cursor/pulsating overrides, other layer/parallax/autoscroll
-profiles beyond the two bounded combinations and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+profiles outside the stated main/secondary numeric domain and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
 
 ### Bound map-initialization windows
 

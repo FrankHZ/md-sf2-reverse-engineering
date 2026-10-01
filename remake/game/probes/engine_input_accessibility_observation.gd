@@ -42,6 +42,14 @@ var raw_entry: Dictionary = {}
 var raw_late_end: Dictionary = {}
 var raw_boundary: Dictionary = {}
 var raw_draws: Array = []
+var camera_exposure_before: Dictionary = {}
+var camera_exposure_checks := 0
+
+func record_camera_before_draw() -> void:
+    if not parallax_case or not is_instance_valid(view): return
+    var s := state()
+    camera_exposure_before = {"tick":s.simulationTick,"token":s.token,
+        "x":s.presentation.cameraX,"y":s.presentation.cameraY}
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
@@ -59,7 +67,17 @@ func record_camera_draw() -> void:
     var identity := str([s.simulationTick, s.token])
     if camera_draw_seen.has(identity): return
     camera_draw_seen[identity] = true
-    camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities})
+    if parallax_case and s.map == "map-40":
+        var x: float = s.logicalView.AX.Position / 16.0
+        var y: float = s.logicalView.AY.Position / 16.0
+        check(is_equal_approx(s.presentation.cameraX, x) and is_equal_approx(s.presentation.cameraY, y),
+            "Exposed main camera agrees after unequal-plane draw")
+        if camera_exposure_before.get("tick") == s.simulationTick and camera_exposure_before.get("token") == s.token:
+            check(is_equal_approx(camera_exposure_before.x, x) and is_equal_approx(camera_exposure_before.y, y),
+                "Exposed main camera agrees before unequal-plane draw")
+            camera_exposure_checks += 1
+    camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities,
+        "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}})
 
 func check(ok: bool, message: String) -> void:
     if not ok:
@@ -1111,6 +1129,7 @@ func post_palace_route(s: Dictionary) -> void:
         s.cursor == null and s.wait == null and s.eventCaller == null and not s.flags.has(399.0),
         "Unequal plane approach stops at Map40 field control before natural battle selection")
     read_sample("parallax-field-return")
+    check(camera_exposure_checks > 0, "Actual unequal-plane draws expose consistent camera before and after")
 
 func opening_settle(castle_yes: bool = true) -> bool:
     var seen: Dictionary = {}
@@ -1370,6 +1389,7 @@ func run_portrait_event() -> void:
         return
     view.connect("SessionResultObserved", record_warp_result)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
+    if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))
     # Existing accepted spatial edges only, never its historical frame/acknowledgement counts.
     var navigation: Array = fixture.expectedObservation.records[0].logicalInputTrace
