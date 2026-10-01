@@ -13,14 +13,14 @@ func guard(s: Dictionary) -> Dictionary:
 func remember(s: Dictionary, label: String) -> void:
     castle_records.append({"label":label,"map":s.get("map"),"player":player(s),"guard":guard(s),"flags":s.get("flags"),"cursor":s.get("cursor"),"wait":s.get("wait"),"failure":s.get("failure"),"presentation":s.get("presentation")})
 # Derived modern observers reuse this navigation with their bound wait consumer.
-func bound_castle_settle(_label: String) -> Dictionary:
+func bound_castle_settle(_label: String, _yes: bool = true) -> Dictionary:
     return {}
 func observe_castle_frame(s: Dictionary) -> void:
     palette_min = minf(palette_min, s.presentation.paletteBrightness)
     for entity in s.get("entities", []):
         if entity.id == "entity-131" and entity.priority: priority_seen = true
 func settle(label: String, yes: bool = true) -> Dictionary:
-    var bound: Dictionary = await bound_castle_settle(label)
+    var bound: Dictionary = await bound_castle_settle(label, yes)
     if not bound.is_empty(): return bound
     for count in range(5000):
         await process_frame
@@ -51,7 +51,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
     return stopped
 func input_code(name: String) -> int:
     return {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_Z}[name]
-func castle_route(s: Dictionary, stop_at_royal_return: bool = false) -> Dictionary:
+func castle_route(s: Dictionary, stop_at_royal_return: bool = false, after_segment: String = "") -> Dictionary:
     castle_identity = s.sessionId
     remember(s, "live-opening-completed")
     if decline:
@@ -59,7 +59,11 @@ func castle_route(s: Dictionary, stop_at_royal_return: bool = false) -> Dictiona
         s = await settle("rejoined-opening-return")
         if issue != "": return s
     var graph: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"))
+    var continuing := after_segment == ""
     for segment in graph.static.routeGraph.segments:
+        if not continuing:
+            continuing = segment.id == after_segment
+            continue
         if segment.kind == "navigation":
             for step in range(segment.inputs.size()):
                 var p := player(s)

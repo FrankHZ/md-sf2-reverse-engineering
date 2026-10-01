@@ -449,10 +449,14 @@ sourceFF/null/no-event-speaker narration is admitted without replacing a retaine
 inferring its absence; actual speech uses the null speaker and remains silent. Explicit closes
 still own removal. [Dialogue provenance/limits](../../docs/design/contracts/dialogue-system.md#bound-neutral-text-delay-and-narration).
 
-The additional camera profile is source layer255 with zero foreground/background offsets,
+The map-init camera profile includes source layer255 with zero foreground/background offsets,
 unity parallax and zero autoscroll. It follows A rather than B, retaining identical initialized
 A/B axes through destination/scroll/window service. The existing renderer uses that same origin
-without a duplicate foreground. Layer0 remains supported; other profiles, before-battle/outcome
+without a duplicate foreground. The field profile also admits main-plane unity/origin0 and secondary
+per-axis128/256 parallax, offsets0–63 and zero autoscroll within nonnegative signed-word positions.
+Initialization quantizes before scaling/offset; destination and speed transforms preserve independent
+axes. Ordinary actors subtract the area main plane; entity Layer still controls window priority.
+Foreground presence includes parallax differences. Other profiles, before-battle/outcome
 bound windows, camera-entity and scene-map commands retain their explicit limits.
 [Source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
 
@@ -465,6 +469,14 @@ requests no speech. Matching semantic readbacks preserve the accepted JOIN prefi
 across delivery. The bounded first palace route is described in
 [verification](./development-and-verification.md#bound-map-initialization-observation). Original
 natural timing and full modern Battle01/H4 acceptance remain **Unknown**.
+**Confirmed, bounded modern host:** the retained opening/JOIN and first-palace checkpoint continues
+through Astral refusal/re-prompt/acceptance, tower guard sprite completion before F401/F256,
+repeat interaction and Map21 readiness to Map40(14,13). The existing navigation omits the final
+Up into the marked battle exit. Actual independent A/B tile origins and main-plane actor geometry,
+resources, clipping and signed window priority are read back throughout changing plane separation.
+Instant and adjustable/reveal settings retain identical post-JOIN logical transitions and carried RNG.
+This field endpoint does not admit scene-map, camera-entity or before-battle windows, and does
+not close executable H4 or original natural-cadence acceptance.
 
 ## Presentation and private Content
 

@@ -91,7 +91,9 @@ internal sealed class ExplorationPresentation : IDisposable
             if (current.Exploration is { } world)
             {
                 if (current.Story.LogicalView is { } view)
-                    _camera = target = new Vector2(view.BX.Position / 16f, view.BY.Position / 16f);
+                    _camera = target = view.Area.Layer == 0
+                        ? new Vector2(view.BX.Position / 16f, view.BY.Position / 16f)
+                        : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
                 else
                 {
                     var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.Area;
@@ -261,9 +263,13 @@ internal sealed class ExplorationPresentation : IDisposable
             var view = story.LogicalView;
             if (view is not null) _camera = new(view.BX.Position / 16f, view.BY.Position / 16f);
             var foreground = view is null ? _camera : new Vector2(view.AX.Position / 16f, view.AY.Position / 16f);
+            // VInt_UpdateSprites selects the area's main plane once before its entity loop.
+            // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
+            var actorOrigin = view is not null && view.Area.Layer != 0 ? foreground : _camera;
             var overlay = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
             bool hasForeground = view is null ? overlay.X != 0 || overlay.Y != 0 :
-                view.Area.ForegroundX != view.Area.BackgroundX || view.Area.ForegroundY != view.Area.BackgroundY;
+                view.Area.ForegroundX != view.Area.BackgroundX || view.Area.ForegroundY != view.Area.BackgroundY ||
+                view.Area.ParallaxAX != view.Area.ParallaxBX || view.Area.ParallaxAY != view.Area.ParallaxBY;
             var offset = view is null ? overlay : new MapOverlayOffset(0, 0);
             var backgroundDraw = DrawLayer(world, visual, _camera, new(0, 0), false, view is null ? null : false, 0);
             object? foregroundDraw = view is not null && hasForeground
@@ -290,12 +296,13 @@ internal sealed class ExplorationPresentation : IDisposable
                 var texture = Sprite(entity, lowered);
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
                 if (sourceNod is null && gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
-                var destination = new Rect2(_screen.Position + (point - _camera) * _scale, new Vector2(24, 24) * _scale);
+                var destination = new Rect2(_screen.Position + (point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
                 bool visible = _screen.Intersects(destination);
                 actors.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                     facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
                     x = destination.Position.X, y = destination.Position.Y,
                     width = destination.Size.X, height = destination.Size.Y, visible,
+                    originX = actorOrigin.X, originY = actorOrigin.Y,
                     texture = texture.GetInstanceId().ToString() });
                 if (gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,

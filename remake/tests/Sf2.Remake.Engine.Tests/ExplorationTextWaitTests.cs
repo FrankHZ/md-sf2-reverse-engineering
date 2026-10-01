@@ -438,7 +438,7 @@ public sealed class ExplorationTextWaitTests
         Assert.True(next.HideWindows);
         var upper = view with { AX = new(20 * 384), BX = new(20 * 384), AY = new(21 * 384 + 32 * 384), BY = new(21 * 384) };
         Assert.False(TickAt(30 * 384, 30 * 384, upper).Scrolling);
-        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 128 } }, new(2, 0, 0)));
+        Assert.Equal("field-view-profile", Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 192 } }, new(2, 0, 0))).Message);
         Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { TargetSlot = 63 }, new(2, 0, 0)));
         Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view, new(2, 0, 1)));
     }

@@ -530,14 +530,18 @@ runtime dependency or authority.
 
 ### Bound map-init foreground projection
 
-The bound camera additionally admits source layer255 only with zero A/B origins, unity parallax
-and zero autoscroll. [Source/behavior contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
-owns provenance and the A-follow selection. Equal initialized A/B positions, destinations and
-speeds are preserved by the existing service; the base/actor projection at B therefore coincides
-with main-plane A and suppresses duplicate foreground. Tile alpha/priority and sprite ordering
-retain their existing owners. Actual readback must compare projection and logical origins at the
-same draw tick; equality on one entry sample does not prove the lifecycle. Different offsets,
-layer types, source interrupt timing and final hardware pixels remain outside this admission.
+The bound camera admits zero-autoscroll layer0/255, with unity/origin0 on the main plane and
+secondary per-axis parallax128/256 and tile offsets0–63, within nonnegative signed-word positions.
+[Source/behavior contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle)
+owns initialization, transforms, independent scroll speeds and main-plane follow. A and B tile
+draws use their respective origins; foreground presence compares both offsets and parallax.
+Ordinary actors use the area's main plane (B for0, A for255), selected before the source entity
+loop; entity Layer selects signed window priority rather than coordinates. Observation exposes
+each actor's actual origin. Equal unity planes still suppress duplicate foreground. Tile alpha,
+clipping, priority and sprite ordering retain their existing owners. Readback compares draw tick,
+logical origins, actual resources and geometry throughout changing plane separation. Other layer,
+autoscroll, word-wrap and raster/scroll-table profiles remain Unsupported or Unknown; this does
+not establish original interrupt timing or final hardware pixels.
 
 ## SVG HUD Source
 

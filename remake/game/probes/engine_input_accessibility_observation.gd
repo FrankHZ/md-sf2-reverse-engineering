@@ -32,7 +32,8 @@ var choice_exercised := false
 var choice_following := false
 var choice_draws: Array = []
 var modern_music_case := "modern-music" in input_case
-var map_init_case := "map-init" in input_case
+var parallax_case := "field-parallax" in input_case
+var map_init_case := "map-init" in input_case or parallax_case
 var raw_text_case := "raw-text" in input_case or modern_music_case
 var music_logical_end: Dictionary = {}
 var music_plain_input: Dictionary = {}
@@ -1087,16 +1088,39 @@ func exercise_bound_choice() -> void:
         "Bound choice acceptance has no extra validation67")
     choice_exercised = true
 
-func bound_castle_settle(label: String) -> Dictionary:
+func bound_castle_settle(label: String, yes: bool = true) -> Dictionary:
     if not map_init_case: return {}
-    if not await opening_settle(): issue = label + ":bound-settle"
+    if not await opening_settle(yes): issue = label + ":bound-settle"
     return read_sample(label)
 
-func opening_settle() -> bool:
+func post_palace_route(s: Dictionary) -> void:
+    s = await castle_route(s, false, "map20-to-map19-royal-return")
+    check(issue == "", "Astral and tower route completed: " + issue)
+    if issue != "": return
+    check(s.map == "map-21" and s.canWaitAtInput and 608.0 in s.flags and 401.0 in s.flags and 256.0 in s.flags,
+        "Astral acceptance and tower guard return ordinary field control")
+    var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../../tests/fixtures/h3/map3-battle01-player-ready-v1.json"))
+    for step in fixture.static.inputPlan.slice(0, -1):
+        var p := player(s)
+        check(s.map == "map-" + str(int(step.from.map)) and p.x == step.from.x * 384 and p.y == step.from.y * 384,
+            "Post-palace navigation starts at its actual field position")
+        await key(input_code(step.input))
+        if not await opening_settle(): return
+        s = read_sample(step.waypoint)
+    check(s.map == "map-40" and player(s).x == 14 * 384 and player(s).y == 13 * 384 and s.canWaitAtInput and
+        s.cursor == null and s.wait == null and s.eventCaller == null and not s.flags.has(399.0),
+        "Unequal plane approach stops at Map40 field control before natural battle selection")
+    read_sample("parallax-field-return")
+
+func opening_settle(castle_yes: bool = true) -> bool:
     var seen: Dictionary = {}
     var phases: Dictionary = {}
     for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
+        if parallax_case and s.map == "map-21":
+            if s.wait == "EntitySpriteWait" and s.cursor != null and s.cursor.Program == "cs-53ef4":
+                guard_sprite_wait = s
+            if s.flags.has(401.0) and guard_release.is_empty(): guard_release = s
         if map_init_case and castle_started: observe_castle_frame(s)
         if s.failure != null: return observe_raw_boundary(s)
         if choice_case and not s.focused:
@@ -1111,6 +1135,13 @@ func opening_settle() -> bool:
             read_sample("choice-route-focus-restored")
             continue
         if s.get("canWaitAtInput", false): return true
+        if parallax_case and castle_started and s.get("choice") != null and s.choice.Work.Phase == 3:
+            read_sample("castle-choice-input")
+            physical(KEY_ENTER if castle_yes else KEY_ESCAPE, true)
+            physical(KEY_ENTER if castle_yes else KEY_ESCAPE, false)
+            read_sample("castle-choice-accepted")
+            await process_frame
+            continue
         if modern_music_case and s.wait == "MusicWait":
             check(not s.canWaitForText and not s.canWaitAtInput and s.music.Generation == s.musicWait.Generation and
                 s.audio.musicGeneration == s.music.Generation, "Music helper owns a matching logical/playback generation")
@@ -1293,6 +1324,9 @@ func opening_settle() -> bool:
                 check(opening_semantic(state()) == before, "Reveal-only input does not service text or entities")
                 read_sample("opening-reveal-" + str(s.textId))
             if s.get("canWaitForText", false):
+                if parallax_case and castle_started and not seen_texts.has(s.token):
+                    seen_texts[s.token] = true
+                    texts.append({"id":s.textId,"speaker":s.speaker,"flags":s.speakerFlags,"program":s.cursor,"tick":s.simulationTick})
                 var ready := read_sample("opening-ready-" + str(s.textId))
                 var before := opening_semantic(ready)
                 for idle_frame in range(5): await process_frame
@@ -1395,6 +1429,7 @@ func run_portrait_event() -> void:
                         final.portraitWindow == "ClosedPortraitWindow" and 604.0 in final.flags and 605.0 in final.flags,
                         "First palace completes with flags and closed lifecycle at usable Map19 control")
                     check(returned.sessionId == join_return.sessionId, "Palace route retains opening session")
+                    if parallax_case: await post_palace_route(final)
                 finish_public()
                 return
             if raw_text_case:

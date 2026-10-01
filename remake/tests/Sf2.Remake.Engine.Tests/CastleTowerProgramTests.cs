@@ -8,6 +8,105 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class CastleTowerProgramTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void UnequalPlaneInitializationQuantizesThenScalesBeforeOffsets(int layer)
+    {
+        var world = ParallaxWorld(layer);
+        world = world.WithEntity(world.PlayerEntity with { Motion = world.PlayerEntity.Motion with { X = 4020, Y = 4310 } });
+        var view = ExplorationViewRunner.Initialize(world);
+        Assert.Equal(layer == 0 ? 1024 + 768 : 2048, view.AX.Position);
+        Assert.Equal(layer == 0 ? 1152 + 1152 : 2304, view.AY.Position);
+        Assert.Equal(layer == 0 ? 2048 : 1024 + 768, view.BX.Position);
+        Assert.Equal(layer == 0 ? 2304 : 1152 + 1152, view.BY.Position);
+        Assert.False(view.Scrolling);
+        var destination = ExplorationViewRunner.SetDestination(view, new(9, 11));
+        Assert.Equal(layer == 0 ? 1728 + 768 : 3456, destination.AX.Destination);
+        Assert.Equal(layer == 0 ? 2112 + 1152 : 4224, destination.AY.Destination);
+        Assert.Equal(layer == 0 ? 3456 : 1728 + 768, destination.BX.Destination);
+        Assert.Equal(layer == 0 ? 4224 : 2112 + 1152, destination.BY.Destination);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void UnequalPlaneFollowUsesMainPlaneAndScalesEachAxisSpeed(int layer)
+    {
+        var world = ParallaxWorld(layer);
+        var view = ExplorationViewRunner.Initialize(world);
+        view = view with { AX = new(384), AY = new(384), BX = new(384), BY = new(384) };
+        var next = ExplorationViewRunner.Tick(world, view, new(2, 0, 0));
+        Assert.Equal(layer == 0 ? 396 : 360, next.AX.Position);
+        Assert.Equal(layer == 0 ? 396 : 360, next.AY.Position);
+        Assert.Equal(layer == 0 ? 360 : 396, next.BX.Position);
+        Assert.Equal(layer == 0 ? 360 : 396, next.BY.Position);
+        Assert.Equal(layer == 0 ? 12 : 24, next.AX.Speed);
+        Assert.Equal(layer == 0 ? 24 : 12, next.BX.Speed);
+        Assert.Equal(1, next.FollowCounter);
+        Assert.True(next.HideWindows);
+        var clamped = ExplorationViewRunner.Initialize(world);
+        var stopped = ExplorationViewRunner.Tick(world, clamped, new(2, 0, 0));
+        Assert.False(stopped.Scrolling);
+        Assert.Equal(0, stopped.FollowCounter);
+    }
+
+    [Fact]
+    public void ParallaxAxisCompletionKeepsWindowHideUntilItsOwnFinalPass()
+    {
+        var world = ParallaxWorld(255);
+        var view = ExplorationViewRunner.Initialize(world) with
+        { TargetSlot = null, AX = new(0, 24), AY = new(0), BX = new(0, 36), BY = new(0) };
+        var first = ExplorationViewRunner.Tick(world, view, new(2, 0, 0));
+        Assert.Null(first.AX.Destination);
+        Assert.Equal(12, first.BX.Position);
+        Assert.True(first.HideWindows);
+        var second = ExplorationViewRunner.Tick(world, first, new(2, 0, 0));
+        Assert.False(second.HideWindows);
+        Assert.True(second.BX.Active);
+        var third = ExplorationViewRunner.Tick(world, second, new(2, 0, 0));
+        Assert.False(third.Scrolling);
+        Assert.Equal(36, third.BX.Position);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void CoincidentOriginsWithDifferentPerAxisParallaxStillSeparateDuringScroll(int layer)
+    {
+        var world = ParallaxWorld(layer);
+        var view = ExplorationViewRunner.Initialize(world);
+        view = view with { Area = view.Area with
+        { ForegroundX = 0, ForegroundY = 0, BackgroundX = 0, BackgroundY = 0,
+            ParallaxAY = 256, ParallaxBY = 256 }, AX = new(0), AY = new(0), BX = new(0), BY = new(0) };
+        var destination = ExplorationViewRunner.SetDestination(view, new(2, 3));
+        Assert.Equal(layer == 0 ? 384 : 768, destination.AX.Destination);
+        Assert.Equal(layer == 0 ? 768 : 384, destination.BX.Destination);
+        Assert.Equal(1152, destination.AY.Destination);
+        Assert.Equal(1152, destination.BY.Destination);
+        var next = ExplorationViewRunner.Tick(world, destination, new(2, 0, 0));
+        Assert.Equal(layer == 0 ? 12 : 24, next.AX.Position);
+        Assert.Equal(layer == 0 ? 24 : 12, next.BX.Position);
+        Assert.Equal(24, next.AY.Position);
+        Assert.Equal(24, next.BY.Position);
+    }
+
+    private static ExplorationState ParallaxWorld(int layer) => Start("harbor-arrival", document =>
+    {
+        document["world"]!["maps"]![0]!["layout"] = new JsonArray(Enumerable.Range(0, 32)
+            .Select(_ => (JsonNode)new JsonArray(Enumerable.Range(0, 32).Select(_ => (JsonNode)JsonValue.Create(0)!).ToArray())).ToArray());
+        var area = document["world"]!["maps"]![0]!["areas"]![0]!;
+        area["maxX"] = 31;
+        area["maxY"] = 31;
+        area["view"] = JsonNode.Parse($$"""
+            {"foregroundX":{{(layer == 0 ? 2 : 0)}},"foregroundY":{{(layer == 0 ? 3 : 0)}},
+             "backgroundX":{{(layer == 0 ? 0 : 2)}},"backgroundY":{{(layer == 0 ? 0 : 3)}},
+             "parallaxAX":{{(layer == 0 ? 128 : 256)}},"parallaxAY":{{(layer == 0 ? 128 : 256)}},
+             "parallaxBX":{{(layer == 0 ? 256 : 128)}},"parallaxBY":{{(layer == 0 ? 256 : 128)}},
+             "autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":{{layer}}}
+            """);
+    }).Current.Exploration!;
+
     [Fact]
     public void RelativeDestinationRedispatchAllowsTimedReversalBeforeTheFirstDestination()
     {
