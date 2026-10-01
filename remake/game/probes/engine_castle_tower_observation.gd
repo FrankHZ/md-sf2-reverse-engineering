@@ -12,7 +12,16 @@ func guard(s: Dictionary) -> Dictionary:
     return {}
 func remember(s: Dictionary, label: String) -> void:
     castle_records.append({"label":label,"map":s.get("map"),"player":player(s),"guard":guard(s),"flags":s.get("flags"),"cursor":s.get("cursor"),"wait":s.get("wait"),"failure":s.get("failure"),"presentation":s.get("presentation")})
+# Derived modern observers reuse this navigation with their bound wait consumer.
+func bound_castle_settle(_label: String) -> Dictionary:
+    return {}
+func observe_castle_frame(s: Dictionary) -> void:
+    palette_min = minf(palette_min, s.presentation.paletteBrightness)
+    for entity in s.get("entities", []):
+        if entity.id == "entity-131" and entity.priority: priority_seen = true
 func settle(label: String, yes: bool = true) -> Dictionary:
+    var bound: Dictionary = await bound_castle_settle(label)
+    if not bound.is_empty(): return bound
     for count in range(5000):
         await process_frame
         frames += 1
@@ -21,9 +30,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
             guard_sprite_wait = s
         if s.map == "map-21" and s.flags.has(401.0) and guard_release.is_empty():
             guard_release = s
-        palette_min = minf(palette_min, s.presentation.paletteBrightness)
-        for entity in s.get("entities", []):
-            if entity.id == "entity-131" and entity.priority: priority_seen = true
+        observe_castle_frame(s)
         if s.sessionId != castle_identity or s.failure != null:
             issue = label + ":session-failure"
             remember(s, label)
@@ -44,7 +51,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
     return stopped
 func input_code(name: String) -> int:
     return {"Left":KEY_LEFT,"Right":KEY_RIGHT,"Up":KEY_UP,"Down":KEY_DOWN,"C":KEY_Z}[name]
-func castle_route(s: Dictionary) -> Dictionary:
+func castle_route(s: Dictionary, stop_at_royal_return: bool = false) -> Dictionary:
     castle_identity = s.sessionId
     remember(s, "live-opening-completed")
     if decline:
@@ -118,6 +125,9 @@ func castle_route(s: Dictionary) -> Dictionary:
                 issue = "palace-presentation"
                 return s
         if segment.id == "map20-to-map19-royal-return":
+            if stop_at_royal_return:
+                remember(s, segment.id)
+                return s
             for input in [KEY_LEFT, KEY_RIGHT]:
                 await key(input)
                 s = await settle("palace-repeat-entry")

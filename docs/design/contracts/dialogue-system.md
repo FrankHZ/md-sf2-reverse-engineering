@@ -162,6 +162,35 @@ identical semantic Wait/ack streams under instant/adjustable reveal and reveal-o
 state/RNG must agree while actual presentation conditions still hold. Keep W2 and plain input
 cases distinct. No existing failure, golden or unresolved first-warp timing field is waived here.
 
+## Bound neutral text delay and narration
+
+**Confirmed (static source):** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/scripting/text/textfunctions_1.asm:symbol_delay1/loc_65CC/loc_65D8/loc_65F0`
+loads counter21, saves and clears `CURRENTLY_TYPEWRITING`, performs `WaitForVInt` followed by DBF
+under neutral input and mouth-control0, then restores the saved value. This means22 source wait
+services, not22 independently measured natural hardware frames. Nonzero mouth-control skips the
+waits; masked held input can shorten the source loop.
+
+The bound remake consumer MUST preserve D1 as a typed token, without a glyph, cursor advance,
+first-glyph change, W1/W2 draw/copy or acknowledgement. Its neutral delay MUST execute22 existing
+common services with typewriting cleared and restore the actual saved logical flag before the
+next token. Nonzero mouth-control contributes no delay services. Token order, repeated/end/around-
+input placement, eligible entities/portrait RNG and single/batched service equivalence retain their
+existing owners. Reveal completion and reveal-only Confirm MUST NOT substitute for source held
+logical input. Held-input shortening remains unadmitted by this modern consumer; D3 and other
+unbound controls remain Unsupported. The legacy suppressed W1 shortcut cannot consume D1 by
+ignoring its services.
+
+**Confirmed (static source):** `mapscriptengine_2.asm:csc00_displaySingleTextbox` skips portrait
+lookup for operandFFFF, writes `CURRENT_SPEECH_SFX=0`, then performs view wait/text and the ordinary
+close/Sleep10 tail. Explicit sourceFF/null/no-event-speaker narration MAY use bound text without an
+actor; arbitrary missing/invalid actors remain errors. A skipped lookup MUST preserve an already
+open portrait rather than prove it absent. Actual speech must remain silent even with a retained
+portrait; explicit source closes still own its lifecycle. [Bound engine execution](../../../remake/docs/exploration-programs.md#bound-map-initialization-lifecycle)
+and [native acceptance](../../../remake/docs/development-and-verification.md#bound-map-initialization-observation)
+exercise the admitted consumer. Original natural cadence, speech scheduling and whole-route H4
+remain **Unknown**.
+
 ## Entity-event portrait service
 
 **Confirmed (static source):** at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,

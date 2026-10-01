@@ -31,8 +31,9 @@ internal static class ExplorationViewRunner
 
     internal static void Validate(ExplorationViewArea area)
     {
+        bool layer = area.Layer == 0 || area.Layer == 255 && area.ForegroundX == 0 && area.ForegroundY == 0;
         if (area.ParallaxAX != 256 || area.ParallaxAY != 256 || area.ParallaxBX != 256 || area.ParallaxBY != 256 ||
-            area.AutoscrollAX != 0 || area.AutoscrollAY != 0 || area.AutoscrollBX != 0 || area.AutoscrollBY != 0 || area.Layer != 0 || area.BackgroundX != 0 || area.BackgroundY != 0)
+            area.AutoscrollAX != 0 || area.AutoscrollAY != 0 || area.AutoscrollBX != 0 || area.AutoscrollBY != 0 || !layer || area.BackgroundX != 0 || area.BackgroundY != 0)
             throw new BattleRuleException("field-view-profile", "map.view", true);
     }
 

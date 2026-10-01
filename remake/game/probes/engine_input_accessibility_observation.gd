@@ -32,6 +32,7 @@ var choice_exercised := false
 var choice_following := false
 var choice_draws: Array = []
 var modern_music_case := "modern-music" in input_case
+var map_init_case := "map-init" in input_case
 var raw_text_case := "raw-text" in input_case or modern_music_case
 var music_logical_end: Dictionary = {}
 var music_plain_input: Dictionary = {}
@@ -1086,11 +1087,17 @@ func exercise_bound_choice() -> void:
         "Bound choice acceptance has no extra validation67")
     choice_exercised = true
 
+func bound_castle_settle(label: String) -> Dictionary:
+    if not map_init_case: return {}
+    if not await opening_settle(): issue = label + ":bound-settle"
+    return read_sample(label)
+
 func opening_settle() -> bool:
     var seen: Dictionary = {}
     var phases: Dictionary = {}
     for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
+        if map_init_case and castle_started: observe_castle_frame(s)
         if s.failure != null: return observe_raw_boundary(s)
         if choice_case and not s.focused:
             # Recover an observed external focus loss without servicing or replacing state.
@@ -1378,6 +1385,16 @@ func run_portrait_event() -> void:
                     "Complete JOIN returns first ordinary field control with flags, caller and windows settled")
                 check(join_return.partyLists == {"Joined":[0.0,1.0,2.0],"Active":[0.0,1.0],"Reserve":[2.0]},
                     "Complete JOIN retains joined, active and reserve membership")
+                if map_init_case:
+                    castle_started = true
+                    var returned: Dictionary = await castle_route(join_return, true)
+                    check(issue == "", "Bound castle route completed: " + issue)
+                    var final := read_sample("map-init-field-return")
+                    check(final.map == "map-19" and final.canWaitAtInput and final.eventCaller == null and
+                        final.cursor == null and final.wait == null and final.textWindow == "ClosedTextWindow" and
+                        final.portraitWindow == "ClosedPortraitWindow" and 604.0 in final.flags and 605.0 in final.flags,
+                        "First palace completes with flags and closed lifecycle at usable Map19 control")
+                    check(returned.sessionId == join_return.sessionId, "Palace route retains opening session")
                 finish_public()
                 return
             if raw_text_case:

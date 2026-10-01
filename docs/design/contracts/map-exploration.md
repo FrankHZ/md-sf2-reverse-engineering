@@ -814,7 +814,23 @@ A tile destination MUST disable following, multiply each coordinate by384 logica
 install four destinations with the admitted foreground/background offsets. It MUST preserve current
 positions, inherited follow counter and an already active axis whose new destination equals its
 position. An equal inactive axis remains inactive. This profile admits unity parallax, zero
-autoscroll, layer0, background origin0 and nonnegative signed-word destinations only.
+autoscroll, background origin0 and nonnegative signed-word destinations only. Layer0 retains its
+foreground offsets. Source layer255 is additionally admitted only with foreground and background
+origins all zero; other layer/offset combinations remain Unsupported.
+
+**Confirmed (static source and authored behavior):** at pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/maps/entries/map20/2-areas.asm` selects `mainLayerType 255`, zero origins,
+unity parallax and zero autoscroll. `code/common/maps/camerafunctions.asm:VInt_UpdateViewData`
+selects B coordinates for layer0 and A for nonzero layer type before following and scrolling.
+`code/common/tech/graphics/display.asm:SetViewDestination/loc_36BE` applies the separate origins
+and parallax before setting each destination; its window-position work precedes the camera wait
+recheck. This admission retains the source255 byte and A-follow branch. Initialization, explicit
+destinations and common service produce equal A/B axes for the admitted zero-offset profile;
+the existing base/actor projection at B therefore also uses the authoritative main-plane A origin,
+with no duplicate foreground. Engine behavior covers a distinct A/B starting state to establish
+which plane drives follow decisions, then equal initialized axes through scroll/wait/return.
+This does not establish original natural reach, interrupt timing or final VDP pixels.
 
 Each common service MUST preserve the current entity-service flag and order entity work before
 view/scroll/window and registered portrait work. No-follow mode prepares speed24, or32 when the
@@ -838,7 +854,20 @@ priority map pixels cover low priority sprite ink, while transparent pixels reve
 See the [source/data binding](../../research/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion).
 Unbound presentation retains its prior contract. **Unknown:** natural interrupt/VDP/DMA timing,
 word-wrap destinations, explicit speed, cursor/pulsating overrides, other layer/parallax/autoscroll
-profiles and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+profiles beyond the two bounded combinations and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+
+### Bound map-initialization windows
+
+An admitted bound initialization script MAY use the existing camera, explicit text and registered
+portrait services while retaining `MapLoaded`, its cursor and real nested call stack. It MUST NOT
+be relabeled as field input or given an artificial entity/Zone caller. Portrait opening registers
+only after movement; closing unregisters before movement. Text input becomes available only at
+actual logical input after delivery completes, while ordinary field actions remain closed.
+Nested script returns retain the outer initialization continuation, including open-window view
+waits; only completion of the outer initializer restores player following and field control.
+Before-battle and outcome continuations, unknown/unregistered portraits and unbound legacy text
+are not admitted by this extension. The [engine owner](../../../remake/docs/exploration-programs.md#bound-map-initialization-lifecycle)
+records its bounded execution and acceptance; original presentation cadence remains **Unknown**.
 
 ## Remake Acceptance
 

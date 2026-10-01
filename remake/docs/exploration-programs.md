@@ -431,6 +431,41 @@ program PC until `EntitySpriteReady` returns for that slot/generation. Authored 
 service. Actual ordinary-host observations at60 and30 FPS cover the connected group, repeat visits,
 the player-facing wait, guard repeat interaction and stable field input without state injection.
 
+### Bound map-initialization lifecycle
+
+Bound text/view settings now admit ordinary map initialization with its real `MapLoaded`
+continuation, no event caller, and a live cursor. Explicit portraits use the same movement,
+registration, blink/mouth service and close lifecycle as field callers. Bound text retains its
+window/view service and enables only eligible text Wait/Ack after logical work and delivery;
+`CanWaitAtInput` still requires complete field return. A nested `end-map-script` waits for the
+view when its text remains open, then resumes its actual caller. Only the outer init completion
+restores field following. No map/program/text ID selects production admission.
+
+D1 is a typed neutral22-service pause with saved/cleared/restored typewriting; nonzero mouth
+control skips its waits. It preserves first-glyph/token order and uses the same live entity/window/
+portrait services, with no poll/copy or fake acknowledgement. Held logical-input shortening remains
+unadmitted; reveal/Ack cannot supply it. Other unbound controls remain Unsupported. Explicit
+sourceFF/null/no-event-speaker narration is admitted without replacing a retained portrait or
+inferring its absence; actual speech uses the null speaker and remains silent. Explicit closes
+still own removal. [Dialogue provenance/limits](../../docs/design/contracts/dialogue-system.md#bound-neutral-text-delay-and-narration).
+
+The additional camera profile is source layer255 with zero foreground/background offsets,
+unity parallax and zero autoscroll. It follows A rather than B, retaining identical initialized
+A/B axes through destination/scroll/window service. The existing renderer uses that same origin
+without a duplicate foreground. Layer0 remains supported; other profiles, before-battle/outcome
+bound windows, camera-entity and scene-map commands retain their explicit limits.
+[Source contract](../../docs/design/contracts/map-exploration.md#bound-field-camera-lifecycle).
+
+Actual engine cases cover nested camera and open/closed text returns, portrait registration/close,
+readiness and unsupported contexts, first/repeat flag branches and a distinct authored foreground
+follow state. **Confirmed, bounded modern host:** instant and adjustable/reveal delivery execute the same
+opening/JOIN, guard out/back/F604, Map19 init, full first palace/F605 and Map19 field return.
+Source255 A/B origins and actual tile/actor projections agree through init/scroll; sourceFF narration
+requests no speech. Matching semantic readbacks preserve the accepted JOIN prefix and gameplay
+across delivery. The bounded first palace route is described in
+[verification](./development-and-verification.md#bound-map-initialization-observation). Original
+natural timing and full modern Battle01/H4 acceptance remain **Unknown**.
+
 ## Presentation and private Content
 
 Content validates private provenance, embedded raster identities/shapes, required map/sprite links

@@ -2840,3 +2840,38 @@ cue with the same logical identity; counters alone are insufficient. Compare pro
 own draw tick when a result callback precedes redraw. Screenshots and live state/RNG injection are
 prohibited. Measured counts/seeds are results, never production quotas. This is bounded JOIN
 acceptance; full #437/H4, original clock mapping and unrelated recorded failures remain open.
+
+## Bound map-initialization observation
+
+Use the existing locked SDK and private environment. Actual engine cases live in
+`ExplorationTextWaitTests` (nested init camera/portrait/text, readiness, source255 follow/scroll,
+D1 neutral/skip/placement/restoration/batching with portrait RNG, and sourceFF narration)
+and `CastleTowerProgramTests` (live first/repeat init selection). Run changed cases and affected
+field readiness directly, `uv run sf2 verify adapter`, and the committed engine planner selection.
+Preserve completed red results and rerun corrected nodes; remote engine CI supplies its full gate.
+
+Reuse the installed ordinary Godot host, complete retained modern world, controlled bound opening
+and party. Its original small start binds only Map3. For this route, use the existing
+`selected_map_palette_bindings(verified_compiler, [19,20])` with clean pinned source to add only the
+two required map pairs to a fresh ignored start. Retain Map3 and directly compare all other start
+fields unchanged. Do not regenerate the world/assets, infer the pair from another map, or normalize
+source255. The accepted producer reads two words per map and records selection paths.
+
+Extend the existing opening probe by selecting
+`SF2_INPUT_CASE=portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-map-init`;
+compare with `adjustable-modern-music-map-init-reveal`, keeping the same semantic Wait/choice/Ack
+stream. Existing input settings and startup arguments apply. The probe uses the existing castle
+navigation and bound-wait consumer, stops at first palace completion followed by Map19 field
+return, and records actual state/input/audio/draw projections/errors. No screenshot or session,
+flag, position or RNG injection is permitted.
+
+Require exit0/passed:true/no errors, source gate guards out/back and F604, exact royal entrance,
+palace entity changes and F605, source255 retained and equal A/B origins through scroll, and
+projection agreement at matching draw ticks. Narration text2192 must retain null speaker/flags255
+and request no speech even if a portrait is still present. Final Map19 must have closed windows, no caller,
+cursor or wait, and usable ordinary input. Compare accepted JOIN prefix and matched semantic
+states across settings directly, excluding delivery/host identity fields; measure seeds rather
+than targeting old history. Each next startup is necessary to compare from unchanged opening
+because the probe exits. Preserve earlier missing-palette and unsupported-view failures. Original
+natural timing, later bound scene/before-battle capability, continuous winning trace and executable
+H4 policy cutover remain open.

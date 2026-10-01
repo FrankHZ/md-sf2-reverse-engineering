@@ -1364,6 +1364,310 @@ public sealed class ExplorationTextWaitTests
         Assert.Equal(result.Snapshot.Story.SimulationTick, after.Snapshot.Story.SimulationTick);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void MapInitializationCameraRetainsItsContinuationUntilTheNestedScriptReturns(int layer)
+    {
+        var session = StartFieldText("A{W1}", configure: document =>
+        {
+            var area = document["world"]!["maps"]![0]!["areas"]![0]!["view"]!;
+            area["layer"] = layer;
+            if (layer == 255) area["foregroundY"] = 0;
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"transfer","map":"quay","position":{"x":1,"y":1},"facing":0,"loadMode":"rebuild"},{"op":"end"}]
+                """);
+            document["world"]!["maps"]![0]!["onLoad"] = JsonNode.Parse("""{"program":"initialize","instruction":0}""");
+            var programs = document["world"]!["programs"]!.AsArray();
+            programs.Add(JsonNode.Parse("""
+                {"id":"initialize","instructions":[{"op":"call","target":{"program":"scene","instruction":0},"activateEntities":true},
+                {"op":"set-flag","flag":605,"value":true},{"op":"end"}]}
+                """));
+            programs.Add(JsonNode.Parse("""
+                {"id":"scene","instructions":[{"op":"camera-target","position":{"x":3,"y":3}},
+                {"op":"wait-view"},{"op":"end-map-script"}]}
+                """));
+        });
+        Assert.Equal(SessionStopReason.SimulationWait, session.Current.StopReason);
+        Assert.IsType<ViewWait>(session.Current.Story.Wait);
+        Assert.Equal(ProgramContinuation.MapLoaded, session.Current.Story.Continuation);
+        Assert.Null(session.Current.Story.EventCaller);
+        Assert.Equal(new[] { "invitation", "initialize" }, session.Current.Story.Callers.Select(x => x.Program));
+        Assert.DoesNotContain(605, session.Current.Story.Flags);
+        for (int i = 0; session.Current.Story.Wait is ViewWait && i < 100; i++)
+        {
+            Assert.Equal(ProgramContinuation.MapLoaded, session.Current.Story.Continuation);
+            Assert.Null(session.Current.Story.EventCaller);
+            if (layer == 255)
+            {
+                Assert.Equal(session.Current.Story.LogicalView!.AX, session.Current.Story.LogicalView.BX);
+                Assert.Equal(session.Current.Story.LogicalView.AY, session.Current.Story.LogicalView.BY);
+            }
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+        }
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+        Assert.Equal(ProgramContinuation.FieldInput, session.Current.Story.Continuation);
+        Assert.Contains(605, session.Current.Story.Flags);
+        Assert.Empty(session.Current.Story.Callers);
+        Assert.Null(session.Current.Story.Cursor);
+    }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 2)]
+    public void MapInitializationRegistersPortraitAndServicesTextAcrossNestedReturns(bool closeInChild, int speed)
+    {
+        var session = StartFieldText("AB{W1}", speed: speed, configure: document =>
+        {
+            document["world"]!["presentation"]!["sprites"]![0]!["portrait"] = 7;
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""
+                [{"op":"transfer","map":"quay","position":{"x":1,"y":1},"facing":0,"loadMode":"rebuild"},{"op":"end"}]
+                """);
+            document["world"]!["maps"]![0]!["onLoad"] = JsonNode.Parse("""{"program":"initialize","instruction":0}""");
+            var programs = document["world"]!["programs"]!.AsArray();
+            programs.Add(JsonNode.Parse("""
+                {"id":"initialize","instructions":[{"op":"call","target":{"program":"scene","instruction":0},"activateEntities":true},
+                {"op":"close-portrait"},{"op":"close-text"},{"op":"set-flag","flag":605,"value":true},{"op":"end"}]}
+                """));
+            programs.Add(JsonNode.Parse($$"""
+                {"id":"scene","instructions":[{"op":"open-portrait","entity":"ferryman","flags":192},
+                {"op":"wait-view"},{"op":"text-cursor","text":100},
+                {"op":"show-text","mode":"single","speaker":"ferryman","explicitWindows":true},
+                {{(closeInChild ? "{\"op\":\"close-portrait\"},{\"op\":\"close-text\"}," : "")}}
+                {"op":"end-map-script"}]}
+                """));
+        });
+        Assert.IsType<PortraitMovementWait>(session.Current.Story.Wait);
+        bool registered = false, input = false, closing = false, nestedReturn = false;
+        for (int i = 0; session.Current.StopReason != SessionStopReason.PlayerInput && i < 300; i++)
+        {
+            var story = session.Current.Story;
+            Assert.Equal(ProgramContinuation.MapLoaded, story.Continuation);
+            Assert.Null(story.EventCaller);
+            Assert.DoesNotContain(605, story.Flags);
+            Assert.NotEmpty(story.Callers);
+            registered |= story.PortraitWindow is OpenPortraitWindow { Work.Registered: true };
+            closing |= story.Wait is PortraitMovementWait { Closing: true };
+            nestedReturn |= story.Wait is ViewWait { ScriptReturn: true };
+            if (story.Wait is FieldTextWait { LogicalDone: true } text)
+            {
+                Assert.True(Assert.IsType<OpenPortraitWindow>(story.PortraitWindow).Work!.Registered);
+                Assert.False(session.Current.CanWaitForText);
+                Assert.False(session.Current.CanWaitAtInput);
+                Accept(session, new CompleteTextReveal(text.Token));
+                Assert.True(session.Current.CanWaitForText);
+                foreach (var invalid in new[] { ProgramContinuation.BeforeBattleFinished, ProgramContinuation.VictoryProgramFinished,
+                    ProgramContinuation.DefeatProgramFinished, ProgramContinuation.OutcomeMapLoaded })
+                {
+                    var excluded = session.Current.WithStory(session.Current.Story.Copy(session.Current.Story.Cursor,
+                        session.Current.Story.Wait, continuation: invalid));
+                    Assert.False(excluded.CanWaitForText);
+                    Assert.Equal("text-input-unavailable", ExplorationDispatcher.Submit(session.Definition, excluded,
+                        new WaitForText(text.Token)).Failure!.Code);
+                }
+                Accept(session, new WaitForText(text.Token));
+                Accept(session, new Acknowledge(text.Token));
+                input = true;
+            }
+            else Accept(session, new AdvanceSimulation(story.Wait!.Token));
+        }
+        Assert.True(registered && input && closing);
+        Assert.Equal(!closeInChild, nestedReturn);
+        Assert.Equal(SessionStopReason.PlayerInput, session.Current.StopReason);
+        Assert.Equal(ProgramContinuation.FieldInput, session.Current.Story.Continuation);
+        Assert.Empty(session.Current.Story.Callers);
+        Assert.Contains(605, session.Current.Story.Flags);
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+        Assert.False(session.Current.Story.LogicalText!.Open);
+        Assert.Null(session.Current.Story.Cursor);
+        Assert.Null(session.Current.Story.Wait);
+    }
+
+    [Fact]
+    public void ForegroundMapFollowSelectsPlaneAAndPreservesCoincidentAxesDuringServices()
+    {
+        var session = StartFieldText("A{W1}", configure: document =>
+        {
+            var area = document["world"]!["maps"]![0]!["areas"]![0]!["view"]!;
+            area["layer"] = 255;
+            area["foregroundY"] = 0;
+        });
+        var world = session.Current.Exploration!;
+        var view = session.Current.Story.LogicalView!;
+        world = world.WithEntity(world.PlayerEntity with { Motion = world.PlayerEntity.Motion with { X = 2305, Y = 2305 } });
+        var fromA = ExplorationViewRunner.Tick(world, view with { AX = new(384), AY = new(384) }, new(2, 0, 0));
+        Assert.Equal(0, fromA.FollowCounter); // A is inside its deadband; B would request a destination.
+        Assert.Null(fromA.BX.Destination);
+        for (int i = 0; i < 25; i++)
+        {
+            view = ExplorationViewRunner.Tick(world, view, new(2, 0, 0));
+            Assert.Equal(view.AX, view.BX);
+            Assert.Equal(view.AY, view.BY);
+        }
+        Assert.Equal(384, view.AX.Position);
+        Assert.Equal(384, view.AY.Position);
+        Assert.False(view.Scrolling);
+        var context = session.Current.Story;
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world,
+            view with { Area = view.Area with { ForegroundX = 1 } }, context.TextSettings!));
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world,
+            view with { Area = view.Area with { Layer = 1 } }, context.TextSettings!));
+    }
+
+    [Theory]
+    [InlineData(255, true)]
+    [InlineData(0, false)]
+    public void ExplicitNarrationUsesSourceLookupSkipWithoutAdmittingAnInvalidSpeaker(int flags, bool accepted)
+    {
+        var session = StartFieldText("{LEADER}{W1}", configure: document =>
+        {
+            var instruction = document["world"]!["programs"]![0]!["instructions"]![1]!;
+            instruction["speaker"] = null;
+            instruction["speakerFlags"] = flags;
+            document["world"]!["programs"]![0]!["instructions"]!.AsArray().Insert(1,
+                JsonNode.Parse("""{"op":"wait-ticks","ticks":1}"""));
+        });
+        var result = Send(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        if (!accepted)
+        {
+            Assert.Equal("field-text-speaker", result.Failure!.Code);
+            Assert.Equal(SessionStopReason.Unsupported, session.Current.StopReason);
+            return;
+        }
+        Assert.Null(result.Failure);
+        Assert.Equal(SessionStopReason.SimulationWait, session.Current.StopReason);
+        DrainTextWork(session);
+        var token = session.Current.Story.Wait!.Token;
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+        Assert.Null(Assert.IsType<OpenTextWindow>(session.Current.Story.TextWindow).Speaker);
+        Assert.Equal("Leader", Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Projection);
+        Accept(session, new CompleteTextReveal(token));
+        Accept(session, new WaitForText(token));
+        Accept(session, new Acknowledge(token));
+        for (int i = 0; session.Current.Story.Wait is TextCloseWait && i < 20; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait.Token));
+        Assert.True(session.Current.CanWaitAtInput);
+    }
+
+    [Theory]
+    [InlineData(0, 22)]
+    [InlineData(1, 0)]
+    public void SourceDelayContributesNeutralServicesWithoutGlyphOrPollWork(int mouthControl, int pauseServices)
+    {
+        var session = StartFieldText("{D1}A{W1}", configure: document =>
+            document["start"]!["textSettings"]!["mouthControl"] = mouthControl);
+        Assert.Equal(SessionStopReason.SimulationWait, session.Current.StopReason);
+        int pauses = 0, services = 0;
+        while (session.Current.Story.Wait is FieldTextWait { LogicalDone: false } && services < 100)
+        {
+            var story = session.Current.Story;
+            bool pause = story.Wait is FieldTextWait { Phase: FieldTextPhase.TextPause };
+            if (pause)
+            {
+                Assert.False(story.Typewriting);
+                Assert.True(((FieldTextWait)story.Wait!).SavedTypewriting);
+                Assert.Equal((byte)2, story.LogicalText!.X);
+                Assert.True(((FieldTextWait)story.Wait!).FirstGlyph);
+                pauses++;
+            }
+            var result = Accept(session, new AdvanceSimulation(story.Wait!.Token));
+            Assert.DoesNotContain(result.Observations, row => row.Kind.StartsWith("rng-text", StringComparison.Ordinal));
+            Assert.Equal(story.RandomSeedCopy, session.Current.Story.RandomSeedCopy);
+            services++;
+        }
+        Assert.Equal(pauseServices, pauses);
+        Assert.Equal(12 + pauseServices, services); // Ten window passes, one cursor and speed2 delay1.
+        Assert.Equal("A", Assert.IsType<FieldTextWait>(session.Current.Story.Wait).Projection);
+        Assert.False(session.Current.Story.Typewriting);
+    }
+
+    [Fact]
+    public void ConsecutiveAndPostInputDelaysMatchBatchedServicesWithLivePortraitRng()
+    {
+        (long Tick, uint Seed, byte? Copy, string[] Draws) Run(int batch)
+        {
+            var session = StartFieldText("{D1}{D1}{W2}A{D1}{W1}{D1}", interaction: true, configure: document =>
+                document["world"]!["presentation"]!["sprites"]![0]!["portrait"] = 7);
+            var draws = new List<string>();
+            for (int i = 0; !session.Current.CanWaitAtInput && i < 1000; i++)
+            {
+                var wait = session.Current.Story.Wait!;
+                SessionResult result;
+                if (wait is FieldTextWait { LogicalDone: true } text)
+                {
+                    Accept(session, new CompleteTextReveal(text.Token));
+                    if (text.Phase == FieldTextPhase.End) continue;
+                    result = Accept(session, new WaitForText(text.Token));
+                    draws.AddRange(result.Observations.Where(row => row.RandomRange is not null)
+                        .Select(row => $"{row.Kind}:{row.Before}:{row.After}:{row.RandomRange}:{row.RandomValue}"));
+                    result = Accept(session, new Acknowledge(text.Token));
+                }
+                else result = Accept(session, new AdvanceSimulation(wait.Token, batch));
+                draws.AddRange(result.Observations.Where(row => row.RandomRange is not null)
+                    .Select(row => $"{row.Kind}:{row.Before}:{row.After}:{row.RandomRange}:{row.RandomValue}"));
+            }
+            Assert.True(session.Current.CanWaitAtInput);
+            Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+            Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+            Assert.NotEmpty(draws);
+            return (session.Current.Story.SimulationTick, session.Current.Exploration!.Party.MainSeed,
+                session.Current.Story.RandomSeedCopy, draws.ToArray());
+        }
+        var single = Run(1);
+        var batched = Run(600);
+        Assert.Equal(single.Tick, batched.Tick);
+        Assert.Equal(single.Seed, batched.Seed);
+        Assert.Equal(single.Copy, batched.Copy);
+        Assert.Equal(single.Draws, batched.Draws);
+    }
+
+    [Fact]
+    public void DelayRestoresTheActualSavedTypewritingValueBeforeTheNextGlyph()
+    {
+        var session = StartFieldText("{D1}A{W1}");
+        for (int i = 0; session.Current.Story.Wait is not FieldTextWait { Phase: FieldTextPhase.TextPause } && i < 20; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var story = session.Current.Story;
+        var wait = Assert.IsType<FieldTextWait>(story.Wait);
+        var paused = ExplorationTextRunner.Normalize(story.Copy(story.Cursor,
+            wait with { Index = 0, Phase = FieldTextPhase.Tokens }, typewriting: false));
+        var actual = Assert.IsType<FieldTextWait>(paused.Wait);
+        Assert.False(actual.SavedTypewriting);
+        Assert.True(actual.FirstGlyph);
+        var restored = ExplorationTextRunner.AfterService(paused.Copy(paused.Cursor, actual with { Remaining = 1 }));
+        Assert.False(restored.Typewriting);
+        Assert.Equal(FieldTextPhase.GlyphCursor, Assert.IsType<FieldTextWait>(restored.Wait).Phase);
+    }
+
+    [Fact]
+    public void SourceNarrationRetainsAnAlreadyRegisteredPortraitUntilExplicitClose()
+    {
+        var session = StartFieldText("{LEADER}{W1}", interaction: true, configure: document =>
+        {
+            document["world"]!["presentation"]!["sprites"]![0]!["portrait"] = 7;
+            var text = document["world"]!["programs"]![0]!["instructions"]![1]!;
+            text["speaker"] = null;
+            text["speakerFlags"] = 255;
+            document["world"]!["programs"]![0]!["instructions"]!.AsArray().Insert(2,
+                JsonNode.Parse("""{"op":"close-portrait"}"""));
+        });
+        for (int i = 0; session.Current.Story.Wait is not FieldTextWait && i < 20; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        DrainTextWork(session);
+        Assert.Null(Assert.IsType<OpenTextWindow>(session.Current.Story.TextWindow).Speaker);
+        Assert.True(Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!.Registered);
+        var token = session.Current.Story.Wait!.Token;
+        Accept(session, new CompleteTextReveal(token));
+        Accept(session, new Acknowledge(token));
+        Assert.IsType<PortraitMovementWait>(session.Current.Story.Wait);
+        Assert.False(Assert.IsType<OpenPortraitWindow>(session.Current.Story.PortraitWindow).Work!.Registered);
+        for (int i = 0; !session.Current.CanWaitAtInput && i < 40; i++)
+            Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.IsType<ClosedPortraitWindow>(session.Current.Story.PortraitWindow);
+    }
+
     private static void RawInstructions(JsonNode document, bool speaker)
     {
         var instructions = document["world"]!["programs"]![0]!["instructions"]!;
