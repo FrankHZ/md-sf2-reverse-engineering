@@ -813,10 +813,12 @@ inspected [destination/scroll/wait chain](../../research/map3-messenger-acceptan
 A tile destination MUST disable following, multiply each coordinate by384 logical units, and
 install four destinations with the admitted foreground/background offsets. It MUST preserve current
 positions, inherited follow counter and an already active axis whose new destination equals its
-position. An equal inactive axis remains inactive. This profile admits unity parallax, zero
-autoscroll, background origin0 and nonnegative signed-word destinations only. Layer0 retains its
-foreground offsets. Source layer255 is additionally admitted only with foreground and background
-origins all zero; other layer/offset combinations remain Unsupported.
+position. An equal inactive axis remains inactive. The admitted profile has zero autoscroll,
+layer0 or255, unity parallax and origin0 on the main plane (B for0, A for255). Each secondary
+axis admits parallax128 or256 and offsets0–63 tiles. Both input coordinates and transformed
+positions/destinations MUST stay in0–32767; signed-word wrap remains Unsupported. Each axis
+MUST multiply by its parallax, shift right8, then add its own tile origin. LoadMap MUST clamp
+and quantize the shared origin to128 logical units before this transform.
 
 **Confirmed (static source and authored behavior):** at pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`,
@@ -827,14 +829,31 @@ selects B coordinates for layer0 and A for nonzero layer type before following a
 and parallax before setting each destination; its window-position work precedes the camera wait
 recheck. This admission retains the source255 byte and A-follow branch. Initialization, explicit
 destinations and common service produce equal A/B axes for the admitted zero-offset profile;
-the existing base/actor projection at B therefore also uses the authoritative main-plane A origin,
+the actor projection selects authoritative main-plane A, which coincides with the base B origin,
 with no duplicate foreground. Engine behavior covers a distinct A/B starting state to establish
 which plane drives follow decisions, then equal initialized axes through scroll/wait/return.
 This does not establish original natural reach, interrupt timing or final VDP pixels.
 
+**Confirmed (static binding):** pinned `map40/2-areas.asm` has layer255, backgroundY32 and
+background parallax128/128. `code/common/maps/mapload.asm:LoadMap/@loc_19` applies unsigned
+multiply/shift before each offset after origin quantization. `VInt_UpdateViewData` uses the main
+plane for deadbands/clamps and scales each axis's speed24/32 by its parallax. The main plane
+remains unity/origin0 in this profile, so its positions are the shared follow coordinates.
+`code/common/scripting/entity/entityscriptengine_1.asm:VInt_UpdateSprites` selects the area's
+main plane before the entity loop. Ordinary entity `Layer` does not select a coordinate plane;
+its signed comparison with window presence selects sprite priority. The special player sprite
+path and original scroll-table/VDP raster details are not expanded by this modern projection.
+`code/common/tech/graphics/specialsprites.asm:UpdateSpecialSprite` retains those selected
+coordinates; its Nazca special update additionally applies Layer displacement. That special
+graphic/vehicle mapping remains outside this ordinary-entity projection admission.
+Secondary planes MUST be drawn when their offsets or parallax differ, including equal offsets
+with different parallax. Actual actor geometry MUST subtract the main plane, while A/B tile
+geometry retains its respective independent origin.
+
 Each common service MUST preserve the current entity-service flag and order entity work before
 view/scroll/window and registered portrait work. No-follow mode prepares speed24, or32 when the
-inherited counter interpreted as a signed word exceeds6, on every service including active scrolls.
+inherited counter interpreted as a signed word exceeds6, scaled per axis by parallax/256,
+on every service including active scrolls.
 Axes advance independently and snap/clear when reaching or crossing their destination. Window
 hiding uses the A-axis active bits before that scroll pass. Shared RNG and the previous poll-copy
 byte retain their existing service ownership.
@@ -845,16 +864,17 @@ this logical wait. Settled camera positions remain held through dialogue and nes
 actual ordinary field-control return restores player following, without resetting positions,
 pending destinations or the counter. The next service applies the normal follow rules.
 
-The whole bound renderer MUST project the authoritative B origin for this profile's actors/base
-and A origin for its foreground, without a second center/clamp/smoothing authority or duplicate
-foreground offset. Modern viewport/layout and existing raster resources remain presentation choices.
+The whole bound renderer MUST project B for background tiles and A for foreground tiles.
+Actors and exposed camera state MUST use the area's authoritative main origin (B for layer0,
+A for255), consistently across update and draw callbacks, without a second center/clamp/smoothing
+authority or duplicate foreground offset. Modern viewport/layout and existing raster resources remain presentation choices.
 Per-cell tile priority and alpha MUST determine occlusion, rather than a whole-block or whole-plane
 priority lift. Plane display priority MUST remain distinct from sprite-to-sprite ordering; high
 priority map pixels cover low priority sprite ink, while transparent pixels reveal the next surface.
 See the [source/data binding](../../research/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion).
 Unbound presentation retains its prior contract. **Unknown:** natural interrupt/VDP/DMA timing,
 word-wrap destinations, explicit speed, cursor/pulsating overrides, other layer/parallax/autoscroll
-profiles beyond the two bounded combinations and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
+profiles outside the stated main/secondary numeric domain and csc24 entity tracking are not admitted by this binding or the older seven-case H3 seam.
 
 ### Bound map-initialization windows
 

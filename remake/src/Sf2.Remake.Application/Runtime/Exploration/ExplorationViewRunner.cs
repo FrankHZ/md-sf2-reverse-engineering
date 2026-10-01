@@ -25,16 +25,32 @@ internal static class ExplorationViewRunner
         int x = Center(player.Motion.X, area.MinX, area.MaxX, 1920, 3840);
         int y = Center(player.Motion.Y, area.MinY, area.MaxY, 1536, 3456);
         // No active destination is asserted by LoadMap. Its stale RAM words are unconsumed.
-        return new(area, player.Slot, new(x + area.ForegroundX * 384), new(y + area.ForegroundY * 384),
-            new(x + area.BackgroundX * 384), new(y + area.BackgroundY * 384));
+        return new(area, player.Slot, new(Plane(x, area.ParallaxAX, area.ForegroundX)), new(Plane(y, area.ParallaxAY, area.ForegroundY)),
+            new(Plane(x, area.ParallaxBX, area.BackgroundX)), new(Plane(y, area.ParallaxBY, area.BackgroundY)));
     }
 
     internal static void Validate(ExplorationViewArea area)
     {
-        bool layer = area.Layer == 0 || area.Layer == 255 && area.ForegroundX == 0 && area.ForegroundY == 0;
-        if (area.ParallaxAX != 256 || area.ParallaxAY != 256 || area.ParallaxBX != 256 || area.ParallaxBY != 256 ||
-            area.AutoscrollAX != 0 || area.AutoscrollAY != 0 || area.AutoscrollBX != 0 || area.AutoscrollBY != 0 || !layer || area.BackgroundX != 0 || area.BackgroundY != 0)
+        bool main = area.Layer switch
+        {
+            0 => area.BackgroundX == 0 && area.BackgroundY == 0 && area.ParallaxBX == 256 && area.ParallaxBY == 256,
+            255 => area.ForegroundX == 0 && area.ForegroundY == 0 && area.ParallaxAX == 256 && area.ParallaxAY == 256,
+            _ => false,
+        };
+        if (!main || area.ParallaxAX is not (128 or 256) || area.ParallaxAY is not (128 or 256) ||
+            area.ParallaxBX is not (128 or 256) || area.ParallaxBY is not (128 or 256) ||
+            area.AutoscrollAX != 0 || area.AutoscrollAY != 0 || area.AutoscrollBX != 0 || area.AutoscrollBY != 0)
             throw new BattleRuleException("field-view-profile", "map.view", true);
+    }
+
+    // Source uses unsigned multiply, shift, then the independent layer origin.
+    // Keep the admitted domain below signed-word wrap for both current and destination axes.
+    private static int Plane(int position, int parallax, int offset)
+    {
+        long result = ((long)position * parallax >> 8) + offset * 384;
+        if (position is < 0 or > short.MaxValue || result is < 0 or > short.MaxValue)
+            throw new BattleRuleException("field-view-destination", "program.camera", true);
+        return (int)result;
     }
 
     internal static LogicalView SetDestination(LogicalView view, MapPosition position)
@@ -51,8 +67,8 @@ internal static class ExplorationViewRunner
         }
         int x = position.X * 384, y = position.Y * 384;
         return view with { TargetSlot = null,
-            AX = Set(view.AX, x + view.Area.ForegroundX * 384), AY = Set(view.AY, y + view.Area.ForegroundY * 384),
-            BX = Set(view.BX, x + view.Area.BackgroundX * 384), BY = Set(view.BY, y + view.Area.BackgroundY * 384) };
+            AX = Set(view.AX, Plane(x, view.Area.ParallaxAX, view.Area.ForegroundX)), AY = Set(view.AY, Plane(y, view.Area.ParallaxAY, view.Area.ForegroundY)),
+            BX = Set(view.BX, Plane(x, view.Area.ParallaxBX, view.Area.BackgroundX)), BY = Set(view.BY, Plane(y, view.Area.ParallaxBY, view.Area.BackgroundY)) };
     }
 
     internal static LogicalView Tick(ExplorationState world, LogicalView view, ExplorationTextSettings settings)
@@ -66,8 +82,7 @@ internal static class ExplorationViewRunner
         {
             // The FF branch bypasses following but prepares speed even during a scroll.
             int speed = unchecked((short)view.FollowCounter) > 6 ? 32 : 24;
-            view = view with { AX = view.AX with { Speed = speed }, AY = view.AY with { Speed = speed },
-                BX = view.BX with { Speed = speed }, BY = view.BY with { Speed = speed } };
+            view = Speeds(view, speed);
         }
         // A followed entity with an active mask retains its existing speeds.
         else if (!view.Scrolling)
@@ -80,20 +95,29 @@ internal static class ExplorationViewRunner
             bool changed = x != nextX || y != nextY;
             int counter = changed ? unchecked((ushort)(view.FollowCounter + 1)) : 0;
             int speed = unchecked((short)counter) > 6 ? 32 : 24;
+            view = Speeds(view, speed);
             LogicalViewAxis Destination(LogicalViewAxis axis, int destination) => changed
-                ? axis with { Destination = axis.Position == destination ? null : destination, Speed = speed }
-                : axis with { Speed = speed };
+                ? axis with { Destination = axis.Position == destination ? null : destination }
+                : axis;
             view = view with
             {
-                AX = Destination(view.AX, nextX + area.ForegroundX * 384),
-                AY = Destination(view.AY, nextY + area.ForegroundY * 384),
-                BX = Destination(view.BX, nextX + area.BackgroundX * 384),
-                BY = Destination(view.BY, nextY + area.BackgroundY * 384), FollowCounter = counter,
+                AX = Destination(view.AX, Plane(nextX, area.ParallaxAX, area.ForegroundX)),
+                AY = Destination(view.AY, Plane(nextY, area.ParallaxAY, area.ForegroundY)),
+                BX = Destination(view.BX, Plane(nextX, area.ParallaxBX, area.BackgroundX)),
+                BY = Destination(view.BY, Plane(nextY, area.ParallaxBY, area.BackgroundY)), FollowCounter = counter,
             };
         }
         bool hide = view.AX.Active || view.AY.Active;
         return view with { AX = Scroll(view.AX), AY = Scroll(view.AY), BX = Scroll(view.BX), BY = Scroll(view.BY), HideWindows = hide };
     }
+
+    private static LogicalView Speeds(LogicalView view, int speed) => view with
+    {
+        AX = view.AX with { Speed = speed * view.Area.ParallaxAX >> 8 },
+        AY = view.AY with { Speed = speed * view.Area.ParallaxAY >> 8 },
+        BX = view.BX with { Speed = speed * view.Area.ParallaxBX >> 8 },
+        BY = view.BY with { Speed = speed * view.Area.ParallaxBY >> 8 },
+    };
 
     private static int Follow(int target, int view, int minimum, int maximum) =>
         target < view + 1536 ? (view > minimum ? view - 384 : view) :

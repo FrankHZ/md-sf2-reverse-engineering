@@ -2875,3 +2875,26 @@ than targeting old history. Each next startup is necessary to compare from uncha
 because the probe exits. Preserve earlier missing-palette and unsupported-view failures. Original
 natural timing, later bound scene/before-battle capability, continuous winning trace and executable
 H4 policy cutover remain open.
+
+## Bound field parallax observation
+
+Use the retained private world/party/music/environment and a fresh start with only the existing
+palette producer's [21,40] bindings added to the accepted map-init start. Compare all other input
+fields directly; no world export or environment copy is required. Build the owned adapter Debug
+for the ordinary host. Use the existing accessibility observer with
+`SF2_INPUT_CASE=portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-field-parallax`
+and `adjustable-modern-music-field-parallax-reveal` at rate20. Reuse opening/JOIN and first palace as
+same-session setup, then continue the existing castle graph after its royal-return segment.
+Observe Astral refusal/re-prompt/acceptance, guard sprite completion before F401/F256, repeat and
+Map21 field readiness. Consume45 of46 player-ready extension inputs, stopping at Map40(14,13)
+before the final Up into marked Y12 battle exit. No checkpoint injection or target seed/tick applies.
+
+Compare logical states and distinct same-tick transitions across settings. Preserve the accepted
+pre-JOIN completed raw-text End delivery difference separately: it introduces no tick/RNG/entity
+service or eligible input; all post-JOIN gameplay transitions must match. Read actual independent
+A/B draws and changing separation, main-plane actor origins/resources/geometry, clipping and signed
+window priority; verify stable input and carried party/RNG. Engine cases belong to
+`CastleTowerProgramTests`; adapter compile and direct source/contract checks own the other boundaries.
+Scene-map, camera-entity and bound before-battle windows remain outside this acceptance. Record the
+committed default planner and any engine-scope refusal; the shared contract alone does not authorize
+local normal/full/H3. Preserve completed failure records and obtain independent main-gate review.
