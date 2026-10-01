@@ -925,13 +925,14 @@ public sealed class ExplorationSessionTests
     [Theory]
     [InlineData("period")]
     [InlineData("palette")]
-    [InlineData("white")]
+    [InlineData("flash-white")]
     [InlineData("zero-period")]
     public void UnsupportedStaticBindingsRejectBeforeMovement(string shape)
     {
         var (definition, before) = WarpWorld([], false, 123, period: shape == "period" ? (byte)0 : (byte)3,
-            onLoad: shape is "white" or "zero-period" ? [new PresentCue(PresentationCueKind.FadeIn,
-                shape == "white" ? "white" : "black", FullBlack: shape == "zero-period" ? new(0) : null), new EndProgram()] : null);
+            onLoad: shape is "flash-white" or "zero-period" ? [new PresentCue(
+                shape == "flash-white" ? PresentationCueKind.FlashWhite : PresentationCueKind.FadeIn,
+                shape == "flash-white" ? "white" : "black", FullBlack: shape == "zero-period" ? new(0) : null), new EndProgram()] : null);
         if (shape == "palette")
         {
             var target = definition.Exploration!.Maps[new("destination")];
@@ -943,6 +944,53 @@ public sealed class ExplorationSessionTests
         Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
         Assert.Same(before.Active, result.Snapshot.Active); Assert.Same(before.Story, result.Snapshot.Story);
         Assert.Empty(result.Observations);
+    }
+
+    [Theory]
+    [InlineData(PresentationCueKind.FadeIn)]
+    [InlineData(PresentationCueKind.FadeOut)]
+    public void OrdinaryOnLoadWhiteCompletesBeforeFieldReturn(PresentationCueKind kind)
+    {
+        var (definition, before) = WarpWorld([], false, 123, onLoad:
+            [new PresentCue(kind, "white"), new WriteFlag(604, true), new EndProgram()]);
+        var current = DrainFade(definition, ReachFade(definition, before), false);
+        Assert.IsType<WarpLoadWait>(current.Story.Wait);
+        current = Step(definition, current, new AdvanceSimulation(current.Story.Wait!.Token, 600)).Snapshot;
+        Assert.Equal("destination", current.Exploration!.Map.Value);
+        var white = Assert.IsType<FullFadeWait>(current.Story.Wait);
+        Assert.Equal(FullFadeColor.White, white.Color);
+        Assert.Equal(FullFadePurpose.Script, white.Purpose);
+        Assert.Equal(1, white.Period);
+        Assert.Equal((byte?)3, white.RestorePeriod);
+        Assert.False(current.CanWaitAtInput);
+        long started = current.Story.SimulationTick;
+        current = Step(definition, current, new AdvanceSimulation(white.Token, 600)).Snapshot;
+        Assert.True(Assert.IsType<FullFadeWait>(current.Story.Wait).LogicalDone);
+        Assert.Equal(started + 9, current.Story.SimulationTick);
+        Assert.Equal(3, current.Story.Display!.Period);
+        Assert.DoesNotContain(604, current.Story.Flags);
+        Assert.False(current.CanWaitAtInput);
+        Assert.Equal(kind == PresentationCueKind.FadeOut ? new PalettePair(0xEEE, 0xEEE) : current.Story.Display.Base,
+            current.Story.Display.Current);
+        current = Step(definition, current, new CompletePresentation(white.Token, kind)).Snapshot;
+        Assert.Contains(604, current.Story.Flags);
+        Assert.Equal(started + 9, current.Story.SimulationTick);
+        if (kind == PresentationCueKind.FadeOut)
+        {
+            var restore = Assert.IsType<FullFadeWait>(current.Story.Wait);
+            Assert.Equal(FullFadeColor.Black, restore.Color);
+            Assert.Equal(FullFadePurpose.WarpIn, restore.Purpose);
+            Assert.False(current.CanWaitAtInput);
+            current = DrainFade(definition, current, false);
+        }
+        Assert.Equal(SessionStopReason.PlayerInput, current.StopReason);
+        Assert.True(current.CanWaitAtInput);
+        Assert.Null(current.Story.Warp);
+        Assert.Equal(current.Story.Display!.Base, current.Story.Display.Current);
+        Assert.Equal(FullFadeVisibility.BaseRestored, current.Story.Display.Visibility);
+        Assert.Equal(3, current.Story.Display.Period);
+        Assert.Equal(before.Exploration!.Party.Actors, current.Exploration!.Party.Actors);
+        Assert.Equal(before.Exploration.Party.Gold, current.Exploration.Party.Gold);
     }
 
     [Fact]
