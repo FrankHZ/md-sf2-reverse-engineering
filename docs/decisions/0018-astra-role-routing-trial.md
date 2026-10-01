@@ -3,7 +3,7 @@
 - Status: **Accepted**; trial closed, task-based routing adopted
 - Proposal date: 2026-09-05
 - Decision date: 2026-09-06
-- Routing update: 2026-09-22
+- Routing update: 2026-10-01
 - Scope: task model routing and handoffs after the bounded trial
 
 ## Context
@@ -26,13 +26,17 @@ Choose the model for the task's reasoning difficulty within its assigned role an
 | --- | --- |
 | Main-gate planning, independent review and serialized integration; independently assigned investigation of systemic problems | `gpt-6-astra` / `high` |
 | Difficult architecture, conflicting evidence, novel reverse engineering or runtime-admission design | `gpt-6-astra` / `high` |
-| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6-sol` / `medium` |
+| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6.1-sol` / `medium` |
 | Focused repeatable work with settled semantics, explicit ownership and direct acceptance, such as mechanical documentation or translation synchronization and routine bounded implementation | `gpt-6-luna` / `high` |
 
 The godot-architect, research and design-doc roles retain their responsibilities; a lane name alone
 does not select a model. Main-gate and independently assigned investigator retain Astra/High. Keep
 unclear evidence and integration authority with the accountable owner rather than assigning Luna
 solely for cost. A user-specific choice overrides these defaults.
+
+All current Sol dispatches, escalations to Sol and continuations of existing Sol tasks use
+`gpt-6.1-sol`. Preserve the task's supported reasoning effort and completed evidence; historical
+model selections remain historical records.
 
 Model and reasoning effort are separate. Use High above Medium only for a concrete reasoning
 difficulty; reserve XHigh for an exceptional named difficulty where High is insufficient or comparable
@@ -41,8 +45,9 @@ difficulty or scope limitations from missing input, tool or environment failures
 checks. Escalate Luna to Sol or Sol to Astra when a named reasoning or scope limitation warrants it;
 escalation changes neither scope nor acceptance and does not reset runtime budgets.
 
-Preserve running or frozen executors and completed results. No model switch, task recreation, extra
-verification, benchmark or investigator dispatch follows from this routing update. Do not create an
+Preserve running or frozen executors and completed results. Apply the Sol selection on the next
+authorized continuation; no interruption, task recreation, extra verification, benchmark or
+investigator dispatch follows from this routing update. Do not create an
 extra executor solely to spend emulator or test wait time on another model. Official model guidance
 informs these defaults; it does not establish project performance, account quota savings or a model
 ranking for this repository.
@@ -146,6 +151,9 @@ start a new product slice or authorize worktree/ref cleanup.
 
 ## References
 
+- [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol), accessed 2026-10-01:
+  confirms the requested model ID and support for Medium reasoning. The user selected it for all
+  current Sol routing; this does not establish a project performance or quota comparison.
 - [Codex Sol and Luna selection guidance](https://learn.chatgpt.com/docs/whats-new#choose-gpt-6-sol-and-luna),
   accessed 2026-09-22: recommends Sol Medium for everyday coding and Luna High for focused,
   repeatable tasks, subject to plan, client and workspace availability.
