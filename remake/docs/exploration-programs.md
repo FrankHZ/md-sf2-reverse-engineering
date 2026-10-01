@@ -528,9 +528,9 @@ remain unchanged.
 
 [Native acceptance](development-and-verification.md#source-bound-camera-observation) covers the
 whole accepted prefix and both Messenger destinations, stopping at text531 W1 before Wait/Ack.
-The camera stays held; zone/script return and F603 remain pending. Bound csc24/entity tracking,
-explicit speed, cursor/pulsating overrides, non-unity parallax/autoscroll and word-wrap destinations
-remain unsupported; no hardware timing claim follows.
+The camera stays held; zone/script return and F603 remain pending. Physical tracking uses the
+bound target rule below. Explicit speed, cursor/pulsating overrides, profiles outside the admitted
+secondary parallax domain, autoscroll and word-wrap destinations remain unsupported; no hardware timing claim follows.
 
 ### Source-bound nod
 
@@ -605,10 +605,37 @@ area covers the retained player. Player-area and legacy overlay lookup apply onl
 **Confirmed (bounded remake observation):** the representative ordinary native run continues the existing same-session route from Map40 approach
 through its last marked exit Up, Map57 scene/entity replacement, explicit destination(2,8) and
 Astral135 text2292/W2 confirmation to2293/W1 input. These operands identify observation only.
-No tick/seed, route endpoint or instruction index controls production legality. Non-null camera-entity135
-and later before-body/battle-load/first-battle-input consumers remain unadmitted for bound settings.
+No tick/seed, route endpoint or instruction index controls production legality. White palette services
+and later effects/battle-load/first-battle-input consumers remain unadmitted for bound settings.
 The older unbound full Battle01 admission is separate evidence; modern carried-party/RNG admission
 and original natural cadence remain open. [Source/semantic contract](../../docs/design/contracts/map-exploration.md#bound-black-scene-replacement-and-before-battle-windows).
+
+### Bound physical camera tracking
+
+`camera-entity` validates the existing bound field/map-init/real-before caller, resolves a logical
+selector once through the normal physical entity resolver and installs only LogicalView.TargetSlot.
+Valid slot0/default aliases and invisible allocated sprites remain valid. Missing/removed/out-of-table
+references, reserved physical cursor slot63 and incomplete/outcome contexts reject before publication.
+Installation/retarget/detach advances no tick or RNG and preserves independent axes, destinations,
+speeds, source follow counter, area, windows, callers, service policy and party. Compatibility camera
+entity/destination hints clear; actual bound projection continues to use LogicalView alone.
+
+The existing common service moves enabled entities before updating the view/windows and registered
+portrait. Following reads that live physical record, selecting B for layer0 or A for255. While any
+axis is active it preserves prepared speed/counter and completes the existing scroll; later settled
+following uses the existing deadband/clamp/counter rule and independent128/256 parallax. Null detach
+retains axes/counter; explicit destinations clear tracking. Sprite visibility is independent of
+identity removal. No new reducer, render smoothing, resource, clock or content lowering is needed.
+
+Ordinary W1 Ack, portrait unregister/close, text close and source Sleep10 precede subsequent target
+installation/motion. Later portrait/text opening and input retain the real before continuation and
+route. Idle input presentation performs no camera service. The next white palette service remains
+`full-black-fade-binding` Unsupported before new palette/helper publication; complete before-body,
+later effects and battle admission are separate. [Observation](development-and-verification.md#bound-physical-camera-tracking-observation)
+and [contract](../../docs/design/contracts/map-exploration.md#bound-physical-camera-target) own this boundary.
+Independent ordinary native readback reaches tracked motion and three later W1s before the white
+Unsupported. Its raw observer FAIL from two expected-stop assertions is preserved separately from
+semantic readback PASS; the corrected observer has not been executed.
 
 ## Battle01 admission and first input
 

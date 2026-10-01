@@ -1502,5 +1502,9 @@ start/world/party/asset/music inputs remain unchanged. Explicit scene origin sel
 entity replacement does not re-center. Bound A/B drawing retains that origin even when the old
 player is outside every new area; only unbound drawing selects legacy overlays by player location.
 Actual text/portrait projection and input delivery use the
-ordinary adapter. Non-null camera-entity and later full bound battle presentation remain outside admission.
+ordinary adapter. Bound physical target installation reuses this projection and the existing common
+service; no player recentering or render smoothing is added. Valid invisible allocated targets remain
+physical camera targets. Actual target movement precedes view/window/portrait service; idle input
+presentation performs no such service. White palette cues and later full bound battle presentation
+remain outside admission. [Tracking rule](exploration-programs.md#bound-physical-camera-tracking).
 [Behavior/limits](exploration-programs.md#bound-before-battle-scene-and-windows).

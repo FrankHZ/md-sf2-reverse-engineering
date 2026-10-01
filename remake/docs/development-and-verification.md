@@ -2920,7 +2920,7 @@ Earlier opening/palace/tower/parallax steps are setup for this same session. Con
 player-ready fixture Up; inspect actual scene/palette/entity readiness/main camera/portrait/text,
 real BeforeBattleFinished/EnteringBattle/callers, ordinary W2 confirm and next W1 readiness.
 Stop observation at that genuine input wait. No forced PC, injected seed/party/capture or screenshots.
-Non-null camera-entity/later entry stay Unsupported. Record committed default planner and actual CI;
+That observation ends before target tracking; white palette/later entry stay Unsupported. Record committed default planner and actual CI;
 shared contract prose alone does not require local normal/full/H3. Preserve completed failures.
 
 **Confirmed (remake observation of prior detach ordering):** the retained `native-03` representative instant run exits0/PASS
@@ -2962,3 +2962,44 @@ this representative's measured main/copy seeds remain unchanged. These are resul
 The two authored layer profiles also draw actual A/B tiles and actors while retaining a player
 outside every new area. Enabled/disabled random old-entity behavior separately verifies the general
 post-load RNG rule. Original cadence/pixels and later full battle admission remain open.
+
+
+## Bound physical camera tracking observation
+
+Use the accepted black-scene inputs and post-load source wait unchanged. No source/world/asset export
+or new start is required. Run affected BattleEntryProgramTests.BoundCameraTracking cases and the
+updated BoundSceneFadeLoadFade case through the selected absolute SDK/shared CLI environment;
+`uv run sf2 verify adapter`, controlled Debug build and `uv run sf2 design-contracts test` own the
+local gates. Keep completed failures and rerun only invalidated nodes. Record clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD` and actual exact-head CI; no local full
+engine/normal/full/H3 campaign follows solely from this bounded consumer.
+
+Reuse the owned installation/project for ONE ordinary same-session observation, case
+`portrait-event-zone-nod-camera-choice-yes-private-instant-modern-music-before-battle-tracking`.
+The retained wrapper is `local/issue534/bound-camera-tracking/run-native.py native-new instant 1 40 yes modern-music-before-battle-tracking`.
+Opening/palace/tower/Map40 and2292 W2→2293 W1 are setup. Physical Confirm at2293 must unregister
+and close the portrait, close text and run source Sleep10 before binding the real source135 slot.
+Read actual moving entity, view axes/counter/speed, matching main camera/tile/actor projection,
+settled text/portrait delivery and real route/callers at ordinary2294/95/96 W1. Idle input must add
+no service/debt. Confirm2296 and observe the first still-unadmitted white FadeOut:
+`full-black-fade-binding` Unsupported before display/helper publication and a stable stopped state.
+An earlier failure is discovery evidence, never bypassed. Operand labels identify observation only;
+no production endpoint or injected state/seed/capture is permitted. Compare the accepted approach
+and old2293 boundary, reporting newly measured consequences; no paired settings run or screenshots.
+White palette/effects/complete before-body/battle load/first input and original cadence remain open.
+
+
+**Confirmed (bounded semantic readback):** the ordinary native01 continuation reaches real physical
+tracking, later2294/95/96 W1 inputs and the first white capability stop. Its raw probe exits1 with
+`passed:false` and exactly two observer assertion errors: the generic no-error sampler at the expected
+Unsupported boundary and a failure-kind comparison against Unsupported instead of UnsupportedCapability.
+Both records remain failures. Independent inspection of immutable actual output establishes
+`full-black-fade-binding`/`UnsupportedCapability`, unchanged visible display/no palette helper,
+719 tracked draws/7,909 actor projections and610 adjacent live-entity-before-view service checks.
+The accepted Map40 approach and2293 W1 gameplay fields compare directly equal. The tested expected-stop
+branch executes three idle frames, physical Confirm and the stable stopped-state check before returning;
+its exact raw failure set contains no failure of that check. The tested probe version and its two-line
+correction provenance are retained. Main-gate approved this semantic acceptance without repeating the
+ordinary route solely to turn its report green. The corrected observer was not executed. See the
+ignored owning handoff for commands, measured states and complete failures; no original timing claim
+or full before-body/battle-entry admission follows.
