@@ -1608,3 +1608,24 @@ explicit. This readback changes neither the audio buffer nor scene/audio playbac
 See [same-session observation](development-and-verification.md#same-session-actual-observation) for
 input freezing and session boundaries. New A observations do not fill omitted fields in old A-D02
 records or prove complete original resource provenance and dependent consumer bindings.
+
+### Offline reached material provenance
+
+The H4 comparator accepts explicit world/scene, process receipt, scene evidence root and pinned
+independent asset checkout selections. The base scene candidate's existing source/manifest identities
+and historical CRLF extractor fingerprint bind its42 embedded scale2 PNGs; visible node-bound
+background/ground and reached actor/weapon IDs resolve to those rasters. The additional three
+field-death rasters and complete healing/death use are outside this proof. The candidate remains a
+private review input; comparison does not promote it into the independent library or re-extract it.
+
+Actually started audio resolves through the selected world to library catalog/runtime and the exact
+existing provenance record. Read the original capture interval and runtime WAV without writing;
+compare PCM bytes, format, recording timer and loop. The WAV-container SHA differs from raw PCM SHA.
+Requested timer remains distinct: the accepted unique-finite fallback can choose recording189 for
+command66 requested203. This proves the selected material, not original natural dispatch at203.
+
+Continuous receipt/lifecycle facts retain their same-session applicability, including ongoing music
+at termination. Material-source joins do not close original dispatch, causal wait or consumer edges.
+The map/layer, entity/portrait/gesture, private text/font/glyph and full actor/healing/death resource
+families remain incomplete. See the [contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#offline-reached-original-material-joins)
+and [offline command](development-and-verification.md#offline-reached-material-comparison).
