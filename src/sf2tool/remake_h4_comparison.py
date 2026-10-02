@@ -1133,8 +1133,16 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
     Missing named evidence is unavailable; a present contradiction is false.
     """
     result = dict(original=None, plain=None, audio=None, caller=None, anchors={})
-    if evidence_root is None or world_path is None:
+    plain_value = None
+
+    def finalize():
+        # Every exit preserves observed contradictions without closing partial evidence.
+        values = [plain_value, result["audio"], result["caller"]]
+        result["plain"] = False if False in values else None if None in values else True
         return result
+
+    if evidence_root is None or world_path is None:
+        return finalize()
     evidence_root, world_path = (
         p.resolve() if p.is_absolute() else repo_path(p) for p in (evidence_root, world_path)
     )
@@ -1152,7 +1160,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         )
     ]
     if not all(p.is_file() for p in paths):
-        return result
+        return finalize()
 
     def digest(path):
         return hashlib.sha256(path.read_bytes()).hexdigest().upper()
@@ -1172,7 +1180,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         result["original"] = sealed
         if not sealed:
             result.update(plain=False, audio=False, caller=False)
-            return result
+            return finalize()
         result["original"] = None
         checkpoints = [row for _, row in rows(paths[2])]
         inputs = [row for _, row in rows(paths[3])]
@@ -1232,14 +1240,13 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         )
         if not original_plain:
             result.update(plain=False, audio=False, caller=False)
-            return result
+            return finalize()
     except json.JSONDecodeError:
         result.update(original=False, plain=False, audio=False, caller=False)
-        return result
+        return finalize()
     except (KeyError, IndexError):
-        return result
+        return finalize()
 
-    plain_value = None
     try:
         labels = (
             "music-logical-end",
@@ -1253,10 +1260,10 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             for label in labels
         ]
         if any(not group for group in selected):
-            return result
+            return finalize()
         if any(len(group) != 1 for group in selected):
             result.update(plain=False, audio=False, caller=False)
-            return result
+            return finalize()
         (li, logical), (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (
             group[0] for group in selected
         )
@@ -1297,7 +1304,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             if r["before"]["revision"] == polled["revision"] and r["action"] == "confirm"
         ]
         if not early or not wait or not confirm:
-            return result
+            return finalize()
         wait, confirm = wait[0], confirm[0]
 
         def delivered(record, kind):
@@ -1360,7 +1367,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and r["Revision"] == logical["revision"]
         ]
         if not starts or not finishes:
-            return result
+            return finalize()
         start, finish = starts[0], finishes[0]
         restarts = [
             r
@@ -1376,7 +1383,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             if s["state"]["audio"]["musicGeneration"] == generation
         ]
         if not restarts or not transitional:
-            return result
+            return finalize()
         restart = restarts[0]
         interval = [
             r
@@ -1416,7 +1423,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and restart["Revision"] < previous[0][1]["Sequence"]
         )
         if not world_path.is_file():
-            return result
+            return finalize()
         world = read(world_path)["world"]
         program = next(p for p in world["programs"] if p["id"] == "cs-51614")
         instructions = program["instructions"]
@@ -1444,7 +1451,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             if s["state"]["wait"] == "ZoneArrivalWait"
         ]
         if not arrivals:
-            return result
+            return finalize()
         zone = next(p for p in world["programs"] if p["id"] == "map3-zoneevent8")
         entities = {e["id"]: e for e in ready["entities"]}
         effects = all(
@@ -1524,10 +1531,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         )
     except (KeyError, IndexError, StopIteration):
         pass
-    # Closing plain JOIN requires its completion and dependent caller binding too.
-    values = [plain_value, result["audio"], result["caller"]]
-    result["plain"] = False if False in values else None if None in values else True
-    return result
+    return finalize()
 
 
 def compare_modern(
