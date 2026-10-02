@@ -19,7 +19,8 @@ controls the original comparisons below. Original records, projector values and 
 remain immutable evidence. An affected original whole-history comparison is a historical diagnostic
 with a declared clock deviation, not a newly passing assertion or an unchanged modern golden.
 Report applicability before executing a comparison; the existing projector does not automatically
-implement this policy cutover. A modern continuous winning trace remains pending independent review.
+implement this policy cutover. The ordinary modern winning/return capability was independently accepted in PR #588.
+That bounded acceptance does not supply all executable H4 bindings or continuous 9A variants.
 
 | Layer | Requirement under the modern clock |
 | --- | --- |
@@ -176,7 +177,7 @@ The mappings in the next section identify actual existing surfaces and missing c
 | 4 — natural encounter | Selected CheckBattle/load/start/first-control records; R2c/R2d field shapes only: battle ID, before/start programs, F88/F451, region flags 90–105, party/combatants, position/stats/status/equipment, activation/spawn, turn scores/order/cursor, first actor and readiness guards | Natural route creates Battle01 and completes programs before manual control. Compare local initialization rules; actor2 and history-dependent selected values remain original diagnostics under the modern clock. Clear blocking script/modal/transfer/action/target/scroll state. Original window count 2/palette mode 5 are allowed nonblocking presentation, not mandatory host byte values. |
 | 5 — battle | Selected action/checkpoint/scene records and R3a–R3d/local rules: round/order/actor/control, movement origin/path/destination, action/resource/slot/target, AI choice/memory, RNG before/range/value/after, follow-up kind, per-target HP/MP/status/death, item removal, EXP/level/stats/spells/gold/drop, after-turn and outcome | At matched state/input, compare each reached rule and consumed effect, including costs and RNG. The original whole winning history is diagnostic under the modern clock. Compare HP before WriteBattlesceneScript with consumed EndBattlescene, not temporary script-calculation HP. Pair each RNG draw/effect where evidenced; gaps in draw mapping remain OPEN even if endpoint HP matches. Do not hardcode round 14 or actor history as gameplay legality. |
 | 6 — victory/return | Selected final segment plus R4a: winning condition, eligible-party healing, reached after-program operations/effects, joins, F401/F501, controller result, transfer/setup selection | Require natural victory and full reached operation entry/return pairing, shared tail before enclosing return, then clear/set flags, D4=1 equivalent and exploration handoff. `ms_Void` at source `0x477E8` is Map57's exact fallback selection. One completed return cannot replace after-program consumption. |
-| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied, while actual comparison remains open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. The actual run does not reach this boundary; this assertion and full 5B remain OPEN. |
+| 7 — endpoint | Accepted bounded original endpoint and RA-12 input/effect evidence; optional PR #526 extension projection is bound when explicitly supplied, while actual comparison remains open | Compare all scenario state and no pending battle/script/modal/transfer; observe settled player/camera across two host update boundaries without inventing original-frame equality. After the actual endpoint is settled, accept the independently evidenced Down and compare its actual displacement/state effect. PR #588 observes returned control and Left; the named Down comparison and two independently identified settled host-update boundaries remain separate H4 assertions. |
 | 8 — save/7C | 6A restart rule; private asset inventory and ROM/source/extraction provenance for every reached original scene dialogue/map/sprite/portrait/animation/music/SFX identity and binding | No user save/load/suspend/checkpoint surface; restart reconstructs layer 1. Every consumed original scene resource resolves to admitted original private content. Missing private input is Unavailable; an authored substitute for required original scene content fails 7C when observed. MUSIC_JOIN/MUSIC_SAD_JOIN chord loops and host mute do not satisfy original audio. Public distribution remains outside scope. |
 | 9 — 8D presentation | Reached program/operation and scene/dialogue/animation/audio resource identities, dispatch/consumer/ack boundaries, blocking and resulting state from accepted source plus bounded observations | Match semantic identity and causal order; observe actual host use and completion/ack as defined below. Request/mailbox pairs, program return or a counter alone cannot PASS delivery. Missing original consumption evidence is OPEN; missing host evidence is Unavailable. No screenshots. |
 | 10 — deviations | ADR0010 1A/2A/4A/6A/9A/10A; inventory below | Emit a separate named result for every accepted deviation and its expected behavior, even when PASS. No implicit exclusions, missing-input waiver or newly invented deviation. |
@@ -222,7 +223,7 @@ displacement, battle255, F401=false, F501=true, and no blocking consumers. This 
 accepted terminal pair; it does not modify or make the PR #504 terminal resumable. RA-12's bounded
 ordinary-input acceptance and displacement
 are evidenced. The projector retains the PR #504 neutral endpoint and optionally binds this separate
-extension through an explicit `--extension-root`; H4 has no actual observation at that boundary.
+extension through an explicit `--extension-root`; The legacy H4 diagnostic has no actual observation at that boundary. PR #588 supplies modern returned control and Left, which does not replace this named Down comparison.
 
 ## Mapping to existing actual observations
 
@@ -268,11 +269,12 @@ committed effect and return to battlefield input. Assert initialization before c
 each required wait before dependent progression, consumed effects before EndBattlescene-equivalent
 release, and no input release while blocking scene work remains. Missing original resource/order
 bindings remain OPEN; missing actual observation is Unavailable, while observed omission of a
-required scene is FAIL. The current [BattlePresentation](../../../remake/game/src/Battles/BattlePresentation.cs)
-projects board markers/status/roster only: it does not prove battle-scene animation or dialogue
-consumption. This is an explicit layer-9 implementation gap, independent of the exploration cue
-services, battle-state correctness and private-audio work. No original pixels or frame durations
-are required to close it.
+required scene is FAIL. The current [BattleSessionView](../../../remake/game/src/Battles/BattleSessionView.cs) mounts
+`BattleSceneView` and observes reached private scene, healing and field-death consumers under the
+[presentation owner](../../../remake/docs/presentation-and-assets.md). PR #588 confirms its ordinary
+winning scene/outcome path. Complete original resource/order bindings and per-occurrence actual
+consumer/completion correspondence remain layer-9 requirements; the accepted capability and
+aggregate counters alone do not pass them. No original pixels or frame durations are required.
 
 9A runs report separate variant identities/settings and compare the same layer 2/3/5/7 gameplay
 decisions/state against the baseline: default and remapped keyboard/gamepad, standard and swapped
@@ -409,3 +411,67 @@ Independent review accepts these comparison definitions with their precise open 
 does not establish complete definition readiness or milestone readiness.
 The [readiness ledger](../synthesis/map3-battle01-readiness.md) tracks closure; main-gate independently
 reviews acceptance. The offline reference projection does not execute H4 or launch native acquisition.
+
+## Executable modern applicability comparison
+
+The existing comparator's `--profile modern-continuous` reads the accepted ordinary JSON sample/
+result stream, separate outcome JSON, actual settings and recorded host result. The default legacy
+JSONL/plan profile retains its original diagnostic semantics and completed results. Select a retained
+original projection with the accepted Down extension from worktree-owned ignored inputs; neither
+profile reseeds production or modifies the original projector/goldens.
+
+Every assertion records applicability before evaluation: `applicable`, `historical-diagnostic` or
+`required-unobserved`, with original owner/record and actual file/record. Historical mismatches keep
+their raw result and separate counts. Current required FAILs and Unavailable assertions control the
+current verdict; missing original semantic binding is distinct from missing actual host observation
+or selection/provenance. All ten required layers and named variants remain in scope. Defeat/other
+unreached return families and excluded hardware cadence do not become winning-profile prerequisites.
+
+The ordinary observer labels two independent host-update reads at first returned input *before*
+Left, before Down and after Down. Observe unchanged settled player/camera/readiness at each pair,
+without issuing gameplay Wait. Preserve accepted Left and then require legal ordinary Down from the
+reached modern cell. Original absolute terminal coordinates/resources are history diagnostics;
+local displacement, facing, collision and true input readiness remain required.
+
+The `matrix` command consumes all four named actual reports (A default keyboard, B default gamepad,
+C remapped keyboard and D remapped gamepad), compares configured roles and complete semantic input/
+observation/state with A, and retains each report's remaining required obligations. Missing variants
+are Unavailable; a pair PASS never substitutes for a complete matrix or full H4. Required consumer/
+resource/matched-state rule gaps cannot be waived by modern victory or settings equality.
+
+Physical consumption is established by actual synchronous dispatch intervals and submit results;
+automatic results retain their latest ordinal only as context. Reveal-only Confirm is a delivery
+operation, not an acknowledgement. D waits actual Label readiness for natural reveal without
+issuing gameplay Wait. Ordered logical observations retain every operand. Host-only text-revealed
+and single automatic healing scene-delivery notifications are retained separately and must leave
+gameplay/RNG service unchanged; actual acknowledgements and scene transitions remain ordered.
+This timing distinction does not waive required original matched-state or consumer bindings.
+
+The modern delivery distinction follows the maintained host/application owners:
+[`ExplorationSessionView._Process`](../../../remake/game/src/Exploration/ExplorationSessionView.cs)
+sends `CompleteTextReveal` after actual Label delivery;
+[`BattleSceneView.Consume/Acknowledge`](../../../remake/game/src/Battles/BattleSceneView.cs)
+separates reveal, timed acknowledgement and `CompletePresentation`;
+[`BattleSceneContinuation.Submit`](../../../remake/src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+advances healing logic only for simulation or acknowledgement, while delivery marks `Delivered`.
+These are modern consumption rules, not evidence for original hardware timing.
+
+**Confirmed bounded actual settings comparison:** the four named winning profiles have equal
+717 consumed physical inputs, 34,568 ordered logical observations, 35 action states, admission,
+resources/RNG and returned player/camera/readiness pairs. D uses an explicitly additive two-audio
+selection; A/B/C reuse is justified by unchanged used assets and absence of the previously unresolved
+exact speech requests. C reveal-only Confirm submits no command; D confirms only delivered text.
+The matrix has four variant PASS results but remains `Unavailable`, `milestonePass=false`: three
+admission item fields, admission phase mapping, mandatory operation-to-consumption mapping,
+matched-state rule/RNG mapping, complete reached resource provenance and required unshimmed consumer
+bindings remain missing. Settings equality does not close these eight obligations per variant.
+
+The completed first D attempt stopped before battle at text 2297 with actual `AdapterError`
+`presentation-unavailable` / `audio-command-ambiguous`, even though `SessionResult.failure` was null.
+The old catalog lacked exact speech 70/73 at Timer B 189 and contained multiple other candidates.
+The two independently reviewed finite PCM additions and actual D playback are owned by the
+[audio boundary](../../../remake/docs/presentation-and-assets.md#audio-boundary). The corrected
+additive selection completes D; production selector and input/clock policy remain unchanged.
+Historical original trajectory mismatches and the failed D report are retained. Two original
+isolated exports (49.3339547 seconds / 2,400 dump frames) are separate from the unchanged retained
+natural-route/RNG ledger, and establish no new natural original route or hardware-timing claim.

@@ -3,6 +3,7 @@ extends "res://probes/engine_battle01_admission_observation.gd"
 var outcome_records: Array = []
 var after_programs: Dictionary = {}
 var held_battle := false
+var endpoint_records: Array = []
 var after_mosaic := 0
 var after_white := false
 var after_sounds := 0
@@ -197,7 +198,7 @@ func after_admission(s: Dictionary) -> Dictionary:
             issue = "outcome-flags-or-gold"
         elif lose and (s.map != "map-3" or after_sounds < 1 or after_programs.has("abcs-battle01")):
             issue = "ordinary-defeat-path"
-        elif not lose and (s.map != "map-57" or after_mosaic <= 0 or not after_white or not after_programs.has("abcs-battle01")):
+        elif not lose and (s.map != "map-57" or after_mosaic <= 0 or (after_white if OS.get_environment("SF2_H4_VARIANT") in ["C", "D"] else not after_white) or not after_programs.has("abcs-battle01")):
             issue = "victory-after-program"
         else:
             var viewport := Rect2(s.viewport.x, s.viewport.y, s.viewport.width, s.viewport.height)
@@ -205,14 +206,31 @@ func after_admission(s: Dictionary) -> Dictionary:
             if s.viewport.width != 960 or s.viewport.height != 640 or not board.has_area() or not viewport.encloses(board):
                 issue = "return-viewport"
             var before := player(s)
+            if not OS.get_environment("SF2_H4_VARIANT").is_empty():
+                await settled_endpoint("first-return")
             await key(KEY_LEFT)
             s = await outcome_settle()
             if player(s).x == before.x and player(s).y == before.y: issue = "actual-return-movement"
+            if not OS.get_environment("SF2_H4_VARIANT").is_empty() and issue == "":
+                await settled_endpoint("before-down")
+                var down_before := player(s)
+                await key(KEY_DOWN)
+                s = await outcome_settle()
+                if player(s).x != down_before.x or player(s).y != down_before.y + 384: issue = "actual-return-down"
+                await settled_endpoint("after-down")
     var file = FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".outcome.json", FileAccess.WRITE)
     file.store_string(JSON.stringify({"issue":issue,"lose":lose,"initialGold":initial_gold,"records":outcome_records,"programs":after_programs.keys(),
-        "heldBattle":held_battle,"mosaicOutDraws":after_mosaic,"whiteSeen":after_white,"soundStarts":after_sounds,"final":s}, "  "))
+        "heldBattle":held_battle,"mosaicOutDraws":after_mosaic,"whiteSeen":after_white,"soundStarts":after_sounds,"endpoints":endpoint_records,"final":s}, "  "))
     file.close()
     return s
+
+func settled_endpoint(label: String) -> void:
+    for update in range(2):
+        await process_frame
+        var s := state()
+        endpoint_records.append({"label":label,"update":update,"hostUpdate":Engine.get_process_frames(),"state":s})
+        if not s.get("canWaitAtInput", false) or s.wait != null or s.cursor != null or s.battleMounted or s.tickDebt != 0 or s.failure != null:
+            issue = "endpoint-not-ready:" + label
 
 func outcome_settle() -> Dictionary:
     for frame in range(20000):
@@ -226,13 +244,15 @@ func outcome_settle() -> Dictionary:
             if s.stage != null and s.stopReason == "PlayerInput": return s
             if s.scene.phase in ["ActionMessage", "ResultMessage", "DeathMessage", "RewardMessage", "GrowthMessage", "GoldMessage"]:
                 if s.scene.healing == null or s.scene.healing.LogicalComplete or s.scene.healing.AtTimedInput:
-                    await key(KEY_ENTER)
+                    if OS.get_environment("SF2_H4_VARIANT") != "D" or call("h4_scene_ready"):
+                        await key(KEY_ENTER)
             continue
         held_battle = held_battle or s.battleMounted
         after_mosaic = maxi(after_mosaic, int(s.presentation.mosaicOutDraws))
         after_sounds = maxi(after_sounds, int(s.presentation.soundStarts))
         after_white = after_white or s.presentation.whiteOpacity > 0.95
         if s.cursor != null: after_programs[s.cursor.Program] = true
+        if has_method("h4_reveal"): call("h4_reveal", s)
         if s.get("canWaitForText", false):
             outcome_records.append({"label":"outcome-text-input","state":s})
             await key(KEY_ENTER)

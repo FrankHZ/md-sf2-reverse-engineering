@@ -3131,3 +3131,73 @@ Disposable actor-node geometry and attempted UI candidate may change; accepted g
 not. Other errors remain failures. A green report with callback/script errors is not clean acceptance.
 The continuous winning and bound victory/return scope above has native acceptance;
 executable H4 policy cutover and unobserved outcome/return variants remain open.
+
+## Modern continuous H4 comparison
+
+The maintained module retains its default legacy JSONL/plan diagnostic. Select the explicit modern
+profile for ordinary sample/result JSON plus its outcome/settings/log and recorded process exit:
+
+```powershell
+uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --actual $actual --outcome $outcome --settings $settings --host-log $hostLog --host-exit $recordedExit `
+  --output $freshReport
+# Repeat --variant-report for each actual A/B/C/D report; missing named variants stay Unavailable.
+uv run python -m sf2tool.remake_h4_comparison matrix `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --variant-report $reportA --variant-report $reportB --variant-report $reportC --variant-report $reportD `
+  --output $freshMatrixReport
+```
+
+Reference/provenance inputs are exact copies of retained accepted projection and extension records
+in this worktree's ignored inputs; select them explicitly rather than depending on another removable
+worktree's mutable report. The original projector, legacy driver/goldens and production are read-only.
+Modern reports name original and actual record locations, applicability and reason before equality.
+Historical trajectory mismatches retain raw results and separate counts; required observed errors are
+FAIL, absent required original/actual fields are Unavailable with the missing side identified.
+Exit1 means required FAIL, exit2 incomplete/Unavailable, exit0 complete applicable acceptance. Neither
+a successful report command nor a variant-pair PASS implies milestone acceptance.
+
+For the ordinary winning suffix set `SF2_H4_VARIANT` to A/B/C/D while retaining the accepted normal05
+start/world/scene/content/party/RNG, fixed60 FPS, optionalpoll1 and adaptive legal battle policy:
+
+| Variant | Physical input and actual settings |
+| --- | --- |
+| A | Default keyboard; standard Confirm/Cancel; normal flash; instant40 |
+| B | Default gamepad with one intended direction delivered via supported left stick; standard; normal; instant40 |
+| C | Remapped keyboard; swapped Confirm/Cancel; reduced flash; adjustable20 with reveal-only Confirm |
+| D | Remapped gamepad with admitted right stick; swapped; reduced; adjustable20 natural reveal |
+
+Each run records actual press/release identity, synchronous dispatch intervals and result consumer
+ordinals. Only a submit observed inside that interval establishes consumed physical input; the latest
+ordinal on a later automatic result does not. Actual field and battle Label readiness separates
+reveal-only Confirm from acknowledgement; D waits natural reveal before Confirm without gameplay Wait.
+Compare ordered logical Wait/ack/command observations, action states, admission and reached endpoint
+resources/state. Preserve text-revealed and single automatic healing scene-delivery notifications in a
+separate raw list and require unchanged gameplay/RNG service. Their host timing may interleave with
+mandatory work; acknowledgements and scene continuation remain ordered. Reveal-only Confirm adds no
+semantic input or service. The first stable returned endpoint has two
+separate host-update reads before Left; preserve actual Left, observe two settled pre-Down updates,
+then ordinary Down and two post-Down updates. Host observation does not issue a gameplay Wait.
+Observe player/camera, genuine readiness, cleared callers/waits/transfer/battle/modal and zero debt.
+Reject a blocked Down honestly; no injected position or substitute direction. Four actual reports are
+required for the named matrix, with each report's outstanding original/host bindings still retained.
+
+Accepted normal05 remains the prior ordinary continuous winning/Left evidence. Its duplicated final
+sample/outcome reads lack independent update identities and cannot supply the named Down or full
+extended settings stream. Existing authored-only pairs also cannot supply continuous variants.
+Direct comparison, affected Python lint, probe check-only and direct contract/document checks verify
+this verification-tool change; no tests of probes/comparator or normal/full/H3 suite are added.
+
+For A, optional `--baseline-actual` and `--baseline-outcome` compare the accepted normal05
+shared checkpoints and Left endpoint directly; they do not substitute an old authored pair for A-D.
+
+The bounded continuous A-D matrix is observed: four variant PASS results, with overall Unavailable
+and milestonePass=false because eight required original/actual bindings per variant remain open.
+A/B/C retain the earlier world; D uses a fresh world adding only exact speech70/73 BD from the
+[audio owner's pinned pack](presentation-and-assets.md#audio-boundary). Preserve direct equality with the prior world after removing the two new rows, and the dependency
+check for actual used resources when reusing those runs.
+D receipts distinguish 23/8 starts, 22/7 replacements/stops and one Finished per command, with no
+sequence gap or added gameplay Wait. Observer-only comparisons and partial historic receipt windows
+must not be treated as complete original consumer evidence. The preserved D01 audio error belongs
+to actual host presentation even though its SessionResult has no failure.

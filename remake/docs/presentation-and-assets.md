@@ -657,18 +657,19 @@ prior command; it does not restore a PCM offset. Map-area field/battle music sel
 area music and `PlayMapMusic` substitutions. Application retains wait tokens and player input
 ownership; Godot reports service completion.
 
-The six music resources and 25 finite SFX timer variants occupy 104,374,046 bytes in the generated
-private world; its reader permits 100 MiB. Other package limits are unchanged. A WASAPI Godot run observed Town's natural forward-loop
+The selected inventory contains six music resources and 27 finite SFX timer variants. The additive
+continuous world is 103,329,576 bytes, within the existing 100 MiB reader limit. Other package limits
+are unchanged. A WASAPI Godot run observed Town's natural forward-loop
 wrap while `Playing` stayed true without `Finished`, then ordinary Map 3 inputs reached JOIN.
 An early acknowledgement retained the sound wait token. The finite stream ended naturally;
 previous Town restarted at its beginning before acknowledgement returned to the field with flag 603.
 The ordered player receipts were start 8, stop 8, start 19, finish 19, start 8. Native exit was zero.
 This checks real resource playback and input ownership in that bounded route; it does not establish
-original waveform/timing equality. The complete reached resource inventory is admitted at local asset
-commit `7219d9c6ac2e72d86b3d62b2042e153e4dbba34f`, tree
-`ff1d4f37271cff828f7a0bd1efde083c56915e55`, manifest SHA-256
-`82B8E862B7438D44AD65B3C0CEF328B8CFD8E53653FE39D0266590B541B3C448`;
-checkout preflight passed. Its tracked
+original waveform/timing equality. The selected private resource inventory is admitted at local asset
+commit `293c9460818f4768905be809e83488d77f698fba`, tree
+`70196dde88e94b52bc482ecd2a8c8662c743787b`, manifest SHA-256
+`C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E`;
+checkout and export preflight passed. Complete reached 7C provenance remains an H4 obligation. Its tracked
 `manifests/audio-town-join-provenance.json` retains original capture identities, sample cuts,
 reproduction parameters, loop evidence and the host receipts. Source WAVs and capture observers
 remain in that private repository. Use the explicit asset commit/tree/manifest pins with
@@ -677,11 +678,38 @@ remain in that private repository. Use the explicit asset commit/tree/manifest p
 `manifests/audio-reached-inventory-provenance.json` owns the remaining capture protocols, exact
 sample cuts and actual host receipts. Music commands 2, 5, 34 and 38 passed actual forward-loop,
 continued-playing and clean-release observations through explicitly controlled field-music selections.
-That tests their resource consumption, not natural battle-action triggers. The 25 finite SFX variants
+That tests their resource consumption, not natural battle-action triggers. The finite SFX variants
 passed original driver termination, native lifecycle, complete WAV and unchanged-installation checks.
 Their cuts retain unchanged PCM, including 441 samples before and after the selected audible interval;
 the measured quiet separation permits at most one PCM16 unit. No normalization, noise gate or waveform
 rewrite is applied. Initial-context variants retain their explicit inferred Map 3/Town context.
+
+**Confirmed exact speech additions:** command 70 (`SFX_DIALOG_BLEEP_2_TIMER_BD`) and command 73
+(`SFX_DIALOG_BLEEP_5_TIMER_BD`) retain inherited Timer B 189 from original music 34. The isolated
+finite protocol dispatched at frame 243, observed channel 8 termination at 249 and all 13 channels
+inactive through the 60-frame tail ending at 309. Pinned source spans end with `FF 00 00`; observed
+cursors 6022 and 6055 match that terminal. Independently reviewed cuts retain samples
+`[179311,187805)` and `[179313,187892)`, respectively 8,494 and 8,579 stereo PCM16 frames at
+44,100 Hz. Both candidates equal the original selected sample bytes; no resampling, gain or pitch
+change. These two isolated exports cost 49.3339547 seconds and 2,400 dump frames; retained natural
+route/RNG accounting is unchanged. They do not prove natural original timing or waveform phase.
+
+The private admission appends only two source WAVs, two runtime WAVs and their records in the two
+existing manifests; all prior resources, provenance and host history remain unchanged. The selected
+continuous world adds only those two audio rows, with its other content and old PCM/modernEndStep
+values directly equal. Completed A/B/C observations retain their earlier selection: their actual used
+rows are unchanged and they did not invoke these previously unresolved pairs. Partial receipt windows
+are not claimed as an exhaustive trace; the existing exact-or-unique selector would reject those
+requests in the old catalog. The D selection explicitly contains the two additions.
+
+**Confirmed bounded D consumer:** natural adjustable20/remapped-gamepad/swapped/reduced-flash D
+completes the ordinary winning route and settled Left/Down return without an added audio Wait.
+Actual receipts match requested BD, asset BD, format and PCM identity: command 70 has 23 starts,
+22 legitimate replacements/stops and one `Finished`; command 73 has eight starts, seven replacements/
+stops and one `Finished`. All 31 starts are paired, with no sampled sequence gaps. Replacement is the
+existing whole-clip covered-slot policy; these results do not claim original per-channel mixing.
+The earlier D attempt's `audio-command-ambiguous` failure remains preserved; selector/runtime policy
+is unchanged. Unvisited playback and full 7C/H4 bindings remain open.
 
 Ordinary accepted field warps publish `warp-started` before transfer; rejected destinations and script
 transfers do not. `WarpIfSetAtPoint`, `ProcessMapEventType1_Warp` and the source `WARP_SFX` reset own

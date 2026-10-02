@@ -5,8 +5,17 @@ extends "res://probes/engine_battle01_outcome_observation.gd"
 var samples: Array = []
 var failures: Array = []
 var input_case := OS.get_environment("SF2_INPUT_CASE")
-var use_pad := "gamepad" in input_case
-var remapped := "remapped" in input_case
+var h4_variant := OS.get_environment("SF2_H4_VARIANT")
+var use_pad := "gamepad" in input_case or h4_variant in ["B", "D"]
+var remapped := "remapped" in input_case or h4_variant in ["C", "D"]
+var input_records: Array = []
+var reveal_tokens: Dictionary = {}
+var stick_used := false
+var active_input := 0
+var input_delivering := false
+var speech_receipts: Array = []
+var audio_sequence_seen := 0
+var audio_receipt_gaps: Array = []
 var private_route := "private" in input_case
 var maximum_white := 0.0
 var completed_white: Array = []
@@ -109,6 +118,16 @@ func read_sample(label: String) -> Dictionary:
 
 func state() -> Dictionary:
     var s := super.state()
+    if h4_variant == "D" and host.has_method("ReadAudioObservationJson"):
+        var playback: Dictionary = JSON.parse_string(host.call("ReadAudioObservationJson"))
+        var receipts: Array = playback.get("receipts", [])
+        if not receipts.is_empty() and audio_sequence_seen > 0 and int(receipts[0].Sequence) > audio_sequence_seen + 1:
+            audio_receipt_gaps.append({"after":audio_sequence_seen,"before":receipts[0].Sequence})
+        for receipt in receipts:
+            if int(receipt.Sequence) <= audio_sequence_seen: continue
+            if int(receipt.Command) in [70, 73] and receipt.RequestedTimerB == 189:
+                speech_receipts.append(receipt)
+        audio_sequence_seen = maxi(audio_sequence_seen, int(playback.get("sequence", 0)))
     if s.has("presentation"):
         maximum_white = maxf(maximum_white, s.presentation.whiteOpacity)
         var p: Dictionary = s.presentation
@@ -124,7 +143,22 @@ func physical(code: int, pressed: bool) -> void:
         KEY_DOWN:"down", KEY_S:"down", KEY_LEFT:"left", KEY_A:"left",
         KEY_ENTER:"confirm", KEY_Z:"confirm", KEY_ESCAPE:"cancel", KEY_X:"cancel",
         KEY_F:"attack", KEY_H:"spell", KEY_TAB:"target", KEY_SPACE:"stay", KEY_V:"wait"}[code]
-    if wait_axis and action == "wait":
+    var before: Dictionary = {}
+    if not h4_variant.is_empty():
+        before = h4_context(state())
+        if pressed: active_input += 1
+    var result_start := warp_records.size()
+    input_delivering = not h4_variant.is_empty()
+    var delivered := {"kind":"key", "code":code}
+    if h4_variant in ["B", "D"] and action == "left" and (not stick_used or not pressed and not input_records.is_empty() and input_records.back().delivery.kind == "axis"):
+        var event := InputEventJoypadMotion.new()
+        event.device = 0
+        event.axis = JOY_AXIS_RIGHT_X if remapped else JOY_AXIS_LEFT_X
+        event.axis_value = -0.8 if pressed else 0.0
+        delivered = {"kind":"axis", "code":event.axis, "value":event.axis_value}
+        Input.parse_input_event(event)
+        if pressed: stick_used = true
+    elif wait_axis and action == "wait":
         field_axis(0.8 if pressed else 0.0)
     elif use_pad:
         var buttons := {"up":JOY_BUTTON_DPAD_UP,"right":JOY_BUTTON_DPAD_RIGHT,
@@ -138,6 +172,7 @@ func physical(code: int, pressed: bool) -> void:
         event.button_index = buttons[action]
         event.device = 0
         event.pressed = pressed
+        delivered = {"kind":"button", "code":event.button_index}
         Input.parse_input_event(event)
     else:
         var event := InputEventKey.new()
@@ -146,11 +181,49 @@ func physical(code: int, pressed: bool) -> void:
             event.keycode = {"up":KEY_I,"right":KEY_L,"down":KEY_K,"left":KEY_J,
                 "confirm":KEY_E,"cancel":KEY_Q,"attack":KEY_R,"spell":KEY_T,"target":KEY_U,"stay":KEY_O,"wait":KEY_B}[action]
         event.pressed = pressed
+        delivered = {"kind":"key", "code":event.keycode}
         Input.parse_input_event(event)
 
-    if guarded_wait_case: Input.flush_buffered_events()
+    if guarded_wait_case or not h4_variant.is_empty(): Input.flush_buffered_events()
+    input_delivering = false
+    if not h4_variant.is_empty():
+        input_records.append({"ordinal":active_input,"action":action,"pressed":pressed,
+            "delivery":delivered,"hostUpdate":Engine.get_process_frames(),"before":before,
+            "after":h4_context(state()),"resultStart":result_start,"resultEnd":warp_records.size()})
+
+func h4_context(s: Dictionary) -> Dictionary:
+    var result: Dictionary = {}
+    for name in ["sessionId","revision","simulationTick","mainSeed","thinkingSeed","map","mode","actor","stage","wait","token","cursor","canWaitForText","canWaitAtInput","visibleCharacters","totalCharacters"]:
+        if s.has(name): result[name] = s[name]
+    var battle := host.find_child("BattleSessionView", true, false)
+    if battle != null:
+        var message := battle.get_node_or_null("BattleScene/SceneCanvas/Message") as Label
+        if message != null:
+            result["sceneVisibleCharacters"] = message.visible_characters
+            result["sceneTotalCharacters"] = message.get_total_character_count()
+    return result
+
+func h4_scene_ready() -> bool:
+    var context := h4_context(state())
+    return context.get("sceneVisibleCharacters", -1) < 0 or context.sceneVisibleCharacters >= context.sceneTotalCharacters
+
+func h4_reveal(s: Dictionary) -> void:
+    if h4_variant != "C" or s.get("fieldText") == null or s.get("visibleCharacters", -1) < 0 or s.visibleCharacters >= s.totalCharacters or reveal_tokens.has(s.token): return
+    reveal_tokens[s.token] = true
+    var held := opening_semantic(s)
+    physical(KEY_ENTER, true)
+    physical(KEY_ENTER, false)
+    check(opening_semantic(state()) == held, "Continuous reveal-only Confirm adds no semantic service")
 
 func key(code: int) -> void:
+    if h4_variant == "D" and code in [KEY_ENTER, KEY_Z]:
+        for update in range(2000):
+            var context := h4_context(state())
+            var field_ready: bool = context.get("visibleCharacters", -1) < 0 or context.visibleCharacters >= context.totalCharacters
+            if field_ready and h4_scene_ready(): break
+            await process_frame
+            frames += 1
+        check(h4_scene_ready(), "Natural scene reveal reaches delivered text before Confirm")
     physical(code, true)
     await process_frame
     frames += 1
@@ -247,6 +320,10 @@ func write_settings(path: String) -> bool:
         settings.charactersPerSecond = 40
     if "warp-transition" in input_case: settings.reducedFlash = "reduced" in input_case
     if OS.get_environment("SF2_INPUT_RATE") != "": settings.charactersPerSecond = int(OS.get_environment("SF2_INPUT_RATE"))
+    if not h4_variant.is_empty():
+        settings.textMode = "adjustable" if h4_variant in ["C", "D"] else "instant"
+        settings.charactersPerSecond = 20 if h4_variant in ["C", "D"] else 40
+        settings.reducedFlash = h4_variant in ["C", "D"]
     if remapped:
         var keys := {"up":"I","right":"L","down":"K","left":"J","confirm":"Q","cancel":"E",
             "attack":"R","spell":"T","target":"U","stay":"O","item":"P","wait":"B"}
@@ -984,6 +1061,7 @@ func finish_public() -> void:
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
         "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,"battleEntryRecords":battle_entry_records,
+        "h4Variant":h4_variant,"inputRecords":input_records,"speechReceipts":speech_receipts,"audioReceiptGaps":audio_receipt_gaps,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
         "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}, "  ")
     if guarded_wait_case:
@@ -1008,12 +1086,12 @@ func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
     if winning_case and result.boundary in ["attach", "begin"]:
         # Attach publishes before the new view has built its projection.
-        warp_records.append({"result":result, "state":{}})
+        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}})
         return
     if winning_case and result.mode == "Exploration" and host.get_node_or_null("ExplorationSessionView") == null:
         # Battle publishes its outcome before GameRoot installs the returning field
         # view. Preserve the result now; the new view's attach and live state follow.
-        warp_records.append({"result":result, "state":{}, "projection":"field-view-pending"})
+        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}, "projection":"field-view-pending"})
         return
     var s := state()
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
@@ -1026,7 +1104,7 @@ func record_warp_result(payload: String) -> void:
     elif winning_case and s.has("stage"):
         # The admitted board is retained at first input; terrain is immutable.
         s.erase("terrain")
-    warp_records.append({"result":result, "state":s})
+    warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s})
 
 func observe_winning_view(node: Node) -> void:
     if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", record_warp_result):
@@ -1251,6 +1329,7 @@ func before_battle_tracking(entry: Dictionary) -> void:
     var positive_white := false
     for frame in range(4000 if white_palette_case else 2500):
         var s := state()
+        h4_reveal(s)
         if s.failure != null:
             if white_palette_case:
                 read_sample("white-unexpected-failure")
@@ -1279,7 +1358,7 @@ func before_battle_tracking(entry: Dictionary) -> void:
             if s.canWaitForText and int(s.textId) == 2297:
                 white_palette_completed = true
                 read_sample("white-chester2297-input")
-                check(inputs == [2294,2295,2296] and fades.size() == 6 and receipts.size() == 6 and positive_white,
+                check(inputs == [2294,2295,2296] and fades.size() == 6 and receipts.size() == 6 and (not positive_white if h4_variant in ["C", "D"] else positive_white),
                     "Ordinary route delivered and completed six white helpers before Chester W1")
                 check(s.display.Current == s.display.Base and s.display.Period == entry.display.Period and
                     s.presentation.whiteOpacity == 0 and s.presentation.paletteBrightness == 1 and
@@ -1341,6 +1420,7 @@ func remaining_before_battle(entry: Dictionary) -> void:
     while winning_case or frame < 9000:
         frame += 1
         var s := state()
+        h4_reveal(s)
         if s.failure != null:
             var failed := read_sample("battle-entry-actual-failure")
             battle_entry_records.append({"label":"before-body-terminal","reason":"actual-failure",
@@ -1466,6 +1546,7 @@ func opening_settle(castle_yes: bool = true) -> bool:
     var phases: Dictionary = {}
     for frame in range(8000 if "camera" in input_case else 5000):
         var s := state()
+        h4_reveal(s)
         if parallax_case and s.map == "map-21":
             if s.wait == "EntitySpriteWait" and s.cursor != null and s.cursor.Program == "cs-53ef4":
                 guard_sprite_wait = s
