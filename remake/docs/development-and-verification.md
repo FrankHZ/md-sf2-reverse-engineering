@@ -3063,6 +3063,26 @@ Keep exact tested probe/wrapper, logs, process result and actual JSON in fresh i
 `local/issue534/bound-battle-entry/`. Compare prior accepted checkpoints directly; later RNG is a new
 observation, not an invented original target. A genuine missing capability stops for allocation.
 
+PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
+is zero.
+
+**Confirmed (bounded remake, PR587 bound battle entry):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
+script/process errors. It delivers one mosaic and five shiver tokens, restores sprite-size24 and
+physical128's animation counter, projects remaining text2298..2304, six positioned/scripted entities,
+and black out/mount/in through first actual Movement/Confirm/Cancel. One hidden mosaic interval
+retains tick14931/main3361406976/token and zero debt, then resumes without catch-up. The loader keeps
+logical tick15929 and the frozen field facade; first round selects ally2 with main1151074304 and
+gold60 under existing initialization/queue rules. These are observations, never legality constants
+or claimed original targets. Six prior accepted checkpoints, including Chester, are unchanged;
+the old2293 inspector omitted derived PalettePair.White metadata, so comparison normalizes only that
+previously omitted derived field. The owning handoff retains exact token/draw/party readbacks.
+
+`ordinary-normal-01` reached the same semantic endpoint with report PASS/exit0 but six script errors
+in two old draw hooks after mode handoff; it is not clean native acceptance. Guards now stop field
+hooks on a battle observation. The original log/report and first inspector's derived-metadata
+comparison failure are preserved, as are initial test CS1501, two test-setup NullReference failures and nullable-assertion CS1503.
+Focused corrected engine selection passes51; those corrections did not broaden the verification scope.
+
 ## Bound victory and return observation
 
 Run the affected `BattleOutcomeProgramTests`, field text/portrait and entry behavior cases through
@@ -3109,23 +3129,5 @@ actor, accepted selection/preview, party resources/progress/loadout, queue and R
 state, require no action/turn observations, then confirm a subsequently accepted legal target.
 Disposable actor-node geometry and attempted UI candidate may change; accepted gameplay state may
 not. Other errors remain failures. A green report with callback/script errors is not clean acceptance.
-PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
-is zero. The continuous winning and bound victory/return scope above has native acceptance;
+The continuous winning and bound victory/return scope above has native acceptance;
 executable H4 policy cutover and unobserved outcome/return variants remain open.
-
-**Confirmed (bounded remake):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
-script/process errors. It delivers one mosaic and five shiver tokens, restores sprite-size24 and
-physical128's animation counter, projects remaining text2298..2304, six positioned/scripted entities,
-and black out/mount/in through first actual Movement/Confirm/Cancel. One hidden mosaic interval
-retains tick14931/main3361406976/token and zero debt, then resumes without catch-up. The loader keeps
-logical tick15929 and the frozen field facade; first round selects ally2 with main1151074304 and
-gold60 under existing initialization/queue rules. These are observations, never legality constants
-or claimed original targets. Six prior accepted checkpoints, including Chester, are unchanged;
-the old2293 inspector omitted derived PalettePair.White metadata, so comparison normalizes only that
-previously omitted derived field. The owning handoff retains exact token/draw/party readbacks.
-
-`ordinary-normal-01` reached the same semantic endpoint with report PASS/exit0 but six script errors
-in two old draw hooks after mode handoff; it is not clean native acceptance. Guards now stop field
-hooks on a battle observation. The original log/report and first inspector's derived-metadata
-comparison failure are preserved, as are initial test CS1501, two test-setup NullReference failures and nullable-assertion CS1503.
-Focused corrected engine selection passes51; those corrections did not broaden the verification scope.
