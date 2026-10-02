@@ -847,8 +847,29 @@ def compare_modern(
         ids = [a["id"] for a in candidate["allies"]]
         require(len(ids) == len(set(ids)), "duplicate controlled party actor")
     candidate_allies = {a["id"]: a for a in candidate["allies"]} if candidate else {}
+    startup = actual.get("admissionSnapshot", {})
+    startup_state = startup.get("state", {})
+    admitted = startup_state.get("admittedParty") or {}
+    selected_encounters = [
+        row
+        for row in admitted.get("encounters", [])
+        if row.get("encounter") == admitted.get("encounter")
+    ]
+    deployments = (
+        selected_encounters[0].get("deployments", []) if len(selected_encounters) == 1 else []
+    )
+    admission_identities = []
+    admitted_stats = []
     candidate_definitions = []
     for ally in admission["accounting"]["allies"][:3]:
+        actor_id = f"ally-{ally['id']}"
+        observed_inputs = [
+            p for p in startup_state.get("party", []) if p["Actor"]["Value"] == actor_id
+        ]
+        bound = [d for d in deployments if d.get("actor") == actor_id]
+        observed_input = observed_inputs[0] if len(observed_inputs) == 1 else None
+        deployment = bound[0] if len(bound) == 1 else None
+        definition = deployment.get("definition", {}) if deployment else {}
         carried = next(
             (p for p in first.get("party", []) if p["Actor"]["Value"] == f"ally-{ally['id']}"), {}
         )
@@ -871,6 +892,68 @@ def compare_modern(
         inherited = progress.get("SourceLoadout") if isinstance(progress, dict) else None
         loadout = explicit if explicit is not None else inherited
         selected = candidate_allies.get(ally["id"])
+        identity = None
+        if admitted:
+            # Select the named encounter/deployment; ambiguity is not a first-match fallback.
+            selected_definition = (
+                dict(
+                    classRule={
+                        0: "UnpromotedSwordsman",
+                        1: "UnpromotedKnight",
+                        4: "UnpromotedPriest",
+                    }.get(selected["classId"]),
+                    level=selected["level"],
+                    maxHp=selected["maxHp"],
+                    maxMp=selected["maxMp"],
+                    attack=selected["attack"],
+                    defense=selected["defense"],
+                    agility=selected["agility"] & 127,
+                    extraRoundAction=bool(selected["agility"] & 128),
+                    move=selected["move"],
+                )
+                if selected
+                else None
+            )
+            input_fields = {
+                "Hp": "hp",
+                "Mp": "mp",
+                "Exp": "exp",
+                "Kills": "kills",
+                "Defeats": "defeats",
+                "Status": "status",
+            }
+            identity = bool(
+                candidate
+                and selected
+                and observed_input
+                and deployment
+                and startup.get("inputOrdinal") == 0
+                and startup_state.get("revision") is not None
+                and 0 <= startup_state["revision"] <= first["revision"]
+                and startup_state.get("sessionId") == first.get("sessionId")
+                and admitted.get("package")
+                and admitted.get("provenance")
+                and admitted.get("origin") == candidate.get("profile")
+                and admitted.get("encounter") == f"battle-{candidate['battle']}"
+                and deployment.get("member") == ally["id"]
+                and {k: definition.get(k) for k in selected_definition} == selected_definition
+                and (definition.get("sourceLoadout") or {}).get("Items") == selected.get("items")
+                and (definition.get("sourceLoadout") or {}).get("Spells") == selected.get("spells")
+                and {k: observed_input.get(k) for k in input_fields}
+                == {k: selected.get(v) for k, v in input_fields.items()}
+                and observed_input == carried
+            )
+            if observed_input and deployment:
+                explicit = observed_input.get("SourceLoadout")
+                progress = observed_input.get("Progress")
+                inherited = progress.get("SourceLoadout") if isinstance(progress, dict) else None
+                loadout = (
+                    explicit
+                    if explicit is not None
+                    else (inherited if inherited is not None else definition.get("sourceLoadout"))
+                )
+        admission_identities.append(identity)
+        admitted_stats.append(definition if identity and progress is None else None)
         expected_items = [i["raw"] for i in ally["items"]]
         candidate_definitions.append(
             dict(
@@ -880,12 +963,21 @@ def compare_modern(
                 items=selected.get("items") if selected else None,
                 actualOverride=explicit,
                 actualProgress=progress,
-                actual=dict(file=actual_path.as_posix(),
-                            record=f"samples[0].party[Actor=ally-{ally['id']}]"),
+                actual=dict(
+                    file=actual_path.as_posix(),
+                    record=f"admissionSnapshot.state.party[Actor={actor_id}]"
+                    if admitted else f"samples[0].party[Actor={actor_id}]",
+                ),
                 candidateEvidenceOwner=candidate.get("evidenceOwner") if candidate else None,
                 effectiveAdmissionObserved=isinstance(loadout, dict) and "Items" in loadout,
-                reason="Selected definition is a candidate input, not a same-run deployment "
-                "snapshot",
+                admittedDeployment=deployment,
+                admittedDeploymentRecord=f"admissionSnapshot.state.admittedParty.encounters"
+                f"[encounter={admitted.get('encounter')}].deployments[actor={actor_id}]"
+                if admitted else None,
+                sameSessionInputConsistency=identity,
+                reason="Read-through admitted definition/operands at input ordinal0"
+                if admitted
+                else "Selected definition is a candidate input, not a same-run deployment snapshot",
             )
         )
         check(
@@ -893,7 +985,9 @@ def compare_modern(
             parent + ".effective four-slot words",
             expected_items,
             loadout.get("Items") if isinstance(loadout, dict) else None,
-            "samples[0].party.SourceLoadout",
+            "admissionSnapshot.state.party/admittedParty.encounters"
+            if admitted
+            else "samples[0].party.SourceLoadout",
             admission["source"],
             parent=parent,
             missing_side="actual deployment definition at admission",
@@ -917,8 +1011,14 @@ def compare_modern(
             1,
             parent + ".admission loadout identity",
             True,
-            isinstance(loadout, dict) and "Items" in loadout if loadout is not None else None,
-            "samples[0].party.SourceLoadout/Progress.SourceLoadout",
+            identity
+            if admitted
+            else (
+                isinstance(loadout, dict) and "Items" in loadout if loadout is not None else None
+            ),
+            "admissionSnapshot.state.party/admittedParty.encounters"
+            if admitted
+            else "samples[0].party.SourceLoadout/Progress.SourceLoadout",
             dict(
                 owner=OWNER,
                 binding="R1 full item words; modern override/progress/definition precedence",
@@ -926,8 +1026,10 @@ def compare_modern(
             ),
             parent=parent,
             missing_side="same-run loaded deployment definition identity",
-            reason="Current launcher and selected input explain candidate provenance; "
-            "neither supplies the unrecorded same-run definition when both overrides are null",
+            reason="Same-session pre-command admitted definition and party operands compared "
+            "to the explicitly selected input; no instantiated battle is claimed at startup"
+            if admitted
+            else "Current launcher and selected input do not supply an omitted same-run definition",
         )
     check(
         1,
@@ -1080,7 +1182,8 @@ def compare_modern(
                 binding=f"inherited.entities[physical={slot}].actionScript",
                 actionScript=original_entity["actionScript"],
             ),
-            applicability="required-unobserved", parent=phase_parent,
+            applicability="required-unobserved",
+            parent=phase_parent,
             missing_side="original pointer/template/offset and moving-gate translation",
             reason="The original pointer is retained but no executable source translation/gate "
             "binding is selected. Actual cursor/moving or coordinate differences cannot supply "
@@ -1116,21 +1219,26 @@ def compare_modern(
     check(
         1,
         "effective admission class/level/maxima/stats/spells definition identity",
-        "same-run resolved party definition or progress",
-        None,
-        "samples[0].party.Progress",
+        True,
+        (False if not all(admission_identities) else True if all(admitted_stats) else None)
+        if admitted
+        else None,
+        "admissionSnapshot.state.admittedParty.encounters/party",
         admission["source"],
         parent=phase_parent,
         missing_side="actual",
-        reason="Selected input and nullable progress projection omit the loaded definition "
-        "identity",
+        reason="Same-session admitted class/stats/spell words match the selected input, whose "
+        "original comparison is independent; non-null stat Progress needs effective stat binding",
     )
     check(
-        1, "walking motion gate/velocity/travel/flags correspondence",
-        "selected R1 walking motion fields and waiting-for-motion gate", None,
+        1,
+        "walking motion gate/velocity/travel/flags correspondence",
+        "selected R1 walking motion fields and waiting-for-motion gate",
+        None,
         "samples[0].entities[slot=5/6/8]",
         dict(**ref["inherited"]["source"], owner="docs/research/map3-messenger-acceptance.md"),
-        parent=phase_parent, missing_side="source motion-field join and actual motion gate",
+        parent=phase_parent,
+        missing_side="source motion-field join and actual motion gate",
         reason="Selected reference omits the raw motion bytes; actual projection omits "
         "WaitingForMotion. Matched geometry and directly observed wait timers do not fill these "
         "operands or prove the cursor/moving translation",
@@ -1741,13 +1849,19 @@ def compare_modern(
     ):
         item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
             row["state"].get("itemSlot") is not None
-            for row in outcome.get("records", []) if row.get("label") == "action-selected"
+            for row in outcome.get("records", [])
+            if row.get("label") == "action-selected"
         )
         if name == "healing item slot words/removal and resource effects" and not item_reached:
             check(
-                5, name, binding, None, actual_location,
+                5,
+                name,
+                binding,
+                None,
+                actual_location,
                 dict(owner=OWNER, binding="original UseItem history in decisions/scenes"),
-                applicability="historical-diagnostic", parent=rule_parent,
+                applicability="historical-diagnostic",
+                parent=rule_parent,
                 reason="No item action is reached in this actual winning profile; retain original "
                 "UseItem history without imposing an unvisited consuming branch",
             )
@@ -1764,6 +1878,100 @@ def compare_modern(
         )
 
     resource_parent = "complete reached 7C resource/provenance inventory"
+    scene_rows = actual.get("sceneObservations", [])
+    mounted_scenes = [
+        r for r in scene_rows if r["scene"].get("visible") and not r["scene"].get("fieldDeath")
+    ]
+    mounted_resources = sorted(
+        {
+            r["scene"][name]["resource"]
+            for r in mounted_scenes
+            for name in ("background", "backgroundWrap", "ground")
+            if r["scene"].get(name, {}).get("visible") and r["scene"][name].get("resource")
+        }
+    )
+    if scene_rows:
+        check(
+            8,
+            "actual mounted scene background/ground identities",
+            True,
+            bool(mounted_scenes)
+            and all(
+                r["scene"].get(name, {}).get("visible")
+                for r in mounted_scenes
+                for name in ("background", "backgroundWrap")
+            )
+            and all(
+                node.get("resource") and node.get("texturePresent")
+                for r in mounted_scenes
+                for name in ("background", "backgroundWrap", "ground")
+                if (node := r["scene"].get(name, {})).get("visible")
+            ),
+            "sceneObservations[*].scene.background/backgroundWrap/ground",
+            parent=resource_parent,
+            reason="IDs read from successfully bound visible nodes in this session; "
+            "hidden metadata is not consumption",
+        )
+    receipt_rows = actual.get("audioReceipts", [])
+    audio_terminal = actual.get("audioTerminal", {})
+    audio_receipts = [r["receipt"] for r in receipt_rows]
+    audio_contiguous = None
+    audio_balances = Counter()
+    audio_lifecycle = {}
+    if audio_terminal:
+        audio_contiguous = bool(
+            not actual.get("audioReceiptGaps")
+            and [r["Sequence"] for r in audio_receipts]
+            == list(range(1, int(audio_terminal["sequence"]) + 1))
+            and actual.get("audioSequenceSeen") == audio_terminal["sequence"]
+            and audio_terminal.get("error") is None
+            and all(r["poll"]["sessionId"] == first.get("sessionId") for r in receipt_rows)
+        )
+        operations = Counter(r["Operation"] for r in audio_receipts)
+        audio_ordered = True
+        for receipt in audio_receipts:
+            if receipt["Operation"] == "started":
+                audio_balances[receipt["Cue"]] += 1
+            elif receipt["Operation"] in ("finished", "stopped"):
+                audio_balances[receipt["Cue"]] -= 1
+                audio_ordered = audio_ordered and audio_balances[receipt["Cue"]] >= 0
+        terminal_voices = Counter(s["cue"] for s in audio_terminal.get("sounds", []))
+        if audio_terminal.get("musicPlaying"):
+            terminal_voices[audio_terminal["musicCue"]] += 1
+        audio_lifecycle = dict(
+            operations=dict(operations),
+            outstandingByCue=dict(+audio_balances),
+            terminalVoices=dict(terminal_voices),
+            terminalMusicPlaying=audio_terminal.get("musicPlaying"),
+            reason="Cue totals classify starts/stops/finishes; wait tokens are not playback IDs. "
+            "Same-cue overlapping voices are not assigned invented generations",
+        )
+        check(
+            8,
+            "actual audio receipt stream continuity",
+            True,
+            audio_contiguous,
+            "audioReceipts/audioReceiptGaps/audioSequenceSeen/audioTerminal",
+            parent=resource_parent,
+            applicability="required-unobserved" if actual.get("audioReceiptGaps") else "applicable",
+            missing_side="actual missing receipt ranges",
+            reason="First sequence1 through terminal sequence; "
+            "missing ranges remain observation failures",
+        )
+        check(
+            8,
+            "actual audio lifecycle balance",
+            True,
+            audio_ordered
+            and +audio_balances == terminal_voices
+            and not (set(operations) - {"started", "stopped", "finished", "fade-command"}),
+            "audioReceipts[*].receipt.Operation/Cue + audioTerminal",
+            parent=resource_parent,
+            applicability="required-unobserved" if actual.get("audioReceiptGaps") else "applicable",
+            missing_side="actual lifecycle across missed receipt ranges",
+            reason="Actual cue totals reconcile with terminal voices; "
+            "ongoing field music requires no fabricated end",
+        )
     for name, binding, actual_location, side in (
         (
             "reached map3/19/20/21/40/57 atlas and layer identities",
@@ -1795,15 +2003,23 @@ def compare_modern(
         (
             "scene background/ground actual resource identity",
             "source scene background/ground selectors -> mounted resource identity",
-            "warpRecords[*].state.scene.background/ground resource identity",
-            "actual resource ID (projection records positions but omits these IDs)",
+            "sceneObservations[*].scene.background/backgroundWrap/ground"
+            if scene_rows
+            else "warpRecords[*].state.scene.background/ground resource identity",
+            "original selector/provenance to actual mounted ID join"
+            if scene_rows
+            else "actual resource ID (projection records positions but omits these IDs)",
         ),
         (
             "reached audio command/timer/PCM provenance and playback lifecycle",
             "audioPairs dispatch/mailbox identity -> admitted exact original PCM -> actual "
             "start/stop/finish",
-            "samples[*].audio.receipts + speechReceipts",
-            "complete reached audio/provenance join and exhaustive required playback receipts",
+            "audioReceipts/audioTerminal"
+            if audio_terminal
+            else "samples[*].audio.receipts + speechReceipts",
+            "original dispatch/mailbox/PCM provenance and dependent consumer joins"
+            if audio_contiguous
+            else "complete reached audio/provenance join and exhaustive required playback receipts",
         ),
     ):
         missing(
@@ -1815,6 +2031,12 @@ def compare_modern(
             side,
             "Only reached resources are required; no all-corpus/frame inventory or hardware "
             "equality. Current selected content is not by itself an actual consumption record",
+            observed=mounted_resources
+            if scene_rows and name == "scene background/ground actual resource identity"
+            else dict(contiguous=audio_contiguous, lifecycle=audio_lifecycle)
+            if audio_terminal
+            and name == "reached audio command/timer/PCM provenance and playback lifecycle"
+            else None,
         )
 
     consumer_parent = "required unshimmed ack and scene consumer binding"
@@ -2051,8 +2273,11 @@ def compare_modern(
                 reason="Closed required child set is owned by the continuous contract; "
                 "candidate input equality cannot substitute for missing actual/source bindings",
                 children=[child["assertion"] for child in required_children],
-                historicalChildren=[child["assertion"] for child in children
-                                    if child["applicability"] == "historical-diagnostic"],
+                historicalChildren=[
+                    child["assertion"]
+                    for child in children
+                    if child["applicability"] == "historical-diagnostic"
+                ],
             )
         )
     required_rows = [a for a in assertions if a["applicability"] != "historical-diagnostic"]
@@ -2078,6 +2303,21 @@ def compare_modern(
         assertions=assertions,
         coverageObligations=coverage,
         candidateDefinitions=candidate_definitions,
+        actualObservations=dict(
+            admissionInputConsistency=admission_identities,
+            sceneRecords=len(scene_rows),
+            visibleMountedResources=mounted_resources,
+            completedSceneTokens=sorted(
+                {
+                    r["scene"]["waitToken"]
+                    for r in scene_rows
+                    if r["scene"].get("completed") and r["scene"].get("waitToken") is not None
+                }
+            ),
+            audioReceiptCount=len(audio_receipts),
+            audioContiguous=audio_contiguous,
+            audioLifecycle=audio_lifecycle,
+        ),
         counts=counts,
         historicalCounts=dict(
             Counter(

@@ -352,6 +352,7 @@ internal sealed partial class BattleSceneView : Control
             texture = ImageTexture.CreateFromImage(image); _textures.Add(resource, texture);
         }
         node.Texture = texture; node.Scale = new(0.5f,0.5f);
+        node.SetMeta("bound_resource", resource);
     }
     private Sprite2D Sprite(string name, Vector2 position)
     { var node = new Sprite2D { Name = name, Position = position, Centered = false }; _canvas.AddChild(node); return node; }
@@ -377,10 +378,16 @@ internal sealed partial class BattleSceneView : Control
                 width = sprite.GetRect().Size.X, height = sprite.GetRect().Size.Y }).ToArray(),
         allyFrame = _allyFrame, enemyFrame = _enemyFrame, allyResource = _allyResource, enemyResource = _enemyResource,
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
+        background = BoundResource(_background), backgroundWrap = BoundResource(_backgroundWrap), ground = BoundResource(_ground),
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,
         visibleCharacters = _message.VisibleCharacters, allyStatus = _allyStatus.Text, enemyStatus = _enemyStatus.Text,
         allyX = _ally.Position.X, allyY = _ally.Position.Y, enemyX = _enemy.Position.X, enemyY = _enemy.Position.Y,
         backgroundX = _background.Position.X, groundX = _ground.Position.X, weaponX = _weapon.Position.X,
+    };
+    private static object BoundResource(Sprite2D node) => new
+    {
+        resource = node.HasMeta("bound_resource") ? node.GetMeta("bound_resource").AsString() : null,
+        texturePresent = node.Texture is not null, visible = node.IsVisibleInTree(),
     };
     public override void _ExitTree() { foreach (var texture in _textures.Values) texture.Dispose(); }
 }

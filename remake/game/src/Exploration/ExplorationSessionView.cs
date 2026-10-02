@@ -515,6 +515,32 @@ public sealed partial class ExplorationSessionView : Control
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
             battleMounted = _battleMounted,
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
+            admittedParty = current?.Exploration is { } world ? new
+            {
+                package = _session!.Definition.Package, origin = _session.Definition.Origin,
+                provenance = _session.Definition.Exploration?.Provenance,
+                encounter = world.Party.Encounter,
+                // Definition operands, not an instantiated battle at field startup.
+                encounters = _session.Definition.Encounters.Select(pair => new
+                {
+                    encounter = pair.Key,
+                    deployments = pair.Value.Deployments.Where(deployment =>
+                        world.Party.Actors.Any(input => input.Actor == deployment.Actor)).Select(deployment => new
+                    {
+                        actor = deployment.Actor.Value, member = deployment.Initialization?.AllyPartyMember,
+                        processingOrder = deployment.ProcessingOrder,
+                        definition = new
+                        {
+                            classRule = deployment.Definition.ClassRule.ToString(),
+                            level = deployment.Definition.Level, maxHp = deployment.Definition.MaxHp, maxMp = deployment.Definition.MaxMp,
+                            attack = deployment.Definition.Attack, defense = deployment.Definition.Defense,
+                            agility = deployment.Definition.Agility, extraRoundAction = deployment.Definition.ExtraRoundAction,
+                            move = deployment.Definition.Move, spells = deployment.Definition.Spells,
+                            sourceLoadout = deployment.Definition.SourceLoadout,
+                        },
+                    }),
+                }),
+            } : null,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),
             flags = current?.Story.Flags, simulationTick = current?.Story.SimulationTick, cursor = current?.Story.Cursor, wait = current?.Story.Wait?.GetType().Name,
             continuation = current?.Story.Continuation.ToString(), enteringBattle = current?.Story.EnteringBattle, callers = current?.Story.Callers,

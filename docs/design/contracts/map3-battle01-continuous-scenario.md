@@ -461,10 +461,13 @@ These are modern consumption rules, not evidence for original hardware timing.
 resources/RNG and returned player/camera/readiness pairs. D uses an explicitly additive two-audio
 selection; A/B/C reuse is justified by unchanged used assets and absence of the previously unresolved
 exact speech requests. C reveal-only Confirm submits no command; D confirms only delivered text.
-The matrix has four variant PASS results but remains `Unavailable`, `milestonePass=false`: three
+The retained A-D02 matrix has four variant PASS results but remains `Unavailable`, `milestonePass=false`: three
 admission item fields, admission phase mapping, mandatory operation-to-consumption mapping,
 matched-state rule/RNG mapping, complete reached resource provenance and required unshimmed consumer
-bindings remain missing. Settings equality does not close these eight obligations per variant.
+bindings remain missing in those sessions. Settings equality does not close their eight obligations.
+The separately observed new A session supplies admission definitions and actual mounted-resource/audio
+records; those fields do not backfill A-D02. Its three item parents pass, while five original phase,
+operation, rule, resource and consumer parents remain open. Full H4 is still incomplete.
 
 ### Admission and required child obligations
 
@@ -483,10 +486,13 @@ loadout resolution is explicit `SourceLoadout`, then `Progress.SourceLoadout`, t
 deployment definition. This precedence describes the remake; independent original expectations are
 the reference's full R1 item words. Candidate equality, current launch selection, reader preflight and
 later battle inventory do not observe a deployment definition omitted from the admission projection.
-When both actual overrides are null, effective words and same-run identity stay Unavailable. No default
-input is selected and no absent value is forced to zero. The minimum later observation is the resolved
-loadout/definition identity for each actor **before the first command**, tied to that actual session
-and the selected immutable input; it does not require another entire original route.
+When both actual overrides are null **and the same-session admitted definition is unobserved**,
+effective words and identity stay Unavailable. No default input is selected and no absent value is
+forced to zero. A pre-first-command snapshot can identify the actual session's admitted encounter,
+deployment/actor and definition operands against its explicitly selected frozen input. Field startup
+does not instantiate a battle actor; effective items use the precedence above, with later actual
+loaded/ready actors corroborating only that same session. This actual observation requires no new
+original route. See the [observation owner](../../../remake/docs/development-and-verification.md#same-session-actual-observation).
 
 The closed required child families for the reached winning profile are:
 
@@ -516,8 +522,12 @@ provenance and consumer completion edges require separately bounded work if exis
 bind them. This comparator does not implement a second battle engine or general source interpreter.
 The named original text483 W1 witness and plain JOIN seam keep their bounded scope; W2 loop entry or
 shimmed DisplayText RTS cannot replace an unobserved accepting read. Scene background/ground positions
-do not supply resource IDs absent from the actual projection. Preserve these precise Unknowns without
-queuing acquisition or adding untaken branches as prerequisites.
+do not supply resource IDs. The new A's successful-bind node IDs, texture/visibility and actual
+completion records supply their actual side, with pre-Present signal projections distinguished from
+later polls. Its continuous audio receipts identify actual starts/stops/finishes/fades and ongoing
+terminal voices; wait tokens are not playback IDs. Original resource selectors/provenance and each
+required dependent-consumer join remain separate Unknowns. Preserve them without queuing acquisition
+or adding untaken branches as prerequisites.
 
 The completed first D attempt stopped before battle at text 2297 with actual `AdapterError`
 `presentation-unavailable` / `audio-command-ambiguous`, even though `SessionResult.failure` was null.
