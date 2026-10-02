@@ -2503,6 +2503,63 @@ uses H twice, observes the selected second spell and HUD, then commits HP90/MP15
 `SpellSelectionTests` exercises the same independent costs, target reset, cancellation and rejection
 semantics. The public package order remains unchanged; diagnostics stay in the external probe.
 
+## Battle message operand and font observation
+
+`BattleSceneView.Observe()` retains `reactionAmount` directly from the current scene's `Amount`.
+This is the raw reaction/message operand, not a damage calculation or the effective HP difference.
+An overkill result can therefore retain damage greater than the target's remaining HP. The existing
+message, phase, wait token and visible-character fields identify the corresponding mounted Label.
+`messageFont` reads that Label's resolved settings/theme font and size, its visibility, resource class,
+and ordered font-cache face identities (family, style, face index and system-fallback permission).
+The existing battle scene probe retains these fields through its generic scene projection.
+
+The [Font API](https://docs.godotengine.org/en/4.7/classes/class_font.html) and
+[TextServer API](https://docs.godotengine.org/en/4.7/classes/class_textserver.html) supply those face
+identities; an available file or opaque RID does not identify the mounted consumer. These are the
+resolved configured font/fallback caches. **Unknown:** which face, including an automatic system
+fallback, shapes each individual character; the public Label API does not expose its shaped buffers.
+Modern font/layout remains permitted. Exact shaped glyph runs, original bitmaps and pixels are not
+new acceptance gates. Observation performs no input, logical update or RNG operation.
+
+For the bounded direct check, load the current ignored private configuration in the same launching
+process. Reuse the registered installations and owning project. A Debug rebuild/restart is needed
+to load the changed adapter when no suitable owned instance is running:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run sf2 verify adapter
+# The local launcher uses shared_dotnet_environment for Debug/native child launches.
+uv run python -X utf8 local/issue534/battle-message-observation-01/run.py build
+uv run python -X utf8 local/issue534/battle-message-observation-01/run.py check
+uv run python -X utf8 local/issue534/battle-message-observation-01/run.py lethal <fresh-lethal-run>
+uv run python -X utf8 local/issue534/battle-message-observation-01/run.py heal <fresh-heal-run>
+```
+
+This local check uses `GameRoot --private-battle-start`, the retained selected private inputs and an
+ignored script extending `engine_battle_scene_observation.gd`. It reuses ordinary movement/target/
+attack and HEAL input, scene settling, actual node reads and process errors. Only disclosed controlled
+ally starts differ: the lethal actor has increased attack/movement and EXP0; HEAL selects the caster
+at full HP. Read the raw amount beside the committed HP effect and token. The lethal observation
+retains Amount52 against HP5→0; the full-HP HEAL retains recovery0, one MP payment and both message
+timeout paths. The mounted consumer reports Open Sans SemiBold / SemiBold, face0, size9, with system
+fallback allowed. Consecutive synchronous observation reads preserve session/revision/observation
+sequence, actor state, semantic observations and both RNG images. These checks prove the observation
+mechanism, not independently calculated original damage or per-character fallback selection.
+
+The direct reader does not provide ally Growth definitions. The completed EXP99 attempt is a
+preserved `level-up` Unsupported failure, not an interrupted run or passing growth check. Direct
+battle initialization also refreshes HP to maximum; the completed injured-HEAL assertion failure is
+preserved, and the corrected window explicitly checks full-HP recovery. No Domain/Content fix or
+world-route extension follows from these probe-input limitations. Existing retained typed growth
+effects remain the growth evidence dependency; this check supplies no new GrowthMessage witness.
+
+Keep fresh outputs under `local/issue534/battle-message-observation-01`; retain the completed failure
+logs, process receipts, actual projections, input/effect stream and read-pair invariants. Do not alter
+old captures: new windows cannot backfill six missing lethal operands or the previously unobserved
+font of new-A02. The existing whole displayed-text/font/glyph binding row remains incomplete until
+a separately allocated complete evidence binding. No partial PASS, subset, count change, full winning
+route, screenshot, emulator, export or broad/helper test is part of this observation patch.
+
 ## HEAL scene verification
 
 Use the current locked environment/private-input configuration before controlled .NET or Godot
