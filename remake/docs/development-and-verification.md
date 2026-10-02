@@ -3110,7 +3110,8 @@ state, require no action/turn observations, then confirm a subsequently accepted
 Disposable actor-node geometry and attempted UI candidate may change; accepted gameplay state may
 not. Other errors remain failures. A green report with callback/script errors is not clean acceptance.
 PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
-is zero. Full combat/winning, executable H4 policy cutover and later bound return families remain open.
+is zero. The continuous winning and bound victory/return scope above has native acceptance;
+executable H4 policy cutover and unobserved outcome/return variants remain open.
 
 **Confirmed (bounded remake):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
 script/process errors. It delivers one mosaic and five shiver tokens, restores sprite-size24 and

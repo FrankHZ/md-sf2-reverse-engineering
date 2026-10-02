@@ -236,7 +236,7 @@ func outcome_settle() -> Dictionary:
         if s.get("canWaitForText", false):
             outcome_records.append({"label":"outcome-text-input","state":s})
             await key(KEY_ENTER)
-        elif s.wait == "DialogueWait" and not s.has("fieldText"):
+        elif s.wait == "DialogueWait" and s.get("fieldText") == null:
             if not seen_texts.has(s.token):
                 seen_texts[s.token] = true
                 texts.append({"id":s.textId,"speaker":s.speaker,"program":s.cursor,"tick":s.simulationTick})
