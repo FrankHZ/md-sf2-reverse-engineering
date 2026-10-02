@@ -683,6 +683,22 @@ is unclaimed. The renderer reports an adapter failure if an admitted service can
 
 ## Battle01 outcome, after-program and return
 
+Bound outcomes initialize the newly built field world through `ExplorationTextRunner.Initialize`:
+its view starts from that world, windows are closed and old entity-service/window work is cleared.
+Display, party/resources/progress/loadout/RNG, route and captured return anchor are retained.
+`BattleReturn` is shared by text admission, portrait admission and text readiness. It requires the
+actual outcome continuation, route, anchor, cursor and initialized settings/view; it does not
+rename the program as ordinary field input. Nested return-map initialization retains its callers
+until completion. Existing reveal/input phases and portrait registration still control confirmation.
+
+**Confirmed — bounded modern native route:** the unchanged opening party/world with the accepted
+cumulative scene selection reaches live battle control, adaptive legal commits, victory and the
+full bound after/return through actual keyboard inputs. Registered explicit windows retain the
+victory continuation, source join/unlock/completed order precedes returned field input, and a real
+Move settles afterward. The existing target-browse contract permits range rejection without changing
+accepted target, party/resources or RNG; rejected attempts and subsequent legal confirmations remain
+in the observation. Original natural cadence/pixels and executable H4 applicability are separate.
+
 The connected private world binds the original outcome hooks and growth tables through Content.
 Actual HEAL/item/physical awards consume one EXP threshold, grow the five base stats with carried main
 RNG, refresh admitted ATT-only equipment and retain current HP/MP separately from their new maxima.

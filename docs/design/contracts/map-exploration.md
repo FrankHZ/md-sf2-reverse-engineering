@@ -1087,3 +1087,17 @@ Bound generic presentation effects and loader deliveries MUST suspend with the e
 focus/visibility rule, discard paused debt and resume without catch-up. Unbound and music policies
 retain their existing owners. Mosaic/shiver continue through their actual delivery and restoration;
 this does not establish source DMA/pixels, original opportunities or full winning/H4 acceptance.
+
+### Bound outcome world and return
+
+**Accepted remake policy:** creating the outcome exploration world MUST initialize its logical
+view and closed text/portrait windows through the existing field initializer. Retained prebattle
+view/window work MUST NOT become the new world's authority. Display, live party resources,
+progress, loadout, RNG, outcome route and captured return anchor remain carried state.
+
+Explicit outcome windows MUST retain their actual victory/defeat/return continuation and callers.
+Their admission and input readiness require an active field world, real outcome route, return
+anchor and cursor, initialized text/view settings, and the existing window/portrait/reveal phase
+guards. Field control remains unavailable until the after-program, join/flags, return and map init
+have completed. Living/immortal healing and the script's reset-all retain distinct dead-ally rules.
+These engine rules do not establish original natural continuity or resolve H4 comparison gaps.

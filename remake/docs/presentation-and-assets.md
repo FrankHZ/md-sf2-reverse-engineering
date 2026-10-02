@@ -1541,3 +1541,19 @@ precedes start/first input. It does not claim original LoadBattle callback oppor
 palette pixels. Asset bindings, source null detach/post-load wait, viewport approximation and inputs
 remain unchanged. [Execution](exploration-programs.md#bound-before-body-and-battle-entry),
 [observation](development-and-verification.md#bound-before-body-and-battle-entry-observation).
+
+### Bound outcome projection lifecycle
+
+At outcome entry the new exploration world owns a freshly initialized logical view and closed
+text/portrait windows; the loader's frozen old-field projection is not reused as that authority.
+Carried Display and the live party/RNG retain their existing owners. Explicit after/return windows
+keep the actual outcome continuation and anchor through map initialization; confirmation requires
+the existing reveal/input phase and admitted registered portrait. The existing renderer delivers
+scene effects and fades. Original pixels, timing and audio fidelity remain Unknown.
+
+The ordinary bound winning observation consumes actual movement, scene messages, automatic turns,
+growth/death and after-program effects before releasing the battle facade. The result signal at the
+battle→field boundary precedes installation of the returning field view: observers retain that
+payload and read the new field projection after attach, rather than query the old battle view in
+exploration mode. Target-browse range rejections retain accepted gameplay state while the attempted
+UI candidate changes, as specified by the existing architecture owner.

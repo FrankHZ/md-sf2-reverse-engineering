@@ -6,7 +6,7 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class ExplorationPortraitRunner
 {
     internal static bool HasCaller(StoryState story) => story.EventCaller is not null || ExplorationTextRunner.MapInitialization(story) ||
-        ExplorationTextRunner.BeforeBattle(story);
+        ExplorationTextRunner.BeforeBattle(story) || ExplorationTextRunner.BattleReturn(story);
 
     internal static bool Admitted(StoryState story) => story.PortraitWindow is ClosedPortraitWindow ||
         HasCaller(story) && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;
@@ -14,7 +14,7 @@ internal static class ExplorationPortraitRunner
     internal static SessionSnapshot Open(ScenarioDefinition definition, SessionSnapshot current, EntityRef actor, byte flags,
         List<SessionObservation> observations, bool entry)
     {
-        if (!HasCaller(current.Story) || current.Story.PortraitWindow is UnknownPortraitWindow)
+        if (current.Exploration is null || !HasCaller(current.Story) || current.Story.PortraitWindow is UnknownPortraitWindow)
             throw new BattleRuleException("field-portrait-context", "story.portrait", true);
         if (current.Story.PortraitWindow is OpenPortraitWindow existing)
         {
