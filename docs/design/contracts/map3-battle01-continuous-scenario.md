@@ -575,7 +575,7 @@ effects; actual observations supply occurrence and consumption. Indices, text ID
 seeds are evidence locators, never production restrictions.
 
 The comparator adds bounded JOIN playback/restart and caller subsets. Full audio
-replacement/fade/stop/resume, other operation/consumer/rule obligations and the four resource families
+replacement/fade/stop/resume, other operation/consumer/rule obligations and the other resource families
 remain Unavailable, keeping all five broad parents and full H4 incomplete. Unseen original helper
 return order is Inferred; original music completion and channel/F0/queue/residual/interleaving remain
 Unknown. Modern finite music remains the accepted deviation.
@@ -603,7 +603,8 @@ The selected cumulative scene's three field-death rasters remain outside that ba
 Visible node-bound background/ground IDs can close their bounded material child. Reached actor/weapon
 IDs can pass a material subset while the full actor/weapon/healing/death family remains Unavailable:
 fairy and field-death projections omit the complete bound raster identities. Map atlas/layer,
-entity/portrait/gesture and displayed private token/font/glyph families also remain open.
+entity/portrait/gesture families remain open. The displayed private token/font/glyph child uses
+the complete reached binding below; older captures without actual font/raw operands stay unavailable.
 
 Every actually started audio cue must resolve uniquely through selected world audio, the pinned clean
 asset checkout and its existing reached or Town/JOIN provenance record. Compare raw PCM to runtime
@@ -618,4 +619,37 @@ Material origin is a layer7C assertion. Original natural per-occurrence dispatch
 causal wait and consumer completion remain operation/consumer assertions. Those missing joins do not
 require a different historical battle trajectory to establish material origin. Optional selections
 never backfill older sessions. Missing evidence is Unavailable; contradictory observed content or
-identity is FAIL. The four incomplete resource families and five broad parents keep full H4 incomplete.
+identity is FAIL. The three other incomplete resource families and five broad parents keep full H4 incomplete.
+
+### Complete reached displayed-text material binding
+
+The existing displayed-text/token/font/glyph child joins the selected world and scene from the
+same-run process receipt to a read-only, explicitly selected SF2DISASM checkout at the accepted pin.
+All imported text and member names must equal that source. ASCII symbols and advances use the
+existing font reader and source/ROM parity fixture; private extracted font bytes must match its
+accepted identity. Battle01 enemy selectors resolve through the pinned spriteset source. Its
+recorded source digest uses the historical Windows CRLF representation, reproduced from the Git
+object without changing inputs.
+
+Every reached field span, including outcome2305..2310, pairs session/token/revision with its
+ordered ShowText producer and selected text-cursor progression. W1/W2 continuation span tokens
+retain the same source occurrence. Expected Units/control kinds/symbols/advances and projection
+must match the actual mounted Label text. Every reached battle message token pairs its preparation,
+typed action/reaction, critical/HP/EXP/gold/growth operands and source producer selector with the
+actual Label. Raw reaction Amount supplies uncapped lethal numbers; clipped HP loss cannot replace
+it. No rendered string selects an expected source template. Missing or unpaired occurrences keep
+the whole child Unavailable; independently observed contradictions remain FAIL.
+
+Field and battle use the same accepted modern configured-font boundary: the mounted FontFile face,
+family/style/index, size and system-fallback permission. Current mounted defaults are Open Sans
+SemiBold/SemiBold/face0, field16 and battle9. Original symbol/advance provenance and actual modern
+Label consumption are separate checks. Per-character fallback, exact shaping, original bitmap and
+pixel equality remain Unknown/outside this material assertion. Control-token identity proves no
+unobserved original W2 accepting read or control side effect.
+
+Optional EntityWaitRelease is retained raw for consumer work but excluded from the common gameplay
+event projection because old captures lack it. For a paired historical baseline entity only,
+isScriptIdle is omitted from the actual comparison when that old entity lacks the field. Identity,
+order and all other operands remain exact; idle present on both sides is compared, and a missing
+actual idle when expected has it fails. Historical baseline PASS does not prove its unobserved
+idle state. The modern matrix retains each session's own evidence; new A cannot backfill B/C/D.

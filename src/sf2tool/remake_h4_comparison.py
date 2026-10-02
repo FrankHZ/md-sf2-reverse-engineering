@@ -12,6 +12,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 import subprocess
 import wave
 from bisect import bisect_right
@@ -730,9 +731,16 @@ def compare(ref, plan, actual_path, host_log, host_exit):
 
 
 def semantic_value(value):
-    """Remove transport counters, retaining every logical observation operand."""
+    """Compare common gameplay; raw predicate-time release evidence stays separate.
+
+    EntityWaitRelease was added by PR600 to an existing observation. Older
+    captures lack it; its absence is unavailable consumer evidence, not drift
+    in the unchanged gameplay observation. Keep every other logical operand.
+    """
     if isinstance(value, dict):
-        return {k: v for k, v in value.items() if k not in ("Revision", "Sequence")}
+        return {
+            k: v for k, v in value.items() if k not in ("Revision", "Sequence", "EntityWaitRelease")
+        }
     return value
 
 
@@ -760,6 +768,29 @@ def endpoint_state(state):
     }
 
 
+def paired_baseline_value(expected, actual):
+    """An old paired entity cannot prove the subsequently exposed idle operand.
+
+    Only this additive field is projected when absent historically. Identity,
+    order, all older operands and idle values present on both sides stay exact.
+    Raw actual states continue to own idle/release consumer evidence.
+    """
+    old, new = expected.get("entities"), actual.get("entities")
+    if not isinstance(old, list) or not isinstance(new, list) or len(old) != len(new):
+        return actual
+    if not all(
+        e.get("id") is not None and e["id"] == a.get("id") for e, a in zip(old, new, strict=True)
+    ):
+        return actual
+    return dict(
+        actual,
+        entities=[
+            {k: v for k, v in a.items() if k != "isScriptIdle" or "isScriptIdle" in e}
+            for e, a in zip(old, new, strict=True)
+        ],
+    )
+
+
 # This accepted candidate predates field-death additions. Fingerprint-v1 hashes
 # checkout bytes, so the recorded Windows CRLF identity differs from Git LF blobs.
 SCENE_SOURCE_SHA256 = "A2C7E64C23A858DC7E8EDC890C0279DB4B04F285A2940CBA14C9571055D30DCB"
@@ -771,6 +802,505 @@ SCENE_GENERATOR_COMPONENTS = (
     "src/sf2tool/texture_extract.py",
     "src/sf2tool/compression.py",
 )
+
+
+def text_material_binding(actual, outcome, selection, source_root):
+    """Full reached text material/modern Label join, independent of rendered selectors."""
+    result = dict(value=None, checks=[], field=[], battle=[], boundary="modern configured font")
+    if not selection or source_root is None:
+        return result
+
+    def check(name, value):
+        result["checks"].append(dict(name=name, value=value))
+
+    def font(value, size):
+        if not value or not value.get("faces"):
+            return None
+        return (
+            value.get("size") == size
+            and value.get("resourceClass") == "FontFile"
+            and all(
+                f.get("family") == "Open Sans SemiBold"
+                and f.get("style") == "SemiBold"
+                and f.get("faceIndex") == 0
+                and f.get("allowSystemFallback") is True
+                for f in value["faces"]
+            )
+        )
+
+    try:
+        world_path, scene_path, process_path = selection[:3]
+        world_path, scene_path, process_path = (
+            p.resolve() if p.is_absolute() else repo_path(p)
+            for p in (world_path, scene_path, process_path)
+        )
+        world, scene, process = read(world_path), read(scene_path), read(process_path)
+        selected = process.get("selectedInputs", {})
+        check(
+            "same-run material selection",
+            all(
+                repo_path(selected[k]).resolve() == p.resolve()
+                for k, p in (
+                    ("SF2_PRIVATE_EXPLORATION_CONTENT", world_path),
+                    ("SF2_PRIVATE_BATTLE_SCENE_CONTENT", scene_path),
+                )
+            ),
+        )
+        source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        check("original source pin", pin == UPSTREAM)
+
+        def source(path):
+            return subprocess.check_output(
+                ["git", "-C", str(source_root), "show", f"{UPSTREAM}:disasm/{path}"]
+            )
+
+        from sf2tool.h2.variable_width_font import _glyph_metadata, _parse_ascii_map
+
+        texts = {
+            int(line[:4], 16): line[5:]
+            for line in source("data/scripting/text/gamescript.txt").decode("utf-8").splitlines()
+            if re.match(r"^[0-9A-Fa-f]{4}=.+", line)
+        }
+        ascii_map = _parse_ascii_map(
+            source("data/scripting/text/asciitotextsymbolmap.asm").decode("utf-8")
+        )
+        # Extracted private font bytes are ignored upstream. Validate against the
+        # accepted source/ROM parity fixture before deriving their advances.
+        font_fixture = read(repo_path("tests/fixtures/h2/variable-width-font-static-v1.json"))
+        font_bytes = (
+            source_root / "disasm/data/graphics/tech/fonts/variablewidthfont.bin"
+        ).read_bytes()
+        check(
+            "original font bytes",
+            font_fixture["upstreamCommit"] == UPSTREAM
+            and font_fixture["romSha256"] == ROM
+            and hashlib.sha256(font_bytes).hexdigest().upper()
+            == font_fixture["fontHashes"]["fontSha256"],
+        )
+        advances = [g["advancePixels"] for g in _glyph_metadata(font_bytes, 0)]
+        names = re.findall(r'"([^"]*)"', source("data/stats/allies/allynames.asm").decode("utf-8"))
+        enemies = re.findall(
+            r'"([^"]*)"', source("data/stats/enemies/enemynames.asm").decode("utf-8")
+        )
+        w = world["world"]
+        check(
+            "world original identity",
+            world["provenance"]["commit"] == UPSTREAM and world["provenance"]["romSha256"] == ROM,
+        )
+        check("full source text import", {t["id"]: t["text"] for t in w["texts"]} == texts)
+        check(
+            "source symbol map and advances",
+            w["textFont"]["asciiToSymbol"] == ascii_map and w["textFont"]["advances"] == advances,
+        )
+        check("member names", w["memberNames"] == scene["memberNames"] == names)
+        check(
+            "scene text import",
+            all(text == texts[int(tid)] for tid, text in scene["texts"].items()),
+        )
+        check("admitted enemy name", "GIZMO" in enemies)
+        battle = read(repo_path(selected["SF2_PRIVATE_BATTLE01_DATA"]))
+        battle_source = source("data/battles/spritesets/spriteset01.asm")
+        enemy_names = re.findall(
+            r"^\s*enemyCombatant\s+(\w+),", battle_source.decode("utf-8"), re.MULTILINE
+        )
+        selected_enemies = [e for e in battle["entities"] if e["kind"] == "enemy"]
+        check(
+            "original Battle01 enemy selectors",
+            battle["provenance"]["commit"] == UPSTREAM
+            and battle["provenance"]["sourcePath"] == "data/battles/spritesets/spriteset01.asm"
+            # This admitted extractor recorded its Windows CRLF checkout bytes;
+            # reproduce that representation from the pinned Git LF object.
+            and battle["provenance"]["sourceSha256"]
+            == hashlib.sha256(battle_source.replace(b"\n", b"\r\n")).hexdigest().upper()
+            and [e["identityExpression"] for e in selected_enemies] == enemy_names
+            and all(n == "GIZMO" for n in enemy_names),
+        )
+        session = actual["samples"][0]["state"]["sessionId"]
+        records = actual.get("warpRecords", [])
+        events, seen = [], set()
+        for ri, r in enumerate(records):
+            for e in r["result"].get("observations", []):
+                if e["Sequence"] not in seen:
+                    events.append(dict(record=ri, **e))
+                    seen.add(e["Sequence"])
+        events.sort(key=lambda e: e["Sequence"])
+        event_by_sequence = {e["Sequence"]: e for e in events}
+
+        def units(text, leader):
+            out = []
+            for part in re.split(r"(\{[^}]+\})", text):
+                if part == "{N}":
+                    out.append(dict(Kind=1, Text="\n", Symbol=0, Advance=0))
+                    continue
+                if part in ("{W1}", "{W2}", "{D1}"):
+                    out.append(
+                        dict(
+                            Kind={"{W1}": 3, "{W2}": 4, "{D1}": 6}[part],
+                            Text="",
+                            Symbol=0,
+                            Advance=0,
+                        )
+                    )
+                    continue
+                if part.startswith("{NAME;"):
+                    part = names[int(part[6:-1])]
+                elif part == "{LEADER}":
+                    part = names[int(leader)]
+                elif part.startswith("{"):
+                    raise ValueError("unbound source control")
+                for c in part:
+                    symbol = ascii_map[ord(c)]
+                    out.append(dict(Kind=0, Text=c, Symbol=symbol, Advance=advances[symbol - 1]))
+            return out
+
+        programs = {p["id"]: p for p in w["programs"]}
+        text_cursor, producer_text = None, {}
+        for e in events:
+            loc = e.get("Program")
+            if e["Kind"] != "program-instruction" or loc is None:
+                continue
+            ins = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
+            if ins.get("op") == "text-cursor":
+                text_cursor = ins["text"]
+            elif ins.get("op") == "show-text":
+                producer_text[e["Sequence"]] = text_cursor
+                if text_cursor is not None:
+                    text_cursor += 1
+        field_rows = actual["samples"] + [
+            r for r in outcome.get("records", []) if r.get("label") == "outcome-text-input"
+        ]
+        field_tokens = set()
+        producer_sequences = sorted(producer_text)
+        for i, row in enumerate(field_rows):
+            s = row["state"]
+            f = s.get("fieldText")
+            if not f:
+                continue
+            token, tid = f["Token"]["Value"], int(f["Text"])
+            active = s["partyLists"]["Active"]
+            expected = units(texts[tid], active[0] if active else 0)
+            check(f"field units {i}", expected == f["Units"])
+            # W1/W2 continuation creates another span token in the same source
+            # ShowText occurrence. Join by ordered producer lineage, not text.
+            pi = bisect_right(producer_sequences, token) - 1
+            producer_sequence = producer_sequences[pi] if pi >= 0 else None
+            producer = event_by_sequence.get(producer_sequence)
+            if producer is None or producer.get("Program") is None:
+                check(f"field producer {i}", None)
+            else:
+                loc = producer["Program"]
+                ins = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
+                check(
+                    f"field producer {i}",
+                    None
+                    if producer_text.get(producer_sequence) is None
+                    else producer["Kind"] == "program-instruction"
+                    and ins.get("op") == "show-text"
+                    and producer_text[producer_sequence] == tid,
+                )
+            label = s.get("fieldLabel")
+            check(f"field font {i}", font(label.get("font") if label else None, 16))
+            projection = "".join(u["Text"] for u in expected[: int(f["End"])])
+            check(
+                f"field Label {i}",
+                None
+                if label is None
+                else s["sessionId"] == session
+                and projection == f["Projection"] == s["dialogue"] == label["text"],
+            )
+            if (
+                label
+                and label["visible"]
+                and (
+                    label["visibleCharacters"] < 0
+                    or label["visibleCharacters"] >= label["totalCharacters"]
+                )
+            ):
+                field_tokens.add(token)
+            result["field"].append(
+                dict(
+                    sample=i,
+                    token=token,
+                    text=tid,
+                    revision=s["revision"],
+                    producerSequence=producer_sequence,
+                    program=producer.get("Program") if producer else None,
+                )
+            )
+        required_field = {
+            r["state"]["fieldText"]["Token"]["Value"]
+            for r in records
+            if r.get("state", {}).get("fieldText")
+        }
+        required_field.update(
+            r["state"]["fieldText"]["Token"]["Value"]
+            for r in field_rows
+            if r["state"].get("fieldText")
+        )
+        check(
+            "every reached field occurrence mounted",
+            True if required_field and required_field <= field_tokens else None,
+        )
+        check(
+            "every source ShowText occurrence paired",
+            True
+            if producer_sequences
+            and set(producer_sequences) <= {r["producerSequence"] for r in result["field"]}
+            else None,
+        )
+        preps = [e for e in events if e["Kind"] == "scene-prepared"]
+        prepseq = [e["Sequence"] for e in preps]
+        messages = {}
+        for i, row in enumerate(actual.get("sceneObservations", [])):
+            if row["scene"].get("message"):
+                messages.setdefault(row["scene"]["waitToken"], []).append((i, row))
+
+        def actor(e, key="Actor"):
+            return (e.get(key) or {}).get("Value")
+
+        def name(who):
+            if who.startswith("ally-"):
+                return names[int(who.split("-")[1])]
+            if who.startswith("enemy-"):
+                return enemy_names[int(who.split("-")[1])]
+            raise ValueError("unsupported actor")
+
+        for token, rows_for_token in messages.items():
+            si = rows_for_token[0][1]["scene"]
+            if si.get("reactionAmount") is None:
+                si = next(
+                    (
+                        row["scene"]
+                        for _, row in rows_for_token
+                        if row["scene"].get("reactionAmount") is not None
+                    ),
+                    si,
+                )
+            gi = bisect_right(prepseq, token) - 1
+            if gi < 0:
+                check(f"battle prepare {token}", None)
+                continue
+            p = preps[gi]
+            end = prepseq[gi + 1] if gi + 1 < len(preps) else float("inf")
+            body = [e for e in events if p["Sequence"] <= e["Sequence"] < end]
+            if gi + 1 < len(preps):
+                body = [
+                    e
+                    for e in body
+                    if not (
+                        e["record"] == preps[gi + 1]["record"]
+                        and e["Kind"]
+                        in (
+                            "gold",
+                            "rng-dodge",
+                            "rng-critical",
+                            "rng-spread-1",
+                            "rng-spread-2",
+                            "rng-double",
+                            "rng-counter",
+                        )
+                    )
+                ]
+            starts = [
+                e["Sequence"]
+                for e in body
+                if e["Kind"] == "scene-step-started" and e["Detail"] == "ActionMessage"
+            ]
+            rx = bisect_right(starts, token) - 1
+            rxend = starts[rx + 1] if rx + 1 < len(starts) else float("inf")
+            reaction = [e for e in body if rx >= 0 and starts[rx] <= e["Sequence"] < rxend]
+            actions = [
+                e
+                for e in reaction
+                if e["Kind"]
+                in ("physical-first", "physical-second", "physical-counter", "heal", "item-use")
+            ]
+            pair = actions[0] if len(actions) == 1 else None
+            hp = [
+                e
+                for e in reaction
+                if e["Kind"] == "hp" and pair and actor(e) == actor(pair, "Target")
+            ]
+            critical = any(e["Kind"] == "critical" for e in reaction)
+            step = event_by_sequence.get(token)
+            phase = step.get("Detail") if step and step["Kind"] == "scene-step-started" else None
+            tid = value = who = None
+            if phase in (
+                "ActionMessage",
+                "ResultMessage",
+                "DeathMessage",
+                "SpellCost",
+                "MakeIdle",
+                "SpellStop",
+            ):
+                check(
+                    f"battle typed action {token}",
+                    None if pair is None else si["actionKind"] == pair["Kind"],
+                )
+            healing = bool(si.get("healing"))
+            if pair and phase in ("ActionMessage", "SpellCost"):
+                who = actor(pair)
+                value = int(si["spell"]["Level"]) if healing else 0
+                tid = (
+                    274
+                    if healing
+                    else {
+                        "physical-first": 273,
+                        "physical-second": 293,
+                        "physical-counter": 292,
+                    }.get(pair["Kind"])
+                )
+            elif pair and phase in ("ResultMessage", "MakeIdle", "SpellStop"):
+                who = actor(pair, "Target")
+                tid = (
+                    298
+                    if healing
+                    else 286
+                    if si["reactionKind"] == "Dodge"
+                    else (287 if actor(pair).startswith("ally-") else 288)
+                    if critical
+                    else (284 if actor(pair).startswith("ally-") else 285)
+                )
+                value = 0 if si["reactionKind"] == "Dodge" else si.get("reactionAmount")
+                if value is not None and si["reactionKind"] != "Dodge":
+                    check(
+                        f"reaction clipping {token}",
+                        None
+                        if len(hp) != 1
+                        else hp[0]["After"] - hp[0]["Before"] == value
+                        if healing
+                        else hp[0]["After"] == max(0, hp[0]["Before"] - value),
+                    )
+            elif pair and phase == "DeathMessage":
+                who = actor(pair, "Target")
+                tid = 291 if who.startswith("ally-") else 290
+                value = 0
+            elif phase in ("RewardMessage", "GrowthMessage"):
+                exp = [e for e in body if e["Kind"] == "exp"]
+                if len(exp) == 1:
+                    who = actor(exp[0])
+                    if phase == "RewardMessage":
+                        tid = 263
+                        value = (
+                            exp[0]["After"] - exp[0]["Before"] if exp[0]["After"] < 200 else None
+                        )
+                    else:
+                        notices = []
+                        for kind, template in (
+                            ("level", 244),
+                            ("level-max-hp", 266),
+                            ("level-max-mp", 267),
+                            ("level-base-attack", 268),
+                            ("level-defense", 269),
+                            ("level-agility", 270),
+                        ):
+                            for e in body:
+                                if e["Kind"] == kind and (
+                                    kind == "level" or e["After"] > e["Before"]
+                                ):
+                                    notices.append(
+                                        (
+                                            template,
+                                            e["After"]
+                                            if kind == "level"
+                                            else e["After"] - e["Before"],
+                                        )
+                                    )
+                        growthstarts = [
+                            e["Sequence"]
+                            for e in body
+                            if e["Kind"] == "scene-step-started" and e["Detail"] == "GrowthMessage"
+                        ]
+                        ni = bisect_right(growthstarts, token) - 1
+                        if 0 <= ni < len(notices):
+                            tid, value = notices[ni]
+            elif phase == "GoldMessage":
+                gold = [
+                    e
+                    for e in events
+                    if e["record"] == p["record"]
+                    and e["Sequence"] <= p["Sequence"]
+                    and e["Kind"] == "gold"
+                    and actor(e) == actor(p)
+                ]
+                if gold:
+                    tid = 393
+                    who = actor(p)
+                    value = sum(e["After"] - e["Before"] for e in gold)
+            expected = None
+            if tid is not None and value is not None and who is not None:
+                expected = (
+                    texts[tid]
+                    .replace("{NAME}", name(who))
+                    .replace("{#}", str(int(value)))
+                    .replace("{N}", "\n")
+                )
+                if healing:
+                    expected = expected.replace("{SPELL}", si["spell"]["Value"].upper())
+                expected = re.sub(r"\{D[0-9]+\}", "", expected)
+            for i, row in rows_for_token:
+                check(
+                    f"battle phase {i}", None if phase is None else row["scene"]["phase"] == phase
+                )
+                check(
+                    f"battle text {i}",
+                    None
+                    if expected is None
+                    else row["sessionId"] == session and row["scene"]["message"] == expected,
+                )
+                check(f"battle font {i}", font(row["scene"].get("messageFont"), 9))
+                check(
+                    f"battle operand {i}",
+                    None
+                    if expected is None or row["scene"].get("reactionAmount") is None
+                    else row["scene"].get("reactionAmount") == si.get("reactionAmount"),
+                )
+            mounted = [
+                r["state"]["scene"]
+                for r in records
+                if r.get("state", {}).get("scene", {}).get("waitToken") == token
+            ]
+            check(
+                f"battle mounted {token}",
+                True
+                if any(
+                    s.get("messageFont", {}).get("visible")
+                    and (
+                        s.get("visibleCharacters", 0) < 0
+                        or s.get("visibleCharacters", 0) >= len(s.get("message", ""))
+                    )
+                    for s in mounted
+                )
+                else None,
+            )
+            result["battle"].append(
+                dict(
+                    token=token,
+                    phase=phase,
+                    sourceTemplate=tid,
+                    prepare=p["Sequence"],
+                    action=pair["Sequence"] if pair else None,
+                    reactionAmount=si.get("reactionAmount"),
+                    projections=len(rows_for_token),
+                )
+            )
+        required_battle = {
+            r["state"]["scene"]["waitToken"]
+            for r in records
+            if r.get("state", {}).get("scene", {}).get("message")
+        }
+        check(
+            "every reached battle occurrence paired",
+            True if required_battle and required_battle <= messages.keys() else None,
+        )
+    except (KeyError, IndexError, ValueError, OSError, subprocess.CalledProcessError):
+        check("missing source/material/consumer operand", None)
+    values = [c["value"] for c in result["checks"]]
+    result["value"] = False if False in values else None if None in values or not values else True
+    return result
 
 
 def reached_materials(actual, selection):
@@ -2049,6 +2579,7 @@ def compare_modern(
     controlled_start_path=None,
     material_selection=None,
     original_join_evidence_root=None,
+    text_source_root=None,
 ):
     actual, outcome, settings = read(actual_path), read(outcome_path), read(settings_path)
     samples = actual.get("samples", [])
@@ -2638,11 +3169,13 @@ def compare_modern(
             "storyFlags",
         )
         for label in required:
+            expected = {k: baseline.get(label, {}).get(k) for k in fields}
+            observed = {k: labels.get(label, {}).get(k) for k in fields}
             check(
                 3,
                 "accepted modern baseline:" + label,
-                {k: baseline.get(label, {}).get(k) for k in fields},
-                {k: labels.get(label, {}).get(k) for k in fields},
+                expected,
+                paired_baseline_value(expected, observed),
                 "samples:" + label,
                 dict(
                     owner="PR588 ordinary-normal-05",
@@ -3282,6 +3815,7 @@ def compare_modern(
             "ongoing field music requires no fabricated end",
         )
     materials = reached_materials(actual, material_selection)
+    text_material = text_material_binding(actual, outcome, material_selection, text_source_root)
     for row in materials["checks"]:
         check(
             8,
@@ -3354,7 +3888,9 @@ def compare_modern(
         ),
     ):
         material = None
-        if name == "scene background/ground actual resource identity":
+        if name == "displayed text tokens/font/glyph private binding":
+            material = text_material["value"]
+        elif name == "scene background/ground actual resource identity":
             material = materials["scene"]
         elif name == "reached audio command/timer/PCM provenance and playback lifecycle":
             material = (
@@ -3390,6 +3926,8 @@ def compare_modern(
             else dict(contiguous=audio_contiguous, lifecycle=audio_lifecycle)
             if audio_terminal
             and name == "reached audio command/timer/PCM provenance and playback lifecycle"
+            else text_material
+            if name == "displayed text tokens/font/glyph private binding"
             else None,
         )
 
@@ -3718,6 +4256,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             reachedMaterialJoins=materials["joins"],
+            textMaterialBinding=text_material,
             plainJoinBinding=join,
             walkingAdmissionBinding=walking,
         ),
@@ -3893,6 +4432,11 @@ def main():
         help="Explicit candidate party definition; not a same-run admission snapshot",
     )
     parser.add_argument("--selected-world", type=Path)
+    parser.add_argument(
+        "--text-source-root",
+        type=Path,
+        help="Read-only pinned SF2DISASM checkout for the reached text material join",
+    )
     parser.add_argument("--original-join-evidence-root", type=Path)
     parser.add_argument("--selected-scene", type=Path)
     parser.add_argument("--process-receipt", type=Path)
@@ -3965,6 +4509,7 @@ def main():
                 args.controlled_start,
                 material_selection,
                 args.original_join_evidence_root,
+                args.text_source_root,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
