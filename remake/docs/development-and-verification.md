@@ -3185,6 +3185,27 @@ own the complete reached winning scope. Required-unobserved children identify or
 semantic-join gaps even when candidate metadata is available. A parent needs every required child;
 selected witnessed fields cannot close unobserved sibling obligations.
 
+The comparator checks the frozen required family/child declarations before returning a modern
+report. The matrix also checks each supplied report's required children, unique rows/parents,
+parent child lists/counts/verdicts, and assertion/historical/report summaries. The selected accepted
+reference also supplies required admission/return flags and occupied slots. Missing evidence
+represented by a required-unobserved row remains Unavailable; omitted required rows or families,
+duplicate rows/parents and contradictory results are malformed reports and make the matrix FAIL,
+with `remaining[*].integrityErrors` identifying the inconsistency. Valid report fields and order
+remain unchanged. Optional material/JOIN subsets and historical diagnostics do not enlarge the
+frozen required child set; retained reports lacking newer subset rows remain valid.
+
+Only `complete named continuous settings matrix` may close after all four named variants satisfy
+settings and gameplay equivalence. Every other required child and coverage parent still gates full
+acceptance, using FAIL before Unavailable before PASS. For a direct integrity reproduction, use
+in-memory copies of the retained A/B/C/D reports: omit their Unavailable assertion rows while
+retaining original summaries and coverage parents, then call `compare_matrix(paths, selected_reference)` with those copies
+substituted for `read`. The result must be FAIL with `milestonePass=false`; the unmodified reports
+remain four variant PASS / full Unavailable. Also inspect missing required families/children,
+duplicate or conflicting rows/parents/summaries, known FAIL with missing evidence, and the single
+matrix-self closure on otherwise complete synthetic copies. Keep those synthetic cases separate
+from actual game evidence and preserve the source files and completed historical failures.
+
 Reuse retained A-D02 process receipts/logs/settings/actual/outcome and accepted original/Down inputs
 for fresh offline reports. Read each recorded native exit from its own receipt, load the ignored
 private-input configuration in the launching process, and preserve previous reports/failures. The
