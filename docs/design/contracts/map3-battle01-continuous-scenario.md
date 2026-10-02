@@ -295,6 +295,18 @@ all 9A variants and their acknowledgement/state equivalence (layers2,3,5,7,9); a
 identified out-of-domain safe/Unsupported behavior (10A/affected layer). Out-of-domain safety cannot
 waive an in-domain required action. Private-only 7C handling is a product boundary, not a deviation.
 
+Layer 10 also separately reports the
+[accepted fast-text speech omission](../../decisions/0010-map3-battle01-product-acceptance.md#accepted-fast-text-speech-omission)
+(layers8/9): instant/reveal-all skips speech for omitted character reveals, while reveal itself
+preserves existing tails and normal source-specific confirmation cues. Later legitimate replacement
+remains allowed. Reveal-only must not acknowledge, emit confirmation audio, add a tick/RNG advance
+or wait for omitted speech. Do not require cue67 for every Ack or a tail to finish before Ack.
+Report omission conformance separately from same-semantic-Wait/Ack state equivalence and actual
+audio lifecycle coverage. An accepted omission cannot turn unavailable normal-reveal speech,
+completion or resource provenance into PASS. The
+[audio owner](../../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+records bounded observations and the remaining reveal-tail observation limit.
+
 ## Offline reference bindings
 
 Run the maintained [read-only projector](../../../src/sf2tool/remake_h4_reference.py) with the local
