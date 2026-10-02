@@ -538,3 +538,33 @@ additive selection completes D; production selector and input/clock policy remai
 Historical original trajectory mismatches and the failed D report are retained. Two original
 isolated exports (49.3339547 seconds / 2,400 dump frames) are separate from the unchanged retained
 natural-route/RNG ledger, and establish no new natural original route or hardware-timing claim.
+
+### Offline reached original material joins
+
+The modern comparison can join explicitly selected same-run world/scene inputs to mounted resource
+IDs and continuous audio starts. The process receipt supplies the selected inputs; it is not selected
+by a run-directory name. The base scene proof uses the existing 42-raster candidate, its source bundle
+and manifest, with original ROM/upstream pins and the recorded extractor identity. Fingerprint-v1
+reproduces the historical `bfcb819fe61cf6b7f2a3a45822f6de51e411e559` four-component CRLF checkout
+bytes; current implementation and Git LF fingerprints are reported separately and cannot replace it.
+The selected cumulative scene's three field-death rasters remain outside that base proof.
+
+Visible node-bound background/ground IDs can close their bounded material child. Reached actor/weapon
+IDs can pass a material subset while the full actor/weapon/healing/death family remains Unavailable:
+fairy and field-death projections omit the complete bound raster identities. Map atlas/layer,
+entity/portrait/gesture and displayed private token/font/glyph families also remain open.
+
+Every actually started audio cue must resolve uniquely through selected world audio, the pinned clean
+asset checkout and its existing reached or Town/JOIN provenance record. Compare raw PCM to runtime
+WAV PCM and the unchanged original capture interval; WAV-container digests are separate identities.
+Command, recording timer, format, cut, loop and receipt identity must agree. The existing exact-timer
+then unique-finite selection policy retains both requested and recording timers: command66's four
+requested203/recorded189 starts are an accepted finite-recording fallback, not original natural
+playback evidence at203. Existing stream continuity, lifecycle balance and terminal ongoing music
+remain required; no voice generations or terminal finishes are invented.
+
+Material origin is a layer7C assertion. Original natural per-occurrence dispatch, mailbox timing,
+causal wait and consumer completion remain operation/consumer assertions. Those missing joins do not
+require a different historical battle trajectory to establish material origin. Optional selections
+never backfill older sessions. Missing evidence is Unavailable; contradictory observed content or
+identity is FAIL. The four incomplete resource families and five broad parents keep full H4 incomplete.

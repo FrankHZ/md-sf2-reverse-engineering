@@ -3267,3 +3267,42 @@ D receipts distinguish 23/8 starts, 22/7 replacements/stops and one Finished per
 sequence gap or added gameplay Wait. Observer-only comparisons and partial historic receipt windows
 must not be treated as complete original consumer evidence. The preserved D01 audio error belongs
 to actual host presentation even though its SessionResult has no failure.
+
+### Offline reached material comparison
+
+Use the retained actual session without a new native run. Select every material input explicitly;
+relative material paths resolve from this repository root, absolute paths from the explicitly chosen
+data root. The recorded process selection must match the selected world and scene. Do not follow
+foreign absolute paths in copy receipts. When authorized, freeze only the existing base candidate's
+`battle-scenes.json`, `candidate-report.json`, `source/battle-scenes/selection.json` and
+`manifests/presentation-assets-v1.json`, preserving relative names and byte equality. Keep the source
+read-only and record selection in the ignored run handoff. No extraction/export/library promotion.
+
+```powershell
+# Existing read-only checkout validator; keep asset pins from the accepted selection.
+uv run python -m sf2tool.remake_assets checkout --asset-root $assetRoot `
+  --expected-commit $assetCommit --expected-tree $assetTree --expected-manifest-sha256 $assetManifestSha
+uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `
+  --reference $reference --actual $actual --outcome $outcome --settings $settings `
+  --host-log $hostLog --host-exit $recordedExit --controlled-start $frozenParty `
+  --selected-world $world --selected-scene $scene --process-receipt $processReceipt `
+  --scene-evidence-root $sceneEvidenceRoot --asset-root $assetRoot `
+  --expected-asset-commit $assetCommit --expected-asset-tree $assetTree `
+  --expected-asset-manifest-sha256 $assetManifestSha --output $freshReport
+```
+
+The optional material arguments are supplied together. Missing selections or input files remain
+Unavailable; observed identity/content drift is FAIL. Reports retain selected inputs, per-start
+requested/recording timers, source records and actual scene/receipt joins. The existing base42 source
+and manifest pins are required; its fingerprint-v1 reproduces historical CRLF bytes from the named
+Git object, reporting current and Git LF fingerprints separately. Evidence bytes are never normalized.
+Original audio capture cuts must equal runtime PCM and the selected world's raw PCM; container hashes
+are checked independently by checkout preflight. Continuous starts/stops/finishes/fades and terminal
+voices retain the already observed lifecycle boundary.
+
+Run the matrix with the fresh A report and retained separate B/C/D reports. Compare all gameplay
+equivalence fields to the accepted A report; keep old sessions' absent fields Unavailable. Direct
+legacy applicability must remain unchanged. Use affected lint/design-contract checks and committed
+planner/actual CI. This offline comparator slice needs no SDK/native/capture, new source acquisition,
+normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
+actor/weapon subset leave four resource families, operation/consumer gaps and full H4 incomplete.
