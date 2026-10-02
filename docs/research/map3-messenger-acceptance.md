@@ -3352,6 +3352,35 @@ warp gaps, H4/HEAL/JOIN/next-actor/nonrun/cleanup limits remain with their exist
 
 ### Opening field-text settings and view binding
 
+The complete reached private text material comparison is owned by the
+[continuous contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding)
+and `src/sf2tool/remake_h4_comparison.py:text_material_binding`. **Confirmed**, bounded to its named
+continuous A: the independent pinned gamescript import, ally/enemy names, ASCII map and accepted
+font byte identity produce all reached field Units/control tokens/symbols/advances and mounted
+Label projections, including outcome texts2305..2310. Ordered source ShowText/text-cursor lineage
+pairs continuation tokens without reverse matching rendered text. The required span inventory follows
+the source W1/W2 boundaries and retained logical acceptance events; it does not depend on any
+consumer projection surviving. Battle's required message inventory likewise follows logical phase
+starts. Missing one span from every projection channel remains Unavailable even when its producer's
+other span is present. A missing field operand cannot suppress an independently observed battle
+contradiction, or the reverse; occurrence-local checks retain False over Unavailable. The named
+continuous A's complete displayed-text material binding passes at this boundary; original W2
+accepting reads, per-character fallback and the other resource/consumer/rule gaps remain outside it.
+
+Battle selectors come from the accepted producer branches: physical273/293/292, HEAL274/298,
+damage284/285 or critical287/288, dodge286, death290/291, EXP263, gold393 and growth244/266..271.
+Typed action/effect lineage supplies names, critical status, recovery/cost/reward/growth operands;
+actual raw reaction Amount supplies the uncapped damage operand before HP clipping. The selected
+Battle01 spriteset and member-name imports retain the accepted source pin. The current admitted
+enemy-name branch is GIZMO; unseen producer branches remain unsupported by this binding.
+
+Actual mounted font observations prove the modern configured face/size and Label use, under the
+same field/battle boundary. They do not prove individual system-fallback glyph selection or original
+bitmap/shaping/pixel behavior. **Unknown:** original W2 accepting reads/control side effects not
+already independently witnessed. Static token/material identity cannot supply those observations.
+The [verification route](../../remake/docs/development-and-verification.md#continuous-text-material-comparison)
+records exact source/material/input selections, whole-occurrence readback and missing/drift boundaries.
+
 **Confirmed (source and existing saved bytes):** the selected USA ROM remains the tracked
 `manifests/roms/sf2-us.json` identity and SF2DISASM commit remains
 `c834c652b6862bc5679fd7f69a38a7093206efc6`. Existing numbered continuation prepared-06 is the

@@ -2556,9 +2556,92 @@ effects remain the growth evidence dependency; this check supplies no new Growth
 Keep fresh outputs under `local/issue534/battle-message-observation-01`; retain the completed failure
 logs, process receipts, actual projections, input/effect stream and read-pair invariants. Do not alter
 old captures: new windows cannot backfill six missing lethal operands or the previously unobserved
-font of new-A02. The existing whole displayed-text/font/glyph binding row remains incomplete until
-a separately allocated complete evidence binding. No partial PASS, subset, count change, full winning
+font of new-A02. The complete binding uses its separately allocated continuous A in the
+[comparison route](#continuous-text-material-comparison). No partial PASS, subset, count change, full winning
 route, screenshot, emulator, export or broad/helper test is part of this observation patch.
+
+## Continuous text material comparison
+
+`remake_h4_comparison` accepts `--text-source-root` as an explicit read-only pinned SF2DISASM
+checkout. Relative selections resolve from the repository root, including package working
+directories. Existing same-run world/scene/process and scene/asset provenance selections remain
+required; no new corpus, manifest, schema or subset is introduced. The existing whole
+`displayed text tokens/font/glyph private binding` child receives the result, with occurrence and
+source checks retained in `actualObservations.textMaterialBinding`.
+
+The independently reproducible source boundary is the accepted SF2DISASM commit, gamescript,
+ally/enemy names, Battle01 spriteset, ASCII map and font bytes checked against the existing
+source/ROM-parity fixture. The recorded Battle01 source digest represents the historical CRLF
+checkout; derive that exact representation from its pinned Git object, without rewriting evidence.
+The [continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#complete-reached-displayed-text-material-binding)
+defines all field span and typed battle action/effect joins. Missing fonts, raw operands, source
+selections or unpaired occurrences are Unavailable; content/operand/face contradictions are FAIL.
+Mixed missing evidence and an independent contradiction remain FAIL. No per-character shaping,
+original bitmap/pixel, W2 consumer or additional motion/audio closure follows from material PASS.
+
+The retained complete A is `local/issue534/h4-text-material-01/new-A-01`: session
+`f003bc6c-f18b-4e52-8921-ed8be904589a`, native exit0 and no process/probe errors. It reuses accepted
+party/start/world/scene/pins/settings and the existing legal adaptive route. Actual source joins
+cover86 field spans/596 projections, including outcome2305..2310, and103 battle tokens/725 nonempty
+projections. Field/battle mounted Open Sans SemiBold/SemiBold/face0 use sizes16/9; raw lethal
+reaction amounts are present. Input/probe/DLL identities and new release/Nod/fade facts remain in
+that session's private output. No input, asset or old capture is modified. A native launch was
+necessary because no owned instance existed and old A lacked these consumer observations; the
+successful complete A is not repeated. The separately retained adjustable PR600 window owns its
+reveal audio mechanism; instant A supplies no incremental reveal-tail interval.
+
+For local reproduction, load current private configuration and use the retained explicit selections:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue534/h4-text-material-01/compare.py <fresh-comparison-name>
+uv run python -X utf8 local/issue534/h4-text-material-01/direct.py <fresh-direct-name> <comparison-name>
+```
+
+Those ignored recipes call `compare_modern`/`compare_matrix` with accepted reference, normal05,
+same-run inputs, pinned source/asset roots and retained B/C/D reports. The maintained CLI equivalent
+is `uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous`, with
+the existing explicit arguments plus `--text-source-root <configured-checkout>` and a fresh ignored
+output. Recalculation always uses a new output filename; retained completed failures stay unchanged.
+Direct checks exercise missing/drifting font, Label, glyph advance, raw Amount, source selection,
+mixed absence/contradiction, the #595 report-integrity boundary and unchanged assertions outside
+this child. Source and consumer files remain read-only. Engine/adapter binaries are unchanged, so
+their accepted checks are reused rather than repeated.
+
+For the whole-occurrence and mixed-evidence boundary, run the ignored retained correction reader
+with a fresh output name:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue534/h4-text-material-01/correction-cases.py <fresh-readback-name>
+```
+
+It removes battle28578 from both scene projection channels while retaining its logical start, and
+field continuation18004 from every projection while retaining source producer17751 and its sibling
+span. Both must be Unavailable. These tokens locate retained examples, never production restrictions
+or fixed completeness counts. The inventories derive from reached logical starts and source span
+semantics. Cross-section, later-occurrence and same-occurrence missing/contradiction pairs must retain
+False in both directions; independent font/phase and available source checks continue after a local
+operand absence. `requiredField`/`requiredBattle` retain that independent inventory in the existing
+binding result. No new report framework or unvisited requirement is introduced.
+
+The named A's complete displayed-text material child passes, including the independent logical/source
+occurrence inventory and mixed missing/contradiction boundaries. Its required comparison has2238
+PASS/23 Unavailable; after matrix self-closure, A has22 remaining children. Common-gameplay equivalence
+and all four settings variants pass. Retained B/C/D each have37 unavailable children and their own
+missing observations, with no backfill. Three other resource families and five broad parents remain
+incomplete; full H4 is Unavailable. The existing historical
+original trajectory diagnostics, normal05, prior captures, source/clock/JOIN/HEAL/RNG and other
+failures/Unknowns remain unchanged.
+
+The compatibility projection excludes only additive EntityWaitRelease from common event operands;
+raw typed evidence is retained. Paired baseline comparison omits only newly exposed isScriptIdle
+when the corresponding old entity lacks it, retaining identity/order and every other field. If both
+sides expose idle, compare its value; expected idle with missing actual idle fails. Existing field
+cursor/busy/moving and RNG drift still fail. Old baseline PASS proves no unavailable idle evidence.
+The initial six baseline representation failures and later historical-CRLF selector-check failure
+are preserved in report-A-01/02 and matrix-01/02; only offline comparison was corrected. Preflight's
+missing prior DLL-copy assumption and direct01's completed assertion failure remain recorded.
 
 ## Consolidated field consumer boundary observation
 
@@ -3449,7 +3532,7 @@ equivalence fields to the accepted A report; keep old sessions' absent fields Un
 legacy applicability must remain unchanged. Use affected lint/design-contract checks and committed
 planner/actual CI. This offline comparator slice needs no SDK/native/capture, new source acquisition,
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
-actor/weapon subset leave four resource families, operation/consumer gaps and full H4 incomplete.
+actor/weapon subset leave the other resource families, operation/consumer gaps and full H4 incomplete.
 
 ### Offline plain JOIN consumer comparison
 
