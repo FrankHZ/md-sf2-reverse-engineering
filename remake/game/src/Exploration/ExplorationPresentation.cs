@@ -22,6 +22,8 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly bool _reducedFlash;
     private int _spriteMounts;
     private WaitToken? _cue;
+    private string? _cueResource;
+    private long _drawSequence;
     private double _cueAge;
     private float _fadeStart;
     private EntityRef? _gesture;
@@ -74,6 +76,14 @@ internal sealed class ExplorationPresentation : IDisposable
     internal Vector2 Camera => _camera;
     internal Rect2 Screen => _screen;
     internal string? ActiveCue { get; private set; }
+    internal object CueProjection => new
+    {
+        token = _cue?.Value, kind = ActiveCue, resource = _cueResource, elapsed = _cueResource == "nod" ? (double?)null : _cueAge,
+        gesture = _gesture?.Value, lowered = _nodding, shivering = _shivering,
+        mosaic = _mosaic?.Value, mosaicOut = _mosaicOut,
+        paletteBrightness = PaletteBrightness, whiteOpacity = WhiteOpacity, reducedFlash = _reducedFlash,
+        whiteVisible = _white.IsVisibleInTree(), ownerVisible = _owner.IsVisibleInTree(),
+    };
 
     internal IReadOnlyList<SessionCommand> Update(double delta, SessionSnapshot current)
     {
@@ -118,6 +128,7 @@ internal sealed class ExplorationPresentation : IDisposable
             if (current.Story.Wait is NodWait nod)
             {
                 _cue = nod.Token; _gesture = nod.Entity; _shivering = false; _mosaic = null;
+                _cueResource = "nod";
                 _nodding = nod.Lowered; ActiveCue = "Gesture";
                 var actor = current.Exploration!.Entities[nod.Entity];
                 // Mount the existing transformed/normal resources. Rendering never decides
@@ -137,13 +148,14 @@ internal sealed class ExplorationPresentation : IDisposable
                 _ => null,
             };
             if (wait is null)
-            { _cue = null; _gesture = null; _mosaic = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
+            { _cue = null; _cueResource = null; _gesture = null; _mosaic = null; _shivering = _nodding = false; ActiveCue = null; return completions; }
             if (CompletedCueToken == wait.Token.Value) return completions;
             if (current.Exploration is null && wait.Cue.Kind is PresentationCueKind.CameraWait or PresentationCueKind.Gesture or PresentationCueKind.EntityEffect)
                 throw new InvalidOperationException("presentation-map-unavailable");
             if (_cue != wait.Token)
             {
                 _cue = wait.Token; _cueAge = 0; _gesture = null; _mosaic = null; _shivering = _nodding = false;
+                _cueResource = wait.Cue.Resource;
                 ActiveCue = wait.Cue.Kind.ToString();
                 if (wait.Cue.Kind is PresentationCueKind.FadeIn or PresentationCueKind.FadeOut)
                 {
@@ -253,8 +265,9 @@ internal sealed class ExplorationPresentation : IDisposable
         return completions;
     }
 
-    internal bool Draw(ExplorationState world, StoryState story)
+    internal bool Draw(ExplorationState world, SessionSnapshot current)
     {
+        var story = current.Story;
         if (_visuals is null) return false;
         try
         {
@@ -304,7 +317,10 @@ internal sealed class ExplorationPresentation : IDisposable
                 bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
                 var texture = Sprite(entity, lowered);
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
-                if (sourceNod is null && gesture && _shivering) point.X += (int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1;
+                int shiverOffsetX = sourceNod is null && gesture && _shivering ? ((int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1) : 0;
+                point.X += shiverOffsetX;
+                double mosaicAge = _mosaicOut ? 0.5 - _cueAge : _cueAge;
+                int? mosaicBlock = _mosaic == entity.Entity ? (mosaicAge < 0.1 ? 8 : mosaicAge < 0.2 ? 6 : mosaicAge < 0.3 ? 4 : mosaicAge < 0.4 ? 2 : 1) : null;
                 var destination = new Rect2(_screen.Position + (point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
                 bool visible = _screen.Intersects(destination);
                 actors.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
@@ -312,6 +328,7 @@ internal sealed class ExplorationPresentation : IDisposable
                     x = destination.Position.X, y = destination.Position.Y,
                     width = destination.Size.X, height = destination.Size.Y, visible,
                     originX = actorOrigin.X, originY = actorOrigin.Y,
+                    gesture, lowered, shiverOffsetX, mosaicBlock,
                     texture = texture.GetInstanceId().ToString() });
                 if (gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
@@ -327,8 +344,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 if (_mosaic == entity.Entity)
                 {
                     List<Rect2> sampledInk = [];
-                    double age = _mosaicOut ? 0.5 - _cueAge : _cueAge;
-                    int block = age < 0.1 ? 8 : age < 0.2 ? 6 : age < 0.3 ? 4 : age < 0.4 ? 2 : 1;
+                    int block = mosaicBlock!.Value;
                     for (int y = 0; y < 24; y += block)
                         for (int x = 0; x < 24; x += block)
                         {
@@ -369,7 +385,9 @@ internal sealed class ExplorationPresentation : IDisposable
             }
             // The bound A origin already includes the foreground layout offset.
             if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foreground, offset, true, null, pass++);
-            CameraProjection = new { simulationTick = story.SimulationTick, token = story.Wait?.Token.Value,
+            CameraProjection = new { drawSequence = ++_drawSequence, processFrame = Engine.GetProcessFrames(),
+                sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
+                simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
                 x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };

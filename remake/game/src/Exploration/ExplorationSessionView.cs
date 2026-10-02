@@ -15,7 +15,7 @@ public sealed partial class ExplorationSessionView : Control
     [Signal]
     public delegate void SessionResultObservedEventHandler(string resultJson);
 
-    private void PublishResult(string boundary)
+    private void PublishResult(string boundary, CompletePresentation? completion = null)
     {
         if (!HasConnections(SignalName.SessionResultObserved)) return;
         var result = _result!;
@@ -23,7 +23,12 @@ public sealed partial class ExplorationSessionView : Control
         {
             boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
-            stopReason = result.StopReason.ToString(), failure = result.Failure, observations = result.Observations,
+            stopReason = result.StopReason.ToString(), failure = result.Failure,
+            observations = completion is null ? result.Observations : Array.Empty<SessionObservation>(),
+            completion = completion is null ? null : new
+            {
+                token = completion.Wait.Value, kind = completion.Kind.ToString(), processFrame = Engine.GetProcessFrames(),
+            },
         }));
     }
 
@@ -328,6 +333,9 @@ public sealed partial class ExplorationSessionView : Control
     private void Send(SessionCommand command)
     {
         var current = _session!.Current;
+        // Observe the actual adapter handoff before Submit can resume its caller.
+        // The last draw keeps its own identity; this signal neither draws nor completes anything.
+        if (command is CompletePresentation completion) PublishResult("presentation-completion-before-submit", completion);
         _result = _session.Submit(new(current.SessionId, current.Revision, null, command));
         if (current.Story.Wait?.Token != _session.Current.Story.Wait?.Token) _tickTime = 0;
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
@@ -451,7 +459,7 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
-        if (_presentation?.Draw(world, _session!.Current.Story) == true) return;
+        if (_presentation?.Draw(world, _session!.Current) == true) return;
         var bounds = world.Definition.Traversal.ActiveAreas;
         int left = bounds.Min(area => area.MinimumX), top = bounds.Min(area => area.MinimumY);
         int right = bounds.Max(area => area.MaximumX), bottom = bounds.Max(area => area.MaximumY);
@@ -478,7 +486,7 @@ public sealed partial class ExplorationSessionView : Control
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
-            sessionId = current?.SessionId, revision = current?.Revision, mode = current?.Mode.ToString(),
+            sessionId = current?.SessionId, revision = current?.Revision, observationSequence = current?.ObservationSequence, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
             canWaitForChoice = current?.CanWaitForChoice, choice = current?.Story.Wait as ChoiceWait,
             gameplayHeld = _input.GameplayHeld, choiceRequiresRelease = _choiceRequiresRelease,
@@ -491,6 +499,7 @@ public sealed partial class ExplorationSessionView : Control
             windowFixPending = current?.Story.WindowFixPending,
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             entityWait = current?.Story.Wait as EntityWait,
+            presentationWait = current?.Story.Wait as PresentationWait, presentationCue = _presentation?.CueProjection,
             cameraProjection = _presentation?.CameraProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
