@@ -3163,7 +3163,12 @@ The optional controlled-start argument selects candidate definition values expli
 same-run deployment snapshot. Reports separate `candidateDefinitions` from actual override/progress,
 and keep effective admission unavailable when the missing loaded definition cannot be identified.
 Later first-control inventories do not fill admission. Candidate input equality may pass its own
-child check while its effective-items parent remains Unavailable. Use only A's optional normal05
+child check while its effective-items parent remains Unavailable. Walking timer expectations come
+directly from selected original `inherited.entities[].waitTimer`. The corresponding `actionScript`
+pointer is retained, but cursor/moving remains required-unobserved until a precise source
+template/base/offset and movement-gate binding is executable. Existing bounded runtime phase-correction
+evidence is not a replacement for that original expected-value binding; neither remake start nor
+coordinate differences prove it. Use only A's optional normal05
 baseline arguments: C/D's different presentation settings are intentional; the four-report matrix
 owns their gameplay equivalence.
 

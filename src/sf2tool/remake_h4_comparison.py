@@ -1053,23 +1053,38 @@ def compare_modern(
             ref["inherited"]["source"],
             parent=phase_parent,
         )
-    for slot, cursor, timer, moving in ((5, 0, 30, False), (6, 9, 0, False), (8, 9, 0, True)):
+    for slot in (5, 6, 8):
         modern = next((e for e in first.get("entities", []) if e["slot"] == slot), {})
+        original_entity = next(e for e in ref["inherited"]["entities"] if e["physical"] == slot)
         check(
             1,
-            f"admission walking slot {slot} logical phase",
-            dict(actionCursor=cursor, waitTimer=timer, moving=moving),
-            {k: modern[k] for k in ("actionCursor", "waitTimer", "moving")}
-            if all(k in modern for k in ("actionCursor", "waitTimer", "moving"))
-            else None,
-            f"samples[0].entities[slot={slot}]",
+            f"admission walking slot {slot} wait timer",
+            original_entity["waitTimer"],
+            modern.get("waitTimer"),
+            f"samples[0].entities[slot={slot}].waitTimer",
             dict(
                 **ref["inherited"]["source"],
-                owner="docs/research/map3-messenger-acceptance.md",
-                binding="selected R1 walking continuation; source PC decoded to logical actions",
+                binding=f"inherited.entities[physical={slot}].waitTimer",
             ),
             parent=phase_parent,
-            reason="Accepted selected-start phase translation, not numeric RAM-PC/cursor equality",
+            reason="Direct original readback; no remake start supplies the expected timer",
+        )
+        check(
+            1,
+            f"admission walking slot {slot} cursor/moving source binding",
+            "original pointer/template/base/offset to cursor, and source moving-gate readback",
+            {k: modern.get(k) for k in ("actionCursor", "moving")},
+            f"samples[0].entities[slot={slot}].actionCursor/moving",
+            dict(
+                **ref["inherited"]["source"],
+                binding=f"inherited.entities[physical={slot}].actionScript",
+                actionScript=original_entity["actionScript"],
+            ),
+            applicability="required-unobserved", parent=phase_parent,
+            missing_side="original pointer/template/offset and moving-gate translation",
+            reason="The original pointer is retained but no executable source translation/gate "
+            "binding is selected. Actual cursor/moving or coordinate differences cannot supply "
+            "original expectations",
         )
     for ally in admission["accounting"]["allies"][:3]:
         selected = candidate_allies.get(ally["id"])
@@ -1117,7 +1132,8 @@ def compare_modern(
         dict(**ref["inherited"]["source"], owner="docs/research/map3-messenger-acceptance.md"),
         parent=phase_parent, missing_side="source motion-field join and actual motion gate",
         reason="Selected reference omits the raw motion bytes; actual projection omits "
-        "WaitingForMotion. Matched position/cursor/wait/moving fields do not fill these operands",
+        "WaitingForMotion. Matched geometry and directly observed wait timers do not fill these "
+        "operands or prove the cursor/moving translation",
     )
 
     events = [
