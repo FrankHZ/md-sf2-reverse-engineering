@@ -727,11 +727,41 @@ The full inventory includes the original Woman sprite 195's 72/CB voice; a faile
 omitted that entry while incorrectly assuming the entity was Sarah. That fixture failure does not
 establish a missing reached asset. The complete pack and source-derived speaker metadata agree.
 
-**Modern text-mode difference:** instant text and reveal-all input suppress incremental speech
-bleeps; adjustable text uses the configured modern reveal speed. Adjustable-mode consumption PASS
-does not prove speech-cue parity for instant mode, original cadence, or every scene. H4 must retain
-suppressed or unobserved cues as differences/unavailable; 9A input/settings acceptance does not grant
-an original-audio parity claim. This behavior is not a newly accepted 10A deviation waiver.
+### Accepted fast-text speech policy
+
+The user accepted [the 9A/10A fast-text omission](../../docs/decisions/0010-map3-battle01-product-acceptance.md#accepted-fast-text-speech-omission):
+instant text and reveal-all input skip speech for omitted character reveals. Reveal itself leaves
+already-playing tails intact; later legitimate cue replacement still applies, including normal
+source-defined confirmation replacement. Normal source-specific confirmation cues remain required,
+without adding67 to every Ack. Reveal-only emits no Ack, confirmation cue, tick/RNG advance or wait
+for omitted speech, and Ack does not wait for a tail to finish. Adjustable text retains the configured
+modern reveal speed and imported speaker identity. These rules use the existing adapter and whole-PCM
+replacement policy; they do not introduce another cue or audio scheduler.
+
+**Confirmed bounded actual coverage:** the accepted A-D settings matrix compares the executed route's
+semantic inputs, ordered logical observations and gameplay/RNG state. C contains84 synchronous
+early Confirm inputs with unchanged token, revision, tick, RNG and input state, and no submitted
+result; D confirms naturally delivered text. New A's instant session has a gap-free1049-receipt
+audio stream with no speech commands70–74 and51 starts of67 (36 replacements/stops and15 natural
+completions). These totals prove bounded consumption, not a cue-to-Ack binding for every occurrence.
+D's62 speech receipts cover70/73 at BD:31 starts,29 replacements and two natural completions.
+The [settings and same-session observation owners](./development-and-verification.md#same-session-actual-observation)
+retain the selected inputs and reproduction routes; these observations do not backfill old sessions.
+
+**Unknown actual reveal-tail interval:** C's synchronous input records carry gameplay fields but no
+before/after sound identity. Its sampled audio retains391 distinct receipts, including74 playback
+and confirmation67;47 early inputs have a same-token/revision sample with a playing voice. Such samples
+cannot prove that the same voice remained playing across reveal. A sparse later `Finished` is not
+sufficient. The existing audio-consumer obligation therefore retains this observation limit: a
+bounded actual reveal while speech is playing would need the same startSequence/voice before and
+after, no reveal-induced stop/restart/new speech or67, and actual later completion or legitimate
+replacement. No new acceptance family or route/settings rerun follows from this limit.
+
+The [continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md)
+reports the accepted omission independently of state equivalence and actual lifecycle coverage.
+Normal-reveal speech, actual completion and7C provenance remain required where applicable; unobserved
+coverage stays Unavailable. Historical CB/D2 speech consumption PASS is not state-equivalence evidence,
+and the completed instant-fixture observation failure remains preserved. Full H4 remains incomplete.
 
 Town's inferred PCM loop uses an exact recurrence of all ten original driver channel records at
 frames 2757 and 8618 in the controlled export. The reviewed candidate loop is sample frames
@@ -913,8 +943,9 @@ completion receipt never creates logical work. Previous music becomes logically 
 gate sample but actually restarts after both the complete helper group and whole-PCM finish.
 Duplicate current requests preserve playback/generation; changed active-helper playback reports an
 error. No source clock claim follows from the profile or actual callback. Field-Wait eligibility and
-PCM duration cannot supply an original clock binding. The instant/reveal-all speech difference above
-still requires its own 10A disposition and same-semantic-Wait/acknowledgement comparison.
+PCM duration cannot supply an original clock binding. The accepted
+[fast-text speech omission](#accepted-fast-text-speech-policy) retains its separate deviation report,
+same-semantic-Wait/acknowledgement comparison and bounded actual coverage limits.
 
 ## Physical Battle Scenes
 

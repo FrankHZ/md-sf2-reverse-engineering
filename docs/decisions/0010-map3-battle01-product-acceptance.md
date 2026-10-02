@@ -332,6 +332,30 @@ The accepted initial deviation inventory includes:
 Each accepted deviation must appear in the future continuous H4 report even when its expected result
 passes. Silence, a missing fixture, or an unavailable private input does not authorize a deviation.
 
+### Accepted fast-text speech omission
+
+The user selected this 9A/10A accessibility deviation on 2026-10-02
+([decision record](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/517#issuecomment-5953279661)).
+The product owner is the user; main-gate records acceptance, the audio adapter owner maintains the
+behavior, and the continuous-scenario owner reports its independent layer-10 result. The rationale
+is to support fast reading without replaying speech for skipped character reveals or delaying input
+for that omitted speech.
+
+The affected observables are layer-8 speech/confirmation playback, layer-9 text delivery and input,
+and layer-10 deviation reporting. Instant text and reveal-all input skip per-character speech for
+the characters whose reveal was omitted. Reveal itself preserves already-playing sound tails;
+later legitimate cue replacement, including source-defined confirmation replacement, still applies.
+Normal source-specific confirmation cues remain required; this does not add cue67 to every Ack.
+Reveal-all alone emits no acknowledgement, confirmation cue, service tick, RNG advance or speech wait.
+Acknowledgement need not wait for a speech tail to finish.
+
+Report this omission explicitly even when it conforms to the accepted expected behavior. It does
+not waive same-semantic-Wait/Ack state equivalence, normal-reveal speech, actual completion,
+private-content provenance or unrelated 7C/8D obligations. Product acceptance is not observation
+coverage or full H4 PASS; the [continuous contract](../design/contracts/map3-battle01-continuous-scenario.md)
+and [audio owner](../../remake/docs/presentation-and-assets.md#accepted-fast-text-speech-policy)
+retain the actual evidence boundaries.
+
 Private-only original-asset handling and the prohibition on public distribution are product and
 copyright boundaries, not deviations from original fidelity.
 
