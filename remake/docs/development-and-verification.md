@@ -3141,6 +3141,7 @@ profile for ordinary sample/result JSON plus its outcome/settings/log and record
 uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `
   --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
   --actual $actual --outcome $outcome --settings $settings --host-log $hostLog --host-exit $recordedExit `
+  --controlled-start remake/reference/inputs/map3-opening-party.json `
   --output $freshReport
 # Repeat --variant-report for each actual A/B/C/D report; missing named variants stay Unavailable.
 uv run python -m sf2tool.remake_h4_comparison matrix `
@@ -3157,6 +3158,35 @@ Historical trajectory mismatches retain raw results and separate counts; require
 FAIL, absent required original/actual fields are Unavailable with the missing side identified.
 Exit1 means required FAIL, exit2 incomplete/Unavailable, exit0 complete applicable acceptance. Neither
 a successful report command nor a variant-pair PASS implies milestone acceptance.
+
+The optional controlled-start argument selects candidate definition values explicitly. It is not a
+same-run deployment snapshot. Reports separate `candidateDefinitions` from actual override/progress,
+and keep effective admission unavailable when the missing loaded definition cannot be identified.
+Later first-control inventories do not fill admission. Candidate input equality may pass its own
+child check while its effective-items parent remains Unavailable. Walking timer expectations come
+directly from selected original `inherited.entities[].waitTimer`. The corresponding `actionScript`
+pointer is retained, but cursor/moving remains required-unobserved until a precise source
+template/base/offset and movement-gate binding is executable. Existing bounded runtime phase-correction
+evidence is not a replacement for that original expected-value binding; neither remake start nor
+coordinate differences prove it. Use only A's optional normal05
+baseline arguments: C/D's different presentation settings are intentional; the four-report matrix
+owns their gameplay equivalence.
+
+`coverageObligations` retains all eight parents and their required child lists/counts. Main assertion
+counts evaluate children, without counting those parent summaries again. The
+[contract's child families](../../docs/design/contracts/map3-battle01-continuous-scenario.md#admission-and-required-child-obligations)
+own the complete reached winning scope. Required-unobserved children identify original, actual or
+semantic-join gaps even when candidate metadata is available. A parent needs every required child;
+selected witnessed fields cannot close unobserved sibling obligations.
+
+Reuse retained A-D02 process receipts/logs/settings/actual/outcome and accepted original/Down inputs
+for fresh offline reports. Read each recorded native exit from its own receipt, load the ignored
+private-input configuration in the launching process, and preserve previous reports/failures. The
+direct legacy comparison must remain unchanged. This binding work uses affected lint and direct
+contract checks plus the committed dependency plan/actual CI; it adds no tests of comparison tools
+or native/build/original capture. If a future missing actual field needs a probe change, request that
+exact observation boundary separately before rerunning native. No blanket suite follows from these
+report changes.
 
 For the ordinary winning suffix set `SF2_H4_VARIANT` to A/B/C/D while retaining the accepted normal05
 start/world/scene/content/party/RNG, fixed60 FPS, optionalpoll1 and adaptive legal battle policy:

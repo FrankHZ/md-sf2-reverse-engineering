@@ -14,6 +14,7 @@ from bisect import bisect_right
 from collections import Counter
 from pathlib import Path
 
+from sf2tool.h3.rng import _rng_step
 from sf2tool.paths import repo_path
 from sf2tool.remake_h4_reference import (
     EXTENSION_SOURCE,
@@ -757,12 +758,14 @@ def compare_modern(
     host_exit,
     baseline_path=None,
     baseline_outcome=None,
+    controlled_start_path=None,
 ):
     actual, outcome, settings = read(actual_path), read(outcome_path), read(settings_path)
     samples = actual.get("samples", [])
     require(samples, "modern actual lacks samples")
     records = actual.get("warpRecords", [])
     assertions = []
+    obligations = {}
 
     def check(
         layer,
@@ -773,13 +776,22 @@ def compare_modern(
         original=None,
         applicability="applicable",
         reason="semantic assertion",
+        parent=None,
+        missing_side=None,
+        actual_file=None,
     ):
         # Applicability precedes evaluation. Original diagnostics keep their raw mismatch.
         if value is None and applicability == "applicable":
             applicability = "required-unobserved"
             if reason == "semantic assertion":
                 reason = "Actual field absent at " + location
-        result = "Unavailable" if value is None else "PASS" if value == expected else "FAIL"
+        result = (
+            "Unavailable"
+            if value is None or applicability == "required-unobserved"
+            else "PASS"
+            if value == expected
+            else "FAIL"
+        )
         assertions.append(
             dict(
                 layer=layer,
@@ -788,7 +800,8 @@ def compare_modern(
                 original=original
                 or dict(owner=OWNER, commit="87528953c6ee6d2631e24663a6d2e846be4c22ce"),
                 actual=dict(
-                    file=(
+                    file=actual_file
+                    or (
                         outcome_path
                         if location.startswith("outcome.")
                         else host_log
@@ -801,8 +814,12 @@ def compare_modern(
                 actualValue=value,
                 result=result,
                 reason=reason,
+                **({"parent": parent} if parent else {}),
+                **({"missingSide": missing_side or "actual"} if result == "Unavailable" else {}),
             )
         )
+        if parent:
+            obligations.setdefault(parent, []).append(assertions[-1])
 
     first = samples[0]["state"]
     admission = ref["admission"]
@@ -820,6 +837,17 @@ def compare_modern(
         ),
     ):
         check(1, name, expected, value, "samples[0]", admission["source"])
+    candidate = read(controlled_start_path) if controlled_start_path else None
+    if candidate:
+        require(
+            candidate.get("formatVersion") == 1
+            and candidate.get("profile") == "private-local-controlled-start",
+            "not a controlled party definition input",
+        )
+        ids = [a["id"] for a in candidate["allies"]]
+        require(len(ids) == len(set(ids)), "duplicate controlled party actor")
+    candidate_allies = {a["id"]: a for a in candidate["allies"]} if candidate else {}
+    candidate_definitions = []
     for ally in admission["accounting"]["allies"][:3]:
         carried = next(
             (p for p in first.get("party", []) if p["Actor"]["Value"] == f"ally-{ally['id']}"), {}
@@ -837,14 +865,69 @@ def compare_modern(
                 "samples[0].party",
                 admission["source"],
             )
-        loadout = carried.get("SourceLoadout") or {}
+        parent = f"ally-{ally['id']}.items"
+        explicit = carried.get("SourceLoadout")
+        progress = carried.get("Progress")
+        inherited = progress.get("SourceLoadout") if isinstance(progress, dict) else None
+        loadout = explicit if explicit is not None else inherited
+        selected = candidate_allies.get(ally["id"])
+        expected_items = [i["raw"] for i in ally["items"]]
+        candidate_definitions.append(
+            dict(
+                actor=f"ally-{ally['id']}",
+                file=controlled_start_path.as_posix() if controlled_start_path else None,
+                record=f"allies[id={ally['id']}]",
+                items=selected.get("items") if selected else None,
+                actualOverride=explicit,
+                actualProgress=progress,
+                actual=dict(file=actual_path.as_posix(),
+                            record=f"samples[0].party[Actor=ally-{ally['id']}]"),
+                candidateEvidenceOwner=candidate.get("evidenceOwner") if candidate else None,
+                effectiveAdmissionObserved=isinstance(loadout, dict) and "Items" in loadout,
+                reason="Selected definition is a candidate input, not a same-run deployment "
+                "snapshot",
+            )
+        )
         check(
             1,
-            f"ally-{ally['id']}.items",
-            [i["raw"] for i in ally["items"]],
-            loadout.get("Items"),
+            parent + ".effective four-slot words",
+            expected_items,
+            loadout.get("Items") if isinstance(loadout, dict) else None,
             "samples[0].party.SourceLoadout",
             admission["source"],
+            parent=parent,
+            missing_side="actual deployment definition at admission",
+            reason="Resolve explicit override, then Progress.SourceLoadout, then same-run "
+            "deployment definition; absent definition cannot be replaced by later inventory",
+        )
+        check(
+            1,
+            parent + ".candidate definition slots",
+            expected_items,
+            selected.get("items") if selected else None,
+            f"allies[id={ally['id']}].items",
+            admission["source"],
+            parent=parent,
+            actual_file=controlled_start_path.as_posix() if controlled_start_path else None,
+            missing_side="explicit controlled-start selection",
+            reason="Candidate input comparison only; equality does not observe loaded "
+            "admission slots",
+        )
+        check(
+            1,
+            parent + ".admission loadout identity",
+            True,
+            isinstance(loadout, dict) and "Items" in loadout if loadout is not None else None,
+            "samples[0].party.SourceLoadout/Progress.SourceLoadout",
+            dict(
+                owner=OWNER,
+                binding="R1 full item words; modern override/progress/definition precedence",
+                modernOwner="remake/src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs:83",
+            ),
+            parent=parent,
+            missing_side="same-run loaded deployment definition identity",
+            reason="Current launcher and selected input explain candidate provenance; "
+            "neither supplies the unrecorded same-run definition when both overrides are null",
         )
     check(
         1,
@@ -853,6 +936,204 @@ def compare_modern(
         (first.get("partyLists") or {}).get("Active"),
         "samples[0].partyLists",
         admission["source"],
+    )
+
+    phase_parent = "complete relevant admission phase/field mapping"
+    for flag, expected_flag in admission["state"]["flags"].items():
+        check(
+            1,
+            f"admission flag {flag}",
+            expected_flag,
+            int(flag) in first["flags"] if "flags" in first else None,
+            "samples[0].flags",
+            admission["source"],
+            parent=phase_parent,
+        )
+    for source_key, actual_key in (("joined", "Joined"), ("active", "Active")):
+        check(
+            1,
+            "admission " + source_key,
+            admission["accounting"][source_key],
+            (first.get("partyLists") or {}).get(actual_key),
+            "samples[0].partyLists",
+            admission["source"],
+            parent=phase_parent,
+        )
+    readiness_fields = (
+        "continuation",
+        "cursor",
+        "wait",
+        "callers",
+        "callerReturning",
+        "warp",
+        "choice",
+        "battleMounted",
+        "canWaitAtInput",
+    )
+    check(
+        1,
+        "admission logical consumer readiness",
+        dict(
+            continuation="FieldInput",
+            cursor=None,
+            wait=None,
+            callers=[],
+            callerReturning=None,
+            warp=None,
+            choice=None,
+            battleMounted=False,
+            canWaitAtInput=True,
+        ),
+        {k: first[k] for k in readiness_fields}
+        if all(k in first for k in readiness_fields)
+        else None,
+        "samples[0].continuation/cursor/wait/callers/warp/choice",
+        dict(
+            **admission["source"],
+            owner="docs/design/contracts/map3-controlled-admission.md",
+            binding="zero pending returns/active consumers at the selected logical R1 seam",
+        ),
+        parent=phase_parent,
+    )
+    check(
+        1,
+        "admission seed-copy byte",
+        admission["state"]["rngCopyByte"],
+        first.get("randomSeedCopy"),
+        "samples[0].randomSeedCopy",
+        admission["source"],
+        parent=phase_parent,
+        reason="An absent latch is not zero; first-read/write relevance is not yet bound",
+    )
+    check(
+        1,
+        "opening mouth/view controls before first source write",
+        "original opening readback",
+        (first.get("textSettings") or {}),
+        "samples[0].textSettings",
+        dict(owner="docs/design/contracts/dialogue-system.md", binding="opening service gates"),
+        applicability="required-unobserved",
+        parent=phase_parent,
+        missing_side="original",
+        reason="MouthControl/ViewSpeed are ancestry Inferred, not an opening RAM observation",
+    )
+    # In this selected R1, zero script plus the 0x7000 sentinel denotes an unused physical slot.
+    occupied = [
+        e
+        for e in ref["inherited"]["entities"]
+        if not (e["actionScript"] == 0 and e["x"] == e["y"] == 0x7000)
+    ]
+    check(
+        1,
+        "admission occupied physical slots",
+        [e["physical"] for e in occupied],
+        sorted(int(e["slot"]) for e in first["entities"]) if "entities" in first else None,
+        "samples[0].entities[*].slot",
+        ref["inherited"]["source"],
+        parent=phase_parent,
+    )
+    entity_fields = {
+        "x": "x",
+        "y": "y",
+        "targetX": "destinationX",
+        "targetY": "destinationY",
+        "facing": "facing",
+        "layer": "layer",
+    }
+    for entity in occupied:
+        modern = next((e for e in first.get("entities", []) if e["slot"] == entity["physical"]), {})
+        check(
+            1,
+            f"admission slot {entity['physical']} position/destination/facing/layer",
+            {k: entity[v] for k, v in entity_fields.items()},
+            {k: modern[k] for k in entity_fields}
+            if all(k in modern for k in entity_fields)
+            else None,
+            f"samples[0].entities[slot={entity['physical']}]",
+            ref["inherited"]["source"],
+            parent=phase_parent,
+        )
+    for slot in (5, 6, 8):
+        modern = next((e for e in first.get("entities", []) if e["slot"] == slot), {})
+        original_entity = next(e for e in ref["inherited"]["entities"] if e["physical"] == slot)
+        check(
+            1,
+            f"admission walking slot {slot} wait timer",
+            original_entity["waitTimer"],
+            modern.get("waitTimer"),
+            f"samples[0].entities[slot={slot}].waitTimer",
+            dict(
+                **ref["inherited"]["source"],
+                binding=f"inherited.entities[physical={slot}].waitTimer",
+            ),
+            parent=phase_parent,
+            reason="Direct original readback; no remake start supplies the expected timer",
+        )
+        check(
+            1,
+            f"admission walking slot {slot} cursor/moving source binding",
+            "original pointer/template/base/offset to cursor, and source moving-gate readback",
+            {k: modern.get(k) for k in ("actionCursor", "moving")},
+            f"samples[0].entities[slot={slot}].actionCursor/moving",
+            dict(
+                **ref["inherited"]["source"],
+                binding=f"inherited.entities[physical={slot}].actionScript",
+                actionScript=original_entity["actionScript"],
+            ),
+            applicability="required-unobserved", parent=phase_parent,
+            missing_side="original pointer/template/offset and moving-gate translation",
+            reason="The original pointer is retained but no executable source translation/gate "
+            "binding is selected. Actual cursor/moving or coordinate differences cannot supply "
+            "original expectations",
+        )
+    for ally in admission["accounting"]["allies"][:3]:
+        selected = candidate_allies.get(ally["id"])
+        fields = {
+            "classId": "class",
+            "level": "level",
+            "maxHp": "hpMax",
+            "maxMp": "mpMax",
+            "attack": "attack",
+            "defense": "defense",
+            "agility": "agility",
+            "move": "move",
+        }
+        expected_definition = {k: ally[v] for k, v in fields.items()}
+        expected_definition["spells"] = [s["raw"] for s in ally["spells"]]
+        check(
+            1,
+            f"ally-{ally['id']} candidate class/stats/spell words",
+            expected_definition,
+            {k: selected.get(k) for k in expected_definition} if selected else None,
+            f"allies[id={ally['id']}]",
+            admission["source"],
+            parent=phase_parent,
+            actual_file=controlled_start_path.as_posix() if controlled_start_path else None,
+            missing_side="explicit controlled-start selection",
+            reason="Candidate definition only; this does not observe effective admission "
+            "stats/spells",
+        )
+    check(
+        1,
+        "effective admission class/level/maxima/stats/spells definition identity",
+        "same-run resolved party definition or progress",
+        None,
+        "samples[0].party.Progress",
+        admission["source"],
+        parent=phase_parent,
+        missing_side="actual",
+        reason="Selected input and nullable progress projection omit the loaded definition "
+        "identity",
+    )
+    check(
+        1, "walking motion gate/velocity/travel/flags correspondence",
+        "selected R1 walking motion fields and waiting-for-motion gate", None,
+        "samples[0].entities[slot=5/6/8]",
+        dict(**ref["inherited"]["source"], owner="docs/research/map3-messenger-acceptance.md"),
+        parent=phase_parent, missing_side="source motion-field join and actual motion gate",
+        reason="Selected reference omits the raw motion bytes; actual projection omits "
+        "WaitingForMotion. Matched geometry and directly observed wait timers do not fill these "
+        "operands or prove the cursor/moving translation",
     )
 
     events = [
@@ -1276,36 +1557,330 @@ def compare_modern(
             ),
             "inputRecords[*].delivery/ordinal",
         )
-    # Required fidelity bindings remain incomplete even when the modern host route succeeds.
-    for layer, name, side in (
-        (1, "complete relevant admission phase/field mapping", "original semantic mapping"),
-        (
-            3,
-            "complete mandatory operation-to-consumption mapping",
-            "original/actual record correspondence",
-        ),
-        (5, "matched-state rule/RNG/draw-to-effect comparisons", "original matched-state binding"),
-        (
-            8,
-            "complete reached 7C resource/provenance inventory",
-            "actual per-resource provenance correspondence",
-        ),
-        (
-            9,
-            "required unshimmed ack and scene consumer binding",
-            "original consumption and actual correlation",
-        ),
-        (10, "complete named continuous settings matrix", "actual A-D matrix report"),
-    ):
+
+    def missing(layer, parent, name, binding, actual_location, side, reason, observed=None):
         check(
             layer,
             name,
-            "complete applicable binding",
-            None,
-            "coverage",
+            binding,
+            observed,
+            actual_location,
+            dict(owner=OWNER, sourceCommit=SOURCE, upstream=UPSTREAM, binding=binding),
             applicability="required-unobserved",
-            reason=side,
+            parent=parent,
+            missing_side=side,
+            reason=reason,
         )
+
+    operation_parent = "complete mandatory operation-to-consumption mapping"
+    for flag, expected_flag in ref["endpoint"]["state"]["flags"].items():
+        check(
+            3,
+            f"returned story flag {flag}",
+            expected_flag,
+            int(flag) in final["flags"] if "flags" in final else None,
+            "outcome.final.flags",
+            ref["endpoint"]["source"],
+            parent=operation_parent,
+        )
+    check(
+        3,
+        "after-program join/flag/return causal order",
+        ["after-battle-join", "battle-unlock-cleared", "battle-completed-set", "battle-returned"],
+        ordered,
+        "warpRecords[*].result.observations",
+        dict(
+            owner="docs/research/map3-battle01-victory-return.md",
+            binding="accepted after-program shared tail before flag writes and enclosing return",
+        ),
+        parent=operation_parent,
+    )
+    for name, binding, actual_location in (
+        (
+            "taken route/setup/caller branch operands and occurrence",
+            "operationPairs.entry/return + program/operation.pc/opcode + route/story branch "
+            "operands",
+            "warpRecords[*].result.observations.Program/Detail",
+        ),
+        (
+            "awaited entity motion/gesture/fade before caller return",
+            "story operation subject/destination/wait + operationPairs return",
+            "warpRecords[*].state.entities/callers/presentation",
+        ),
+        (
+            "dialogue speaker/control-token occurrence and choice effect",
+            "story displayed text/speaker + choices + ordered W1/W2 tokens",
+            "samples[*].textId/speaker/fieldText + inputRecords",
+        ),
+        (
+            "route roster/flag writes at their source branch",
+            "story joined/follower and F600..608/F66/F89 changes before operation return",
+            "warpRecords[*].state.partyLists/flags",
+        ),
+        (
+            "warp destination/setup initialization before field release",
+            "route warp/setup operands and pending consumer return",
+            "warpRecords[*].state.warp/loadServices/callers",
+        ),
+        (
+            "before/after operation effects and shared-tail return pairing",
+            "operationPairs for reached bbcs_01/abcs_battle01, including awaited effects and "
+            "shared tail",
+            "warpRecords[*].result.observations.Program + outcome.records/programs",
+        ),
+    ):
+        missing(
+            3,
+            operation_parent,
+            name,
+            binding,
+            actual_location,
+            "original/actual semantic join",
+            "Source operation PC/operands and typed instruction/consumer occurrence are not "
+            "joined; instruction presence or total count cannot establish this edge",
+        )
+
+    rule_parent = "matched-state rule/RNG/draw-to-effect comparisons"
+    unique_events = {}
+    sequence_consistent = True
+    for event in events:
+        sequence = event["Sequence"]
+        if sequence in unique_events and unique_events[sequence] != event:
+            sequence_consistent = False
+        unique_events[sequence] = event
+    check(
+        5,
+        "repeated logical sequence identifies the same observation",
+        True,
+        sequence_consistent,
+        "warpRecords[*].result.observations.Sequence",
+        parent=rule_parent,
+        reason="Repeated snapshots cannot duplicate or alter a consumed draw/effect",
+    )
+    # Reuse the original H3 model, not the remake RNG. Its fixed-range model is sufficient
+    # for these recorded ranges; preserve the full image's unmodified low word separately.
+    draws = [e for e in unique_events.values() if e["Kind"].startswith("rng-")]
+    for event in draws:
+        operands = [event.get(k) for k in ("Before", "After", "RandomRange", "RandomValue")]
+        if all(v is not None for v in operands):
+            before, after, range_, value = map(int, operands)
+            word, result = _rng_step(before >> 16, ((range_ * 2) & 65535))
+            expected_draw = dict(after=(word << 16) | (before & 65535), value=result >> 1)
+            actual_draw = dict(after=after, value=value)
+        else:
+            expected_draw, actual_draw = "word update, preserved low word, range/result", None
+        check(
+            5,
+            f"main draw {int(event['Sequence'])} {event['Kind']}",
+            expected_draw,
+            actual_draw,
+            f"warpRecords.observations[Sequence={int(event['Sequence'])}]",
+            dict(
+                owner="docs/design/contracts/randomness.md",
+                fixture="tests/fixtures/h3/rng-v1.json",
+                upstream=UPSTREAM,
+                binding="GenerateRandomNumber word update and doubled-range upper product",
+            ),
+            parent=rule_parent,
+            reason="Independent accepted original generator model at the actual seed/range; "
+            "this does not yet associate the draw with a particular source effect",
+        )
+    check(
+        5,
+        "recorded main draw operands are available",
+        True,
+        bool(draws) or None,
+        "warpRecords.observations: rng-*",
+        parent=rule_parent,
+    )
+    for name, binding, actual_location, side in (
+        (
+            "turn candidate score draws and tie/order result",
+            "turns.accounting.turnOrder + source agility/extra-round score rule at matched seed",
+            "round-rng/round-started + battle turnOrder",
+            "actual per-candidate range/draw operands",
+        ),
+        (
+            "physical range/dodge/critical/spread/double/counter effects",
+            "scenes.effects.attackType + source action rules at matched "
+            "stats/status/equipment/seed",
+            "rng-dodge/critical/spread/double/counter + physical-first/second/hp",
+            "matched original operands and draw-to-effect join",
+        ),
+        (
+            "HEAL recovery/cost/fairy opportunity and seed effects",
+            "scenes.effects + source HEAL MP/recovery and fairy caller/gate rules",
+            "spell-selected/mp/heal/rng-fairy-* + scene.healing",
+            "original caller opportunities and matched recovery/draw effects",
+        ),
+        (
+            "healing item slot words/removal and resource effects",
+            "decisions UseItem zero-based slot/live word + scenes consumed item/HP boundary",
+            "itemSlot/inventories + action-committed/scene-ended",
+            "matched source item action/resource occurrence",
+        ),
+        (
+            "EXP/gold/growth/spell learning and after-turn/outcome effects",
+            "scenes.after accounting + source reward/growth/status and victory rules",
+            "exp/gold/level-*/after-turn/battle-outcome + party.Progress",
+            "matched source preconditions and draw/effect association",
+        ),
+        (
+            "AI thinking draw/choice/memory and movement decision",
+            "StartAiControl/ExecuteAiControl serialized actor memory + source thinking-byte "
+            "contract",
+            "thinking-rng/ai-memory/ai-target/ai-move + thinkingSeed",
+            "original thinking draw stream and decoded matched AI memory",
+        ),
+        (
+            "field text/portrait/NPC service draw-to-effect gates",
+            "story W1/W2/portrait/entity caller state plus RNG consumerScopes",
+            "rng-text-*/rng-portrait-* + fieldText/portraitWork/entities",
+            "source live service gates and individual caller/effect mapping",
+        ),
+    ):
+        item_reached = any(e["Kind"] == "item-consumed" for e in unique_events.values()) or any(
+            row["state"].get("itemSlot") is not None
+            for row in outcome.get("records", []) if row.get("label") == "action-selected"
+        )
+        if name == "healing item slot words/removal and resource effects" and not item_reached:
+            check(
+                5, name, binding, None, actual_location,
+                dict(owner=OWNER, binding="original UseItem history in decisions/scenes"),
+                applicability="historical-diagnostic", parent=rule_parent,
+                reason="No item action is reached in this actual winning profile; retain original "
+                "UseItem history without imposing an unvisited consuming branch",
+            )
+            continue
+        missing(
+            5,
+            rule_parent,
+            name,
+            binding,
+            actual_location,
+            side,
+            "Compare the reached rule at matched operands; whole historical actor/round "
+            "sequence and settings equality cannot supply this binding",
+        )
+
+    resource_parent = "complete reached 7C resource/provenance inventory"
+    for name, binding, actual_location, side in (
+        (
+            "reached map3/19/20/21/40/57 atlas and layer identities",
+            "route/setup map identity -> admitted original map source/extractor -> actual "
+            "atlas use",
+            "samples[*].map/cameraProjection",
+            "selected original asset/provenance to actual mount join",
+        ),
+        (
+            "reached entity sprites/portraits/gesture resource identities",
+            "story subject/sprite/portrait/gesture -> ROM/source selection -> actual node resource",
+            "samples[*].entities/cameraProjection.actors/portraitProjection/presentation",
+            "per-occurrence source asset and actual resource correspondence",
+        ),
+        (
+            "displayed text tokens/font/glyph private binding",
+            "story displayed text ID and control tokens -> admitted original text/font -> "
+            "Label use",
+            "samples[*].textId/fieldText/dialogue + scene.message",
+            "private text/font provenance to actual displayed occurrence",
+        ),
+        (
+            "scene actor/weapon/healing/death resources",
+            "scenes actor/action/target selectors -> accepted scene source extraction -> "
+            "mounted resource",
+            "warpRecords[*].state.scene.allyResource/enemyResource/weaponResource/healing/fieldDeath",
+            "source selector and per-resource actual use/provenance join",
+        ),
+        (
+            "scene background/ground actual resource identity",
+            "source scene background/ground selectors -> mounted resource identity",
+            "warpRecords[*].state.scene.background/ground resource identity",
+            "actual resource ID (projection records positions but omits these IDs)",
+        ),
+        (
+            "reached audio command/timer/PCM provenance and playback lifecycle",
+            "audioPairs dispatch/mailbox identity -> admitted exact original PCM -> actual "
+            "start/stop/finish",
+            "samples[*].audio.receipts + speechReceipts",
+            "complete reached audio/provenance join and exhaustive required playback receipts",
+        ),
+    ):
+        missing(
+            8,
+            resource_parent,
+            name,
+            binding,
+            actual_location,
+            side,
+            "Only reached resources are required; no all-corpus/frame inventory or hardware "
+            "equality. Current selected content is not by itself an actual consumption record",
+        )
+
+    consumer_parent = "required unshimmed ack and scene consumer binding"
+    for name, binding, actual_location, side, reason in (
+        (
+            "W1 displayed token occurrence/accepting read/service gates",
+            "named text483 DisplayText -> symbol_wait1 -> loc_65B4 -> text return",
+            "inputRecords Confirm/Wait + fieldText + text-w1-*",
+            "remaining original occurrence/service-gate to actual consumer joins",
+            "The accepted text483 witness proves that bounded seam; RTS/cursor alone cannot "
+            "identify every required natural occurrence",
+        ),
+        (
+            "W2 accepting read/validation indicator and token return",
+            "source loc_6472 draw/copy/wait/read then sub_64A8 validation/clear -> token resume",
+            "inputRecords + text-w2-* + audio validation receipt",
+            "original exact W2 accepting read and actual occurrence correlation",
+            "Text510/511 returns and W2 loop entry do not observe the later accepting read",
+        ),
+        (
+            "plain JOIN input after matching finite completion",
+            "natural WaitForPlayerInput input-first seam after declared modern music completion",
+            "music-actual-completed/music-wait-returned + inputRecords + presentation-acknowledged",
+            "named original plain-input occurrence to actual completion/ack join",
+            "Plain input is separate from W1/W2; modern finite music is an accepted deviation",
+        ),
+        (
+            "entity motion/gesture/fade consumer start/completion before resume",
+            "reached story subject/wait -> real node use/completion -> dependent caller/input "
+            "release",
+            "samples[*].presentation/entities + warpRecords.result/state",
+            "per-occurrence original wait dependency and actual completion identity",
+            "A culled subject or request/return counter alone does not prove required delivery",
+        ),
+        (
+            "battle scene command/resources/wait/effect/end consumer edges",
+            "Initialize/Execute/End plus source command rules -> mounted action/target "
+            "resources -> "
+            "each required completion/ack -> committed effect -> field input",
+            "scene phase/waitToken/resources/completed + scene-step-*/scene-ended + actors",
+            "source dynamic command/operand mapping and actual per-occurrence completion joins",
+            "Existing phase snapshots and prepare/end pairs do not alone bind every required "
+            "animation/message/resource edge; no original frame/pixel equality is required",
+        ),
+        (
+            "audio replacement/fade/stop/resume dependent consumer edges",
+            "source reached audio command/timer and wait/replacement rule -> real player "
+            "generation "
+            "completion/stop -> matching release",
+            "audio receipts/musicWait/token + inputRecords/warpRecords",
+            "source wait dependencies and complete actual playback/generation correspondence",
+            "Original mailbox dispatch is not playback; persistent music needs no invented end "
+            "event",
+        ),
+    ):
+        missing(9, consumer_parent, name, binding, actual_location, side, reason)
+
+    check(
+        10,
+        "complete named continuous settings matrix",
+        "actual A-D matrix report",
+        None,
+        "coverage",
+        missing_side="separate actual matrix report",
+        reason="The matrix command closes only this obligation after all four reports compare",
+    )
     check(
         10,
         "modern finite-music deviation declaration",
@@ -1448,6 +2023,38 @@ def compare_modern(
         for row in outcome.get("records", [])
         if row.get("label") == "action-selected"
     ]
+    coverage = []
+    for name, children in obligations.items():
+        required_children = [c for c in children if c["applicability"] != "historical-diagnostic"]
+        child_counts = dict(Counter(child["result"] for child in required_children))
+        parent_result = (
+            "FAIL"
+            if child_counts.get("FAIL")
+            else "Unavailable"
+            if child_counts.get("Unavailable")
+            else "PASS"
+        )
+        coverage.append(
+            dict(
+                layer=children[0]["layer"],
+                assertion=name,
+                applicability="required-unobserved"
+                if parent_result == "Unavailable"
+                else "applicable",
+                original=dict(
+                    owner=OWNER, binding="required reached winning-profile child obligations"
+                ),
+                actual=dict(file=actual_path.as_posix(), record="assertions[parent=" + name + "]"),
+                expected="all applicable required children PASS",
+                actualValue=child_counts,
+                result=parent_result,
+                reason="Closed required child set is owned by the continuous contract; "
+                "candidate input equality cannot substitute for missing actual/source bindings",
+                children=[child["assertion"] for child in required_children],
+                historicalChildren=[child["assertion"] for child in children
+                                    if child["applicability"] == "historical-diagnostic"],
+            )
+        )
     required_rows = [a for a in assertions if a["applicability"] != "historical-diagnostic"]
     counts = dict(Counter(a["result"] for a in required_rows))
     verdict = (
@@ -1469,6 +2076,8 @@ def compare_modern(
             hostExit=host_exit,
         ),
         assertions=assertions,
+        coverageObligations=coverage,
+        candidateDefinitions=candidate_definitions,
         counts=counts,
         historicalCounts=dict(
             Counter(
@@ -1579,6 +2188,7 @@ def compare_matrix(paths):
     remaining = [
         dict(
             variant=r["variant"],
+            coverageObligations=r.get("coverageObligations", []),
             assertions=[
                 a
                 for a in r["assertions"]
@@ -1629,6 +2239,11 @@ def main():
     parser.add_argument("--variant-report", type=Path, action="append", default=[])
     parser.add_argument("--baseline-actual", type=Path)
     parser.add_argument("--baseline-outcome", type=Path)
+    parser.add_argument(
+        "--controlled-start",
+        type=Path,
+        help="Explicit candidate party definition; not a same-run admission snapshot",
+    )
     args = parser.parse_args()
     ref = reference(args.reference)
     if args.mode == "matrix":
@@ -1675,6 +2290,7 @@ def main():
                 args.host_exit,
                 args.baseline_actual,
                 args.baseline_outcome,
+                args.controlled_start,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))

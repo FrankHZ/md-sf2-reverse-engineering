@@ -466,6 +466,59 @@ admission item fields, admission phase mapping, mandatory operation-to-consumpti
 matched-state rule/RNG mapping, complete reached resource provenance and required unshimmed consumer
 bindings remain missing. Settings equality does not close these eight obligations per variant.
 
+### Admission and required child obligations
+
+Modern reports retain the eight named coverage obligations in `coverageObligations`, with their
+required child assertion names and aggregate results. `assertions` holds the evaluated children;
+parent counts are separate from assertion counts. Unreached original action families remain historical children and do not enter the required parent result. A parent passes only when every applicable required
+child passes. Observed disagreement is FAIL; an absent expected observation or semantic join remains
+`required-unobserved` even when the report can display candidate values. Each unavailable child names
+its `missingSide`, original owner/binding and actual record location. The matrix carries these parent
+rows alongside remaining child assertions. Neither deleting an opaque placeholder nor selecting only
+easy children closes a parent.
+
+`--controlled-start` explicitly selects a **candidate** party definition. `candidateDefinitions`
+records its file/actor/slot values separately from actual admission override/progress. Modern effective
+loadout resolution is explicit `SourceLoadout`, then `Progress.SourceLoadout`, then the same-run loaded
+deployment definition. This precedence describes the remake; independent original expectations are
+the reference's full R1 item words. Candidate equality, current launch selection, reader preflight and
+later battle inventory do not observe a deployment definition omitted from the admission projection.
+When both actual overrides are null, effective words and same-run identity stay Unavailable. No default
+input is selected and no absent value is forced to zero. The minimum later observation is the resolved
+loadout/definition identity for each actor **before the first command**, tied to that actual session
+and the selected immutable input; it does not require another entire original route.
+
+The closed required child families for the reached winning profile are:
+
+| Parent | Required children and comparison boundary |
+| --- | --- |
+| Three actor item parents | Each actor's complete four effective ushort slots; independently compared candidate definition slots; actual admission loadout identity and override/progress/definition resolution. Later inventories corroborate only. |
+| Relevant admission phase/fields | Named R1 flags and joined/active lists; neutral logical consumer readiness; seed-copy observation/relevance; opening mouth/view gates; occupied physical slots and position/destination/facing/layer; direct slot5/6/8 original waitTimer equality, unproved pointer/template/offset-to-cursor and source moving-gate bindings, and motion gate/velocity/travel/flags correspondence; candidate class/level/maxima/stats/spell words and same-run effective definition identity. Do not require unobserved complete flags, padding accounting, RAM-PC equality or hardware time. |
+| Mandatory operation consumption | Taken route/setup/caller branch operands and occurrence; awaited entity motion/gesture/fade before caller return; dialogue speaker/control-token occurrence and choice effect; route roster/flag writes; warp destination/setup release; before/after effects and shared-tail return pairing; named returned story flags and join/flag/return causal order. Source operations may lower to several typed instructions: counts alone are not correspondence. |
+| Matched-state rules/RNG | Recorded main draw word update/range/result and preserved image lane; turn score/tie/order draws; physical range/dodge/critical/spread/double/counter; HEAL cost/recovery/fairy opportunities; item slot/removal/resource effects when an item action is reached; EXP/gold/growth/learned spells/after-turn/outcome; AI thinking/choice/memory/movement; field text/portrait/NPC service gates and draw effects. Compare reached rules at matched operands, never the whole historical winning order. |
+| Reached 7C resources | Reached map atlases/layers; entity sprites/portraits/gestures; displayed private text/token/font binding; scene actor/weapon/healing/death resources; scene background/ground actual IDs; reached audio command/timer/PCM provenance and playback lifecycle. Join source selection/extraction to actual use. No all-corpus/frame inventory or hardware equality. |
+| Unshimmed acknowledgement/scene consumers | W1 token/accepting-read/service-gate correspondence; W2 accepting read/validation/token return; plain JOIN input after matching finite completion; entity motion/gesture/fade completion before resume; battle command/resource/wait/effect/end edges; audio replacement/fade/stop/resume dependencies. Real use/completion and occurrence identity are required, not request or aggregate counters. |
+
+Direct admission comparisons bind selected occupied entity geometry and original walking wait timers,
+named flags/lists/readiness, candidate definitions and returned story flag/return edges. Recorded
+main draws use the existing original H3 generator model at each actual seed/range, independently of
+remake RNG code. That arithmetic comparison does not prove a source draw-to-effect association, AI
+thinking stream, service opportunity or whole action rule. The original `RANDOM_SEED_COPY=0` versus
+actual null and ancestry-inferred mouth/view gates remain explicit; first-use relevance is not yet
+proved. Original `actionScript` pointers are retained in the provenance of each walking child, but no
+executable pointer/template/base/offset-to-cursor translation or source moving-gate binding is
+selected. Those cursor/moving children stay required-unobserved. Neither remake start values nor
+unequal coordinates supply original expectations. Full H4 remains incomplete.
+
+Remaining operation/rule/resource/consumer joins name their required operands and missing side.
+The source-PC to typed-instruction correspondence, matched action preconditions, per-resource
+provenance and consumer completion edges require separately bounded work if existing records cannot
+bind them. This comparator does not implement a second battle engine or general source interpreter.
+The named original text483 W1 witness and plain JOIN seam keep their bounded scope; W2 loop entry or
+shimmed DisplayText RTS cannot replace an unobserved accepting read. Scene background/ground positions
+do not supply resource IDs absent from the actual projection. Preserve these precise Unknowns without
+queuing acquisition or adding untaken branches as prerequisites.
+
 The completed first D attempt stopped before battle at text 2297 with actual `AdapterError`
 `presentation-unavailable` / `audio-command-ambiguous`, even though `SessionResult.failure` was null.
 The old catalog lacked exact speech 70/73 at Timer B 189 and contained multiple other candidates.
