@@ -27,7 +27,9 @@ from sf2tool.remake_asset_build import (
 from sf2tool.remake_assets import AssetPreflightError, inspect_asset_checkout
 from sf2tool.remake_h4_reference import (
     EXTENSION_SOURCE,
+    OBSERVER,
     ROM,
+    RUNNER,
     SOURCE,
     UPSTREAM,
     location,
@@ -1123,6 +1125,383 @@ def reached_materials(actual, selection):
     return result
 
 
+def plain_join_binding(ref, actual, evidence_root, world_path):
+    """Bind only the accepted JOIN occurrence; indices locate evidence, not legality.
+
+    The four selected files reuse the accepted segment seals. This is an offline
+    consumer readback, not resumability validation or original music completion.
+    Missing named evidence is unavailable; a present contradiction is false.
+    """
+    result = dict(original=None, plain=None, audio=None, caller=None, anchors={})
+    if evidence_root is None or world_path is None:
+        return result
+    evidence_root, world_path = (
+        p.resolve() if p.is_absolute() else repo_path(p) for p in (evidence_root, world_path)
+    )
+    require(
+        evidence_root.is_relative_to(repo_path("local")),
+        "JOIN evidence must be selected beneath this worktree's local/",
+    )
+    paths = [
+        evidence_root / name
+        for name in (
+            "candidate.json",
+            "runtime/segment-pair.json",
+            "runtime/checkpoints.jsonl",
+            "runtime/actual-inputs.jsonl",
+        )
+    ]
+    if not all(p.is_file() for p in paths):
+        return result
+
+    def digest(path):
+        return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+    try:
+        candidate, pair = read(paths[0]), read(paths[1])
+        sealed = (
+            digest(paths[1]) == ref["lineage"][0]["pairSha256"]
+            and digest(paths[0]) == pair["material"]
+            and all(digest(p) == pair["files"][p.name] for p in paths[2:])
+            and [
+                candidate[k]
+                for k in ("RomSha256", "SourceCommit", "ObserverSha256", "RunnerSha256")
+            ]
+            == [ROM, UPSTREAM, OBSERVER, RUNNER]
+        )
+        result["original"] = sealed
+        if not sealed:
+            result.update(plain=False, audio=False, caller=False)
+            return result
+        result["original"] = None
+        checkpoints = [row for _, row in rows(paths[2])]
+        inputs = [row for _, row in rows(paths[3])]
+        # One-based locations from the sealed prepared68 witness, selected by the
+        # accepted reference operation pair, not a new reference inferred from host output.
+        op = ref["operationPairs"][83]
+        entry, accepted, close, returned, script, ready = (
+            checkpoints[i - 1] for i in (2608, 2609, 2610, 2612, 2621, 2624)
+        )
+        applying, frame = inputs[17233], inputs[17234]
+        original_plain = (
+            checkpoints[2572]["kind"] == "audio:request"
+            and checkpoints[2572]["facts"]["command"] == 19
+            and checkpoints[2573]["kind"] == "DisplayText:entry"
+            and checkpoints[2573]["facts"]["target"] == 447
+            and checkpoints[2602]["kind"] == "DisplayText:return"
+            and checkpoints[2602]["facts"]["target"] == 447
+            and [checkpoints[i]["facts"]["command"] for i in (2603, 2604)] == [240, 251]
+            and checkpoints[2605]["kind"] == "audio:consumer-dispatch"
+            and checkpoints[2606]["kind"] == "audio:mailbox-written"
+            and checkpoints[2605]["facts"]["command"] == checkpoints[2606]["facts"]["command"] == 8
+            and checkpoints[2606]["order"] < entry["order"]
+            and entry["kind"] == "WaitForPlayerInput:entry"
+            and accepted["kind"] == "WaitForPlayerInput:return"
+            and entry["facts"]["target"] == accepted["facts"]["target"] == 0x1576
+            and entry["state"]["input"] == 0
+            and accepted["state"]["input"] == 32
+            and accepted["facts"]["d0"] == 3
+            and applying["kind"] == "applying"
+            and frame["kind"] == "frame"
+            and applying["button"] == frame["button"] == "C"
+            and applying["id"] == frame["id"]
+            and applying["order"] < accepted["order"] < frame["order"]
+            and close["kind"] == "CloseDialogueWindow:entry"
+            and returned["facts"]["operation"] == dict(opcode=8, pc=0x51630)
+            and returned["order"] == op["return"]["order"]
+            and script["kind"] == "script:return"
+            and script["facts"]["target"] == 0x5149A
+            and entry["order"]
+            < accepted["order"]
+            < close["order"]
+            < returned["order"]
+            < script["order"]
+            < ready["order"]
+            and not any(c["state"]["flags"]["603"] for c in (entry, accepted, returned, script))
+            and ready["state"]["flags"]["603"]
+            and ready["state"]["pendingReturns"] == 0
+        )
+        result["original"] = original_plain
+        result["anchors"]["original"] = dict(
+            segment=68,
+            checkpoints=[2608, 2609, 2610, 2612, 2621, 2624],
+            actualInputs=[17234, 17235],
+            upstream=UPSTREAM,
+            helperReturnOrder="Inferred",
+            originalMusicCompletion="Unknown",
+        )
+        if not original_plain:
+            result.update(plain=False, audio=False, caller=False)
+            return result
+    except json.JSONDecodeError:
+        result.update(original=False, plain=False, audio=False, caller=False)
+        return result
+    except (KeyError, IndexError):
+        return result
+
+    plain_value = None
+    try:
+        labels = (
+            "music-logical-end",
+            "music-plain-input",
+            "music-plain-poll",
+            "music-plain-accepted",
+            "join-field-return",
+        )
+        selected = [
+            [(i, s["state"]) for i, s in enumerate(actual["samples"]) if s["label"] == label]
+            for label in labels
+        ]
+        if any(not group for group in selected):
+            return result
+        if any(len(group) != 1 for group in selected):
+            result.update(plain=False, audio=False, caller=False)
+            return result
+        (li, logical), (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (
+            group[0] for group in selected
+        )
+        records = actual["warpRecords"]
+        observations = [(i, o) for i, r in enumerate(records) for o in r["result"]["observations"]]
+
+        def event(kind, detail=None):
+            found = [
+                (i, o)
+                for i, o in observations
+                if o["Kind"] == kind
+                and (detail is None or o["Detail"] == detail)
+                and logical["revision"] < o["Sequence"] <= ready["revision"]
+            ]
+            if not found:
+                raise KeyError(kind)
+            return found
+
+        completed = event("music-actual-completed", "MUSIC_JOIN")
+        released = event("music-wait-returned", "MUSIC_JOIN")
+        previous = event("presentation-completed", "PreviousMusic")
+        acknowledged = event("presentation-acknowledged")
+        pressed = [r for r in actual["inputRecords"] if r["pressed"]]
+        early = [
+            r
+            for r in pressed
+            if r["before"]["revision"] == logical["revision"]
+            and r["before"]["token"] == logical["token"]
+        ]
+        wait = [
+            r
+            for r in pressed
+            if r["before"]["revision"] == plain["revision"] and r["action"] == "wait"
+        ]
+        confirm = [
+            r
+            for r in pressed
+            if r["before"]["revision"] == polled["revision"] and r["action"] == "confirm"
+        ]
+        if not early or not wait or not confirm:
+            return result
+        wait, confirm = wait[0], confirm[0]
+
+        def delivered(record, kind):
+            return any(
+                o["Kind"] == kind
+                for r in records[record["resultStart"] : record["resultEnd"]]
+                for o in r["result"]["observations"]
+            )
+
+        plain_value = (
+            li < pi < wi < ai < ri
+            and len(completed) == len(released) == len(previous) == len(acknowledged) == 1
+            and completed[0][1]["Sequence"]
+            < released[0][1]["Sequence"]
+            < previous[0][1]["Sequence"]
+            < plain["revision"]
+            < acknowledged[0][1]["Sequence"]
+            < acked["revision"]
+            and plain["wait"] == polled["wait"] == "DialogueWait"
+            and plain["token"] == polled["token"] == confirm["before"]["token"]
+            and plain["cursor"] == polled["cursor"] == confirm["before"]["cursor"]
+            and acked["wait"] == confirm["after"]["wait"] == "TextCloseWait"
+            and {r["action"] for r in early} == {"wait", "confirm"}
+            and all(r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in early)
+            and polled["simulationTick"] == plain["simulationTick"] + 1
+            and acked["simulationTick"] == polled["simulationTick"]
+            and plain["mainSeed"] == polled["mainSeed"] == acked["mainSeed"]
+            and delivered(wait, "gameplay-wait")
+            and delivered(confirm, "presentation-acknowledged")
+            and all(
+                s["w1"] is None and s["fieldText"] is None and 603 not in s["flags"]
+                for s in (plain, polled, acked)
+            )
+        )
+        music, helper = logical["music"], logical["musicWait"]
+        generation = music["Generation"]
+        receipts = [r["receipt"] for r in actual["audioReceipts"]]
+        starts = [
+            r
+            for r in receipts
+            if r["Cue"] == "MUSIC_JOIN"
+            and r["Operation"] == "started"
+            and r["Revision"] == generation
+        ]
+        finishes = [
+            r
+            for r in receipts
+            if r["Cue"] == "MUSIC_JOIN"
+            and r["Operation"] == "finished"
+            and r["Revision"] == logical["revision"]
+        ]
+        if not starts or not finishes:
+            return result
+        start, finish = starts[0], finishes[0]
+        restarts = [
+            r
+            for r in receipts
+            if r["Cue"] == music["Previous"][-1]
+            and r["Operation"] == "started"
+            and finish["Sequence"] < r["Sequence"]
+            and r["Revision"] < plain["revision"]
+        ]
+        transitional = [
+            s["state"]
+            for s in actual["samples"][li + 1 : pi]
+            if s["state"]["audio"]["musicGeneration"] == generation
+        ]
+        if not restarts or not transitional:
+            return result
+        restart = restarts[0]
+        interval = [
+            r
+            for r in receipts
+            if start["Sequence"] <= r["Sequence"] <= restart["Sequence"]
+            and r["Cue"].startswith("MUSIC_")
+        ]
+        result["audio"] = (
+            len(starts) == len(finishes) == len(restarts) == 1
+            and interval == [start, finish, restart]
+            and music["Cue"] == "MUSIC_JOIN"
+            and music["Step"] == music["EndStep"]
+            and music["PreviousEligible"]
+            and not music["ActualDone"]
+            and helper["Generation"] == generation
+            and helper["LogicalDone"]
+            and helper["Armed"]
+            and helper["Cleared"]
+            and logical["audio"]["musicGeneration"] == generation
+            and logical["audio"]["musicPlaying"]
+            and not logical["audio"]["musicFinished"]
+            and finish["WaitToken"] == helper["Token"]["Value"]
+            and start["PcmSha256"] == finish["PcmSha256"]
+            and not finish["Playing"]
+            and restart["Playing"]
+            and all(
+                s["audio"]["musicFinished"]
+                and not s["audio"]["musicPlaying"]
+                and s["audio"]["error"] is None
+                for s in transitional
+            )
+            and plain["audio"]["musicCue"] == restart["Cue"]
+            and plain["audio"]["musicPlaying"]
+            and plain["audio"]["musicPosition"] > 0
+            and plain["audio"]["error"] is None
+            and completed[0][1]["Sequence"] > finish["Revision"]
+            and restart["Revision"] < previous[0][1]["Sequence"]
+        )
+        if not world_path.is_file():
+            return result
+        world = read(world_path)["world"]
+        program = next(p for p in world["programs"] if p["id"] == "cs-51614")
+        instructions = program["instructions"]
+        begin = plain["cursor"]["Instruction"]
+        tail = instructions[int(begin) :]
+        actual_tail = [
+            (i, o)
+            for i, o in observations
+            if o["Kind"] == "program-instruction"
+            and o["Program"]["Program"] == program["id"]
+            and acked["revision"] <= o["Sequence"] <= ready["revision"]
+        ]
+        ticks = event("simulation-tick")
+        flag = [
+            (i, o)
+            for i, o in observations
+            if o["Kind"] == "program-instruction"
+            and o["Detail"] == "WriteFlag"
+            and acked["revision"] < o["Sequence"] <= ready["revision"]
+        ]
+        zone_finished = event("zone-finished")
+        zone = next(p for p in world["programs"] if p["id"] == "map3-zoneevent8")
+        entities = {e["id"]: e for e in ready["entities"]}
+        effects = all(
+            entities[i["entity"]]["follower"]
+            == dict(
+                LeaderSlot=int(i["leader"].removeprefix("entity-")),
+                OffsetX=i["x"],
+                OffsetY=i["y"],
+            )
+            for i in tail[3:5]
+        ) and all(
+            entities[i["entity"]]["x"] == i["position"]["x"] * 384
+            and entities[i["entity"]]["y"] == i["position"]["y"] * 384
+            and entities[i["entity"]]["facing"] == i["facing"]
+            for i in tail[5:7]
+        )
+        result["caller"] = (
+            effects
+            and program["source"]
+            == "disasm/data/maps/entries/map03/mapsetups/scripts_1.asm:cs_51614"
+            and instructions[int(begin) - 4]["text"] == 447
+            and instructions[int(begin) - 3]["waitForAcknowledgement"] is False
+            and instructions[int(begin) - 2]["kind"] == "SoundWait"
+            and instructions[int(begin) - 1]["kind"] == "PreviousMusic"
+            and [i["op"] for i in tail]
+            == [
+                "wait-text-input",
+                "close-text",
+                "wait-ticks",
+                "follow",
+                "follow",
+                "position",
+                "position",
+                "jump",
+            ]
+            and tail[2]["ticks"] == 10
+            and [o["Program"]["Instruction"] for _, o in actual_tail]
+            == list(range(int(begin) + 1, len(instructions)))
+            and len(ticks) == tail[2]["ticks"]
+            and actual_tail[1][1]["Sequence"]
+            < ticks[0][1]["Sequence"]
+            <= ticks[-1][1]["Sequence"]
+            < actual_tail[2][1]["Sequence"]
+            and len(flag) == len(zone_finished) == 1
+            and flag[0][1]["Program"]["Program"] == zone["id"]
+            and zone["instructions"][int(flag[0][1]["Program"]["Instruction"])]
+            == dict(op="set-flag", flag=603, value=True)
+            and actual_tail[-1][1]["Sequence"]
+            < flag[0][1]["Sequence"]
+            < zone_finished[0][1]["Sequence"]
+            == ready["revision"]
+            and 603 in ready["flags"]
+            and ready["wait"] is None
+            and ready["cursor"] is None
+            and ready["canWaitAtInput"]
+            and {1, 2}.issubset(ready["partyLists"]["Joined"])
+        )
+        result["anchors"]["actual"] = dict(
+            samples=[li, pi, wi, ai, ri],
+            generation=generation,
+            helperToken=helper["Token"]["Value"],
+            receiptSequences=[r["Sequence"] for r in interval],
+            inputOrdinals=[r["ordinal"] for r in early] + [wait["ordinal"], confirm["ordinal"]],
+            completionRecords=[completed[0][0], released[0][0], previous[0][0]],
+            callerRecords=[i for i, _ in actual_tail] + [flag[0][0], zone_finished[0][0]],
+        )
+    except (KeyError, IndexError, StopIteration):
+        pass
+    # Closing plain JOIN requires its completion and dependent caller binding too.
+    values = [plain_value, result["audio"], result["caller"]]
+    result["plain"] = False if False in values else None if None in values else True
+    return result
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -1134,6 +1513,7 @@ def compare_modern(
     baseline_outcome=None,
     controlled_start_path=None,
     material_selection=None,
+    original_join_evidence_root=None,
 ):
     actual, outcome, settings = read(actual_path), read(outcome_path), read(settings_path)
     samples = actual.get("samples", [])
@@ -2462,6 +2842,28 @@ def compare_modern(
         )
 
     consumer_parent = "required unshimmed ack and scene consumer binding"
+    join = plain_join_binding(
+        ref,
+        actual,
+        original_join_evidence_root,
+        material_selection[0] if material_selection else None,
+    )
+    for name, value, parent, layer in (
+        ("bounded JOIN original witness binding", join["original"], consumer_parent, 9),
+        ("bounded JOIN finite playback and previous restart", join["audio"], consumer_parent, 9),
+        ("bounded JOIN dependent caller return", join["caller"], operation_parent, 7),
+    ):
+        check(
+            layer,
+            name,
+            True,
+            value,
+            "samples/inputRecords/warpRecords/audioReceipts",
+            original=dict(owner=OWNER, upstream=UPSTREAM, binding=join["anchors"]),
+            parent=parent,
+            reason="Only the sealed JOIN occurrence; missing selected evidence "
+            "is unavailable. Original music completion remains Unknown",
+        )
     for name, binding, actual_location, side, reason in (
         (
             "W1 displayed token occurrence/accepting read/service gates",
@@ -2514,6 +2916,21 @@ def compare_modern(
             "event",
         ),
     ):
+        if (
+            name == "plain JOIN input after matching finite completion"
+            and join["plain"] is not None
+        ):
+            check(
+                9,
+                name,
+                True,
+                join["plain"],
+                actual_location,
+                original=dict(owner=OWNER, upstream=UPSTREAM, binding=join["anchors"]),
+                parent=consumer_parent,
+                reason=reason,
+            )
+            continue
         missing(9, consumer_parent, name, binding, actual_location, side, reason)
 
     check(
@@ -2717,6 +3134,9 @@ def compare_modern(
             extension=(ref.get("postVictoryInput") or {}).get("sourceCommit"),
         ),
         evidence=dict(
+            originalJoinEvidenceRoot=(
+                original_join_evidence_root.as_posix() if original_join_evidence_root else None
+            ),
             materialSelection=(
                 dict(
                     zip(
@@ -2760,6 +3180,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             reachedMaterialJoins=materials["joins"],
+            plainJoinBinding=join,
         ),
         counts=counts,
         historicalCounts=dict(
@@ -2928,6 +3349,7 @@ def main():
         help="Explicit candidate party definition; not a same-run admission snapshot",
     )
     parser.add_argument("--selected-world", type=Path)
+    parser.add_argument("--original-join-evidence-root", type=Path)
     parser.add_argument("--selected-scene", type=Path)
     parser.add_argument("--process-receipt", type=Path)
     parser.add_argument("--scene-evidence-root", type=Path)
@@ -2998,6 +3420,7 @@ def main():
                 args.baseline_outcome,
                 args.controlled_start,
                 material_selection,
+                args.original_join_evidence_root,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))
