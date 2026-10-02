@@ -2625,14 +2625,12 @@ False in both directions; independent font/phase and available source checks con
 operand absence. `requiredField`/`requiredBattle` retain that independent inventory in the existing
 binding result. No new report framework or unvisited requirement is introduced.
 
-The root's frozen `root-readback-01.json` preserves the two false completeness passes and the
-missing-Units suppression failure. Correcting those verifier boundaries uses the same successful
-native A and fresh offline reports; no native/SDK/source acquisition or broad rerun is required.
-
-Common-gameplay equivalence and all four settings variants pass. Material acceptance remains pending
-independent review of the complete logical/source occurrence inventory and mixed missing/contradiction
-boundaries. The accepted remaining A count stays23; B/C/D each retain37 unavailable children and their
-own missing observations. Full H4 remains Unavailable. The existing historical
+The named A's complete displayed-text material child passes, including the independent logical/source
+occurrence inventory and mixed missing/contradiction boundaries. Its required comparison has2238
+PASS/23 Unavailable; after matrix self-closure, A has22 remaining children. Common-gameplay equivalence
+and all four settings variants pass. Retained B/C/D each have37 unavailable children and their own
+missing observations, with no backfill. Three other resource families and five broad parents remain
+incomplete; full H4 is Unavailable. The existing historical
 original trajectory diagnostics, normal05, prior captures, source/clock/JOIN/HEAL/RNG and other
 failures/Unknowns remain unchanged.
 

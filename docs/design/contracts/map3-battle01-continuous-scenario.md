@@ -619,8 +619,9 @@ Material origin is a layer7C assertion. Original natural per-occurrence dispatch
 causal wait and consumer completion remain operation/consumer assertions. Those missing joins do not
 require a different historical battle trajectory to establish material origin. Optional selections
 never backfill older sessions. Missing evidence is Unavailable; contradictory observed content or
-identity is FAIL. Displayed-text material acceptance remains pending independent review; the four
-incomplete resource families and five broad parents keep full H4 incomplete.
+identity is FAIL. The complete displayed-text material child passes for the named continuous A.
+Three other resource families and five broad parents keep full H4 incomplete. After matrix
+self-closure, A has22 remaining children; retained B/C/D each have37 and are not backfilled.
 
 ### Complete reached displayed-text material binding
 
