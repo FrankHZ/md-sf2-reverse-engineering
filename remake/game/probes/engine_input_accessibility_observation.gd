@@ -83,9 +83,11 @@ func record_camera_draw() -> void:
     if not is_instance_valid(view): return
     var s := state()
     if not s.has("presentation"): return
-    if s.get("nod") != null or s.get("fade") != null:
+    var presenting: Dictionary = s.get("presentationWait") if s.get("presentationWait") != null else {}
+    var resource = presenting.get("Cue", {}).get("Resource")
+    if s.get("entityWait") != null or s.get("nod") != null or s.get("fade") != null or resource in ["nod", "shiver", "mosaic-in", "mosaic-out", "black", "white"]:
         consumer_boundaries.append({"projectionStage":"frame-post-draw","inputOrdinal":active_input,
-            "state":consumer_context(s),"releases":[]})
+            "state":consumer_context(s),"releases":[],"drawDelivery":consumer_draw_delivery(s)})
     if raw_text_case and s.textId == 447:
         var dialogue := view.get_node("Dialogue") as Label
         raw_draws.append({"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
@@ -251,7 +253,7 @@ func physical(code: int, pressed: bool) -> void:
 
 func h4_context(s: Dictionary) -> Dictionary:
     var result: Dictionary = {}
-    for name in ["sessionId","revision","simulationTick","mainSeed","thinkingSeed","map","mode","actor","stage","wait","token","cursor","canWaitForText","canWaitAtInput","visibleCharacters","totalCharacters"]:
+    for name in ["sessionId","revision","observationSequence","simulationTick","mainSeed","thinkingSeed","map","mode","actor","stage","wait","token","cursor","canWaitForText","canWaitAtInput","visibleCharacters","totalCharacters"]:
         if s.has(name): result[name] = s[name]
     var battle := host.find_child("BattleSessionView", true, false)
     if battle != null:
@@ -264,9 +266,32 @@ func h4_context(s: Dictionary) -> Dictionary:
 func consumer_context(s: Dictionary) -> Dictionary:
     var result := h4_context(s)
     for name in ["entityWait","entities","callers","continuation","stop","nod","nodProjection",
-            "fade","display","presentation","cameraProjection","fieldLabel"]:
+        "fade","display","presentation","cameraProjection","fieldLabel","presentationWait","presentationCue",
+        "canWaitForChoice","waitingAtInput","eventCaller","callerReturning"]:
         if s.has(name): result[name] = s[name]
     return result.duplicate(true)
+
+func consumer_draw_delivery(s: Dictionary) -> Dictionary:
+    var p: Dictionary = s.get("cameraProjection") if s.get("cameraProjection") != null else {}
+    var subject = null
+    if s.get("entityWait") != null: subject = s.entityWait.Entity.Value
+    elif s.get("nod") != null: subject = s.nod.Entity.Value
+    elif s.get("presentationWait") != null and s.presentationWait.Cue.Entity != null: subject = s.presentationWait.Cue.Entity.Value
+    var actor = null
+    var logical = null
+    for entity in s.get("entities", []):
+        if entity.id == subject: logical = entity; break
+    for candidate in p.get("actors", []):
+        if candidate.entity == subject: actor = candidate; break
+    return {"processFrame":Engine.get_process_frames(),"subject":subject,
+        "projectionAvailable":not p.is_empty(),"drawSequence":p.get("drawSequence"),
+        "projectionProcessFrame":p.get("processFrame"),"projectionToken":p.get("token"),
+        "projectionTick":p.get("simulationTick"),"projectionSessionId":p.get("sessionId"),
+        "logicalSubjectVisible":logical.get("Visible") if logical != null else null,
+        "sameToken":not p.is_empty() and p.get("token") == s.get("token"),
+        "sameTick":not p.is_empty() and p.get("simulationTick") == s.get("simulationTick"),
+        "actorStatus":"no-subject" if subject == null else ("missing" if actor == null else ("drawn" if actor.visible else "culled")),
+        "actor":actor}
 
 func h4_scene_ready() -> bool:
     var context := h4_context(state())
@@ -1155,6 +1180,12 @@ func finish_public() -> void:
 
 func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
+    if result.boundary == "presentation-completion-before-submit":
+        var before := state()
+        consumer_boundaries.append({"result":result,"inputOrdinal":active_input,
+            "projectionStage":"completion-before-submit","state":consumer_context(before),"releases":[],
+            "drawDelivery":consumer_draw_delivery(before)})
+        return
     if winning_case and result.boundary in ["attach", "begin"]:
         # Attach publishes before the new view has built its projection.
         warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}})
@@ -1170,7 +1201,7 @@ func record_warp_result(payload: String) -> void:
     var releases: Array = result.observations.filter(func(o): return o.get("EntityWaitRelease") != null)
     if s.get("entityWait") != null or not releases.is_empty() or s.get("nod") != null or s.get("fade") != null or result.observations.any(func(o): return o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-") or o.Kind == "presentation-completed"):
         consumer_boundaries.append({"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present",
-            "state":consumer_context(s),"releases":releases})
+            "state":consumer_context(s),"releases":releases,"drawDelivery":consumer_draw_delivery(s)})
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
         # Accepted prefix checkpoints remain full samples. Keep every result and its
         # identity here without repeating the entire field projection every tick.

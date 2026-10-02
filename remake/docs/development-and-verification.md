@@ -2707,6 +2707,57 @@ Old sessions remain immutable: this does not backfill six old lethal amounts, fi
 old reveal intervals. Complete material/motion/audio occurrence bindings need a separate collection
 allocation; original W2/control/audio/source gaps and full H4 Unavailable remain explicit.
 
+### Actual motion and generic cue draw/handoff
+
+The same projection mechanism retains a per-view `cameraProjection.drawSequence`, process frame,
+session/revision/observation sequence, logical tick/token and the actual cue state used by Draw.
+Actor records expose the existing lowered-sprite flag, shiver X offset and mosaic block size.
+`presentationCue` reads the live adapter cue token/resource/age, actor binding and real modulation/
+white-overlay opacity and visibility; it is separate from the last drawn projection. Nod elapsed
+remains in its existing Nod projection, rather than borrowing the generic presentation timer.
+These fields observe rendering operands; they add no draw, logical service, RNG operation or command.
+
+The probe retains post-draw entity waits and generic shiver/mosaic/black/white cue states, with
+logical subject, projection identity, token/tick agreement and drawn/culled/missing/no-subject status.
+Logical subject visibility is retained independently. A missing actor is not assumed culled;
+`frame-post-draw` alone does not make an older projection current. One draw per simulation tick,
+instruction or release is not required. A rendered actor record represents issued draw operands,
+not original VDP/DMA completion or hardware timing.
+
+Immediately before an existing `CompletePresentation` is submitted, the existing result signal
+emits `presentation-completion-before-submit` with its token/kind/process frame and unchanged
+session/revision/observation sequence. Its observations list is empty. The probe stores this only
+as a `completion-before-submit` consumer boundary, so it cannot duplicate gameplay results or
+events. The live cue/last draw/caller/readiness then precede the ordinary submit result. Preserve
+the actual order even when the last draw predates the completion callback; never delay completion,
+force visibility or invent a terminal draw to fill evidence.
+
+For the bounded mechanism check, reuse the existing selected world/assets and source instructions:
+two `cs-5145c` Init installs, `cs-513d6` motion remapped to the player, visible and offscreen shiver,
+both mosaic directions, and generic black/white fades. The ignored start selects that appended
+program and omits only logical display to exercise generic fades; settings remain accepted A.
+It is a controlled observation, not natural source reach or continuous-route acceptance.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run sf2 verify adapter
+uv run python -X utf8 local/issue534/field-consumer-observation-01/run.py build
+uv run python -X utf8 local/issue534/field-consumer-observation-01/run.py check
+uv run python -X utf8 local/issue534/field-consumer-observation-01/run.py native <fresh-run>
+uv run python -X utf8 local/issue534/field-consumer-observation-01/readback.py
+```
+
+The readback names its immutable `window-01` capture. It checks visible movement, immediate caller
+reinstallation, all generic cue handoffs, real shiver offsets/mosaic block classes, fade properties,
+culled state and unchanged logical state across repeated reads. Retain initial zero offset/null
+block when Draw precedes installation of the next cue in Update. The last draw and handoff have
+distinct frames and ages; terminal operand availability is assessed from those facts, not renamed.
+The existing probe exits at the window endpoint and offers no in-instance reset; a later required
+window must name its startup necessity. Unaffected Nod/full-fade captures remain their own evidence.
+No engine/helper tests, normal/full/H3 suite, source acquisition or full successful-route rerun is
+required by this instrumentation. Both whole field-consumer obligations and full H4 stay Unavailable
+pending separately allocated complete occurrence/source/actual joins.
+
 ## HEAL scene verification
 
 Use the current locked environment/private-input configuration before controlled .NET or Godot
