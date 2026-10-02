@@ -65,11 +65,16 @@ internal static class ExplorationTextRunner
         { Continuation: ProgramContinuation.BeforeBattleFinished, EnteringBattle: not null, EventCaller: null, Cursor: not null,
             TextSettings: not null, LogicalText: not null, LogicalView: not null };
 
+    internal static bool BattleReturn(StoryState story) => story is
+        { Continuation: ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded,
+            EnteringBattle.Outcome: not null, OutcomeReturn: not null, EventCaller: null, Cursor: not null,
+            TextSettings: not null, LogicalText: not null, LogicalView: not null };
+
     internal static void ValidateContext(SessionSnapshot current)
     {
         if (current.Story is not { TextSettings: not null, LogicalText: not null, LogicalView: not null } ||
             !(current.Story is { Continuation: ProgramContinuation.FieldInput, EnteringBattle: null } ||
-                MapInitialization(current.Story) || BeforeBattle(current.Story)) ||
+                MapInitialization(current.Story) || BeforeBattle(current.Story) || BattleReturn(current.Story)) ||
             current.Exploration is null ||
             !ExplorationPortraitRunner.Admitted(current.Story))
             throw new BattleRuleException("field-text-context", "story.text", true);

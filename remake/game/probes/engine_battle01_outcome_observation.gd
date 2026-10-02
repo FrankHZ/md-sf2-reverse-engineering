@@ -149,18 +149,34 @@ func after_admission(s: Dictionary) -> Dictionary:
     var initial_gold: int = s.gold
     for action in range(200):
         if not s.has("stage"): break
+        if s.sessionId != castle_identity or s.failure != null or s.stage != "Movement" or s.stopReason != "PlayerInput":
+            issue = "native-action-readiness"
+            break
         if not valid_projection(s, true):
             issue = "battle-viewport"
             break
         var step := choose_command(s, lose)
+        outcome_records.append({"label":"action-selected","decision":step,"state":s})
         for i in range(1, step.path.size()):
             var p: Dictionary = step.path[i]
             var old: Dictionary = step.path[i - 1]
             await key(KEY_RIGHT if p.x > old.x else KEY_LEFT if p.x < old.x else KEY_DOWN if p.y > old.y else KEY_UP)
+            s = await outcome_settle()
+            if s.sessionId != castle_identity or s.actor != step.actor or s.stage != "Movement" or s.stopReason != "PlayerInput" or s.failure != null or s.previewX != p.x or s.previewY != p.y:
+                issue = "native-movement-preview"
+                break
+        if issue != "": break
         await key(KEY_ENTER)
+        s = await outcome_settle()
+        if s.get("stage") != "ActionChoice" or s.actor != step.actor:
+            issue = "native-action-choice"
+            break
         await key(KEY_H if step.action == "heal" else KEY_F if step.action == "attack" else KEY_SPACE)
         await process_frame
         s = state()
+        if s.failure != null or s.sessionId != castle_identity or s.actor != step.actor or s.stage not in ["TargetChoice", "CommitReady"]:
+            issue = "native-action-selection"
+            break
         if step.target != null:
             for candidate in range(12):
                 if s.target == step.target: break
@@ -207,19 +223,25 @@ func outcome_settle() -> Dictionary:
             issue = "outcome-session-or-presentation-failure"
             return s
         if s.has("stage"):
-            if s.stage != null: return s
+            if s.stage != null and s.stopReason == "PlayerInput": return s
+            if s.scene.phase in ["ActionMessage", "ResultMessage", "DeathMessage", "RewardMessage", "GrowthMessage", "GoldMessage"]:
+                if s.scene.healing == null or s.scene.healing.LogicalComplete or s.scene.healing.AtTimedInput:
+                    await key(KEY_ENTER)
             continue
         held_battle = held_battle or s.battleMounted
         after_mosaic = maxi(after_mosaic, int(s.presentation.mosaicOutDraws))
         after_sounds = maxi(after_sounds, int(s.presentation.soundStarts))
         after_white = after_white or s.presentation.whiteOpacity > 0.95
         if s.cursor != null: after_programs[s.cursor.Program] = true
-        if s.wait == "DialogueWait":
+        if s.get("canWaitForText", false):
+            outcome_records.append({"label":"outcome-text-input","state":s})
+            await key(KEY_ENTER)
+        elif s.wait == "DialogueWait" and s.get("fieldText") == null:
             if not seen_texts.has(s.token):
                 seen_texts[s.token] = true
                 texts.append({"id":s.textId,"speaker":s.speaker,"program":s.cursor,"tick":s.simulationTick})
                 await key(KEY_ENTER)
         elif s.wait == "ChoiceWait": await key(KEY_ENTER)
-        elif s.stop == "PlayerInput" and not player(s).get("moving", true): return s
+        elif s.get("canWaitAtInput", false): return s
     issue = "outcome-settle-timeout"
     return state()

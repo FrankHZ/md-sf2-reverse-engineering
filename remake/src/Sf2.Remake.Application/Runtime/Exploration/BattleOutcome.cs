@@ -38,6 +38,7 @@ internal static class BattleOutcome
             var story = current.Story.Copy(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
                 callers: [], continuation: kind == BattleOutcomeKind.Victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.DefeatProgramFinished,
                 outcomeReturn: destination, clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
+            story = ExplorationTextRunner.Initialize(world, story);
             current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations,
                 "outcome-program-started", kind.ToString());
             return ProgramRunner.Run(definition, current, observations);

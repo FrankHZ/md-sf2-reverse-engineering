@@ -37,6 +37,8 @@ var white_palette_completed := false
 var white_palette_case := "before-battle-white" in input_case
 var battle_entry_case := "before-battle-white-entry" in input_case
 var battle_entry_completed := false
+var winning_case := "before-battle-white-entry-victory" in input_case
+var winning_started := false
 var battle_entry_records: Array = []
 var tracking_case := "before-battle-tracking" in input_case or white_palette_case
 var parallax_case := "field-parallax" in input_case or before_battle_case
@@ -1004,7 +1006,31 @@ func finish_public() -> void:
 
 func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
-    warp_records.append({"result":result, "state":state()})
+    if winning_case and result.boundary in ["attach", "begin"]:
+        # Attach publishes before the new view has built its projection.
+        warp_records.append({"result":result, "state":{}})
+        return
+    if winning_case and result.mode == "Exploration" and host.get_node_or_null("ExplorationSessionView") == null:
+        # Battle publishes its outcome before GameRoot installs the returning field
+        # view. Preserve the result now; the new view's attach and live state follow.
+        warp_records.append({"result":result, "state":{}, "projection":"field-view-pending"})
+        return
+    var s := state()
+    if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
+        # Accepted prefix checkpoints remain full samples. Keep every result and its
+        # identity here without repeating the entire field projection every tick.
+        var prefix: Dictionary = {}
+        for field in ["sessionId", "revision", "simulationTick", "observationSequence", "map", "mode", "stop", "wait", "token", "cursor", "mainSeed", "failure", "focused", "tickDebt"]:
+            if s.has(field): prefix[field] = s[field]
+        s = prefix
+    elif winning_case and s.has("stage"):
+        # The admitted board is retained at first input; terrain is immutable.
+        s.erase("terrain")
+    warp_records.append({"result":result, "state":s})
+
+func observe_winning_view(node: Node) -> void:
+    if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", record_warp_result):
+        node.connect("SessionResultObserved", record_warp_result)
 
 func w1_settle_legacy() -> bool:
     # Only the already accepted three-input opening setup; its text is not W1 evidence.
@@ -1306,15 +1332,54 @@ func remaining_before_battle(entry: Dictionary) -> void:
     var loader: Array = []
     var mounted := false
     var previous := entry
+    var started := Time.get_ticks_msec()
+    var progressed_at := started
+    var progress: Array = []
+    var frame := 0
     physical(KEY_ENTER, true)
     physical(KEY_ENTER, false)
-    for frame in range(9000):
+    while winning_case or frame < 9000:
+        frame += 1
         var s := state()
         if s.failure != null:
-            read_sample("battle-entry-actual-failure")
+            var failed := read_sample("battle-entry-actual-failure")
+            battle_entry_records.append({"label":"before-body-terminal","reason":"actual-failure",
+                "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":failed})
             return
+        if winning_case and not s.get("focused", true):
+            var lost := read_sample("before-body-focus-lost")
+            root.grab_focus()
+            var focus_deadline := Time.get_ticks_msec() + 2000
+            while not root.has_focus() and Time.get_ticks_msec() < focus_deadline: await process_frame
+            var restored := read_sample("before-body-focus-restored")
+            if not root.has_focus():
+                field_unavailable.append("Before-body OS focus restoration unavailable")
+                battle_entry_records.append({"label":"before-body-terminal","reason":"focus-restore-unavailable",
+                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":restored})
+                return
+            check(opening_semantic(restored) == opening_semantic(lost) and restored.tickDebt == 0,
+                "Actual before-body focus restoration adds no catch-up work")
+            progressed_at = Time.get_ticks_msec()
+            continue
+        if winning_case:
+            var next_progress: Array = [s.get("simulationTick"),s.get("cursor"),s.get("wait"),s.get("token"),
+                s.get("fieldText"),s.get("canWaitForText"),s.get("stage"),s.get("mode"),
+                s.get("presentation", {}).get("completedCueToken")]
+            if next_progress != progress:
+                progress = next_progress
+                progressed_at = Time.get_ticks_msec()
+            elif Time.get_ticks_msec() - progressed_at >= 15000:
+                var stalled := read_sample("remaining-before-body-no-progress")
+                battle_entry_records.append({"label":"before-body-terminal","reason":"no-semantic-progress",
+                    "elapsedMs":Time.get_ticks_msec() - started,"noProgressMs":Time.get_ticks_msec() - progressed_at,
+                    "visible":view.is_visible_in_tree(),"state":stalled})
+                check(false, "Remaining before-body has no semantic progress for 15 seconds")
+                return
         if s.has("stage"):
             var first := read_sample("bound-first-battle-input")
+            if winning_case:
+                battle_entry_records.append({"label":"before-body-terminal","reason":"first-battle-input",
+                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":first})
             check(first.sessionId == entry.sessionId and first.stage == "Movement" and first.round == 1 and
                 first.storyFlags.has(451.0) and valid_projection(first, true), "Actual loaded board owns first Movement input")
             check(effects.values().count("EntityEffect") == 1 and effects.values().count("Gesture") == 5 and
@@ -1331,6 +1396,14 @@ func remaining_before_battle(entry: Dictionary) -> void:
                 cancelled.mainSeed == first.mainSeed and cancelled.actors == first.actors,
                 "Actual Cancel restores Movement without committing gameplay")
             battle_entry_completed = failures.is_empty()
+            if winning_case and battle_entry_completed:
+                winning_started = true
+                castle_identity = cancelled.sessionId
+                observe_winning_view(view)
+                var returned := await after_admission(cancelled)
+                check(issue == "", "Continuous winning outcome: " + issue)
+                read_sample("bound-victory-return-movement-settled")
+                check(returned.get("canWaitAtInput", false), "Genuine field input restored after winning movement")
             return
         if s.presentation.completedCueToken != null and effects.has(s.presentation.completedCueToken) and not delivered.has(s.presentation.completedCueToken):
             delivered[s.presentation.completedCueToken] = s.presentation.completedCueKind
@@ -1383,6 +1456,9 @@ func remaining_before_battle(entry: Dictionary) -> void:
             physical(KEY_ENTER, false)
         previous = s
         await process_frame
+    var exhausted := read_sample("remaining-before-body-budget-exhausted")
+    battle_entry_records.append({"label":"before-body-terminal","reason":"legacy-process-frame-budget",
+        "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":exhausted})
     check(false, "Remaining before-body did not reach real first battle input")
 
 func opening_settle(castle_yes: bool = true) -> bool:
@@ -1642,6 +1718,7 @@ func run_portrait_event() -> void:
         finish_public()
         return
     view.connect("SessionResultObserved", record_warp_result)
+    if winning_case: node_added.connect(observe_winning_view)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))

@@ -81,6 +81,15 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+Bound victory/defeat/return programs now share field text/portrait readiness with their genuine
+outcome route, anchor and continuation. New outcome worlds initialize their own logical view and
+closed windows, preserving carried party/display/RNG. Outcome engine cases cover changed winning
+positions, living/dead membership, flag/join ordering, nested map init and usable movement. The
+ordinary bound native baseline reaches victory, the complete after/return and settled field movement
+through live adaptive commands. Target-range rejections during TAB browsing retain accepted selection,
+resources and RNG under the existing menu contract; they remain visible evidence. Executable H4
+applicability remains a separate gate.
+
 The common state-driven session is the only runtime; M5 removed the legacy host and its smoke
 drivers. Startup selection stays inline in `GameRoot` because it joins distinct ports and results.
 

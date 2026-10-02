@@ -3062,10 +3062,11 @@ plus delivery/input/mount states to avoid the preserved oversized-output failure
 Keep exact tested probe/wrapper, logs, process result and actual JSON in fresh ignored
 `local/issue534/bound-battle-entry/`. Compare prior accepted checkpoints directly; later RNG is a new
 observation, not an invented original target. A genuine missing capability stops for allocation.
-PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
-is zero. Full combat/winning, executable H4 policy cutover and later bound return families remain open.
 
-**Confirmed (bounded remake):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
+PR586's six-helper/mixed acceptance and every completed failure stay preserved; original/input delta
+is zero.
+
+**Confirmed (bounded remake, PR587 bound battle entry):** `ordinary-normal-02` reports PASS/exit0 with 1569 samples and no
 script/process errors. It delivers one mosaic and five shiver tokens, restores sprite-size24 and
 physical128's animation counter, projects remaining text2298..2304, six positioned/scripted entities,
 and black out/mount/in through first actual Movement/Confirm/Cancel. One hidden mosaic interval
@@ -3081,3 +3082,52 @@ in two old draw hooks after mode handoff; it is not clean native acceptance. Gua
 hooks on a battle observation. The original log/report and first inspector's derived-metadata
 comparison failure are preserved, as are initial test CS1501, two test-setup NullReference failures and nullable-assertion CS1503.
 Focused corrected engine selection passes51; those corrections did not broaden the verification scope.
+
+## Bound victory and return observation
+
+Run the affected `BattleOutcomeProgramTests`, field text/portrait and entry behavior cases through
+the protected SDK environment; run `uv run sf2 verify adapter`, the controlled Debug build and
+`uv run sf2 design-contracts test`. Review the default planner at clean committed HEAD and actual
+CI under engine scope. Outcome cases use a real last-action scene result with the facade's carried
+story semantics, changed positions and dead membership, then drain genuine outcome/return windows
+and nested map init before exercising a field Move. Invalid ownership and stale fade receipts reject
+before publication. This selection does not require normal/full/H3 or the retired aggregate.
+
+For the continuous bound winning baseline use the existing ordinary probe wrapper with
+`ordinary-new instant 1 40 yes modern-music-before-battle-white-entry-victory`. Fixed 60 FPS comes
+from `--fixed-fps 60`; keep the accepted 40-character rate, optional poll and unchanged start/world.
+The existing external policy chooses legal actions from current actors and board, checking actual
+preview, stage, target, session identity and failures before commits. Settle actual scene messages,
+W1/W2/plain input and presentation deliveries, then require genuine returned field input plus a
+real settled Move. Strategy failure or an observability/capability gap is retained and reported.
+
+The remaining before-body observer uses actual readiness, logical tick/cursor/wait/text phase and
+delivery progress for the winning suffix, with a finite no-progress timeout and the outer wall
+timeout. Process frames and redraw counts alone cannot exhaust an allowed focus suspension. Reuse
+real focus detection/restoration, retain pre/post state and verify zero-debt/no-catch-up at that
+boundary. Terminal records include full state, focus/visibility, wait/readiness and receipt fields
+with elapsed time and the stopping reason. A stalled or unavailable run remains a failed gate.
+
+Keep every result signal and new combat/outcome state boundary. Prefix result records retain compact
+identity/tick/cursor/RNG state; full prior samples and the zone/choice/nod states consumed by existing
+assertions remain. Attach payloads are retained before initialized projection reads. Battle terrain
+is retained at first input instead of repeated at every result. Save tested probes/wrapper, output,
+log and process status in fresh ignored `local/issue534/bound-victory-return/`. Compare prior accepted
+checkpoints directly. This observation does not make unavailable H4 variants pass or waive HEAL,
+warp, original accounting or presentation gaps.
+
+Select the accepted cumulative battle scene through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`, including
+healing and fieldDeath movement/death sprite bindings. `SF2_PRIVATE_BATTLE01_SCENE` selects encounter
+placement and does not substitute for this scene document. Copy accepted private scene/provenance
+bytes into this worktree's ignored input directory and compare directly; use the existing reader
+to check party/world admission and retained scene bindings before the route. Engine outcome cases
+and a passing adapter build do not satisfy native winning acceptance.
+
+Inspect all result failures directly. Only an actual TAB target-browse `IllegalCommand/target-range`
+may be retained under the [existing menu contract](architecture.md#production-assemblies): compare session,
+actor, accepted selection/preview, party resources/progress/loadout, queue and RNG with the prior
+state, require no action/turn observations, then confirm a subsequently accepted legal target.
+Disposable actor-node geometry and attempted UI candidate may change; accepted gameplay state may
+not. Other errors remain failures. A green report with callback/script errors is not clean acceptance.
+The continuous winning and bound victory/return scope above has native acceptance;
+executable H4 policy cutover and unobserved outcome/return variants remain open.
