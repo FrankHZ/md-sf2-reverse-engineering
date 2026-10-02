@@ -103,10 +103,14 @@ public sealed class SessionSnapshot
     internal SessionSnapshot WithStory(StoryState story) => new(SessionId, Revision, ObservationSequence, Active, story, StopReason);
 }
 
+public sealed record EntityWaitRelease(WaitToken Token, EntityRef Subject, EntityWaitCompletion Completion,
+    bool IsScriptIdle, bool Busy, bool Moving, int ActionCursor, ProgramLocation? Caller, ProgramLocation? AfterMotion);
+
 public sealed record SessionObservation(long Sequence, long Revision, string Kind,
     ActorRef? Actor = null, long? Before = null, long? After = null,
     MapPosition? From = null, MapPosition? To = null, ushort? RandomRange = null, ushort? RandomValue = null,
-    ActorRef? Target = null, string? Detail = null, EntityRef? Entity = null, ProgramLocation? Program = null);
+    ActorRef? Target = null, string? Detail = null, EntityRef? Entity = null, ProgramLocation? Program = null,
+    EntityWaitRelease? EntityWaitRelease = null);
 public sealed record SessionResult(SessionSnapshot Snapshot, IReadOnlyList<SessionObservation> Observations,
     SessionStopReason StopReason, SessionFailure? Failure = null);
 public abstract record SessionStartOutcome;

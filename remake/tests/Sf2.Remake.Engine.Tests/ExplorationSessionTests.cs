@@ -766,6 +766,51 @@ public sealed class ExplorationSessionTests
         Assert.True(session.Current.CanWaitAtInput);
     }
 
+    [Theory]
+    [InlineData("Preserve", EntityWaitCompletion.NotBusy)]
+    [InlineData("SlotTimer", EntityWaitCompletion.ScriptIdle)]
+    public void IdleReleaseResumesTheCallerAndInstallsItsNextWaitWithoutExtraService(
+        string installation, EntityWaitCompletion completion)
+    {
+        var session = StartProgram($$"""
+            [{"op":"motion","entity":"ferryman","wait":true,"installation":"{{installation}}",
+              "actions":[{"op":"jump","instruction":1},{"op":"idle"}]},
+             {"op":"motion","entity":"ferryman","wait":true,"installation":"SlotTimer",
+              "actions":[{"op":"wait","ticks":20},{"op":"jump","instruction":2},{"op":"idle"}]},
+             {"op":"set-flag","flag":14,"value":true},{"op":"end"}]
+            """);
+        var before = session.Current;
+        var first = Assert.IsType<EntityWait>(before.Story.Wait);
+        Assert.Equal(completion, first.Completion);
+        var result = Send(session, new AdvanceSimulation(first.Token, 10));
+        Assert.Null(result.Failure);
+        var after = session.Current;
+        var second = Assert.IsType<EntityWait>(after.Story.Wait);
+        Assert.NotEqual(first.Token, second.Token);
+        Assert.Equal(before.Story.SimulationTick + 1, after.Story.SimulationTick);
+        Assert.Equal(before.Revision + 2, after.Revision);
+        Assert.Equal(before.ObservationSequence + 2, after.ObservationSequence);
+        Assert.Equal(after.ObservationSequence, second.Token.Value);
+        Assert.Equal(new[] { "simulation-tick", "program-instruction" }, result.Observations.Select(o => o.Kind));
+        Assert.Equal(before.Exploration!.Party.MainSeed, after.Exploration!.Party.MainSeed);
+        Assert.False(after.Exploration.Entities[new("ferryman")].IsScriptIdle);
+        Assert.True(after.Exploration.Entities[new("ferryman")].Busy);
+        Assert.DoesNotContain(14, after.Story.Flags);
+        var released = Assert.IsType<EntityWaitRelease>(result.Observations[0].EntityWaitRelease);
+        Assert.Equal(first.Token, released.Token);
+        Assert.Equal(first.Entity, released.Subject);
+        Assert.Equal(completion, released.Completion);
+        Assert.True(released.IsScriptIdle);
+        Assert.False(released.Busy);
+        Assert.False(released.Moving);
+        Assert.Equal(0, released.Caller!.Value.Instruction);
+        Assert.Null(result.Observations[1].EntityWaitRelease);
+        Accept(session, new AdvanceSimulation(second.Token, 100));
+        Assert.Contains(14, session.Current.Story.Flags);
+        Assert.Null(session.Current.Story.Wait);
+        Assert.True(session.Current.CanWaitAtInput);
+    }
+
     private static SessionResult Step(ScenarioDefinition definition, SessionSnapshot snapshot, SessionCommand command)
     {
         var result = ExplorationDispatcher.Submit(definition, snapshot, command);
