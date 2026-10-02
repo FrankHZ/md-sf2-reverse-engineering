@@ -2560,6 +2560,70 @@ font of new-A02. The existing whole displayed-text/font/glyph binding row remain
 a separately allocated complete evidence binding. No partial PASS, subset, count change, full winning
 route, screenshot, emulator, export or broad/helper test is part of this observation patch.
 
+## Consolidated field consumer boundary observation
+
+The existing input probe retains `fieldLabel` from the mounted field `Dialogue` node: text,
+visibility/reveal and resolved font size/class/face identities, using the same configured-font
+boundary as the battle message observation above. Imported Units/symbols/advances and matching
+Label text alone do not prove that resolved font. Per-character fallback remains Unknown; no
+original bitmap, exact shaping or pixel gate is added. Delivery reads must distinguish the callback's
+`signal-before-Present` nodes from the subsequent actual presented/drawn nodes.
+
+`ExplorationSessionView` exposes current `entityWait` and each entity's existing `isScriptIdle`.
+For release, the dispatcher attaches optional typed `EntityWaitRelease` to the existing service
+`SessionObservation`: old token, subject, completion policy, idle/busy/moving, action cursor and
+caller/after-motion location. It adds no commit, ordinal, revision, tick or RNG operation. The
+selected `cs-5145c` instructions0→1 reinstall `entity-128` immediately after its first wait returns
+inside the same Submit; the adapter's post-submit entity already belongs to the next script.
+Therefore that state cannot substitute for predicate-time idle. This payload retains the predicate
+state before caller execution, without changing the completion test or program order.
+
+`consumerBoundaries` retains current wait/caller/subject/presentation and release payloads before
+the probe's prefix trimming, plus relevant existing Nod/fade actual `frame-post-draw` states.
+Existing `nod-started`, `nod-presentation-completed`, `nod-returned`, logical Nod progress,
+`full-fade-*` and `presentation-completed` remain their original events. No new completion counter
+or observation bus is introduced. A request, culled node or callback before Present does not prove
+delivered drawing; join the actual mounted state at its stated stage.
+
+`revealAudioPairs` brackets a real incomplete-text Confirm dispatch synchronously: live audio and
+logical context before input, then after `Input.flush_buffered_events()`, before any yielded frame.
+Require the same voice `startSequence`/cue/slots Playing across full reveal, unchanged logical token/
+revision/tick/RNG and result range, and no reveal-induced receipt. Preserve later real Finished or
+legitimate replacement with complete uniquely bindable receipt ordering. Playback position may
+advance on the audio clock. A natural finish inside the pair or an ambiguous ending remains
+unobserved for the still-playing-tail claim; neighboring samples cannot fill this interval.
+
+The short controlled check reuses admitted private world/audio/font/sprites and the two selected
+`cs-5145c` motion instructions, followed by controlled Nod/black fades/text481 with the player as
+speaker. It changes only ignored program/start/settings selections, not assets or runtime state.
+It is a mechanism witness, not natural caller reach, whole-route collection or full-row acceptance:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run sf2 verify adapter
+# Protected shared SDK environment; narrow real wait/caller cases, Debug build and probe check.
+uv run python -X utf8 local/issue534/consumer-boundary-observation-01/run.py test
+uv run python -X utf8 local/issue534/consumer-boundary-observation-01/run.py build
+uv run python -X utf8 local/issue534/consumer-boundary-observation-01/run.py check
+uv run python -X utf8 local/issue534/consumer-boundary-observation-01/run.py window <fresh-run>
+```
+
+Load changed code only when a suitable owned instance is unavailable or requires that build; reuse
+the registered installation/project and worktree-local inputs/output. The real wait tests cover
+NotBusy and ScriptIdle completion, immediate caller reinstallation, next-wait legality and unchanged
+service/ordinal/RNG boundaries. Direct reads preserve session/revision/tick/entity/observation state.
+The observed field font is Open Sans SemiBold / SemiBold, face0, size16, system fallback allowed;
+the speech73 voice retains startSequence2 across reveal and then finishes without replacement.
+The first native release is idle at action cursor13 while its post-submit subject is already busy
+under the next script. Existing Nod delivery and two fades are retained with actual node state.
+
+Keep all completed temporary-script failures and native process/results under the owning ignored
+run root; corrected checks do not turn previous failures into PASS. No helper tests, full new A/A-D,
+whole winning route, screenshot, emulator/acquisition/export/cleanup or comparator change follows.
+Old sessions remain immutable: this does not backfill six old lethal amounts, field/battle fonts or
+old reveal intervals. Complete material/motion/audio occurrence bindings need a separate collection
+allocation; original W2/control/audio/source gaps and full H4 Unavailable remain explicit.
+
 ## HEAL scene verification
 
 Use the current locked environment/private-input configuration before controlled .NET or Godot

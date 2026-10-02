@@ -324,6 +324,7 @@ internal static class ExplorationDispatcher
                             if (!field.Moved) return ProgramRunner.Run(definition, current, observations);
                             continue;
                         }
+                        EntityWaitRelease? releasedEntityWait = null;
                         if (story.Wait is EntityEventFacingWait)
                         { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor,
                             entityServices: story.TextSettings is not null ? false : null); }
@@ -333,9 +334,16 @@ internal static class ExplorationDispatcher
                             explored.World.TryResolveEntity(entityWait.Entity, out var awaitedEntity) &&
                             (entityWait.Completion == EntityWaitCompletion.ScriptIdle
                                 ? awaitedEntity.IsScriptIdle : !awaitedEntity.Busy))
+                        {
+                            releasedEntityWait = new(entityWait.Token, entityWait.Entity, entityWait.Completion,
+                                awaitedEntity.IsScriptIdle, awaitedEntity.Busy, awaitedEntity.Motion.IsMoving,
+                                awaitedEntity.ActionCursor, story.Cursor, entityWait.AfterMotion);
                             story = story.Cursor is null ? story.Copy(entityWait.AfterMotion) : FinishWait(story);
+                        }
                         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
                         current = ProgramRunner.Commit(current, active, story, observations, playerWait ? "gameplay-wait" : "simulation-tick");
+                        if (releasedEntityWait is not null)
+                            observations[^1] = observations[^1] with { EntityWaitRelease = releasedEntityWait };
                         current = ExplorationPortraitRunner.Service(current, observations);
                         // Existing field input does not interrupt background ticks. Completing a
                         // wait or resuming a program still yields at its next control boundary.

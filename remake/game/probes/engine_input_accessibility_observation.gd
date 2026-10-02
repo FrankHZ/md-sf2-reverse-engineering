@@ -10,6 +10,8 @@ var use_pad := "gamepad" in input_case or h4_variant in ["B", "D"]
 var remapped := "remapped" in input_case or h4_variant in ["C", "D"]
 var input_records: Array = []
 var reveal_tokens: Dictionary = {}
+var reveal_audio_pairs: Array = []
+var consumer_boundaries: Array = []
 var stick_used := false
 var active_input := 0
 var input_delivering := false
@@ -81,6 +83,9 @@ func record_camera_draw() -> void:
     if not is_instance_valid(view): return
     var s := state()
     if not s.has("presentation"): return
+    if s.get("nod") != null or s.get("fade") != null:
+        consumer_boundaries.append({"projectionStage":"frame-post-draw","inputOrdinal":active_input,
+            "state":consumer_context(s),"releases":[]})
     if raw_text_case and s.textId == 447:
         var dialogue := view.get_node("Dialogue") as Label
         raw_draws.append({"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
@@ -125,6 +130,18 @@ func read_sample(label: String) -> Dictionary:
 
 func state() -> Dictionary:
     var s := super.state()
+    var field_view := host.get_node_or_null("ExplorationSessionView") if is_instance_valid(host) else null
+    var label := field_view.get_node_or_null("Dialogue") as Label if field_view != null else null
+    if label != null and s.has("textId"):
+        var font: Font = label.label_settings.font if label.label_settings != null and label.label_settings.font != null else label.get_theme_font("font")
+        var server := TextServerManager.get_primary_interface()
+        var faces: Array = []
+        for rid in font.get_rids():
+            faces.append({"family":server.font_get_name(rid),"style":server.font_get_style_name(rid),
+                "faceIndex":server.font_get_face_index(rid),"allowSystemFallback":server.font_is_allow_system_fallback(rid)})
+        s["fieldLabel"] = {"visible":label.is_visible_in_tree(),"text":label.text,"visibleCharacters":label.visible_characters,
+            "totalCharacters":label.get_total_character_count(),"font":{"resourceClass":font.get_class(),
+                "size":label.label_settings.font_size if label.label_settings != null else label.get_theme_font_size("font_size"),"faces":faces}}
     if not h4_variant.is_empty():
         observation_session = s.get("sessionId")
         poll_h4_audio()
@@ -171,9 +188,16 @@ func physical(code: int, pressed: bool) -> void:
         KEY_ENTER:"confirm", KEY_Z:"confirm", KEY_ESCAPE:"cancel", KEY_X:"cancel",
         KEY_F:"attack", KEY_H:"spell", KEY_TAB:"target", KEY_SPACE:"stay", KEY_V:"wait"}[code]
     var before: Dictionary = {}
+    var reveal_before: Dictionary = {}
+    var audio_before: Dictionary = {}
     if not h4_variant.is_empty():
         before = h4_context(state())
         if pressed: active_input += 1
+    if pressed and action == "confirm":
+        var candidate := state()
+        if candidate.get("visibleCharacters", -1) >= 0 and candidate.visibleCharacters < candidate.get("totalCharacters", 0):
+            reveal_before = h4_context(candidate)
+            audio_before = JSON.parse_string(host.call("ReadAudioObservationJson"))
     var result_start := warp_records.size()
     input_delivering = not h4_variant.is_empty()
     var delivered := {"kind":"key", "code":code}
@@ -211,7 +235,14 @@ func physical(code: int, pressed: bool) -> void:
         delivered = {"kind":"key", "code":event.keycode}
         Input.parse_input_event(event)
 
-    if guarded_wait_case or not h4_variant.is_empty(): Input.flush_buffered_events()
+    if guarded_wait_case or not h4_variant.is_empty() or not reveal_before.is_empty(): Input.flush_buffered_events()
+    if not reveal_before.is_empty():
+        # Synchronous real dispatch interval: no yielded frame or neighboring sample.
+        var audio_after: Dictionary = JSON.parse_string(host.call("ReadAudioObservationJson"))
+        reveal_audio_pairs.append({"inputOrdinal":active_input,"delivery":delivered,
+            "before":reveal_before,"after":h4_context(state()),"audioBefore":audio_before,
+            "audioAfter":audio_after,
+            "resultStart":result_start,"resultEnd":warp_records.size()})
     input_delivering = false
     if not h4_variant.is_empty():
         input_records.append({"ordinal":active_input,"action":action,"pressed":pressed,
@@ -229,6 +260,13 @@ func h4_context(s: Dictionary) -> Dictionary:
             result["sceneVisibleCharacters"] = message.visible_characters
             result["sceneTotalCharacters"] = message.get_total_character_count()
     return result
+
+func consumer_context(s: Dictionary) -> Dictionary:
+    var result := h4_context(s)
+    for name in ["entityWait","entities","callers","continuation","stop","nod","nodProjection",
+            "fade","display","presentation","cameraProjection","fieldLabel"]:
+        if s.has(name): result[name] = s[name]
+    return result.duplicate(true)
 
 func h4_scene_ready() -> bool:
     var context := h4_context(state())
@@ -1092,6 +1130,7 @@ func finish_public() -> void:
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
         "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,"battleEntryRecords":battle_entry_records,
         "h4Variant":h4_variant,"inputRecords":input_records,"speechReceipts":speech_receipts,"audioReceiptGaps":audio_receipt_gaps,
+        "revealAudioPairs":reveal_audio_pairs,"consumerBoundaries":consumer_boundaries,
         "admissionSnapshot":admission_snapshot,"sceneObservations":scene_observations,
         "audioReceipts":audio_receipts,"audioTerminal":audio_terminal,"audioSequenceSeen":audio_sequence_seen,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
@@ -1128,6 +1167,10 @@ func record_warp_result(payload: String) -> void:
     projection_stage = "signal-before-Present"
     var s := state()
     projection_stage = "host-poll"
+    var releases: Array = result.observations.filter(func(o): return o.get("EntityWaitRelease") != null)
+    if s.get("entityWait") != null or not releases.is_empty() or s.get("nod") != null or s.get("fade") != null or result.observations.any(func(o): return o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-") or o.Kind == "presentation-completed"):
+        consumer_boundaries.append({"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present",
+            "state":consumer_context(s),"releases":releases})
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
         # Accepted prefix checkpoints remain full samples. Keep every result and its
         # identity here without repeating the entire field projection every tick.
