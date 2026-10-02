@@ -828,6 +828,8 @@ def text_material_binding(actual, outcome, selection, source_root):
             )
         )
 
+    w, texts, names, enemy_names = {}, {}, [], []
+    ascii_map = advances = None
     try:
         world_path, scene_path, process_path = selection[:3]
         world_path, scene_path, process_path = (
@@ -835,6 +837,11 @@ def text_material_binding(actual, outcome, selection, source_root):
             for p in (world_path, scene_path, process_path)
         )
         world, scene, process = read(world_path), read(scene_path), read(process_path)
+        w = world["world"]
+        check(
+            "world original identity",
+            world["provenance"]["commit"] == UPSTREAM and world["provenance"]["romSha256"] == ROM,
+        )
         selected = process.get("selectedInputs", {})
         check(
             "same-run material selection",
@@ -864,36 +871,37 @@ def text_material_binding(actual, outcome, selection, source_root):
             for line in source("data/scripting/text/gamescript.txt").decode("utf-8").splitlines()
             if re.match(r"^[0-9A-Fa-f]{4}=.+", line)
         }
+        check("full source text import", {t["id"]: t["text"] for t in w["texts"]} == texts)
         ascii_map = _parse_ascii_map(
             source("data/scripting/text/asciitotextsymbolmap.asm").decode("utf-8")
         )
         # Extracted private font bytes are ignored upstream. Validate against the
         # accepted source/ROM parity fixture before deriving their advances.
-        font_fixture = read(repo_path("tests/fixtures/h2/variable-width-font-static-v1.json"))
-        font_bytes = (
-            source_root / "disasm/data/graphics/tech/fonts/variablewidthfont.bin"
-        ).read_bytes()
-        check(
-            "original font bytes",
-            font_fixture["upstreamCommit"] == UPSTREAM
-            and font_fixture["romSha256"] == ROM
-            and hashlib.sha256(font_bytes).hexdigest().upper()
-            == font_fixture["fontHashes"]["fontSha256"],
-        )
-        advances = [g["advancePixels"] for g in _glyph_metadata(font_bytes, 0)]
+        try:
+            font_fixture = read(repo_path("tests/fixtures/h2/variable-width-font-static-v1.json"))
+            font_bytes = (
+                source_root / "disasm/data/graphics/tech/fonts/variablewidthfont.bin"
+            ).read_bytes()
+            check(
+                "original font bytes",
+                font_fixture["upstreamCommit"] == UPSTREAM
+                and font_fixture["romSha256"] == ROM
+                and hashlib.sha256(font_bytes).hexdigest().upper()
+                == font_fixture["fontHashes"]["fontSha256"],
+            )
+            advances = [g["advancePixels"] for g in _glyph_metadata(font_bytes, 0)]
+        except (KeyError, ValueError, OSError):
+            check("missing original font operand", None)
         names = re.findall(r'"([^"]*)"', source("data/stats/allies/allynames.asm").decode("utf-8"))
         enemies = re.findall(
             r'"([^"]*)"', source("data/stats/enemies/enemynames.asm").decode("utf-8")
         )
-        w = world["world"]
-        check(
-            "world original identity",
-            world["provenance"]["commit"] == UPSTREAM and world["provenance"]["romSha256"] == ROM,
-        )
-        check("full source text import", {t["id"]: t["text"] for t in w["texts"]} == texts)
         check(
             "source symbol map and advances",
-            w["textFont"]["asciiToSymbol"] == ascii_map and w["textFont"]["advances"] == advances,
+            None
+            if ascii_map is None or advances is None
+            else w["textFont"]["asciiToSymbol"] == ascii_map
+            and w["textFont"]["advances"] == advances,
         )
         check("member names", w["memberNames"] == scene["memberNames"] == names)
         check(
@@ -918,96 +926,123 @@ def text_material_binding(actual, outcome, selection, source_root):
             and [e["identityExpression"] for e in selected_enemies] == enemy_names
             and all(n == "GIZMO" for n in enemy_names),
         )
-        session = actual["samples"][0]["state"]["sessionId"]
-        records = actual.get("warpRecords", [])
-        events, seen = [], set()
-        for ri, r in enumerate(records):
-            for e in r["result"].get("observations", []):
-                if e["Sequence"] not in seen:
-                    events.append(dict(record=ri, **e))
-                    seen.add(e["Sequence"])
-        events.sort(key=lambda e: e["Sequence"])
-        event_by_sequence = {e["Sequence"]: e for e in events}
+    except (KeyError, IndexError, ValueError, OSError, subprocess.CalledProcessError):
+        check("missing source/material operand", None)
+    session = actual["samples"][0]["state"]["sessionId"]
+    records = actual.get("warpRecords", [])
+    events, seen = [], set()
+    for ri, r in enumerate(records):
+        for e in r["result"].get("observations", []):
+            if e["Sequence"] not in seen:
+                events.append(dict(record=ri, **e))
+                seen.add(e["Sequence"])
+    events.sort(key=lambda e: e["Sequence"])
+    event_by_sequence = {e["Sequence"]: e for e in events}
 
-        def units(text, leader):
-            out = []
-            for part in re.split(r"(\{[^}]+\})", text):
-                if part == "{N}":
-                    out.append(dict(Kind=1, Text="\n", Symbol=0, Advance=0))
-                    continue
-                if part in ("{W1}", "{W2}", "{D1}"):
-                    out.append(
-                        dict(
-                            Kind={"{W1}": 3, "{W2}": 4, "{D1}": 6}[part],
-                            Text="",
-                            Symbol=0,
-                            Advance=0,
-                        )
+    def units(text, leader):
+        out = []
+        for part in re.split(r"(\{[^}]+\})", text):
+            if part == "{N}":
+                out.append(dict(Kind=1, Text="\n", Symbol=0, Advance=0))
+                continue
+            if part in ("{W1}", "{W2}", "{D1}"):
+                out.append(
+                    dict(
+                        Kind={"{W1}": 3, "{W2}": 4, "{D1}": 6}[part],
+                        Text="",
+                        Symbol=0,
+                        Advance=0,
                     )
-                    continue
-                if part.startswith("{NAME;"):
-                    part = names[int(part[6:-1])]
-                elif part == "{LEADER}":
-                    part = names[int(leader)]
-                elif part.startswith("{"):
-                    raise ValueError("unbound source control")
-                for c in part:
-                    symbol = ascii_map[ord(c)]
-                    out.append(dict(Kind=0, Text=c, Symbol=symbol, Advance=advances[symbol - 1]))
-            return out
+                )
+                continue
+            if part.startswith("{NAME;"):
+                part = names[int(part[6:-1])]
+            elif part == "{LEADER}":
+                part = names[int(leader)]
+            elif part.startswith("{"):
+                raise ValueError("unbound source control")
+            for c in part:
+                symbol = ascii_map[ord(c)]
+                out.append(dict(Kind=0, Text=c, Symbol=symbol, Advance=advances[symbol - 1]))
+        return out
 
-        programs = {p["id"]: p for p in w["programs"]}
-        text_cursor, producer_text = None, {}
-        for e in events:
+    programs = {p["id"]: p for p in w.get("programs", [])}
+    text_cursor, producer_text = None, {}
+    required_field, producer_spans = {}, {}
+    active_producer, span = None, 0
+    for e in events:
+        try:
             loc = e.get("Program")
-            if e["Kind"] != "program-instruction" or loc is None:
+            if e["Kind"] == "program-instruction" and loc is not None:
+                ins = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
+                if ins.get("op") == "text-cursor":
+                    text_cursor = ins["text"]
+                elif ins.get("op") == "show-text":
+                    active_producer, span = e["Sequence"], 0
+                    producer_text[active_producer] = text_cursor
+                    # Source controls, not consumer projections, define the spans.
+                    text = texts[text_cursor]
+                    controls = list(re.finditer(r"\{W[12]\}", text))
+                    producer_spans[active_producer] = controls
+                    required_field[active_producer] = dict(
+                        producer=active_producer, text=text_cursor, span=0
+                    )
+                    if text_cursor is not None:
+                        text_cursor += 1
+            elif (
+                e["Kind"] in ("text-w1-accepted", "text-w2-accepted")
+                and active_producer is not None
+            ):
+                controls = producer_spans[active_producer]
+                if span >= len(controls):
+                    check(f"source text acceptance {e['Sequence']}", False)
+                    continue
+                control = controls[span]
+                check(
+                    f"source text acceptance {e['Sequence']}",
+                    e["Kind"] == "text-w" + control.group()[2] + "-accepted",
+                )
+                if control.end() < len(texts[producer_text[active_producer]]):
+                    span += 1
+                    required_field[e["Sequence"]] = dict(
+                        producer=active_producer, text=producer_text[active_producer], span=span
+                    )
+                else:
+                    active_producer = None
+        except (KeyError, IndexError, ValueError):
+            check(f"missing source text producer {e['Sequence']}", None)
+            active_producer = None
+    field_rows = actual["samples"] + [
+        r for r in outcome.get("records", []) if r.get("label") == "outcome-text-input"
+    ]
+    field_tokens = set()
+    for i, row in enumerate(field_rows):
+        s = row["state"]
+        f = s.get("fieldText")
+        if not f:
+            continue
+        label = s.get("fieldLabel")
+        check(f"field font {i}", font(label.get("font") if label else None, 16))
+        try:
+            token = f["Token"]["Value"]
+            required = required_field.get(token)
+            if required is None or ascii_map is None or advances is None:
+                check(f"missing field lineage/units {i}", None)
                 continue
-            ins = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
-            if ins.get("op") == "text-cursor":
-                text_cursor = ins["text"]
-            elif ins.get("op") == "show-text":
-                producer_text[e["Sequence"]] = text_cursor
-                if text_cursor is not None:
-                    text_cursor += 1
-        field_rows = actual["samples"] + [
-            r for r in outcome.get("records", []) if r.get("label") == "outcome-text-input"
-        ]
-        field_tokens = set()
-        producer_sequences = sorted(producer_text)
-        for i, row in enumerate(field_rows):
-            s = row["state"]
-            f = s.get("fieldText")
-            if not f:
-                continue
-            token, tid = f["Token"]["Value"], int(f["Text"])
+            tid, producer_sequence = required["text"], required["producer"]
+            check(f"field producer {i}", None if f.get("Text") is None else f["Text"] == tid)
             active = s["partyLists"]["Active"]
             expected = units(texts[tid], active[0] if active else 0)
-            check(f"field units {i}", expected == f["Units"])
-            # W1/W2 continuation creates another span token in the same source
-            # ShowText occurrence. Join by ordered producer lineage, not text.
-            pi = bisect_right(producer_sequences, token) - 1
-            producer_sequence = producer_sequences[pi] if pi >= 0 else None
-            producer = event_by_sequence.get(producer_sequence)
-            if producer is None or producer.get("Program") is None:
-                check(f"field producer {i}", None)
-            else:
-                loc = producer["Program"]
-                ins = programs[loc["Program"]]["instructions"][int(loc["Instruction"])]
-                check(
-                    f"field producer {i}",
-                    None
-                    if producer_text.get(producer_sequence) is None
-                    else producer["Kind"] == "program-instruction"
-                    and ins.get("op") == "show-text"
-                    and producer_text[producer_sequence] == tid,
-                )
-            label = s.get("fieldLabel")
-            check(f"field font {i}", font(label.get("font") if label else None, 16))
-            projection = "".join(u["Text"] for u in expected[: int(f["End"])])
+            check(f"field units {i}", None if f.get("Units") is None else expected == f["Units"])
+            ends = [j for j, u in enumerate(expected) if u["Kind"] in (3, 4)]
+            ends.append(len(expected))
+            end = ends[required["span"]]
+            check(f"field span {i}", None if f.get("End") is None else f["End"] == end)
+            projection = "".join(u["Text"] for u in expected[:end])
             check(
                 f"field Label {i}",
                 None
-                if label is None
+                if label is None or f.get("Projection") is None
                 else s["sessionId"] == session
                 and projection == f["Projection"] == s["dialogue"] == label["text"],
             )
@@ -1027,48 +1062,45 @@ def text_material_binding(actual, outcome, selection, source_root):
                     text=tid,
                     revision=s["revision"],
                     producerSequence=producer_sequence,
-                    program=producer.get("Program") if producer else None,
+                    span=required["span"],
+                    program=event_by_sequence[producer_sequence].get("Program"),
                 )
             )
-        required_field = {
-            r["state"]["fieldText"]["Token"]["Value"]
-            for r in records
-            if r.get("state", {}).get("fieldText")
-        }
-        required_field.update(
-            r["state"]["fieldText"]["Token"]["Value"]
-            for r in field_rows
-            if r["state"].get("fieldText")
-        )
-        check(
-            "every reached field occurrence mounted",
-            True if required_field and required_field <= field_tokens else None,
-        )
-        check(
-            "every source ShowText occurrence paired",
-            True
-            if producer_sequences
-            and set(producer_sequences) <= {r["producerSequence"] for r in result["field"]}
-            else None,
-        )
-        preps = [e for e in events if e["Kind"] == "scene-prepared"]
-        prepseq = [e["Sequence"] for e in preps]
-        messages = {}
-        for i, row in enumerate(actual.get("sceneObservations", [])):
-            if row["scene"].get("message"):
-                messages.setdefault(row["scene"]["waitToken"], []).append((i, row))
+        except (KeyError, IndexError, ValueError):
+            check(f"missing field occurrence operand {i}", None)
+    check(
+        "every logical/source field span mounted",
+        True if required_field and required_field.keys() <= field_tokens else None,
+    )
+    result["requiredField"] = [
+        dict(token=token, **binding) for token, binding in required_field.items()
+    ]
+    preps = [e for e in events if e["Kind"] == "scene-prepared"]
+    prepseq = [e["Sequence"] for e in preps]
+    messages = {}
+    for i, row in enumerate(actual.get("sceneObservations", [])):
+        if row["scene"].get("message"):
+            messages.setdefault(row["scene"]["waitToken"], []).append((i, row))
 
-        def actor(e, key="Actor"):
-            return (e.get(key) or {}).get("Value")
+    def actor(e, key="Actor"):
+        return (e.get(key) or {}).get("Value")
 
-        def name(who):
-            if who.startswith("ally-"):
-                return names[int(who.split("-")[1])]
-            if who.startswith("enemy-"):
-                return enemy_names[int(who.split("-")[1])]
-            raise ValueError("unsupported actor")
+    def name(who):
+        if who.startswith("ally-"):
+            return names[int(who.split("-")[1])]
+        if who.startswith("enemy-"):
+            return enemy_names[int(who.split("-")[1])]
+        raise ValueError("unsupported actor")
 
-        for token, rows_for_token in messages.items():
+    for token, rows_for_token in messages.items():
+        step = event_by_sequence.get(token)
+        phase = step.get("Detail") if step and step["Kind"] == "scene-step-started" else None
+        for i, row in rows_for_token:
+            check(f"battle font {i}", font(row["scene"].get("messageFont"), 9))
+            check(
+                f"battle phase {i}", None if phase is None else row["scene"].get("phase") == phase
+            )
+        try:
             si = rows_for_token[0][1]["scene"]
             if si.get("reactionAmount") is None:
                 si = next(
@@ -1243,15 +1275,11 @@ def text_material_binding(actual, outcome, selection, source_root):
                 expected = re.sub(r"\{D[0-9]+\}", "", expected)
             for i, row in rows_for_token:
                 check(
-                    f"battle phase {i}", None if phase is None else row["scene"]["phase"] == phase
-                )
-                check(
                     f"battle text {i}",
                     None
                     if expected is None
                     else row["sessionId"] == session and row["scene"]["message"] == expected,
                 )
-                check(f"battle font {i}", font(row["scene"].get("messageFont"), 9))
                 check(
                     f"battle operand {i}",
                     None
@@ -1287,17 +1315,29 @@ def text_material_binding(actual, outcome, selection, source_root):
                     projections=len(rows_for_token),
                 )
             )
-        required_battle = {
-            r["state"]["scene"]["waitToken"]
-            for r in records
-            if r.get("state", {}).get("scene", {}).get("message")
-        }
-        check(
-            "every reached battle occurrence paired",
-            True if required_battle and required_battle <= messages.keys() else None,
-        )
-    except (KeyError, IndexError, ValueError, OSError, subprocess.CalledProcessError):
-        check("missing source/material/consumer operand", None)
+        except (KeyError, IndexError, ValueError):
+            check(f"missing battle occurrence operand {token}", None)
+    message_phases = {
+        "ActionMessage",
+        "ResultMessage",
+        "DeathMessage",
+        "SpellCost",
+        "MakeIdle",
+        "SpellStop",
+        "RewardMessage",
+        "GoldMessage",
+        "GrowthMessage",
+    }
+    required_battle = {
+        e["Sequence"]
+        for e in events
+        if e["Kind"] == "scene-step-started" and e.get("Detail") in message_phases
+    }
+    check(
+        "every logical battle message paired",
+        True if required_battle and required_battle <= messages.keys() else None,
+    )
+    result["requiredBattle"] = sorted(required_battle)
     values = [c["value"] for c in result["checks"]]
     result["value"] = False if False in values else None if None in values or not values else True
     return result

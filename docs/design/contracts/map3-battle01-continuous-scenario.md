@@ -619,7 +619,8 @@ Material origin is a layer7C assertion. Original natural per-occurrence dispatch
 causal wait and consumer completion remain operation/consumer assertions. Those missing joins do not
 require a different historical battle trajectory to establish material origin. Optional selections
 never backfill older sessions. Missing evidence is Unavailable; contradictory observed content or
-identity is FAIL. The three other incomplete resource families and five broad parents keep full H4 incomplete.
+identity is FAIL. Displayed-text material acceptance remains pending independent review; the four
+incomplete resource families and five broad parents keep full H4 incomplete.
 
 ### Complete reached displayed-text material binding
 
@@ -632,13 +633,25 @@ recorded source digest uses the historical Windows CRLF representation, reproduc
 object without changing inputs.
 
 Every reached field span, including outcome2305..2310, pairs session/token/revision with its
-ordered ShowText producer and selected text-cursor progression. W1/W2 continuation span tokens
-retain the same source occurrence. Expected Units/control kinds/symbols/advances and projection
+ordered ShowText producer and selected text-cursor progression. Its required inventory comes from
+logical ShowText events, source W1/W2 boundaries and the reached accepting events: a nonterminal
+source wait produces the next span at that accepting event's token. Terminal acceptance adds no
+span; unvisited continuations add no requirement. Deleting every projection of a continuation while
+retaining its logical production must remain Unavailable. Expected Units/control kinds/symbols/advances and projection
 must match the actual mounted Label text. Every reached battle message token pairs its preparation,
 typed action/reaction, critical/HP/EXP/gold/growth operands and source producer selector with the
-actual Label. Raw reaction Amount supplies uncapped lethal numbers; clipped HP loss cannot replace
-it. No rendered string selects an expected source template. Missing or unpaired occurrences keep
+actual Label. Required battle tokens come from the retained logical starts of the supported
+message-bearing phases, independently of both scene projection channels. Raw reaction Amount
+supplies uncapped lethal numbers; clipped HP loss cannot replace it. No rendered string selects an
+expected source template. Missing or unpaired occurrences keep
 the whole child Unavailable; independently observed contradictions remain FAIL.
+
+Missing operands contribute Unavailable locally. Available field and battle occurrences, source
+content, phase and font checks continue to contribute; a missing early field Units or battle action
+operand must not suppress a later or independent contradiction. False takes precedence over
+Unavailable in either section order. Source span boundaries determine the expected field projection
+even when the observed Units or End is absent. The result retains its logical/source required
+inventories alongside actual joins, without fixed occurrence counts or an additional row.
 
 Field and battle use the same accepted modern configured-font boundary: the mounted FontFile face,
 family/style/index, size and system-fallback permission. Current mounted defaults are Open Sans

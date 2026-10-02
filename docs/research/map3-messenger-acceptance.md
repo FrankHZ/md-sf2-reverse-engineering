@@ -3358,7 +3358,13 @@ and `src/sf2tool/remake_h4_comparison.py:text_material_binding`. **Confirmed**, 
 continuous A: the independent pinned gamescript import, ally/enemy names, ASCII map and accepted
 font byte identity produce all reached field Units/control tokens/symbols/advances and mounted
 Label projections, including outcome texts2305..2310. Ordered source ShowText/text-cursor lineage
-pairs continuation tokens without reverse matching rendered text.
+pairs continuation tokens without reverse matching rendered text. The required span inventory follows
+the source W1/W2 boundaries and retained logical acceptance events; it does not depend on any
+consumer projection surviving. Battle's required message inventory likewise follows logical phase
+starts. Missing one span from every projection channel remains Unavailable even when its producer's
+other span is present. A missing field operand cannot suppress an independently observed battle
+contradiction, or the reverse; occurrence-local checks retain False over Unavailable. Full material
+acceptance remains pending independent review.
 
 Battle selectors come from the accepted producer branches: physical273/293/292, HEAL274/298,
 damage284/285 or critical287/288, dodge286, death290/291, EXP263, gold393 and growth244/266..271.

@@ -2600,7 +2600,7 @@ uv run python -X utf8 local/issue534/h4-text-material-01/direct.py <fresh-direct
 
 Those ignored recipes call `compare_modern`/`compare_matrix` with accepted reference, normal05,
 same-run inputs, pinned source/asset roots and retained B/C/D reports. The maintained CLI equivalent
-is `uv run python -m sf2tool.remake_h4_comparison --mode compare --profile modern-continuous`, with
+is `uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous`, with
 the existing explicit arguments plus `--text-source-root <configured-checkout>` and a fresh ignored
 output. Recalculation always uses a new output filename; retained completed failures stay unchanged.
 Direct checks exercise missing/drifting font, Label, glyph advance, raw Amount, source selection,
@@ -2608,9 +2608,31 @@ mixed absence/contradiction, the #595 report-integrity boundary and unchanged as
 this child. Source and consumer files remain read-only. Engine/adapter binaries are unchanged, so
 their accepted checks are reused rather than repeated.
 
-Common-gameplay equivalence and all four settings variants pass. A's required comparison has2238
-PASS/23 Unavailable; after the matrix-self obligation,22 remain. B/C/D each retain37 unavailable
-children and their own missing observations. Full H4 remains Unavailable. The existing historical
+For the whole-occurrence and mixed-evidence boundary, run the ignored retained correction reader
+with a fresh output name:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue534/h4-text-material-01/correction-cases.py <fresh-readback-name>
+```
+
+It removes battle28578 from both scene projection channels while retaining its logical start, and
+field continuation18004 from every projection while retaining source producer17751 and its sibling
+span. Both must be Unavailable. These tokens locate retained examples, never production restrictions
+or fixed completeness counts. The inventories derive from reached logical starts and source span
+semantics. Cross-section, later-occurrence and same-occurrence missing/contradiction pairs must retain
+False in both directions; independent font/phase and available source checks continue after a local
+operand absence. `requiredField`/`requiredBattle` retain that independent inventory in the existing
+binding result. No new report framework or unvisited requirement is introduced.
+
+The root's frozen `root-readback-01.json` preserves the two false completeness passes and the
+missing-Units suppression failure. Correcting those verifier boundaries uses the same successful
+native A and fresh offline reports; no native/SDK/source acquisition or broad rerun is required.
+
+Common-gameplay equivalence and all four settings variants pass. Material acceptance remains pending
+independent review of the complete logical/source occurrence inventory and mixed missing/contradiction
+boundaries. The accepted remaining A count stays23; B/C/D each retain37 unavailable children and their
+own missing observations. Full H4 remains Unavailable. The existing historical
 original trajectory diagnostics, normal05, prior captures, source/clock/JOIN/HEAL/RNG and other
 failures/Unknowns remain unchanged.
 
