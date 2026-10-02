@@ -3785,6 +3785,43 @@ readback reproduce this implementation boundary under the [verification owner](.
 they do not prove original reach, music timing or complete JOIN. No original runtime delta is added;
 earlier H4, warp, HEAL, JOIN timeout/cross-clock, next-actor/index and cleanup gaps remain open.
 
+### Reached field motion, gesture and fade correspondence
+
+**Confirmed (static source):** the pinned map script engine's `csc14_manual`, `csc15`
+and `csc2D` wait on the installed action address becoming `eas_Idle`; physical arrival and
+Busy are separate operands. Inline `ac_moveRel` does not await its destination. A later
+relative command uses the entity's then-current signed coordinates, not the sum of earlier
+requested destinations. `MakeEntityWalk` installs the pinned perpetual walking stream without
+inventing a local completion edge. The existing `OriginalPrograms` parser/lowering reproduces
+complete ordered producer operands from each reached source program. Macro or native-call
+statement index and producer ordinal map that source to the selected typed span, independently
+of rendered names and surviving projection records.
+
+Source `csc26` supplies Nod's normal/lowered/normal phases and animation-byte restoration;
+`csc2A` supplies shiver's alternating phase and animation/sprite-size/flag restoration.
+`csc22` supplies mosaic direction. Named black/white fading helpers supply finite palette
+termination and temporary-period restoration. The accepted modern half-second generic effects,
+loader bridge and ordinary-warp helpers remain the boundaries defined by the
+[exploration contract](../../docs/design/contracts/map-exploration.md) and
+[presentation owner](../../remake/docs/presentation-and-assets.md). The loader and outcome-return
+wrappers are explicit modern compositions, not ordinary source cutscene macro compilations.
+
+**Confirmed (bounded modern observation):** the complete occurrence reader joins logical
+producers, held waits, source-derived signed destinations, predicate-time release identity,
+actual actor geometry/phases or palette-node use, completion handoff, logical restoration and
+dependent continuation. A same-submit hide/reposition/reinstallation cannot replace the held
+motion destination or release predicate. Legitimate culling follows logical visibility and
+viewport geometry. A source wait does not require a draw on every tick or a terminal draw in
+the release frame. Palette nodes may be consumed before field geometry exists or after battle
+mounting; absent actors are not fabricated. Reproduce through the
+[whole field comparison route](../../remake/docs/development-and-verification.md#complete-field-motion-consumer-comparison).
+
+**Unknown:** original natural reach/caller state for unobserved occurrences, CPU-time service
+opportunities, DMA/VDP processing and presentation timing, palette pixels, broad NPC/RNG/collision
+history and synchronization with the winning remake route. The sealed prepared original operation
+pairs remain bounded corroboration; their count and historical clocks do not define this route's
+inventory or gameplay legality. No new original runtime observation follows from this join.
+
 The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
 now chooses one progress step per existing common service from semantic request, arm-before-sample
 and complete three-service helper groups. The optional finite profile19/505 and actual playback

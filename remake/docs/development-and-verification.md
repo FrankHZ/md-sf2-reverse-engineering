@@ -2755,8 +2755,67 @@ distinct frames and ages; terminal operand availability is assessed from those f
 The existing probe exits at the window endpoint and offers no in-instance reset; a later required
 window must name its startup necessity. Unaffected Nod/full-fade captures remain their own evidence.
 No engine/helper tests, normal/full/H3 suite, source acquisition or full successful-route rerun is
-required by this instrumentation. Both whole field-consumer obligations and full H4 stay Unavailable
-pending separately allocated complete occurrence/source/actual joins.
+required by this instrumentation. This bounded window alone leaves both whole field-consumer
+obligations Unavailable. Their separately allocated complete join is described below; full H4
+retains the other outstanding families.
+
+## Complete field motion consumer comparison
+
+The maintained modern comparator binds exactly the existing two whole field-motion/gesture/fade
+children described by the [continuous contract](../../docs/design/contracts/map3-battle01-continuous-scenario.md#complete-reached-field-motion-and-consumer-binding).
+`actualObservations.fieldMotionBinding` retains the independently inventoried producers, source
+macro/native-call spans, typed locations and occurrence-local source/actual checks. The source
+reader verifies the selected pin and tracked source before reusing `OriginalPrograms`; its ordered
+producer operands must equal the selected same-run world. Existing material/original-witness
+selections remain explicit. The source witnesses corroborate their named seams; no winning-trace
+frame alignment or new original run is required.
+
+The current retained continuous observation is `local/issue534/field-motion-join-01/new-A-02`.
+It reuses the accepted Debug binaries, frozen party/start/settings/world/scene and legal A route
+at fixed60/poll1. Its process completed exit0, internal route checks passed, and its Godot log has
+no errors. The completed `new-A-01` route remains a failed observation: explicit-null `entities`
+caused70 iteration errors and aborted64 postdraw,3 before-submit and3 pre-Present callbacks.
+Those missing continuous-session rows cannot be repaired offline or backfilled from a short window.
+
+The probe now skips iteration for an explicitly-null entity collection while retaining that raw
+null, cue/projection identity and no-subject/missing/culling distinctions. Camera actor collections
+are non-null arrays when that projection exists. The bounded `null-window-07` uses the selected
+Map57 source warp destination and before/load programs; it preserves all70 explicitly-null callback
+records without errors or fabricated entities. Its endpoint is loader return after scene mount
+and FadeIn handoff, not first battle input. Earlier controlled-start/endpoint failures are preserved
+under the same ignored owner. A GDScript-only correction needs no SDK rebuild. A clean complete
+observation is reused for every offline correction and is not repeated.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -X utf8 local/issue534/field-motion-join-01/compare.py <fresh-comparison-name>
+```
+
+This recipe calls the maintained `compare_modern`/`compare_matrix` interfaces with the explicit
+accepted reference, normal05 baseline, source/material/original witness selections and retained
+B/C/D reports. The maintained CLI route is the existing modern-continuous compare command with
+those selections and a fresh ignored output. Relative selections resolve from the repository root.
+Direct counterexamples remove every consumer channel of motion, Nod, shiver, mosaic, full fade and
+loader fade while retaining logical producers. They also exercise wrong source/subject/policy/
+destination/phase/restore/period/endpoint/caller/order and missing-plus-false within one or across
+independent occurrences. False must dominate missing in both directions. These are direct verifier
+checks, not a helper unit suite. Exact common gameplay, unaffected assertion values/applicability,
+closed inventory/#595 integrity and each variant's own evidence remain required.
+
+The phase checks include partial consumer loss while logical producers and phase contexts survive:
+missing Nod lowered use, shiver alternating use or a mosaic block cannot be replaced by a surviving
+normal/pre-Update draw. Logical visibility and viewport geometry preserve hidden/culled applicability.
+Direct corrections also check held policy, premature field-input readiness, entry-saved period and
+palette continuity, shiver saved-state continuity, and independent contradictions alongside missing
+phase/operand evidence. The original PR603 candidate and root's completed readbacks remain discovery
+evidence; corrected reports use fresh destinations and the same immutable clean `new-A-02` capture.
+
+The candidate comparison closes these two children only. The retained text-material A's22 and
+B/C/D's37 remaining-child results stay attached to their own immutable observations. Independent
+review decides acceptance of the new candidate; all five broad families and full H4 remain
+Unavailable. Run affected Python lint, direct document/private/diff checks, committed dependency
+planning and actual CI. Reuse accepted unchanged binaries; no normal/full/H3/engine/adapter rerun
+is required solely for this offline comparison and GDScript correction.
 
 ## HEAL scene verification
 
