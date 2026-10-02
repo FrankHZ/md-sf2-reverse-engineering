@@ -35,6 +35,9 @@ var modern_music_case := "modern-music" in input_case
 var before_battle_case := "before-battle" in input_case
 var white_palette_completed := false
 var white_palette_case := "before-battle-white" in input_case
+var battle_entry_case := "before-battle-white-entry" in input_case
+var battle_entry_completed := false
+var battle_entry_records: Array = []
 var tracking_case := "before-battle-tracking" in input_case or white_palette_case
 var parallax_case := "field-parallax" in input_case or before_battle_case
 var map_init_case := "map-init" in input_case or parallax_case
@@ -52,12 +55,14 @@ var camera_exposure_checks := 0
 func record_camera_before_draw() -> void:
     if not parallax_case or not is_instance_valid(view): return
     var s := state()
+    if not s.has("simulationTick"): return
     camera_exposure_before = {"tick":s.simulationTick,"token":s.token,
         "x":s.presentation.cameraX,"y":s.presentation.cameraY}
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
     var s := state()
+    if not s.has("presentation"): return
     if raw_text_case and s.textId == 447:
         var dialogue := view.get_node("Dialogue") as Label
         raw_draws.append({"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
@@ -69,7 +74,11 @@ func record_camera_draw() -> void:
     var p = s.get("cameraProjection")
     if p == null or s.logicalView == null or p.simulationTick != s.simulationTick or p.token != s.token: return
     # The white slice retains delivered helper/input projections, not redundant earlier-route draw traces.
-    if white_palette_case and s.fade == null and not s.canWaitForText: return
+    if white_palette_case and s.fade == null and not s.canWaitForText:
+        if not battle_entry_case or s.presentation.activeCue not in ["EntityEffect", "Gesture", "BattleLoad", "FadeIn", "FadeOut"]: return
+        # One mounted projection per generic token; delivery/restoration states are retained separately.
+        if camera_draw_seen.has("entry-" + str(s.token)): return
+        camera_draw_seen["entry-" + str(s.token)] = true
     var identity := str([s.simulationTick, s.token])
     if camera_draw_seen.has(identity): return
     camera_draw_seen[identity] = true
@@ -964,6 +973,7 @@ func run_text_wait() -> void:
 
 func finish_public() -> void:
     if white_palette_case: check(white_palette_completed, "Declared white palette route reached Chester W1")
+    if battle_entry_case: check(battle_entry_completed, "Declared route reached and exercised real first battle input")
     if choice_case and choice_exercised:
         for phase in [1,2,3,4,5]:
             check(choice_draws.any(func(d): return d.choice.Work.Phase == phase),
@@ -971,7 +981,7 @@ func finish_public() -> void:
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
-        "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,
+        "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,"battleEntryRecords":battle_entry_records,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
         "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}, "  ")
     if guarded_wait_case:
@@ -1252,6 +1262,7 @@ func before_battle_tracking(entry: Dictionary) -> void:
                 var held := opening_semantic(s)
                 for idle_frame in range(3): await process_frame
                 check(opening_semantic(state()) == held and state().tickDebt == 0, "Chester input remains held without debt")
+                if battle_entry_case: await remaining_before_battle(s)
                 return
         check(s.continuation == entry.continuation and s.enteringBattle == entry.enteringBattle and
             s.callers == entry.callers and s.eventCaller == null and not s.canWaitAtInput,
@@ -1285,6 +1296,94 @@ func before_battle_tracking(entry: Dictionary) -> void:
             physical(KEY_ENTER, false)
         await process_frame
     check(false, "Tracking continuation did not reach its next unadmitted capability")
+
+func remaining_before_battle(entry: Dictionary) -> void:
+    var effects: Dictionary = {}
+    var delivered: Dictionary = {}
+    var texts: Array = []
+    var paused := false
+    var joined: Dictionary = {}
+    var loader: Array = []
+    var mounted := false
+    var previous := entry
+    physical(KEY_ENTER, true)
+    physical(KEY_ENTER, false)
+    for frame in range(9000):
+        var s := state()
+        if s.failure != null:
+            read_sample("battle-entry-actual-failure")
+            return
+        if s.has("stage"):
+            var first := read_sample("bound-first-battle-input")
+            check(first.sessionId == entry.sessionId and first.stage == "Movement" and first.round == 1 and
+                first.storyFlags.has(451.0) and valid_projection(first, true), "Actual loaded board owns first Movement input")
+            check(effects.values().count("EntityEffect") == 1 and effects.values().count("Gesture") == 5 and
+                delivered.size() == effects.size() and paused and joined.size() == 6 and
+                loader == ["FadeOut", "BattleLoad", "FadeIn"] and mounted,
+                "Complete remaining effects, population, suspension and loader were observed")
+            await key(KEY_ENTER)
+            var choice := read_sample("bound-first-action-choice")
+            check(choice.stage == "ActionChoice" and choice.actor == first.actor and choice.mainSeed == first.mainSeed,
+                "Actual Confirm selects action without a turn or RNG commit")
+            await key(KEY_ESCAPE)
+            var cancelled := read_sample("bound-first-movement-cancel")
+            check(cancelled.stage == "Movement" and cancelled.actor == first.actor and cancelled.round == first.round and
+                cancelled.mainSeed == first.mainSeed and cancelled.actors == first.actors,
+                "Actual Cancel restores Movement without committing gameplay")
+            battle_entry_completed = failures.is_empty()
+            return
+        if s.presentation.completedCueToken != null and effects.has(s.presentation.completedCueToken) and not delivered.has(s.presentation.completedCueToken):
+            delivered[s.presentation.completedCueToken] = s.presentation.completedCueKind
+            battle_entry_records.append({"label":"effect-delivered","state":s})
+            check(s.spriteSize == entry.spriteSize and s.entities.all(func(e): return e.animationCounter != 255),
+                "Actual generic effect completion restores sprite size and entity animation")
+        if s.wait == "PresentationWait" and s.presentation.activeCue in ["EntityEffect", "Gesture"]:
+            if not effects.has(s.token):
+                effects[s.token] = s.presentation.activeCue
+                battle_entry_records.append({"label":"effect-mounted","state":s})
+            if not paused and s.presentation.activeCue == "EntityEffect" and s.presentation.mosaicDraws > entry.presentation.mosaicDraws:
+                var effect_view := view
+                effect_view.call("hide")
+                await process_frame
+                var held := state()
+                await create_timer(0.15).timeout
+                var hidden := read_sample("generic-effect-hidden")
+                check(opening_semantic(hidden) == opening_semantic(held) and hidden.token == held.token and
+                    hidden.tickDebt == 0 and hidden.presentation.completedCueToken == held.presentation.completedCueToken and
+                    hidden.presentation.mosaicDraws == held.presentation.mosaicDraws,
+                    "Hidden bound generic effect suspends logical state, RNG, delivery and debt")
+                effect_view.call("show")
+                await process_frame
+                var resumed := read_sample("generic-effect-resumed")
+                check(resumed.token == held.token and resumed.tickDebt == 0 and
+                    opening_semantic(resumed) == opening_semantic(held), "Generic effect resumes without catch-up service")
+                paused = true
+        if s.entities != null:
+            for entity in s.entities:
+                if entity.id in ["entity-129","entity-130","entity-131","entity-132","entity-133","entity-134"] and entity.Visible:
+                    joined[entity.id] = entity.slot
+        if s.mode == "Battle":
+            check(s.fade == null and not s.flags.has(451.0) and s.display == previous.display and
+                s.logicalView == previous.logicalView, "Modern loader preserves frozen field facade without field helper or early intro")
+            if s.presentation.activeCue in ["FadeOut","BattleLoad","FadeIn"] and (loader.is_empty() or loader[-1] != s.presentation.activeCue):
+                loader.append(s.presentation.activeCue)
+                battle_entry_records.append({"label":"battle-loader-" + s.presentation.activeCue,"state":s})
+            if s.battleMounted:
+                mounted = true
+                var board := host.get_node("ExplorationSessionView/BattleSessionView")
+                var projection: Dictionary = JSON.parse_string(board.call("ReadObservationJson"))
+                check(projection.stage == null and projection.boardChildren > 0 and valid_projection(projection, false),
+                    "Battle mount projects a board while withholding real input")
+        elif s.canWaitForText:
+            var ready := read_sample("remaining-text" + str(int(s.textId)) + "-input")
+            check(ready.portraitWork.Registered and ready.sessionId == entry.sessionId and not ready.battleMounted,
+                "Remaining delivered W1/W2 has a registered portrait in the same before-context")
+            texts.append(int(s.textId))
+            physical(KEY_ENTER, true)
+            physical(KEY_ENTER, false)
+        previous = s
+        await process_frame
+    check(false, "Remaining before-body did not reach real first battle input")
 
 func opening_settle(castle_yes: bool = true) -> bool:
     var seen: Dictionary = {}

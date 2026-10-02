@@ -267,7 +267,10 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, ExplorationMusicRunner.Begin(current, token));
                         break;
                     case PresentCue cue:
-                        if (cue.FullBlack is not null || current.Story.Display is not null && MapTransfer.IsPalette(cue))
+                        if (cue.FullBlack is not null && current.Active is not ActiveExploration)
+                            throw new BattleRuleException("full-fade-context", "program.presentation", true);
+                        if (cue.FullBlack is not null || current.Active is ActiveExploration &&
+                            current.Story.Display is not null && MapTransfer.IsPalette(cue))
                         {
                             MapTransfer.ValidateCue(cue);
                             current = MapTransfer.BeginFade(current, current.Story, cue.Kind,

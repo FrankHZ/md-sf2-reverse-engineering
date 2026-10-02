@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
@@ -12,6 +13,120 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleEntryProgramTests
 {
+    [Theory]
+    [InlineData(false, 1, 0x222, 0x444, false)]
+    [InlineData(true, 3, 0xE20, 0x24E, false)]
+    [InlineData(true, 17, 0xEEE, 0xAAA, true)]
+    public void BattleLoaderKeepsActiveBattleAndFrozenFieldContextUntilFirstInput(
+        bool bound, byte period, ushort color2, ushort color3, bool seen)
+    {
+        void Configure(JsonNode document)
+        {
+            document["start"]!.AsObject().Remove("program");
+            document["start"]!["map"] = "yard-map";
+            document["start"]!["flags"] = new JsonArray(13, 90, seen ? 20 : 91);
+            document["battle"]!["start"]!["mainSeed"] = seen ? 0x12341234u : 0xC632A55Au;
+            document["battle"]!["start"]!["gold"] = seen ? 17 : 0;
+            document["battle"]!["start"]!["actors"]![0]!["hp"] = seen ? 71 : 95;
+            document["battle"]!["start"]!["actors"]![0]!["mp"] = seen ? 7 : 20;
+            document["battle"]!["start"]!["actors"]![0]!["exp"] = seen ? 9 : 0;
+            if (bound) document["start"]!["display"] = JsonNode.Parse($$"""
+                {"period":{{period}},"base":{"color2":{{color2}},"color3":{{color3}}},
+                "current":{"color2":{{color2}},"color3":{{color3}}},"visibility":"base-restored"}
+                """);
+            document["world"]!["maps"]![1]!["basePalette"] = new JsonObject { ["color2"] = color2, ["color3"] = color3 };
+            document["world"]!["maps"]![1]!["battle"]!["load"] = JsonNode.Parse("""{"program":"load-board","instruction":0}""");
+            var before = document["world"]!["programs"]!.AsArray().Single(row => row!["id"]!.GetValue<string>() == "before-battle")!;
+            before["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            document["world"]!["programs"]!.AsArray().Add(JsonNode.Parse("""
+                {"id":"load-board","entitiesRunning":false,"instructions":[
+                {"op":"present","kind":"FadeOut","resource":"black","entity":null,"position":null},
+                {"op":"present","kind":"BattleLoad","resource":null,"entity":null,"position":null},
+                {"op":"present","kind":"FadeIn","resource":"black","entity":null,"position":null},
+                {"op":"end"}]}
+                """));
+        }
+        var session = bound ? ExplorationTextWaitTests.StartFieldText("{W1}", configure: Configure) : Start("harbor-arrival", Configure);
+        if (!seen)
+        {
+            Assert.Equal(ProgramContinuation.BeforeBattleFinished, session.Current.Story.Continuation);
+            var finished = Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+            Assert.Contains(finished.Observations, row => row.Kind == "battle-initialized");
+        }
+        var initialized = session.Current;
+        Assert.Equal(seen ? 71 : 95, initialized.Battle.GetActor(new("medic-a")).Hp);
+        Assert.Equal(seen ? 7 : 20, initialized.Battle.GetActor(new("medic-a")).Mp);
+        Assert.Equal<byte?>((byte)(seen ? 9 : 0), initialized.Battle.GetActor(new("medic-a")).Exp);
+        Assert.Equal<uint?>((uint)(seen ? 17 : 0), initialized.Battle.Gold);
+        if (bound)
+        {
+            // A stored period and live target cannot turn a battle-loader delivery into a field pass.
+            initialized = initialized.WithStory(initialized.Story.Copy(initialized.Story.Cursor, initialized.Story.Wait,
+                logicalView: initialized.Story.LogicalView! with { TargetSlot = 0, FollowCounter = 7 }));
+        }
+        var current = initialized;
+        foreach (var kind in new[] { PresentationCueKind.FadeOut, PresentationCueKind.BattleLoad, PresentationCueKind.FadeIn })
+        {
+            var wait = Assert.IsType<PresentationWait>(current.Story.Wait);
+            Assert.Equal(kind, wait.Cue.Kind);
+            Assert.IsType<ActiveBattle>(current.Active);
+            Assert.Null(current.Selection);
+            Assert.False(current.HasBattleControl);
+            Assert.Equal(seen, current.Story.Flags.Contains(20));
+            foreach (var receipt in new[] { new CompletePresentation(new(wait.Token.Value + 1), kind),
+                new CompletePresentation(wait.Token, PresentationCueKind.CameraWait) })
+            {
+                var rejected = ExplorationDispatcher.Submit(session.Definition, current, receipt);
+                Assert.NotNull(rejected.Failure);
+                Assert.Same(current.Active, rejected.Snapshot.Active);
+                Assert.Equal(current.Story, rejected.Snapshot.Story);
+            }
+            var result = ExplorationDispatcher.Submit(session.Definition, current, new CompletePresentation(wait.Token, kind));
+            Assert.Null(result.Failure);
+            current = result.Snapshot;
+            Assert.Equal(initialized.Story.SimulationTick, current.Story.SimulationTick);
+            Assert.Equal(initialized.Story.RandomSeedCopy, current.Story.RandomSeedCopy);
+            Assert.Equal(initialized.Story.Display, current.Story.Display);
+            Assert.Equal(initialized.Story.LogicalView, current.Story.LogicalView);
+            Assert.Equal(initialized.Story.TextSettings, current.Story.TextSettings);
+            Assert.Equal(initialized.Story.Callers, current.Story.Callers);
+            Assert.DoesNotContain(result.Observations, row => row.Kind is "simulation-tick" or "entity-service" or "full-fade-started");
+            if (kind != PresentationCueKind.FadeIn) Assert.Same(initialized.Active, current.Active);
+        }
+        Assert.True(current.HasBattleControl);
+        Assert.Contains(20, current.Story.Flags);
+        Assert.Equal(!seen, current.Story.Flags.Contains(16));
+        Assert.Equal(1, current.Battle.Round);
+        Assert.NotNull(current.Selection);
+        var confirmed = BattleCommandDispatcher.Submit(current, new Confirm());
+        Assert.Null(confirmed.Failure);
+        Assert.Equal(BattleSelectionStage.ActionChoice, confirmed.Snapshot.Selection!.Stage);
+        var cancelled = BattleCommandDispatcher.Submit(confirmed.Snapshot, new Cancel());
+        Assert.Null(cancelled.Failure);
+        Assert.Equal(BattleSelectionStage.Movement, cancelled.Snapshot.Selection!.Stage);
+        Assert.Same(current.Battle, cancelled.Snapshot.Battle);
+    }
+
+    [Fact]
+    public void ExplicitFieldFadeRejectsBattleContextBeforePublication()
+    {
+        var session = CameraSession(null);
+        var field = session.Current;
+        var route = session.Definition.Exploration!.Maps[new("yard-map")].Battle!;
+        var initialized = BattleEntry.Continue(session.Definition, field.WithStory(
+            field.Story.Copy(null, continuation: ProgramContinuation.BeforeBattleFinished, enteringBattle: route)), []);
+        var cue = new PresentCue(PresentationCueKind.FadeOut, "black", FullBlack: new(2));
+        var programs = session.Definition.Exploration!.Programs.Values.Append(new StoryProgram("field-fade", [cue, new EndProgram()]));
+        var world = new ExplorationDefinition(session.Definition.Exploration.Maps.Values, programs);
+        var definition = new ScenarioDefinition("field-fade-context", session.Definition.Encounters.Values, exploration: world);
+        var input = initialized.WithStory(initialized.Story.Copy(new("field-fade", 0)));
+        var result = ProgramRunner.Run(definition, input, []);
+        Assert.Equal("full-fade-context", result.Failure!.Code);
+        Assert.Same(input.Active, result.Snapshot.Active);
+        Assert.Equal(input.Story, result.Snapshot.Story);
+        Assert.Empty(result.Observations);
+    }
+
     [Theory]
     [InlineData(ProgramContinuation.FieldInput, false)]
     [InlineData(ProgramContinuation.MapLoaded, true)]
