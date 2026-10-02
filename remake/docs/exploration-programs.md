@@ -1080,11 +1080,12 @@ and [source/semantic rule](../../docs/design/contracts/map-exploration.md#bound-
 
 Field palette routing checks `ActiveExploration`, not merely retained Display. After the genuine
 before-context completes, BattleEntry initializes `ActiveBattle`; its unprofiled black loader cues
-use the existing `PresentationWait` modern delivery lifetime. Matching receipts keep the battle state
+use the existing `PresentationWait` modern delivery lifetime. Matching receipts retain ActiveBattle and its state
 and frozen field Display/view/settings; they add no field opportunity. Explicit FullBlack in a
 non-field context rejects as `full-fade-context` before helper publication. The old scene facade
 remains available until the existing mount and handoff. Load/start/intro ordering and first queue
-remain owned by BattleEntry and BattleTurnFlow.
+remain owned by BattleEntry and BattleTurnFlow; the final delivery can resume those owners and their
+ordinary first-queue RNG draws without adding a field opportunity.
 
 Bound generic `PresentationWait`, including mosaic/shiver and retained-profile loader delivery,
 now uses the existing visibility/focus suspension and zero-debt resume. Effect completion/restoration

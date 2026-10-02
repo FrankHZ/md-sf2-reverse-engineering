@@ -1076,11 +1076,12 @@ extra-service profile. Original callback opportunities and presentation cadence 
 **Accepted remake policy:** logical field palette helpers MUST require an active exploration world.
 Retained field Display/settings/view alone MUST NOT select field services after battle initialization.
 Unprofiled battle-loader black out/in use the existing modern delivery-only presentation service;
-matching receipts preserve battle actors/resources/RNG and do not publish an exploration world or
+delivery itself preserves battle actors/resources/RNG and does not publish an exploration world or
 perform field entity/view/window/portrait services. Explicit field-only FullBlack outside exploration
 MUST reject before helper publication. Persistent field settings and frozen old-view projection remain
 available to the loader facade and future return; no second mutable field world or palette clock is
-required. Load/start/intro and first input retain their existing ordering owners.
+required. Receipt continuation may run the existing load/start/intro and first-queue owners, including
+their ordinary queue RNG draws; those changes are not a field service or another delivery tick.
 
 Bound generic presentation effects and loader deliveries MUST suspend with the existing host
 focus/visibility rule, discard paused debt and resume without catch-up. Unbound and music policies
