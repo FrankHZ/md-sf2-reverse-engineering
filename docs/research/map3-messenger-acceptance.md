@@ -3687,6 +3687,32 @@ uninterrupted music19 result of505 driver updates does not establish an entity-s
 wall-clock duration or a fresh counter at SoundWait. Original logical/actual JOIN timing remains open.
 Single-member446/CLASS and sad-music progression retain separate capability/evidence boundaries.
 
+### Winning-lineage plain JOIN witness
+
+**Confirmed:** the accepted reference's `prepared-68` pair pins the natural selector128 JOIN at
+`0x51630`, under `cs_5149A`. Its checkpoints2573–2576 bind command19, raw text447 and dispatch/mailbox;
+2603–2607 bind text return, F0/FB requests and previous command8 dispatch/mailbox. Checkpoints2608/2609
+observe `WaitForPlayerInput` (`0x1576`) entry with input0 and return with input32/C, D0=3. Actual-input
+rows17234/17235 bracket that accepting callback with the same C command's applying/frame records.
+Close entry2610, JOIN return2612 and script return2621 precede follower-ready2624. F603 remains false
+through script return and is true at follower-ready, with no pending returns.
+
+Reproduce the bounded offline readback through `sf2tool.remake_h4_comparison compare
+--profile modern-continuous --original-join-evidence-root $selectedWitness` with the accepted
+reference, actual and material selections described by the
+[verification owner](../../remake/docs/development-and-verification.md#offline-plain-join-consumer-comparison).
+The explicit witness contains only `candidate.json`, `runtime/segment-pair.json`,
+`runtime/checkpoints.jsonl` and `runtime/actual-inputs.jsonl`; its existing pair/material/file seals
+must match the accepted reference. Embedded foreign paths are not followed. This does not validate
+resume capability or add an original runtime observation.
+
+**Inferred:** the unobserved music-helper return precedes the observed plain-helper entry, from the
+pinned `FadeOut_WaitForP1Input` call order. **Unknown:** that return's timestamp, original audible
+completion/restart, channel phase, F0 clearance, queue state, residual Sleep and service interleaving.
+Original dispatch/mailbox is not audible completion. The modern finite clock, whole-PCM finish and
+previous-track restart are accepted product behavior; host ticks do not replace original frames.
+PCs, row indices, text447 and measured seeds locate this witness, not gameplay legality.
+
 **Confirmed (bounded remake behavior):** general bound raw text consumes existing FieldText work,
 actual W1/W2 and reveal completion. Speakerless raw display retains admitted common services and
 does not invent an acknowledgement. Without finite metadata, bound SoundWait preserves completed state and reports

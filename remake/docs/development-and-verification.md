@@ -3306,3 +3306,28 @@ legacy applicability must remain unchanged. Use affected lint/design-contract ch
 planner/actual CI. This offline comparator slice needs no SDK/native/capture, new source acquisition,
 normal/full/H3 or verification-helper tests. Background/ground and audio material closure plus an
 actor/weapon subset leave four resource families, operation/consumer gaps and full H4 incomplete.
+
+### Offline plain JOIN consumer comparison
+
+Add `--original-join-evidence-root $selectedWitness` to the complete modern material comparison
+above. Select the four-file, byte-identical prepared68 witness explicitly in this worktree's ignored
+inputs, retaining `candidate.json` and the three `runtime/` relative filenames named by the
+[research owner](../../docs/research/map3-messenger-acceptance.md#winning-lineage-plain-join-witness).
+The comparator checks the existing accepted-reference pair pin, candidate material seal, two raw
+file seals and original ROM/upstream/observer/runner identity. It reads no embedded foreign paths,
+state file or binary and does not invoke the resume validator.
+
+Use the retained same-session actual observation, frozen party/settings, selected world/scene,
+complete material selections, baseline and reference. Reports retain original row anchors and actual
+sample, input ordinal, playback generation, helper token, receipt sequence and result-record anchors.
+The existing plain JOIN child requires all three actual bindings: completion/restart, plain input
+and dependent caller return. Bounded audio/caller subsets do not close the full audio or operation
+parents. Missing selections/required observations remain Unavailable; sealed-identity drift or an
+observed consumer contradiction is FAIL. Original completion remains Unknown.
+
+Run a fresh report/matrix with retained separate B/C/D reports; compare prior gameplay and all
+assertions outside this JOIN child/new subsets exactly. Directly check absent/drifted witness and
+actual-generation/input/caller contradictions, plus same-input legacy applicability. Use affected
+lint/design-contract checks, committed planner and actual CI. No new SDK/native/H3/capture,
+extraction/export, broad normal/full suite or verification-helper tests are required for this offline
+boundary. Preserve completed historical failures and full H4 Unavailable.

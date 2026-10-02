@@ -529,6 +529,33 @@ terminal voices; wait tokens are not playback IDs. Original resource selectors/p
 required dependent-consumer join remain separate Unknowns. Preserve them without queuing acquisition
 or adding untaken branches as prerequisites.
 
+### Bounded plain JOIN consumer binding
+
+The existing plain JOIN child may pass only with the explicit sealed
+[winning-lineage witness](../../research/map3-messenger-acceptance.md#winning-lineage-plain-join-witness)
+and actual finite-playback, input and dependent-caller bindings. Missing named evidence is
+Unavailable; observed contradiction is FAIL. Optional evidence never backfills another session.
+
+Bind logical end with actual playback still pending, matching playback generation at the finish
+signal, helper return, actual previous-track restart and its presentation completion before plain
+input. Generation identity and wait token are separate. A transitional snapshot may show restored
+domain music while the actual player still reports the completed JOIN generation; later plain-input
+projection must show the previous track playing without error. The unique music interval proves
+only this uninterrupted JOIN occurrence, not SFX voice generations or other interruptions.
+
+Early Wait and Confirm must produce no results or state change. Plain Wait services one tick with
+the same token/cursor; Confirm accepts that token, advances to text close and adds no tick or RNG
+draw. Neither is a W1/W2 occurrence. Close, the selected ten-tick program wait, follower/guard effects,
+script/caller continuation and F603 precede usable field input. Source operands remain the expected
+effects; actual observations supply occurrence and consumption. Indices, text IDs and measured
+seeds are evidence locators, never production restrictions.
+
+The comparator adds bounded JOIN playback/restart and caller subsets. Full audio
+replacement/fade/stop/resume, other operation/consumer/rule obligations and the four resource families
+remain Unavailable, keeping all five broad parents and full H4 incomplete. Unseen original helper
+return order is Inferred; original music completion and channel/F0/queue/residual/interleaving remain
+Unknown. Modern finite music remains the accepted deviation.
+
 The completed first D attempt stopped before battle at text 2297 with actual `AdapterError`
 `presentation-unavailable` / `audio-command-ambiguous`, even though `SessionResult.failure` was null.
 The old catalog lacked exact speech 70/73 at Timer B 189 and contained multiple other candidates.
