@@ -3379,7 +3379,8 @@ Run a fresh modern report and matrix with the retained B/C/D reports. Compare ga
 assertion outside these four children exactly, allowing their dependent summaries to change. Direct
 readback must cover missing selections/content/phase/gates, contradictory pointer/template/content,
 actual phase/motion/gates, and mixed contradictory plus missing observations: known False dominates
-missing evidence. Preserve report completeness and the matrix-only self-check boundary. Use affected
+missing evidence. Evaluate source, phase, each normalized motion contribution and consumed gate
+independently; a missing operand blocks only its dependent contribution. Preserve report completeness and the matrix-only self-check boundary. Use affected
 lint/document/contract checks, the committed planner and exact-head CI. This offline readback adds
 no capture, SDK/native launch, acquisition, export or verification-helper tests; preserve completed
 legacy, JOIN and source results and their failures.

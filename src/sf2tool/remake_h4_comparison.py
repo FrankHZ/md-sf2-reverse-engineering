@@ -1743,10 +1743,10 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
         slots={},
     )
 
-    def finish():
-        def combined(values):
-            return False if False in values else None if None in values else True
+    def combined(values):
+        return False if False in values else None if None in values else True
 
+    def finish():
         return dict(
             slots={slot: combined(values) for slot, values in parts.items()},
             motion=combined(motion_parts),
@@ -1778,19 +1778,26 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
     try:
         selected = read(world_path)
         identity = selected["provenance"]
-        source_ok = (
-            source_ok
-            and identity["commit"] == UPSTREAM
-            and identity["romSha256"] == ROM
-            and identity["repository"] == ACCEPTED_UPSTREAM_REPOSITORY
+        source_ok = combined(
+            [source_ok]
+            + [
+                None if identity.get(key) is None else identity[key] == expected
+                for key, expected in (
+                    ("commit", UPSTREAM),
+                    ("romSha256", ROM),
+                    ("repository", ACCEPTED_UPSTREAM_REPOSITORY),
+                )
+            ]
         )
         for values in parts.values():
             values.append(source_ok)
         motion_parts.append(source_ok)
-        map3 = next(m for m in selected["world"]["maps"] if m["id"] == "map-3")
+        map3 = next(
+            (m for m in selected.get("world", {}).get("maps", []) if m["id"] == "map-3"), {}
+        )
         states = [s["state"] for s in actual["samples"]]
         initial = states[0]
-        admitted = actual["admissionSnapshot"]["state"]
+        admitted = actual.get("admissionSnapshot", {}).get("state", {})
         expected_actions = [
             dict(op="wait", ticks=30),
             dict(op="speed", x=0, y=0),
@@ -1800,19 +1807,26 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
         candidates = [
             (i, s)
             for i, s in enumerate(states)
-            if "simulationTick" in s
+            if initial.get("simulationTick") is not None
+            and s.get("simulationTick") is not None
             and 0 < s["simulationTick"] - initial["simulationTick"] < next_wait
         ]
         later = candidates[0] if candidates else None
         if later:
             sample_index, consumed = later
-            prefix = []
-            for record in actual["warpRecords"]:
-                if record["result"]["revision"] > consumed["revision"]:
-                    break
-                prefix.extend(record["result"]["observations"])
-            # No caller action can reinstall/reset the three admitted streams.
-            no_reset = not any(o["Kind"] == "program-instruction" for o in prefix)
+            reset_parts = [True if "warpRecords" in actual else None]
+            for record in actual.get("warpRecords", []):
+                try:
+                    if record["result"]["revision"] > consumed["revision"]:
+                        break
+                    reset_parts.extend(
+                        None if o.get("Kind") is None else o["Kind"] != "program-instruction"
+                        for o in record["result"]["observations"]
+                    )
+                except KeyError:
+                    reset_parts.append(None)
+            # Missing reset evidence cannot hide an observed reinstall contradiction.
+            no_reset = combined(reset_parts)
             delta = consumed["simulationTick"] - initial["simulationTick"]
             anchors["consumption"] = dict(
                 sample=sample_index, logicalServices=delta, noProgramInstallation=no_reset
@@ -1820,25 +1834,41 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
 
         def movement(x, y, dx, dy, vx, vy, tx, ty, ax, ay, sx, sy, flags_a, flags_b):
             def sign(value):
-                return (value > 0) - (value < 0)
+                return None if value is None else (value > 0) - (value < 0)
 
-            # Travel is the carried total envelope used by acceleration/deceleration,
-            # not the current remaining distance. All distances use source tile384.
+            def difference(a, b):
+                return None if a is None or b is None else a - b
+
+            def tiles(value):
+                return None if value is None else value / 384
+
+            def bit(value, mask):
+                return None if value is None else bool(value & mask)
+
+            # Missing operands affect only their own normalized contribution.
+            remaining = [difference(dx, x), difference(dy, y)]
+            active = [None if d is None else d != 0 for d in remaining]
             return dict(
-                activeAxes=[x != dx, y != dy],
-                direction=[sign(dx - x), sign(dy - y)],
-                velocityDirection=[sign(vx) if x != dx else 0, sign(vy) if y != dy else 0],
-                travelTiles=[tx / 384, ty / 384],
-                remainingTiles=[abs(dx - x) / 384, abs(dy - y) / 384],
-                accelerationSteps=[ax / 384, ay / 384],
-                configuredSpeed=[sx / 384, sy / 384],
-                acceleration=[bool(flags_a & 1), bool(flags_a & 2)],
-                deceleration=[bool(flags_a & 4), bool(flags_a & 8)],
-                obstructable=bool(flags_a & 128),
-                mapCollision=bool(flags_a & 64),
-                entityCollision=bool(flags_a & 32),
-                autoFacing=bool(flags_b & 64),
+                activeAxes=active,
+                direction=[sign(d) for d in remaining],
+                velocityDirection=[
+                    None if moving is None else sign(v) if moving else 0
+                    for moving, v in zip(active, (vx, vy), strict=True)
+                ],
+                travelTiles=[tiles(tx), tiles(ty)],
+                remainingTiles=[tiles(None if d is None else abs(d)) for d in remaining],
+                accelerationSteps=[tiles(ax), tiles(ay)],
+                configuredSpeed=[tiles(sx), tiles(sy)],
+                acceleration=[bit(flags_a, 1), bit(flags_a, 2)],
+                deceleration=[bit(flags_a, 4), bit(flags_a, 8)],
+                obstructable=bit(flags_a, 128),
+                mapCollision=bit(flags_a, 64),
+                entityCollision=bit(flags_a, 32),
+                autoFacing=bit(flags_b, 64),
             )
+
+        def matches(expected, value):
+            return None if value is None else expected == value
 
         for ordinal, (slot, character, center) in enumerate(
             ((5, 130, (20, 13, 3)), (6, 131, (18, 10, 1)), (8, 133, (12, 9, 1)))
@@ -1854,44 +1884,50 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
                 pointer = int.from_bytes(raw[20:24], "big")
                 base = 0xFF5600 + ordinal * 50
                 offset = pointer - base
-                projected = next(e for e in ref["inherited"]["entities"] if e["physical"] == slot)
-                bound = (
-                    source_ok
-                    and len(raw) == 32
-                    and offset in (0, 40)
-                    and (
-                        raw_record["facts"]["entityIndexBytes"][character - 96] == slot
-                        and projected["actionScript"] == pointer
-                        and projected["waitTimer"] == raw[31]
-                        and (
-                            projected["x"],
-                            projected["y"],
-                            projected["destinationX"],
-                            projected["destinationY"],
-                        )
-                        == (word(0), word(2), word(12), word(14))
-                    )
+                projected = next(
+                    (e for e in ref["inherited"].get("entities", []) if e["physical"] == slot), {}
                 )
-                values.append(bound)
-                motion_parts.append(bound)
-                template = next(e for e in map3["entities"] if e["id"] == f"entity-{character}")
-                actions = template["actions"]
-                content_ok = actions == expected_actions + [
-                    dict(op="random-walk", x=center[0], y=center[1], radius=center[2]),
-                    dict(op="wait", ticks=next_wait),
-                    dict(op="jump", instruction=8),
-                ]
-                values[2] = bound and content_ok
-                motion_parts.append(bound and content_ok)
-                observed = next(e for e in initial["entities"] if e["slot"] == slot)
-                admission = next(e for e in admitted["entities"] if e["slot"] == slot)
+                bound_parts = [source_ok, len(raw) == 32, offset in (0, 40)]
+                index_binding = None
+                try:
+                    index_binding = raw_record["facts"]["entityIndexBytes"][character - 96] == slot
+                except (KeyError, IndexError):
+                    index_binding = None
+                bound_parts.append(index_binding)
+                for key, value in (
+                    ("actionScript", pointer),
+                    ("waitTimer", raw[31]),
+                    ("x", word(0)),
+                    ("y", word(2)),
+                    ("destinationX", word(12)),
+                    ("destinationY", word(14)),
+                ):
+                    bound_parts.append(matches(value, projected.get(key)))
+                values.extend(bound_parts)
+                motion_parts.extend(bound_parts)
+                content_ok = None
+                try:
+                    template = next(e for e in map3["entities"] if e["id"] == f"entity-{character}")
+                    content_ok = template["actions"] == expected_actions + [
+                        dict(op="random-walk", x=center[0], y=center[1], radius=center[2]),
+                        dict(op="wait", ticks=next_wait),
+                        dict(op="jump", instruction=8),
+                    ]
+                except (KeyError, StopIteration):
+                    pass
+                values[2] = content_ok
+                motion_parts.append(content_ok)
+                observed = next((e for e in initial.get("entities", []) if e["slot"] == slot), {})
+                admission = next((e for e in admitted.get("entities", []) if e["slot"] == slot), {})
                 cursor = 0 if offset == 0 else 9
                 moving = (word(0), word(2)) != (word(12), word(14))
-                values.append(
-                    observed["id"] == admission["id"] == template["id"]
-                    and observed["actionCursor"] == admission["actionCursor"] == cursor
-                    and observed["moving"] == admission["moving"] == moving
-                )
+                for state in (observed, admission):
+                    for key, value in (
+                        ("id", f"entity-{character}"),
+                        ("actionCursor", cursor),
+                        ("moving", moving),
+                    ):
+                        values.append(matches(value, state.get(key)))
                 expected = movement(
                     word(0),
                     word(2),
@@ -1912,7 +1948,7 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
                 def actual_movement(e):
                     return movement(
                         *(
-                            e[k]
+                            e.get(k)
                             for k in (
                                 "x",
                                 "y",
@@ -1928,12 +1964,20 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
                                 "speedY",
                             )
                         ),
-                        int(e["flagsA"]),
-                        int(e["flagsB"]),
+                        int(e["flagsA"]) if e.get("flagsA") is not None else None,
+                        int(e["flagsB"]) if e.get("flagsB") is not None else None,
                     )
 
                 actual_motion = actual_movement(observed)
-                motion_parts.append(expected == actual_motion == actual_movement(admission))
+                for state_motion in (actual_motion, actual_movement(admission)):
+                    for key, value in expected.items():
+                        actual_value = state_motion[key]
+                        if isinstance(value, list):
+                            motion_parts.extend(
+                                matches(v, a) for v, a in zip(value, actual_value, strict=True)
+                            )
+                        else:
+                            motion_parts.append(matches(value, actual_value))
                 anchors["slots"][slot] = dict(
                     base=base,
                     offset=offset,
@@ -1943,32 +1987,42 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
                     expectedMotion=expected,
                     actualMotion=actual_motion,
                 )
-                gate = None
+                gate_parts = [None]
                 if later:
-                    after = next(e for e in consumed["entities"] if e["slot"] == slot)
-                    gate = no_reset and after["id"] == observed["id"]
+                    after = next((e for e in consumed.get("entities", []) if e["slot"] == slot), {})
+                    gate_parts = [no_reset, matches(f"entity-{character}", after.get("id"))]
                     if offset == 0:
-                        gate = gate and raw[31] >= 30 and after["actionCursor"] in (8, 9)
+                        gate_parts.extend(
+                            (
+                                raw[31] >= 30,
+                                None
+                                if after.get("actionCursor") is None
+                                else after["actionCursor"] in (8, 9),
+                            )
+                        )
                     else:
-                        gate = gate and after["actionCursor"] == cursor
+                        gate_parts.append(matches(cursor, after.get("actionCursor")))
+                        gate_parts.append(matches(moving, after.get("moving")))
+                        gate_parts.append(
+                            matches(0 if moving else raw[31] + delta, after.get("waitTimer"))
+                        )
                         if moving:
-                            gate = (
-                                gate
-                                and after["moving"]
-                                and after["waitTimer"] == 0
-                                and (
-                                    (after["targetX"], after["targetY"]) == (word(12), word(14))
-                                    and abs(after["x"] - after["targetX"])
-                                    + abs(after["y"] - after["targetY"])
-                                    < abs(word(0) - word(12)) + abs(word(2) - word(14))
+                            gate_parts.extend(
+                                (
+                                    matches(word(12), after.get("targetX")),
+                                    matches(word(14), after.get("targetY")),
                                 )
                             )
-                        else:
-                            gate = (
-                                gate
-                                and not after["moving"]
-                                and after["waitTimer"] == raw[31] + delta
-                            )
+                            progress = None
+                            try:
+                                progress = abs(after["x"] - after["targetX"]) + abs(
+                                    after["y"] - after["targetY"]
+                                ) < abs(word(0) - word(12)) + abs(word(2) - word(14))
+                            except KeyError:
+                                progress = None
+                            gate_parts.append(progress)
+                gate = combined(gate_parts)
+                if later:
                     anchors["slots"][slot]["consumedGate"] = gate
                 values.append(gate)
                 motion_parts.append(gate)
