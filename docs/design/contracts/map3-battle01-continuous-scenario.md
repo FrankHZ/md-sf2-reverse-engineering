@@ -523,10 +523,22 @@ main draws use the existing original H3 generator model at each actual seed/rang
 remake RNG code. That arithmetic comparison does not prove a source draw-to-effect association, AI
 thinking stream, service opportunity or whole action rule. The original `RANDOM_SEED_COPY=0` versus
 actual null and ancestry-inferred mouth/view gates remain explicit; first-use relevance is not yet
-proved. Original `actionScript` pointers are retained in the provenance of each walking child, but no
-executable pointer/template/base/offset-to-cursor translation or source moving-gate binding is
-selected. Those cursor/moving children stay required-unobserved. Neither remake start values nor
-unequal coordinates supply original expectations. Full H4 remains incomplete.
+proved. With the explicit sealed R1 witness and selected compiled content, walking admission binds
+the three pointers through the pinned allocator/template to semantic cursor/moving state and consumed
+wait behavior. The [walking source owner](../../research/map3-messenger-acceptance.md#walking-admission-continuation)
+supplies expected phases; remake start values and program names do not supply them. Without that
+selection these existing children remain Unavailable. Full H4 remains incomplete.
+
+The existing walking motion/readiness child compares active axes and direction, carried total travel
+and remaining distance in tile units, configured speed/acceleration operands, acceleration/deceleration,
+collision/obstruction and auto-facing gates. Total travel is not reconstructed from remaining distance.
+Original velocity magnitude/storage and frame duration are outside the modern-clock boundary; signed
+direction and actual blocked/unblocked continuation remain required. Unused flag bits remain provenance
+rather than new register-equality requirements. The first same-session sample inside the source-derived
+next-wait duration demonstrates consumption without fixing a sample index or service count. The hidden
+`WaitingForMotion` boolean is Inferred; its observed wait/motion effects are Confirmed. This admission
+binding does not close the full awaited motion/gesture/fade or entity-consumer families, original natural
+timing, whole-route NPC/RNG scheduling or collision corpus.
 
 Remaining operation/rule/resource/consumer joins name their required operands and missing side.
 The source-PC to typed-instruction correspondence, matched action preconditions, per-resource
