@@ -2802,6 +2802,14 @@ independent occurrences. False must dominate missing in both directions. These a
 checks, not a helper unit suite. Exact common gameplay, unaffected assertion values/applicability,
 closed inventory/#595 integrity and each variant's own evidence remain required.
 
+The phase checks include partial consumer loss while logical producers and phase contexts survive:
+missing Nod lowered use, shiver alternating use or a mosaic block cannot be replaced by a surviving
+normal/pre-Update draw. Logical visibility and viewport geometry preserve hidden/culled applicability.
+Direct corrections also check held policy, premature field-input readiness, entry-saved period and
+palette continuity, shiver saved-state continuity, and independent contradictions alongside missing
+phase/operand evidence. The original PR603 candidate and root's completed readbacks remain discovery
+evidence; corrected reports use fresh destinations and the same immutable clean `new-A-02` capture.
+
 The candidate comparison closes these two children only. The retained text-material A's22 and
 B/C/D's37 remaining-child results stay attached to their own immutable observations. Independent
 review decides acceptance of the new candidate; all five broad families and full H4 remain

@@ -2386,6 +2386,20 @@ def field_motion_binding(actual, selection, source_root):
             spans = source_spans[loc["Program"]]
             occurrence["sourceProducerOrdinal"] = ordinal
             occurrence["sourceOperation"] = spans[ordinal] if ordinal < len(spans) else None
+        for state in states:
+            if (
+                role != "motion"
+                or (ins or {}).get("wait")
+                or state.get("wait")
+                in ("EntityWait", "NodWait", "FullFadeWait", "PresentationWait")
+            ):
+                operand(
+                    "operation",
+                    token,
+                    "pending wait blocks field input readiness",
+                    [state.get("canWaitAtInput")],
+                    lambda ready: ready is False,
+                )
         if ins is None:
             # Absent source operands cannot hide a contradiction between the
             # logical wait and its predicate release in this same session.
@@ -2483,6 +2497,16 @@ def field_motion_binding(actual, selection, source_root):
                     if role == "nod"
                     else None
                 )
+                if role == "motion":
+                    operand(
+                        "operation",
+                        token,
+                        "held source wait policy",
+                        [(wait or {}).get("Completion")],
+                        lambda policy, ins=ins: (
+                            policy == (0 if ins.get("installation") == "Preserve" else 1)
+                        ),
+                    )
                 if role in ("motion", "nod"):
                     for family in ("operation", "consumer"):
                         operand(
@@ -2822,15 +2846,45 @@ def field_motion_binding(actual, selection, source_root):
                         ),
                     )
                     display = (terminal or {}).get("display") or {}
+                    fade_entry = next((s for s in fade_rows if s["fade"].get("Entry") == 0), None)
+                    saved = (fade_entry or {}).get("fade") or {}
+                    temporary = ins["resource"] == "white" or bool(
+                        (ins.get("fullBlack") or {}).get("period")
+                    )
+                    restored_period = (
+                        saved.get("RestorePeriod") if temporary else saved.get("Period")
+                    )
+                    entry_base = ((fade_entry or {}).get("display") or {}).get("Base")
+                    for state in fade_rows:
+                        held = state["fade"]
+                        check(
+                            "operation",
+                            "saved fade period continuity",
+                            None
+                            if "RestorePeriod" not in saved or "RestorePeriod" not in held
+                            else held["RestorePeriod"] == saved["RestorePeriod"],
+                            token,
+                        )
+                        operand(
+                            "operation",
+                            token,
+                            "held fade period continuity",
+                            [held.get("Period"), saved.get("Period")],
+                            lambda a, b: a == b,
+                        )
+                        operand(
+                            "operation",
+                            token,
+                            "saved palette continuity",
+                            [(state.get("display") or {}).get("Base"), entry_base],
+                            lambda a, b: a == b,
+                        )
                     operand(
                         "operation",
                         token,
                         "full-fade period restoration",
-                        [display.get("Period"), f.get("Period")],
-                        lambda a, b, f=f: (
-                            a
-                            == (f.get("RestorePeriod") if f.get("RestorePeriod") is not None else b)
-                        ),
+                        [display.get("Period"), restored_period],
+                        lambda a, b: a == b,
                     )
                     if ins["resource"] == "white" or (ins.get("fullBlack") or {}).get("period"):
                         expected_period = (
@@ -2844,12 +2898,11 @@ def field_motion_binding(actual, selection, source_root):
                             lambda a, expected_period=expected_period: a == expected_period,
                         )
                     current = display.get("Current") or {}
-                    base = display.get("Base") or {}
                     operand(
                         "operation",
                         token,
                         "full-fade logical palette endpoint",
-                        [current or None, base or None],
+                        [current or None, entry_base],
                         lambda a, b, ins=ins: (
                             a == b
                             if ins["kind"] == "FadeIn"
@@ -2858,6 +2911,16 @@ def field_motion_binding(actual, selection, source_root):
                     )
                 if ins.get("resource") == "shiver":
                     restore = ((entry or {}).get("presentationWait") or {}).get("Restore") or {}
+                    for state in states:
+                        held_restore = (state.get("presentationWait") or {}).get("Restore") or {}
+                        for field in ("AnimationCounter", "SpriteSize"):
+                            operand(
+                                "operation",
+                                token,
+                                "saved shiver " + field + " continuity",
+                                [held_restore.get(field), restore.get(field)],
+                                lambda a, b: a == b,
+                            )
                     after = record_by_event.get((end or {}).get("Sequence"), {}).get("state", {})
                     if after.get("spriteSize") is None and end:
                         candidates = [
@@ -2929,6 +2992,102 @@ def field_motion_binding(actual, selection, source_root):
 
             draws = [b for b in rows if b.get("projectionStage") == "frame-post-draw"]
             used = []
+            effect = "nod" if role == "nod" else ins.get("resource")
+            phases = (
+                ("normal-before", "lowered", "normal-after")
+                if effect == "nod"
+                else (-1, 1)
+                if effect == "shiver"
+                else (8, 6, 4, 2, 1)
+                if effect in ("mosaic-in", "mosaic-out")
+                else ()
+            )
+            applicability = {phase: [] for phase in phases}
+            phase_use = set()
+
+            def semantic_phases(state, effect=effect, subject=subject, token=token):
+                if effect == "nod":
+                    age = (state.get("nod") or {}).get("Elapsed")
+                    return (
+                        ()
+                        if age is None
+                        else (
+                            "normal-before"
+                            if age < 10
+                            else "lowered"
+                            if age < 30
+                            else "normal-after",
+                        )
+                    )
+                cue = state.get("presentationCue") or {}
+                age = cue.get("elapsed")
+                if age is None or cue.get("token") != token:
+                    return ()
+                if (
+                    effect == "shiver"
+                    and cue.get("gesture") == subject
+                    and cue.get("shivering") is True
+                ):
+                    return tuple(
+                        {
+                            1 if int(max(0, age + d) * 60 / 5) % 2 == 0 else -1
+                            for d in (-1e-14, 1e-14)
+                        }
+                    )
+                if effect in ("mosaic-in", "mosaic-out") and cue.get("mosaic") == subject:
+                    age = 0.5 - age if effect == "mosaic-out" else age
+                    return tuple(
+                        {
+                            8
+                            if a < 0.1
+                            else 6
+                            if a < 0.2
+                            else 4
+                            if a < 0.3
+                            else 2
+                            if a < 0.4
+                            else 1
+                            for a in (age - 1e-14, age + 1e-14)
+                        }
+                    )
+                return ()
+
+            for state in states:
+                logical = entity(state, subject)
+                presentation = state.get("presentation") or {}
+                visible = None
+                x = y = None
+                if logical is not None and logical.get("Visible") is False:
+                    visible = False
+                elif logical is not None and all(
+                    value is not None
+                    for value in (
+                        logical.get("x"),
+                        logical.get("y"),
+                        logical.get("Visible"),
+                        presentation.get("cameraX"),
+                        presentation.get("cameraY"),
+                    )
+                ):
+                    x = logical["x"] / 16 - presentation["cameraX"]
+                    y = logical["y"] / 16 - presentation["cameraY"]
+                    # Semantic coverage follows logical pose and the accepted
+                    # 320x192 viewport, independently of surviving actor draws.
+                    visible = (
+                        logical["Visible"] and x + 24 > 0 and y + 24 > 0 and x < 320 and y < 192
+                    )
+                for phase in semantic_phases(state):
+                    phase_visible = visible
+                    if x is not None and y is not None:
+                        phase_x = x + (phase if effect == "shiver" else 0)
+                        phase_visible = (
+                            logical["Visible"]
+                            and phase_x + 24 > 0
+                            and y + 24 > 0
+                            and phase_x < 320
+                            and y < 192
+                        )
+                    applicability[phase].append(phase_visible)
             for b in draws:
                 s = b["state"]
                 p = s.get("cameraProjection") or {}
@@ -3067,6 +3226,52 @@ def field_motion_binding(actual, selection, source_root):
                         ],
                         intersects,
                     )
+                    if semantic_phases(s) and effect == "shiver":
+                        cue = p.get("cue") or {}
+                        operand(
+                            "consumer",
+                            token,
+                            "active shiver draw subject",
+                            [cue.get("gesture")],
+                            lambda a, subject=subject: a == subject,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "active shiver draw flag",
+                            [cue.get("shivering")],
+                            lambda a: a is True,
+                        )
+                    if semantic_phases(s) and effect in ("mosaic-in", "mosaic-out"):
+                        cue = p.get("cue") or {}
+                        operand(
+                            "consumer",
+                            token,
+                            "active mosaic draw subject",
+                            [cue.get("mosaic")],
+                            lambda a, subject=subject: a == subject,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "active mosaic draw direction",
+                            [cue.get("mosaicOut")],
+                            lambda a, effect=effect: a is (effect == "mosaic-out"),
+                        )
+                    if actor.get("visible") is True:
+                        if role == "nod" and actor.get("gesture") is True:
+                            phase_use.update(semantic_phases(s))
+                        elif (
+                            effect == "shiver"
+                            and (p.get("cue") or {}).get("shivering") is True
+                            and (p.get("cue") or {}).get("gesture") == subject
+                        ):
+                            phase_use.add(actor.get("shiverOffsetX"))
+                        elif (
+                            effect in ("mosaic-in", "mosaic-out")
+                            and (p.get("cue") or {}).get("mosaic") == subject
+                        ):
+                            phase_use.add(actor.get("mosaicBlock"))
                     if role == "nod":
                         nod = s.get("nod") or {}
                         operand(
@@ -3153,6 +3358,17 @@ def field_motion_binding(actual, selection, source_root):
                                 [cue.get("elapsed"), actor.get("mosaicBlock")],
                                 mosaic,
                             )
+            for phase, visibility in applicability.items():
+                check(
+                    "consumer",
+                    "required visible semantic phase " + str(phase),
+                    True
+                    if phase in phase_use
+                    else True
+                    if visibility and all(value is False for value in visibility)
+                    else None,
+                    token,
+                )
             # Generic loader fades after mounting have a frozen field camera; their
             # live modulation and handoff are the actual consumer, not a new actor draw.
             if subject is None and role != "full-fade":

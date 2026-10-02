@@ -704,3 +704,14 @@ use. Deleting every consumer channel for a produced occurrence must preserve tha
 leave the whole join Unavailable. No mandatory row, partial PASS subset or normalization exception
 is added. Existing original evidence, older variant applicability and all other families retain
 their own acceptance boundaries; these two joins cannot close full H4.
+
+Necessary visible gesture phases are obligations independent of surviving draw records: Nod's
+normal-before/lowered/normal-after phases, shiver's two alternating offsets and mosaic's directed
+block progression. Logical pose and the accepted viewport determine phase visibility; hidden or
+culled phases require no forced draw. A surviving initial pre-Update drawing cannot establish
+later phase use. Missing a whole necessary visible phase is Unavailable; an independently wrong
+surviving phase is FAIL. Held EntityWait policy must agree with source and predicate release, and
+pending motion/effect waits cannot expose field-input readiness. Missing fields are assessed
+independently. Saved fade period and palette base, and shiver restoration operands, retain their
+entry identity through the wait; restoration compares the completed state against that entry,
+never against a matching value invented in the terminal record.
