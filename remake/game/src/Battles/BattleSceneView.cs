@@ -369,6 +369,7 @@ internal sealed partial class BattleSceneView : Control
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind,
+        reactionAmount = _state?.Amount,
         item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell,
         spellAnimationSelector = _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
@@ -380,10 +381,30 @@ internal sealed partial class BattleSceneView : Control
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
         background = BoundResource(_background), backgroundWrap = BoundResource(_backgroundWrap), ground = BoundResource(_ground),
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,
-        visibleCharacters = _message.VisibleCharacters, allyStatus = _allyStatus.Text, enemyStatus = _enemyStatus.Text,
+        visibleCharacters = _message.VisibleCharacters, messageFont = ObserveMessageFont(),
+        allyStatus = _allyStatus.Text, enemyStatus = _enemyStatus.Text,
         allyX = _ally.Position.X, allyY = _ally.Position.Y, enemyX = _enemy.Position.X, enemyY = _enemy.Position.Y,
         backgroundX = _background.Position.X, groundX = _ground.Position.X, weaponX = _weapon.Position.X,
     };
+    private object ObserveMessageFont()
+    {
+        var font = _message.LabelSettings?.Font ?? _message.GetThemeFont("font");
+        var server = TextServerManager.GetPrimaryInterface();
+        // These are the mounted Label's resolved font/fallback caches. Public
+        // Label APIs do not expose which face shaped each character.
+        return new
+        {
+            visible = _message.IsVisibleInTree(),
+            size = _message.LabelSettings?.FontSize ?? _message.GetThemeFontSize("font_size"),
+            resourceClass = font.GetClass().ToString(),
+            faces = font.GetRids().Select(rid => new
+            {
+                family = server.FontGetName(rid), style = server.FontGetStyleName(rid),
+                faceIndex = server.FontGetFaceIndex(rid),
+                allowSystemFallback = server.FontIsAllowSystemFallback(rid),
+            }).ToArray(),
+        };
+    }
     private static object BoundResource(Sprite2D node) => new
     {
         resource = node.HasMeta("bound_resource") ? node.GetMeta("bound_resource").AsString() : null,
