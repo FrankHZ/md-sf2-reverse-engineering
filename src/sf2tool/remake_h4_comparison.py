@@ -1725,6 +1725,318 @@ def modern_report_integrity(report, ref):
     return errors
 
 
+def walking_admission_binding(ref, actual, evidence_root, world_path, original_binding):
+    """Translate the pinned R1 walking continuation, then observe its consumption.
+
+    The 50-byte eas_Walking layout includes the branch's external displacement.
+    ClearEntities/SetWalkingActscript own these buffers; addresses locate this
+    witness only. UpdateEntityData/esc01 define movement and destination waiting.
+    No original velocity magnitude or frame duration is a modern expectation.
+    """
+    parts = {slot: [original_binding] for slot in (5, 6, 8)}
+    motion_parts = [original_binding]
+    anchors = dict(
+        source=ref["inherited"]["source"],
+        upstream=UPSTREAM,
+        template="eas_Walking:50bytes; wait30@0/randomWalk@32/waitDest@40/wait20@42/branch@46",
+        hiddenMotionGate="Inferred",
+        slots={},
+    )
+
+    def combined(values):
+        return False if False in values else None if None in values else True
+
+    def finish():
+        return dict(
+            slots={slot: combined(values) for slot, values in parts.items()},
+            motion=combined(motion_parts),
+            anchors=anchors,
+        )
+
+    if original_binding is not True:
+        return finish()
+    if world_path is None or evidence_root is None:
+        for values in parts.values():
+            values.append(None)
+        motion_parts.append(None)
+        return finish()
+    evidence_root, world_path = (
+        p.resolve() if p.is_absolute() else repo_path(p) for p in (evidence_root, world_path)
+    )
+    # Plain JOIN has already verified the accepted pair/material/raw-file seals.
+    checkpoints = [row for _, row in rows(evidence_root / "runtime/checkpoints.jsonl")]
+    raw_record = checkpoints[1]
+    source_ok = raw_record["kind"] == "r1:inherited-status-and-live-entities" and (
+        raw_record["order"] == ref["inherited"]["source"]["order"]
+        and ref["inherited"]["source"]["record"] == "prepared-68/runtime/checkpoints.jsonl:2"
+    )
+    for values in parts.values():
+        values.extend((source_ok, None))
+    motion_parts.extend((source_ok, None))
+    if not world_path.is_file():
+        return finish()
+    try:
+        selected = read(world_path)
+        identity = selected["provenance"]
+        source_ok = combined(
+            [source_ok]
+            + [
+                None if identity.get(key) is None else identity[key] == expected
+                for key, expected in (
+                    ("commit", UPSTREAM),
+                    ("romSha256", ROM),
+                    ("repository", ACCEPTED_UPSTREAM_REPOSITORY),
+                )
+            ]
+        )
+        for values in parts.values():
+            values.append(source_ok)
+        motion_parts.append(source_ok)
+        map3 = next(
+            (m for m in selected.get("world", {}).get("maps", []) if m["id"] == "map-3"), {}
+        )
+        states = [s["state"] for s in actual["samples"]]
+        initial = states[0]
+        admitted = actual.get("admissionSnapshot", {}).get("state", {})
+        expected_actions = [
+            dict(op="wait", ticks=30),
+            dict(op="speed", x=0, y=0),
+            dict(op="acceleration", x=1, y=1),
+        ] + [dict(op="flags", field="a", mask=mask, value=mask) for mask in (3, 12, 128, 64, 32)]
+        next_wait = 20  # Source wait20 follows waitDest, not a measured host duration.
+        candidates = [
+            (i, s)
+            for i, s in enumerate(states)
+            if initial.get("simulationTick") is not None
+            and s.get("simulationTick") is not None
+            and 0 < s["simulationTick"] - initial["simulationTick"] < next_wait
+        ]
+        later = candidates[0] if candidates else None
+        if later:
+            sample_index, consumed = later
+            reset_parts = [True if "warpRecords" in actual else None]
+            for record in actual.get("warpRecords", []):
+                try:
+                    if record["result"]["revision"] > consumed["revision"]:
+                        break
+                    reset_parts.extend(
+                        None if o.get("Kind") is None else o["Kind"] != "program-instruction"
+                        for o in record["result"]["observations"]
+                    )
+                except KeyError:
+                    reset_parts.append(None)
+            # Missing reset evidence cannot hide an observed reinstall contradiction.
+            no_reset = combined(reset_parts)
+            delta = consumed["simulationTick"] - initial["simulationTick"]
+            anchors["consumption"] = dict(
+                sample=sample_index, logicalServices=delta, noProgramInstallation=no_reset
+            )
+
+        def movement(x, y, dx, dy, vx, vy, tx, ty, ax, ay, sx, sy, flags_a, flags_b):
+            def sign(value):
+                return None if value is None else (value > 0) - (value < 0)
+
+            def difference(a, b):
+                return None if a is None or b is None else a - b
+
+            def tiles(value):
+                return None if value is None else value / 384
+
+            def bit(value, mask):
+                return None if value is None else bool(value & mask)
+
+            # Missing operands affect only their own normalized contribution.
+            remaining = [difference(dx, x), difference(dy, y)]
+            active = [None if d is None else d != 0 for d in remaining]
+            return dict(
+                activeAxes=active,
+                direction=[sign(d) for d in remaining],
+                velocityDirection=[
+                    None if moving is None else sign(v) if moving else 0
+                    for moving, v in zip(active, (vx, vy), strict=True)
+                ],
+                travelTiles=[tiles(tx), tiles(ty)],
+                remainingTiles=[tiles(None if d is None else abs(d)) for d in remaining],
+                accelerationSteps=[tiles(ax), tiles(ay)],
+                configuredSpeed=[tiles(sx), tiles(sy)],
+                acceleration=[bit(flags_a, 1), bit(flags_a, 2)],
+                deceleration=[bit(flags_a, 4), bit(flags_a, 8)],
+                obstructable=bit(flags_a, 128),
+                mapCollision=bit(flags_a, 64),
+                entityCollision=bit(flags_a, 32),
+                autoFacing=bit(flags_b, 64),
+            )
+
+        def matches(expected, value):
+            return None if value is None else expected == value
+
+        for ordinal, (slot, character, center) in enumerate(
+            ((5, 130, (20, 13, 3)), (6, 131, (18, 10, 1)), (8, 133, (12, 9, 1)))
+        ):
+            values = parts[slot]
+            try:
+                entity = next(e for e in raw_record["facts"]["entities"] if e["physical"] == slot)
+                raw = bytes(entity["bytes"])
+
+                def word(offset, signed=False, data=raw):
+                    return int.from_bytes(data[offset : offset + 2], "big", signed=signed)
+
+                pointer = int.from_bytes(raw[20:24], "big")
+                base = 0xFF5600 + ordinal * 50
+                offset = pointer - base
+                projected = next(
+                    (e for e in ref["inherited"].get("entities", []) if e["physical"] == slot), {}
+                )
+                bound_parts = [source_ok, len(raw) == 32, offset in (0, 40)]
+                index_binding = None
+                try:
+                    index_binding = raw_record["facts"]["entityIndexBytes"][character - 96] == slot
+                except (KeyError, IndexError):
+                    index_binding = None
+                bound_parts.append(index_binding)
+                for key, value in (
+                    ("actionScript", pointer),
+                    ("waitTimer", raw[31]),
+                    ("x", word(0)),
+                    ("y", word(2)),
+                    ("destinationX", word(12)),
+                    ("destinationY", word(14)),
+                ):
+                    bound_parts.append(matches(value, projected.get(key)))
+                values.extend(bound_parts)
+                motion_parts.extend(bound_parts)
+                content_ok = None
+                try:
+                    template = next(e for e in map3["entities"] if e["id"] == f"entity-{character}")
+                    content_ok = template["actions"] == expected_actions + [
+                        dict(op="random-walk", x=center[0], y=center[1], radius=center[2]),
+                        dict(op="wait", ticks=next_wait),
+                        dict(op="jump", instruction=8),
+                    ]
+                except (KeyError, StopIteration):
+                    pass
+                values[2] = content_ok
+                motion_parts.append(content_ok)
+                observed = next((e for e in initial.get("entities", []) if e["slot"] == slot), {})
+                admission = next((e for e in admitted.get("entities", []) if e["slot"] == slot), {})
+                cursor = 0 if offset == 0 else 9
+                moving = (word(0), word(2)) != (word(12), word(14))
+                for state in (observed, admission):
+                    for key, value in (
+                        ("id", f"entity-{character}"),
+                        ("actionCursor", cursor),
+                        ("moving", moving),
+                    ):
+                        values.append(matches(value, state.get(key)))
+                expected = movement(
+                    word(0),
+                    word(2),
+                    word(12),
+                    word(14),
+                    word(4, True),
+                    word(6, True),
+                    word(8),
+                    word(10),
+                    raw[24],
+                    raw[25],
+                    raw[26],
+                    raw[27],
+                    raw[28],
+                    raw[29],
+                )
+
+                def actual_movement(e):
+                    return movement(
+                        *(
+                            e.get(k)
+                            for k in (
+                                "x",
+                                "y",
+                                "targetX",
+                                "targetY",
+                                "velocityX",
+                                "velocityY",
+                                "travelX",
+                                "travelY",
+                                "accelerationX",
+                                "accelerationY",
+                                "speedX",
+                                "speedY",
+                            )
+                        ),
+                        int(e["flagsA"]) if e.get("flagsA") is not None else None,
+                        int(e["flagsB"]) if e.get("flagsB") is not None else None,
+                    )
+
+                actual_motion = actual_movement(observed)
+                for state_motion in (actual_motion, actual_movement(admission)):
+                    for key, value in expected.items():
+                        actual_value = state_motion[key]
+                        if isinstance(value, list):
+                            motion_parts.extend(
+                                matches(v, a) for v, a in zip(value, actual_value, strict=True)
+                            )
+                        else:
+                            motion_parts.append(matches(value, actual_value))
+                anchors["slots"][slot] = dict(
+                    base=base,
+                    offset=offset,
+                    character=character,
+                    expectedCursor=cursor,
+                    expectedMoving=moving,
+                    expectedMotion=expected,
+                    actualMotion=actual_motion,
+                )
+                gate_parts = [None]
+                if later:
+                    after = next((e for e in consumed.get("entities", []) if e["slot"] == slot), {})
+                    gate_parts = [no_reset, matches(f"entity-{character}", after.get("id"))]
+                    if offset == 0:
+                        gate_parts.extend(
+                            (
+                                raw[31] >= 30,
+                                None
+                                if after.get("actionCursor") is None
+                                else after["actionCursor"] in (8, 9),
+                            )
+                        )
+                    else:
+                        gate_parts.append(matches(cursor, after.get("actionCursor")))
+                        gate_parts.append(matches(moving, after.get("moving")))
+                        gate_parts.append(
+                            matches(0 if moving else raw[31] + delta, after.get("waitTimer"))
+                        )
+                        if moving:
+                            gate_parts.extend(
+                                (
+                                    matches(word(12), after.get("targetX")),
+                                    matches(word(14), after.get("targetY")),
+                                )
+                            )
+                            progress = None
+                            try:
+                                progress = abs(after["x"] - after["targetX"]) + abs(
+                                    after["y"] - after["targetY"]
+                                ) < abs(word(0) - word(12)) + abs(word(2) - word(14))
+                            except KeyError:
+                                progress = None
+                            gate_parts.append(progress)
+                gate = combined(gate_parts)
+                if later:
+                    anchors["slots"][slot]["consumedGate"] = gate
+                values.append(gate)
+                motion_parts.append(gate)
+            except (KeyError, IndexError, StopIteration):
+                values.append(None)
+                motion_parts.append(None)
+        motion_parts[2] = source_ok
+    except (KeyError, IndexError, StopIteration):
+        for values in parts.values():
+            values.append(None)
+        motion_parts.append(None)
+    return finish()
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -1742,6 +2054,19 @@ def compare_modern(
     samples = actual.get("samples", [])
     require(samples, "modern actual lacks samples")
     records = actual.get("warpRecords", [])
+    join = plain_join_binding(
+        ref,
+        actual,
+        original_join_evidence_root,
+        material_selection[0] if material_selection else None,
+    )
+    walking = walking_admission_binding(
+        ref,
+        actual,
+        original_join_evidence_root,
+        material_selection[0] if material_selection else None,
+        join["original"],
+    )
     assertions = []
     obligations = {}
 
@@ -2154,20 +2479,20 @@ def compare_modern(
         check(
             1,
             f"admission walking slot {slot} cursor/moving source binding",
-            "original pointer/template/base/offset to cursor, and source moving-gate readback",
-            {k: modern.get(k) for k in ("actionCursor", "moving")},
+            True,
+            walking["slots"][slot],
             f"samples[0].entities[slot={slot}].actionCursor/moving",
             dict(
                 **ref["inherited"]["source"],
                 binding=f"inherited.entities[physical={slot}].actionScript",
                 actionScript=original_entity["actionScript"],
+                admissionBinding=walking["anchors"],
             ),
-            applicability="required-unobserved",
             parent=phase_parent,
-            missing_side="original pointer/template/offset and moving-gate translation",
-            reason="The original pointer is retained but no executable source translation/gate "
-            "binding is selected. Actual cursor/moving or coordinate differences cannot supply "
-            "original expectations",
+            missing_side="selected source/content/actual phase or consumed gate",
+            reason="Pinned allocator/template and raw R1 identity/pointer translate the phase; "
+            "actual admission plus blocked/unblocked continuation consume it. "
+            "Hidden gate is Inferred",
         )
     for ally in admission["accounting"]["allies"][:3]:
         selected = candidate_allies.get(ally["id"])
@@ -2213,15 +2538,19 @@ def compare_modern(
     check(
         1,
         "walking motion gate/velocity/travel/flags correspondence",
-        "selected R1 walking motion fields and waiting-for-motion gate",
-        None,
+        True,
+        walking["motion"],
         "samples[0].entities[slot=5/6/8]",
-        dict(**ref["inherited"]["source"], owner="docs/research/map3-messenger-acceptance.md"),
+        dict(
+            **ref["inherited"]["source"],
+            owner="docs/research/map3-messenger-acceptance.md",
+            admissionBinding=walking["anchors"],
+        ),
         parent=phase_parent,
-        missing_side="source motion-field join and actual motion gate",
-        reason="Selected reference omits the raw motion bytes; actual projection omits "
-        "WaitingForMotion. Matched geometry and directly observed wait timers do not fill these "
-        "operands or prove the cursor/moving translation",
+        missing_side="selected source/content/actual movement or consumed gate",
+        reason="Source consumer normalization preserves direction, carried travel, acceleration/"
+        "deceleration and collision/auto-facing gates; "
+        "no hardware velocity magnitude/frame equality",
     )
 
     events = [
@@ -3065,12 +3394,6 @@ def compare_modern(
         )
 
     consumer_parent = "required unshimmed ack and scene consumer binding"
-    join = plain_join_binding(
-        ref,
-        actual,
-        original_join_evidence_root,
-        material_selection[0] if material_selection else None,
-    )
     for name, value, parent, layer in (
         ("bounded JOIN original witness binding", join["original"], consumer_parent, 9),
         ("bounded JOIN finite playback and previous restart", join["audio"], consumer_parent, 9),
@@ -3396,6 +3719,7 @@ def compare_modern(
             audioLifecycle=audio_lifecycle,
             reachedMaterialJoins=materials["joins"],
             plainJoinBinding=join,
+            walkingAdmissionBinding=walking,
         ),
         counts=counts,
         historicalCounts=dict(

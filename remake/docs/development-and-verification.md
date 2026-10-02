@@ -3354,3 +3354,33 @@ actual-generation/input/caller contradictions, plus same-input legacy applicabil
 lint/design-contract checks, committed planner and actual CI. No new SDK/native/H3/capture,
 extraction/export, broad normal/full suite or verification-helper tests are required for this offline
 boundary. Preserve completed historical failures and full H4 Unavailable.
+
+### Offline walking admission comparison
+
+Use the complete modern material comparison and the same explicitly selected, sealed
+`--original-join-evidence-root` witness above. Its R1 checkpoint supplies the three live walking
+records; the [research owner](../../docs/research/map3-messenger-acceptance.md#walking-admission-continuation)
+owns the pinned allocator, 50-byte template, map declarations and movement consumers. The selected
+world must retain the matching original identity and compiled walking actions. Modern start inputs
+and program names do not supply original expectations.
+
+The existing three cursor/moving children bind R1 pointers, physical/character lookup, wait and
+geometry to the selected content and actual admission/sample-zero phase. The existing motion child
+compares active axes, destination and velocity direction, carried total travel, remaining distance,
+acceleration/deceleration, obstruction, map/entity collision and auto-facing gates. Total travel is
+independent of remaining distance. Original velocity magnitudes and hardware-frame equality are
+excluded. A later same-session sample inside the source next-wait duration must demonstrate
+consumption without a caller reinstall; neither a fixed sample index nor a measured tick count
+defines gameplay. The hidden `WaitingForMotion` value remains Inferred; its observed consumption
+effects are Confirmed only at this seam. Full awaited/entity motion, gesture and fade families remain
+Unavailable.
+
+Run a fresh modern report and matrix with the retained B/C/D reports. Compare gameplay and every
+assertion outside these four children exactly, allowing their dependent summaries to change. Direct
+readback must cover missing selections/content/phase/gates, contradictory pointer/template/content,
+actual phase/motion/gates, and mixed contradictory plus missing observations: known False dominates
+missing evidence. Evaluate source, phase, each normalized motion contribution and consumed gate
+independently; a missing operand blocks only its dependent contribution. Preserve report completeness and the matrix-only self-check boundary. Use affected
+lint/document/contract checks, the committed planner and exact-head CI. This offline readback adds
+no capture, SDK/native launch, acquisition, export or verification-helper tests; preserve completed
+legacy, JOIN and source results and their failures.

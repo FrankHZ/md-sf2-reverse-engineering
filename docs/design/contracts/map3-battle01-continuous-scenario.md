@@ -511,7 +511,7 @@ The closed required child families for the reached winning profile are:
 | Parent | Required children and comparison boundary |
 | --- | --- |
 | Three actor item parents | Each actor's complete four effective ushort slots; independently compared candidate definition slots; actual admission loadout identity and override/progress/definition resolution. Later inventories corroborate only. |
-| Relevant admission phase/fields | Named R1 flags and joined/active lists; neutral logical consumer readiness; seed-copy observation/relevance; opening mouth/view gates; occupied physical slots and position/destination/facing/layer; direct slot5/6/8 original waitTimer equality, unproved pointer/template/offset-to-cursor and source moving-gate bindings, and motion gate/velocity/travel/flags correspondence; candidate class/level/maxima/stats/spell words and same-run effective definition identity. Do not require unobserved complete flags, padding accounting, RAM-PC equality or hardware time. |
+| Relevant admission phase/fields | Named R1 flags and joined/active lists; neutral logical consumer readiness; seed-copy observation/relevance; opening mouth/view gates; occupied physical slots and position/destination/facing/layer; direct slot5/6/8 original waitTimer equality, explicitly selected sealed R1 pointer/template/offset-to-cursor and consumed source moving-gate bindings, and motion gate/velocity/travel/flags correspondence; candidate class/level/maxima/stats/spell words and same-run effective definition identity. Do not require unobserved complete flags, padding accounting, RAM-PC equality or hardware time. |
 | Mandatory operation consumption | Taken route/setup/caller branch operands and occurrence; awaited entity motion/gesture/fade before caller return; dialogue speaker/control-token occurrence and choice effect; route roster/flag writes; warp destination/setup release; before/after effects and shared-tail return pairing; named returned story flags and join/flag/return causal order. Source operations may lower to several typed instructions: counts alone are not correspondence. |
 | Matched-state rules/RNG | Recorded main draw word update/range/result and preserved image lane; turn score/tie/order draws; physical range/dodge/critical/spread/double/counter; HEAL cost/recovery/fairy opportunities; item slot/removal/resource effects when an item action is reached; EXP/gold/growth/learned spells/after-turn/outcome; AI thinking/choice/memory/movement; field text/portrait/NPC service gates and draw effects. Compare reached rules at matched operands, never the whole historical winning order. |
 | Reached 7C resources | Reached map atlases/layers; entity sprites/portraits/gestures; displayed private text/token/font binding; scene actor/weapon/healing/death resources; scene background/ground actual IDs; reached audio command/timer/PCM provenance and playback lifecycle. Join source selection/extraction to actual use. No all-corpus/frame inventory or hardware equality. |
@@ -523,10 +523,22 @@ main draws use the existing original H3 generator model at each actual seed/rang
 remake RNG code. That arithmetic comparison does not prove a source draw-to-effect association, AI
 thinking stream, service opportunity or whole action rule. The original `RANDOM_SEED_COPY=0` versus
 actual null and ancestry-inferred mouth/view gates remain explicit; first-use relevance is not yet
-proved. Original `actionScript` pointers are retained in the provenance of each walking child, but no
-executable pointer/template/base/offset-to-cursor translation or source moving-gate binding is
-selected. Those cursor/moving children stay required-unobserved. Neither remake start values nor
-unequal coordinates supply original expectations. Full H4 remains incomplete.
+proved. With the explicit sealed R1 witness and selected compiled content, walking admission binds
+the three pointers through the pinned allocator/template to semantic cursor/moving state and consumed
+wait behavior. The [walking source owner](../../research/map3-messenger-acceptance.md#walking-admission-continuation)
+supplies expected phases; remake start values and program names do not supply them. Without that
+selection these existing children remain Unavailable. Full H4 remains incomplete.
+
+The existing walking motion/readiness child compares active axes and direction, carried total travel
+and remaining distance in tile units, configured speed/acceleration operands, acceleration/deceleration,
+collision/obstruction and auto-facing gates. Total travel is not reconstructed from remaining distance.
+Original velocity magnitude/storage and frame duration are outside the modern-clock boundary; signed
+direction and actual blocked/unblocked continuation remain required. Unused flag bits remain provenance
+rather than new register-equality requirements. The first same-session sample inside the source-derived
+next-wait duration demonstrates consumption without fixing a sample index or service count. The hidden
+`WaitingForMotion` boolean is Inferred; its observed wait/motion effects are Confirmed. This admission
+binding does not close the full awaited motion/gesture/fade or entity-consumer families, original natural
+timing, whole-route NPC/RNG scheduling or collision corpus.
 
 Remaining operation/rule/resource/consumer joins name their required operands and missing side.
 The source-PC to typed-instruction correspondence, matched action preconditions, per-resource

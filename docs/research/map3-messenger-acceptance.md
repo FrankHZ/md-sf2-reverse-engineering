@@ -3687,6 +3687,41 @@ uninterrupted music19 result of505 driver updates does not establish an entity-s
 wall-clock duration or a fresh counter at SoundWait. Original logical/actual JOIN timing remains open.
 Single-member446/CLASS and sad-music progression retain separate capability/evidence boundaries.
 
+### Walking admission continuation
+
+**Confirmed (source and retained R1):** at pinned upstream
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `entityfunctions_1.asm:ClearEntities` resets walking
+allocation to `FF5600`; `entityfunctions_2.asm:SetWalkingActscript` copies and advances 50 bytes,
+patching center/radius. Map3 `s1_entities.asm` admits the three walkers in source order.
+`eas_main.asm:eas_Walking` and `sf2cutscenemacros.asm` give offsets0 wait30,32 randomWalk,40 waitDest,
+42 wait20,46 branch. The branch includes its separately emitted displacement word. R1
+`prepared-68/runtime/checkpoints.jsonl:2` records pointers at base+0/+40/+40 and the index-table
+bindings for slots5/6/8. The selected compiled actions independently lower these phases to cursors0/9/9.
+These addresses locate the witness and do not restrict gameplay.
+
+`entityscriptengine_2.asm:UpdateEntityData` compares position/destination before movement and reads
+carried travel, acceleration factors and flagsA0/1 (acceleration),2/3 (deceleration); its auto-facing
+consumer reads flagsB6. `esc01_waitUntilDestination` holds/reset-clears the timer until arrival, then
+advances to wait20; `esc00_wait` tests the existing timer first. `esc18/19/1A` set flagsA7/6/5;
+the controlled/random-walk and relative/absolute motion consumers use these for obstruction,
+map collision and entity collision. Macro names alone do not determine those meanings.
+
+**Confirmed (bounded actual consumption):** new-A02's same-session admission and first eligible
+same-target sample inside wait20's duration show the expired slot5 wait entering random walk, the
+stationary slot6 consuming wait20, and the still-moving slot8 retaining timer0 at its pending wait.
+No intervening program installation resets the streams. Original and actual active axes/direction,
+carried travel envelope, configured motion operands and relevant flag gates bind independently of
+velocity magnitude or original frame cadence. Slot8 carries a full tile's travel while its remaining
+distance is shorter; replacing the former with the latter changes acceleration/deceleration operands.
+The observed logical service count is evidence, not a gameplay quota or original elapsed time.
+
+**Inferred:** the unprojected internal `WaitingForMotion` value. Its functional effect is observed;
+no direct boolean read is claimed. **Unknown:** natural R1 continuation timing, whole-route NPC/RNG
+opportunities, the collision corpus and full motion/gesture/fade consumer correspondence. A later
+sealed RAM buffer readback corroborates only its own saved point, not an earlier R1 RAM timestamp.
+Reproduction and explicit selection belong to the
+[verification owner](../../remake/docs/development-and-verification.md#offline-walking-admission-comparison).
+
 ### Winning-lineage plain JOIN witness
 
 **Confirmed:** the accepted reference's `prepared-68` pair pins the natural selector128 JOIN at
