@@ -3159,11 +3159,17 @@ FAIL, absent required original/actual fields are Unavailable with the missing si
 Exit1 means required FAIL, exit2 incomplete/Unavailable, exit0 complete applicable acceptance. Neither
 a successful report command nor a variant-pair PASS implies milestone acceptance.
 
-The optional controlled-start argument selects candidate definition values explicitly. It is not a
-same-run deployment snapshot. Reports separate `candidateDefinitions` from actual override/progress,
-and keep effective admission unavailable when the missing loaded definition cannot be identified.
-Later first-control inventories do not fill admission. Candidate input equality may pass its own
-child check while its effective-items parent remains Unavailable. Walking timer expectations come
+The optional controlled-start argument selects candidate definition values explicitly. Reports
+separate that input from `admissionSnapshot`, captured before the first host frame/input in a new
+H4 session. Its `admittedParty` reads the actual session's package, origin, existing provenance and
+explicitly named encounter/deployments, alongside the party override/progress operands. Field startup
+has no instantiated battle actor: these are admitted definitions. Item comparison uses the existing
+override → progress → selected deployment precedence. Definition identity requires matching actor/member,
+class/stats/spell words and party input to the selected frozen input in that same session; multiple
+encounters or deployments never permit an arbitrary first match. Effective stat progress beyond this
+bound null-progress admission remains unobserved. Later loaded/ready actor fields are corroboration,
+not a replacement for the startup record. Retained sessions lacking the snapshot remain Unavailable;
+new-session observations never backfill their missing fields. Walking timer expectations come
 directly from selected original `inherited.entities[].waitTimer`. The corresponding `actionScript`
 pointer is retained, but cursor/moving remains required-unobserved until a precise source
 template/base/offset and movement-gate binding is executable. Existing bounded runtime phase-correction
@@ -3182,11 +3188,41 @@ selected witnessed fields cannot close unobserved sibling obligations.
 Reuse retained A-D02 process receipts/logs/settings/actual/outcome and accepted original/Down inputs
 for fresh offline reports. Read each recorded native exit from its own receipt, load the ignored
 private-input configuration in the launching process, and preserve previous reports/failures. The
-direct legacy comparison must remain unchanged. This binding work uses affected lint and direct
-contract checks plus the committed dependency plan/actual CI; it adds no tests of comparison tools
-or native/build/original capture. If a future missing actual field needs a probe change, request that
-exact observation boundary separately before rerunning native. No blanket suite follows from these
-report changes.
+direct legacy comparison must remain unchanged. Observation changes use affected adapter compilation,
+probe check-only, direct comparator/lint/document checks and committed plan/actual CI. A required new
+native observation needs its named boundary and fresh outputs; no verification-helper tests or
+normal/full/H3 suite follows from report changes.
+
+### Same-session actual observation
+
+The existing H4 input probe captures `admissionSnapshot` immediately after Main constructs its
+session and retains the settled initial sample separately. Freeze the selected party/start/settings
+under the owning ignored run root; record their paths relative to the explicit repository root in
+the existing process receipt. The settings destination must be fresh for the probe to create; compare
+the generated settings with the separately frozen expected selection. Explicitly select the accepted
+A world instead of deriving selection from an output-directory name. Package/provenance alone does
+not identify a file; verify admitted values against the recorded frozen selection.
+
+`sceneObservations` retains changed mounted resource/phase/completion facts with session, revision,
+observation sequence, token, input ordinal and host update. `signal-before-Present` identifies a result
+callback's preceding node projection; `host-poll` identifies actual subsequently polled nodes. Token
+and phase must be read from the projection, not assumed from the newly published result. Missing
+transient completion remains unobserved. Hidden node metadata does not prove consumption.
+
+All H4 variants can retain the existing global audio API's unseen receipts in `audioReceipts` with
+separate poll context. Startup, each process frame, inputs and terminal sampling check sequence1
+through `audioTerminal.sequence`, including an overflow before the first poll. `audioReceiptGaps`
+retains missed ranges. The terminal read precedes host teardown; ongoing field music needs no invented
+end receipt. Cue start/stop/finish totals classify actual playback, without treating a wait token as
+a playback ID or assigning invented generations to overlapping same-cue voices. D's existing speech
+subset remains separate. Polling hooks disconnect at finish; production's 64-receipt buffer is unchanged.
+
+One new complete A can join admission, battle resources/audio and after/return in one session.
+A startup-only run cannot provide those later observations. Keep accepted A-D02 equivalence and D02
+speech evidence identified as their historical sessions; compare new A's common gameplay to A02,
+without claiming that B/C/D observed new fields. Instant A does not observe D's natural-reveal speech.
+Actual resource identities or contiguous receipts supply only their actual side; original resource,
+mailbox, rule and service/consumer joins remain independently required.
 
 For the ordinary winning suffix set `SF2_H4_VARIANT` to A/B/C/D while retaining the accepted normal05
 start/world/scene/content/party/RNG, fixed60 FPS, optionalpoll1 and adaptive legal battle policy:

@@ -1585,3 +1585,26 @@ battle→field boundary precedes installation of the returning field view: obser
 payload and read the new field projection after attach, rather than query the old battle view in
 exploration mode. Target-browse range rejections retain accepted gameplay state while the attempted
 UI candidate changes, as specified by the existing architecture owner.
+
+### Continuous mounted-resource and audio readback
+
+`BattleSceneView.Bind` records a resource ID on its existing Sprite2D only after successful raster
+decode/size validation and texture assignment. `Observe` exposes background, backgroundWrap and
+ground node-bound IDs, texture presence and actual tree visibility, alongside existing actor/weapon
+IDs and completion state. A configured content ID or retained metadata on a hidden node is not a new
+consumption observation. The H4 input probe records changed scene facts, distinguishing the result
+signal before Present from later host polls. Completion must be actually observed; elapsed time or
+the next phase does not synthesize a receipt.
+
+The same probe uses `GameRoot.ReadAudioObservationJson` throughout an H4 session to retain every
+unseen receipt from the existing 64-entry window. Sequence checks include initial overflow and the
+terminal read, with receipt revision/time/wait token distinct from poll session/input/frame context.
+Started, stopped, finished and fade-command remain distinct facts. Cue totals can reconcile with
+terminal voices; a wait token is not a playback identity, same-cue overlap is not assigned invented
+generations, and ongoing field music is not required to end at observation termination. The older
+D speech subset stays separately available. Missing receipt ranges and unobserved scene edges remain
+explicit. This readback changes neither the audio buffer nor scene/audio playback behavior.
+
+See [same-session observation](development-and-verification.md#same-session-actual-observation) for
+input freezing and session boundaries. New A observations do not fill omitted fields in old A-D02
+records or prove complete original resource provenance and dependent consumer bindings.

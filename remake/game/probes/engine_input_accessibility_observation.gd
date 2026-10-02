@@ -16,6 +16,13 @@ var input_delivering := false
 var speech_receipts: Array = []
 var audio_sequence_seen := 0
 var audio_receipt_gaps: Array = []
+var audio_receipts: Array = []
+var audio_terminal: Dictionary = {}
+var admission_snapshot: Dictionary = {}
+var scene_observations: Array = []
+var last_scene_observation := ""
+var projection_stage := "host-poll"
+var observation_session: Variant = null
 var private_route := "private" in input_case
 var maximum_white := 0.0
 var completed_white: Array = []
@@ -118,16 +125,20 @@ func read_sample(label: String) -> Dictionary:
 
 func state() -> Dictionary:
     var s := super.state()
-    if h4_variant == "D" and host.has_method("ReadAudioObservationJson"):
-        var playback: Dictionary = JSON.parse_string(host.call("ReadAudioObservationJson"))
-        var receipts: Array = playback.get("receipts", [])
-        if not receipts.is_empty() and audio_sequence_seen > 0 and int(receipts[0].Sequence) > audio_sequence_seen + 1:
-            audio_receipt_gaps.append({"after":audio_sequence_seen,"before":receipts[0].Sequence})
-        for receipt in receipts:
-            if int(receipt.Sequence) <= audio_sequence_seen: continue
-            if int(receipt.Command) in [70, 73] and receipt.RequestedTimerB == 189:
-                speech_receipts.append(receipt)
-        audio_sequence_seen = maxi(audio_sequence_seen, int(playback.get("sequence", 0)))
+    if not h4_variant.is_empty():
+        observation_session = s.get("sessionId")
+        poll_h4_audio()
+        if s.get("scene") != null:
+            var scene: Dictionary = s.scene.duplicate(true)
+            # Retain changed mounted facts, not a redundant elapsed-clock trace.
+            scene.erase("elapsed")
+            scene.erase("visibleCharacters")
+            var signature := JSON.stringify(scene)
+            if signature != last_scene_observation:
+                scene_observations.append({"sessionId":s.sessionId,"revision":s.revision,
+                    "observationSequence":s.observationSequence,"inputOrdinal":active_input,
+                    "hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage,"scene":scene})
+                last_scene_observation = signature
     if s.has("presentation"):
         maximum_white = maxf(maximum_white, s.presentation.whiteOpacity)
         var p: Dictionary = s.presentation
@@ -137,6 +148,22 @@ func state() -> Dictionary:
             var receipt := {"token":p.completedCueToken, "kind":p.completedCueKind}
             if not completed_white.has(receipt): completed_white.append(receipt)
     return s
+
+func poll_h4_audio() -> void:
+    if not is_instance_valid(host) or not host.has_method("ReadAudioObservationJson"): return
+    var playback = JSON.parse_string(host.call("ReadAudioObservationJson"))
+    if not playback is Dictionary: return
+    for receipt in playback.get("receipts", []):
+        var ordinal := int(receipt.Sequence)
+        if ordinal <= audio_sequence_seen: continue
+        if ordinal != audio_sequence_seen + 1:
+            audio_receipt_gaps.append({"after":audio_sequence_seen,"before":ordinal})
+        audio_receipts.append({"receipt":receipt,"poll":{"sessionId":observation_session,
+            "inputOrdinal":active_input,"hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage}})
+        if h4_variant == "D" and int(receipt.Command) in [70,73] and receipt.RequestedTimerB == 189:
+            speech_receipts.append(receipt)
+        audio_sequence_seen = ordinal
+    audio_terminal = playback.duplicate(true)
 
 func physical(code: int, pressed: bool) -> void:
     var action: String = {KEY_UP:"up", KEY_W:"up", KEY_RIGHT:"right", KEY_D:"right",
@@ -1051,6 +1078,9 @@ func run_text_wait() -> void:
     finish_public()
 
 func finish_public() -> void:
+    if not h4_variant.is_empty():
+        poll_h4_audio()
+        if process_frame.is_connected(poll_h4_audio): process_frame.disconnect(poll_h4_audio)
     if white_palette_case: check(white_palette_completed, "Declared white palette route reached Chester W1")
     if battle_entry_case: check(battle_entry_completed, "Declared route reached and exercised real first battle input")
     if choice_case and choice_exercised:
@@ -1062,6 +1092,8 @@ func finish_public() -> void:
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
         "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,"battleEntryRecords":battle_entry_records,
         "h4Variant":h4_variant,"inputRecords":input_records,"speechReceipts":speech_receipts,"audioReceiptGaps":audio_receipt_gaps,
+        "admissionSnapshot":admission_snapshot,"sceneObservations":scene_observations,
+        "audioReceipts":audio_receipts,"audioTerminal":audio_terminal,"audioSequenceSeen":audio_sequence_seen,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
         "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}, "  ")
     if guarded_wait_case:
@@ -1093,7 +1125,9 @@ func record_warp_result(payload: String) -> void:
         # view. Preserve the result now; the new view's attach and live state follow.
         warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}, "projection":"field-view-pending"})
         return
+    projection_stage = "signal-before-Present"
     var s := state()
+    projection_stage = "host-poll"
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
         # Accepted prefix checkpoints remain full samples. Keep every result and its
         # identity here without repeating the entire field projection every tick.
@@ -1784,6 +1818,9 @@ func run_portrait_event() -> void:
     field_main_started = true
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
+    if not h4_variant.is_empty():
+        admission_snapshot = {"inputOrdinal":active_input,"hostUpdate":Engine.get_process_frames(),"state":state()}
+        process_frame.connect(poll_h4_audio)
     await process_frame
     root.grab_focus()
     await process_frame
