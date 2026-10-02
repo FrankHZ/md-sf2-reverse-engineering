@@ -13,6 +13,7 @@ import base64
 import hashlib
 import json
 import re
+import struct
 import subprocess
 import wave
 from bisect import bisect_right
@@ -2107,6 +2108,1077 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
 MATRIX_OBLIGATION = "complete named continuous settings matrix"
 
 
+def field_motion_binding(actual, selection, source_root):
+    """Join source producers to occurrence-local field waits and actual consumers."""
+    result = dict(operation=None, consumer=None, checks=[], occurrences=[])
+
+    def check(family, name, value, token=None):
+        result["checks"].append(dict(family=family, name=name, value=value, token=token))
+
+    def common(name, value):
+        for family in ("operation", "consumer"):
+            check(family, name, value)
+
+    def aggregate(values):
+        return False if False in values else None if None in values or not values else True
+
+    def target(i):
+        return (
+            i.get("op") == "motion"
+            or i.get("op") == "present"
+            and i.get("kind") in ("Gesture", "EntityEffect", "FadeIn", "FadeOut")
+        )
+
+    world, programs, compiler = {}, {}, None
+    tracked_source = set()
+    try:
+        if not selection:
+            raise ValueError("no selected world")
+        world_path, _, receipt_path = selection[:3]
+        world_path = world_path.resolve() if world_path.is_absolute() else repo_path(world_path)
+        receipt_path = (
+            receipt_path.resolve() if receipt_path.is_absolute() else repo_path(receipt_path)
+        )
+        document, receipt = read(world_path), read(receipt_path)
+        world = document["world"]
+        programs = {p["id"]: p for p in world["programs"]}
+        common(
+            "selected original identity",
+            document["provenance"]["commit"] == UPSTREAM
+            and document["provenance"]["romSha256"] == ROM,
+        )
+        common(
+            "same-run selected world",
+            repo_path(receipt["selectedInputs"]["SF2_PRIVATE_EXPLORATION_CONTENT"]).resolve()
+            == world_path,
+        )
+    except (KeyError, OSError, ValueError):
+        common("selected world operand absent", None)
+    try:
+        if source_root is None:
+            raise ValueError("no original source")
+        source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
+        pin = subprocess.check_output(
+            ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+        ).strip()
+        common("original source pin", pin == UPSTREAM)
+        clean = subprocess.run(
+            ["git", "-C", str(source_root), "diff", "--quiet", UPSTREAM, "--", "disasm"],
+            check=False,
+        ).returncode
+        common("original compiler reads pinned tracked source", clean == 0)
+        tracked_source = set(
+            subprocess.check_output(
+                ["git", "-C", str(source_root), "ls-tree", "-r", "--name-only", UPSTREAM], text=True
+            ).splitlines()
+        )
+        from sf2tool.remake_exploration_content import OriginalPrograms
+
+        compiler = OriginalPrograms(
+            {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, source_root
+        )
+        for p in programs.values():
+            source = p.get("source", "")
+            if source.startswith("disasm/") and ":" in source:
+                path = source.rsplit(":", 1)[0]
+                if path in tracked_source:
+                    compiler.register_file(path)
+    except (KeyError, OSError, ValueError, subprocess.CalledProcessError):
+        common("source lowering operand absent", None)
+        compiler = None
+
+    events, record_by_event = {}, {}
+    for r in actual.get("warpRecords", []):
+        for e in r["result"].get("observations", []):
+            seq = e["Sequence"]
+            if seq in events and events[seq] != e:
+                common("logical occurrence identity contradiction", False)
+            events[seq] = e
+            record_by_event.setdefault(seq, r)
+    ordered = sorted(events.values(), key=lambda e: e["Sequence"])
+    boundaries = actual.get("consumerBoundaries", [])
+    by_token = {}
+    for b in boundaries:
+        s = b.get("state", {})
+        by_token.setdefault(s.get("token"), []).append(b)
+    source_values = {}
+    source_spans = {}
+
+    def instruction(location):
+        if not location:
+            return None
+        p = programs.get(location.get("Program"))
+        index = location.get("Instruction")
+        if (
+            p is None
+            or index is None
+            or int(index) != index
+            or not 0 <= index < len(p["instructions"])
+        ):
+            return None
+        return p["instructions"][int(index)]
+
+    def source_value(program):
+        if program in source_values:
+            return source_values[program]
+        p = programs.get(program)
+        value = None
+        if p is not None:
+            selected = [i for i in p["instructions"] if target(i)]
+            if program in ("source-battle-load", "source-outcome-return"):
+                # Accepted modern wrappers, not an ordinary cutscene macro compilation.
+                value = selected == [
+                    dict(op="present", kind=kind, resource="black", entity=None, position=None)
+                    for kind in ("FadeOut", "FadeIn")
+                ]
+                owner = (
+                    "loadBattle.asm:LoadBattle"
+                    if program == "source-battle-load"
+                    else "explorationfunctions_2.asm:ExplorationLoop"
+                )
+                value = value and p.get("source", "").endswith(owner)
+            elif compiler is not None and p.get("source", "").startswith("disasm/"):
+                try:
+                    if p["source"].rsplit(":", 1)[0] not in tracked_source:
+                        source_values[program] = False
+                        return False
+                    symbol = p["source"].rsplit(":", 1)[1]
+                    compiler.compile(symbol)
+                    value = selected == [
+                        i for i in compiler.programs[symbol]["instructions"] if target(i)
+                    ]
+                    macros = {
+                        "entityActions",
+                        "entityActionsWait",
+                        "customActscript",
+                        "customActscriptWait",
+                        "setActscript",
+                        "setActscriptWait",
+                        "entityNodHead",
+                        "nod",
+                        "shiver",
+                        "fadeInB",
+                        "fadeOutB",
+                        "slowFadeInB",
+                        "slowFadeOutB",
+                        "mapFadeOutToWhite",
+                        "mapFadeInFromWhite",
+                        "loadMapFadeIn",
+                    }
+                    source_spans[program] = [
+                        op
+                        for op in compiler.source_operations(p["source"].rsplit(":", 1)[0], symbol)
+                        if op["opcode"] in macros
+                        or op["opcode"] == "jsr"
+                        and op["operandText"] == "MakeEntityWalk"
+                        or op["opcode"] == "animEntityFX"
+                        and any(name in op["operandText"] for name in ("MOSAIC_IN", "MOSAIC_OUT"))
+                    ]
+                    value = value and len(source_spans[program]) == len(selected)
+                except (KeyError, OSError, ValueError, IndexError):
+                    value = None
+        source_values[program] = value
+        return value
+
+    producers = []
+    warp_started = transferred = -1
+    last_location = None
+    for e in ordered:
+        seq = e["Sequence"]
+        if e["Kind"] == "warp-started":
+            warp_started = seq
+        if e["Kind"] == "map-transferred":
+            transferred = seq
+        r = record_by_event[seq]
+        s = r.get("state", {})
+        loc = e.get("Program")
+        if e["Kind"] == "full-fade-started":
+            loc = s.get("cursor")
+            # The outcome publishes before GameRoot installs the returning view.
+            # Recover this producer from preceding logical source instructions,
+            # independently of whether any projection channel survived.
+            if "cursor" not in s and last_location:
+                candidate = dict(
+                    Program=last_location["Program"], Instruction=last_location["Instruction"] + 1
+                )
+                next_ins = instruction(candidate)
+                if (
+                    next_ins
+                    and next_ins.get("op") == "present"
+                    and next_ins.get("kind") in ("FadeIn", "FadeOut")
+                ):
+                    loc = candidate
+            ins = instruction(loc)
+            helper = "cursor" in s and loc is None
+            if helper:
+                ins = dict(
+                    op="present",
+                    kind="FadeOut" if warp_started > transferred else "FadeIn",
+                    resource="black",
+                    entity=None,
+                )
+            producers.append((e, loc, ins, "full-fade", helper))
+        elif e["Kind"] in ("program-instruction", "nod-started"):
+            last_location = loc
+            ins = instruction(loc)
+            if ins is not None and target(ins):
+                producers.append(
+                    (e, loc, ins, "nod" if e["Kind"] == "nod-started" else ins["op"], False)
+                )
+            elif e.get("Detail") == "StartEntityMotion" or e["Kind"] == "nod-started":
+                producers.append((e, loc, ins, "motion", False))
+    common("logical producer inventory present", True if producers else None)
+
+    def entity(s, subject):
+        return next((x for x in s.get("entities") or [] if x.get("id") == subject), None)
+
+    def following(token, kind):
+        return next((e for e in ordered if e["Sequence"] > token and e["Kind"] == kind), None)
+
+    def operand(family, token, name, operands, predicate):
+        # Evaluate independently: missing elsewhere cannot hide this contradiction.
+        check(
+            family, name, None if any(x is None for x in operands) else predicate(*operands), token
+        )
+
+    for e, loc, ins, role, helper in producers:
+        token = e["Sequence"]
+        r = record_by_event[token]
+        rows = by_token.get(token, [])
+        states = [b["state"] for b in rows]
+        entry = next(
+            (
+                s
+                for s in states
+                if s.get("wait") in ("EntityWait", "NodWait", "FullFadeWait", "PresentationWait")
+            ),
+            None,
+        )
+        provenance = (
+            "accepted ordinary-warp fade helper"
+            if helper
+            else programs.get((loc or {}).get("Program"), {}).get("source")
+        )
+        occurrence = dict(
+            token=token,
+            location=loc,
+            source=provenance,
+            role=role,
+            blocking=None,
+            operation=None,
+            consumer=None,
+        )
+        result["occurrences"].append(occurrence)
+        start_index = len(result["checks"])
+        for family in ("operation", "consumer"):
+            check(
+                family,
+                "source complete ordered producer operands",
+                True
+                if helper and compiler is not None
+                else source_value((loc or {}).get("Program")),
+                token,
+            )
+            check(family, "typed producer present", None if ins is None else target(ins), token)
+        if loc and loc["Program"] in source_spans:
+            p = programs[loc["Program"]]
+            ordinal = sum(target(i) for i in p["instructions"][: int(loc["Instruction"])])
+            spans = source_spans[loc["Program"]]
+            occurrence["sourceProducerOrdinal"] = ordinal
+            occurrence["sourceOperation"] = spans[ordinal] if ordinal < len(spans) else None
+        if ins is None:
+            # Absent source operands cannot hide a contradiction between the
+            # logical wait and its predicate release in this same session.
+            if entry and entry.get("entityWait"):
+                release = next(
+                    (
+                        x
+                        for x in ordered
+                        if (x.get("EntityWaitRelease") or {}).get("Token", {}).get("Value") == token
+                    ),
+                    None,
+                )
+                payload = (release or {}).get("EntityWaitRelease") or {}
+                wait = entry["entityWait"]
+                for family in ("operation", "consumer"):
+                    operand(
+                        family,
+                        token,
+                        "logical/released subject agree",
+                        [wait.get("Entity"), payload.get("Subject")],
+                        lambda a, b: a == b,
+                    )
+                    operand(
+                        family,
+                        token,
+                        "logical/released policy agree",
+                        [wait.get("Completion"), payload.get("Completion")],
+                        lambda a, b: a == b,
+                    )
+            continue
+        subject = ins.get("entity")
+        blocking = role != "motion" or ins.get("wait")
+        occurrence["blocking"] = bool(blocking)
+        if not blocking:
+            # Source nonwait/perpetual installation has no local completion dependency.
+            occurrence["completionApplicability"] = "nonawaited source installation"
+            for family in ("operation", "consumer"):
+                check(
+                    family,
+                    "nonawaited instruction installs without local wait",
+                    e.get("Detail") == "StartEntityMotion",
+                    token,
+                )
+        else:
+            check("operation", "logical wait entry retained", True if entry else None, token)
+            check("consumer", "actual wait context retained", True if entry else None, token)
+            if entry:
+                operand(
+                    "operation",
+                    token,
+                    "same session at producer",
+                    [entry.get("sessionId"), r["result"].get("sessionId")],
+                    lambda a, b: a == b,
+                )
+                operand(
+                    "operation",
+                    token,
+                    "revision at producer",
+                    [entry.get("revision"), e.get("Revision")],
+                    lambda a, b: a >= b,
+                )
+            expected_wait = {
+                "motion": "EntityWait",
+                "nod": "NodWait",
+                "full-fade": "FullFadeWait",
+                "present": "PresentationWait",
+            }[role]
+            for s in states:
+                for family in ("operation", "consumer"):
+                    operand(
+                        family,
+                        token,
+                        "held wait kind",
+                        [s.get("wait")],
+                        lambda a, expected_wait=expected_wait: a == expected_wait,
+                    )
+                    operand(
+                        family,
+                        token,
+                        "held source cursor",
+                        [s.get("cursor") or {} if "cursor" in s else None, loc or {}],
+                        lambda a, b: a == b,
+                    )
+                    operand(
+                        family,
+                        token,
+                        "held caller stack",
+                        [s.get("callers"), (entry or {}).get("callers")],
+                        lambda a, b: a == b,
+                    )
+                wait = (
+                    s.get("entityWait")
+                    if role == "motion"
+                    else s.get("nod")
+                    if role == "nod"
+                    else None
+                )
+                if role in ("motion", "nod"):
+                    for family in ("operation", "consumer"):
+                        operand(
+                            family,
+                            token,
+                            "logical wait subject",
+                            [((wait or {}).get("Entity") or {}).get("Value")],
+                            lambda a, subject=subject: a == subject,
+                        )
+                if role == "present":
+                    cue = (s.get("presentationWait") or {}).get("Cue")
+                    operand(
+                        "operation",
+                        token,
+                        "source cue resource",
+                        [(cue or {}).get("Resource"), ins.get("resource")],
+                        lambda a, b: a == b,
+                    )
+                    check(
+                        "operation",
+                        "source cue entity",
+                        None
+                        if cue is None or "Entity" not in cue
+                        else cue["Entity"] == (dict(Value=subject) if subject else None),
+                        token,
+                    )
+            end = None
+            if role == "motion":
+                release = next(
+                    (
+                        x
+                        for x in ordered
+                        if (x.get("EntityWaitRelease") or {}).get("Token", {}).get("Value") == token
+                    ),
+                    None,
+                )
+                end = release
+                payload = (release or {}).get("EntityWaitRelease") or {}
+                expected_policy = 0 if ins.get("installation") == "Preserve" else 1
+                for family in ("operation", "consumer"):
+                    operand(
+                        family,
+                        token,
+                        "released subject",
+                        [(payload.get("Subject") or {}).get("Value")],
+                        lambda a, subject=subject: a == subject,
+                    )
+                    operand(
+                        family,
+                        token,
+                        "released wait policy",
+                        [payload.get("Completion")],
+                        lambda a, expected_policy=expected_policy: a == expected_policy,
+                    )
+                    operand(
+                        family,
+                        token,
+                        "source wait predicate",
+                        [payload.get("IsScriptIdle") if expected_policy else payload.get("Busy")],
+                        lambda p, expected_policy=expected_policy: p is bool(expected_policy),
+                    )
+                idle = next((i for i, a in enumerate(ins["actions"]) if a["op"] == "idle"), None)
+                if expected_policy:
+                    operand(
+                        "operation",
+                        token,
+                        "source Idle action cursor",
+                        [payload.get("ActionCursor"), idle],
+                        lambda a, b: a == b,
+                    )
+                entry_entity = entity(entry or {}, subject)
+                # The release can immediately hide/reposition/reinstall this slot.
+                # Source destinations belong to the held wait; ScriptIdle is the
+                # actual release predicate, not a terminal raster/arrival quota.
+                held_entity = next(
+                    (entity(s, subject) for s in reversed(states) if entity(s, subject)), None
+                )
+                occurrence["motionOperands"] = dict(
+                    entry=entry_entity, held=held_entity, actions=ins["actions"], release=payload
+                )
+                moves = [a for a in ins["actions"] if a["op"] == "move"]
+                if any(m.get("wait") is False for m in moves):
+                    # ac_moveRel does not await arrival. Its next command starts
+                    # from the then-current pose, not a sum of prior destinations.
+                    for index, action in enumerate(ins["actions"]):
+                        if action["op"] != "move":
+                            continue
+                        phase = next(
+                            (
+                                entity(s, subject)
+                                for s in states
+                                if (entity(s, subject) or {}).get("actionCursor") == index + 1
+                            ),
+                            None,
+                        )
+                        if action["x"] == action["y"] == 0 and release:
+                            phase = next(
+                                (
+                                    entity(b["state"], subject)
+                                    for b in boundaries
+                                    if any(
+                                        x.get("Sequence") == release["Sequence"]
+                                        for x in b.get("releases", [])
+                                    )
+                                ),
+                                None,
+                            )
+                        for axis in ("x", "y"):
+                            operand(
+                                "operation",
+                                token,
+                                "nonwaiting source command destination " + str(index) + axis,
+                                [
+                                    (phase or {}).get(axis),
+                                    (phase or {}).get("target" + axis.upper()),
+                                ],
+                                lambda a, b, axis=axis, action=action: b == a + 384 * action[axis],
+                            )
+                else:
+                    for axis in ("x", "y"):
+                        operand(
+                            "operation",
+                            token,
+                            "source relative destination " + axis,
+                            [
+                                (entry_entity or {}).get(axis),
+                                (held_entity or {}).get("target" + axis.upper()),
+                            ],
+                            lambda a, b, axis=axis, moves=moves: (
+                                b == a + 384 * sum(m[axis] for m in moves)
+                            ),
+                        )
+                operand(
+                    "operation",
+                    token,
+                    "held caller until release",
+                    [payload.get("Caller") or {} if "Caller" in payload else None, loc or {}],
+                    lambda a, b: a == b,
+                )
+            else:
+                kind = ins.get("kind")
+                end_kind = (
+                    "nod-returned"
+                    if role == "nod"
+                    else "full-fade-completed"
+                    if role == "full-fade"
+                    else "presentation-completed"
+                )
+                end = following(token, end_kind)
+                if end is not None and role != "nod":
+                    operand(
+                        "operation",
+                        token,
+                        "completion kind",
+                        [end.get("Detail"), kind],
+                        lambda a, b: a == b,
+                    )
+                if role == "nod":
+                    operand(
+                        "operation",
+                        token,
+                        "nod normal animation restore",
+                        [(end or {}).get("After")],
+                        lambda a: a == 0,
+                    )
+                    operand(
+                        "operation",
+                        token,
+                        "nod restored subject",
+                        [((end or {}).get("Entity") or {}).get("Value")],
+                        lambda a, subject=subject: a == subject,
+                    )
+                handoffs = [
+                    b for b in rows if b.get("projectionStage") == "completion-before-submit"
+                ]
+                handoff = handoffs[0] if len(handoffs) == 1 else None
+                check(
+                    "consumer",
+                    "unique actual completion handoff",
+                    None if not handoffs else len(handoffs) == 1,
+                    token,
+                )
+                if handoff:
+                    completion = handoff.get("result", {}).get("completion") or {}
+                    cue = handoff["state"].get("presentationCue") or {}
+                    for name, value, expected in (
+                        ("actual completion token", completion.get("token"), token),
+                        ("actual completion kind", completion.get("kind"), kind),
+                        ("live cue token", cue.get("token"), token),
+                        ("live cue kind", cue.get("kind"), kind),
+                    ):
+                        operand(
+                            "consumer",
+                            token,
+                            name,
+                            [value],
+                            lambda a, expected=expected: a == expected,
+                        )
+                    operand(
+                        "consumer",
+                        token,
+                        "handoff before logical completion",
+                        [handoff["state"].get("revision"), (end or {}).get("Revision")],
+                        lambda a, b: a < b,
+                    )
+                    if ins.get("resource") == "shiver":
+                        operand(
+                            "consumer",
+                            token,
+                            "shiver finite completion",
+                            [cue.get("elapsed")],
+                            lambda a: a >= 0.5,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "shiver handoff subject",
+                            [cue.get("gesture")],
+                            lambda a, subject=subject: a == subject,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "shiver handoff flag",
+                            [cue.get("shivering")],
+                            lambda a: a is True,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "shiver phase remains installed at handoff",
+                            [cue.get("gesture"), cue.get("shivering"), cue.get("elapsed")],
+                            lambda a, b, c, subject=subject: (
+                                a == subject and b is True and c >= 0.5
+                            ),
+                        )
+                    if ins.get("resource") in ("mosaic-in", "mosaic-out"):
+                        operand(
+                            "consumer",
+                            token,
+                            "mosaic finite completion",
+                            [cue.get("elapsed")],
+                            lambda a: a >= 0.5,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "mosaic handoff subject",
+                            [cue.get("mosaic")],
+                            lambda a, subject=subject: a == subject,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "mosaic handoff direction",
+                            [cue.get("mosaicOut")],
+                            lambda a, ins=ins: a is (ins["resource"] == "mosaic-out"),
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "mosaic direction and finite completion",
+                            [cue.get("mosaic"), cue.get("mosaicOut"), cue.get("elapsed")],
+                            lambda a, b, c, ins=ins, subject=subject: (
+                                a == subject and b is (ins["resource"] == "mosaic-out") and c >= 0.5
+                            ),
+                        )
+                    if ins.get("resource") in ("black", "white"):
+                        field = (
+                            "whiteOpacity" if ins["resource"] == "white" else "paletteBrightness"
+                        )
+                        expected = (
+                            int(kind == "FadeOut")
+                            if field == "whiteOpacity"
+                            else int(kind == "FadeIn")
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "actual fade endpoint",
+                            [cue.get(field)],
+                            lambda a, expected=expected: abs(a - expected) < 1e-6,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "fade finite completion",
+                            [cue.get("elapsed")],
+                            lambda a: a >= 0.5,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "fade owner visible",
+                            [cue.get("ownerVisible")],
+                            lambda a: a is True,
+                        )
+                if role == "full-fade":
+                    fade_rows = [s for s in states if s.get("fade") is not None]
+                    terminal = next(
+                        (s for s in reversed(fade_rows) if s["fade"].get("LogicalDone")), None
+                    )
+                    f = (terminal or {}).get("fade") or {}
+                    expected_purpose = (0 if ins["kind"] == "FadeOut" else 1) if helper else 2
+                    for s in fade_rows:
+                        operand(
+                            "operation",
+                            token,
+                            "source full-fade purpose",
+                            [s["fade"].get("Purpose")],
+                            lambda a, expected_purpose=expected_purpose: a == expected_purpose,
+                        )
+                        operand(
+                            "operation",
+                            token,
+                            "source full-fade color",
+                            [s["fade"].get("Color")],
+                            lambda a, ins=ins: a == int(ins["resource"] == "white"),
+                        )
+                        operand(
+                            "operation",
+                            token,
+                            "source full-fade entry range",
+                            [s["fade"].get("Entry")],
+                            lambda a: 0 <= a <= 8,
+                        )
+                    operand(
+                        "operation",
+                        token,
+                        "source full-fade purpose/color/finite terminator",
+                        [f.get("Purpose"), f.get("Color"), f.get("Entry"), f.get("LogicalDone")],
+                        lambda a, b, c, d, expected_purpose=expected_purpose, ins=ins: (
+                            a == expected_purpose
+                            and b == int(ins["resource"] == "white")
+                            and c == 8
+                            and d is True
+                        ),
+                    )
+                    display = (terminal or {}).get("display") or {}
+                    operand(
+                        "operation",
+                        token,
+                        "full-fade period restoration",
+                        [display.get("Period"), f.get("Period")],
+                        lambda a, b, f=f: (
+                            a
+                            == (f.get("RestorePeriod") if f.get("RestorePeriod") is not None else b)
+                        ),
+                    )
+                    if ins["resource"] == "white" or (ins.get("fullBlack") or {}).get("period"):
+                        expected_period = (
+                            1 if ins["resource"] == "white" else ins["fullBlack"]["period"]
+                        )
+                        operand(
+                            "operation",
+                            token,
+                            "source temporary fade period",
+                            [f.get("Period")],
+                            lambda a, expected_period=expected_period: a == expected_period,
+                        )
+                    current = display.get("Current") or {}
+                    base = display.get("Base") or {}
+                    operand(
+                        "operation",
+                        token,
+                        "full-fade logical palette endpoint",
+                        [current or None, base or None],
+                        lambda a, b, ins=ins: (
+                            a == b
+                            if ins["kind"] == "FadeIn"
+                            else a.get("White" if ins["resource"] == "white" else "Black") is True
+                        ),
+                    )
+                if ins.get("resource") == "shiver":
+                    restore = ((entry or {}).get("presentationWait") or {}).get("Restore") or {}
+                    after = record_by_event.get((end or {}).get("Sequence"), {}).get("state", {})
+                    if after.get("spriteSize") is None and end:
+                        candidates = [
+                            x.get("state", {})
+                            for x in actual.get("samples", [])
+                            + actual.get("battleEntryRecords", [])
+                        ]
+                        candidates = [
+                            s
+                            for s in candidates
+                            if s.get("revision", -1) >= end["Revision"]
+                            and (s.get("presentation") or {}).get("completedCueToken") == token
+                            and s.get("spriteSize") is not None
+                        ]
+                        if candidates:
+                            after = min(candidates, key=lambda s: s["revision"])
+                    restored = entity(after, subject)
+                    for family in ("operation", "consumer"):
+                        operand(
+                            family,
+                            token,
+                            "shiver animation restoration",
+                            [
+                                restore.get("AnimationCounter"),
+                                (restored or {}).get("animationCounter"),
+                            ],
+                            lambda a, b: a == b,
+                        )
+                        operand(
+                            family,
+                            token,
+                            "shiver flags restoration",
+                            [(restored or {}).get("flagsB")],
+                            lambda a: int(a) & 8 == 0,
+                        )
+                        operand(
+                            family,
+                            token,
+                            "shiver sprite-size restoration",
+                            [restore.get("SpriteSize"), after.get("spriteSize")],
+                            lambda a, b: a == b,
+                        )
+            check("operation", "logical completion occurrence", True if end else None, token)
+            if end:
+                dependent = next(
+                    (
+                        x
+                        for x in ordered
+                        if x["Sequence"] > token
+                        and x["Kind"]
+                        in (
+                            "program-instruction",
+                            "nod-started",
+                            "map-transferred",
+                            "battle-returned",
+                        )
+                    ),
+                    None,
+                )
+                operand(
+                    "operation",
+                    token,
+                    "completion before dependent continuation",
+                    [end.get("Sequence"), (dependent or {}).get("Sequence")],
+                    lambda a, b: a < b,
+                )
+                if role == "motion":
+                    check("consumer", "predicate release observed before continuation", True, token)
+
+            draws = [b for b in rows if b.get("projectionStage") == "frame-post-draw"]
+            used = []
+            for b in draws:
+                s = b["state"]
+                p = s.get("cameraProjection") or {}
+                if subject is None:
+                    # Palette/white nodes remain real consumers before field
+                    # geometry exists (first after-program fade) and after mount.
+                    cue = s.get("presentationCue") or {}
+                    if cue.get("token") == token:
+                        used.append(True)
+                        for name, value, expected in (
+                            ("drawn fade kind", cue.get("kind"), ins["kind"]),
+                            ("drawn fade resource", cue.get("resource"), ins["resource"]),
+                        ):
+                            operand(
+                                "consumer",
+                                token,
+                                name,
+                                [value],
+                                lambda a, expected=expected: a == expected,
+                            )
+                        operand(
+                            "consumer",
+                            token,
+                            "actual fade drawn in same occurrence",
+                            [cue.get("kind"), cue.get("resource"), cue.get("ownerVisible")],
+                            lambda a, b, c, ins=ins: (
+                                a == ins["kind"] and b == ins["resource"] and c is True
+                            ),
+                        )
+                    continue
+                if p.get("token") != token:
+                    continue
+                operand(
+                    "consumer",
+                    token,
+                    "actual draw session",
+                    [p.get("sessionId"), s.get("sessionId")],
+                    lambda a, b: a == b,
+                )
+                operand(
+                    "consumer",
+                    token,
+                    "actual draw revision",
+                    [p.get("revision"), s.get("revision")],
+                    lambda a, b: a <= b,
+                )
+                if subject is not None:
+                    logical = entity(s, subject)
+                    actor = next(
+                        (a for a in p.get("actors") or [] if a.get("entity") == subject), None
+                    )
+                    if logical is not None and logical.get("Visible") is False:
+                        used.append(True)
+                        check(
+                            "consumer",
+                            "logically hidden subject has no visible draw",
+                            actor is None or actor.get("visible") is False,
+                            token,
+                        )
+                        continue
+                    if logical is None or actor is None:
+                        check("consumer", "actual subject projection operand", None, token)
+                        continue
+                    used.append(True)
+                    operand(
+                        "consumer",
+                        token,
+                        "physical subject slot",
+                        [logical.get("slot"), actor.get("slot")],
+                        lambda a, b: a == b,
+                    )
+                    for dimension, viewport_size in (("width", 320), ("height", 192)):
+                        operand(
+                            "consumer",
+                            token,
+                            "accepted viewport " + dimension,
+                            [p.get(dimension), p.get("scale")],
+                            lambda a, b, viewport_size=viewport_size: (
+                                abs(a - viewport_size * b) < 0.002
+                            ),
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "accepted actor extent " + dimension,
+                            [actor.get(dimension), p.get("scale")],
+                            lambda a, b: abs(a - 24 * b) < 0.002,
+                        )
+                    shift = actor.get("shiverOffsetX")
+                    for axis in ("x", "y"):
+                        operand(
+                            "consumer",
+                            token,
+                            "logical pose projected " + axis,
+                            [
+                                logical.get(axis),
+                                actor.get(axis),
+                                actor.get("origin" + axis.upper()),
+                                p.get(axis),
+                                p.get("scale"),
+                                shift if axis == "x" else 0,
+                            ],
+                            lambda a, b, c, d, scale, shift, axis=axis: (
+                                abs(b - (d + (a / 16 + (shift if axis == "x" else 0) - c) * scale))
+                                < 0.002
+                            ),
+                        )
+
+                    def intersects(x, y, w, h, px, py, pw, ph, visible):
+                        # Rect2 uses float32, including its edge additions.
+                        def as_float32(number):
+                            return struct.unpack("f", struct.pack("f", number))[0]
+
+                        x, y, w, h, px, py, pw, ph = map(as_float32, (x, y, w, h, px, py, pw, ph))
+                        return visible is (
+                            as_float32(x + w) > px
+                            and as_float32(y + h) > py
+                            and x < as_float32(px + pw)
+                            and y < as_float32(py + ph)
+                        )
+
+                    operand(
+                        "consumer",
+                        token,
+                        "viewport geometry and legitimate culling",
+                        [
+                            actor.get("x"),
+                            actor.get("y"),
+                            actor.get("width"),
+                            actor.get("height"),
+                            p.get("x"),
+                            p.get("y"),
+                            p.get("width"),
+                            p.get("height"),
+                            actor.get("visible"),
+                        ],
+                        intersects,
+                    )
+                    if role == "nod":
+                        nod = s.get("nod") or {}
+                        operand(
+                            "consumer",
+                            token,
+                            "nod gesture subject installed",
+                            [actor.get("gesture")],
+                            lambda a: a is True,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "nod animation held",
+                            [logical.get("animationCounter")],
+                            lambda a: a == 255,
+                        )
+                        operand(
+                            "consumer",
+                            token,
+                            "bound nod source phase",
+                            [
+                                nod.get("Elapsed"),
+                                actor.get("lowered"),
+                            ],
+                            lambda age, low: low is (10 <= age < 30),
+                        )
+                    elif ins.get("resource") == "shiver":
+                        cue = p.get("cue") or {}
+                        operand(
+                            "consumer",
+                            token,
+                            "shiver legal offset",
+                            [shift],
+                            lambda a, cue=cue: a in (-1, 1) if cue.get("shivering") else a == 0,
+                        )
+
+                        def shiver(age, offset, cue=cue):
+                            if not cue.get("shivering"):
+                                return offset == 0
+                            # Godot JSON rounds the retained double age; compare
+                            # its serialization interval at a phase boundary.
+                            return offset in {
+                                1 if int(max(0, age + d) * 60 / 5) % 2 == 0 else -1
+                                for d in (-1e-14, 1e-14)
+                            }
+
+                        operand(
+                            "consumer",
+                            token,
+                            "actual shiver alternating phase",
+                            [cue.get("elapsed"), shift],
+                            shiver,
+                        )
+                    elif ins.get("resource") in ("mosaic-in", "mosaic-out"):
+                        cue = p.get("cue") or {}
+                        if cue.get("mosaic") == subject:
+                            operand(
+                                "consumer",
+                                token,
+                                "mosaic legal block",
+                                [actor.get("mosaicBlock")],
+                                lambda a: a in (1, 2, 4, 6, 8),
+                            )
+
+                            def mosaic(age, block, ins=ins):
+                                age = 0.5 - age if ins["resource"] == "mosaic-out" else age
+                                return block in {
+                                    8
+                                    if a < 0.1
+                                    else 6
+                                    if a < 0.2
+                                    else 4
+                                    if a < 0.3
+                                    else 2
+                                    if a < 0.4
+                                    else 1
+                                    for a in (age - 1e-14, age + 1e-14)
+                                }
+
+                            operand(
+                                "consumer",
+                                token,
+                                "actual mosaic finite phase",
+                                [cue.get("elapsed"), actor.get("mosaicBlock")],
+                                mosaic,
+                            )
+            # Generic loader fades after mounting have a frozen field camera; their
+            # live modulation and handoff are the actual consumer, not a new actor draw.
+            if subject is None and role != "full-fade":
+                used = [
+                    True for b in rows if b.get("projectionStage") == "completion-before-submit"
+                ]
+            check(
+                "consumer",
+                "actual use retained without per-tick draw quota",
+                True if used else None,
+                token,
+            )
+        local = result["checks"][start_index:]
+        for family in ("operation", "consumer"):
+            occurrence[family] = aggregate(
+                [c["value"] for c in local if family == "consumer" or c["family"] == family]
+            )
+    if compiler is not None:
+        common("lowering dependencies owned by source pin", compiler.sources <= tracked_source)
+    for family in ("operation", "consumer"):
+        result[family] = aggregate(
+            [c["value"] for c in result["checks"] if family == "consumer" or c["family"] == family]
+        )
+    return result
+
+
 def modern_required_children(variant, ref):
     """Frozen winning-profile children; observed subsets do not enlarge this set."""
     ally_ids = [a["id"] for a in ref["admission"]["accounting"]["allies"][:3]]
@@ -2638,6 +3710,7 @@ def compare_modern(
         material_selection[0] if material_selection else None,
         join["original"],
     )
+    field_motion = field_motion_binding(actual, material_selection, text_source_root)
     assertions = []
     obligations = {}
 
@@ -3619,6 +4692,23 @@ def compare_modern(
             "warpRecords[*].result.observations.Program + outcome.records/programs",
         ),
     ):
+        if name == "awaited entity motion/gesture/fade before caller return":
+            check(
+                3,
+                name,
+                True,
+                field_motion["operation"],
+                actual_location,
+                dict(
+                    owner="docs/design/contracts/map-exploration.md",
+                    upstreamCommit=UPSTREAM,
+                    binding="complete ordered source producers, wait predicates "
+                    "and signed command operands",
+                ),
+                parent=operation_parent,
+                reason="Occurrence-local source/wait/caller join; false dominates missing operands",
+            )
+            continue
         missing(
             3,
             operation_parent,
@@ -4055,6 +5145,24 @@ def compare_modern(
                 reason=reason,
             )
             continue
+        if name == "entity motion/gesture/fade consumer start/completion before resume":
+            check(
+                9,
+                name,
+                True,
+                field_motion["consumer"],
+                actual_location,
+                dict(
+                    owner="remake/docs/presentation-and-assets.md",
+                    upstreamCommit=UPSTREAM,
+                    binding="source occurrence -> real phase/draw/modulation -> completion "
+                    "handoff -> logical restore/resume",
+                ),
+                parent=consumer_parent,
+                reason="Complete reached inventory; geometric culling and actual finite handoffs, "
+                "without per-tick/terminal draw quotas",
+            )
+            continue
         missing(9, consumer_parent, name, binding, actual_location, side, reason)
 
     check(
@@ -4299,6 +5407,7 @@ def compare_modern(
             textMaterialBinding=text_material,
             plainJoinBinding=join,
             walkingAdmissionBinding=walking,
+            fieldMotionBinding=field_motion,
         ),
         counts=counts,
         historicalCounts=dict(

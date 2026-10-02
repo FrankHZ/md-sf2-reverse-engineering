@@ -667,3 +667,40 @@ isScriptIdle is omitted from the actual comparison when that old entity lacks th
 order and all other operands remain exact; idle present on both sides is compared, and a missing
 actual idle when expected has it fails. Historical baseline PASS does not prove its unobserved
 idle state. The modern matrix retains each session's own evidence; new A cannot backfill B/C/D.
+
+### Complete reached field motion and consumer binding
+
+The two existing whole children `awaited entity motion/gesture/fade before caller return` and
+`entity motion/gesture/fade consumer start/completion before resume` use the same complete reached
+inventory. Logical `program-instruction`, dedicated `nod-started` and `full-fade-started` producers
+define it independently of retained consumer channels. The initial after-program fade can publish
+before the returning view exists; preceding logical source instructions identify its typed span.
+Ordinary-warp helper direction follows the logical warp/transfer boundary. Unvisited source programs
+add no occurrence requirement. Fixed counts, endpoint names and rendered selectors do not select
+accepted behavior.
+
+The selected same-run world and pinned source must agree on every ordered producer operand in each
+reached program. Reuse the source parser/lowering; retain source statement/opcode, producer ordinal
+and typed location. Treat the accepted modern loader/outcome wrappers and ordinary-warp helpers as
+their named compositions. Each awaited installation binds session/token/subject/physical slot,
+source wait policy, held cursor/callers, signed destination and release predicate. Source nonwait
+and perpetual installations have no invented local completion requirement. Inline nonwaiting
+relative actions bind each destination to its actual command-entry pose; summing requested moves
+would invent arrival waits. A post-release hide or reposition is a dependent command, not the held
+motion endpoint.
+
+Actual consumption binds observed draw identity, logical pose, viewport intersection and Nod/shiver/
+mosaic phase; generic cues bind their real finite handoff. Palette/white nodes have a live consumer
+even when field geometry is absent. Restore source animation, flags, global sprite size, palette
+endpoint and temporary period before dependent continuation. Preserve a last draw preceding the
+handoff; neither one draw per tick nor synchronized terminal raster is required. Rect2 edge checks
+use its float32 arithmetic. Retained JSON's rounded elapsed age represents a narrow serialization
+interval at generic phase boundaries; this does not normalize gameplay or claim original timing.
+
+Missing evidence contributes Unavailable locally. Independently observed wrong subject, policy,
+destination, phase, restoration, endpoint or continuation order is FAIL even when another field or
+occurrence is missing. Consumer closure includes the source/wait/effect predicates as well as actual
+use. Deleting every consumer channel for a produced occurrence must preserve that inventory and
+leave the whole join Unavailable. No mandatory row, partial PASS subset or normalization exception
+is added. Existing original evidence, older variant applicability and all other families retain
+their own acceptance boundaries; these two joins cannot close full H4.

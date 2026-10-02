@@ -279,8 +279,9 @@ func consumer_draw_delivery(s: Dictionary) -> Dictionary:
     elif s.get("presentationWait") != null and s.presentationWait.Cue.Entity != null: subject = s.presentationWait.Cue.Entity.Value
     var actor = null
     var logical = null
-    for entity in s.get("entities", []):
-        if entity.id == subject: logical = entity; break
+    if s.get("entities") != null:
+        for entity in s.entities:
+            if entity.id == subject: logical = entity; break
     for candidate in p.get("actors", []):
         if candidate.entity == subject: actor = candidate; break
     return {"processFrame":Engine.get_process_frames(),"subject":subject,
