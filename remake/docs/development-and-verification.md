@@ -3188,7 +3188,9 @@ selected witnessed fields cannot close unobserved sibling obligations.
 The comparator checks the frozen required family/child declarations before returning a modern
 report. The matrix also checks each supplied report's required children, unique rows/parents,
 parent child lists/counts/verdicts, and assertion/historical/report summaries. The selected accepted
-reference also supplies required admission/return flags and occupied slots. Missing evidence
+reference also supplies required admission/return flags, occupied slots and admitted ally identities.
+The independent initial map/position/facing/gold/seed and each admitted ally's HP/MP/status
+comparisons are required even when summaries are reconciled after their omission. Missing evidence
 represented by a required-unobserved row remains Unavailable; omitted required rows or families,
 duplicate rows/parents and contradictory results are malformed reports and make the matrix FAIL,
 with `remaining[*].integrityErrors` identifying the inconsistency. Valid report fields and order

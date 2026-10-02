@@ -1539,8 +1539,16 @@ MATRIX_OBLIGATION = "complete named continuous settings matrix"
 
 def modern_required_children(variant, ref):
     """Frozen winning-profile children; observed subsets do not enlarge this set."""
+    ally_ids = [a["id"] for a in ref["admission"]["accounting"]["allies"][:3]]
     families = {
         None: (
+            "map",
+            "x",
+            "y",
+            "facing",
+            "gold",
+            "mainSeed",
+            *(f"ally-{ally}.{field}" for ally in ally_ids for field in ("Hp", "Mp", "Status")),
             "admission roster",
             "one continuous session",
             "monotonic observed sequence",
@@ -1617,10 +1625,10 @@ def modern_required_children(variant, ref):
                 for slot in (5, 6, 8)
                 for field in ("wait timer", "cursor/moving source binding")
             ),
-            *(f"ally-{ally} candidate class/stats/spell words" for ally in range(3)),
+            *(f"ally-{ally} candidate class/stats/spell words" for ally in ally_ids),
         ),
     }
-    for ally in range(3):
+    for ally in ally_ids:
         parent = f"ally-{ally}.items"
         families[parent] = tuple(
             parent + "." + field
