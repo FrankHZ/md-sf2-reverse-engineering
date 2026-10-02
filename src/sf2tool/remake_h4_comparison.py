@@ -1320,6 +1320,16 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and plain["token"] == polled["token"] == confirm["before"]["token"]
             and plain["cursor"] == polled["cursor"] == confirm["before"]["cursor"]
             and acked["wait"] == confirm["after"]["wait"] == "TextCloseWait"
+            and all(
+                side[key] == state[key]
+                for side, state in (
+                    (wait["before"], plain),
+                    (wait["after"], polled),
+                    (confirm["before"], polled),
+                    (confirm["after"], acked),
+                )
+                for key in ("revision", "simulationTick", "mainSeed", "token", "cursor")
+            )
             and {r["action"] for r in early} == {"wait", "confirm"}
             and all(r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in early)
             and polled["simulationTick"] == plain["simulationTick"] + 1
@@ -1428,6 +1438,13 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and acked["revision"] < o["Sequence"] <= ready["revision"]
         ]
         zone_finished = event("zone-finished")
+        arrivals = [
+            s["state"]
+            for s in actual["samples"][ai + 1 : ri]
+            if s["state"]["wait"] == "ZoneArrivalWait"
+        ]
+        if not arrivals:
+            return result
         zone = next(p for p in world["programs"] if p["id"] == "map3-zoneevent8")
         entities = {e["id"]: e for e in ready["entities"]}
         effects = all(
@@ -1466,6 +1483,16 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and tail[2]["ticks"] == 10
             and [o["Program"]["Instruction"] for _, o in actual_tail]
             == list(range(int(begin) + 1, len(instructions)))
+            and [o["Detail"] for _, o in actual_tail]
+            == [
+                "CloseText",
+                "WaitProgramTicks",
+                "FollowEntity",
+                "FollowEntity",
+                "SetEntityPosition",
+                "SetEntityPosition",
+                "JumpProgram",
+            ]
             and len(ticks) == tail[2]["ticks"]
             and actual_tail[1][1]["Sequence"]
             < ticks[0][1]["Sequence"]
@@ -1483,6 +1510,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and ready["wait"] is None
             and ready["cursor"] is None
             and ready["canWaitAtInput"]
+            and all(603 in s["flags"] and not s["canWaitAtInput"] for s in arrivals)
             and {1, 2}.issubset(ready["partyLists"]["Joined"])
         )
         result["anchors"]["actual"] = dict(
