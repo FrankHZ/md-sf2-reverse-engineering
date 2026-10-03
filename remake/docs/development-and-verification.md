@@ -3860,6 +3860,15 @@ collections or actor/portrait selectors. The bounded `guard-startup-04` check ob
 unsubscription, callback replacement and a replacement host/session. All eight predicates pass;
 two ObjectDB instances reported at temporary-helper exit remain a recorded warning, not a clean-log
 or memory-performance claim. Preserve the preceding completed helper/managed-signal failures.
+The production `run_portrait_event` startup also guards its later session-result registration with
+`is_connected`, because the early node-added hook has already installed that callback for winning
+observations. The separate bounded `production-startup-03` window executes the production startup
+and stops before its first navigation key submission: first draw requirements/uses327, exactly one
+`record_warp_result` callback alongside the existing managed signal bridge, one actual startup
+result delivery, zero submitted inputs and no host errors/warnings. The earlier lifecycle helper
+overrides `run` and does not prove this production registration path. Preserve production-startup01's
+helper count failure and production-startup02's custom-callable diagnostic error; no full route,
+subscription lifecycle repeat or C# rebuild follows from this GDScript-only correction.
 
 The independent resource inventory derives block/tile keys from retained layer geometry, source
 layout and camera coverage, and portrait poses from logical identity/flags/work plus source alternate
