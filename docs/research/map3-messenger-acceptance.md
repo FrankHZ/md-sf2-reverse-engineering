@@ -3822,6 +3822,54 @@ history and synchronization with the winning remake route. The sealed prepared o
 pairs remain bounded corroboration; their count and historical clocks do not define this route's
 inventory or gameplay legality. No new original runtime observation follows from this join.
 
+### Reached whole-operation source and effect correspondence
+
+**Confirmed (static source):** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies the ordered reached cutscene bodies,
+map warp-event tables, flag-selected default setups and on-load programs. In
+`disasm/data/battles/entries/battle01/cs_afterbattle.asm:abcs_battle01`, camera detach precedes
+map loading and a one-tick wait separates map loading from entity replacement. Existing
+`OriginalPrograms` lowering retains both operations. The corrected selected world replaces only
+that program row; removing those two instructions recovers the old row, and restoring that row
+recovers the entire old document, including all provenance, asset and audio data.
+
+Map20's `mapsetups/s6_initfunction.asm:cs_53996` sets the player to23,39 after the source coordinate
+branch. Its ordinary warp requested23,37; the retained request and source initializer explain the
+first held pose. A prior old-map snapshot is not the branch's coordinate operand. The final explicit
+victory return uses the last living ally pose and source battle-map/facing policy, separately from
+ordinary warp helpers and immediate battle selection. Neither a fixed warp count nor an observed
+historical choice count defines route legality.
+
+**Confirmed (bounded modern observation):** the corrected continuous A joins complete source
+successors, dynamic branches, held callers/nested returns, dialogue/control/choice effects,
+roster/flag/follower effects, warp/setup/init/load readiness and before/after/shared-tail effects.
+The pending return camera read comes from the live session after its mode changes to exploration;
+session/revision/observation sequence agree with that actual result. The one-service map-load wait
+retains the old physical entities with input unavailable before replacement. The clean retained
+`local/issue534/operation-flow-01/new-A-03` process exits0 with no Godot errors and unchanged
+party/start/settings. Nine pre-AB baseline checkpoints and Left remain exact. The
+[contract](../design/contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
+and [reproduction route](../../remake/docs/development-and-verification.md#complete-operation-flow-comparison)
+define this bounded comparison, not original hardware equivalence.
+
+**Unknown:** original natural caller/branch/service history outside named observations, original
+presentation and hardware timing, broad NPC/RNG/collision correspondence, and the outstanding H4
+families. No new original runtime capture follows from this join. Historical reports and completed
+failed native attempts remain preserved; the corrected world gives A a distinct content cohort and
+does not backfill B/C/D or close the full continuous settings matrix.
+
+The corrected operation reader requires explicit camera target presence, in-call stack evidence and
+actual initialization/shared-tail effects. Pinned `InitializeMapEntities`,
+`InitializeFollowerEntities`, `GetAllyMapsprite`, setup pointer/entity declarations and the existing
+population lowering supply the bounded rebuild allocation and sprite rules; preserve loads retain
+the prior physical set. Actual facing and all retained first-boundary allocation contexts are checked
+after source overrides. Shared-tail flag and counted membership states are read before return,
+separately from published operation labels. **Unknown (actual observation):** calls at4107 and12608
+have no retained caller-stack operand before their enclosing returns. Other later stacks cannot
+supply those intervals; the whole route/setup/caller child remains Unavailable despite correct
+observed source nesting and continuation. The other four operation-flow children pass the corrected
+bounded readback, without a new native or original capture.
+
 The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
 now chooses one progress step per existing common service from semantic request, arm-before-sample
 and complete three-service helper groups. The optional finite profile19/505 and actual playback

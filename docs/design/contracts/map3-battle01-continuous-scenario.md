@@ -715,3 +715,63 @@ pending motion/effect waits cannot expose field-input readiness. Missing fields 
 independently. Saved fade period and palette base, and shiver restoration operands, retain their
 entry identity through the wait; restoration compares the completed state against that entry,
 never against a matching value invented in the terminal record.
+
+### Complete reached operation-flow binding
+
+The five existing whole children below use one complete reached source/effect binding in
+`remake_h4_comparison.py:operation_flow_binding`:
+
+- `taken route/setup/caller branch operands and occurrence`
+- `dialogue speaker/control-token occurrence and choice effect`
+- `route roster/flag writes at their source branch`
+- `warp destination/setup initialization before field release`
+- `before/after operation effects and shared-tail return pairing`
+
+The same-run selected world must equal the pinned source's complete ordered reached bodies,
+including called bodies, map initialization and explicit modern loader/return compositions.
+Observed PCs, flags, coordinate operands, held caller frames and enclosing returns establish the
+taken route. A source call requires its matching nested return and continuation; any later matching
+PC is insufficient. Dialogue reuses the complete displayed-text binding and independently joins each
+accepted choice to its source branch and flag effect. Counted roster prefixes, source flag writes and
+installed follower effects retain their branch ordering.
+
+Caller-stack evidence must occur inside that invocation, before its enclosing return. A later
+unrelated stack cannot fill a missing interval. The retained corrected A has no stack operand within
+the calls at observation4107 and12608; this keeps the whole route/setup/caller child Unavailable.
+
+Ordinary warps independently select the first matching pinned map event, its destination and load
+mode, the flag-selected default setup and on-load initialization, both load services and genuine
+field readiness. A later initializer may overwrite a requested player pose only when its source
+instruction and retained warp request establish that chain. Battle selection and explicit outcome
+return are separate operations: the last live battle pose and source victory map/facing select the
+return destination. Transfer counts cannot pair these boundaries.
+
+At the first held destination boundary, compare actual player facing against the request and any
+intervening source facing override. Source setup declarations, follower flags and existing ally
+sprite lowering supply rebuild allocation identities, physical slots and sprites; preserve-mode
+loads retain the prior physical allocation, with intervening source sprite changes applied.
+Check all retained physical contexts at that boundary. Missing facing/slot/sprite operands contribute
+Unavailable; a present wrong effect remains FAIL independently of another missing operand.
+
+Before/after effects include physical position/facing/sprite/hide changes, source reset HP/MP,
+actual camera detach, ordered scene-map load, its source one-service wait and subsequent entity
+replacement, and source shared-tail JOIN/unlock/completed writes before enclosing return.
+Camera identity at the pending battle-to-field seam is the live session's logical view; no absent
+field actor projection is fabricated. An older pre-presentation camera projection cannot replace
+the fresh dependent read. Missing evidence contributes Unavailable locally; observed contradictions
+remain FAIL even when another operand is absent. No mandatory rows, partial PASS subsets, fixed
+trace counts or gameplay normalization are introduced.
+
+Camera detach requires an explicitly present null target operand; an absent key proves no detach.
+Shared-tail markers identify operations but do not establish effects: independently compare their
+source-defined flag changes and counted JOIN membership against actual state before enclosing
+return, accounting for intervening legitimate writers. Missing state is Unavailable; wrong flags or
+membership are FAIL even when another effect operand is missing.
+
+The corrected `abcs-battle01` body includes source camera detach and the one-tick wait between map
+and entity loading. Preserve their real service, effect and PC consequences. The nine accepted
+pre-after-program checkpoints and modern Left baseline remain exact in the bounded corrected A
+observation; there is no evidence requiring a Left-baseline change. The historical A/B/C/D matrix
+retains its own content identity. Corrected A cannot form a current same-content matrix with old
+B/C/D; current cohort and full H4 remain Unavailable. Reproduction and current evidence are owned by
+the [operation-flow verification route](../../../remake/docs/development-and-verification.md#complete-operation-flow-comparison).

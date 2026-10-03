@@ -71,10 +71,24 @@ var raw_boundary: Dictionary = {}
 var raw_draws: Array = []
 var camera_exposure_before: Dictionary = {}
 var camera_exposure_checks := 0
+var winning_focus_recovery: Array = []
+var focus_recovery_pending := false
 
 func record_camera_before_draw() -> void:
     if not parallax_case or not is_instance_valid(view): return
     var s := state()
+    # This unattended winning capture has no intentional focus-loss scenario.
+    # Request genuine window focus once per loss; the application's guard stays active.
+    if winning_case:
+        if not root.has_focus() and not focus_recovery_pending:
+            winning_focus_recovery.append({"kind":"requested","focused":root.has_focus(),
+                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")})
+            focus_recovery_pending = true
+            root.grab_focus()
+        elif root.has_focus() and focus_recovery_pending:
+            winning_focus_recovery.append({"kind":"restored","focused":root.has_focus(),
+                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")})
+            focus_recovery_pending = false
     if not s.has("simulationTick"): return
     camera_exposure_before = {"tick":s.simulationTick,"token":s.token,
         "x":s.presentation.cameraX,"y":s.presentation.cameraY}
@@ -1157,6 +1171,7 @@ func finish_public() -> void:
         "warpRecords":warp_records,"cameraDraws":camera_draws,"choiceDraws":choice_draws,"battleEntryRecords":battle_entry_records,
         "h4Variant":h4_variant,"inputRecords":input_records,"speechReceipts":speech_receipts,"audioReceiptGaps":audio_receipt_gaps,
         "revealAudioPairs":reveal_audio_pairs,"consumerBoundaries":consumer_boundaries,
+        "winningFocusRecovery":winning_focus_recovery,
         "admissionSnapshot":admission_snapshot,"sceneObservations":scene_observations,
         "audioReceipts":audio_receipts,"audioTerminal":audio_terminal,"audioSequenceSeen":audio_sequence_seen,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
@@ -1179,6 +1194,23 @@ func finish_public() -> void:
     quit(0 if failures.is_empty() else 1)
 
 
+func pending_return_context(result: Dictionary) -> Dictionary:
+    # Read the live session while the field view has not yet been installed.
+    # These are logical operands; there is no field projection at this boundary.
+    var battle_view := host.get_node_or_null("BattleSessionView")
+    if battle_view == null: return {}
+    var live: Dictionary = JSON.parse_string(battle_view.call("ReadObservationJson"))
+    var identity_matches: bool = live.get("sessionId") == result.sessionId and live.get("revision") == result.revision and live.get("observationSequence") == result.observationSequence
+    check(identity_matches, "Pending field return reads the current result identity")
+    if not identity_matches: return {}
+    var context: Dictionary = {}
+    for field in ["sessionId", "revision", "observationSequence"]:
+        if live.has(field): context[field] = live[field]
+    var logical: Dictionary = live.get("pendingFieldReturn", {})
+    for field in ["logicalView", "simulationTick", "cursor"]:
+        if logical.has(field): context[field] = logical[field]
+    return context
+
 func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
     if result.boundary == "presentation-completion-before-submit":
@@ -1194,7 +1226,7 @@ func record_warp_result(payload: String) -> void:
     if winning_case and result.mode == "Exploration" and host.get_node_or_null("ExplorationSessionView") == null:
         # Battle publishes its outcome before GameRoot installs the returning field
         # view. Preserve the result now; the new view's attach and live state follow.
-        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}, "projection":"field-view-pending"})
+        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":pending_return_context(result), "projection":"field-view-pending"})
         return
     projection_stage = "signal-before-Present"
     var s := state()
