@@ -591,6 +591,14 @@ def _read_capture(path):
     context = _ReaderContext(_STREAM_SCRATCH_ROOT or path.resolve().parent)
     _STREAM_CONTEXT = context
     channels, counts, descriptors, terminal = {}, {}, {}, None
+    metadata = {}
+    metadata_keys = {
+        "admissionSnapshot",
+        "rawTextBoundary",
+        "musicLogicalEnd",
+        "musicPlainInput",
+        "joinReturn",
+    }
     previous, descriptor_bytes = 0, 0
     with path.open("rb") as source:
         while raw := source.readline(_STREAM_RECORD_LIMIT + 1):
@@ -663,6 +671,16 @@ def _read_capture(path):
                         use["used"] = descriptors[selector["captureDescriptor"]]
                     channels["resourceUses"].append(dict(use, identity=payload["identity"]))
                 continue
+            if channel == "captureMetadata":
+                require(
+                    set(payload) == {"key", "value"}
+                    and isinstance(payload["key"], str)
+                    and payload["key"] in metadata_keys
+                    and payload["key"] not in metadata,
+                    "invalid/duplicate capture metadata key",
+                )
+                metadata[payload["key"]] = payload["value"]
+                continue
             if channel == "terminal":
                 terminal = payload
             else:
@@ -672,6 +690,22 @@ def _read_capture(path):
                 channels[channel].append(payload)
     require(terminal is not None and counts.get("header") == 1, "capture missing terminal/header")
     result = dict(terminal)
+    if metadata or "captureMetadataKeys" in result:
+        declared = result.pop("captureMetadataKeys", None)
+        require(
+            isinstance(declared, list)
+            and len(declared) == len(metadata_keys)
+            and all(isinstance(key, str) for key in declared)
+            and set(declared) == metadata_keys
+            and set(metadata) == metadata_keys,
+            "missing/invalid capture metadata declaration",
+        )
+        require(
+            not metadata_keys.intersection(result) and not metadata_keys.intersection(channels),
+            "capture metadata conflicts with terminal/channel",
+        )
+        for key in metadata_keys:
+            result[key] = metadata[key]
     result.update(channels)
     result["captureIntegrity"] = dict(
         records=previous,
