@@ -81,6 +81,12 @@ or stable-observation boundary under
 
 ## Current Engineering Frontier
 
+The current C/D settings observations complete the winning/return route with intact bounded capture
+and unchanged inputs. They retain their own evidence alongside the frozen A/B reports; native
+completion does not itself close the settings matrix or full H4. See the
+[C/D capture and comparison boundary](./development-and-verification.md#current-cd-settings-capture),
+including preserved failed attempts and the completed local toolchain-provenance failure.
+
 Bound victory/defeat/return programs now share field text/portrait readiness with their genuine
 outcome route, anchor and continuation. New outcome worlds initialize their own logical view and
 closed windows, preserving carried party/display/RNG. Outcome engine cases cover changed winning
