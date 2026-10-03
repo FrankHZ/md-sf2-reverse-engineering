@@ -3458,6 +3458,9 @@ not alter gameplay clocks, logical services, RNG, rendering decisions or #517 sp
 The probe installs `game/src/Observation/ObservationCapture.cs` before Main. Existing result,
 audio and actual draw boundaries supply immutable primitive facts. Main-thread Godot dictionaries
 are copied before enqueue; newly built CLR facts are transferred without a JSON/Godot round trip.
+Field consumer and camera callbacks expose only their control operands to GDScript. Their full
+state/projection evidence is snapshotted directly into owned CLR primitives on the game thread;
+lazy collections are materialized before enqueue, so later live changes cannot alter queued facts.
 One worker serializes UTF-8 and writes in capture order. No live Godot object crosses that boundary.
 Resource descriptors are emitted before their uses and reset when the owning view detaches;
 native session/revision/token/draw identity remains in the use record. Actual uses are retained,

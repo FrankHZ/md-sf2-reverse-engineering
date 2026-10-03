@@ -122,6 +122,75 @@ public sealed partial class ObservationCapture : Node
         }
         catch (InvalidOperationException error) { Fail(error.Message + ":channel=" + channel); return false; }
     }
+    // Resolve lazy/live-owned fact collections synchronously before handing ownership to
+    // the writer. This path preserves the Variant transport's primitive representation
+    // without allocating a Godot collection for every state/projection node.
+    internal bool RecordSnapshotFacts(string channel, object facts)
+    {
+        if (!Accepting) return false;
+        long started = System.Diagnostics.Stopwatch.GetTimestamp();
+        try
+        {
+            lock (_gate)
+            {
+                if (_failure is not null || _finishing) return false;
+                var budget = new CopyBudget(_queuedBytes, _pendingBytes);
+                var snapshot = SnapshotFacts(facts, budget);
+                return QueueFacts(channel, snapshot, false, budget, started);
+            }
+        }
+        catch (Exception error) when (error is InvalidOperationException or ArgumentException)
+        { Fail(error.Message + ":channel=" + channel); return false; }
+    }
+
+    private static object? SnapshotFacts(object? value, CopyBudget budget, int depth = 0)
+    {
+        if (depth > 64) throw new InvalidOperationException("capture-payload-depth-limit");
+        if (value is Variant variant) return CopyVariant(variant, budget, depth);
+        if (value is Godot.Collections.Dictionary dictionary) return CopyVariant(dictionary, budget, depth);
+        if (value is Godot.Collections.Array array) return CopyVariant(array, budget, depth);
+        if (value is GodotObject) throw new InvalidOperationException("capture-live-godot-object");
+        if (value is null) { budget.Add(4,16); return null; }
+        if (value is Guid guid) value = guid.ToString();
+        if (value is string text) { budget.Add(text.Length*6L+2,text.Length*2L+24); return text; }
+        if (value is bool) { budget.Add(5,24); return value; }
+        if (value is Enum or byte or sbyte or short or ushort or int or uint or long or ulong)
+        { budget.Add(32,24); return Convert.ToInt64(value); }
+        if (value is float or double or decimal) { budget.Add(32,24); return Convert.ToDouble(value); }
+        if (value is IDictionary mapping)
+        {
+            budget.Add(2,128);
+            var result = new Dictionary<string,object?>();
+            foreach (DictionaryEntry entry in mapping)
+            {
+                string key = Convert.ToString(entry.Key)!;
+                budget.Add(key.Length*6L+4,key.Length*2L+64);
+                result.Add(key,SnapshotFacts(entry.Value,budget,depth+1));
+            }
+            return result;
+        }
+        if (value is IEnumerable sequence)
+        {
+            budget.Add(2,64);
+            var result = new List<object?>();
+            foreach (var item in sequence) { budget.Add(1,16); result.Add(SnapshotFacts(item,budget,depth+1)); }
+            return result;
+        }
+        budget.Add(2,128);
+        var row = new Dictionary<string,object?>();
+        foreach (var property in FactProperties(value.GetType()))
+        {
+            budget.Add(property.Name.Length*6L+4,property.Name.Length*2L+64);
+            row.Add(property.Name,SnapshotFacts(property.GetValue(value),budget,depth+1));
+        }
+        return row;
+    }
+
+    // Shallow selection only; callers must snapshot selected values before enqueue.
+    internal static Dictionary<string,object?> FactFields(object? facts) => facts is null ? [] :
+        facts is Dictionary<string,object?> fields ? fields :
+        FactProperties(facts.GetType()).ToDictionary(property=>property.Name,property=>property.GetValue(facts));
+
     internal void AudioReceipt(object receipt)
     {
         if (Accepting) RecordFacts("audioReceipts", new { receipt, poll = new

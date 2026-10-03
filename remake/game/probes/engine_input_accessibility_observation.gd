@@ -124,13 +124,12 @@ func record_camera_before_draw() -> void:
 func record_camera_draw() -> void:
     if not is_instance_valid(view) or capture_failed: return
     if capture != null and view.has_method("CaptureNeedsPostDraw") and not view.call("CaptureNeedsPostDraw",raw_text_case,choice_case,white_palette_case,battle_entry_case): return
-    var s := state()
+    var s := callback_state()
     if not s.has("presentation"): return
     var presenting: Dictionary = s.get("presentationWait") if s.get("presentationWait") != null else {}
     var resource = presenting.get("Cue", {}).get("Resource")
     if s.get("entityWait") != null or s.get("nod") != null or s.get("fade") != null or resource in ["nod", "shiver", "mosaic-in", "mosaic-out", "black", "white"]:
-        capture_row("consumerBoundaries",{"projectionStage":"frame-post-draw","inputOrdinal":active_input,
-            "state":consumer_context(s),"releases":[],"drawDelivery":consumer_draw_delivery(s)}, consumer_boundaries)
+        record_consumer({"projectionStage":"frame-post-draw","inputOrdinal":active_input,"releases":[]},s)
     if raw_text_case and s.textId == 447:
         var dialogue := view.get_node("Dialogue") as Label
         capture_row("rawTextDraws",{"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
@@ -164,8 +163,14 @@ func record_camera_draw() -> void:
             check(is_equal_approx(camera_exposure_before.x, x) and is_equal_approx(camera_exposure_before.y, y),
                 "Exposed main camera agrees before unequal-plane draw")
             camera_exposure_checks += 1
-    capture_row("cameraDraws",{"projection":p, "logicalView":s.logicalView, "entities":s.entities,
-        "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}}, camera_draws)
+    var exposed_after := {"x":s.presentation.cameraX,"y":s.presentation.cameraY}
+    if capture != null and view.has_method("RecordCaptureCamera"):
+        if not view.call("RecordCaptureCamera",camera_exposure_before,exposed_after):
+            capture_failed = true
+            issue = "capture-failed:" + str(capture.call("Failure"))
+    else:
+        capture_row("cameraDraws",{"projection":p, "logicalView":s.logicalView, "entities":s.entities,
+            "exposedBefore":camera_exposure_before,"exposedAfter":exposed_after}, camera_draws)
 
 func record_resource_draw() -> void:
     if capture != null: return # C# records immutable actual draw facts at this boundary.
@@ -293,7 +298,26 @@ func read_sample(label: String) -> Dictionary:
     return s
 
 func state() -> Dictionary:
-    var s := super.state()
+    return enrich_state(super.state())
+
+func callback_state() -> Dictionary:
+    var field_view := host.get_node_or_null("ExplorationSessionView") if is_instance_valid(host) else null
+    if capture != null and field_view != null:
+        view = field_view
+        return enrich_state(view.call("ReadCaptureWitness"))
+    return state()
+
+func record_consumer(envelope: Dictionary, s: Dictionary) -> void:
+    if capture != null and is_instance_valid(view) and view.has_method("RecordCaptureConsumer"):
+        if not view.call("RecordCaptureConsumer",envelope,h4_context(s),s.get("fieldLabel",{})):
+            capture_failed = true
+            issue = "capture-failed:" + str(capture.call("Failure"))
+        return
+    envelope["state"] = consumer_context(s)
+    envelope["drawDelivery"] = consumer_draw_delivery(s)
+    capture_row("consumerBoundaries",envelope,consumer_boundaries)
+
+func enrich_state(s: Dictionary) -> Dictionary:
     if capture_failed: s["failure"] = issue
     var field_view := host.get_node_or_null("ExplorationSessionView") if is_instance_valid(host) else null
     var label := field_view.get_node_or_null("Dialogue") as Label if field_view != null else null
@@ -1449,10 +1473,8 @@ func record_result_facts(result: Dictionary) -> void:
                     resource_progress[milestone] = control
                     save_resource_progress()
     if result.boundary == "presentation-completion-before-submit":
-        var before := state()
-        capture_row("consumerBoundaries",{"result":result,"inputOrdinal":active_input,
-            "projectionStage":"completion-before-submit","state":consumer_context(before),"releases":[],
-            "drawDelivery":consumer_draw_delivery(before)}, consumer_boundaries)
+        var before := callback_state()
+        record_consumer({"result":result,"inputOrdinal":active_input,"projectionStage":"completion-before-submit","releases":[]},before)
         return
     if winning_case and result.boundary in ["attach", "begin"]:
         # Attach publishes before the new view has built its projection.
@@ -1465,12 +1487,12 @@ func record_result_facts(result: Dictionary) -> void:
         return
     projection_stage = "signal-before-Present"
     var narrow: bool = capture != null and winning_case and not winning_started and is_instance_valid(view) and view.has_method("ReadCapturePrefix") and not view.call("CaptureHasConsumerWait") and not result.observations.any(func(o): return o.get("EntityWaitRelease") != null or o.Kind in ["zone-entered","choice-returned","nod-returned","presentation-completed"] or o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-"))
-    var s: Dictionary = view.call("ReadCapturePrefix") if narrow else state()
+    var prefix_result: bool = winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"])
+    var s: Dictionary = view.call("ReadCapturePrefix") if narrow else (callback_state() if prefix_result else state())
     projection_stage = "host-poll"
     var releases: Array = result.observations.filter(func(o): return o.get("EntityWaitRelease") != null)
     if s.get("entityWait") != null or not releases.is_empty() or s.get("nod") != null or s.get("fade") != null or result.observations.any(func(o): return o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-") or o.Kind == "presentation-completed"):
-        capture_row("consumerBoundaries",{"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present",
-            "state":consumer_context(s),"releases":releases,"drawDelivery":consumer_draw_delivery(s)}, consumer_boundaries)
+        record_consumer({"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present","releases":releases},s)
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
         # Accepted prefix checkpoints remain full samples. Keep every result and its
         # identity here without repeating the entire field projection every tick.

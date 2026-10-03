@@ -543,6 +543,85 @@ public sealed partial class ExplorationSessionView : Control
     public Godot.Collections.Dictionary ReadCaptureState(bool full = false, bool resources = false) =>
         ObservationCapture.ToDictionary(ObservationFacts(full, resources));
 
+    // Only callback control operands cross into GDScript. Full evidence is captured
+    // below at the same synchronous boundary, without a CLR/Variant/CLR round trip.
+    public Godot.Collections.Dictionary ReadCaptureWitness()
+    {
+        var state = ObservationCapture.FactFields(ObservationFacts(false,false));
+        string[] names = ["sessionId","revision","observationSequence","simulationTick","mainSeed","map","mode",
+            "stop","wait","token","cursor","failure","focused","tickDebt","canWaitAtInput","canWaitForText",
+            "visibleCharacters","totalCharacters","textId","entityWait","nod","fade","presentationWait",
+            "presentation","choice","choiceProjection","logicalView"];
+        var witness = names.ToDictionary(name=>name,name=>state[name]);
+        var projection = ObservationCapture.FactFields(state["cameraProjection"]);
+        witness["cameraProjection"] = state["cameraProjection"] is null ? null :
+            new[] { "drawSequence","processFrame","sessionId","revision","observationSequence","simulationTick","token" }
+                .ToDictionary(name=>name,name=>projection[name]);
+        return ObservationCapture.ToDictionary(witness);
+    }
+
+    public bool RecordCaptureConsumer(Godot.Collections.Dictionary envelope, Godot.Collections.Dictionary context,
+        Godot.Collections.Dictionary fieldLabel)
+    {
+        var capture = ObservationCapture.Find(this);
+        if (capture?.IsAccepting() != true) return false;
+        var state = ObservationCapture.FactFields(ObservationFacts(false,false));
+        return capture.RecordSnapshotFacts("consumerBoundaries",CaptureConsumerFacts(state,envelope,context,fieldLabel));
+    }
+
+    private static object CaptureConsumerFacts(Dictionary<string,object?> state, Godot.Collections.Dictionary envelope,
+        Godot.Collections.Dictionary context, Godot.Collections.Dictionary fieldLabel)
+    {
+        string[] names = ["entityWait","entities","callers","continuation","stop","nod","nodProjection",
+            "fade","display","presentation","cameraProjection","presentationWait","presentationCue",
+            "canWaitForChoice","waitingAtInput","eventCaller","callerReturning"];
+        var consumer = names.ToDictionary(name=>name,name=>state[name]);
+        foreach (var pair in context) consumer[pair.Key.AsString()] = pair.Value;
+        consumer["fieldLabel"] = fieldLabel;
+        var row = envelope.ToDictionary(pair=>pair.Key.AsString(),pair=>(object?)pair.Value);
+        row["state"] = consumer;
+        row["drawDelivery"] = CaptureDrawDelivery(state);
+        return row;
+    }
+
+    private static object CaptureDrawDelivery(Dictionary<string,object?> state)
+    {
+        var projection = ObservationCapture.FactFields(state["cameraProjection"]);
+        var wait = state["entityWait"] ?? state["nod"];
+        var subject = wait is not null ? ObservationCapture.FactFields(wait).GetValueOrDefault("Entity") :
+            ObservationCapture.FactFields(ObservationCapture.FactFields(state["presentationWait"]).GetValueOrDefault("Cue")).GetValueOrDefault("Entity");
+        var id = ObservationCapture.FactFields(subject).GetValueOrDefault("Value");
+        object? actor = null, visible = null;
+        foreach (var item in (System.Collections.IEnumerable?)state["entities"] ?? Array.Empty<object>())
+        {
+            var entity = ObservationCapture.FactFields(item);
+            if (Equals(entity["id"],id)) { visible=entity["Visible"]; break; }
+        }
+        foreach (var item in (System.Collections.IEnumerable?)projection.GetValueOrDefault("actors") ?? Array.Empty<object>())
+        {
+            var candidate = ObservationCapture.FactFields(item);
+            if (Equals(candidate["entity"],id)) { actor=item; break; }
+        }
+        return new { processFrame=Engine.GetProcessFrames(), subject=id,
+            projectionAvailable=projection.Count!=0, drawSequence=projection.GetValueOrDefault("drawSequence"),
+            projectionProcessFrame=projection.GetValueOrDefault("processFrame"), projectionToken=projection.GetValueOrDefault("token"),
+            projectionTick=projection.GetValueOrDefault("simulationTick"), projectionSessionId=projection.GetValueOrDefault("sessionId"),
+            logicalSubjectVisible=visible,
+            sameToken=projection.Count!=0 && Equals(projection.GetValueOrDefault("token"),state["token"]),
+            sameTick=projection.Count!=0 && Equals(projection.GetValueOrDefault("simulationTick"),state["simulationTick"]),
+            actorStatus=id is null ? "no-subject" : actor is null ? "missing" :
+                Equals(ObservationCapture.FactFields(actor)["visible"],true) ? "drawn" : "culled", actor };
+    }
+
+    public bool RecordCaptureCamera(Godot.Collections.Dictionary before, Godot.Collections.Dictionary after)
+    {
+        var capture = ObservationCapture.Find(this);
+        if (capture?.IsAccepting() != true) return false;
+        var state = ObservationCapture.FactFields(ObservationFacts(false,false));
+        return capture.RecordSnapshotFacts("cameraDraws",new { projection=state["cameraProjection"],
+            logicalView=state["logicalView"], entities=state["entities"], exposedBefore=before, exposedAfter=after });
+    }
+
     private object ObservationFacts(bool full, bool resources)
     {
         _presentation?.ObserveResources(HasConnections(ResourceDrawSignal) && ObservationCapture.Find(this)?.IsAccepting() != false);
