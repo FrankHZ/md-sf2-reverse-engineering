@@ -318,6 +318,17 @@ public sealed partial class BattleSessionView : Control
     public string ReadObservationJson()
     {
         var current = _session?.Current;
+        if (current?.Active is ActiveExploration)
+            return JsonSerializer.Serialize(new
+            {
+                sessionId = current.SessionId, revision = current.Revision,
+                observationSequence = current.ObservationSequence,
+                pendingFieldReturn = new
+                {
+                    logicalView = current.Story.LogicalView, simulationTick = current.Story.SimulationTick,
+                    cursor = current.Story.Cursor,
+                },
+            });
         return JsonSerializer.Serialize(new
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,

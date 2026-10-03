@@ -3698,3 +3698,82 @@ independently; a missing operand blocks only its dependent contribution. Preserv
 lint/document/contract checks, the committed planner and exact-head CI. This offline readback adds
 no capture, SDK/native launch, acquisition, export or verification-helper tests; preserve completed
 legacy, JOIN and source results and their failures.
+
+### Complete operation-flow comparison
+
+Use the complete modern material comparison above, with `--text-source-root $sourceRoot`,
+`--original-join-evidence-root $selectedWitness`, `--baseline-actual $normal05Actual` and
+`--baseline-outcome $normal05Outcome`. The explicitly selected read-only source checkout must be
+clean for `disasm` at `c834c652b6862bc5679fd7f69a38a7093206efc6`. Relative selections resolve from
+the chosen repository root; shared immutable inputs remain outside removable worktrees. All fresh
+writable selections, runs and reports belong to this worktree's ignored output root.
+
+For the corrected world, use the existing `OriginalPrograms` compiler on the pinned source. In a
+local Python driver launched with `uv run python -X utf8`, take explicit repository, upstream,
+old-world and fresh-output paths, and perform these operations:
+
+```python
+compiler = OriginalPrograms(
+    {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
+    upstream, scene_maps=[57],
+)
+compiler.register_file("disasm/data/battles/entries/battle01/cs_afterbattle.asm")
+compiler.compile("abcs_battle01")
+new = copy.deepcopy(old)
+index = next(i for i, p in enumerate(old["world"]["programs"])
+             if p["id"] == "abcs-battle01")
+row = compiler.programs["abcs_battle01"]
+assert row["instructions"][2] == {"op": "camera-entity", "entity": None}
+assert row["instructions"][5] == {"op": "wait-ticks", "ticks": 1}
+reduced = copy.deepcopy(row)
+del reduced["instructions"][5]
+del reduced["instructions"][2]
+assert reduced == old["world"]["programs"][index]
+new["world"]["programs"][index] = row
+restored = copy.deepcopy(new)
+restored["world"]["programs"][index] = old["world"]["programs"][index]
+assert restored == old
+```
+
+Import `copy` and `OriginalPrograms` from `sf2tool.remake_exploration_content`; read and write UTF-8
+JSON. Before compiling, verify the source HEAD and `git diff --quiet <pin> -- disasm`. Reject an
+existing output path, preserve the old input, and read back the fresh file. Keep the original ROM
+identity/provenance and every other world/asset/audio selection unchanged. This is a selected-content
+correction using the existing compiler, not an engine correction or implicit recipe switch. The
+retained preparation recipe/proof is under `local/issue534/operation-flow-preparation-01/`.
+
+The [five whole children](../../docs/design/contracts/map3-battle01-continuous-scenario.md#complete-reached-operation-flow-binding)
+require complete source/effect joins. Reuse a successful corrected A for offline corrections. The
+bounded adapter observation exposes live session/revision/observation identity and nested
+`pendingFieldReturn` logical view/tick/cursor after battle mode changes; the probe checks these
+identities against its actual result while field projection remains unavailable. Its unattended
+winning scenario requests genuine window focus once per observed loss and records restoration;
+application focus guards and ordinary intentional focus-loss scenarios retain their behavior.
+
+Current local evidence is `local/issue534/operation-flow-01/new-A-03`: successful complete corrected
+A, exit0, no Godot errors, unchanged frozen party/start/settings, and no focus-recovery request in
+this run. The retained process receipt, tested Debug DLLs, C# and probe copies and patches identify
+the accepted base plus actual observation delta. Failed native01 (observer errors), native02 (white
+wait timeout), null-window01 (real focus loss) and null-window02 (missing post-draw assertion despite
+observed focus/service recovery) remain completed failures, not successful continuous evidence.
+
+Direct readback gives the five children PASS with 2,245 PASS / 16 Unavailable assertions and no
+required FAIL; the 15 other children and matrix obligation stay open. This candidate awaits
+independent acceptance; accepted A20 and historical matrix evidence are not retroactively changed.
+Nine normal05 pre-AB checkpoints and Left remain exact. Gameplay equivalence changes only its raw
+inputs/observations components: six post-AB input locations carry the two source PC additions,
+and actual service/effect events remain unnormalized. Other equivalence components remain exact.
+The retained raw-delta proof identifies exactly two new instruction events and their real simulation
+service; a source-PC readback recovers the old projection only for diagnostic comparison, while
+reports preserve the new raw stream. Forty RNG draw labels retain their source kind and values with
+three later observation ordinals. Sixteen audio receipt labels have actual host receipt identities;
+their material, assertion values and results remain exact, with no uniform receipt-offset rule.
+The corrected A-only current cohort is Unavailable; combining it with old B/C/D is a failing mixed
+content diagnostic, not a same-content matrix. Preserve both reports and historical matrix.
+
+Acceptance uses direct whole-flow comparison; wrong/missing branch, caller, choice, roster/write,
+destination/setup/latch, load service, camera and enclosing-return cases, including mixed missing
+and contradictory evidence; closed mandatory inventory and corruption checks; exact unaffected
+assertions and baselines; affected Ruff/docs/private-boundary checks; actual adapter build; committed
+dependency plan and exact-head CI. No verifier-unit suite or normal/full/H3 run is implied. New
+original captures or B/C/D recollection require their own concrete allocation.

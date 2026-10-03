@@ -3395,6 +3395,1105 @@ def field_motion_binding(actual, selection, source_root):
     return result
 
 
+def operation_flow_binding(actual, selection, source_root, motion, text):
+    """Bind complete reached source bodies to dynamic control and ordered effects."""
+    names = (
+        "taken route/setup/caller branch operands and occurrence",
+        "dialogue speaker/control-token occurrence and choice effect",
+        "route roster/flag writes at their source branch",
+        "warp destination/setup initialization before field release",
+        "before/after operation effects and shared-tail return pairing",
+    )
+    result = dict(values={}, checks=[], programs=[], warps=[])
+
+    def check(family, name, value, sequence=None):
+        result["checks"].append(dict(family=family, name=name, value=value, sequence=sequence))
+
+    def common(name, value):
+        for family in names:
+            check(family, name, value)
+
+    def finish():
+        for family in names:
+            values = [c["value"] for c in result["checks"] if c["family"] == family]
+            result["values"][family] = (
+                False if False in values else None if None in values or not values else True
+            )
+        return result
+
+    try:
+        if not selection or source_root is None:
+            raise ValueError("missing source selection")
+        world_path, _, receipt_path = selection[:3]
+        world_path = world_path if world_path.is_absolute() else repo_path(world_path)
+        receipt_path = receipt_path if receipt_path.is_absolute() else repo_path(receipt_path)
+        source_root = source_root if source_root.is_absolute() else repo_path(source_root)
+        document, receipt = read(world_path), read(receipt_path)
+        world = document["world"]
+        programs = {p["id"]: p for p in world["programs"]}
+        maps = {m["id"]: m for m in world["maps"]}
+        common(
+            "selected original provenance",
+            document["provenance"]["commit"] == UPSTREAM
+            and document["provenance"]["romSha256"] == ROM,
+        )
+        common(
+            "same-run world selection",
+            repo_path(receipt["selectedInputs"]["SF2_PRIVATE_EXPLORATION_CONTENT"]).resolve()
+            == world_path.resolve(),
+        )
+        common(
+            "pinned clean source",
+            subprocess.check_output(
+                ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+            ).strip()
+            == UPSTREAM
+            and subprocess.run(
+                ["git", "-C", str(source_root), "diff", "--quiet", UPSTREAM, "--", "disasm"],
+                check=False,
+            ).returncode
+            == 0,
+        )
+        tracked = set(
+            subprocess.check_output(
+                ["git", "-C", str(source_root), "ls-tree", "-r", "--name-only", UPSTREAM], text=True
+            ).splitlines()
+        )
+        from sf2tool.h2.map_content import _encode_source
+        from sf2tool.h2.map_import import _decode_source_table
+        from sf2tool.h2.map_setup import _parse_routes
+        from sf2tool.remake_exploration_content import OriginalPrograms
+
+        compiler = OriginalPrograms(
+            {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
+            source_root,
+            scene_maps=[57],
+        )
+        for p in programs.values():
+            path = p.get("source", "").rsplit(":", 1)[0]
+            if path in tracked:
+                compiler.register_file(path)
+        routes = {
+            "map-" + str(row["map"]): row
+            for row in _parse_routes(
+                (source_root / "disasm/data/maps/mapsetups.asm").read_text(encoding="utf-8")
+            )
+        }
+    except (KeyError, OSError, ValueError, subprocess.CalledProcessError):
+        common("source/selection operands absent", None)
+        return finish()
+
+    events, records = {}, {}
+    for row in actual.get("warpRecords", []):
+        for e in row["result"].get("observations", []):
+            seq = e["Sequence"]
+            if seq in events and events[seq] != e:
+                common("logical occurrence identity", False)
+            events[seq] = e
+            records.setdefault(seq, row)
+    ordered = [events[k] for k in sorted(events)]
+
+    def instruction(e):
+        loc = e.get("Program")
+        if not loc or loc.get("Program") not in programs:
+            return None
+        index = loc.get("Instruction")
+        body = programs[loc["Program"]]["instructions"]
+        return (
+            body[int(index)]
+            if index is not None and int(index) == index and 0 <= index < len(body)
+            else None
+        )
+
+    executed = [(e, instruction(e)) for e in ordered if e.get("Program")]
+    common("complete logical source occurrence inventory", True if executed else None)
+    for pid in dict.fromkeys(e["Program"]["Program"] for e, _ in executed):
+        p = programs.get(pid)
+        value = None
+        if p:
+            source = p.get("source", "")
+            path, symbol = source.rsplit(":", 1) if ":" in source else ("", source)
+            if pid.endswith("-flag-layout"):
+                map_id = int(pid.split("-")[1])
+                try:
+                    data, count, tail = _encode_source(
+                        source_root / f"disasm/data/maps/entries/map{map_id:02d}/3-flag-events.asm",
+                        "flagEvents",
+                        compiler.equates,
+                    )
+                    flag_rows = _decode_source_table("flagEvents", data, count, tail)
+                    expected = []
+                    for index, row in enumerate(flag_rows):
+                        expected.extend(
+                            [
+                                dict(
+                                    op="branch-flag",
+                                    flag=row["flag"],
+                                    whenSet=False,
+                                    target=dict(program=pid, instruction=index * 2 + 2),
+                                ),
+                                dict(
+                                    op="native-call",
+                                    symbol="flag-layout-copy",
+                                    source=f"{source}[{index}]",
+                                ),
+                            ]
+                        )
+                    expected.append(
+                        dict(op="jump", target=dict(program=f"map-{map_id}-setup", instruction=0))
+                    )
+                    value = p["instructions"] == expected
+                except (KeyError, OSError, ValueError):
+                    value = None
+            elif pid.startswith("map-") and pid.endswith("-setup"):
+                map_name = pid.removesuffix("-setup")
+                value = (
+                    map_name not in routes
+                    and p["instructions"] == [dict(op="end")]
+                    and source == "None:ordered setup/init/population"
+                )
+            elif path not in tracked:
+                value = False
+            elif pid in ("source-battle-load", "source-outcome-return"):
+                # Accepted native compositions have their own implementation-neutral contracts.
+                middle = (
+                    dict(op="present", kind="BattleLoad", resource=None, entity=None, position=None)
+                    if pid == "source-battle-load"
+                    else dict(op="battle-return-map")
+                )
+                expected = [
+                    dict(
+                        op="present", kind="FadeOut", resource="black", entity=None, position=None
+                    ),
+                    middle,
+                    dict(op="present", kind="FadeIn", resource="black", entity=None, position=None),
+                    dict(op="end"),
+                ]
+                value = p["instructions"] == expected and symbol == (
+                    "LoadBattle" if pid == "source-battle-load" else "ExplorationLoop"
+                )
+            else:
+                try:
+                    compiler.compile(symbol)
+                    value = p["instructions"] == compiler.programs[symbol][
+                        "instructions"
+                    ] and p.get("entitiesRunning") == compiler.programs[symbol].get(
+                        "entitiesRunning"
+                    )
+                except (KeyError, OSError, ValueError):
+                    value = None
+        result["programs"].append(
+            dict(program=pid, source=p.get("source") if p else None, value=value)
+        )
+        common("complete reached body " + pid, value)
+    common("lowering dependencies pinned", compiler.sources <= tracked)
+
+    # Finite source fades publish a wait producer rather than program-instruction.
+    # Reuse the independently source-bound producer locations, never host counts.
+    trace = {e["Sequence"]: e["Program"] for e, _ in executed}
+    for occurrence in motion.get("occurrences", []):
+        if occurrence.get("location"):
+            trace.setdefault(occurrence["token"], occurrence["location"])
+    trace = sorted(trace.items())
+    for index, (seq, loc) in enumerate(trace[:-1]):
+        ins = instruction(dict(Program=loc))
+        if ins is None or ins["op"] in (
+            "call",
+            "jump",
+            "branch-flag",
+            "branch-coordinates",
+            "end",
+            "end-map-script",
+            "return",
+        ):
+            continue
+        following_loc = trace[index + 1][1]
+        expected = dict(Program=loc["Program"], Instruction=loc["Instruction"] + 1)
+        # Explicit outcome-map transfer has no Program field; its map effect is
+        # bound below rather than treated as an omitted source instruction.
+        skipped = instruction(dict(Program=expected))
+        if skipped and skipped["op"] == "battle-return-map":
+            continue
+        value = following_loc == expected
+        if not value and any(
+            number not in events for number in range(int(seq) + 1, int(trace[index + 1][0]))
+        ):
+            value = None
+        for family in names:
+            check(family, "complete ordered source successor", value, seq)
+
+    states = []
+    for channel in ("samples", "consumerBoundaries", "warpRecords"):
+        for index, row in enumerate(actual.get(channel, [])):
+            s = row.get("state", {})
+            if s.get("observationSequence") is not None:
+                states.append((s["observationSequence"], channel, index, s))
+    states.sort(key=lambda item: item[0])
+
+    def entity(s, identity):
+        return next((x for x in s.get("entities") or [] if x.get("id") == identity), None)
+
+    def signature(s):
+        return [(x["id"], x["slot"], x["sprite"]) for x in s.get("entities") or []]
+
+    def anchor(seq, field, before=True):
+        candidates = [
+            x for x in states if field in x[3] and (x[0] <= seq if before else x[0] >= seq)
+        ]
+        return (candidates[-1] if before else candidates[0]) if candidates else None
+
+    choices = {}
+    for n, e in enumerate(ordered):
+        if e["Kind"] == "choice-result-flag":
+            producer = next(
+                (
+                    x
+                    for x in reversed(ordered[:n])
+                    if instruction(x) and instruction(x)["op"] == "yes-no"
+                ),
+                None,
+            )
+            accepted = next(
+                (
+                    x
+                    for x in reversed(ordered[:n])
+                    if x["Kind"] == "choice-accepted"
+                    and producer
+                    and x["Sequence"] > producer["Sequence"]
+                ),
+                None,
+            )
+            choices[e["Sequence"]] = (
+                int(e["Detail"]),
+                accepted["Detail"] == "yes"
+                if accepted and accepted.get("Detail") in ("yes", "no")
+                else None,
+            )
+
+    layout = world["partyFlags"]
+
+    def join_effect(flags, member):
+        flags.add(layout["joinedStart"] + member)
+        joined = [i for i in range(layout["memberCount"]) if layout["joinedStart"] + i in flags]
+        active = [i for i in joined if layout["activeStart"] + i in flags]
+        reserve = [i for i in joined if i not in active]
+        # Source JoinForce publishes counted prefixes before its active-flag store.
+        if len(active) < layout["capacity"]:
+            flags.add(layout["activeStart"] + member)
+        return dict(Joined=joined, Active=active, Reserve=reserve)
+
+    def write_flags(flags, e):
+        ins = instruction(e)
+        if ins and ins["op"] == "set-flag":
+            (flags.add if ins["value"] else flags.discard)(ins["flag"])
+        elif ins and ins["op"] == "join-party":
+            join_effect(flags, ins["member"])
+        elif e["Sequence"] in choices:
+            flag, value = choices[e["Sequence"]]
+            if value is None:
+                return False
+            (flags.add if value else flags.discard)(flag)
+        elif e["Kind"] == "map-transferred" and e.get("Detail") in maps:
+            for write in maps[e["Detail"]].get("entryFlags", []):
+                (flags.add if write["value"] else flags.discard)(write["flag"])
+        elif e["Kind"] in ("battle-unlock-cleared", "battle-completed-set"):
+            battle = next(
+                (
+                    m["battle"]
+                    for m in maps.values()
+                    if m.get("battle") and m["battle"].get("encounter") == "battle-1"
+                ),
+                None,
+            )
+            key = "unlockedFlag" if e["Kind"] == "battle-unlock-cleared" else "completedFlag"
+            if battle is None or battle.get(key) is None:
+                return False
+            (flags.discard if key == "unlockedFlag" else flags.add)(battle[key])
+        return True
+
+    def flags_at(seq):
+        before = anchor(seq, "flags")
+        if before is None:
+            return None
+        flags = set(before[3]["flags"])
+        for e in ordered:
+            if before[0] < e["Sequence"] <= seq and not write_flags(flags, e):
+                return None
+        return flags
+
+    warp_requests = {}
+    starts = [e for e in ordered if e["Kind"] == "warp-started"]
+    for n, start in enumerate(starts):
+        seq = start["Sequence"]
+        stop = starts[n + 1]["Sequence"] if n + 1 < len(starts) else float("inf")
+        region = [e for e in ordered if seq < e["Sequence"] < stop]
+        battle = next((e for e in region if e["Kind"] == "battle-selected"), None)
+        source_map = records[seq].get("state", {}).get("map")
+        held = next(
+            (
+                x
+                for x in states
+                if x[0] >= seq
+                and x[3].get("map") == source_map
+                and (x[3].get("fade") or {}).get("Purpose") == (2 if battle else 0)
+                and entity(x[3], "entity-0")
+            ),
+            None,
+        )
+        if held is None:
+            held = anchor(seq, "entities") if battle else None
+        player = entity(held[3], "entity-0") if held else None
+        request = None
+        if player and source_map in maps:
+            path = f"disasm/data/maps/entries/map{int(source_map[4:]):02d}/6-warp-events.asm"
+            try:
+                data, count, tail = _encode_source(
+                    source_root / path, "warpEvents", compiler.equates
+                )
+                rows = _decode_source_table("warpEvents", data, count, tail)
+                tx, ty = player["targetX"] // 384, player["targetY"] // 384
+                source_row = next(
+                    (
+                        row
+                        for row in rows
+                        if row["trigger"]["x"] in (255, tx) and row["trigger"]["y"] in (255, ty)
+                    ),
+                    None,
+                )
+                if source_row:
+                    destination = (
+                        int(source_map[4:])
+                        if source_row["targetMap"] == 255
+                        else source_row["targetMap"]
+                    )
+                    request = dict(
+                        map="map-" + str(destination),
+                        position=source_row["destination"],
+                        facing=source_row["facing"],
+                        loadMode="preserve" if source_row["targetMap"] == 255 else "rebuild",
+                    )
+                    check(
+                        names[3],
+                        "source warp mode",
+                        source_row["scrollMode"] == 0 and not source_row["retainsCoordinates"],
+                        seq,
+                    )
+                    selected = next(
+                        (
+                            row
+                            for row in maps[source_map]["events"]
+                            if row["kind"] == "warp"
+                            and (row["x"] is None or row["x"] == tx)
+                            and (row["y"] is None or row["y"] == ty)
+                        ),
+                        None,
+                    )
+                    check(
+                        names[3],
+                        "source first-match request",
+                        {k: selected.get(k) for k in request} == request if selected else None,
+                        seq,
+                    )
+            except (KeyError, OSError, ValueError):
+                check(names[3], "source warp table absent", None, seq)
+        check(names[3], "held requested cell", True if request else None, seq)
+        result["warps"].append(
+            dict(sequence=seq, request=request, kind="battle-entry" if battle else "ordinary")
+        )
+        if not request:
+            continue
+        if battle:
+            check(
+                names[3],
+                "direct battle entry selection",
+                battle["Detail"] == maps[request["map"]]["battle"]["encounter"],
+                seq,
+            )
+            continue
+        transfer = next((e for e in region if e["Kind"] == "map-transferred"), None)
+        check(names[3], "ordinary transfer occurrence", True if transfer else None, seq)
+        if transfer is None:
+            continue
+        warp_requests[transfer["Sequence"]] = request
+        check(names[3], "requested destination map", transfer.get("Detail") == request["map"], seq)
+        service = [
+            e
+            for e in region
+            if e["Sequence"] < transfer["Sequence"] and e["Kind"] == "map-load-service"
+        ]
+        check(names[3], "two disabled load services", len(service) == 2, seq)
+        target = maps[request["map"]]
+        flags = flags_at(transfer["Sequence"] - 1)
+        route = routes.get(request["map"])
+        expected_setup = (
+            None
+            if route is None
+            else dict(
+                default=route["defaultPointer"].lower().replace("_", "-"),
+                variants=[
+                    dict(flag=v["flag"], setup=v["pointer"].lower().replace("_", "-"))
+                    for v in route["flagVariants"]
+                ],
+            )
+        )
+        check(names[0], "source ordered setup route", target.get("setup") == expected_setup, seq)
+        selected_setup = expected_setup["default"] if expected_setup else None
+        if expected_setup and flags is not None:
+            for variant in expected_setup["variants"]:
+                if variant["flag"] in flags:
+                    selected_setup = variant["setup"]
+        for family in (names[0], names[3]):
+            check(
+                family,
+                "entry flags select admitted source setup",
+                None
+                if flags is None
+                else expected_setup is None or selected_setup == expected_setup["default"],
+                seq,
+            )
+        post = next(
+            (
+                x
+                for x in states
+                if x[0] >= transfer["Sequence"]
+                and x[3].get("map") == request["map"]
+                and entity(x[3], "entity-0")
+            ),
+            None,
+        )
+        check(names[3], "destination physical initialization held", True if post else None, seq)
+        if post:
+            pose = entity(post[3], "entity-0")
+            expected_position = request["position"]
+            for e in ordered:
+                ins = instruction(e)
+                if (
+                    transfer["Sequence"] < e["Sequence"] <= post[0]
+                    and ins
+                    and ins["op"] == "position"
+                    and ins["entity"] == "entity-0"
+                ):
+                    expected_position = ins["position"]
+            check(
+                names[3],
+                "destination or intervening source initialization pose",
+                pose["x"] == expected_position["x"] * 384
+                and pose["y"] == expected_position["y"] * 384,
+                seq,
+            )
+            latch = next(
+                (
+                    x[3].get("warp")
+                    for x in states
+                    if x[0] >= transfer["Sequence"]
+                    and x[0] < stop
+                    and x[3].get("map") == request["map"]
+                    and x[3].get("warp")
+                ),
+                None,
+            )
+            if expected_position != request["position"]:
+                check(
+                    names[3],
+                    "overwritten destination retains independent requested operand",
+                    True if latch else None,
+                    seq,
+                )
+            if latch:
+                check(
+                    names[3],
+                    "retained request independent of later initialized pose",
+                    latch["Map"]["Value"] == request["map"]
+                    and latch["Position"]
+                    == dict(X=request["position"]["x"], Y=request["position"]["y"])
+                    and latch["Facing"] == request["facing"],
+                    seq,
+                )
+        on_load = target.get("onLoad")
+        first_instruction = next(
+            (e for e, _ in executed if e["Sequence"] > transfer["Sequence"]), None
+        )
+        if on_load:
+            check(
+                names[3],
+                "selected setup initialization starts at source caller",
+                None
+                if first_instruction is None
+                else first_instruction["Program"]
+                == dict(Program=on_load["program"], Instruction=on_load["instruction"]),
+                seq,
+            )
+        ready = next(
+            (
+                x
+                for x in states
+                if transfer["Sequence"] <= x[0] < stop
+                and x[3].get("map") == request["map"]
+                and x[3].get("canWaitAtInput") is True
+            ),
+            None,
+        )
+        check(
+            names[3], "field release after destination initialization", True if ready else None, seq
+        )
+        if ready:
+            check(
+                names[3],
+                "destination field control has no pending caller or wait",
+                all(key in ready[3] for key in ("cursor", "wait", "callers", "callerReturning"))
+                and ready[3]["cursor"] is None
+                and ready[3]["wait"] is None
+                and ready[3]["callers"] == []
+                and not ready[3]["callerReturning"],
+                seq,
+            )
+
+    for n, (e, ins) in enumerate(executed):
+        seq, loc = e["Sequence"], e["Program"]
+        if ins is None:
+            common("unmapped logical source occurrence", None)
+            continue
+        op = ins["op"]
+        nextloc = executed[n + 1][0]["Program"] if n + 1 < len(executed) else None
+        target = None
+        if op in ("call", "jump"):
+            target = ins["target"]
+        elif op == "branch-flag":
+            flags = flags_at(seq)
+            if flags is not None:
+                target = (
+                    ins["target"]
+                    if (ins["flag"] in flags) == ins["whenSet"]
+                    else dict(program=loc["Program"], instruction=loc["Instruction"] + 1)
+                )
+        elif op == "branch-coordinates":
+            held = anchor(seq, "entities")
+            player = entity(held[3], ins["entity"]) if held else None
+            coordinates = (player["x"], player["y"]) if player else None
+            if held:
+                for earlier in ordered:
+                    if not held[0] < earlier["Sequence"] <= seq:
+                        continue
+                    previous = instruction(earlier)
+                    if earlier["Sequence"] in warp_requests:
+                        position = warp_requests[earlier["Sequence"]]["position"]
+                        coordinates = position["x"] * 384, position["y"] * 384
+                    elif (
+                        previous
+                        and previous["op"] == "position"
+                        and previous["entity"] == ins["entity"]
+                    ):
+                        coordinates = (
+                            previous["position"]["x"] * 384,
+                            previous["position"]["y"] * 384,
+                        )
+            if coordinates is not None:
+                target = (
+                    ins["target"]
+                    if (coordinates == (ins["x"], ins["y"])) == ins["whenEqual"]
+                    else dict(program=loc["Program"], instruction=loc["Instruction"] + 1)
+                )
+        if op in ("call", "jump", "branch-flag", "branch-coordinates"):
+            expected = (
+                dict(Program=target["program"], Instruction=target["instruction"])
+                if target
+                else None
+            )
+            check(
+                names[0],
+                "source evaluated " + op,
+                None if expected is None or nextloc is None else expected == nextloc,
+                seq,
+            )
+        if op == "call":
+            continuation = dict(Program=loc["Program"], Instruction=loc["Instruction"] + 1)
+            depth, later = 1, None
+            for j in range(n + 1, len(executed)):
+                nested = executed[j][1]
+                if nested is None:
+                    break
+                if nested["op"] == "call":
+                    depth += 1
+                elif nested["op"] in ("end", "end-map-script", "return"):
+                    depth -= 1
+                if depth == 0:
+                    later = j + 1 if j + 1 < len(executed) else None
+                    break
+            check(
+                names[0], "caller continuation returned", True if later is not None else None, seq
+            )
+            if later:
+                check(
+                    names[0],
+                    "first enclosing return reaches source continuation",
+                    executed[later][0]["Program"] == continuation,
+                    seq,
+                )
+                check(
+                    names[0],
+                    "callee source return precedes continuation",
+                    executed[later - 1][1]["op"] in ("end", "end-map-script", "return"),
+                    seq,
+                )
+                held = anchor(seq, "callers", False)
+                if held is None:
+                    check(names[0], "held caller operand absent", None, seq)
+                if held and held[0] < executed[later][0]["Sequence"]:
+                    check(
+                        names[0],
+                        "held caller frame matches source continuation",
+                        continuation in held[3]["callers"],
+                        seq,
+                    )
+        if op in ("set-flag", "join-party"):
+            before = anchor(seq - 1, "flags")
+            after = anchor(seq, "flags", False)
+            expected = set(before[3]["flags"]) if before else None
+            expected_lists = None
+            if expected is not None and after:
+                for earlier in ordered:
+                    prior = instruction(earlier)
+                    if (
+                        before[0] < earlier["Sequence"] <= after[0]
+                        and prior
+                        and prior["op"] == "join-party"
+                    ):
+                        expected_lists = join_effect(expected, prior["member"])
+                        continue
+                    if before[0] < earlier["Sequence"] <= after[0] and not write_flags(
+                        expected, earlier
+                    ):
+                        expected = None
+                        break
+            check(
+                names[2],
+                "source writes and non-source writers reach independent flags",
+                None if expected is None or after is None else expected == set(after[3]["flags"]),
+                seq,
+            )
+            if op == "join-party" and after:
+                lists = after[3].get("partyLists")
+                check(
+                    names[2],
+                    "joined member retained in counted prefix",
+                    None if lists is None else ins["member"] in lists["Joined"],
+                    seq,
+                )
+                check(
+                    names[2],
+                    "ordered source counted joined/active/reserve prefixes",
+                    None if lists is None or expected_lists is None else lists == expected_lists,
+                    seq,
+                )
+        if op == "follow":
+            held = anchor(seq, "entities", False)
+            follower = entity(held[3], ins["entity"]) if held else None
+            leader = entity(held[3], ins["leader"]) if held else None
+            check(
+                names[2],
+                "source follower installation",
+                None
+                if follower is None or leader is None
+                else follower.get("follower")
+                == dict(LeaderSlot=leader["slot"], OffsetX=ins["x"], OffsetY=ins["y"]),
+                seq,
+            )
+        if op == "yes-no":
+            stop = next(
+                (
+                    x["Sequence"]
+                    for x, i in executed
+                    if x["Sequence"] > seq and i and i["op"] == "yes-no"
+                ),
+                float("inf"),
+            )
+            accepted = next(
+                (
+                    x
+                    for x in ordered
+                    if seq < x["Sequence"] < stop and x["Kind"] == "choice-accepted"
+                ),
+                None,
+            )
+            flag_event = next(
+                (
+                    x
+                    for x in ordered
+                    if seq < x["Sequence"] < stop and x["Kind"] == "choice-result-flag"
+                ),
+                None,
+            )
+            returned = next(
+                (
+                    x
+                    for x in ordered
+                    if seq < x["Sequence"] < stop and x["Kind"] == "choice-returned"
+                ),
+                None,
+            )
+            check(
+                names[1],
+                "accepted choice/flag/return source occurrence",
+                None
+                if not accepted or not flag_event or not returned
+                else seq < accepted["Sequence"] < flag_event["Sequence"] < returned["Sequence"]
+                and int(flag_event["Detail"]) == ins["flag"]
+                and returned["Detail"] == accepted["Detail"],
+                seq,
+            )
+            after = anchor(returned["Sequence"], "flags", False) if returned else None
+            check(
+                names[1],
+                "choice flag effect in independent full state",
+                None
+                if after is None or accepted is None
+                else (ins["flag"] in after[3]["flags"]) == (accepted["Detail"] == "yes"),
+                seq,
+            )
+
+    check(names[1], "complete source dialogue/control material", text["value"])
+    check(names[4], "complete awaited source effects", motion["operation"])
+    outcome_start = next((e for e in ordered if e["Kind"] == "outcome-program-started"), None)
+    returned = next((e for e in ordered if e["Kind"] == "battle-returned"), None)
+    battle_snapshots = [
+        row["state"]
+        for row in actual.get("warpRecords", [])
+        if row["result"].get("mode") == "Battle"
+        and row["result"].get("boundary") == "submit"
+        and outcome_start
+        and row["result"].get("observationSequence", float("inf")) < outcome_start["Sequence"]
+    ]
+    last_battle = battle_snapshots[-1] if battle_snapshots else None
+    transfers = [
+        e for e in ordered if e["Kind"] == "map-transferred" and e["Sequence"] not in warp_requests
+    ]
+    transfer = transfers[-1] if transfers else None
+    battle_map = next(
+        (
+            m
+            for m in maps.values()
+            if m.get("battle") and m["battle"].get("encounter") == "battle-1"
+        ),
+        None,
+    )
+    first_living = (
+        next(
+            (
+                p
+                for p in sorted(
+                    last_battle.get("actors", []), key=lambda p: int(p["id"].split("-")[1])
+                )
+                if p["id"].startswith("ally-") and p.get("hp", 0) > 0
+            ),
+            None,
+        )
+        if last_battle
+        and all(
+            p.get("hp") is not None
+            for p in last_battle.get("actors", [])
+            if p["id"].startswith("ally-")
+        )
+        else None
+    )
+    destination = (
+        None
+        if first_living is None
+        or battle_map is None
+        or first_living.get("x") is None
+        or first_living.get("y") is None
+        else dict(
+            map=battle_map["id"],
+            position=dict(x=first_living["x"], y=first_living["y"]),
+            facing=battle_map["battle"]["outcome"]["victoryFacing"],
+        )
+    )
+    result["warps"].append(
+        dict(
+            kind="explicit-outcome-return",
+            sequence=transfer["Sequence"] if transfer else None,
+            request=destination,
+        )
+    )
+    for family in (names[3], names[4]):
+        check(
+            family,
+            "source victory outcome kind",
+            None if outcome_start is None else outcome_start["Detail"] == "Victory",
+        )
+        check(
+            family,
+            "source outcome destination map",
+            None
+            if transfer is None or battle_map is None
+            else transfer["Detail"] == battle_map["id"],
+        )
+        check(
+            family,
+            "outcome transfer independently bound to last living battle pose",
+            None
+            if transfer is None or destination is None
+            else transfer["Detail"] == destination["map"],
+        )
+    if transfer and destination:
+        held = next(
+            (x for x in states if x[0] >= transfer["Sequence"] and entity(x[3], "entity-0")), None
+        )
+        player = entity(held[3], "entity-0") if held else None
+        for family in (names[3], names[4]):
+            check(
+                family,
+                "source outcome return position/facing effect",
+                None
+                if player is None
+                else player["x"] == destination["position"]["x"] * 384
+                and player["y"] == destination["position"]["y"] * 384
+                and player["facing"] == destination["facing"],
+                transfer["Sequence"],
+            )
+        fades = [
+            item
+            for item in motion.get("occurrences", [])
+            if (item.get("location") or {}).get("Program") == "source-outcome-return"
+        ]
+        check(
+            names[4],
+            "source outcome helper/transfer/init/visible return pairing",
+            None
+            if len(fades) != 2 or returned is None
+            else fades[0]["token"] < transfer["Sequence"] < fades[1]["token"] < returned["Sequence"]
+            and fades[0]["operation"] is True
+            and fades[1]["operation"] is True,
+        )
+        ready = (
+            next(
+                (
+                    x
+                    for x in states
+                    if x[0] >= returned["Sequence"] and x[3].get("canWaitAtInput") is True
+                ),
+                None,
+            )
+            if returned
+            else None
+        )
+        check(
+            names[3],
+            "outcome visible field readiness after enclosing return",
+            True if ready else None,
+        )
+    if battle_map and outcome_start:
+        tail = battle_map["battle"]
+        effects = [
+            ("after-battle-join", tail["outcome"]["joinMember"]),
+            ("battle-unlock-cleared", tail["unlockedFlag"]),
+            ("battle-completed-set", tail["completedFlag"]),
+        ]
+        previous = outcome_start["Sequence"]
+        for kind, operand in effects:
+            effect = next(
+                (e for e in ordered if e["Kind"] == kind and e["Sequence"] > previous), None
+            )
+            check(
+                names[4],
+                "source shared-tail operand " + kind,
+                None if effect is None else int(effect["Detail"]) == operand,
+                previous,
+            )
+            check(
+                names[2],
+                "source enclosing roster/flag operand " + kind,
+                None if effect is None else int(effect["Detail"]) == operand,
+                previous,
+            )
+            if effect:
+                previous = effect["Sequence"]
+    for pid in ("bbcs-01", "abcs-battle01"):
+        body_events = [(e, ins) for e, ins in executed if e["Program"]["Program"] == pid]
+        check(names[4], "before/after body reached " + pid, True if body_events else None)
+        for e, ins in body_events:
+            seq = e["Sequence"]
+            if ins and ins["op"] in ("position", "face", "sprite", "hide"):
+                held = anchor(seq, "entities", False)
+                actor = entity(held[3], ins["entity"]) if held else None
+                expected_effect = dict(ins)
+                for other, effect in body_events:
+                    if (
+                        held
+                        and seq < other["Sequence"] <= held[0]
+                        and effect
+                        and effect.get("entity") == ins["entity"]
+                        and effect["op"] == ins["op"]
+                    ):
+                        expected_effect = effect
+                value = None
+                if actor:
+                    if ins["op"] == "position":
+                        value = (
+                            actor["x"] == expected_effect["position"]["x"] * 384
+                            and actor["y"] == expected_effect["position"]["y"] * 384
+                        )
+                    elif ins["op"] == "face":
+                        value = actor["facing"] == expected_effect["facing"]
+                    elif ins["op"] == "sprite":
+                        value = actor["sprite"] == expected_effect["sprite"]
+                    else:
+                        value = actor["Visible"] is False
+                check(names[4], "source physical effect " + ins["op"], value, seq)
+            if ins and ins["op"] == "reset-party-battle-stats":
+                held = anchor(seq, "party", False)
+                party = held[3]["party"] if held else None
+                value = None
+                if party:
+                    allies = [p for p in party if p["Actor"]["Value"].startswith("ally-")]
+                    admitted = (
+                        actual.get("admissionSnapshot", {})
+                        .get("state", {})
+                        .get("admittedParty", {})
+                    )
+                    encounter = next(
+                        (
+                            row
+                            for row in admitted.get("encounters", [])
+                            if row.get("encounter") == admitted.get("encounter")
+                        ),
+                        {},
+                    )
+                    definitions = {
+                        p["actor"]: p["definition"] for p in encounter.get("deployments", [])
+                    }
+                    values = []
+                    for member in allies:
+                        progress = member.get("Progress")
+                        maximum = progress or definitions.get(member["Actor"]["Value"])
+                        if maximum is None:
+                            values.append(None)
+                            continue
+                        hp, mp = (
+                            maximum.get(k)
+                            for k in (("MaxHp", "MaxMp") if progress else ("maxHp", "maxMp"))
+                        )
+                        values.append(
+                            None
+                            if hp is None or mp is None
+                            else member["Hp"] == hp and member["Mp"] == mp
+                        )
+                    value = (
+                        False if False in values else None if None in values or not values else True
+                    )
+                check(names[4], "source full ally HP/MP reset", value, seq)
+            if ins and ins["op"] == "scene-map":
+                loaded_entities = next(
+                    (
+                        x
+                        for x, i in body_events
+                        if x["Sequence"] > seq and i and i["op"] == "scene-entities"
+                    ),
+                    None,
+                )
+                wait = next(
+                    (
+                        x
+                        for x, i in body_events
+                        if x["Sequence"] > seq
+                        and i
+                        and i["op"] == "wait-ticks"
+                        and x["Program"]["Instruction"] == e["Program"]["Instruction"] + 1
+                    ),
+                    None,
+                )
+                services = [
+                    x
+                    for x in ordered
+                    if loaded_entities
+                    and seq < x["Sequence"] < loaded_entities["Sequence"]
+                    and x["Kind"] == "simulation-tick"
+                ]
+                service = services[0] if services else None
+                check(
+                    names[4],
+                    "distinct post-load service before entity replacement",
+                    None
+                    if not loaded_entities or not wait or not service
+                    else len(services) == 1
+                    and seq < wait["Sequence"] < service["Sequence"] < loaded_entities["Sequence"],
+                )
+                if wait and loaded_entities:
+                    entry = records[wait["Sequence"]].get("state", {})
+                    if "entities" not in entry:
+                        entry = next(
+                            (
+                                x[3]
+                                for x in states
+                                if x[0] == wait["Sequence"]
+                                and "entities" in x[3]
+                                and "entitiesRunning" in x[3]
+                            ),
+                            entry,
+                        )
+                    replacement = records[loaded_entities["Sequence"]].get("state", {})
+                    old = anchor(seq - 1, "entities")
+                    check(
+                        names[4],
+                        "post-load wait retains old physical set with enabled services",
+                        None
+                        if not entry.get("entities") or old is None
+                        else signature(entry) == signature(old[3])
+                        and entry.get("entitiesRunning") is True
+                        and entry.get("wait") == "TickWait"
+                        and entry.get("canWaitAtInput") is False,
+                        seq,
+                    )
+                    check(
+                        names[4],
+                        "one real post-load logical service",
+                        None
+                        if entry.get("simulationTick") is None
+                        or replacement.get("simulationTick") is None
+                        else replacement["simulationTick"] == entry["simulationTick"] + 1,
+                        seq,
+                    )
+            if ins and ins["op"] == "camera-entity" and ins["entity"] is None:
+                held = records[seq].get("state", {})
+                observed = (
+                    None
+                    if held.get("logicalView") is None
+                    else held["logicalView"].get("TargetSlot") is None
+                )
+                if observed is None and pid == "bbcs-01":
+                    # The returning battle view needs the logical channel; the earlier
+                    # mounted field already exposes its actual bound target on draw.
+                    stop = next(
+                        (
+                            x["Sequence"]
+                            for x, i in body_events
+                            if x["Sequence"] > seq
+                            and i
+                            and i["op"] in ("scene-map", "camera-entity", "camera-target")
+                        ),
+                        float("inf"),
+                    )
+                    projection = next(
+                        (
+                            x[3]["cameraProjection"]
+                            for x in states
+                            if seq <= x[0] < stop
+                            and x[3].get("cameraProjection") is not None
+                            and "targetSlot" in x[3]["cameraProjection"]
+                            and x[3]["cameraProjection"].get("observationSequence", -1) >= seq
+                        ),
+                        None,
+                    )
+                    if projection:
+                        observed = projection["targetSlot"] is None
+                check(
+                    names[4],
+                    "actual pre-fade detach",
+                    observed,
+                    seq,
+                )
+    return finish()
+
+
 def modern_required_children(variant, ref):
     """Frozen winning-profile children; observed subsets do not enlarge this set."""
     ally_ids = [a["id"] for a in ref["admission"]["accounting"]["allies"][:3]]
@@ -3927,6 +5026,10 @@ def compare_modern(
         join["original"],
     )
     field_motion = field_motion_binding(actual, material_selection, text_source_root)
+    text_material = text_material_binding(actual, outcome, material_selection, text_source_root)
+    operation_flow = operation_flow_binding(
+        actual, material_selection, text_source_root, field_motion, text_material
+    )
     assertions = []
     obligations = {}
 
@@ -4925,6 +6028,25 @@ def compare_modern(
                 reason="Occurrence-local source/wait/caller join; false dominates missing operands",
             )
             continue
+        if name in operation_flow["values"]:
+            check(
+                3,
+                name,
+                True,
+                operation_flow["values"][name],
+                actual_location,
+                dict(
+                    owner="docs/design/contracts/map-exploration.md",
+                    upstreamCommit=UPSTREAM,
+                    binding=binding,
+                ),
+                parent=operation_parent,
+                reason=(
+                    "Complete source body, evaluated operands and occurrence-local effects; "
+                    "false dominates missing"
+                ),
+            )
+            continue
         missing(
             3,
             operation_parent,
@@ -5161,7 +6283,6 @@ def compare_modern(
             "ongoing field music requires no fabricated end",
         )
     materials = reached_materials(actual, material_selection)
-    text_material = text_material_binding(actual, outcome, material_selection, text_source_root)
     for row in materials["checks"]:
         check(
             8,
@@ -5624,6 +6745,7 @@ def compare_modern(
             plainJoinBinding=join,
             walkingAdmissionBinding=walking,
             fieldMotionBinding=field_motion,
+            operationFlowBinding=operation_flow,
         ),
         counts=counts,
         historicalCounts=dict(
