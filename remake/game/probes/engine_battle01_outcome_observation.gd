@@ -194,7 +194,7 @@ func after_admission(s: Dictionary) -> Dictionary:
     if issue == "":
         if s.has("stage") or s.stop != "PlayerInput" or s.wait != null or s.battleMounted or not held_battle:
             issue = "outcome-return-control"
-        elif s.flags.has(501.0) == lose or s.flags.has(401.0) != lose:
+        elif numeric_contains(s.flags, 501) == lose or numeric_contains(s.flags, 401) != lose:
             issue = "outcome-flags-or-gold"
         elif lose and (s.map != "map-3" or after_sounds < 1 or after_programs.has("abcs-battle01")):
             issue = "ordinary-defeat-path"
