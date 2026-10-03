@@ -15,6 +15,7 @@ internal sealed partial class BattleMapViewport : Control
     private readonly Dictionary<ActorRef, Sprite2D> _sprites = [];
     private readonly Dictionary<ActorRef, int> _spriteIds = [];
     private readonly Dictionary<(int Sprite, int Direction, int Frame), ImageTexture> _textures = [];
+    private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
     private BattleMovementState? _movement;
     private double _movementElapsed;
     private double _movementProgress;
@@ -159,6 +160,8 @@ internal sealed partial class BattleMapViewport : Control
         // Death and idle poses use frame0; movement consumes both admitted halves.
         using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
         _textures[key] = texture = ImageTexture.CreateFromImage(frame);
+        _resourceSelectors[texture] = new { sprite, direction, frame = walkingFrame,
+            raster = sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames[direction] : null };
         return texture;
     }
 
@@ -207,6 +210,9 @@ internal sealed partial class BattleMapViewport : Control
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
             nodeX = node.Position.X, nodeY = node.Position.Y, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
             sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
+                resourceSelector = sprite.Texture is ImageTexture bound && _resourceSelectors.TryGetValue(bound, out var selector)
+                    ? selector : null,
+                texturePresent = sprite.Texture is not null, visibleInTree = sprite.IsVisibleInTree(),
                 facing = (int)sprite.GetMeta("facing", -1), walkingFrame = (int)sprite.GetMeta("walkingFrame", 0), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
                 width = sprite.Texture?.GetWidth(), height = sprite.Texture?.GetHeight() } : null,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };

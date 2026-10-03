@@ -3864,11 +3864,16 @@ actual initialization/shared-tail effects. Pinned `InitializeMapEntities`,
 population lowering supply the bounded rebuild allocation and sprite rules; preserve loads retain
 the prior physical set. Actual facing and all retained first-boundary allocation contexts are checked
 after source overrides. Shared-tail flag and counted membership states are read before return,
-separately from published operation labels. **Unknown (actual observation):** calls at4107 and12608
+separately from published operation labels. **Unknown (retained A03 observation):** calls at4107 and12608
 have no retained caller-stack operand before their enclosing returns. Other later stacks cannot
-supply those intervals; the whole route/setup/caller child remains Unavailable despite correct
-observed source nesting and continuation. The other four operation-flow children pass the corrected
-bounded readback, without a new native or original capture.
+supply those intervals; that capture's whole route/setup/caller child remains Unavailable despite
+correct observed source nesting and continuation. Fresh application readbacks preserve complete
+immutable before/after stacks at the actual call and enclosing-return Commit, including deferred
+source-map-script service returns. Their own session and source identities must establish the join.
+The [caller/resource cohort route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+reuses pinned source/ROM decoders and accepted private atlas/sprite/portrait/field-death inputs for
+complete reached texture requirements and actual mounted uses. This adds no original runtime evidence
+and cannot backfill missing operands in the retained A03 or historical settings captures.
 
 The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
 now chooses one progress step per existing common service from semantic request, arm-before-sample
@@ -3879,3 +3884,26 @@ natural RNG history. The known505 ordinal is not reclassified as original elapse
 whole-history outputs remain historical diagnostics where affected; matched-state RNG/battle rules
 and unaffected source behaviors retain their comparison obligations. New continuous winning-trace
 acceptance stays open; neither controlled seed injection nor this bounded JOIN substitutes for it.
+
+**Confirmed (bounded candidate modern comparison):** retained current A02/B02 under
+`local/issue534/caller-resource-cohort-01` complete with native exit0, no Godot errors and unchanged
+selected party/start/settings. Corrected `report-A-10.json` and `report-B-02.json` each retain
+2247 PASS / 14 Unavailable / zero required FAIL. All five whole operation children and the
+entity/portrait and scene source/use children pass. Independent tile and full portrait-pose
+inventories expose joint requirement/use omissions; missing occurrence operands do not hide later
+available contradictions. **Unknown:** current mutable door/flag/roof working-layout operands are
+absent, so the whole map resource child remains Unavailable. No new original runtime evidence or
+fresh capture fills this boundary.
+
+The original strict `matrix-AB-01.json` and `matrix-AB-reproduction.json` remain FAIL evidence:
+of 34571 observations, only positions 10336–10340 differ because the matching `music-actual-completed`
+/ `MUSIC_JOIN` event occurs at A index 10340 and B index 10336. All other payload/order, admission,
+inputs, battle states, endpoints, party, gold and main seed are exact. The allocated bounded matrix
+correspondence independently proves each side's actual source/request/generation, receipt,
+helper arm/eligible progress and complete groups, both gates and caller return. It pairs that one
+completion only across same-occurrence music-step/helper-service records, retaining both original
+ordered streams. A/B pass this correspondence; C/D and the overall/full H4 result remain Unavailable.
+The [verification route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+owns reproduction and exclusions. No original playback timing, YM phase, VInt cadence or natural
+history is inferred. C/D and repeat successful A/B captures remain held through independent integration
+and separately allocated Issue #605 performance work.

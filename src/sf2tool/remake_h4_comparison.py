@@ -1344,9 +1344,860 @@ def text_material_binding(actual, outcome, selection, source_root):
     return result
 
 
-def reached_materials(actual, selection):
+def reached_visual_materials(
+    actual,
+    selection,
+    source_root,
+    canonical_content=None,
+    tileset_metadata=None,
+    palette_metadata=None,
+):
+    """Join reached texture selectors to existing source decoders and private exports."""
+    result = dict(map=None, entity=None, scene=None, checks=[], joins=[])
+
+    def check(family, name, value, identity=None):
+        row = dict(family=family, name=name, value=value)
+        if identity is not None:
+            row["identity"] = identity
+        result["checks"].append(row)
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def evaluated(family, name):
+        try:
+            yield
+        except KeyError:
+            for dependent in family if isinstance(family, tuple) else (family,):
+                check(dependent, name + " operand absent", None)
+        except (IndexError, ValueError, TypeError) as error:
+            for dependent in family if isinstance(family, tuple) else (family,):
+                check(dependent, name + " malformed " + type(error).__name__, False)
+
+    def finish():
+        for family in ("map", "entity", "scene"):
+            values = [c["value"] for c in result["checks"] if c["family"] == family]
+            result[family] = (
+                False if False in values else None if None in values or not values else True
+            )
+        return result
+
+    def scene_uses(scene):
+        scene_rows = actual.get("sceneObservations", [])
+        check("scene", "reached scene observation channel", True if scene_rows else None)
+        for row in scene_rows:
+            with evaluated("scene", "scene occurrence"):
+                scene_state = row["scene"]
+                fairy = (scene_state.get("healing") or {}).get("Fairy")
+                if scene_state.get("visible") and fairy and fairy.get("Control"):
+                    needed = {}
+                    for i, instance in enumerate(fairy["Fairies"]):
+                        with evaluated("scene", "fairy instance"):
+                            if instance["Active"]:
+                                needed["FairyBody" + str(i)] = scene["healing"]["bodies"][
+                                    int(instance["BodyFrame"])
+                                ]
+                                needed["FairyWings" + str(i)] = scene["healing"]["wings"][
+                                    int(instance["WingFrame"])
+                                ]
+                    for i, dust in enumerate(fairy["Dust"]):
+                        with evaluated("scene", "fairy dust"):
+                            if dust["Age"]:
+                                needed["FairyDust" + str(i)] = scene["healing"]["dust"][
+                                    int(dust["Frame"])
+                                ]
+                    mounted = {s["name"]: s for s in scene_state.get("fairySprites", [])}
+                    for name, resource in needed.items():
+                        node = mounted.get(name, {}).get("binding")
+                        check(
+                            "scene",
+                            "required fairy mounted texture " + name,
+                            None
+                            if node is None
+                            else node.get("resource") == resource
+                            and node.get("texturePresent")
+                            and node.get("visible"),
+                        )
+                if scene_state.get("fieldDeath"):
+                    actors = row.get("fieldActors")
+                    check(
+                        "scene",
+                        "actual field-death consumer channel",
+                        True if actors is not None else None,
+                    )
+                    if scene_state["phase"] in ("FieldSpin", "FieldExit"):
+                        mounted = {a["id"]: a.get("sprite") for a in actors or []}
+                        for dead in scene_state["fieldDeath"]["actors"]:
+                            node = mounted.get(dead)
+                            check(
+                                "scene",
+                                "required dead actor remains projected during its source effect",
+                                None
+                                if node is None
+                                else node.get("visible") and node.get("texturePresent"),
+                            )
+                    for actor in actors or []:
+                        with evaluated("scene", "field actor"):
+                            sprite = actor.get("sprite")
+                            if not sprite or not sprite.get("visible"):
+                                continue
+                            selector = sprite.get("resourceSelector")
+                            facing = sprite["facing"]
+                            direction = 0 if facing == 1 else 2 if facing == 3 else 1
+                            ally = next(
+                                (
+                                    a["sprite"]
+                                    for a in scene["fieldDeath"]["allies"]
+                                    if actor["id"] == "ally-" + str(a["character"])
+                                ),
+                                None,
+                            )
+                            original_sprite = (
+                                ally
+                                if ally is not None
+                                else scene["fieldDeath"]["enemies"][0]["sprite"]
+                            )
+                            expected_sprite = (
+                                63
+                                if actor["id"] in scene_state["fieldDeath"]["actors"]
+                                and scene_state["phase"] == "FieldExit"
+                                else original_sprite
+                            )
+                            check(
+                                "scene",
+                                "actual field-death assigned texture",
+                                None
+                                if selector is None
+                                else selector
+                                == dict(
+                                    sprite=expected_sprite,
+                                    direction=direction,
+                                    frame=sprite["walkingFrame"],
+                                    raster=scene["fieldDeath"]["exitFrames"][direction]
+                                    if expected_sprite == 63
+                                    else None,
+                                )
+                                and sprite.get("texturePresent")
+                                and sprite.get("visibleInTree"),
+                            )
+
+    if not selection:
+        return result
+    try:
+        selected_scene = selection[1]
+        selected_scene = (
+            selected_scene.resolve() if selected_scene.is_absolute() else repo_path(selected_scene)
+        )
+        scene_uses(read(selected_scene))
+    except FileNotFoundError:
+        check("scene", "selected scene definition absent", None)
+    except (KeyError, IndexError, ValueError, TypeError):
+        check("scene", "selected scene definition malformed", False)
+    if source_root is None or not all((canonical_content, tileset_metadata, palette_metadata)):
+        for family in ("map", "entity", "scene"):
+            check(family, "source decoding prerequisite absent", None)
+        return finish()
+    try:
+        import io
+        from types import SimpleNamespace
+
+        from sf2tool.compression import decode_basic_compressed
+        from sf2tool.h2.map_import import MANIFEST, _canonical_bytes
+        from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+        from sf2tool.remake_asset_build import (
+            _MAP3_ATLAS,
+            _MAP19_20_ATLAS,
+            _MAP21_ATLAS,
+            _MAP40_ATLAS,
+            _MAP57_ATLAS,
+            ACCEPTED_PALETTE_METADATA_SHA256,
+            ACCEPTED_TILESET_METADATA_SHA256,
+            PLAYER_PALETTE_ADDRESS,
+            PLAYER_POINTER_TABLE_ADDRESS,
+            _build_world_atlas_source,
+            _combine_player_halves,
+            _render_player_frame,
+            _scale_rgba_nearest,
+        )
+        from sf2tool.remake_exploration_content import OriginalPrograms, prepare_visuals
+        from sf2tool.texture_extract import md_palette_color, write_png_rgba
+
+        paths = [p.resolve() if p.is_absolute() else repo_path(p) for p in selection[:5]]
+        world_path, scene_path, process_path, scene_root, asset_root = paths
+        source_root = source_root.resolve() if source_root.is_absolute() else repo_path(source_root)
+        document, scene, process = read(world_path), read(scene_path), read(process_path)
+        world, presentation = document["world"], document["world"]["presentation"]
+        binding = all(
+            repo_path(process["selectedInputs"][key]).resolve() == path
+            for key, path in (
+                ("SF2_PRIVATE_EXPLORATION_CONTENT", world_path),
+                ("SF2_PRIVATE_BATTLE_SCENE_CONTENT", scene_path),
+            )
+        )
+        pin = (
+            document["provenance"]["commit"] == UPSTREAM
+            and document["provenance"]["romSha256"] == ROM
+        )
+        source_pin = (
+            subprocess.check_output(
+                ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+            ).strip()
+            == UPSTREAM
+        )
+        source_pin &= (
+            subprocess.run(
+                ["git", "-C", str(source_root), "diff", "--quiet", UPSTREAM, "--", "disasm"],
+                check=False,
+            ).returncode
+            == 0
+        )
+        rom_path = private_input_path(ROM_INPUT_IDENTITY)
+        rom = rom_path.read_bytes()
+        for family in ("map", "entity", "scene"):
+            check(
+                family,
+                "same-run source and selection pins",
+                binding and pin and source_pin and hashlib.sha256(rom).hexdigest().upper() == ROM,
+            )
+        canonical_content = (
+            canonical_content.resolve()
+            if canonical_content.is_absolute()
+            else repo_path(canonical_content)
+        )
+        canonical = read(canonical_content)
+        canonical_valid = (
+            hashlib.sha256(_canonical_bytes(canonical)).hexdigest().upper()
+            == read(MANIFEST)["outputSha256"]
+        )
+        check("map", "accepted canonical source layout/blocksets", canonical_valid)
+        manifest = read(asset_root / "manifests/presentation-assets-v1.json")
+        assets = {a["assetId"]: a for a in manifest["assets"]}
+        families = {
+            m: family
+            for family in (_MAP3_ATLAS, _MAP19_20_ATLAS, _MAP21_ATLAS, _MAP40_ATLAS, _MAP57_ATLAS)
+            for m in family.map_indices
+        }
+        atlas_bindings = {
+            row["id"]: families[int(row["id"].split("-")[-1])].asset_id for row in world["maps"]
+        }
+        compiler = OriginalPrograms(canonical, source_root)
+        compiler.programs = {p["id"]: p for p in world["programs"]}
+        expected = prepare_visuals(
+            compiler, canonical, world["maps"], rom_path, asset_root, selection[7], atlas_bindings
+        )
+        maps = {m["map"]: m for m in presentation["maps"]}
+        source_maps = {m["map"]: m for m in expected["maps"]}
+        sprites = {m["sprite"]: m for m in presentation["sprites"]}
+        source_sprites = {m["sprite"]: m for m in expected["sprites"]}
+        portraits = {m["portrait"]: m for m in presentation["portraits"]}
+        source_portraits = {m["portrait"]: m for m in expected["portraits"]}
+        canonical_maps = {m["id"]: m for m in canonical["maps"]}
+        canonical_layouts = {m["id"]: m for m in canonical["resources"]["layouts"]}
+        for row in world["maps"]:
+            original = canonical_maps[int(row["id"].split("-")[-1])]
+            layout = canonical_layouts[original["references"]["layout"]]
+            check(
+                "map",
+                "selected layout original words " + row["id"],
+                [word for line in row["layout"] for word in line] == layout["words"],
+            )
+        tileset_metadata = (
+            tileset_metadata.resolve()
+            if tileset_metadata.is_absolute()
+            else repo_path(tileset_metadata)
+        )
+        palette_metadata = (
+            palette_metadata.resolve()
+            if palette_metadata.is_absolute()
+            else repo_path(palette_metadata)
+        )
+        tilesets, palettes = read(tileset_metadata), read(palette_metadata)
+        check(
+            "map",
+            "accepted private atlas metadata identities",
+            hashlib.sha256(tileset_metadata.read_bytes()).hexdigest().upper()
+            == ACCEPTED_TILESET_METADATA_SHA256
+            and hashlib.sha256(palette_metadata.read_bytes()).hexdigest().upper()
+            == ACCEPTED_PALETTE_METADATA_SHA256,
+        )
+        for name, visual in maps.items():
+            family = families[int(name.split("-")[-1])]
+            decoded = _build_world_atlas_source(rom, tilesets, palettes, family)
+            source_bytes = (asset_root / family.source_file).read_bytes()
+            png = base64.b64decode(visual["atlas"]["data"], validate=True)
+            encoded = io.BytesIO()
+            # The existing deterministic writer needs only its write_bytes sink.
+            write_png_rgba(
+                SimpleNamespace(write_bytes=encoded.write),
+                128 * visual["scale"],
+                320 * visual["scale"],
+                _scale_rgba_nearest(decoded.rgba_pixels, 128, 320, visual["scale"]),
+            )
+            source_valid = (
+                source_bytes == decoded.source_bundle
+                and hashlib.sha256(source_bytes).hexdigest().upper()
+                == assets[family.asset_id]["source"]["sha256"]
+            )
+            source_valid &= png == encoded.getvalue()
+            check(
+                "map",
+                "atlas source recipe and canonical selectors " + name,
+                source_valid and visual == source_maps.get(name),
+            )
+
+        requirements = list(actual.get("resourceRequirements", []))
+        uses = list(actual.get("resourceUses", []))
+
+        def available_rows(rows, requirement):
+            available = []
+            for row in rows:
+                family = "map" if row.get("kind") == "map" else "entity"
+                with evaluated(family, "resource occurrence"):
+                    i = row["identity"]
+                    for key in ("sessionId", "visit", "map", "phase", "observationSequence"):
+                        i[key]
+                    row["kind"]
+                    row["expected" if requirement else "used"]
+                    available.append(row)
+            return available
+
+        requirements = available_rows(requirements, True)
+        uses = available_rows(uses, False)
+        programs = {p["id"]: p for p in world["programs"]}
+        visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
+        for delivery in actual.get("warpRecords", []):
+            for event in delivery.get("result", {}).get("observations", []):
+                if event.get("Kind") == "map-transferred":
+                    visits[event["Sequence"]] = event["Detail"]
+                elif event.get("Detail") == "LoadSceneMap" and event.get("Program"):
+                    loc = event["Program"]
+                    visits[event["Sequence"]] = programs[loc["Program"]]["instructions"][
+                        int(loc["Instruction"])
+                    ]["map"]
+        visit_sequences = sorted(visits)
+        sessions = {
+            row["state"]["sessionId"]
+            for channel in ("samples", "consumerBoundaries", "warpRecords")
+            for row in actual.get(channel, [])
+            if row.get("state", {}).get("sessionId")
+        }
+        for row in requirements + uses:
+            with evaluated("map" if row.get("kind") == "map" else "entity", "resource identity"):
+                i = row["identity"]
+                family = "map" if row["kind"] == "map" else "entity"
+                check(
+                    family,
+                    "same-session resource delivery identity",
+                    None if not sessions else len(sessions) == 1 and i["sessionId"] in sessions,
+                )
+                position = bisect_right(visit_sequences, i["observationSequence"]) - 1
+                visit = visit_sequences[position] if position >= 0 else None
+                check(
+                    family,
+                    "actual use belongs to its latest logical map visit",
+                    i["visit"] == visit and i["map"] == visits.get(visit),
+                )
+        for family in ("map", "entity"):
+            check(family, "independent reached requirement channel", True if requirements else None)
+        field_maps = {
+            row["state"]["map"]
+            for row in actual.get("samples", [])
+            if row.get("state", {}).get("map") in maps
+        }
+        observed_maps = {r["identity"].get("map") for r in requirements if r.get("kind") == "map"}
+        check(
+            "map",
+            "every reached field map has delivered layer inventory",
+            field_maps <= observed_maps if requirements else None,
+        )
+
+        def identity(row):
+            i = row["identity"]
+            return (
+                i["sessionId"],
+                i["visit"],
+                i["map"],
+                i["phase"],
+                row["kind"],
+                row.get("subject"),
+                row.get("slot"),
+                row.get("layer"),
+                row.get("highPriority"),
+            )
+
+        requirement_phases = {}
+        for required in requirements:
+            i = required["identity"]
+            requirement_phases.setdefault((i["visit"], required["kind"]), set()).add(i["phase"])
+        # Independently require visible logical subjects in retained current
+        # projections. Surviving draw/use rows cannot define their own inventory.
+        logical_states = [
+            row.get("state", {})
+            for channel in ("samples", "consumerBoundaries", "warpRecords")
+            for row in actual.get(channel, [])
+        ]
+        required_entities = {
+            (
+                r["identity"]["visit"],
+                r["identity"]["phase"],
+                r.get("subject"),
+                r.get("slot"),
+                json.dumps(r["expected"], sort_keys=True),
+            )
+            for r in requirements
+            if r["kind"] == "entity"
+        }
+
+        def portrait_pose(visit, phase, want):
+            return (
+                visit,
+                phase,
+                want["portrait"],
+                want["mirror"],
+                want["eyes"],
+                want["mouth"],
+                tuple(want["tiles"]),
+            )
+
+        required_portraits = set()
+        for row in requirements:
+            if row["kind"] == "portrait":
+                with evaluated("entity", "portrait inventory"):
+                    required_portraits.add(
+                        portrait_pose(
+                            row["identity"]["visit"], row["identity"]["phase"], row["expected"]
+                        )
+                    )
+        required_tiles = set()
+        for row in requirements:
+            if row["kind"] == "map":
+                with evaluated("map", "tile inventory"):
+                    i, want = row["identity"], row["expected"]
+                    required_tiles.add(
+                        (
+                            i["visit"],
+                            i["phase"],
+                            row.get("layer"),
+                            row.get("highPriority"),
+                            row.get("subject"),
+                            row.get("pass"),
+                            want["block"],
+                            want["tile"],
+                            want["word"],
+                        )
+                    )
+        map_definitions = {row["id"]: row for row in world["maps"]}
+        logical_tiles = set()
+
+        def layer_tiles(map_id, layer, name):
+            # Original draw geometry independently retains the first covered tile and
+            # occlusion ink regions. Neither inventory comes from requirement/use rows.
+            recorded = list(layer.get("overlaps", []))
+            if layer.get("first"):
+                recorded.append(layer["first"])
+            if name == "occlusion":
+                if not recorded:
+                    check("map", "independent occlusion tile operands", None)
+                return recorded
+            definition = map_definitions[map_id]
+            events = definition.get("layoutEvents") or {}
+            mutable_regions = [row["copy"] for rows in events.values() for row in rows]
+            unknown_layout = False
+            origin_x, origin_y = layer["x"], layer["y"]
+            for y in range(int(origin_y // 24), int(origin_y // 24) + 9):
+                for x in range(int(origin_x // 24), int(origin_x // 24) + 15):
+                    sx, sy = int(x + layer["offsetX"]), int(y + layer["offsetY"])
+                    if not (0 <= sx < 64 and 0 <= sy < 64):
+                        continue
+                    if any(
+                        copy["destination"]["x"] <= sx < copy["destination"]["x"] + copy["width"]
+                        and copy["destination"]["y"]
+                        <= sy
+                        < copy["destination"]["y"] + copy["height"]
+                        for copy in mutable_regions
+                    ):
+                        unknown_layout = True
+                        continue
+                    block = definition["layout"][sy][sx] & 0x3FF
+                    if name.startswith("foreground") and block == 0:
+                        continue
+                    high = layer.get("highPriority")
+                    for tile in range(1 if high is None else 9):
+                        word = maps[map_id]["blocks"][block][tile]
+                        if high is not None and bool(word & 0x8000) != high:
+                            continue
+                        px = x * 24 - origin_x + (0 if high is None else tile % 3 * 8)
+                        py = y * 24 - origin_y + (0 if high is None else tile // 3 * 8)
+                        width = 24 if high is None else 8
+                        if px + width > 0 and py + width > 0 and px < 320 and py < 192:
+                            recorded.append(dict(block=block, tile=tile, word=word))
+            if unknown_layout:
+                check("map", "reached mutable region needs current working-layout operands", None)
+            return recorded
+
+        logical_inventory = set()
+        logical_layers = set()
+        required_layers = {
+            (
+                r["identity"]["visit"],
+                r["identity"]["phase"],
+                r.get("layer"),
+                r.get("highPriority"),
+                r.get("subject"),
+            )
+            for r in requirements
+            if r["kind"] == "map"
+        }
+        for state in logical_states:
+            with evaluated(("map", "entity"), "logical draw occurrence"):
+                projection = state.get("cameraProjection") or {}
+                presentation = state.get("presentation") or {}
+                if (
+                    not projection
+                    or projection.get("revision") != state.get("revision")
+                    or projection.get("map") != state.get("map")
+                ):
+                    continue
+                position = bisect_right(visit_sequences, state["observationSequence"]) - 1
+                visit = visit_sequences[position] if position >= 0 else None
+                phase = str(presentation.get("activeCue") or "<null>")
+                # Godot str(null) is <null>; other cue names are retained verbatim.
+                layers = [
+                    (name, projection.get(name))
+                    for name in ("background", "foreground", "backgroundHigh", "foregroundHigh")
+                ]
+                layers += [("occlusion", layer) for layer in projection.get("occlusionDraws", [])]
+                for name, layer in layers:
+                    if not layer or not layer.get("draws"):
+                        continue
+                    key = (visit, phase, name, layer.get("highPriority"), layer.get("subject"))
+                    if key not in logical_layers:
+                        logical_layers.add(key)
+                        check(
+                            "map",
+                            "independent reached layer/pass/subject requirement",
+                            True if key in required_layers else None,
+                        )
+                    with evaluated("map", "independent reached tile"):
+                        for tile in layer_tiles(state["map"], layer, name):
+                            tile_key = (
+                                *key,
+                                layer.get("pass"),
+                                tile["block"],
+                                tile["tile"],
+                                tile["word"],
+                            )
+                            if tile_key not in logical_tiles:
+                                logical_tiles.add(tile_key)
+                                check(
+                                    "map",
+                                    "independent reached block/tile requirement",
+                                    True if tile_key in required_tiles else None,
+                                    tile_key,
+                                )
+                for logical in state.get("entities") or []:
+                    with evaluated("entity", "logical entity occurrence"):
+                        x = logical["x"] / 16 - presentation["cameraX"]
+                        y = logical["y"] / 16 - presentation["cameraY"]
+                        if not (
+                            logical["Visible"] and x + 24 > 0 and y + 24 > 0 and x < 320 and y < 192
+                        ):
+                            continue
+                        nod = state.get("nod") or {}
+                        subject = nod.get("Entity")
+                        if isinstance(subject, dict):
+                            subject = subject.get("Value")
+                        want = dict(
+                            sprite=logical["sprite"],
+                            direction=0
+                            if logical["facing"] == 1
+                            else 2
+                            if logical["facing"] == 3
+                            else 1,
+                            half=int(15 < logical["animationCounter"] < 128),
+                            nod=subject == logical["id"] and bool(nod.get("Lowered")),
+                        )
+                        key = (
+                            visit,
+                            phase,
+                            logical["id"],
+                            logical["slot"],
+                            json.dumps(want, sort_keys=True),
+                        )
+                        if key not in logical_inventory:
+                            logical_inventory.add(key)
+                            # The startup draw can precede callback installation. Its
+                            # current snapshot retains the actual drawn texture selector;
+                            # reuse that operand rather than fabricating a later draw.
+                            if key not in required_entities:
+                                actor = next(
+                                    (
+                                        a
+                                        for a in projection.get("actors", [])
+                                        if a.get("entity") == logical["id"]
+                                        and a.get("slot") == logical["slot"]
+                                        and a.get("visible")
+                                    ),
+                                    None,
+                                )
+                                if actor and actor.get("resourceSelector") is not None:
+                                    i = {
+                                        name: projection.get(name)
+                                        for name in (
+                                            "sessionId",
+                                            "revision",
+                                            "observationSequence",
+                                            "simulationTick",
+                                            "token",
+                                            "drawSequence",
+                                        )
+                                    }
+                                    i.update(visit=visit, map=state["map"], phase=phase)
+                                    requirement = dict(
+                                        identity=i,
+                                        kind="entity",
+                                        subject=logical["id"],
+                                        slot=logical["slot"],
+                                        expected=want,
+                                    )
+                                    requirements.append(requirement)
+                                    uses.append(dict(requirement, used=actor["resourceSelector"]))
+                                    required_entities.add(key)
+                                    requirement_phases.setdefault((visit, "entity"), set()).add(
+                                        phase
+                                    )
+                            check(
+                                "entity",
+                                "independent visible logical subject/pose requirement",
+                                True if key in required_entities else None,
+                                key,
+                            )
+                portrait = state.get("portraitProjection") or {}
+                if portrait.get("id", -1) >= 0:
+                    with evaluated("entity", "independent portrait pose"):
+                        work = state.get("portraitWork") or {}
+                        flags = state["portraitFlags"]
+                        if flags is None or state.get("portraitId") is None:
+                            raise KeyError("logical portrait identity")
+                        original = source_portraits[state["portraitId"]]
+                        tiles = list(range(64))
+                        for changes in (
+                            (original["eyes"] if work.get("EyesClosed") else []),
+                            (original["mouth"] if work.get("MouthOpen") else []),
+                        ):
+                            for x, y, alternate_x, alternate_y in changes:
+                                tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+                        want = dict(
+                            portrait=state["portraitId"],
+                            mirror=bool(int(flags) & 0x40),
+                            eyes=bool(work.get("EyesClosed")),
+                            mouth=bool(work.get("MouthOpen")),
+                            tiles=tiles,
+                        )
+                        key = portrait_pose(visit, phase, want)
+                        check(
+                            "entity",
+                            "independent reached portrait pose requirement",
+                            True if key in required_portraits else None,
+                            key,
+                        )
+                    check(
+                        "entity",
+                        "drawn portrait has logical source identity",
+                        None
+                        if "portraitId" not in state
+                        else portrait["id"] == state["portraitId"],
+                    )
+        check(
+            "entity",
+            "independent reached visible logical inventory",
+            True if logical_inventory else None,
+        )
+        index = {}
+        for used in uses:
+            with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
+                index.setdefault(identity(used), []).append(used)
+                i = used["identity"]
+                phases = requirement_phases.get((i["visit"], used["kind"]), set())
+                family = "map" if used["kind"] == "map" else "entity"
+                if used["kind"] == "map":
+                    high = used.get("highPriority")
+                    word = used["used"]["word"]
+                    name, draw_pass = used.get("layer"), used.get("pass")
+                    valid_pass = (
+                        {
+                            "background": 0,
+                            "foreground": 1,
+                            "backgroundHigh": 2,
+                            "foregroundHigh": 3,
+                        }.get(name)
+                        == draw_pass
+                        if name != "occlusion"
+                        else draw_pass >= 5
+                    )
+                    check(
+                        "map",
+                        "actual source tile priority and named layer pass",
+                        valid_pass
+                        and word == int(word)
+                        and (high is None or bool(int(word) & 0x8000) == high),
+                    )
+                check(
+                    family,
+                    "actual use phase has independent logical requirements",
+                    None if not phases else i["phase"] in phases,
+                )
+        for required in requirements:
+            with evaluated(
+                "map" if required.get("kind") == "map" else "entity", "required texture join"
+            ):
+                kind, want = required["kind"], required["expected"]
+                family = "map" if kind == "map" else "entity"
+                candidates = index.get(identity(required), [])
+                if kind == "map":
+                    candidates = [
+                        r
+                        for r in candidates
+                        if r["used"].get("tile") == want["tile"]
+                        and r["used"].get("block") == want["block"]
+                    ]
+                    visual = maps[required["identity"]["map"]]
+                    check(
+                        family,
+                        "required logical block/tile source word",
+                        0 <= want["block"] < len(visual["blocks"])
+                        and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
+                    )
+                else:
+                    candidates = [r for r in candidates if r.get("expected") == want]
+                check(family, "required actual texture use", True if candidates else None)
+                for used in candidates:
+                    bound = used["used"]
+                    if kind == "map":
+                        bound = bound.get("selector")
+                        valid = (
+                            None
+                            if bound is None
+                            else bound
+                            == dict(
+                                kind="map-block",
+                                map=required["identity"]["map"],
+                                block=want["block"],
+                            )
+                            and used["used"].get("word") == want["word"]
+                        )
+                    elif kind == "entity":
+                        valid = None if bound is None else bound == dict(kind="entity", **want)
+                        check(
+                            family,
+                            "reached sprite original pointer/palette/decode",
+                            sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
+                            and want["sprite"] in source_sprites,
+                        )
+                    else:
+                        valid = (
+                            None
+                            if bound is None
+                            else bound.get("texturePresent")
+                            and bound.get("selector") == dict(kind="portrait", **want)
+                        )
+                        check(
+                            family,
+                            "reached portrait original decode/tile composition",
+                            portraits.get(want["portrait"])
+                            == source_portraits.get(want["portrait"])
+                            and want["portrait"] in source_portraits,
+                        )
+                        original = source_portraits.get(want["portrait"])
+                        tiles = list(range(64))
+                        if original:
+                            for changes in (
+                                (original["eyes"] if want["eyes"] else []),
+                                (original["mouth"] if want["mouth"] else []),
+                            ):
+                                for change in changes:
+                                    x, y, alternate_x, alternate_y = change
+                                    tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+                        check(
+                            family,
+                            "portrait source alternate tile selection",
+                            None if original is None else want["tiles"] == tiles,
+                        )
+                    check(
+                        family, "bound texture selector matches logical source requirement", valid
+                    )
+                    result["joins"].append(
+                        dict(kind=kind, identity=required["identity"], expected=want, value=valid)
+                    )
+
+        # Source recipe for the accepted three-raster extension, separate from base42.
+        with evaluated("scene", "field-death source"):
+            field = read(scene_path.parent / "field-death-provenance.json")
+            field_valid = (
+                field["upstreamCommit"] == UPSTREAM
+                and field["romSha256"] == ROM
+                and field["effectSprite"] == 63
+            )
+            field_valid &= field["allyAssignments"] == [
+                dict(character=r["character"], sprite=r["sprite"])
+                for r in compiler.initial_ally_sprites()[:3]
+            ]
+            field_valid &= (
+                rom[field["enemyTableAddress"] + field["enemyId"]] == field["enemySprite"] == 103
+            )
+            palette = [
+                md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
+                for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
+            ]
+            for direction, span in enumerate(field["spans"]):
+                entry = PLAYER_POINTER_TABLE_ADDRESS + (63 * 3 + direction) * 4
+                address = int.from_bytes(rom[entry : entry + 4], "big")
+                decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576)
+                pixels = bytes(
+                    _combine_player_halves(
+                        _render_player_frame(decoded.output[:288], palette),
+                        _render_player_frame(decoded.output[288:], palette),
+                    )
+                )
+                raster = scene["rasters"][scene["fieldDeath"]["exitFrames"][direction]]
+                field_valid &= span == dict(
+                    pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed
+                )
+                field_valid &= (
+                    base64.b64decode(raster["data"], validate=True) == pixels
+                    and hashlib.sha256(pixels).hexdigest().upper() == raster["sha256"]
+                )
+            check("scene", "field death original ROM spans and assignments", field_valid)
+        return finish()
+    except (FileNotFoundError, KeyError, subprocess.CalledProcessError):
+        for family in ("map", "entity", "scene"):
+            check(family, "source/use prerequisite absent", None)
+    except (ValueError, OSError, IndexError, TypeError) as error:
+        result["error"] = str(error)
+        for family in ("map", "entity", "scene"):
+            check(family, "source/use evidence contradiction " + type(error).__name__, False)
+    return finish()
+
+
+def reached_materials(
+    actual,
+    selection,
+    source_root=None,
+    canonical_content=None,
+    tileset_metadata=None,
+    palette_metadata=None,
+):
     """Offline material origin only; natural dispatch/consumer joins stay separate."""
-    result = dict(scene=None, audio=None, actorWeapon=None, checks=[], joins=[])
+    result = dict(
+        scene=None,
+        audio=None,
+        actorWeapon=None,
+        checks=[],
+        joins=[],
+        visuals=reached_visual_materials(
+            actual, selection, source_root, canonical_content, tileset_metadata, palette_metadata
+        ),
+    )
     if not selection:
         return result
 
@@ -1820,7 +2671,6 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
 
     try:
         labels = (
-            "music-logical-end",
             "music-plain-input",
             "music-plain-poll",
             "music-plain-accepted",
@@ -1835,26 +2685,103 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         if any(len(group) != 1 for group in selected):
             result.update(plain=False, audio=False, caller=False)
             return finalize()
-        (li, logical), (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (
-            group[0] for group in selected
-        )
+        (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (group[0] for group in selected)
         records = actual["warpRecords"]
         observations = [(i, o) for i, r in enumerate(records) for o in r["result"]["observations"]]
+        late = [
+            (i, row["state"])
+            for i, row in enumerate(actual["samples"])
+            if row["label"] == "music-logical-end"
+        ]
+        if len(late) > 1:
+            result.update(plain=False, audio=False, caller=False)
+            return finalize()
+        held = [
+            (i, row["state"])
+            for i, row in enumerate(records)
+            if row.get("state", {}).get("wait") == "MusicWait"
+            and row["state"]["revision"] < plain["revision"]
+        ]
+        if not held:
+            return finalize()
+        li, logical = late[0] if late else (None, held[0][1])
+        initial_starts = [
+            row["receipt"]
+            for row in actual["audioReceipts"]
+            if row["receipt"]["Cue"] == "MUSIC_JOIN"
+            and row["receipt"]["Operation"] == "started"
+            and row["receipt"]["Revision"] < logical["revision"]
+        ]
+        if late:
+            generation = logical["music"]["Generation"]
+        else:
+            if logical.get("sessionId") != plain.get("sessionId"):
+                result["audio"] = False
+            if not world_path.is_file():
+                return finalize()
+            early_world = read(world_path)["world"]
+            early_programs = {p["id"]: p for p in early_world["programs"]}
+
+            def source_operation(event):
+                location = event.get("Program")
+                if location is None:
+                    return None
+                return early_programs[location["Program"]]["instructions"][
+                    int(location["Instruction"])
+                ]
+
+            helper_sources = [
+                o
+                for _, o in observations
+                if o["Kind"] == "program-instruction"
+                and o["Sequence"] <= logical["revision"]
+                and (source_operation(o) or {}).get("kind") == "SoundWait"
+            ]
+            if not helper_sources:
+                return finalize()
+            install = helper_sources[-1]
+            request_sources = [
+                o
+                for _, o in observations
+                if o["Kind"] == "program-instruction"
+                and o["Sequence"] < install["Sequence"]
+                and (source_operation(o) or {}).get("kind") == "Sound"
+                and (source_operation(o) or {}).get("resource") == "MUSIC_JOIN"
+            ]
+            if not request_sources:
+                return finalize()
+            request = request_sources[-1]
+            generation = request["Sequence"]
+            if (
+                logical.get("token") != install["Sequence"]
+                or logical.get("cursor") != install["Program"]
+                or any(row["Revision"] != generation for row in initial_starts)
+            ):
+                result["audio"] = False
 
         def event(kind, detail=None):
+            lower = (
+                acked["revision"]
+                if kind in ("simulation-tick", "zone-finished")
+                else generation - 1
+                if kind == "music-actual-completed"
+                else logical["revision"]
+            )
             found = [
                 (i, o)
                 for i, o in observations
                 if o["Kind"] == kind
                 and (detail is None or o["Detail"] == detail)
-                and logical["revision"] < o["Sequence"] <= ready["revision"]
+                and lower < o["Sequence"] <= ready["revision"]
             ]
             if not found:
                 raise KeyError(kind)
             return found
 
-        completed = event("music-actual-completed", "MUSIC_JOIN")
         released = event("music-wait-returned", "MUSIC_JOIN")
+        if not late and any(state["revision"] >= released[0][1]["Sequence"] for _, state in held):
+            result["audio"] = False
+        completed = event("music-actual-completed", "MUSIC_JOIN")
         previous = event("presentation-completed", "PreviousMusic")
         acknowledged = event("presentation-acknowledged")
         pressed = [r for r in actual["inputRecords"] if r["pressed"]]
@@ -1874,7 +2801,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             for r in pressed
             if r["before"]["revision"] == polled["revision"] and r["action"] == "confirm"
         ]
-        if not early or not wait or not confirm:
+        if (late and not early) or not wait or not confirm:
             return finalize()
         wait, confirm = wait[0], confirm[0]
 
@@ -1886,7 +2813,11 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             )
 
         plain_value = (
-            li < pi < wi < ai < ri
+            (
+                li < pi < wi < ai < ri
+                if late
+                else logical["revision"] < plain["revision"] and pi < wi < ai < ri
+            )
             and len(completed) == len(released) == len(previous) == len(acknowledged) == 1
             and completed[0][1]["Sequence"]
             < released[0][1]["Sequence"]
@@ -1908,7 +2839,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
                 )
                 for key in ("revision", "simulationTick", "mainSeed", "token", "cursor")
             )
-            and {r["action"] for r in early} == {"wait", "confirm"}
+            and (not late or {r["action"] for r in early} == {"wait", "confirm"})
             and all(r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in early)
             and polled["simulationTick"] == plain["simulationTick"] + 1
             and acked["simulationTick"] == polled["simulationTick"]
@@ -1920,9 +2851,20 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
                 for s in (plain, polled, acked)
             )
         )
-        music, helper = logical["music"], logical["musicWait"]
-        generation = music["Generation"]
+        music = logical["music"] if late else None
+        helper = logical["musicWait"] if late else None
+        helper_token = helper["Token"]["Value"] if late else install["Sequence"]
         receipts = [r["receipt"] for r in actual["audioReceipts"]]
+        previous_starts = [
+            r
+            for r in receipts
+            if r["Operation"] == "started"
+            and r["Cue"].startswith("MUSIC_")
+            and r["Revision"] < generation
+        ]
+        if not late and not previous_starts:
+            return finalize()
+        previous_cue = music["Previous"][0] if late else previous_starts[-1]["Cue"]
         starts = [
             r
             for r in receipts
@@ -1935,25 +2877,39 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             for r in receipts
             if r["Cue"] == "MUSIC_JOIN"
             and r["Operation"] == "finished"
-            and r["Revision"] == logical["revision"]
+            and (
+                r["Revision"] == logical["revision"]
+                if late
+                else generation <= r["Revision"] < plain["revision"]
+            )
         ]
         if not starts or not finishes:
             return finalize()
         start, finish = starts[0], finishes[0]
+        finish_context = next(
+            (
+                row["state"]
+                for row in reversed(records)
+                if row.get("state", {}).get("revision") == finish["Revision"]
+            ),
+            None,
+        )
+        if not late and (finish_context is None or "token" not in finish_context):
+            return finalize()
         restarts = [
             r
             for r in receipts
-            if r["Cue"] == music["Previous"][-1]
+            if r["Cue"] == previous_cue
             and r["Operation"] == "started"
             and finish["Sequence"] < r["Sequence"]
             and r["Revision"] < plain["revision"]
         ]
         transitional = [
             s["state"]
-            for s in actual["samples"][li + 1 : pi]
+            for s in (actual["samples"][li + 1 : pi] if late else [])
             if s["state"]["audio"]["musicGeneration"] == generation
         ]
-        if not restarts or not transitional:
+        if not restarts or (late and not transitional):
             return finalize()
         restart = restarts[0]
         interval = [
@@ -1962,37 +2918,144 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             if start["Sequence"] <= r["Sequence"] <= restart["Sequence"]
             and r["Cue"].startswith("MUSIC_")
         ]
-        result["audio"] = (
-            len(starts) == len(finishes) == len(restarts) == 1
-            and interval == [start, finish, restart]
-            and music["Cue"] == "MUSIC_JOIN"
-            and music["Step"] == music["EndStep"]
-            and music["PreviousEligible"]
-            and not music["ActualDone"]
-            and helper["Generation"] == generation
-            and helper["LogicalDone"]
-            and helper["Armed"]
-            and helper["Cleared"]
-            and logical["audio"]["musicGeneration"] == generation
-            and logical["audio"]["musicPlaying"]
-            and not logical["audio"]["musicFinished"]
-            and finish["WaitToken"] == helper["Token"]["Value"]
-            and start["PcmSha256"] == finish["PcmSha256"]
-            and not finish["Playing"]
-            and restart["Playing"]
-            and all(
-                s["audio"]["musicFinished"]
-                and not s["audio"]["musicPlaying"]
-                and s["audio"]["error"] is None
-                for s in transitional
+        if not late:
+            if not world_path.is_file():
+                return finalize()
+            request_op, install_op = source_operation(request), source_operation(install)
+            profile = next(
+                (row for row in early_world["presentation"]["audio"] if row["cue"] == "MUSIC_JOIN"),
+                None,
             )
-            and plain["audio"]["musicCue"] == restart["Cue"]
-            and plain["audio"]["musicPlaying"]
-            and plain["audio"]["musicPosition"] > 0
-            and plain["audio"]["error"] is None
-            and completed[0][1]["Sequence"] > finish["Revision"]
-            and restart["Revision"] < previous[0][1]["Sequence"]
-        )
+            if profile is None or profile.get("modernEndStep") is None:
+                return finalize()
+            end = profile["modernEndStep"]
+            before_steps = [
+                o
+                for _, o in observations
+                if generation < o["Sequence"] < helper_token
+                and o["Kind"] == "music-step"
+                and o.get("Detail") == "MUSIC_JOIN"
+            ]
+            initial_step = min(end, len(before_steps))
+            progress = [
+                o
+                for _, o in observations
+                if helper_token < o["Sequence"] < released[0][1]["Sequence"]
+                and o["Kind"] in ("music-step", "music-wait-armed", "music-previous-eligible")
+                and o.get("Detail") == "MUSIC_JOIN"
+            ]
+            services = [
+                o
+                for _, o in observations
+                if helper_token < o["Sequence"] < released[0][1]["Sequence"]
+                and o["Kind"] == "music-helper-service"
+            ]
+            armed = [o for o in progress if o["Kind"] == "music-wait-armed"]
+            eligible = [o for o in progress if o["Kind"] == "music-previous-eligible"]
+            if not progress or not services or not armed or not eligible:
+                return finalize()
+            if completed[0][1]["Sequence"] > services[-1]["Sequence"]:
+                # A real late-held interval requires its own retained state and
+                # attempted-input/no-debt operands; its missing sample is not early.
+                return finalize()
+            needed = max(2, end - initial_step)
+            groups = ((needed + 2) // 3) * 3
+            attempts = [
+                r
+                for r in pressed
+                if helper_token <= r["before"]["revision"] < released[0][1]["Sequence"]
+            ]
+            plain_value = plain_value and all(
+                r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in attempts
+            )
+            result["audio"] = (
+                result["audio"] is not False
+                and len(starts) == len(finishes) == len(restarts) == 1
+                and interval == [start, finish, restart]
+                and request["Kind"] == install["Kind"] == "program-instruction"
+                and request_op is not None
+                and request_op.get("op") == "present"
+                and request_op.get("kind") == "Sound"
+                and request_op.get("resource") == "MUSIC_JOIN"
+                and install_op is not None
+                and install_op.get("op") == "present"
+                and install_op.get("kind") == "SoundWait"
+                and install["Program"] == logical["cursor"]
+                and len(progress) == len(services) == groups
+                and len(armed) == len(eligible) == 1
+                and progress[0] == armed[0]
+                and eligible[0]["Sequence"] == progress[int(needed) - 1]["Sequence"]
+                and all(
+                    p["Sequence"] < v["Sequence"]
+                    and (
+                        index + 1 == len(progress)
+                        or v["Sequence"] < progress[index + 1]["Sequence"]
+                    )
+                    for index, (p, v) in enumerate(zip(progress, services, strict=False))
+                )
+                and all(
+                    state["token"] == helper_token
+                    and state["cursor"] == logical["cursor"]
+                    and state["sessionId"] == plain["sessionId"]
+                    and state["simulationTick"]
+                    == logical["simulationTick"]
+                    - sum(v["Sequence"] <= logical["revision"] for v in services)
+                    + sum(v["Sequence"] <= state["revision"] for v in services)
+                    for _, state in held
+                )
+                and finish_context["sessionId"] == plain["sessionId"]
+                and finish["WaitToken"] == finish_context["token"]
+                and start["PcmSha256"] == finish["PcmSha256"]
+                and not finish["Playing"]
+                and restart["Playing"]
+                and finish["Revision"] < completed[0][1]["Sequence"]
+                and restart["Revision"] < previous[0][1]["Sequence"]
+                and plain["audio"]["musicCue"] == restart["Cue"]
+                and plain["audio"]["musicPlaying"]
+                and plain["audio"]["error"] is None
+            )
+            result["anchors"]["earlyLogicalWork"] = dict(
+                request=generation,
+                helper=helper_token,
+                endStep=end,
+                initialStep=initial_step,
+                progressSequences=[p["Sequence"] for p in progress],
+                serviceSequences=[v["Sequence"] for v in services],
+                eligible=eligible[0]["Sequence"],
+                previousCue=previous_cue,
+            )
+        else:
+            result["audio"] = (
+                len(starts) == len(finishes) == len(restarts) == 1
+                and interval == [start, finish, restart]
+                and music["Cue"] == "MUSIC_JOIN"
+                and music["Step"] == music["EndStep"]
+                and music["PreviousEligible"]
+                and not music["ActualDone"]
+                and helper["Generation"] == generation
+                and helper["LogicalDone"]
+                and helper["Armed"]
+                and helper["Cleared"]
+                and logical["audio"]["musicGeneration"] == generation
+                and logical["audio"]["musicPlaying"]
+                and not logical["audio"]["musicFinished"]
+                and finish["WaitToken"] == helper["Token"]["Value"]
+                and start["PcmSha256"] == finish["PcmSha256"]
+                and not finish["Playing"]
+                and restart["Playing"]
+                and all(
+                    s["audio"]["musicFinished"]
+                    and not s["audio"]["musicPlaying"]
+                    and s["audio"]["error"] is None
+                    for s in transitional
+                )
+                and plain["audio"]["musicCue"] == restart["Cue"]
+                and plain["audio"]["musicPlaying"]
+                and plain["audio"]["musicPosition"] > 0
+                and plain["audio"]["error"] is None
+                and completed[0][1]["Sequence"] > finish["Revision"]
+                and restart["Revision"] < previous[0][1]["Sequence"]
+            )
         if not world_path.is_file():
             return finalize()
         world = read(world_path)["world"]
@@ -2093,8 +3156,10 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         )
         result["anchors"]["actual"] = dict(
             samples=[li, pi, wi, ai, ri],
+            completionOrder="late" if late else "early",
+            heldHelperRecords=[i for i, _ in held],
             generation=generation,
-            helperToken=helper["Token"]["Value"],
+            helperToken=helper_token,
             receiptSequences=[r["Sequence"] for r in interval],
             inputOrdinals=[r["ordinal"] for r in early] + [wait["ordinal"], confirm["ordinal"]],
             completionRecords=[completed[0][0], released[0][0], previous[0][0]],
@@ -3630,6 +4695,107 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 states.append((s["observationSequence"], channel, index, s))
     states.sort(key=lambda item: item[0])
 
+    control_reads = {}
+    for row in actual.get("warpRecords", []):
+        delivery = row.get("result", {})
+        for control in delivery.get("programControlReads") or []:
+            seq = control.get("Sequence")
+            previous = control_reads.get(seq)
+            check(
+                names[0],
+                "control read duplicate identity",
+                previous is None or previous == control,
+                seq,
+            )
+            control_reads.setdefault(seq, control)
+            event = events.get(seq)
+            source_instruction = instruction(dict(Program=control.get("Source")))
+            operands = all(
+                k in control
+                for k in (
+                    "SessionId",
+                    "Sequence",
+                    "Revision",
+                    "Source",
+                    "Operation",
+                    "Cursor",
+                    "CallersBefore",
+                    "Callers",
+                )
+            )
+            check(names[0], "control read operands", True if operands else None, seq)
+            check(
+                names[0],
+                "same session control read session",
+                None
+                if "SessionId" not in control
+                else control["SessionId"] == delivery.get("sessionId"),
+                seq,
+            )
+            check(
+                names[0],
+                "control read producing event revision",
+                None
+                if event is None or "Revision" not in control
+                else control["Revision"] == event.get("Revision"),
+                seq,
+            )
+            check(
+                names[0],
+                "control read delivered sequence interval",
+                None if seq is None else seq <= delivery.get("observationSequence", -1),
+                seq,
+            )
+            op = source_instruction.get("op") if source_instruction else None
+            operation = control.get("Operation")
+            check(
+                names[0],
+                "control read source operation",
+                None
+                if op is None or operation is None
+                else (operation == "CallProgram" and op == "call")
+                or (operation == "ReturnProgram" and op == "return")
+                or (
+                    operation in ("EndProgram", "ScriptReturn") and op in ("end", "end-map-script")
+                ),
+                seq,
+            )
+            produced = (
+                None
+                if event is None or operation is None or "Source" not in control
+                else (
+                    event.get("Kind") == "text-work-advanced"
+                    if operation == "ScriptReturn"
+                    else event.get("Program") == control["Source"]
+                    and event.get("Detail") == operation
+                )
+            )
+            check(names[0], "control read producing Commit", produced, seq)
+            if any(k not in control for k in ("CallersBefore", "Callers", "Cursor")):
+                continue
+            before, after = control["CallersBefore"], control["Callers"]
+            if operation == "CallProgram" and source_instruction:
+                continuation = dict(
+                    Program=control["Source"]["Program"],
+                    Instruction=control["Source"]["Instruction"] + 1,
+                )
+                target = source_instruction["target"]
+                check(
+                    names[0],
+                    "actual call pushes full source continuation stack",
+                    after == before + [continuation]
+                    and control["Cursor"]
+                    == dict(Program=target["program"], Instruction=target["instruction"]),
+                    seq,
+                )
+            elif operation in ("EndProgram", "ReturnProgram", "ScriptReturn"):
+                check(
+                    names[0],
+                    "actual return pops full stack or ends empty caller",
+                    after == before[:-1] and control["Cursor"] == (before[-1] if before else None),
+                    seq,
+                )
+
     def entity(s, identity):
         return next((x for x in s.get("entities") or [] if x.get("id") == identity), None)
 
@@ -4201,7 +5367,44 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     ),
                     None,
                 )
-                if held is None:
+                call_read = control_reads.get(seq)
+                return_reads = [
+                    c
+                    for c in control_reads.values()
+                    if seq < c.get("Sequence", -1) < executed[later][0]["Sequence"]
+                    and c.get("Source") == executed[later - 1][0]["Program"]
+                    and c.get("Operation") in ("EndProgram", "ReturnProgram", "ScriptReturn")
+                ]
+                if call_read is not None:
+                    check(
+                        names[0],
+                        "actual call read source identity",
+                        call_read.get("Source") == loc
+                        and call_read.get("Operation") == "CallProgram",
+                        seq,
+                    )
+                    check(
+                        names[0],
+                        "actual enclosing return operand",
+                        True if return_reads else None,
+                        seq,
+                    )
+                    for returned in return_reads:
+                        check(
+                            names[0],
+                            "actual enclosing return restores full pre-call stack",
+                            None
+                            if any(
+                                k not in c
+                                for c in (call_read, returned)
+                                for k in ("Callers", "CallersBefore")
+                            )
+                            else returned["CallersBefore"] == call_read["Callers"]
+                            and returned["Callers"] == call_read["CallersBefore"]
+                            and returned.get("Cursor") == continuation,
+                            seq,
+                        )
+                if held is None and call_read is None:
                     check(names[0], "held caller operand absent", None, seq)
                 if held and held[0] < executed[later][0]["Sequence"]:
                     check(
@@ -5215,6 +6418,39 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
     return finish()
 
 
+def gameplay(s):
+    actor_render = {"nodeX", "nodeY", "visible", "text", "sprite", "globalRect", "insideMap"}
+    return {
+        **{
+            k: s.get(k)
+            for k in (
+                "sessionId",
+                "revision",
+                "mainSeed",
+                "thinkingSeed",
+                "gold",
+                "queueCursor",
+                "round",
+                "actor",
+                "target",
+                "previewX",
+                "previewY",
+                "stage",
+                "spell",
+                "itemSlot",
+                "inventories",
+                "turnOrder",
+                "storyFlags",
+                "regionFlags",
+                "aiMemory",
+            )
+        },
+        "actors": [
+            {k: v for k, v in a.items() if k not in actor_render} for a in s.get("actors", [])
+        ],
+    }
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -5228,6 +6464,9 @@ def compare_modern(
     material_selection=None,
     original_join_evidence_root=None,
     text_source_root=None,
+    canonical_content=None,
+    tileset_metadata=None,
+    palette_metadata=None,
 ):
     actual, outcome, settings = read(actual_path), read(outcome_path), read(settings_path)
     samples = actual.get("samples", [])
@@ -5873,39 +7112,6 @@ def compare_modern(
     )
 
     # Keep all browsing failures; only the accepted candidate rejection has a bounded allowance.
-    actor_render = {"nodeX", "nodeY", "visible", "text", "sprite", "globalRect", "insideMap"}
-
-    def gameplay(s):
-        return {
-            **{
-                k: s.get(k)
-                for k in (
-                    "sessionId",
-                    "revision",
-                    "mainSeed",
-                    "thinkingSeed",
-                    "gold",
-                    "queueCursor",
-                    "round",
-                    "actor",
-                    "target",
-                    "previewX",
-                    "previewY",
-                    "stage",
-                    "spell",
-                    "itemSlot",
-                    "inventories",
-                    "turnOrder",
-                    "storyFlags",
-                    "regionFlags",
-                    "aiMemory",
-                )
-            },
-            "actors": [
-                {k: v for k, v in a.items() if k not in actor_render} for a in s.get("actors", [])
-            ],
-        }
-
     previous = None
     rejections = []
     for index, row in enumerate(records):
@@ -6503,7 +7709,14 @@ def compare_modern(
             reason="Actual cue totals reconcile with terminal voices; "
             "ongoing field music requires no fabricated end",
         )
-    materials = reached_materials(actual, material_selection)
+    materials = reached_materials(
+        actual,
+        material_selection,
+        text_source_root,
+        canonical_content,
+        tileset_metadata,
+        palette_metadata,
+    )
     for row in materials["checks"]:
         check(
             8,
@@ -6576,7 +7789,14 @@ def compare_modern(
         ),
     ):
         material = None
-        if name == "displayed text tokens/font/glyph private binding":
+        if name == "reached map3/19/20/21/40/57 atlas and layer identities":
+            material = materials["visuals"]["map"]
+        elif name == "reached entity sprites/portraits/gesture resource identities":
+            material = materials["visuals"]["entity"]
+        elif name == "scene actor/weapon/healing/death resources":
+            values = (materials["actorWeapon"], materials["visuals"]["scene"])
+            material = False if False in values else None if None in values else True
+        elif name == "displayed text tokens/font/glyph private binding":
             material = text_material["value"]
         elif name == "scene background/ground actual resource identity":
             material = materials["scene"]
@@ -6916,6 +8136,9 @@ def compare_modern(
             extension=(ref.get("postVictoryInput") or {}).get("sourceCommit"),
         ),
         evidence=dict(
+            canonicalContent=canonical_content.as_posix() if canonical_content else None,
+            tilesetMetadata=tileset_metadata.as_posix() if tileset_metadata else None,
+            paletteMetadata=palette_metadata.as_posix() if palette_metadata else None,
             originalJoinEvidenceRoot=(
                 original_join_evidence_root.as_posix() if original_join_evidence_root else None
             ),
@@ -6962,6 +8185,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             reachedMaterialJoins=materials["joins"],
+            reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
             plainJoinBinding=join,
             walkingAdmissionBinding=walking,
@@ -6995,6 +8219,231 @@ def compare_modern(
     errors = modern_report_integrity(report, ref)
     require(not errors, "; ".join(errors))
     return report
+
+
+def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
+    """Reproduce occurrence evidence from actual files; report PASS flags are not proof."""
+    proof = dict(value=None)
+    if modern_report_integrity(report, ref):
+        return dict(value=False, reason="report integrity")
+    identity = report.get("originalIdentity", {})
+    if not isinstance(identity, dict):
+        return dict(value=False, reason="malformed source identity")
+    expected_identity = dict(
+        rom=ref["romSha256"],
+        upstream=ref["upstream"],
+        extension=(ref.get("postVictoryInput") or {}).get("sourceCommit"),
+    )
+    identity_missing = "sourceCommit" not in report or any(
+        k not in identity for k in expected_identity
+    )
+    if (
+        "sourceCommit" in report
+        and report["sourceCommit"] != SOURCE
+        or any(k in identity and identity[k] != v for k, v in expected_identity.items())
+    ):
+        return dict(value=False, reason="wrong source identity")
+    try:
+        evidence = report["evidence"]
+        selection = evidence.get("materialSelection")
+        if not selection or not evidence.get("actual") or not evidence.get("outcome"):
+            return proof
+        actual_path, outcome_path = (
+            Path(evidence[k]).resolve()
+            if Path(evidence[k]).is_absolute()
+            else repo_path(evidence[k]).resolve()
+            for k in ("actual", "outcome")
+        )
+        if not all(
+            p.is_relative_to(repo_path("local").resolve()) for p in (actual_path, outcome_path)
+        ):
+            return dict(value=False, reason="actual outside owned evidence")
+        actual, outcome = read(actual_path), read(outcome_path)
+        if actual.get("h4Variant") != report["variant"] or actual.get("passed") is not True:
+            return dict(value=False, reason="wrong or failed actual capture")
+        records = actual["warpRecords"]
+        events = [
+            o
+            for row in records
+            if row["result"]["boundary"] == "submit"
+            for o in row["result"]["observations"]
+            if o["Kind"] != "text-revealed"
+            and not (
+                len(row["result"]["observations"]) == 1
+                and o["Kind"] == "scene-delivery"
+                and row.get("inputDelivery") is False
+            )
+        ]
+        inputs = [
+            dict(
+                action=r["action"],
+                wait=r["before"].get("wait"),
+                cursor=r["before"].get("cursor"),
+                actor=r["before"].get("actor"),
+            )
+            for r in actual["inputRecords"]
+            if r["pressed"]
+            and any(
+                x.get("inputDelivery")
+                and x.get("inputOrdinal") == r["ordinal"]
+                and x["result"]["boundary"] == "submit"
+                for x in records[r["resultStart"] : r["resultEnd"]]
+            )
+        ]
+        first, final = actual["samples"][0]["state"], outcome["final"]
+        paired = {}
+        for label in ("first-return", "before-down", "after-down"):
+            pair = [e for e in outcome.get("endpoints", []) if e["label"] == label]
+            if len(pair) == 2:
+                paired[label] = endpoint_state(pair[1]["state"])
+        derived = dict(
+            admission={
+                k: first.get(k) for k in ("map", "party", "partyLists", "flags", "gold", "mainSeed")
+            },
+            inputs=inputs,
+            observations=[semantic_value(o) for o in events],
+            battleStates=[
+                {
+                    k: v
+                    for k, v in gameplay(row["state"]).items()
+                    if k not in ("sessionId", "revision")
+                }
+                for row in outcome.get("records", [])
+                if row.get("label") == "action-selected"
+            ],
+            endpoints=paired,
+            party=final.get("party"),
+            gold=final.get("gold"),
+            mainSeed=final.get("mainSeed"),
+        )
+        if derived != report["equivalence"]:
+            return dict(value=False, reason="report does not reproduce actual equivalence")
+        selected_world = Path(selection["world"])
+        world = (
+            selected_world.resolve() if selected_world.is_absolute() else repo_path(selected_world)
+        )
+        binding = plain_join_binding(
+            ref,
+            actual,
+            Path(evidence["originalJoinEvidenceRoot"])
+            if evidence.get("originalJoinEvidenceRoot")
+            else None,
+            world,
+        )
+        material_selection = tuple(
+            Path(selection[k])
+            for k in ("world", "scene", "processReceipt", "sceneEvidenceRoot", "assetRoot")
+        ) + tuple(selection[k] for k in ("assetCommit", "assetTree", "assetManifestSha256"))
+        source_audio = reached_materials(actual, material_selection)["audio"]
+        if source_audio is False:
+            return dict(value=False, reason="independent source audio binding")
+        values = [binding[k] for k in ("original", "plain", "audio", "caller")] + [source_audio]
+        if False in values:
+            return dict(value=False, reason="contradictory actual JOIN gates or caller")
+        if None in values:
+            return proof
+        anchor = binding["anchors"]["actual"]
+        generation, token = anchor["generation"], anchor["helperToken"]
+        completed = events[completion_index]
+        release = next(
+            o for o in events if o["Kind"] == "music-wait-returned" and o["Detail"] == "MUSIC_JOIN"
+        )
+        eligible = next(
+            o
+            for o in events
+            if o["Kind"] == "music-previous-eligible" and o["Detail"] == "MUSIC_JOIN"
+        )
+        if not (
+            generation < completed["Sequence"] < release["Sequence"]
+            and all(
+                generation < events[i]["Sequence"] < eligible["Sequence"] for i in crossed_indices
+            )
+        ):
+            return dict(value=False, reason="completion crosses a dependent gate")
+        held = [
+            row["state"]
+            for row in records
+            if row.get("state", {}).get("wait") == "MusicWait"
+            and row["state"].get("token") == token
+        ]
+        if not held or any(
+            not any(
+                events[i] in row["result"]["observations"]
+                and row.get("state", {}).get("wait") == "MusicWait"
+                and row["state"].get("token") == token
+                and row["state"]["revision"] >= events[i]["Revision"]
+                and row["state"]["sessionId"] == held[0]["sessionId"]
+                for row in records
+            )
+            for i in crossed_indices
+        ):
+            return dict(value=False, reason="crossed service is outside the actual helper")
+        receipts = [
+            r["receipt"]
+            for r in actual["audioReceipts"]
+            if r["receipt"]["Cue"] == "MUSIC_JOIN"
+            and r["receipt"]["Operation"] in ("started", "finished")
+        ]
+        return dict(
+            value=None if identity_missing else True,
+            sessionId=held[0]["sessionId"],
+            generation=generation,
+            helperToken=token,
+            receiptSequences=[r["Sequence"] for r in receipts],
+            completionSequence=completed["Sequence"],
+            eligibleSequence=eligible["Sequence"],
+            releaseSequence=release["Sequence"],
+            crossedSequences=[events[i]["Sequence"] for i in crossed_indices],
+        )
+    except FileNotFoundError:
+        return proof
+    except (KeyError, IndexError, StopIteration):
+        return proof
+    except (ValueError, TypeError, AttributeError):
+        return dict(value=False, reason="malformed occurrence evidence")
+
+
+def bounded_join_correspondence(base, other, ref):
+    """Pair one independently proved completion; retain both original ordered streams."""
+    result = dict(value=False)
+    a, b = base["equivalence"], other["equivalence"]
+    if any(a[k] != b.get(k) for k in a if k != "observations"):
+        return dict(value=False, reason="other unequal equivalence component")
+    x, y = a["observations"], b["observations"]
+    found = [
+        [
+            i
+            for i, o in enumerate(stream)
+            if o.get("Kind") == "music-actual-completed" and o.get("Detail") == "MUSIC_JOIN"
+        ]
+        for stream in (x, y)
+    ]
+    if len(x) != len(y) or any(len(v) != 1 for v in found):
+        return dict(value=False, reason="missing, duplicate or unequal completion inventory")
+    ai, bi = found[0][0], found[1][0]
+    lo, hi = min(ai, bi), max(ai, bi)
+    if ai == bi or x[ai] != y[bi] or x[:lo] != y[:lo] or x[hi + 1 :] != y[hi + 1 :]:
+        return dict(value=False, reason="unequal payload or another moved observation")
+    ax, bx = ([i for i in range(lo, hi + 1) if i != complete] for complete in (ai, bi))
+    if any(x[i] != y[j] for i, j in zip(ax, bx, strict=True)) or any(
+        x[i].get("Kind") not in ("music-step", "music-helper-service")
+        or x[i].get("Detail") != ("MUSIC_JOIN" if x[i]["Kind"] == "music-step" else None)
+        for i in ax
+    ):
+        return dict(value=False, reason="completion crosses an unallocated operation")
+    proofs = [
+        _matrix_join_occurrence(base, ref, ai, ax),
+        _matrix_join_occurrence(other, ref, bi, bx),
+    ]
+    values = [p["value"] for p in proofs]
+    result.update(
+        value=False if False in values else None if None in values else True,
+        completionIndices=dict(base=ai, other=bi),
+        crossedCorrespondence=list(zip(ax, bx, strict=True)),
+        occurrences=proofs,
+        rule="same JOIN occurrence music-step/music-helper-service only",
+    )
+    return result
 
 
 def compare_matrix(paths, ref):
@@ -7047,14 +8496,35 @@ def compare_matrix(paths, ref):
                 else:
                     difference.update(expected=value, actual=other)
                 differences.append(difference)
+        causal = None
+        if report and base and differences:
+            causal = bounded_join_correspondence(base, report, ref)
+        raw_equal = (
+            report is not None and base is not None and report["equivalence"] == base["equivalence"]
+        )
+        contradiction = (
+            report is not None
+            and base is not None
+            and (
+                observed != expected
+                or causal is not None
+                and causal["value"] is False
+                or bool(modern_report_integrity(report, ref))
+                or bool(modern_report_integrity(base, ref))
+            )
+        )
         result = (
-            "Unavailable"
+            "FAIL"
+            if contradiction
+            else "Unavailable"
             if report is None
             or base is None
             or report["equivalence"].get("inputs") is None
             or base["equivalence"].get("inputs") is None
             else "PASS"
-            if observed == expected and report["equivalence"] == base["equivalence"]
+            if raw_equal or causal and causal["value"] is True
+            else "Unavailable"
+            if causal and causal["value"] is None
             else "FAIL"
         )
         checks.append(
@@ -7072,7 +8542,9 @@ def compare_matrix(paths, ref):
                 expectedSettings=expected,
                 actualSettings=observed,
                 differences=differences,
-                reason="Full named settings and semantic/state equivalence to A; "
+                rawOrderEqual=raw_equal,
+                causalCorrespondence=causal,
+                reason="Full named settings and state/occurrence equivalence to A; "
                 "missing variant is not a pair PASS",
             )
         )
@@ -7140,6 +8612,17 @@ def main():
         help="Explicit candidate party definition; not a same-run admission snapshot",
     )
     parser.add_argument("--selected-world", type=Path)
+    parser.add_argument(
+        "--canonical-content",
+        type=Path,
+        help="Read-only existing canonical map export, verified against its accepted manifest",
+    )
+    parser.add_argument(
+        "--tileset-metadata", type=Path, help="Read-only accepted private map tileset extraction"
+    )
+    parser.add_argument(
+        "--palette-metadata", type=Path, help="Read-only accepted private map palette extraction"
+    )
     parser.add_argument(
         "--text-source-root",
         type=Path,
@@ -7218,6 +8701,9 @@ def main():
                 material_selection,
                 args.original_join_evidence_root,
                 args.text_source_root,
+                args.canonical_content,
+                args.tileset_metadata,
+                args.palette_metadata,
             )
             write(args.output, result)
             print(json.dumps({k: result[k] for k in ("result", "counts", "milestonePass")}))

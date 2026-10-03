@@ -16,6 +16,8 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod), ImageTexture> _sprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
+    private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
+    private bool _observeResources;
     private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
@@ -52,6 +54,15 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int SpriteMounts => _spriteMounts;
     internal object? NodProjection { get; private set; }
     internal object? CameraProjection { get; private set; }
+    internal object? PortraitResourceProjection { get; private set; }
+    internal void ObserveResources(bool enabled)
+    {
+        if (_observeResources == enabled) return;
+        _observeResources = enabled;
+        // A subscription change invalidates its previous draw snapshot, not game state.
+        CameraProjection = null;
+        PortraitResourceProjection = null;
+    }
     internal int GestureDraws { get; private set; }
     internal int NodDraws { get; private set; }
     internal int RestoredGestureDraws { get; private set; }
@@ -329,6 +340,7 @@ internal sealed class ExplorationPresentation : IDisposable
                     width = destination.Size.X, height = destination.Size.Y, visible,
                     originX = actorOrigin.X, originY = actorOrigin.Y,
                     gesture, lowered, shiverOffsetX, mosaicBlock,
+                    resourceSelector = _observeResources ? _resourceSelectors[texture] : null,
                     texture = texture.GetInstanceId().ToString() });
                 if (gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
@@ -392,6 +404,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
+            PortraitResourceProjection = null;
             byte flags = (story.PortraitWindow as OpenPortraitWindow)?.Flags ?? 0;
             // Preserve old content's display hint without admitting its unknown service gate.
             if (story.PortraitWindow is UnknownPortraitWindow { LegacySpeaker: { } speaking } legacy &&
@@ -419,6 +432,8 @@ internal sealed class ExplorationPresentation : IDisposable
                     using var crop = composed.GetRegion(new(0, 0, 48, 56));
                     if (key.Item2) crop.FlipX();
                     _portraits[key] = texture = ImageTexture.CreateFromImage(crop);
+                    _resourceSelectors[texture] = new
+                    { kind = "portrait", portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
                 }
                 var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 92 : 20,
                     work is null ? viewport.Y - 150 : 52 + work.Y * 12, 72, 84);
@@ -432,6 +447,10 @@ internal sealed class ExplorationPresentation : IDisposable
                 });
                 _owner.DrawRect(destination.Grow(3), new Color(0.06f, 0.07f, 0.12f));
                 _owner.DrawTextureRect(texture, destination, false);
+                if (_observeResources) PortraitResourceProjection = new { selector = _resourceSelectors[texture], texturePresent = true,
+                    width = texture.GetWidth(), height = texture.GetHeight(), sessionId = current.SessionId,
+                    revision = current.Revision, observationSequence = current.ObservationSequence,
+                    simulationTick = story.SimulationTick, token = story.Wait?.Token.Value };
             }
             return true;
         }
@@ -446,6 +465,10 @@ internal sealed class ExplorationPresentation : IDisposable
         int draws = 0;
         object? first = null;
         List<object> overlaps = [];
+        List<object>? resources = _observeResources ? [] : null;
+        List<object>? required = _observeResources ? [] : null;
+        HashSet<(int Block, int Tile, int Word)>? expected = _observeResources ? [] : null;
+        HashSet<(int Block, int Tile, int Word)>? used = _observeResources ? [] : null;
         for (int y = top; y <= top + ViewHeight / 24; y++)
             for (int x = left; x <= left + ViewWidth / 24 + 1; x++)
             {
@@ -472,9 +495,13 @@ internal sealed class ExplorationPresentation : IDisposable
                     {
                         if (!clipped.Intersects(mask)) continue;
                         var covered = clipped.Intersection(mask);
+                        if (expected?.Add((block, tile, word)) == true)
+                            required!.Add(new { map = world.Map.Value, block, tile, word, sourceX, sourceY });
                         _owner.DrawTextureRectRegion(texture, covered,
                             new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale));
                         draws++;
+                        if (used?.Add((block, tile, word)) == true)
+                            resources!.Add(new { selector = _resourceSelectors[texture], block, tile, word });
                         first ??= new { sourceX, sourceY, block, tile, word, x = covered.Position.X, y = covered.Position.Y,
                             width = covered.Size.X, height = covered.Size.Y };
                         if (actor is { } painted)
@@ -484,7 +511,8 @@ internal sealed class ExplorationPresentation : IDisposable
                     }
                 }
             }
-        return new { x = origin.X, y = origin.Y, offsetX = offset.X, offsetY = offset.Y, highPriority, pass, draws, first, overlaps };
+        return new { x = origin.X, y = origin.Y, offsetX = offset.X, offsetY = offset.Y, highPriority, pass,
+            subject = actor?.Entity.Value, draws, first, overlaps, required, resources };
     }
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)
@@ -507,6 +535,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
         }
         _blocks[(visual.Map, block)] = texture = ImageTexture.CreateFromImage(image);
+        _resourceSelectors[texture] = new { kind = "map-block", map = visual.Map.Value, block };
         return texture;
     }
 
@@ -528,6 +557,7 @@ internal sealed class ExplorationPresentation : IDisposable
             for (int x = 0; x < 24; x++) image.SetPixel(x, 0, Colors.Transparent);
         }
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
+        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod };
         List<Rect2> ink = [];
         for (int y = 0; y < 24; y++)
             for (int x = 0; x < 24;)

@@ -43,6 +43,26 @@ var nod_pause_checked := false
 var camera_pause_checked := false
 var camera_draws: Array = []
 var camera_draw_seen: Dictionary = {}
+var resource_uses: Array = []
+var resource_requirements: Array = []
+var resource_use_seen: Dictionary = {}
+var resource_requirement_seen: Dictionary = {}
+var resource_map := ""
+var resource_visit := 0
+var resource_progress: Dictionary = {}
+var reading_resource_draw := false
+
+func save_resource_progress() -> void:
+    var file := FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".progress.json", FileAccess.WRITE)
+    file.store_string(JSON.stringify(resource_progress))
+    file.close()
+
+func resource_check(ok: bool, message: String) -> void:
+    if ok: return
+    check(false,message)
+    resource_progress["failure"] = message
+    save_resource_progress()
+    quit(1)
 var choice_case := "choice" in input_case
 var choice_yes := "choice-yes" in input_case
 var choice_prefix := false
@@ -133,6 +153,102 @@ func record_camera_draw() -> void:
     camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities,
         "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}})
 
+func record_resource_draw() -> void:
+    reading_resource_draw = true
+    var s := state()
+    reading_resource_draw = false
+    record_field_resources(s)
+
+func record_field_resources(s: Dictionary) -> void:
+    var p = s.get("cameraProjection")
+    if p == null or p.revision != s.revision or p.map != s.map: return
+    if resource_map != s.map:
+        resource_map = s.map
+    var phase: String = str(s.presentation.get("activeCue"))
+    var identity := {"sessionId":s.sessionId,"revision":s.revision,"observationSequence":s.observationSequence,
+        "simulationTick":s.simulationTick,"token":s.token,"drawSequence":p.drawSequence,
+        "visit":resource_visit,"map":s.map,"phase":phase}
+    var layers: Array = []
+    for name in ["background","foreground","backgroundHigh","foregroundHigh"]:
+        if p.get(name) != null: layers.append({"name":name,"layer":p[name]})
+    for layer in p.get("occlusionDraws", []): layers.append({"name":"occlusion","layer":layer})
+    for item in layers:
+        var layer: Dictionary = item.layer
+        var layer_key := [resource_visit, s.map, phase, item.name, layer.highPriority, layer.get("subject")]
+        for required in layer.get("required", []):
+            var key := JSON.stringify(layer_key + [required.block,required.tile,required.word])
+            if not resource_requirement_seen.has(key):
+                resource_requirement_seen[key] = true
+                resource_requirements.append({"identity":identity,"kind":"map","layer":item.name,
+                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"expected":required})
+        for used in layer.get("resources", []):
+            resource_check(used.get("selector") != null and used.selector.get("map") == s.map and used.selector.get("block") == used.block,
+                "Drawn map texture selector matches its actual layer/block")
+            var key := JSON.stringify(layer_key + [used.tile,used.word,used.selector])
+            if not resource_use_seen.has(key):
+                resource_use_seen[key] = true
+                resource_uses.append({"identity":identity,"kind":"map","layer":item.name,
+                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"used":used})
+    for actor in p.actors:
+        if not actor.visible: continue
+        var logical: Dictionary = {}
+        for entity in s.entities:
+            if entity.slot == actor.slot: logical = entity; break
+        if logical.is_empty(): continue
+        var expected := {"sprite":logical.sprite,"direction":0 if logical.facing == 1 else 2 if logical.facing == 3 else 1,
+            "half":1 if logical.animationCounter > 15 and logical.animationCounter < 128 else 0,"nod":actor.lowered}
+        var key := JSON.stringify([resource_visit, s.map, phase, actor.slot, actor.entity, expected])
+        if not resource_requirement_seen.has(key):
+            resource_requirement_seen[key] = true
+            resource_requirements.append({"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,"expected":expected})
+        var used_key := key + JSON.stringify(actor.get("resourceSelector"))
+        var selector = actor.get("resourceSelector")
+        resource_check(selector != null and selector.get("sprite") == expected.sprite and selector.get("direction") == expected.direction
+            and selector.get("half") == expected.half and selector.get("nod") == expected.nod,"Drawn entity texture matches logical subject")
+        if not resource_use_seen.has(used_key):
+            resource_use_seen[used_key] = true
+            resource_uses.append({"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,
+                "expected":expected,"used":actor.get("resourceSelector")})
+    var portrait = s.get("portraitProjection")
+    if portrait != null and portrait.get("id", -1) >= 0:
+        var key := JSON.stringify([resource_visit,s.map,phase,portrait])
+        # Position/tick are delivery facts, not distinct source resources.
+        var expected := {"portrait":portrait.id,"mirror":portrait.get("mirrored",false),
+            "eyes":portrait.get("eyesClosed",false),"mouth":portrait.get("mouthOpen",false),"tiles":portrait.get("tiles",[])}
+        key = JSON.stringify([resource_visit,s.map,phase,expected])
+        if not resource_requirement_seen.has(key):
+            resource_requirement_seen[key] = true
+            resource_requirements.append({"identity":identity,"kind":"portrait","expected":expected})
+        var bound = s.get("portraitResourceProjection")
+        resource_check(bound != null and bound.get("texturePresent",false) and bound.selector.get("portrait") == expected.portrait,
+            "Drawn portrait texture selector matches logical window")
+        var used_key := key + JSON.stringify(bound)
+        if bound != null:
+            used_key = key + JSON.stringify(bound.selector)
+        if not resource_use_seen.has(used_key):
+            resource_use_seen[used_key] = true
+            resource_uses.append({"identity":identity,"kind":"portrait","expected":expected,"used":bound})
+    var milestone: String = "field-" + str(s.map)
+    if not resource_progress.has(milestone):
+        resource_progress[milestone] = {"sessionId":s.sessionId,"visit":resource_visit,"revision":s.revision,
+            "requirements":resource_requirements.size(),"uses":resource_uses.size()}
+        save_resource_progress()
+    if p.actors.any(func(a): return a.get("gesture") and a.get("visible")) and not resource_progress.has("gesture"):
+        resource_progress["gesture"] = {"revision":s.revision,"token":s.token}
+        save_resource_progress()
+
+func compact_resource_projection(s: Dictionary) -> void:
+    # Keep the existing geometry in snapshots; source selectors live once in the
+    # bounded requirement/use channel rather than being repeated every service.
+    var p = s.get("cameraProjection")
+    if p == null: return
+    var layers: Array = p.get("occlusionDraws", []).duplicate()
+    for name in ["background","foreground","backgroundHigh","foregroundHigh"]:
+        if p.get(name) != null: layers.append(p[name])
+    for layer in layers:
+        layer.erase("required")
+        layer.erase("resources")
+
 func check(ok: bool, message: String) -> void:
     if not ok:
         failures.append(message)
@@ -166,12 +282,20 @@ func state() -> Dictionary:
             # Retain changed mounted facts, not a redundant elapsed-clock trace.
             scene.erase("elapsed")
             scene.erase("visibleCharacters")
-            var signature := JSON.stringify(scene)
+            var field_actors: Array = []
+            for actor in s.get("actors", []):
+                field_actors.append({"id":actor.id,"hp":actor.hp,"position":{"x":actor.x,"y":actor.y},"sprite":actor.get("sprite")})
+            var signature := JSON.stringify([scene,field_actors])
             if signature != last_scene_observation:
                 scene_observations.append({"sessionId":s.sessionId,"revision":s.revision,
                     "observationSequence":s.observationSequence,"inputOrdinal":active_input,
-                    "hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage,"scene":scene})
+                    "hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage,"scene":scene,"fieldActors":field_actors})
                 last_scene_observation = signature
+                for milestone in ["fairy","death"]:
+                    var reached: bool = not scene.get("fairySprites",[]).is_empty() if milestone == "fairy" else scene.get("fieldDeath") != null
+                    if reached and not resource_progress.has(milestone):
+                        resource_progress[milestone] = {"revision":s.revision,"scenePhase":scene.phase}
+                        save_resource_progress()
     if s.has("presentation"):
         maximum_white = maxf(maximum_white, s.presentation.whiteOpacity)
         var p: Dictionary = s.presentation
@@ -180,6 +304,7 @@ func state() -> Dictionary:
         if p.completedCueToken != null and white_tokens.has(p.completedCueToken):
             var receipt := {"token":p.completedCueToken, "kind":p.completedCueKind}
             if not completed_white.has(receipt): completed_white.append(receipt)
+    if not reading_resource_draw: compact_resource_projection(s)
     return s
 
 func poll_h4_audio() -> void:
@@ -1172,6 +1297,7 @@ func finish_public() -> void:
         "h4Variant":h4_variant,"inputRecords":input_records,"speechReceipts":speech_receipts,"audioReceiptGaps":audio_receipt_gaps,
         "revealAudioPairs":reveal_audio_pairs,"consumerBoundaries":consumer_boundaries,
         "winningFocusRecovery":winning_focus_recovery,
+        "resourceUses":resource_uses,"resourceRequirements":resource_requirements,
         "admissionSnapshot":admission_snapshot,"sceneObservations":scene_observations,
         "audioReceipts":audio_receipts,"audioTerminal":audio_terminal,"audioSequenceSeen":audio_sequence_seen,
         "rawTextBoundary":raw_boundary,"rawTextDraws":raw_draws,
@@ -1213,6 +1339,20 @@ func pending_return_context(result: Dictionary) -> Dictionary:
 
 func record_warp_result(payload: String) -> void:
     var result: Dictionary = JSON.parse_string(payload)
+    if not h4_variant.is_empty():
+        if not result.has("programControlReads"):
+            check(false,"Program control result channel absent")
+            quit(1)
+            return
+        for event in result.observations:
+            if event.Kind == "map-transferred" or event.get("Detail") == "LoadSceneMap":
+                resource_visit = int(event.Sequence)
+        for control in result.programControlReads:
+            if control.Operation == "CallProgram":
+                var milestone := "call-" + str(control.Source.Program) + "-" + str(control.Source.Instruction)
+                if not resource_progress.has(milestone):
+                    resource_progress[milestone] = control
+                    save_resource_progress()
     if result.boundary == "presentation-completion-before-submit":
         var before := state()
         consumer_boundaries.append({"result":result,"inputOrdinal":active_input,
@@ -1248,6 +1388,8 @@ func record_warp_result(payload: String) -> void:
     warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s})
 
 func observe_winning_view(node: Node) -> void:
+    if node.has_signal("ResourceDrawObserved") and not node.is_connected("ResourceDrawObserved", record_resource_draw):
+        node.connect("ResourceDrawObserved", record_resource_draw)
     if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", record_warp_result):
         node.connect("SessionResultObserved", record_warp_result)
 
@@ -1468,7 +1610,11 @@ func before_battle_tracking(entry: Dictionary) -> void:
     var fades: Dictionary = {}
     var receipts: Dictionary = {}
     var positive_white := false
-    for frame in range(4000 if white_palette_case else 2500):
+    var frame := 0
+    var progressed_at := Time.get_ticks_msec()
+    var progress: Array = []
+    while winning_case or frame < (4000 if white_palette_case else 2500):
+        frame += 1
         var s := state()
         h4_reveal(s)
         if s.failure != null:
@@ -1487,6 +1633,17 @@ func before_battle_tracking(entry: Dictionary) -> void:
             physical(KEY_ENTER, false)
             check(opening_semantic(state()) == held, "Unsupported boundary stays stopped under idle and input")
             return
+        if winning_case:
+            var next_progress: Array = [s.get("simulationTick"),s.get("cursor"),s.get("wait"),s.get("token"),
+                s.get("fieldText"),s.get("canWaitForText"),s.get("visibleCharacters"),
+                s.get("presentation", {}).get("completedCueToken")]
+            if next_progress != progress:
+                progress = next_progress
+                progressed_at = Time.get_ticks_msec()
+            elif Time.get_ticks_msec() - progressed_at >= 15000:
+                read_sample("tracking-no-progress")
+                check(false, "Tracking continuation has no semantic or text delivery progress for 15 seconds")
+                return
         if white_palette_case:
             if s.fade != null and s.fade.Color == 1:
                 fades[s.token] = s.fade.Kind
@@ -1923,6 +2080,7 @@ func run_portrait_event() -> void:
     root.size = Vector2i(960,640)
     Engine.max_fps = 60
     field_main_started = true
+    if winning_case: node_added.connect(observe_winning_view)
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     if not h4_variant.is_empty():
@@ -1942,8 +2100,8 @@ func run_portrait_event() -> void:
         check(false, "Retained bound start has actual field control")
         finish_public()
         return
-    view.connect("SessionResultObserved", record_warp_result)
-    if winning_case: node_added.connect(observe_winning_view)
+    if not view.is_connected("SessionResultObserved", record_warp_result):
+        view.connect("SessionResultObserved", record_warp_result)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))

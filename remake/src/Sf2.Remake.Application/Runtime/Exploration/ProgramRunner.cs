@@ -16,13 +16,16 @@ internal static class ProgramRunner
         return new(token, text, end, end < tokens.Count);
     }
 
-    internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations)
+    internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
+        IReadOnlyList<ProgramControlRead>? prefixReads = null)
     {
+        List<ProgramControlRead> reads = prefixReads?.ToList() ?? [];
+        SessionResult Finish(SessionResult result) => result with { ProgramControlReads = reads.AsReadOnly() };
         for (int budget = 0; budget < 256; budget++)
         {
             try
             {
-                if (current.Story.Wait is not null) return Result(current, observations);
+                if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
                     if (current.Story.Warp is not null)
@@ -46,8 +49,8 @@ internal static class ProgramRunner
                     if (current.Story.Continuation == ProgramContinuation.BattleStartFinished)
                     {
                         var result = BattleAdvancer.Advance(current, observations);
-                        return result with { Snapshot = result.Snapshot.WithStory(current.Story.Copy(null,
-                            continuation: ProgramContinuation.FieldInput)) };
+                        return Finish(result with { Snapshot = result.Snapshot.WithStory(current.Story.Copy(null,
+                            continuation: ProgramContinuation.FieldInput)) });
                     }
                     current = MapEventDispatcher.Finish(current, observations);
                     if (current.Story.Wait is not null) continue;
@@ -66,12 +69,13 @@ internal static class ProgramRunner
                     if (current.Story.LogicalView is { } view && current.Exploration is { } field)
                         current = current.WithStory(current.Story.Copy(null,
                             logicalView: view with { TargetSlot = field.PlayerEntity.Slot }));
-                    return Result(Stop(current, SessionStopReason.PlayerInput), observations);
+                    return Finish(Result(Stop(current, SessionStopReason.PlayerInput), observations));
                 }
                 if (!definition.Exploration!.Programs.TryGetValue(cursor.Program, out var program) ||
                     cursor.Instruction < 0 || cursor.Instruction >= program.Instructions.Count)
                     throw new BattleRuleException("program-cursor", "program.cursor");
                 StoryInstruction instruction = program.Instructions[cursor.Instruction];
+                var callersBefore = current.Story.Callers;
                 if (instruction is UnsupportedInstruction unsupported)
                     throw new BattleRuleException("program-opcode", unsupported.Source + ":" + unsupported.Opcode, true);
                 var story = current.Story.Copy(Next(cursor));
@@ -361,11 +365,19 @@ internal static class ProgramRunner
                     default: throw new BattleRuleException("program-instruction", "program", true);
                 }
                 current = Commit(current, active, story, observations, story.Wait is NodWait ? "nod-started" : "program-instruction", instruction.GetType().Name, cursor);
+                if (instruction is CallProgram or ReturnProgram ||
+                    instruction is EndProgram && story.Wait is not ViewWait { ScriptReturn: true })
+                    reads.Add(ControlRead(current, cursor, instruction.GetType().Name, callersBefore));
             }
-            catch (BattleRuleException error) { return Failure(current, observations, error); }
+            catch (BattleRuleException error) { return Finish(Failure(current, observations, error)); }
         }
-        return Result(Stop(current, SessionStopReason.SimulationWait), observations);
+        return Finish(Result(Stop(current, SessionStopReason.SimulationWait), observations));
     }
+
+    internal static ProgramControlRead ControlRead(SessionSnapshot current, ProgramLocation source, string operation,
+        IReadOnlyList<ProgramLocation> callersBefore) =>
+        new(current.SessionId, current.ObservationSequence, current.Revision, source, operation,
+            current.Story.Cursor, Array.AsReadOnly(callersBefore.ToArray()), Array.AsReadOnly(current.Story.Callers.ToArray()));
 
     private static StoryState Return(StoryState story) => story.Callers.Count == 0 ? story.Copy(null) :
         story.Copy(story.Callers[^1], callers: story.Callers.SkipLast(1));

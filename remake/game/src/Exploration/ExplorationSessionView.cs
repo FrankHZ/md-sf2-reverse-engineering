@@ -15,6 +15,10 @@ public sealed partial class ExplorationSessionView : Control
     [Signal]
     public delegate void SessionResultObservedEventHandler(string resultJson);
 
+    // User signal connections identify the external capture itself, without a managed event bridge.
+    private static readonly StringName ResourceDrawSignal = "ResourceDrawObserved";
+    public ExplorationSessionView() => AddUserSignal(ResourceDrawSignal);
+
     private void PublishResult(string boundary, CompletePresentation? completion = null)
     {
         if (!HasConnections(SignalName.SessionResultObserved)) return;
@@ -25,6 +29,7 @@ public sealed partial class ExplorationSessionView : Control
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
             stopReason = result.StopReason.ToString(), failure = result.Failure,
             observations = completion is null ? result.Observations : Array.Empty<SessionObservation>(),
+            programControlReads = completion is null ? result.ProgramControlReads ?? [] : [],
             completion = completion is null ? null : new
             {
                 token = completion.Wait.Value, kind = completion.Kind.ToString(), processFrame = Engine.GetProcessFrames(),
@@ -459,7 +464,12 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
-        if (_presentation?.Draw(world, _session!.Current) == true) return;
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
+        if (_presentation?.Draw(world, _session!.Current) == true)
+        {
+            if (HasConnections(ResourceDrawSignal)) EmitSignal(ResourceDrawSignal);
+            return;
+        }
         var bounds = world.Definition.Traversal.ActiveAreas;
         int left = bounds.Min(area => area.MinimumX), top = bounds.Min(area => area.MinimumY);
         int right = bounds.Max(area => area.MaximumX), bottom = bounds.Max(area => area.MaximumY);
@@ -483,6 +493,7 @@ public sealed partial class ExplorationSessionView : Control
 
     public string ReadObservationJson()
     {
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
@@ -501,6 +512,7 @@ public sealed partial class ExplorationSessionView : Control
             entityWait = current?.Story.Wait as EntityWait,
             presentationWait = current?.Story.Wait as PresentationWait, presentationCue = _presentation?.CueProjection,
             cameraProjection = _presentation?.CameraProjection,
+            portraitResourceProjection = _presentation?.PortraitResourceProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
             eventCaller = current?.Story.EventCaller?.GetType().Name,

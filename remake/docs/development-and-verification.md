@@ -3792,3 +3792,124 @@ reports under the same ignored output root. The 24 original direct cases and fou
 corruptions remain required alongside targeted wrong/missing/mixed cases for these four corrections.
 Reuse A03 and its exact tested adapter/probe identity; these comparator corrections require no SDK,
 native, B/C/D, original-source acquisition or broad suite rerun.
+
+### Caller and reached visual resource cohort
+
+The bounded caller/resource allocation reuses the successful current A02/B02 observations.
+Freeze the accepted party/start, source world with its two AB operations, cumulative scene45 and
+material selection. Keep fixed60, optional poll1 and the legal adaptive winning route. Successful
+captures are reused for offline corrections; every failed attempt retains its process, log, tested
+source/binaries and failure record. C/D and repeated successful A/B captures are held through
+independent integration and the separately owned performance work in Issue #605. No original runtime
+acquisition or complete H4 acceptance is implied.
+
+The application publishes `ProgramControlReads` separately from semantic observations. Each actual
+call/return retains its full copied before/after stack and resulting cursor at the producing Commit.
+The finite source-map-script return is read after its final real service. The observer does not add
+yields, events, services or RNG draws. Direct production-assembly checks cover nested/synchronous
+returns, empty callers, waits, failure and the instruction budget, delayed script return and battle
+transition.
+
+The same session's post-draw channel records `resourceRequirements` and `resourceUses`. The requirement
+comes from the logical map layer/block/tile or visible entity/portrait; use comes from the actual
+assigned/drawn cached typed texture selector. Identity retains session/revision/observation sequence,
+simulation tick/token, logical map visit and presentation phase. Retain priority passes and occlusion subjects,
+normal/lowered gesture frames, portrait alternate tiles, visible fairy raster bindings and actual
+field-death actor textures. A selected resource absent from the route is not an additional obligation.
+The full source/use result is retained as `actualObservations.reachedVisualMaterialBinding`.
+
+Add `--canonical-content $selectedCanonical --tileset-metadata $selectedTilesetMetadata
+--palette-metadata $selectedPaletteMetadata` to the existing explicit modern material comparison.
+These are read-only accepted private exports, resolved from the repository root when relative;
+verify their existing canonical/metadata identities and the registered ROM before source decoding.
+The existing atlas recipe and sprite/portrait decoder reproduce the selected source bytes in memory.
+The field-death extension is checked separately from frozen base42 using its existing provenance and
+ROM spans. No new export, manifest, cache or private acquisition is required.
+
+Missing independent requirements, actual uses, caller operands or source prerequisites remain
+Unavailable. Contradictory evidence dominates missing evidence. The existing whole children and
+closed mandatory inventory remain unchanged; no partial subset passes or new mandatory rows are
+introduced. Keep historical and mixed-content diagnostic matrices separate from the current cohort.
+Full H4 and original natural timing/history remain open until their own evidence and independent
+acceptance boundaries are met.
+
+The JOIN reader supports both accepted completion orders. A real late-held logical-end interval
+retains its state, attempted input, no added service/debt and transitional playback operands. Early
+completion may leave no such sample: use the actual source music request and SoundWait installation,
+held session/token/cursor, declared finite profile, arm/eligible progress and complete three-service
+groups, real completion/finish receipt and previous-track restart before plain input and caller return.
+The group count follows that session's actual pre-helper progress and declared end step. No missing
+terminal held state is fabricated. Missing necessary receipt/source/state operands stay Unavailable;
+a wrong helper/generation, premature return or illegal held input remains FAIL independently of
+unrelated missing evidence. Retained late observations remain positive and negative coverage.
+
+The matrix retains both ordered raw streams and their exact differences. Its bounded causal rule
+can pair one matching finite `MUSIC_JOIN` actual-completion across only the same occurrence's
+`music-step`/`music-helper-service` records. Each side independently proves source/request,
+session/generation, receipt, arm/eligible progress, complete helper groups, both gates and dependent
+caller return from its actual files. Report integrity, all other observations and state/input/seed
+components remain mandatory. Wrong payload, shifted gameplay, another cue/generation, duplicate or
+missing completion, crossing arm/eligible/release/restart/return, or false source provenance is FAIL.
+Missing necessary proof is Unavailable; observed contradictions dominate unrelated missing evidence.
+This correspondence neither sorts nor deletes events and does not change `semantic_value`.
+
+Detailed field resource collection is enabled only while the actual Godot user signal
+`ResourceDrawObserved` has a connection. The observer installs that subscription before the first
+draw. Texture creation caches typed selectors; unsubscription produces no detailed requirement/use
+collections or actor/portrait selectors. The bounded `guard-startup-04` check observes the first draw,
+unsubscription, callback replacement and a replacement host/session. All eight predicates pass;
+two ObjectDB instances reported at temporary-helper exit remain a recorded warning, not a clean-log
+or memory-performance claim. Preserve the preceding completed helper/managed-signal failures.
+The production `run_portrait_event` startup also guards its later session-result registration with
+`is_connected`, because the early node-added hook has already installed that callback for winning
+observations. The separate bounded `production-startup-03` window executes the production startup
+and stops before its first navigation key submission: first draw requirements/uses327, exactly one
+`record_warp_result` callback alongside the existing managed signal bridge, one actual startup
+result delivery, zero submitted inputs and no host errors/warnings. The earlier lifecycle helper
+overrides `run` and does not prove this production registration path. Preserve production-startup01's
+helper count failure and production-startup02's custom-callable diagnostic error; no full route,
+subscription lifecycle repeat or C# rebuild follows from this GDScript-only correction.
+
+The independent resource inventory derives block/tile keys from retained layer geometry, source
+layout and camera coverage, and portrait poses from logical identity/flags/work plus source alternate
+tiles. Removing the same item from requirement and use channels therefore cannot define away the
+obligation. Retained first/occlusion tile operands supplement coverage independently of those channels.
+Missing occurrence operands are evaluated locally so later available contradictions still fail.
+**Unknown:** A02/B02 do not retain the current mutable working layout for door/flag/roof copy regions.
+Their whole map resource child remains Unavailable; entity/portrait and scene source/use children pass.
+A static base layout cannot replace those missing runtime operands. No fresh capture is allocated to
+fill them here.
+
+The winning tracking observer uses the same 15-second no-progress boundary as the remaining
+before-body route, with actual logical state and mounted text delivery as progress. A fixed host-frame
+limit can expire while source text services continue when collection or presentation consumes extra
+frames. On a genuine stall, retain the full terminal state. This observer boundary changes no engine
+clock, source service, input cadence, playback or focus policy. Non-winning bounded tracking retains
+its existing frame limit. Preserve failed `caller-resource-cohort-01/variant-B-01` as a completed
+observer failure; its identical 2293/94/95 checkpoints and advancing 2296 tail do not prove a stall.
+
+The corrected candidate reports `report-A-10.json` and `report-B-02.json` each retain
+2247 PASS / 14 Unavailable / zero required FAIL. All five operation children pass; whole map resources
+remain Unavailable at the missing working-layout boundary. The original strict `matrix-AB-01.json`
+and `matrix-AB-reproduction.json` remain immutable FAIL evidence: only the matching asynchronous
+JOIN completion moved, across positions 10336–10340 of 34571 observations. All other operands match.
+The bounded correspondence yields A/B PASS with C/D Unavailable, overall Unavailable and no milestone
+PASS. Reproduce using the corrected reports, loading private configuration in the same process and
+choosing a fresh ignored output:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison matrix `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --variant-report local/issue534/caller-resource-cohort-01/report-A-10.json `
+  --variant-report local/issue534/caller-resource-cohort-01/report-B-02.json `
+  --output local/issue534/caller-resource-cohort-01/matrix-AB-causal-resource-review.json
+```
+
+Expected exit 2: A/B PASS, C/D Unavailable, `rawOrderEqual=false` for B with retained differences and
+independent causal occurrence proofs. Direct review covers joint block/tile and portrait-pose omissions,
+missing/contradictory occurrences in both directions, prior caller/resource negatives, early/late JOIN
+and the matrix exclusions. Obsolete historical reports still preserve raw exact equality but fail
+current mandatory report-integrity checks; they cannot stand in for current reports. Freeze this
+bounded result in the same Draft PR. Complete settings/H4, missing original timing/history and #605
+performance acceptance remain separate.

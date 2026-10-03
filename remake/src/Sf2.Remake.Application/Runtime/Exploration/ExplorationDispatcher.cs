@@ -259,10 +259,14 @@ internal static class ExplorationDispatcher
                             var token = current.Story.Wait.Token;
                             current = current.WithStory(ExplorationTextRunner.BeforeService(current.Story));
                             current = Service(definition, current, observations, "text-mandatory-service");
+                            var returningScript = current.Story.Wait is ViewWait { ScriptReturn: true, FinalService: true };
+                            var returnSource = current.Story.Cursor;
+                            var callersBefore = current.Story.Callers;
                             var servicedStory = ExplorationTextRunner.AfterService(current.Story);
                             current = ProgramRunner.Commit(current, current.Active, servicedStory,
                                 observations, "text-work-advanced");
-                            if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations);
+                            if (current.Story.Wait?.Token != token) return ProgramRunner.Run(definition, current, observations,
+                                returningScript ? [ProgramRunner.ControlRead(current, returnSource!.Value, "ScriptReturn", callersBefore)] : null);
                             if (current.Story.Wait is FieldTextWait { LogicalDone: true }) return ProgramRunner.Result(current, observations);
                             continue;
                         }

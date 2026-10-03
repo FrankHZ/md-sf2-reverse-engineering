@@ -600,11 +600,19 @@ reproduces the historical `bfcb819fe61cf6b7f2a3a45822f6de51e411e559` four-compon
 bytes; current implementation and Git LF fingerprints are reported separately and cannot replace it.
 The selected cumulative scene's three field-death rasters remain outside that base proof.
 
-Visible node-bound background/ground IDs can close their bounded material child. Reached actor/weapon
-IDs can pass a material subset while the full actor/weapon/healing/death family remains Unavailable:
-fairy and field-death projections omit the complete bound raster identities. Map atlas/layer,
-entity/portrait/gesture families remain open. The displayed private token/font/glyph child uses
-the complete reached binding below; older captures without actual font/raw operands stay unavailable.
+Visible node-bound background/ground IDs can close their bounded material child. The three existing
+map/layer, entity/portrait/gesture and actor/weapon/healing/death children require complete reached
+source and actual-use inventories. The field draw exposes independent logical block/tile/priority
+requirements and selectors from the texture actually drawn; visible entities and portraits retain
+logical subjects/poses and assigned texture selectors. Deduplication is local to a logical map visit,
+phase, layer or subject and source selector. A return to the same map is a new visit, identified by
+its actual map-load event, not a directory name or frame counter. Visible fairy nodes expose their
+bound raster IDs; field-death records retain actual actor textures even while the scene view is hidden.
+The offline join reuses the pinned canonical map, ROM, atlas, sprite/portrait and field-death decoders
+and accepted private extraction metadata. Selected exports alone cannot close a reached-use child.
+Missing operands remain Unavailable; a wrong source, visit, subject, phase or texture remains FAIL.
+Older captures without these channels retain their missing evidence. The displayed private
+token/font/glyph child uses the complete reached binding below.
 
 Every actually started audio cue must resolve uniquely through selected world audio, the pinned clean
 asset checkout and its existing reached or Town/JOIN provenance record. Compare raw PCM to runtime
@@ -736,8 +744,13 @@ accepted choice to its source branch and flag effect. Counted roster prefixes, s
 installed follower effects retain their branch ordering.
 
 Caller-stack evidence must occur inside that invocation, before its enclosing return. A later
-unrelated stack cannot fill a missing interval. The retained corrected A has no stack operand within
-the calls at observation4107 and12608; this keeps the whole route/setup/caller child Unavailable.
+unrelated stack cannot fill a missing interval. `SessionResult.ProgramControlReads` retains immutable
+full stacks before and after each actual call/return Commit, with session, revision, observation
+sequence, source operation and resulting cursor. A delayed source-map-script return is recorded at
+its actual `AfterService` Commit. A same-submit call/body/return therefore needs no artificial yield
+or new gameplay event. The reader pairs the first enclosing return and full pre-call restoration;
+missing operands remain Unavailable and contradictory reads remain FAIL. Older captures without
+these reads retain their own missing intervals.
 
 Ordinary warps independently select the first matching pinned map event, its destination and load
 mode, the flag-selected default setup and on-load initialization, both load services and genuine
@@ -775,3 +788,32 @@ observation; there is no evidence requiring a Left-baseline change. The historic
 retains its own content identity. Corrected A cannot form a current same-content matrix with old
 B/C/D; current cohort and full H4 remain Unavailable. Reproduction and current evidence are owned by
 the [operation-flow verification route](../../../remake/docs/development-and-verification.md#complete-operation-flow-comparison).
+
+For the bounded JOIN, actual finite playback may finish before logical helper work. The logical
+progress must still reach the selected end step, arm before sampling and finish a complete
+three-service group; both gates and the actual previous-track restart precede plain input and
+caller return. A late-only held sample or input attempt is required only for that observed interval.
+An early-completed cue can resume immediately at the last logical service, leaving no terminal
+held sample. Bind its actual request/generation, helper token/cursor, service groups, receipt,
+completion and return; do not invent a plateau to fit an older observation.
+
+The settings matrix preserves raw event order and exact differences. One matching finite JOIN
+actual-completion may correspond across only that same occurrence's music-step/helper-service
+records, after each actual source independently establishes request/generation, receipt, arm and
+eligible progress, complete helper groups, both gates and caller return. All other payload/order,
+input/admission, battle/endpoints, party/gold and main-seed operands remain equal. Report-integrity
+or source contradictions fail even when another operand is missing. Missing necessary proof remains
+Unavailable. No stream sorting/deletion or semantic-value change is part of this rule. Crossing a
+non-helper operation or either release/return boundary is not correspondence.
+
+Reached visual completeness uses independent logical inventories: map layer/block/tile/pass/subject
+coverage from retained geometry and source layout, and portrait identity/mirror/eyes/mouth/composed
+tiles from logical state and source decoding. Simultaneous omission from requirement and use channels
+remains a missing obligation. Each available occurrence is evaluated locally; a missing earlier
+operand must not mask a later contradiction. Missing current mutable working-layout operands in the
+retained A02/B02 observations keep the whole map child Unavailable; selected base layout is not proof
+of runtime door/flag/roof state. Entity/portrait and scene bindings retain their own results.
+
+The current bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
+C/D and repeated successful A/B captures remain held through independent integration and Issue #605
+performance work. This result does not establish complete settings or H4 acceptance.

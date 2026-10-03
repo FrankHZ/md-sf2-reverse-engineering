@@ -24,6 +24,7 @@ public sealed partial class BattleSessionView : Control
             boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
             stopReason = result.StopReason.ToString(), failure = result.Failure, observations = result.Observations,
+            programControlReads = result.ProgramControlReads ?? [],
         }));
     }
 

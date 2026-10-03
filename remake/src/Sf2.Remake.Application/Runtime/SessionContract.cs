@@ -111,8 +111,12 @@ public sealed record SessionObservation(long Sequence, long Revision, string Kin
     MapPosition? From = null, MapPosition? To = null, ushort? RandomRange = null, ushort? RandomValue = null,
     ActorRef? Target = null, string? Detail = null, EntityRef? Entity = null, ProgramLocation? Program = null,
     EntityWaitRelease? EntityWaitRelease = null);
+public sealed record ProgramControlRead(Guid SessionId, long Sequence, long Revision,
+    ProgramLocation Source, string Operation, ProgramLocation? Cursor,
+    IReadOnlyList<ProgramLocation> CallersBefore, IReadOnlyList<ProgramLocation> Callers);
 public sealed record SessionResult(SessionSnapshot Snapshot, IReadOnlyList<SessionObservation> Observations,
-    SessionStopReason StopReason, SessionFailure? Failure = null);
+    SessionStopReason StopReason, SessionFailure? Failure = null,
+    IReadOnlyList<ProgramControlRead>? ProgramControlReads = null);
 public abstract record SessionStartOutcome;
 public sealed record SessionStarted(GameSession Session, SessionResult Result) : SessionStartOutcome;
 public sealed record SessionStartFailed(SessionFailure Failure) : SessionStartOutcome;
