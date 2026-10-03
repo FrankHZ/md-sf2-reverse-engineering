@@ -115,12 +115,8 @@ func record_camera_before_draw() -> void:
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
-    reading_resource_draw = true
     var s := state()
-    reading_resource_draw = false
     if not s.has("presentation"): return
-    if not h4_variant.is_empty(): record_field_resources(s)
-    compact_resource_projection(s)
     var presenting: Dictionary = s.get("presentationWait") if s.get("presentationWait") != null else {}
     var resource = presenting.get("Cue", {}).get("Resource")
     if s.get("entityWait") != null or s.get("nod") != null or s.get("fade") != null or resource in ["nod", "shiver", "mosaic-in", "mosaic-out", "black", "white"]:
@@ -156,6 +152,12 @@ func record_camera_draw() -> void:
             camera_exposure_checks += 1
     camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities,
         "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}})
+
+func record_resource_draw() -> void:
+    reading_resource_draw = true
+    var s := state()
+    reading_resource_draw = false
+    record_field_resources(s)
 
 func record_field_resources(s: Dictionary) -> void:
     var p = s.get("cameraProjection")
@@ -1386,6 +1388,8 @@ func record_warp_result(payload: String) -> void:
     warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s})
 
 func observe_winning_view(node: Node) -> void:
+    if node.has_signal("ResourceDrawObserved") and not node.is_connected("ResourceDrawObserved", record_resource_draw):
+        node.connect("ResourceDrawObserved", record_resource_draw)
     if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", record_warp_result):
         node.connect("SessionResultObserved", record_warp_result)
 
@@ -2076,6 +2080,7 @@ func run_portrait_event() -> void:
     root.size = Vector2i(960,640)
     Engine.max_fps = 60
     field_main_started = true
+    if winning_case: node_added.connect(observe_winning_view)
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     if not h4_variant.is_empty():
@@ -2096,7 +2101,6 @@ func run_portrait_event() -> void:
         finish_public()
         return
     view.connect("SessionResultObserved", record_warp_result)
-    if winning_case: node_added.connect(observe_winning_view)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))

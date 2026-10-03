@@ -15,6 +15,9 @@ public sealed partial class ExplorationSessionView : Control
     [Signal]
     public delegate void SessionResultObservedEventHandler(string resultJson);
 
+    [Signal]
+    public delegate void ResourceDrawObservedEventHandler();
+
     private void PublishResult(string boundary, CompletePresentation? completion = null)
     {
         if (!HasConnections(SignalName.SessionResultObserved)) return;
@@ -460,7 +463,12 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
-        if (_presentation?.Draw(world, _session!.Current) == true) return;
+        _presentation?.ObserveResources(HasConnections(SignalName.ResourceDrawObserved));
+        if (_presentation?.Draw(world, _session!.Current) == true)
+        {
+            if (HasConnections(SignalName.ResourceDrawObserved)) EmitSignal(SignalName.ResourceDrawObserved);
+            return;
+        }
         var bounds = world.Definition.Traversal.ActiveAreas;
         int left = bounds.Min(area => area.MinimumX), top = bounds.Min(area => area.MinimumY);
         int right = bounds.Max(area => area.MaximumX), bottom = bounds.Max(area => area.MaximumY);
@@ -484,6 +492,7 @@ public sealed partial class ExplorationSessionView : Control
 
     public string ReadObservationJson()
     {
+        _presentation?.ObserveResources(HasConnections(SignalName.ResourceDrawObserved));
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {

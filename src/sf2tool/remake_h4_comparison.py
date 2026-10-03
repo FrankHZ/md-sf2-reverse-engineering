@@ -6225,6 +6225,39 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
     return finish()
 
 
+def gameplay(s):
+    actor_render = {"nodeX", "nodeY", "visible", "text", "sprite", "globalRect", "insideMap"}
+    return {
+        **{
+            k: s.get(k)
+            for k in (
+                "sessionId",
+                "revision",
+                "mainSeed",
+                "thinkingSeed",
+                "gold",
+                "queueCursor",
+                "round",
+                "actor",
+                "target",
+                "previewX",
+                "previewY",
+                "stage",
+                "spell",
+                "itemSlot",
+                "inventories",
+                "turnOrder",
+                "storyFlags",
+                "regionFlags",
+                "aiMemory",
+            )
+        },
+        "actors": [
+            {k: v for k, v in a.items() if k not in actor_render} for a in s.get("actors", [])
+        ],
+    }
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -6886,39 +6919,6 @@ def compare_modern(
     )
 
     # Keep all browsing failures; only the accepted candidate rejection has a bounded allowance.
-    actor_render = {"nodeX", "nodeY", "visible", "text", "sprite", "globalRect", "insideMap"}
-
-    def gameplay(s):
-        return {
-            **{
-                k: s.get(k)
-                for k in (
-                    "sessionId",
-                    "revision",
-                    "mainSeed",
-                    "thinkingSeed",
-                    "gold",
-                    "queueCursor",
-                    "round",
-                    "actor",
-                    "target",
-                    "previewX",
-                    "previewY",
-                    "stage",
-                    "spell",
-                    "itemSlot",
-                    "inventories",
-                    "turnOrder",
-                    "storyFlags",
-                    "regionFlags",
-                    "aiMemory",
-                )
-            },
-            "actors": [
-                {k: v for k, v in a.items() if k not in actor_render} for a in s.get("actors", [])
-            ],
-        }
-
     previous = None
     rejections = []
     for index, row in enumerate(records):
@@ -8028,6 +8028,220 @@ def compare_modern(
     return report
 
 
+def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
+    """Reproduce occurrence evidence from actual files; report PASS flags are not proof."""
+    proof = dict(value=None)
+    if modern_report_integrity(report, ref):
+        return dict(value=False, reason="report integrity")
+    if report.get("sourceCommit") != SOURCE or report.get("originalIdentity") != dict(
+        rom=ref["romSha256"],
+        upstream=ref["upstream"],
+        extension=(ref.get("postVictoryInput") or {}).get("sourceCommit"),
+    ):
+        return dict(value=False, reason="wrong source identity")
+    try:
+        evidence = report["evidence"]
+        selection = evidence.get("materialSelection")
+        if not selection or not evidence.get("actual") or not evidence.get("outcome"):
+            return proof
+        actual_path, outcome_path = (
+            Path(evidence[k]).resolve()
+            if Path(evidence[k]).is_absolute()
+            else repo_path(evidence[k]).resolve()
+            for k in ("actual", "outcome")
+        )
+        if not all(
+            p.is_relative_to(repo_path("local").resolve()) for p in (actual_path, outcome_path)
+        ):
+            return dict(value=False, reason="actual outside owned evidence")
+        actual, outcome = read(actual_path), read(outcome_path)
+        if actual.get("h4Variant") != report["variant"] or actual.get("passed") is not True:
+            return dict(value=False, reason="wrong or failed actual capture")
+        records = actual["warpRecords"]
+        events = [
+            o
+            for row in records
+            if row["result"]["boundary"] == "submit"
+            for o in row["result"]["observations"]
+            if o["Kind"] != "text-revealed"
+            and not (
+                len(row["result"]["observations"]) == 1
+                and o["Kind"] == "scene-delivery"
+                and row.get("inputDelivery") is False
+            )
+        ]
+        inputs = [
+            dict(
+                action=r["action"],
+                wait=r["before"].get("wait"),
+                cursor=r["before"].get("cursor"),
+                actor=r["before"].get("actor"),
+            )
+            for r in actual["inputRecords"]
+            if r["pressed"]
+            and any(
+                x.get("inputDelivery")
+                and x.get("inputOrdinal") == r["ordinal"]
+                and x["result"]["boundary"] == "submit"
+                for x in records[r["resultStart"] : r["resultEnd"]]
+            )
+        ]
+        first, final = actual["samples"][0]["state"], outcome["final"]
+        paired = {}
+        for label in ("first-return", "before-down", "after-down"):
+            pair = [e for e in outcome.get("endpoints", []) if e["label"] == label]
+            if len(pair) == 2:
+                paired[label] = endpoint_state(pair[1]["state"])
+        derived = dict(
+            admission={
+                k: first.get(k) for k in ("map", "party", "partyLists", "flags", "gold", "mainSeed")
+            },
+            inputs=inputs,
+            observations=[semantic_value(o) for o in events],
+            battleStates=[
+                {
+                    k: v
+                    for k, v in gameplay(row["state"]).items()
+                    if k not in ("sessionId", "revision")
+                }
+                for row in outcome.get("records", [])
+                if row.get("label") == "action-selected"
+            ],
+            endpoints=paired,
+            party=final.get("party"),
+            gold=final.get("gold"),
+            mainSeed=final.get("mainSeed"),
+        )
+        if derived != report["equivalence"]:
+            return dict(value=False, reason="report does not reproduce actual equivalence")
+        selected_world = Path(selection["world"])
+        world = (
+            selected_world.resolve() if selected_world.is_absolute() else repo_path(selected_world)
+        )
+        binding = plain_join_binding(
+            ref,
+            actual,
+            Path(evidence["originalJoinEvidenceRoot"])
+            if evidence.get("originalJoinEvidenceRoot")
+            else None,
+            world,
+        )
+        material_selection = tuple(
+            Path(selection[k])
+            for k in ("world", "scene", "processReceipt", "sceneEvidenceRoot", "assetRoot")
+        ) + tuple(selection[k] for k in ("assetCommit", "assetTree", "assetManifestSha256"))
+        source_audio = reached_materials(actual, material_selection)["audio"]
+        if source_audio is False:
+            return dict(value=False, reason="independent source audio binding")
+        values = [binding[k] for k in ("original", "plain", "audio", "caller")] + [source_audio]
+        if False in values:
+            return dict(value=False, reason="contradictory actual JOIN gates or caller")
+        if None in values:
+            return proof
+        anchor = binding["anchors"]["actual"]
+        generation, token = anchor["generation"], anchor["helperToken"]
+        completed = events[completion_index]
+        release = next(
+            o for o in events if o["Kind"] == "music-wait-returned" and o["Detail"] == "MUSIC_JOIN"
+        )
+        eligible = next(
+            o
+            for o in events
+            if o["Kind"] == "music-previous-eligible" and o["Detail"] == "MUSIC_JOIN"
+        )
+        if not (
+            generation < completed["Sequence"] < release["Sequence"]
+            and all(
+                generation < events[i]["Sequence"] < eligible["Sequence"] for i in crossed_indices
+            )
+        ):
+            return dict(value=False, reason="completion crosses a dependent gate")
+        held = [
+            row["state"]
+            for row in records
+            if row.get("state", {}).get("wait") == "MusicWait"
+            and row["state"].get("token") == token
+        ]
+        if not held or any(
+            not any(
+                events[i] in row["result"]["observations"]
+                and row.get("state", {}).get("wait") == "MusicWait"
+                and row["state"].get("token") == token
+                and row["state"]["revision"] >= events[i]["Revision"]
+                and row["state"]["sessionId"] == held[0]["sessionId"]
+                for row in records
+            )
+            for i in crossed_indices
+        ):
+            return dict(value=False, reason="crossed service is outside the actual helper")
+        receipts = [
+            r["receipt"]
+            for r in actual["audioReceipts"]
+            if r["receipt"]["Cue"] == "MUSIC_JOIN"
+            and r["receipt"]["Operation"] in ("started", "finished")
+        ]
+        return dict(
+            value=True,
+            sessionId=held[0]["sessionId"],
+            generation=generation,
+            helperToken=token,
+            receiptSequences=[r["Sequence"] for r in receipts],
+            completionSequence=completed["Sequence"],
+            eligibleSequence=eligible["Sequence"],
+            releaseSequence=release["Sequence"],
+            crossedSequences=[events[i]["Sequence"] for i in crossed_indices],
+        )
+    except FileNotFoundError:
+        return proof
+    except (KeyError, IndexError, StopIteration):
+        return proof
+    except (ValueError, TypeError, AttributeError):
+        return dict(value=False, reason="malformed occurrence evidence")
+
+
+def bounded_join_correspondence(base, other, ref):
+    """Pair one independently proved completion; retain both original ordered streams."""
+    result = dict(value=False)
+    a, b = base["equivalence"], other["equivalence"]
+    if any(a[k] != b.get(k) for k in a if k != "observations"):
+        return dict(value=False, reason="other unequal equivalence component")
+    x, y = a["observations"], b["observations"]
+    found = [
+        [
+            i
+            for i, o in enumerate(stream)
+            if o.get("Kind") == "music-actual-completed" and o.get("Detail") == "MUSIC_JOIN"
+        ]
+        for stream in (x, y)
+    ]
+    if len(x) != len(y) or any(len(v) != 1 for v in found):
+        return dict(value=False, reason="missing, duplicate or unequal completion inventory")
+    ai, bi = found[0][0], found[1][0]
+    lo, hi = min(ai, bi), max(ai, bi)
+    if ai == bi or x[ai] != y[bi] or x[:lo] != y[:lo] or x[hi + 1 :] != y[hi + 1 :]:
+        return dict(value=False, reason="unequal payload or another moved observation")
+    ax, bx = ([i for i in range(lo, hi + 1) if i != complete] for complete in (ai, bi))
+    if any(x[i] != y[j] for i, j in zip(ax, bx, strict=True)) or any(
+        x[i].get("Kind") not in ("music-step", "music-helper-service")
+        or x[i].get("Detail") != ("MUSIC_JOIN" if x[i]["Kind"] == "music-step" else None)
+        for i in ax
+    ):
+        return dict(value=False, reason="completion crosses an unallocated operation")
+    proofs = [
+        _matrix_join_occurrence(base, ref, ai, ax),
+        _matrix_join_occurrence(other, ref, bi, bx),
+    ]
+    values = [p["value"] for p in proofs]
+    result.update(
+        value=False if False in values else None if None in values else True,
+        completionIndices=dict(base=ai, other=bi),
+        crossedCorrespondence=list(zip(ax, bx, strict=True)),
+        occurrences=proofs,
+        rule="same JOIN occurrence music-step/music-helper-service only",
+    )
+    return result
+
+
 def compare_matrix(paths, ref):
     reports = [read(p) for p in paths]
     variants = [r.get("variant") for r in reports]
@@ -8078,14 +8292,35 @@ def compare_matrix(paths, ref):
                 else:
                     difference.update(expected=value, actual=other)
                 differences.append(difference)
+        causal = None
+        if report and base and differences:
+            causal = bounded_join_correspondence(base, report, ref)
+        raw_equal = (
+            report is not None and base is not None and report["equivalence"] == base["equivalence"]
+        )
+        contradiction = (
+            report is not None
+            and base is not None
+            and (
+                observed != expected
+                or causal is not None
+                and causal["value"] is False
+                or bool(modern_report_integrity(report, ref))
+                or bool(modern_report_integrity(base, ref))
+            )
+        )
         result = (
-            "Unavailable"
+            "FAIL"
+            if contradiction
+            else "Unavailable"
             if report is None
             or base is None
             or report["equivalence"].get("inputs") is None
             or base["equivalence"].get("inputs") is None
             else "PASS"
-            if observed == expected and report["equivalence"] == base["equivalence"]
+            if raw_equal or causal and causal["value"] is True
+            else "Unavailable"
+            if causal and causal["value"] is None
             else "FAIL"
         )
         checks.append(
@@ -8103,7 +8338,9 @@ def compare_matrix(paths, ref):
                 expectedSettings=expected,
                 actualSettings=observed,
                 differences=differences,
-                reason="Full named settings and semantic/state equivalence to A; "
+                rawOrderEqual=raw_equal,
+                causalCorrespondence=causal,
+                reason="Full named settings and state/occurrence equivalence to A; "
                 "missing variant is not a pair PASS",
             )
         )
