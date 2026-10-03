@@ -3523,6 +3523,14 @@ drives, not tests of verification helpers. Capture availability does not close m
 map working-layout operands, C/D observations or full H4 acceptance. The bounded performance and
 correction evidence belongs to [Issue #605](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/605).
 
+For bounded route timing, `ReadCaptureWitness(true)` supplies actual entity position/facing/busy,
+text/portrait, focus and draw identities without serializing unused resource history. Preserve full
+initial/final snapshots outside measurement and field equality against the full reader in both
+capture modes. A changed timing reader requires a matched off/on pair with the same helper, build
+and settings. GDScript calls pass the witness mode explicitly; C# optional defaults are not supplied
+by Godot's dynamic `call` bridge. Production capture callbacks use `false` and retain full evidence
+through their separate synchronous snapshot path.
+
 ## Modern continuous H4 comparison
 
 The maintained module retains its default legacy JSONL/plan diagnostic. Select the explicit modern
