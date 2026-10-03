@@ -3832,3 +3832,18 @@ closed mandatory inventory remain unchanged; no partial subset passes or new man
 introduced. Keep historical and mixed-content diagnostic matrices separate from the current cohort.
 Full H4 and original natural timing/history remain open until their own evidence and independent
 acceptance boundaries are met.
+
+The JOIN reader supports both accepted completion orders. A real late-held logical-end interval
+retains its state, attempted input, no added service/debt and transitional playback operands. Early
+completion may leave no such sample: use the actual source music request and SoundWait installation,
+held session/token/cursor, declared finite profile, arm/eligible progress and complete three-service
+groups, real completion/finish receipt and previous-track restart before plain input and caller return.
+The group count follows that session's actual pre-helper progress and declared end step. No missing
+terminal held state is fabricated. Missing necessary receipt/source/state operands stay Unavailable;
+a wrong helper/generation, premature return or illegal held input remains FAIL independently of
+unrelated missing evidence. Retained late observations remain positive and negative coverage.
+
+The same content need not produce the same asynchronous completion placement. Preserve original
+and current raw event order and the existing exact matrix comparison. Local JOIN acceptance alone
+cannot establish settings-cohort equality; a strict conflict needs its own decision before further
+successful-capture repetitions or remaining complete variant runs.

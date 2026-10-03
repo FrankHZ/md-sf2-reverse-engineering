@@ -3884,3 +3884,12 @@ natural RNG history. The known505 ordinal is not reclassified as original elapse
 whole-history outputs remain historical diagnostics where affected; matched-state RNG/battle rules
 and unaffected source behaviors retain their comparison obligations. New continuous winning-trace
 acceptance stays open; neither controlled seed injection nor this bounded JOIN substitutes for it.
+
+The current candidate readback uses `local/issue534/caller-resource-cohort-01/variant-A-02` with
+unchanged selected party/start/settings and a clean native exit. Its separate control reads and
+source-to-use joins cover the existing route/caller and three visual resource children. Early
+actual JOIN completion still performs the declared logical work and full helper group before
+return and real previous-track restart. This is a bounded modern observation; original playback
+completion and natural timing remain Unknown. Independent integration and the current complete
+settings cohort remain separate acceptance boundaries. Preserve A03's missing operands and the
+failed memory-pressure observer attempt; neither is relabelled as a successful new capture.

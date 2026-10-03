@@ -788,3 +788,12 @@ observation; there is no evidence requiring a Left-baseline change. The historic
 retains its own content identity. Corrected A cannot form a current same-content matrix with old
 B/C/D; current cohort and full H4 remain Unavailable. Reproduction and current evidence are owned by
 the [operation-flow verification route](../../../remake/docs/development-and-verification.md#complete-operation-flow-comparison).
+
+For the bounded JOIN, actual finite playback may finish before logical helper work. The logical
+progress must still reach the selected end step, arm before sampling and finish a complete
+three-service group; both gates and the actual previous-track restart precede plain input and
+caller return. A late-only held sample or input attempt is required only for that observed interval.
+An early-completed cue can resume immediately at the last logical service, leaving no terminal
+held sample. Bind its actual request/generation, helper token/cursor, service groups, receipt,
+completion and return; do not invent a plateau to fit an older observation. This accepted behavior
+does not change raw event equality in the current settings matrix.

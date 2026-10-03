@@ -1355,8 +1355,11 @@ def reached_visual_materials(
     """Join reached texture selectors to existing source decoders and private exports."""
     result = dict(map=None, entity=None, scene=None, checks=[], joins=[])
 
-    def check(family, name, value):
-        result["checks"].append(dict(family=family, name=name, value=value))
+    def check(family, name, value, identity=None):
+        row = dict(family=family, name=name, value=value)
+        if identity is not None:
+            row["identity"] = identity
+        result["checks"].append(row)
 
     def finish():
         for family in ("map", "entity", "scene"):
@@ -1520,8 +1523,8 @@ def reached_visual_materials(
                 source_valid and visual == source_maps.get(name),
             )
 
-        requirements = actual.get("resourceRequirements", [])
-        uses = actual.get("resourceUses", [])
+        requirements = list(actual.get("resourceRequirements", []))
+        uses = list(actual.get("resourceUses", []))
         programs = {p["id"]: p for p in world["programs"]}
         visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
         for delivery in actual.get("warpRecords", []):
@@ -1534,9 +1537,20 @@ def reached_visual_materials(
                         int(loc["Instruction"])
                     ]["map"]
         visit_sequences = sorted(visits)
+        sessions = {
+            row["state"]["sessionId"]
+            for channel in ("samples", "consumerBoundaries", "warpRecords")
+            for row in actual.get(channel, [])
+            if row.get("state", {}).get("sessionId")
+        }
         for row in requirements + uses:
             i = row["identity"]
             family = "map" if row["kind"] == "map" else "entity"
+            check(
+                family,
+                "same-session resource delivery identity",
+                None if not sessions else len(sessions) == 1 and i["sessionId"] in sessions,
+            )
             position = bisect_right(visit_sequences, i["observationSequence"]) - 1
             visit = visit_sequences[position] if position >= 0 else None
             check(
@@ -1576,12 +1590,185 @@ def reached_visual_materials(
         for required in requirements:
             i = required["identity"]
             requirement_phases.setdefault((i["visit"], required["kind"]), set()).add(i["phase"])
+        # Independently require visible logical subjects in retained current
+        # projections. Surviving draw/use rows cannot define their own inventory.
+        logical_states = [
+            row.get("state", {})
+            for channel in ("samples", "consumerBoundaries", "warpRecords")
+            for row in actual.get(channel, [])
+        ]
+        required_entities = {
+            (
+                r["identity"]["visit"],
+                r["identity"]["phase"],
+                r.get("subject"),
+                r.get("slot"),
+                json.dumps(r["expected"], sort_keys=True),
+            )
+            for r in requirements
+            if r["kind"] == "entity"
+        }
+        required_portraits = {
+            (r["identity"]["visit"], r["expected"]["portrait"])
+            for r in requirements
+            if r["kind"] == "portrait"
+        }
+        logical_inventory = set()
+        logical_layers = set()
+        required_layers = {
+            (
+                r["identity"]["visit"],
+                r["identity"]["phase"],
+                r.get("layer"),
+                r.get("highPriority"),
+                r.get("subject"),
+            )
+            for r in requirements
+            if r["kind"] == "map"
+        }
+        for state in logical_states:
+            projection = state.get("cameraProjection") or {}
+            presentation = state.get("presentation") or {}
+            if (
+                not projection
+                or projection.get("revision") != state.get("revision")
+                or projection.get("map") != state.get("map")
+            ):
+                continue
+            position = bisect_right(visit_sequences, state["observationSequence"]) - 1
+            visit = visit_sequences[position] if position >= 0 else None
+            phase = str(presentation.get("activeCue") or "<null>")
+            # Godot str(null) is <null>; other cue names are retained verbatim.
+            layers = [
+                (name, projection.get(name))
+                for name in ("background", "foreground", "backgroundHigh", "foregroundHigh")
+            ]
+            layers += [("occlusion", layer) for layer in projection.get("occlusionDraws", [])]
+            for name, layer in layers:
+                if not layer or not layer.get("draws"):
+                    continue
+                key = (visit, phase, name, layer.get("highPriority"), layer.get("subject"))
+                if key not in logical_layers:
+                    logical_layers.add(key)
+                    check(
+                        "map",
+                        "independent reached layer/pass/subject requirement",
+                        True if key in required_layers else None,
+                    )
+            for logical in state.get("entities") or []:
+                x = logical["x"] / 16 - presentation["cameraX"]
+                y = logical["y"] / 16 - presentation["cameraY"]
+                if not (logical["Visible"] and x + 24 > 0 and y + 24 > 0 and x < 320 and y < 192):
+                    continue
+                nod = state.get("nod") or {}
+                subject = nod.get("Entity")
+                if isinstance(subject, dict):
+                    subject = subject.get("Value")
+                want = dict(
+                    sprite=logical["sprite"],
+                    direction=0 if logical["facing"] == 1 else 2 if logical["facing"] == 3 else 1,
+                    half=int(15 < logical["animationCounter"] < 128),
+                    nod=subject == logical["id"] and bool(nod.get("Lowered")),
+                )
+                key = (
+                    visit,
+                    phase,
+                    logical["id"],
+                    logical["slot"],
+                    json.dumps(want, sort_keys=True),
+                )
+                if key not in logical_inventory:
+                    logical_inventory.add(key)
+                    # The startup draw can precede callback installation. Its
+                    # current snapshot retains the actual drawn texture selector;
+                    # reuse that operand rather than fabricating a later draw.
+                    if key not in required_entities:
+                        actor = next(
+                            (
+                                a
+                                for a in projection.get("actors", [])
+                                if a.get("entity") == logical["id"]
+                                and a.get("slot") == logical["slot"]
+                                and a.get("visible")
+                            ),
+                            None,
+                        )
+                        if actor and actor.get("resourceSelector") is not None:
+                            i = {
+                                name: projection.get(name)
+                                for name in (
+                                    "sessionId",
+                                    "revision",
+                                    "observationSequence",
+                                    "simulationTick",
+                                    "token",
+                                    "drawSequence",
+                                )
+                            }
+                            i.update(visit=visit, map=state["map"], phase=phase)
+                            requirement = dict(
+                                identity=i,
+                                kind="entity",
+                                subject=logical["id"],
+                                slot=logical["slot"],
+                                expected=want,
+                            )
+                            requirements.append(requirement)
+                            uses.append(dict(requirement, used=actor["resourceSelector"]))
+                            required_entities.add(key)
+                            requirement_phases.setdefault((visit, "entity"), set()).add(phase)
+                    check(
+                        "entity",
+                        "independent visible logical subject/pose requirement",
+                        True if key in required_entities else None,
+                        key,
+                    )
+            portrait = state.get("portraitProjection") or {}
+            if portrait.get("id", -1) >= 0:
+                key = (visit, portrait["id"])
+                check(
+                    "entity",
+                    "independent reached portrait requirement",
+                    True if key in required_portraits else None,
+                )
+                check(
+                    "entity",
+                    "drawn portrait has logical source identity",
+                    None if "portraitId" not in state else portrait["id"] == state["portraitId"],
+                )
+        check(
+            "entity",
+            "independent reached visible logical inventory",
+            True if logical_inventory else None,
+        )
         index = {}
         for used in uses:
             index.setdefault(identity(used), []).append(used)
             i = used["identity"]
             phases = requirement_phases.get((i["visit"], used["kind"]), set())
             family = "map" if used["kind"] == "map" else "entity"
+            if used["kind"] == "map":
+                high = used.get("highPriority")
+                word = used["used"]["word"]
+                name, draw_pass = used.get("layer"), used.get("pass")
+                valid_pass = (
+                    {
+                        "background": 0,
+                        "foreground": 1,
+                        "backgroundHigh": 2,
+                        "foregroundHigh": 3,
+                    }.get(name)
+                    == draw_pass
+                    if name != "occlusion"
+                    else draw_pass >= 5
+                )
+                check(
+                    "map",
+                    "actual source tile priority and named layer pass",
+                    valid_pass
+                    and word == int(word)
+                    and (high is None or bool(int(word) & 0x8000) == high),
+                )
             check(
                 family,
                 "actual use phase has independent logical requirements",
@@ -2291,7 +2478,6 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
 
     try:
         labels = (
-            "music-logical-end",
             "music-plain-input",
             "music-plain-poll",
             "music-plain-accepted",
@@ -2306,26 +2492,103 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         if any(len(group) != 1 for group in selected):
             result.update(plain=False, audio=False, caller=False)
             return finalize()
-        (li, logical), (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (
-            group[0] for group in selected
-        )
+        (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (group[0] for group in selected)
         records = actual["warpRecords"]
         observations = [(i, o) for i, r in enumerate(records) for o in r["result"]["observations"]]
+        late = [
+            (i, row["state"])
+            for i, row in enumerate(actual["samples"])
+            if row["label"] == "music-logical-end"
+        ]
+        if len(late) > 1:
+            result.update(plain=False, audio=False, caller=False)
+            return finalize()
+        held = [
+            (i, row["state"])
+            for i, row in enumerate(records)
+            if row.get("state", {}).get("wait") == "MusicWait"
+            and row["state"]["revision"] < plain["revision"]
+        ]
+        if not held:
+            return finalize()
+        li, logical = late[0] if late else (None, held[0][1])
+        initial_starts = [
+            row["receipt"]
+            for row in actual["audioReceipts"]
+            if row["receipt"]["Cue"] == "MUSIC_JOIN"
+            and row["receipt"]["Operation"] == "started"
+            and row["receipt"]["Revision"] < logical["revision"]
+        ]
+        if late:
+            generation = logical["music"]["Generation"]
+        else:
+            if logical.get("sessionId") != plain.get("sessionId"):
+                result["audio"] = False
+            if not world_path.is_file():
+                return finalize()
+            early_world = read(world_path)["world"]
+            early_programs = {p["id"]: p for p in early_world["programs"]}
+
+            def source_operation(event):
+                location = event.get("Program")
+                if location is None:
+                    return None
+                return early_programs[location["Program"]]["instructions"][
+                    int(location["Instruction"])
+                ]
+
+            helper_sources = [
+                o
+                for _, o in observations
+                if o["Kind"] == "program-instruction"
+                and o["Sequence"] <= logical["revision"]
+                and (source_operation(o) or {}).get("kind") == "SoundWait"
+            ]
+            if not helper_sources:
+                return finalize()
+            install = helper_sources[-1]
+            request_sources = [
+                o
+                for _, o in observations
+                if o["Kind"] == "program-instruction"
+                and o["Sequence"] < install["Sequence"]
+                and (source_operation(o) or {}).get("kind") == "Sound"
+                and (source_operation(o) or {}).get("resource") == "MUSIC_JOIN"
+            ]
+            if not request_sources:
+                return finalize()
+            request = request_sources[-1]
+            generation = request["Sequence"]
+            if (
+                logical.get("token") != install["Sequence"]
+                or logical.get("cursor") != install["Program"]
+                or any(row["Revision"] != generation for row in initial_starts)
+            ):
+                result["audio"] = False
 
         def event(kind, detail=None):
+            lower = (
+                acked["revision"]
+                if kind in ("simulation-tick", "zone-finished")
+                else generation - 1
+                if kind == "music-actual-completed"
+                else logical["revision"]
+            )
             found = [
                 (i, o)
                 for i, o in observations
                 if o["Kind"] == kind
                 and (detail is None or o["Detail"] == detail)
-                and logical["revision"] < o["Sequence"] <= ready["revision"]
+                and lower < o["Sequence"] <= ready["revision"]
             ]
             if not found:
                 raise KeyError(kind)
             return found
 
-        completed = event("music-actual-completed", "MUSIC_JOIN")
         released = event("music-wait-returned", "MUSIC_JOIN")
+        if not late and any(state["revision"] >= released[0][1]["Sequence"] for _, state in held):
+            result["audio"] = False
+        completed = event("music-actual-completed", "MUSIC_JOIN")
         previous = event("presentation-completed", "PreviousMusic")
         acknowledged = event("presentation-acknowledged")
         pressed = [r for r in actual["inputRecords"] if r["pressed"]]
@@ -2345,7 +2608,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             for r in pressed
             if r["before"]["revision"] == polled["revision"] and r["action"] == "confirm"
         ]
-        if not early or not wait or not confirm:
+        if (late and not early) or not wait or not confirm:
             return finalize()
         wait, confirm = wait[0], confirm[0]
 
@@ -2357,7 +2620,11 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             )
 
         plain_value = (
-            li < pi < wi < ai < ri
+            (
+                li < pi < wi < ai < ri
+                if late
+                else logical["revision"] < plain["revision"] and pi < wi < ai < ri
+            )
             and len(completed) == len(released) == len(previous) == len(acknowledged) == 1
             and completed[0][1]["Sequence"]
             < released[0][1]["Sequence"]
@@ -2379,7 +2646,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
                 )
                 for key in ("revision", "simulationTick", "mainSeed", "token", "cursor")
             )
-            and {r["action"] for r in early} == {"wait", "confirm"}
+            and (not late or {r["action"] for r in early} == {"wait", "confirm"})
             and all(r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in early)
             and polled["simulationTick"] == plain["simulationTick"] + 1
             and acked["simulationTick"] == polled["simulationTick"]
@@ -2391,9 +2658,20 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
                 for s in (plain, polled, acked)
             )
         )
-        music, helper = logical["music"], logical["musicWait"]
-        generation = music["Generation"]
+        music = logical["music"] if late else None
+        helper = logical["musicWait"] if late else None
+        helper_token = helper["Token"]["Value"] if late else install["Sequence"]
         receipts = [r["receipt"] for r in actual["audioReceipts"]]
+        previous_starts = [
+            r
+            for r in receipts
+            if r["Operation"] == "started"
+            and r["Cue"].startswith("MUSIC_")
+            and r["Revision"] < generation
+        ]
+        if not late and not previous_starts:
+            return finalize()
+        previous_cue = music["Previous"][0] if late else previous_starts[-1]["Cue"]
         starts = [
             r
             for r in receipts
@@ -2406,7 +2684,11 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             for r in receipts
             if r["Cue"] == "MUSIC_JOIN"
             and r["Operation"] == "finished"
-            and r["Revision"] == logical["revision"]
+            and (
+                r["Revision"] == logical["revision"]
+                if late
+                else generation <= r["Revision"] < plain["revision"]
+            )
         ]
         if not starts or not finishes:
             return finalize()
@@ -2414,17 +2696,17 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         restarts = [
             r
             for r in receipts
-            if r["Cue"] == music["Previous"][-1]
+            if r["Cue"] == previous_cue
             and r["Operation"] == "started"
             and finish["Sequence"] < r["Sequence"]
             and r["Revision"] < plain["revision"]
         ]
         transitional = [
             s["state"]
-            for s in actual["samples"][li + 1 : pi]
+            for s in (actual["samples"][li + 1 : pi] if late else [])
             if s["state"]["audio"]["musicGeneration"] == generation
         ]
-        if not restarts or not transitional:
+        if not restarts or (late and not transitional):
             return finalize()
         restart = restarts[0]
         interval = [
@@ -2433,37 +2715,143 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             if start["Sequence"] <= r["Sequence"] <= restart["Sequence"]
             and r["Cue"].startswith("MUSIC_")
         ]
-        result["audio"] = (
-            len(starts) == len(finishes) == len(restarts) == 1
-            and interval == [start, finish, restart]
-            and music["Cue"] == "MUSIC_JOIN"
-            and music["Step"] == music["EndStep"]
-            and music["PreviousEligible"]
-            and not music["ActualDone"]
-            and helper["Generation"] == generation
-            and helper["LogicalDone"]
-            and helper["Armed"]
-            and helper["Cleared"]
-            and logical["audio"]["musicGeneration"] == generation
-            and logical["audio"]["musicPlaying"]
-            and not logical["audio"]["musicFinished"]
-            and finish["WaitToken"] == helper["Token"]["Value"]
-            and start["PcmSha256"] == finish["PcmSha256"]
-            and not finish["Playing"]
-            and restart["Playing"]
-            and all(
-                s["audio"]["musicFinished"]
-                and not s["audio"]["musicPlaying"]
-                and s["audio"]["error"] is None
-                for s in transitional
+        if not late:
+            if not world_path.is_file():
+                return finalize()
+            request_op, install_op = source_operation(request), source_operation(install)
+            profile = next(
+                (row for row in early_world["presentation"]["audio"] if row["cue"] == "MUSIC_JOIN"),
+                None,
             )
-            and plain["audio"]["musicCue"] == restart["Cue"]
-            and plain["audio"]["musicPlaying"]
-            and plain["audio"]["musicPosition"] > 0
-            and plain["audio"]["error"] is None
-            and completed[0][1]["Sequence"] > finish["Revision"]
-            and restart["Revision"] < previous[0][1]["Sequence"]
-        )
+            if profile is None or profile.get("modernEndStep") is None:
+                return finalize()
+            end = profile["modernEndStep"]
+            before_steps = [
+                o
+                for _, o in observations
+                if generation < o["Sequence"] < helper_token
+                and o["Kind"] == "music-step"
+                and o.get("Detail") == "MUSIC_JOIN"
+            ]
+            initial_step = min(end, len(before_steps))
+            progress = [
+                o
+                for _, o in observations
+                if helper_token < o["Sequence"] < released[0][1]["Sequence"]
+                and o["Kind"] in ("music-step", "music-wait-armed", "music-previous-eligible")
+                and o.get("Detail") == "MUSIC_JOIN"
+            ]
+            services = [
+                o
+                for _, o in observations
+                if helper_token < o["Sequence"] < released[0][1]["Sequence"]
+                and o["Kind"] == "music-helper-service"
+            ]
+            armed = [o for o in progress if o["Kind"] == "music-wait-armed"]
+            eligible = [o for o in progress if o["Kind"] == "music-previous-eligible"]
+            if not progress or not services or not armed or not eligible:
+                return finalize()
+            if completed[0][1]["Sequence"] > services[-1]["Sequence"]:
+                # A real late-held interval requires its own retained state and
+                # attempted-input/no-debt operands; its missing sample is not early.
+                return finalize()
+            needed = max(2, end - initial_step)
+            groups = ((needed + 2) // 3) * 3
+            attempts = [
+                r
+                for r in pressed
+                if helper_token <= r["before"]["revision"] < released[0][1]["Sequence"]
+            ]
+            plain_value = plain_value and all(
+                r["resultStart"] == r["resultEnd"] and r["before"] == r["after"] for r in attempts
+            )
+            result["audio"] = (
+                result["audio"] is not False
+                and len(starts) == len(finishes) == len(restarts) == 1
+                and interval == [start, finish, restart]
+                and request["Kind"] == install["Kind"] == "program-instruction"
+                and request_op is not None
+                and request_op.get("op") == "present"
+                and request_op.get("kind") == "Sound"
+                and request_op.get("resource") == "MUSIC_JOIN"
+                and install_op is not None
+                and install_op.get("op") == "present"
+                and install_op.get("kind") == "SoundWait"
+                and install["Program"] == logical["cursor"]
+                and len(progress) == len(services) == groups
+                and len(armed) == len(eligible) == 1
+                and progress[0] == armed[0]
+                and eligible[0]["Sequence"] == progress[int(needed) - 1]["Sequence"]
+                and all(
+                    p["Sequence"] < v["Sequence"]
+                    and (
+                        index + 1 == len(progress)
+                        or v["Sequence"] < progress[index + 1]["Sequence"]
+                    )
+                    for index, (p, v) in enumerate(zip(progress, services, strict=False))
+                )
+                and all(
+                    state["token"] == helper_token
+                    and state["cursor"] == logical["cursor"]
+                    and state["sessionId"] == plain["sessionId"]
+                    and state["simulationTick"]
+                    == logical["simulationTick"]
+                    - sum(v["Sequence"] <= logical["revision"] for v in services)
+                    + sum(v["Sequence"] <= state["revision"] for v in services)
+                    for _, state in held
+                )
+                and finish["WaitToken"] == helper_token
+                and start["PcmSha256"] == finish["PcmSha256"]
+                and not finish["Playing"]
+                and restart["Playing"]
+                and finish["Revision"] < completed[0][1]["Sequence"]
+                and restart["Revision"] < previous[0][1]["Sequence"]
+                and plain["audio"]["musicCue"] == restart["Cue"]
+                and plain["audio"]["musicPlaying"]
+                and plain["audio"]["error"] is None
+            )
+            result["anchors"]["earlyLogicalWork"] = dict(
+                request=generation,
+                helper=helper_token,
+                endStep=end,
+                initialStep=initial_step,
+                progressSequences=[p["Sequence"] for p in progress],
+                serviceSequences=[v["Sequence"] for v in services],
+                eligible=eligible[0]["Sequence"],
+                previousCue=previous_cue,
+            )
+        else:
+            result["audio"] = (
+                len(starts) == len(finishes) == len(restarts) == 1
+                and interval == [start, finish, restart]
+                and music["Cue"] == "MUSIC_JOIN"
+                and music["Step"] == music["EndStep"]
+                and music["PreviousEligible"]
+                and not music["ActualDone"]
+                and helper["Generation"] == generation
+                and helper["LogicalDone"]
+                and helper["Armed"]
+                and helper["Cleared"]
+                and logical["audio"]["musicGeneration"] == generation
+                and logical["audio"]["musicPlaying"]
+                and not logical["audio"]["musicFinished"]
+                and finish["WaitToken"] == helper["Token"]["Value"]
+                and start["PcmSha256"] == finish["PcmSha256"]
+                and not finish["Playing"]
+                and restart["Playing"]
+                and all(
+                    s["audio"]["musicFinished"]
+                    and not s["audio"]["musicPlaying"]
+                    and s["audio"]["error"] is None
+                    for s in transitional
+                )
+                and plain["audio"]["musicCue"] == restart["Cue"]
+                and plain["audio"]["musicPlaying"]
+                and plain["audio"]["musicPosition"] > 0
+                and plain["audio"]["error"] is None
+                and completed[0][1]["Sequence"] > finish["Revision"]
+                and restart["Revision"] < previous[0][1]["Sequence"]
+            )
         if not world_path.is_file():
             return finalize()
         world = read(world_path)["world"]
@@ -2564,8 +2952,10 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         )
         result["anchors"]["actual"] = dict(
             samples=[li, pi, wi, ai, ri],
+            completionOrder="late" if late else "early",
+            heldHelperRecords=[i for i, _ in held],
             generation=generation,
-            helperToken=helper["Token"]["Value"],
+            helperToken=helper_token,
             receiptSequences=[r["Sequence"] for r in interval],
             inputOrdinals=[r["ordinal"] for r in early] + [wait["ordinal"], confirm["ordinal"]],
             completionRecords=[completed[0][0], released[0][0], previous[0][0]],
@@ -4120,6 +4510,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 k in control
                 for k in (
                     "SessionId",
+                    "Sequence",
                     "Revision",
                     "Source",
                     "Operation",
@@ -4129,25 +4520,35 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 )
             )
             check(names[0], "control read operands", True if operands else None, seq)
-            if not operands:
-                continue
             check(
                 names[0],
-                "same session control read event identity",
+                "same session control read session",
                 None
-                if event is None
-                else control["SessionId"] == delivery.get("sessionId")
-                and control["Revision"] == event.get("Revision")
-                and seq <= delivery.get("observationSequence", -1),
+                if "SessionId" not in control
+                else control["SessionId"] == delivery.get("sessionId"),
+                seq,
+            )
+            check(
+                names[0],
+                "control read producing event revision",
+                None
+                if event is None or "Revision" not in control
+                else control["Revision"] == event.get("Revision"),
+                seq,
+            )
+            check(
+                names[0],
+                "control read delivered sequence interval",
+                None if seq is None else seq <= delivery.get("observationSequence", -1),
                 seq,
             )
             op = source_instruction.get("op") if source_instruction else None
-            operation = control["Operation"]
+            operation = control.get("Operation")
             check(
                 names[0],
                 "control read source operation",
                 None
-                if op is None
+                if op is None or operation is None
                 else (operation == "CallProgram" and op == "call")
                 or (operation == "ReturnProgram" and op == "return")
                 or (
@@ -4157,7 +4558,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             )
             produced = (
                 None
-                if event is None
+                if event is None or operation is None or "Source" not in control
                 else (
                     event.get("Kind") == "text-work-advanced"
                     if operation == "ScriptReturn"
@@ -4166,6 +4567,8 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 )
             )
             check(names[0], "control read producing Commit", produced, seq)
+            if any(k not in control for k in ("CallersBefore", "Callers", "Cursor")):
+                continue
             before, after = control["CallersBefore"], control["Callers"]
             if operation == "CallProgram" and source_instruction:
                 continuation = dict(
