@@ -2100,7 +2100,8 @@ func run_portrait_event() -> void:
         check(false, "Retained bound start has actual field control")
         finish_public()
         return
-    view.connect("SessionResultObserved", record_warp_result)
+    if not view.is_connected("SessionResultObserved", record_warp_result):
+        view.connect("SessionResultObserved", record_warp_result)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_PRIVATE_EXPLORATION_PLAN")))
