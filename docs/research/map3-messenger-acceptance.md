@@ -3885,22 +3885,25 @@ whole-history outputs remain historical diagnostics where affected; matched-stat
 and unaffected source behaviors retain their comparison obligations. New continuous winning-trace
 acceptance stays open; neither controlled seed injection nor this bounded JOIN substitutes for it.
 
-The current candidate readback uses `local/issue534/caller-resource-cohort-01/variant-A-02` with
-unchanged selected party/start/settings and a clean native exit. Its separate control reads and
-source-to-use joins cover the existing route/caller and three visual resource children. Early
-actual JOIN completion still performs the declared logical work and full helper group before
-return and real previous-track restart. This is a bounded modern observation; original playback
-completion and natural timing remain Unknown. Independent integration and the current complete
-settings cohort remain separate acceptance boundaries. Preserve A03's missing operands and the
-failed memory-pressure observer attempt; neither is relabelled as a successful new capture.
+**Confirmed (bounded candidate modern comparison):** retained current A02/B02 under
+`local/issue534/caller-resource-cohort-01` complete with native exit0, no Godot errors and unchanged
+selected party/start/settings. Corrected `report-A-10.json` and `report-B-02.json` each retain
+2247 PASS / 14 Unavailable / zero required FAIL. All five whole operation children and the
+entity/portrait and scene source/use children pass. Independent tile and full portrait-pose
+inventories expose joint requirement/use omissions; missing occurrence operands do not hide later
+available contradictions. **Unknown:** current mutable door/flag/roof working-layout operands are
+absent, so the whole map resource child remains Unavailable. No new original runtime evidence or
+fresh capture fills this boundary.
 
-**Confirmed (candidate modern comparison):** current A02 and B02 both complete with clean native
-exit0 and unchanged selected party/start/settings. `report-A-09.json` and `report-B-01.json` under
-`local/issue534/caller-resource-cohort-01` each retain 2248 PASS / 13 Unavailable / zero required FAIL;
-the five whole operation children and three reached visual source/use children pass. The unchanged
-strict matrix is FAIL: of 34571 observations, only positions10336–10340 differ because the same
-`music-actual-completed` / `MUSIC_JOIN` event occurs at A index10340 and B index10336. A diagnostic
-removal of just that event leaves every other payload/order exact; it does not modify either raw
-report or establish matrix PASS. Admission, inputs, battle states, endpoints, party, gold and main
-seed compare exactly. `matrix-AB-01.json` and `current-AB-causal-diagnostic-01.json` preserve this
-boundary. C/D are not collected pending the independent matrix decision; complete H4 remains open.
+The original strict `matrix-AB-01.json` and `matrix-AB-reproduction.json` remain FAIL evidence:
+of 34571 observations, only positions 10336–10340 differ because the matching `music-actual-completed`
+/ `MUSIC_JOIN` event occurs at A index 10340 and B index 10336. All other payload/order, admission,
+inputs, battle states, endpoints, party, gold and main seed are exact. The allocated bounded matrix
+correspondence independently proves each side's actual source/request/generation, receipt,
+helper arm/eligible progress and complete groups, both gates and caller return. It pairs that one
+completion only across same-occurrence music-step/helper-service records, retaining both original
+ordered streams. A/B pass this correspondence; C/D and the overall/full H4 result remain Unavailable.
+The [verification route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+owns reproduction and exclusions. No original playback timing, YM phase, VInt cadence or natural
+history is inferred. C/D and repeat successful A/B captures remain held through independent integration
+and separately allocated Issue #605 performance work.

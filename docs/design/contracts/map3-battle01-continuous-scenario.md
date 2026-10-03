@@ -795,11 +795,25 @@ three-service group; both gates and the actual previous-track restart precede pl
 caller return. A late-only held sample or input attempt is required only for that observed interval.
 An early-completed cue can resume immediately at the last logical service, leaving no terminal
 held sample. Bind its actual request/generation, helper token/cursor, service groups, receipt,
-completion and return; do not invent a plateau to fit an older observation. This accepted behavior
-does not change raw event equality in the current settings matrix.
+completion and return; do not invent a plateau to fit an older observation.
 
-The candidate current A/B comparison exposes this separate boundary: both local JOIN orders satisfy
-the existing source helper and playback obligations, while the strict raw matrix fails for their
-asynchronous completion placement. C/D remain uncollected pending independent disposition of that
-failure. Do not normalize the event order, repeat a successful capture to force equality, or claim
-complete settings/H4 acceptance from the local child results.
+The settings matrix preserves raw event order and exact differences. One matching finite JOIN
+actual-completion may correspond across only that same occurrence's music-step/helper-service
+records, after each actual source independently establishes request/generation, receipt, arm and
+eligible progress, complete helper groups, both gates and caller return. All other payload/order,
+input/admission, battle/endpoints, party/gold and main-seed operands remain equal. Report-integrity
+or source contradictions fail even when another operand is missing. Missing necessary proof remains
+Unavailable. No stream sorting/deletion or semantic-value change is part of this rule. Crossing a
+non-helper operation or either release/return boundary is not correspondence.
+
+Reached visual completeness uses independent logical inventories: map layer/block/tile/pass/subject
+coverage from retained geometry and source layout, and portrait identity/mirror/eyes/mouth/composed
+tiles from logical state and source decoding. Simultaneous omission from requirement and use channels
+remains a missing obligation. Each available occurrence is evaluated locally; a missing earlier
+operand must not mask a later contradiction. Missing current mutable working-layout operands in the
+retained A02/B02 observations keep the whole map child Unavailable; selected base layout is not proof
+of runtime door/flag/roof state. Entity/portrait and scene bindings retain their own results.
+
+The current bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
+C/D and repeated successful A/B captures remain held through independent integration and Issue #605
+performance work. This result does not establish complete settings or H4 acceptance.

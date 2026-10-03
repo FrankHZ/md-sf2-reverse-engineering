@@ -1361,6 +1361,19 @@ def reached_visual_materials(
             row["identity"] = identity
         result["checks"].append(row)
 
+    from contextlib import contextmanager
+
+    @contextmanager
+    def evaluated(family, name):
+        try:
+            yield
+        except KeyError:
+            for dependent in family if isinstance(family, tuple) else (family,):
+                check(dependent, name + " operand absent", None)
+        except (IndexError, ValueError, TypeError) as error:
+            for dependent in family if isinstance(family, tuple) else (family,):
+                check(dependent, name + " malformed " + type(error).__name__, False)
+
     def finish():
         for family in ("map", "entity", "scene"):
             values = [c["value"] for c in result["checks"] if c["family"] == family]
@@ -1369,12 +1382,121 @@ def reached_visual_materials(
             )
         return result
 
-    if (
-        not selection
-        or source_root is None
-        or not all((canonical_content, tileset_metadata, palette_metadata))
-    ):
+    def scene_uses(scene):
+        scene_rows = actual.get("sceneObservations", [])
+        check("scene", "reached scene observation channel", True if scene_rows else None)
+        for row in scene_rows:
+            with evaluated("scene", "scene occurrence"):
+                scene_state = row["scene"]
+                fairy = (scene_state.get("healing") or {}).get("Fairy")
+                if scene_state.get("visible") and fairy and fairy.get("Control"):
+                    needed = {}
+                    for i, instance in enumerate(fairy["Fairies"]):
+                        with evaluated("scene", "fairy instance"):
+                            if instance["Active"]:
+                                needed["FairyBody" + str(i)] = scene["healing"]["bodies"][
+                                    int(instance["BodyFrame"])
+                                ]
+                                needed["FairyWings" + str(i)] = scene["healing"]["wings"][
+                                    int(instance["WingFrame"])
+                                ]
+                    for i, dust in enumerate(fairy["Dust"]):
+                        with evaluated("scene", "fairy dust"):
+                            if dust["Age"]:
+                                needed["FairyDust" + str(i)] = scene["healing"]["dust"][
+                                    int(dust["Frame"])
+                                ]
+                    mounted = {s["name"]: s for s in scene_state.get("fairySprites", [])}
+                    for name, resource in needed.items():
+                        node = mounted.get(name, {}).get("binding")
+                        check(
+                            "scene",
+                            "required fairy mounted texture " + name,
+                            None
+                            if node is None
+                            else node.get("resource") == resource
+                            and node.get("texturePresent")
+                            and node.get("visible"),
+                        )
+                if scene_state.get("fieldDeath"):
+                    actors = row.get("fieldActors")
+                    check(
+                        "scene",
+                        "actual field-death consumer channel",
+                        True if actors is not None else None,
+                    )
+                    if scene_state["phase"] in ("FieldSpin", "FieldExit"):
+                        mounted = {a["id"]: a.get("sprite") for a in actors or []}
+                        for dead in scene_state["fieldDeath"]["actors"]:
+                            node = mounted.get(dead)
+                            check(
+                                "scene",
+                                "required dead actor remains projected during its source effect",
+                                None
+                                if node is None
+                                else node.get("visible") and node.get("texturePresent"),
+                            )
+                    for actor in actors or []:
+                        with evaluated("scene", "field actor"):
+                            sprite = actor.get("sprite")
+                            if not sprite or not sprite.get("visible"):
+                                continue
+                            selector = sprite.get("resourceSelector")
+                            facing = sprite["facing"]
+                            direction = 0 if facing == 1 else 2 if facing == 3 else 1
+                            ally = next(
+                                (
+                                    a["sprite"]
+                                    for a in scene["fieldDeath"]["allies"]
+                                    if actor["id"] == "ally-" + str(a["character"])
+                                ),
+                                None,
+                            )
+                            original_sprite = (
+                                ally
+                                if ally is not None
+                                else scene["fieldDeath"]["enemies"][0]["sprite"]
+                            )
+                            expected_sprite = (
+                                63
+                                if actor["id"] in scene_state["fieldDeath"]["actors"]
+                                and scene_state["phase"] == "FieldExit"
+                                else original_sprite
+                            )
+                            check(
+                                "scene",
+                                "actual field-death assigned texture",
+                                None
+                                if selector is None
+                                else selector
+                                == dict(
+                                    sprite=expected_sprite,
+                                    direction=direction,
+                                    frame=sprite["walkingFrame"],
+                                    raster=scene["fieldDeath"]["exitFrames"][direction]
+                                    if expected_sprite == 63
+                                    else None,
+                                )
+                                and sprite.get("texturePresent")
+                                and sprite.get("visibleInTree"),
+                            )
+
+    if not selection:
         return result
+    try:
+        selected_scene = selection[1]
+        selected_scene = (
+            selected_scene.resolve() if selected_scene.is_absolute() else repo_path(selected_scene)
+        )
+        scene_uses(read(selected_scene))
+    except FileNotFoundError:
+        check("scene", "selected scene definition absent", None)
+    except (KeyError, IndexError, ValueError, TypeError):
+        check("scene", "selected scene definition malformed", False)
+    if source_root is None or not all((canonical_content, tileset_metadata, palette_metadata)):
+        for family in ("map", "entity", "scene"):
+            check(family, "source decoding prerequisite absent", None)
+        return finish()
     try:
         import io
         from types import SimpleNamespace
@@ -1525,6 +1647,22 @@ def reached_visual_materials(
 
         requirements = list(actual.get("resourceRequirements", []))
         uses = list(actual.get("resourceUses", []))
+
+        def available_rows(rows, requirement):
+            available = []
+            for row in rows:
+                family = "map" if row.get("kind") == "map" else "entity"
+                with evaluated(family, "resource occurrence"):
+                    i = row["identity"]
+                    for key in ("sessionId", "visit", "map", "phase", "observationSequence"):
+                        i[key]
+                    row["kind"]
+                    row["expected" if requirement else "used"]
+                    available.append(row)
+            return available
+
+        requirements = available_rows(requirements, True)
+        uses = available_rows(uses, False)
         programs = {p["id"]: p for p in world["programs"]}
         visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
         for delivery in actual.get("warpRecords", []):
@@ -1544,20 +1682,21 @@ def reached_visual_materials(
             if row.get("state", {}).get("sessionId")
         }
         for row in requirements + uses:
-            i = row["identity"]
-            family = "map" if row["kind"] == "map" else "entity"
-            check(
-                family,
-                "same-session resource delivery identity",
-                None if not sessions else len(sessions) == 1 and i["sessionId"] in sessions,
-            )
-            position = bisect_right(visit_sequences, i["observationSequence"]) - 1
-            visit = visit_sequences[position] if position >= 0 else None
-            check(
-                family,
-                "actual use belongs to its latest logical map visit",
-                i["visit"] == visit and i["map"] == visits.get(visit),
-            )
+            with evaluated("map" if row.get("kind") == "map" else "entity", "resource identity"):
+                i = row["identity"]
+                family = "map" if row["kind"] == "map" else "entity"
+                check(
+                    family,
+                    "same-session resource delivery identity",
+                    None if not sessions else len(sessions) == 1 and i["sessionId"] in sessions,
+                )
+                position = bisect_right(visit_sequences, i["observationSequence"]) - 1
+                visit = visit_sequences[position] if position >= 0 else None
+                check(
+                    family,
+                    "actual use belongs to its latest logical map visit",
+                    i["visit"] == visit and i["map"] == visits.get(visit),
+                )
         for family in ("map", "entity"):
             check(family, "independent reached requirement channel", True if requirements else None)
         field_maps = {
@@ -1608,11 +1747,94 @@ def reached_visual_materials(
             for r in requirements
             if r["kind"] == "entity"
         }
-        required_portraits = {
-            (r["identity"]["visit"], r["expected"]["portrait"])
-            for r in requirements
-            if r["kind"] == "portrait"
-        }
+
+        def portrait_pose(visit, phase, want):
+            return (
+                visit,
+                phase,
+                want["portrait"],
+                want["mirror"],
+                want["eyes"],
+                want["mouth"],
+                tuple(want["tiles"]),
+            )
+
+        required_portraits = set()
+        for row in requirements:
+            if row["kind"] == "portrait":
+                with evaluated("entity", "portrait inventory"):
+                    required_portraits.add(
+                        portrait_pose(
+                            row["identity"]["visit"], row["identity"]["phase"], row["expected"]
+                        )
+                    )
+        required_tiles = set()
+        for row in requirements:
+            if row["kind"] == "map":
+                with evaluated("map", "tile inventory"):
+                    i, want = row["identity"], row["expected"]
+                    required_tiles.add(
+                        (
+                            i["visit"],
+                            i["phase"],
+                            row.get("layer"),
+                            row.get("highPriority"),
+                            row.get("subject"),
+                            row.get("pass"),
+                            want["block"],
+                            want["tile"],
+                            want["word"],
+                        )
+                    )
+        map_definitions = {row["id"]: row for row in world["maps"]}
+        logical_tiles = set()
+
+        def layer_tiles(map_id, layer, name):
+            # Original draw geometry independently retains the first covered tile and
+            # occlusion ink regions. Neither inventory comes from requirement/use rows.
+            recorded = list(layer.get("overlaps", []))
+            if layer.get("first"):
+                recorded.append(layer["first"])
+            if name == "occlusion":
+                if not recorded:
+                    check("map", "independent occlusion tile operands", None)
+                return recorded
+            definition = map_definitions[map_id]
+            events = definition.get("layoutEvents") or {}
+            mutable_regions = [row["copy"] for rows in events.values() for row in rows]
+            unknown_layout = False
+            origin_x, origin_y = layer["x"], layer["y"]
+            for y in range(int(origin_y // 24), int(origin_y // 24) + 9):
+                for x in range(int(origin_x // 24), int(origin_x // 24) + 15):
+                    sx, sy = int(x + layer["offsetX"]), int(y + layer["offsetY"])
+                    if not (0 <= sx < 64 and 0 <= sy < 64):
+                        continue
+                    if any(
+                        copy["destination"]["x"] <= sx < copy["destination"]["x"] + copy["width"]
+                        and copy["destination"]["y"]
+                        <= sy
+                        < copy["destination"]["y"] + copy["height"]
+                        for copy in mutable_regions
+                    ):
+                        unknown_layout = True
+                        continue
+                    block = definition["layout"][sy][sx] & 0x3FF
+                    if name.startswith("foreground") and block == 0:
+                        continue
+                    high = layer.get("highPriority")
+                    for tile in range(1 if high is None else 9):
+                        word = maps[map_id]["blocks"][block][tile]
+                        if high is not None and bool(word & 0x8000) != high:
+                            continue
+                        px = x * 24 - origin_x + (0 if high is None else tile % 3 * 8)
+                        py = y * 24 - origin_y + (0 if high is None else tile // 3 * 8)
+                        width = 24 if high is None else 8
+                        if px + width > 0 and py + width > 0 and px < 320 and py < 192:
+                            recorded.append(dict(block=block, tile=tile, word=word))
+            if unknown_layout:
+                check("map", "reached mutable region needs current working-layout operands", None)
+            return recorded
+
         logical_inventory = set()
         logical_layers = set()
         required_layers = {
@@ -1627,115 +1849,165 @@ def reached_visual_materials(
             if r["kind"] == "map"
         }
         for state in logical_states:
-            projection = state.get("cameraProjection") or {}
-            presentation = state.get("presentation") or {}
-            if (
-                not projection
-                or projection.get("revision") != state.get("revision")
-                or projection.get("map") != state.get("map")
-            ):
-                continue
-            position = bisect_right(visit_sequences, state["observationSequence"]) - 1
-            visit = visit_sequences[position] if position >= 0 else None
-            phase = str(presentation.get("activeCue") or "<null>")
-            # Godot str(null) is <null>; other cue names are retained verbatim.
-            layers = [
-                (name, projection.get(name))
-                for name in ("background", "foreground", "backgroundHigh", "foregroundHigh")
-            ]
-            layers += [("occlusion", layer) for layer in projection.get("occlusionDraws", [])]
-            for name, layer in layers:
-                if not layer or not layer.get("draws"):
+            with evaluated(("map", "entity"), "logical draw occurrence"):
+                projection = state.get("cameraProjection") or {}
+                presentation = state.get("presentation") or {}
+                if (
+                    not projection
+                    or projection.get("revision") != state.get("revision")
+                    or projection.get("map") != state.get("map")
+                ):
                     continue
-                key = (visit, phase, name, layer.get("highPriority"), layer.get("subject"))
-                if key not in logical_layers:
-                    logical_layers.add(key)
-                    check(
-                        "map",
-                        "independent reached layer/pass/subject requirement",
-                        True if key in required_layers else None,
-                    )
-            for logical in state.get("entities") or []:
-                x = logical["x"] / 16 - presentation["cameraX"]
-                y = logical["y"] / 16 - presentation["cameraY"]
-                if not (logical["Visible"] and x + 24 > 0 and y + 24 > 0 and x < 320 and y < 192):
-                    continue
-                nod = state.get("nod") or {}
-                subject = nod.get("Entity")
-                if isinstance(subject, dict):
-                    subject = subject.get("Value")
-                want = dict(
-                    sprite=logical["sprite"],
-                    direction=0 if logical["facing"] == 1 else 2 if logical["facing"] == 3 else 1,
-                    half=int(15 < logical["animationCounter"] < 128),
-                    nod=subject == logical["id"] and bool(nod.get("Lowered")),
-                )
-                key = (
-                    visit,
-                    phase,
-                    logical["id"],
-                    logical["slot"],
-                    json.dumps(want, sort_keys=True),
-                )
-                if key not in logical_inventory:
-                    logical_inventory.add(key)
-                    # The startup draw can precede callback installation. Its
-                    # current snapshot retains the actual drawn texture selector;
-                    # reuse that operand rather than fabricating a later draw.
-                    if key not in required_entities:
-                        actor = next(
-                            (
-                                a
-                                for a in projection.get("actors", [])
-                                if a.get("entity") == logical["id"]
-                                and a.get("slot") == logical["slot"]
-                                and a.get("visible")
-                            ),
-                            None,
+                position = bisect_right(visit_sequences, state["observationSequence"]) - 1
+                visit = visit_sequences[position] if position >= 0 else None
+                phase = str(presentation.get("activeCue") or "<null>")
+                # Godot str(null) is <null>; other cue names are retained verbatim.
+                layers = [
+                    (name, projection.get(name))
+                    for name in ("background", "foreground", "backgroundHigh", "foregroundHigh")
+                ]
+                layers += [("occlusion", layer) for layer in projection.get("occlusionDraws", [])]
+                for name, layer in layers:
+                    if not layer or not layer.get("draws"):
+                        continue
+                    key = (visit, phase, name, layer.get("highPriority"), layer.get("subject"))
+                    if key not in logical_layers:
+                        logical_layers.add(key)
+                        check(
+                            "map",
+                            "independent reached layer/pass/subject requirement",
+                            True if key in required_layers else None,
                         )
-                        if actor and actor.get("resourceSelector") is not None:
-                            i = {
-                                name: projection.get(name)
-                                for name in (
-                                    "sessionId",
-                                    "revision",
-                                    "observationSequence",
-                                    "simulationTick",
-                                    "token",
-                                    "drawSequence",
-                                )
-                            }
-                            i.update(visit=visit, map=state["map"], phase=phase)
-                            requirement = dict(
-                                identity=i,
-                                kind="entity",
-                                subject=logical["id"],
-                                slot=logical["slot"],
-                                expected=want,
+                    with evaluated("map", "independent reached tile"):
+                        for tile in layer_tiles(state["map"], layer, name):
+                            tile_key = (
+                                *key,
+                                layer.get("pass"),
+                                tile["block"],
+                                tile["tile"],
+                                tile["word"],
                             )
-                            requirements.append(requirement)
-                            uses.append(dict(requirement, used=actor["resourceSelector"]))
-                            required_entities.add(key)
-                            requirement_phases.setdefault((visit, "entity"), set()).add(phase)
+                            if tile_key not in logical_tiles:
+                                logical_tiles.add(tile_key)
+                                check(
+                                    "map",
+                                    "independent reached block/tile requirement",
+                                    True if tile_key in required_tiles else None,
+                                    tile_key,
+                                )
+                for logical in state.get("entities") or []:
+                    with evaluated("entity", "logical entity occurrence"):
+                        x = logical["x"] / 16 - presentation["cameraX"]
+                        y = logical["y"] / 16 - presentation["cameraY"]
+                        if not (
+                            logical["Visible"] and x + 24 > 0 and y + 24 > 0 and x < 320 and y < 192
+                        ):
+                            continue
+                        nod = state.get("nod") or {}
+                        subject = nod.get("Entity")
+                        if isinstance(subject, dict):
+                            subject = subject.get("Value")
+                        want = dict(
+                            sprite=logical["sprite"],
+                            direction=0
+                            if logical["facing"] == 1
+                            else 2
+                            if logical["facing"] == 3
+                            else 1,
+                            half=int(15 < logical["animationCounter"] < 128),
+                            nod=subject == logical["id"] and bool(nod.get("Lowered")),
+                        )
+                        key = (
+                            visit,
+                            phase,
+                            logical["id"],
+                            logical["slot"],
+                            json.dumps(want, sort_keys=True),
+                        )
+                        if key not in logical_inventory:
+                            logical_inventory.add(key)
+                            # The startup draw can precede callback installation. Its
+                            # current snapshot retains the actual drawn texture selector;
+                            # reuse that operand rather than fabricating a later draw.
+                            if key not in required_entities:
+                                actor = next(
+                                    (
+                                        a
+                                        for a in projection.get("actors", [])
+                                        if a.get("entity") == logical["id"]
+                                        and a.get("slot") == logical["slot"]
+                                        and a.get("visible")
+                                    ),
+                                    None,
+                                )
+                                if actor and actor.get("resourceSelector") is not None:
+                                    i = {
+                                        name: projection.get(name)
+                                        for name in (
+                                            "sessionId",
+                                            "revision",
+                                            "observationSequence",
+                                            "simulationTick",
+                                            "token",
+                                            "drawSequence",
+                                        )
+                                    }
+                                    i.update(visit=visit, map=state["map"], phase=phase)
+                                    requirement = dict(
+                                        identity=i,
+                                        kind="entity",
+                                        subject=logical["id"],
+                                        slot=logical["slot"],
+                                        expected=want,
+                                    )
+                                    requirements.append(requirement)
+                                    uses.append(dict(requirement, used=actor["resourceSelector"]))
+                                    required_entities.add(key)
+                                    requirement_phases.setdefault((visit, "entity"), set()).add(
+                                        phase
+                                    )
+                            check(
+                                "entity",
+                                "independent visible logical subject/pose requirement",
+                                True if key in required_entities else None,
+                                key,
+                            )
+                portrait = state.get("portraitProjection") or {}
+                if portrait.get("id", -1) >= 0:
+                    with evaluated("entity", "independent portrait pose"):
+                        work = state.get("portraitWork") or {}
+                        flags = state["portraitFlags"]
+                        if flags is None or state.get("portraitId") is None:
+                            raise KeyError("logical portrait identity")
+                        original = source_portraits[state["portraitId"]]
+                        tiles = list(range(64))
+                        for changes in (
+                            (original["eyes"] if work.get("EyesClosed") else []),
+                            (original["mouth"] if work.get("MouthOpen") else []),
+                        ):
+                            for x, y, alternate_x, alternate_y in changes:
+                                tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+                        want = dict(
+                            portrait=state["portraitId"],
+                            mirror=bool(int(flags) & 0x40),
+                            eyes=bool(work.get("EyesClosed")),
+                            mouth=bool(work.get("MouthOpen")),
+                            tiles=tiles,
+                        )
+                        key = portrait_pose(visit, phase, want)
+                        check(
+                            "entity",
+                            "independent reached portrait pose requirement",
+                            True if key in required_portraits else None,
+                            key,
+                        )
                     check(
                         "entity",
-                        "independent visible logical subject/pose requirement",
-                        True if key in required_entities else None,
-                        key,
+                        "drawn portrait has logical source identity",
+                        None
+                        if "portraitId" not in state
+                        else portrait["id"] == state["portraitId"],
                     )
-            portrait = state.get("portraitProjection") or {}
-            if portrait.get("id", -1) >= 0:
-                key = (visit, portrait["id"])
-                check(
-                    "entity",
-                    "independent reached portrait requirement",
-                    True if key in required_portraits else None,
-                )
-                check(
-                    "entity",
-                    "drawn portrait has logical source identity",
-                    None if "portraitId" not in state else portrait["id"] == state["portraitId"],
-                )
         check(
             "entity",
             "independent reached visible logical inventory",
@@ -1743,238 +2015,159 @@ def reached_visual_materials(
         )
         index = {}
         for used in uses:
-            index.setdefault(identity(used), []).append(used)
-            i = used["identity"]
-            phases = requirement_phases.get((i["visit"], used["kind"]), set())
-            family = "map" if used["kind"] == "map" else "entity"
-            if used["kind"] == "map":
-                high = used.get("highPriority")
-                word = used["used"]["word"]
-                name, draw_pass = used.get("layer"), used.get("pass")
-                valid_pass = (
-                    {
-                        "background": 0,
-                        "foreground": 1,
-                        "backgroundHigh": 2,
-                        "foregroundHigh": 3,
-                    }.get(name)
-                    == draw_pass
-                    if name != "occlusion"
-                    else draw_pass >= 5
-                )
-                check(
-                    "map",
-                    "actual source tile priority and named layer pass",
-                    valid_pass
-                    and word == int(word)
-                    and (high is None or bool(int(word) & 0x8000) == high),
-                )
-            check(
-                family,
-                "actual use phase has independent logical requirements",
-                None if not phases else i["phase"] in phases,
-            )
-        for required in requirements:
-            kind, want = required["kind"], required["expected"]
-            family = "map" if kind == "map" else "entity"
-            candidates = index.get(identity(required), [])
-            if kind == "map":
-                candidates = [
-                    r
-                    for r in candidates
-                    if r["used"].get("tile") == want["tile"]
-                    and r["used"].get("block") == want["block"]
-                ]
-                visual = maps[required["identity"]["map"]]
+            with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
+                index.setdefault(identity(used), []).append(used)
+                i = used["identity"]
+                phases = requirement_phases.get((i["visit"], used["kind"]), set())
+                family = "map" if used["kind"] == "map" else "entity"
+                if used["kind"] == "map":
+                    high = used.get("highPriority")
+                    word = used["used"]["word"]
+                    name, draw_pass = used.get("layer"), used.get("pass")
+                    valid_pass = (
+                        {
+                            "background": 0,
+                            "foreground": 1,
+                            "backgroundHigh": 2,
+                            "foregroundHigh": 3,
+                        }.get(name)
+                        == draw_pass
+                        if name != "occlusion"
+                        else draw_pass >= 5
+                    )
+                    check(
+                        "map",
+                        "actual source tile priority and named layer pass",
+                        valid_pass
+                        and word == int(word)
+                        and (high is None or bool(int(word) & 0x8000) == high),
+                    )
                 check(
                     family,
-                    "required logical block/tile source word",
-                    0 <= want["block"] < len(visual["blocks"])
-                    and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
+                    "actual use phase has independent logical requirements",
+                    None if not phases else i["phase"] in phases,
                 )
-            else:
-                candidates = [r for r in candidates if r.get("expected") == want]
-            check(family, "required actual texture use", True if candidates else None)
-            for used in candidates:
-                bound = used["used"]
+        for required in requirements:
+            with evaluated(
+                "map" if required.get("kind") == "map" else "entity", "required texture join"
+            ):
+                kind, want = required["kind"], required["expected"]
+                family = "map" if kind == "map" else "entity"
+                candidates = index.get(identity(required), [])
                 if kind == "map":
-                    bound = bound.get("selector")
-                    valid = (
-                        None
-                        if bound is None
-                        else bound
-                        == dict(
-                            kind="map-block", map=required["identity"]["map"], block=want["block"]
-                        )
-                        and used["used"].get("word") == want["word"]
-                    )
-                elif kind == "entity":
-                    valid = None if bound is None else bound == dict(kind="entity", **want)
+                    candidates = [
+                        r
+                        for r in candidates
+                        if r["used"].get("tile") == want["tile"]
+                        and r["used"].get("block") == want["block"]
+                    ]
+                    visual = maps[required["identity"]["map"]]
                     check(
                         family,
-                        "reached sprite original pointer/palette/decode",
-                        sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
-                        and want["sprite"] in source_sprites,
+                        "required logical block/tile source word",
+                        0 <= want["block"] < len(visual["blocks"])
+                        and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
                     )
                 else:
-                    valid = (
-                        None
-                        if bound is None
-                        else bound.get("texturePresent")
-                        and bound.get("selector") == dict(kind="portrait", **want)
-                    )
+                    candidates = [r for r in candidates if r.get("expected") == want]
+                check(family, "required actual texture use", True if candidates else None)
+                for used in candidates:
+                    bound = used["used"]
+                    if kind == "map":
+                        bound = bound.get("selector")
+                        valid = (
+                            None
+                            if bound is None
+                            else bound
+                            == dict(
+                                kind="map-block",
+                                map=required["identity"]["map"],
+                                block=want["block"],
+                            )
+                            and used["used"].get("word") == want["word"]
+                        )
+                    elif kind == "entity":
+                        valid = None if bound is None else bound == dict(kind="entity", **want)
+                        check(
+                            family,
+                            "reached sprite original pointer/palette/decode",
+                            sprites.get(want["sprite"]) == source_sprites.get(want["sprite"])
+                            and want["sprite"] in source_sprites,
+                        )
+                    else:
+                        valid = (
+                            None
+                            if bound is None
+                            else bound.get("texturePresent")
+                            and bound.get("selector") == dict(kind="portrait", **want)
+                        )
+                        check(
+                            family,
+                            "reached portrait original decode/tile composition",
+                            portraits.get(want["portrait"])
+                            == source_portraits.get(want["portrait"])
+                            and want["portrait"] in source_portraits,
+                        )
+                        original = source_portraits.get(want["portrait"])
+                        tiles = list(range(64))
+                        if original:
+                            for changes in (
+                                (original["eyes"] if want["eyes"] else []),
+                                (original["mouth"] if want["mouth"] else []),
+                            ):
+                                for change in changes:
+                                    x, y, alternate_x, alternate_y = change
+                                    tiles[y * 8 + x] = alternate_y * 8 + alternate_x
+                        check(
+                            family,
+                            "portrait source alternate tile selection",
+                            None if original is None else want["tiles"] == tiles,
+                        )
                     check(
-                        family,
-                        "reached portrait original decode/tile composition",
-                        portraits.get(want["portrait"]) == source_portraits.get(want["portrait"])
-                        and want["portrait"] in source_portraits,
+                        family, "bound texture selector matches logical source requirement", valid
                     )
-                    original = source_portraits.get(want["portrait"])
-                    tiles = list(range(64))
-                    if original:
-                        for changes in (
-                            (original["eyes"] if want["eyes"] else []),
-                            (original["mouth"] if want["mouth"] else []),
-                        ):
-                            for change in changes:
-                                x, y, alternate_x, alternate_y = change
-                                tiles[y * 8 + x] = alternate_y * 8 + alternate_x
-                    check(
-                        family,
-                        "portrait source alternate tile selection",
-                        None if original is None else want["tiles"] == tiles,
+                    result["joins"].append(
+                        dict(kind=kind, identity=required["identity"], expected=want, value=valid)
                     )
-                check(family, "bound texture selector matches logical source requirement", valid)
-                result["joins"].append(
-                    dict(kind=kind, identity=required["identity"], expected=want, value=valid)
-                )
 
         # Source recipe for the accepted three-raster extension, separate from base42.
-        field = read(scene_path.parent / "field-death-provenance.json")
-        field_valid = (
-            field["upstreamCommit"] == UPSTREAM
-            and field["romSha256"] == ROM
-            and field["effectSprite"] == 63
-        )
-        field_valid &= field["allyAssignments"] == [
-            dict(character=r["character"], sprite=r["sprite"])
-            for r in compiler.initial_ally_sprites()[:3]
-        ]
-        field_valid &= (
-            rom[field["enemyTableAddress"] + field["enemyId"]] == field["enemySprite"] == 103
-        )
-        palette = [
-            md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
-            for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
-        ]
-        for direction, span in enumerate(field["spans"]):
-            entry = PLAYER_POINTER_TABLE_ADDRESS + (63 * 3 + direction) * 4
-            address = int.from_bytes(rom[entry : entry + 4], "big")
-            decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576)
-            pixels = bytes(
-                _combine_player_halves(
-                    _render_player_frame(decoded.output[:288], palette),
-                    _render_player_frame(decoded.output[288:], palette),
-                )
+        with evaluated("scene", "field-death source"):
+            field = read(scene_path.parent / "field-death-provenance.json")
+            field_valid = (
+                field["upstreamCommit"] == UPSTREAM
+                and field["romSha256"] == ROM
+                and field["effectSprite"] == 63
             )
-            raster = scene["rasters"][scene["fieldDeath"]["exitFrames"][direction]]
-            field_valid &= span == dict(
-                pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed
-            )
+            field_valid &= field["allyAssignments"] == [
+                dict(character=r["character"], sprite=r["sprite"])
+                for r in compiler.initial_ally_sprites()[:3]
+            ]
             field_valid &= (
-                base64.b64decode(raster["data"], validate=True) == pixels
-                and hashlib.sha256(pixels).hexdigest().upper() == raster["sha256"]
+                rom[field["enemyTableAddress"] + field["enemyId"]] == field["enemySprite"] == 103
             )
-        check("scene", "field death original ROM spans and assignments", field_valid)
-        scene_rows = actual.get("sceneObservations", [])
-        check("scene", "reached scene observation channel", True if scene_rows else None)
-        for row in scene_rows:
-            scene_state = row["scene"]
-            fairy = (scene_state.get("healing") or {}).get("Fairy")
-            if scene_state.get("visible") and fairy and fairy.get("Control"):
-                needed = {}
-                for i, instance in enumerate(fairy["Fairies"]):
-                    if instance["Active"]:
-                        needed["FairyBody" + str(i)] = scene["healing"]["bodies"][
-                            int(instance["BodyFrame"])
-                        ]
-                        needed["FairyWings" + str(i)] = scene["healing"]["wings"][
-                            int(instance["WingFrame"])
-                        ]
-                for i, dust in enumerate(fairy["Dust"]):
-                    if dust["Age"]:
-                        needed["FairyDust" + str(i)] = scene["healing"]["dust"][int(dust["Frame"])]
-                mounted = {s["name"]: s for s in scene_state.get("fairySprites", [])}
-                for name, resource in needed.items():
-                    node = mounted.get(name, {}).get("binding")
-                    check(
-                        "scene",
-                        "required fairy mounted texture " + name,
-                        None
-                        if node is None
-                        else node.get("resource") == resource
-                        and node.get("texturePresent")
-                        and node.get("visible"),
+            palette = [
+                md_palette_color(int.from_bytes(rom[i : i + 2], "big"))
+                for i in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
+            ]
+            for direction, span in enumerate(field["spans"]):
+                entry = PLAYER_POINTER_TABLE_ADDRESS + (63 * 3 + direction) * 4
+                address = int.from_bytes(rom[entry : entry + 4], "big")
+                decoded = decode_basic_compressed(rom[address:], expected_output_bytes=576)
+                pixels = bytes(
+                    _combine_player_halves(
+                        _render_player_frame(decoded.output[:288], palette),
+                        _render_player_frame(decoded.output[288:], palette),
                     )
-            if scene_state.get("fieldDeath"):
-                actors = row.get("fieldActors")
-                check(
-                    "scene",
-                    "actual field-death consumer channel",
-                    True if actors is not None else None,
                 )
-                if scene_state["phase"] in ("FieldSpin", "FieldExit"):
-                    mounted = {a["id"]: a.get("sprite") for a in actors or []}
-                    for dead in scene_state["fieldDeath"]["actors"]:
-                        node = mounted.get(dead)
-                        check(
-                            "scene",
-                            "required dead actor remains projected during its source effect",
-                            None
-                            if node is None
-                            else node.get("visible") and node.get("texturePresent"),
-                        )
-                for actor in actors or []:
-                    sprite = actor.get("sprite")
-                    if not sprite or not sprite.get("visible"):
-                        continue
-                    selector = sprite.get("resourceSelector")
-                    facing = sprite["facing"]
-                    direction = 0 if facing == 1 else 2 if facing == 3 else 1
-                    ally = next(
-                        (
-                            a["sprite"]
-                            for a in scene["fieldDeath"]["allies"]
-                            if actor["id"] == "ally-" + str(a["character"])
-                        ),
-                        None,
-                    )
-                    original_sprite = (
-                        ally if ally is not None else scene["fieldDeath"]["enemies"][0]["sprite"]
-                    )
-                    expected_sprite = (
-                        63
-                        if actor["id"] in scene_state["fieldDeath"]["actors"]
-                        and scene_state["phase"] == "FieldExit"
-                        else original_sprite
-                    )
-                    check(
-                        "scene",
-                        "actual field-death assigned texture",
-                        None
-                        if selector is None
-                        else selector
-                        == dict(
-                            sprite=expected_sprite,
-                            direction=direction,
-                            frame=sprite["walkingFrame"],
-                            raster=scene["fieldDeath"]["exitFrames"][direction]
-                            if expected_sprite == 63
-                            else None,
-                        )
-                        and sprite.get("texturePresent")
-                        and sprite.get("visibleInTree"),
-                    )
+                raster = scene["rasters"][scene["fieldDeath"]["exitFrames"][direction]]
+                field_valid &= span == dict(
+                    pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed
+                )
+                field_valid &= (
+                    base64.b64decode(raster["data"], validate=True) == pixels
+                    and hashlib.sha256(pixels).hexdigest().upper() == raster["sha256"]
+                )
+            check("scene", "field death original ROM spans and assignments", field_valid)
         return finish()
     except (FileNotFoundError, KeyError, subprocess.CalledProcessError):
         for family in ("map", "entity", "scene"):
