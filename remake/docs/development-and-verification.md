@@ -3446,10 +3446,96 @@ not. Other errors remain failures. A green report with callback/script errors is
 The continuous winning and bound victory/return scope above has native acceptance;
 executable H4 policy cutover and unobserved outcome/return variants remain open.
 
+## Bounded H4 capture
+
+The H4 input probe defaults to `sf2-observation-jsonl-v1`. Its existing ignored output destination
+contains a header, ordered records and a successful terminal after the writer drains, flushes and
+closes. Each envelope has `captureSequence`, `channel`, zero-based channel `index`, and `payload`.
+A missing terminal, duplicate/gapped ordinal, detached descriptor or record after terminal fails
+readback. An output prefix is discovery evidence, never a completed capture. The observation does
+not alter gameplay clocks, logical services, RNG, rendering decisions or #517 speech policy.
+
+The probe installs `game/src/Observation/ObservationCapture.cs` before Main. Existing result,
+audio and actual draw boundaries supply immutable primitive facts. Main-thread Godot dictionaries
+are copied before enqueue; newly built CLR facts are transferred without a JSON/Godot round trip.
+Field consumer and camera callbacks expose only their control operands to GDScript. Their full
+state/projection evidence is snapshotted directly into owned CLR primitives on the game thread;
+lazy collections are materialized before enqueue, so later live changes cannot alter queued facts.
+One worker serializes UTF-8 and writes in capture order. No live Godot object crosses that boundary.
+Resource descriptors are emitted before their uses and reset when the owning view detaches;
+native session/revision/token/draw identity remains in the use record. Actual uses are retained,
+with at most 64 uses per draw envelope. The reader expands this transport batching to the existing
+logical resource-use records. It does not merge actual uses with independent requirements.
+
+Capture limits are 32MiB of conservative queued encoded size, 1MiB per encoded record, and 64MiB of
+charged pending storage including the fixed writer/control reserve. Active requirement keys,
+descriptors and route-control witnesses have explicit lifetime/count/memory limits. Overflow,
+serialization/I/O error, cancellation or session replacement fails the capture and promptly
+removes observation callbacks. Success requires an intact terminal and successful process/status
+contract; a performance sample from a failed capture cannot establish evidence or performance PASS.
+
+`SF2_CAPTURE_LEGACY=1` retains the historical JSON path for explicit compatibility diagnostics.
+`SF2_CAPTURE_STREAM=1` explicitly selects the stream. For a current H4 capture pass the same stream
+to `--actual` and `--outcome`; outcome records and summary are embedded channels. Historical
+JSON plus its separate outcome file remains readable. Existing comparison predicates, raw
+ordered differences, source provenance and Unavailable boundaries still apply.
+
+The current-format reader uses Python's standard-library SQLite for private derived records
+and explicit ordinal/native/resource joins. Reads are detached values: complete a mutable record
+before publishing it. Group children within a working database remain explicitly appendable;
+foreign published stores are copied when incorporated into a new report. Numeric equality and
+first-seen/native order remain comparison rules, not SQLite type-affinity or collation rules.
+Event-to-state associations and state sorting keep row references instead of repeating snapshots.
+Resource validation consumes bounded records without rebuilding a whole-history Python list.
+
+Each working database uses DELETE journaling with FULL synchronization. Transactions admit at
+most 256 record/index publications and 1MiB of encoded values; keys are independently record-bounded.
+The SQLite page-cache target is 8MiB, not a total-process memory guarantee. An encoded row has a
+1MiB limit and its decoded representation has a 16MiB limit. Cursors and bounded sort batches avoid
+whole-run indexes in Python. Closing without an explicit successful flush rolls back the remaining
+partial transaction; committed scratch prefixes remain discovery evidence. Historical plain JSON
+inputs retain their existing read path.
+
+CLI scratch directories are fresh `reader-*` children beside the explicitly selected report
+output, beneath the owning worktree's `local/`. Direct capture reads default to that input's parent.
+Relative paths resolve from the repository root, independently of root/package cwd. Opening a
+published report is read-only and does not create scratch; deriving new results creates a fresh
+working database only when needed.
+
+A current report uses `streamReportFormat=sf2-h4-sqlite-report-v1` and one companion named
+`<report filename>.sqlite` in the same directory. Its `streamDatabase` name resolves relative to
+the report. Publication copies all referenced derived records, including nested groups and records
+from other reports, into that companion using bounded operations. References inside the companion
+are store IDs, not source-database paths. The complete database commits and closes before the JSON
+entry point is published. A failed write does not publish a successful entry point; retain its
+partial artifacts and choose a fresh output name for a later run.
+
+Preserve or move the report and its companion together. Reopen the pair through the maintained
+reader; previous scratch or input-report databases are not needed for derived-row access, including
+matrix output. Historical evidence/provenance paths remain provenance and are not rewritten by
+this storage transport. Earlier private `sf2-h4-stream-report-v1` diagnostics require their retained
+reader source version; there is no second maintained write backend. Databases, captures, reports
+and extracted inputs remain private and are never committed.
+
+Use affected adapter compilation, probe check-only, direct writer failures/bounds, retained-record
+comparison and the explicitly allocated native performance window. These are direct verification
+drives, not tests of verification helpers. Capture availability does not close missing original
+map working-layout operands, C/D observations or full H4 acceptance. The bounded performance and
+correction evidence belongs to [Issue #605](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/605).
+
+For bounded route timing, `ReadCaptureWitness(true)` supplies actual entity position/facing/busy,
+text/portrait, focus and draw identities without serializing unused resource history. Preserve full
+initial/final snapshots outside measurement and field equality against the full reader in both
+capture modes. A changed timing reader requires a matched off/on pair with the same helper, build
+and settings. GDScript calls pass the witness mode explicitly; C# optional defaults are not supplied
+by Godot's dynamic `call` bridge. Production capture callbacks use `false` and retain full evidence
+through their separate synchronous snapshot path.
+
 ## Modern continuous H4 comparison
 
 The maintained module retains its default legacy JSONL/plan diagnostic. Select the explicit modern
-profile for ordinary sample/result JSON plus its outcome/settings/log and recorded process exit:
+profile for a current capture stream (also passed as outcome), or historical sample/result JSON
+plus its outcome file, with settings/log and recorded process exit:
 
 ```powershell
 uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `

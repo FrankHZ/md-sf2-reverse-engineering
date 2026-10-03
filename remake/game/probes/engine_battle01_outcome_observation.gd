@@ -157,7 +157,7 @@ func after_admission(s: Dictionary) -> Dictionary:
             issue = "battle-viewport"
             break
         var step := choose_command(s, lose)
-        outcome_records.append({"label":"action-selected","decision":step,"state":s})
+        capture_row("outcomeRecords",{"label":"action-selected","decision":step,"state":s}, outcome_records)
         for i in range(1, step.path.size()):
             var p: Dictionary = step.path[i]
             var old: Dictionary = step.path[i - 1]
@@ -189,7 +189,7 @@ func after_admission(s: Dictionary) -> Dictionary:
                 break
         await key(KEY_ENTER)
         s = await outcome_settle()
-        outcome_records.append({"actor":step.actor,"round":step.round,"action":step.action,"target":step.target,"map":s.get("map"),"failure":s.failure})
+        capture_row("outcomeRecords",{"actor":step.actor,"round":step.round,"action":step.action,"target":step.target,"map":s.get("map"),"failure":s.failure}, outcome_records)
         if issue != "": break
     if issue == "":
         if s.has("stage") or s.stop != "PlayerInput" or s.wait != null or s.battleMounted or not held_battle:
@@ -218,17 +218,21 @@ func after_admission(s: Dictionary) -> Dictionary:
                 s = await outcome_settle()
                 if player(s).x != down_before.x or player(s).y != down_before.y + 384: issue = "actual-return-down"
                 await settled_endpoint("after-down")
-    var file = FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".outcome.json", FileAccess.WRITE)
-    file.store_string(JSON.stringify({"issue":issue,"lose":lose,"initialGold":initial_gold,"records":outcome_records,"programs":after_programs.keys(),
-        "heldBattle":held_battle,"mosaicOutDraws":after_mosaic,"whiteSeen":after_white,"soundStarts":after_sounds,"endpoints":endpoint_records,"final":s}, "  "))
-    file.close()
+    if capture == null:
+        var file = FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".outcome.json", FileAccess.WRITE)
+        file.store_string(JSON.stringify({"issue":issue,"lose":lose,"initialGold":initial_gold,"records":outcome_records,"programs":after_programs.keys(),
+            "heldBattle":held_battle,"mosaicOutDraws":after_mosaic,"whiteSeen":after_white,"soundStarts":after_sounds,"endpoints":endpoint_records,"final":s}, "  "))
+        file.close()
+    else:
+        capture_row("outcomeSummary",{"issue":issue,"lose":lose,"initialGold":initial_gold,"programs":after_programs.keys(),
+            "heldBattle":held_battle,"mosaicOutDraws":after_mosaic,"whiteSeen":after_white,"soundStarts":after_sounds,"final":s}, [])
     return s
 
 func settled_endpoint(label: String) -> void:
     for update in range(2):
         await process_frame
         var s := state()
-        endpoint_records.append({"label":label,"update":update,"hostUpdate":Engine.get_process_frames(),"state":s})
+        capture_row("outcomeEndpoints",{"label":label,"update":update,"hostUpdate":Engine.get_process_frames(),"state":s}, endpoint_records)
         if not s.get("canWaitAtInput", false) or s.wait != null or s.cursor != null or s.battleMounted or s.tickDebt != 0 or s.failure != null:
             issue = "endpoint-not-ready:" + label
 
@@ -254,7 +258,7 @@ func outcome_settle() -> Dictionary:
         if s.cursor != null: after_programs[s.cursor.Program] = true
         if has_method("h4_reveal"): call("h4_reveal", s)
         if s.get("canWaitForText", false):
-            outcome_records.append({"label":"outcome-text-input","state":s})
+            capture_row("outcomeRecords",{"label":"outcome-text-input","state":s}, outcome_records)
             await key(KEY_ENTER)
         elif s.wait == "DialogueWait" and s.get("fieldText") == null:
             if not seen_texts.has(s.token):
