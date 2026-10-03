@@ -3858,6 +3858,18 @@ families. No new original runtime capture follows from this join. Historical rep
 failed native attempts remain preserved; the corrected world gives A a distinct content cohort and
 does not backfill B/C/D or close the full continuous settings matrix.
 
+The corrected operation reader requires explicit camera target presence, in-call stack evidence and
+actual initialization/shared-tail effects. Pinned `InitializeMapEntities`,
+`InitializeFollowerEntities`, `GetAllyMapsprite`, setup pointer/entity declarations and the existing
+population lowering supply the bounded rebuild allocation and sprite rules; preserve loads retain
+the prior physical set. Actual facing and all retained first-boundary allocation contexts are checked
+after source overrides. Shared-tail flag and counted membership states are read before return,
+separately from published operation labels. **Unknown (actual observation):** calls at4107 and12608
+have no retained caller-stack operand before their enclosing returns. Other later stacks cannot
+supply those intervals; the whole route/setup/caller child remains Unavailable despite correct
+observed source nesting and continuation. The other four operation-flow children pass the corrected
+bounded readback, without a new native or original capture.
+
 The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
 now chooses one progress step per existing common service from semantic request, arm-before-sample
 and complete three-service helper groups. The optional finite profile19/505 and actual playback

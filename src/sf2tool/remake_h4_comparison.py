@@ -3462,7 +3462,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         from sf2tool.h2.map_content import _encode_source
         from sf2tool.h2.map_import import _decode_source_table
         from sf2tool.h2.map_setup import _parse_routes
-        from sf2tool.remake_exploration_content import OriginalPrograms
+        from sf2tool.remake_exploration_content import OriginalPrograms, _tokens
 
         compiler = OriginalPrograms(
             {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
@@ -3709,6 +3709,18 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             if battle is None or battle.get(key) is None:
                 return False
             (flags.discard if key == "unlockedFlag" else flags.add)(battle[key])
+        elif e["Kind"] == "after-battle-join":
+            battle = next(
+                (
+                    m["battle"]
+                    for m in maps.values()
+                    if m.get("battle") and m["battle"].get("encounter") == "battle-1"
+                ),
+                None,
+            )
+            if battle is None:
+                return False
+            join_effect(flags, battle["outcome"]["joinMember"])
         return True
 
     def flags_at(seq):
@@ -3856,6 +3868,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 x
                 for x in states
                 if x[0] >= transfer["Sequence"]
+                and x[0] < stop
                 and x[3].get("map") == request["map"]
                 and entity(x[3], "entity-0")
             ),
@@ -3865,6 +3878,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         if post:
             pose = entity(post[3], "entity-0")
             expected_position = request["position"]
+            expected_facing = request["facing"]
             for e in ordered:
                 ins = instruction(e)
                 if (
@@ -3874,6 +3888,150 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     and ins["entity"] == "entity-0"
                 ):
                     expected_position = ins["position"]
+                if (
+                    transfer["Sequence"] < e["Sequence"] <= post[0]
+                    and ins
+                    and ins["op"] == "face"
+                    and ins["entity"] == "entity-0"
+                ):
+                    expected_facing = ins["facing"]
+            initialized_states = [
+                x[3]
+                for x in states
+                if x[0] == post[0] and x[3].get("map") == request["map"] and x[3].get("entities")
+            ]
+            for initialized in initialized_states:
+                player = entity(initialized, "entity-0") or {}
+                check(
+                    names[3],
+                    "source requested or initialized player facing",
+                    None if player.get("facing") is None else player["facing"] == expected_facing,
+                    seq,
+                )
+            # Pinned setup entity declarations and the existing population lowering
+            # supply allocation identity/sprites, independently of the actual list.
+            population = None
+            templates = None
+            try:
+                population = compiler.population()
+                check(
+                    names[3],
+                    "source allocation population",
+                    target.get("population") == population,
+                    seq,
+                )
+                map_number = int(request["map"].split("-")[1])
+                folder = f"disasm/data/maps/entries/map{map_number:02d}/mapsetups/"
+                pointer = route["defaultPointer"] if route else None
+                table = (
+                    next(
+                        (
+                            path
+                            for path in sorted(tracked)
+                            if path.startswith(folder)
+                            and Path(path).name.startswith("pointertable")
+                            and re.search(
+                                rf"^{re.escape(pointer)}:",
+                                (source_root / path).read_text(encoding="utf-8"),
+                                re.MULTILINE,
+                            )
+                        ),
+                        None,
+                    )
+                    if pointer
+                    else None
+                )
+                templates = []
+                if table:
+                    symbol = compiler.source_operations(table, pointer)[0]["operandText"]
+                    entity_path = next(
+                        path
+                        for path in sorted(tracked)
+                        if path.startswith(folder)
+                        and Path(path).name.startswith("s1_entities")
+                        and re.search(
+                            rf"^{re.escape(symbol)}:",
+                            (source_root / path).read_text(encoding="utf-8"),
+                            re.MULTILINE,
+                        )
+                    )
+                    npc = population["nonAllyStart"]
+                    for row in compiler.source_operations(entity_path, symbol):
+                        if row["opcode"] == "msEntitiesEnd":
+                            break
+                        if row["opcode"] not in ("msFixedEntity", "msWalkingEntity"):
+                            raise ValueError("unbound setup entity declaration")
+                        args = _tokens(row["operandText"])
+                        sprite = compiler.number(args[3])
+                        if sprite >= compiler.equates["MAPSPRITES_SPECIALS_START"]:
+                            raise ValueError("unbound special allocation")
+                        identity = sprite if sprite < population["allyCount"] else npc
+                        if identity == npc:
+                            npc += 1
+                        templates.append(("entity-" + str(identity), sprite))
+                check(
+                    names[3],
+                    "source setup entity declarations",
+                    [(p["id"], p.get("sprite")) for p in target["entities"]] == templates,
+                    seq,
+                )
+            except (KeyError, OSError, ValueError, StopIteration):
+                templates = None
+                check(names[3], "source allocation operands absent", None, seq)
+            expected_signature = None
+            if request["loadMode"] == "preserve":
+                prior = anchor(transfer["Sequence"] - 1, "entities")
+                if prior:
+                    expected_signature = signature(prior[3])
+            elif templates is not None and population and flags is not None:
+                sprites = {
+                    p["character"]: (
+                        p["unjoinedSprite"]
+                        if p["joinedFlag"] is not None and p["joinedFlag"] not in flags
+                        else p["sprite"]
+                    )
+                    for p in population["allySprites"]
+                }
+                identities = [("entity-0", sprites[0])]
+                identities.extend(
+                    ("entity-" + str(p["character"]), sprites.get(p["character"], p["sprite"]))
+                    for p in population["followers"]
+                    if p["flag"] in flags
+                )
+                for identity, sprite in templates:
+                    if identity not in {p[0] for p in identities}:
+                        identities.append(
+                            (identity, sprites.get(int(identity.split("-")[1]), sprite))
+                        )
+                expected_signature = [
+                    (identity, slot, sprite) for slot, (identity, sprite) in enumerate(identities)
+                ]
+            if expected_signature is not None:
+                for e in ordered:
+                    ins = instruction(e)
+                    if (
+                        transfer["Sequence"] < e["Sequence"] <= post[0]
+                        and ins
+                        and ins["op"] == "sprite"
+                    ):
+                        expected_signature = [
+                            (identity, slot, ins["sprite"] if identity == ins["entity"] else sprite)
+                            for identity, slot, sprite in expected_signature
+                        ]
+            for initialized in initialized_states:
+                check(
+                    names[3],
+                    "actual initialized physical allocation and sprites",
+                    None
+                    if expected_signature is None
+                    or any(
+                        p.get(k) is None
+                        for p in initialized["entities"]
+                        for k in ("id", "slot", "sprite")
+                    )
+                    else signature(initialized) == expected_signature,
+                    seq,
+                )
             check(
                 names[3],
                 "destination or intervening source initialization pose",
@@ -4035,7 +4193,14 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     executed[later - 1][1]["op"] in ("end", "end-map-script", "return"),
                     seq,
                 )
-                held = anchor(seq, "callers", False)
+                held = next(
+                    (
+                        x
+                        for x in states
+                        if seq <= x[0] < executed[later][0]["Sequence"] and "callers" in x[3]
+                    ),
+                    None,
+                )
                 if held is None:
                     check(names[0], "held caller operand absent", None, seq)
                 if held and held[0] < executed[later][0]["Sequence"]:
@@ -4306,6 +4471,62 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 previous,
             )
             if effect:
+                before_flags = flags_at(effect["Sequence"] - 1)
+                after = next(
+                    (
+                        x
+                        for x in states
+                        if effect["Sequence"] <= x[0]
+                        and returned
+                        and x[0] <= returned["Sequence"]
+                        and "flags" in x[3]
+                    ),
+                    None,
+                )
+                expected_lists = None
+                if before_flags is not None:
+                    if kind == "after-battle-join":
+                        expected_lists = join_effect(before_flags, operand)
+                    elif kind == "battle-unlock-cleared":
+                        before_flags.discard(operand)
+                    else:
+                        before_flags.add(operand)
+                    if after:
+                        for writer in ordered:
+                            if effect["Sequence"] < writer["Sequence"] <= after[
+                                0
+                            ] and not write_flags(before_flags, writer):
+                                before_flags = None
+                                break
+                for family in (names[2], names[4]):
+                    check(
+                        family,
+                        "actual shared-tail flag effect " + kind,
+                        None
+                        if before_flags is None or after is None
+                        else before_flags == set(after[3]["flags"]),
+                        effect["Sequence"],
+                    )
+                    if kind == "after-battle-join":
+                        lists = next(
+                            (
+                                x
+                                for x in states
+                                if effect["Sequence"] <= x[0]
+                                and returned
+                                and x[0] <= returned["Sequence"]
+                                and "partyLists" in x[3]
+                            ),
+                            None,
+                        )
+                        check(
+                            family,
+                            "actual shared-tail counted membership",
+                            None
+                            if lists is None or expected_lists is None
+                            else lists[3]["partyLists"] == expected_lists,
+                            effect["Sequence"],
+                        )
                 previous = effect["Sequence"]
     for pid in ("bbcs-01", "abcs-battle01"):
         body_events = [(e, ins) for e, ins in executed if e["Program"]["Program"] == pid]
@@ -4456,7 +4677,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 held = records[seq].get("state", {})
                 observed = (
                     None
-                    if held.get("logicalView") is None
+                    if held.get("logicalView") is None or "TargetSlot" not in held["logicalView"]
                     else held["logicalView"].get("TargetSlot") is None
                 )
                 if observed is None and pid == "bbcs-01":

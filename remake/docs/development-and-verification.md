@@ -3757,8 +3757,8 @@ the accepted base plus actual observation delta. Failed native01 (observer error
 wait timeout), null-window01 (real focus loss) and null-window02 (missing post-draw assertion despite
 observed focus/service recovery) remain completed failures, not successful continuous evidence.
 
-Direct readback gives the five children PASS with 2,245 PASS / 16 Unavailable assertions and no
-required FAIL; the 15 other children and matrix obligation stay open. This candidate awaits
+Corrected direct readback gives four children PASS with 2,244 PASS / 17 Unavailable assertions and no
+required FAIL; the route/setup/caller child, 15 other children and matrix obligation stay open. This candidate awaits
 independent acceptance; accepted A20 and historical matrix evidence are not retroactively changed.
 Nine normal05 pre-AB checkpoints and Left remain exact. Gameplay equivalence changes only its raw
 inputs/observations components: six post-AB input locations carry the two source PC additions,
@@ -3777,3 +3777,16 @@ and contradictory evidence; closed mandatory inventory and corruption checks; ex
 assertions and baselines; affected Ruff/docs/private-boundary checks; actual adapter build; committed
 dependency plan and exact-head CI. No verifier-unit suite or normal/full/H3 run is implied. New
 original captures or B/C/D recollection require their own concrete allocation.
+
+The original operation-flow candidate's four review failures are retained in the Issue/PR handoff
+and local `root-counterexamples-01.json` / `root-effects-01.json`. Corrections require explicit null
+camera operands, caller lookup inside each invocation/return interval, actual first-destination
+facing/allocation/slot/sprite effects and independent shared-tail flags/counts. Use existing source
+population/setup lowering; account for source overrides and preserve-mode retention. Never borrow a
+later stack or substitute event labels for flag effects. In this unchanged A03, the calls at4107 and
+12608 lack in-call stack observations; the whole route child is honestly Unavailable. Reproduce with
+`report-corrected-final-01.json`, `direct-correction-02.json` and their fresh current/mixed matrix
+reports under the same ignored output root. The 24 original direct cases and four integrity
+corruptions remain required alongside targeted wrong/missing/mixed cases for these four corrections.
+Reuse A03 and its exact tested adapter/probe identity; these comparator corrections require no SDK,
+native, B/C/D, original-source acquisition or broad suite rerun.
