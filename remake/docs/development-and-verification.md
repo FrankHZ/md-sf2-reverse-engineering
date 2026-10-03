@@ -3757,9 +3757,11 @@ the accepted base plus actual observation delta. Failed native01 (observer error
 wait timeout), null-window01 (real focus loss) and null-window02 (missing post-draw assertion despite
 observed focus/service recovery) remain completed failures, not successful continuous evidence.
 
-Corrected direct readback gives four children PASS with 2,244 PASS / 17 Unavailable assertions and no
-required FAIL; the route/setup/caller child, 15 other children and matrix obligation stay open. This candidate awaits
-independent acceptance; accepted A20 and historical matrix evidence are not retroactively changed.
+The bounded direct readback gives four operation-flow children PASS with 2,244 PASS / 17 Unavailable
+assertions and no required FAIL. The route/setup/caller child remains Unavailable because calls
+at4107 and12608 lack retained in-call stack operands. Fifteen other children and the matrix
+obligation remain open; full H4 remains Unavailable. Historical matrix evidence retains its own
+content and observation boundary.
 Nine normal05 pre-AB checkpoints and Left remain exact. Gameplay equivalence changes only its raw
 inputs/observations components: six post-AB input locations carry the two source PC additions,
 and actual service/effect events remain unnormalized. Other equivalence components remain exact.
