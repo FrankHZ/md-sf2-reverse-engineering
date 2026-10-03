@@ -3,6 +3,9 @@ extends "res://probes/engine_battle01_outcome_observation.gd"
 # External native observation. Authored variations are written only to the caller's
 # ignored destination, then admitted by the ordinary Main/startup path.
 var samples: Array = []
+var selected_label_font: Font
+var selected_label_font_size := -1
+var label_font_facts: Dictionary = {}
 var failures: Array = []
 var input_case := OS.get_environment("SF2_INPUT_CASE")
 var h4_variant := OS.get_environment("SF2_H4_VARIANT")
@@ -51,8 +54,13 @@ var resource_map := ""
 var resource_visit := 0
 var resource_progress: Dictionary = {}
 var reading_resource_draw := false
+var resource_lifetime := ""
+var current_draw_uses: Array = []
 
 func save_resource_progress() -> void:
+    if capture != null:
+        capture_row("resourceProgress",resource_progress,[])
+        return
     var file := FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".progress.json", FileAccess.WRITE)
     file.store_string(JSON.stringify(resource_progress))
     file.close()
@@ -95,41 +103,42 @@ var winning_focus_recovery: Array = []
 var focus_recovery_pending := false
 
 func record_camera_before_draw() -> void:
-    if not parallax_case or not is_instance_valid(view): return
-    var s := state()
+    if not parallax_case or not is_instance_valid(view) or capture_failed: return
+    var s: Dictionary = view.call("ReadCaptureClock") if capture != null and view.has_method("ReadCaptureClock") else state()
     # This unattended winning capture has no intentional focus-loss scenario.
     # Request genuine window focus once per loss; the application's guard stays active.
     if winning_case:
         if not root.has_focus() and not focus_recovery_pending:
-            winning_focus_recovery.append({"kind":"requested","focused":root.has_focus(),
-                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")})
+            capture_row("winningFocusRecovery",{"kind":"requested","focused":root.has_focus(),
+                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")}, winning_focus_recovery)
             focus_recovery_pending = true
             root.grab_focus()
         elif root.has_focus() and focus_recovery_pending:
-            winning_focus_recovery.append({"kind":"restored","focused":root.has_focus(),
-                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")})
+            capture_row("winningFocusRecovery",{"kind":"restored","focused":root.has_focus(),
+                "processFrame":Engine.get_process_frames(),"revision":s.get("revision"),"simulationTick":s.get("simulationTick")}, winning_focus_recovery)
             focus_recovery_pending = false
     if not s.has("simulationTick"): return
     camera_exposure_before = {"tick":s.simulationTick,"token":s.token,
         "x":s.presentation.cameraX,"y":s.presentation.cameraY}
 
 func record_camera_draw() -> void:
-    if not is_instance_valid(view): return
+    if not is_instance_valid(view) or capture_failed: return
+    if capture != null and view.has_method("CaptureNeedsPostDraw") and not view.call("CaptureNeedsPostDraw",raw_text_case,choice_case,white_palette_case,battle_entry_case): return
     var s := state()
     if not s.has("presentation"): return
     var presenting: Dictionary = s.get("presentationWait") if s.get("presentationWait") != null else {}
     var resource = presenting.get("Cue", {}).get("Resource")
     if s.get("entityWait") != null or s.get("nod") != null or s.get("fade") != null or resource in ["nod", "shiver", "mosaic-in", "mosaic-out", "black", "white"]:
-        consumer_boundaries.append({"projectionStage":"frame-post-draw","inputOrdinal":active_input,
-            "state":consumer_context(s),"releases":[],"drawDelivery":consumer_draw_delivery(s)})
+        capture_row("consumerBoundaries",{"projectionStage":"frame-post-draw","inputOrdinal":active_input,
+            "state":consumer_context(s),"releases":[],"drawDelivery":consumer_draw_delivery(s)}, consumer_boundaries)
     if raw_text_case and s.textId == 447:
         var dialogue := view.get_node("Dialogue") as Label
-        raw_draws.append({"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
+        capture_row("rawTextDraws",{"tick":s.simulationTick,"token":s.token,"visible":dialogue.is_visible_in_tree(),
             "text":dialogue.text,"characters":dialogue.visible_characters,"total":dialogue.get_total_character_count(),
-            "position":str(dialogue.global_position),"size":str(dialogue.size)})
+            "position":str(dialogue.global_position),"size":str(dialogue.size)}, raw_draws)
     if choice_case and s.get("choice") != null:
-        choice_draws.append({"tick":s.simulationTick,"token":s.token,"choice":s.choice,
-            "projection":s.choiceProjection,"hideWindows":s.logicalView.HideWindows})
+        capture_row("choiceDraws",{"tick":s.simulationTick,"token":s.token,"choice":s.choice,
+            "projection":s.choiceProjection,"hideWindows":s.logicalView.HideWindows}, choice_draws)
     var p = s.get("cameraProjection")
     if p == null or s.logicalView == null or p.simulationTick != s.simulationTick or p.token != s.token: return
     # The white slice retains delivered helper/input projections, not redundant earlier-route draw traces.
@@ -138,6 +147,11 @@ func record_camera_draw() -> void:
         # One mounted projection per generic token; delivery/restoration states are retained separately.
         if camera_draw_seen.has("entry-" + str(s.token)): return
         camera_draw_seen["entry-" + str(s.token)] = true
+    if capture != null:
+        var lifetime := str([s.token,s.simulationTick])
+        if camera_draw_seen.get("lifetime") != lifetime:
+            camera_draw_seen.clear()
+            camera_draw_seen["lifetime"] = lifetime
     var identity := str([s.simulationTick, s.token])
     if camera_draw_seen.has(identity): return
     camera_draw_seen[identity] = true
@@ -150,21 +164,28 @@ func record_camera_draw() -> void:
             check(is_equal_approx(camera_exposure_before.x, x) and is_equal_approx(camera_exposure_before.y, y),
                 "Exposed main camera agrees before unequal-plane draw")
             camera_exposure_checks += 1
-    camera_draws.append({"projection":p, "logicalView":s.logicalView, "entities":s.entities,
-        "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}})
+    capture_row("cameraDraws",{"projection":p, "logicalView":s.logicalView, "entities":s.entities,
+        "exposedBefore":camera_exposure_before,"exposedAfter":{"x":s.presentation.cameraX,"y":s.presentation.cameraY}}, camera_draws)
 
 func record_resource_draw() -> void:
+    if capture != null: return # C# records immutable actual draw facts at this boundary.
     reading_resource_draw = true
     var s := state()
     reading_resource_draw = false
     record_field_resources(s)
 
 func record_field_resources(s: Dictionary) -> void:
+    current_draw_uses.clear()
     var p = s.get("cameraProjection")
     if p == null or p.revision != s.revision or p.map != s.map: return
     if resource_map != s.map:
         resource_map = s.map
     var phase: String = str(s.presentation.get("activeCue"))
+    var lifetime := str([resource_visit,s.map,phase])
+    if capture != null and lifetime != resource_lifetime:
+        resource_lifetime = lifetime
+        resource_use_seen.clear()
+        resource_requirement_seen.clear()
     var identity := {"sessionId":s.sessionId,"revision":s.revision,"observationSequence":s.observationSequence,
         "simulationTick":s.simulationTick,"token":s.token,"drawSequence":p.drawSequence,
         "visit":resource_visit,"map":s.map,"phase":phase}
@@ -179,16 +200,16 @@ func record_field_resources(s: Dictionary) -> void:
             var key := JSON.stringify(layer_key + [required.block,required.tile,required.word])
             if not resource_requirement_seen.has(key):
                 resource_requirement_seen[key] = true
-                resource_requirements.append({"identity":identity,"kind":"map","layer":item.name,
-                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"expected":required})
+                capture_row("resourceRequirements",{"identity":identity,"kind":"map","layer":item.name,
+                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"expected":required}, resource_requirements)
         for used in layer.get("resources", []):
             resource_check(used.get("selector") != null and used.selector.get("map") == s.map and used.selector.get("block") == used.block,
                 "Drawn map texture selector matches its actual layer/block")
             var key := JSON.stringify(layer_key + [used.tile,used.word,used.selector])
-            if not resource_use_seen.has(key):
-                resource_use_seen[key] = true
-                resource_uses.append({"identity":identity,"kind":"map","layer":item.name,
-                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"used":used})
+            if capture != null or not resource_use_seen.has(key):
+                if capture == null: resource_use_seen[key] = true
+                capture_row("resourceUses",{"identity":identity,"kind":"map","layer":item.name,
+                    "highPriority":layer.highPriority,"pass":layer.pass,"subject":layer.get("subject"),"resourceIdentity":used.get("resourceIdentity"),"used":used}, resource_uses)
     for actor in p.actors:
         if not actor.visible: continue
         var logical: Dictionary = {}
@@ -200,15 +221,19 @@ func record_field_resources(s: Dictionary) -> void:
         var key := JSON.stringify([resource_visit, s.map, phase, actor.slot, actor.entity, expected])
         if not resource_requirement_seen.has(key):
             resource_requirement_seen[key] = true
-            resource_requirements.append({"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,"expected":expected})
+            capture_row("resourceRequirements",{"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,"expected":expected}, resource_requirements)
         var used_key := key + JSON.stringify(actor.get("resourceSelector"))
         var selector = actor.get("resourceSelector")
         resource_check(selector != null and selector.get("sprite") == expected.sprite and selector.get("direction") == expected.direction
             and selector.get("half") == expected.half and selector.get("nod") == expected.nod,"Drawn entity texture matches logical subject")
-        if not resource_use_seen.has(used_key):
-            resource_use_seen[used_key] = true
-            resource_uses.append({"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,
-                "expected":expected,"used":actor.get("resourceSelector")})
+        if capture != null or not resource_use_seen.has(used_key):
+            if capture == null: resource_use_seen[used_key] = true
+            capture_row("resourceUses",{"identity":identity,"kind":"entity","subject":actor.entity,"slot":actor.slot,
+                "expected":expected,"resourceIdentity":actor.texture,"used":actor.get("resourceSelector")}, resource_uses)
+    if capture != null and (resource_use_seen.size() + resource_requirement_seen.size() > 8192 or not capture.call("ValidateControl",resource_requirement_seen.keys(),"active-requirement-keys")):
+        capture.call("Cancel","active-resource-identity-limit")
+        capture_failed = true
+        issue = "capture-active-resource-identity-limit"
     var portrait = s.get("portraitProjection")
     if portrait != null and portrait.get("id", -1) >= 0:
         var key := JSON.stringify([resource_visit,s.map,phase,portrait])
@@ -218,16 +243,21 @@ func record_field_resources(s: Dictionary) -> void:
         key = JSON.stringify([resource_visit,s.map,phase,expected])
         if not resource_requirement_seen.has(key):
             resource_requirement_seen[key] = true
-            resource_requirements.append({"identity":identity,"kind":"portrait","expected":expected})
+            capture_row("resourceRequirements",{"identity":identity,"kind":"portrait","expected":expected}, resource_requirements)
         var bound = s.get("portraitResourceProjection")
         resource_check(bound != null and bound.get("texturePresent",false) and bound.selector.get("portrait") == expected.portrait,
             "Drawn portrait texture selector matches logical window")
         var used_key := key + JSON.stringify(bound)
         if bound != null:
             used_key = key + JSON.stringify(bound.selector)
-        if not resource_use_seen.has(used_key):
-            resource_use_seen[used_key] = true
-            resource_uses.append({"identity":identity,"kind":"portrait","expected":expected,"used":bound})
+        if capture != null or not resource_use_seen.has(used_key):
+            if capture == null: resource_use_seen[used_key] = true
+            capture_row("resourceUses",{"identity":identity,"kind":"portrait","expected":expected,"resourceIdentity":bound.get("resourceIdentity"),"used":bound}, resource_uses)
+    if capture != null and not current_draw_uses.is_empty():
+        if not capture.call("RecordDrawUses",identity,current_draw_uses):
+            capture_failed = true
+            issue = "capture-failed:" + str(capture.call("Failure"))
+        current_draw_uses.clear()
     var milestone: String = "field-" + str(s.map)
     if not resource_progress.has(milestone):
         resource_progress[milestone] = {"sessionId":s.sessionId,"visit":resource_visit,"revision":s.revision,
@@ -255,28 +285,35 @@ func check(ok: bool, message: String) -> void:
         push_error(message)
 
 func read_sample(label: String) -> Dictionary:
+    capture_full_state = true
     var s := state()
-    samples.append({"label":label, "state":s})
+    capture_full_state = false
+    capture_row("samples",{"label":label, "state":s}, samples)
     check(s.failure == null, label + ": no application/adapter error")
     return s
 
 func state() -> Dictionary:
     var s := super.state()
+    if capture_failed: s["failure"] = issue
     var field_view := host.get_node_or_null("ExplorationSessionView") if is_instance_valid(host) else null
     var label := field_view.get_node_or_null("Dialogue") as Label if field_view != null else null
     if label != null and s.has("textId"):
         var font: Font = label.label_settings.font if label.label_settings != null and label.label_settings.font != null else label.get_theme_font("font")
-        var server := TextServerManager.get_primary_interface()
-        var faces: Array = []
-        for rid in font.get_rids():
-            faces.append({"family":server.font_get_name(rid),"style":server.font_get_style_name(rid),
-                "faceIndex":server.font_get_face_index(rid),"allowSystemFallback":server.font_is_allow_system_fallback(rid)})
+        var size: int = label.label_settings.font_size if label.label_settings != null else label.get_theme_font_size("font_size")
+        if capture == null or font != selected_label_font or size != selected_label_font_size:
+            selected_label_font = font
+            selected_label_font_size = size
+            var server := TextServerManager.get_primary_interface()
+            var faces: Array = []
+            for rid in font.get_rids():
+                faces.append({"family":server.font_get_name(rid),"style":server.font_get_style_name(rid),
+                    "faceIndex":server.font_get_face_index(rid),"allowSystemFallback":server.font_is_allow_system_fallback(rid)})
+            label_font_facts = {"resourceClass":font.get_class(),"size":size,"faces":faces}
         s["fieldLabel"] = {"visible":label.is_visible_in_tree(),"text":label.text,"visibleCharacters":label.visible_characters,
-            "totalCharacters":label.get_total_character_count(),"font":{"resourceClass":font.get_class(),
-                "size":label.label_settings.font_size if label.label_settings != null else label.get_theme_font_size("font_size"),"faces":faces}}
+            "totalCharacters":label.get_total_character_count(),"font":label_font_facts}
     if not h4_variant.is_empty():
         observation_session = s.get("sessionId")
-        poll_h4_audio()
+        if capture == null: poll_h4_audio()
         if s.get("scene") != null:
             var scene: Dictionary = s.scene.duplicate(true)
             # Retain changed mounted facts, not a redundant elapsed-clock trace.
@@ -287,9 +324,9 @@ func state() -> Dictionary:
                 field_actors.append({"id":actor.id,"hp":actor.hp,"position":{"x":actor.x,"y":actor.y},"sprite":actor.get("sprite")})
             var signature := JSON.stringify([scene,field_actors])
             if signature != last_scene_observation:
-                scene_observations.append({"sessionId":s.sessionId,"revision":s.revision,
+                capture_row("sceneObservations",{"sessionId":s.sessionId,"revision":s.revision,
                     "observationSequence":s.observationSequence,"inputOrdinal":active_input,
-                    "hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage,"scene":scene,"fieldActors":field_actors})
+                    "hostUpdate":Engine.get_process_frames(),"projectionStage":projection_stage,"scene":scene,"fieldActors":field_actors}, scene_observations)
                 last_scene_observation = signature
                 for milestone in ["fairy","death"]:
                     var reached: bool = not scene.get("fairySprites",[]).is_empty() if milestone == "fairy" else scene.get("fieldDeath") != null
@@ -300,14 +337,19 @@ func state() -> Dictionary:
         maximum_white = maxf(maximum_white, s.presentation.whiteOpacity)
         var p: Dictionary = s.presentation
         if p.activeCue in ["FadeIn", "FadeOut"]:
+            if capture != null and not white_tokens.has(s.token): white_tokens.clear()
             white_tokens[s.token] = p.activeCue
         if p.completedCueToken != null and white_tokens.has(p.completedCueToken):
             var receipt := {"token":p.completedCueToken, "kind":p.completedCueKind}
-            if not completed_white.has(receipt): completed_white.append(receipt)
+            if not completed_white.has(receipt):
+                completed_white.append(receipt)
+                if capture != null and (completed_white.size() > RETAINED_CONTROL_ROWS or not capture.call("ValidateControl",completed_white,"completed-white-control")):
+                    capture.call("Cancel","completed-white-control-limit")
     if not reading_resource_draw: compact_resource_projection(s)
     return s
 
 func poll_h4_audio() -> void:
+    if capture != null: return
     if not is_instance_valid(host) or not host.has_method("ReadAudioObservationJson"): return
     var playback = JSON.parse_string(host.call("ReadAudioObservationJson"))
     if not playback is Dictionary: return
@@ -334,12 +376,13 @@ func physical(code: int, pressed: bool) -> void:
     if not h4_variant.is_empty():
         before = h4_context(state())
         if pressed: active_input += 1
+        if capture != null: capture.call("SetInputOrdinal",active_input)
     if pressed and action == "confirm":
         var candidate := state()
         if candidate.get("visibleCharacters", -1) >= 0 and candidate.visibleCharacters < candidate.get("totalCharacters", 0):
             reveal_before = h4_context(candidate)
             audio_before = JSON.parse_string(host.call("ReadAudioObservationJson"))
-    var result_start := warp_records.size()
+    var result_start := capture_count("warpRecords",warp_records)
     input_delivering = not h4_variant.is_empty()
     var delivered := {"kind":"key", "code":code}
     if h4_variant in ["B", "D"] and action == "left" and (not stick_used or not pressed and not input_records.is_empty() and input_records.back().delivery.kind == "axis"):
@@ -380,15 +423,15 @@ func physical(code: int, pressed: bool) -> void:
     if not reveal_before.is_empty():
         # Synchronous real dispatch interval: no yielded frame or neighboring sample.
         var audio_after: Dictionary = JSON.parse_string(host.call("ReadAudioObservationJson"))
-        reveal_audio_pairs.append({"inputOrdinal":active_input,"delivery":delivered,
+        capture_row("revealAudioPairs",{"inputOrdinal":active_input,"delivery":delivered,
             "before":reveal_before,"after":h4_context(state()),"audioBefore":audio_before,
             "audioAfter":audio_after,
-            "resultStart":result_start,"resultEnd":warp_records.size()})
+            "resultStart":result_start,"resultEnd":capture_count("warpRecords",warp_records)}, reveal_audio_pairs)
     input_delivering = false
     if not h4_variant.is_empty():
-        input_records.append({"ordinal":active_input,"action":action,"pressed":pressed,
+        capture_row("inputRecords",{"ordinal":active_input,"action":action,"pressed":pressed,
             "delivery":delivered,"hostUpdate":Engine.get_process_frames(),"before":before,
-            "after":h4_context(state()),"resultStart":result_start,"resultEnd":warp_records.size()})
+            "after":h4_context(state()),"resultStart":result_start,"resultEnd":capture_count("warpRecords",warp_records)}, input_records)
 
 func h4_context(s: Dictionary) -> Dictionary:
     var result: Dictionary = {}
@@ -439,6 +482,7 @@ func h4_scene_ready() -> bool:
 
 func h4_reveal(s: Dictionary) -> void:
     if h4_variant != "C" or s.get("fieldText") == null or s.get("visibleCharacters", -1) < 0 or s.visibleCharacters >= s.totalCharacters or reveal_tokens.has(s.token): return
+    if capture != null: reveal_tokens.clear()
     reveal_tokens[s.token] = true
     var held := opening_semantic(s)
     physical(KEY_ENTER, true)
@@ -736,8 +780,8 @@ func observe_wait(result_json: String) -> void:
     check(result.failure == null, "Every submitted field command succeeds")
     for observation in result.observations:
         if observation.Kind == "gameplay-wait":
-            wait_receipts.append({"frame":Engine.get_process_frames(), "micros":Time.get_ticks_usec(),
-                "revision":result.revision})
+            capture_row("waitReceipts",{"frame":Engine.get_process_frames(), "micros":Time.get_ticks_usec(),
+                "revision":result.revision}, wait_receipts)
             if wait_receipts.size() == release_at:
                 physical(KEY_V, false)
 
@@ -806,6 +850,15 @@ func admit_field_paths() -> bool:
     field_paths = destinations
     # As in the scene/H4 observers, retain the fresh output handle. Actual I/O can still fail
     # after preflight; report the run-owned partial files, without a rollback/transaction scheme.
+    if OS.get_environment("SF2_CAPTURE_STREAM") == "1" or (not h4_variant.is_empty() and OS.get_environment("SF2_CAPTURE_LEGACY") != "1"):
+        capture = load("res://src/Observation/ObservationCapture.cs").new()
+        capture.name = "ObservationCapture"
+        root.add_child(capture)
+        capture.connect("CaptureFailed",capture_error)
+        if not capture.call("Begin",field_paths.output): return field_io_failure(str(capture.call("Failure")))
+        capture_row("header",{"format":"sf2-observation-jsonl-v1","case":input_case,"h4Variant":h4_variant}, [])
+        field_created.output = true
+        return true
     field_output = FileAccess.open(field_paths.output, FileAccess.WRITE)
     if field_output == null: return field_io_failure("output open failed: " + str(FileAccess.get_open_error()))
     field_created.output = true
@@ -1281,6 +1334,9 @@ func run_text_wait() -> void:
     finish_public()
 
 func finish_public() -> void:
+    if capture != null:
+        await finish_capture()
+        return
     if not h4_variant.is_empty():
         poll_h4_audio()
         if process_frame.is_connected(poll_h4_audio): process_frame.disconnect(poll_h4_audio)
@@ -1320,6 +1376,41 @@ func finish_public() -> void:
     quit(0 if failures.is_empty() else 1)
 
 
+func disconnect_capture() -> void:
+    for callback in [record_camera_before_draw]:
+        if RenderingServer.frame_pre_draw.is_connected(callback): RenderingServer.frame_pre_draw.disconnect(callback)
+    for callback in [record_camera_draw]:
+        if RenderingServer.frame_post_draw.is_connected(callback): RenderingServer.frame_post_draw.disconnect(callback)
+    if node_added.is_connected(observe_winning_view): node_added.disconnect(observe_winning_view)
+    var observed_nodes: Array = [view]
+    if is_instance_valid(host): observed_nodes.append(host.find_child("BattleSessionView",true,false))
+    for node in observed_nodes:
+        if not is_instance_valid(node): continue
+        if node.has_signal("ResourceDrawObserved") and node.is_connected("ResourceDrawObserved",record_resource_draw): node.disconnect("ResourceDrawObserved",record_resource_draw)
+        if node.has_signal("SessionFactsObserved") and node.is_connected("SessionFactsObserved",record_result_facts): node.disconnect("SessionFactsObserved",record_result_facts)
+
+func capture_error(reason: String) -> void:
+    capture_failed = true
+    issue = reason
+    disconnect_capture()
+    push_error("Observation capture failed: " + reason)
+
+func finish_capture() -> void:
+    disconnect_capture()
+    if not capture_failed:
+        capture.call("Complete",{"passed":failures.is_empty() and field_unavailable.is_empty(),"case":input_case,
+            "h4Variant":h4_variant,"failures":failures,"unavailable":field_unavailable,
+            "maximumWhite":maximum_white,"completedWhite":completed_white,"admissionSnapshot":admission_snapshot,
+            "rawTextBoundary":raw_boundary,"musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return,
+            "audioTerminal":JSON.parse_string(host.call("ReadAudioObservationJson")),"audioSequenceSeen":JSON.parse_string(host.call("ReadAudioObservationJson")).sequence})
+    while not capture.call("IsFinished"): await process_frame
+    if not capture.call("Succeeded"):
+        push_error("Observation capture failed: " + str(capture.call("Failure")))
+        quit(1)
+        return
+    quit(1 if not failures.is_empty() else (0 if field_unavailable.is_empty() else 2))
+
+
 func pending_return_context(result: Dictionary) -> Dictionary:
     # Read the live session while the field view has not yet been installed.
     # These are logical operands; there is no field projection at this boundary.
@@ -1338,7 +1429,10 @@ func pending_return_context(result: Dictionary) -> Dictionary:
     return context
 
 func record_warp_result(payload: String) -> void:
-    var result: Dictionary = JSON.parse_string(payload)
+    record_result_facts(JSON.parse_string(payload))
+
+func record_result_facts(result: Dictionary) -> void:
+    if capture != null and capture_failed: return
     if not h4_variant.is_empty():
         if not result.has("programControlReads"):
             check(false,"Program control result channel absent")
@@ -1347,6 +1441,7 @@ func record_warp_result(payload: String) -> void:
         for event in result.observations:
             if event.Kind == "map-transferred" or event.get("Detail") == "LoadSceneMap":
                 resource_visit = int(event.Sequence)
+                if capture != null: capture.call("SetResourceVisit",resource_visit)
         for control in result.programControlReads:
             if control.Operation == "CallProgram":
                 var milestone := "call-" + str(control.Source.Program) + "-" + str(control.Source.Instruction)
@@ -1355,26 +1450,27 @@ func record_warp_result(payload: String) -> void:
                     save_resource_progress()
     if result.boundary == "presentation-completion-before-submit":
         var before := state()
-        consumer_boundaries.append({"result":result,"inputOrdinal":active_input,
+        capture_row("consumerBoundaries",{"result":result,"inputOrdinal":active_input,
             "projectionStage":"completion-before-submit","state":consumer_context(before),"releases":[],
-            "drawDelivery":consumer_draw_delivery(before)})
+            "drawDelivery":consumer_draw_delivery(before)}, consumer_boundaries)
         return
     if winning_case and result.boundary in ["attach", "begin"]:
         # Attach publishes before the new view has built its projection.
-        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}})
+        capture_row("warpRecords",{"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":{}}, warp_records)
         return
     if winning_case and result.mode == "Exploration" and host.get_node_or_null("ExplorationSessionView") == null:
         # Battle publishes its outcome before GameRoot installs the returning field
         # view. Preserve the result now; the new view's attach and live state follow.
-        warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":pending_return_context(result), "projection":"field-view-pending"})
+        capture_row("warpRecords",{"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":pending_return_context(result), "projection":"field-view-pending"}, warp_records)
         return
     projection_stage = "signal-before-Present"
-    var s := state()
+    var narrow: bool = capture != null and winning_case and not winning_started and is_instance_valid(view) and view.has_method("ReadCapturePrefix") and not view.call("CaptureHasConsumerWait") and not result.observations.any(func(o): return o.get("EntityWaitRelease") != null or o.Kind in ["zone-entered","choice-returned","nod-returned","presentation-completed"] or o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-"))
+    var s: Dictionary = view.call("ReadCapturePrefix") if narrow else state()
     projection_stage = "host-poll"
     var releases: Array = result.observations.filter(func(o): return o.get("EntityWaitRelease") != null)
     if s.get("entityWait") != null or not releases.is_empty() or s.get("nod") != null or s.get("fade") != null or result.observations.any(func(o): return o.Kind.begins_with("nod-") or o.Kind.begins_with("fade-") or o.Kind.begins_with("full-fade-") or o.Kind == "presentation-completed"):
-        consumer_boundaries.append({"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present",
-            "state":consumer_context(s),"releases":releases,"drawDelivery":consumer_draw_delivery(s)})
+        capture_row("consumerBoundaries",{"result":result,"inputOrdinal":active_input,"projectionStage":"signal-before-Present",
+            "state":consumer_context(s),"releases":releases,"drawDelivery":consumer_draw_delivery(s)}, consumer_boundaries)
     if winning_case and not winning_started and not result.observations.any(func(o): return o.Kind in ["zone-entered", "choice-returned", "nod-returned"]):
         # Accepted prefix checkpoints remain full samples. Keep every result and its
         # identity here without repeating the entire field projection every tick.
@@ -1385,13 +1481,15 @@ func record_warp_result(payload: String) -> void:
     elif winning_case and s.has("stage"):
         # The admitted board is retained at first input; terrain is immutable.
         s.erase("terrain")
-    warp_records.append({"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s})
+    capture_row("warpRecords",{"result":result, "inputOrdinal":active_input, "inputDelivery":input_delivering, "state":s}, warp_records)
 
 func observe_winning_view(node: Node) -> void:
     if node.has_signal("ResourceDrawObserved") and not node.is_connected("ResourceDrawObserved", record_resource_draw):
         node.connect("ResourceDrawObserved", record_resource_draw)
-    if node.has_signal("SessionResultObserved") and not node.is_connected("SessionResultObserved", record_warp_result):
-        node.connect("SessionResultObserved", record_warp_result)
+    var result_signal := "SessionFactsObserved" if capture != null else "SessionResultObserved"
+    var callback := record_result_facts if capture != null else record_warp_result
+    if node.has_signal(result_signal) and not node.is_connected(result_signal,callback):
+        node.connect(result_signal,callback)
 
 func w1_settle_legacy() -> bool:
     # Only the already accepted three-input opening setup; its text is not W1 evidence.
@@ -1419,7 +1517,11 @@ func opening_semantic(s: Dictionary) -> Array:
 
 func observe_raw_boundary(s: Dictionary) -> bool:
     if not raw_text_case or raw_entry.is_empty() or s.failure != "field-music-progress-unbound": return false
-    samples.append({"label":"raw-text-expected-unsupported", "state":s})
+    if capture != null:
+        capture_full_state = true
+        s = state()
+        capture_full_state = false
+    capture_row("samples",{"label":"raw-text-expected-unsupported", "state":s}, samples)
     check(s.stop == "Unsupported" and s.failureKind == "UnsupportedCapability" and
         s.failureField == "program.presentation" and s.failureVisible, "Named music boundary is visibly Unsupported")
     check(s.textId == 447 and s.speaker == null and s.fieldText == null and s.wait == null and
@@ -1621,7 +1723,7 @@ func before_battle_tracking(entry: Dictionary) -> void:
             if white_palette_case:
                 read_sample("white-unexpected-failure")
                 return
-            samples.append({"label":"tracking-white-boundary", "state":s})
+            capture_row("samples",{"label":"tracking-white-boundary", "state":s}, samples)
             check(s.failure == "full-black-fade-binding" and s.failureKind == "UnsupportedCapability" and
                 s.display == entry.display and s.fade == null and s.presentation.whiteOpacity == 0,
                 "White palette service remains Unsupported before palette/helper publication")
@@ -1721,8 +1823,8 @@ func remaining_before_battle(entry: Dictionary) -> void:
         h4_reveal(s)
         if s.failure != null:
             var failed := read_sample("battle-entry-actual-failure")
-            battle_entry_records.append({"label":"before-body-terminal","reason":"actual-failure",
-                "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":failed})
+            capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"actual-failure",
+                "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":failed}, battle_entry_records)
             return
         if winning_case and not s.get("focused", true):
             var lost := read_sample("before-body-focus-lost")
@@ -1732,8 +1834,8 @@ func remaining_before_battle(entry: Dictionary) -> void:
             var restored := read_sample("before-body-focus-restored")
             if not root.has_focus():
                 field_unavailable.append("Before-body OS focus restoration unavailable")
-                battle_entry_records.append({"label":"before-body-terminal","reason":"focus-restore-unavailable",
-                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":restored})
+                capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"focus-restore-unavailable",
+                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":restored}, battle_entry_records)
                 return
             check(opening_semantic(restored) == opening_semantic(lost) and restored.tickDebt == 0,
                 "Actual before-body focus restoration adds no catch-up work")
@@ -1748,16 +1850,16 @@ func remaining_before_battle(entry: Dictionary) -> void:
                 progressed_at = Time.get_ticks_msec()
             elif Time.get_ticks_msec() - progressed_at >= 15000:
                 var stalled := read_sample("remaining-before-body-no-progress")
-                battle_entry_records.append({"label":"before-body-terminal","reason":"no-semantic-progress",
+                capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"no-semantic-progress",
                     "elapsedMs":Time.get_ticks_msec() - started,"noProgressMs":Time.get_ticks_msec() - progressed_at,
-                    "visible":view.is_visible_in_tree(),"state":stalled})
+                    "visible":view.is_visible_in_tree(),"state":stalled}, battle_entry_records)
                 check(false, "Remaining before-body has no semantic progress for 15 seconds")
                 return
         if s.has("stage"):
             var first := read_sample("bound-first-battle-input")
             if winning_case:
-                battle_entry_records.append({"label":"before-body-terminal","reason":"first-battle-input",
-                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":first})
+                capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"first-battle-input",
+                    "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":first}, battle_entry_records)
             check(first.sessionId == entry.sessionId and first.stage == "Movement" and first.round == 1 and
                 first.storyFlags.has(451.0) and valid_projection(first, true), "Actual loaded board owns first Movement input")
             check(effects.values().count("EntityEffect") == 1 and effects.values().count("Gesture") == 5 and
@@ -1785,13 +1887,13 @@ func remaining_before_battle(entry: Dictionary) -> void:
             return
         if s.presentation.completedCueToken != null and effects.has(s.presentation.completedCueToken) and not delivered.has(s.presentation.completedCueToken):
             delivered[s.presentation.completedCueToken] = s.presentation.completedCueKind
-            battle_entry_records.append({"label":"effect-delivered","state":s})
+            capture_row("battleEntryRecords",{"label":"effect-delivered","state":s}, battle_entry_records)
             check(s.spriteSize == entry.spriteSize and s.entities.all(func(e): return e.animationCounter != 255),
                 "Actual generic effect completion restores sprite size and entity animation")
         if s.wait == "PresentationWait" and s.presentation.activeCue in ["EntityEffect", "Gesture"]:
             if not effects.has(s.token):
                 effects[s.token] = s.presentation.activeCue
-                battle_entry_records.append({"label":"effect-mounted","state":s})
+                capture_row("battleEntryRecords",{"label":"effect-mounted","state":s}, battle_entry_records)
             if not paused and s.presentation.activeCue == "EntityEffect" and s.presentation.mosaicDraws > entry.presentation.mosaicDraws:
                 var effect_view := view
                 effect_view.call("hide")
@@ -1818,7 +1920,7 @@ func remaining_before_battle(entry: Dictionary) -> void:
                 s.logicalView == previous.logicalView, "Modern loader preserves frozen field facade without field helper or early intro")
             if s.presentation.activeCue in ["FadeOut","BattleLoad","FadeIn"] and (loader.is_empty() or loader[-1] != s.presentation.activeCue):
                 loader.append(s.presentation.activeCue)
-                battle_entry_records.append({"label":"battle-loader-" + s.presentation.activeCue,"state":s})
+                capture_row("battleEntryRecords",{"label":"battle-loader-" + s.presentation.activeCue,"state":s}, battle_entry_records)
             if s.battleMounted:
                 mounted = true
                 var board := host.get_node("ExplorationSessionView/BattleSessionView")
@@ -1835,8 +1937,8 @@ func remaining_before_battle(entry: Dictionary) -> void:
         previous = s
         await process_frame
     var exhausted := read_sample("remaining-before-body-budget-exhausted")
-    battle_entry_records.append({"label":"before-body-terminal","reason":"legacy-process-frame-budget",
-        "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":exhausted})
+    capture_row("battleEntryRecords",{"label":"before-body-terminal","reason":"legacy-process-frame-budget",
+        "elapsedMs":Time.get_ticks_msec() - started,"visible":view.is_visible_in_tree(),"state":exhausted}, battle_entry_records)
     check(false, "Remaining before-body did not reach real first battle input")
 
 func opening_settle(castle_yes: bool = true) -> bool:
@@ -2084,7 +2186,9 @@ func run_portrait_event() -> void:
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     if not h4_variant.is_empty():
+        capture_full_state = true
         admission_snapshot = {"inputOrdinal":active_input,"hostUpdate":Engine.get_process_frames(),"state":state()}
+        capture_full_state = false
         process_frame.connect(poll_h4_audio)
     await process_frame
     root.grab_focus()
@@ -2100,7 +2204,9 @@ func run_portrait_event() -> void:
         check(false, "Retained bound start has actual field control")
         finish_public()
         return
-    if not view.is_connected("SessionResultObserved", record_warp_result):
+    if capture != null:
+        if not view.is_connected("SessionFactsObserved",record_result_facts): view.connect("SessionFactsObserved",record_result_facts)
+    elif not view.is_connected("SessionResultObserved", record_warp_result):
         view.connect("SessionResultObserved", record_warp_result)
     if "camera" in input_case: RenderingServer.frame_post_draw.connect(record_camera_draw)
     if parallax_case: RenderingServer.frame_pre_draw.connect(record_camera_before_draw)
@@ -2460,7 +2566,7 @@ func run_warp_transition() -> void:
         await process_frame
         var s := state()
         if s.failure != null:
-            samples.append({"label":"warp-failure","state":s})
+            capture_row("samples",{"label":"warp-failure","state":s}, samples)
             check("failure" in input_case and s.failureVisible and s.presentation.paletteBrightness == 0 and not s.canWaitAtInput,
                 "Reached failure remains readable over the black world with control held")
             returned = "failure" in input_case
@@ -2522,7 +2628,7 @@ func run_warp_transition() -> void:
             check(s.presentation.paletteBrightness == 0 and not s.canWaitAtInput, "Load gate is actually black")
         if s.canWaitAtInput:
             returned = true
-            samples.append({"label":"warp-visible-return","state":s})
+            capture_row("samples",{"label":"warp-visible-return","state":s}, samples)
             check(s.presentation.paletteBrightness == 1 and s.display.Visibility == 1 and s.display.Base == s.display.Current,
                 "Field control follows real and logical visible return")
             check(s.tickDebt == 0, "Visible return clears unused batch time")
@@ -2530,7 +2636,7 @@ func run_warp_transition() -> void:
             await tap_wait()
             read_sample("warp-next-input")
             break
-        if frame % 4 == 0: samples.append({"label":"warp-progress","state":s})
+        if frame % 4 == 0: capture_row("samples",{"label":"warp-progress","state":s}, samples)
     check(returned and saw_out and saw_black, "Bounded transition reaches its complete outcome through old-scene black")
     if "failure" not in input_case:
         check(saw_in and saw_destination_black, "Destination is mounted black and actually faded visible")

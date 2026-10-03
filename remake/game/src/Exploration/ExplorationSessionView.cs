@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Sf2.Remake.GodotAdapter.Observation;
 using System.Text.RegularExpressions;
 using Godot;
 using Sf2.Remake.GodotAdapter.Audio;
@@ -17,13 +18,19 @@ public sealed partial class ExplorationSessionView : Control
 
     // User signal connections identify the external capture itself, without a managed event bridge.
     private static readonly StringName ResourceDrawSignal = "ResourceDrawObserved";
-    public ExplorationSessionView() => AddUserSignal(ResourceDrawSignal);
+    private static readonly StringName FactsSignal = "SessionFactsObserved";
+    private bool _legacyCamera;
+    public ExplorationSessionView()
+    {
+        AddUserSignal(ResourceDrawSignal);
+        AddUserSignal(FactsSignal, [new Godot.Collections.Dictionary { ["name"] = "facts", ["type"] = (int)Variant.Type.Dictionary }]);
+    }
 
     private void PublishResult(string boundary, CompletePresentation? completion = null)
     {
-        if (!HasConnections(SignalName.SessionResultObserved)) return;
+        if (!HasConnections(SignalName.SessionResultObserved) && !HasConnections(FactsSignal)) return;
         var result = _result!;
-        EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(new
+        var facts = new
         {
             boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
@@ -34,7 +41,10 @@ public sealed partial class ExplorationSessionView : Control
             {
                 token = completion.Wait.Value, kind = completion.Kind.ToString(), processFrame = Engine.GetProcessFrames(),
             },
-        }));
+        };
+        if (HasConnections(FactsSignal) && ObservationCapture.Find(this)?.IsAccepting() != false) EmitSignal(FactsSignal, ObservationCapture.ToDictionary(facts));
+        if (HasConnections(SignalName.SessionResultObserved))
+            EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(facts));
     }
 
     private GameSession? _session;
@@ -94,6 +104,7 @@ public sealed partial class ExplorationSessionView : Control
     }
     public override void _ExitTree()
     {
+        ObservationCapture.Find(this)?.ViewDetached("exploration");
         CancelFieldWait();
         GetViewport().SizeChanged -= Present;
         GetWindow().FocusExited -= SuspendClock;
@@ -464,7 +475,8 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
-        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal) && ObservationCapture.Find(this)?.IsAccepting() != false);
+        _presentation?.ObserveCamera(_legacyCamera || HasConnections(ResourceDrawSignal) || HasConnections(FactsSignal));
         if (_presentation?.Draw(world, _session!.Current) == true)
         {
             if (HasConnections(ResourceDrawSignal)) EmitSignal(ResourceDrawSignal);
@@ -493,9 +505,50 @@ public sealed partial class ExplorationSessionView : Control
 
     public string ReadObservationJson()
     {
-        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
+        _legacyCamera = true;
+        _presentation?.ObserveCamera(true);
+        return JsonSerializer.Serialize(ObservationFacts(true, true));
+    }
+
+    public Godot.Collections.Dictionary ReadCaptureClock() => new()
+    {
+        ["simulationTick"] = _session!.Current.Story.SimulationTick,
+        ["token"] = _session.Current.Story.Wait is { } wait ? Variant.From(wait.Token.Value) : default,
+        ["revision"] = _session.Current.Revision,
+        ["presentation"] = new Godot.Collections.Dictionary { ["cameraX"] = _presentation?.Camera.X ?? 0, ["cameraY"] = _presentation?.Camera.Y ?? 0 },
+    };
+
+    public bool CaptureHasConsumerWait() => _session?.Current.Story.Wait is EntityWait or NodWait or FullFadeWait;
+    public bool CaptureNeedsPostDraw(bool rawText, bool choice, bool white, bool battleEntry)
+    {
         var current = _session?.Current;
-        return JsonSerializer.Serialize(new
+        if (current is null) return false;
+        if (CaptureHasConsumerWait() || current.Story.Wait is PresentationWait { Cue.Resource: "nod" or "shiver" or "mosaic-in" or "mosaic-out" or "black" or "white" }) return true;
+        if (rawText && current.Story.TextWindow is OpenTextWindow { Text: 447 } || choice && current.Story.Wait is ChoiceWait) return true;
+        return !white || current.CanWaitForText || battleEntry && _presentation?.ActiveCue is "EntityEffect" or "Gesture" or "BattleLoad" or "FadeIn" or "FadeOut";
+    }
+    public Godot.Collections.Dictionary ReadCapturePrefix()
+    {
+        var current = _session!.Current;
+        return ObservationCapture.ToDictionary(new
+        {
+            sessionId = current.SessionId, revision = current.Revision, simulationTick = current.Story.SimulationTick,
+            observationSequence = current.ObservationSequence, map = current.Exploration?.Map.Value, mode = current.Mode.ToString(),
+            stop = current.StopReason.ToString(), wait = current.Story.Wait?.GetType().Name, token = current.Story.Wait?.Token.Value,
+            cursor = current.Story.Cursor, mainSeed = current.Exploration?.Party.MainSeed, failure = PresentationFailure?.Code,
+            focused = GetWindow().HasFocus(), tickDebt = _tickTime,
+        });
+    }
+
+    public Godot.Collections.Dictionary ReadCaptureState(bool full = false, bool resources = false) =>
+        ObservationCapture.ToDictionary(ObservationFacts(full, resources));
+
+    private object ObservationFacts(bool full, bool resources)
+    {
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal) && ObservationCapture.Find(this)?.IsAccepting() != false);
+        _presentation?.ObserveCamera(_legacyCamera || HasConnections(ResourceDrawSignal) || HasConnections(FactsSignal));
+        var current = _session?.Current;
+        return new
         {
             sessionId = current?.SessionId, revision = current?.Revision, observationSequence = current?.ObservationSequence, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
@@ -511,7 +564,7 @@ public sealed partial class ExplorationSessionView : Control
             nod = current?.Story.Wait as NodWait, nodProjection = _presentation?.NodProjection,
             entityWait = current?.Story.Wait as EntityWait,
             presentationWait = current?.Story.Wait as PresentationWait, presentationCue = _presentation?.CueProjection,
-            cameraProjection = _presentation?.CameraProjection,
+            cameraProjection = resources ? _presentation?.CameraProjection : _presentation?.CameraCompactProjection,
             portraitResourceProjection = _presentation?.PortraitResourceProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
@@ -537,7 +590,7 @@ public sealed partial class ExplorationSessionView : Control
             mapViewport = _presentation is { } presented ? Battles.BattleMapViewport.Rectangle(presented.Screen) : null,
             battleMounted = _battleMounted,
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
-            admittedParty = current?.Exploration is { } world ? new
+            admittedParty = full && current?.Exploration is { } world ? new
             {
                 package = _session!.Definition.Package, origin = _session.Definition.Origin,
                 provenance = _session.Definition.Exploration?.Provenance,
@@ -606,7 +659,7 @@ public sealed partial class ExplorationSessionView : Control
                 entity.Visible, actionCursor = entity.ActionCursor, speedX = entity.Motion.XSpeed, flagsA = entity.Motion.FlagsA, flagsB = entity.Motion.FlagsB,
             }),
             observations = _result?.Observations,
-            audio = _audio?.ObservePlayback(),
-        });
+            audio = full ? _audio?.ObservePlayback() : _audio?.ObserveState(),
+        };
     }
 }

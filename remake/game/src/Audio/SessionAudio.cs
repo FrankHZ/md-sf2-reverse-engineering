@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Observation;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Maps;
@@ -13,6 +14,7 @@ internal sealed class SessionAudio : IDisposable
     private (MapId Map, int Area, bool Battle)? _context;
     private readonly AudioStreamPlayer _music;
     private readonly Node _owner;
+    private readonly ObservationCapture? _capture;
     private readonly List<SoundVoice> _sounds = [];
     private readonly Action _musicFinished;
     private bool _disposed;
@@ -34,6 +36,7 @@ internal sealed class SessionAudio : IDisposable
         _maps = definition.Visuals?.Maps ?? new Dictionary<MapId, ExplorationMapVisual>();
         _music = new AudioStreamPlayer { Name = "SessionMusic" };
         _owner = owner;
+        _capture = ObservationCapture.Find(owner);
         owner.AddChild(_music);
         _musicFinished = () => { if (_music.Playing) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
         _music.Finished += _musicFinished;
@@ -49,6 +52,14 @@ internal sealed class SessionAudio : IDisposable
     internal bool MusicPlaying => _music.Playing;
     internal double MusicPosition => _music.GetPlaybackPosition();
     internal int? TimerB { get; private set; }
+
+    internal object ObserveState() => new
+    {
+        error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
+        musicCue = MusicCue, musicPlaying = _music.Playing, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
+        musicPosition = MusicPosition, timerB = TimerB, soundCue = _soundCue,
+        soundPlaying = _sounds.Any(voice => voice.Player.Playing),
+    };
 
     internal object ObservePlayback() => new
     {
@@ -73,6 +84,7 @@ internal sealed class SessionAudio : IDisposable
             asset?.SampleRate, asset?.Channels, asset?.SampleFrames, asset?.LoopBegin, asset?.LoopEnd,
             player.Playing, player.GetPlaybackPosition(), Time.GetTicksUsec(), _revision, _waitToken,
             _sounds.FirstOrDefault(voice => voice.Player == player)?.RequestedTimerB));
+        _capture?.AudioReceipt(_receipts[^1]);
         // Existing inspectors poll live state. Sequence makes a missed bounded window explicit.
         if (_receipts.Count > 64) _receipts.RemoveAt(0);
     }
@@ -86,6 +98,7 @@ internal sealed class SessionAudio : IDisposable
 
     internal void Observe(SessionResult result)
     {
+        _capture?.BindSession(result.Snapshot.SessionId);
         _revision = result.Snapshot.Revision;
         _waitToken = result.Snapshot.BattleScene?.Token.Value ?? result.Snapshot.Story.Wait?.Token.Value;
         if (Error is not null || result.Failure is not null || _assets.Count == 0) return;

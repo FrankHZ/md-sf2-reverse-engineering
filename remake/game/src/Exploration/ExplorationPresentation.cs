@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Observation;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -17,7 +18,10 @@ internal sealed class ExplorationPresentation : IDisposable
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
+    private readonly ObservationCapture? _capture;
+    private bool Streaming => _observeResources && _capture?.IsAccepting() == true;
     private bool _observeResources;
+    private bool _observeCamera;
     private readonly SessionAudio _audio;
     private readonly ColorRect _white;
     private readonly Action _prepareBattle;
@@ -43,6 +47,7 @@ internal sealed class ExplorationPresentation : IDisposable
     {
         _owner = owner; _visuals = definition.Visuals; _reducedFlash = reducedFlash; _prepareBattle = prepareBattle;
         _audio = audio; Error = audio.Error;
+        _capture = ObservationCapture.Find(owner);
         _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),
             MouseFilter = Control.MouseFilterEnum.Ignore, ZIndex = 100 };
         owner.AddChild(_white);
@@ -54,6 +59,12 @@ internal sealed class ExplorationPresentation : IDisposable
     internal int SpriteMounts => _spriteMounts;
     internal object? NodProjection { get; private set; }
     internal object? CameraProjection { get; private set; }
+    internal object? CameraCompactProjection { get; private set; }
+    internal void ObserveCamera(bool enabled)
+    {
+        _observeCamera = enabled;
+        if (!enabled) { CameraProjection = null; CameraCompactProjection = null; NodProjection = null; }
+    }
     internal object? PortraitResourceProjection { get; private set; }
     internal void ObserveResources(bool enabled)
     {
@@ -305,12 +316,13 @@ internal sealed class ExplorationPresentation : IDisposable
                 view.Area.ParallaxAX != view.Area.ParallaxBX || view.Area.ParallaxAY != view.Area.ParallaxBY;
             var offset = view is null ? overlay : new MapOverlayOffset(0, 0);
             var backgroundDraw = DrawLayer(world, visual, background, new(0, 0), false, view is null ? null : false, 0);
-            object? foregroundDraw = view is not null && hasForeground
+            LayerDraw? foregroundDraw = view is not null && hasForeground
                 ? DrawLayer(world, visual, foreground, offset, true, false, 1) : null;
-            List<object> actors = [];
-            List<object> occlusionDraws = [];
-            object? backgroundHigh = view is null ? null : DrawLayer(world, visual, background, new(0, 0), false, true, 2);
-            object? foregroundHigh = view is not null && hasForeground
+            List<object>? actors = _observeCamera ? [] : null;
+            List<(ExplorationEntity Entity, ImageTexture Texture, bool Lowered)>? drawnActors = Streaming ? [] : null;
+            List<object>? occlusionDraws = _observeCamera ? [] : null;
+            LayerDraw? backgroundHigh = view is null ? null : DrawLayer(world, visual, background, new(0, 0), false, true, 2);
+            LayerDraw? foregroundHigh = view is not null && hasForeground
                 ? DrawLayer(world, visual, foreground, offset, true, true, 3) : null;
             int pass = 4;
             var sourceNod = story.Wait as NodWait;
@@ -334,7 +346,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 int? mosaicBlock = _mosaic == entity.Entity ? (mosaicAge < 0.1 ? 8 : mosaicAge < 0.2 ? 6 : mosaicAge < 0.3 ? 4 : mosaicAge < 0.4 ? 2 : 1) : null;
                 var destination = new Rect2(_screen.Position + (point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
                 bool visible = _screen.Intersects(destination);
-                actors.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
+                actors?.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                     facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
                     x = destination.Position.X, y = destination.Position.Y,
                     width = destination.Size.X, height = destination.Size.Y, visible,
@@ -342,7 +354,7 @@ internal sealed class ExplorationPresentation : IDisposable
                     gesture, lowered, shiverOffsetX, mosaicBlock,
                     resourceSelector = _observeResources ? _resourceSelectors[texture] : null,
                     texture = texture.GetInstanceId().ToString() });
-                if (gesture && sourceNod is not null)
+                if (_observeCamera && gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
                         entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                         facing = entity.Motion.Facing, animationCounter = entity.Motion.AnimationCounter,
@@ -350,6 +362,7 @@ internal sealed class ExplorationPresentation : IDisposable
                         texture = texture.GetInstanceId(), normalTexture = Sprite(entity, false).GetInstanceId(),
                         width = texture.GetWidth(), height = texture.GetHeight() };
                 if (!visible) continue;
+                drawnActors?.Add((entity, texture, lowered));
                 var bounds = destination;
                 bool mirror = entity.Motion.Facing is 0 or 4 or 7;
                 IReadOnlyList<Rect2> inkRuns = _spriteInk[texture];
@@ -384,8 +397,13 @@ internal sealed class ExplorationPresentation : IDisposable
                         new Vector2(mirror ? 24 - run.End.X : run.Position.X, run.Position.Y) * _scale,
                         run.Size * _scale)).ToArray();
                     var actor = (entity.Entity, bounds, (IReadOnlyList<Rect2>)ink);
-                    occlusionDraws.Add(DrawLayer(world, visual, background, new(0, 0), false, true, pass++, actor));
-                    if (hasForeground) occlusionDraws.Add(DrawLayer(world, visual, foreground, offset, true, true, pass++, actor));
+                    var restoredBackground = DrawLayer(world, visual, background, new(0, 0), false, true, pass++, actor);
+                    if (restoredBackground is not null) occlusionDraws?.Add(restoredBackground);
+                    if (hasForeground)
+                    {
+                        var restoredForeground = DrawLayer(world, visual, foreground, offset, true, true, pass++, actor);
+                        if (restoredForeground is not null) occlusionDraws?.Add(restoredForeground);
+                    }
                 }
                 if (gesture)
                 {
@@ -397,20 +415,34 @@ internal sealed class ExplorationPresentation : IDisposable
             }
             // The bound A origin already includes the foreground layout offset.
             if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foreground, offset, true, null, pass++);
+            if (_observeCamera)
+            {
             CameraProjection = new { drawSequence = ++_drawSequence, processFrame = Engine.GetProcessFrames(),
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
                 x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
+            CameraCompactProjection = new { drawSequence = _drawSequence, processFrame = Engine.GetProcessFrames(),
+                sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
+                simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
+                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
+                x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y,
+                scale = _scale, windows, background = backgroundDraw?.Geometry(), foreground = foregroundDraw?.Geometry(),
+                backgroundHigh = backgroundHigh?.Geometry(), foregroundHigh = foregroundHigh?.Geometry(), actors,
+                occlusionDraws = occlusionDraws?.Cast<LayerDraw>().Select(layer => layer.Geometry()).ToArray() };
+            }
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             PortraitResourceProjection = null;
+            object? portraitUse = null;
+            object? portraitExpected = null;
+            string? portraitIdentity = null;
             byte flags = (story.PortraitWindow as OpenPortraitWindow)?.Flags ?? 0;
             // Preserve old content's display hint without admitting its unknown service gate.
             if (story.PortraitWindow is UnknownPortraitWindow { LegacySpeaker: { } speaking } legacy &&
                 world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite)
             { portraitId = _visuals.Sprites[sprite].Portrait; flags = legacy.LegacyFlags; }
-            _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
+            if (_observeCamera) _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
                 { ["id"] = portraitId is { } drawn ? drawn : -1, ["flags"] = flags });
             if (portraitId is { } portrait)
             {
@@ -437,7 +469,7 @@ internal sealed class ExplorationPresentation : IDisposable
                 }
                 var destination = new Rect2((flags & 0x80) != 0 ? viewport.X - 92 : 20,
                     work is null ? viewport.Y - 150 : 52 + work.Y * 12, 72, 84);
-                _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
+                if (_observeCamera) _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
                 {
                     ["id"] = portrait, ["flags"] = flags, ["eyesClosed"] = key.Item3, ["mouthOpen"] = key.Item4,
                     ["tiles"] = new Godot.Collections.Array<int>(tiles), ["mirrored"] = key.Item2,
@@ -447,26 +479,97 @@ internal sealed class ExplorationPresentation : IDisposable
                 });
                 _owner.DrawRect(destination.Grow(3), new Color(0.06f, 0.07f, 0.12f));
                 _owner.DrawTextureRect(texture, destination, false);
-                if (_observeResources) PortraitResourceProjection = new { selector = _resourceSelectors[texture], texturePresent = true,
+                if (Streaming)
+                {
+                    portraitIdentity = texture.GetInstanceId().ToString();
+                    portraitExpected = new { portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
+                    portraitUse = new { selector = _capture!.Descriptor(portraitIdentity, _resourceSelectors[texture]), texturePresent = true,
+                        width = texture.GetWidth(), height = texture.GetHeight(), sessionId = current.SessionId,
+                        revision = current.Revision, observationSequence = current.ObservationSequence,
+                        simulationTick = story.SimulationTick, token = story.Wait?.Token.Value };
+                }
+                if (_observeResources) PortraitResourceProjection = new { resourceIdentity = texture.GetInstanceId().ToString(), selector = _resourceSelectors[texture], texturePresent = true,
                     width = texture.GetWidth(), height = texture.GetHeight(), sessionId = current.SessionId,
                     revision = current.Revision, observationSequence = current.ObservationSequence,
                     simulationTick = story.SimulationTick, token = story.Wait?.Token.Value };
             }
+            if (Streaming)
+                CaptureResources(world, current, backgroundDraw, foregroundDraw, backgroundHigh, foregroundHigh,
+                    occlusionDraws!, drawnActors!, portraitIdentity, portraitExpected, portraitUse);
             return true;
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
         { Error = error.Message; return true; }
     }
 
-    private object DrawLayer(ExplorationState world, ExplorationMapVisual visual, Vector2 origin, MapOverlayOffset offset,
+    private void CaptureResources(ExplorationState world, SessionSnapshot current, LayerDraw? background,
+        LayerDraw? foreground, LayerDraw? backgroundHigh, LayerDraw? foregroundHigh, List<object> occlusions,
+        List<(ExplorationEntity Entity, ImageTexture Texture, bool Lowered)> actors,
+        string? portraitIdentity, object? portraitExpected, object? portraitUse)
+    {
+        var capture = _capture!;
+        var identity = new { sessionId = current.SessionId, revision = current.Revision,
+            observationSequence = current.ObservationSequence, simulationTick = current.Story.SimulationTick,
+            token = current.Story.Wait?.Token.Value, drawSequence = _drawSequence, visit = capture.ResourceVisit,
+            map = world.Map.Value, phase = ActiveCue ?? "<null>" };
+        capture.ResourceLifetime($"{identity.visit}:{identity.map}:{identity.phase}");
+        List<object> uses = [];
+        void Flush()
+        {
+            if (uses.Count == 0 || !capture.IsAccepting()) return;
+            capture.RecordFrozenFacts("drawUses", new { identity, uses = uses.ToArray() });
+            uses.Clear();
+        }
+        void Use(object row) { uses.Add(row); if (uses.Count == 64) Flush(); }
+        void Layer(string name, LayerDraw? layer)
+        {
+            if (layer is null || !capture.IsAccepting()) return;
+            string prefix = $"map:{name}:{layer.highPriority}:{layer.subject}:";
+            foreach (var expected in layer.required ?? [])
+                if (capture.NewRequirement($"{prefix}{expected.block}:{expected.tile}:{expected.word}"))
+                    capture.RecordFrozenFacts("resourceRequirements", new { identity, kind = "map", layer = name,
+                        layer.highPriority, layer.pass, layer.subject, expected });
+            foreach (var use in layer.resources ?? [])
+            {
+                if (!capture.IsAccepting()) return;
+                var selector = capture.Descriptor(use.resourceIdentity, use.selector);
+                Use(new { kind = "map", layer = name, layer.highPriority, layer.pass, layer.subject,
+                    use.resourceIdentity, used = new { selector, use.block, use.tile, use.word } });
+            }
+        }
+        Layer("background", background); Layer("foreground", foreground);
+        Layer("backgroundHigh", backgroundHigh); Layer("foregroundHigh", foregroundHigh);
+        foreach (LayerDraw layer in occlusions) Layer("occlusion", layer);
+        foreach (var (entity, texture, lowered) in actors)
+        {
+            if (!capture.IsAccepting()) return;
+            var expected = new { sprite = entity.Sprite, direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 },
+                half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0, nod = lowered };
+            string key = $"entity:{entity.Slot}:{entity.Entity.Value}:{expected.sprite}:{expected.direction}:{expected.half}:{lowered}";
+            if (capture.NewRequirement(key)) capture.RecordFrozenFacts("resourceRequirements", new
+                { identity, kind = "entity", subject = entity.Entity.Value, slot = entity.Slot, expected });
+            string resourceIdentity = texture.GetInstanceId().ToString();
+            Use(new { kind = "entity", subject = entity.Entity.Value, slot = entity.Slot, expected,
+                resourceIdentity, used = capture.Descriptor(resourceIdentity, _resourceSelectors[texture]) });
+        }
+        if (portraitUse is not null && capture.IsAccepting())
+        {
+            if (capture.NewRequirement("portrait:" + portraitIdentity))
+                capture.RecordFrozenFacts("resourceRequirements", new { identity, kind = "portrait", expected = portraitExpected });
+            Use(new { kind = "portrait", expected = portraitExpected, resourceIdentity = portraitIdentity, used = portraitUse });
+        }
+        Flush();
+    }
+
+    private LayerDraw? DrawLayer(ExplorationState world, ExplorationMapVisual visual, Vector2 origin, MapOverlayOffset offset,
         bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null)
     {
         int left = (int)Math.Floor(origin.X / 24), top = (int)Math.Floor(origin.Y / 24);
         int draws = 0;
         object? first = null;
-        List<object> overlaps = [];
-        List<object>? resources = _observeResources ? [] : null;
-        List<object>? required = _observeResources ? [] : null;
+        List<object>? overlaps = _observeCamera ? [] : null;
+        List<MapUse>? resources = _observeResources ? [] : null;
+        List<MapRequirement>? required = _observeResources ? [] : null;
         HashSet<(int Block, int Tile, int Word)>? expected = _observeResources ? [] : null;
         HashSet<(int Block, int Tile, int Word)>? used = _observeResources ? [] : null;
         for (int y = top; y <= top + ViewHeight / 24; y++)
@@ -496,23 +599,31 @@ internal sealed class ExplorationPresentation : IDisposable
                         if (!clipped.Intersects(mask)) continue;
                         var covered = clipped.Intersection(mask);
                         if (expected?.Add((block, tile, word)) == true)
-                            required!.Add(new { map = world.Map.Value, block, tile, word, sourceX, sourceY });
+                            required!.Add(new(world.Map.Value, block, tile, word, sourceX, sourceY));
                         _owner.DrawTextureRectRegion(texture, covered,
                             new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale));
                         draws++;
                         if (used?.Add((block, tile, word)) == true)
-                            resources!.Add(new { selector = _resourceSelectors[texture], block, tile, word });
-                        first ??= new { sourceX, sourceY, block, tile, word, x = covered.Position.X, y = covered.Position.Y,
+                            resources!.Add(new(_resourceSelectors[texture], texture.GetInstanceId().ToString(), block, tile, word));
+                        if (_observeCamera) first ??= new { sourceX, sourceY, block, tile, word, x = covered.Position.X, y = covered.Position.Y,
                             width = covered.Size.X, height = covered.Size.Y };
                         if (actor is { } painted)
-                            overlaps.Add(new { entity = painted.Entity.Value, sourceX, sourceY, block, tile, word,
+                            overlaps?.Add(new { entity = painted.Entity.Value, sourceX, sourceY, block, tile, word,
                                 texture = texture.GetInstanceId().ToString(), x = covered.Position.X, y = covered.Position.Y,
                                 width = covered.Size.X, height = covered.Size.Y });
                     }
                 }
             }
-        return new { x = origin.X, y = origin.Y, offsetX = offset.X, offsetY = offset.Y, highPriority, pass,
-            subject = actor?.Entity.Value, draws, first, overlaps, required, resources };
+        return _observeCamera ? new(origin.X, origin.Y, offset.X, offset.Y, highPriority, pass,
+            actor?.Entity.Value, draws, first, overlaps!, required, resources) : null;
+    }
+
+    private sealed record MapRequirement(string map, int block, int tile, int word, int sourceX, int sourceY);
+    private sealed record MapUse(object selector, string resourceIdentity, int block, int tile, int word);
+    private sealed record LayerDraw(float x, float y, int offsetX, int offsetY, bool? highPriority, int pass,
+        string? subject, int draws, object? first, List<object> overlaps, List<MapRequirement>? required, List<MapUse>? resources)
+    {
+        internal object Geometry() => new { x, y, offsetX, offsetY, highPriority, pass, subject, draws, first, overlaps };
     }
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)

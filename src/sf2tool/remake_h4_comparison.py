@@ -11,13 +11,19 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import itertools
 import json
+import os
 import re
+import sqlite3
 import struct
 import subprocess
+import sys
+import uuid
 import wave
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from collections import Counter
+from collections.abc import Sequence
 from pathlib import Path
 
 from sf2tool.h3.rng import _rng_step
@@ -43,20 +49,709 @@ OWNER = "docs/design/contracts/map3-battle01-continuous-scenario.md"
 DIRECTIONS = {1: "Up", 2: "Down", 4: "Left", 8: "Right"}
 
 
+# Current captures and derived joins stay on disk; the historical JSON path is unchanged.
+# Explicit SQLite ordinal/native-key joins retain the comparison predicates and
+# detached publication semantics without per-group files or a full-run memory index.
+_STREAM_CONTEXT = None
+_STREAM_SCRATCH_ROOT = None
+_STREAM_RECORD_LIMIT = 1024 * 1024
+_STREAM_CACHE_LIMIT = 8 * 1024 * 1024
+_STREAM_ROW_MEMORY_LIMIT = 16 * 1024 * 1024
+
+
+def _row_memory(value):
+    seen, total, pending = set(), 0, [value]
+    while pending:
+        row = pending.pop()
+        identity = id(row)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        total += sys.getsizeof(row)
+        require(total <= _STREAM_ROW_MEMORY_LIMIT, "stream row decoded-memory limit")
+        if isinstance(row, dict):
+            pending.extend(row.keys())
+            pending.extend(row.values())
+        elif isinstance(row, (list, tuple)) and not isinstance(row, _RecordSpool):
+            pending.extend(row)
+    return total
+
+
+class _ReaderContext:
+    """One private SQLite store; bounded transactions, detached rows, explicit close."""
+
+    def __init__(self, scratch_root=None, *, database=None, readonly=False):
+        self.readonly = readonly
+        self.connection = None
+        self.pending_rows = self.pending_bytes = 0
+        if database is None:
+            root = Path(scratch_root).resolve()
+            require(
+                root.is_relative_to(repo_path("local").resolve()), "reader scratch outside local"
+            )
+            root = root / ("reader-" + uuid.uuid4().hex)
+            root.mkdir(parents=True, exist_ok=False)
+            database = root / "rows.sqlite"
+        self.database = Path(database).resolve()
+        self.root = self.database.parent
+        require(
+            self.database.is_relative_to(repo_path("local").resolve()),
+            "reader database outside local",
+        )
+        if readonly:
+            self.connection = sqlite3.connect(self.database.as_uri() + "?mode=ro", uri=True)
+            self.connection.execute("PRAGMA query_only=ON")
+        else:
+            self.database.touch(exist_ok=False)
+            self.connection = sqlite3.connect(self.database)
+            self.connection.execute("PRAGMA journal_mode=DELETE")
+            self.connection.execute("PRAGMA synchronous=FULL")
+            self.connection.executescript("""
+                CREATE TABLE stores(id INTEGER PRIMARY KEY, length INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE records(store INTEGER NOT NULL, ordinal INTEGER NOT NULL,
+                    payload BLOB NOT NULL, PRIMARY KEY(store,ordinal));
+                CREATE TABLE entries(store INTEGER NOT NULL, key BLOB NOT NULL,
+                    position INTEGER NOT NULL, original BLOB NOT NULL, payload BLOB NOT NULL,
+                    PRIMARY KEY(store,key));
+                CREATE INDEX entry_order ON entries(store,position);
+                CREATE TABLE imports(source TEXT NOT NULL, store INTEGER NOT NULL,
+                    span TEXT NOT NULL, target INTEGER NOT NULL,
+                    PRIMARY KEY(source,store,span)) WITHOUT ROWID;
+            """)
+        self.connection.execute("PRAGMA cache_size=-8192")
+        self.connection.execute("PRAGMA temp_store=FILE")
+        self.connection.execute("PRAGMA mmap_size=0")
+
+    def flush(self):
+        self.connection.commit()
+        self.pending_rows = self.pending_bytes = 0
+
+    def reserve(self, size):
+        # Bound encoded values per transaction; each canonical/original key is also
+        # independently record-bounded. SQLite's page-cache target is not a heap limit.
+        require(0 <= size <= _STREAM_RECORD_LIMIT, "transaction value too large")
+        if self.pending_rows >= 256 or self.pending_bytes + size > _STREAM_RECORD_LIMIT:
+            self.flush()
+        self.pending_rows += 1
+        self.pending_bytes += size
+
+    def close(self):
+        if self.connection is not None:
+            # Only an explicit successful flush commits the final partial transaction.
+            self.connection.close()
+            self.connection = None
+
+    def __del__(self):
+        self.close()
+
+    def store(self):
+        require(not self.readonly, "cannot append to a published report")
+        self.reserve(32)
+        result = self.connection.execute("INSERT INTO stores DEFAULT VALUES").lastrowid
+        return result
+
+    def length(self, store):
+        row = self.connection.execute("SELECT length FROM stores WHERE id=?", (store,)).fetchone()
+        require(row is not None, "missing derived row store")
+        return row[0]
+
+    def sequence(self, values=()):
+        result = _RecordSpool(self, self.store())
+        result.extend(values)
+        return result
+
+    def encode(self, value):
+        _row_memory(value)
+        raw = json.dumps(
+            _pack_stream(value, self), ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        require(0 < len(raw) <= _STREAM_RECORD_LIMIT, "stream join record too large")
+        return raw
+
+    def decode(self, raw):
+        require(0 < len(raw) <= _STREAM_RECORD_LIMIT, "stream row length limit")
+        value = json.loads(raw)
+        _row_memory(value)
+        return _unpack_stream(value, self)
+
+    def import_rows(self, rows):
+        """Snapshot a published foreign store/slice once; memo lives on disk, not in RAM."""
+        if rows.context is self and not isinstance(rows, _RecordSlice):
+            return rows.store
+        span = (
+            str((rows.positions.start, rows.positions.stop, rows.positions.step))
+            if isinstance(rows, _RecordSlice)
+            else ""
+        )
+        source = (str(rows.context.database), rows.store, span)
+        found = self.connection.execute(
+            "SELECT target FROM imports WHERE source=? AND store=? AND span=?", source
+        ).fetchone()
+        if found is not None:
+            return found[0]
+        target = self.sequence()
+        self.reserve(len(source[0]) + len(span) + 32)
+        self.connection.execute("INSERT INTO imports VALUES(?,?,?,?)", (*source, target.store))
+        target.extend(rows)
+        return target.store
+
+
+def _working_context():
+    global _STREAM_CONTEXT
+    if _STREAM_CONTEXT.readonly:
+        _STREAM_CONTEXT = _ReaderContext(_STREAM_SCRATCH_ROOT or _STREAM_CONTEXT.root)
+    return _STREAM_CONTEXT
+
+
+class _RecordSpool(Sequence):
+    """Append-only published records, not a mutable list or an object-identity cache.
+
+    Indexed and iterated reads are detached. Build mutable records before publishing.
+    Grouped child stores in this context remain appendable by their explicit reference.
+    Foreign published stores are copied when incorporated into a new report/work store.
+    """
+
+    def __init__(self, context, store):
+        self.context, self.store = context, store
+
+    def __len__(self):
+        return self.context.length(self.store)
+
+    def __iter__(self):
+        cursor = self.context.connection.execute(
+            "SELECT payload FROM records WHERE store=? ORDER BY ordinal", (self.store,)
+        )
+        try:
+            for (raw,) in cursor:
+                yield self.context.decode(raw)
+        finally:
+            cursor.close()
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return _RecordSlice(self, range(*index.indices(len(self))))
+        if index < 0:
+            index += len(self)
+        row = self.context.connection.execute(
+            "SELECT payload FROM records WHERE store=? AND ordinal=?", (self.store, index)
+        ).fetchone()
+        if row is None:
+            raise IndexError(index)
+        return self.context.decode(row[0])
+
+    def append(self, value):
+        raw = self.context.encode(value)
+        count = len(self)
+        self.context.reserve(len(raw))
+        self.context.connection.execute(
+            "INSERT INTO records VALUES(?,?,?)", (self.store, count, raw)
+        )
+        self.context.connection.execute(
+            "UPDATE stores SET length=length+1 WHERE id=?", (self.store,)
+        )
+
+    def extend(self, values):
+        for value in values:
+            self.append(value)
+
+    def __reversed__(self):
+        return (self[index] for index in range(len(self) - 1, -1, -1))
+
+    def __add__(self, other):
+        return _working_context().sequence(itertools.chain(self, other))
+
+    def __radd__(self, other):
+        return _working_context().sequence(itertools.chain(other, self))
+
+    def __contains__(self, value):
+        return any(row == value for row in self)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, (list, _RecordSpool))
+            and len(self) == len(other)
+            and all(a == b for a, b in zip(self, other, strict=True))
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def index(self, value, start=0, stop=None):
+        for i, row in enumerate(self):
+            if i >= start and (stop is None or i < stop) and row == value:
+                return i
+        raise ValueError(value)
+
+    def copy(self):
+        return _working_context().sequence(self)
+
+    def sort(self, *, key=None, reverse=False):
+        # Merge two bounded rows at a time. At most 64 carry slots describe runs;
+        # scratch rows are retained for failure reproduction, never cleaned implicitly.
+        key = key or (lambda row: row)
+        slots, batch, charge = [], [], 0
+
+        def merge(left, right):
+            def rows():
+                a, b = iter(left), iter(right)
+                missing = object()
+                x, y = next(a, missing), next(b, missing)
+                while x is not missing or y is not missing:
+                    if (
+                        y is missing
+                        or x is not missing
+                        and ((key(x) >= key(y)) if reverse else (key(x) <= key(y)))
+                    ):
+                        yield x
+                        x = next(a, missing)
+                    else:
+                        yield y
+                        y = next(b, missing)
+
+            return _working_context().sequence(rows())
+
+        def carry(run):
+            level = 0
+            while level < len(slots) and slots[level] is not None:
+                run = merge(slots[level], run)
+                slots[level] = None
+                level += 1
+            require(level < 64, "stream sort run limit")
+            if level == len(slots):
+                slots.append(run)
+            else:
+                slots[level] = run
+
+        for row in self:
+            size = _row_memory(row)
+            if batch and charge + size > _STREAM_CACHE_LIMIT:
+                batch.sort(key=key, reverse=reverse)
+                carry(_working_context().sequence(batch))
+                batch, charge = [], 0
+            batch.append(row)
+            charge += size
+        if batch:
+            batch.sort(key=key, reverse=reverse)
+            carry(_working_context().sequence(batch))
+        result = None
+        for run in reversed(slots):
+            if run is not None:
+                result = run if result is None else merge(result, run)
+        if result is not None:
+            self.context, self.store = result.context, result.store
+
+
+class _RecordSlice(_RecordSpool):
+    def __init__(self, parent, positions):
+        self.parent, self.positions = parent, positions
+        self.context, self.store = parent.context, parent.store
+
+    def __len__(self):
+        return len(self.positions)
+
+    def __iter__(self):
+        return (self.parent[index] for index in self.positions)
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return _RecordSlice(self.parent, self.positions[index])
+        return self.parent[self.positions[index]]
+
+
+def _inventory_key(value):
+    if isinstance(value, dict):
+        return {key: _inventory_key(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_inventory_key(item) for item in value]
+    if isinstance(value, bool) or isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+def _join_key(value):
+    # Preserve Python equality explicitly, rather than SQLite type affinity/collation.
+    raw = json.dumps(
+        _inventory_key(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    require(len(raw) <= _STREAM_RECORD_LIMIT, "join key record too large")
+    return raw
+
+
+class _OccurrenceMap:
+    """Explicit native-key join, detached reads, assignment updates, first-seen order."""
+
+    def __init__(self):
+        self.context = _working_context()
+        self.store = self.context.store()
+
+    def _key(self, key):
+        require(
+            key is None or isinstance(key, (int, float)) and int(key) == key and key >= 0,
+            "invalid native occurrence key",
+        )
+        return _join_key(key)
+
+    def __len__(self):
+        return self.context.length(self.store)
+
+    def __iter__(self):
+        cursor = self.context.connection.execute(
+            "SELECT original FROM entries WHERE store=? ORDER BY position", (self.store,)
+        )
+        try:
+            for (raw,) in cursor:
+                yield self.context.decode(raw)
+        finally:
+            cursor.close()
+
+    def __getitem__(self, key):
+        row = self.context.connection.execute(
+            "SELECT payload FROM entries WHERE store=? AND key=?", (self.store, self._key(key))
+        ).fetchone()
+        if row is None:
+            raise KeyError(key)
+        return self.context.decode(row[0])
+
+    def __setitem__(self, key, value):
+        encoded = self._key(key)
+        original, raw = self.context.encode(key), self.context.encode(value)
+        self.context.reserve(len(raw))
+        updated = self.context.connection.execute(
+            "UPDATE entries SET payload=? WHERE store=? AND key=?", (raw, self.store, encoded)
+        ).rowcount
+        if not updated:
+            self.context.connection.execute(
+                "INSERT INTO entries VALUES(?,?,?,?,?)",
+                (self.store, encoded, len(self), original, raw),
+            )
+            self.context.connection.execute(
+                "UPDATE stores SET length=length+1 WHERE id=?", (self.store,)
+            )
+
+    def __contains__(self, key):
+        return (
+            self.context.connection.execute(
+                "SELECT 1 FROM entries WHERE store=? AND key=?", (self.store, self._key(key))
+            ).fetchone()
+            is not None
+        )
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def setdefault(self, key, default):
+        if key not in self:
+            if isinstance(default, list) and not default:
+                default = self.context.sequence()
+            self[key] = default
+        return self[key]
+
+    def values(self):
+        return _working_context().sequence(self[key] for key in self)
+
+    def items(self):
+        return ((key, self[key]) for key in self)
+
+
+class _ResourceUseGroups(_OccurrenceMap):
+    """Composite resource keys map directly to explicit child record stores."""
+
+    def _key(self, key):
+        return _join_key(key)
+
+    def setdefault(self, key, default):
+        if key not in self:
+            self[key] = self.context.sequence(default)
+        return self[key]
+
+
+def _resource_groups():
+    return _ResourceUseGroups() if _STREAM_CONTEXT is not None else {}
+
+
+class _InventoryKeys:
+    """Equality-only composite inventory with indexed canonical keys."""
+
+    def __init__(self, values=()):
+        self.values = _ResourceUseGroups()
+        for value in values:
+            self.add(value)
+
+    def __len__(self):
+        return len(self.values)
+
+    def __contains__(self, key):
+        return key in self.values
+
+    def add(self, key):
+        if key not in self.values:
+            self.values[key] = True
+
+
+def _value_set(values=()):
+    return _InventoryKeys(values) if _STREAM_CONTEXT is not None else set(values)
+
+
+class _OccurrenceSet:
+    def __init__(self):
+        self.values = _OccurrenceMap()
+
+    def add(self, key):
+        if key not in self.values:
+            self.values[key] = True
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __len__(self):
+        return len(self.values)
+
+    def __contains__(self, key):
+        return key in self.values
+
+
+def _occurrence_set(values=()):
+    result = _OccurrenceSet() if _STREAM_CONTEXT is not None else set()
+    for value in values:
+        result.add(value)
+    return result
+
+
+def _group_rows(groups, key):
+    if key not in groups:
+        groups[key] = _bounded_list()
+    return groups[key]
+
+
+def _occurrence_dict(values):
+    result = _occurrence_map()
+    for key, value in values:
+        result[key] = value
+    return result
+
+
+_NO_STREAM_VALUES = object()
+
+
+def _bounded_list(values=_NO_STREAM_VALUES):
+    if _STREAM_CONTEXT is None:
+        return [] if values is _NO_STREAM_VALUES else list(values)
+    if values is _NO_STREAM_VALUES:
+        return _working_context().sequence()
+    iterator, small, charge = iter(values), [], 0
+    for row in iterator:
+        size = _row_memory(row)
+        if len(small) >= 256 or charge + size > 1024 * 1024:
+            return _working_context().sequence(itertools.chain(small, (row,), iterator))
+        small.append(row)
+        charge += size
+    return small
+
+
+def _bounded_sorted(values, *, key=None, reverse=False):
+    if _STREAM_CONTEXT is None:
+        return sorted(values, key=key, reverse=reverse)
+    result = _bounded_list(values)
+    result.sort(key=key, reverse=reverse)
+    return result
+
+
+def _occurrence_map():
+    return _OccurrenceMap() if _STREAM_CONTEXT is not None else {}
+
+
+def _pack_stream(value, context):
+    if isinstance(value, _RecordSpool):
+        return {"_sf2Rows": context.import_rows(value)}
+    if isinstance(value, dict):
+        return {k: _pack_stream(v, context) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_pack_stream(v, context) for v in value]
+    return value
+
+
+def _unpack_stream(value, context):
+    if isinstance(value, dict) and set(value) == {"_sf2Rows"}:
+        store = value["_sf2Rows"]
+        require(type(store) is int and store > 0, "invalid derived row reference")
+        context.length(store)  # Missing storage must fail at readback, not look empty.
+        return _RecordSpool(context, store)
+    if isinstance(value, dict):
+        return {k: _unpack_stream(v, context) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_unpack_stream(v, context) for v in value]
+    return value
+
+
+def _read_capture(path):
+    global _STREAM_CONTEXT
+    context = _ReaderContext(_STREAM_SCRATCH_ROOT or path.resolve().parent)
+    _STREAM_CONTEXT = context
+    channels, counts, descriptors, terminal = {}, {}, {}, None
+    previous, descriptor_bytes = 0, 0
+    with path.open("rb") as source:
+        while raw := source.readline(_STREAM_RECORD_LIMIT + 1):
+            require(
+                len(raw) <= _STREAM_RECORD_LIMIT and raw.endswith(b"\n"),
+                "oversized/truncated capture record",
+            )
+            row = json.loads(raw)
+            require(terminal is None, "capture record follows terminal")
+            require(
+                type(row["captureSequence"]) is int and row["captureSequence"] == previous + 1,
+                "missing/duplicate capture sequence",
+            )
+            previous = row["captureSequence"]
+            channel, payload = row["channel"], row["payload"]
+            require(
+                isinstance(channel, str) and 0 < len(channel) <= 64 and isinstance(payload, dict),
+                "invalid capture record shape",
+            )
+            _row_memory(payload)
+            require(previous != 1 or channel == "header", "capture header must be first")
+            require(channel in counts or len(counts) < 64, "capture channel bound")
+            require(
+                type(row["index"]) is int and row["index"] == counts.get(channel, 0),
+                "missing/duplicate channel ordinal",
+            )
+            counts[channel] = row["index"] + 1
+            if channel == "header":
+                require(
+                    previous == 1 and payload["format"] == "sf2-observation-jsonl-v1",
+                    "invalid capture header",
+                )
+            elif channel == "descriptorReset":
+                descriptors.clear()
+                descriptor_bytes = 0
+            elif channel == "resourceDescriptors":
+                require(payload["id"] not in descriptors, "duplicate resource descriptor")
+                descriptor_bytes += _row_memory(payload["selector"])
+                require(
+                    len(descriptors) < 4096 and descriptor_bytes <= _STREAM_CACHE_LIMIT,
+                    "resource descriptor lifetime bound",
+                )
+                descriptors[payload["id"]] = payload["selector"]
+            elif channel == "resourceUses":
+                used = payload["used"]
+                selector = used.get("selector", used)
+                if "captureDescriptor" in selector:
+                    require(
+                        selector["captureDescriptor"] in descriptors,
+                        "missing/detached resource descriptor",
+                    )
+                    if "selector" in used:
+                        used["selector"] = descriptors[selector["captureDescriptor"]]
+                    else:
+                        payload["used"] = descriptors[selector["captureDescriptor"]]
+            if channel == "drawUses":
+                if "resourceUses" not in channels:
+                    channels["resourceUses"] = context.sequence()
+                for use in payload["uses"]:
+                    used = use["used"]
+                    selector = used.get("selector", used)
+                    require(
+                        "captureDescriptor" in selector
+                        and selector["captureDescriptor"] in descriptors,
+                        "missing/detached draw resource descriptor",
+                    )
+                    if "selector" in used:
+                        used["selector"] = descriptors[selector["captureDescriptor"]]
+                    else:
+                        use["used"] = descriptors[selector["captureDescriptor"]]
+                    channels["resourceUses"].append(dict(use, identity=payload["identity"]))
+                continue
+            if channel == "terminal":
+                terminal = payload
+            else:
+                if channel not in channels:
+                    require(len(channels) < 64, "capture channel bound")
+                    channels[channel] = context.sequence()
+                channels[channel].append(payload)
+    require(terminal is not None and counts.get("header") == 1, "capture missing terminal/header")
+    result = dict(terminal)
+    result.update(channels)
+    result["captureIntegrity"] = dict(
+        records=previous,
+        channelCounts=counts,
+        terminal=True,
+        pageCacheTargetBytes=_STREAM_CACHE_LIMIT,
+        recordLimit=_STREAM_RECORD_LIMIT,
+        decodedRowLimit=_STREAM_ROW_MEMORY_LIMIT,
+        scratch=context.root.relative_to(repo_path(".")).as_posix(),
+    )
+    context.flush()
+    return result
+
+
 def read(path):
-    return json.loads(path.read_bytes())
+    path = (Path(path) if Path(path).is_absolute() else repo_path(path)).resolve()
+    with path.open("rb") as source:
+        first = source.readline(_STREAM_RECORD_LIMIT + 1)
+    try:
+        header = json.loads(first)
+    except (ValueError, UnicodeDecodeError):
+        header = None
+    if isinstance(header, dict) and header.get("channel") == "header":
+        return _read_capture(path)
+    value = json.loads(path.read_bytes())
+    if isinstance(value, dict):
+        format_name = value.get("streamReportFormat")
+        require(
+            format_name != "sf2-h4-stream-report-v1",
+            "old private spool report requires its retained reader version",
+        )
+        if format_name == "sf2-h4-sqlite-report-v1":
+            global _STREAM_CONTEXT
+            name = value["streamDatabase"]
+            require(
+                isinstance(name, str) and Path(name).name == name, "invalid report companion name"
+            )
+            database = (path.parent / name).resolve()
+            require(
+                database.parent == path.parent and database.is_file(), "missing report companion"
+            )
+            context = _ReaderContext(database=database, readonly=True)
+            _STREAM_CONTEXT = context
+            return _unpack_stream(value, context)
+    return value
 
 
 def write(path, value):
-    path = path.resolve()
+    path = (Path(path) if Path(path).is_absolute() else repo_path(path)).resolve()
     require(
-        path.is_relative_to(repo_path("local")) and not path.exists(),
+        path.is_relative_to(repo_path("local").resolve()) and not path.exists(),
         "output must be fresh beneath this worktree's local/",
     )
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("x", encoding="utf-8") as stream:
+    if _STREAM_CONTEXT is not None:
+        database = path.with_name(path.name + ".sqlite")
+        context = _ReaderContext(database=database)
+        try:
+            value = _pack_stream(
+                dict(
+                    value,
+                    streamReportFormat="sf2-h4-sqlite-report-v1",
+                    streamDatabase=database.name,
+                ),
+                context,
+            )
+            # Imports are only a bounded copy memo. A published bundle has no source DB paths.
+            context.connection.execute("DELETE FROM imports")
+            context.flush()
+        finally:
+            context.close()
+    # Publish the entry point only after its complete companion has committed and closed.
+    # Failed companion/JSON writes remain private discovery artifacts; never reuse that name.
+    partial = path.with_name(path.name + ".partial")
+    with partial.open("x", encoding="utf-8") as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2)
         stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    partial.rename(path)
 
 
 def reference(path):
@@ -807,7 +1502,13 @@ SCENE_GENERATOR_COMPONENTS = (
 
 def text_material_binding(actual, outcome, selection, source_root):
     """Full reached text material/modern Label join, independent of rendered selectors."""
-    result = dict(value=None, checks=[], field=[], battle=[], boundary="modern configured font")
+    result = dict(
+        value=None,
+        checks=_bounded_list(),
+        field=_bounded_list(),
+        battle=_bounded_list(),
+        boundary="modern configured font",
+    )
     if not selection or source_root is None:
         return result
 
@@ -931,14 +1632,14 @@ def text_material_binding(actual, outcome, selection, source_root):
         check("missing source/material operand", None)
     session = actual["samples"][0]["state"]["sessionId"]
     records = actual.get("warpRecords", [])
-    events, seen = [], set()
+    events, seen = _bounded_list(), _occurrence_set()
     for ri, r in enumerate(records):
         for e in r["result"].get("observations", []):
             if e["Sequence"] not in seen:
                 events.append(dict(record=ri, **e))
                 seen.add(e["Sequence"])
     events.sort(key=lambda e: e["Sequence"])
-    event_by_sequence = {e["Sequence"]: e for e in events}
+    event_by_sequence = _occurrence_dict((e["Sequence"], e) for e in events)
 
     def units(text, leader):
         out = []
@@ -968,8 +1669,8 @@ def text_material_binding(actual, outcome, selection, source_root):
         return out
 
     programs = {p["id"]: p for p in w.get("programs", [])}
-    text_cursor, producer_text = None, {}
-    required_field, producer_spans = {}, {}
+    text_cursor, producer_text = None, None
+    required_field, controls = _occurrence_map(), []
     active_producer, span = None, 0
     for e in events:
         try:
@@ -980,11 +1681,10 @@ def text_material_binding(actual, outcome, selection, source_root):
                     text_cursor = ins["text"]
                 elif ins.get("op") == "show-text":
                     active_producer, span = e["Sequence"], 0
-                    producer_text[active_producer] = text_cursor
+                    producer_text = text_cursor
                     # Source controls, not consumer projections, define the spans.
                     text = texts[text_cursor]
                     controls = list(re.finditer(r"\{W[12]\}", text))
-                    producer_spans[active_producer] = controls
                     required_field[active_producer] = dict(
                         producer=active_producer, text=text_cursor, span=0
                     )
@@ -994,7 +1694,6 @@ def text_material_binding(actual, outcome, selection, source_root):
                 e["Kind"] in ("text-w1-accepted", "text-w2-accepted")
                 and active_producer is not None
             ):
-                controls = producer_spans[active_producer]
                 if span >= len(controls):
                     check(f"source text acceptance {e['Sequence']}", False)
                     continue
@@ -1003,20 +1702,21 @@ def text_material_binding(actual, outcome, selection, source_root):
                     f"source text acceptance {e['Sequence']}",
                     e["Kind"] == "text-w" + control.group()[2] + "-accepted",
                 )
-                if control.end() < len(texts[producer_text[active_producer]]):
+                if control.end() < len(texts[producer_text]):
                     span += 1
                     required_field[e["Sequence"]] = dict(
-                        producer=active_producer, text=producer_text[active_producer], span=span
+                        producer=active_producer, text=producer_text, span=span
                     )
                 else:
                     active_producer = None
         except (KeyError, IndexError, ValueError):
             check(f"missing source text producer {e['Sequence']}", None)
             active_producer = None
-    field_rows = actual["samples"] + [
-        r for r in outcome.get("records", []) if r.get("label") == "outcome-text-input"
-    ]
-    field_tokens = set()
+    field_rows = itertools.chain(
+        actual["samples"],
+        (r for r in outcome.get("records", []) if r.get("label") == "outcome-text-input"),
+    )
+    field_tokens = _occurrence_set()
     for i, row in enumerate(field_rows):
         s = row["state"]
         f = s.get("fieldText")
@@ -1071,14 +1771,15 @@ def text_material_binding(actual, outcome, selection, source_root):
             check(f"missing field occurrence operand {i}", None)
     check(
         "every logical/source field span mounted",
-        True if required_field and required_field.keys() <= field_tokens else None,
+        True if required_field and all(token in field_tokens for token in required_field) else None,
     )
-    result["requiredField"] = [
+    result["requiredField"] = _bounded_list(
         dict(token=token, **binding) for token, binding in required_field.items()
-    ]
-    preps = [e for e in events if e["Kind"] == "scene-prepared"]
-    prepseq = [e["Sequence"] for e in preps]
-    messages = {}
+    )
+    preps = _bounded_list(e for e in events if e["Kind"] == "scene-prepared")
+    prepseq = _bounded_list(e["Sequence"] for e in preps)
+    event_sequences = _bounded_list(e["Sequence"] for e in events)
+    messages = _occurrence_map()
     for i, row in enumerate(actual.get("sceneObservations", [])):
         if row["scene"].get("message"):
             messages.setdefault(row["scene"]["waitToken"], []).append((i, row))
@@ -1118,7 +1819,11 @@ def text_material_binding(actual, outcome, selection, source_root):
                 continue
             p = preps[gi]
             end = prepseq[gi + 1] if gi + 1 < len(preps) else float("inf")
-            body = [e for e in events if p["Sequence"] <= e["Sequence"] < end]
+            body = events[
+                bisect_right(event_sequences, p["Sequence"] - 1) : bisect_right(
+                    event_sequences, end - 1
+                )
+            ]
             if gi + 1 < len(preps):
                 body = [
                     e
@@ -1251,14 +1956,14 @@ def text_material_binding(actual, outcome, selection, source_root):
                         if 0 <= ni < len(notices):
                             tid, value = notices[ni]
             elif phase == "GoldMessage":
-                gold = [
+                gold = _bounded_list(
                     e
                     for e in events
                     if e["record"] == p["record"]
                     and e["Sequence"] <= p["Sequence"]
                     and e["Kind"] == "gold"
                     and actor(e) == actor(p)
-                ]
+                )
                 if gold:
                     tid = 393
                     who = actor(p)
@@ -1287,11 +1992,11 @@ def text_material_binding(actual, outcome, selection, source_root):
                     if expected is None or row["scene"].get("reactionAmount") is None
                     else row["scene"].get("reactionAmount") == si.get("reactionAmount"),
                 )
-            mounted = [
+            mounted = _bounded_list(
                 r["state"]["scene"]
                 for r in records
                 if r.get("state", {}).get("scene", {}).get("waitToken") == token
-            ]
+            )
             check(
                 f"battle mounted {token}",
                 True
@@ -1329,17 +2034,17 @@ def text_material_binding(actual, outcome, selection, source_root):
         "GoldMessage",
         "GrowthMessage",
     }
-    required_battle = {
+    required_battle = _occurrence_set(
         e["Sequence"]
         for e in events
         if e["Kind"] == "scene-step-started" and e.get("Detail") in message_phases
-    }
+    )
     check(
         "every logical battle message paired",
-        True if required_battle and required_battle <= messages.keys() else None,
+        True if required_battle and all(token in messages for token in required_battle) else None,
     )
-    result["requiredBattle"] = sorted(required_battle)
-    values = [c["value"] for c in result["checks"]]
+    result["requiredBattle"] = _bounded_sorted(required_battle)
+    values = _bounded_list(c["value"] for c in result["checks"])
     result["value"] = False if False in values else None if None in values or not values else True
     return result
 
@@ -1353,7 +2058,7 @@ def reached_visual_materials(
     palette_metadata=None,
 ):
     """Join reached texture selectors to existing source decoders and private exports."""
-    result = dict(map=None, entity=None, scene=None, checks=[], joins=[])
+    result = dict(map=None, entity=None, scene=None, checks=_bounded_list(), joins=_bounded_list())
 
     def check(family, name, value, identity=None):
         row = dict(family=family, name=name, value=value)
@@ -1376,7 +2081,7 @@ def reached_visual_materials(
 
     def finish():
         for family in ("map", "entity", "scene"):
-            values = [c["value"] for c in result["checks"] if c["family"] == family]
+            values = _bounded_list(c["value"] for c in result["checks"] if c["family"] == family)
             result[family] = (
                 False if False in values else None if None in values or not values else True
             )
@@ -1645,11 +2350,10 @@ def reached_visual_materials(
                 source_valid and visual == source_maps.get(name),
             )
 
-        requirements = list(actual.get("resourceRequirements", []))
-        uses = list(actual.get("resourceUses", []))
+        requirements = _bounded_list(actual.get("resourceRequirements", []))
+        uses = _bounded_list(actual.get("resourceUses", []))
 
         def available_rows(rows, requirement):
-            available = []
             for row in rows:
                 family = "map" if row.get("kind") == "map" else "entity"
                 with evaluated(family, "resource occurrence"):
@@ -1658,11 +2362,10 @@ def reached_visual_materials(
                         i[key]
                     row["kind"]
                     row["expected" if requirement else "used"]
-                    available.append(row)
-            return available
+                    yield row
 
-        requirements = available_rows(requirements, True)
-        uses = available_rows(uses, False)
+        requirements = _bounded_list(available_rows(requirements, True))
+        uses = _bounded_list(available_rows(uses, False))
         programs = {p["id"]: p for p in world["programs"]}
         visits = {0: read(repo_path(process["selectedStart"]))["start"]["map"]}
         for delivery in actual.get("warpRecords", []):
@@ -1674,14 +2377,14 @@ def reached_visual_materials(
                     visits[event["Sequence"]] = programs[loc["Program"]]["instructions"][
                         int(loc["Instruction"])
                     ]["map"]
-        visit_sequences = sorted(visits)
+        visit_sequences = _bounded_sorted(visits)
         sessions = {
             row["state"]["sessionId"]
             for channel in ("samples", "consumerBoundaries", "warpRecords")
             for row in actual.get(channel, [])
             if row.get("state", {}).get("sessionId")
         }
-        for row in requirements + uses:
+        for row in itertools.chain(requirements, uses):
             with evaluated("map" if row.get("kind") == "map" else "entity", "resource identity"):
                 i = row["identity"]
                 family = "map" if row["kind"] == "map" else "entity"
@@ -1725,18 +2428,18 @@ def reached_visual_materials(
                 row.get("highPriority"),
             )
 
-        requirement_phases = {}
+        requirement_phases = _resource_groups()
         for required in requirements:
             i = required["identity"]
-            requirement_phases.setdefault((i["visit"], required["kind"]), set()).add(i["phase"])
+            requirement_phases.setdefault((i["visit"], required["kind"]), []).append(i["phase"])
         # Independently require visible logical subjects in retained current
         # projections. Surviving draw/use rows cannot define their own inventory.
-        logical_states = [
+        logical_states = (
             row.get("state", {})
             for channel in ("samples", "consumerBoundaries", "warpRecords")
             for row in actual.get(channel, [])
-        ]
-        required_entities = {
+        )
+        required_entities = _value_set(
             (
                 r["identity"]["visit"],
                 r["identity"]["phase"],
@@ -1746,7 +2449,7 @@ def reached_visual_materials(
             )
             for r in requirements
             if r["kind"] == "entity"
-        }
+        )
 
         def portrait_pose(visit, phase, want):
             return (
@@ -1759,7 +2462,7 @@ def reached_visual_materials(
                 tuple(want["tiles"]),
             )
 
-        required_portraits = set()
+        required_portraits = _value_set()
         for row in requirements:
             if row["kind"] == "portrait":
                 with evaluated("entity", "portrait inventory"):
@@ -1768,7 +2471,7 @@ def reached_visual_materials(
                             row["identity"]["visit"], row["identity"]["phase"], row["expected"]
                         )
                     )
-        required_tiles = set()
+        required_tiles = _value_set()
         for row in requirements:
             if row["kind"] == "map":
                 with evaluated("map", "tile inventory"):
@@ -1787,12 +2490,12 @@ def reached_visual_materials(
                         )
                     )
         map_definitions = {row["id"]: row for row in world["maps"]}
-        logical_tiles = set()
+        logical_tiles = _value_set()
 
         def layer_tiles(map_id, layer, name):
             # Original draw geometry independently retains the first covered tile and
             # occlusion ink regions. Neither inventory comes from requirement/use rows.
-            recorded = list(layer.get("overlaps", []))
+            recorded = _bounded_list(layer.get("overlaps", []))
             if layer.get("first"):
                 recorded.append(layer["first"])
             if name == "occlusion":
@@ -1801,7 +2504,7 @@ def reached_visual_materials(
                 return recorded
             definition = map_definitions[map_id]
             events = definition.get("layoutEvents") or {}
-            mutable_regions = [row["copy"] for rows in events.values() for row in rows]
+            mutable_regions = _bounded_list(row["copy"] for rows in events.values() for row in rows)
             unknown_layout = False
             origin_x, origin_y = layer["x"], layer["y"]
             for y in range(int(origin_y // 24), int(origin_y // 24) + 9):
@@ -1835,9 +2538,9 @@ def reached_visual_materials(
                 check("map", "reached mutable region needs current working-layout operands", None)
             return recorded
 
-        logical_inventory = set()
-        logical_layers = set()
-        required_layers = {
+        logical_inventory = _value_set()
+        logical_layers = _value_set()
+        required_layers = _value_set(
             (
                 r["identity"]["visit"],
                 r["identity"]["phase"],
@@ -1847,7 +2550,7 @@ def reached_visual_materials(
             )
             for r in requirements
             if r["kind"] == "map"
-        }
+        )
         for state in logical_states:
             with evaluated(("map", "entity"), "logical draw occurrence"):
                 projection = state.get("cameraProjection") or {}
@@ -1963,7 +2666,7 @@ def reached_visual_materials(
                                     requirements.append(requirement)
                                     uses.append(dict(requirement, used=actor["resourceSelector"]))
                                     required_entities.add(key)
-                                    requirement_phases.setdefault((visit, "entity"), set()).add(
+                                    requirement_phases.setdefault((visit, "entity"), []).append(
                                         phase
                                     )
                             check(
@@ -1980,7 +2683,7 @@ def reached_visual_materials(
                         if flags is None or state.get("portraitId") is None:
                             raise KeyError("logical portrait identity")
                         original = source_portraits[state["portraitId"]]
-                        tiles = list(range(64))
+                        tiles = _bounded_list(range(64))
                         for changes in (
                             (original["eyes"] if work.get("EyesClosed") else []),
                             (original["mouth"] if work.get("MouthOpen") else []),
@@ -2013,10 +2716,21 @@ def reached_visual_materials(
             "independent reached visible logical inventory",
             True if logical_inventory else None,
         )
-        index = {}
+
+        def use_key(row, required=False):
+            # These are precisely the existing candidate filters, not acceptance operands.
+            want = row["expected"] if required else row.get("expected")
+            if row["kind"] == "map":
+                data = want if required else row["used"]
+                match = (data.get("block"), data.get("tile"))
+            else:
+                match = (json.dumps(_inventory_key(want), sort_keys=True, separators=(",", ":")),)
+            return identity(row) + match
+
+        index = _resource_groups()
         for used in uses:
             with evaluated("map" if used.get("kind") == "map" else "entity", "actual texture use"):
-                index.setdefault(identity(used), []).append(used)
+                index.setdefault(use_key(used), []).append(used)
                 i = used["identity"]
                 phases = requirement_phases.get((i["visit"], used["kind"]), set())
                 family = "map" if used["kind"] == "map" else "entity"
@@ -2053,14 +2767,8 @@ def reached_visual_materials(
             ):
                 kind, want = required["kind"], required["expected"]
                 family = "map" if kind == "map" else "entity"
-                candidates = index.get(identity(required), [])
+                candidates = index.get(use_key(required, required=True), [])
                 if kind == "map":
-                    candidates = [
-                        r
-                        for r in candidates
-                        if r["used"].get("tile") == want["tile"]
-                        and r["used"].get("block") == want["block"]
-                    ]
                     visual = maps[required["identity"]["map"]]
                     check(
                         family,
@@ -2068,8 +2776,6 @@ def reached_visual_materials(
                         0 <= want["block"] < len(visual["blocks"])
                         and visual["blocks"][int(want["block"])][int(want["tile"])] == want["word"],
                     )
-                else:
-                    candidates = [r for r in candidates if r.get("expected") == want]
                 check(family, "required actual texture use", True if candidates else None)
                 for used in candidates:
                     bound = used["used"]
@@ -2109,7 +2815,7 @@ def reached_visual_materials(
                             and want["portrait"] in source_portraits,
                         )
                         original = source_portraits.get(want["portrait"])
-                        tiles = list(range(64))
+                        tiles = _bounded_list(range(64))
                         if original:
                             for changes in (
                                 (original["eyes"] if want["eyes"] else []),
@@ -2192,8 +2898,8 @@ def reached_materials(
         scene=None,
         audio=None,
         actorWeapon=None,
-        checks=[],
-        joins=[],
+        checks=_bounded_list(),
+        joins=_bounded_list(),
         visuals=reached_visual_materials(
             actual, selection, source_root, canonical_content, tileset_metadata, palette_metadata
         ),
@@ -2336,11 +3042,13 @@ def reached_materials(
                 "scene rasters -> scale2 buckets/source/derivation",
             )
         )
-        mounted = [
-            (i, r["scene"])
-            for i, r in enumerate(actual.get("sceneObservations", []))
-            if r["scene"].get("visible") and not r["scene"].get("fieldDeath")
-        ]
+        mounted = _bounded_list(
+            (
+                (i, r["scene"])
+                for i, r in enumerate(actual.get("sceneObservations", []))
+                if r["scene"].get("visible") and not r["scene"].get("fieldDeath")
+            )
+        )
         backgrounds, actors = [], []
         for i, row in mounted:
             for key in ("background", "backgroundWrap", "ground"):
@@ -2410,12 +3118,14 @@ def reached_materials(
             )
             provenance.extend((name, i, r) for i, r in enumerate(owner[key]))
         audio = world["world"]["presentation"]["audio"]
-        starts = [
-            (i, r["receipt"])
-            for i, r in enumerate(actual.get("audioReceipts", []))
-            if r["receipt"]["Operation"] == "started"
-        ]
-        for cue in sorted({r["Cue"] for _, r in starts}):
+        starts = _bounded_list(
+            (
+                (i, r["receipt"])
+                for i, r in enumerate(actual.get("audioReceipts", []))
+                if r["receipt"]["Operation"] == "started"
+            )
+        )
+        for cue in _bounded_sorted({r["Cue"] for _, r in starts}):
             selected_audio = [a for a in audio if a["cue"] == cue]
             library = [a for a in catalog["assets"] if a["kind"] == "audio" and a["cue"] == cue]
             records = [(n, i, r) for n, i, r in provenance if r["asset"]["cue"] == cue]
@@ -2687,31 +3397,37 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             return finalize()
         (pi, plain), (wi, polled), (ai, acked), (ri, ready) = (group[0] for group in selected)
         records = actual["warpRecords"]
-        observations = [(i, o) for i, r in enumerate(records) for o in r["result"]["observations"]]
-        late = [
-            (i, row["state"])
-            for i, row in enumerate(actual["samples"])
-            if row["label"] == "music-logical-end"
-        ]
+        observations = _bounded_list(
+            ((i, o) for i, r in enumerate(records) for o in r["result"]["observations"])
+        )
+        late = _bounded_list(
+            (
+                (i, row["state"])
+                for i, row in enumerate(actual["samples"])
+                if row["label"] == "music-logical-end"
+            )
+        )
         if len(late) > 1:
             result.update(plain=False, audio=False, caller=False)
             return finalize()
-        held = [
-            (i, row["state"])
-            for i, row in enumerate(records)
-            if row.get("state", {}).get("wait") == "MusicWait"
-            and row["state"]["revision"] < plain["revision"]
-        ]
+        held = _bounded_list(
+            (
+                (i, row["state"])
+                for i, row in enumerate(records)
+                if row.get("state", {}).get("wait") == "MusicWait"
+                and row["state"]["revision"] < plain["revision"]
+            )
+        )
         if not held:
             return finalize()
         li, logical = late[0] if late else (None, held[0][1])
-        initial_starts = [
+        initial_starts = _bounded_list(
             row["receipt"]
             for row in actual["audioReceipts"]
             if row["receipt"]["Cue"] == "MUSIC_JOIN"
             and row["receipt"]["Operation"] == "started"
             and row["receipt"]["Revision"] < logical["revision"]
-        ]
+        )
         if late:
             generation = logical["music"]["Generation"]
         else:
@@ -2784,7 +3500,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         completed = event("music-actual-completed", "MUSIC_JOIN")
         previous = event("presentation-completed", "PreviousMusic")
         acknowledged = event("presentation-acknowledged")
-        pressed = [r for r in actual["inputRecords"] if r["pressed"]]
+        pressed = _bounded_list(r for r in actual["inputRecords"] if r["pressed"])
         early = [
             r
             for r in pressed
@@ -2854,7 +3570,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         music = logical["music"] if late else None
         helper = logical["musicWait"] if late else None
         helper_token = helper["Token"]["Value"] if late else install["Sequence"]
-        receipts = [r["receipt"] for r in actual["audioReceipts"]]
+        receipts = _bounded_list(r["receipt"] for r in actual["audioReceipts"])
         previous_starts = [
             r
             for r in receipts
@@ -2904,11 +3620,11 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and finish["Sequence"] < r["Sequence"]
             and r["Revision"] < plain["revision"]
         ]
-        transitional = [
+        transitional = _bounded_list(
             s["state"]
             for s in (actual["samples"][li + 1 : pi] if late else [])
             if s["state"]["audio"]["musicGeneration"] == generation
-        ]
+        )
         if not restarts or (late and not transitional):
             return finalize()
         restart = restarts[0]
@@ -3079,11 +3795,11 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             and acked["revision"] < o["Sequence"] <= ready["revision"]
         ]
         zone_finished = event("zone-finished")
-        arrivals = [
+        arrivals = _bounded_list(
             s["state"]
             for s in actual["samples"][ai + 1 : ri]
             if s["state"]["wait"] == "ZoneArrivalWait"
-        ]
+        )
         if not arrivals:
             return finalize()
         zone = next(p for p in world["programs"] if p["id"] == "map3-zoneevent8")
@@ -3123,7 +3839,7 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
             ]
             and tail[2]["ticks"] == 10
             and [o["Program"]["Instruction"] for _, o in actual_tail]
-            == list(range(int(begin) + 1, len(instructions)))
+            == _bounded_list(range(int(begin) + 1, len(instructions)))
             and [o["Detail"] for _, o in actual_tail]
             == [
                 "CloseText",
@@ -3175,7 +3891,9 @@ MATRIX_OBLIGATION = "complete named continuous settings matrix"
 
 def field_motion_binding(actual, selection, source_root):
     """Join source producers to occurrence-local field waits and actual consumers."""
-    result = dict(operation=None, consumer=None, checks=[], occurrences=[])
+    result = dict(
+        operation=None, consumer=None, checks=_bounded_list(), occurrences=_bounded_list()
+    )
 
     def check(family, name, value, token=None):
         result["checks"].append(dict(family=family, name=name, value=value, token=token))
@@ -3252,20 +3970,32 @@ def field_motion_binding(actual, selection, source_root):
         common("source lowering operand absent", None)
         compiler = None
 
-    events, record_by_event = {}, {}
-    for r in actual.get("warpRecords", []):
+    events, record_by_event = _occurrence_map(), _occurrence_map()
+    warp_records = actual.get("warpRecords", [])
+    for ordinal, r in enumerate(warp_records):
         for e in r["result"].get("observations", []):
             seq = e["Sequence"]
             if seq in events and events[seq] != e:
                 common("logical occurrence identity contradiction", False)
             events[seq] = e
-            record_by_event.setdefault(seq, r)
-    ordered = sorted(events.values(), key=lambda e: e["Sequence"])
+            record_by_event.setdefault(seq, ordinal)
+    ordered = _bounded_sorted(events.values(), key=lambda e: e["Sequence"])
+    events_by_kind = {}
+    release_by_token = _occurrence_map()
+    for event in ordered:
+        _group_rows(events_by_kind, event["Kind"]).append(event)
+        release_token = (event.get("EntityWaitRelease") or {}).get("Token", {}).get("Value")
+        if release_token is not None:
+            release_by_token.setdefault(release_token, event)
     boundaries = actual.get("consumerBoundaries", [])
-    by_token = {}
+    by_token = _occurrence_map()
+    release_boundary = _occurrence_map()
     for b in boundaries:
         s = b.get("state", {})
         by_token.setdefault(s.get("token"), []).append(b)
+        for release in b.get("releases", []):
+            if release.get("Sequence") is not None:
+                release_boundary.setdefault(release["Sequence"], b)
     source_values = {}
     source_spans = {}
 
@@ -3345,7 +4075,7 @@ def field_motion_binding(actual, selection, source_root):
         source_values[program] = value
         return value
 
-    producers = []
+    producers = _bounded_list()
     warp_started = transferred = -1
     last_location = None
     for e in ordered:
@@ -3354,7 +4084,7 @@ def field_motion_binding(actual, selection, source_root):
             warp_started = seq
         if e["Kind"] == "map-transferred":
             transferred = seq
-        r = record_by_event[seq]
+        r = warp_records[record_by_event[seq]]
         s = r.get("state", {})
         loc = e.get("Program")
         if e["Kind"] == "full-fade-started":
@@ -3398,7 +4128,9 @@ def field_motion_binding(actual, selection, source_root):
         return next((x for x in s.get("entities") or [] if x.get("id") == subject), None)
 
     def following(token, kind):
-        return next((e for e in ordered if e["Sequence"] > token and e["Kind"] == kind), None)
+        group = events_by_kind.get(kind, [])
+        position = bisect_right(group, token, key=lambda event: event["Sequence"])
+        return group[position] if position < len(group) else None
 
     def operand(family, token, name, operands, predicate):
         # Evaluate independently: missing elsewhere cannot hide this contradiction.
@@ -3408,9 +4140,9 @@ def field_motion_binding(actual, selection, source_root):
 
     for e, loc, ins, role, helper in producers:
         token = e["Sequence"]
-        r = record_by_event[token]
+        r = warp_records[record_by_event[token]]
         rows = by_token.get(token, [])
-        states = [b["state"] for b in rows]
+        states = _bounded_list(b["state"] for b in rows)
         entry = next(
             (
                 s
@@ -3433,7 +4165,6 @@ def field_motion_binding(actual, selection, source_root):
             operation=None,
             consumer=None,
         )
-        result["occurrences"].append(occurrence)
         start_index = len(result["checks"])
         for family in ("operation", "consumer"):
             check(
@@ -3469,14 +4200,7 @@ def field_motion_binding(actual, selection, source_root):
             # Absent source operands cannot hide a contradiction between the
             # logical wait and its predicate release in this same session.
             if entry and entry.get("entityWait"):
-                release = next(
-                    (
-                        x
-                        for x in ordered
-                        if (x.get("EntityWaitRelease") or {}).get("Token", {}).get("Value") == token
-                    ),
-                    None,
-                )
+                release = release_by_token.get(token)
                 payload = (release or {}).get("EntityWaitRelease") or {}
                 wait = entry["entityWait"]
                 for family in ("operation", "consumer"):
@@ -3494,6 +4218,7 @@ def field_motion_binding(actual, selection, source_root):
                         [wait.get("Completion"), payload.get("Completion")],
                         lambda a, b: a == b,
                     )
+            result["occurrences"].append(occurrence)
             continue
         subject = ins.get("entity")
         blocking = role != "motion" or ins.get("wait")
@@ -3600,14 +4325,7 @@ def field_motion_binding(actual, selection, source_root):
                     )
             end = None
             if role == "motion":
-                release = next(
-                    (
-                        x
-                        for x in ordered
-                        if (x.get("EntityWaitRelease") or {}).get("Token", {}).get("Value") == token
-                    ),
-                    None,
-                )
+                release = release_by_token.get(token)
                 end = release
                 payload = (release or {}).get("EntityWaitRelease") or {}
                 expected_policy = 0 if ins.get("installation") == "Preserve" else 1
@@ -3668,16 +4386,10 @@ def field_motion_binding(actual, selection, source_root):
                             None,
                         )
                         if action["x"] == action["y"] == 0 and release:
-                            phase = next(
-                                (
-                                    entity(b["state"], subject)
-                                    for b in boundaries
-                                    if any(
-                                        x.get("Sequence") == release["Sequence"]
-                                        for x in b.get("releases", [])
-                                    )
-                                ),
-                                None,
+                            phase = (
+                                entity(release_boundary[release["Sequence"]]["state"], subject)
+                                if release["Sequence"] in release_boundary
+                                else None
                             )
                         for axis in ("x", "y"):
                             operand(
@@ -3870,7 +4582,7 @@ def field_motion_binding(actual, selection, source_root):
                             lambda a: a is True,
                         )
                 if role == "full-fade":
-                    fade_rows = [s for s in states if s.get("fade") is not None]
+                    fade_rows = _bounded_list(s for s in states if s.get("fade") is not None)
                     terminal = next(
                         (s for s in reversed(fade_rows) if s["fade"].get("LogicalDone")), None
                     )
@@ -3986,22 +4698,23 @@ def field_motion_binding(actual, selection, source_root):
                                 [held_restore.get(field), restore.get(field)],
                                 lambda a, b: a == b,
                             )
-                    after = record_by_event.get((end or {}).get("Sequence"), {}).get("state", {})
+                    ordinal = record_by_event.get((end or {}).get("Sequence"))
+                    after = warp_records[ordinal].get("state", {}) if ordinal is not None else {}
                     if after.get("spriteSize") is None and end:
-                        candidates = [
-                            x.get("state", {})
-                            for x in actual.get("samples", [])
-                            + actual.get("battleEntryRecords", [])
-                        ]
-                        candidates = [
-                            s
-                            for s in candidates
-                            if s.get("revision", -1) >= end["Revision"]
-                            and (s.get("presentation") or {}).get("completedCueToken") == token
-                            and s.get("spriteSize") is not None
-                        ]
-                        if candidates:
-                            after = min(candidates, key=lambda s: s["revision"])
+                        candidates = (
+                            state
+                            for x in itertools.chain(
+                                actual.get("samples", []), actual.get("battleEntryRecords", [])
+                            )
+                            if (state := x.get("state", {})).get("revision", -1) >= end["Revision"]
+                            and (state.get("presentation") or {}).get("completedCueToken") == token
+                            and state.get("spriteSize") is not None
+                        )
+                        selected = min(
+                            candidates, key=lambda state: state["revision"], default=None
+                        )
+                        if selected is not None:
+                            after = selected
                     restored = entity(after, subject)
                     for family in ("operation", "consumer"):
                         operand(
@@ -4055,8 +4768,8 @@ def field_motion_binding(actual, selection, source_root):
                 if role == "motion":
                     check("consumer", "predicate release observed before continuation", True, token)
 
-            draws = [b for b in rows if b.get("projectionStage") == "frame-post-draw"]
-            used = []
+            draws = _bounded_list(b for b in rows if b.get("projectionStage") == "frame-post-draw")
+            used = _bounded_list()
             effect = "nod" if role == "nod" else ins.get("resource")
             phases = (
                 ("normal-before", "lowered", "normal-after")
@@ -4067,7 +4780,7 @@ def field_motion_binding(actual, selection, source_root):
                 if effect in ("mosaic-in", "mosaic-out")
                 else ()
             )
-            applicability = {phase: [] for phase in phases}
+            applicability = {phase: _bounded_list() for phase in phases}
             phase_use = set()
 
             def semantic_phases(state, effect=effect, subject=subject, token=token):
@@ -4451,11 +5164,16 @@ def field_motion_binding(actual, selection, source_root):
             occurrence[family] = aggregate(
                 [c["value"] for c in local if family == "consumer" or c["family"] == family]
             )
+        result["occurrences"].append(occurrence)
     if compiler is not None:
         common("lowering dependencies owned by source pin", compiler.sources <= tracked_source)
     for family in ("operation", "consumer"):
         result[family] = aggregate(
-            [c["value"] for c in result["checks"] if family == "consumer" or c["family"] == family]
+            _bounded_list(
+                c["value"]
+                for c in result["checks"]
+                if family == "consumer" or c["family"] == family
+            )
         )
     return result
 
@@ -4469,7 +5187,9 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         "warp destination/setup initialization before field release",
         "before/after operation effects and shared-tail return pairing",
     )
-    result = dict(values={}, checks=[], programs=[], warps=[])
+    result = dict(
+        values={}, checks=_bounded_list(), programs=_bounded_list(), warps=_bounded_list()
+    )
 
     def check(family, name, value, sequence=None):
         result["checks"].append(dict(family=family, name=name, value=value, sequence=sequence))
@@ -4480,7 +5200,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
 
     def finish():
         for family in names:
-            values = [c["value"] for c in result["checks"] if c["family"] == family]
+            values = _bounded_list(c["value"] for c in result["checks"] if c["family"] == family)
             result["values"][family] = (
                 False if False in values else None if None in values or not values else True
             )
@@ -4548,15 +5268,16 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         common("source/selection operands absent", None)
         return finish()
 
-    events, records = {}, {}
-    for row in actual.get("warpRecords", []):
+    events, records = _occurrence_map(), _occurrence_map()
+    warp_records = actual.get("warpRecords", [])
+    for ordinal, row in enumerate(warp_records):
         for e in row["result"].get("observations", []):
             seq = e["Sequence"]
             if seq in events and events[seq] != e:
                 common("logical occurrence identity", False)
             events[seq] = e
-            records.setdefault(seq, row)
-    ordered = [events[k] for k in sorted(events)]
+            records.setdefault(seq, ordinal)
+    ordered = _bounded_list(events[k] for k in _bounded_sorted(events))
 
     def instruction(e):
         loc = e.get("Program")
@@ -4570,7 +5291,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             else None
         )
 
-    executed = [(e, instruction(e)) for e in ordered if e.get("Program")]
+    executed = _bounded_list((e, instruction(e)) for e in ordered if e.get("Program"))
     common("complete logical source occurrence inventory", True if executed else None)
     for pid in dict.fromkeys(e["Program"]["Program"] for e, _ in executed):
         p = programs.get(pid)
@@ -4655,11 +5376,11 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
 
     # Finite source fades publish a wait producer rather than program-instruction.
     # Reuse the independently source-bound producer locations, never host counts.
-    trace = {e["Sequence"]: e["Program"] for e, _ in executed}
+    trace = _occurrence_dict((e["Sequence"], e["Program"]) for e, _ in executed)
     for occurrence in motion.get("occurrences", []):
         if occurrence.get("location"):
             trace.setdefault(occurrence["token"], occurrence["location"])
-    trace = sorted(trace.items())
+    trace = _bounded_sorted(trace.items())
     for index, (seq, loc) in enumerate(trace[:-1]):
         ins = instruction(dict(Program=loc))
         if ins is None or ins["op"] in (
@@ -4687,15 +5408,20 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         for family in names:
             check(family, "complete ordered source successor", value, seq)
 
-    states = []
+    states = _bounded_list()
     for channel in ("samples", "consumerBoundaries", "warpRecords"):
         for index, row in enumerate(actual.get(channel, [])):
             s = row.get("state", {})
             if s.get("observationSequence") is not None:
-                states.append((s["observationSequence"], channel, index, s))
+                states.append((s["observationSequence"], channel, index))
     states.sort(key=lambda item: item[0])
+    state_sequences = _bounded_list(item[0] for item in states)
 
-    control_reads = {}
+    def state_of(reference):
+        # Sort only native sequence/channel/ordinal, never copies of world snapshots.
+        return actual[reference[1]][reference[2]]["state"]
+
+    control_reads = _occurrence_map()
     for row in actual.get("warpRecords", []):
         delivery = row.get("result", {})
         for control in delivery.get("programControlReads") or []:
@@ -4803,12 +5529,14 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         return [(x["id"], x["slot"], x["sprite"]) for x in s.get("entities") or []]
 
     def anchor(seq, field, before=True):
-        candidates = [
-            x for x in states if field in x[3] and (x[0] <= seq if before else x[0] >= seq)
-        ]
-        return (candidates[-1] if before else candidates[0]) if candidates else None
+        positions = (
+            range(bisect_right(state_sequences, seq) - 1, -1, -1)
+            if before
+            else range(bisect_left(state_sequences, seq), len(states))
+        )
+        return next((states[i] for i in positions if field in state_of(states[i])), None)
 
-    choices = {}
+    choices = _occurrence_map()
     for n, e in enumerate(ordered):
         if e["Kind"] == "choice-result-flag":
             producer = next(
@@ -4893,34 +5621,34 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         before = anchor(seq, "flags")
         if before is None:
             return None
-        flags = set(before[3]["flags"])
+        flags = set(state_of(before)["flags"])
         for e in ordered:
             if before[0] < e["Sequence"] <= seq and not write_flags(flags, e):
                 return None
         return flags
 
-    warp_requests = {}
-    starts = [e for e in ordered if e["Kind"] == "warp-started"]
+    warp_requests = _occurrence_map()
+    starts = _bounded_list(e for e in ordered if e["Kind"] == "warp-started")
     for n, start in enumerate(starts):
         seq = start["Sequence"]
         stop = starts[n + 1]["Sequence"] if n + 1 < len(starts) else float("inf")
-        region = [e for e in ordered if seq < e["Sequence"] < stop]
+        region = _bounded_list(e for e in ordered if seq < e["Sequence"] < stop)
         battle = next((e for e in region if e["Kind"] == "battle-selected"), None)
-        source_map = records[seq].get("state", {}).get("map")
+        source_map = warp_records[records[seq]].get("state", {}).get("map")
         held = next(
             (
                 x
                 for x in states
                 if x[0] >= seq
-                and x[3].get("map") == source_map
-                and (x[3].get("fade") or {}).get("Purpose") == (2 if battle else 0)
-                and entity(x[3], "entity-0")
+                and state_of(x).get("map") == source_map
+                and (state_of(x).get("fade") or {}).get("Purpose") == (2 if battle else 0)
+                and entity(state_of(x), "entity-0")
             ),
             None,
         )
         if held is None:
             held = anchor(seq, "entities") if battle else None
-        player = entity(held[3], "entity-0") if held else None
+        player = entity(state_of(held), "entity-0") if held else None
         request = None
         if player and source_map in maps:
             path = f"disasm/data/maps/entries/map{int(source_map[4:]):02d}/6-warp-events.asm"
@@ -5035,14 +5763,14 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 for x in states
                 if x[0] >= transfer["Sequence"]
                 and x[0] < stop
-                and x[3].get("map") == request["map"]
-                and entity(x[3], "entity-0")
+                and state_of(x).get("map") == request["map"]
+                and entity(state_of(x), "entity-0")
             ),
             None,
         )
         check(names[3], "destination physical initialization held", True if post else None, seq)
         if post:
-            pose = entity(post[3], "entity-0")
+            pose = entity(state_of(post), "entity-0")
             expected_position = request["position"]
             expected_facing = request["facing"]
             for e in ordered:
@@ -5061,11 +5789,13 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     and ins["entity"] == "entity-0"
                 ):
                     expected_facing = ins["facing"]
-            initialized_states = [
-                x[3]
+            initialized_states = _bounded_list(
+                state_of(x)
                 for x in states
-                if x[0] == post[0] and x[3].get("map") == request["map"] and x[3].get("entities")
-            ]
+                if x[0] == post[0]
+                and state_of(x).get("map") == request["map"]
+                and state_of(x).get("entities")
+            )
             for initialized in initialized_states:
                 player = entity(initialized, "entity-0") or {}
                 check(
@@ -5093,7 +5823,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     next(
                         (
                             path
-                            for path in sorted(tracked)
+                            for path in _bounded_sorted(tracked)
                             if path.startswith(folder)
                             and Path(path).name.startswith("pointertable")
                             and re.search(
@@ -5112,7 +5842,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     symbol = compiler.source_operations(table, pointer)[0]["operandText"]
                     entity_path = next(
                         path
-                        for path in sorted(tracked)
+                        for path in _bounded_sorted(tracked)
                         if path.startswith(folder)
                         and Path(path).name.startswith("s1_entities")
                         and re.search(
@@ -5148,7 +5878,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             if request["loadMode"] == "preserve":
                 prior = anchor(transfer["Sequence"] - 1, "entities")
                 if prior:
-                    expected_signature = signature(prior[3])
+                    expected_signature = signature(state_of(prior))
             elif templates is not None and population and flags is not None:
                 sprites = {
                     p["character"]: (
@@ -5207,12 +5937,12 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             )
             latch = next(
                 (
-                    x[3].get("warp")
+                    state_of(x).get("warp")
                     for x in states
                     if x[0] >= transfer["Sequence"]
                     and x[0] < stop
-                    and x[3].get("map") == request["map"]
-                    and x[3].get("warp")
+                    and state_of(x).get("map") == request["map"]
+                    and state_of(x).get("warp")
                 ),
                 None,
             )
@@ -5252,8 +5982,8 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 x
                 for x in states
                 if transfer["Sequence"] <= x[0] < stop
-                and x[3].get("map") == request["map"]
-                and x[3].get("canWaitAtInput") is True
+                and state_of(x).get("map") == request["map"]
+                and state_of(x).get("canWaitAtInput") is True
             ),
             None,
         )
@@ -5264,11 +5994,14 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             check(
                 names[3],
                 "destination field control has no pending caller or wait",
-                all(key in ready[3] for key in ("cursor", "wait", "callers", "callerReturning"))
-                and ready[3]["cursor"] is None
-                and ready[3]["wait"] is None
-                and ready[3]["callers"] == []
-                and not ready[3]["callerReturning"],
+                all(
+                    key in state_of(ready)
+                    for key in ("cursor", "wait", "callers", "callerReturning")
+                )
+                and state_of(ready)["cursor"] is None
+                and state_of(ready)["wait"] is None
+                and state_of(ready)["callers"] == []
+                and not state_of(ready)["callerReturning"],
                 seq,
             )
 
@@ -5292,7 +6025,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 )
         elif op == "branch-coordinates":
             held = anchor(seq, "entities")
-            player = entity(held[3], ins["entity"]) if held else None
+            player = entity(state_of(held), ins["entity"]) if held else None
             coordinates = (player["x"], player["y"]) if player else None
             if held:
                 for earlier in ordered:
@@ -5363,7 +6096,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     (
                         x
                         for x in states
-                        if seq <= x[0] < executed[later][0]["Sequence"] and "callers" in x[3]
+                        if seq <= x[0] < executed[later][0]["Sequence"] and "callers" in state_of(x)
                     ),
                     None,
                 )
@@ -5410,13 +6143,13 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     check(
                         names[0],
                         "held caller frame matches source continuation",
-                        continuation in held[3]["callers"],
+                        continuation in state_of(held)["callers"],
                         seq,
                     )
         if op in ("set-flag", "join-party"):
             before = anchor(seq - 1, "flags")
             after = anchor(seq, "flags", False)
-            expected = set(before[3]["flags"]) if before else None
+            expected = set(state_of(before)["flags"]) if before else None
             expected_lists = None
             if expected is not None and after:
                 for earlier in ordered:
@@ -5436,11 +6169,13 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
             check(
                 names[2],
                 "source writes and non-source writers reach independent flags",
-                None if expected is None or after is None else expected == set(after[3]["flags"]),
+                None
+                if expected is None or after is None
+                else expected == set(state_of(after)["flags"]),
                 seq,
             )
             if op == "join-party" and after:
-                lists = after[3].get("partyLists")
+                lists = state_of(after).get("partyLists")
                 check(
                     names[2],
                     "joined member retained in counted prefix",
@@ -5455,8 +6190,8 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 )
         if op == "follow":
             held = anchor(seq, "entities", False)
-            follower = entity(held[3], ins["entity"]) if held else None
-            leader = entity(held[3], ins["leader"]) if held else None
+            follower = entity(state_of(held), ins["entity"]) if held else None
+            leader = entity(state_of(held), ins["leader"]) if held else None
             check(
                 names[2],
                 "source follower installation",
@@ -5515,7 +6250,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 "choice flag effect in independent full state",
                 None
                 if after is None or accepted is None
-                else (ins["flag"] in after[3]["flags"]) == (accepted["Detail"] == "yes"),
+                else (ins["flag"] in state_of(after)["flags"]) == (accepted["Detail"] == "yes"),
                 seq,
             )
 
@@ -5523,18 +6258,18 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
     check(names[4], "complete awaited source effects", motion["operation"])
     outcome_start = next((e for e in ordered if e["Kind"] == "outcome-program-started"), None)
     returned = next((e for e in ordered if e["Kind"] == "battle-returned"), None)
-    battle_snapshots = [
+    battle_snapshots = _bounded_list(
         row["state"]
         for row in actual.get("warpRecords", [])
         if row["result"].get("mode") == "Battle"
         and row["result"].get("boundary") == "submit"
         and outcome_start
         and row["result"].get("observationSequence", float("inf")) < outcome_start["Sequence"]
-    ]
+    )
     last_battle = battle_snapshots[-1] if battle_snapshots else None
-    transfers = [
+    transfers = _bounded_list(
         e for e in ordered if e["Kind"] == "map-transferred" and e["Sequence"] not in warp_requests
-    ]
+    )
     transfer = transfers[-1] if transfers else None
     battle_map = next(
         (
@@ -5548,7 +6283,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         next(
             (
                 p
-                for p in sorted(
+                for p in _bounded_sorted(
                     last_battle.get("actors", []), key=lambda p: int(p["id"].split("-")[1])
                 )
                 if p["id"].startswith("ally-") and p.get("hp", 0) > 0
@@ -5604,9 +6339,10 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
         )
     if transfer and destination:
         held = next(
-            (x for x in states if x[0] >= transfer["Sequence"] and entity(x[3], "entity-0")), None
+            (x for x in states if x[0] >= transfer["Sequence"] and entity(state_of(x), "entity-0")),
+            None,
         )
-        player = entity(held[3], "entity-0") if held else None
+        player = entity(state_of(held), "entity-0") if held else None
         for family in (names[3], names[4]):
             check(
                 family,
@@ -5637,7 +6373,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 (
                     x
                     for x in states
-                    if x[0] >= returned["Sequence"] and x[3].get("canWaitAtInput") is True
+                    if x[0] >= returned["Sequence"] and state_of(x).get("canWaitAtInput") is True
                 ),
                 None,
             )
@@ -5682,7 +6418,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                         if effect["Sequence"] <= x[0]
                         and returned
                         and x[0] <= returned["Sequence"]
-                        and "flags" in x[3]
+                        and "flags" in state_of(x)
                     ),
                     None,
                 )
@@ -5707,7 +6443,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                         "actual shared-tail flag effect " + kind,
                         None
                         if before_flags is None or after is None
-                        else before_flags == set(after[3]["flags"]),
+                        else before_flags == set(state_of(after)["flags"]),
                         effect["Sequence"],
                     )
                     if kind == "after-battle-join":
@@ -5718,7 +6454,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                                 if effect["Sequence"] <= x[0]
                                 and returned
                                 and x[0] <= returned["Sequence"]
-                                and "partyLists" in x[3]
+                                and "partyLists" in state_of(x)
                             ),
                             None,
                         )
@@ -5727,18 +6463,20 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                             "actual shared-tail counted membership",
                             None
                             if lists is None or expected_lists is None
-                            else lists[3]["partyLists"] == expected_lists,
+                            else state_of(lists)["partyLists"] == expected_lists,
                             effect["Sequence"],
                         )
                 previous = effect["Sequence"]
     for pid in ("bbcs-01", "abcs-battle01"):
-        body_events = [(e, ins) for e, ins in executed if e["Program"]["Program"] == pid]
+        body_events = _bounded_list(
+            ((e, ins) for e, ins in executed if e["Program"]["Program"] == pid)
+        )
         check(names[4], "before/after body reached " + pid, True if body_events else None)
         for e, ins in body_events:
             seq = e["Sequence"]
             if ins and ins["op"] in ("position", "face", "sprite", "hide"):
                 held = anchor(seq, "entities", False)
-                actor = entity(held[3], ins["entity"]) if held else None
+                actor = entity(state_of(held), ins["entity"]) if held else None
                 expected_effect = dict(ins)
                 for other, effect in body_events:
                     if (
@@ -5765,7 +6503,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                 check(names[4], "source physical effect " + ins["op"], value, seq)
             if ins and ins["op"] == "reset-party-battle-stats":
                 held = anchor(seq, "party", False)
-                party = held[3]["party"] if held else None
+                party = state_of(held)["party"] if held else None
                 value = None
                 if party:
                     allies = [p for p in party if p["Actor"]["Value"].startswith("ally-")]
@@ -5825,13 +6563,13 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     ),
                     None,
                 )
-                services = [
+                services = _bounded_list(
                     x
                     for x in ordered
                     if loaded_entities
                     and seq < x["Sequence"] < loaded_entities["Sequence"]
                     and x["Kind"] == "simulation-tick"
-                ]
+                )
                 service = services[0] if services else None
                 check(
                     names[4],
@@ -5842,26 +6580,28 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     and seq < wait["Sequence"] < service["Sequence"] < loaded_entities["Sequence"],
                 )
                 if wait and loaded_entities:
-                    entry = records[wait["Sequence"]].get("state", {})
+                    entry = warp_records[records[wait["Sequence"]]].get("state", {})
                     if "entities" not in entry:
                         entry = next(
                             (
-                                x[3]
+                                state_of(x)
                                 for x in states
                                 if x[0] == wait["Sequence"]
-                                and "entities" in x[3]
-                                and "entitiesRunning" in x[3]
+                                and "entities" in state_of(x)
+                                and "entitiesRunning" in state_of(x)
                             ),
                             entry,
                         )
-                    replacement = records[loaded_entities["Sequence"]].get("state", {})
+                    replacement = warp_records[records[loaded_entities["Sequence"]]].get(
+                        "state", {}
+                    )
                     old = anchor(seq - 1, "entities")
                     check(
                         names[4],
                         "post-load wait retains old physical set with enabled services",
                         None
                         if not entry.get("entities") or old is None
-                        else signature(entry) == signature(old[3])
+                        else signature(entry) == signature(state_of(old))
                         and entry.get("entitiesRunning") is True
                         and entry.get("wait") == "TickWait"
                         and entry.get("canWaitAtInput") is False,
@@ -5877,7 +6617,7 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                         seq,
                     )
             if ins and ins["op"] == "camera-entity" and ins["entity"] is None:
-                held = records[seq].get("state", {})
+                held = warp_records[records[seq]].get("state", {})
                 observed = (
                     None
                     if held.get("logicalView") is None or "TargetSlot" not in held["logicalView"]
@@ -5898,12 +6638,13 @@ def operation_flow_binding(actual, selection, source_root, motion, text):
                     )
                     projection = next(
                         (
-                            x[3]["cameraProjection"]
+                            state_of(x)["cameraProjection"]
                             for x in states
                             if seq <= x[0] < stop
-                            and x[3].get("cameraProjection") is not None
-                            and "targetSlot" in x[3]["cameraProjection"]
-                            and x[3]["cameraProjection"].get("observationSequence", -1) >= seq
+                            and state_of(x).get("cameraProjection") is not None
+                            and "targetSlot" in state_of(x)["cameraProjection"]
+                            and state_of(x)["cameraProjection"].get("observationSequence", -1)
+                            >= seq
                         ),
                         None,
                     )
@@ -6176,7 +6917,7 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
         map3 = next(
             (m for m in selected.get("world", {}).get("maps", []) if m["id"] == "map-3"), {}
         )
-        states = [s["state"] for s in actual["samples"]]
+        states = _bounded_list(s["state"] for s in actual["samples"])
         initial = states[0]
         admitted = actual.get("admissionSnapshot", {}).get("state", {})
         expected_actions = [
@@ -6185,13 +6926,15 @@ def walking_admission_binding(ref, actual, evidence_root, world_path, original_b
             dict(op="acceleration", x=1, y=1),
         ] + [dict(op="flags", field="a", mask=mask, value=mask) for mask in (3, 12, 128, 64, 32)]
         next_wait = 20  # Source wait20 follows waitDest, not a measured host duration.
-        candidates = [
-            (i, s)
-            for i, s in enumerate(states)
-            if initial.get("simulationTick") is not None
-            and s.get("simulationTick") is not None
-            and 0 < s["simulationTick"] - initial["simulationTick"] < next_wait
-        ]
+        candidates = _bounded_list(
+            (
+                (i, s)
+                for i, s in enumerate(states)
+                if initial.get("simulationTick") is not None
+                and s.get("simulationTick") is not None
+                and 0 < s["simulationTick"] - initial["simulationTick"] < next_wait
+            )
+        )
         later = candidates[0] if candidates else None
         if later:
             sample_index, consumed = later
@@ -6451,6 +7194,18 @@ def gameplay(s):
     }
 
 
+def _capture_outcome(actual, outcome_path):
+    if "captureIntegrity" not in actual:
+        return read(outcome_path)
+    summaries = actual.get("outcomeSummary", [])
+    require(len(summaries) == 1, "current capture missing/duplicate outcome summary")
+    return dict(
+        summaries[0],
+        records=actual.get("outcomeRecords", []),
+        endpoints=actual.get("outcomeEndpoints", []),
+    )
+
+
 def compare_modern(
     ref,
     actual_path,
@@ -6468,7 +7223,8 @@ def compare_modern(
     tileset_metadata=None,
     palette_metadata=None,
 ):
-    actual, outcome, settings = read(actual_path), read(outcome_path), read(settings_path)
+    actual = read(actual_path)
+    outcome, settings = _capture_outcome(actual, outcome_path), read(settings_path)
     samples = actual.get("samples", [])
     require(samples, "modern actual lacks samples")
     records = actual.get("warpRecords", [])
@@ -6490,7 +7246,7 @@ def compare_modern(
     operation_flow = operation_flow_binding(
         actual, material_selection, text_source_root, field_motion, text_material
     )
-    assertions = []
+    assertions = _bounded_list()
     obligations = {}
 
     def check(
@@ -6545,7 +7301,7 @@ def compare_modern(
             )
         )
         if parent:
-            obligations.setdefault(parent, []).append(assertions[-1])
+            _group_rows(obligations, parent).append(assertions[-1])
 
     first = samples[0]["state"]
     admission = ref["admission"]
@@ -6857,7 +7613,7 @@ def compare_modern(
         1,
         "admission occupied physical slots",
         [e["physical"] for e in occupied],
-        sorted(int(e["slot"]) for e in first["entities"]) if "entities" in first else None,
+        _bounded_sorted(int(e["slot"]) for e in first["entities"]) if "entities" in first else None,
         "samples[0].entities[*].slot",
         ref["inherited"]["source"],
         parent=phase_parent,
@@ -6976,12 +7732,12 @@ def compare_modern(
         "no hardware velocity magnitude/frame equality",
     )
 
-    events = [
+    events = _bounded_list(
         e
         for r in records
         if r["result"]["boundary"] == "submit"
         for e in r["result"]["observations"]
-    ]
+    )
     session = first.get("sessionId")
     check(
         2,
@@ -6992,7 +7748,7 @@ def compare_modern(
         and outcome["final"]["sessionId"] == session,
         "warpRecords[*].result/sessionId",
     )
-    sequences = [r["result"]["observationSequence"] for r in records]
+    sequences = _bounded_list(r["result"]["observationSequence"] for r in records)
     check(
         2,
         "monotonic observed sequence",
@@ -7014,7 +7770,6 @@ def compare_modern(
         actual.get("passed") and not actual.get("failures") and not actual.get("unavailable"),
         "passed/failures/unavailable",
     )
-    labels = {s["label"]: s["state"] for s in samples}
     required = [
         "parallax-field-return",
         "before-battle-text2293-input",
@@ -7026,6 +7781,7 @@ def compare_modern(
         "bound-first-action-choice",
         "bound-first-movement-cancel",
     ]
+    labels = {s["label"]: s["state"] for s in samples if s["label"] in required}
     check(
         3,
         "mandatory reached checkpoints",
@@ -7034,7 +7790,9 @@ def compare_modern(
         "samples[*].label",
     )
     if baseline_path is not None:
-        baseline = {s["label"]: s["state"] for s in read(baseline_path)["samples"]}
+        baseline = {
+            s["label"]: s["state"] for s in read(baseline_path)["samples"] if s["label"] in required
+        }
         fields = (
             "simulationTick",
             "mainSeed",
@@ -7113,7 +7871,7 @@ def compare_modern(
 
     # Keep all browsing failures; only the accepted candidate rejection has a bounded allowance.
     previous = None
-    rejections = []
+    rejections = _bounded_list()
     for index, row in enumerate(records):
         state, result = row.get("state", {}), row["result"]
         failure = result.get("failure")
@@ -7183,16 +7941,20 @@ def compare_modern(
         5,
         "adaptive actions and consumed outcome",
         True,
-        bool([r for r in outcome.get("records", []) if r.get("label") == "action-selected"])
+        bool(
+            _bounded_list(
+                r for r in outcome.get("records", []) if r.get("label") == "action-selected"
+            )
+        )
         and outcome.get("issue") == "",
         "outcome.records/issue",
     )
-    ordered = [
+    ordered = _bounded_list(
         e["Kind"]
         for e in events
         if e["Kind"]
         in ("after-battle-join", "battle-unlock-cleared", "battle-completed-set", "battle-returned")
-    ]
+    )
     check(
         6,
         "whole after/return order",
@@ -7486,7 +8248,7 @@ def compare_modern(
         )
 
     rule_parent = "matched-state rule/RNG/draw-to-effect comparisons"
-    unique_events = {}
+    unique_events = _occurrence_map()
     sequence_consistent = True
     for event in events:
         sequence = event["Sequence"]
@@ -7504,7 +8266,7 @@ def compare_modern(
     )
     # Reuse the original H3 model, not the remake RNG. Its fixed-range model is sufficient
     # for these recorded ranges; preserve the full image's unmodified low word separately.
-    draws = [e for e in unique_events.values() if e["Kind"].startswith("rng-")]
+    draws = _bounded_list(e for e in unique_events.values() if e["Kind"].startswith("rng-"))
     for event in draws:
         operands = [event.get(k) for k in ("Before", "After", "RandomRange", "RandomValue")]
         if all(v is not None for v in operands):
@@ -7616,10 +8378,10 @@ def compare_modern(
 
     resource_parent = "complete reached 7C resource/provenance inventory"
     scene_rows = actual.get("sceneObservations", [])
-    mounted_scenes = [
+    mounted_scenes = _bounded_list(
         r for r in scene_rows if r["scene"].get("visible") and not r["scene"].get("fieldDeath")
-    ]
-    mounted_resources = sorted(
+    )
+    mounted_resources = _bounded_sorted(
         {
             r["scene"][name]["resource"]
             for r in mounted_scenes
@@ -7651,15 +8413,15 @@ def compare_modern(
         )
     receipt_rows = actual.get("audioReceipts", [])
     audio_terminal = actual.get("audioTerminal", {})
-    audio_receipts = [r["receipt"] for r in receipt_rows]
+    audio_receipts = _bounded_list(r["receipt"] for r in receipt_rows)
     audio_contiguous = None
     audio_balances = Counter()
     audio_lifecycle = {}
     if audio_terminal:
         audio_contiguous = bool(
             not actual.get("audioReceiptGaps")
-            and [r["Sequence"] for r in audio_receipts]
-            == list(range(1, int(audio_terminal["sequence"]) + 1))
+            and _bounded_list(r["Sequence"] for r in audio_receipts)
+            == _bounded_list(range(1, int(audio_terminal["sequence"]) + 1))
             and actual.get("audioSequenceSeen") == audio_terminal["sequence"]
             and audio_terminal.get("error") is None
             and all(r["poll"]["sessionId"] == first.get("sessionId") for r in receipt_rows)
@@ -7973,7 +8735,7 @@ def compare_modern(
         reason="Only synchronous dispatch results establish physical input consumption",
     )
     inputs = (
-        [
+        _bounded_list(
             dict(
                 action=r["action"],
                 wait=r["before"].get("wait"),
@@ -7988,11 +8750,11 @@ def compare_modern(
                 and x["result"]["boundary"] == "submit"
                 for x in records[r.get("resultStart", 0) : r.get("resultEnd", 0)]
             )
-        ]
+        )
         if causal_records
         else None
     )
-    reveal_inputs = [
+    reveal_inputs = _bounded_list(
         r
         for r in input_rows
         if r["pressed"]
@@ -8004,7 +8766,7 @@ def compare_modern(
                 ("sceneVisibleCharacters", "sceneTotalCharacters"),
             )
         )
-    ]
+    )
     if variant == "C":
         check(
             10,
@@ -8051,7 +8813,7 @@ def compare_modern(
         )
     # Delivery notifications may interleave with mandatory work as reveal speed changes.
     # Keep logical operands ordered; retain and independently check host-only deliveries.
-    semantic, deliveries, delivery_checks = [], [], []
+    semantic, deliveries, delivery_checks = _bounded_list(), _bounded_list(), _bounded_list()
     previous = None
     for index, row in enumerate(records):
         result, state = row["result"], row.get("state", {})
@@ -8089,14 +8851,16 @@ def compare_modern(
         reason="Only text-revealed and single automatic scene-delivery notifications; "
         "acknowledgements and scene continuation remain ordered logical observations",
     )
-    battle_states = [
+    battle_states = _bounded_list(
         {k: v for k, v in gameplay(row["state"]).items() if k not in ("sessionId", "revision")}
         for row in outcome.get("records", [])
         if row.get("label") == "action-selected"
-    ]
-    coverage = []
+    )
+    coverage = _bounded_list()
     for name, children in obligations.items():
-        required_children = [c for c in children if c["applicability"] != "historical-diagnostic"]
+        required_children = _bounded_list(
+            c for c in children if c["applicability"] != "historical-diagnostic"
+        )
         child_counts = dict(Counter(child["result"] for child in required_children))
         parent_result = verdict(child_counts)
         coverage.append(
@@ -8123,7 +8887,9 @@ def compare_modern(
                 ],
             )
         )
-    required_rows = [a for a in assertions if a["applicability"] != "historical-diagnostic"]
+    required_rows = _bounded_list(
+        a for a in assertions if a["applicability"] != "historical-diagnostic"
+    )
     counts = dict(Counter(a["result"] for a in required_rows))
     result = verdict(counts)
     report = dict(
@@ -8174,12 +8940,12 @@ def compare_modern(
             admissionInputConsistency=admission_identities,
             sceneRecords=len(scene_rows),
             visibleMountedResources=mounted_resources,
-            completedSceneTokens=sorted(
-                {
+            completedSceneTokens=_bounded_sorted(
+                _occurrence_set(
                     r["scene"]["waitToken"]
                     for r in scene_rows
                     if r["scene"].get("completed") and r["scene"].get("waitToken") is not None
-                }
+                )
             ),
             audioReceiptCount=len(audio_receipts),
             audioContiguous=audio_contiguous,
@@ -8258,11 +9024,12 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
             p.is_relative_to(repo_path("local").resolve()) for p in (actual_path, outcome_path)
         ):
             return dict(value=False, reason="actual outside owned evidence")
-        actual, outcome = read(actual_path), read(outcome_path)
+        actual = read(actual_path)
+        outcome = _capture_outcome(actual, outcome_path)
         if actual.get("h4Variant") != report["variant"] or actual.get("passed") is not True:
             return dict(value=False, reason="wrong or failed actual capture")
         records = actual["warpRecords"]
-        events = [
+        events = _bounded_list(
             o
             for row in records
             if row["result"]["boundary"] == "submit"
@@ -8273,8 +9040,8 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
                 and o["Kind"] == "scene-delivery"
                 and row.get("inputDelivery") is False
             )
-        ]
-        inputs = [
+        )
+        inputs = _bounded_list(
             dict(
                 action=r["action"],
                 wait=r["before"].get("wait"),
@@ -8289,11 +9056,11 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
                 and x["result"]["boundary"] == "submit"
                 for x in records[r["resultStart"] : r["resultEnd"]]
             )
-        ]
+        )
         first, final = actual["samples"][0]["state"], outcome["final"]
         paired = {}
         for label in ("first-return", "before-down", "after-down"):
-            pair = [e for e in outcome.get("endpoints", []) if e["label"] == label]
+            pair = _bounded_list(e for e in outcome.get("endpoints", []) if e["label"] == label)
             if len(pair) == 2:
                 paired[label] = endpoint_state(pair[1]["state"])
         derived = dict(
@@ -8301,8 +9068,8 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
                 k: first.get(k) for k in ("map", "party", "partyLists", "flags", "gold", "mainSeed")
             },
             inputs=inputs,
-            observations=[semantic_value(o) for o in events],
-            battleStates=[
+            observations=_bounded_list(semantic_value(o) for o in events),
+            battleStates=_bounded_list(
                 {
                     k: v
                     for k, v in gameplay(row["state"]).items()
@@ -8310,7 +9077,7 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
                 }
                 for row in outcome.get("records", [])
                 if row.get("label") == "action-selected"
-            ],
+            ),
             endpoints=paired,
             party=final.get("party"),
             gold=final.get("gold"),
@@ -8360,12 +9127,12 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
             )
         ):
             return dict(value=False, reason="completion crosses a dependent gate")
-        held = [
+        held = _bounded_list(
             row["state"]
             for row in records
             if row.get("state", {}).get("wait") == "MusicWait"
             and row["state"].get("token") == token
-        ]
+        )
         if not held or any(
             not any(
                 events[i] in row["result"]["observations"]
@@ -8378,12 +9145,12 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
             for i in crossed_indices
         ):
             return dict(value=False, reason="crossed service is outside the actual helper")
-        receipts = [
+        receipts = _bounded_list(
             r["receipt"]
             for r in actual["audioReceipts"]
             if r["receipt"]["Cue"] == "MUSIC_JOIN"
             and r["receipt"]["Operation"] in ("started", "finished")
-        ]
+        )
         return dict(
             value=None if identity_missing else True,
             sessionId=held[0]["sessionId"],
@@ -8439,7 +9206,7 @@ def bounded_join_correspondence(base, other, ref):
     result.update(
         value=False if False in values else None if None in values else True,
         completionIndices=dict(base=ai, other=bi),
-        crossedCorrespondence=list(zip(ax, bx, strict=True)),
+        crossedCorrespondence=_bounded_list(zip(ax, bx, strict=True)),
         occurrences=proofs,
         rule="same JOIN occurrence music-step/music-helper-service only",
     )
@@ -8458,7 +9225,7 @@ def compare_matrix(paths, ref):
         ),
         "matrix requires named modern reports",
     )
-    checks = []
+    checks = _bounded_list()
     base = next((r for r in reports if r.get("variant") == "A"), None)
     for name in required:
         report = next((r for r in reports if r.get("variant") == name), None)
@@ -8477,7 +9244,9 @@ def compare_matrix(paths, ref):
                 if value == other:
                     continue
                 difference = dict(field=field)
-                if isinstance(value, list) and isinstance(other, list):
+                if isinstance(value, (list, _RecordSpool)) and isinstance(
+                    other, (list, _RecordSpool)
+                ):
                     index = next(
                         (
                             i
@@ -8637,6 +9406,9 @@ def main():
     parser.add_argument("--expected-asset-tree")
     parser.add_argument("--expected-asset-manifest-sha256")
     args = parser.parse_args()
+    global _STREAM_SCRATCH_ROOT
+    args.output = (args.output if args.output.is_absolute() else repo_path(args.output)).resolve()
+    _STREAM_SCRATCH_ROOT = args.output.parent
     material_selection = (
         args.selected_world,
         args.selected_scene,

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Sf2.Remake.GodotAdapter.Observation;
 using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
@@ -15,17 +16,24 @@ public sealed partial class BattleSessionView : Control
     [Signal]
     public delegate void SessionResultObservedEventHandler(string resultJson);
 
+    private static readonly StringName FactsSignal = "SessionFactsObserved";
+    public BattleSessionView() => AddUserSignal(FactsSignal,
+        [new Godot.Collections.Dictionary { ["name"] = "facts", ["type"] = (int)Variant.Type.Dictionary }]);
+
     private void PublishResult(string boundary)
     {
-        if (!HasConnections(SignalName.SessionResultObserved)) return;
+        if (!HasConnections(SignalName.SessionResultObserved) && !HasConnections(FactsSignal)) return;
         var result = _result!;
-        EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(new
+        var facts = new
         {
             boundary, sessionId = result.Snapshot.SessionId, revision = result.Snapshot.Revision,
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
             stopReason = result.StopReason.ToString(), failure = result.Failure, observations = result.Observations,
             programControlReads = result.ProgramControlReads ?? [],
-        }));
+        };
+        if (HasConnections(FactsSignal) && ObservationCapture.Find(this)?.IsAccepting() != false) EmitSignal(FactsSignal, ObservationCapture.ToDictionary(facts));
+        if (HasConnections(SignalName.SessionResultObserved))
+            EmitSignal(SignalName.SessionResultObserved, JsonSerializer.Serialize(facts));
     }
 
     private GameSession? _session;
@@ -90,7 +98,11 @@ public sealed partial class BattleSessionView : Control
     }
 
     public override void _EnterTree() => GetViewport().SizeChanged += Arrange;
-    public override void _ExitTree() => GetViewport().SizeChanged -= Arrange;
+    public override void _ExitTree()
+    {
+        ObservationCapture.Find(this)?.ViewDetached("battle");
+        GetViewport().SizeChanged -= Arrange;
+    }
 
     private void Arrange()
     {
@@ -316,11 +328,16 @@ public sealed partial class BattleSessionView : Control
         });
     }
 
-    public string ReadObservationJson()
+    public string ReadObservationJson() => JsonSerializer.Serialize(ObservationFacts(true));
+
+    public Godot.Collections.Dictionary ReadCaptureState(bool full = false) =>
+        ObservationCapture.ToDictionary(ObservationFacts(full));
+
+    private object ObservationFacts(bool full)
     {
         var current = _session?.Current;
         if (current?.Active is ActiveExploration)
-            return JsonSerializer.Serialize(new
+            return new
             {
                 sessionId = current.SessionId, revision = current.Revision,
                 observationSequence = current.ObservationSequence,
@@ -329,8 +346,8 @@ public sealed partial class BattleSessionView : Control
                     logicalView = current.Story.LogicalView, simulationTick = current.Story.SimulationTick,
                     cursor = current.Story.Cursor,
                 },
-            });
-        return JsonSerializer.Serialize(new
+            };
+        return new
         {
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             scene = _scene.Observe(), observationSequence = current?.ObservationSequence,
@@ -346,7 +363,7 @@ public sealed partial class BattleSessionView : Control
                 .Select(a => new { actor = a.Actor.Value, memory = a.AiMemory, lastTarget = a.LastTarget?.Value }).ToArray(),
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
-            terrain = current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()),
+            terrain = full ? current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()) : null,
             target = current?.Selection?.Target?.Value, candidate = _targetCandidate?.Value,
             itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items.Text,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
@@ -363,6 +380,6 @@ public sealed partial class BattleSessionView : Control
             hudLabels = _hudLabels.Select(label => new { name = label.Name.ToString(), rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }),
             hudScroll = _hud.ScrollVertical, hudScrollMaximum = _hud.GetVScrollBar().MaxValue, hudScrollPage = _hud.GetVScrollBar().Page,
             previewRect = _map.PreviewRectangle, previewInsideMap = _map.PreviewInsideMap, zoom = _map.Zoom,
-        });
+        };
     }
 }

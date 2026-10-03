@@ -167,6 +167,16 @@ path. Unknown, duplicate, conflicting and missing-path options fail before any s
 The external GDScript observer owns `SF2_OBSERVATION_*` settings; the game never parses diagnostic
 case/output/shape options. The read-only view endpoint remains ordinary diagnostic support.
 
+The external H4 probe can install `ObservationCapture` before Main. Existing view/result, audio
+receipt and actual draw boundaries then publish copied primitive facts or newly built immutable
+facts to one ordered writer. The worker owns UTF-8 serialization and file I/O; it cannot read
+Godot nodes, live sessions or engine clocks. Native identities remain separate from capture
+sequence/channel ordinals. Texture descriptors follow the actual view/resource lifetime, while
+requirements and uses retain separate channels. Failure disconnects observation callbacks and
+leaves an explicitly incomplete prefix. Offline comparison uses SQLite ordinal/native/resource
+joins with detached published records; each saved report owns one relocatable companion database.
+See the [capture protocol and reader](development-and-verification.md#bounded-h4-capture).
+
 The reference host and its public-synthetic import/export smoke were retired at M5. Export configuration
 excludes ordinary probes; a complete ordinary package/export is not claimed. The opening/messenger,
 castle/tower, Battle01 entry and outcome consumers use common programs, physical entity slots with
