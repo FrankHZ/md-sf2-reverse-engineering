@@ -25,6 +25,7 @@ public sealed partial class ExplorationSessionView : Control
             observationSequence = result.Snapshot.ObservationSequence, mode = result.Snapshot.Mode.ToString(),
             stopReason = result.StopReason.ToString(), failure = result.Failure,
             observations = completion is null ? result.Observations : Array.Empty<SessionObservation>(),
+            programControlReads = completion is null ? result.ProgramControlReads ?? [] : [],
             completion = completion is null ? null : new
             {
                 token = completion.Wait.Value, kind = completion.Kind.ToString(), processFrame = Engine.GetProcessFrames(),
@@ -501,6 +502,7 @@ public sealed partial class ExplorationSessionView : Control
             entityWait = current?.Story.Wait as EntityWait,
             presentationWait = current?.Story.Wait as PresentationWait, presentationCue = _presentation?.CueProjection,
             cameraProjection = _presentation?.CameraProjection,
+            portraitResourceProjection = _presentation?.PortraitResourceProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait, randomSeedCopy = current?.Story.RandomSeedCopy,
             entityEvent = current?.Story.EntityEvent,
             eventCaller = current?.Story.EventCaller?.GetType().Name,

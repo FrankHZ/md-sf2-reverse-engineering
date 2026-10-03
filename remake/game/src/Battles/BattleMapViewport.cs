@@ -1,4 +1,5 @@
 using Godot;
+using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -159,6 +160,8 @@ internal sealed partial class BattleMapViewport : Control
         // Death and idle poses use frame0; movement consumes both admitted halves.
         using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
         _textures[key] = texture = ImageTexture.CreateFromImage(frame);
+        texture.SetMeta("resource_selector", JsonSerializer.Serialize(new { sprite, direction, frame = walkingFrame,
+            raster = sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames[direction] : null }));
         return texture;
     }
 
@@ -207,6 +210,9 @@ internal sealed partial class BattleMapViewport : Control
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
             nodeX = node.Position.X, nodeY = node.Position.Y, visible = _sprites.TryGetValue(a.Actor, out var image) ? image.Visible : node.Visible, text = node.Text,
             sprite = _sprites.TryGetValue(a.Actor, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
+                resourceSelector = sprite.Texture is { } bound && bound.HasMeta("resource_selector")
+                    ? JsonSerializer.Deserialize<JsonElement>(bound.GetMeta("resource_selector").AsString()) : (JsonElement?)null,
+                texturePresent = sprite.Texture is not null, visibleInTree = sprite.IsVisibleInTree(),
                 facing = (int)sprite.GetMeta("facing", -1), walkingFrame = (int)sprite.GetMeta("walkingFrame", 0), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
                 width = sprite.Texture?.GetWidth(), height = sprite.Texture?.GetHeight() } : null,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
