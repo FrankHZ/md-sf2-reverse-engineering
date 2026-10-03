@@ -2693,6 +2693,16 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
         if not starts or not finishes:
             return finalize()
         start, finish = starts[0], finishes[0]
+        finish_context = next(
+            (
+                row["state"]
+                for row in reversed(records)
+                if row.get("state", {}).get("revision") == finish["Revision"]
+            ),
+            None,
+        )
+        if not late and (finish_context is None or "token" not in finish_context):
+            return finalize()
         restarts = [
             r
             for r in receipts
@@ -2800,7 +2810,8 @@ def plain_join_binding(ref, actual, evidence_root, world_path):
                     + sum(v["Sequence"] <= state["revision"] for v in services)
                     for _, state in held
                 )
-                and finish["WaitToken"] == helper_token
+                and finish_context["sessionId"] == plain["sessionId"]
+                and finish["WaitToken"] == finish_context["token"]
                 and start["PcmSha256"] == finish["PcmSha256"]
                 and not finish["Playing"]
                 and restart["Playing"]

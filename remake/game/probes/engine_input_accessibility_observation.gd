@@ -1606,7 +1606,11 @@ func before_battle_tracking(entry: Dictionary) -> void:
     var fades: Dictionary = {}
     var receipts: Dictionary = {}
     var positive_white := false
-    for frame in range(4000 if white_palette_case else 2500):
+    var frame := 0
+    var progressed_at := Time.get_ticks_msec()
+    var progress: Array = []
+    while winning_case or frame < (4000 if white_palette_case else 2500):
+        frame += 1
         var s := state()
         h4_reveal(s)
         if s.failure != null:
@@ -1625,6 +1629,17 @@ func before_battle_tracking(entry: Dictionary) -> void:
             physical(KEY_ENTER, false)
             check(opening_semantic(state()) == held, "Unsupported boundary stays stopped under idle and input")
             return
+        if winning_case:
+            var next_progress: Array = [s.get("simulationTick"),s.get("cursor"),s.get("wait"),s.get("token"),
+                s.get("fieldText"),s.get("canWaitForText"),s.get("visibleCharacters"),
+                s.get("presentation", {}).get("completedCueToken")]
+            if next_progress != progress:
+                progress = next_progress
+                progressed_at = Time.get_ticks_msec()
+            elif Time.get_ticks_msec() - progressed_at >= 15000:
+                read_sample("tracking-no-progress")
+                check(false, "Tracking continuation has no semantic or text delivery progress for 15 seconds")
+                return
         if white_palette_case:
             if s.fade != null and s.fade.Color == 1:
                 fades[s.token] = s.fade.Kind

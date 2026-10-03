@@ -3847,3 +3847,11 @@ The same content need not produce the same asynchronous completion placement. Pr
 and current raw event order and the existing exact matrix comparison. Local JOIN acceptance alone
 cannot establish settings-cohort equality; a strict conflict needs its own decision before further
 successful-capture repetitions or remaining complete variant runs.
+
+The winning tracking observer uses the same 15-second no-progress boundary as the remaining
+before-body route, with actual logical state and mounted text delivery as progress. A fixed host-frame
+limit can expire while source text services continue when collection or presentation consumes extra
+frames. On a genuine stall, retain the full terminal state. This observer boundary changes no engine
+clock, source service, input cadence, playback or focus policy. Non-winning bounded tracking retains
+its existing frame limit. Preserve failed `caller-resource-cohort-01/variant-B-01` as a completed
+observer failure; its identical 2293/94/95 checkpoints and advancing 2296 tail do not prove a stall.
