@@ -104,7 +104,7 @@ func admission_settle(label: String) -> Dictionary:
         if s.cursor != null and s.cursor.Program == "bbcs-01": before_seen = true
         if s.mode == "Battle" and s.wait == "PresentationWait":
             load_seen = true
-            if s.flags.has(451.0):
+            if numeric_contains(s.flags, 451):
                 issue = "intro-flag-before-load-service"
                 return s
             var mounted = host.get_node_or_null("ExplorationSessionView/BattleSessionView")
@@ -143,7 +143,7 @@ func finish(s: Dictionary) -> void:
     if issue == "":
         if not before_seen or not white_seen or mosaic_draws <= 0 or shiver_draws <= 0 or not load_seen:
             issue = "before-battle-presentation-services"
-        elif battle_loaded.is_empty() or s.stage != "Movement" or s.round != 1 or not s.storyFlags.has(451.0) or s.boardChildren <= 0 or not valid_projection(s, true):
+        elif battle_loaded.is_empty() or s.stage != "Movement" or s.round != 1 or not numeric_contains(s.storyFlags, 451) or s.boardChildren <= 0 or not valid_projection(s, true):
             issue = "first-player-projection"
         else:
             await key(KEY_ENTER)
