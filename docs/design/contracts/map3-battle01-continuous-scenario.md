@@ -814,6 +814,10 @@ operand must not mask a later contradiction. Missing current mutable working-lay
 retained A02/B02 observations keep the whole map child Unavailable; selected base layout is not proof
 of runtime door/flag/roof state. Entity/portrait and scene bindings retain their own results.
 
-The current bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
-C/D and repeated successful A/B captures remain held through independent integration and Issue #605
-performance work. This result does not establish complete settings or H4 acceptance.
+The bounded A/B correspondence passes while raw strict mismatch evidence remains preserved.
+After the accepted capture-performance work, separately allocated current C/D native observations
+complete the route with their own unchanged settings/start/party and intact bounded terminals.
+Successful observations remain frozen; compare their actual streams without repeating A/B or
+backfilling any session. The [current C/D owner](../../../remake/docs/development-and-verification.md#current-cd-settings-capture)
+records the comparison and matrix boundary. Native completion alone does not establish complete
+settings or H4 acceptance.

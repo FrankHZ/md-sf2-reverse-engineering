@@ -1,4 +1,26 @@
 extends "res://probes/engine_map3_opening_observation.gd"
+
+# Native capture facts use integers; the legacy JSON reader produces floats.
+# Match numeric values without coercing strings, booleans, nulls or structure.
+func numeric_equal(actual: Variant, expected: Variant) -> bool:
+    if typeof(actual) in [TYPE_INT, TYPE_FLOAT] and typeof(expected) in [TYPE_INT, TYPE_FLOAT]:
+        return actual == expected
+    if typeof(actual) != typeof(expected): return false
+    if actual is Array:
+        if actual.size() != expected.size(): return false
+        for index in range(actual.size()):
+            if not numeric_equal(actual[index], expected[index]): return false
+        return true
+    if actual is Dictionary:
+        if actual.size() != expected.size(): return false
+        for key in expected:
+            if not actual.has(key) or not numeric_equal(actual[key], expected[key]): return false
+        return true
+    return actual == expected
+
+func numeric_contains(values: Array, expected: Variant) -> bool:
+    if typeof(expected) not in [TYPE_INT, TYPE_FLOAT]: return false
+    return values.any(func(value): return numeric_equal(value, expected))
 var castle_started := false
 var castle_records: Array = []
 var castle_identity := ""
@@ -28,7 +50,7 @@ func settle(label: String, yes: bool = true) -> Dictionary:
         var s := state()
         if s.map == "map-21" and s.wait == "EntitySpriteWait" and s.cursor.Program == "cs-53ef4":
             guard_sprite_wait = s
-        if s.map == "map-21" and s.flags.has(401.0) and guard_release.is_empty():
+        if s.map == "map-21" and numeric_contains(s.flags, 401) and guard_release.is_empty():
             guard_release = s
         observe_castle_frame(s)
         if s.sessionId != castle_identity or s.failure != null:
@@ -82,7 +104,7 @@ func castle_route(s: Dictionary, stop_at_royal_return: bool = false, after_segme
             s = await settle(segment.id, false)
             if issue != "": return s
             remember(s, "astral-declined")
-            if not s.flags.has(607.0) or s.flags.has(608.0):
+            if not numeric_contains(s.flags, 607) or numeric_contains(s.flags, 608):
                 issue = "astral-decline-flags"
                 return s
             await key(KEY_Z)
@@ -94,10 +116,10 @@ func castle_route(s: Dictionary, stop_at_royal_return: bool = false, after_segme
                 s = await settle(segment.id)
                 if issue != "": return s
             remember(s, "guard-released")
-            if not s.flags.has(401.0) or not s.flags.has(256.0) or guard(s).x != 6 * 384 or player(s).facing != 3:
+            if not numeric_contains(s.flags, 401) or not numeric_contains(s.flags, 256) or guard(s).x != 6 * 384 or player(s).facing != 3:
                 issue = "guard-release-state"
                 return s
-            if guard_sprite_wait.is_empty() or guard_sprite_wait.flags.has(401.0) or guard_sprite_wait.flags.has(256.0) or player(guard_sprite_wait).facing != 3:
+            if guard_sprite_wait.is_empty() or numeric_contains(guard_sprite_wait.flags, 401) or numeric_contains(guard_sprite_wait.flags, 256) or player(guard_sprite_wait).facing != 3:
                 issue = "guard-sprite-service-order"
                 return s
             if player(s).spriteReady != player(s).spriteRequest or player(s).waitingForSprite:
