@@ -3480,6 +3480,19 @@ to `--actual` and `--outcome`; outcome records and summary are embedded channels
 JSON plus its separate outcome file remains readable. Existing comparison predicates, raw
 ordered differences, source provenance and Unavailable boundaries still apply.
 
+The complete H4 probe publishes its five retained snapshots (`admissionSnapshot`,
+`rawTextBoundary`, `musicLogicalEnd`, `musicPlainInput`, `joinReturn`) as separate
+`captureMetadata` records with `key` and `value`, then declares exactly those keys in terminal
+`captureMetadataKeys`. Each record still obeys the existing size and queue limits. The reader
+restores the original top-level fields, accepts the earlier inline terminal format, and rejects
+missing, duplicate, unknown or conflicting split fields. Generic short captures need no H4 metadata.
+Battle policy selection explicitly reads full current state for terrain; per-frame observations
+remain lightweight. Native integer flags and party IDs compare numerically with historical JSON
+numbers, preserving exact values, sequence order and nonnumeric types. Zone-return control retains
+only the four scalar timing operands it consumes; the stream retains the complete source record.
+Nod texture identities use decimal strings, like other native resource identities, preserving
+unsigned instance IDs without a signed conversion.
+
 The current-format reader uses Python's standard-library SQLite for private derived records
 and explicit ordinal/native/resource joins. Reads are detached values: complete a mutable record
 before publishing it. Group children within a working database remain explicitly appendable;
