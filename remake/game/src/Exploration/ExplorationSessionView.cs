@@ -545,8 +545,11 @@ public sealed partial class ExplorationSessionView : Control
 
     // Only callback control operands cross into GDScript. Full evidence is captured
     // below at the same synchronous boundary, without a CLR/Variant/CLR round trip.
-    public Godot.Collections.Dictionary ReadCaptureWitness()
+    public Godot.Collections.Dictionary ReadCaptureWitness(bool route = false)
     {
+        // Route control needs the same actual draw clock as the full observation,
+        // without pulling unused resource evidence into each readiness poll.
+        if (route) { _legacyCamera = true; _presentation?.ObserveCamera(true); }
         var state = ObservationCapture.FactFields(ObservationFacts(false,false));
         string[] names = ["sessionId","revision","observationSequence","simulationTick","mainSeed","map","mode",
             "stop","wait","token","cursor","failure","focused","tickDebt","canWaitAtInput","canWaitForText",
@@ -557,6 +560,16 @@ public sealed partial class ExplorationSessionView : Control
         witness["cameraProjection"] = state["cameraProjection"] is null ? null :
             new[] { "drawSequence","processFrame","sessionId","revision","observationSequence","simulationTick","token" }
                 .ToDictionary(name=>name,name=>projection[name]);
+        if (route)
+        {
+            witness["portraitId"] = state["portraitId"];
+            witness["portraitWork"] = state["portraitWork"];
+            witness["entities"] = _session?.Current.Exploration?.AllEntities.Select(entity => new
+            {
+                id = entity.Entity.Value, x = entity.Motion.X, y = entity.Motion.Y,
+                facing = entity.Motion.Facing, busy = entity.Busy,
+            });
+        }
         return ObservationCapture.ToDictionary(witness);
     }
 
