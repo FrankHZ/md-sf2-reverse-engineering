@@ -7578,6 +7578,7 @@ def compare_modern(
             audioContiguous=audio_contiguous,
             audioLifecycle=audio_lifecycle,
             reachedMaterialJoins=materials["joins"],
+            reachedVisualMaterialBinding=materials["visuals"],
             textMaterialBinding=text_material,
             plainJoinBinding=join,
             walkingAdmissionBinding=walking,

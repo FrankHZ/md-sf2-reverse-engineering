@@ -3792,3 +3792,43 @@ reports under the same ignored output root. The 24 original direct cases and fou
 corruptions remain required alongside targeted wrong/missing/mixed cases for these four corrections.
 Reuse A03 and its exact tested adapter/probe identity; these comparator corrections require no SDK,
 native, B/C/D, original-source acquisition or broad suite rerun.
+
+### Caller and reached visual resource cohort
+
+The caller/resource allocation uses one fresh successful continuous A/B/C/D capture per current
+settings variant, serially in the owned Godot project. Freeze the accepted party/start, source world
+with its two AB operations, cumulative scene45 and material selection. D adds only its existing two
+speech BD rows. Keep fixed60, optional poll1 and the legal adaptive winning route. Validate A's
+complete caller and resource operands before B/C/D. A successful capture is reused for offline
+corrections; a failed attempt retains its process, log, tested source/binaries and failure record.
+No original runtime acquisition is implied.
+
+The application publishes `ProgramControlReads` separately from semantic observations. Each actual
+call/return retains its full copied before/after stack and resulting cursor at the producing Commit.
+The finite source-map-script return is read after its final real service. The observer does not add
+yields, events, services or RNG draws. Direct production-assembly checks cover nested/synchronous
+returns, empty callers, waits, failure and the instruction budget, delayed script return and battle
+transition.
+
+The same session's post-draw channel records `resourceRequirements` and `resourceUses`. The requirement
+comes from the logical map layer/block/tile or visible entity/portrait; use comes from the actual
+assigned/drawn texture metadata. Identity retains session/revision/observation sequence, simulation
+tick/token, logical map visit and presentation phase. Retain priority passes and occlusion subjects,
+normal/lowered gesture frames, portrait alternate tiles, visible fairy raster bindings and actual
+field-death actor textures. A selected resource absent from the route is not an additional obligation.
+The full source/use result is retained as `actualObservations.reachedVisualMaterialBinding`.
+
+Add `--canonical-content $selectedCanonical --tileset-metadata $selectedTilesetMetadata
+--palette-metadata $selectedPaletteMetadata` to the existing explicit modern material comparison.
+These are read-only accepted private exports, resolved from the repository root when relative;
+verify their existing canonical/metadata identities and the registered ROM before source decoding.
+The existing atlas recipe and sprite/portrait decoder reproduce the selected source bytes in memory.
+The field-death extension is checked separately from frozen base42 using its existing provenance and
+ROM spans. No new export, manifest, cache or private acquisition is required.
+
+Missing independent requirements, actual uses, caller operands or source prerequisites remain
+Unavailable. Contradictory evidence dominates missing evidence. The existing whole children and
+closed mandatory inventory remain unchanged; no partial subset passes or new mandatory rows are
+introduced. Keep historical and mixed-content diagnostic matrices separate from the current cohort.
+Full H4 and original natural timing/history remain open until their own evidence and independent
+acceptance boundaries are met.

@@ -3864,11 +3864,16 @@ actual initialization/shared-tail effects. Pinned `InitializeMapEntities`,
 population lowering supply the bounded rebuild allocation and sprite rules; preserve loads retain
 the prior physical set. Actual facing and all retained first-boundary allocation contexts are checked
 after source overrides. Shared-tail flag and counted membership states are read before return,
-separately from published operation labels. **Unknown (actual observation):** calls at4107 and12608
+separately from published operation labels. **Unknown (retained A03 observation):** calls at4107 and12608
 have no retained caller-stack operand before their enclosing returns. Other later stacks cannot
-supply those intervals; the whole route/setup/caller child remains Unavailable despite correct
-observed source nesting and continuation. The other four operation-flow children pass the corrected
-bounded readback, without a new native or original capture.
+supply those intervals; that capture's whole route/setup/caller child remains Unavailable despite
+correct observed source nesting and continuation. Fresh application readbacks preserve complete
+immutable before/after stacks at the actual call and enclosing-return Commit, including deferred
+source-map-script service returns. Their own session and source identities must establish the join.
+The [caller/resource cohort route](../../remake/docs/development-and-verification.md#caller-and-reached-visual-resource-cohort)
+reuses pinned source/ROM decoders and accepted private atlas/sprite/portrait/field-death inputs for
+complete reached texture requirements and actual mounted uses. This adds no original runtime evidence
+and cannot backfill missing operands in the retained A03 or historical settings captures.
 
 The [accepted modern clock](../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)
 now chooses one progress step per existing common service from semantic request, arm-before-sample

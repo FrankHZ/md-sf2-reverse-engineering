@@ -50,6 +50,7 @@ var resource_requirement_seen: Dictionary = {}
 var resource_map := ""
 var resource_visit := 0
 var resource_progress: Dictionary = {}
+var reading_resource_draw := false
 
 func save_resource_progress() -> void:
     var file := FileAccess.open(OS.get_environment("SF2_EXPLORATION_OBSERVATION_OUTPUT") + ".progress.json", FileAccess.WRITE)
@@ -114,9 +115,12 @@ func record_camera_before_draw() -> void:
 
 func record_camera_draw() -> void:
     if not is_instance_valid(view): return
+    reading_resource_draw = true
     var s := state()
+    reading_resource_draw = false
     if not s.has("presentation"): return
     if not h4_variant.is_empty(): record_field_resources(s)
+    compact_resource_projection(s)
     var presenting: Dictionary = s.get("presentationWait") if s.get("presentationWait") != null else {}
     var resource = presenting.get("Cue", {}).get("Resource")
     if s.get("entityWait") != null or s.get("nod") != null or s.get("fade") != null or resource in ["nod", "shiver", "mosaic-in", "mosaic-out", "black", "white"]:
@@ -231,6 +235,18 @@ func record_field_resources(s: Dictionary) -> void:
         resource_progress["gesture"] = {"revision":s.revision,"token":s.token}
         save_resource_progress()
 
+func compact_resource_projection(s: Dictionary) -> void:
+    # Keep the existing geometry in snapshots; source selectors live once in the
+    # bounded requirement/use channel rather than being repeated every service.
+    var p = s.get("cameraProjection")
+    if p == null: return
+    var layers: Array = p.get("occlusionDraws", []).duplicate()
+    for name in ["background","foreground","backgroundHigh","foregroundHigh"]:
+        if p.get(name) != null: layers.append(p[name])
+    for layer in layers:
+        layer.erase("required")
+        layer.erase("resources")
+
 func check(ok: bool, message: String) -> void:
     if not ok:
         failures.append(message)
@@ -286,6 +302,7 @@ func state() -> Dictionary:
         if p.completedCueToken != null and white_tokens.has(p.completedCueToken):
             var receipt := {"token":p.completedCueToken, "kind":p.completedCueKind}
             if not completed_white.has(receipt): completed_white.append(receipt)
+    if not reading_resource_draw: compact_resource_projection(s)
     return s
 
 func poll_h4_audio() -> void:
