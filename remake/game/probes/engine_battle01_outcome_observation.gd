@@ -156,6 +156,11 @@ func after_admission(s: Dictionary) -> Dictionary:
         if not valid_projection(s, true):
             issue = "battle-viewport"
             break
+        if capture != null:
+            # The movement policy needs terrain; per-frame observations stay lightweight.
+            capture_full_state = true
+            s = state()
+            capture_full_state = false
         var step := choose_command(s, lose)
         capture_row("outcomeRecords",{"label":"action-selected","decision":step,"state":s}, outcome_records)
         for i in range(1, step.path.size()):

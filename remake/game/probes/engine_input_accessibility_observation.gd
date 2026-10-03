@@ -1422,11 +1422,14 @@ func capture_error(reason: String) -> void:
 
 func finish_capture() -> void:
     disconnect_capture()
+    var metadata := {"admissionSnapshot":admission_snapshot,"rawTextBoundary":raw_boundary,
+        "musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return}
+    for name in metadata:
+        capture_row("captureMetadata", {"key":name,"value":metadata[name]}, [])
     if not capture_failed:
         capture.call("Complete",{"passed":failures.is_empty() and field_unavailable.is_empty(),"case":input_case,
             "h4Variant":h4_variant,"failures":failures,"unavailable":field_unavailable,
-            "maximumWhite":maximum_white,"completedWhite":completed_white,"admissionSnapshot":admission_snapshot,
-            "rawTextBoundary":raw_boundary,"musicLogicalEnd":music_logical_end,"musicPlainInput":music_plain_input,"joinReturn":join_return,
+            "maximumWhite":maximum_white,"completedWhite":completed_white,"captureMetadataKeys":metadata.keys(),
             "audioTerminal":JSON.parse_string(host.call("ReadAudioObservationJson")),"audioSequenceSeen":JSON.parse_string(host.call("ReadAudioObservationJson")).sequence})
     while not capture.call("IsFinished"): await process_frame
     if not capture.call("Succeeded"):
