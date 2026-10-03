@@ -1334,18 +1334,18 @@ func run_text_wait() -> void:
     finish_public()
 
 func finish_public() -> void:
-    if capture != null:
-        await finish_capture()
-        return
-    if not h4_variant.is_empty():
-        poll_h4_audio()
-        if process_frame.is_connected(poll_h4_audio): process_frame.disconnect(poll_h4_audio)
     if white_palette_case: check(white_palette_completed, "Declared white palette route reached Chester W1")
     if battle_entry_case: check(battle_entry_completed, "Declared route reached and exercised real first battle input")
     if choice_case and choice_exercised:
         for phase in [1,2,3,4,5]:
             check(choice_draws.any(func(d): return d.choice.Work.Phase == phase),
                 "Actual menu draw observed for phase " + str(phase))
+    if capture != null:
+        await finish_capture()
+        return
+    if not h4_variant.is_empty():
+        poll_h4_audio()
+        if process_frame.is_connected(poll_h4_audio): process_frame.disconnect(poll_h4_audio)
     var contents := JSON.stringify({"passed":failures.is_empty() and field_unavailable.is_empty(),
         "case":input_case,"failures":failures,"unavailable":field_unavailable,
         "maximumWhite":maximum_white,"completedWhite":completed_white,"samples":samples,"waitReceipts":wait_receipts,
