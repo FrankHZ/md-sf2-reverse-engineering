@@ -3,7 +3,7 @@
 - Status: **Accepted**; trial closed, task-based routing adopted
 - Proposal date: 2026-09-05
 - Decision date: 2026-09-06
-- Routing update: 2026-10-01
+- Routing update: 2026-10-03
 - Scope: task model routing and handoffs after the bounded trial
 
 ## Context
@@ -26,7 +26,7 @@ Choose the model for the task's reasoning difficulty within its assigned role an
 | --- | --- |
 | Main-gate planning, independent review and serialized integration; independently assigned investigation of systemic problems | `gpt-6-astra` / `high` |
 | Difficult architecture, conflicting evidence, novel reverse engineering or runtime-admission design | `gpt-6-astra` / `high` |
-| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6.1-sol` / `medium` |
+| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6.1-sol` / `high` |
 | Focused repeatable work with settled semantics, explicit ownership and direct acceptance, such as mechanical documentation or translation synchronization and routine bounded implementation | `gpt-6-luna` / `high` |
 
 The godot-architect, research and design-doc roles retain their responsibilities; a lane name alone
@@ -35,11 +35,12 @@ unclear evidence and integration authority with the accountable owner rather tha
 solely for cost. A user-specific choice overrides these defaults.
 
 All current Sol dispatches, escalations to Sol and continuations of existing Sol tasks use
-`gpt-6.1-sol`. Preserve the task's supported reasoning effort and completed evidence; historical
-model selections remain historical records.
+`gpt-6.1-sol` with High as the default and minimum reasoning effort, as selected by the user.
+Raise a lower setting to High on the next authorized continuation; preserve an already higher
+supported setting and completed evidence. Historical model selections remain historical records.
 
-Model and reasoning effort are separate. Use High above Medium only for a concrete reasoning
-difficulty; reserve XHigh for an exceptional named difficulty where High is insufficient or comparable
+Model and reasoning effort are separate. Sol's High floor is a project dispatch policy, not a measured
+model-performance claim. Reserve XHigh for an exceptional named difficulty where High is insufficient or comparable
 work shows a concrete benefit. Record an override reason in the Issue handoff. Distinguish reasoning
 difficulty or scope limitations from missing input, tool or environment failures and ordinary failed
 checks. Escalate Luna to Sol or Sol to Astra when a named reasoning or scope limitation warrants it;
