@@ -8033,10 +8033,21 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
     proof = dict(value=None)
     if modern_report_integrity(report, ref):
         return dict(value=False, reason="report integrity")
-    if report.get("sourceCommit") != SOURCE or report.get("originalIdentity") != dict(
+    identity = report.get("originalIdentity", {})
+    if not isinstance(identity, dict):
+        return dict(value=False, reason="malformed source identity")
+    expected_identity = dict(
         rom=ref["romSha256"],
         upstream=ref["upstream"],
         extension=(ref.get("postVictoryInput") or {}).get("sourceCommit"),
+    )
+    identity_missing = "sourceCommit" not in report or any(
+        k not in identity for k in expected_identity
+    )
+    if (
+        "sourceCommit" in report
+        and report["sourceCommit"] != SOURCE
+        or any(k in identity and identity[k] != v for k, v in expected_identity.items())
     ):
         return dict(value=False, reason="wrong source identity")
     try:
@@ -8181,7 +8192,7 @@ def _matrix_join_occurrence(report, ref, completion_index, crossed_indices):
             and r["receipt"]["Operation"] in ("started", "finished")
         ]
         return dict(
-            value=True,
+            value=None if identity_missing else True,
             sessionId=held[0]["sessionId"],
             generation=generation,
             helperToken=token,
