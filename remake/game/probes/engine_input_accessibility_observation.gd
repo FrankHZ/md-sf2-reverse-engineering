@@ -304,7 +304,7 @@ func callback_state() -> Dictionary:
     var field_view := host.get_node_or_null("ExplorationSessionView") if is_instance_valid(host) else null
     if capture != null and field_view != null:
         view = field_view
-        return enrich_state(view.call("ReadCaptureWitness"))
+        return enrich_state(view.call("ReadCaptureWitness",false))
     return state()
 
 func record_consumer(envelope: Dictionary, s: Dictionary) -> void:
