@@ -15,8 +15,9 @@ public sealed partial class ExplorationSessionView : Control
     [Signal]
     public delegate void SessionResultObservedEventHandler(string resultJson);
 
-    [Signal]
-    public delegate void ResourceDrawObservedEventHandler();
+    // User signal connections identify the external capture itself, without a managed event bridge.
+    private static readonly StringName ResourceDrawSignal = "ResourceDrawObserved";
+    public ExplorationSessionView() => AddUserSignal(ResourceDrawSignal);
 
     private void PublishResult(string boundary, CompletePresentation? completion = null)
     {
@@ -463,10 +464,10 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Draw()
     {
         if (_lastWorld is not { } world) return;
-        _presentation?.ObserveResources(HasConnections(SignalName.ResourceDrawObserved));
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
         if (_presentation?.Draw(world, _session!.Current) == true)
         {
-            if (HasConnections(SignalName.ResourceDrawObserved)) EmitSignal(SignalName.ResourceDrawObserved);
+            if (HasConnections(ResourceDrawSignal)) EmitSignal(ResourceDrawSignal);
             return;
         }
         var bounds = world.Definition.Traversal.ActiveAreas;
@@ -492,7 +493,7 @@ public sealed partial class ExplorationSessionView : Control
 
     public string ReadObservationJson()
     {
-        _presentation?.ObserveResources(HasConnections(SignalName.ResourceDrawObserved));
+        _presentation?.ObserveResources(HasConnections(ResourceDrawSignal));
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
