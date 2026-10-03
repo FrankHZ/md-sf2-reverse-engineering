@@ -3898,9 +3898,9 @@ The bounded caller/resource allocation reuses the successful current A02/B02 obs
 Freeze the accepted party/start, source world with its two AB operations, cumulative scene45 and
 material selection. Keep fixed60, optional poll1 and the legal adaptive winning route. Successful
 captures are reused for offline corrections; every failed attempt retains its process, log, tested
-source/binaries and failure record. C/D and repeated successful A/B captures are held through
-independent integration and the separately owned performance work in Issue #605. No original runtime
-acquisition or complete H4 acceptance is implied.
+source/binaries and failure record. The subsequent [current C/D allocation](#current-cd-settings-capture)
+consumes the accepted performance work in Issue #605; successful A/B observations remain frozen.
+No original runtime acquisition or complete H4 acceptance is implied.
 
 The application publishes `ProgramControlReads` separately from semantic observations. Each actual
 call/return retains its full copied before/after stack and resulting cursor at the producing Commit.
@@ -4012,3 +4012,65 @@ and the matrix exclusions. Obsolete historical reports still preserve raw exact 
 current mandatory report-integrity checks; they cannot stand in for current reports. Freeze this
 bounded result in the same Draft PR. Complete settings/H4, missing original timing/history and #605
 performance acceptance remain separate.
+
+### Current C/D settings capture
+
+**Confirmed native capture:** `local/issue534/settings-cd-current-01/variant-C-05` at
+`85e926c71581fe37d95973209d96ff35e40ffd95` and `variant-D-01` at
+`31f3caf4bdf1ca3a2951e53d3d93f2d000f5d2f8` (only verification documentation changed)
+complete the ordinary winning route and Left/Down return at fixed60/poll1. C uses remapped keyboard,
+swapped Confirm/Cancel, adjustable20, reduced flash and reveal-only Confirm; D uses the admitted
+remapped gamepad/right stick with the same settings and natural reveal. Each process exits0 with
+zero host errors, unchanged settings/start/party and no remaining owned process. Their actual
+streams contain269932/293080 contiguous records and intact terminals; the five separate metadata
+records each remain below93KB and terminals below28KB. The maintained comparison reads the same
+`actual.jsonl` as actual and outcome. Successful C/D and retained A10/B02 are immutable inputs.
+
+Retain the completed discovery failures in this output root: C01 (202.170s) failed native numeric
+membership and the omitted zone-control state; C02 (68.111s) failed unsigned Nod texture identity
+conversion; C04 (169.172s, exit1) failed omitted policy terrain and oversized combined terminal.
+C03 did not launch: its preflight compared assembly bytes despite unchanged Application source and
+different build commit metadata. C05/D01 took248.191/324.231s. These failures are not interrupted or
+replaced by the successful captures. The fixes preserve input legality, adaptive commands,
+gameplay/RNG, all evidence fields and the original capture bounds.
+
+Direct verification includes16 native numeric controls,11 metadata shape/equality/negative cases,
+actual C05 terminal equivalence between inline/split formats, actual normal/lowered unsigned Nod
+identities, probe check-only, controlled Debug build and adapter compilation. Default planner
+selection is adapter-build/public-core/tooling-python, with no unclassified path or changed shared
+execution semantics; `--scope engine` correctly rejects the shared H4 comparator. The normal
+`uv run sf2 verify` completed148 checks plus document/index/ROM checks, then failed toolchain
+provenance because this worktree has no default `local/upstream/SF2DISASM`. Preserve that completed
+FAIL; the explicit accepted read-only source used by H4 does not satisfy the toolchain's owning-local
+checkout requirement. No new upstream copy, generic aggregate, performance benchmark or original
+runtime acquisition is part of this slice. Offline H4 comparison and remaining obligations retain
+their independent result.
+
+Reproduce offline with the existing explicitly selected read-only `$pinnedSource`, `$canonical`,
+`$tilesetMetadata` and `$paletteMetadata` from the material evidence owner. Use C05 or D01's own
+process/settings/party/stream; omit A-only normal05 baseline arguments. The frozen A report supplies
+the unchanged scene/resource selection and asset pins, not C/D observation facts:
+
+```powershell
+. ./local/private-inputs.ps1
+$run = 'local/issue534/settings-cd-current-01/variant-C-05' # or variant-D-01
+$process = Get-Content -LiteralPath "$run/process.json" -Raw | ConvertFrom-Json
+$material = (Get-Content -LiteralPath 'local/issue534/caller-resource-cohort-01/report-A-10.json' -Raw |
+  ConvertFrom-Json).evidence.materialSelection
+uv run python -m sf2tool.remake_h4_comparison compare --profile modern-continuous `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --actual "$run/actual.jsonl" --outcome "$run/actual.jsonl" `
+  --settings "$run/settings.json" --host-log "$run/godot.log" --host-exit $process.exit `
+  --controlled-start "$run/inputs/party.json" `
+  --selected-world $process.selectedInputs.SF2_PRIVATE_EXPLORATION_CONTENT `
+  --selected-scene $material.scene --process-receipt "$run/process.json" `
+  --scene-evidence-root $material.sceneEvidenceRoot --asset-root $material.assetRoot `
+  --expected-asset-commit $material.assetCommit --expected-asset-tree $material.assetTree `
+  --expected-asset-manifest-sha256 $material.assetManifestSha256 `
+  --original-join-evidence-root local/issue534/h4-join-consumer-01/inputs/original-join-01 `
+  --text-source-root $pinnedSource --canonical-content $canonical `
+  --tileset-metadata $tilesetMetadata --palette-metadata $paletteMetadata `
+  --output local/issue534/settings-cd-current-01/report-C-reproduction.json
+```
+
+Choose a fresh output for each reproduction and preserve each JSON/SQLite report pair together.
