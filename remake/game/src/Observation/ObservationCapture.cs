@@ -160,11 +160,14 @@ public sealed partial class ObservationCapture : Node
         if (value is IDictionary mapping)
         {
             budget.Add(2,128);
-            var result = new Dictionary<string,object?>();
+            // Charge the known container before reserving its storage. This avoids
+            // resize arrays without allocating ahead of the pending-memory bound.
+            budget.Add(0,mapping.Count*64L);
+            var result = new Dictionary<string,object?>(mapping.Count);
             foreach (DictionaryEntry entry in mapping)
             {
                 string key = Convert.ToString(entry.Key)!;
-                budget.Add(key.Length*6L+4,key.Length*2L+64);
+                budget.Add(key.Length*6L+4,key.Length*2L);
                 result.Add(key,SnapshotFacts(entry.Value,budget,depth+1));
             }
             return result;
@@ -172,17 +175,23 @@ public sealed partial class ObservationCapture : Node
         if (value is IEnumerable sequence)
         {
             budget.Add(2,64);
-            var result = new List<object?>();
-            foreach (var item in sequence) { budget.Add(1,16); result.Add(SnapshotFacts(item,budget,depth+1)); }
+            int? count = (sequence as ICollection)?.Count;
+            if (count is { } size) budget.Add(size,size*16L);
+            var result = count is { } capacity ? new List<object?>(capacity) : new List<object?>();
+            foreach (var item in sequence)
+            {
+                if (count is null) budget.Add(1,16);
+                result.Add(SnapshotFacts(item,budget,depth+1));
+            }
             return result;
         }
         budget.Add(2,128);
-        var row = new Dictionary<string,object?>();
-        foreach (var property in FactProperties(value.GetType()))
-        {
+        var properties = FactProperties(value.GetType());
+        foreach (var property in properties)
             budget.Add(property.Name.Length*6L+4,property.Name.Length*2L+64);
+        var row = new Dictionary<string,object?>(properties.Length);
+        foreach (var property in properties)
             row.Add(property.Name,SnapshotFacts(property.GetValue(value),budget,depth+1));
-        }
         return row;
     }
 
