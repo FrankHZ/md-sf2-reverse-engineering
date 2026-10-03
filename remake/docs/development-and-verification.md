@@ -3855,3 +3855,21 @@ frames. On a genuine stall, retain the full terminal state. This observer bounda
 clock, source service, input cadence, playback or focus policy. Non-winning bounded tracking retains
 its existing frame limit. Preserve failed `caller-resource-cohort-01/variant-B-01` as a completed
 observer failure; its identical 2293/94/95 checkpoints and advancing 2296 tail do not prove a stall.
+
+The current candidate A02/B02 reports each have 2248 PASS / 13 Unavailable / zero required FAIL.
+The strict A/B matrix is FAIL solely for the placement of the matching asynchronous JOIN completion;
+all other observation payload/order and state/input equivalence components match. Keep that failure
+and the uncollected C/D boundary explicit. Reproduce the existing matrix without normalization from
+the repository root, loading private configuration in the same process and choosing a fresh output:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_h4_comparison matrix `
+  --reference local/issue534/modern-h4-applicability/inputs-01/reference.json `
+  --variant-report local/issue534/caller-resource-cohort-01/report-A-09.json `
+  --variant-report local/issue534/caller-resource-cohort-01/report-B-01.json `
+  --output local/issue534/caller-resource-cohort-01/matrix-AB-reproduction.json
+```
+
+Expected exit1: A PASS, B FAIL for observations, C/D Unavailable. Candidate local child acceptance
+is separate from this failed settings cohort and from independent integration.

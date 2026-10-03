@@ -797,3 +797,9 @@ An early-completed cue can resume immediately at the last logical service, leavi
 held sample. Bind its actual request/generation, helper token/cursor, service groups, receipt,
 completion and return; do not invent a plateau to fit an older observation. This accepted behavior
 does not change raw event equality in the current settings matrix.
+
+The candidate current A/B comparison exposes this separate boundary: both local JOIN orders satisfy
+the existing source helper and playback obligations, while the strict raw matrix fails for their
+asynchronous completion placement. C/D remain uncollected pending independent disposition of that
+failure. Do not normalize the event order, repeat a successful capture to force equality, or claim
+complete settings/H4 acceptance from the local child results.

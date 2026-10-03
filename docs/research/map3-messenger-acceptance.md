@@ -3893,3 +3893,14 @@ return and real previous-track restart. This is a bounded modern observation; or
 completion and natural timing remain Unknown. Independent integration and the current complete
 settings cohort remain separate acceptance boundaries. Preserve A03's missing operands and the
 failed memory-pressure observer attempt; neither is relabelled as a successful new capture.
+
+**Confirmed (candidate modern comparison):** current A02 and B02 both complete with clean native
+exit0 and unchanged selected party/start/settings. `report-A-09.json` and `report-B-01.json` under
+`local/issue534/caller-resource-cohort-01` each retain 2248 PASS / 13 Unavailable / zero required FAIL;
+the five whole operation children and three reached visual source/use children pass. The unchanged
+strict matrix is FAIL: of 34571 observations, only positions10336–10340 differ because the same
+`music-actual-completed` / `MUSIC_JOIN` event occurs at A index10340 and B index10336. A diagnostic
+removal of just that event leaves every other payload/order exact; it does not modify either raw
+report or establish matrix PASS. Admission, inputs, battle states, endpoints, party, gold and main
+seed compare exactly. `matrix-AB-01.json` and `current-AB-causal-diagnostic-01.json` preserve this
+boundary. C/D are not collected pending the independent matrix decision; complete H4 remains open.
