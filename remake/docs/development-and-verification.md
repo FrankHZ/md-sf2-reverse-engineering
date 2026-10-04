@@ -34,6 +34,37 @@ failure, necessary code/import restart, observed contamination, or test of start
 justify a bounded restart or isolated instance; record the reason. A new slice or comparison does not
 justify copying the project, extracting another editor, or building a debug framework.
 
+## Observation and Comparison Planning
+
+Before a large or expanded capture/comparison, apply the
+[scale-planning owner](../../docs/operations/bounded-inspection-and-review.md#plan-before-scaling).
+Declare the claim and minimum sufficient granularity, input/intermediate/output cardinalities,
+algorithmic cost, resource budgets, stages, concurrency and publication headroom. Reuse relevant
+measurements or a representative small pilot before the full run. Evaluate native collection and
+offline comparison separately: acceptable frame time, an indexed database or a bounded writer queue
+does not establish acceptable whole-run storage or join cost. Include repeated resource uses,
+requirement/candidate products, copies, journals and final report companions in the estimate.
+
+For future probes, start ordinary CPU/memory/progress and coarse state sampling around1Hz, while
+retaining necessary semantic and actual-consumption events at their originating boundaries with
+occurrence/order identity. Choose finer sampling for a named claim; do not miss a short event by
+sampling once per second. A draw callback may itself occur every frame for many resources, so
+event-driven collection still needs an explicit total-volume estimate.
+
+Reuse stable descriptors and compact unchanged uses into counts or delimited spans only when the
+accepted predicate permits it and completeness, changes and contradictions remain auditable.
+Per-frame motion/camera/draw evidence needs a bounded interval and byte budget. Frame-time
+percentiles may require per-frame timing statistics, not per-frame full-state serialization.
+Sampling, serialization and flush rates are separate: batched writes preserve all required events,
+overflow/error behavior and complete terminal records.
+
+Select offline scope before expensive import and derivation, preserving required context and
+explicitly marking unselected or missing obligations. Estimate peak logical bytes separately from
+physical volume headroom; compression does not remove redundant work. Preserve diagnostics and
+replan when observed costs materially exceed the estimate. These design rules do not alter existing
+captures, acceptance predicates, running-process control or cleanup authority. A guidance-only change
+uses direct document checks and does not trigger native, SDK, normal/full or H3 verification.
+
 ## Locked .NET Workflow
 
 Load the existing ignored host/worktree environment before every SDK command, including informational

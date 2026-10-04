@@ -1,9 +1,70 @@
-# Bounded Artifact, Diff, Handoff, and Review Runbook
+# Bounded Data Work, Inspection, and Review Runbook
 
-Use this runbook when a task inspects a large tracked artifact or topic diff, prepares a root or
-main-gate handoff, or independently reviews a candidate. It uses existing Git, GitHub, and `sf2`
-outputs; it does not introduce telemetry, a benchmark, a new acceptance gate, or a substitute for
-owning evidence.
+Use this runbook when planning large acquisition or processing, inspecting a large artifact or topic
+diff, preparing a root or main-gate handoff, or independently reviewing a candidate. It uses existing
+Git, GitHub, and `sf2` outputs; it does not introduce telemetry, a benchmark, a new acceptance gate,
+or a substitute for owning evidence.
+
+## Plan before Scaling
+
+Before a new or materially expanded bulk run, record a concise engineering plan in the owning
+Issue or design surface. Durable requirements and acceptance boundaries belong in their tracked
+owners. Scale the rigor to the work: a small bounded task needs a few concrete estimates, not a new
+framework, manifest, monitoring service or human approval ceremony. Use existing dispatch and review.
+
+1. **Question and granularity.** Name the claim, selected scope, required occurrences and context.
+   Choose the minimum sufficient events, changes, counters or samples. Justify each additional
+   per-frame, per-object or per-variant dimension; a convenient callback is not a data-volume plan.
+2. **Cardinality and complexity.** Estimate records as duration × rate × subjects × variants where
+   applicable, then bytes per record and input/intermediate/output sizes. Include distinct keys and
+   skew, nested scans, sorting, repeated serialization/copies and per-row database work. A keyed
+   requirement/use join can still cost `sum(R_k * U_k)`: an index reduces lookup cost, not the number
+   of pairs. Streaming, SQLite and bounded queues alone establish neither affordable total time nor
+   storage. Prefer scope selection before import/materialization and reuse existing reductions.
+3. **Budgets and execution.** Estimate compute, elapsed time, peak memory, I/O, logical and physical
+   storage, network and API/model costs where relevant; mark non-applicable costs. Include sources,
+   transactions/journals, sort/spill buffers, report companions and publication copies. Plan stages,
+   batch sizes and concurrency against shared capacity, retaining explicit headroom. State assumptions,
+   uncertainty and thresholds for pausing expansion and replanning before resources are exhausted.
+4. **Lifecycle.** Identify immutable raw evidence, reusable descriptors, derived reports and
+   recomputable scratch, with exact owners and locations. Store facts once where practical and use
+   references or streamed reductions. Define the new run's scratch disposal boundary in advance;
+   this grants no cleanup authority over existing evidence, inputs, failure records or other runs.
+   A published result must retain its declared dependencies and remain readable after permitted
+   scratch disposal.
+5. **Calibrate and stage.** Prefer existing relevant measurements; if key estimates are unknown,
+   use a representative small pilot covering skew and the costly stages, including publication.
+   Extrapolate with uncertainty and validate the main assumptions before full scale. A short native
+   frame-time measurement does not validate offline full-route join or storage cost. Do not run the
+   full expensive job merely to learn a cardinality available from counts or a small sample.
+6. **Respond to measurements.** Record bounded stage progress through existing output. When actual
+   growth or throughput materially differs, preserve diagnostics and revise the algorithm, scope,
+   staging or concurrency. Do not blindly wait, raise limits or restart. Compression can protect
+   physical headroom but does not fix logical amplification. Report any missing required evidence
+   explicitly; a budget or a smaller selection never turns an incomplete claim into PASS. Existing
+   process-control, input-preservation and cleanup authority still applies.
+
+### Sampling, Events, and Writing
+
+These are defaults for future capture design, not permission to thin existing evidence or change
+accepted predicates. The [remake observation owner](../../remake/docs/development-and-verification.md#observation-and-comparison-planning)
+applies them to Godot and offline comparison.
+
+- Start ordinary operational telemetry (CPU, memory, progress) and coarse periodic state visibility
+  around 1Hz; select another rate when the question requires it. This is not a limit on semantic events.
+- Record necessary input, transition, actual consumption, completion and failure events at their
+  originating boundaries with occurrence/order identity. A one-second point sample cannot replace
+  a short-lived event, and a mount or request is not proof of actual use.
+- Reuse stable descriptors. Summarize unchanged repeated uses with counts or delimited spans only
+  when the predicate permits it and interval completeness is established. Retain actual first use,
+  scope/lifetime, relevant changes, contradictions and auditable original locations. A high-frequency
+  draw callback is still high-volume even when called event-driven.
+- Collect per-frame detail only for a named claim over a bounded interval with record/byte estimates
+  and an endpoint. Per-frame timing counters or accumulators can support the required tail/percentile
+  measurement without a full-state JSON snapshot per frame; preserve the chosen metric's accuracy.
+- Separate observation frequency from serialization and flush frequency. Batching one second of
+  writes must preserve every necessary event within that second. Bound buffers and total output,
+  and retain overflow, writer-error and terminal-integrity behavior.
 
 ## Inspect Identity and Shape First
 
